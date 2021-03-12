@@ -26,10 +26,12 @@ msg(str`Hello ${user}!`);
 // Lit template
 msg(html`Hello <b>World</b>!`);
 
-// Lit template with variable expression (one placeholder)
+// Lit template with one XLIFF placeholder (combined start tag + expression +
+// end tag).
 msg(html`Hello <b>${user}</b>!`);
 
-// Lit template with variable expression (two placeholders)
+// Lit template with two XLIFF placeholders (combined start tag + expression,
+// separate end tag).
 msg(html`Click <a href=${url}>here</a>!`);
 
 // Lit template with string expression

@@ -397,6 +397,10 @@ export function _msg(
   return template;
 }
 
+/**
+ * Render the result of a `str` tagged template to a string. Note we don't need
+ * to do this for Lit templates, since Lit itself handles rendering.
+ */
 const joinStringsAndValues = (
   strings: TemplateStringsArray,
   values: Readonly<unknown[]>,

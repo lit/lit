@@ -111,17 +111,15 @@ export function parseStringAsTemplateLiteral(
     ts.ScriptKind.JS
   );
   if (file.statements.length !== 1) {
-    throw new KnownError('Internal error: expected 1 statement');
+    throw new Error('Internal error: expected 1 statement');
   }
   const statement = file.statements[0];
   if (!ts.isExpressionStatement(statement)) {
-    throw new KnownError('Internal error: expected expression statement');
+    throw new Error('Internal error: expected expression statement');
   }
   const expression = statement.expression;
   if (!ts.isTemplateLiteral(expression)) {
-    throw new KnownError(
-      'Internal error: expected template literal expression'
-    );
+    throw new Error('Internal error: expected template literal expression');
   }
   return expression;
 }
