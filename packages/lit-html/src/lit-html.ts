@@ -911,8 +911,42 @@ class ChildPartImpl {
     this._$setChildPartConnected?.(isConnected);
   }
 
+  /**
+   * The parent node into which the part renders its content.
+   *
+   * A ChildPart's content consists of a range of adjacent child nodes of
+   * `.parentNode`, possibly bordered by 'marker nodes' (`.startNode` and
+   * `.endNode`).
+   *
+   * - If both `.startNode` and `.endNode` are non-null, then the part's content
+   * consists of all siblings between `.startNode` and `.endNode`, exclusively.
+   *
+   * - If `.startNode` is non-null but `.endNode` is null, then the part's
+   * content consists of all siblings following `.startNode`, up to and
+   * including the last child of `.parentNode`. If `.endNode` is non-null, then
+   * `.startNode` will always be non-null.
+   *
+   * - If both `.endNode` and `.startNode` are null, then the part's content
+   * consists of all child nodes of `.parentNode`.
+   */
   get parentNode(): Node {
     return wrap(this._$startNode).parentNode!;
+  }
+
+  /**
+   * The part's leading marker node, if any. See `.parentNode` for more
+   * information.
+   */
+  get startNode(): Node | null {
+    return this._$startNode;
+  }
+
+  /**
+   * The part's trailing marker node, if any. See `.parentNode` for more
+   * information.
+   */
+  get endNode(): Node | null {
+    return this._$endNode;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
