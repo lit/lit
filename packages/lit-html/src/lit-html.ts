@@ -937,7 +937,7 @@ class ChildPartImpl {
    * The part's leading marker node, if any. See `.parentNode` for more
    * information.
    */
-  get startNode(): Node | undefined {
+  get startNode(): Node | null {
     return this._$startNode;
   }
 
@@ -945,8 +945,8 @@ class ChildPartImpl {
    * The part's trailing marker node, if any. See `.parentNode` for more
    * information.
    */
-  get endNode(): Node | undefined {
-    return this._$endNode ?? undefined;
+  get endNode(): Node | null {
+    return this._$endNode;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {

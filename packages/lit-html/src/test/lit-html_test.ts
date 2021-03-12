@@ -1503,15 +1503,15 @@ suite('lit-html', () => {
         update(part: ChildPart) {
           const {parentNode, startNode, endNode} = part;
 
-          if (endNode !== undefined) {
-            assert.notEqual(startNode, undefined);
+          if (endNode !== null) {
+            assert.notEqual(startNode, null);
           }
 
-          if (startNode === undefined) {
+          if (startNode === null) {
             // The part covers all children in `parentNode`.
             assert.equal(parentNode.childNodes.length, 0);
-            assert.equal(endNode, undefined);
-          } else if (endNode === undefined) {
+            assert.equal(endNode, null);
+          } else if (endNode === null) {
             // The part covers all siblings following `startNode`.
             assert.equal(startNode.nextSibling, null);
           } else {
