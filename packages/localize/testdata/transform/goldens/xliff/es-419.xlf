@@ -42,21 +42,6 @@
   <source>Hello World</source>
   <target>Hola Mundo</target>
 </trans-unit>
-<trans-unit id="s03c68d79ad36e8d4">
-  <note>Description of 0</note>
-  <source>described 0</source>
-  <target>described 0</target>
-</trans-unit>
-<trans-unit id="s03c68e79ad36ea87">
-  <note>Parent description / Description of 1</note>
-  <source>described 1</source>
-  <target>described 1</target>
-</trans-unit>
-<trans-unit id="s03c68f79ad36ec3a">
-  <note>Parent description / Description of 2</note>
-  <source>described 2</source>
-  <target>described 2</target>
-</trans-unit>
 </body>
 </file>
 </xliff>

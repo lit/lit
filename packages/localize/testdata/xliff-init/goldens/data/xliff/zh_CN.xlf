@@ -5,6 +5,10 @@
 <trans-unit id="s8c0ec8d1fb9e6e32">
   <source>Hello World!</source>
 </trans-unit>
+<trans-unit id="he7b474847636149b">
+  <note>Description of Hello $(name)</note>
+  <source>Hello <ph id="0">&lt;b>${name}</ph>!<ph id="1">&lt;/b></ph></source>
+</trans-unit>
 </body>
 </file>
 </xliff>
