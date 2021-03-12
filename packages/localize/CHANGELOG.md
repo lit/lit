@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-## Changed
+### Changed
 
 - **[BREAKING]** Templates can now contain arbitrary expressions, and no longer
   need to be wrapped in a function.

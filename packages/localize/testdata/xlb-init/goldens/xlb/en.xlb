@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<localizationbundle locale="en">
+  <messages>
+    <msg name="s8c0ec8d1fb9e6e32">Hello World!</msg>
+    <msg name="he7b474847636149b">Hello <ph>&lt;b>${name}</ph>!<ph>&lt;/b></ph></msg>
+  </messages>
+</localizationbundle>
