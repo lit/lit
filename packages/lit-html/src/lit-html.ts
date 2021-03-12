@@ -918,16 +918,16 @@ class ChildPartImpl {
    * `.parentNode`, possibly bordered by 'marker nodes' (`.startNode` and
    * `.endNode`).
    *
-   * - If both `.startNode` and `.endNode` are defined, then the part's content
+   * - If both `.startNode` and `.endNode` are non-null, then the part's content
    * consists of all siblings between `.startNode` and `.endNode`, exclusively.
    *
-   * - If `.startNode` is defined but `.endNode` is undefined, then the part's
+   * - If `.startNode` is non-null but `.endNode` is null, then the part's
    * content consists of all siblings following `.startNode`, up to and
-   * including the last child of `.parentNode`. (If `.endNode` is defined, then
-   * `.startNode` will always be defined.)
+   * including the last child of `.parentNode`. If `.endNode` is non-null, then
+   * `.startNode` will always be non-null.
    *
-   * - If both `.endNode` and `.startNode` are undefined, then the part's
-   * content consists of all child nodes of `.parentNode`.
+   * - If both `.endNode` and `.startNode` are null, then the part's content
+   * consists of all child nodes of `.parentNode`.
    */
   get parentNode(): Node {
     return wrap(this._$startNode).parentNode!;
