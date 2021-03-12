@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { directive as legacyDirective } from "./lib/directive.js";
-import * as legacyLit from "./lit-html.js";
+import {directive as legacyDirective} from './lib/directive.js';
+import * as legacyLit from './lit-html.js';
 
 export const PartType = {
   ATTRIBUTE: 1,
@@ -31,17 +31,14 @@ export type ChildPartInfo = {
 };
 
 export type AttributePartInfo = {
-  readonly type:
-    | typeof PartType.ATTRIBUTE
-    | typeof PartType.PROPERTY
-    | typeof PartType.BOOLEAN_ATTRIBUTE
-    | typeof PartType.EVENT;
-  readonly strings?: ReadonlyArray<string>;
-  readonly name: string;
-  readonly tagName: string;
+  readonly type:|typeof PartType.ATTRIBUTE|
+               typeof PartType.PROPERTY|
+               typeof PartType.BOOLEAN_ATTRIBUTE|typeof PartType.EVENT;
+  readonly strings?: ReadonlyArray<string>; readonly name: string; readonly tagName:
+                                                                                string;
 };
 
-export type Part = ChildPart | AttributePart | BooleanAttributePart | EventPart;
+export type Part = ChildPart|AttributePart|BooleanAttributePart|EventPart;
 
 type Interface<T> = {
   [P in keyof T]: T[P];
@@ -50,7 +47,7 @@ type Interface<T> = {
 export type ChildPart = Interface<ChildPartImpl>;
 class ChildPartImpl {
   readonly type = PartType.CHILD;
-  readonly options: legacyLit.RenderOptions | undefined;
+  readonly options: legacyLit.RenderOptions|undefined;
   constructor(readonly legacyPart: legacyLit.NodePart) {
     this.options = legacyPart.options;
   }
@@ -72,11 +69,8 @@ export function getRenderedNodes(childPart: ChildPart) {
   const results = [];
   const impl = childPart as ChildPartImpl;
   const part = impl.legacyPart;
-  for (
-    let node: Node | null = part.startNode;
-    node && node !== part.endNode;
-    node = node.nextSibling
-  ) {
+  for (let node: Node|null = part.startNode; node && node !== part.endNode;
+       node = node.nextSibling) {
     const n: Node = node;
     results.push(n);
   }
@@ -85,9 +79,9 @@ export function getRenderedNodes(childPart: ChildPart) {
 
 export type AttributePart = Interface<AttributePartImpl>;
 class AttributePartImpl {
-  readonly type: typeof PartType.ATTRIBUTE | typeof PartType.PROPERTY;
+  readonly type: typeof PartType.ATTRIBUTE|typeof PartType.PROPERTY;
 
-  get options(): legacyLit.RenderOptions | undefined {
+  get options(): legacyLit.RenderOptions|undefined {
     return undefined;
   }
   get name(): string {
@@ -110,9 +104,8 @@ class AttributePartImpl {
     return this.element.tagName;
   }
 
-  constructor(
-    readonly legacyPart: legacyLit.AttributePart | legacyLit.PropertyPart
-  ) {
+  constructor(readonly legacyPart: legacyLit.AttributePart|
+              legacyLit.PropertyPart) {
     if (legacyPart instanceof legacyLit.PropertyPart) {
       this.type = PartType.PROPERTY;
     } else {
@@ -125,7 +118,7 @@ export type BooleanAttributePart = Interface<BooleanAttributePartImpl>;
 class BooleanAttributePartImpl {
   readonly type = PartType.BOOLEAN_ATTRIBUTE;
 
-  get options(): legacyLit.RenderOptions | undefined {
+  get options(): legacyLit.RenderOptions|undefined {
     return undefined;
   }
   get name(): string {
@@ -148,7 +141,8 @@ class BooleanAttributePartImpl {
     return this.element.tagName;
   }
 
-  constructor(readonly legacyPart: legacyLit.BooleanAttributePart) {}
+  constructor(readonly legacyPart: legacyLit.BooleanAttributePart) {
+  }
 }
 
 /**
@@ -165,9 +159,10 @@ class BooleanAttributePartImpl {
 export type EventPart = Interface<EventPartImpl>;
 class EventPartImpl {
   readonly type = PartType.EVENT;
-  constructor(readonly legacyPart: legacyLit.EventPart) {}
+  constructor(readonly legacyPart: legacyLit.EventPart) {
+  }
 
-  get options(): legacyLit.RenderOptions | undefined {
+  get options(): legacyLit.RenderOptions|undefined {
     return undefined;
   }
   get name(): string {
@@ -205,9 +200,8 @@ function legacyPartToPart(part: legacyLit.Part): Part {
   } else if (part instanceof legacyLit.BooleanAttributePart) {
     return new BooleanAttributePartImpl(part);
   } else if (
-    part instanceof legacyLit.PropertyPart ||
-    part instanceof legacyLit.AttributePart
-  ) {
+      part instanceof legacyLit.PropertyPart ||
+      part instanceof legacyLit.AttributePart) {
     return new AttributePartImpl(part);
   }
   // ElementPartInfo doesn't exist in lit-html v1
@@ -220,7 +214,7 @@ function legacyPartToPart(part: legacyLit.Part): Part {
  * This is useful for checking that a directive is attached to a valid part,
  * such as with directive that can only be used on attribute bindings.
  */
-export type PartInfo = ChildPartInfo | AttributePartInfo;
+export type PartInfo = ChildPartInfo|AttributePartInfo;
 
 export type DirectiveClass = {
   new (part: PartInfo): Directive;
@@ -230,7 +224,7 @@ export type DirectiveClass = {
  * This utility type extracts the signature of a directive class's render()
  * method so we can use it for the type of the generated directive function.
  */
-export type DirectiveParameters<C extends Directive> = Parameters<C["render"]>;
+export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
 
 /**
  * A generated directive function doesn't evaluate the directive, but just
@@ -249,7 +243,8 @@ export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
  * `directive`.
  */
 export abstract class Directive {
-  constructor(_partInfo: PartInfo) {}
+  constructor(_partInfo: PartInfo) {
+  }
   abstract render(...props: Array<unknown>): unknown;
   update(_part: Part, props: Array<unknown>): unknown {
     return this.render(...props);
@@ -257,10 +252,8 @@ export abstract class Directive {
 }
 
 export function directive<C extends DirectiveClass>(directiveClass: C) {
-  const partToInstance = new WeakMap<
-    legacyLit.Part,
-    readonly [Part, InstanceType<C>]
-  >();
+  const partToInstance =
+      new WeakMap<legacyLit.Part, readonly[Part, InstanceType<C>]>();
   const result = legacyDirective((...props: unknown[]) => {
     return (part: legacyLit.Part) => {
       const cached = partToInstance.get(part);
@@ -278,7 +271,6 @@ export function directive<C extends DirectiveClass>(directiveClass: C) {
     };
   });
 
-  return result as (
-    ...props: DirectiveParameters<InstanceType<C>>
-  ) => (part: legacyLit.Part) => void;
+  return result as (...props: DirectiveParameters<InstanceType<C>>) =>
+             (part: legacyLit.Part) => void;
 }

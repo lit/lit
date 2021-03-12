@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { Directive, Part, PartInfo } from "./directive.js";
-import * as legacyLit from "./lit-html.js";
+import {Directive, Part, PartInfo} from './directive.js';
+import * as legacyLit from './lit-html.js';
 
 /**
  * A superclass for directives that need to asynchronously update.
@@ -27,7 +27,7 @@ export abstract class AsyncDirective extends Directive {
     this.ddPart = (partInfo as Part).legacyPart;
   }
 
-  private ddGetNode(): Node | undefined {
+  private ddGetNode(): Node|undefined {
     if (this.ddPart instanceof legacyLit.NodePart) {
       return this.ddPart.startNode;
     } else if (this.ddPart instanceof legacyLit.EventPart) {
@@ -35,9 +35,8 @@ export abstract class AsyncDirective extends Directive {
     } else if (this.ddPart instanceof legacyLit.BooleanAttributePart) {
       return this.ddPart.element;
     } else if (
-      this.ddPart instanceof legacyLit.PropertyPart ||
-      this.ddPart instanceof legacyLit.AttributePart
-    ) {
+        this.ddPart instanceof legacyLit.PropertyPart ||
+        this.ddPart instanceof legacyLit.AttributePart) {
       return this.ddPart.committer.element;
     }
     return undefined;
@@ -76,6 +75,8 @@ export abstract class AsyncDirective extends Directive {
    * In the v1 version of these APIs, we don't monitor for disconnection and
    * reconnection, we only call these methods when setValue is called.
    */
-  protected disconnected() {}
-  protected reconnected() {}
+  protected disconnected() {
+  }
+  protected reconnected() {
+  }
 }
