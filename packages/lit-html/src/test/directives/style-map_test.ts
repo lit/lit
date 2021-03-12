@@ -89,15 +89,18 @@ suite('styleMap', () => {
       marginTop: '2px',
       'padding-bottom': '4px',
       borderRadius: '5px',
+      borderColor: 'blue',
     });
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     assert.equal(el.style.borderRadius, '5px');
-    renderStyleMap({borderRadius: undefined});
+    assert.equal(el.style.borderColor, 'blue');
+    renderStyleMap({borderRadius: undefined, borderColor: null});
     assert.equal(el.style.marginTop, '');
     assert.equal(el.style.paddingBottom, '');
-    assert.equal(el.style.paddingBottom, '');
+    assert.equal(el.style.borderRadius, '');
+    assert.equal(el.style.borderColor, '');
   });
 
   test('works with static properties', () => {
