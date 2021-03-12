@@ -30,10 +30,10 @@ Options:
               See https://github.com/Polymer/lit-html/tree/lit-next/packages/localize#readme for details.
 `;
 
-const validCommands = ['build', 'extract'] as const;
-type Command = typeof validCommands[number];
-const isValidCommand = (str: string): str is Command =>
-  validCommands.includes(str as Command);
+const commands = ['build', 'extract'] as const;
+type Command = typeof commands[number];
+const isCommand = (str: string): str is Command =>
+  commands.includes(str as Command);
 
 interface CliOptions {
   config: Config;
@@ -81,6 +81,8 @@ async function runAndThrow({config, command}: CliOptions) {
   const localizer = makeLocalizer(config);
 
   if (command === 'extract') {
+    // TODO(aomarks) Don't even require the user to have configured their output
+    // mode if they're just doing extraction.
     console.log('Extracting messages');
     const {messages, errors} = localizer.extractSourceMessages();
     if (errors.length > 0) {
@@ -140,14 +142,14 @@ function cliOptsFromArgs(argv: string[]): CliOptions {
   if (args._.length === 0) {
     throw new KnownError(
       `Missing command argument. ` +
-        `Valid commands: ${[...validCommands].join(', ')}`
+        `Valid commands: ${[...commands].join(', ')}`
     );
   }
   const command = args._[0];
-  if (!isValidCommand(command)) {
+  if (!isCommand(command)) {
     throw new KnownError(
       `Invalid command ${command}}. ` +
-        `Valid commands: ${[...validCommands].join(', ')}`
+        `Valid commands: ${[...commands].join(', ')}`
     );
   }
   if (args._.length > 1) {
