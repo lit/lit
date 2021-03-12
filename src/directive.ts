@@ -31,6 +31,7 @@ export interface ChildPartInfo {
 }
 
 export interface AttributePartInfo {
+  // eslint-disable-next-line @typescript-eslint/type-annotation-spacing
   readonly type:|typeof PartType.ATTRIBUTE|
       typeof PartType.PROPERTY|typeof PartType.BOOLEAN_ATTRIBUTE|
       typeof PartType.EVENT;
@@ -244,6 +245,7 @@ export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
  * `directive`.
  */
 export abstract class Directive {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(_partInfo: PartInfo) {
   }
   abstract render(...props: Array<unknown>): unknown;

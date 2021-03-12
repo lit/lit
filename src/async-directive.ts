@@ -75,8 +75,10 @@ export abstract class AsyncDirective extends Directive {
    * In the v1 version of these APIs, we don't monitor for disconnection and
    * reconnection, we only call these methods when setValue is called.
    */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected disconnected() {
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected reconnected() {
   }
 }
