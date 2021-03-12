@@ -11,6 +11,14 @@ import {
 } from './modes/transform.js';
 import {readConfigFileAndWriteSchema, Config} from './config';
 
+export interface LocaleTransformer {
+  locale: string;
+  localeTransformer: {
+    type: 'program';
+    factory: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>;
+  };
+}
+
 /**
  * Return an array of locales with associated TypeScript transformer factories
  * suitable for passing to the `transformers.before` [0] option of
@@ -39,13 +47,7 @@ import {readConfigFileAndWriteSchema, Config} from './config';
  */
 export const localeTransformers = (
   configPath = './lit-localize.json'
-): Array<{
-  locale: string;
-  localeTransformer: {
-    type: 'program';
-    factory: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>;
-  };
-}> => {
+): Array<LocaleTransformer> => {
   const config = readConfigFileAndWriteSchema(configPath);
   if (config.output.mode !== 'transform') {
     throw Error('localeTransformers is only supported for transform mode');
