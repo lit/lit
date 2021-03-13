@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   msg(str`Hello ${name}`);
   ```
 
+- **[BREAKING]** The `lit-localize` CLI now must always take one of two
+  commands: `extract` or `build`. Previously, both of these steps were always
+  performed.
+
 ## [0.6.1] - 2020-12-09
 
 ### Fixed

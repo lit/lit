@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {litLocalizeTransform} from '../outputters/transform';
+import {litLocalizeTransform} from '../modes/transform';
 import * as ts from 'typescript';
 import {Message, makeMessageIdMap} from '../messages';
 import test, {ExecutionContext} from 'ava';

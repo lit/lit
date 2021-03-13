@@ -11,10 +11,9 @@
 export class KnownError extends Error {}
 
 /**
- * Fail type checking if the first argument is not `never`, and throw a
- * `KnownError` with the given message if this function is somehow called
- * anyway.
+ * Fail type checking if the first argument is not `never` and return the
+ * argument.
  */
-export function throwUnreachable(_x: never, msg: string) {
-  throw new KnownError(msg);
+export function unreachable(x: never) {
+  return x;
 }
