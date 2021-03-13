@@ -2431,6 +2431,30 @@ suite('ReactiveElement', () => {
     assert.equal(a.getAttribute('bar'), 'yo');
   });
 
+  test('addInitializer', () => {
+    class A extends ReactiveElement {
+      prop1?: string;
+      prop2?: string;
+      event?: string;
+    }
+    A.addInitializer((a) => {
+      (a as A).prop1 = 'prop1';
+    });
+    A.addInitializer((a) => {
+      (a as A).prop2 = 'prop2';
+    });
+    A.addInitializer((a) => {
+      a.addEventListener('click', (e) => ((a as A).event = e.type));
+    });
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    assert.equal(a.prop1, 'prop1');
+    assert.equal(a.prop2, 'prop2');
+    a.dispatchEvent(new Event('click'));
+    assert.equal(a.event, 'click');
+  });
+
   suite('exceptions', () => {
     let threwError = false;
     // Custom error listener.

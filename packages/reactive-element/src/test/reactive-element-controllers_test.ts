@@ -12,7 +12,7 @@ import {
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('ReactiveElement controllers', () => {
+suite('Reactive controllers', () => {
   class MyController implements ReactiveController {
     host: ReactiveElement;
     updateCount = 0;
