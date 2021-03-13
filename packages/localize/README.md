@@ -12,7 +12,7 @@
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
-###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [FAQ](#faq)
+###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [Rollup](#rollup) | [FAQ](#faq)
 
 > @lit/localize is a library and command-line tool for localizing web
 > applications that are based on lit-html and LitElement.
@@ -517,10 +517,10 @@ In transform mode, applications of the `Localized` mixin are removed.
 lit-localize command [--flags]
 ```
 
-| Command   | Description                                                                                                                                                                                                                                                                                                                                    |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `extract` | Extract templates from `msg()` calls across all source files included by your `tsconfig.json`, and create or update XLIFF (`.xlf`) files containing translation requests.                                                                                                                                                                      |
-| `build`   | Read translations and build the project according to the configured mode.<br><br>In _transform_ mode, compile your TypeScript project for each locale, replacing `msg` calls with localized templates.<br><br>In _runtime_ mode, generate a `<locale>.ts` file for each locale, which can be dynamically loaded by the `@lit/localize` module. |
+| Command   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extract` | Extract templates from `msg()` calls across all source files included by your `tsconfig.json`, and create or update XLIFF (`.xlf`) files containing translation requests.                                                                                                                                                                                                                                                                         |
+| `build`   | Read translations and build the project according to the configured mode.<br><br>In _transform_ mode, compile your TypeScript project for each locale, replacing `msg` calls with localized templates. See also the [Rollup](#rollup) section for performing this transform as part of a Rollup pipeline.<br><br>In _runtime_ mode, generate a `<locale>.ts` file for each locale, which can be dynamically loaded by the `@lit/localize` module. |
 
 | Flag       | Description                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
@@ -541,6 +541,55 @@ lit-localize command [--flags]
 | `output.outputDir`                       | `string`                   | Output directory for generated TypeScript modules. Into this directory will be generated a `<locale>.ts` for each `targetLocale`, each a TypeScript module that exports the translations in that locale keyed by message ID. |
 | <h4 colspan="3">XLIFF only</h4>          |                            |
 | `interchange.xliffDir`                   | `string`                   | Directory on disk to read/write `.xlf` XML files. For each target locale, the file path `"<xliffDir>/<locale>.xlf"` will be used.                                                                                            |
+
+## Rollup
+
+To integrate locale transformation into a [Rollup](https://rollupjs.org/)
+project, import the `localeTransformers` function from
+`@lit/localize/lib/rollup.js`.
+
+This function generates an array of `{locale, transformer}` objects, which you
+can use in conjunction with the
+[transformers](https://github.com/rollup/plugins/tree/master/packages/typescript/#transformers)
+option of
+[`@rollup/plugin-typescript`](https://www.npmjs.com/package/@rollup/plugin-typescript)
+to generate a separate bundle for each locale.
+
+> NOTE: This approach is only supported for _transform mode_. For runtime mode,
+> run `lit-localize build` before invoking Rollup. Runtime mode generates
+> TypeScript files that can be treated as normal source inputs by an existing
+> build pipeline.
+
+For example, the following `rollup.config.js` generates a minified bundle for
+each of your locales into `./bundled/<locale>/` directories.
+
+```js
+import typescript from '@rollup/plugin-typescript';
+import {localeTransformers} from '@lit/localize/lib/rollup.js';
+import resolve from '@rollup/plugin-node-resolve';
+import {terser} from 'rollup-plugin-terser';
+
+// Config is read from ./lit-localize.json by default.
+// Pass a path to read config from another location.
+const locales = localeTransformers();
+
+export default locales.map(({locale, localeTransformer}) => ({
+  input: `src/index.ts`,
+  plugins: [
+    typescript({
+      transformers: {
+        before: [localeTransformer],
+      },
+    }),
+    resolve(),
+    terser(),
+  ],
+  output: {
+    file: `bundled/${locale}/index.js`,
+    format: 'es',
+  },
+}));
+```
 
 ## FAQ
 

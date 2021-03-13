@@ -8,7 +8,7 @@
     const locale = validLocales.includes(urlLocale) ? urlLocale : 'en';
     const script = document.createElement('script');
     script.type = 'module';
-    script.src = `/lib/${locale}/index.js`;
+    script.src = `/bundled/${locale}/index.js`;
     document.head.appendChild(script);
   </script>
 </head>
