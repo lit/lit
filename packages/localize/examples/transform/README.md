@@ -13,7 +13,7 @@ mode.
 ## Setup
 
 ```bash
-git clone https://github.com/Polymer/lit-html.git
+git clone https://github.com/Polymer/lit-html.git --branch lit-next
 cd lit-html/packages/localize/examples/transform
 npm i
 npx lit-localize build

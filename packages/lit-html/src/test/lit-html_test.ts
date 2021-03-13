@@ -1494,6 +1494,65 @@ suite('lit-html', () => {
       assertContent('<div>TEST:A</div>');
     });
 
+    suite('ChildPart invariants for parentNode, startNode, endNode', () => {
+      class CheckNodePropertiesBehavior extends Directive {
+        render() {
+          return nothing;
+        }
+
+        update(part: ChildPart) {
+          const {parentNode, startNode, endNode} = part;
+
+          if (endNode !== null) {
+            assert.notEqual(startNode, null);
+          }
+
+          if (startNode === null) {
+            // The part covers all children in `parentNode`.
+            assert.equal(parentNode.childNodes.length, 0);
+            assert.equal(endNode, null);
+          } else if (endNode === null) {
+            // The part covers all siblings following `startNode`.
+            assert.equal(startNode.nextSibling, null);
+          } else {
+            // The part covers all siblings between `startNode` and `endNode`.
+            assert.equal<Node | null>(startNode.nextSibling, endNode);
+          }
+
+          return nothing;
+        }
+      }
+      const checkNodePropertiesBehavior = directive(
+        CheckNodePropertiesBehavior
+      );
+
+      test('when the directive is the only child', () => {
+        const makeTemplate = (content: unknown) => html`<div>${content}</div>`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
+
+      test('when the directive is the last child', () => {
+        const makeTemplate = (content: unknown) =>
+          html`<div>Earlier sibling. ${content}</div>`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
+
+      test('when the directive is not the last child', () => {
+        const makeTemplate = (content: unknown) =>
+          html`<div>Earlier sibling. ${content} Later sibling.</div>`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
+    });
+
     test('directives are stateful', () => {
       const go = (v: string) => {
         render(html`<div>${count(v)}</div>`, container);
