@@ -4,23 +4,23 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message, makeMessageIdMap} from '../messages';
-import {Locale, writeLocaleCodesModule} from '../locales';
-import {Config} from '../config';
-import * as ts from 'typescript';
+import {Message, makeMessageIdMap} from '../messages.js';
+import {Locale, writeLocaleCodesModule} from '../locales.js';
+import {Config} from '../config.js';
+import ts from 'typescript';
 import {
   isLitTemplate,
   isMsgCall,
   extractTemplate,
   extractOptions,
   generateMsgIdFromAstNode,
-} from '../program-analysis';
-import {KnownError} from '../error';
+} from '../program-analysis.js';
+import {KnownError} from '../error.js';
 import {
   escapeStringToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
-} from '../typescript';
+} from '../typescript.js';
 import * as pathLib from 'path';
 import {LitLocalizer} from '../index.js';
 

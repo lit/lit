@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Config} from '../config';
-import {Locale} from '../locales';
-import {Message, ProgramMessage, Bundle} from '../messages';
-import {XlbConfig, xlbFactory} from './xlb';
-import {XliffConfig, xliffFactory} from './xliff';
+import {Config} from '../config.js';
+import {Locale} from '../locales.js';
+import {Message, ProgramMessage, Bundle} from '../messages.js';
+import {XlbConfig, xlbFactory} from './xlb.js';
+import {XliffConfig, xliffFactory} from './xliff.js';
 
 /**
  * Union of configuration objects for each of the supported interchange

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import * as path from 'path';
-import {KnownError} from './error';
+import {KnownError} from './error.js';
 
 /**
  * Set up a TypeScript API program given a tsconfig.json filepath.

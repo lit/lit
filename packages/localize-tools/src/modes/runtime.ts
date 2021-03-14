@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message, ProgramMessage, Placeholder} from '../messages';
-import {applyPatches, Patches} from '../patches';
-import {Locale, writeLocaleCodesModule} from '../locales';
-import {Config} from '../config';
-import {KnownError} from '../error';
+import {Message, ProgramMessage, Placeholder} from '../messages.js';
+import {applyPatches, Patches} from '../patches.js';
+import {Locale, writeLocaleCodesModule} from '../locales.js';
+import {Config} from '../config.js';
+import {KnownError} from '../error.js';
 import {
   escapeStringToEmbedInTemplateLiteral,
   parseStringAsTemplateLiteral,
-} from '../typescript';
-import * as fsExtra from 'fs-extra';
+} from '../typescript.js';
+import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {LitLocalizer} from '../index.js';
 
 /**

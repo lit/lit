@@ -5,18 +5,18 @@
  */
 
 import * as xmldom from 'xmldom';
-import * as glob from 'glob';
-import * as fsExtra from 'fs-extra';
+import glob from 'glob';
+import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
-import {Config} from '../config';
-import {Locale} from '../locales';
-import {Formatter} from './index';
-import {KnownError} from '../error';
-import {ProgramMessage, Message, Bundle, Placeholder} from '../messages';
+import {Config} from '../config.js';
+import {Locale} from '../locales.js';
+import {Formatter} from './index.js';
+import {KnownError} from '../error.js';
+import {ProgramMessage, Message, Bundle, Placeholder} from '../messages.js';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
-} from './xml-utils';
+} from './xml-utils.js';
 
 /**
  * Parse an XLB XML file. These files contain translations organized using the

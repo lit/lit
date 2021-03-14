@@ -6,11 +6,18 @@
 
 import * as path from 'path';
 import {execFileSync} from 'child_process';
-import test from 'ava';
-import {runAndLog} from '../../cli';
-import * as fsExtra from 'fs-extra';
+import test, {Test} from 'tape';
+import {runAndLog} from '../../cli.js';
+import fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
-import {formatDirDiff} from '../format-dir-diff';
+import {formatDirDiff} from '../format-dir-diff.js';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
+
+// TODO(aomarks) Add to DefinitelyTyped.
+interface TestWithTeardown extends Test {
+  teardown(fn: () => void): void;
+}
 
 /**
  * Run lit-localize end-to-end using input and golden files from the filesystem.
@@ -44,7 +51,14 @@ export function e2eGoldensTest(
   expectedExitCode = 0,
   expectedStdOutErr = ''
 ) {
-  const root = path.resolve(__dirname, '..', '..', '..', 'testdata', name);
+  const root = path.resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    '..',
+    'testdata',
+    name
+  );
   const inputDir = path.join(root, 'input');
   const outputDir = path.join(root, 'output');
   const goldensDir = path.join(root, 'goldens');
@@ -55,7 +69,7 @@ export function e2eGoldensTest(
 
     const oldCwd = process.cwd();
     process.chdir(outputDir);
-    t.teardown(() => {
+    (t as TestWithTeardown).teardown(() => {
       process.chdir(oldCwd);
     });
 
@@ -112,5 +126,7 @@ export function e2eGoldensTest(
     } else {
       t.fail(formatDirDiff(diff));
     }
+
+    t.end();
   });
 }

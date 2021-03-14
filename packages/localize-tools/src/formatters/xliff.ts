@@ -5,23 +5,23 @@
  */
 
 import * as xmldom from 'xmldom';
-import * as fsExtra from 'fs-extra';
+import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import {Config} from '../config';
-import {Locale} from '../locales';
-import {Formatter} from './index';
-import {KnownError} from '../error';
+import {Config} from '../config.js';
+import {Locale} from '../locales.js';
+import {Formatter} from './index.js';
+import {KnownError} from '../error.js';
 import {
   Bundle,
   Message,
   ProgramMessage,
   Placeholder,
   makeMessageIdMap,
-} from '../messages';
+} from '../messages.js';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
-} from './xml-utils';
+} from './xml-utils.js';
 
 /**
  * Configuration for XLIFF interchange format.

@@ -7,11 +7,13 @@
 import * as fs from 'fs';
 import * as jsonSchema from 'jsonschema';
 import * as pathLib from 'path';
-import {Locale} from './locales';
-import {KnownError} from './error';
-import {FormatConfig} from './formatters';
-import {RuntimeOutputConfig} from './modes/runtime';
-import {TransformOutputConfig} from './modes/transform';
+import {Locale} from './locales.js';
+import {KnownError} from './error.js';
+import {FormatConfig} from './formatters/index.js';
+import {RuntimeOutputConfig} from './modes/runtime.js';
+import {TransformOutputConfig} from './modes/transform.js';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
 
 interface ConfigFile {
   /**
@@ -121,7 +123,12 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const schema = require('../config.schema.json');
+  const schemaPath = pathLib.resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'config.schema.json'
+  );
+  const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   const result = jsonSchema.validate(parsed, schema);
   if (result.errors.length > 0) {
     throw new KnownError(

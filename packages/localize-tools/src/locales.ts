@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as fsExtra from 'fs-extra';
+import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import {KnownError} from './error';
-import {escapeStringToEmbedInTemplateLiteral} from './typescript';
+import {KnownError} from './error.js';
+import {escapeStringToEmbedInTemplateLiteral} from './typescript.js';
 
 export type Locale = string & {__TYPE__: 'Locale'};
 

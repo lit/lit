@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {litLocalizeTransform} from '../modes/transform';
-import * as ts from 'typescript';
-import {Message, makeMessageIdMap} from '../messages';
-import test, {ExecutionContext} from 'ava';
-import * as prettier from 'prettier';
-import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment';
+import {litLocalizeTransform} from '../modes/transform.js';
+import ts from 'typescript';
+import {Message, makeMessageIdMap} from '../messages.js';
+import test, {Test} from 'tape';
+import prettier from 'prettier';
+import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 const IMPORT_MSG = `import { msg, str } from "@lit/localize";\n`;
@@ -21,7 +21,7 @@ const IMPORT_LIT_HTML = `import { html } from "lit-html";\n`;
  * that the output matches (prettier-formatted).
  */
 function checkTransform(
-  t: ExecutionContext,
+  t: Test,
   inputTs: string,
   expectedJs: string,
   opts?: {
@@ -83,26 +83,31 @@ function checkTransform(
 test('unchanged const', (t) => {
   const src = 'const foo = "foo";';
   checkTransform(t, src, src);
+  t.end();
 });
 
 test('unchanged html', (t) => {
   const src =
     'const foo = "foo"; const bar = "bar"; html`Hello ${foo} and ${bar}!`;';
   checkTransform(t, src, src);
+  t.end();
 });
 
 test('msg(string)', (t) => {
   checkTransform(t, 'msg("Hello World", {id: "foo"});', '"Hello World";');
+  t.end();
 });
 
 test('msg(string) unnecessarily tagged with str', (t) => {
   checkTransform(t, 'msg(str`Hello World`, {id: "foo"});', '`Hello World`;');
+  t.end();
 });
 
 test('msg(string) translated', (t) => {
   checkTransform(t, 'msg("Hello World", {id: "foo"});', '`Hola Mundo`;', {
     messages: [{name: 'foo', contents: ['Hola Mundo']}],
   });
+  t.end();
 });
 
 test('html(msg(string))', (t) => {
@@ -111,6 +116,7 @@ test('html(msg(string))', (t) => {
     'html`<b>${msg("Hello World", {id: "foo"})}</b>`;',
     'html`<b>Hello World</b>`;'
   );
+  t.end();
 });
 
 test('html(msg(string)) translated', (t) => {
@@ -120,6 +126,7 @@ test('html(msg(string)) translated', (t) => {
     'html`<b>Hola Mundo</b>`;',
     {messages: [{name: 'foo', contents: ['Hola Mundo']}]}
   );
+  t.end();
 });
 
 test('html(msg(html))', (t) => {
@@ -128,6 +135,7 @@ test('html(msg(html))', (t) => {
     'html`<b>${msg(html`Hello <i>World</i>`, {id: "foo"})}</b>`;',
     'html`<b>Hello <i>World</i></b>`;'
   );
+  t.end();
 });
 
 test('html(msg(html)) translated', (t) => {
@@ -149,6 +157,7 @@ test('html(msg(html)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(string(expr))', (t) => {
@@ -157,6 +166,7 @@ test('msg(string(expr))', (t) => {
     'const name = "World";' + 'msg(str`Hello ${name}!`, {id: "foo"});',
     'const name = "World";' + '`Hello ${name}!`;'
   );
+  t.end();
 });
 
 test('msg(string(expr)) translated', (t) => {
@@ -173,6 +183,7 @@ test('msg(string(expr)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(string(string))', (t) => {
@@ -181,6 +192,7 @@ test('msg(string(string))', (t) => {
     'msg(str`Hello ${"World"}!`, {id: "foo"});',
     '`Hello World!`;'
   );
+  t.end();
 });
 
 test('msg(string(string)) translated', (t) => {
@@ -197,6 +209,7 @@ test('msg(string(string)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(html(expr))', (t) => {
@@ -205,6 +218,7 @@ test('msg(html(expr))', (t) => {
     'const name = "World";' + 'msg(html`Hello <b>${name}</b>!`, {id: "foo"});',
     'const name = "World";' + 'html`Hello <b>${name}</b>!`;'
   );
+  t.end();
 });
 
 test('msg(html(expr)) translated', (t) => {
@@ -221,6 +235,7 @@ test('msg(html(expr)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(html(string))', (t) => {
@@ -229,6 +244,7 @@ test('msg(html(string))', (t) => {
     'msg(html`Hello <b>${"World"}</b>!`, {id: "foo"});',
     'html`Hello <b>World</b>!`;'
   );
+  t.end();
 });
 
 test('msg(html(string)) translated', (t) => {
@@ -245,6 +261,7 @@ test('msg(html(string)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(html(html))', (t) => {
@@ -253,6 +270,7 @@ test('msg(html(html))', (t) => {
     'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
     'html`Hello <b><i>World</i></b>!`;'
   );
+  t.end();
 });
 
 test('msg(html(html)) translated', (t) => {
@@ -273,6 +291,7 @@ test('msg(html(html)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(string(msg(string)))', (t) => {
@@ -281,6 +300,7 @@ test('msg(string(msg(string)))', (t) => {
     'msg(str`Hello ${msg("World", {id: "bar"})}!`, {id: "foo"});',
     '`Hello World!`;'
   );
+  t.end();
 });
 
 test('msg(string(msg(string))) translated', (t) => {
@@ -305,6 +325,7 @@ test('msg(string(msg(string))) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('msg(string(<b>msg(string)</b>)) translated', (t) => {
@@ -329,6 +350,7 @@ test('msg(string(<b>msg(string)</b>)) translated', (t) => {
       ],
     }
   );
+  t.end();
 });
 
 test('import * as litLocalize', (t) => {
@@ -341,6 +363,7 @@ test('import * as litLocalize', (t) => {
     '"Hello World";',
     {autoImport: false}
   );
+  t.end();
 });
 
 test('import {msg as foo}', (t) => {
@@ -353,6 +376,7 @@ test('import {msg as foo}', (t) => {
     '"Hello World";',
     {autoImport: false}
   );
+  t.end();
 });
 
 test('exclude different msg function', (t) => {
@@ -364,6 +388,7 @@ test('exclude different msg function', (t) => {
     msg("Hello World", {id: "foo"});`,
     {autoImport: false}
   );
+  t.end();
 });
 
 test('configureTransformLocalization() -> {getLocale: () => "es-419"}', (t) => {
@@ -378,6 +403,7 @@ test('configureTransformLocalization() -> {getLocale: () => "es-419"}', (t) => {
      const locale = getLocale();`,
     {locale: 'es-419'}
   );
+  t.end();
 });
 
 test('configureLocalization() throws', (t) => {
@@ -393,9 +419,9 @@ test('configureLocalization() throws', (t) => {
          });`,
         ``
       ),
-    undefined,
     'Cannot use configureLocalization in transform mode'
   );
+  t.end();
 });
 
 test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
@@ -405,6 +431,7 @@ test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
      window.addEventListener(LOCALE_STATUS_EVENT, () => console.log('ok'));`,
     `window.addEventListener('lit-localize-status', () => console.log('ok'));`
   );
+  t.end();
 });
 
 test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
@@ -414,6 +441,7 @@ test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
      window.addEventListener(litLocalize.LOCALE_STATUS_EVENT, () => console.log('ok'));`,
     `window.addEventListener('lit-localize-status', () => console.log('ok'));`
   );
+  t.end();
 });
 
 test('re-assigned LOCALE_STATUS_EVENT', (t) => {
@@ -425,6 +453,7 @@ test('re-assigned LOCALE_STATUS_EVENT', (t) => {
     `const event = 'lit-localize-status';
      window.addEventListener(event, () => console.log('ok'));`
   );
+  t.end();
 });
 
 test('different LOCALE_STATUS_EVENT variable unchanged', (t) => {
@@ -433,6 +462,7 @@ test('different LOCALE_STATUS_EVENT variable unchanged', (t) => {
     `const LOCALE_STATUS_EVENT = "x";`,
     `const LOCALE_STATUS_EVENT = "x";`
   );
+  t.end();
 });
 
 test('different variable cast to "lit-localie-status" unchanged', (t) => {
@@ -441,6 +471,7 @@ test('different variable cast to "lit-localie-status" unchanged', (t) => {
     `const x = "x" as "lit-localize-status";`,
     `const x = "x";`
   );
+  t.end();
 });
 
 test('Localized(LitElement) -> LitElement', (t) => {
@@ -462,4 +493,5 @@ test('Localized(LitElement) -> LitElement', (t) => {
      }`,
     {autoImport: false}
   );
+  t.end();
 });
