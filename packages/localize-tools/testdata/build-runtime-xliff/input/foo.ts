@@ -40,7 +40,7 @@ msg(html`[SALT] Hello <b>${msg('World')}</b>!`);
 msg(html`Hello <b><!-- comment -->World</b>!`);
 
 // Lit template with expression order inversion
-msg(html`a:${'A'} b:${'B'} c:${'C'}`);
+msg(html`a:${"A"} b:${"B"} c:${"C"}`);
 
 // Custom ID
 msg('Hello World', {id: 'myId'});
