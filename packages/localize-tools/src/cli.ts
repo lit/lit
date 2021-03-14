@@ -81,7 +81,10 @@ async function version() {
     '..',
     'package.json'
   );
-  return JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+  const packageJson = JSON.parse(
+    await fs.readFile(packageJsonPath, 'utf8')
+  ) as {version: number};
+  return packageJson.version;
 }
 
 async function runAndThrow({config, command}: CliOptions) {
