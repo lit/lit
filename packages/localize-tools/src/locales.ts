@@ -7,9 +7,8 @@
 import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
+import {Locale} from './types/locale';
 import {escapeStringToEmbedInTemplateLiteral} from './typescript.js';
-
-export type Locale = string & {__TYPE__: 'Locale'};
 
 /**
  * Return whether the given string is formatted like a BCP 47 language tag. Note

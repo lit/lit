@@ -8,8 +8,9 @@ import * as xmldom from 'xmldom';
 import glob from 'glob';
 import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
-import {Config} from '../config.js';
-import {Locale} from '../locales.js';
+import {Config} from '../types/config.js';
+import {XlbConfig} from '../types/formatters.js';
+import {Locale} from '../types/locale';
 import {Formatter} from './index.js';
 import {KnownError} from '../error.js';
 import {ProgramMessage, Message, Bundle, Placeholder} from '../messages.js';
@@ -17,29 +18,6 @@ import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
 } from './xml-utils.js';
-
-/**
- * Parse an XLB XML file. These files contain translations organized using the
- * same message names that we originally requested.
- * Configuration for XLB interchange format.
- */
-export interface XlbConfig {
-  format: 'xlb';
-
-  /**
-   * Output path on disk to the XLB XML file that will be created containing all
-   * messages extracted from the source. E.g. "data/localization/en.xlb".
-   */
-  outputFile: string;
-
-  /**
-   * Glob pattern of XLB XML files to read from disk containing translated
-   * messages. E.g. "data/localization/*.xlb".
-   *
-   * See https://github.com/isaacs/node-glob#README for valid glob syntax.
-   */
-  translationsGlob: string;
-}
 
 /**
  * Create an XLB formatter from a main config object.

@@ -4,7 +4,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2018"],
+    "lib": ["es2020"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

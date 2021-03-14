@@ -5,11 +5,10 @@
  */
 
 import * as ts from 'typescript';
-import {
-  TransformLitLocalizer,
-  TransformOutputConfig,
-} from './modes/transform.js';
-import {readConfigFileAndWriteSchema, Config} from './config';
+import {TransformLitLocalizer} from './modes/transform.js';
+import {readConfigFileAndWriteSchema} from './config.js';
+import {Config} from './types/config.js';
+import {TransformOutputConfig} from './types/modes.js';
 
 export interface LocaleTransformer {
   locale: string;

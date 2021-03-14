@@ -6,8 +6,10 @@
 
 import {Message, ProgramMessage, Placeholder} from '../messages.js';
 import {applyPatches, Patches} from '../patches.js';
-import {Locale, writeLocaleCodesModule} from '../locales.js';
-import {Config} from '../config.js';
+import {writeLocaleCodesModule} from '../locales.js';
+import {Locale} from '../types/locale';
+import {Config} from '../types/config.js';
+import {RuntimeOutputConfig} from '../types/modes.js';
 import {KnownError} from '../error.js';
 import {
   escapeStringToEmbedInTemplateLiteral,
@@ -17,32 +19,6 @@ import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import ts from 'typescript';
 import {LitLocalizer} from '../index.js';
-
-/**
- * Configuration specific to the `runtime` output mode.
- */
-export interface RuntimeOutputConfig {
-  mode: 'runtime';
-
-  /**
-   * Output directory for generated TypeScript modules. Into this directory will
-   * be generated a <locale>.ts for each `targetLocale`, each a TypeScript
-   * module that exports the translations in that locale keyed by message ID.
-   */
-  outputDir: string;
-
-  /**
-   * Optional filepath for a generated TypeScript module that exports
-   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
-   * from your config file. Use to keep your config file and client config in
-   * sync. For example:
-   *
-   *   export const sourceLocale = 'en';
-   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
-   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
-   */
-  localeCodesModule?: string;
-}
 
 /**
  * Localizes a Lit project in runtime mode.

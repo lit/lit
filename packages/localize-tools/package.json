@@ -21,7 +21,7 @@
   "scripts": {
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && npm run generate-json-schema && tsc",
-    "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/config.ts --required --noExtraProps > config.schema.json",
+    "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && npm run test:tape && npm run test:check-tsc",
     "test:tape": "tape-es 'lib/tests/**/*.test.js' | tap-spec",
     "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true npm run test:tape",

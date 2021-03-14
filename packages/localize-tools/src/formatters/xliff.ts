@@ -7,8 +7,9 @@
 import * as xmldom from 'xmldom';
 import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import {Config} from '../config.js';
-import {Locale} from '../locales.js';
+import {Config} from '../types/config.js';
+import {XliffConfig} from '../types/formatters.js';
+import {Locale} from '../types/locale';
 import {Formatter} from './index.js';
 import {KnownError} from '../error.js';
 import {
@@ -22,19 +23,6 @@ import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
 } from './xml-utils.js';
-
-/**
- * Configuration for XLIFF interchange format.
- */
-export interface XliffConfig {
-  format: 'xliff';
-
-  /**
-   * Directory on disk to read/write .xlf XML files. For each target locale,
-   * the file path "<xliffDir>/<locale>.xlf" will be used.
-   */
-  xliffDir: string;
-}
 
 /**
  * Create an XLIFF formatter from a main config object.

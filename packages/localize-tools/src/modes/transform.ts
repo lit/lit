@@ -5,8 +5,10 @@
  */
 
 import {Message, makeMessageIdMap} from '../messages.js';
-import {Locale, writeLocaleCodesModule} from '../locales.js';
-import {Config} from '../config.js';
+import {writeLocaleCodesModule} from '../locales.js';
+import {Locale} from '../types/locale';
+import {Config} from '../types/config.js';
+import {TransformOutputConfig} from '../types/modes.js';
 import ts from 'typescript';
 import {
   isLitTemplate,
@@ -23,25 +25,6 @@ import {
 } from '../typescript.js';
 import * as pathLib from 'path';
 import {LitLocalizer} from '../index.js';
-
-/**
- * Configuration specific to the `transform` output mode.
- */
-export interface TransformOutputConfig {
-  mode: 'transform';
-
-  /**
-   * Optional filepath for a generated TypeScript module that exports
-   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
-   * from your config file. Use to keep your config file and client config in
-   * sync. For example:
-   *
-   *   export const sourceLocale = 'en';
-   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
-   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
-   */
-  localeCodesModule?: string;
-}
 
 type TypeScriptTransformerFactoryFactory = (
   program: ts.Program
