@@ -49,7 +49,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:ts && rollup -c",
     "build:watch": "rollup -c --watch",
-    "build:ts": "tsc --build && treemirror copy development . '**/*.d.ts{,.map}'",
+    "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",

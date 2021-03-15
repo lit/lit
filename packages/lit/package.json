@@ -53,7 +53,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:ts && rollup -c",
     "build:watch": "rollup -c --watch",
-    "build:ts": "tsc --build && treemirror copy development . '**/*.d.ts{,.map}'",
+    "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
     "clean": "rm -rf {async-directive,decorators,directive-helpers,directive,html,hydrate-support,hydrate,index,polyfill-support,static-html}.{d.ts.map,d.ts,js.map,js} test/ decorators/ directives/ development/ *.tsbuildinfo",
     "publish-dev": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",

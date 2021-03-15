@@ -41,7 +41,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:ts && rollup -c && npm run build:babel",
     "build:watch": "rollup -c --watch",
-    "build:ts": "tsc --build && treemirror copy development . '**/*.d.ts{,.map}'",
+    "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
     "build:babel": "babel --extensions '.ts' src/test/decorators  --out-dir development/test/decorators-babel",
     "check-version": "node scripts/check-version-tracker.js",
