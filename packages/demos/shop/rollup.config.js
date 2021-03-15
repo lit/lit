@@ -24,6 +24,14 @@ import {getBabelOutputPlugin} from '@rollup/plugin-babel';
 const htmlPlugin = html({
   rootDir: './',
   flattenOutput: false,
+  // Injects a feature detection script to test for modern ES2020 syntax, used
+  // to determine whether to load the modern or legacy build
+  transformHtml: (html) => {
+    return html.replace(
+      '<script',
+      `<script>window.__isModern=window?.window;</script><script`
+    );
+  },
 });
 
 export default {
@@ -38,7 +46,6 @@ export default {
     minifyHTML(),
     // Minify JS
     terser({
-      ecma: 2020,
       module: true,
       warnings: true,
     }),
@@ -51,7 +58,7 @@ export default {
       // Feature detection for loading legacy bundles
       legacyOutput: {
         name: 'legacy',
-        test: "!('noModule' in HTMLScriptElement.prototype)",
+        test: '!window.__isModern',
         type: 'systemjs',
       },
       // List of polyfills to inject (each has individual feature detection)
@@ -59,6 +66,7 @@ export default {
         hash: true,
         coreJs: true,
         regeneratorRuntime: true,
+        fetch: true,
         webcomponents: true,
         // Custom configuration for loading Lit's polyfill-support module,
         // required for interfacing with the webcomponents polyfills
@@ -117,5 +125,5 @@ export default {
       ],
     },
   ],
-  preserveEntrySignatures: 'strict',
+  preserveEntrySignatures: false,
 };

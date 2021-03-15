@@ -8,7 +8,7 @@
   "repository": "Polymer/shop",
   "scripts": {
     "serve": "wds --watch",
-    "serve:build": "wds --watch --root-dir build --app-index build/index.html",
+    "serve:build": "wds --watch --config web-dev-server-prod.config.mjs",
     "build": "rm -rf build && rollup -c",
     "build:watch": "npm run build -- --watch"
   },
