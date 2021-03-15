@@ -8,7 +8,6 @@ import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import * as pathLib from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
@@ -312,13 +311,6 @@ export function litProdConfig({
         ...(CHECKSIZE
           ? [skipBundleOutput]
           : [
-              // Place a copy of each d.ts file adjacent to its minified module.
-              copy({
-                targets: entryPoints.map((name) => ({
-                  src: `development/${name}.d.ts`,
-                  dest: pathLib.dirname(name),
-                })),
-              }),
               // Copy polyfill support tests.
               copy({
                 targets: [

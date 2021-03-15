@@ -44,10 +44,10 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc --build && rollup -c",
+    "build": "npm run clean && npm run build:ts && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:bundle": "npm run clean:bundle && tsc --build && rollup -c rollup.bundle.config.js",
-    "build:ts": "tsc --build",
+    "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
@@ -77,18 +77,19 @@
     "!/src/test/"
   ],
   "dependencies": {
-    "lit-html": "^2.0.0-pre.4",
-    "@lit/reactive-element": "^1.0.0-pre.1"
+    "@lit/reactive-element": "^1.0.0-pre.1",
+    "lit-html": "^2.0.0-pre.4"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
     "@webcomponents/template": "^1.4.4",
+    "@webcomponents/webcomponentsjs": "^2.5.0",
     "chokidar-cli": "^2.1.0",
     "downlevel-dts": "^0.6.0",
+    "internal-scripts": "^1.0.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",
     "tslib": "^2.0.3",
