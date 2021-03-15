@@ -312,13 +312,6 @@ export function litProdConfig({
         ...(CHECKSIZE
           ? [skipBundleOutput]
           : [
-              // Place a copy of each d.ts file adjacent to its minified module.
-              copy({
-                targets: entryPoints.map((name) => ({
-                  src: `development/${name}.d.ts`,
-                  dest: pathLib.dirname(name),
-                })),
-              }),
               // Copy polyfill support tests.
               copy({
                 targets: [

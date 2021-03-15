@@ -4,6 +4,7 @@
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "build:ts": "lerna run build:ts",
     "clean": "lerna run clean",
     "format": "npm run format:eslint && npm run format:prettier",
     "format:eslint": "eslint \"**/*.{js,ts}\" --fix",
