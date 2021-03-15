@@ -20,7 +20,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 <!-- ### Changed -->
-<!-- ### Added -->
+
+### Added
+
+- (Since 2.0.0-pre.6) Reintroduced the `SVGTemplateResult` type.
+  ([#1623](https://github.com/Polymer/lit-html/issues/1623))
 
 ### Fixed
 

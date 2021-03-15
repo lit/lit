@@ -10,8 +10,8 @@ import * as pathLib from 'path';
 import {Locale} from './locales';
 import {KnownError} from './error';
 import {FormatConfig} from './formatters';
-import {RuntimeOutputConfig} from './outputters/runtime';
-import {TransformOutputConfig} from './outputters/transform';
+import {RuntimeOutputConfig} from './modes/runtime';
+import {TransformOutputConfig} from './modes/transform';
 
 interface ConfigFile {
   /**

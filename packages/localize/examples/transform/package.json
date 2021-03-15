@@ -4,15 +4,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf lib/* && lit-localize",
+    "build": "rm -rf lib/* && lit-localize build && npx rollup -c",
     "serve": "es-dev-server --node-resolve --preserve-symlinks"
   },
   "dependencies": {
-    "@lit/localize": "^0.6.1",
+    "@lit/localize": "^0.7.0",
     "lit-element": "^2.4.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "@rollup/plugin-typescript": "^8.2.0",
     "es-dev-server": "^1.57.3",
+    "rollup": "^2.41.1",
+    "rollup-plugin-summary": "^1.2.3",
+    "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.0.2"
   }
 }

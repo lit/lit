@@ -5,5 +5,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const templates = {
-  string: `Hello World!`,
+  s8c0ec8d1fb9e6e32: `Hello World!`,
 };

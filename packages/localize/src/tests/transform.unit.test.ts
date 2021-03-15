@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {litLocalizeTransform} from '../outputters/transform';
+import {litLocalizeTransform} from '../modes/transform';
 import * as ts from 'typescript';
 import {Message, makeMessageIdMap} from '../messages';
 import test, {ExecutionContext} from 'ava';
@@ -12,7 +12,7 @@ import * as prettier from 'prettier';
 import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment';
 
 const cache = new CompilerHostCache();
-const IMPORT_MSG = `import { msg } from "./lit-localize.js";\n`;
+const IMPORT_MSG = `import { msg, str } from "./lit-localize.js";\n`;
 const IMPORT_LIT_HTML = `import { html } from "lit-html";\n`;
 
 /**
@@ -95,6 +95,10 @@ test('msg(string)', (t) => {
   checkTransform(t, 'msg("Hello World", {id: "foo"});', '"Hello World";');
 });
 
+test('msg(string) unnecessarily tagged with str', (t) => {
+  checkTransform(t, 'msg(str`Hello World`, {id: "foo"});', '`Hello World`;');
+});
+
 test('msg(string) translated', (t) => {
   checkTransform(t, 'msg("Hello World", {id: "foo"});', '`Hola Mundo`;', {
     messages: [{name: 'foo', contents: ['Hola Mundo']}],
@@ -147,20 +151,18 @@ test('html(msg(html)) translated', (t) => {
   );
 });
 
-test('msg(fn(string), expr)', (t) => {
+test('msg(string(expr))', (t) => {
   checkTransform(
     t,
-    'const name = "World";' +
-      'msg((name) => `Hello ${name}!`, {id: "foo", args: [name]});',
+    'const name = "World";' + 'msg(str`Hello ${name}!`, {id: "foo"});',
     'const name = "World";' + '`Hello ${name}!`;'
   );
 });
 
-test('msg(fn(string), expr) translated', (t) => {
+test('msg(string(expr)) translated', (t) => {
   checkTransform(
     t,
-    'const name = "World";' +
-      'msg((name) => `Hello ${name}!`, {id: "foo", args: [name]});',
+    'const name = "World";' + 'msg(str`Hello ${name}!`, {id: "foo"});',
     'const name = "World";' + '`Hola ${name}!`;',
     {
       messages: [
@@ -173,44 +175,42 @@ test('msg(fn(string), expr) translated', (t) => {
   );
 });
 
-test('msg(fn(string), string)', (t) => {
+test('msg(string(string))', (t) => {
   checkTransform(
     t,
-    'msg((name) => `Hello ${name}!`, {id: "foo", args: ["World"]});',
+    'msg(str`Hello ${"World"}!`, {id: "foo"});',
     '`Hello World!`;'
   );
 });
 
-test('msg(fn(string), string) translated', (t) => {
+test('msg(string(string)) translated', (t) => {
   checkTransform(
     t,
-    'msg((name) => `Hello ${name}!`, {id: "foo", args: ["World"]});',
+    'msg(str`Hello ${"World"}!`, {id: "foo"});',
     '`Hola World!`;',
     {
       messages: [
         {
           name: 'foo',
-          contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+          contents: ['Hola ', {untranslatable: '${"World"}'}, '!'],
         },
       ],
     }
   );
 });
 
-test('msg(fn(html), expr)', (t) => {
+test('msg(html(expr))', (t) => {
   checkTransform(
     t,
-    'const name = "World";' +
-      'msg((name) => html`Hello <b>${name}</b>!`, {id: "foo", args: [name]});',
+    'const name = "World";' + 'msg(html`Hello <b>${name}</b>!`, {id: "foo"});',
     'const name = "World";' + 'html`Hello <b>${name}</b>!`;'
   );
 });
 
-test('msg(fn(html), expr) translated', (t) => {
+test('msg(html(expr)) translated', (t) => {
   checkTransform(
     t,
-    'const name = "World";' +
-      'msg((name) => html`Hello <b>${name}</b>!`, {id: "foo", args: [name]});',
+    'const name = "World";' + 'msg(html`Hello <b>${name}</b>!`, {id: "foo"});',
     'const name = "World";' + 'html`Hola <b>${name}</b>!`;',
     {
       messages: [
@@ -223,72 +223,104 @@ test('msg(fn(html), expr) translated', (t) => {
   );
 });
 
-test('msg(fn(html), string)', (t) => {
+test('msg(html(string))', (t) => {
   checkTransform(
     t,
-    'msg((name) => html`Hello <b>${name}</b>!`, {id: "foo", args: ["World"]});',
+    'msg(html`Hello <b>${"World"}</b>!`, {id: "foo"});',
     'html`Hello <b>World</b>!`;'
   );
 });
 
-test('msg(fn(html), string) translated', (t) => {
+test('msg(html(string)) translated', (t) => {
   checkTransform(
     t,
-    'msg((name) => html`Hello <b>${name}</b>!`, {id: "foo", args: ["World"]});',
+    'msg(html`Hello <b>${"World"}</b>!`, {id: "foo"});',
     'html`Hola <b>World</b>!`;',
     {
       messages: [
         {
           name: 'foo',
-          contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+          contents: ['Hola ', {untranslatable: '<b>${"World"}</b>'}, '!'],
         },
       ],
     }
   );
 });
 
-test('msg(fn(html), html)', (t) => {
+test('msg(html(html))', (t) => {
   checkTransform(
     t,
-    'msg((name) => html`Hello <b>${name}</b>!`, {id: "foo", args: [html`<i>World</i>`]});',
+    'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
     'html`Hello <b><i>World</i></b>!`;'
   );
 });
 
-test('msg(fn(html), html) translated', (t) => {
+test('msg(html(html)) translated', (t) => {
   checkTransform(
     t,
-    'msg((name) => html`Hello <b>${name}</b>!`, {id: "foo", args: [html`<i>World</i>`]});',
+    'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
     'html`Hola <b><i>World</i></b>!`;',
     {
       messages: [
         {
           name: 'foo',
-          contents: ['Hola ', {untranslatable: '<b>${name}</b>'}, '!'],
+          contents: [
+            'Hola ',
+            {untranslatable: '<b>${html`<i>World</i>`}</b>'},
+            '!',
+          ],
         },
       ],
     }
   );
 });
 
-test('msg(fn(string), msg(string))', (t) => {
+test('msg(string(msg(string)))', (t) => {
   checkTransform(
     t,
-    'msg((name) => `Hello ${name}!`, {id: "foo", args: [msg("World", {id: "bar"})]});',
+    'msg(str`Hello ${msg("World", {id: "bar"})}!`, {id: "foo"});',
     '`Hello World!`;'
   );
 });
 
-test('msg(fn(string), msg(string)) translated', (t) => {
+test('msg(string(msg(string))) translated', (t) => {
   checkTransform(
     t,
-    'msg((name) => `Hello ${name}!`, {id: "foo", args: [msg("World", {id: "bar"})]});',
+    'msg(str`Hello ${msg("World", {id: "bar"})}!`, {id: "foo"});',
     '`Hola Mundo!`;',
     {
       messages: [
         {
           name: 'foo',
-          contents: ['Hola ', {untranslatable: '${name}'}, '!'],
+          contents: [
+            'Hola ',
+            {untranslatable: '${msg("World", {id: "bar"})}'},
+            '!',
+          ],
+        },
+        {
+          name: 'bar',
+          contents: ['Mundo'],
+        },
+      ],
+    }
+  );
+});
+
+test('msg(string(<b>msg(string)</b>)) translated', (t) => {
+  checkTransform(
+    t,
+    'msg(str`Hello <b>${msg("World", {id: "bar"})}</b>!`, {id: "foo"});',
+    '`Hola <b>Mundo</b>!`;',
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: [
+            'Hola ',
+            {untranslatable: '<b>${msg("World", {id: "bar"})}</b>'},
+            '!',
+          ],
         },
         {
           name: 'bar',
