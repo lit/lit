@@ -294,8 +294,7 @@ export abstract class ReactiveElement
   static disableWarning?: (type: Warnings) => void;
   /** @nocollapse */
   static addInitializer(initializer: Initializer) {
-    this._initializers ??= [];
-    this._initializers.push(initializer);
+    (this._initializers ??= []).push(initializer);
   }
   static _initializers?: Initializer[];
   /*
