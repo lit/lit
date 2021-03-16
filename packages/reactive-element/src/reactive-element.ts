@@ -272,6 +272,10 @@ export type Warnings = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
 
+export type ReactiveElementConstructor = new (
+  ...args: unknown[]
+) => ReactiveElement;
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method

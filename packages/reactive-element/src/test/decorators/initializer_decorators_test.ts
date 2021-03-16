@@ -45,7 +45,7 @@ suite('Decorators using intitializers', () => {
     assert.equal(el.foo, 'foo');
   });
 
-  test('can create controller decorator that uses hostConnected/hostDisconnected', async () => {
+  test('can create `listen` controller decorator', async () => {
     const listeners: WeakMap<
       ReactiveElement,
       Array<{type: string; listener: (e: Event) => void}>
@@ -108,7 +108,7 @@ suite('Decorators using intitializers', () => {
     assert.isUndefined(el.event2);
   });
 
-  test('can create controller decorator that uses hostUpdate', async () => {
+  test('can create `validate` controller decorator', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type Validator = (v: any) => any;
 
@@ -158,7 +158,7 @@ suite('Decorators using intitializers', () => {
     assert.equal(el.foo, 0);
   });
 
-  test('can create controller decorator that uses hostUpdated', async () => {
+  test('can create `observer` controller decorator', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type Observer = (v: any, key?: PropertyKey) => void;
 

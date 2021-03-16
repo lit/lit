@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement} from '../reactive-element.js';
+import {
+  ReactiveElement,
+  ReactiveElementConstructor,
+} from '../reactive-element.js';
 
 export type Constructor<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,8 +49,6 @@ export const standardPrototypeMethod = (
   key: element.key,
   descriptor,
 });
-
-export type ReactiveElementConstructor = typeof ReactiveElement;
 
 export const decorateProperty = (
   decorator: (ctor: ReactiveElementConstructor, property: PropertyKey) => void
