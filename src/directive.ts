@@ -59,26 +59,6 @@ class ChildPartImpl {
   }
 }
 
-/**
- * Yields all toplevel nodes inside the dom range managed by the ChildPart.
- *
- * So if the ChildPart has rendered:
- *     html`<label><input></label> <div></div>`
- *
- * This function will yield the label and the div, but not the input.
- */
-export function getRenderedNodes(childPart: ChildPart) {
-  const results = [];
-  const impl = childPart as ChildPartImpl;
-  const part = impl.legacyPart;
-  for (let node: Node|null = part.startNode; node && node !== part.endNode;
-       node = node.nextSibling) {
-    const n: Node = node;
-    results.push(n);
-  }
-  return results;
-}
-
 export type AttributePart = Interface<AttributePartImpl>;
 class AttributePartImpl {
   readonly type: typeof PartType.ATTRIBUTE|typeof PartType.PROPERTY;
