@@ -58,11 +58,11 @@ class ChildPartImpl {
     return this.legacyPart.startNode.parentNode!;
   }
 
-  get startNode(): Node | null {
+  get startNode(): Node|null {
     return this.legacyPart.startNode;
   }
 
-  get endNode(): Node | null {
+  get endNode(): Node|null {
     return this.legacyPart.endNode;
   }
 }
