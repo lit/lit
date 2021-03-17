@@ -284,12 +284,6 @@ suite('Task', () => {
         async ([state]) => (state === 'initial' ? initialState : 'A'),
         () => [this.state]
       );
-
-      t2 = new Task(
-        this,
-        () => new Promise(() => []),
-        () => []
-      );
     }
     customElements.define(generateElementName(), TestEl);
 
@@ -302,11 +296,15 @@ suite('Task', () => {
     await Promise.resolve();
     assert.equal(el.task.status, TaskStatus.PENDING, 'pending');
 
-    await Promise.resolve();
+    await el.task.taskComplete;
     assert.equal(el.task.status, TaskStatus.COMPLETE, 'complete');
+    assert.equal(el.task.value, 'A');
 
+    // Kick off a new task run
     el.state = 'initial';
 
+    // We need to wait for the element to update, and then the task to run,
+    // so we wait a event loop turn:
     await new Promise((r) => setTimeout(r, 0));
     assert.equal(el.task.status, TaskStatus.INITIAL, 'new initial');
   });

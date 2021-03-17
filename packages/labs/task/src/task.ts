@@ -95,6 +95,16 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   private _error?: unknown;
   status: TaskStatus = TaskStatus.INITIAL;
 
+  /**
+   * A Promise that resolve when the current task run is complete.
+   *
+   * If a new task run is started while a previous run is pending, the Promise
+   * is kept and only resolved when the new run is completed.
+   */
+  taskComplete!: Promise<R>;
+  private _resolveTaskComplete!: (value: R) => void;
+  private _rejectTaskComplete!: (e: unknown) => void;
+
   constructor(
     host: ReactiveControllerHost,
     task: TaskFunction<T, R>,
@@ -104,6 +114,10 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     this._host.addController(this);
     this._task = task;
     this._getDependencies = getDependencies;
+    this.taskComplete = new Promise((res, rej) => {
+      this._resolveTaskComplete = res;
+      this._rejectTaskComplete = rej;
+    });
   }
 
   hostUpdated() {
@@ -113,6 +127,15 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   private async _completeTask() {
     const deps = this._getDependencies();
     if (this._isDirty(deps)) {
+      if (
+        this.status === TaskStatus.COMPLETE ||
+        this.status === TaskStatus.ERROR
+      ) {
+        this.taskComplete = new Promise((res, rej) => {
+          this._resolveTaskComplete = res;
+          this._rejectTaskComplete = rej;
+        });
+      }
       this.status = TaskStatus.PENDING;
       this._error = undefined;
       this._value = undefined;
@@ -131,8 +154,13 @@ export class Task<T extends [...unknown[]] = any, R = any> {
         if (result === initialState) {
           this.status = TaskStatus.INITIAL;
         } else {
-          this.status =
-            error === undefined ? TaskStatus.COMPLETE : TaskStatus.ERROR;
+          if (error === undefined) {
+            this.status = TaskStatus.COMPLETE;
+            this._resolveTaskComplete(result as R);
+          } else {
+            this.status = TaskStatus.ERROR;
+            this._rejectTaskComplete(error);
+          }
           this._value = result as R;
           this._error = error;
         }
