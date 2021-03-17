@@ -2,8 +2,9 @@
   "type": "module",
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap --ci",
     "build": "lerna run build",
+    "build:ts": "lerna run build:ts",
     "clean": "lerna run clean",
     "format": "npm run format:eslint && npm run format:prettier",
     "format:eslint": "eslint \"**/*.{js,ts}\" --fix",

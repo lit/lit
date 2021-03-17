@@ -12,9 +12,18 @@ import {
   ElementPart,
 } from './lit-html';
 
-export type DirectiveClass = {
+export {
+  AttributePart,
+  BooleanAttributePart,
+  ChildPart,
+  ElementPart,
+  EventPart,
+  Part,
+} from './lit-html';
+
+export interface DirectiveClass {
   new (part: PartInfo): Directive;
-};
+}
 
 /**
  * This utility type extracts the signature of a directive class's render()
@@ -26,12 +35,12 @@ export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
  * A generated directive function doesn't evaluate the directive, but just
  * returns a DirectiveResult object that captures the arguments.
  */
-export type DirectiveResult<C extends DirectiveClass = DirectiveClass> = {
+export interface DirectiveResult<C extends DirectiveClass = DirectiveClass> {
   /** @internal */
   _$litDirective$: C;
   /** @internal */
   values: DirectiveParameters<InstanceType<C>>;
-};
+}
 
 export const PartType = {
   ATTRIBUTE: 1,
@@ -44,14 +53,14 @@ export const PartType = {
 
 export type PartType = typeof PartType[keyof typeof PartType];
 
-export type ChildPartInfo = {
+export interface ChildPartInfo {
   readonly type: typeof PartType.CHILD;
   readonly _$part: ChildPart;
   readonly _$parent: Disconnectable;
   readonly _$attributeIndex: number | undefined;
-};
+}
 
-export type AttributePartInfo = {
+export interface AttributePartInfo {
   readonly type:
     | typeof PartType.ATTRIBUTE
     | typeof PartType.PROPERTY
@@ -63,14 +72,14 @@ export type AttributePartInfo = {
   readonly _$part: AttributePart;
   readonly _$parent: Disconnectable;
   readonly _$attributeIndex: number | undefined;
-};
+}
 
-export type ElementPartInfo = {
+export interface ElementPartInfo {
   readonly type: typeof PartType.ELEMENT;
   readonly _$part: ElementPart;
   readonly _$parent: Disconnectable;
   readonly _$attributeIndex: undefined;
-};
+}
 
 /**
  * Information about the part a directive is bound to.

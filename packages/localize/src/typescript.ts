@@ -54,22 +54,27 @@ export function createDiagnostic(
 }
 
 /**
- * Nicely log an error for the given TypeScript diagnostic object.
+ * Create a nice string for the given TypeScript diagnostic objects.
+ */
+export function stringifyDiagnostics(diagnostics: ts.Diagnostic[]): string {
+  return ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+    getCanonicalFileName(name: string) {
+      return name;
+    },
+    getCurrentDirectory() {
+      return process.cwd();
+    },
+    getNewLine() {
+      return '\n';
+    },
+  });
+}
+
+/**
+ * Nicely log an error for the given TypeScript diagnostic objects.
  */
 export function printDiagnostics(diagnostics: ts.Diagnostic[]): void {
-  console.error(
-    ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-      getCanonicalFileName(name: string) {
-        return name;
-      },
-      getCurrentDirectory() {
-        return process.cwd();
-      },
-      getNewLine() {
-        return '\n';
-      },
-    })
-  );
+  console.error(stringifyDiagnostics(diagnostics));
 }
 
 /**
@@ -83,4 +88,33 @@ export function escapeStringToEmbedInTemplateLiteral(
     .replace(/\\/g, `\\\\`)
     .replace(/`/g, '\\`')
     .replace(/\$/g, '\\$');
+}
+
+/**
+ * Parse the given string as though it were the body of a template literal
+ * (backticks should not be included), and return its TypeScript AST node
+ * representation.
+ */
+export function parseStringAsTemplateLiteral(
+  templateLiteralBody: string
+): ts.TemplateLiteral {
+  const file = ts.createSourceFile(
+    '__DUMMY__.ts',
+    '`' + templateLiteralBody + '`',
+    ts.ScriptTarget.ESNext,
+    false,
+    ts.ScriptKind.JS
+  );
+  if (file.statements.length !== 1) {
+    throw new Error('Internal error: expected 1 statement');
+  }
+  const statement = file.statements[0];
+  if (!ts.isExpressionStatement(statement)) {
+    throw new Error('Internal error: expected expression statement');
+  }
+  const expression = statement.expression;
+  if (!ts.isTemplateLiteral(expression)) {
+    throw new Error('Internal error: expected template literal expression');
+  }
+  return expression;
 }

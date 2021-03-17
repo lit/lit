@@ -47,7 +47,7 @@ export abstract class Formatter {
   /**
    * Read translations we have already received.
    */
-  abstract readTranslations(): Promise<Bundle[]>;
+  abstract readTranslations(): Bundle[];
 
   /**
    * Write localization interchange data (i.e. translation requests) to disk.

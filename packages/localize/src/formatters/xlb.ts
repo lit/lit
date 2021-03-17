@@ -70,30 +70,17 @@ class XlbFormatter implements Formatter {
    * Read translations from all XLB files on disk that match the configured glob
    * pattern.
    */
-  async readTranslations(): Promise<Array<Bundle>> {
-    const files = await new Promise<string[]>((resolve, reject) =>
-      glob(
-        this.xlbConfig.translationsGlob,
-        {cwd: this.config.baseDir, absolute: true},
-        (err, files) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(files);
-          }
-        }
-      )
-    );
-    const bundles: Array<Promise<Bundle>> = [];
+  readTranslations(): Array<Bundle> {
+    const files = glob.sync(this.xlbConfig.translationsGlob, {
+      cwd: this.config.baseDir,
+      absolute: true,
+    });
+    const bundles: Array<Bundle> = [];
     for (const file of files) {
-      bundles.push(
-        (async () => {
-          const xmlStr = await fsExtra.readFile(file, 'utf8');
-          return this.parseXmb(xmlStr);
-        })()
-      );
+      const xmlStr = fsExtra.readFileSync(file, 'utf8');
+      bundles.push(this.parseXmb(xmlStr));
     }
-    return Promise.all(bundles);
+    return bundles;
   }
 
   /**
