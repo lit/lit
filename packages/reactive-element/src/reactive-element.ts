@@ -272,10 +272,6 @@ export type Warnings = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
 
-export type ReactiveElementConstructor = new (
-  ...args: unknown[]
-) => ReactiveElement;
-
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -294,7 +290,8 @@ export abstract class ReactiveElement
   static disableWarning?: (type: Warnings) => void;
   /** @nocollapse */
   static addInitializer(initializer: Initializer) {
-    (this._initializers ??= []).push(initializer);
+    this._initializers ??= [];
+    this._initializers.push(initializer);
   }
   static _initializers?: Initializer[];
   /*

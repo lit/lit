@@ -4,10 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  ReactiveElement,
-  ReactiveElementConstructor,
-} from '../reactive-element.js';
+import {ReactiveElement} from '../reactive-element.js';
 
 export type Constructor<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +48,7 @@ export const standardPrototypeMethod = (
 });
 
 export const decorateProperty = (
-  decorator: (ctor: ReactiveElementConstructor, property: PropertyKey) => void
+  decorator: (ctor: typeof ReactiveElement, property: PropertyKey) => void
 ) => (
   protoOrDescriptor: ReactiveElement | ClassElement,
   name?: string
@@ -59,12 +56,18 @@ export const decorateProperty = (
 ): void | any => {
   if (name !== undefined) {
     const ctor = (protoOrDescriptor as ReactiveElement)
-      .constructor as ReactiveElementConstructor;
+      .constructor as typeof ReactiveElement;
     return decorator(ctor, name!);
   } else {
     return {
       ...protoOrDescriptor,
-      finisher(ctor: ReactiveElementConstructor) {
+      // Note, the @property decorator saves `key` as `originalKey`
+      // so try to use it here.
+      key:
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (protoOrDescriptor as any).originalKey ??
+        (protoOrDescriptor as ClassElement).key,
+      finisher(ctor: typeof ReactiveElement) {
         decorator(ctor, (protoOrDescriptor as ClassElement).key);
       },
     };

@@ -6,14 +6,11 @@
 
 import {ReactiveElement} from '../../reactive-element.js';
 import {generateElementName} from '../test-helpers.js';
-import {
-  decorateProperty,
-  ReactiveElementConstructor,
-} from '../../decorators/base.js';
+import {decorateProperty} from '../../decorators/base.js';
 import {assert} from '@esm-bundle/chai';
 import {property} from '../../decorators/property.js';
 
-suite('Decorators using intitializers', () => {
+suite('Decorators using initializers', () => {
   let container: HTMLDivElement;
 
   setup(async () => {
@@ -26,23 +23,23 @@ suite('Decorators using intitializers', () => {
   });
 
   test('can create initializer decorator with `decorateProperty`', async () => {
-    const setProp = (value: string) =>
-      decorateProperty(
-        (ctor: ReactiveElementConstructor, name: PropertyKey) => {
-          ctor.addInitializer((e: A) => {
-            (e as any)[name as string] = value;
-          });
-        }
-      );
+    const wasDecorated = (value: string) =>
+      decorateProperty((ctor: typeof ReactiveElement, name: PropertyKey) => {
+        ctor.addInitializer((e: A) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (e as any).decoration = {name, value};
+        });
+      });
 
     class A extends ReactiveElement {
-      @setProp('foo')
+      @wasDecorated('bar')
       foo?: string;
     }
     customElements.define(generateElementName(), A);
     const el = new A();
     container.appendChild(el);
-    assert.equal(el.foo, 'foo');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    assert.deepEqual((el as any).decoration, {name: 'foo', value: 'bar'});
   });
 
   test('can create `listen` controller decorator', async () => {
@@ -52,7 +49,7 @@ suite('Decorators using intitializers', () => {
     > = new WeakMap();
     const listenWindow = <T>(type: string) => {
       return decorateProperty(
-        (ctor: ReactiveElementConstructor, name: PropertyKey) => {
+        (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             const listener = (event: Event) =>
               ((((ctor.prototype as unknown) as T)[
@@ -119,7 +116,7 @@ suite('Decorators using intitializers', () => {
 
     const validate = <T>(validatorFn: Validator) => {
       return decorateProperty(
-        (ctor: ReactiveElementConstructor, name: PropertyKey) => {
+        (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             let v = validators.get(e);
             if (v === undefined) {
@@ -141,8 +138,8 @@ suite('Decorators using intitializers', () => {
     };
 
     class B extends ReactiveElement {
-      @validate<B>((v: number) => Math.max(0, Math.min(10, v)))
       @property()
+      @validate<B>((v: number) => Math.max(0, Math.min(10, v)))
       foo = 5;
     }
     customElements.define(generateElementName(), B);
@@ -160,28 +157,32 @@ suite('Decorators using intitializers', () => {
 
   test('can create `observer` controller decorator', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type Observer = (v: any, key?: PropertyKey) => void;
+    type Observer = (value: any, previous?: any) => void;
 
     const observers: WeakMap<
       ReactiveElement,
-      Array<{key: PropertyKey; observer: Observer}>
+      Array<{key: PropertyKey; observer: Observer; previousValue?: any}>
     > = new WeakMap();
 
     const observer = <T>(observerFn: Observer) => {
       return decorateProperty(
-        (ctor: ReactiveElementConstructor, name: PropertyKey) => {
+        (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             let v = observers.get(e);
             if (v === undefined) {
               observers.set(e, (v = []));
               e.addController({
                 hostUpdated() {
-                  v!.forEach(({key, observer}) => {
-                    observer.call(
-                      e,
-                      ((e as unknown) as T)[key as keyof T],
-                      key
-                    );
+                  v!.forEach((info) => {
+                    const value = ((e as unknown) as T)[info.key as keyof T];
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const hasChanged =
+                      (e.constructor as any).getPropertyOptions(name)
+                        ?.hasChanged ?? Object.is;
+                    if (hasChanged(value, info.previousValue)) {
+                      info.observer.call(e, value, info.previousValue);
+                      info.previousValue = value;
+                    }
                   });
                 },
               });
@@ -193,30 +194,30 @@ suite('Decorators using intitializers', () => {
     };
 
     class B extends ReactiveElement {
-      @observer<B>(function (this: B, v: number) {
-        this._observedFoo = v;
-      })
       @property()
+      @observer<B>(function (this: B, value: number, previous?: number) {
+        this._observedFoo = {value, previous};
+      })
       foo = 5;
-      _observedFoo?: number;
+      _observedFoo?: {value: number; previous?: number};
 
-      @observer<B>(function (this: B, v: string) {
-        this._observedBar = v;
-      })
       @property()
+      @observer<B>(function (this: B, value: string, previous?: string) {
+        this._observedBar = {value, previous};
+      })
       bar = 'bar';
-      _observedBar?: string;
+      _observedBar?: {value: string; previous?: string};
     }
     customElements.define(generateElementName(), B);
     const el = new B();
     container.appendChild(el);
     await el.updateComplete;
-    assert.equal(el._observedFoo, 5);
-    assert.equal(el._observedBar, 'bar');
+    assert.deepEqual(el._observedFoo, {value: 5, previous: undefined});
+    assert.deepEqual(el._observedBar, {value: 'bar', previous: undefined});
     el.foo = 100;
     el.bar = 'bar2';
     await el.updateComplete;
-    assert.equal(el._observedFoo, 100);
-    assert.equal(el._observedBar, 'bar2');
+    assert.deepEqual(el._observedFoo, {value: 100, previous: 5});
+    assert.deepEqual(el._observedBar, {value: 'bar2', previous: 'bar'});
   });
 });
