@@ -73,22 +73,21 @@ export const cache = directive(
       // If the new value is a TemplateResult and the previous value is not,
       // or is a different Template as the previous value, restore the child
       // part from the cache.
-      if (
-        isTemplateResult(v) &&
-        (!isTemplateResult(this.value) || this.value.strings !== v.strings)
-      ) {
-        const cachedContainerPart = this.templateCache.get(v.strings);
-        if (cachedContainerPart !== undefined) {
-          // Move the cached part back into the container part value
-          const partValue = getCommittedValue(
-            cachedContainerPart
-          ) as Array<ChildPart>;
-          const cachedPart = partValue.pop()!;
-          // Move cached part back into DOM
-          clearPart(containerPart);
-          insertPart(containerPart, undefined, cachedPart);
-          setCommittedValue(containerPart, [cachedPart]);
-          cachedPart.setConnected(true);
+      if (isTemplateResult(v)) {
+        if (!isTemplateResult(this.value) || this.value.strings !== v.strings) {
+          const cachedContainerPart = this.templateCache.get(v.strings);
+          if (cachedContainerPart !== undefined) {
+            // Move the cached part back into the container part value
+            const partValue = getCommittedValue(
+              cachedContainerPart
+            ) as Array<ChildPart>;
+            const cachedPart = partValue.pop()!;
+            // Move cached part back into DOM
+            clearPart(containerPart);
+            insertPart(containerPart, undefined, cachedPart);
+            setCommittedValue(containerPart, [cachedPart]);
+            cachedPart.setConnected(true);
+          }
         }
         this.value = v;
       } else {

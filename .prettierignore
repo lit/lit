@@ -20,6 +20,9 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
+packages/internal-scripts/node_modules/
+packages/internal-scripts/lib/
+
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/

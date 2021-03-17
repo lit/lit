@@ -67,7 +67,8 @@ export interface ReactiveController {
   hostDisconnected?(): void;
 
   /**
-   * Called during the client-side host update.
+   * Called during the client-side host update, just before the host calls
+   * its own update.
    *
    * Code in `update()` can depend on the DOM as it is not called in
    * server-side rendering.
@@ -75,7 +76,9 @@ export interface ReactiveController {
   hostUpdate?(): void;
 
   /**
-   * Called after a host update. It is not called in server-side rendering.
+   * Called after a host update, just before the host calls firstUpdated and
+   * updated. It is not called in server-side rendering.
+   *
    */
   hostUpdated?(): void;
 }
