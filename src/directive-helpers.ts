@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import { ChildPart } from "./directive.js";
 import { TemplateResult } from "./lit-html.js";
 
 /**
@@ -20,26 +19,3 @@ import { TemplateResult } from "./lit-html.js";
  */
 export const isTemplateResult = (value: unknown): value is TemplateResult =>
   value instanceof TemplateResult;
-
-/**
- * Yields all toplevel nodes inside the dom range managed by the ChildPart.
- *
- * So if the ChildPart has rendered:
- *     html`<label><input></label> <div></div>`
- *
- * This function will yield the label and the div, but not the input.
- */
-export function getRenderedNodes(childPart: ChildPart) {
-  const results = [];
-  const impl = childPart;
-  const part = impl.legacyPart;
-  for (
-    let node: Node | null = part.startNode;
-    node && node !== part.endNode;
-    node = node.nextSibling
-  ) {
-    const n: Node = node;
-    results.push(n);
-  }
-  return results;
-}
