@@ -21,11 +21,11 @@ import {
  * for CSSStyleDeclaration like `backgroundColor`.
  */
 export interface StyleInfo {
-  readonly [name: string]: string;
+  readonly [name: string]: string | undefined | null;
 }
 
 class StyleMap extends Directive {
-  previousStyleProperties?: Set<string>;
+  _previousStyleProperties?: Set<string>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -44,7 +44,7 @@ class StyleMap extends Directive {
   render(styleInfo: StyleInfo) {
     return Object.keys(styleInfo).reduce((style, prop) => {
       const value = styleInfo[prop];
-      if (value === null) {
+      if (value == null) {
         return style;
       }
       // Convert property names from camel-case to dash-case, i.e.:
@@ -64,10 +64,10 @@ class StyleMap extends Directive {
   update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
 
-    if (this.previousStyleProperties === undefined) {
-      this.previousStyleProperties = new Set();
+    if (this._previousStyleProperties === undefined) {
+      this._previousStyleProperties = new Set();
       for (const name in styleInfo) {
-        this.previousStyleProperties.add(name);
+        this._previousStyleProperties.add(name);
       }
       return this.render(styleInfo);
     }
@@ -75,26 +75,30 @@ class StyleMap extends Directive {
     // Remove old properties that no longer exist in styleInfo
     // We use forEach() instead of for-of so that re don't require down-level
     // iteration.
-    this.previousStyleProperties!.forEach((name) => {
-      if (!(name in styleInfo)) {
-        this.previousStyleProperties!.delete(name);
-        if (name.indexOf('-') === -1) {
+    this._previousStyleProperties!.forEach((name) => {
+      // If the name isn't in styleInfo or it's null/undefined
+      if (styleInfo[name] == null) {
+        this._previousStyleProperties!.delete(name);
+        if (name.includes('-')) {
+          style.removeProperty(name);
+        } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (style as any)[name] = null;
-        } else {
-          style.removeProperty(name);
         }
       }
     });
 
     // Add or update properties
     for (const name in styleInfo) {
-      this.previousStyleProperties.add(name);
-      if (name.indexOf('-') === -1) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (style as any)[name] = styleInfo[name];
-      } else {
-        style.setProperty(name, styleInfo[name]);
+      const value = styleInfo[name];
+      if (value != null) {
+        this._previousStyleProperties.add(name);
+        if (name.includes('-')) {
+          style.setProperty(name, value);
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (style as any)[name] = value;
+        }
       }
     }
     return noChange;
