@@ -57,6 +57,14 @@ class ChildPartImpl {
   get parentNode(): Node {
     return this.legacyPart.startNode.parentNode!;
   }
+
+  get startNode(): Node | null {
+    return this.legacyPart.startNode;
+  }
+
+  get endNode(): Node | null {
+    return this.legacyPart.endNode;
+  }
 }
 
 export type AttributePart = Interface<AttributePartImpl>;
