@@ -16,6 +16,7 @@ following links for details on the changes being made:
   - [`lit-html`](./packages/lit-html)
   - [`lit-element`](./packages/lit-element)
   - [`@lit/reactive-element`](./packages/reactive-element)
+  - [`@lit/cli`](./packages/cli)
 - Additional libraries
   - [`@lit/localize`](./packages/localize)
 - Labs

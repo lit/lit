@@ -33,6 +33,10 @@
 			"path": "packages/localize"
 		},
 		{
+			"name": "localize-tools",
+			"path": "packages/localize-tools"
+		},
+		{
 			"name": "labs",
 			"path": "packages/labs"
 		},

@@ -122,6 +122,10 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 
+packages/labs/cli/lib
+packages/labs/cli/test
+packages/labs/cli/index.*
+
 packages/labs/react/development/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
