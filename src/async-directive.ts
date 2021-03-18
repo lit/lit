@@ -78,6 +78,13 @@ export abstract class AsyncDirective extends Directive {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected disconnected() {
   }
+  /**
+   * User callback to restore the working state of the directive prior to the next
+   * render. This should generally re-do the work that was undone in `disconnected`.
+   *
+   * NOTE: In lit-html 1.x, the `disconnected` and `reconnected` callbacks WILL NOT BE
+   * CALLED. The interface is provided here for forward-compatible directive authoring only.
+   */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected reconnected() {
   }
