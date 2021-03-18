@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {
@@ -93,7 +85,7 @@ const createMarker = () => document.createComment('');
  * Inserts a ChildPart into the given container ChildPart's DOM, either at the
  * end of the container ChildPart, or before the optional `refPart`.
  *
- * This does not add the part to the containerPart's comitted value. That must
+ * This does not add the part to the containerPart's committed value. That must
  * be done by callers.
  *
  * @param containerPart Part within which to add the new ChildPart
@@ -103,7 +95,7 @@ const createMarker = () => document.createComment('');
  */
 export const insertPart = (
   containerPart: ChildPart,
-  refPart: ChildPart | undefined,
+  refPart?: ChildPart,
   part?: ChildPart
 ): ChildPart => {
   const container = wrap(containerPart._$startNode).parentNode!;
@@ -184,7 +176,7 @@ const RESET_VALUE = {};
  * @param part
  * @param value
  */
-export const setComittedValue = (part: Part, value: unknown = RESET_VALUE) =>
+export const setCommittedValue = (part: Part, value: unknown = RESET_VALUE) =>
   (part._$committedValue = value);
 
 /**
@@ -201,7 +193,7 @@ export const setComittedValue = (part: Part, value: unknown = RESET_VALUE) =>
  *
  * @param part
  */
-export const getComittedValue = (part: ChildPart) => part._$committedValue;
+export const getCommittedValue = (part: ChildPart) => part._$committedValue;
 
 /**
  * Removes a ChildPart from the DOM, including any of its content.

@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- (Since 1.0.0-pre.1) A controller's `hostUpdated` method is now called before the host's `firstUpdated` method ([#1650](https://github.com/Polymer/lit-html/issues/1650)).
 - (Since 1.0.0-pre.1) Fixed `@query` decorator when cache flag is used and code is compiled with Babel ([#1591](https://github.com/Polymer/lit-html/pull/1591)).
 
 - (Since 1.0.0-pre.1) Renamed all decorator modules to use kebab-case filename convention rather than camelCase.
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - (Since 1.0.0-pre.1) Removed `willUpdate` from `ReactiveController`.
 - (Since 1.0.0-pre.1) Renamed `Controller`'s `dis/connectedCallback` methods.
 - (Since 1.0.0-pre.1) Renamed `Controller` to `ReactiveController`.
+- Made JSCompiler_renameProperty block scoped so that it's inlined in the Terser prod build. Closure should compile from the development build, or after a custom TypeScript compilation.
 
 ## [1.0.0-pre.1] - 2020-12-16
 

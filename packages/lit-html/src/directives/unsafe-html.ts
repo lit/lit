@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {nothing, TemplateResult, noChange} from '../lit-html.js';
@@ -21,8 +13,8 @@ export class UnsafeHTML extends Directive {
   static directiveName = 'unsafeHTML';
   static resultType = HTML_RESULT;
 
-  value: unknown = nothing;
-  templateResult?: TemplateResult;
+  private _value: unknown = nothing;
+  private _templateResult?: TemplateResult;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -38,8 +30,8 @@ export class UnsafeHTML extends Directive {
   render(value: string | typeof nothing | typeof noChange) {
     // TODO: add tests for nothing and noChange
     if (value === nothing) {
-      this.templateResult = undefined;
-      return (this.value = value);
+      this._templateResult = undefined;
+      return (this._value = value);
     }
     if (value === noChange) {
       return value;
@@ -51,16 +43,16 @@ export class UnsafeHTML extends Directive {
         }() called with a non-string value`
       );
     }
-    if (value === this.value) {
-      return this.templateResult;
+    if (value === this._value) {
+      return this._templateResult;
     }
-    this.value = value;
+    this._value = value;
     const strings = ([value] as unknown) as TemplateStringsArray;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (strings as any).raw = strings;
     // WARNING: impersonating a TemplateResult like this is extremely
     // dangerous. Third-party directives should not do this.
-    return (this.templateResult = {
+    return (this._templateResult = {
       // Cast to a known set of integers that satisfy ResultType so that we
       // don't have to export ResultType and possibly encourage this pattern.
       _$litType$: (this.constructor as typeof UnsafeHTML).resultType as 1 | 2,

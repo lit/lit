@@ -1,12 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import * as ts from 'typescript';
@@ -59,22 +54,27 @@ export function createDiagnostic(
 }
 
 /**
- * Nicely log an error for the given TypeScript diagnostic object.
+ * Create a nice string for the given TypeScript diagnostic objects.
+ */
+export function stringifyDiagnostics(diagnostics: ts.Diagnostic[]): string {
+  return ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+    getCanonicalFileName(name: string) {
+      return name;
+    },
+    getCurrentDirectory() {
+      return process.cwd();
+    },
+    getNewLine() {
+      return '\n';
+    },
+  });
+}
+
+/**
+ * Nicely log an error for the given TypeScript diagnostic objects.
  */
 export function printDiagnostics(diagnostics: ts.Diagnostic[]): void {
-  console.error(
-    ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-      getCanonicalFileName(name: string) {
-        return name;
-      },
-      getCurrentDirectory() {
-        return process.cwd();
-      },
-      getNewLine() {
-        return '\n';
-      },
-    })
-  );
+  console.error(stringifyDiagnostics(diagnostics));
 }
 
 /**
@@ -88,4 +88,33 @@ export function escapeStringToEmbedInTemplateLiteral(
     .replace(/\\/g, `\\\\`)
     .replace(/`/g, '\\`')
     .replace(/\$/g, '\\$');
+}
+
+/**
+ * Parse the given string as though it were the body of a template literal
+ * (backticks should not be included), and return its TypeScript AST node
+ * representation.
+ */
+export function parseStringAsTemplateLiteral(
+  templateLiteralBody: string
+): ts.TemplateLiteral {
+  const file = ts.createSourceFile(
+    '__DUMMY__.ts',
+    '`' + templateLiteralBody + '`',
+    ts.ScriptTarget.ESNext,
+    false,
+    ts.ScriptKind.JS
+  );
+  if (file.statements.length !== 1) {
+    throw new Error('Internal error: expected 1 statement');
+  }
+  const statement = file.statements[0];
+  if (!ts.isExpressionStatement(statement)) {
+    throw new Error('Internal error: expected expression statement');
+  }
+  const expression = statement.expression;
+  if (!ts.isTemplateLiteral(expression)) {
+    throw new Error('Internal error: expected template literal expression');
+  }
+  return expression;
 }

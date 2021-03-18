@@ -1,12 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import * as ts from 'typescript';
@@ -52,18 +47,6 @@ export interface ProgramMessage extends Message {
   descStack: string[];
 
   /**
-   * If this message was written as a function, the names of the parameters that
-   * the function takes.
-   *
-   * E.g. given:
-   *   msg('foo', (bar: string, baz: number) => `foo ${bar} ${baz}`, 'a', 4)
-   *
-   * Then params is:
-   *   [ 'bar', 'baz' ]
-   */
-  params?: string[];
-
-  /**
    * True if this message was tagged as a lit-html template, or was a function
    * that returned a lit-html template.
    */
@@ -106,13 +89,34 @@ export function makeMessageIdMap<T extends Message>(
 }
 
 /**
+ * Sort by message description, then filename (for determinism, in case there is
+ * no description, since file-process order is arbitrary), then by source-code
+ * position order. The order of entries in interchange files can be significant,
+ * e.g. in determining the order in which messages are displayed to translators.
+ * We want messages that are logically related to be presented together.
+ */
+export function sortProgramMessages(
+  messages: ProgramMessage[]
+): ProgramMessage[] {
+  return messages.sort((a, b) => {
+    const descCompare = a.descStack
+      .join('')
+      .localeCompare(b.descStack.join(''));
+    if (descCompare !== 0) {
+      return descCompare;
+    }
+    return a.file.fileName.localeCompare(b.file.fileName);
+  });
+}
+
+/**
  * Check that for every localized message, the set of placeholders in the
  * localized version is equal to the set of placeholders in the source version
  * (no more, no less, no changes, but order can change).
  *
  * It is important to validate this condition because placeholders can contain
  * arbitrary HTML and JavaScript template literal placeholder expressions, will
- * be substituited back into generated executable source code. A well behaving
+ * be substituted back into generated executable source code. A well behaving
  * localization process/tool would not allow any modification of these
  * placeholders, but we can't assume that to be the case, so it is a potential
  * source of bugs and attacks and must be validated.

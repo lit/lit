@@ -1,12 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import * as fs from 'fs';
@@ -15,8 +10,8 @@ import * as pathLib from 'path';
 import {Locale} from './locales';
 import {KnownError} from './error';
 import {FormatConfig} from './formatters';
-import {RuntimeOutputConfig} from './outputters/runtime';
-import {TransformOutputConfig} from './outputters/transform';
+import {RuntimeOutputConfig} from './modes/runtime';
+import {TransformOutputConfig} from './modes/transform';
 
 interface ConfigFile {
   /**

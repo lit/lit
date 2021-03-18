@@ -17,6 +17,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Changed
+
+- Added result and dependency type arguments to Task
+
+### Added
+
+- Added an `initialState` sentinal value that task functions can return to reset the task state to INITIAL.
+
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
 ## [1.0.0-pre.1] - 2021-02-11
 
 ### Added

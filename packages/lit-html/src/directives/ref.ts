@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 import {nothing, ElementPart} from '../lit-html.js';
 import {directive, AsyncDirective} from '../async-directive.js';
@@ -44,6 +36,7 @@ export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
+  private _context: unknown;
 
   render(_ref: RefOrCallback) {
     return nothing;
@@ -60,6 +53,7 @@ class RefDirective extends AsyncDirective {
       // We either got a new ref or this is the first render;
       // store the ref/element & update the ref value
       this._ref = ref;
+      this._context = part.options?.host;
       this._updateRefValue((this._element = part.element));
     }
     return nothing;
@@ -74,12 +68,12 @@ class RefDirective extends AsyncDirective {
       // previous one unsets it) and down in the tree (where it would be unset
       // before being set)
       if (lastElementForCallback.get(this._ref) !== undefined) {
-        this._ref(undefined);
+        this._ref.call(this._context, undefined);
       }
       lastElementForCallback.set(this._ref, element);
       // Call the ref with the new element value
       if (element !== undefined) {
-        this._ref(element);
+        this._ref.call(this._context, element);
       }
     } else {
       (this._ref as RefInternal)!.value = element;

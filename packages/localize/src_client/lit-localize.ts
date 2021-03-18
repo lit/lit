@@ -1,16 +1,11 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {TemplateResult} from 'lit-html';
-import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
+import {generateMsgId} from './id-generation.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -52,11 +47,7 @@ export interface TransformConfiguration {
 /**
  * The template-like types that can be passed to `msg`.
  */
-export type TemplateLike =
-  | string
-  | TemplateResult
-  | ((...args: any[]) => string)
-  | ((...args: any[]) => TemplateResult);
+export type TemplateLike = string | TemplateResult | StrResult;
 
 /**
  * A mapping from template ID to template.
@@ -84,7 +75,7 @@ export interface LocaleModule {
  */
 export const LOCALE_STATUS_EVENT = 'lit-localize-status';
 
-// Mifiring eslint rule
+// Misfiring eslint rule
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare global {
   interface WindowEventMap {
@@ -303,6 +294,35 @@ const setLocale: ((newLocale: string) => Promise<void>) & {
   return loading.promise;
 };
 
+export interface StrResult {
+  strTag: true;
+  strings: TemplateStringsArray;
+  values: unknown[];
+}
+
+/**
+ * Tag that allows expressions to be used in localized non-HTML template
+ * strings.
+ *
+ * Example: msg(str`Hello ${this.user}!`);
+ *
+ * The Lit html tag can also be used for this purpose, but HTML will need to be
+ * escaped, and there is a small overhead for HTML parsing.
+ *
+ * Untagged template strings with expressions aren't supported by lit-localize
+ * because they don't allow for values to be captured at runtime.
+ */
+const _str = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): StrResult => ({
+  strTag: true,
+  strings,
+  values,
+});
+
+export const str: typeof _str & {_LIT_LOCALIZE_STR_?: never} = _str;
+
 /**
  * Make a string or lit-html template localizable.
  *
@@ -311,64 +331,96 @@ const setLocale: ((newLocale: string) => Promise<void>) & {
  * @param options Optional configuration object with the following properties:
  *   - id: Optional project-wide unique identifier for this template. If
  *     omitted, an id will be automatically generated from the template strings.
- *   - args: In the case that `template` is a function, it will be invoked with
- *     these arguments.
  */
 export function _msg(template: string, options?: {id?: string}): string;
+export function _msg(template: StrResult, options?: {id?: string}): string;
 
 export function _msg(
   template: TemplateResult,
   options?: {id?: string}
 ): TemplateResult;
 
-export function _msg<F extends (...args: any[]) => string>(
-  fn: F,
-  options: {id?: string; args: Parameters<F>}
-): string;
-
-export function _msg<F extends (...args: any[]) => TemplateResult>(
-  fn: F,
-  options: {id?: string; args: Parameters<F>}
-): TemplateResult;
-
 export function _msg(
   template: TemplateLike,
-  options?: {id?: string; args?: any[]}
+  options?: {id?: string}
 ): string | TemplateResult {
   if (templates) {
     const id = options?.id ?? generateId(template);
     const localized = templates[id];
     if (localized) {
-      template = localized;
+      if (typeof localized === 'string') {
+        // E.g. "Hello World!"
+        return localized;
+      } else if ('strTag' in localized) {
+        // E.g. str`Hello ${name}!`
+        //
+        // Localized templates have ${number} in place of real template
+        // expressions. They can't have real template values, because the
+        // variable scope would be wrong. The number tells us the index of the
+        // source value to substitute in its place, because expressions can be
+        // moved to a different position during translation.
+        return joinStringsAndValues(
+          localized.strings,
+          // Cast `template` because its type wasn't automatically narrowed (but
+          // we know it must be the same type as `localized`).
+          (template as TemplateResult).values,
+          localized.values as number[]
+        );
+      } else {
+        // E.g. html`Hello <b>${name}</b>!`
+        //
+        // We have to keep our own mapping of expression ordering because we do
+        // an in-place update of `values`, and otherwise we'd lose ordering for
+        // subsequent renders.
+        let order = expressionOrders.get(localized);
+        if (order === undefined) {
+          order = localized.values as number[];
+          expressionOrders.set(localized, order);
+        }
+        // Cast `localized.values` because it's readonly.
+        (localized as {
+          values: TemplateResult['values'];
+        }).values = order.map((i) => (template as TemplateResult).values[i]);
+        return localized;
+      }
     }
   }
-  if (typeof template === 'function') {
-    return template(...(options?.args ?? []));
+  if (typeof template !== 'string' && 'strTag' in template) {
+    // E.g. str`Hello ${name}!` in original source locale.
+    return joinStringsAndValues(template.strings, template.values);
   }
   return template;
 }
 
+/**
+ * Render the result of a `str` tagged template to a string. Note we don't need
+ * to do this for Lit templates, since Lit itself handles rendering.
+ */
+const joinStringsAndValues = (
+  strings: TemplateStringsArray,
+  values: Readonly<unknown[]>,
+  valueOrder?: number[]
+) => {
+  let concat = strings[0];
+  for (let i = 1; i < strings.length; i++) {
+    concat += values[valueOrder ? valueOrder[i - 1] : i - 1];
+    concat += strings[i];
+  }
+  return concat;
+};
+
+const expressionOrders = new WeakMap<TemplateResult, number[]>();
+
 const hashCache = new Map<TemplateStringsArray | string, string>();
 
 function generateId(template: TemplateLike): string {
-  if (typeof template === 'function') {
-    const numParams = template.length;
-    // Note that by using HASH_DELIMITER as the template parameter here, we can
-    // skip splitting and re-joining when we perform the hash. It's safe to do
-    // this because we enforce that template expressions are only identifiers
-    // that reference function parameters.
-    const params = [];
-    // Note Array.fill is not supported in IE11.
-    for (let i = 0; i < numParams; i++) {
-      params[i] = HASH_DELIMITER;
-    }
-    template = template(...params);
-  }
-
   const strings = typeof template === 'string' ? template : template.strings;
   let id = hashCache.get(strings);
   if (id === undefined) {
-    id = generateMsgId(strings, typeof template !== 'string');
+    id = generateMsgId(
+      strings,
+      typeof template !== 'string' && !('strTag' in template)
+    );
     hashCache.set(strings, id);
   }
   return id;

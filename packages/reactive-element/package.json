@@ -7,7 +7,7 @@
   "description": "A simple low level base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
-  "author": "The Polymer Authors",
+  "author": "Google LLC",
   "homepage": "https://lit-element.polymer-project.org/",
   "main": "reactive-element.js",
   "module": "reactive-element.js",
@@ -39,9 +39,9 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc --build && rollup -c && npm run build:babel",
+    "build": "npm run clean && npm run build:ts && rollup -c && npm run build:babel",
     "build:watch": "rollup -c --watch",
-    "build:ts": "tsc --build",
+    "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
     "build:babel": "babel --extensions '.ts' src/test/decorators  --out-dir development/test/decorators-babel",
     "check-version": "node scripts/check-version-tracker.js",
@@ -71,8 +71,8 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.12.10",
     "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-class-properties": "^7.12.1",
     "@babel/plugin-proposal-decorators": "^7.12.12",
     "@babel/plugin-transform-typescript": "^7.12.1",
@@ -80,9 +80,10 @@
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
     "@webcomponents/template": "^1.4.4",
+    "@webcomponents/webcomponentsjs": "^2.5.0",
     "chokidar-cli": "^2.1.0",
+    "internal-scripts": "^1.0.0",
     "mocha": "^8.1.1",
     "rollup": "^2.26.4",
     "typescript": "^4.1.3"

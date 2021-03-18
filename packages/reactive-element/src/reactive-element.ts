@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /**
@@ -83,21 +75,11 @@ if (DEV_MODE) {
  * alias this function, so we have to use a small shim that has the same
  * behavior when not compiling.
  */
-window.JSCompiler_renameProperty = <P extends PropertyKey>(
+/*@__INLINE__*/
+const JSCompiler_renameProperty = <P extends PropertyKey>(
   prop: P,
   _obj: unknown
 ): P => prop;
-
-declare global {
-  const JSCompiler_renameProperty: <P extends PropertyKey>(
-    prop: P,
-    _obj: unknown
-  ) => P;
-
-  interface Window {
-    JSCompiler_renameProperty: typeof JSCompiler_renameProperty;
-  }
-}
 
 /**
  * Converts property values to and from attribute values.
@@ -1039,11 +1021,11 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
+    this.__controllers?.forEach((c) => c.hostUpdated?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this.__controllers?.forEach((c) => c.hostUpdated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1168,7 +1150,9 @@ if (DEV_MODE) {
   // Default warning set.
   ReactiveElement.enabledWarnings = ['change-in-update'];
   const ensureOwnWarnings = function (ctor: typeof ReactiveElement) {
-    if (!ctor.hasOwnProperty('enabledWarnings')) {
+    if (
+      !ctor.hasOwnProperty(JSCompiler_renameProperty('enabledWarnings', ctor))
+    ) {
       ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };

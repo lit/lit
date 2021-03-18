@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 import {
   AttributePart,
@@ -21,6 +13,7 @@ import {
   RenderOptions,
   svg,
   TemplateResult,
+  SVGTemplateResult,
   SanitizerFactory,
   Part,
 } from '../lit-html.js';
@@ -693,6 +686,16 @@ suite('lit-html', () => {
       assert.equal(line.tagName, 'line');
       assert.equal(line.namespaceURI, 'http://www.w3.org/2000/svg');
     });
+
+    const staticAssertExtends = <T, U extends T>(_?: [T, U]) => {};
+
+    test('`SVGTemplateResult` is a subtype of `TemplateResult`', () => {
+      staticAssertExtends<TemplateResult, SVGTemplateResult>();
+    });
+
+    test('`svg` returns an `SVGTemplateResult`', () => {
+      staticAssertExtends<SVGTemplateResult, ReturnType<typeof svg>>();
+    });
   });
 
   suite('attributes', () => {
@@ -732,6 +735,27 @@ suite('lit-html', () => {
       assertContent('<div foo="ABC"></div>');
       render(html`<div foo=${'A'}B${'C'}></div>`, container);
       assertContent('<div foo="ABC"></div>');
+    });
+
+    test('renders interpolation to an unquoted attribute with nbsp character', () => {
+      assertRender(
+        html`<div a=${'A'}\u00a0${'B'}></div>`,
+        '<div a="A&nbsp;B"></div>'
+      );
+    });
+
+    test('renders interpolation to a quoted attribute with nbsp character', () => {
+      assertRender(
+        html`<div a="${'A'}\u00a0${'B'}"></div>`,
+        '<div a="A&nbsp;B"></div>'
+      );
+    });
+
+    test('renders non-latin attribute name and interpolated unquoted non-latin values', () => {
+      assertRender(
+        html`<div ふ=ふ${'ふ'}ふ フ=フ${'フ'}フ></div>`,
+        '<div ふ="ふふふ" フ="フフフ"></div>'
+      );
     });
 
     test('renders multiple bindings in an attribute', () => {
@@ -1468,6 +1492,65 @@ suite('lit-html', () => {
 
       render(html`<div>${testDirective('A')}</div>`, container);
       assertContent('<div>TEST:A</div>');
+    });
+
+    suite('ChildPart invariants for parentNode, startNode, endNode', () => {
+      class CheckNodePropertiesBehavior extends Directive {
+        render() {
+          return nothing;
+        }
+
+        update(part: ChildPart) {
+          const {parentNode, startNode, endNode} = part;
+
+          if (endNode !== null) {
+            assert.notEqual(startNode, null);
+          }
+
+          if (startNode === null) {
+            // The part covers all children in `parentNode`.
+            assert.equal(parentNode.childNodes.length, 0);
+            assert.equal(endNode, null);
+          } else if (endNode === null) {
+            // The part covers all siblings following `startNode`.
+            assert.equal(startNode.nextSibling, null);
+          } else {
+            // The part covers all siblings between `startNode` and `endNode`.
+            assert.equal<Node | null>(startNode.nextSibling, endNode);
+          }
+
+          return nothing;
+        }
+      }
+      const checkNodePropertiesBehavior = directive(
+        CheckNodePropertiesBehavior
+      );
+
+      test('when the directive is the only child', () => {
+        const makeTemplate = (content: unknown) => html`<div>${content}</div>`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
+
+      test('when the directive is the last child', () => {
+        const makeTemplate = (content: unknown) =>
+          html`<div>Earlier sibling. ${content}</div>`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
+
+      test('when the directive is not the last child', () => {
+        const makeTemplate = (content: unknown) =>
+          html`<div>Earlier sibling. ${content} Later sibling.</div>`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
     });
 
     test('directives are stateful', () => {

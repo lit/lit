@@ -1,12 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {extractMessagesFromProgram} from '../program-analysis.js';
@@ -29,7 +24,7 @@ function checkAnalysis(
   t: ExecutionContext,
   inputTs: string,
   expectedMessages: Array<
-    Pick<ProgramMessage, 'name' | 'contents' | 'params'> &
+    Pick<ProgramMessage, 'name' | 'contents'> &
       Partial<Pick<ProgramMessage, 'descStack'>>
   >,
   expectedErrors: string[] = []
@@ -53,16 +48,14 @@ function checkAnalysis(
     expectedErrors
   );
   t.deepEqual(
-    messages.map(({name, contents, params, descStack}) => ({
+    messages.map(({name, contents, descStack}) => ({
       name,
       contents,
-      params,
       descStack,
     })),
-    expectedMessages.map(({name, contents, params, descStack}) => ({
+    expectedMessages.map(({name, contents, descStack}) => ({
       name,
       contents,
-      params,
       descStack: descStack ?? [],
     }))
   );
@@ -77,6 +70,19 @@ test('string message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
     msg('Hello World', {id: 'greeting'});
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 'greeting',
+      contents: ['Hello World'],
+    },
+  ]);
+});
+
+test('string message unnecessarily tagged with str', (t) => {
+  const src = `
+    import {msg, str} from './lit-localize.js';
+    msg(str\`Hello World\`, {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
@@ -152,28 +158,28 @@ test('HTML message with comment', (t) => {
 
 test('parameterized string message', (t) => {
   const src = `
-    import {msg} from './lit-localize.js';
-    msg((name: string) => \`Hello \${name}\`, {id: 'greeting', args: ["friend"]});
+    import {msg, str} from './lit-localize.js';
+    const name = "friend";
+    msg(str\`Hello \${name}\`, {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
       name: 'greeting',
       contents: ['Hello ', {untranslatable: '${name}'}],
-      params: ['name'],
     },
   ]);
 });
 
 test('parameterized string message (auto ID)', (t) => {
   const src = `
-    import {msg} from './lit-localize.js';
-    msg((name: string) => \`Hello \${name}\`);
+    import {msg, str} from './lit-localize.js';
+    const name = "friend";
+    msg(str\`Hello \${name}\`);
   `;
   checkAnalysis(t, src, [
     {
       name: 'saed7d3734ce7f09d',
       contents: ['Hello ', {untranslatable: '${name}'}],
-      params: ['name'],
     },
   ]);
 });
@@ -181,7 +187,8 @@ test('parameterized string message (auto ID)', (t) => {
 test('parameterized HTML message', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
-    msg((name: string) => html\`<b>Hello \${name}</b>\`, {id: 'greeting', args: ["friend"]);
+    const name = "Friend";
+    msg(html\`<b>Hello \${friend}</b>\`, {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
@@ -189,9 +196,8 @@ test('parameterized HTML message', (t) => {
       contents: [
         {untranslatable: '<b>'},
         'Hello ',
-        {untranslatable: '${name}</b>'},
+        {untranslatable: '${friend}</b>'},
       ],
-      params: ['name'],
     },
   ]);
 });
@@ -306,40 +312,6 @@ test('error: message id must be static', (t) => {
   );
 });
 
-test('error: placeholders must use function', (t) => {
-  const src = `
-    import {msg} from './lit-localize.js';
-    const foo = 'foo';
-    msg(\`Hello \${name}\`, {id: 'greeting'});
-    msg(html\`<b>Hello \${name}</b>\`, {id: 'greeting'});
-  `;
-  checkAnalysis(
-    t,
-    src,
-    [],
-    [
-      '__DUMMY__.ts(4,9): error TS2324: To use a variable, pass an arrow function.',
-      '__DUMMY__.ts(5,9): error TS2324: To use a variable, pass an arrow function.',
-    ]
-  );
-});
-
-test('error: placeholders must only reference function parameters', (t) => {
-  const src = `
-    import {msg} from './lit-localize.js';
-    const foo = 'foo';
-    msg((name) => \`Hello \${name} \${foo}\`, {id: 'greeting', args: ['Friend']);
-  `;
-  checkAnalysis(
-    t,
-    src,
-    [],
-    [
-      '__DUMMY__.ts(4,36): error TS2324: Placeholder must be one of the following identifiers: name',
-    ]
-  );
-});
-
 test('error: different message contents', (t) => {
   const src = `
     import {msg} from './lit-localize.js';
@@ -357,6 +329,22 @@ test('error: different message contents', (t) => {
     ],
     [
       '__DUMMY__.ts(4,5): error TS2324: Message ids must have the same default text wherever they are used',
+    ]
+  );
+});
+
+test('error: string with expressions must use str tag', (t) => {
+  const src = `
+    import {msg} from './lit-localize.js';
+    const name = 'friend';
+    msg(\`Hello \${name}\`);
+  `;
+  checkAnalysis(
+    t,
+    src,
+    [],
+    [
+      '__DUMMY__.ts(4,9): error TS2324: String literal with expressions must use the str tag',
     ]
   );
 });

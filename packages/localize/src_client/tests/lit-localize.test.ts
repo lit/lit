@@ -1,18 +1,14 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {assert} from '@esm-bundle/chai';
 
 import {
   msg,
+  str,
   configureLocalization,
   configureTransformLocalization,
   LocaleModule,
@@ -54,7 +50,9 @@ suite('lit-localize', () => {
   const spanishModule = {
     templates: {
       greeting: html`<b>Hola Mundo</b>`,
-      parameterized: (name: string) => html`<b>Hola ${name}</b>`,
+      parameterized: html`<b>Hola ${0}</b>`,
+      strOrderChange: str`2:${1} 1:${0}`,
+      htmlOrderChange: html`<b>2:${1} 1:${0}</b>`,
     },
   };
 
@@ -97,10 +95,10 @@ suite('lit-localize', () => {
     });
 
     test('renders parameterized template in English', () => {
+      const name = 'friend';
       render(
-        msg((name: string) => html`Hello ${name}`, {
+        msg(html`Hello ${name}`, {
           id: 'parameterized',
-          args: ['friend'],
         }),
         container
       );
@@ -111,14 +109,52 @@ suite('lit-localize', () => {
       const loaded = setLocale('es-419');
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
+      const name = 'friend';
       render(
-        msg((name: string) => html`Hello ${name}`, {
+        msg(html`Hello ${name}`, {
           id: 'parameterized',
-          args: ['friend'],
         }),
         container
       );
       assert.equal(container.textContent, 'Hola friend');
+    });
+
+    test('renders parameterized string template where expression order changed', async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+
+      const renderAndTest = () => {
+        render(msg(str`1:${'A'} 2:${'B'}`, {id: 'strOrderChange'}), container);
+        assert.equal(container.textContent, '2:B 1:A');
+      };
+
+      renderAndTest();
+
+      // Render again in case we lost our value ordering somehow.
+      renderAndTest();
+    });
+
+    test('renders parameterized HTML template where expression order changed', async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+
+      const renderAndTest = () => {
+        render(
+          msg(html`<b>1:${'A'} 2:${'B'}</b>`, {id: 'htmlOrderChange'}),
+          container
+        );
+        assert.equal(container.textContent, '2:B 1:A');
+      };
+
+      renderAndTest();
+
+      // Render again in case we lost our value ordering somehow. This is a
+      // possible source of bugs, because we do an in-place update of
+      // TemplateResult values, so it's easy to lose track of the original order
+      // if not careful.
+      renderAndTest();
     });
   });
 
@@ -126,9 +162,9 @@ suite('lit-localize', () => {
     const autoSpanishModule = {
       templates: {
         s8c0ec8d1fb9e6e32: 'Hola Mundo!',
-        s00ad08ebae1e0f74: (name: string) => `Hola ${name}!`,
+        s00ad08ebae1e0f74: str`Hola ${0}!`,
         h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
-        h82ccc38d4d46eaa9: (name: string) => html`Hola <b>${name}</b>!`,
+        h82ccc38d4d46eaa9: html`Hola <b>${0}</b>!`,
       },
     };
 
@@ -144,10 +180,8 @@ suite('lit-localize', () => {
     });
 
     test('renders parameterized string template', () => {
-      render(
-        msg((name) => `Hello ${name}!`, {args: ['Friend']}),
-        container
-      );
+      const name = 'Friend';
+      render(msg(str`Hello ${name}!`), container);
       assert.equal(container.textContent, 'Hola Friend!');
     });
 
@@ -157,10 +191,8 @@ suite('lit-localize', () => {
     });
 
     test('renders parameterized html template', () => {
-      render(
-        msg((name) => html`Hello <b>${name}</b>!`, {args: ['Friend']}),
-        container
-      );
+      const name = 'Friend';
+      render(msg(html`Hello <b>${name}</b>!`), container);
       assert.equal(container.textContent, 'Hola Friend!');
     });
   });

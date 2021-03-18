@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';
@@ -184,7 +190,7 @@ export default {
             ),
             // Don't load if the page is tagged with a special meta indicating
             // the polyfills will be loaded manually
-            test: '!document.querySelector("meta[name=manual-polyfills")',
+            test: '!document.querySelector("meta[name=manual-polyfills]")',
             module: false,
           },
         ],

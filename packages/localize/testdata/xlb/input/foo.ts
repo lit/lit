@@ -1,34 +1,54 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {html} from 'lit-html';
-import * as litLocalize from '../../../lit-localize.js';
+import {msg, str} from '../../../lit-localize.js';
 
-litLocalize.msg('Hello World!', {id: 'string'});
+const user = 'Friend';
+const url = 'https://www.example.com/';
 
-litLocalize.msg(html`Hello <b><i>World!</i></b>`, {id: 'lit'});
+// Plain string
+msg('Hello World!');
 
-litLocalize.msg((name: string) => `Hello ${name}!`, {
-  id: 'variables_1',
-  args: ['World'],
-});
+// Plain string with expression
+msg(str`Hello ${user}!`);
 
-litLocalize.msg(
-  (url: string, name: string) =>
-    html`Hello ${name}, click <a href="${url}">here</a>!`,
-  {
-    id: 'lit_variables_1',
-    args: ['World', 'https://www.example.com/'],
-  }
-);
+// Lit template
+msg(html`Hello <b>World</b>!`);
 
-litLocalize.msg((x: string) => html`${x}y${x}y${x}`, {
-  id: 'lit_variables_2',
-  args: ['x'],
-});
+// Lit template with variable expression (one placeholder)
+msg(html`Hello <b>${user}</b>!`);
 
-litLocalize.msg(
-  (x: string) => html`<b>${x}</b>
-    <i>y</i>
-    <b>${x}</b>
-    <i>y</i>
-    <b>${x}</b>`,
-  {id: 'lit_variables_3', args: ['x']}
-);
+// Lit template with variable expression (two placeholders)
+msg(html`Click <a href=${url}>here</a>!`);
+
+// Lit template with string expression
+//
+// TODO(aomarks) The "SALT" text is here because we have a check to make sure
+// that two messages can't have the same ID unless they have identical template
+// contents. After https://github.com/Polymer/lit-html/issues/1621 is
+// implemented, add a "meaning" parameter instead.
+msg(html`[SALT] Click <a href="${'https://www.example.com/'}">here</a>!`);
+
+// Lit template with nested msg expression
+msg(html`[SALT] Hello <b>${msg('World')}</b>!`);
+
+// Lit template with comment
+msg(html`Hello <b><!-- comment -->World</b>!`);
+
+// Custom ID
+msg('Hello World', {id: 'myId'});
+
+// msgdesc: Description of 0
+msg('described 0');
+
+// msgdesc: Parent description
+export function described() {
+  // msgdesc: Description of 1
+  msg('described 1');
+  // msgdesc: Description of 2
+  msg('described 2');
+}

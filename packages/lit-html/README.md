@@ -28,20 +28,11 @@ changes:
 - `render()` no longer clears its container on first render
 - Custom `templateFactory`, `TemplateProcessor`, and custom tag functions are no
   longer supported
+- The `polyfill-support.js` file must be loaded when using the `webcomponents`
+  polyfills
 
 See the full [changelog](CHANGELOG.md) for more details on
 these and other minor breaking changes.
-
-## 🚨 Known issues/limitations
-
-- **Browser support**: This pre-release should run on modern browsers, however a
-  change to factor legacy browser support (IE11, etc.) into an opt-in package is
-  ongoing. As such, this release will not run on some older browsers. This is a
-  temporary state.
-- **Limited directive implementation**: The following directives are not yet
-  implemented. This is a temporary state:
-  - `asyncAppend`
-  - `asyncReplace`
 
 ## 🚨 Migrating directives
 

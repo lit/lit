@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {AttributePart, html, render} from '../../lit-html.js';
@@ -72,6 +64,14 @@ suite('styleMap', () => {
     assert.equal(style.paddingLeft, '4px');
   });
 
+  test('first render skips undefined properties', () => {
+    renderStyleMap({marginTop: undefined, marginBottom: null});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.getAttribute('style'), '');
+    assert.equal(el.style.marginTop, '');
+    assert.equal(el.style.marginBottom, '');
+  });
+
   test('adds and updates properties', () => {
     renderStyleMap({marginTop: '2px', 'padding-bottom': '4px', opacity: '0.5'});
     const el = container.firstElementChild as HTMLElement;
@@ -85,13 +85,22 @@ suite('styleMap', () => {
   });
 
   test('removes properties', () => {
-    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px'});
+    renderStyleMap({
+      marginTop: '2px',
+      'padding-bottom': '4px',
+      borderRadius: '5px',
+      borderColor: 'blue',
+    });
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
-    renderStyleMap({});
+    assert.equal(el.style.borderRadius, '5px');
+    assert.equal(el.style.borderColor, 'blue');
+    renderStyleMap({borderRadius: undefined, borderColor: null});
     assert.equal(el.style.marginTop, '');
     assert.equal(el.style.paddingBottom, '');
+    assert.equal(el.style.borderRadius, '');
+    assert.equal(el.style.borderColor, '');
   });
 
   test('works with static properties', () => {

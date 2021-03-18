@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {setLocaleFromUrl} from './localization.js';
 import {LOCALE_STATUS_EVENT} from '@lit/localize';
 import {html, render} from 'lit-html';

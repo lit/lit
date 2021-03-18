@@ -1,40 +1,13 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {Part, noChange} from '../lit-html.js';
 import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
 import {AsyncDirective} from '../async-directive.js';
-
-const DEV_MODE = true;
-
-if (DEV_MODE) {
-  console.warn(
-    'lit-html: The `until` directive is deprecated and will be removed in ' +
-      'the next major version.'
-  );
-}
-
-interface AsyncState {
-  /**
-   * The last rendered index of a call to until(). A value only renders if its
-   * index is less than the `lastRenderedIndex`.
-   */
-  lastRenderedIndex: number;
-
-  values: unknown[];
-}
 
 const isPromise = (x: unknown) => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
@@ -43,28 +16,21 @@ const isPromise = (x: unknown) => {
 const _infinity = 0x7fffffff;
 
 class UntilDirective extends AsyncDirective {
-  private _state: WeakMap<Part, AsyncState> = new WeakMap<Part, AsyncState>();
+  private _lastRenderedIndex: number = _infinity;
+  private _values: unknown[] = [];
 
   render(...args: Array<unknown>) {
     return args.find((x) => !isPromise(x)) ?? noChange;
   }
 
-  update(part: Part, args: Array<unknown>) {
-    let state = this._state.get(part)!;
-    if (state === undefined) {
-      state = {
-        lastRenderedIndex: _infinity,
-        values: [],
-      };
-      this._state.set(part, state);
-    }
-    const previousValues = state.values;
+  update(_part: Part, args: Array<unknown>) {
+    const previousValues = this._values;
     let previousLength = previousValues.length;
-    state.values = args;
+    this._values = args;
 
     for (let i = 0; i < args.length; i++) {
       // If we've rendered a higher-priority value already, stop.
-      if (i > state.lastRenderedIndex) {
+      if (i > this._lastRenderedIndex) {
         break;
       }
 
@@ -72,7 +38,7 @@ class UntilDirective extends AsyncDirective {
 
       // Render non-Promise values immediately
       if (!isPromise(value)) {
-        state.lastRenderedIndex = i;
+        this._lastRenderedIndex = i;
         // Since a lower-priority value will never overwrite a higher-priority
         // synchronous value, we can stop processing now.
         return value;
@@ -85,16 +51,16 @@ class UntilDirective extends AsyncDirective {
 
       // We have a Promise that we haven't seen before, so priorities may have
       // changed. Forget what we rendered before.
-      state.lastRenderedIndex = _infinity;
+      this._lastRenderedIndex = _infinity;
       previousLength = 0;
 
       Promise.resolve(value).then((resolvedValue: unknown) => {
-        const index = state.values.indexOf(value);
+        const index = this._values.indexOf(value);
         // If state.values doesn't contain the value, we've re-rendered without
         // the value, so don't render it. Then, only render if the value is
         // higher-priority than what's already been rendered.
-        if (index > -1 && index < state.lastRenderedIndex) {
-          state.lastRenderedIndex = index;
+        if (index > -1 && index < this._lastRenderedIndex) {
+          this._lastRenderedIndex = index;
           this.setValue(resolvedValue);
         }
       });

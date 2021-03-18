@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {
@@ -68,21 +60,28 @@ suite('ReactiveElement controllers', () => {
     connectedCallback() {
       this.connectedCount++;
       super.connectedCallback();
+      this.controller.callbackOrder.push('connectedCallback');
     }
 
     disconnectedCallback() {
       this.disconnectedCount++;
       super.disconnectedCallback();
+      this.controller.callbackOrder.push('disconnectedCallback');
     }
 
     update(changedProperties: PropertyValues) {
       this.updateCount++;
       super.update(changedProperties);
+      this.controller.callbackOrder.push('update');
     }
 
-    updated(changedProperties: PropertyValues) {
+    firstUpdated() {
+      this.controller.callbackOrder.push('firstUpdated');
+    }
+
+    updated() {
       this.updatedCount++;
-      super.updated(changedProperties);
+      this.controller.callbackOrder.push('updated');
     }
   }
   customElements.define(generateElementName(), A);
@@ -164,18 +163,27 @@ suite('ReactiveElement controllers', () => {
   test('controllers callback order', async () => {
     assert.deepEqual(el.controller.callbackOrder, [
       'hostConnected',
+      'connectedCallback',
       'hostUpdate',
+      'update',
       'hostUpdated',
+      'firstUpdated',
+      'updated',
     ]);
     el.controller.callbackOrder = [];
     el.foo = 'new';
     await el.updateComplete;
     assert.deepEqual(el.controller.callbackOrder, [
       'hostUpdate',
+      'update',
       'hostUpdated',
+      'updated',
     ]);
     el.controller.callbackOrder = [];
     container.removeChild(el);
-    assert.deepEqual(el.controller.callbackOrder, ['hostDisconnected']);
+    assert.deepEqual(el.controller.callbackOrder, [
+      'hostDisconnected',
+      'disconnectedCallback',
+    ]);
   });
 });

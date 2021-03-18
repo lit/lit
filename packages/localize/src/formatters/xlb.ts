@@ -1,12 +1,7 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
- * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
- * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
- * Google as part of the polymer project is also subject to an additional IP
- * rights grant found at http://polymer.github.io/PATENTS.txt
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import * as xmldom from 'xmldom';
@@ -75,30 +70,17 @@ class XlbFormatter implements Formatter {
    * Read translations from all XLB files on disk that match the configured glob
    * pattern.
    */
-  async readTranslations(): Promise<Array<Bundle>> {
-    const files = await new Promise<string[]>((resolve, reject) =>
-      glob(
-        this.xlbConfig.translationsGlob,
-        {cwd: this.config.baseDir, absolute: true},
-        (err, files) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(files);
-          }
-        }
-      )
-    );
-    const bundles: Array<Promise<Bundle>> = [];
+  readTranslations(): Array<Bundle> {
+    const files = glob.sync(this.xlbConfig.translationsGlob, {
+      cwd: this.config.baseDir,
+      absolute: true,
+    });
+    const bundles: Array<Bundle> = [];
     for (const file of files) {
-      bundles.push(
-        (async () => {
-          const xmlStr = await fsExtra.readFile(file, 'utf8');
-          return this.parseXmb(xmlStr);
-        })()
-      );
+      const xmlStr = fsExtra.readFileSync(file, 'utf8');
+      bundles.push(this.parseXmb(xmlStr));
     }
-    return Promise.all(bundles);
+    return bundles;
   }
 
   /**

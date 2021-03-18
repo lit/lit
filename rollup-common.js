@@ -1,22 +1,13 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import * as pathLib from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
@@ -318,13 +309,6 @@ export function litProdConfig({
         ...(CHECKSIZE
           ? [skipBundleOutput]
           : [
-              // Place a copy of each d.ts file adjacent to its minified module.
-              copy({
-                targets: entryPoints.map((name) => ({
-                  src: `development/${name}.d.ts`,
-                  dest: pathLib.dirname(name),
-                })),
-              }),
               // Copy polyfill support tests.
               copy({
                 targets: [

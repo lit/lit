@@ -37,7 +37,7 @@ Initialize repo:
 ```sh
 git clone https://github.com/Polymer/lit-html.git -b lit-next
 cd lit-html
-npm run install
+npm install
 npm run bootstrap
 ```
 
