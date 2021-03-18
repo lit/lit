@@ -29,11 +29,11 @@
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
-      import {flip, SCALE} from '../development/flip.js';
+      import {flip, defaultCssProperties} from '../development/flip.js';
       import {FlipController} from '../development/flip-controller.js';
 
       class MyElement extends LitElement {
-        static properties = {shifted: {}, moving: {}};
+        static properties = {shifted: {}, embiggen: {}, flipDisabled: {}};
         static styles = css`
           :host {
             display: flex;
@@ -43,6 +43,7 @@
             min-height: 500px;
             overflow: hidden;
             --box-size: 116px;
+            user-select: none;
           }
 
           * {
@@ -60,29 +61,48 @@
             height: var(--box-size);
           }
           .container {
-            color: black;
-            background: #90caf9;
+            background: #263238;
           }
 
-          .container > .circle {
-            border: 2px solid orange;
+          .circle {
             text-align: center;
+            color: black;
+            background: #b0bec5;
+          }
+
+          .shifted > .circle {
+            background: #263238;
+            color: white;
           }
 
           .shifted {
             top: 100px;
             width: calc(3 * var(--box-size));
             height: calc(3 * var(--box-size));
-            background: #b71c1c;
-            color: white;
+            background: #b0bec5;
+          }
+
+          label {
+            position: absolute;
+            left: 0;
           }
         `;
 
         constructor() {
           super();
-          this.flipController = new FlipController(this);
-          // this.flipController.startPaused = true;
+          this.flipController = new FlipController(this, {
+            options: {
+              animationOptions: {
+                duration: 1500,
+                easing: 'ease-in-out',
+              },
+            },
+            // startPaused: true,
+            onComplete: () => setTimeout(() => this.changeLayout(), 1000),
+          });
           this.addEventListener('click', () => this.clickHandler());
+          this.embiggen = true;
+          this.flipDisabled = false;
         }
 
         firstUpdated() {
@@ -90,22 +110,34 @@
         }
 
         render() {
-          const animationOptions = {duration: 1500, easing: 'ease-in-out'};
           return html`
+            <label @click=${(e) => e.stopPropagation()}>
+              <input
+                @change=${async (e) => {
+                  this.flipController.finish();
+                  this.embiggen = !this.embiggen;
+                }}
+                .checked=${this.embiggen}
+                type="checkbox"
+              />
+              Embiggen Text
+            </label>
             <div
               class="container circle ${this.shifted ? 'shifted' : ''}"
               ${flip({
-                animationOptions,
                 id: 'container',
-                onComplete: () => this.changeLayout(),
-                Xdisabled: true,
+                disabled: this.flipDisabled,
               })}
             >
               <span
                 class="circle"
                 ${flip({
                   id: 'content',
-                  scaleInverse: SCALE.up,
+                  animationOptions: {fill: 'forwards'},
+                  commit: true,
+                  reset: true,
+                  scaleUp: this.embiggen,
+                  disabled: this.flipDisabled,
                 })}
                 >Simple...<br />
                 is beautiful.</span
@@ -114,16 +146,18 @@
           `;
         }
 
-        async clickHandler() {
-          if (!this.flipController.isAnimating) {
-            this.changeLayout();
-          } else {
+        clickHandler() {
+          if (this.flipController.isAnimating) {
             this.flipController.togglePlay();
+          } else {
+            this.changeLayout();
           }
         }
 
         changeLayout() {
-          this.shifted = !this.shifted;
+          if (!this.flipController.isAnimating) {
+            this.shifted = !this.shifted;
+          }
         }
       }
 

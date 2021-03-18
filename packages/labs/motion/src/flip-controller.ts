@@ -1,5 +1,5 @@
 import {ReactiveControllerHost} from 'lit-element';
-import {FlipOptions} from './flip.js';
+import {Flip, FlipOptions} from './flip.js';
 
 export const flipControllers: WeakMap<
   ReactiveControllerHost,
@@ -17,41 +17,69 @@ export class FlipController {
   host: ReactiveControllerHost;
   options: FlipOptions;
   startPaused = false;
+  onComplete?: () => void;
 
-  constructor(host: ReactiveControllerHost, options: FlipOptions) {
+  constructor(
+    host: ReactiveControllerHost,
+    info: {
+      options?: FlipOptions;
+      startPaused?: boolean;
+      onComplete?: () => void;
+    }
+  ) {
     this.host = host;
-    this.options = options || {};
+    this.options = info.options || {};
+    this.startPaused = !!info.startPaused;
+    this.onComplete = info.onComplete;
     flipControllers.set(this.host, this);
   }
 
   /**
    * Set of active `flip()` in the host component
    */
-  animations: Set<Animation> = new Set();
+  flips: Set<Flip> = new Set();
 
-  add(animation: Animation) {
-    this.animations.add(animation);
+  protected pendingComplete = false;
+
+  async add(flip: Flip) {
+    this.flips.add(flip);
     if (this.startPaused) {
-      animation.pause();
+      flip.animation?.pause();
+    }
+    this.pendingComplete = true;
+    await flip.finished;
+    if (this.pendingComplete) {
+      this.pendingComplete = false;
+      this.onComplete?.();
     }
   }
 
-  remove(animation: Animation) {
-    this.animations.delete(animation);
+  remove(flip: Flip) {
+    this.flips.delete(flip);
   }
 
   /**
    * Pauses all `flip()` animations running in the host component.
    */
   pause() {
-    this.animations.forEach((a) => a.pause());
+    this.flips.forEach((f) => f.animation?.pause());
   }
 
   /**
    * Plays all active `flip()` animations in the host component.
    */
   play() {
-    this.animations.forEach((a) => a.play());
+    this.flips.forEach((f) => f.animation?.play());
+  }
+
+  cancel() {
+    this.flips.forEach((f) => f.animation?.cancel());
+    this.flips.clear();
+  }
+
+  finish() {
+    this.flips.forEach((f) => f.animation?.finish());
+    this.flips.clear();
   }
 
   /**
@@ -69,13 +97,15 @@ export class FlipController {
    * Returns true if the host component has any active `flip()` animations.
    */
   get isAnimating() {
-    return this.animations.size > 0;
+    return this.flips.size > 0;
   }
 
   /**
    * Returns true if the host component has any playing `flip()` animations.
    */
   get isPlaying() {
-    return Array.from(this.animations).some((a) => a.playState === 'running');
+    return Array.from(this.flips).some(
+      (a) => a.animation?.playState === 'running'
+    );
   }
 }

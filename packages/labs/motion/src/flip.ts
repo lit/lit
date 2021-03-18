@@ -12,15 +12,6 @@ export type CSSValues = {
 
 export type CSSPropertiesList = string[];
 
-export const SCALE = {
-  none: 0,
-  up: 1,
-  down: 2,
-  both: 3,
-} as const;
-
-export type Scale = typeof SCALE[keyof typeof SCALE];
-
 // zIndex for "in" animations
 let z = 0;
 
@@ -32,10 +23,10 @@ export type FlipOptions = {
   id?: unknown;
   // Set to the flip id to map to when rendering "in"
   inId?: unknown;
-  // If set, this flip will only scale inversely to its ancestor flips.
-  // Values can be SCALE.up, SCALE.down, SCALE.both
-  // Other flip properties are ignored.
-  scaleInverse?: Scale;
+  // If set, this flip will scale up with its ancestor flips.
+  scaleUp?: boolean;
+  // Callback run when the flip animation starts
+  onStart?: (element: HTMLElement, flip: Flip) => void;
   // Callback run when the flip animation is complete
   onComplete?: (element: HTMLElement, flip: Flip) => void;
   // Callback run to modify frames used to animate the flip
@@ -56,9 +47,11 @@ export type FlipOptions = {
   disabled?: boolean;
   // Callback run to produce a value which is dirty checked to determine if flip should run.
   guard?: () => unknown;
+  commit?: boolean;
+  reset?: boolean;
 };
 
-const animationFrame = () =>
+export const animationFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
 
 // Presets for animating "in" and "out" of the DOM.
@@ -148,17 +141,21 @@ const flipMap: WeakMap<Node, Flip> = new WeakMap();
  */
 export class Flip extends AsyncDirective {
   private _host?: LitElement;
-  private _fromValues!: CSSValues;
+  private _fromValues?: CSSValues;
   private _element!: HTMLElement;
   private _parentNode: Element | null = null;
   private _nextSibling: Node | null = null;
   private _shouldFlip = true;
   private _previousValue: unknown;
+  private _flipStyles?: string | undefined | null;
 
-  shouldLog = true;
+  shouldLog = false;
   flipProps?: CSSValues;
   animation?: Animation;
   options!: FlipOptions;
+
+  finished!: Promise<void>;
+  private _resolveFinished!: () => void;
 
   constructor(part: PartInfo) {
     super(part);
@@ -167,6 +164,18 @@ export class Flip extends AsyncDirective {
         'The `flip` directive must be used in attribute position.'
       );
     }
+    this.createFinished();
+  }
+
+  createFinished() {
+    this.finished = new Promise((r) => {
+      this._resolveFinished = r;
+    });
+  }
+
+  resolveFinished() {
+    this._resolveFinished?.();
+    this.createFinished();
   }
 
   render(_options?: FlipOptions) {
@@ -198,8 +207,11 @@ export class Flip extends AsyncDirective {
     }
     // Ensure there are some properties to animation and some animation options.
     options!.properties ??= defaultCssProperties;
-    if (options.scaleInverse !== undefined) {
-      options.properties = ['width', 'height'];
+    // if scaling up, don't move left/top
+    if (options.scaleUp) {
+      options.properties = options.properties.filter(
+        (x) => !(x === 'left' || x === 'top')
+      );
     }
     this.options = options;
   }
@@ -252,7 +264,26 @@ export class Flip extends AsyncDirective {
     this.flip();
   }
 
+  resetStyles() {
+    if (this._flipStyles !== undefined) {
+      this._element.setAttribute('style', this._flipStyles ?? '');
+      this._flipStyles = undefined;
+    }
+  }
+
+  commitStyles() {
+    this._flipStyles = this._element.getAttribute('style');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.animation as any)?.commitStyles();
+    this.animation?.cancel();
+  }
+
   flip() {
+    // TODO(sorvell): should this be guarded?
+    if (this.options.reset) {
+      this.resetStyles();
+    }
+    this.options.onStart?.(this._element, this);
     if (
       !this._shouldFlip ||
       !this._element.isConnected ||
@@ -270,14 +301,14 @@ export class Flip extends AsyncDirective {
     );
     const toValues = this._measure();
     // Normal flip or inverse scale
-    if (this._fromValues) {
+    if (this._fromValues !== undefined) {
       const {from, to} = this._applyAncestorAdjustments(
         this._fromValues,
         this._measure(),
         ancestors,
-        this.options.scaleInverse!
+        this.options.scaleUp!
       );
-      const shouldScale = !!(this.options.scaleInverse! & SCALE.both);
+      const shouldScale = this.options.scaleUp;
       frames = this.calculateFrames(from, to, shouldScale, shouldScale);
       // "In" flip.
     } else {
@@ -355,7 +386,7 @@ export class Flip extends AsyncDirective {
       return;
     }
     if (this.options.id !== undefined) {
-      disconnectedProps.set(this.options.id, this._fromValues);
+      disconnectedProps.set(this.options.id, this._fromValues!);
     }
     await animationFrame;
     if (this._parentNode?.isConnected && this.options.out !== undefined) {
@@ -369,7 +400,7 @@ export class Flip extends AsyncDirective {
       if (this.options.stabilizeOut) {
         this.log('stabilizing out');
         const left = diffOp(
-          this._fromValues.left as number,
+          this._fromValues!.left as number,
           shifted.left as number
         );
         // TODO(sorvell): these nudges could conflict with existing styling
@@ -380,7 +411,7 @@ export class Flip extends AsyncDirective {
           this._element.style.left = left + 'px';
         }
         const top = diffOp(
-          this._fromValues.top as number,
+          this._fromValues!.top as number,
           shifted.top as number
         );
         if (top !== 0) {
@@ -398,7 +429,7 @@ export class Flip extends AsyncDirective {
     from: CSSValues,
     to: CSSValues,
     ancestors: Flip[],
-    scaleInverse: Scale = SCALE.none
+    scaleUp = false
   ) {
     const ancestorProps = ancestors
       .map((a) => a.flipProps)
@@ -414,25 +445,11 @@ export class Flip extends AsyncDirective {
           dScaleY = dScaleY / (a.height as number);
         }
       });
-      if (scaleInverse) {
-        // TODO(sorvell): scaling is WIP and needs refinement.
-        const up = scaleInverse & SCALE.up;
-        const down = scaleInverse & SCALE.down;
-        const x = dScaleX < 1 ? (down ? 1 / dScaleX : 1) : up ? dScaleX : 1;
-        const y = dScaleY < 1 ? (down ? 1 / dScaleY : 1) : up ? dScaleY : 1;
-        //const orig = {...to};
-        from.width = x * (to.width as number);
-        from.height = y * (to.height as number);
-        // console.log(
-        //   'dScaleX',
-        //   dScaleX,
-        //   'mod',
-        //   x,
-        //   'orig',
-        //   orig.width,
-        //   'to final',
-        //   from.width
-        // );
+      if (scaleUp && dScaleX > 1) {
+        from.width = dScaleX * (to.width as number);
+      }
+      if (scaleUp && dScaleY > 1) {
+        from.height = dScaleY * (to.height as number);
       }
       if (from.left !== undefined) {
         from.left = dScaleX * (from.left as number);
@@ -498,18 +515,28 @@ export class Flip extends AsyncDirective {
     if (this.isAnimating() || this.options.disabled || frames === undefined) {
       return;
     }
+
     this.log('animate', [frames, options]);
     this.animation = this._element.animate(frames, options);
     const controller = flipControllers.get(this._host!);
-    controller?.add(this.animation);
-    await this.animation.finished;
+    controller?.add(this);
+    try {
+      await this.animation.finished;
+    } catch (e) {
+      // cancelled.
+    }
     this.flipProps = undefined;
-    controller?.remove(this.animation);
+    this._fromValues = undefined;
+    controller?.remove(this);
+    if (this.options.commit) {
+      this.commitStyles();
+    }
     this.options.onComplete?.(this._element, this);
+    this.resolveFinished();
   }
 
   protected isAnimating() {
-    return this.animation?.playState === 'running';
+    return this.animation?.playState === 'running' || this.animation?.pending;
   }
 
   log(message: string, data?: unknown) {

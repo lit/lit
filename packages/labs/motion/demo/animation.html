@@ -32,21 +32,26 @@
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
       import {classMap} from 'lit-html/directives/class-map.js';
-      import {flip, flyBelow, SCALE} from '../development/flip.js';
+      import {flip, flyBelow} from '../development/flip.js';
       import {FlipController} from '../development/flip-controller.js';
 
       class MyElement extends LitElement {
         static properties = {
           layout: {},
-          animating: {},
         };
 
         constructor() {
           super();
-          this.animating = false;
           this.layout = 0;
-          this.flipController = new FlipController(this);
-          this.flipController.startPaused = true;
+          this.flipController = new FlipController(this, {
+            options: {
+              animationOptions: {
+                duration: 1000,
+              },
+            },
+            onComplete: () => this.animationDone(),
+            // startPaused: true
+          });
           this.addEventListener('click', () => this.clickHandler());
         }
 
@@ -56,48 +61,28 @@
               display: block;
               height: 100%;
               --hi-box-size: 50px;
+              --box-color: #004d40;
+              --box-text-color: white;
             }
             * {
               box-sizing: border-box;
             }
 
-            .positioned-box.layout1 {
-              left: 50vw;
-              top: 50vh;
-              opacity: 0.25;
-            }
-
-            .positioned-box.layout2 {
-              left: 10vw;
-              top: 60vh;
-              opacity: 0.5;
-            }
-
-            .animation-container {
-              min-height: 50px;
-            }
-
             .box {
               display: inline-block;
               position: relative;
-              border: 2px solid black;
-              background: #03dac6;
+              background: var(--box-color);
+              color: var(--box-text-color);
               font-weight: 800;
               padding: 8px;
               margin: 4px;
             }
 
-            .positioned-box {
-              position: absolute;
-            }
-
-            .animation-container2 {
-              min-height: 200px;
-            }
-
             .animation-list {
-              display: inline-flex;
+              min-height: 180px;
+              display: flex;
               flex-direction: column;
+              align-items: start;
             }
 
             .animation-list.layout1 {
@@ -126,28 +111,36 @@
               order: 1;
             }
 
-            .hibox {
+            .layout3,
+            .layout3 > * {
+              --box-color: orange;
+              --box-text-color: black;
+            }
+
+            /* TODO(sorvell): debug why this doesn't work */
+            /*.hibox {
               position: relative;
-              left: 200px;
-              top: 200px;
-              border: none;
+              left: 0px;
               padding: 0;
               margin: 0;
-              height: var(--hi-box-size);
-              width: var(--hi-box-size);
               overflow: hidden;
-              border: 2px solid black;
               display: flex;
               align-items: center;
               justify-content: center;
+              --hi-box-scale: 1;
+              --hi-box-left: 0;
+              --hi-box-top: 0;
+              height: calc(var(--hi-box-size) * var(--hi-box-scale));
+              width: calc(var(--hi-box-size) * var(--hi-box-scale));
+              left: calc(var(--hi-box-size) * var(--hi-box-left));
+              top: calc(var(--hi-box-size) * var(--hi-box-top));
             }
 
-            .hibox-internal {
-              background: tomato;
-              height: var(--hi-box-size);
-              width: var(--hi-box-size);
-              border: 2px solid green;
-              border: none;
+            .hibox > div {
+              position: relative;
+              will-change: transform;
+              height: calc(var(--hi-box-size) * var(--hi-box-scale));
+              width: calc(var(--hi-box-size) * var(--hi-box-scale));
               padding: 8px;
               display: flex;
               align-items: center;
@@ -155,93 +148,126 @@
             }
 
             .hibox.layout1 {
-              height: 376px;
-              width: 376px;
-              top: 132px;
+              --hi-box-scale: 3;
+              --hi-box-left: 1.5;
             }
 
             .hibox.layout2 {
-              height: 142px;
-              width: 142px;
-              left: 200px;
-              top: 82px;
+              --hi-box-scale: 2;
+              --hi-box-left: 1.5;
+              --hi-box-top: 1.5;
+            }
+
+            .hibox.layout3 {
+              --hi-box-scale: 1.5;
+              --hi-box-left: 0;
+              --hi-box-top: 1.5;
+            }*/
+
+            .hibox {
+              position: relative;
+              left: 0px;
+              padding: 0;
+              margin: 0;
+              height: var(--hi-box-size);
+              width: var(--hi-box-size);
+              overflow: hidden;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .hibox > div {
+              position: relative;
+              will-change: transform;
+              height: var(--hi-box-size);
+              width: var(--hi-box-size);
+              padding: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .hibox.layout1 {
+              height: calc(var(--hi-box-size) * 4);
+              width: calc(var(--hi-box-size) * 4);
+              left: calc(var(--hi-box-size) * 2);
+            }
+
+            .hibox.layout2 {
+              height: calc(var(--hi-box-size) * 3);
+              width: calc(var(--hi-box-size) * 3);
+              left: calc(var(--hi-box-size) * 2);
+              top: calc(var(--hi-box-size) * 2);
+            }
+
+            .hibox.layout3 {
+              height: calc(var(--hi-box-size) * 2);
+              width: calc(var(--hi-box-size) * 2);
+              left: 0;
+              top: calc(var(--hi-box-size) * 2);
+            }
+
+            .in-out {
+              position: relative;
+              left: 50%;
             }
           `,
         ];
 
         render() {
-          const options = {
-            animationOptions: {
-              duration: 1000,
-              easing: 'ease-in-out',
-            },
+          const classes = {
+            layout1: this.layout === 1,
+            layout2: this.layout === 2,
+            layout3: this.layout === 3,
           };
-          let layoutClass = '';
-          if (this.layout === 1) {
-            layoutClass = 'layout1';
-          } else if (this.layout === 2) {
-            layoutClass = 'layout2';
-          }
+
           return html`
-            <!--<section class="animation-container">
-              <div ${flip(
-              options
-            )} class="box positioned-box ${layoutClass}"">Hello!</div>
-            </section>-->
-            <!--<section class="animation-container2">
-              <section class="animation-list ${layoutClass}">
-                <div class="box" ${flip(options)}>Item 1</div>
-                <div class="box" ${flip(options)}>Item 2</div>
-                <div class="box" ${flip(options)}>Item 3</div>
-                <div class="box" ${flip(options)}>Item 4</div>
-              </section>
-            </section>-->
+            <section class="animation-list ${classMap(classes)}">
+              <div class="box" ${flip()}>Item 1</div>
+              <div class="box" ${flip()}>Item 2</div>
+              <div class="box" ${flip()}>Item 3</div>
+              <div class="box" ${flip()}>Item 4</div>
+            </section>
             <section>
-              <div
-                class="hibox box from-top-left ${layoutClass}"
-                ${flip({
-                  id: 'hibox',
-                  ...options,
-                  onComplete: () => this.animationDone(),
-                })}
-              >
+              <div class="hibox box ${classMap(classes)}" ${flip()}>
                 <div
-                  class="hibox-internal"
                   ${flip({
-                    id: 'hibox-internal',
-                    animationOptions: {Xfill: 'both'},
-                    scaleInverse: SCALE.up,
-                    Xdisabled: true,
+                    animationOptions: {fill: 'both'},
+                    scaleUp: true,
+                    commit: true,
+                    reset: true,
                   })}
                 >
                   Hi
                 </div>
               </div>
             </section>
-            <!--<section>
-              ${layoutClass
-              ? html`<div
-                  class="box"
-                  ${flip({
-                    ...options,
-                    in: flyBelow,
-                    out: flyBelow,
-                    stabilizeOut: true,
-                  })}
-                >
-                  In / Out
-                </div>`
-              : ''}
-            </section>-->
+            <section class="in-out">
+              ${this.layout !== 0
+                ? html`<div
+                    class="box ${classMap(classes)}"
+                    ${flip({
+                      in: flyBelow,
+                      out: flyBelow,
+                      stabilizeOut: true,
+                    })}
+                  >
+                    In / Out
+                  </div>`
+                : ''}
+            </section>
           `;
         }
 
         changeLayout() {
-          this.layout = ++this.layout % 3;
+          if (!this.flipController.isAnimating) {
+            this.layout = ++this.layout % 4;
+          }
         }
 
         animationDone() {
-          //setTimeout(() => this.changeLayout(), 1000);
+          this.changeLayout();
         }
 
         firstUpdated() {
@@ -249,10 +275,10 @@
         }
 
         async clickHandler() {
-          if (!this.flipController.isAnimating) {
-            this.changeLayout();
-          } else {
+          if (this.flipController.isAnimating) {
             this.flipController.togglePlay();
+          } else {
+            this.changeLayout();
           }
         }
       }
