@@ -66,14 +66,14 @@ export abstract class AsyncDirective extends Directive {
   }
 
   /**
-   * User callbacks for implementing logic to release any
+   * User callback for implementing logic to release any
    * resources/subscriptions that may have been retained by this directive.
    * Since directives may also be re-connected, `reconnected` should also be
    * implemented to restore the working state of the directive prior to the next
    * render.
    *
-   * In the v1 version of these APIs, we don't monitor for disconnection and
-   * reconnection.
+   * NOTE: In lit-html 1.x, the `disconnected` and `reconnected` callbacks WILL NOT BE
+   * CALLED. The interface is provided here for forward-compatible directive authoring only.
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected disconnected() {
