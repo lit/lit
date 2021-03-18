@@ -270,7 +270,7 @@ export const nothing = Symbol.for('lit-nothing');
  * or attr. This restriction simplifies the cache lookup, which is on the hot
  * path for rendering.
  */
-const templateCache = new Map<TemplateStringsArray, Template>();
+const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
 export interface RenderOptions {
   /**
