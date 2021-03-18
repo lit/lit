@@ -22,6 +22,7 @@ following links for details on the changes being made:
   - [`@lit-labs/ssr`](./packages/lit-ssr)
   - [`@lit-labs/react`](./packages/labs/react)
   - [`@lit-labs/task`](./packages/labs/task)
+  - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin)
 - Starter kits (not published to npm)
   - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next))
   - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/PolymerLabs/lit-element-starter-js/tree/lit-next))

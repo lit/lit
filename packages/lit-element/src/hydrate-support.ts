@@ -20,7 +20,7 @@ interface PatchableLitElement extends HTMLElement {
   createRenderRoot(): Element | ShadowRoot;
   renderRoot: Element | ShadowRoot;
   render(): unknown;
-  _$renderOptions: RenderOptions;
+  renderOptions: RenderOptions;
   _$needsHydration: boolean;
 }
 
@@ -52,9 +52,9 @@ interface PatchableLitElement extends HTMLElement {
     (ReactiveElement.prototype as any).update.call(this, changedProperties);
     if (this._$needsHydration) {
       this._$needsHydration = false;
-      hydrate(value, this.renderRoot, this._$renderOptions);
+      hydrate(value, this.renderRoot, this.renderOptions);
     } else {
-      render(value, this.renderRoot as HTMLElement, this._$renderOptions);
+      render(value, this.renderRoot as HTMLElement, this.renderOptions);
     }
   };
 };

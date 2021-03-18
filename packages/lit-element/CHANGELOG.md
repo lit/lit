@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Changed
+
+- (Since 3.0.0-pre.3) The `renderOptions` class field on `LitElement` is now public.
+
 ## [3.0.0-pre.3] - 2021-02-11
 
 ### Changed

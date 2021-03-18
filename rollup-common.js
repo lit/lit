@@ -52,7 +52,7 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // and choose the next letter.
 //
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
-// FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
+// FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
   // lit-html: Template (used by polyfill-support)
   _$createElement: 'A',
@@ -66,36 +66,34 @@ const stableProperties = {
   _$template: 'G',
   // reactive-element: ReactiveElement (used by polyfill-support)
   _$didUpdate: 'H',
-  // lit-element: LitElement
-  _$renderOptions: 'I',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'J',
+  _$renderImpl: 'I',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'K',
+  _$needsHydration: 'J',
   // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'L',
+  _$committedValue: 'K',
   // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'M',
+  _$setValue: 'L',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'N',
-  // lit-element: ReactiveElement (used by private-ssr-support)
-  _$attributeToProperty: 'O',
-  // lit-element: ReactiveElement (used by private-ssr-support)
-  _$changedProperties: 'P',
+  _$handlesPrepareStyles: 'M',
+  // lit-element: ReactiveElement (used bby ssr-support)
+  _$attributeToProperty: 'N',
+  // lit-element: ReactiveElement (used bby ssr-support)
+  _$changedProperties: 'O',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
-  // async-directive)
-  _$parent: 'Q',
-  _$disconnetableChildren: 'R',
-  // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'S',
-  // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'T',
-  // lit-html: ChildPart (added by async-directive)
-  _$reparentDisconnectables: 'U',
+  // disconnectable-directive)
+  _$parent: 'P',
+  _$disconnetableChildren: 'Q',
+  // disconnectable-directive: DisconnectableDirective
+  _$setDirectiveConnected: 'R',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$setChildPartConnected: 'S',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$reparentDisconnectables: 'T',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'V',
+  _$clear: 'U',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'W',
+  _$resolve: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
