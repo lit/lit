@@ -14,6 +14,16 @@
 
 import type {LitElement} from 'lit';
 
+// Proposed interface changes
+declare global {
+  interface ShadowRootInit {
+    customElements?: CustomElementRegistry;
+  }
+  interface ShadowRoot {
+    importNode(node: Node, deep?: boolean): Node;
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LitElementConstructor = new (...args: any[]) => LitElement;
 
@@ -45,10 +55,8 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
         );
       }
 
-      // @ts-expect-error: importNode not yet in ShadowRoot
       return (this.renderOptions.creationScope = this.attachShadow({
         ...shadowRootOptions,
-        // @ts-expect-error: customElements not yet in ShadowRootInit
         customElements: constructor.registry,
       }));
     }
