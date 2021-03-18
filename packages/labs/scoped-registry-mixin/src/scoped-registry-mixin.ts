@@ -32,21 +32,23 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
     static registry?: CustomElementRegistry;
 
     createRenderRoot() {
-      const constructor = this.constructor as typeof ScopedRegistryMixin;
-      // @ts-expect-error: shadowRootOptions
+      const constructor = this.constructor as typeof ScopedRegistryMixin &
+        typeof LitElement;
+
       const {registry, elementDefinitions, shadowRootOptions} = constructor;
 
       if (elementDefinitions && !registry) {
         constructor.registry = new CustomElementRegistry();
 
         Object.entries(elementDefinitions).forEach(([tagName, klass]) =>
-          constructor.registry?.define(tagName, klass)
+          constructor.registry!.define(tagName, klass)
         );
       }
 
       // @ts-expect-error: importNode not yet in ShadowRoot
       return (this.renderOptions.creationScope = this.attachShadow({
         ...shadowRootOptions,
+        // @ts-expect-error: customElements not yet in ShadowRootInit
         customElements: constructor.registry,
       }));
     }
