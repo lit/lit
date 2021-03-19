@@ -63,6 +63,12 @@ class RepeatDirective extends Directive {
     };
   }
 
+  render<T>(items: Iterable<T>, template: ItemTemplate<T>): Array<unknown>;
+  render<T>(
+    items: Iterable<T>,
+    keyFn: KeyFn<T> | ItemTemplate<T>,
+    template: ItemTemplate<T>
+  ): Array<unknown>;
   render<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
@@ -417,11 +423,19 @@ class RepeatDirective extends Directive {
   }
 }
 
-export type RepeatDirectiveFn = <T>(
-  items: Iterable<T>,
-  keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
-  template?: ItemTemplate<T>
-) => unknown;
+export interface RepeatDirectiveFn {
+  <T>(
+    items: Iterable<T>,
+    keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
+    template?: ItemTemplate<T>
+  ): unknown;
+  <T>(items: Iterable<T>, template: ItemTemplate<T>): unknown;
+  <T>(
+    items: Iterable<T>,
+    keyFn: KeyFn<T> | ItemTemplate<T>,
+    template: ItemTemplate<T>
+  ): unknown;
+}
 
 /**
  * A directive that repeats a series of values (usually `TemplateResults`)
