@@ -244,6 +244,10 @@ export abstract class Directive {
   }
 }
 
+/**
+ * Creates a user-facing directive function from a Directive class. This
+ * function has the same parameters as the directive's render() method.
+ */
 export function directive<C extends DirectiveClass>(directiveClass: C) {
   const partToInstance =
       new WeakMap<legacyLit.Part, readonly[Part, InstanceType<C>]>();
