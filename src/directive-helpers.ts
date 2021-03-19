@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateResult} from "./lit-html.js";
+import {TemplateResult} from './lit-html.js';
 
 /**
  * Tests if a value is a TemplateResult.
  */
 export const isTemplateResult = (value: unknown): value is TemplateResult =>
-  value instanceof TemplateResult;
+    value instanceof TemplateResult;
