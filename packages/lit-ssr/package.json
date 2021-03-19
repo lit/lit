@@ -54,6 +54,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
+    "@webcomponents/template-shadowroot": "^0.1.0",
     "escape-html": "^1.0.3",
     "koa": "^2.7.0",
     "koa-node-resolve": "^1.0.0-pre.5",
@@ -63,8 +64,7 @@
     "lit-html": "^2.0.0-pre.4",
     "node-fetch": "^2.6.0",
     "parse5": "^5.1.0",
-    "resolve": "^1.10.1",
-    "template-shadowroot": "webcomponents/template-shadowroot#npm-support"
+    "resolve": "^1.10.1"
   },
   "engines": {
     "node": ">=13.9.0"
