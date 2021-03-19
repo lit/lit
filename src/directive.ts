@@ -22,7 +22,7 @@ export const PartType = {
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
   ELEMENT: 6,
-} as const ;
+} as const;
 
 export type PartType = typeof PartType[keyof typeof PartType];
 
@@ -50,8 +50,10 @@ export type ChildPart = Interface<ChildPartImpl>;
 class ChildPartImpl {
   readonly type = PartType.CHILD;
   readonly options: legacyLit.RenderOptions|undefined;
-  constructor(readonly legacyPart: legacyLit.NodePart) {
+  readonly legacyPart: legacyLit.NodePart;
+  constructor(legacyPart: legacyLit.NodePart) {
     this.options = legacyPart.options;
+    this.legacyPart = legacyPart;
   }
 
   get parentNode(): Node {
@@ -252,7 +254,7 @@ export function directive<C extends DirectiveClass>(directiveClass: C) {
       if (cached === undefined) {
         modernPart = legacyPartToPart(part);
         instance = new directiveClass(modernPart) as InstanceType<C>;
-        partToInstance.set(part, [modernPart, instance] as const );
+        partToInstance.set(part, [modernPart, instance] as const);
       } else {
         modernPart = cached[0];
         instance = cached[1];

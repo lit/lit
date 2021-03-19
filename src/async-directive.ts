@@ -13,41 +13,41 @@
  */
 
 import {Directive, Part, PartInfo} from './directive.js';
-import * as legacyLit from './lit-html.js';
+import {AttributePart as LegacyAttributePart, BooleanAttributePart as LegacyBooleanAttributePart, EventPart as LegacyEventPart, NodePart as LegacyNodePart, Part as LegacyPart, PropertyPart as LegacyPropertyPart,} from './lit-html.js';
 
 /**
  * A superclass for directives that need to asynchronously update.
  */
 export abstract class AsyncDirective extends Directive {
-  private readonly ddPart: legacyLit.Part;
-  private renderedYet = false;
+  private readonly _legacyPart: LegacyPart;
+  private _renderedYet = false;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
-    this.ddPart = (partInfo as Part).legacyPart;
+    this._legacyPart = (partInfo as Part).legacyPart;
   }
 
-  private ddGetNode(): Node|undefined {
-    if (this.ddPart instanceof legacyLit.NodePart) {
-      return this.ddPart.startNode;
-    } else if (this.ddPart instanceof legacyLit.EventPart) {
-      return this.ddPart.element;
-    } else if (this.ddPart instanceof legacyLit.BooleanAttributePart) {
-      return this.ddPart.element;
+  private _legacyGetNode(): Node|undefined {
+    if (this._legacyPart instanceof LegacyNodePart) {
+      return this._legacyPart.startNode;
+    } else if (this._legacyPart instanceof LegacyEventPart) {
+      return this._legacyPart.element;
+    } else if (this._legacyPart instanceof LegacyBooleanAttributePart) {
+      return this._legacyPart.element;
     } else if (
-        this.ddPart instanceof legacyLit.PropertyPart ||
-        this.ddPart instanceof legacyLit.AttributePart) {
-      return this.ddPart.committer.element;
+        this._legacyPart instanceof LegacyPropertyPart ||
+        this._legacyPart instanceof LegacyAttributePart) {
+      return this._legacyPart.committer.element;
     }
     return undefined;
   }
 
-  private shouldRender() {
-    if (!this.renderedYet) {
-      this.renderedYet = true;
+  private _shouldRender() {
+    if (!this._renderedYet) {
+      this._renderedYet = true;
       return true;
     }
-    const node = this.ddGetNode();
+    const node = this._legacyGetNode();
     if (node != null && !node.isConnected) {
       // node is disconnected, do not render
       return false;
@@ -56,13 +56,13 @@ export abstract class AsyncDirective extends Directive {
   }
 
   setValue(value: unknown) {
-    if (!this.shouldRender()) {
+    if (!this._shouldRender()) {
       // node is disconnected, do nothing.
       return;
     }
 
-    this.ddPart.setValue(value);
-    this.ddPart.commit();
+    this._legacyPart.setValue(value);
+    this._legacyPart.commit();
   }
 
   /**
@@ -72,18 +72,21 @@ export abstract class AsyncDirective extends Directive {
    * implemented to restore the working state of the directive prior to the next
    * render.
    *
-   * NOTE: In lit-html 1.x, the `disconnected` and `reconnected` callbacks WILL NOT BE
-   * CALLED. The interface is provided here for forward-compatible directive authoring only.
+   * NOTE: In lit-html 1.x, the `disconnected` and `reconnected` callbacks WILL
+   * NOT BE CALLED. The interface is provided here for forward-compatible
+   * directive authoring only.
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected disconnected() {
   }
   /**
-   * User callback to restore the working state of the directive prior to the next
-   * render. This should generally re-do the work that was undone in `disconnected`.
+   * User callback to restore the working state of the directive prior to the
+   * next render. This should generally re-do the work that was undone in
+   * `disconnected`.
    *
-   * NOTE: In lit-html 1.x, the `disconnected` and `reconnected` callbacks WILL NOT BE
-   * CALLED. The interface is provided here for forward-compatible directive authoring only.
+   * NOTE: In lit-html 1.x, the `disconnected` and `reconnected` callbacks WILL
+   * NOT BE CALLED. The interface is provided here for forward-compatible
+   * directive authoring only.
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected reconnected() {
