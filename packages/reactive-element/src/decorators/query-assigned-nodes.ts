@@ -12,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 // TODO(sorvell): Remove when https://github.com/webcomponents/polyfills/issues/397 is addressed.
 // x-browser support for matches
@@ -57,35 +53,26 @@ export function queryAssignedNodes(
   flatten = false,
   selector = ''
 ) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
-      get(this: ReactiveElement) {
-        const slotSelector = `slot${
-          slotName ? `[name=${slotName}]` : ':not([name])'
-        }`;
-        const slot = this.renderRoot?.querySelector(slotSelector);
-        let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
-        if (nodes && selector) {
-          nodes = nodes.filter(
-            (node) =>
-              node.nodeType === Node.ELEMENT_NODE &&
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ((node as any).matches
-                ? (node as Element).matches(selector)
-                : legacyMatches.call(node as Element, selector))
-          );
-        }
-        return nodes;
-      },
-      enumerable: true,
-      configurable: true,
-    };
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+  return decorateProperty(null, (_name: PropertyKey) => ({
+    get(this: ReactiveElement) {
+      const slotSelector = `slot${
+        slotName ? `[name=${slotName}]` : ':not([name])'
+      }`;
+      const slot = this.renderRoot?.querySelector(slotSelector);
+      let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
+      if (nodes && selector) {
+        nodes = nodes.filter(
+          (node) =>
+            node.nodeType === Node.ELEMENT_NODE &&
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ((node as any).matches
+              ? (node as Element).matches(selector)
+              : legacyMatches.call(node as Element, selector))
+        );
+      }
+      return nodes;
+    },
+    enumerable: true,
+    configurable: true,
+  }));
 }

@@ -12,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -46,11 +42,7 @@ import {
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
+  return decorateProperty(null, (name: PropertyKey) => {
     const descriptor = {
       get(this: ReactiveElement) {
         return this.renderRoot?.querySelector(selector);
@@ -59,9 +51,7 @@ export function query(selector: string, cache?: boolean) {
       configurable: true,
     };
     if (cache) {
-      const prop =
-        name !== undefined ? name : (protoOrDescriptor as ClassElement).key;
-      const key = typeof prop === 'symbol' ? Symbol() : `__${prop}`;
+      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
       descriptor.get = function (this: ReactiveElement) {
         if (
           ((this as unknown) as {[key: string]: Element | null})[
@@ -77,8 +67,6 @@ export function query(selector: string, cache?: boolean) {
         ];
       };
     }
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+    return descriptor;
+  });
 }

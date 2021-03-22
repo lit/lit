@@ -15,7 +15,7 @@ export type Constructor<T> = {
 export interface ClassDescriptor {
   kind: 'class';
   elements: ClassElement[];
-  finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
+  finisher?: <T>(clazz: Constructor<T>) => void | Constructor<T>;
 }
 
 // From the TC39 Decorators proposal
@@ -25,7 +25,7 @@ export interface ClassElement {
   placement: 'static' | 'prototype' | 'own';
   initializer?: Function;
   extras?: ClassElement[];
-  finisher?: <T>(clazz: Constructor<T>) => undefined | Constructor<T>;
+  finisher?: <T>(clazz: Constructor<T>) => void | Constructor<T>;
   descriptor?: PropertyDescriptor;
 }
 
@@ -47,8 +47,21 @@ export const standardPrototypeMethod = (
   descriptor,
 });
 
+/**
+ * Helper for decorating a property that is compatible with both TypeScript
+ * and Babel decorators. The optional `finisher` can be used to perform work on
+ * the class. It . The optional `descriptor` should return a PropertyDescriptor
+ * to install for the given property.
+ *
+ * @param finisher {(ctor: typeof ReactiveElement, property: PropertyKey) => void)} Optional finisher
+ * @param descriptor {(property: PropertyKey) => PropertyDescriptor} Optional descriptor generator
+ * @returns {ClassElement|void}
+ */
 export const decorateProperty = (
-  decorator: (ctor: typeof ReactiveElement, property: PropertyKey) => void
+  finisher?:
+    | ((ctor: typeof ReactiveElement, property: PropertyKey) => void)
+    | null,
+  descriptor?: (property: PropertyKey) => PropertyDescriptor
 ) => (
   protoOrDescriptor: ReactiveElement | ClassElement,
   name?: string
@@ -57,19 +70,36 @@ export const decorateProperty = (
   if (name !== undefined) {
     const ctor = (protoOrDescriptor as ReactiveElement)
       .constructor as typeof ReactiveElement;
-    return decorator(ctor, name!);
+    if (descriptor !== undefined) {
+      Object.defineProperty(protoOrDescriptor, name, descriptor(name));
+    }
+    return finisher?.(ctor, name!);
   } else {
-    return {
-      ...protoOrDescriptor,
-      // Note, the @property decorator saves `key` as `originalKey`
-      // so try to use it here.
-      key:
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (protoOrDescriptor as any).originalKey ??
-        (protoOrDescriptor as ClassElement).key,
-      finisher(ctor: typeof ReactiveElement) {
-        decorator(ctor, (protoOrDescriptor as ClassElement).key);
-      },
-    };
+    // Note, the @property decorator saves `key` as `originalKey`
+    // so try to use it here.
+    const key =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (protoOrDescriptor as any).originalKey ??
+      (protoOrDescriptor as ClassElement).key;
+    const info: ClassElement =
+      descriptor != undefined
+        ? {
+            kind: 'method',
+            placement: 'prototype',
+            key,
+            descriptor: descriptor((protoOrDescriptor as ClassElement).key),
+          }
+        : {...(protoOrDescriptor as ClassElement), key};
+    if (finisher != undefined) {
+      info.finisher = function <ReactiveElement>(
+        ctor: Constructor<ReactiveElement>
+      ) {
+        finisher(
+          (ctor as unknown) as typeof ReactiveElement,
+          (protoOrDescriptor as ClassElement).key
+        );
+      };
+    }
+    return info;
   }
 };
