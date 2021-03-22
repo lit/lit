@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import {PropertyDeclaration, ReactiveElement} from '../reactive-element.js';
-import {ClassElement} from './base.js';
+import {ClassElement, ClassElementPropertyDescriptor} from './base.js';
 
 const standardProperty = (
   options: PropertyDeclaration,
@@ -66,9 +66,20 @@ const standardProperty = (
 const legacyProperty = (
   options: PropertyDeclaration,
   proto: Object,
-  name: PropertyKey
+  name: PropertyKey,
+  legacyDescriptor?: ClassElementPropertyDescriptor
 ) => {
   (proto.constructor as typeof ReactiveElement).createProperty(name, options);
+  const desc = Object.getOwnPropertyDescriptor(proto, name);
+  if (legacyDescriptor?.initializer != undefined) {
+    (proto.constructor as typeof ReactiveElement).addInitializer(
+      (e: ReactiveElement) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (e as any)[name] = legacyDescriptor.initializer!();
+      }
+    );
+  }
+  return desc;
 };
 
 /**
@@ -105,9 +116,13 @@ const legacyProperty = (
  * @ExportDecoratedItems
  */
 export function property(options?: PropertyDeclaration) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (protoOrDescriptor: Object | ClassElement, name?: PropertyKey): any =>
+  return (
+    protoOrDescriptor: Object | ClassElement,
+    name?: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any =>
     name !== undefined
-      ? legacyProperty(options!, protoOrDescriptor as Object, name)
+      ? legacyProperty(options!, protoOrDescriptor as Object, name, descriptor)
       : standardProperty(options!, protoOrDescriptor as ClassElement);
 }

@@ -39,11 +39,12 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc --build && rollup -c && npm run build:babel",
+    "build": "npm run clean && tsc --build && rollup -c && npm run build:babel && npm run build:babel:legacy",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
     "build:babel": "babel --extensions '.ts' src/test/decorators  --out-dir development/test/decorators-babel",
+    "build:babel:legacy": "babel --config-file ./.babelrc-legacy-decorators --extensions '.ts' src/test/decorators  --out-dir development/test/decorators-babel-legacy",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "clean": "rm -rf {css-tag,decorators,polyfill-support,reactive-controller,reactive-element}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",

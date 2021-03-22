@@ -18,6 +18,10 @@ export interface ClassDescriptor {
   finisher?: <T>(clazz: Constructor<T>) => void | Constructor<T>;
 }
 
+export interface ClassElementPropertyDescriptor extends PropertyDescriptor {
+  initializer?: () => unknown;
+}
+
 // From the TC39 Decorators proposal
 export interface ClassElement {
   kind: 'field' | 'method';
@@ -26,7 +30,7 @@ export interface ClassElement {
   initializer?: Function;
   extras?: ClassElement[];
   finisher?: <T>(clazz: Constructor<T>) => void | Constructor<T>;
-  descriptor?: PropertyDescriptor;
+  descriptor?: ClassElementPropertyDescriptor;
 }
 
 export const legacyPrototypeMethod = (
@@ -67,7 +71,8 @@ export const decorateProperty = ({
   descriptor?: (property: PropertyKey) => PropertyDescriptor;
 }) => (
   protoOrDescriptor: ReactiveElement | ClassElement,
-  name?: string
+  name?: string,
+  legacyDescriptor?: ClassElementPropertyDescriptor
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): void | any => {
@@ -75,11 +80,20 @@ export const decorateProperty = ({
   if (name !== undefined) {
     const ctor = (protoOrDescriptor as ReactiveElement)
       .constructor as typeof ReactiveElement;
+    let desc = legacyDescriptor;
     if (descriptor !== undefined) {
-      Object.defineProperty(protoOrDescriptor, name, descriptor(name));
+      desc = descriptor(name);
+      Object.defineProperty(protoOrDescriptor, name, desc);
+    }
+    finisher?.(ctor, name!);
+    if (legacyDescriptor?.initializer != undefined) {
+      ctor.addInitializer((e: ReactiveElement) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (e as any)[name] = legacyDescriptor.initializer!();
+      });
     }
     // Return value used in Babel legacy mode and ignored in TypeScript
-    return finisher?.(ctor, name!);
+    return desc;
     // Babel standard mode
   } else {
     // Note, the @property decorator saves `key` as `originalKey`
@@ -101,10 +115,7 @@ export const decorateProperty = ({
       info.finisher = function <ReactiveElement>(
         ctor: Constructor<ReactiveElement>
       ) {
-        finisher(
-          (ctor as unknown) as typeof ReactiveElement,
-          (protoOrDescriptor as ClassElement).key
-        );
+        finisher((ctor as unknown) as typeof ReactiveElement, key);
       };
     }
     return info;
