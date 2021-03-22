@@ -50,7 +50,7 @@ export const standardPrototypeMethod = (
 /**
  * Helper for decorating a property that is compatible with both TypeScript
  * and Babel decorators. The optional `finisher` can be used to perform work on
- * the class. It . The optional `descriptor` should return a PropertyDescriptor
+ * the class. The optional `descriptor` should return a PropertyDescriptor
  * to install for the given property.
  *
  * @param finisher {(ctor: typeof ReactiveElement, property: PropertyKey) => void)} Optional finisher
