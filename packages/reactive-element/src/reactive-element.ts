@@ -732,7 +732,7 @@ export abstract class ReactiveElement
    */
   connectedCallback() {
     // create renderRoot before first update.
-    if (!this.hasUpdated) {
+    if (this.renderRoot === undefined) {
       (this as {
         renderRoot: Element | DocumentFragment;
       }).renderRoot = this.createRenderRoot();
