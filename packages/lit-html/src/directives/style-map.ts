@@ -82,8 +82,10 @@ class StyleMap extends Directive {
         if (name.includes('-')) {
           style.removeProperty(name);
         } else {
+          // Note reset using empty string (vs null) as IE11 does not always
+          // reset via null (https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style#setting_styles)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (style as any)[name] = null;
+          (style as any)[name] = '';
         }
       }
     });
