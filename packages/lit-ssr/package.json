@@ -54,6 +54,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
+    "@webcomponents/template-shadowroot": "^0.1.0",
     "escape-html": "^1.0.3",
     "koa": "^2.7.0",
     "koa-node-resolve": "^1.0.0-pre.5",
