@@ -42,31 +42,33 @@ import {decorateProperty} from './base.js';
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean) {
-  return decorateProperty(null, (name: PropertyKey) => {
-    const descriptor = {
-      get(this: ReactiveElement) {
-        return this.renderRoot?.querySelector(selector);
-      },
-      enumerable: true,
-      configurable: true,
-    };
-    if (cache) {
-      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-      descriptor.get = function (this: ReactiveElement) {
-        if (
-          ((this as unknown) as {[key: string]: Element | null})[
-            key as string
-          ] === undefined
-        ) {
-          ((this as unknown) as {[key: string]: Element | null})[
-            key as string
-          ] = this.renderRoot?.querySelector(selector);
-        }
-        return ((this as unknown) as {[key: string]: Element | null})[
-          key as string
-        ];
+  return decorateProperty({
+    descriptor: (name: PropertyKey) => {
+      const descriptor = {
+        get(this: ReactiveElement) {
+          return this.renderRoot?.querySelector(selector);
+        },
+        enumerable: true,
+        configurable: true,
       };
-    }
-    return descriptor;
+      if (cache) {
+        const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+        descriptor.get = function (this: ReactiveElement) {
+          if (
+            ((this as unknown) as {[key: string]: Element | null})[
+              key as string
+            ] === undefined
+          ) {
+            ((this as unknown) as {[key: string]: Element | null})[
+              key as string
+            ] = this.renderRoot?.querySelector(selector);
+          }
+          return ((this as unknown) as {[key: string]: Element | null})[
+            key as string
+          ];
+        };
+      }
+      return descriptor;
+    },
   });
 }

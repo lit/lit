@@ -40,11 +40,13 @@ import {decorateProperty} from './base.js';
  * @category Decorator
  */
 export function queryAll(selector: string) {
-  return decorateProperty(null, (_name: PropertyKey) => ({
-    get(this: ReactiveElement) {
-      return this.renderRoot?.querySelectorAll(selector);
-    },
-    enumerable: true,
-    configurable: true,
-  }));
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
+      get(this: ReactiveElement) {
+        return this.renderRoot?.querySelectorAll(selector);
+      },
+      enumerable: true,
+      configurable: true,
+    }),
+  });
 }

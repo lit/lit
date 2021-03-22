@@ -24,11 +24,13 @@ suite('Decorators using initializers', () => {
 
   test('can create initializer decorator with `decorateProperty`', async () => {
     const wasDecorated = (value: string) =>
-      decorateProperty((ctor: typeof ReactiveElement, name: PropertyKey) => {
-        ctor.addInitializer((e: A) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (e as any).decoration = {name, value};
-        });
+      decorateProperty({
+        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
+          ctor.addInitializer((e: A) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (e as any).decoration = {name, value};
+          });
+        },
       });
 
     class A extends ReactiveElement {
@@ -48,8 +50,8 @@ suite('Decorators using initializers', () => {
       Array<{type: string; listener: (e: Event) => void}>
     > = new WeakMap();
     const listenWindow = <T>(type: string) => {
-      return decorateProperty(
-        (ctor: typeof ReactiveElement, name: PropertyKey) => {
+      return decorateProperty({
+        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             const listener = (event: Event) =>
               ((((ctor.prototype as unknown) as T)[
@@ -73,8 +75,8 @@ suite('Decorators using initializers', () => {
             }
             l.push({type, listener});
           });
-        }
-      );
+        },
+      });
     };
 
     class B extends ReactiveElement {
@@ -115,8 +117,8 @@ suite('Decorators using initializers', () => {
     > = new WeakMap();
 
     const validate = <T>(validatorFn: Validator) => {
-      return decorateProperty(
-        (ctor: typeof ReactiveElement, name: PropertyKey) => {
+      return decorateProperty({
+        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             let v = validators.get(e);
             if (v === undefined) {
@@ -133,8 +135,8 @@ suite('Decorators using initializers', () => {
             }
             v.push({key: name, validator: validatorFn});
           });
-        }
-      );
+        },
+      });
     };
 
     class B extends ReactiveElement {
@@ -165,8 +167,8 @@ suite('Decorators using initializers', () => {
     > = new WeakMap();
 
     const observer = <T>(observerFn: Observer) => {
-      return decorateProperty(
-        (ctor: typeof ReactiveElement, name: PropertyKey) => {
+      return decorateProperty({
+        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             let v = observers.get(e);
             if (v === undefined) {
@@ -189,8 +191,8 @@ suite('Decorators using initializers', () => {
             }
             v.push({key: name, observer: observerFn});
           });
-        }
-      );
+        },
+      });
     };
 
     class B extends ReactiveElement {

@@ -53,26 +53,28 @@ export function queryAssignedNodes(
   flatten = false,
   selector = ''
 ) {
-  return decorateProperty(null, (_name: PropertyKey) => ({
-    get(this: ReactiveElement) {
-      const slotSelector = `slot${
-        slotName ? `[name=${slotName}]` : ':not([name])'
-      }`;
-      const slot = this.renderRoot?.querySelector(slotSelector);
-      let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
-      if (nodes && selector) {
-        nodes = nodes.filter(
-          (node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ((node as any).matches
-              ? (node as Element).matches(selector)
-              : legacyMatches.call(node as Element, selector))
-        );
-      }
-      return nodes;
-    },
-    enumerable: true,
-    configurable: true,
-  }));
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
+      get(this: ReactiveElement) {
+        const slotSelector = `slot${
+          slotName ? `[name=${slotName}]` : ':not([name])'
+        }`;
+        const slot = this.renderRoot?.querySelector(slotSelector);
+        let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
+        if (nodes && selector) {
+          nodes = nodes.filter(
+            (node) =>
+              node.nodeType === Node.ELEMENT_NODE &&
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((node as any).matches
+                ? (node as Element).matches(selector)
+                : legacyMatches.call(node as Element, selector))
+          );
+        }
+        return nodes;
+      },
+      enumerable: true,
+      configurable: true,
+    }),
+  });
 }

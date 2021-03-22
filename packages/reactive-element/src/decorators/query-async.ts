@@ -53,12 +53,14 @@ import {decorateProperty} from './base.js';
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return decorateProperty(null, (_name: PropertyKey) => ({
-    async get(this: ReactiveElement) {
-      await this.updateComplete;
-      return this.renderRoot?.querySelector(selector);
-    },
-    enumerable: true,
-    configurable: true,
-  }));
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
+      async get(this: ReactiveElement) {
+        await this.updateComplete;
+        return this.renderRoot?.querySelector(selector);
+      },
+      enumerable: true,
+      configurable: true,
+    }),
+  });
 }

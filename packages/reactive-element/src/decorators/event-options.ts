@@ -46,7 +46,9 @@ import {decorateProperty} from './base.js';
  * @category Decorator
  */
 export function eventOptions(options: AddEventListenerOptions) {
-  return decorateProperty((ctor: typeof ReactiveElement, name: PropertyKey) => {
-    Object.assign(ctor.prototype[name as keyof ReactiveElement], options);
+  return decorateProperty({
+    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
+      Object.assign(ctor.prototype[name as keyof ReactiveElement], options);
+    },
   });
 }

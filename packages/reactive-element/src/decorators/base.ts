@@ -57,23 +57,30 @@ export const standardPrototypeMethod = (
  * @param descriptor {(property: PropertyKey) => PropertyDescriptor} Optional descriptor generator
  * @returns {ClassElement|void}
  */
-export const decorateProperty = (
+export const decorateProperty = ({
+  finisher,
+  descriptor,
+}: {
   finisher?:
     | ((ctor: typeof ReactiveElement, property: PropertyKey) => void)
-    | null,
-  descriptor?: (property: PropertyKey) => PropertyDescriptor
-) => (
+    | null;
+  descriptor?: (property: PropertyKey) => PropertyDescriptor;
+}) => (
   protoOrDescriptor: ReactiveElement | ClassElement,
   name?: string
+  // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): void | any => {
+  // TypeScript / Babel legacy mode
   if (name !== undefined) {
     const ctor = (protoOrDescriptor as ReactiveElement)
       .constructor as typeof ReactiveElement;
     if (descriptor !== undefined) {
       Object.defineProperty(protoOrDescriptor, name, descriptor(name));
     }
+    // Return value used in Babel legacy mode and ignored in TypeScript
     return finisher?.(ctor, name!);
+    // Babel standard mode
   } else {
     // Note, the @property decorator saves `key` as `originalKey`
     // so try to use it here.
