@@ -303,11 +303,11 @@ export const render = (
 ): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart;
+  let part: ChildPart = (partOwnerNode as any)._$litPart$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart = part = new ChildPartImpl(
+    (partOwnerNode as any)._$litPart$ = part = new ChildPartImpl(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,

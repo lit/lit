@@ -35,7 +35,7 @@ const skipBundleOutput = {
 // to avoid collisions since they are used to brand values in positions that
 // accept any value. We don't use a Symbol for these to support mixing and
 // matching values from different versions.
-const reservedProperties = ['_$litType$', '_$litDirective$'];
+const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
 
 // Private properties which should be stable between versions but are used on
 // unambiguous objects and thus are safe to mangle. These include properties on
