@@ -132,7 +132,6 @@ packages/labs/ssr/lib/
 packages/labs/ssr/node_modules/
 packages/labs/ssr/test/
 packages/labs/ssr/index.*
-packages/labs/ssr/**/*.d.ts
 !packages/labs/ssr/custom_typings/*.d.ts
 packages/labs/task/development/
 packages/labs/task/node_modules/
