@@ -67,7 +67,9 @@ suite('styleMap', () => {
   test('first render skips undefined properties', () => {
     renderStyleMap({marginTop: undefined, marginBottom: null});
     const el = container.firstElementChild as HTMLElement;
-    assert.equal(el.getAttribute('style'), '');
+    // Note calling `setAttribute('style', '') does results in
+    // `getAttribute('style') === null` on IE11; test cssText instead
+    assert.equal(el.style.cssText, '');
     assert.equal(el.style.marginTop, '');
     assert.equal(el.style.marginBottom, '');
   });
