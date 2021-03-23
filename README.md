@@ -19,7 +19,7 @@ following links for details on the changes being made:
 - Additional libraries
   - [`@lit/localize`](./packages/localize)
 - Labs
-  - [`@lit-labs/ssr`](./packages/lit-ssr)
+  - [`@lit-labs/ssr`](./packages/labs/ssr)
   - [`@lit-labs/react`](./packages/labs/react)
   - [`@lit-labs/task`](./packages/labs/task)
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin)
