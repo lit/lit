@@ -27,9 +27,9 @@ class RenderLight extends Directive {
 
 /**
  * This directive allows a host element to control its light DOM rendering in
- * addition to its shadow DOM rendering, by implementing a renderLight() method.
+ * addition to its shadow DOM rendering, by implementing a `renderLight()` method.
  *
- * Here's an example of a <x-story> element that intended to server and client
+ * Here's an example of an `<x-story>` element that intended to server and client
  * side render its light DOM, but only client-side render its shadow DOM.
  *
  * The light DOM will contain just content:
@@ -78,8 +78,8 @@ class RenderLight extends Directive {
  * }
  * ```
  *
- * To use the renderLight() method, the use-site of the element must opt into it
- * with the renderLight directive:
+ * To use the `renderLight()` method, the use-site of the element must opt into it
+ * with the `renderLight()` directive:
  *
  * ```js
  * const story = {

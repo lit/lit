@@ -33,10 +33,7 @@ export function* renderApp(data: typeof initialData) {
             import('/demo/app-client.js');
           });
         </script>
-        <script type="module">
-          import {hydrateShadowRoots} from './node_modules/template-shadowroot/template-shadowroot.js';
-          hydrateShadowRoots(document.body);
-        </script>
+        <script src="./node_modules/@webcomponents/template-shadowroot/template-shadowroot.min.js"></script>
         `;
   yield `
       </head>
@@ -49,6 +46,7 @@ export function* renderApp(data: typeof initialData) {
 
   yield `
         </div>
+        <script>TemplateShadowRoot.hydrateShadowRoots(document.body);</script>
       </body>
-    </html>`;
+</html>`;
 }

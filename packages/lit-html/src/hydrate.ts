@@ -123,9 +123,9 @@ export const hydrate = (
   container: Element | DocumentFragment,
   options: Partial<RenderOptions> = {}
 ) => {
-  // TODO(kschaaf): Do we need a helper for _$litPart ("part for node")?
+  // TODO(kschaaf): Do we need a helper for _$litPart$ ("part for node")?
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((container as any)._$litPart !== undefined) {
+  if ((container as any)._$litPart$ !== undefined) {
     throw new Error('container already contains a live render');
   }
 
@@ -178,7 +178,7 @@ export const hydrate = (
     'there should be exactly one root part in a render container'
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (container as any)._$litPart = rootPart;
+  (container as any)._$litPart$ = rootPart;
 };
 
 const openChildPart = (

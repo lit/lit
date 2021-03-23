@@ -64,6 +64,16 @@ suite('styleMap', () => {
     assert.equal(style.paddingLeft, '4px');
   });
 
+  test('first render skips undefined properties', () => {
+    renderStyleMap({marginTop: undefined, marginBottom: null});
+    const el = container.firstElementChild as HTMLElement;
+    // Note calling `setAttribute('style', '') does results in
+    // `getAttribute('style') === null` on IE11; test cssText instead
+    assert.equal(el.style.cssText, '');
+    assert.equal(el.style.marginTop, '');
+    assert.equal(el.style.marginBottom, '');
+  });
+
   test('adds and updates properties', () => {
     renderStyleMap({marginTop: '2px', 'padding-bottom': '4px', opacity: '0.5'});
     const el = container.firstElementChild as HTMLElement;
@@ -77,13 +87,22 @@ suite('styleMap', () => {
   });
 
   test('removes properties', () => {
-    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px'});
+    renderStyleMap({
+      marginTop: '2px',
+      'padding-bottom': '4px',
+      borderRadius: '5px',
+      borderColor: 'blue',
+    });
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
-    renderStyleMap({});
+    assert.equal(el.style.borderRadius, '5px');
+    assert.equal(el.style.borderColor, 'blue');
+    renderStyleMap({borderRadius: undefined, borderColor: null});
     assert.equal(el.style.marginTop, '');
     assert.equal(el.style.paddingBottom, '');
+    assert.equal(el.style.borderRadius, '');
+    assert.equal(el.style.borderColor, '');
   });
 
   test('works with static properties', () => {

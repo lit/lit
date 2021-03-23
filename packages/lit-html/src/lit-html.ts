@@ -270,7 +270,7 @@ export const nothing = Symbol.for('lit-nothing');
  * or attr. This restriction simplifies the cache lookup, which is on the hot
  * path for rendering.
  */
-const templateCache = new Map<TemplateStringsArray, Template>();
+const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
 export interface RenderOptions {
   /**
@@ -282,6 +282,12 @@ export interface RenderOptions {
    * A DOM node before which to render content in the container.
    */
   renderBefore?: ChildNode | null;
+  /**
+   * Node used for cloning the template (`importNode` will be called on this
+   * node). This controls the `ownerDocument` of the rendered DOM, along with
+   * any inherited context. Defaults to the global `document`.
+   */
+  creationScope?: {importNode(node: Node, deep?: boolean): Node};
 }
 
 /**
@@ -297,11 +303,11 @@ export const render = (
 ): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart;
+  let part: ChildPart = (partOwnerNode as any)._$litPart$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart = part = new ChildPartImpl(
+    (partOwnerNode as any)._$litPart$ = part = new ChildPartImpl(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -737,7 +743,7 @@ class TemplateInstance {
       _$element: {content},
       _parts: parts,
     } = this._$template;
-    const fragment = d.importNode(content, true);
+    const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
     let node = walker.nextNode();

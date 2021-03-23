@@ -19,10 +19,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+<!-- ### Changed -->
+
 ### Added
 
-- Reintroduced the `SVGTemplateResult` type.
+- Added optional `creationScope` to `RenderOptions`, which controls the node from which the template is cloned from.
+- (Since 2.0.0-pre.6) Reintroduced the `SVGTemplateResult` type.
   ([#1623](https://github.com/Polymer/lit-html/issues/1623))
+
+### Fixed
+
+- `styleMap()` now removes properties if the value is set to `undefined` or `null`, as opposed to not being a property of the style object. ([#1665](https://github.com/Polymer/lit-html/pull/1665)).
+
+<!-- ### Removed -->
 
 ## [2.0.0-pre.6] - 2021-02-11
 

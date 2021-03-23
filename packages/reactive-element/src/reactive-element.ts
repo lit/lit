@@ -743,7 +743,7 @@ export abstract class ReactiveElement
    */
   connectedCallback() {
     // create renderRoot before first update.
-    if (!this.hasUpdated) {
+    if (this.renderRoot === undefined) {
       (this as {
         renderRoot: Element | DocumentFragment;
       }).renderRoot = this.createRenderRoot();
@@ -1032,11 +1032,11 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
+    this.__controllers?.forEach((c) => c.hostUpdated?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this.__controllers?.forEach((c) => c.hostUpdated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&

@@ -11,7 +11,7 @@ import {directive, Directive, DirectiveParameters} from '../directive.js';
 const initialValue = {};
 
 class Guard extends Directive {
-  previousValue: unknown = initialValue;
+  private _previousValue: unknown = initialValue;
 
   render(_value: unknown, f: () => unknown) {
     return f();
@@ -21,20 +21,20 @@ class Guard extends Directive {
     if (Array.isArray(value)) {
       // Dirty-check arrays by item
       if (
-        Array.isArray(this.previousValue) &&
-        this.previousValue.length === value.length &&
-        value.every((v, i) => v === (this.previousValue as Array<unknown>)[i])
+        Array.isArray(this._previousValue) &&
+        this._previousValue.length === value.length &&
+        value.every((v, i) => v === (this._previousValue as Array<unknown>)[i])
       ) {
         return noChange;
       }
-    } else if (this.previousValue === value) {
+    } else if (this._previousValue === value) {
       // Dirty-check non-arrays by identity
       return noChange;
     }
 
     // Copy the value if it's an array so that if it's mutated we don't forget
     // what the previous values were.
-    this.previousValue = Array.isArray(value) ? Array.from(value) : value;
+    this._previousValue = Array.isArray(value) ? Array.from(value) : value;
     const r = this.render(value, f);
     return r;
   }

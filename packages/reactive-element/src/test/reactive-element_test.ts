@@ -51,6 +51,24 @@ suite('ReactiveElement', () => {
     assert.isTrue(el.hasRenderRoot);
   });
 
+  test(`createRenderRoot is called only once`, async () => {
+    class E extends ReactiveElement {
+      renderRootCalls = 0;
+      createRenderRoot() {
+        this.renderRootCalls++;
+        return this;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    container.removeChild(el);
+    container.appendChild(el);
+    container.removeChild(el);
+    container.appendChild(el);
+    assert.equal(el.renderRootCalls, 1);
+  });
+
   test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
     class E extends ReactiveElement {
       updateCount = 0;
