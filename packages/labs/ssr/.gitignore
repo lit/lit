@@ -3,4 +3,4 @@
 /node_modules/
 /test/
 /index.*
-*.d.ts
+!/custom_typings/*.d.ts
