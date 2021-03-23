@@ -53,8 +53,11 @@ export const standardPrototypeMethod = (
  * the class. The optional `descriptor` should return a PropertyDescriptor
  * to install for the given property.
  *
- * @param finisher {(ctor: typeof ReactiveElement, property: PropertyKey) => void)} Optional finisher
- * @param descriptor {(property: PropertyKey) => PropertyDescriptor} Optional descriptor generator
+ * @param finisher {function} Optional finisher method; receives the element
+ * constructor and property key as arguments and has no return value.
+ * @param descriptor {function} Optional descriptor method; receives the
+ * property key as an argument and returns a property descriptor to define for
+ * the given property.
  * @returns {ClassElement|void}
  */
 export const decorateProperty = ({
@@ -100,10 +103,7 @@ export const decorateProperty = ({
       info.finisher = function <ReactiveElement>(
         ctor: Constructor<ReactiveElement>
       ) {
-        finisher(
-          (ctor as unknown) as typeof ReactiveElement,
-          (protoOrDescriptor as ClassElement).key
-        );
+        finisher((ctor as unknown) as typeof ReactiveElement, key);
       };
     }
     return info;
