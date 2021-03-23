@@ -153,6 +153,7 @@ export class Flip extends AsyncDirective {
   flipProps?: CSSValues;
   animation?: Animation;
   options!: FlipOptions;
+  optionsOrCallback?: (() => FlipOptions) | FlipOptions;
 
   finished!: Promise<void>;
   private _resolveFinished!: () => void;
@@ -178,27 +179,37 @@ export class Flip extends AsyncDirective {
     this.createFinished();
   }
 
-  render(_options?: FlipOptions) {
+  render(_options?: (() => FlipOptions) | FlipOptions) {
     return nothing;
   }
 
+  getController() {
+    return flipControllers.get(this._host!);
+  }
+
+  isDisabled() {
+    return this.options.disabled || this.getController()?.disabled;
+  }
+
   update(part: AttributePart, [options]: Parameters<this['render']>) {
-    if (this._host === undefined) {
+    const firstUpdate = this._host === undefined;
+    if (firstUpdate) {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);
       this._element = part.element;
       flipMap.set(this._element, this);
     }
-    this._setOptions(options);
+    this.optionsOrCallback = options;
+    if (firstUpdate || typeof options !== 'function') {
+      this._setOptions(options as FlipOptions);
+    }
     return this.render(options);
   }
 
   private _setOptions(options?: FlipOptions) {
-    if (options === undefined) {
-      options = {};
-    }
+    options = options ?? {};
     // Mixin controller options.
-    const flipController = flipControllers.get(this._host!);
+    const flipController = this.getController();
     if (flipController !== undefined) {
       options = {
         ...flipController.options,
@@ -208,6 +219,9 @@ export class Flip extends AsyncDirective {
     // Ensure there are some properties to animation and some animation options.
     options!.properties ??= defaultCssProperties;
     // if scaling up, don't move left/top
+    // TODO(sorvell): if these properties change, it's after hostUpdate
+    // where from is measured, meaning we could have measurements for left/top.
+    // Is that ok?
     if (options.scaleUp) {
       options.properties = options.properties.filter(
         (x) => !(x === 'left' || x === 'top')
@@ -224,7 +238,9 @@ export class Flip extends AsyncDirective {
     this.options.properties!.forEach((p) => {
       const v =
         bounds[p as keyof typeof bounds] ??
-        computedStyle[p as keyof CSSStyleDeclaration];
+        (!transformProps[p as keyof typeof transformProps]
+          ? computedStyle[p as keyof CSSStyleDeclaration]
+          : undefined);
       const asNum = Number(v);
       props[p] = isNaN(asNum) ? String(v) : asNum;
     });
@@ -236,7 +252,7 @@ export class Flip extends AsyncDirective {
     const value = this.options.guard?.();
     this._shouldFlip =
       this._host!.hasUpdated &&
-      !this.options.disabled &&
+      !this.isDisabled() &&
       !this.isAnimating() &&
       isDirty(value, this._previousValue) &&
       this._element.isConnected;
@@ -250,6 +266,11 @@ export class Flip extends AsyncDirective {
 
   hostUpdate() {
     if (this._canStartFlip()) {
+      // TODO(sorvell): If options will change that will affect measuring,
+      // then the user must pass a callback which can be called at update time.
+      if (typeof this.optionsOrCallback === 'function') {
+        this._setOptions(this.optionsOrCallback());
+      }
       this._fromValues = this._measure();
       // Record parent and nextSibling used to re-attach node when flipping "out"
       this._parentNode =
@@ -278,12 +299,14 @@ export class Flip extends AsyncDirective {
     this.animation?.cancel();
   }
 
-  flip() {
-    // TODO(sorvell): should this be guarded?
+  beforeFlip() {
     if (this.options.reset) {
       this.resetStyles();
     }
     this.options.onStart?.(this._element, this);
+  }
+
+  flip() {
     if (
       !this._shouldFlip ||
       !this._element.isConnected ||
@@ -291,6 +314,10 @@ export class Flip extends AsyncDirective {
     ) {
       return;
     }
+    // TODO(sorvell):
+    // (1) should do this only if this or an ancestor is flipping?
+    // (2) why reset here and not in hostUpdate?
+    this.beforeFlip();
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
@@ -304,11 +331,12 @@ export class Flip extends AsyncDirective {
     if (this._fromValues !== undefined) {
       const {from, to} = this._applyAncestorAdjustments(
         this._fromValues,
-        this._measure(),
+        toValues,
         ancestors,
         this.options.scaleUp!
       );
       const shouldScale = this.options.scaleUp;
+      this.log('measured', [this._fromValues, toValues, from, to]);
       frames = this.calculateFrames(from, to, shouldScale, shouldScale);
       // "In" flip.
     } else {
@@ -348,7 +376,7 @@ export class Flip extends AsyncDirective {
       p = p?.parentNode
     ) {
       const a = flipMap.get(p!);
-      if (a && !a.options.disabled && a) {
+      if (a && !a.isDisabled() && a) {
         ancestors.push(a);
       }
     }
@@ -431,6 +459,8 @@ export class Flip extends AsyncDirective {
     ancestors: Flip[],
     scaleUp = false
   ) {
+    from = {...from};
+    to = {...to};
     const ancestorProps = ancestors
       .map((a) => a.flipProps)
       .filter((a) => a !== undefined) as CSSValues[];
@@ -445,17 +475,17 @@ export class Flip extends AsyncDirective {
           dScaleY = dScaleY / (a.height as number);
         }
       });
-      if (scaleUp && dScaleX > 1) {
+      if (scaleUp && dScaleX > 1 && to.width !== undefined) {
         from.width = dScaleX * (to.width as number);
       }
-      if (scaleUp && dScaleY > 1) {
+      if (scaleUp && dScaleY > 1 && to.height !== undefined) {
         from.height = dScaleY * (to.height as number);
       }
-      if (from.left !== undefined) {
+      if (from.left !== undefined && to.left !== undefined) {
         from.left = dScaleX * (from.left as number);
         to.left = dScaleX * (to.left as number);
       }
-      if (from.top !== undefined) {
+      if (from.top !== undefined && to.top !== undefined) {
         from.top = dScaleY * (from.top as number);
         to.top = dScaleY * (to.top as number);
       }
@@ -512,13 +542,13 @@ export class Flip extends AsyncDirective {
     frames: Keyframe[] | undefined,
     options = this.options.animationOptions
   ) {
-    if (this.isAnimating() || this.options.disabled || frames === undefined) {
+    if (this.isAnimating() || this.isDisabled() || frames === undefined) {
       return;
     }
 
     this.log('animate', [frames, options]);
     this.animation = this._element.animate(frames, options);
-    const controller = flipControllers.get(this._host!);
+    const controller = this.getController();
     controller?.add(this);
     try {
       await this.animation.finished;
@@ -540,7 +570,7 @@ export class Flip extends AsyncDirective {
   }
 
   log(message: string, data?: unknown) {
-    if (!this.options?.disabled && this.shouldLog) {
+    if (this.shouldLog && !this.isDisabled()) {
       console.log(message, this.options.id, data);
     }
   }

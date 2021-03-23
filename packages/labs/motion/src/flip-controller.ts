@@ -17,6 +17,7 @@ export class FlipController {
   host: ReactiveControllerHost;
   options: FlipOptions;
   startPaused = false;
+  disabled = false;
   onComplete?: () => void;
 
   constructor(
@@ -24,12 +25,14 @@ export class FlipController {
     info: {
       options?: FlipOptions;
       startPaused?: boolean;
+      disabled?: boolean;
       onComplete?: () => void;
     }
   ) {
     this.host = host;
     this.options = info.options || {};
     this.startPaused = !!info.startPaused;
+    this.disabled = !!info.disabled;
     this.onComplete = info.onComplete;
     flipControllers.set(this.host, this);
   }
@@ -48,7 +51,7 @@ export class FlipController {
     }
     this.pendingComplete = true;
     await flip.finished;
-    if (this.pendingComplete) {
+    if (this.pendingComplete && !this.isAnimating) {
       this.pendingComplete = false;
       this.onComplete?.();
     }

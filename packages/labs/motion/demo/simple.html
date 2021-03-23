@@ -115,6 +115,8 @@
               <input
                 @change=${async (e) => {
                   this.flipController.finish();
+                  this.shifted = false;
+                  // this.changeLayout();
                   this.embiggen = !this.embiggen;
                 }}
                 .checked=${this.embiggen}
@@ -131,14 +133,14 @@
             >
               <span
                 class="circle"
-                ${flip({
+                ${flip(() => ({
                   id: 'content',
                   animationOptions: {fill: 'forwards'},
                   commit: true,
                   reset: true,
                   scaleUp: this.embiggen,
                   disabled: this.flipDisabled,
-                })}
+                }))}
                 >Simple...<br />
                 is beautiful.</span
               >

@@ -46,11 +46,12 @@
           this.flipController = new FlipController(this, {
             options: {
               animationOptions: {
-                duration: 1000,
+                duration: 1200,
               },
             },
             onComplete: () => this.animationDone(),
-            // startPaused: true
+            // startPaused: true,
+            // disabled: true,
           });
           this.addEventListener('click', () => this.clickHandler());
         }
@@ -111,14 +112,25 @@
               order: 1;
             }
 
+            .layout1,
+            .layout1 > * {
+              --box-color: magenta;
+              --box-text-color: darkgray;
+            }
+
+            .layout2,
+            .layout2 > * {
+              --box-color: steelblue;
+              --box-text-color: beige;
+            }
+
             .layout3,
             .layout3 > * {
               --box-color: orange;
               --box-text-color: black;
             }
 
-            /* TODO(sorvell): debug why this doesn't work */
-            /*.hibox {
+            .hibox {
               position: relative;
               left: 0px;
               padding: 0;
@@ -139,8 +151,8 @@
             .hibox > div {
               position: relative;
               will-change: transform;
-              height: calc(var(--hi-box-size) * var(--hi-box-scale));
-              width: calc(var(--hi-box-size) * var(--hi-box-scale));
+              height: var(--hi-box-size);
+              width: var(--hi-box-size);
               padding: 8px;
               display: flex;
               align-items: center;
@@ -162,50 +174,6 @@
               --hi-box-scale: 1.5;
               --hi-box-left: 0;
               --hi-box-top: 1.5;
-            }*/
-
-            .hibox {
-              position: relative;
-              left: 0px;
-              padding: 0;
-              margin: 0;
-              height: var(--hi-box-size);
-              width: var(--hi-box-size);
-              overflow: hidden;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-
-            .hibox > div {
-              position: relative;
-              will-change: transform;
-              height: var(--hi-box-size);
-              width: var(--hi-box-size);
-              padding: 8px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-
-            .hibox.layout1 {
-              height: calc(var(--hi-box-size) * 4);
-              width: calc(var(--hi-box-size) * 4);
-              left: calc(var(--hi-box-size) * 2);
-            }
-
-            .hibox.layout2 {
-              height: calc(var(--hi-box-size) * 3);
-              width: calc(var(--hi-box-size) * 3);
-              left: calc(var(--hi-box-size) * 2);
-              top: calc(var(--hi-box-size) * 2);
-            }
-
-            .hibox.layout3 {
-              height: calc(var(--hi-box-size) * 2);
-              width: calc(var(--hi-box-size) * 2);
-              left: 0;
-              top: calc(var(--hi-box-size) * 2);
             }
 
             .in-out {
@@ -230,9 +198,13 @@
               <div class="box" ${flip()}>Item 4</div>
             </section>
             <section>
-              <div class="hibox box ${classMap(classes)}" ${flip()}>
+              <div
+                class="hibox box ${classMap(classes)}"
+                ${flip({id: 'hi-outer'})}
+              >
                 <div
                   ${flip({
+                    id: 'hi-inner',
                     animationOptions: {fill: 'both'},
                     scaleUp: true,
                     commit: true,
