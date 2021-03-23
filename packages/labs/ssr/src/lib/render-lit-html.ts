@@ -48,7 +48,7 @@ import {
   isElement,
 } from './util/parse5-utils.js';
 
-import {isRenderLightDirective} from 'lit/directives/render-light.js';
+import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {LitElement} from 'lit';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
