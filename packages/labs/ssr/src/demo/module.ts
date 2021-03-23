@@ -8,10 +8,13 @@
  * This is a shared client/server module.
  */
 
-import {html} from 'lit';
+import {html, ReactiveControllerHost} from 'lit';
 import {LitElement, css} from 'lit';
 import {property} from 'lit/decorators/property.js';
-//import {repeat} from 'lit/directives/repeat.js';
+// import {repeat} from 'lit/directives/repeat.js';
+import {serverUntil} from '@lit-labs/ssr-client/directives/server-until.js';
+import {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
+import {StatusRenderer, Task} from '@lit-labs/task';
 
 export const initialData = {
   name: 'SSR',
@@ -21,6 +24,33 @@ export const initialData = {
   attr: 'attr-value',
   wasUpdated: false,
 };
+
+const asyncContent = (content: unknown, timeout = 500) =>
+  new Promise((r) => setTimeout(() => r(content), timeout));
+
+class FetchController<T> extends Task implements ServerController {
+  get serverUpdateComplete() {
+    this.hostUpdated();
+    return this.taskComplete;
+  }
+  constructor(host: ReactiveControllerHost, private url: string) {
+    super(
+      host,
+      async ([url]: string[]) => {
+        const response = await fetch(url);
+        return await response.json();
+      },
+      () => [this.url]
+    );
+  }
+  render(renderer: StatusRenderer<T>) {
+    return super.render(renderer);
+  }
+}
+
+interface DataModel {
+  company: string;
+}
 
 export class MyElement extends LitElement {
   static styles = css`
@@ -51,11 +81,27 @@ export class MyElement extends LitElement {
   @property({type: Boolean, reflect: true})
   wasUpdated = false;
 
+  private fetchController = new FetchController<DataModel[]>(
+    this,
+    'https://next.json-generator.com/api/json/get/VJ_MbcMNc'
+  );
+
   render() {
     return html`
       <header>I'm a my-element!</header>
       <div><i>this.prop</i>: ${this.prop}</div>
+      <section>
+        ${serverUntil(asyncContent('async content', 100), 'loading...')}
+      </section>
       <div><i>this.attr</i>: ${this.attr}</div>
+      ${this.fetchController.render({
+        pending: () => 'Loading...',
+        complete: (list) =>
+          html`<ul>
+            ${list.map((item) => html`<li>${item.company}</li>`)}
+          </ul>`,
+        error: (error: unknown) => `Error loading: ${error}`,
+      })}
     `;
   }
 }

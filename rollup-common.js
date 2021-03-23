@@ -92,6 +92,8 @@ const stableProperties = {
   _$resolve: 'S',
   // lit-html: Directive (used by lit-html)
   _$initialize: 'T',
+  // reactive-element: ReactiveElement (used by private-ssr-support)
+  _$controllers: 'U',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

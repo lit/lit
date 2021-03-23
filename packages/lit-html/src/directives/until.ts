@@ -15,7 +15,7 @@ const isPromise = (x: unknown) => {
 // Effectively infinity, but a SMI.
 const _infinity = 0x7fffffff;
 
-class UntilDirective extends AsyncDirective {
+export class UntilDirective extends AsyncDirective {
   private _lastRenderedIndex: number = _infinity;
   private _values: unknown[] = [];
 
@@ -90,9 +90,3 @@ class UntilDirective extends AsyncDirective {
  *     html`${until(content, html`<span>Loading...</span>`)}`
  */
 export const until = directive(UntilDirective);
-
-/**
- * The type of the class that powers this directive. Necessary for naming the
- * directive's return type.
- */
-export type {UntilDirective};

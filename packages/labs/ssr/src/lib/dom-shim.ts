@@ -143,7 +143,7 @@ export const getWindow = (
 
     // No-op any async tasks
     requestAnimationFrame() {},
-    setTimeout() {},
+    setTimeout,
     clearTimeout() {},
 
     // Required for node-fetch

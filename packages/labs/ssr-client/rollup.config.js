@@ -8,6 +8,11 @@ import {litProdConfig} from '../../../rollup-common.js';
 
 export default litProdConfig({
   classPropertyPrefix: 'Λ',
-  entryPoints: ['index', 'directives/render-light'],
+  entryPoints: [
+    'index',
+    'directives/render-light',
+    'directives/server-until',
+    'controllers/server-controller',
+  ],
   external: ['lit/directive.js', 'lit/directive-helpers.js'],
 });

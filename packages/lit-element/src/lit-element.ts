@@ -226,4 +226,6 @@ export const _Φ = {
   },
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
+  // eslint-disable-next-line
+  _$controllers: (el: LitElement) => (el as any)._$controllers,
 };
