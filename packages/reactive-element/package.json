@@ -69,10 +69,9 @@
     "!/src/demo/",
     "!/src/test/"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.12.10",
-    "@babel/core": "7.13.10",
+    "@babel/core": "^7.13.10",
     "@babel/plugin-proposal-class-properties": "^7.13.0",
     "@babel/plugin-proposal-decorators": "^7.13.5",
     "@babel/plugin-transform-typescript": "^7.13.0",
