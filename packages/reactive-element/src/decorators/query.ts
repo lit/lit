@@ -12,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -46,39 +42,33 @@ import {
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
-      get(this: ReactiveElement) {
-        return this.renderRoot?.querySelector(selector);
-      },
-      enumerable: true,
-      configurable: true,
-    };
-    if (cache) {
-      const prop =
-        name !== undefined ? name : (protoOrDescriptor as ClassElement).key;
-      const key = typeof prop === 'symbol' ? Symbol() : `__${prop}`;
-      descriptor.get = function (this: ReactiveElement) {
-        if (
-          ((this as unknown) as {[key: string]: Element | null})[
-            key as string
-          ] === undefined
-        ) {
-          ((this as unknown) as {[key: string]: Element | null})[
-            key as string
-          ] = this.renderRoot?.querySelector(selector);
-        }
-        return ((this as unknown) as {[key: string]: Element | null})[
-          key as string
-        ];
+  return decorateProperty({
+    descriptor: (name: PropertyKey) => {
+      const descriptor = {
+        get(this: ReactiveElement) {
+          return this.renderRoot?.querySelector(selector);
+        },
+        enumerable: true,
+        configurable: true,
       };
-    }
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+      if (cache) {
+        const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+        descriptor.get = function (this: ReactiveElement) {
+          if (
+            ((this as unknown) as {[key: string]: Element | null})[
+              key as string
+            ] === undefined
+          ) {
+            ((this as unknown) as {[key: string]: Element | null})[
+              key as string
+            ] = this.renderRoot?.querySelector(selector);
+          }
+          return ((this as unknown) as {[key: string]: Element | null})[
+            key as string
+          ];
+        };
+      }
+      return descriptor;
+    },
+  });
 }

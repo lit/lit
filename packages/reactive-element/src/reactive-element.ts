@@ -270,6 +270,8 @@ const finalized = 'finalized';
 
 export type Warnings = 'change-in-update' | 'migration';
 
+export type Initializer = (element: ReactiveElement) => void;
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -286,6 +288,12 @@ export abstract class ReactiveElement
   static enableWarning?: (type: Warnings) => void;
   /** @nocollapse */
   static disableWarning?: (type: Warnings) => void;
+  /** @nocollapse */
+  static addInitializer(initializer: Initializer) {
+    this._initializers ??= [];
+    this._initializers.push(initializer);
+  }
+  static _initializers?: Initializer[];
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
@@ -665,6 +673,9 @@ export abstract class ReactiveElement
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+    (this.constructor as typeof ReactiveElement)._initializers?.forEach((i) =>
+      i(this)
+    );
   }
 
   addController(controller: ReactiveController) {
