@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "(cd node_modules/template-shadowroot && npm run build) && tsc",
+    "build": "tsc",
     "build:watch": "tsc --watch",
     "start": "node --experimental-vm-modules ./demo/server.js",
     "test": "npm run test:unit && npm run test:integration",
@@ -64,8 +64,7 @@
     "lit-html": "^2.0.0-pre.4",
     "node-fetch": "^2.6.0",
     "parse5": "^5.1.0",
-    "resolve": "^1.10.1",
-    "template-shadowroot": "webcomponents/template-shadowroot#npm-support"
+    "resolve": "^1.10.1"
   },
   "engines": {
     "node": ">=13.9.0"
