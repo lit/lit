@@ -7,13 +7,16 @@
 import * as path from 'path';
 import minimist from 'minimist';
 import {KnownError, unreachable} from './error.js';
-import {Config} from './types/config.js';
+import type {Config} from './types/config.js';
 import {readConfigFileAndWriteSchema} from './config.js';
 import {LitLocalizer} from './index.js';
 import {printDiagnostics} from './typescript.js';
 import {TransformLitLocalizer} from './modes/transform.js';
 import {RuntimeLitLocalizer} from './modes/runtime.js';
-import {TransformOutputConfig, RuntimeOutputConfig} from './types/modes.js';
+import type {
+  TransformOutputConfig,
+  RuntimeOutputConfig,
+} from './types/modes.js';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 import * as fs from 'fs/promises';

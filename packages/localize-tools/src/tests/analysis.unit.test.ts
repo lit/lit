@@ -60,12 +60,12 @@ function checkAnalysis(
       descStack: descStack ?? [],
     }))
   );
+  t.end();
 }
 
 test('irrelevant code', (t) => {
   const src = 'const foo = "foo";';
   checkAnalysis(t, src, []);
-  t.end();
 });
 
 test('string message', (t) => {
@@ -79,7 +79,6 @@ test('string message', (t) => {
       contents: ['Hello World'],
     },
   ]);
-  t.end();
 });
 
 test('string message unnecessarily tagged with str', (t) => {
@@ -93,7 +92,6 @@ test('string message unnecessarily tagged with str', (t) => {
       contents: ['Hello World'],
     },
   ]);
-  t.end();
 });
 
 test('string message (auto ID)', (t) => {
@@ -107,7 +105,6 @@ test('string message (auto ID)', (t) => {
       contents: ['Hello World'],
     },
   ]);
-  t.end();
 });
 
 test('HTML message', (t) => {
@@ -125,7 +122,6 @@ test('HTML message', (t) => {
       ],
     },
   ]);
-  t.end();
 });
 
 test('HTML message (auto ID)', (t) => {
@@ -143,7 +139,6 @@ test('HTML message (auto ID)', (t) => {
       ],
     },
   ]);
-  t.end();
 });
 
 test('HTML message with comment', (t) => {
@@ -161,7 +156,6 @@ test('HTML message with comment', (t) => {
       ],
     },
   ]);
-  t.end();
 });
 
 test('parameterized string message', (t) => {
@@ -176,7 +170,6 @@ test('parameterized string message', (t) => {
       contents: ['Hello ', {untranslatable: '${name}'}],
     },
   ]);
-  t.end();
 });
 
 test('parameterized string message (auto ID)', (t) => {
@@ -191,7 +184,6 @@ test('parameterized string message (auto ID)', (t) => {
       contents: ['Hello ', {untranslatable: '${name}'}],
     },
   ]);
-  t.end();
 });
 
 test('parameterized HTML message', (t) => {
@@ -210,7 +202,6 @@ test('parameterized HTML message', (t) => {
       ],
     },
   ]);
-  t.end();
 });
 
 test('immediate description', (t) => {
@@ -226,7 +217,6 @@ test('immediate description', (t) => {
       descStack: ['Greeting'],
     },
   ]);
-  t.end();
 });
 
 test('inherited description', (t) => {
@@ -247,7 +237,6 @@ test('inherited description', (t) => {
       descStack: ['Greeter', 'Greeting'],
     },
   ]);
-  t.end();
 });
 
 test('different msg function', (t) => {
@@ -258,7 +247,6 @@ test('different msg function', (t) => {
     msg('Greeting', {id: 'greeting'});
   `;
   checkAnalysis(t, src, []);
-  t.end();
 });
 
 test('error: message id cannot be empty', (t) => {
@@ -274,7 +262,6 @@ test('error: message id cannot be empty', (t) => {
       '__DUMMY__.ts(3,29): error TS2324: Options id property must be a non-empty string literal',
     ]
   );
-  t.end();
 });
 
 test('error: options must be object literal', (t) => {
@@ -291,7 +278,6 @@ test('error: options must be object literal', (t) => {
       '__DUMMY__.ts(4,24): error TS2324: Expected second argument to msg() to be an object literal',
     ]
   );
-  t.end();
 });
 
 test('error: options must be long-form', (t) => {
@@ -308,7 +294,6 @@ test('error: options must be long-form', (t) => {
       '__DUMMY__.ts(4,25): error TS2324: Options object must use identifier or string literal property assignments. Shorthand and spread assignments are not supported.',
     ]
   );
-  t.end();
 });
 
 test('error: message id must be static', (t) => {
@@ -327,7 +312,6 @@ test('error: message id must be static', (t) => {
       '__DUMMY__.ts(5,29): error TS2324: Options id property must be a non-empty string literal',
     ]
   );
-  t.end();
 });
 
 test('error: different message contents', (t) => {
@@ -349,7 +333,6 @@ test('error: different message contents', (t) => {
       '__DUMMY__.ts(4,5): error TS2324: Message ids must have the same default text wherever they are used',
     ]
   );
-  t.end();
 });
 
 test('error: string with expressions must use str tag', (t) => {
@@ -366,5 +349,4 @@ test('error: string with expressions must use str tag', (t) => {
       '__DUMMY__.ts(4,9): error TS2324: String literal with expressions must use the str tag',
     ]
   );
-  t.end();
 });

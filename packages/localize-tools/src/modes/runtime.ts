@@ -7,9 +7,8 @@
 import {Message, ProgramMessage, Placeholder} from '../messages.js';
 import {applyPatches, Patches} from '../patches.js';
 import {writeLocaleCodesModule} from '../locales.js';
-import {Locale} from '../types/locale';
-import {Config} from '../types/config.js';
-import {RuntimeOutputConfig} from '../types/modes.js';
+import type {Config} from '../types/config.js';
+import type {RuntimeOutputConfig} from '../types/modes.js';
 import {KnownError} from '../error.js';
 import {
   escapeStringToEmbedInTemplateLiteral,
@@ -19,6 +18,7 @@ import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import ts from 'typescript';
 import {LitLocalizer} from '../index.js';
+import type {Locale} from '../types/locale.js';
 
 /**
  * Localizes a Lit project in runtime mode.

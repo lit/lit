@@ -5,7 +5,7 @@
  */
 
 import ts from 'typescript';
-import {Config} from './types/config.js';
+import type {Config} from './types/config.js';
 import {
   ProgramMessage,
   Message,
@@ -15,7 +15,7 @@ import {
 import {programFromTsConfig} from './typescript.js';
 import {extractMessagesFromProgram} from './program-analysis.js';
 import {Formatter, makeFormatter} from './formatters/index.js';
-import {Locale} from './types/locale';
+import type {Locale} from './types/locale.js';
 
 interface ExtractMessagesResult {
   messages: Array<ProgramMessage>;

@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Config} from '../types/config.js';
-import {Locale} from '../types/locale';
+import type {Config} from '../types/config.js';
+import type {Locale} from '../types/locale.js';
 import {Message, ProgramMessage, Bundle} from '../messages.js';
 import {xlbFactory} from './xlb.js';
 import {xliffFactory} from './xliff.js';
-import {FormatConfig} from '../types/formatters.js';
+import type {FormatConfig} from '../types/formatters.js';
 
 /**
  * The names of our supported formatters (as used by the config file).

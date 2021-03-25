@@ -8,7 +8,7 @@ import * as fs from 'fs';
 import * as jsonSchema from 'jsonschema';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
-import {Config, ConfigFile} from './types/config.js';
+import type {Config, ConfigFile} from './types/config.js';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 

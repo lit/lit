@@ -7,8 +7,8 @@
 import * as ts from 'typescript';
 import {TransformLitLocalizer} from './modes/transform.js';
 import {readConfigFileAndWriteSchema} from './config.js';
-import {Config} from './types/config.js';
-import {TransformOutputConfig} from './types/modes.js';
+import type {Config} from './types/config.js';
+import type {TransformOutputConfig} from './types/modes.js';
 
 export interface LocaleTransformer {
   locale: string;

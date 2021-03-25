@@ -7,7 +7,7 @@
 import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
-import {Locale} from './types/locale';
+import type {Locale} from './types/locale.js';
 import {escapeStringToEmbedInTemplateLiteral} from './typescript.js';
 
 /**
