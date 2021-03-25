@@ -307,7 +307,7 @@ export const render = (
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart$ = part = new ChildPartImpl(
+    (partOwnerNode as any)._$litPart$ = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -518,8 +518,7 @@ const getTemplateHtml = (
   ];
 };
 
-export type Template = Interface<TemplateImpl>;
-class TemplateImpl {
+export class Template {
   /** @internal */
   _$element!: HTMLTemplateElement;
   /** @internal */
@@ -590,12 +589,12 @@ class TemplateImpl {
                   _strings: statics,
                   _constructor:
                     m[1] === '.'
-                      ? PropertyPartImpl
+                      ? PropertyPart
                       : m[1] === '?'
-                      ? BooleanAttributePartImpl
+                      ? BooleanAttributePart
                       : m[1] === '@'
-                      ? EventPartImpl
-                      : AttributePartImpl,
+                      ? EventPart
+                      : AttributePart,
                 });
                 bindingIndex += statics.length - 1;
               } else {
@@ -755,7 +754,7 @@ class TemplateInstance {
       if (nodeIndex === templatePart._index) {
         let part: Part | undefined;
         if (templatePart._type === CHILD_PART) {
-          part = new ChildPartImpl(
+          part = new ChildPart(
             node as HTMLElement,
             node.nextSibling,
             this,
@@ -770,7 +769,7 @@ class TemplateInstance {
             options
           );
         } else if (templatePart._type === ELEMENT_PART) {
-          part = new ElementPartImpl(node as HTMLElement, this, options);
+          part = new ElementPart(node as HTMLElement, this, options);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -862,10 +861,7 @@ export type Part =
   | ElementPart
   | EventPart;
 
-type Interface<T> = {[P in keyof T]: T[P]};
-
-export type ChildPart = Interface<ChildPartImpl>;
-class ChildPartImpl {
+export class ChildPart {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
@@ -1065,7 +1061,7 @@ class ChildPartImpl {
   _$getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
     let template = templateCache.get(strings);
     if (template === undefined) {
-      templateCache.set(strings, (template = new TemplateImpl(result)));
+      templateCache.set(strings, (template = new Template(result)));
     }
     return template;
   }
@@ -1088,9 +1084,9 @@ class ChildPartImpl {
 
     // Lets us keep track of how many items we stamped so we can clear leftover
     // items from a previous render
-    const itemParts = this._$committedValue as ChildPartImpl[];
+    const itemParts = this._$committedValue as ChildPart[];
     let partIndex = 0;
-    let itemPart: ChildPartImpl | undefined;
+    let itemPart: ChildPart | undefined;
 
     for (const item of value) {
       if (partIndex === itemParts.length) {
@@ -1099,7 +1095,7 @@ class ChildPartImpl {
         // instead of sharing parts between nodes
         // https://github.com/Polymer/lit-html/issues/1266
         itemParts.push(
-          (itemPart = new ChildPartImpl(
+          (itemPart = new ChildPart(
             this._insert(createMarker()),
             this._insert(createMarker()),
             this,
@@ -1149,8 +1145,7 @@ class ChildPartImpl {
   }
 }
 
-export type AttributePart = Interface<AttributePartImpl>;
-class AttributePartImpl {
+export class AttributePart {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
@@ -1304,8 +1299,7 @@ class AttributePartImpl {
   }
 }
 
-export type PropertyPart = Interface<PropertyPartImpl>;
-class PropertyPartImpl extends AttributePartImpl {
+export class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
   /** @internal */
@@ -1325,8 +1319,7 @@ class PropertyPartImpl extends AttributePartImpl {
   }
 }
 
-export type BooleanAttributePart = Interface<BooleanAttributePartImpl>;
-class BooleanAttributePartImpl extends AttributePartImpl {
+export class BooleanAttributePart extends AttributePart {
   readonly type = BOOLEAN_ATTRIBUTE_PART;
 
   /** @internal */
@@ -1353,8 +1346,7 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  * Because event options are passed when adding listeners, we must take case
  * to add and remove the part as a listener when the event options change.
  */
-export type EventPart = Interface<EventPartImpl>;
-class EventPartImpl extends AttributePartImpl {
+export class EventPart extends AttributePart {
   readonly type = EVENT_PART;
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
@@ -1416,8 +1408,7 @@ class EventPartImpl extends AttributePartImpl {
   }
 }
 
-export type ElementPart = Interface<ElementPartImpl>;
-class ElementPartImpl {
+export class ElementPart {
   readonly type = ELEMENT_PART;
 
   /** @internal */
@@ -1485,17 +1476,17 @@ export const _Σ = {
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
   // Used in tests and private-ssr-support
-  _ChildPart: ChildPartImpl,
-  _AttributePart: AttributePartImpl as AttributePartConstructor,
-  _BooleanAttributePart: BooleanAttributePartImpl as AttributePartConstructor,
-  _EventPart: EventPartImpl as AttributePartConstructor,
-  _PropertyPart: PropertyPartImpl as AttributePartConstructor,
-  _ElementPart: ElementPartImpl as ElementPartConstructor,
+  _ChildPart: ChildPart,
+  _AttributePart: AttributePart as AttributePartConstructor,
+  _BooleanAttributePart: BooleanAttributePart as AttributePartConstructor,
+  _EventPart: EventPart as AttributePartConstructor,
+  _PropertyPart: PropertyPart as AttributePartConstructor,
+  _ElementPart: ElementPart as ElementPartConstructor,
 };
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.(TemplateImpl, ChildPartImpl);
+(globalThis as any)['litHtmlPlatformSupport']?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

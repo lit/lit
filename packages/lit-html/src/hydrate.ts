@@ -26,10 +26,6 @@ const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
-  _ChildPart: ChildPart,
-  _EventPart: EventPart,
-  _PropertyPart: PropertyPart,
-  _ElementPart: ElementPart,
 } = _Σ;
 
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
