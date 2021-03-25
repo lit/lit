@@ -144,7 +144,7 @@ function makeLocalizer(config: Config): LitLocalizer {
     default:
       throw new KnownError(
         `Internal error: unknown mode ${
-          (unreachable(config.output) as typeof config.output).mode
+          (unreachable(config.output) as Config['output']).mode
         }`
       );
   }
