@@ -12,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 // Note, in the future, we may extend this decorator to support the use case
 // where the queried element may need to do work to become ready to interact
@@ -57,21 +53,14 @@ import {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
       async get(this: ReactiveElement) {
         await this.updateComplete;
         return this.renderRoot?.querySelector(selector);
       },
       enumerable: true,
       configurable: true,
-    };
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+    }),
+  });
 }

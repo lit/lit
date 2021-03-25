@@ -12,7 +12,7 @@ import {
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-suite('ReactiveElement controllers', () => {
+suite('Reactive controllers', () => {
   class MyController implements ReactiveController {
     host: ReactiveElement;
     updateCount = 0;
@@ -60,21 +60,28 @@ suite('ReactiveElement controllers', () => {
     connectedCallback() {
       this.connectedCount++;
       super.connectedCallback();
+      this.controller.callbackOrder.push('connectedCallback');
     }
 
     disconnectedCallback() {
       this.disconnectedCount++;
       super.disconnectedCallback();
+      this.controller.callbackOrder.push('disconnectedCallback');
     }
 
     update(changedProperties: PropertyValues) {
       this.updateCount++;
       super.update(changedProperties);
+      this.controller.callbackOrder.push('update');
     }
 
-    updated(changedProperties: PropertyValues) {
+    firstUpdated() {
+      this.controller.callbackOrder.push('firstUpdated');
+    }
+
+    updated() {
       this.updatedCount++;
-      super.updated(changedProperties);
+      this.controller.callbackOrder.push('updated');
     }
   }
   customElements.define(generateElementName(), A);
@@ -156,18 +163,27 @@ suite('ReactiveElement controllers', () => {
   test('controllers callback order', async () => {
     assert.deepEqual(el.controller.callbackOrder, [
       'hostConnected',
+      'connectedCallback',
       'hostUpdate',
+      'update',
       'hostUpdated',
+      'firstUpdated',
+      'updated',
     ]);
     el.controller.callbackOrder = [];
     el.foo = 'new';
     await el.updateComplete;
     assert.deepEqual(el.controller.callbackOrder, [
       'hostUpdate',
+      'update',
       'hostUpdated',
+      'updated',
     ]);
     el.controller.callbackOrder = [];
     container.removeChild(el);
-    assert.deepEqual(el.controller.callbackOrder, ['hostDisconnected']);
+    assert.deepEqual(el.controller.callbackOrder, [
+      'hostDisconnected',
+      'disconnectedCallback',
+    ]);
   });
 });
