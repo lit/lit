@@ -5,16 +5,22 @@
  */
 
 import * as path from 'path';
-import * as minimist from 'minimist';
-import {KnownError, unreachable} from './error';
-import {Config, readConfigFileAndWriteSchema} from './config';
+import minimist from 'minimist';
+import {KnownError, unreachable} from './error.js';
+import type {Config} from './types/config.js';
+import {readConfigFileAndWriteSchema} from './config.js';
 import {LitLocalizer} from './index.js';
 import {printDiagnostics} from './typescript.js';
-import {TransformLitLocalizer, TransformOutputConfig} from './modes/transform';
-import {RuntimeLitLocalizer, RuntimeOutputConfig} from './modes/runtime';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('source-map-support').install();
+import {TransformLitLocalizer} from './modes/transform.js';
+import {RuntimeLitLocalizer} from './modes/runtime.js';
+import type {
+  TransformOutputConfig,
+  RuntimeOutputConfig,
+} from './types/modes.js';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
+import * as fs from 'fs/promises';
+import 'source-map-support/register.js';
 
 const usage = `
 Usage: lit-localize [--config=lit-localize.json] COMMAND
@@ -61,7 +67,7 @@ export async function runAndLog(argv: string[]): Promise<number> {
       console.error(err.stack);
     }
     console.log();
-    console.log(`Version: ${version()}`);
+    console.log(`Version: ${await version()}`);
     console.log(`Args: ${argv.slice(2).join(' ')}`);
     if (config) {
       console.log(`Config:`, JSON.stringify(config, null, 2));
@@ -72,9 +78,16 @@ export async function runAndLog(argv: string[]): Promise<number> {
   return 0;
 }
 
-function version() {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require(path.join('..', 'package.json')).version;
+async function version() {
+  const packageJsonPath = path.resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'package.json'
+  );
+  const packageJson = JSON.parse(
+    await fs.readFile(packageJsonPath, 'utf8')
+  ) as {version: number};
+  return packageJson.version;
 }
 
 async function runAndThrow({config, command}: CliOptions) {

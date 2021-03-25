@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Locale} from './locales';
+import type {Locale} from './types/locale.js';
 
 export type Patches = {
   [locale: string]: {

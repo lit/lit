@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as fsExtra from 'fs-extra';
+import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import {KnownError} from './error';
-import {escapeStringToEmbedInTemplateLiteral} from './typescript';
-
-export type Locale = string & {__TYPE__: 'Locale'};
+import {KnownError} from './error.js';
+import type {Locale} from './types/locale.js';
+import {escapeStringToEmbedInTemplateLiteral} from './typescript.js';
 
 /**
  * Return whether the given string is formatted like a BCP 47 language tag. Note

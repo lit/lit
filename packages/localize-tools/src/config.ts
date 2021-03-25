@@ -7,94 +7,10 @@
 import * as fs from 'fs';
 import * as jsonSchema from 'jsonschema';
 import * as pathLib from 'path';
-import {Locale} from './locales';
-import {KnownError} from './error';
-import {FormatConfig} from './formatters';
-import {RuntimeOutputConfig} from './modes/runtime';
-import {TransformOutputConfig} from './modes/transform';
-
-interface ConfigFile {
-  /**
-   * See https://json-schema.org/understanding-json-schema/reference/schema.html
-   */
-  $schema?: string;
-
-  /**
-   * Required locale code that messages in the source code are written in.
-   * @TJS-type string
-   */
-  sourceLocale: Locale;
-
-  /**
-   * Required locale codes that messages will be localized to.
-   * @items.type string
-   */
-  targetLocales: Locale[];
-
-  /**
-   * Path to a tsconfig.json file that describes the TypeScript source files
-   * from which messages will be extracted.
-   */
-  tsConfig: string;
-
-  /**
-   * Localization interchange format and configuration specific to that format.
-   */
-  interchange: FormatConfig;
-
-  /**
-   * Set and configure the output mode.
-   */
-  output: RuntimeOutputConfig | TransformOutputConfig;
-
-  /**
-   * Optional string substitutions to apply to specific locale messages. Useful
-   * for making minor corrections without modifying source files or repeating a
-   * full localization cycle.
-   *
-   * Example:
-   *
-   * "patches": {
-   *   "es-419": {
-   *     "greeting": [
-   *       {
-   *         "before": "Buenos dias",
-   *         "after": "Buenos días"
-   *       }
-   *     ]
-   *   }
-   * }
-   */
-  patches?: {[locale: string]: {[messageId: string]: Patch[]}};
-}
-
-/**
- * A validated config file, plus any extra properties not present in the file
- * itself.
- */
-export interface Config extends ConfigFile {
-  /**
-   * Base directory on disk that contained the config file. Used for resolving
-   * paths relative to the config file.
-   */
-  baseDir: string;
-
-  /**
-   * Resolve a filepath relative to the directory that contained the config
-   * file.
-   */
-  resolve: (path: string) => string;
-}
-
-/**
- * Replace one string with another.
- */
-export interface Patch {
-  /** The string to search for. */
-  before: string;
-  /** The string to replace matches with. */
-  after: string;
-}
+import {KnownError} from './error.js';
+import type {Config, ConfigFile} from './types/config.js';
+import {dirname} from 'path';
+import {fileURLToPath} from 'url';
 
 /**
  * Read a JSON config file from the given path, validate it, and return it. Also
@@ -121,7 +37,12 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const schema = require('../config.schema.json');
+  const schemaPath = pathLib.resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'config.schema.json'
+  );
+  const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   const result = jsonSchema.validate(parsed, schema);
   if (result.errors.length > 0) {
     throw new KnownError(

@@ -5,7 +5,7 @@
  */
 
 import * as ts from 'typescript';
-import {Locale} from './locales';
+import type {Locale} from './types/locale.js';
 
 /**
  * A message for translation.

@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
-import {Config} from './config';
+import ts from 'typescript';
+import type {Config} from './types/config.js';
 import {
   ProgramMessage,
   Message,
   sortProgramMessages,
   validateLocalizedPlaceholders,
-} from './messages';
-import {programFromTsConfig} from './typescript';
-import {extractMessagesFromProgram} from './program-analysis';
-import {Formatter, makeFormatter} from './formatters';
-import {Locale} from './locales';
+} from './messages.js';
+import {programFromTsConfig} from './typescript.js';
+import {extractMessagesFromProgram} from './program-analysis.js';
+import {Formatter, makeFormatter} from './formatters/index.js';
+import type {Locale} from './types/locale.js';
 
 interface ExtractMessagesResult {
   messages: Array<ProgramMessage>;

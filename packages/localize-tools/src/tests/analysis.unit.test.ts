@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import test, {Test} from 'tape';
+
 import {extractMessagesFromProgram} from '../program-analysis.js';
 import {ProgramMessage} from '../messages.js';
-import * as ts from 'typescript';
-import test, {ExecutionContext} from 'ava';
+import ts from 'typescript';
 import {
   createTsProgramFromFragment,
   CompilerHostCache,
-} from './compile-ts-fragment';
+} from './compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 
@@ -21,7 +22,7 @@ const cache = new CompilerHostCache();
  * diagnostics are returned.
  */
 function checkAnalysis(
-  t: ExecutionContext,
+  t: Test,
   inputTs: string,
   expectedMessages: Array<
     Pick<ProgramMessage, 'name' | 'contents'> &
@@ -59,6 +60,7 @@ function checkAnalysis(
       descStack: descStack ?? [],
     }))
   );
+  t.end();
 }
 
 test('irrelevant code', (t) => {

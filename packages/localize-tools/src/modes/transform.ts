@@ -4,44 +4,27 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message, makeMessageIdMap} from '../messages';
-import {Locale, writeLocaleCodesModule} from '../locales';
-import {Config} from '../config';
-import * as ts from 'typescript';
+import {Message, makeMessageIdMap} from '../messages.js';
+import {writeLocaleCodesModule} from '../locales.js';
+import type {Locale} from '../types/locale.js';
+import type {Config} from '../types/config.js';
+import type {TransformOutputConfig} from '../types/modes.js';
+import ts from 'typescript';
 import {
   isLitTemplate,
   isMsgCall,
   extractTemplate,
   extractOptions,
   generateMsgIdFromAstNode,
-} from '../program-analysis';
-import {KnownError} from '../error';
+} from '../program-analysis.js';
+import {KnownError} from '../error.js';
 import {
   escapeStringToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
-} from '../typescript';
+} from '../typescript.js';
 import * as pathLib from 'path';
 import {LitLocalizer} from '../index.js';
-
-/**
- * Configuration specific to the `transform` output mode.
- */
-export interface TransformOutputConfig {
-  mode: 'transform';
-
-  /**
-   * Optional filepath for a generated TypeScript module that exports
-   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
-   * from your config file. Use to keep your config file and client config in
-   * sync. For example:
-   *
-   *   export const sourceLocale = 'en';
-   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
-   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
-   */
-  localeCodesModule?: string;
-}
 
 type TypeScriptTransformerFactoryFactory = (
   program: ts.Program

@@ -4,45 +4,21 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message, ProgramMessage, Placeholder} from '../messages';
-import {applyPatches, Patches} from '../patches';
-import {Locale, writeLocaleCodesModule} from '../locales';
-import {Config} from '../config';
-import {KnownError} from '../error';
+import {Message, ProgramMessage, Placeholder} from '../messages.js';
+import {applyPatches, Patches} from '../patches.js';
+import {writeLocaleCodesModule} from '../locales.js';
+import type {Config} from '../types/config.js';
+import type {RuntimeOutputConfig} from '../types/modes.js';
+import {KnownError} from '../error.js';
 import {
   escapeStringToEmbedInTemplateLiteral,
   parseStringAsTemplateLiteral,
-} from '../typescript';
-import * as fsExtra from 'fs-extra';
+} from '../typescript.js';
+import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {LitLocalizer} from '../index.js';
-
-/**
- * Configuration specific to the `runtime` output mode.
- */
-export interface RuntimeOutputConfig {
-  mode: 'runtime';
-
-  /**
-   * Output directory for generated TypeScript modules. Into this directory will
-   * be generated a <locale>.ts for each `targetLocale`, each a TypeScript
-   * module that exports the translations in that locale keyed by message ID.
-   */
-  outputDir: string;
-
-  /**
-   * Optional filepath for a generated TypeScript module that exports
-   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
-   * from your config file. Use to keep your config file and client config in
-   * sync. For example:
-   *
-   *   export const sourceLocale = 'en';
-   *   export const targetLocales = ['es-419', 'zh_CN'] as const;
-   *   export const allLocales = ['es-419', 'zh_CN', 'en'] as const;
-   */
-  localeCodesModule?: string;
-}
+import type {Locale} from '../types/locale.js';
 
 /**
  * Localizes a Lit project in runtime mode.

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 /**
  * Filesystem caching for the TypeScript CompilerHost implementation used in

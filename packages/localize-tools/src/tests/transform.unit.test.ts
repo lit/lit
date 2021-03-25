@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {litLocalizeTransform} from '../modes/transform';
-import * as ts from 'typescript';
-import {Message, makeMessageIdMap} from '../messages';
-import test, {ExecutionContext} from 'ava';
-import * as prettier from 'prettier';
-import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment';
+import {litLocalizeTransform} from '../modes/transform.js';
+import ts from 'typescript';
+import {Message, makeMessageIdMap} from '../messages.js';
+import test, {Test} from 'tape';
+import prettier from 'prettier';
+import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 const IMPORT_MSG = `import { msg, str } from "@lit/localize";\n`;
@@ -21,7 +21,7 @@ const IMPORT_LIT_HTML = `import { html } from "lit-html";\n`;
  * that the output matches (prettier-formatted).
  */
 function checkTransform(
-  t: ExecutionContext,
+  t: Test,
   inputTs: string,
   expectedJs: string,
   opts?: {
@@ -78,6 +78,7 @@ function checkTransform(
   }
   t.is(formattedActual, formattedExpected);
   t.deepEqual(result.diagnostics, []);
+  t.end();
 }
 
 test('unchanged const', (t) => {
@@ -393,9 +394,9 @@ test('configureLocalization() throws', (t) => {
          });`,
         ``
       ),
-    undefined,
     'Cannot use configureLocalization in transform mode'
   );
+  t.end();
 });
 
 test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
@@ -435,7 +436,7 @@ test('different LOCALE_STATUS_EVENT variable unchanged', (t) => {
   );
 });
 
-test('different variable cast to "lit-localie-status" unchanged', (t) => {
+test('different variable cast to "lit-localize-status" unchanged', (t) => {
   checkTransform(
     t,
     `const x = "x" as "lit-localize-status";`,

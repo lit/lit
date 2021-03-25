@@ -5,36 +5,24 @@
  */
 
 import * as xmldom from 'xmldom';
-import * as fsExtra from 'fs-extra';
+import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import {Config} from '../config';
-import {Locale} from '../locales';
-import {Formatter} from './index';
-import {KnownError} from '../error';
+import type {Config} from '../types/config.js';
+import type {XliffConfig} from '../types/formatters.js';
+import type {Locale} from '../types/locale.js';
+import {Formatter} from './index.js';
+import {KnownError} from '../error.js';
 import {
   Bundle,
   Message,
   ProgramMessage,
   Placeholder,
   makeMessageIdMap,
-} from '../messages';
+} from '../messages.js';
 import {
   getOneElementByTagNameOrThrow,
   getNonEmptyAttributeOrThrow,
-} from './xml-utils';
-
-/**
- * Configuration for XLIFF interchange format.
- */
-export interface XliffConfig {
-  format: 'xliff';
-
-  /**
-   * Directory on disk to read/write .xlf XML files. For each target locale,
-   * the file path "<xliffDir>/<locale>.xlf" will be used.
-   */
-  xliffDir: string;
-}
+} from './xml-utils.js';
 
 /**
  * Create an XLIFF formatter from a main config object.

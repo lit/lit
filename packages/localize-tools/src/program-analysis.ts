@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import * as parse5 from 'parse5';
-import {ProgramMessage, Placeholder, Message} from './messages';
-import {createDiagnostic} from './typescript';
+import {ProgramMessage, Placeholder, Message} from './messages.js';
+import {createDiagnostic} from './typescript.js';
 import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
 
 type ResultOrError<R, E> =

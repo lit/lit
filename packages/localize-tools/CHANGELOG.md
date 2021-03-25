@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
 - Initial release of `@lit/localize-tools` package. This new package provides
   the `lit-localize` binary, while `@lit/localize` continues to provide the
   browser library (`msg`, `LocalizedElement`, etc.).
+
+- **BREAKING** `lit-localize` now uses JS modules instead of CommonJS, so it
+  requires Node 14 or higher.
