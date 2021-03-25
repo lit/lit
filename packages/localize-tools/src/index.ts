@@ -145,5 +145,5 @@ export abstract class LitLocalizer {
   /**
    * Build the project. Behavior depends on output.mode setting.
    */
-  abstract async build(): Promise<void>;
+  abstract build(): Promise<void>;
 }
