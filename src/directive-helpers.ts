@@ -13,6 +13,7 @@
  */
 
 import {TemplateResult} from './lit-html.js';
+export {isPrimitive} from './lib/parts.js';
 
 /**
  * Tests if a value is a TemplateResult.
