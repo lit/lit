@@ -561,7 +561,7 @@ to generate a separate bundle for each locale.
 > TypeScript files that can be treated as normal source inputs by an existing
 > build pipeline.
 
-For example, the following `rollup.config.js` generates a minified bundle for
+For example, the following `rollup.config.mjs` generates a minified bundle for
 each of your locales into `./bundled/<locale>/` directories.
 
 ```js
