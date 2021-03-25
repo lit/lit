@@ -396,6 +396,7 @@ test('configureLocalization() throws', (t) => {
       ),
     'Cannot use configureLocalization in transform mode'
   );
+  t.end();
 });
 
 test('LOCALE_STATUS_EVENT => "lit-localize-status"', (t) => {
@@ -435,7 +436,7 @@ test('different LOCALE_STATUS_EVENT variable unchanged', (t) => {
   );
 });
 
-test('different variable cast to "lit-localie-status" unchanged', (t) => {
+test('different variable cast to "lit-localize-status" unchanged', (t) => {
   checkTransform(
     t,
     `const x = "x" as "lit-localize-status";`,
