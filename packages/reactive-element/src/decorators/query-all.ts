@@ -12,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 /**
  * A property decorator that converts a class property into a getter
@@ -44,20 +40,13 @@ import {
  * @category Decorator
  */
 export function queryAll(selector: string) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
       get(this: ReactiveElement) {
         return this.renderRoot?.querySelectorAll(selector);
       },
       enumerable: true,
       configurable: true,
-    };
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+    }),
+  });
 }

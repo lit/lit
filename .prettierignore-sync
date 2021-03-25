@@ -6,8 +6,7 @@ packages/{*,labs/*}/{.gitignore,.prettierignore}
 # Starter templates specify the lint/format ignore in .eslintignore to stay DRY
 packages/{lit-starter-ts,lit-starter-js}/.eslintignore
 
-
 [inline]
 packages/localize/examples/
-packages/localize/testdata/
-packages/localize/config.schema.json
+packages/localize-tools/testdata/
+packages/localize-tools/config.schema.json

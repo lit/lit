@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020"],
+    "types": [],
+  },
+  "include": ["src/types/**/*"],
+  "exclude": ["node_modules"],
+}

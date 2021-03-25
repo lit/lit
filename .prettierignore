@@ -86,16 +86,18 @@ packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
 packages/localize/lib/
-packages/localize/lib_client/
 packages/localize/node_modules/
-packages/localize/testdata/*/output/
 packages/localize/tests/
-packages/localize/.tsbuildinfo.client
+packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/localized-element.*
 packages/localize/examples/*/node_modules/
 packages/localize/fnv1a64.*
 packages/localize/id-generation.*
+
+packages/localize-tools/lib/
+packages/localize-tools/node_modules/
+packages/localize-tools/testdata/*/output/
 
 packages/reactive-element/decorators/
 packages/reactive-element/development/
@@ -138,5 +140,5 @@ packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
 packages/localize/examples/
-packages/localize/testdata/
-packages/localize/config.schema.json
+packages/localize-tools/testdata/
+packages/localize-tools/config.schema.json

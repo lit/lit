@@ -40,6 +40,8 @@ const standardProperty = (
       key: Symbol(),
       placement: 'own',
       descriptor: {},
+      // store the original key so subsequent decorators have access to it.
+      originalKey: element.key,
       // When @babel/plugin-proposal-decorators implements initializers,
       // do this instead of the initializer below. See:
       // https://github.com/babel/babel/issues/9260 extras: [
