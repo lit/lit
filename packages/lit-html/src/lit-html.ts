@@ -328,7 +328,7 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
 
 const walker = d.createTreeWalker(
   d,
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
   null,
   false
 );
