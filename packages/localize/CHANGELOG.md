@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-<!-- ### Changed -->
+### Changed
+
+- **[BREAKING]** Lit Localize is now distributed as two packages:
+
+  - `@lit/localize` provides the browser library (`msg`, `LocalizedElement`, etc.)
+  - `@lit/localize-tools` provides the `lit-localize` CLI.
 
 ## [0.7.0] - 2021-03-12
 

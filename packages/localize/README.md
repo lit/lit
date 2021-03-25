@@ -92,18 +92,19 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 ## Tutorial
 
-1. Install `@lit/localize`. You get both a client library and a command-line tool.
-   You'll always use both together.
+1. Install `@lit/localize` and `@lit/localize-tools`. These packages provide the
+   client library and the command-line tool.
 
    ```bash
-   npm install --save @lit/localize
+   npm i @lit/localize
+   npm i -D @lit/localize-tools
    ```
 
 2. Set up a TypeScript lit-html project if you don't have one already:
 
    ```bash
-   npm install --save lit-html
-   npm install --save-dev typescript
+   npm i lit-html
+   npm i -D typescript
    npx tsc --init
    ```
 
@@ -546,7 +547,7 @@ lit-localize command [--flags]
 
 To integrate locale transformation into a [Rollup](https://rollupjs.org/)
 project, import the `localeTransformers` function from
-`@lit/localize/lib/rollup.js`.
+`@lit/localize-tools/lib/rollup.js`.
 
 This function generates an array of `{locale, transformer}` objects, which you
 can use in conjunction with the
@@ -565,7 +566,7 @@ each of your locales into `./bundled/<locale>/` directories.
 
 ```js
 import typescript from '@rollup/plugin-typescript';
-import {localeTransformers} from '@lit/localize/lib/rollup.js';
+import {localeTransformers} from '@lit/localize-tools/lib/rollup.js';
 import resolve from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
 

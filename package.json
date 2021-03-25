@@ -12,7 +12,7 @@
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
     "nuke": "rm -rf node_modules packages/{*,labs/*}/node_modules && npm install && npm run bootstrap && npm run clean",
-    "test": "(cd packages/tests && npm test) && (cd packages/labs/ssr && npm test) && (cd packages/localize && npm test) && (cd packages/lit-starter-ts && npm test) && (cd packages/lit-starter-js && npm test)"
+    "test": "(cd packages/tests && npm test) && (cd packages/labs/ssr && npm test) && (cd packages/localize && npm test) && (cd packages/localize-tools && npm test) && (cd packages/lit-starter-ts && npm test) && (cd packages/lit-starter-js && npm test)"
   },
   "dependencies": {
     "lerna": "^3.22.1"
