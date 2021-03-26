@@ -326,9 +326,16 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   }
 }
 
-const walker = d.createTreeWalker(
+const prepWalker = d.createTreeWalker(
   d,
   129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
+  null,
+  false
+);
+
+const cloneWalker = d.createTreeWalker(
+  d,
+  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
   null,
   false
 );
@@ -541,7 +548,7 @@ class TemplateImpl {
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
     this._$element = this._$createElement(html);
-    walker.currentNode = this._$element.content;
+    prepWalker.currentNode = this._$element.content;
 
     // Reparent SVG nodes into template root
     if (type === SVG_RESULT) {
@@ -552,7 +559,7 @@ class TemplateImpl {
     }
 
     // Walk the template to find binding markers and create TemplateParts
-    while ((node = walker.nextNode()) !== null && bindingIndex < l) {
+    while ((node = prepWalker.nextNode()) !== null && bindingIndex < l) {
       if (node.nodeType === 1) {
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
@@ -744,9 +751,9 @@ class TemplateInstance {
       _parts: parts,
     } = this._$template;
     const fragment = (options?.creationScope ?? d).importNode(content, true);
-    walker.currentNode = fragment;
+    cloneWalker.currentNode = fragment;
 
-    let node = walker.nextNode();
+    let node = cloneWalker.nextNode();
     let nodeIndex = 0;
     let partIndex = 0;
     let templatePart = parts[0];
@@ -776,7 +783,7 @@ class TemplateInstance {
         templatePart = parts[++partIndex];
       }
       if (templatePart !== undefined && nodeIndex !== templatePart._index) {
-        node = walker.nextNode();
+        node = cloneWalker.nextNode();
         nodeIndex++;
       }
     }
