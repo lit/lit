@@ -9,8 +9,8 @@ import * as jsonSchema from 'jsonschema';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
 import type {Config, ConfigFile} from './types/config.js';
-import {dirname} from 'path';
-import {fileURLToPath} from 'url';
+// import {dirname} from 'path';
+// import {fileURLToPath} from 'url';
 
 /**
  * Read a JSON config file from the given path, validate it, and return it. Also
@@ -37,11 +37,7 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const schemaPath = pathLib.resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    '..',
-    'config.schema.json'
-  );
+  const schemaPath = pathLib.resolve(__dirname, '..', 'config.schema.json');
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   const result = jsonSchema.validate(parsed, schema);
   if (result.errors.length > 0) {

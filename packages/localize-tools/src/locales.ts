@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import fsExtra from 'fs-extra';
+import * as fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
 import type {Locale} from './types/locale.js';

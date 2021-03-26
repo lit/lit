@@ -17,7 +17,6 @@
     "lit-localize": "bin/lit-localize.js"
   },
   "main": "lit-localize.js",
-  "type": "module",
   "scripts": {
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && npm run generate-json-schema && tsc",

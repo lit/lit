@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import * as ts from 'typescript';
 import * as path from 'path';
 import {KnownError} from './error.js';
 

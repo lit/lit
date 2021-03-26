@@ -8,7 +8,7 @@ import test, {Test} from 'tape';
 
 import {extractMessagesFromProgram} from '../program-analysis.js';
 import {ProgramMessage} from '../messages.js';
-import ts from 'typescript';
+import * as ts from 'typescript';
 import {
   createTsProgramFromFragment,
   CompilerHostCache,

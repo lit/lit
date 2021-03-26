@@ -6,7 +6,7 @@
 
 import * as xmldom from 'xmldom';
 import glob from 'glob';
-import fsExtra from 'fs-extra';
+import * as fsExtra from 'fs-extra';
 import * as pathlib from 'path';
 import type {Config} from '../types/config.js';
 import type {XlbConfig} from '../types/formatters.js';

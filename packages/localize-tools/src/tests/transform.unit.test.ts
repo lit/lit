@@ -5,7 +5,7 @@
  */
 
 import {litLocalizeTransform} from '../modes/transform.js';
-import ts from 'typescript';
+import * as ts from 'typescript';
 import {Message, makeMessageIdMap} from '../messages.js';
 import test, {Test} from 'tape';
 import prettier from 'prettier';

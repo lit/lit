@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import * as ts from 'typescript';
 import * as parse5 from 'parse5';
 import {ProgramMessage, Placeholder, Message} from './messages.js';
 import {createDiagnostic} from './typescript.js';

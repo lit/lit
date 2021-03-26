@@ -9,7 +9,7 @@ import {writeLocaleCodesModule} from '../locales.js';
 import type {Locale} from '../types/locale.js';
 import type {Config} from '../types/config.js';
 import type {TransformOutputConfig} from '../types/modes.js';
-import ts from 'typescript';
+import * as ts from 'typescript';
 import {
   isLitTemplate,
   isMsgCall,

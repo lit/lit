@@ -5,7 +5,7 @@
  */
 
 import * as path from 'path';
-import fsExtra from 'fs-extra';
+import * as fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
 import * as diff from 'diff';
 

@@ -14,9 +14,9 @@ import {
   escapeStringToEmbedInTemplateLiteral,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
-import fsExtra from 'fs-extra';
+import * as fsExtra from 'fs-extra';
 import * as pathLib from 'path';
-import ts from 'typescript';
+import * as ts from 'typescript';
 import {LitLocalizer} from '../index.js';
 import type {Locale} from '../types/locale.js';
 

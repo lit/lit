@@ -17,8 +17,8 @@ import type {
   TransformOutputConfig,
   RuntimeOutputConfig,
 } from './types/modes.js';
-import {dirname} from 'path';
-import {fileURLToPath} from 'url';
+// import {dirname} from 'path';
+// import {fileURLToPath} from 'url';
 import * as fs from 'fs/promises';
 import 'source-map-support/register.js';
 
@@ -79,11 +79,7 @@ export async function runAndLog(argv: string[]): Promise<number> {
 }
 
 async function version() {
-  const packageJsonPath = path.resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    '..',
-    'package.json'
-  );
+  const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
   const packageJson = JSON.parse(
     await fs.readFile(packageJsonPath, 'utf8')
   ) as {version: number};

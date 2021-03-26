@@ -8,11 +8,11 @@ import * as path from 'path';
 import {execFileSync} from 'child_process';
 import test, {Test} from 'tape';
 import {runAndLog} from '../../cli.js';
-import fsExtra from 'fs-extra';
+import * as fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
 import {formatDirDiff} from '../format-dir-diff.js';
-import {dirname} from 'path';
-import {fileURLToPath} from 'url';
+// import {dirname} from 'path';
+// import {fileURLToPath} from 'url';
 
 // TODO(aomarks) Add to DefinitelyTyped.
 interface TestWithTeardown extends Test {
@@ -52,7 +52,7 @@ export function e2eGoldensTest(
   expectedStdOutErr = ''
 ) {
   const root = path.resolve(
-    dirname(fileURLToPath(import.meta.url)),
+    __dirname, //dirname(fileURLToPath(import.meta.url)),
     '..',
     '..',
     '..',

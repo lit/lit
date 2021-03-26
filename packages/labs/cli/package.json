@@ -1,5 +1,5 @@
 {
-  "name": "@lit/cli",
+  "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
   "version": "0.0.0",
   "author": "Google, LLC",
@@ -8,6 +8,7 @@
   },
   "bugs": "https://github.com/Polymer/lit-html/issues",
   "dependencies": {
+    "@lit/localize-tools": "^0.1.0",
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
@@ -20,6 +21,7 @@
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.1.0",
     "globby": "^10.0.2",
+    "stdout-stderr": "^0.1.13",
     "typescript": "^3.9.9",
     "uvu": "^0.5.1"
   },
@@ -49,7 +51,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "tape-es 'test/**/*_test.js'",
+    "test": "uvu test '.*_test\\.js$'",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "version": "oclif-dev readme && git add README.md"
   },

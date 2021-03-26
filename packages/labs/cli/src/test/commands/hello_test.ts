@@ -22,7 +22,9 @@ helloTest.after(() => {
 });
 
 helloTest('hello', async () => {
-  await Hello.run();
+  // Pass empty CLI args so that oclif doesn't try to read the test
+  // runner args.
+  await Hello.run([]);
   assert.match(stdout.output, 'hello world');
 });
 
