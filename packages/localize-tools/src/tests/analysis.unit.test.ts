@@ -26,7 +26,7 @@ function checkAnalysis(
   inputTs: string,
   expectedMessages: Array<
     Pick<ProgramMessage, 'name' | 'contents'> &
-      Partial<Pick<ProgramMessage, 'descStack'>>
+      Partial<Pick<ProgramMessage, 'desc'>>
   >,
   expectedErrors: string[] = []
 ) {
@@ -49,15 +49,15 @@ function checkAnalysis(
     expectedErrors
   );
   t.deepEqual(
-    messages.map(({name, contents, descStack}) => ({
+    messages.map(({name, contents, desc}) => ({
       name,
       contents,
-      descStack,
+      desc,
     })),
-    expectedMessages.map(({name, contents, descStack}) => ({
+    expectedMessages.map(({name, contents, desc}) => ({
       name,
       contents,
-      descStack: descStack ?? [],
+      desc,
     }))
   );
   t.end();
@@ -204,37 +204,88 @@ test('parameterized HTML message', (t) => {
   ]);
 });
 
-test('immediate description', (t) => {
+test('description: @desc<msg()>', (t) => {
   const src = `
     import {msg} from '@lit/localize';
-    // msgdesc: Greeting
+
+    /** @desc Greeting */
+    msg('Hello World');
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 's3d58dee72d4e0c27',
+      contents: ['Hello World'],
+      desc: 'Greeting',
+    },
+  ]);
+});
+
+test('description: @desc<msg()>, multiline, other tags', (t) => {
+  const src = `
+    import {msg} from '@lit/localize';
+
+    /**
+     * A bunch of other text.
+     *
+     * @private
+     * @desc This is a very long description
+     *   that spans multiple lines.
+     * @deprecated
+     */
+    msg('Hello World'});
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 's3d58dee72d4e0c27',
+      contents: ['Hello World'],
+      desc: 'This is a very long description\nthat spans multiple lines.',
+    },
+  ]);
+});
+
+test('description: () => @desc<(msg())>', (t) => {
+  const src = `
+    import {msg} from '@lit/localize';
+
+    () => /** @desc Greeting */ (msg('Hello World'));
+  `;
+  checkAnalysis(t, src, [
+    {
+      name: 's3d58dee72d4e0c27',
+      contents: ['Hello World'],
+      desc: 'Greeting',
+    },
+  ]);
+});
+
+test('description: invalid /* */ comment style', (t) => {
+  const src = `
+    import {msg} from '@lit/localize';
+
+    /* @desc Greeting */
     msg('Hello World', {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
       name: 'greeting',
       contents: ['Hello World'],
-      descStack: ['Greeting'],
+      desc: undefined,
     },
   ]);
 });
 
-test('inherited description', (t) => {
+test('description: invalid // comment style', (t) => {
   const src = `
     import {msg} from '@lit/localize';
-    // msgdesc: Greeter
-    class XGreeter extends HTMLElement {
-      render() {
-        // msgdesc: Greeting
-        return msg('Hello World', {id: 'greeting'});
-      }
-    }
+
+    // @desc Greeting
+    msg('Hello World', {id: 'greeting'});
   `;
   checkAnalysis(t, src, [
     {
       name: 'greeting',
       contents: ['Hello World'],
-      descStack: ['Greeter', 'Greeting'],
+      desc: undefined,
     },
   ]);
 });

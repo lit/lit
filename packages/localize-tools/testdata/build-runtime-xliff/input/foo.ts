@@ -45,13 +45,5 @@ msg(html`a:${"A"} b:${"B"} c:${"C"}`);
 // Custom ID
 msg('Hello World', {id: 'myId'});
 
-// msgdesc: Description of 0
+/** @desc Description of 0 */
 msg('described 0');
-
-// msgdesc: Parent description
-export function described() {
-  // msgdesc: Description of 1
-  msg('described 1');
-  // msgdesc: Description of 2
-  msg('described 2');
-}

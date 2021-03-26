@@ -374,43 +374,23 @@ Name of the [`lit-localize-status`](#lit-localize-status-event) event.
 
 ## Descriptions
 
-You can add descriptions to messages using special `// msgdesc:` comments.
-Message descriptions help translators understand the context of each string they
-are translating.
+You can add descriptions to messages using the `@desc` JSDoc tag. Message
+descriptions help translators understand the context of each string they are
+translating.
 
 ```ts
-// msgdesc: Greeting to everybody on homepage
+/** @desc Greeting to everybody on homepage */
 msg(html`Hello <b>World</b>!`);
 ```
+
+> NOTE: Do not use ~~`/* @desc */`~~ (one star) or ~~`// @desc`~~ comment
+> styles, because these comments are not be parsed as JSDoc.
 
 Descriptions are represented in XLIFF using `<note>` elements.
 
 ```xml
 <trans-unit id="h3c44aff2d5f5ef6b">
   <note>Greeting to everybody on homepage</note>
-  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
-</trans-unit>
-```
-
-You can also apply a `// msgdesc:` comment to a class, function, or block, in
-which case the description will apply recursively to all `msg` calls within it.
-If there are multiple descriptions that apply to a `msg` call, then they are
-concatenated with a forward-slash in top-down order. This can be useful for
-describing the context of an entire group of messages.
-
-```ts
-// msgdesc: Homepage
-class MyHomepage extends Localized(LitElement) {
-  render() {
-    // msgdesc: Greeting to everybody
-    return msg(html`Hello <b>World</b>!`);
-  }
-}
-```
-
-```xml
-<trans-unit id="h3c44aff2d5f5ef6b">
-  <note>Homepage / Greeting to everybody</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>
 ```

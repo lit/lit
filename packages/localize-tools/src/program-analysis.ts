@@ -23,14 +23,7 @@ export function extractMessagesFromProgram(
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of program.getSourceFiles()) {
-    extractMessagesFromNode(
-      sourcefile,
-      program,
-      sourcefile,
-      messages,
-      errors,
-      []
-    );
+    extractMessagesFromNode(sourcefile, program, sourcefile, messages, errors);
   }
   const deduped = dedupeMessages(messages);
   return {
@@ -51,19 +44,9 @@ function extractMessagesFromNode(
   program: ts.Program,
   node: ts.Node,
   messages: ProgramMessage[],
-  errors: ts.Diagnostic[],
-  descStack: MsgDesc[]
+  errors: ts.Diagnostic[]
 ): void {
-  const newDescs = extractMsgDescs(node, file.getFullText());
-  if (newDescs.length > 0) {
-    // Note we just make a copy of the stack each time we get a new description.
-    // This is a little simpler than modifying it in-place given that we have to
-    // de-duplicate. This could be a spot to optimize if we start handling
-    // humongous applications.
-    descStack = dedupeMsgDescs([...descStack, ...newDescs]);
-  }
-
-  const extractResult = extractMsg(file, program, node, descStack);
+  const extractResult = extractMsg(file, program, node);
   if (extractResult.error) {
     errors.push(extractResult.error);
   } else if (extractResult.result !== undefined) {
@@ -71,7 +54,7 @@ function extractMessagesFromNode(
   }
 
   ts.forEachChild(node, (node) => {
-    extractMessagesFromNode(file, program, node, messages, errors, descStack);
+    extractMessagesFromNode(file, program, node, messages, errors);
   });
 }
 
@@ -82,8 +65,7 @@ function extractMessagesFromNode(
 function extractMsg(
   file: ts.SourceFile,
   program: ts.Program,
-  node: ts.Node,
-  descStack: MsgDesc[]
+  node: ts.Node
 ): ResultOrError<ProgramMessage | undefined, ts.Diagnostic> {
   if (!isMsgCall(node, program.getTypeChecker())) {
     // We're not interested.
@@ -124,7 +106,9 @@ function extractMsg(
       node,
       contents,
       isLitTemplate,
-      descStack: descStack.map((desc) => desc.text),
+      // Note we pass node.parent because node is a CallExpression node, but the
+      // JSDoc tag will be attached to the parent Expression node.
+      desc: findNearestDescJsDocTag(node.parent),
     },
   };
 }
@@ -496,56 +480,20 @@ function combineAdjacentPlaceholders(
 }
 
 /**
- * A message description extracted from a TypeScript comment in a particular
- * file.
+ * Finds the nearest @desc JSDoc tag comment associated with the given node by
+ * walking up through parents.
  */
-interface MsgDesc {
-  /** Where the comment begins in the source text. */
-  pos: number;
-  /** Where the comment ends in the source text. */
-  end: number;
-  /** The extracted description (the part after `// msgdesc: `) */
-  text: string;
-}
-
-/**
- * Look for "// msgdesc: foo" comments attached to the given node.
- */
-function extractMsgDescs(node: ts.Node, fileText: string): MsgDesc[] {
-  const ranges = ts.getLeadingCommentRanges(fileText, node.getFullStart());
-  const descs: MsgDesc[] = [];
-  if (ranges !== undefined) {
-    for (const range of ranges) {
-      const comment = fileText.slice(range.pos, range.end);
-      const match = comment.match(/.*msgdesc:\s*(.+)/);
-      if (match !== null) {
-        descs.push({pos: range.pos, end: range.end, text: match[1].trim()});
-      }
-    }
+function findNearestDescJsDocTag(node: ts.Node): string | undefined {
+  const desc = ts.getJSDocTags(node).find((tag) => tag.tagName.text === 'desc')
+    ?.comment;
+  if (desc !== undefined) {
+    return desc;
   }
-  return descs;
-}
-
-/**
- * The way TypeScript treats comments in the AST means that it's possible for
- * us to extract the exact same exact comment range multiple times when
- * traversing certain AST structures (e.g. both for an "expression" node and
- * some child node it has). De-duplicate these based on their source text
- * positions.
- */
-function dedupeMsgDescs(descs: MsgDesc[]): MsgDesc[] {
-  // Since Maps preserve order, we can just pick a key that will be the same for
-  // duplicate comment ranges, populate the map, and then iterate through the
-  // values.
-  const map = new Map<string, MsgDesc>();
-  for (const desc of descs) {
-    const key = `${desc.pos}:${desc.end}`;
-    if (map.has(key)) {
-      continue;
-    }
-    map.set(key, desc);
+  // Handle cases like: () => /** @desc Greeting */(msg('Hello'))
+  if (ts.isParenthesizedExpression(node.parent)) {
+    return findNearestDescJsDocTag(node.parent);
   }
-  return [...map.values()];
+  return undefined;
 }
 
 function replaceHtmlWithPlaceholders(

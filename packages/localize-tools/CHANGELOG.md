@@ -5,7 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- **[BREAKING]** The syntax for message description comments has changed to the
+  `@desc` JSDoc tag instead of the `// msgdesc:` format. Also, descriptions **no
+  longer applies recursively**:
+
+Before:
+
+```js
+// msgdesc: Home page
+class HomePage {
+  hello() {
+    // msgdesc: Greeting to Earth
+    return msg(html`Hello World`);
+  }
+  goodbye() {
+    // msgdesc: Farewell to Earth
+    return msg(html`Goodbye World`);
+  }
+}
+```
+
+After:
+
+```js
+class HomePage {
+  hello() {
+    return /** @desc Home page / Greeting to Earth */(
+      msg(html`Hello World`));
+  }
+  goodbye() {
+    return /** @desc Home page / Farewell to Earth */(
+      msg(html`Goodbye World`));
+  }
+}
+```
 
 ## [0.1.0] - 2021-03-24
 
