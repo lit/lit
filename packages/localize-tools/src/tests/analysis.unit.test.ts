@@ -204,90 +204,57 @@ test('parameterized HTML message', (t) => {
   ]);
 });
 
-test('description: @desc<msg()>', (t) => {
+test('desc option (string)', (t) => {
   const src = `
     import {msg} from '@lit/localize';
 
-    /** @desc Greeting */
-    msg('Hello World');
+    msg('Hello World', {
+      desc: 'A greeting to Earth'
+    });
   `;
   checkAnalysis(t, src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
-      desc: 'Greeting',
+      desc: 'A greeting to Earth',
     },
   ]);
 });
 
-test('description: @desc<msg()>, multiline, other tags', (t) => {
+test('desc option (no substitution literal)', (t) => {
   const src = `
     import {msg} from '@lit/localize';
 
-    /**
-     * A bunch of other text.
-     *
-     * @private
-     * @desc This is a very long description
-     *   that spans multiple lines.
-     * @deprecated
-     */
-    msg('Hello World'});
+    msg('Hello World', {
+      desc: \`A greeting to Earth\`
+    });
   `;
   checkAnalysis(t, src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
-      desc: 'This is a very long description\nthat spans multiple lines.',
+      desc: 'A greeting to Earth',
     },
   ]);
 });
 
-test('description: () => @desc<(msg())>', (t) => {
+test('error: desc option (substitution literal)', (t) => {
   const src = `
     import {msg} from '@lit/localize';
 
-    () => /** @desc Greeting */ (msg('Hello World'));
+    msg('Hello World', {
+      desc: \`A greeting to \${'Earth'}\`
+    });
   `;
-  checkAnalysis(t, src, [
-    {
-      name: 's3d58dee72d4e0c27',
-      contents: ['Hello World'],
-      desc: 'Greeting',
-    },
-  ]);
-});
-
-test('description: invalid /* */ comment style', (t) => {
-  const src = `
-    import {msg} from '@lit/localize';
-
-    /* @desc Greeting */
-    msg('Hello World', {id: 'greeting'});
-  `;
-  checkAnalysis(t, src, [
-    {
-      name: 'greeting',
-      contents: ['Hello World'],
-      desc: undefined,
-    },
-  ]);
-});
-
-test('description: invalid // comment style', (t) => {
-  const src = `
-    import {msg} from '@lit/localize';
-
-    // @desc Greeting
-    msg('Hello World', {id: 'greeting'});
-  `;
-  checkAnalysis(t, src, [
-    {
-      name: 'greeting',
-      contents: ['Hello World'],
-      desc: undefined,
-    },
-  ]);
+  checkAnalysis(
+    t,
+    src,
+    [],
+    [
+      '__DUMMY__.ts(5,13): error TS2324: ' +
+        'msg desc option must be a string with no expressions',
+    ]
+  );
 });
 
 test('different msg function', (t) => {
@@ -310,7 +277,7 @@ test('error: message id cannot be empty', (t) => {
     src,
     [],
     [
-      '__DUMMY__.ts(3,29): error TS2324: Options id property must be a non-empty string literal',
+      '__DUMMY__.ts(3,29): error TS2324: msg id option must be a non-empty string with no expressions',
     ]
   );
 });
@@ -359,8 +326,8 @@ test('error: message id must be static', (t) => {
     src,
     [],
     [
-      '__DUMMY__.ts(4,29): error TS2324: Options id property must be a non-empty string literal',
-      '__DUMMY__.ts(5,29): error TS2324: Options id property must be a non-empty string literal',
+      '__DUMMY__.ts(4,29): error TS2324: msg id option must be a non-empty string with no expressions',
+      '__DUMMY__.ts(5,29): error TS2324: msg id option must be a non-empty string with no expressions',
     ]
   );
 });

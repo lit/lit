@@ -9,9 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **[BREAKING]** The syntax for message description comments has changed to the
-  `@desc` JSDoc tag instead of the `// msgdesc:` format. Also, descriptions **no
-  longer applies recursively**:
+- **[BREAKING]** Description comments (`// msgdesc:`) have been removed in favor
+  of the `desc` option.
 
 Before:
 
@@ -34,12 +33,14 @@ After:
 ```js
 class HomePage {
   hello() {
-    return /** @desc Home page / Greeting to Earth */(
-      msg(html`Hello World`));
+    return msg(html`Hello World`, {
+      desc: 'Home page / Greeting to Earth',
+    });
   }
   goodbye() {
-    return /** @desc Home page / Farewell to Earth */(
-      msg(html`Goodbye World`));
+    return msg(html`Goodbye World`, {
+      desc: 'Home page / Farewell to Earth',
+    });
   }
 }
 ```

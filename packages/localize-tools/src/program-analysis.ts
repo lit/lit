@@ -108,7 +108,7 @@ function extractMsg(
       isLitTemplate,
       // Note we pass node.parent because node is a CallExpression node, but the
       // JSDoc tag will be attached to the parent Expression node.
-      desc: findNearestDescJsDocTag(node.parent),
+      desc: options.desc,
     },
   };
 }
@@ -119,10 +119,7 @@ function extractMsg(
 export function extractOptions(
   node: ts.Node | undefined,
   file: ts.SourceFile
-): ResultOrError<
-  {id?: string; args?: ts.NodeArray<ts.Expression>},
-  ts.Diagnostic
-> {
+): ResultOrError<{id?: string; desc?: string}, ts.Diagnostic> {
   if (node === undefined) {
     return {result: {}};
   }
@@ -136,8 +133,8 @@ export function extractOptions(
     };
   }
 
-  let id: string | undefined = undefined;
-  let args: ts.NodeArray<ts.Expression> | undefined = undefined;
+  let id: string | undefined;
+  let desc: string | undefined;
 
   for (const property of node.properties) {
     // {
@@ -185,34 +182,37 @@ export function extractOptions(
           error: createDiagnostic(
             file,
             property.initializer,
-            `Options id property must be a non-empty string literal`
+            `msg id option must be a non-empty string with no expressions`
           ),
         };
       }
       id = property.initializer.text;
-    } else if (name === 'args') {
-      if (!ts.isArrayLiteralExpression(property.initializer)) {
+    } else if (name === 'desc') {
+      if (
+        !ts.isStringLiteral(property.initializer) &&
+        !ts.isNoSubstitutionTemplateLiteral(property.initializer)
+      ) {
         return {
           error: createDiagnostic(
             file,
             property.initializer,
-            `Options args property must be an array literal`
+            `msg desc option must be a string with no expressions`
           ),
         };
       }
-      args = property.initializer.elements;
+      desc = property.initializer.text;
     } else {
       return {
         error: createDiagnostic(
           file,
           property,
-          `Options object property must be "id" or "args"`
+          `Invalid msg option. Supported: id, desc`
         ),
       };
     }
   }
 
-  return {result: {id, args}};
+  return {result: {id, desc}};
 }
 
 interface ExtractedTemplate {
@@ -477,23 +477,6 @@ function combineAdjacentPlaceholders(
     combined.push({untranslatable: phBuffer.join('')});
   }
   return combined;
-}
-
-/**
- * Finds the nearest @desc JSDoc tag comment associated with the given node by
- * walking up through parents.
- */
-function findNearestDescJsDocTag(node: ts.Node): string | undefined {
-  const desc = ts.getJSDocTags(node).find((tag) => tag.tagName.text === 'desc')
-    ?.comment;
-  if (desc !== undefined) {
-    return desc;
-  }
-  // Handle cases like: () => /** @desc Greeting */(msg('Hello'))
-  if (ts.isParenthesizedExpression(node.parent)) {
-    return findNearestDescJsDocTag(node.parent);
-  }
-  return undefined;
 }
 
 function replaceHtmlWithPlaceholders(

@@ -42,5 +42,4 @@ msg(html`Hello <b><!-- comment -->World</b>!`);
 // Custom ID
 msg('Hello World', {id: 'myId'});
 
-/** @desc Description of 0 */
-msg('described 0');
+msg('described 0', {desc: 'Description of 0'});

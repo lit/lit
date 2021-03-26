@@ -7,9 +7,11 @@
 import {html} from 'lit-html';
 import {msg} from '@lit/localize';
 
-/** @desc Description of Hello World */
-msg('Hello World!');
+msg('Hello World!', {
+  desc: 'Description of Hello World',
+});
 
 const name = 'friend';
-/** Description of Hello $(name) */
-msg(html`Hello <b>${name}!</b>`);
+msg(html`Hello <b>${name}!</b>`, {
+  desc: 'Description of Hello $(name)',
+});
