@@ -326,16 +326,9 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   }
 }
 
-const prepWalker = d.createTreeWalker(
+const walker = d.createTreeWalker(
   d,
   129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
-  null,
-  false
-);
-
-const cloneWalker = d.createTreeWalker(
-  d,
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
   null,
   false
 );
@@ -548,7 +541,7 @@ class TemplateImpl {
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
     this._$element = this._$createElement(html);
-    prepWalker.currentNode = this._$element.content;
+    walker.currentNode = this._$element.content;
 
     // Reparent SVG nodes into template root
     if (type === SVG_RESULT) {
@@ -559,7 +552,7 @@ class TemplateImpl {
     }
 
     // Walk the template to find binding markers and create TemplateParts
-    while ((node = prepWalker.nextNode()) !== null && bindingIndex < l) {
+    while ((node = walker.nextNode()) !== null && bindingIndex < l) {
       if (node.nodeType === 1) {
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
@@ -632,7 +625,7 @@ class TemplateImpl {
             // We can't use empty text nodes as markers because they're
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
-              (node as Element).append(strings[i] || createMarker());
+              (node as Element).append(strings[i], createMarker());
               this._parts.push({_type: CHILD_PART, _index: ++nodeIndex});
               bindingIndex++;
             }
@@ -751,9 +744,9 @@ class TemplateInstance {
       _parts: parts,
     } = this._$template;
     const fragment = (options?.creationScope ?? d).importNode(content, true);
-    cloneWalker.currentNode = fragment;
+    walker.currentNode = fragment;
 
-    let node = cloneWalker.nextNode();
+    let node = walker.nextNode();
     let nodeIndex = 0;
     let partIndex = 0;
     let templatePart = parts[0];
@@ -783,7 +776,7 @@ class TemplateInstance {
         templatePart = parts[++partIndex];
       }
       if (templatePart !== undefined && nodeIndex !== templatePart._index) {
-        node = cloneWalker.nextNode();
+        node = walker.nextNode();
         nodeIndex++;
       }
     }
