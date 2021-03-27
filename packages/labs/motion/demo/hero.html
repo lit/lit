@@ -261,12 +261,14 @@
           super();
           this.data = data;
           this._flipController = new FlipController(this, {
-            animationOptions: {
-              duration: 1000,
-              easing: 'ease-in-out',
-              fill: 'both',
+            options: {
+              animationOptions: {
+                duration: 1000,
+                easing: 'ease-in-out',
+                fill: 'both',
+              },
+              onFrames,
             },
-            onFrames,
           });
         }
 

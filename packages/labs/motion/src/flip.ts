@@ -43,11 +43,13 @@ export type FlipOptions = {
   stabilizeOut?: boolean;
   // Skips animation when initially rendering
   skipInitial?: boolean;
-  // True if the flip is disabled
+  // if `true`, the flip is disabled
   disabled?: boolean;
   // Callback run to produce a value which is dirty checked to determine if flip should run.
   guard?: () => unknown;
+  // If `true`, the final animation state is committed to element styles. Note, requires fill of `forwards` or `both`.
   commit?: boolean;
+  // If `true`, any committed styling is reverted before beginning the next flip.
   reset?: boolean;
 };
 
@@ -314,9 +316,6 @@ export class Flip extends AsyncDirective {
     ) {
       return;
     }
-    // TODO(sorvell):
-    // (1) should do this only if this or an ancestor is flipping?
-    // (2) why reset here and not in hostUpdate?
     this.beforeFlip();
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
@@ -416,8 +415,11 @@ export class Flip extends AsyncDirective {
     if (this.options.id !== undefined) {
       disconnectedProps.set(this.options.id, this._fromValues!);
     }
+    if (this.options.out === undefined) {
+      return;
+    }
     await animationFrame;
-    if (this._parentNode?.isConnected && this.options.out !== undefined) {
+    if (this._parentNode?.isConnected) {
       const ref =
         this._nextSibling && this._nextSibling.parentNode === this._parentNode
           ? this._nextSibling
@@ -467,6 +469,7 @@ export class Flip extends AsyncDirective {
     let dScaleX = 1;
     let dScaleY = 1;
     if (ancestorProps !== undefined) {
+      // gather scaling data for ancestors
       ancestorProps.forEach((a) => {
         if (a.width) {
           dScaleX = dScaleX / (a.width as number);
@@ -475,12 +478,14 @@ export class Flip extends AsyncDirective {
           dScaleY = dScaleY / (a.height as number);
         }
       });
+      // When scaling up, match from and to sizes.
       if (scaleUp && dScaleX > 1 && to.width !== undefined) {
         from.width = dScaleX * (to.width as number);
       }
       if (scaleUp && dScaleY > 1 && to.height !== undefined) {
         from.height = dScaleY * (to.height as number);
       }
+      // Move position by ancestor scaling amount.
       if (from.left !== undefined && to.left !== undefined) {
         from.left = dScaleX * (from.left as number);
         to.left = dScaleX * (to.left as number);
