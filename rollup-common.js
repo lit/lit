@@ -8,7 +8,6 @@ import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import * as pathLib from 'path';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
@@ -36,7 +35,7 @@ const skipBundleOutput = {
 // to avoid collisions since they are used to brand values in positions that
 // accept any value. We don't use a Symbol for these to support mixing and
 // matching values from different versions.
-const reservedProperties = ['_$litType$', '_$litDirective$'];
+const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
 
 // Private properties which should be stable between versions but are used on
 // unambiguous objects and thus are safe to mangle. These include properties on
@@ -53,7 +52,7 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // and choose the next letter.
 //
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
-// FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
+// FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
   // lit-html: Template (used by polyfill-support)
   _$createElement: 'A',
@@ -67,36 +66,34 @@ const stableProperties = {
   _$template: 'G',
   // reactive-element: ReactiveElement (used by polyfill-support)
   _$didUpdate: 'H',
-  // lit-element: LitElement
-  _$renderOptions: 'I',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'J',
+  _$renderImpl: 'I',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'K',
+  _$needsHydration: 'J',
   // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'L',
+  _$committedValue: 'K',
   // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'M',
+  _$setValue: 'L',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'N',
-  // lit-element: ReactiveElement (used by private-ssr-support)
-  _$attributeToProperty: 'O',
-  // lit-element: ReactiveElement (used by private-ssr-support)
-  _$changedProperties: 'P',
+  _$handlesPrepareStyles: 'M',
+  // lit-element: ReactiveElement (used bby ssr-support)
+  _$attributeToProperty: 'N',
+  // lit-element: ReactiveElement (used bby ssr-support)
+  _$changedProperties: 'O',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
-  // async-directive)
-  _$parent: 'Q',
-  _$disconnetableChildren: 'R',
-  // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'S',
-  // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'T',
-  // lit-html: ChildPart (added by async-directive)
-  _$reparentDisconnectables: 'U',
+  // disconnectable-directive)
+  _$parent: 'P',
+  _$disconnetableChildren: 'Q',
+  // disconnectable-directive: DisconnectableDirective
+  _$setDirectiveConnected: 'R',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$setChildPartConnected: 'S',
+  // lit-html: ChildPart (added by disconnectable-directive)
+  _$reparentDisconnectables: 'T',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'V',
+  _$clear: 'U',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'W',
+  _$resolve: 'V',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
@@ -312,13 +309,6 @@ export function litProdConfig({
         ...(CHECKSIZE
           ? [skipBundleOutput]
           : [
-              // Place a copy of each d.ts file adjacent to its minified module.
-              copy({
-                targets: entryPoints.map((name) => ({
-                  src: `development/${name}.d.ts`,
-                  dest: pathLib.dirname(name),
-                })),
-              }),
               // Copy polyfill support tests.
               copy({
                 targets: [

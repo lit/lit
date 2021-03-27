@@ -215,8 +215,8 @@ const COMMENT_PART = 7;
 /**
  * The return type of the template tag functions.
  */
-export type TemplateResult = {
-  _$litType$: ResultType;
+export type TemplateResult<T extends ResultType = ResultType> = {
+  _$litType$: T;
   // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
   // semi-public API though. We can't just let Terser rename them for us,
   // because we need TemplateResults to work between compatible versions of
@@ -225,14 +225,16 @@ export type TemplateResult = {
   values: unknown[];
 };
 
+export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
+
 /**
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = (_$litType$: ResultType) => (
+const tag = <T extends ResultType>(_$litType$: T) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
-): TemplateResult => ({
+): TemplateResult<T> => ({
   _$litType$,
   strings,
   values,
@@ -268,7 +270,7 @@ export const nothing = Symbol.for('lit-nothing');
  * or attr. This restriction simplifies the cache lookup, which is on the hot
  * path for rendering.
  */
-const templateCache = new Map<TemplateStringsArray, Template>();
+const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
 export interface RenderOptions {
   /**
@@ -280,6 +282,12 @@ export interface RenderOptions {
    * A DOM node before which to render content in the container.
    */
   renderBefore?: ChildNode | null;
+  /**
+   * Node used for cloning the template (`importNode` will be called on this
+   * node). This controls the `ownerDocument` of the rendered DOM, along with
+   * any inherited context. Defaults to the global `document`.
+   */
+  creationScope?: {importNode(node: Node, deep?: boolean): Node};
 }
 
 /**
@@ -295,11 +303,11 @@ export const render = (
 ): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart;
+  let part: ChildPart = (partOwnerNode as any)._$litPart$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart = part = new ChildPartImpl(
+    (partOwnerNode as any)._$litPart$ = part = new ChildPartImpl(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -735,7 +743,7 @@ class TemplateInstance {
       _$element: {content},
       _parts: parts,
     } = this._$template;
-    const fragment = d.importNode(content, true);
+    const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
     let node = walker.nextNode();
@@ -909,8 +917,42 @@ class ChildPartImpl {
     this._$setChildPartConnected?.(isConnected);
   }
 
+  /**
+   * The parent node into which the part renders its content.
+   *
+   * A ChildPart's content consists of a range of adjacent child nodes of
+   * `.parentNode`, possibly bordered by 'marker nodes' (`.startNode` and
+   * `.endNode`).
+   *
+   * - If both `.startNode` and `.endNode` are non-null, then the part's content
+   * consists of all siblings between `.startNode` and `.endNode`, exclusively.
+   *
+   * - If `.startNode` is non-null but `.endNode` is null, then the part's
+   * content consists of all siblings following `.startNode`, up to and
+   * including the last child of `.parentNode`. If `.endNode` is non-null, then
+   * `.startNode` will always be non-null.
+   *
+   * - If both `.endNode` and `.startNode` are null, then the part's content
+   * consists of all child nodes of `.parentNode`.
+   */
   get parentNode(): Node {
     return wrap(this._$startNode).parentNode!;
+  }
+
+  /**
+   * The part's leading marker node, if any. See `.parentNode` for more
+   * information.
+   */
+  get startNode(): Node | null {
+    return this._$startNode;
+  }
+
+  /**
+   * The part's trailing marker node, if any. See `.parentNode` for more
+   * information.
+   */
+  get endNode(): Node | null {
+    return this._$endNode;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {

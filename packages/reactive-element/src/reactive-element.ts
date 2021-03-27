@@ -75,21 +75,11 @@ if (DEV_MODE) {
  * alias this function, so we have to use a small shim that has the same
  * behavior when not compiling.
  */
-window.JSCompiler_renameProperty = <P extends PropertyKey>(
+/*@__INLINE__*/
+const JSCompiler_renameProperty = <P extends PropertyKey>(
   prop: P,
   _obj: unknown
 ): P => prop;
-
-declare global {
-  const JSCompiler_renameProperty: <P extends PropertyKey>(
-    prop: P,
-    _obj: unknown
-  ) => P;
-
-  interface Window {
-    JSCompiler_renameProperty: typeof JSCompiler_renameProperty;
-  }
-}
 
 /**
  * Converts property values to and from attribute values.
@@ -280,6 +270,8 @@ const finalized = 'finalized';
 
 export type Warnings = 'change-in-update' | 'migration';
 
+export type Initializer = (element: ReactiveElement) => void;
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -296,6 +288,12 @@ export abstract class ReactiveElement
   static enableWarning?: (type: Warnings) => void;
   /** @nocollapse */
   static disableWarning?: (type: Warnings) => void;
+  /** @nocollapse */
+  static addInitializer(initializer: Initializer) {
+    this._initializers ??= [];
+    this._initializers.push(initializer);
+  }
+  static _initializers?: Initializer[];
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
@@ -675,6 +673,9 @@ export abstract class ReactiveElement
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
+    (this.constructor as typeof ReactiveElement)._initializers?.forEach((i) =>
+      i(this)
+    );
   }
 
   addController(controller: ReactiveController) {
@@ -742,7 +743,7 @@ export abstract class ReactiveElement
    */
   connectedCallback() {
     // create renderRoot before first update.
-    if (!this.hasUpdated) {
+    if (this.renderRoot === undefined) {
       (this as {
         renderRoot: Element | DocumentFragment;
       }).renderRoot = this.createRenderRoot();
@@ -1031,11 +1032,11 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
+    this.__controllers?.forEach((c) => c.hostUpdated?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
     }
-    this.__controllers?.forEach((c) => c.hostUpdated?.());
     this.updated(changedProperties);
     if (
       DEV_MODE &&
@@ -1160,7 +1161,9 @@ if (DEV_MODE) {
   // Default warning set.
   ReactiveElement.enabledWarnings = ['change-in-update'];
   const ensureOwnWarnings = function (ctor: typeof ReactiveElement) {
-    if (!ctor.hasOwnProperty('enabledWarnings')) {
+    if (
+      !ctor.hasOwnProperty(JSCompiler_renameProperty('enabledWarnings', ctor))
+    ) {
       ctor.enabledWarnings = ctor.enabledWarnings!.slice();
     }
   };

@@ -7,7 +7,7 @@
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {ReactiveController} from '@lit/reactive-element/reactive-controller.js';
 import {property} from '@lit/reactive-element/decorators/property.js';
-import {Task, TaskStatus} from '../task.js';
+import {initialState, Task, TaskStatus} from '../task.js';
 import {generateElementName, nextFrame} from './test-helpers';
 import {assert} from '@esm-bundle/chai';
 
@@ -86,7 +86,7 @@ suite('Task', () => {
     rejectRenderedStatusTask!: () => void;
     taskValue?: unknown;
     taskControllerValue?: unknown;
-    task = new Task(
+    task = new Task<[string, string], string>(
       this,
       ([foo, bar]) =>
         new Promise((resolve, reject) => {
@@ -95,7 +95,7 @@ suite('Task', () => {
         }),
       () => [this.foo, this.bar]
     );
-    renderedStatusTask = new Task(
+    renderedStatusTask = new Task<[string?], string>(
       this,
       ([zot]) =>
         new Promise((resolve, reject) => {
@@ -272,5 +272,40 @@ suite('Task', () => {
     el.resolveRenderedStatusTask();
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'result: zot3');
+  });
+
+  test('task functions can return initial state', async () => {
+    class TestEl extends ReactiveElement {
+      @property()
+      state = '';
+
+      task = new Task(
+        this,
+        async ([state]) => (state === 'initial' ? initialState : 'A'),
+        () => [this.state]
+      );
+    }
+    customElements.define(generateElementName(), TestEl);
+
+    const el = new TestEl();
+    assert.equal(el.task.status, TaskStatus.INITIAL, 'initial');
+    container.append(el);
+
+    // After one microtask we expect the task function to have been
+    // called, but not completed
+    await Promise.resolve();
+    assert.equal(el.task.status, TaskStatus.PENDING, 'pending');
+
+    await el.task.taskComplete;
+    assert.equal(el.task.status, TaskStatus.COMPLETE, 'complete');
+    assert.equal(el.task.value, 'A');
+
+    // Kick off a new task run
+    el.state = 'initial';
+
+    // We need to wait for the element to update, and then the task to run,
+    // so we wait a event loop turn:
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(el.task.status, TaskStatus.INITIAL, 'new initial');
   });
 });

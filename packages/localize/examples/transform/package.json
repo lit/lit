@@ -3,16 +3,23 @@
   "description": "Example of using lit-localize in transform mode",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "rm -rf lib/* && lit-localize",
-    "serve": "es-dev-server --node-resolve --preserve-symlinks"
+    "build": "rm -rf lib/* && lit-localize build && npx rollup -c",
+    "serve": "web-dev-server"
   },
   "dependencies": {
-    "@lit/localize": "^0.6.1",
+    "@lit/localize": "^0.8.0",
     "lit-element": "^2.4.0"
   },
   "devDependencies": {
-    "es-dev-server": "^1.57.3",
+    "@lit/localize-tools": "^0.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@rollup/plugin-typescript": "^8.2.0",
+    "@web/dev-server": "^0.1.10",
+    "rollup": "^2.41.1",
+    "rollup-plugin-summary": "^1.2.3",
+    "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.0.2"
   }
 }
