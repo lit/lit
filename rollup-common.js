@@ -54,53 +54,42 @@ const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
 // FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
-  // lit-html: Template (used by polyfill-support and copmiled templates)
-  _$createElement: 'Σce',
-  _$element: 'Σe',
-  _$parts: 'Σp',
-  _$options: 'A',
-  // lit-html: TemplatePart (used by compiled templates)
-  _$type: 'Σt',
-  _$index: 'Σi',
-  _$name: 'Σn',
-  _$strings: 'Σs',
-  _$constructor: 'Σc',
   // lit-html: ChildPart (used by polyfill-support)
-  _$startNode: 'B',
-  _$endNode: 'C',
-  _$getTemplate: 'D',
+  _$startNode: 'A',
+  _$endNode: 'B',
+  _$getTemplate: 'C',
   // lit-html: TemplateInstance (used by polyfill-support)
-  _$template: 'E',
+  _$template: 'D',
   // reactive-element: ReactiveElement (used by polyfill-support)
-  _$didUpdate: 'F',
+  _$didUpdate: 'E',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'G',
+  _$renderImpl: 'F',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'H',
+  _$needsHydration: 'G',
   // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'I',
+  _$committedValue: 'H',
   // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'J',
+  _$setValue: 'I',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'K',
+  _$handlesPrepareStyles: 'J',
   // lit-element: ReactiveElement (used by ssr-support)
-  _$attributeToProperty: 'L',
+  _$attributeToProperty: 'K',
   // lit-element: ReactiveElement (used by ssr-support)
-  _$changedProperties: 'M',
+  _$changedProperties: 'L',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // async-directive)
-  _$parent: 'N',
-  _$disconnetableChildren: 'O',
+  _$parent: 'M',
+  _$disconnetableChildren: 'N',
   // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'P',
+  _$setDirectiveConnected: 'O',
   // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'Q',
+  _$setChildPartConnected: 'P',
   // lit-html: ChildPart (added by async-directive)
-  _$reparentDisconnectables: 'R',
+  _$reparentDisconnectables: 'Q',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'S',
+  _$clear: 'R',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'T',
+  _$resolve: 'S',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

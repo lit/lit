@@ -65,14 +65,13 @@ interface PatchableChildPart {
 }
 
 interface PatchableTemplate {
-  _$element: HTMLTemplateElement;
-  // _$options: RenderOptions;
+  el: HTMLTemplateElement;
 }
 
 interface PatchableTemplateConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableTemplate;
-  _$createElement(html: string, options?: RenderOptions): HTMLTemplateElement;
+  createElement(html: string, options?: RenderOptions): HTMLTemplateElement;
 }
 
 interface PatchableTemplateInstance {
@@ -160,8 +159,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    * and store all style.textContent in the shady scope data.
    * Note, it's ok to patch Template since it's only used via ChildPart.
    */
-  const originalCreateElement = Template._$createElement;
-  Template._$createElement = function (html: string, options?: RenderOptions) {
+  const originalCreateElement = Template.createElement;
+  Template.createElement = function (html: string, options?: RenderOptions) {
     const element = originalCreateElement.call(Template, html, options);
     const scope = options?.scope;
     if (scope !== undefined) {
@@ -224,8 +223,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
       const template = (value as ShadyTemplateResult)?._$litType$
-        ? (this._$committedValue as PatchableTemplateInstance)._$template
-            ._$element
+        ? (this._$committedValue as PatchableTemplateInstance)._$template.el
         : document.createElement('template');
       prepareStyles(scope!, template);
 

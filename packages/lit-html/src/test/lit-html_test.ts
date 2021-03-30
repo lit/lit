@@ -1483,8 +1483,8 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f: TemplateFactory = (options?: RenderOptions) =>
         (_$lit_template_1 ??= {
-          Σe: TemplateImpl.Σce('<!---->', options),
-          Σp: [{Σt: 2, Σi: 0}],
+          el: TemplateImpl.createElement('<!---->', options),
+          parts: [{type: 2, index: 0}],
         });
       assertRender(
         {
@@ -1500,8 +1500,8 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f = (): Template =>
         (_$lit_template_1 ??= {
-          Σe: TemplateImpl.Σce(`<div><!----></div>`),
-          Σp: [{Σt: 2, Σi: 1}],
+          el: TemplateImpl.createElement(`<div><!----></div>`),
+          parts: [{type: 2, index: 1}],
         });
       const result = {
         _$litType$: _$lit_template_1_f,
@@ -1515,14 +1515,14 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f: TemplateFactory = () =>
         (_$lit_template_1 ??= {
-          Σe: TemplateImpl.Σce('<div></div>'),
-          Σp: [
+          el: TemplateImpl.createElement('<div></div>'),
+          parts: [
             {
-              Σt: 1,
-              Σi: 0,
-              Σn: 'foo',
-              Σs: ['', ''],
-              Σc: AttributePart,
+              type: 1,
+              index: 0,
+              name: 'foo',
+              strings: ['', ''],
+              ctor: AttributePart,
             },
           ],
         });
@@ -1539,8 +1539,8 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f: TemplateFactory = () =>
         (_$lit_template_1 ??= {
-          Σe: TemplateImpl.Σce('<div></div>'),
-          Σp: [{Σt: 6, Σi: 0}],
+          el: TemplateImpl.createElement('<div></div>'),
+          parts: [{type: 6, index: 0}],
         });
       const result = {
         _$litType$: _$lit_template_1_f,
