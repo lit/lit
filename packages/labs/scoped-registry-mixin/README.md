@@ -11,6 +11,7 @@ The [Scoped Custom Element Registries](https://github.com/WICG/webcomponents/blo
 When new elements are created within a shadow root with a scoped custom element registry, the browser will use the scoped registry rather than the global registry to look up custom element definitions. When using a scoped element registry, all used custom element elements must be defined within that scope.
 
 `ScopedRegistryHost` adds the following features to LitElement:
+
 1. Automatically creates a scoped CustomElementRegistry for the class
 2. Provides sugar for defining custom elements in the scoped registry
 3. Passes the registry to `attachShadow()` to enable scoping

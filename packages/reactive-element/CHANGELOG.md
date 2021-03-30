@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- (Since 1.0.0-pre.1) Adds `static addInitializer` for adding a function which is called with the element instance when is created. This can be used, for example, to create decorators which hook into element lifecycle by creating a reactive controller ([#1663](https://github.com/Polymer/lit-html/issues/1663)).
 - (Since 1.0.0-pre.1) Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
 
 ### Changed
