@@ -100,8 +100,11 @@ const stableProperties = {
   // lit-html: ChildPart (used by directive-helpers)
   _$clear: 'AA',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'BB',
+  _$resolve: 'AB',
 };
+
+const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const validMangledNames = [...alpha, ...alpha.map((c) => `A${c}`)];
 
 // Validate stableProperties list, just to be safe; catches dupes and
 // out-of-order mangled names
@@ -112,7 +115,7 @@ Object.entries(stableProperties).forEach(([prop, mangle], i) => {
         `(property '${prop}' violates the convention)`
     );
   }
-  if (mangle.charCodeAt(0) !== 'A'.charCodeAt(0) + i) {
+  if (mangle !== validMangledNames[i]) {
     throw new Error(
       `Add new stableProperties to the end of the list using ` +
         `the next available letter (mangled name '${mangle}' for property ` +
