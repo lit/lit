@@ -8,7 +8,7 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
-  Template,
+  // Template,
   noChange,
   nothing,
   render,
@@ -29,10 +29,11 @@ import {
 import {repeat} from '../directives/repeat.js';
 import {AsyncDirective} from '../async-directive.js';
 
-import {_Σ} from '../lit-html.js';
 import {createRef, ref} from '../directives/ref.js';
 
-const {_AttributePart: AttributePart, _Template: Template} = _Σ;
+// For compiled template tests
+import {_Σ} from '../private-ssr-support.js';
+const {AttributePart, Template} = _Σ;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
