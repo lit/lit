@@ -553,19 +553,19 @@ function replaceHtmlWithPlaceholders(
 ): Array<string | Placeholder> {
   const components: Array<string | Placeholder> = [];
 
-  const traverse = (node: parse5.DefaultTreeNode): void => {
+  const traverse = (node: parse5.ChildNode): void => {
     if (node.nodeName === '#text') {
-      const text = (node as parse5.DefaultTreeTextNode).value;
+      const text = (node as parse5.TextNode).value;
       components.push(text);
     } else if (node.nodeName === '#comment') {
       components.push({
-        untranslatable: serializeComment(node as parse5.DefaultTreeCommentNode),
+        untranslatable: serializeComment(node as parse5.CommentNode),
       });
     } else {
       const {open, close} = serializeOpenCloseTags(node);
       components.push({untranslatable: open});
       if ('childNodes' in node) {
-        for (const child of (node as parse5.DefaultTreeParentNode).childNodes) {
+        for (const child of node.childNodes) {
           traverse(child);
         }
       }
@@ -573,8 +573,8 @@ function replaceHtmlWithPlaceholders(
     }
   };
 
-  const frag = parse5.parseFragment(html) as parse5.DefaultTreeDocumentFragment;
-  for (const child of (frag as parse5.DefaultTreeParentNode).childNodes) {
+  const frag = parse5.parseFragment(html);
+  for (const child of frag.childNodes) {
     traverse(child);
   }
   return components;
@@ -589,10 +589,10 @@ function replaceHtmlWithPlaceholders(
  *   <b class="red">foo</b> --> {open: '<b class="red">, close: '</b>'}
  */
 function serializeOpenCloseTags(
-  node: parse5.Node
+  node: parse5.ChildNode
 ): {open: string; close: string} {
-  const withoutChildren = {...node, childNodes: []};
-  const fakeParent = {childNodes: [withoutChildren]};
+  const withoutChildren: parse5.ChildNode = {...node, childNodes: []};
+  const fakeParent = {childNodes: [withoutChildren]} as parse5.Node;
   const serialized = parse5.serialize(fakeParent);
   const lastLt = serialized.lastIndexOf('<');
   const open = serialized.slice(0, lastLt);
@@ -607,8 +607,8 @@ function serializeOpenCloseTags(
  *
  *   {data: "foo"} --> "<!-- foo -->"
  */
-function serializeComment(comment: parse5.DefaultTreeCommentNode): string {
-  return parse5.serialize({childNodes: [comment]});
+function serializeComment(comment: parse5.CommentNode): string {
+  return parse5.serialize({childNodes: [comment]} as parse5.Node);
 }
 
 /**
