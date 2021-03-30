@@ -12,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 // TODO(sorvell): Remove when https://github.com/webcomponents/polyfills/issues/397 is addressed.
 // x-browser support for matches
@@ -57,12 +53,8 @@ export function queryAssignedNodes(
   flatten = false,
   selector = ''
 ) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
       get(this: ReactiveElement) {
         const slotSelector = `slot${
           slotName ? `[name=${slotName}]` : ':not([name])'
@@ -83,9 +75,6 @@ export function queryAssignedNodes(
       },
       enumerable: true,
       configurable: true,
-    };
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+    }),
+  });
 }

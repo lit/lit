@@ -23,7 +23,7 @@ cd lit-html/packages/localize/examples/transform
 npm install
 npx lit-localize build
 npx tsc
-npx es-dev-server --node-resolve
+npx web-dev-server --node-resolve
 ```
 
 Visit the URL that is logged to the console to view the app.
