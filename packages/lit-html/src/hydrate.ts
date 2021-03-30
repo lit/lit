@@ -348,24 +348,24 @@ const createAttributeParts = (
     while (true) {
       // If the next template part is in attribute-position on the current node,
       // create the instance part for it and prime its state
-      const templatePart = instance._$template._parts[state.templatePartIndex];
+      const templatePart = instance._$template._$parts[state.templatePartIndex];
       if (
         templatePart === undefined ||
-        (templatePart._type !== PartType.ATTRIBUTE &&
-          templatePart._type !== PartType.ELEMENT) ||
-        templatePart._index !== nodeIndex
+        (templatePart._$type !== PartType.ATTRIBUTE &&
+          templatePart._$type !== PartType.ELEMENT) ||
+        templatePart._$index !== nodeIndex
       ) {
         break;
       }
       foundOnePart = true;
 
-      if (templatePart._type === PartType.ATTRIBUTE) {
+      if (templatePart._$type === PartType.ATTRIBUTE) {
         // The instance part is created based on the constructor saved in the
         // template part
-        const instancePart = new templatePart._constructor(
+        const instancePart = new templatePart._$constructor(
           node.parentElement as HTMLElement,
-          templatePart._name,
-          templatePart._strings,
+          templatePart._$name,
+          templatePart._$strings,
           state.instance,
           options
         );
@@ -390,7 +390,7 @@ const createAttributeParts = (
           state.instancePartIndex,
           noCommit
         );
-        state.instancePartIndex += templatePart._strings.length - 1;
+        state.instancePartIndex += templatePart._$strings.length - 1;
         instance._parts.push(instancePart);
       } else {
         // templatePart._type === PartType.ELEMENT

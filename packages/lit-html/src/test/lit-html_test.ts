@@ -6,7 +6,9 @@
 import {
   AttributePart,
   ChildPart,
+  CompiledTemplateResult,
   html,
+  Template,
   noChange,
   nothing,
   render,
@@ -16,6 +18,7 @@ import {
   SVGTemplateResult,
   SanitizerFactory,
   Part,
+  TemplateFactory,
 } from '../lit-html.js';
 import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
@@ -25,6 +28,11 @@ import {
 } from './test-utils/strip-markers.js';
 import {repeat} from '../directives/repeat.js';
 import {AsyncDirective} from '../async-directive.js';
+
+import {_Σ} from '../lit-html.js';
+import {createRef, ref} from '../directives/ref.js';
+
+const {_AttributePart: AttributePart, _Template: Template} = _Σ;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -40,7 +48,7 @@ suite('lit-html', () => {
   });
 
   const assertRender = (
-    r: TemplateResult,
+    r: TemplateResult | CompiledTemplateResult,
     expected: string,
     options?: RenderOptions
   ) => {
@@ -1466,6 +1474,82 @@ suite('lit-html', () => {
         assert.notEqual(fooDiv, barDiv);
       }
     );
+  });
+
+  suite('compiled', () => {
+    test('only text', () => {
+      // A compiled template for html`${'A'}`
+      let _$lit_template_1: Template;
+      const _$lit_template_1_f: TemplateFactory = (options?: RenderOptions) =>
+        (_$lit_template_1 ??= {
+          _$element: Template._$createElement('<!---->', options),
+          _$parts: [{_$type: 2, _$index: 0}],
+        });
+      assertRender(
+        {
+          _$litType$: _$lit_template_1_f,
+          values: ['A'],
+        },
+        'A'
+      );
+    });
+
+    test('text expression', () => {
+      // A compiled template for html`<div>${'A'}</div>`
+      let _$lit_template_1: Template;
+      const _$lit_template_1_f = (): Template =>
+        (_$lit_template_1 ??= {
+          _$element: Template._$createElement(`<div><!----></div>`),
+          _$parts: [{_$type: 2, _$index: 1}],
+        });
+      const result = {
+        _$litType$: _$lit_template_1_f,
+        values: ['A'],
+      };
+      assertRender(result, '<div>A</div>');
+    });
+
+    test('attribute expression', () => {
+      // A compiled template for html`<div foo=${'A'}></div>`
+      let _$lit_template_1: Template;
+      const _$lit_template_1_f: TemplateFactory = () =>
+        (_$lit_template_1 ??= {
+          _$element: Template._$createElement('<div></div>'),
+          _$parts: [
+            {
+              _$type: 1,
+              _$index: 0,
+              _$name: 'foo',
+              _$strings: ['', ''],
+              _$constructor: AttributePart,
+            },
+          ],
+        });
+      const result = {
+        _$litType$: _$lit_template_1_f,
+        values: ['A'],
+      };
+      assertRender(result, '<div foo="A"></div>');
+    });
+
+    test('element expression', () => {
+      const r = createRef();
+      // A compiled template for html`<div ${ref(r)}></div>`
+      let _$lit_template_1: Template;
+      const _$lit_template_1_f: TemplateFactory = () =>
+        (_$lit_template_1 ??= {
+          _$element: Template._$createElement('<div></div>'),
+          _$parts: [{_$type: 6, _$index: 0}],
+        });
+      const result = {
+        _$litType$: _$lit_template_1_f,
+        values: [ref(r)],
+      };
+      assertRender(result, '<div></div>');
+      const div = container.firstElementChild;
+      assert.isDefined(div);
+      assert.strictEqual(r.value, div);
+    });
   });
 
   suite('directives', () => {

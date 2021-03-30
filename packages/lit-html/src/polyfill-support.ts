@@ -46,9 +46,12 @@ interface DirectiveParent {
   __directives?: Array<Directive | undefined>;
 }
 
-interface PatchableChildPart {
+interface PatchableChildPartConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableChildPart;
+}
+
+interface PatchableChildPart {
   __directive?: Directive;
   _$committedValue: unknown;
   _$startNode: ChildNode;
@@ -62,11 +65,14 @@ interface PatchableChildPart {
 }
 
 interface PatchableTemplate {
+  _$element: HTMLTemplateElement;
+  // _$options: RenderOptions;
+}
+
+interface PatchableTemplateConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableTemplate;
-  _$createElement(html: string): HTMLTemplateElement;
-  _$element: HTMLTemplateElement;
-  _$options: RenderOptions;
+  _$createElement(html: string, options?: RenderOptions): HTMLTemplateElement;
 }
 
 interface PatchableTemplateInstance {
@@ -89,8 +95,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= (
-  Template: PatchableTemplate,
-  ChildPart: PatchableChildPart
+  Template: PatchableTemplateConstructor,
+  ChildPart: PatchableChildPartConstructor
 ) => {
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
@@ -154,17 +160,17 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    * and store all style.textContent in the shady scope data.
    * Note, it's ok to patch Template since it's only used via ChildPart.
    */
-  const originalCreateElement = Template.prototype._$createElement;
-  Template.prototype._$createElement = function (html: string) {
-    const template = originalCreateElement.call(this, html);
-    const scope = this._$options?.scope;
+  const originalCreateElement = Template._$createElement;
+  Template._$createElement = function (html: string, options?: RenderOptions) {
+    const element = originalCreateElement.call(Template, html, options);
+    const scope = options?.scope;
     if (scope !== undefined) {
       if (!window.ShadyCSS!.nativeShadow) {
-        window.ShadyCSS!.prepareTemplateDom(template, scope);
+        window.ShadyCSS!.prepareTemplateDom(element, scope);
       }
       const scopeCss = cssForScope(scope);
       // Remove styles and store textContent.
-      const styles = template.content.querySelectorAll(
+      const styles = element.content.querySelectorAll(
         'style'
       ) as NodeListOf<HTMLStyleElement>;
       // Store the css in this template in the scope css and remove the <style>
@@ -176,7 +182,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
         })
       );
     }
-    return template;
+    return element;
   };
 
   const renderContainer = document.createDocumentFragment();

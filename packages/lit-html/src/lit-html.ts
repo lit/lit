@@ -226,6 +226,14 @@ export type TemplateResult<T extends ResultType = ResultType> = {
 };
 
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
+export type TemplateFactory = (options?: RenderOptions) => Template;
+
+export type CompiledTemplateResult = {
+  // This is a factory in order to make template initialization lazy
+  // and allow ShadyRenderOptions scope to be passed in.
+  _$litType$: TemplateFactory;
+  values: unknown[];
+};
 
 /**
  * Generates a template literal tag function that returns a TemplateResult with
@@ -523,7 +531,7 @@ class TemplateImpl {
   /** @internal */
   _$element!: HTMLTemplateElement;
   /** @internal */
-  _parts: Array<TemplatePart> = [];
+  _$parts: Array<TemplatePart> = [];
   // Note, this is used by the `polyfill-support` module.
   _$options?: RenderOptions;
 
@@ -540,7 +548,7 @@ class TemplateImpl {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
-    this._$element = this._$createElement(html);
+    this._$element = TemplateImpl._$createElement(html, options);
     walker.currentNode = this._$element.content;
 
     // Reparent SVG nodes into template root
@@ -583,12 +591,12 @@ class TemplateImpl {
                 )!;
                 const statics = value.split(marker);
                 const m = /([.?@])?(.*)/.exec(realName)!;
-                this._parts.push({
-                  _type: ATTRIBUTE_PART,
-                  _index: nodeIndex,
-                  _name: m[2],
-                  _strings: statics,
-                  _constructor:
+                this._$parts.push({
+                  _$type: ATTRIBUTE_PART,
+                  _$index: nodeIndex,
+                  _$name: m[2],
+                  _$strings: statics,
+                  _$constructor:
                     m[1] === '.'
                       ? PropertyPartImpl
                       : m[1] === '?'
@@ -599,9 +607,9 @@ class TemplateImpl {
                 });
                 bindingIndex += statics.length - 1;
               } else {
-                this._parts.push({
-                  _type: ELEMENT_PART,
-                  _index: nodeIndex,
+                this._$parts.push({
+                  _$type: ELEMENT_PART,
+                  _$index: nodeIndex,
                 });
               }
             }
@@ -626,7 +634,7 @@ class TemplateImpl {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this._parts.push({_type: CHILD_PART, _index: ++nodeIndex});
+              this._$parts.push({_$type: CHILD_PART, _$index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -636,7 +644,7 @@ class TemplateImpl {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this._parts.push({_type: CHILD_PART, _index: nodeIndex});
+          this._$parts.push({_$type: CHILD_PART, _$index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -644,7 +652,7 @@ class TemplateImpl {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this._parts.push({_type: COMMENT_PART, _index: nodeIndex});
+            this._$parts.push({_$type: COMMENT_PART, _$index: nodeIndex});
             bindingIndex++;
             // Move to the end of the match
             i += marker.length - 1;
@@ -653,13 +661,14 @@ class TemplateImpl {
       }
       nodeIndex++;
     }
+    // console.log('Template', this);
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
-  _$createElement(html: string) {
-    const template = d.createElement('template');
-    template.innerHTML = html;
-    return template;
+  static _$createElement(html: string, _options?: RenderOptions) {
+    const el = d.createElement('template');
+    el.innerHTML = html;
+    return el;
   }
 }
 
@@ -741,7 +750,7 @@ class TemplateInstance {
   _clone(options: RenderOptions | undefined) {
     const {
       _$element: {content},
-      _parts: parts,
+      _$parts: parts,
     } = this._$template;
     const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
@@ -752,30 +761,30 @@ class TemplateInstance {
     let templatePart = parts[0];
 
     while (templatePart !== undefined && node !== null) {
-      if (nodeIndex === templatePart._index) {
+      if (nodeIndex === templatePart._$index) {
         let part: Part | undefined;
-        if (templatePart._type === CHILD_PART) {
+        if (templatePart._$type === CHILD_PART) {
           part = new ChildPartImpl(
             node as HTMLElement,
             node.nextSibling,
             this,
             options
           );
-        } else if (templatePart._type === ATTRIBUTE_PART) {
-          part = new templatePart._constructor(
+        } else if (templatePart._$type === ATTRIBUTE_PART) {
+          part = new templatePart._$constructor(
             node as HTMLElement,
-            templatePart._name,
-            templatePart._strings,
+            templatePart._$name,
+            templatePart._$strings,
             this,
             options
           );
-        } else if (templatePart._type === ELEMENT_PART) {
+        } else if (templatePart._$type === ELEMENT_PART) {
           part = new ElementPartImpl(node as HTMLElement, this, options);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart._index) {
+      if (templatePart !== undefined && nodeIndex !== templatePart._$index) {
         node = walker.nextNode();
         nodeIndex++;
       }
@@ -815,17 +824,17 @@ type AttributePartConstructor = {
   ): AttributePart;
 };
 type AttributeTemplatePart = {
-  readonly _type: typeof ATTRIBUTE_PART;
-  readonly _index: number;
-  readonly _name: string;
+  readonly _$type: typeof ATTRIBUTE_PART;
+  readonly _$index: number;
+  readonly _$name: string;
   /** @internal */
-  readonly _constructor: AttributePartConstructor;
+  readonly _$constructor: AttributePartConstructor;
   /** @internal */
-  readonly _strings: ReadonlyArray<string>;
+  readonly _$strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly _type: typeof CHILD_PART;
-  readonly _index: number;
+  readonly _$type: typeof CHILD_PART;
+  readonly _$index: number;
 };
 type ElementPartConstructor = {
   new (
@@ -835,12 +844,12 @@ type ElementPartConstructor = {
   ): ElementPart;
 };
 type ElementTemplatePart = {
-  readonly _type: typeof ELEMENT_PART;
-  readonly _index: number;
+  readonly _$type: typeof ELEMENT_PART;
+  readonly _$index: number;
 };
 type CommentTemplatePart = {
-  readonly _type: typeof COMMENT_PART;
-  readonly _index: number;
+  readonly _$type: typeof COMMENT_PART;
+  readonly _$index: number;
 };
 
 /**
@@ -1046,13 +1055,22 @@ class ChildPartImpl {
     this._$committedValue = value;
   }
 
-  private _commitTemplateResult(result: TemplateResult): void {
-    const {values, strings} = result;
-    const template = this._$getTemplate(strings, result);
+  private _commitTemplateResult(
+    result: TemplateResult | CompiledTemplateResult
+  ): void {
+    const {values} = result;
+    let template: Template | undefined;
+    if (typeof result._$litType$ === 'number') {
+      const {strings} = result as TemplateResult;
+      template = this._$getTemplate(strings, result as TemplateResult);
+    } else {
+      template = (result as CompiledTemplateResult)._$litType$(this.options);
+    }
+
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
     } else {
-      const instance = new TemplateInstance(template!, this);
+      const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
@@ -1491,6 +1509,8 @@ export const _Σ = {
   _EventPart: EventPartImpl as AttributePartConstructor,
   _PropertyPart: PropertyPartImpl as AttributePartConstructor,
   _ElementPart: ElementPartImpl as ElementPartConstructor,
+  // Used in compiled templates
+  _Template: TemplateImpl,
 };
 
 // Apply polyfills if available
