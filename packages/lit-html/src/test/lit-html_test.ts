@@ -8,7 +8,7 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
-  // Template,
+  Template,
   noChange,
   nothing,
   render,

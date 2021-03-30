@@ -527,6 +527,7 @@ const getTemplateHtml = (
 };
 
 export type Template = Interface<TemplateImpl>;
+export type {TemplateImpl};
 class TemplateImpl {
   /** @internal */
   _$element!: HTMLTemplateElement;

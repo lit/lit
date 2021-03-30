@@ -6,6 +6,7 @@
 
 import {Directive, PartInfo} from './directive.js';
 import {_Σ as p, AttributePart, noChange, Part} from './lit-html.js';
+export type {Template, TemplateImpl} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -54,4 +55,5 @@ export const _Σ = {
   BooleanAttributePart: p._BooleanAttributePart,
   EventPart: p._EventPart,
   ElementPart: p._ElementPart,
+  Template: p._Template,
 };
