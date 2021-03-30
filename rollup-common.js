@@ -55,52 +55,52 @@ const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
 // FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
   // lit-html: Template (used by polyfill-support and copmiled templates)
-  _$createElement: 'A',
-  _$element: 'B',
-  _$parts: 'C',
-  _$options: 'D',
+  _$createElement: 'Σce',
+  _$element: 'Σe',
+  _$parts: 'Σp',
+  _$options: 'A',
   // lit-html: TemplatePart (used by compiled templates)
-  _$type: 'E',
-  _$index: 'F',
-  _$name: 'G',
-  _$strings: 'H',
-  _$constructor: 'I',
+  _$type: 'Σt',
+  _$index: 'Σi',
+  _$name: 'Σn',
+  _$strings: 'Σs',
+  _$constructor: 'Σc',
   // lit-html: ChildPart (used by polyfill-support)
-  _$startNode: 'J',
-  _$endNode: 'K',
-  _$getTemplate: 'L',
+  _$startNode: 'B',
+  _$endNode: 'C',
+  _$getTemplate: 'D',
   // lit-html: TemplateInstance (used by polyfill-support)
-  _$template: 'M',
+  _$template: 'E',
   // reactive-element: ReactiveElement (used by polyfill-support)
-  _$didUpdate: 'N',
+  _$didUpdate: 'F',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'O',
+  _$renderImpl: 'G',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'P',
+  _$needsHydration: 'H',
   // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'Q',
+  _$committedValue: 'I',
   // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'R',
+  _$setValue: 'J',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'S',
-  // lit-element: ReactiveElement (used bby ssr-support)
-  _$attributeToProperty: 'T',
-  // lit-element: ReactiveElement (used bby ssr-support)
-  _$changedProperties: 'U',
+  _$handlesPrepareStyles: 'K',
+  // lit-element: ReactiveElement (used by ssr-support)
+  _$attributeToProperty: 'L',
+  // lit-element: ReactiveElement (used by ssr-support)
+  _$changedProperties: 'M',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // async-directive)
-  _$parent: 'V',
-  _$disconnetableChildren: 'W',
+  _$parent: 'N',
+  _$disconnetableChildren: 'O',
   // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'X',
+  _$setDirectiveConnected: 'P',
   // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'Y',
+  _$setChildPartConnected: 'Q',
   // lit-html: ChildPart (added by async-directive)
-  _$reparentDisconnectables: 'Z',
+  _$reparentDisconnectables: 'R',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'AA',
+  _$clear: 'S',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'AB',
+  _$resolve: 'T',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -108,21 +108,29 @@ const validMangledNames = [...alpha, ...alpha.map((c) => `A${c}`)];
 
 // Validate stableProperties list, just to be safe; catches dupes and
 // out-of-order mangled names
-Object.entries(stableProperties).forEach(([prop, mangle], i) => {
+let mangledNameCount = 0;
+const reservedPropertySet = new Set();
+
+for (const [prop, mangle] of Object.entries(stableProperties)) {
   if (!prop.startsWith('_$')) {
     throw new Error(
       `stableProperties should start with prefix '_$' ` +
         `(property '${prop}' violates the convention)`
     );
   }
-  if (mangle !== validMangledNames[i]) {
+  if (mangle.startsWith('Σ')) {
+    if (reservedPropertySet.has(mangle)) {
+      throw new Error(`Mangled name ${mangle} used more than once`);
+    }
+    reservedPropertySet.add(mangle);
+  } else if (mangle !== validMangledNames[mangledNameCount++]) {
     throw new Error(
       `Add new stableProperties to the end of the list using ` +
         `the next available letter (mangled name '${mangle}' for property ` +
         `${prop} was unexpected)`
     );
   }
-});
+}
 
 /**
  * Prefixes all class properties with the given prefix character. This is to

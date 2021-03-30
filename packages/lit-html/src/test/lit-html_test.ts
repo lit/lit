@@ -8,7 +8,6 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
-  Template,
   noChange,
   nothing,
   render,
@@ -20,6 +19,7 @@ import {
   Part,
   TemplateFactory,
 } from '../lit-html.js';
+import type {Template} from '../lit-html.js';
 import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -33,7 +33,7 @@ import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
 import {_Σ} from '../private-ssr-support.js';
-const {AttributePart, Template} = _Σ;
+const {AttributePart, Template: TemplateImpl} = _Σ;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1483,8 +1483,8 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f: TemplateFactory = (options?: RenderOptions) =>
         (_$lit_template_1 ??= {
-          _$element: Template._$createElement('<!---->', options),
-          _$parts: [{_$type: 2, _$index: 0}],
+          Σe: TemplateImpl.Σce('<!---->', options),
+          Σp: [{Σt: 2, Σi: 0}],
         });
       assertRender(
         {
@@ -1500,8 +1500,8 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f = (): Template =>
         (_$lit_template_1 ??= {
-          _$element: Template._$createElement(`<div><!----></div>`),
-          _$parts: [{_$type: 2, _$index: 1}],
+          Σe: TemplateImpl.Σce(`<div><!----></div>`),
+          Σp: [{Σt: 2, Σi: 1}],
         });
       const result = {
         _$litType$: _$lit_template_1_f,
@@ -1515,14 +1515,14 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f: TemplateFactory = () =>
         (_$lit_template_1 ??= {
-          _$element: Template._$createElement('<div></div>'),
-          _$parts: [
+          Σe: TemplateImpl.Σce('<div></div>'),
+          Σp: [
             {
-              _$type: 1,
-              _$index: 0,
-              _$name: 'foo',
-              _$strings: ['', ''],
-              _$constructor: AttributePart,
+              Σt: 1,
+              Σi: 0,
+              Σn: 'foo',
+              Σs: ['', ''],
+              Σc: AttributePart,
             },
           ],
         });
@@ -1539,8 +1539,8 @@ suite('lit-html', () => {
       let _$lit_template_1: Template;
       const _$lit_template_1_f: TemplateFactory = () =>
         (_$lit_template_1 ??= {
-          _$element: Template._$createElement('<div></div>'),
-          _$parts: [{_$type: 6, _$index: 0}],
+          Σe: TemplateImpl.Σce('<div></div>'),
+          Σp: [{Σt: 6, Σi: 0}],
         });
       const result = {
         _$litType$: _$lit_template_1_f,
