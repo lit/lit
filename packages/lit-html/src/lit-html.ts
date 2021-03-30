@@ -518,7 +518,8 @@ const getTemplateHtml = (
   ];
 };
 
-export class Template {
+export type {Template};
+class Template {
   /** @internal */
   _$element!: HTMLTemplateElement;
   /** @internal */
@@ -861,7 +862,8 @@ export type Part =
   | ElementPart
   | EventPart;
 
-export class ChildPart {
+export type {ChildPart};
+class ChildPart {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
@@ -1145,7 +1147,8 @@ export class ChildPart {
   }
 }
 
-export class AttributePart {
+export type {AttributePart};
+class AttributePart {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
@@ -1299,7 +1302,8 @@ export class AttributePart {
   }
 }
 
-export class PropertyPart extends AttributePart {
+export type {PropertyPart};
+class PropertyPart extends AttributePart {
   readonly type = PROPERTY_PART;
 
   /** @internal */
@@ -1319,7 +1323,8 @@ export class PropertyPart extends AttributePart {
   }
 }
 
-export class BooleanAttributePart extends AttributePart {
+export type {BooleanAttributePart};
+class BooleanAttributePart extends AttributePart {
   readonly type = BOOLEAN_ATTRIBUTE_PART;
 
   /** @internal */
@@ -1346,7 +1351,8 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  * Because event options are passed when adding listeners, we must take case
  * to add and remove the part as a listener when the event options change.
  */
-export class EventPart extends AttributePart {
+export type {EventPart};
+class EventPart extends AttributePart {
   readonly type = EVENT_PART;
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
@@ -1408,7 +1414,8 @@ export class EventPart extends AttributePart {
   }
 }
 
-export class ElementPart {
+export type {ElementPart};
+class ElementPart {
   readonly type = ELEMENT_PART;
 
   /** @internal */

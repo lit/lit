@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ChildPart, Part, DirectiveParent, TemplateResult} from './lit-html.js';
+import {_Σ, Part, DirectiveParent, TemplateResult} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -12,6 +12,10 @@ import {
   AttributePartInfo,
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
+
+const {_ChildPart: ChildPart} = _Σ;
+
+type ChildPart = InstanceType<typeof ChildPart>;
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
