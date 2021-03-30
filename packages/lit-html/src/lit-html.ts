@@ -691,12 +691,12 @@ function resolveDirective(
     currentDirective =
       nextDirectiveConstructor === undefined
         ? undefined
-        : new nextDirectiveConstructor({
-            ...part,
+        : new nextDirectiveConstructor(({
+            __proto__: part,
             _$part: part,
             _$parent,
             _$attributeIndex,
-          } as PartInfo);
+          } as unknown) as PartInfo);
     if (_$attributeIndex !== undefined) {
       ((_$parent as AttributePart).__directives ??= [])[
         _$attributeIndex
