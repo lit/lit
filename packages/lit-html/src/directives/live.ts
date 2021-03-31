@@ -91,3 +91,9 @@ class LiveDirective extends Directive {
  * passed in, or the binding will update every render.
  */
 export const live = directive(LiveDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {LiveDirective};

@@ -90,3 +90,9 @@ class UntilDirective extends AsyncDirective {
  *     html`${until(content, html`<span>Loading...</span>`)}`
  */
 export const until = directive(UntilDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {UntilDirective};

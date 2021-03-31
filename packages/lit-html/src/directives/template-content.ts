@@ -7,7 +7,7 @@
 import {noChange} from '../lit-html.js';
 import {directive, Directive, PartInfo, PartType} from '../directive.js';
 
-class TemplateContent extends Directive {
+class TemplateContentDirective extends Directive {
   private _previousTemplate?: HTMLTemplateElement;
 
   constructor(partInfo: PartInfo) {
@@ -33,4 +33,10 @@ class TemplateContent extends Directive {
  * Rendering a user-controlled template with this directive
  * could lead to cross-site-scripting vulnerabilities.
  */
-export const templateContent = directive(TemplateContent);
+export const templateContent = directive(TemplateContentDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {TemplateContentDirective};
