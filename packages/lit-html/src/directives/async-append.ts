@@ -20,7 +20,6 @@ import {
 
 type Mapper<T> = (v: T, index?: number) => unknown;
 
-
 class AsyncAppendDirective extends AsyncDirective {
   private _value?: AsyncIterable<unknown>;
   private _reconnectResolver?: () => void;

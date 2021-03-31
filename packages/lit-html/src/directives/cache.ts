@@ -102,4 +102,4 @@ export const cache = directive(CacheDirective);
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
- export type {CacheDirective};
+export type {CacheDirective};

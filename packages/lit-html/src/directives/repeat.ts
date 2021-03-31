@@ -5,12 +5,7 @@
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
-import {
-  directive,
-  Directive,
-  PartInfo,
-  PartType,
-} from '../directive.js';
+import {directive, Directive, PartInfo, PartType} from '../directive.js';
 import {
   insertPart,
   getCommittedValue,
@@ -474,4 +469,4 @@ export const repeat = directive(RepeatDirective) as RepeatDirectiveFn;
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
- export type {RepeatDirective};
+export type {RepeatDirective};
