@@ -580,6 +580,14 @@ suite('lit-html', () => {
       assertContent('<h1>foo</h1>bar<h1>foo</h1>bazqux');
     });
 
+    test('renders value that switches between template and undefined', () => {
+      const go = (v: unknown) => render(html`${v}`, container);
+      go(undefined);
+      assertContent('');
+      go(html`<h1>Hello</h1>`);
+      assertContent('<h1>Hello</h1>');
+    });
+
     test('renders an element', () => {
       const child = document.createElement('p');
       render(html`<div>${child}</div>`, container);
