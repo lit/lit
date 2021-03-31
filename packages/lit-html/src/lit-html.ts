@@ -533,9 +533,8 @@ const getTemplateHtml = (
   ];
 };
 
-export type Template = Interface<TemplateImpl>;
-export type {TemplateImpl};
-class TemplateImpl {
+export type {Template};
+class Template {
   /** @internal */
   el!: HTMLTemplateElement;
   /** @internal */
@@ -553,7 +552,7 @@ class TemplateImpl {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
-    this.el = TemplateImpl.createElement(html, options);
+    this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
     // Reparent SVG nodes into template root
@@ -1072,7 +1071,7 @@ class ChildPartImpl {
       typeof _$litType$ === 'number'
         ? this._$getTemplate(result as TemplateResult)
         : (_$litType$.el === undefined &&
-            (_$litType$.el = TemplateImpl.createElement(
+            (_$litType$.el = Template.createElement(
               _$litType$.h,
               this.options
             )),
@@ -1094,7 +1093,7 @@ class ChildPartImpl {
   _$getTemplate(result: TemplateResult) {
     let template = templateCache.get(result.strings);
     if (template === undefined) {
-      templateCache.set(result.strings, (template = new TemplateImpl(result)));
+      templateCache.set(result.strings, (template = new Template(result)));
     }
     return template;
   }
@@ -1520,13 +1519,11 @@ export const _Σ = {
   _EventPart: EventPartImpl as AttributePartConstructor,
   _PropertyPart: PropertyPartImpl as AttributePartConstructor,
   _ElementPart: ElementPartImpl as ElementPartConstructor,
-  // Used in compiled templates
-  _Template: TemplateImpl,
 };
 
 // Apply polyfills if available
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.(TemplateImpl, ChildPartImpl);
+(globalThis as any)['litHtmlPlatformSupport']?.(Template, ChildPartImpl);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
