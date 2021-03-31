@@ -23,7 +23,6 @@ export default litProdConfig({
     'directives/unsafe-html',
     'directives/unsafe-svg',
     'directives/until',
-    'directives/render-light',
     'lit-html',
     'directive',
     'directive-helpers',

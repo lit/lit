@@ -1,5 +1,5 @@
 /development/
-/test/
+/directives/
+/controllers/
 /node_modules/
 /index.*
-/create-component.*
