@@ -26,8 +26,6 @@
     "/src/",
     "!/src/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/hydrate.{d.ts,d.ts.map,js,js.map}",
-    "/hydrate-support.{d.ts,d.ts.map,js,js.map}",
     "/directives/"
   ],
   "scripts": {
