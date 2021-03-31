@@ -51,6 +51,13 @@
       "focus": true
     },
     {
+      "name": "TS: ssr-client",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/ssr-client",
+      "command": "npm run build:watch",
+      "focus": true
+    },
+    {
       "name": "Rollup: lit-html",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/lit-html",
@@ -90,6 +97,12 @@
       "name": "Rollup: labs/task",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/labs/task",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/ssr-client",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/ssr-client",
       "command": "npm run build:watch"
     }
   ]
