@@ -688,11 +688,12 @@ function resolveDirective(
     : (value as DirectiveResult)._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
     currentDirective?._$setDirectiveConnected?.(false);
-    currentDirective =
-      nextDirectiveConstructor === undefined
-        ? undefined
-        : new nextDirectiveConstructor(part as PartInfo);
-    currentDirective?._$initialize(part, parent, attributeIndex);
+    if (nextDirectiveConstructor === undefined) {
+      currentDirective = undefined;
+    } else {
+      currentDirective = new nextDirectiveConstructor(part as PartInfo);
+      currentDirective._$initialize(part, parent, attributeIndex);
+    }
     if (attributeIndex !== undefined) {
       ((parent as AttributePart).__directives ??= [])[
         attributeIndex
@@ -716,8 +717,7 @@ function resolveDirective(
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
-export type TemplateInstance = Interface<TemplateInstanceImpl>;
-class TemplateInstanceImpl {
+class TemplateInstance {
   /** @internal */
   _$template: Template;
   /** @internal */
@@ -798,21 +798,10 @@ class TemplateInstanceImpl {
     }
   }
 }
-type TemplateInstanceConstructor = {
-  new (template: Template, parent: ChildPart): TemplateInstance;
-};
 
 /*
  * Parts
  */
-type ChildPartConstructor = {
-  new (
-    startNode: ChildNode,
-    endNode: ChildNode | null,
-    parent: TemplateInstance | ChildPart | undefined,
-    options: RenderOptions | undefined
-  ): ChildPart;
-};
 type AttributePartConstructor = {
   new (
     element: HTMLElement,
@@ -1060,7 +1049,7 @@ class ChildPartImpl {
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
     } else {
-      const instance = new TemplateInstanceImpl(template!, this);
+      const instance = new TemplateInstance(template!, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
@@ -1489,11 +1478,11 @@ export const _Σ = {
   _HTML_RESULT: HTML_RESULT,
   _getTemplateHtml: getTemplateHtml,
   // Used in hydrate
-  _TemplateInstance: TemplateInstanceImpl as TemplateInstanceConstructor,
+  _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
   // Used in tests and private-ssr-support
-  _ChildPart: ChildPartImpl as ChildPartConstructor,
+  _ChildPart: ChildPartImpl,
   _AttributePart: AttributePartImpl as AttributePartConstructor,
   _BooleanAttributePart: BooleanAttributePartImpl as AttributePartConstructor,
   _EventPart: EventPartImpl as AttributePartConstructor,
