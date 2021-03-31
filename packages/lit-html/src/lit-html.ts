@@ -671,8 +671,8 @@ export interface Disconnectable {
 function resolveDirective(
   part: ChildPart | AttributePart | ElementPart,
   value: unknown,
-  _$parent: DirectiveParent = part,
-  _$attributeIndex?: number
+  parent: DirectiveParent = part,
+  attributeIndex?: number
 ): unknown {
   // Bail early if the value is explicitly noChange. Note, this means any
   // nested directive is still attached and is not run.
@@ -680,9 +680,9 @@ function resolveDirective(
     return value;
   }
   let currentDirective =
-    _$attributeIndex !== undefined
-      ? (_$parent as AttributePart).__directives?.[_$attributeIndex]
-      : (_$parent as ChildPart | ElementPart | Directive).__directive;
+    attributeIndex !== undefined
+      ? (parent as AttributePart).__directives?.[attributeIndex]
+      : (parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
@@ -691,18 +691,14 @@ function resolveDirective(
     currentDirective =
       nextDirectiveConstructor === undefined
         ? undefined
-        : new nextDirectiveConstructor(({
-            __proto__: part,
-            _$part: part,
-            _$parent,
-            _$attributeIndex,
-          } as unknown) as PartInfo);
-    if (_$attributeIndex !== undefined) {
-      ((_$parent as AttributePart).__directives ??= [])[
-        _$attributeIndex
+        : new nextDirectiveConstructor(part as PartInfo);
+    currentDirective?._$initialize(part, parent, attributeIndex);
+    if (attributeIndex !== undefined) {
+      ((parent as AttributePart).__directives ??= [])[
+        attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as ChildPart | Directive).__directive = currentDirective;
+      (parent as ChildPart | Directive).__directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -710,7 +706,7 @@ function resolveDirective(
       part,
       currentDirective._$resolve(part, (value as DirectiveResult).values),
       currentDirective,
-      _$attributeIndex
+      attributeIndex
     );
   }
   return value;
@@ -720,7 +716,8 @@ function resolveDirective(
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
-class TemplateInstance {
+export type TemplateInstance = Interface<TemplateInstanceImpl>;
+class TemplateInstanceImpl {
   /** @internal */
   _$template: Template;
   /** @internal */
@@ -801,10 +798,21 @@ class TemplateInstance {
     }
   }
 }
+type TemplateInstanceConstructor = {
+  new (template: Template, parent: ChildPart): TemplateInstance;
+};
 
 /*
  * Parts
  */
+type ChildPartConstructor = {
+  new (
+    startNode: ChildNode,
+    endNode: ChildNode | null,
+    parent: TemplateInstance | ChildPart | undefined,
+    options: RenderOptions | undefined
+  ): ChildPart;
+};
 type AttributePartConstructor = {
   new (
     element: HTMLElement,
@@ -1052,7 +1060,7 @@ class ChildPartImpl {
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
     } else {
-      const instance = new TemplateInstance(template!, this);
+      const instance = new TemplateInstanceImpl(template!, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
@@ -1481,11 +1489,11 @@ export const _Σ = {
   _HTML_RESULT: HTML_RESULT,
   _getTemplateHtml: getTemplateHtml,
   // Used in hydrate
-  _TemplateInstance: TemplateInstance,
+  _TemplateInstance: TemplateInstanceImpl as TemplateInstanceConstructor,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
   // Used in tests and private-ssr-support
-  _ChildPart: ChildPartImpl,
+  _ChildPart: ChildPartImpl as ChildPartConstructor,
   _AttributePart: AttributePartImpl as AttributePartConstructor,
   _BooleanAttributePart: BooleanAttributePartImpl as AttributePartConstructor,
   _EventPart: EventPartImpl as AttributePartConstructor,

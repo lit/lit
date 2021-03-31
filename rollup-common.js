@@ -94,6 +94,8 @@ const stableProperties = {
   _$clear: 'U',
   // lit-html: Directive (used by private-ssr-support)
   _$resolve: 'V',
+  // lit-html: Directive (used by lit-html)
+  _$initialize: 'W',
 };
 
 // Validate stableProperties list, just to be safe; catches dupes and
