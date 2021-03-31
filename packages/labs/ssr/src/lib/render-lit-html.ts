@@ -410,7 +410,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                       ? EventPart
                       : AttributePart,
                   strings,
-                  tagName,
+                  tagName: tagName.toUpperCase(),
                   useCustomElementInstance: ctor !== undefined,
                 });
               } else {
@@ -564,10 +564,10 @@ export function* renderTemplateResult(
       case 'attribute-part': {
         const statics = op.strings;
         const part = new op.ctor(
-          // Passing null for the element is fine since the directive only gets
-          // PartInfo without the node available in the constructor
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (null as any) as HTMLElement,
+          // Passing only object with tagName for the element is fine since the
+          // directive only gets PartInfo without the node available in the
+          // constructor
+          {tagName: op.tagName} as HTMLElement,
           op.name,
           statics,
           undefined,

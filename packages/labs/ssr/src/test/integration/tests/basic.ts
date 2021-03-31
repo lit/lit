@@ -12,6 +12,8 @@ import {
   Directive,
   DirectiveParameters,
   DirectiveResult,
+  PartInfo,
+  PartType,
 } from 'lit/directive.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {guard} from 'lit/directives/guard.js';
@@ -475,6 +477,40 @@ export const tests: {[name: string]: SSRTest} = {
         {
           args: ['two'],
           html: '<div>[2:two]</div>',
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  'ChildPart directive gets PartInfo': () => {
+    const info = directive(
+      class extends Directive {
+        partInfo: PartInfo;
+        constructor(partInfo: PartInfo) {
+          super(partInfo);
+          this.partInfo = partInfo;
+        }
+        render(v: string) {
+          if (this.partInfo.type !== PartType.CHILD) {
+            throw new Error('expected PartType.CHILD');
+          }
+          return `[${v}]`;
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html` <div>${info(v)}</div> `;
+      },
+      expectations: [
+        {
+          args: ['one'],
+          html: '<div>[one]</div>',
+        },
+        {
+          args: ['two'],
+          html: '<div>[two]</div>',
         },
       ],
       stableSelectors: ['div'],
@@ -1045,6 +1081,41 @@ export const tests: {[name: string]: SSRTest} = {
         {
           args: ['two'],
           html: '<div a="[2:two]"></div>',
+        },
+      ],
+      stableSelectors: ['div'],
+    };
+  },
+
+  'AttributePart directive gets PartInfo': () => {
+    const info = directive(
+      class extends Directive {
+        partInfo: PartInfo;
+        constructor(partInfo: PartInfo) {
+          super(partInfo);
+          this.partInfo = partInfo;
+        }
+        render(v: string) {
+          if (this.partInfo.type !== PartType.ATTRIBUTE) {
+            throw new Error('expected PartType.ATTRIBUTE');
+          }
+          const {tagName, name, strings} = this.partInfo;
+          return `[${v}:${tagName}:${name}:${strings!.join(':')}]`;
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html` <div title="a${info(v)}b"></div> `;
+      },
+      expectations: [
+        {
+          args: ['one'],
+          html: '<div title="a[one:DIV:title:a:b]b"></div>',
+        },
+        {
+          args: ['two'],
+          html: '<div title="a[two:DIV:title:a:b]b"></div>',
         },
       ],
       stableSelectors: ['div'],
@@ -2060,6 +2131,45 @@ export const tests: {[name: string]: SSRTest} = {
       expectMutationsDuringHydration: true,
       // Arrays don't dirty check, so we get another mutation during first render
       expectMutationsOnFirstRender: true,
+    };
+  },
+
+  'PropertyPart directive gets PartInfo': () => {
+    const info = directive(
+      class extends Directive {
+        partInfo: PartInfo;
+        constructor(partInfo: PartInfo) {
+          super(partInfo);
+          this.partInfo = partInfo;
+        }
+        render(v: string) {
+          if (this.partInfo.type !== PartType.PROPERTY) {
+            throw new Error('expected PartType.PROPERTY');
+          }
+          const {tagName, name, strings} = this.partInfo;
+          return `[${v}:${tagName}:${name}:${strings!.join(':')}]`;
+        }
+      }
+    );
+    return {
+      render(v: string) {
+        return html` <div .title="a${info(v)}b"></div> `;
+      },
+      expectations: [
+        {
+          args: ['one'],
+          html: '<div title="a[one:DIV:title:a:b]b"></div>',
+        },
+        {
+          args: ['two'],
+          html: '<div title="a[two:DIV:title:a:b]b"></div>',
+        },
+      ],
+      stableSelectors: ['div'],
+      // We set properties during hydration, and natively-reflecting properties
+      // will trigger a "mutation" even when set to the same value that was
+      // rendered to its attribute
+      expectMutationsDuringHydration: true,
     };
   },
 
