@@ -176,7 +176,8 @@ const addPropertyForElement = (
   }
 };
 for (const [attr, elements] of reflectedAttributesSource) {
-  for (const elementName of elements) {
+  for (let elementName of elements) {
+    elementName = elementName.toUpperCase();
     if (attr instanceof Array) {
       // Property has a different attribute name.
       addPropertyForElement(elementName, attr[0], attr[1]);
