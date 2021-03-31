@@ -28,7 +28,6 @@ export default litProdConfig({
     'directives/if-defined',
     'directives/live',
     'directives/ref',
-    'directives/render-light',
     'directives/repeat',
     'directives/style-map',
     'directives/template-content',

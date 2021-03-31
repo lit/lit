@@ -1,4 +1,6 @@
 {
+  "name": "lit-monorepo",
+  "private": true,
   "type": "module",
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",

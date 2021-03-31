@@ -19,6 +19,4 @@ export const templates = {
   hf979404a36e879cb: html`a:${0} b:${1} c:${2}`,
   myId: `Hello World`,
   s03c68d79ad36e8d4: `described 0`,
-  s03c68e79ad36ea87: `described 1`,
-  s03c68f79ad36ec3a: `described 2`,
 };

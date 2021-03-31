@@ -227,6 +227,21 @@ export type TemplateResult<T extends ResultType = ResultType> = {
 
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
+export interface CompiledTemplateResult {
+  // This is a factory in order to make template initialization lazy
+  // and allow ShadyRenderOptions scope to be passed in.
+  _$litType$: CompiledTemplate;
+  values: unknown[];
+}
+
+export interface CompiledTemplate extends Omit<Template, 'el'> {
+  // el is overridden to be optional. We initialize it on first render
+  el?: HTMLTemplateElement;
+
+  // The prepared HTML string to create a template element from.
+  h: string;
+}
+
 /**
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
@@ -521,17 +536,14 @@ const getTemplateHtml = (
 export type {Template};
 class Template {
   /** @internal */
-  _$element!: HTMLTemplateElement;
+  el!: HTMLTemplateElement;
   /** @internal */
-  _parts: Array<TemplatePart> = [];
-  // Note, this is used by the `polyfill-support` module.
-  _$options?: RenderOptions;
+  parts: Array<TemplatePart> = [];
 
   constructor(
     {strings, _$litType$: type}: TemplateResult,
     options?: RenderOptions
   ) {
-    this._$options = options;
     let node: Node | null;
     let nodeIndex = 0;
     let bindingIndex = 0;
@@ -540,12 +552,12 @@ class Template {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
-    this._$element = this._$createElement(html);
-    walker.currentNode = this._$element.content;
+    this.el = Template.createElement(html, options);
+    walker.currentNode = this.el.content;
 
     // Reparent SVG nodes into template root
     if (type === SVG_RESULT) {
-      const content = this._$element.content;
+      const content = this.el.content;
       const svgElement = content.firstChild!;
       svgElement.remove();
       content.append(...svgElement.childNodes);
@@ -583,12 +595,12 @@ class Template {
                 )!;
                 const statics = value.split(marker);
                 const m = /([.?@])?(.*)/.exec(realName)!;
-                this._parts.push({
-                  _type: ATTRIBUTE_PART,
-                  _index: nodeIndex,
-                  _name: m[2],
-                  _strings: statics,
-                  _constructor:
+                this.parts.push({
+                  type: ATTRIBUTE_PART,
+                  index: nodeIndex,
+                  name: m[2],
+                  strings: statics,
+                  ctor:
                     m[1] === '.'
                       ? PropertyPart
                       : m[1] === '?'
@@ -599,9 +611,9 @@ class Template {
                 });
                 bindingIndex += statics.length - 1;
               } else {
-                this._parts.push({
-                  _type: ELEMENT_PART,
-                  _index: nodeIndex,
+                this.parts.push({
+                  type: ELEMENT_PART,
+                  index: nodeIndex,
                 });
               }
             }
@@ -626,7 +638,7 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i] || createMarker());
-              this._parts.push({_type: CHILD_PART, _index: ++nodeIndex});
+              this.parts.push({type: CHILD_PART, index: ++nodeIndex});
               bindingIndex++;
             }
             (node as Element).append(strings[lastIndex] || createMarker());
@@ -636,7 +648,7 @@ class Template {
         const data = (node as Comment).data;
         if (data === markerMatch) {
           bindingIndex++;
-          this._parts.push({_type: CHILD_PART, _index: nodeIndex});
+          this.parts.push({type: CHILD_PART, index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -644,7 +656,7 @@ class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this._parts.push({_type: COMMENT_PART, _index: nodeIndex});
+            this.parts.push({type: COMMENT_PART, index: nodeIndex});
             bindingIndex++;
             // Move to the end of the match
             i += marker.length - 1;
@@ -656,10 +668,10 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
-  _$createElement(html: string) {
-    const template = d.createElement('template');
-    template.innerHTML = html;
-    return template;
+  static createElement(html: string, _options?: RenderOptions) {
+    const el = d.createElement('template');
+    el.innerHTML = html;
+    return el;
   }
 }
 
@@ -671,8 +683,8 @@ export interface Disconnectable {
 function resolveDirective(
   part: ChildPart | AttributePart | ElementPart,
   value: unknown,
-  _$parent: DirectiveParent = part,
-  _$attributeIndex?: number
+  parent: DirectiveParent = part,
+  attributeIndex?: number
 ): unknown {
   // Bail early if the value is explicitly noChange. Note, this means any
   // nested directive is still attached and is not run.
@@ -680,29 +692,26 @@ function resolveDirective(
     return value;
   }
   let currentDirective =
-    _$attributeIndex !== undefined
-      ? (_$parent as AttributePart).__directives?.[_$attributeIndex]
-      : (_$parent as ChildPart | ElementPart | Directive).__directive;
+    attributeIndex !== undefined
+      ? (parent as AttributePart).__directives?.[attributeIndex]
+      : (parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
     currentDirective?._$setDirectiveConnected?.(false);
-    currentDirective =
-      nextDirectiveConstructor === undefined
-        ? undefined
-        : new nextDirectiveConstructor({
-            ...part,
-            _$part: part,
-            _$parent,
-            _$attributeIndex,
-          } as PartInfo);
-    if (_$attributeIndex !== undefined) {
-      ((_$parent as AttributePart).__directives ??= [])[
-        _$attributeIndex
+    if (nextDirectiveConstructor === undefined) {
+      currentDirective = undefined;
+    } else {
+      currentDirective = new nextDirectiveConstructor(part as PartInfo);
+      currentDirective._$initialize(part, parent, attributeIndex);
+    }
+    if (attributeIndex !== undefined) {
+      ((parent as AttributePart).__directives ??= [])[
+        attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as ChildPart | Directive).__directive = currentDirective;
+      (parent as ChildPart | Directive).__directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -710,7 +719,7 @@ function resolveDirective(
       part,
       currentDirective._$resolve(part, (value as DirectiveResult).values),
       currentDirective,
-      _$attributeIndex
+      attributeIndex
     );
   }
   return value;
@@ -740,8 +749,8 @@ class TemplateInstance {
   // DocumentFragment and we don't want to hold onto it with an instance field.
   _clone(options: RenderOptions | undefined) {
     const {
-      _$element: {content},
-      _parts: parts,
+      el: {content},
+      parts: parts,
     } = this._$template;
     const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
@@ -752,30 +761,30 @@ class TemplateInstance {
     let templatePart = parts[0];
 
     while (templatePart !== undefined && node !== null) {
-      if (nodeIndex === templatePart._index) {
+      if (nodeIndex === templatePart.index) {
         let part: Part | undefined;
-        if (templatePart._type === CHILD_PART) {
+        if (templatePart.type === CHILD_PART) {
           part = new ChildPart(
             node as HTMLElement,
             node.nextSibling,
             this,
             options
           );
-        } else if (templatePart._type === ATTRIBUTE_PART) {
-          part = new templatePart._constructor(
+        } else if (templatePart.type === ATTRIBUTE_PART) {
+          part = new templatePart.ctor(
             node as HTMLElement,
-            templatePart._name,
-            templatePart._strings,
+            templatePart.name,
+            templatePart.strings,
             this,
             options
           );
-        } else if (templatePart._type === ELEMENT_PART) {
+        } else if (templatePart.type === ELEMENT_PART) {
           part = new ElementPart(node as HTMLElement, this, options);
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart._index) {
+      if (templatePart !== undefined && nodeIndex !== templatePart.index) {
         node = walker.nextNode();
         nodeIndex++;
       }
@@ -815,17 +824,17 @@ type AttributePartConstructor = {
   ): AttributePart;
 };
 type AttributeTemplatePart = {
-  readonly _type: typeof ATTRIBUTE_PART;
-  readonly _index: number;
-  readonly _name: string;
+  readonly type: typeof ATTRIBUTE_PART;
+  readonly index: number;
+  readonly name: string;
   /** @internal */
-  readonly _constructor: AttributePartConstructor;
+  readonly ctor: AttributePartConstructor;
   /** @internal */
-  readonly _strings: ReadonlyArray<string>;
+  readonly strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
-  readonly _type: typeof CHILD_PART;
-  readonly _index: number;
+  readonly type: typeof CHILD_PART;
+  readonly index: number;
 };
 type ElementPartConstructor = {
   new (
@@ -835,12 +844,12 @@ type ElementPartConstructor = {
   ): ElementPart;
 };
 type ElementTemplatePart = {
-  readonly _type: typeof ELEMENT_PART;
-  readonly _index: number;
+  readonly type: typeof ELEMENT_PART;
+  readonly index: number;
 };
 type CommentTemplatePart = {
-  readonly _type: typeof COMMENT_PART;
-  readonly _index: number;
+  readonly type: typeof COMMENT_PART;
+  readonly index: number;
 };
 
 /**
@@ -1044,13 +1053,28 @@ class ChildPart {
     this._$committedValue = value;
   }
 
-  private _commitTemplateResult(result: TemplateResult): void {
-    const {values, strings} = result;
-    const template = this._$getTemplate(strings, result);
+  private _commitTemplateResult(
+    result: TemplateResult | CompiledTemplateResult
+  ): void {
+    const {values, _$litType$} = result;
+    // If $litType$ is a number, result is a plain TemplateResult and we get
+    // the template from the template cache. If not, result is a
+    // CompiledTemplateResult and _$litType$ is a CompiledTemplate and we need
+    // to create the <template> element the first time we see it.
+    const template: Template | CompiledTemplate =
+      typeof _$litType$ === 'number'
+        ? this._$getTemplate(result as TemplateResult)
+        : (_$litType$.el === undefined &&
+            (_$litType$.el = Template.createElement(
+              _$litType$.h,
+              this.options
+            )),
+          _$litType$);
+
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
     } else {
-      const instance = new TemplateInstance(template!, this);
+      const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
       instance._update(values);
       this._commitNode(fragment);
@@ -1060,10 +1084,10 @@ class ChildPart {
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
   /** @internal */
-  _$getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
-    let template = templateCache.get(strings);
+  _$getTemplate(result: TemplateResult) {
+    let template = templateCache.get(result.strings);
     if (template === undefined) {
-      templateCache.set(strings, (template = new Template(result)));
+      templateCache.set(result.strings, (template = new Template(result)));
     }
     return template;
   }
@@ -1405,7 +1429,7 @@ class EventPart extends AttributePart {
 
   handleEvent(event: Event) {
     if (typeof this._$committedValue === 'function') {
-      // TODO (justinfagnani): do we need to default to this._$element?
+      // TODO (justinfagnani): do we need to default to this.element?
       // It'll always be the same as `e.currentTarget`.
       this._$committedValue.call(this.options?.host ?? this.element, event);
     } else {
@@ -1499,4 +1523,4 @@ export const _Σ = {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.6');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.7');

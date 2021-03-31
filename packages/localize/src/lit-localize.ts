@@ -323,6 +323,19 @@ const _str = (
 
 export const str: typeof _str & {_LIT_LOCALIZE_STR_?: never} = _str;
 
+export interface MsgOptions {
+  /**
+   * Optional project-wide unique identifier for this template. If omitted, an
+   * id will be automatically generated from the template strings.
+   */
+  id?: string;
+
+  /**
+   * Optional description of this message.
+   */
+  desc?: string;
+}
+
 /**
  * Make a string or lit-html template localizable.
  *
@@ -331,18 +344,19 @@ export const str: typeof _str & {_LIT_LOCALIZE_STR_?: never} = _str;
  * @param options Optional configuration object with the following properties:
  *   - id: Optional project-wide unique identifier for this template. If
  *     omitted, an id will be automatically generated from the template strings.
+ *   - desc: Optional description
  */
-export function _msg(template: string, options?: {id?: string}): string;
-export function _msg(template: StrResult, options?: {id?: string}): string;
+export function _msg(template: string, options?: MsgOptions): string;
+export function _msg(template: StrResult, options?: MsgOptions): string;
 
 export function _msg(
   template: TemplateResult,
-  options?: {id?: string}
+  options?: MsgOptions
 ): TemplateResult;
 
 export function _msg(
   template: TemplateLike,
-  options?: {id?: string}
+  options?: MsgOptions
 ): string | TemplateResult {
   if (templates) {
     const id = options?.id ?? generateId(template);
