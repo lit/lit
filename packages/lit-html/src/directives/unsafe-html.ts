@@ -9,7 +9,7 @@ import {directive, Directive, PartInfo, PartType} from '../directive.js';
 
 const HTML_RESULT = 1;
 
-export class UnsafeHTMLDirectiveImpl extends Directive {
+export class UnsafeHTMLDirective extends Directive {
   static directiveName = 'unsafeHTML';
   static resultType = HTML_RESULT;
 
@@ -21,7 +21,7 @@ export class UnsafeHTMLDirectiveImpl extends Directive {
     if (partInfo.type !== PartType.CHILD) {
       throw new Error(
         `${
-          (this.constructor as typeof UnsafeHTMLDirectiveImpl).directiveName
+          (this.constructor as typeof UnsafeHTMLDirective).directiveName
         }() can only be used in child bindings`
       );
     }
@@ -39,7 +39,7 @@ export class UnsafeHTMLDirectiveImpl extends Directive {
     if (typeof value != 'string') {
       throw new Error(
         `${
-          (this.constructor as typeof UnsafeHTMLDirectiveImpl).directiveName
+          (this.constructor as typeof UnsafeHTMLDirective).directiveName
         }() called with a non-string value`
       );
     }
@@ -55,7 +55,7 @@ export class UnsafeHTMLDirectiveImpl extends Directive {
     return (this._templateResult = {
       // Cast to a known set of integers that satisfy ResultType so that we
       // don't have to export ResultType and possibly encourage this pattern.
-      _$litType$: (this.constructor as typeof UnsafeHTMLDirectiveImpl)
+      _$litType$: (this.constructor as typeof UnsafeHTMLDirective)
         .resultType as 1 | 2,
       strings,
       values: [],
@@ -70,4 +70,4 @@ export class UnsafeHTMLDirectiveImpl extends Directive {
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeHTML = directive(UnsafeHTMLDirectiveImpl);
+export const unsafeHTML = directive(UnsafeHTMLDirective);

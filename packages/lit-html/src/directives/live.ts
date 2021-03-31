@@ -14,7 +14,7 @@ import {
 } from '../directive.js';
 import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
-class LiveDirectiveImpl extends Directive {
+class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
@@ -90,10 +90,10 @@ class LiveDirectiveImpl extends Directive {
  * you use `live()` with an attribute binding, make sure that only strings are
  * passed in, or the binding will update every render.
  */
-export const live = directive(LiveDirectiveImpl);
+export const live = directive(LiveDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {LiveDirectiveImpl as LiveDirective};
+export type {LiveDirective};

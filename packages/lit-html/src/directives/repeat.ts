@@ -8,7 +8,6 @@ import {ChildPart, noChange} from '../lit-html.js';
 import {
   directive,
   Directive,
-  DirectiveResult,
   PartInfo,
   PartType,
 } from '../directive.js';
