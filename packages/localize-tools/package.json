@@ -37,7 +37,7 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "@lit/localize": "^0.8.0",
+    "@lit/localize": "^0.9.0",
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.4.0",

@@ -9,16 +9,16 @@
     "serve": "web-dev-server"
   },
   "dependencies": {
-    "@lit/localize": "^0.8.0",
+    "@lit/localize": "^0.9.0",
     "lit-element": "^2.4.0"
   },
   "devDependencies": {
-    "@lit/localize-tools": "^0.1.0",
+    "@lit/localize-tools": "^0.2.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/plugin-typescript": "^8.2.0",
     "@web/dev-server": "^0.1.10",
     "rollup": "^2.41.1",
-    "rollup-plugin-summary": "^1.2.3",
+    "rollup-plugin-summary": "^1.3.0",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.0.2"
   }
