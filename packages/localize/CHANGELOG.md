@@ -5,7 +5,91 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!--## Unreleased-->
+<!-- ## Unreleased -->
+
+## [0.9.0] - 2021-03-30
+
+### Changed
+
+- **[BREAKING]** Description comments (`// msgdesc:`) have been removed in favor
+  of the `desc` option.
+
+Before:
+
+```js
+// msgdesc: Home page
+class HomePage {
+  hello() {
+    // msgdesc: Greeting to Earth
+    return msg(html`Hello World`);
+  }
+  goodbye() {
+    // msgdesc: Farewell to Earth
+    return msg(html`Goodbye World`);
+  }
+}
+```
+
+After:
+
+```js
+class HomePage {
+  hello() {
+    return msg(html`Hello World`, {
+      desc: 'Home page / Greeting to Earth',
+    });
+  }
+  goodbye() {
+    return msg(html`Goodbye World`, {
+      desc: 'Home page / Farewell to Earth',
+    });
+  }
+}
+```
+
+## [0.8.0] - 2021-03-24
+
+### Changed
+
+- **[BREAKING]** Lit Localize is now distributed as two packages:
+
+  - `@lit/localize` provides the browser library (`msg`, `LocalizedElement`, etc.)
+  - `@lit/localize-tools` provides the `lit-localize` CLI.
+
+## [0.7.0] - 2021-03-12
+
+- **[BREAKING]** Templates can now contain arbitrary expressions, and no longer
+  need to be wrapped in a function.
+
+  Before:
+
+  ```ts
+  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
+  ```
+
+  After:
+
+  ```ts
+  msg(html`Hello <b>${getUsername()}</b>!`);
+  ```
+
+  Plain strings containing expressions must now be tagged with the new `str`
+  tag. This allows lit-localize to access dynamic values at runtime.
+
+  ```ts
+  import {msg, str} from 'lit-localize';
+  msg(str`Hello ${name}`);
+  ```
+
+- **[BREAKING]** The `lit-localize` CLI now must always take one of two
+  commands: `extract` or `build`. Previously, both of these steps were always
+  performed.
+
+## Added
+
+- Added `@lit/localize/lib/rollup.js` module that exports a `localeTransformers`
+  function that can be used to integrate locale transformation into a Rollup
+  build.
 
 ## [0.6.1] - 2020-12-09
 

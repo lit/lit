@@ -26,9 +26,27 @@
       "command": "npm run build:ts:watch"
     },
     {
-      "name": "TS: lit-ssr",
+      "name": "TS: labs/scoped-registry-mixin",
       "icon": "checklist",
-      "cwd": "[workspaceFolder]/packages/lit-ssr",
+      "cwd": "[workspaceFolder]/packages/labs/scoped-registry-mixin",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: labs/react",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/react",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: labs/task",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/task",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: ssr",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/ssr",
       "command": "npm run build:watch",
       "focus": true
     },
@@ -54,6 +72,24 @@
       "name": "Rollup: lit",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/lit",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/scoped-registry-mixin",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/scoped-registry-mixin",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/react",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/react",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/task",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/task",
       "command": "npm run build:watch"
     }
   ]

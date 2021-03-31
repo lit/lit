@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /**
@@ -75,7 +67,8 @@ export interface ReactiveController {
   hostDisconnected?(): void;
 
   /**
-   * Called during the client-side host update.
+   * Called during the client-side host update, just before the host calls
+   * its own update.
    *
    * Code in `update()` can depend on the DOM as it is not called in
    * server-side rendering.
@@ -83,7 +76,9 @@ export interface ReactiveController {
   hostUpdate?(): void;
 
   /**
-   * Called after a host update. It is not called in server-side rendering.
+   * Called after a host update, just before the host calls firstUpdated and
+   * updated. It is not called in server-side rendering.
+   *
    */
   hostUpdated?(): void;
 }

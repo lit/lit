@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /*
@@ -20,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 /**
  * A property decorator that converts a class property into a getter
@@ -52,20 +40,13 @@ import {
  * @category Decorator
  */
 export function queryAll(selector: string) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
+  return decorateProperty({
+    descriptor: (_name: PropertyKey) => ({
       get(this: ReactiveElement) {
         return this.renderRoot?.querySelectorAll(selector);
       },
       enumerable: true,
       configurable: true,
-    };
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+    }),
+  });
 }

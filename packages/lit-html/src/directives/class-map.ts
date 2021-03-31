@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {AttributePart, noChange} from '../lit-html.js';
@@ -33,7 +25,7 @@ class ClassMapDirectiveImpl extends Directive {
    * Stores the ClassInfo object applied to a given AttributePart.
    * Used to unset existing values when a new ClassInfo object is applied.
    */
-  previousClasses?: Set<string>;
+  private _previousClasses?: Set<string>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -43,7 +35,7 @@ class ClassMapDirectiveImpl extends Directive {
       (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
-        'The `classMap` directive must be used in the `class` attribute ' +
+        '`classMap()` can only be used in the `class` attribute ' +
           'and must be the only part in the attribute.'
       );
     }
@@ -57,11 +49,11 @@ class ClassMapDirectiveImpl extends Directive {
 
   update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
     // Remember dynamic classes on the first render
-    if (this.previousClasses === undefined) {
-      this.previousClasses = new Set();
+    if (this._previousClasses === undefined) {
+      this._previousClasses = new Set();
       for (const name in classInfo) {
         if (classInfo[name]) {
-          this.previousClasses.add(name);
+          this._previousClasses.add(name);
         }
       }
       return this.render(classInfo);
@@ -72,10 +64,10 @@ class ClassMapDirectiveImpl extends Directive {
     // Remove old classes that no longer apply
     // We use forEach() instead of for-of so that we don't require down-level
     // iteration.
-    this.previousClasses.forEach((name) => {
+    this._previousClasses.forEach((name) => {
       if (!(name in classInfo)) {
         classList.remove(name);
-        this.previousClasses!.delete(name);
+        this._previousClasses!.delete(name);
       }
     });
 
@@ -84,13 +76,13 @@ class ClassMapDirectiveImpl extends Directive {
       // We explicitly want a loose truthy check of `value` because it seems
       // more convenient that '' and 0 are skipped.
       const value = !!classInfo[name];
-      if (value !== this.previousClasses.has(name)) {
+      if (value !== this._previousClasses.has(name)) {
         if (value) {
           classList.add(name);
-          this.previousClasses.add(name);
+          this._previousClasses.add(name);
         } else {
           classList.remove(name);
-          this.previousClasses.delete(name);
+          this._previousClasses.delete(name);
         }
       }
     }

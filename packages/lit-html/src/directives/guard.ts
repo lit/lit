@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {noChange, Part} from '../lit-html.js';
@@ -18,8 +10,8 @@ import {directive, Directive, DirectiveParameters} from '../directive.js';
 // A sentinal that indicates guard() hasn't rendered anything yet
 const initialValue = {};
 
-class GuardDirectiveImpl extends Directive {
-  previousValue: unknown = initialValue;
+class GuardDirective extends Directive {
+  private _previousValue: unknown = initialValue;
 
   render(_value: unknown, f: () => unknown) {
     return f();
@@ -29,20 +21,20 @@ class GuardDirectiveImpl extends Directive {
     if (Array.isArray(value)) {
       // Dirty-check arrays by item
       if (
-        Array.isArray(this.previousValue) &&
-        this.previousValue.length === value.length &&
-        value.every((v, i) => v === (this.previousValue as Array<unknown>)[i])
+        Array.isArray(this._previousValue) &&
+        this._previousValue.length === value.length &&
+        value.every((v, i) => v === (this._previousValue as Array<unknown>)[i])
       ) {
         return noChange;
       }
-    } else if (this.previousValue === value) {
+    } else if (this._previousValue === value) {
       // Dirty-check non-arrays by identity
       return noChange;
     }
 
     // Copy the value if it's an array so that if it's mutated we don't forget
     // what the previous values were.
-    this.previousValue = Array.isArray(value) ? Array.from(value) : value;
+    this._previousValue = Array.isArray(value) ? Array.from(value) : value;
     const r = this.render(value, f);
     return r;
   }
@@ -87,10 +79,10 @@ class GuardDirectiveImpl extends Directive {
  * @param value the value to check before re-rendering
  * @param f the template function
  */
-export const guard = directive(GuardDirectiveImpl);
+export const guard = directive(GuardDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {GuardDirectiveImpl as GuardDirective};
+export type {GuardDirective};

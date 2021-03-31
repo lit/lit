@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
@@ -28,10 +20,11 @@ import {
 
 type Mapper<T> = (v: T, index?: number) => unknown;
 
-class AsyncAppendDirectiveImpl extends AsyncDirective {
-  value?: AsyncIterable<unknown>;
-  reconnectResolver?: () => void;
-  reconnectPromise?: Promise<void>;
+
+class AsyncAppendDirective extends AsyncDirective {
+  private _value?: AsyncIterable<unknown>;
+  private _reconnectResolver?: () => void;
+  private _reconnectPromise?: Promise<void>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -49,10 +42,10 @@ class AsyncAppendDirectiveImpl extends AsyncDirective {
   update(part: ChildPart, [value, mapper]: DirectiveParameters<this>) {
     // If we've already set up this particular iterable, we don't need
     // to do anything.
-    if (value === this.value) {
+    if (value === this._value) {
       return;
     }
-    this.value = value;
+    this._value = value;
     this.__iterate(part, mapper);
     return noChange;
   }
@@ -61,17 +54,17 @@ class AsyncAppendDirectiveImpl extends AsyncDirective {
   // because its return value must be `noChange`
   private async __iterate(part: ChildPart, mapper?: Mapper<unknown>) {
     let i = 0;
-    const {value} = this;
+    const {_value: value} = this;
     for await (let v of value!) {
       // Check to make sure that value is the still the current value of
       // the part, and if not bail because a new value owns this part
-      if (this.value !== value) {
+      if (this._value !== value) {
         break;
       }
 
       // If we were disconnected, pause until reconnected
-      if (this.reconnectPromise) {
-        await this.reconnectPromise;
+      if (this._reconnectPromise) {
+        await this._reconnectPromise;
       }
 
       // When we get the first value, clear the part. This lets the
@@ -94,15 +87,15 @@ class AsyncAppendDirectiveImpl extends AsyncDirective {
 
   disconnected() {
     // Pause iteration while disconnected
-    this.reconnectPromise = new Promise(
-      (resolve) => (this.reconnectResolver = resolve)
+    this._reconnectPromise = new Promise(
+      (resolve) => (this._reconnectResolver = resolve)
     );
   }
 
   reconnected() {
     // Resume iteration when reconnected
-    this.reconnectPromise = undefined;
-    this.reconnectResolver!();
+    this._reconnectPromise = undefined;
+    this._reconnectResolver!();
   }
 }
 
@@ -124,10 +117,10 @@ class AsyncAppendDirectiveImpl extends AsyncDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend = directive(AsyncAppendDirectiveImpl);
+export const asyncAppend = directive(AsyncAppendDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {AsyncAppendDirectiveImpl as AsyncAppendDirective};
+export type {AsyncAppendDirective};

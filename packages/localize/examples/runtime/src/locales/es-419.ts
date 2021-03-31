@@ -10,3 +10,4 @@
     export const templates = {
       'h3c44aff2d5f5ef6b': html`Hola <b>Mundo</b>!`,
     };
+  

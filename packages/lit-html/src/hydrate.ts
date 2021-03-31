@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import type {TemplateResult} from './lit-html.js';
@@ -131,9 +123,9 @@ export const hydrate = (
   container: Element | DocumentFragment,
   options: Partial<RenderOptions> = {}
 ) => {
-  // TODO(kschaaf): Do we need a helper for _$litPart ("part for node")?
+  // TODO(kschaaf): Do we need a helper for _$litPart$ ("part for node")?
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((container as any)._$litPart !== undefined) {
+  if ((container as any)._$litPart$ !== undefined) {
     throw new Error('container already contains a live render');
   }
 
@@ -186,7 +178,7 @@ export const hydrate = (
     'there should be exactly one root part in a render container'
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (container as any)._$litPart = rootPart;
+  (container as any)._$litPart$ = rootPart;
 };
 
 const openChildPart = (

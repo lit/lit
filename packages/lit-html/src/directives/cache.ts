@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {TemplateResult, ChildPart, render, nothing} from '../lit-html.js';
@@ -27,9 +19,9 @@ import {
   setCommittedValue,
 } from '../directive-helpers.js';
 
-class CacheDirectiveImpl extends Directive {
-  templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
-  value?: TemplateResult;
+class CacheDirective extends Directive {
+  private _templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
+  private _value?: TemplateResult;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -46,17 +38,17 @@ class CacheDirectiveImpl extends Directive {
     // or is a different Template as the previous value, move the child part
     // into the cache.
     if (
-      isTemplateResult(this.value) &&
-      (!isTemplateResult(v) || this.value.strings !== v.strings)
+      isTemplateResult(this._value) &&
+      (!isTemplateResult(v) || this._value.strings !== v.strings)
     ) {
       // This is always an array because we return [v] in render()
       const partValue = getCommittedValue(containerPart) as Array<ChildPart>;
       const childPart = partValue.pop()!;
-      let cachedContainerPart = this.templateCache.get(this.value.strings);
+      let cachedContainerPart = this._templateCache.get(this._value.strings);
       if (cachedContainerPart === undefined) {
         const fragment = document.createDocumentFragment();
         cachedContainerPart = render(nothing, fragment);
-        this.templateCache.set(this.value.strings, cachedContainerPart);
+        this._templateCache.set(this._value.strings, cachedContainerPart);
       }
       // Move into cache
       setCommittedValue(cachedContainerPart, [childPart]);
@@ -66,26 +58,25 @@ class CacheDirectiveImpl extends Directive {
     // If the new value is a TemplateResult and the previous value is not,
     // or is a different Template as the previous value, restore the child
     // part from the cache.
-    if (
-      isTemplateResult(v) &&
-      (!isTemplateResult(this.value) || this.value.strings !== v.strings)
-    ) {
-      const cachedContainerPart = this.templateCache.get(v.strings);
-      if (cachedContainerPart !== undefined) {
-        // Move the cached part back into the container part value
-        const partValue = getCommittedValue(
-          cachedContainerPart
-        ) as Array<ChildPart>;
-        const cachedPart = partValue.pop()!;
-        // Move cached part back into DOM
-        clearPart(containerPart);
-        insertPart(containerPart, undefined, cachedPart);
-        setCommittedValue(containerPart, [cachedPart]);
-        cachedPart.setConnected(true);
+    if (isTemplateResult(v)) {
+      if (!isTemplateResult(this._value) || this._value.strings !== v.strings) {
+        const cachedContainerPart = this._templateCache.get(v.strings);
+        if (cachedContainerPart !== undefined) {
+          // Move the cached part back into the container part value
+          const partValue = getCommittedValue(
+            cachedContainerPart
+          ) as Array<ChildPart>;
+          const cachedPart = partValue.pop()!;
+          // Move cached part back into DOM
+          clearPart(containerPart);
+          insertPart(containerPart, undefined, cachedPart);
+          setCommittedValue(containerPart, [cachedPart]);
+          cachedPart.setConnected(true);
+        }
       }
-      this.value = v;
+      this._value = v;
     } else {
-      this.value = undefined;
+      this._value = undefined;
     }
     return this.render(v);
   }
@@ -105,10 +96,10 @@ class CacheDirectiveImpl extends Directive {
  * `
  * ```
  */
-export const cache = directive(CacheDirectiveImpl);
+export const cache = directive(CacheDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {CacheDirectiveImpl as CacheDirective};
+ export type {CacheDirective};

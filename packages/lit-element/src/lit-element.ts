@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /**
@@ -95,7 +87,7 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
-  readonly _$renderOptions: RenderOptions = {host: this};
+  readonly renderOptions: RenderOptions = {host: this};
 
   private __childPart: ChildPart | undefined = undefined;
 
@@ -106,7 +98,7 @@ export class LitElement extends ReactiveElement {
     // any styles in Lit content render before adoptedStyleSheets. This is
     // important so that adoptedStyleSheets have precedence over styles in
     // the shadowRoot.
-    this._$renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    this.renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
     return renderRoot;
   }
 
@@ -122,7 +114,7 @@ export class LitElement extends ReactiveElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this.__childPart = render(value, this.renderRoot, this._$renderOptions);
+    this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves

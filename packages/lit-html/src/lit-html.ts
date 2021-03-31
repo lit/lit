@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 // IMPORTANT: these imports must be type-only
@@ -134,10 +126,9 @@ const isIterable = (value: unknown): value is Iterable<unknown> =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   typeof (value as any)?.[Symbol.iterator] === 'function';
 
-// TODO (justinfagnani): can we get away with `\s`?
 const SPACE_CHAR = `[ \t\n\f\r]`;
 const ATTR_VALUE_CHAR = `[^ \t\n\f\r"'\`<>=]`;
-const NAME_CHAR = `[^\0-\x1F\x7F-\x9F "'>=/]`;
+const NAME_CHAR = `[^\\s"'>=/]`;
 
 // These regexes represent the five parsing states that we care about in the
 // Template's HTML scanner. They match the *end* of the state they're named
@@ -148,10 +139,6 @@ const NAME_CHAR = `[^\0-\x1F\x7F-\x9F "'>=/]`;
 // across the multiple regexes used. In addition to the five regexes below
 // we also dynamically create a regex to find the matching end tags for raw
 // text elements.
-
-// TODO (justinfagnani): we detect many more parsing edge-cases than we
-// used to, and many of those are of dubious value. Decide and document
-// how to relax correctness to simplify the regexes and states.
 
 /**
  * End of text is: `<` followed by:
@@ -179,12 +166,9 @@ const comment2EndRegex = />/g;
  * " \t\n\f\r" are HTML space characters:
  * https://infra.spec.whatwg.org/#ascii-whitespace
  *
- * "\0-\x1F\x7F-\x9F" are Unicode control characters, which includes every
- * space character except " ".
- *
  * So an attribute is:
- *  * The name: any character except a control character, space character, ('),
- *    ("), ">", "=", or "/"
+ *  * The name: any character except a whitespace character, ("), ('), ">",
+ *    "=", or "/". Note: this is different from the HTML spec which also excludes control characters.
  *  * Followed by zero or more space characters
  *  * Followed by "="
  *  * Followed by zero or more space characters
@@ -231,8 +215,8 @@ const COMMENT_PART = 7;
 /**
  * The return type of the template tag functions.
  */
-export type TemplateResult = {
-  _$litType$: ResultType;
+export type TemplateResult<T extends ResultType = ResultType> = {
+  _$litType$: T;
   // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
   // semi-public API though. We can't just let Terser rename them for us,
   // because we need TemplateResults to work between compatible versions of
@@ -241,14 +225,16 @@ export type TemplateResult = {
   values: unknown[];
 };
 
+export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
+
 /**
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = (_$litType$: ResultType) => (
+const tag = <T extends ResultType>(_$litType$: T) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
-): TemplateResult => ({
+): TemplateResult<T> => ({
   _$litType$,
   strings,
   values,
@@ -284,18 +270,24 @@ export const nothing = Symbol.for('lit-nothing');
  * or attr. This restriction simplifies the cache lookup, which is on the hot
  * path for rendering.
  */
-const templateCache = new Map<TemplateStringsArray, Template>();
+const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
    * useful to set this to the host component rendering a template.
    */
-  host?: EventTarget;
+  host?: object;
   /**
    * A DOM node before which to render content in the container.
    */
   renderBefore?: ChildNode | null;
+  /**
+   * Node used for cloning the template (`importNode` will be called on this
+   * node). This controls the `ownerDocument` of the rendered DOM, along with
+   * any inherited context. Defaults to the global `document`.
+   */
+  creationScope?: {importNode(node: Node, deep?: boolean): Node};
 }
 
 /**
@@ -311,11 +303,11 @@ export const render = (
 ): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart;
+  let part: ChildPart = (partOwnerNode as any)._$litPart$;
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart = part = new ChildPartImpl(
+    (partOwnerNode as any)._$litPart$ = part = new ChildPartImpl(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -751,7 +743,7 @@ class TemplateInstance {
       _$element: {content},
       _parts: parts,
     } = this._$template;
-    const fragment = d.importNode(content, true);
+    const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
     let node = walker.nextNode();
@@ -925,8 +917,42 @@ class ChildPartImpl {
     this._$setChildPartConnected?.(isConnected);
   }
 
+  /**
+   * The parent node into which the part renders its content.
+   *
+   * A ChildPart's content consists of a range of adjacent child nodes of
+   * `.parentNode`, possibly bordered by 'marker nodes' (`.startNode` and
+   * `.endNode`).
+   *
+   * - If both `.startNode` and `.endNode` are non-null, then the part's content
+   * consists of all siblings between `.startNode` and `.endNode`, exclusively.
+   *
+   * - If `.startNode` is non-null but `.endNode` is null, then the part's
+   * content consists of all siblings following `.startNode`, up to and
+   * including the last child of `.parentNode`. If `.endNode` is non-null, then
+   * `.startNode` will always be non-null.
+   *
+   * - If both `.endNode` and `.startNode` are null, then the part's content
+   * consists of all child nodes of `.parentNode`.
+   */
   get parentNode(): Node {
     return wrap(this._$startNode).parentNode!;
+  }
+
+  /**
+   * The part's leading marker node, if any. See `.parentNode` for more
+   * information.
+   */
+  get startNode(): Node | null {
+    return this._$startNode;
+  }
+
+  /**
+   * The part's trailing marker node, if any. See `.parentNode` for more
+   * information.
+   */
+  get endNode(): Node | null {
+    return this._$endNode;
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {

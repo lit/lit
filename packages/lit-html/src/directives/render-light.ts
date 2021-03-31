@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {ChildPart} from '../lit-html.js';
@@ -35,9 +27,9 @@ class RenderLightDirectiveImpl extends Directive {
 
 /**
  * This directive allows a host element to control its light DOM rendering in
- * addition to its shadow DOM rendering, by implementing a renderLight() method.
+ * addition to its shadow DOM rendering, by implementing a `renderLight()` method.
  *
- * Here's an example of a <x-story> element that intended to server and client
+ * Here's an example of an `<x-story>` element that intended to server and client
  * side render its light DOM, but only client-side render its shadow DOM.
  *
  * The light DOM will contain just content:
@@ -86,8 +78,8 @@ class RenderLightDirectiveImpl extends Directive {
  * }
  * ```
  *
- * To use the renderLight() method, the use-site of the element must opt into it
- * with the renderLight directive:
+ * To use the `renderLight()` method, the use-site of the element must opt into it
+ * with the `renderLight()` directive:
  *
  * ```js
  * const story = {

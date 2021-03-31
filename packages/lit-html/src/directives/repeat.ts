@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
@@ -42,33 +34,13 @@ const generateMap = (list: unknown[], start: number, end: number) => {
   return map;
 };
 
-/**
- * A directive that repeats a series of values (usually `TemplateResults`)
- * generated from an iterable, and updates those items efficiently when the
- * iterable changes based on user-provided `keys` associated with each item.
- *
- * Note that if a `keyFn` is provided, strict key-to-DOM mapping is maintained,
- * meaning previous DOM for a given key is moved into the new position if
- * needed, and DOM will never be reused with values for different keys (new DOM
- * will always be created for new keys). This is generally the most efficient
- * way to use `repeat` since it performs minimum unnecessary work for insertions
- * and removals.
- *
- * IMPORTANT: If providing a `keyFn`, keys *must* be unique for all items in a
- * given call to `repeat`. The behavior when two or more items have the same key
- * is undefined.
- *
- * If no `keyFn` is provided, this directive will perform similar to mapping
- * items to values, and DOM will be reused against potentially different items.
- */
-
-class RepeatDirectiveImpl extends Directive {
-  itemKeys?: unknown[];
+class RepeatDirective extends Directive {
+  private _itemKeys?: unknown[];
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (partInfo.type !== PartType.CHILD) {
-      throw new Error('repeat can only be used in text bindings');
+      throw new Error('repeat() can only be used in text expressions');
     }
   }
 
@@ -97,6 +69,12 @@ class RepeatDirectiveImpl extends Directive {
     };
   }
 
+  render<T>(items: Iterable<T>, template: ItemTemplate<T>): Array<unknown>;
+  render<T>(
+    items: Iterable<T>,
+    keyFn: KeyFn<T> | ItemTemplate<T>,
+    template: ItemTemplate<T>
+  ): Array<unknown>;
   render<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
@@ -125,11 +103,11 @@ class RepeatDirectiveImpl extends Directive {
     );
 
     if (!oldParts) {
-      this.itemKeys = newKeys;
+      this._itemKeys = newKeys;
       return newValues;
     }
 
-    const oldKeys = (this.itemKeys ??= []);
+    const oldKeys = (this._itemKeys ??= []);
 
     // New part list will be built up as we go (either reused from
     // old parts or created for new keys in this update). This is
@@ -444,28 +422,57 @@ class RepeatDirectiveImpl extends Directive {
     }
 
     // Save order of new parts for next round
-    this.itemKeys = newKeys;
+    this._itemKeys = newKeys;
     // Directly set part value, bypassing it's dirty-checking
     setCommittedValue(containerPart, newParts);
     return noChange;
   }
 }
 
-/**
- * Type of the repeat directive function.
- *
- * The inferred types set the generic value as `unknown`.
- */
-export type RepeatDirectiveFn = <T>(
-  items: Iterable<T>,
-  keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
-  template?: ItemTemplate<T>
-) => DirectiveResult<typeof RepeatDirectiveImpl>;
+export interface RepeatDirectiveFn {
+  <T>(
+    items: Iterable<T>,
+    keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
+    template?: ItemTemplate<T>
+  ): unknown;
+  <T>(items: Iterable<T>, template: ItemTemplate<T>): unknown;
+  <T>(
+    items: Iterable<T>,
+    keyFn: KeyFn<T> | ItemTemplate<T>,
+    template: ItemTemplate<T>
+  ): unknown;
+}
 
-export const repeat = directive(RepeatDirectiveImpl) as RepeatDirectiveFn;
+/**
+ * A directive that repeats a series of values (usually `TemplateResults`)
+ * generated from an iterable, and updates those items efficiently when the
+ * iterable changes based on user-provided `keys` associated with each item.
+ *
+ * Note that if a `keyFn` is provided, strict key-to-DOM mapping is maintained,
+ * meaning previous DOM for a given key is moved into the new position if
+ * needed, and DOM will never be reused with values for different keys (new DOM
+ * will always be created for new keys). This is generally the most efficient
+ * way to use `repeat` since it performs minimum unnecessary work for insertions
+ * and removals.
+ *
+ * The `keyFn` takes two parameters, the item and its index, and returns a unique key value.
+ *
+ * ```js
+ * ${repeat(this.items, (item) => item.id, (item, index) =>
+     html`<li>${index}: ${item.name}</li>`)}
+ * ```
+ *
+ * **Important**: If providing a `keyFn`, keys *must* be unique for all items in a
+ * given call to `repeat`. The behavior when two or more items have the same key
+ * is undefined.
+ *
+ * If no `keyFn` is provided, this directive will perform similar to mapping
+ * items to values, and DOM will be reused against potentially different items.
+ */
+export const repeat = directive(RepeatDirective) as RepeatDirectiveFn;
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {RepeatDirectiveImpl as RepeatDirective};
+ export type {RepeatDirective};

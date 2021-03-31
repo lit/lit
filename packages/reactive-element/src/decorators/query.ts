@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /*
@@ -20,11 +12,7 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {
-  ClassElement,
-  legacyPrototypeMethod,
-  standardPrototypeMethod,
-} from './base.js';
+import {decorateProperty} from './base.js';
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -54,39 +42,33 @@ import {
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean) {
-  return (
-    protoOrDescriptor: Object | ClassElement,
-    name?: PropertyKey
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any => {
-    const descriptor = {
-      get(this: ReactiveElement) {
-        return this.renderRoot?.querySelector(selector);
-      },
-      enumerable: true,
-      configurable: true,
-    };
-    if (cache) {
-      const prop =
-        name !== undefined ? name : (protoOrDescriptor as ClassElement).key;
-      const key = typeof prop === 'symbol' ? Symbol() : `__${prop}`;
-      descriptor.get = function (this: ReactiveElement) {
-        if (
-          ((this as unknown) as {[key: string]: Element | null})[
-            key as string
-          ] === undefined
-        ) {
-          ((this as unknown) as {[key: string]: Element | null})[
-            key as string
-          ] = this.renderRoot?.querySelector(selector);
-        }
-        return ((this as unknown) as {[key: string]: Element | null})[
-          key as string
-        ];
+  return decorateProperty({
+    descriptor: (name: PropertyKey) => {
+      const descriptor = {
+        get(this: ReactiveElement) {
+          return this.renderRoot?.querySelector(selector);
+        },
+        enumerable: true,
+        configurable: true,
       };
-    }
-    return name !== undefined
-      ? legacyPrototypeMethod(descriptor, protoOrDescriptor as Object, name)
-      : standardPrototypeMethod(descriptor, protoOrDescriptor as ClassElement);
-  };
+      if (cache) {
+        const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+        descriptor.get = function (this: ReactiveElement) {
+          if (
+            ((this as unknown) as {[key: string]: Element | null})[
+              key as string
+            ] === undefined
+          ) {
+            ((this as unknown) as {[key: string]: Element | null})[
+              key as string
+            ] = this.renderRoot?.querySelector(selector);
+          }
+          return ((this as unknown) as {[key: string]: Element | null})[
+            key as string
+          ];
+        };
+      }
+      return descriptor;
+    },
+  });
 }

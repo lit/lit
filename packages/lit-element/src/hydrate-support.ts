@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /**
@@ -28,7 +20,7 @@ interface PatchableLitElement extends HTMLElement {
   createRenderRoot(): Element | ShadowRoot;
   renderRoot: Element | ShadowRoot;
   render(): unknown;
-  _$renderOptions: RenderOptions;
+  renderOptions: RenderOptions;
   _$needsHydration: boolean;
 }
 
@@ -60,9 +52,9 @@ interface PatchableLitElement extends HTMLElement {
     (ReactiveElement.prototype as any).update.call(this, changedProperties);
     if (this._$needsHydration) {
       this._$needsHydration = false;
-      hydrate(value, this.renderRoot, this._$renderOptions);
+      hydrate(value, this.renderRoot, this.renderOptions);
     } else {
-      render(value, this.renderRoot as HTMLElement, this._$renderOptions);
+      render(value, this.renderRoot as HTMLElement, this.renderOptions);
     }
   };
 };

@@ -33,7 +33,7 @@
     "typescript",
     "lit"
   ],
-  "author": "The Polymer Authors",
+  "author": "Google LLC",
   "license": "BSD-3-Clause",
   "dependencies": {
     "lit": "^2.0.0-pre.1",

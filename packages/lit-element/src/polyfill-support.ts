@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 /**
@@ -47,7 +39,7 @@ interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   constructor: PatchableLitElementConstructor;
   createRenderRoot(): Element | ShadowRoot;
-  _$renderOptions: RenderOptions;
+  renderOptions: RenderOptions;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,7 +74,7 @@ interface PatchableLitElement extends HTMLElement {
     // Pass the scope to render options so that it gets to lit-html for proper
     // scoping via ShadyCSS. This is needed under Shady and also Shadow DOM,
     // due to @apply.
-    this._$renderOptions.scope = this.localName;
+    this.renderOptions.scope = this.localName;
     return createRenderRoot.call(this);
   };
 };

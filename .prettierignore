@@ -20,6 +20,9 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
+packages/internal-scripts/node_modules/
+packages/internal-scripts/lib/
+
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/
@@ -68,13 +71,6 @@ packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
-packages/lit-ssr/demo/
-packages/lit-ssr/lib/
-packages/lit-ssr/node_modules/
-packages/lit-ssr/test/
-packages/lit-ssr/index.*
-packages/lit-ssr/**/*.d.ts
-
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
 # only generated for size check
@@ -90,16 +86,18 @@ packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
 packages/localize/lib/
-packages/localize/lib_client/
 packages/localize/node_modules/
-packages/localize/testdata/*/output/
 packages/localize/tests/
-packages/localize/.tsbuildinfo.client
+packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/localized-element.*
 packages/localize/examples/*/node_modules/
 packages/localize/fnv1a64.*
 packages/localize/id-generation.*
+
+packages/localize-tools/lib/
+packages/localize-tools/node_modules/
+packages/localize-tools/testdata/*/output/
 
 packages/reactive-element/decorators/
 packages/reactive-element/development/
@@ -116,6 +114,15 @@ packages/labs/react/development/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
+packages/labs/scoped-registry-mixin/development/
+packages/labs/scoped-registry-mixin/node_modules/
+packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
+packages/labs/ssr/demo/
+packages/labs/ssr/lib/
+packages/labs/ssr/node_modules/
+packages/labs/ssr/test/
+packages/labs/ssr/index.*
+!packages/labs/ssr/custom_typings/*.d.ts
 packages/labs/task/development/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
@@ -133,5 +140,5 @@ packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
 packages/localize/examples/
-packages/localize/testdata/
-packages/localize/config.schema.json
+packages/localize-tools/testdata/
+packages/localize-tools/config.schema.json

@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {
@@ -57,6 +49,24 @@ suite('ReactiveElement', () => {
     const el = new E();
     container.appendChild(el);
     assert.isTrue(el.hasRenderRoot);
+  });
+
+  test(`createRenderRoot is called only once`, async () => {
+    class E extends ReactiveElement {
+      renderRootCalls = 0;
+      createRenderRoot() {
+        this.renderRootCalls++;
+        return this;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    container.removeChild(el);
+    container.appendChild(el);
+    container.removeChild(el);
+    container.appendChild(el);
+    assert.equal(el.renderRootCalls, 1);
   });
 
   test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
@@ -2437,6 +2447,30 @@ suite('ReactiveElement', () => {
     a.bar = 'yo';
     await a.updateComplete;
     assert.equal(a.getAttribute('bar'), 'yo');
+  });
+
+  test('addInitializer', () => {
+    class A extends ReactiveElement {
+      prop1?: string;
+      prop2?: string;
+      event?: string;
+    }
+    A.addInitializer((a) => {
+      (a as A).prop1 = 'prop1';
+    });
+    A.addInitializer((a) => {
+      (a as A).prop2 = 'prop2';
+    });
+    A.addInitializer((a) => {
+      a.addEventListener('click', (e) => ((a as A).event = e.type));
+    });
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    assert.equal(a.prop1, 'prop1');
+    assert.equal(a.prop2, 'prop2');
+    a.dispatchEvent(new Event('click'));
+    assert.equal(a.event, 'click');
   });
 
   suite('exceptions', () => {
