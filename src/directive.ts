@@ -22,7 +22,7 @@ export const PartType = {
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
   ELEMENT: 6,
-} as const ;
+} as const;
 
 export type PartType = typeof PartType[keyof typeof PartType];
 
@@ -145,7 +145,7 @@ class BooleanAttributePartImpl {
  * add/removeEventListener if the listener changes frequently, such as when an
  * inline function is used as a listener.
  *
- * Because event options are passed when adding listeners, we must take case
+ * Because event options are passed when adding listeners, we must take care
  * to add and remove the part as a listener when the event options change.
  */
 export type EventPart = Interface<EventPartImpl>;
@@ -258,7 +258,7 @@ export function directive<C extends DirectiveClass>(directiveClass: C) {
       if (cached === undefined) {
         modernPart = legacyPartToPart(part);
         instance = new directiveClass(modernPart) as InstanceType<C>;
-        partToInstance.set(part, [modernPart, instance] as const );
+        partToInstance.set(part, [modernPart, instance] as const);
       } else {
         modernPart = cached[0];
         instance = cached[1];

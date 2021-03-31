@@ -15,7 +15,7 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {Directive, directive, DirectiveParameters, Part, PartType,} from '../../directive.js';
+import {Directive, directive, DirectiveParameters, Part, PartInfo, PartType,} from '../../directive.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
@@ -26,7 +26,7 @@ const assert = chai.assert;
 
 /**
  * adds the length of the parent /current node's tag name to the given value on
- * update
+ * update. e.g. <span>${addParentLength(3)}</span> => <span>7</span>
  */
 class AddParentLengthDirective extends Directive {
   _targetEl: Element|null = null;
@@ -59,7 +59,8 @@ class AddParentLengthDirective extends Directive {
 }
 
 /**
- * concats the parent / current element's tag name to the given value on update
+ * concats the parent / current element's tag name to the given value on update.
+ * e.g. <span>${addParentName(3)}</span> => <span>3 span</span>
  */
 class AddParentNameDirective extends Directive {
   _targetEl: Element|null = null;
@@ -92,8 +93,30 @@ class AddParentNameDirective extends Directive {
   }
 }
 
+class UpdateCounterDirective extends Directive {
+  _numUpdates = 0;
+
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
+
+    if (partInfo.type !== PartType.CHILD) {
+      throw new Error('updateCounter directive only supports child parts');
+    }
+  }
+
+  update(_part: Part, [str]: DirectiveParameters<this>) {
+    this._numUpdates++;
+    return this.render(`updates: ${this._numUpdates} input: ${str}`);
+  }
+
+  render(str: string) {
+    return str;
+  }
+}
+
 const addParentLength = directive(AddParentLengthDirective);
 const addParentName = directive(AddParentNameDirective);
+const updateCounter = directive(UpdateCounterDirective);
 
 suite('migration directives', () => {
   let container: HTMLDivElement;
@@ -202,5 +225,24 @@ suite('migration directives', () => {
     el = container.firstElementChild as HTMLInputElement;
 
     assert.equal(el.value, '10');
+  });
+
+  test('state preseved across renders', () => {
+    const renderDirective = (str: string) =>
+        render(html`<div>${updateCounter(str)}</div>`, container);
+
+
+    renderDirective('hello');
+    const el = container.firstElementChild as HTMLInputElement;
+    let content = stripExpressionMarkers(el.textContent!).trim();
+    assert.equal(content, 'updates: 1 input: hello');
+
+    renderDirective('world');
+    content = stripExpressionMarkers(el.textContent!).trim();
+    assert.equal(content, 'updates: 2 input: world');
+
+    renderDirective('world');
+    content = stripExpressionMarkers(el.textContent!).trim();
+    assert.equal(content, 'updates: 3 input: world');
   });
 });

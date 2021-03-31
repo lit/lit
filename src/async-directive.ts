@@ -48,11 +48,7 @@ export abstract class AsyncDirective extends Directive {
       return true;
     }
     const node = this._legacyGetNode();
-    if (node != null && !node.isConnected) {
-      // node is disconnected, do not render
-      return false;
-    }
-    return true;
+    return !!(node?.isConnected);
   }
 
   setValue(value: unknown) {
