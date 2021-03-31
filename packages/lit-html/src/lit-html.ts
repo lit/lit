@@ -683,8 +683,8 @@ export interface Disconnectable {
 function resolveDirective(
   part: ChildPart | AttributePart | ElementPart,
   value: unknown,
-  _$parent: DirectiveParent = part,
-  _$attributeIndex?: number
+  parent: DirectiveParent = part,
+  attributeIndex?: number
 ): unknown {
   // Bail early if the value is explicitly noChange. Note, this means any
   // nested directive is still attached and is not run.
@@ -692,29 +692,26 @@ function resolveDirective(
     return value;
   }
   let currentDirective =
-    _$attributeIndex !== undefined
-      ? (_$parent as AttributePart).__directives?.[_$attributeIndex]
-      : (_$parent as ChildPart | ElementPart | Directive).__directive;
+    attributeIndex !== undefined
+      ? (parent as AttributePart).__directives?.[attributeIndex]
+      : (parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
     : (value as DirectiveResult)._$litDirective$;
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
     currentDirective?._$setDirectiveConnected?.(false);
-    currentDirective =
-      nextDirectiveConstructor === undefined
-        ? undefined
-        : new nextDirectiveConstructor({
-            ...part,
-            _$part: part,
-            _$parent,
-            _$attributeIndex,
-          } as PartInfo);
-    if (_$attributeIndex !== undefined) {
-      ((_$parent as AttributePart).__directives ??= [])[
-        _$attributeIndex
+    if (nextDirectiveConstructor === undefined) {
+      currentDirective = undefined;
+    } else {
+      currentDirective = new nextDirectiveConstructor(part as PartInfo);
+      currentDirective._$initialize(part, parent, attributeIndex);
+    }
+    if (attributeIndex !== undefined) {
+      ((parent as AttributePart).__directives ??= [])[
+        attributeIndex
       ] = currentDirective;
     } else {
-      (_$parent as ChildPart | Directive).__directive = currentDirective;
+      (parent as ChildPart | Directive).__directive = currentDirective;
     }
   }
   if (currentDirective !== undefined) {
@@ -722,7 +719,7 @@ function resolveDirective(
       part,
       currentDirective._$resolve(part, (value as DirectiveResult).values),
       currentDirective,
-      _$attributeIndex
+      attributeIndex
     );
   }
   return value;

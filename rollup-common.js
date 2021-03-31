@@ -90,6 +90,8 @@ const stableProperties = {
   _$clear: 'R',
   // lit-html: Directive (used by private-ssr-support)
   _$resolve: 'S',
+  // lit-html: Directive (used by lit-html)
+  _$initialize: 'T',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

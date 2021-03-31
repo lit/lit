@@ -1578,6 +1578,27 @@ suite('lit-html', () => {
       assertContent('<div>TEST:A</div>');
     });
 
+    test('PartInfo includes metadata for directive in ChildPart', () => {
+      let partInfo: PartInfo;
+      const testDirective = directive(
+        class extends Directive {
+          constructor(info: PartInfo) {
+            super(info);
+            partInfo = info;
+          }
+          render(v: unknown) {
+            return v;
+          }
+        }
+      );
+      render(html`<div>${testDirective('test')}</div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>test</div>'
+      );
+      assert.equal(partInfo!.type, PartType.CHILD);
+    });
+
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
       class CheckNodePropertiesBehavior extends Directive {
         render() {
@@ -1702,10 +1723,62 @@ suite('lit-html', () => {
       );
     });
 
+    test('PartInfo includes metadata for directive in AttributeParts', () => {
+      let partInfo: PartInfo;
+      const testDirective = directive(
+        class extends Directive {
+          constructor(info: PartInfo) {
+            super(info);
+            partInfo = info;
+          }
+          render(v: unknown) {
+            return v;
+          }
+        }
+      );
+      render(html`<div title="a ${testDirective(1)} b"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div title="a 1 b"></div>'
+      );
+      if (partInfo!.type !== PartType.ATTRIBUTE) {
+        throw new Error('Expected attribute PartInfo');
+      }
+      assert.equal(partInfo!.tagName, 'DIV');
+      assert.equal(partInfo!.name, 'title');
+      assert.deepEqual(partInfo!.strings, ['a ', ' b']);
+    });
+
     test('renders directives on PropertyParts', () => {
       render(html`<div .foo=${count('A')}></div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
+    });
+
+    test('PartInfo includes metadata for directive in PropertyParts', () => {
+      let partInfo: PartInfo;
+      const testDirective = directive(
+        class extends Directive {
+          constructor(info: PartInfo) {
+            super(info);
+            partInfo = info;
+          }
+          render(v: unknown) {
+            return v;
+          }
+        }
+      );
+      render(html`<div .title="a ${testDirective(1)} b"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div title="a 1 b"></div>'
+      );
+      if (partInfo!.type !== PartType.PROPERTY) {
+        throw new Error('Expected property PartInfo');
+      }
+      assert.equal(partInfo!.tagName, 'DIV');
+      assert.equal(partInfo!.name, 'title');
+      assert.deepEqual(partInfo!.strings, ['a ', ' b']);
     });
 
     test('renders directives on EventParts', () => {
