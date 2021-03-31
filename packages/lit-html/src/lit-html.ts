@@ -665,7 +665,6 @@ class Template {
       }
       nodeIndex++;
     }
-    // console.log('Template', this);
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.

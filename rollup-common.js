@@ -98,7 +98,6 @@ const validMangledNames = [...alpha, ...alpha.map((c) => `A${c}`)];
 // Validate stableProperties list, just to be safe; catches dupes and
 // out-of-order mangled names
 let mangledNameCount = 0;
-const reservedPropertySet = new Set();
 
 for (const [prop, mangle] of Object.entries(stableProperties)) {
   if (!prop.startsWith('_$')) {
