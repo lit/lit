@@ -17,9 +17,8 @@ import {
   SVGTemplateResult,
   SanitizerFactory,
   Part,
-  TemplateFactory,
+  CompiledTemplate,
 } from '../lit-html.js';
-import type {Template} from '../lit-html.js';
 import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -33,7 +32,7 @@ import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
 import {_Σ} from '../private-ssr-support.js';
-const {AttributePart, Template: TemplateImpl} = _Σ;
+const {AttributePart} = _Σ;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -1480,15 +1479,13 @@ suite('lit-html', () => {
   suite('compiled', () => {
     test('only text', () => {
       // A compiled template for html`${'A'}`
-      let _$lit_template_1: Template;
-      const _$lit_template_1_f: TemplateFactory = (options?: RenderOptions) =>
-        (_$lit_template_1 ??= {
-          el: TemplateImpl.createElement('<!---->', options),
-          parts: [{type: 2, index: 0}],
-        });
+      const _$lit_template_1: CompiledTemplate = {
+        h: '<!---->',
+        parts: [{type: 2, index: 0}],
+      };
       assertRender(
         {
-          _$litType$: _$lit_template_1_f,
+          _$litType$: _$lit_template_1,
           values: ['A'],
         },
         'A'
@@ -1497,14 +1494,12 @@ suite('lit-html', () => {
 
     test('text expression', () => {
       // A compiled template for html`<div>${'A'}</div>`
-      let _$lit_template_1: Template;
-      const _$lit_template_1_f = (): Template =>
-        (_$lit_template_1 ??= {
-          el: TemplateImpl.createElement(`<div><!----></div>`),
-          parts: [{type: 2, index: 1}],
-        });
+      const _$lit_template_1: CompiledTemplate = {
+        h: `<div><!----></div>`,
+        parts: [{type: 2, index: 1}],
+      };
       const result = {
-        _$litType$: _$lit_template_1_f,
+        _$litType$: _$lit_template_1,
         values: ['A'],
       };
       assertRender(result, '<div>A</div>');
@@ -1512,22 +1507,20 @@ suite('lit-html', () => {
 
     test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
-      let _$lit_template_1: Template;
-      const _$lit_template_1_f: TemplateFactory = () =>
-        (_$lit_template_1 ??= {
-          el: TemplateImpl.createElement('<div></div>'),
-          parts: [
-            {
-              type: 1,
-              index: 0,
-              name: 'foo',
-              strings: ['', ''],
-              ctor: AttributePart,
-            },
-          ],
-        });
+      const _$lit_template_1: CompiledTemplate = {
+        h: '<div></div>',
+        parts: [
+          {
+            type: 1,
+            index: 0,
+            name: 'foo',
+            strings: ['', ''],
+            ctor: AttributePart,
+          },
+        ],
+      };
       const result = {
-        _$litType$: _$lit_template_1_f,
+        _$litType$: _$lit_template_1,
         values: ['A'],
       };
       assertRender(result, '<div foo="A"></div>');
@@ -1536,14 +1529,12 @@ suite('lit-html', () => {
     test('element expression', () => {
       const r = createRef();
       // A compiled template for html`<div ${ref(r)}></div>`
-      let _$lit_template_1: Template;
-      const _$lit_template_1_f: TemplateFactory = () =>
-        (_$lit_template_1 ??= {
-          el: TemplateImpl.createElement('<div></div>'),
-          parts: [{type: 6, index: 0}],
-        });
+      const _$lit_template_1: CompiledTemplate = {
+        h: '<div></div>',
+        parts: [{type: 6, index: 0}],
+      };
       const result = {
-        _$litType$: _$lit_template_1_f,
+        _$litType$: _$lit_template_1,
         values: [ref(r)],
       };
       assertRender(result, '<div></div>');

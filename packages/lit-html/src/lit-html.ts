@@ -226,14 +226,21 @@ export type TemplateResult<T extends ResultType = ResultType> = {
 };
 
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
-export type TemplateFactory = (options?: RenderOptions) => Template;
 
-export type CompiledTemplateResult = {
+export interface CompiledTemplateResult {
   // This is a factory in order to make template initialization lazy
   // and allow ShadyRenderOptions scope to be passed in.
-  _$litType$: TemplateFactory;
+  _$litType$: CompiledTemplate;
   values: unknown[];
-};
+}
+
+export interface CompiledTemplate extends Omit<Template, 'el'> {
+  // el is overridden to be optional. We initialize it on first render
+  el?: HTMLTemplateElement;
+
+  // The prepared HTML string to create a template element from.
+  h: string;
+}
 
 /**
  * Generates a template literal tag function that returns a TemplateResult with
@@ -1056,14 +1063,23 @@ class ChildPartImpl {
   private _commitTemplateResult(
     result: TemplateResult | CompiledTemplateResult
   ): void {
-    const {values} = result;
-    let template: Template | undefined;
-    if (typeof result._$litType$ === 'number') {
-      const {strings} = result as TemplateResult;
-      template = this._$getTemplate(strings, result as TemplateResult);
-    } else {
-      template = (result as CompiledTemplateResult)._$litType$(this.options);
-    }
+    const {values, _$litType$} = result;
+    // If $litType$ is a number, result is a plain TemplateResult and we get
+    // the template from the template cache. If not, result is a
+    // CompiledTemplateResult and _$litType$ is a CompiledTemplate and we need
+    // to create the <template> element the first time we see it.
+    const template: Template | CompiledTemplate =
+      typeof _$litType$ === 'number'
+        ? this._$getTemplate(
+            (result as TemplateResult).strings,
+            result as TemplateResult
+          )
+        : (_$litType$.el === undefined &&
+            (_$litType$.el = TemplateImpl.createElement(
+              _$litType$.h,
+              this.options
+            )),
+          _$litType$);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
