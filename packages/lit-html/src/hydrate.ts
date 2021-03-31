@@ -255,14 +255,9 @@ const openChildPart = (
     // }
   } else if (isTemplateResult(value)) {
     // Check for a template result digest
-    const markerWithDigest = `lit-part ${digestForTemplateResult(
-      value as TemplateResult
-    )}`;
+    const markerWithDigest = `lit-part ${digestForTemplateResult(value)}`;
     if (marker.data === markerWithDigest) {
-      const template = ChildPart.prototype._$getTemplate(
-        (value as TemplateResult).strings,
-        value as TemplateResult
-      );
+      const template = ChildPart.prototype._$getTemplate(value);
       const instance = new TemplateInstance(template, part);
       stack.push({
         type: 'template-instance',
@@ -270,7 +265,7 @@ const openChildPart = (
         part,
         templatePartIndex: 0,
         instancePartIndex: 0,
-        result: value as TemplateResult,
+        result: value,
       });
       // For TemplateResult values, we set the part value to the
       // generated TemplateInstance

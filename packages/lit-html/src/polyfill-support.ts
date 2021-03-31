@@ -58,10 +58,7 @@ interface PatchableChildPart {
   _$endNode: ChildNode | null;
   options: RenderOptions;
   _$setValue(value: unknown, directiveParent: DirectiveParent): void;
-  _$getTemplate(
-    strings: TemplateStringsArray,
-    result: ShadyTemplateResult
-  ): HTMLTemplateElement;
+  _$getTemplate(result: ShadyTemplateResult): HTMLTemplateElement;
 }
 
 interface PatchableTemplate {
@@ -251,7 +248,6 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    */
   childPartProto._$getTemplate = function (
     this: PatchableChildPart,
-    strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {
     const scope = this.options?.scope;
@@ -259,10 +255,10 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     if (templateCache === undefined) {
       scopedTemplateCache.set(scope, (templateCache = new Map()));
     }
-    let template = templateCache.get(strings);
+    let template = templateCache.get(result.strings);
     if (template === undefined) {
       templateCache.set(
-        strings,
+        result.strings,
         (template = new Template(result, this.options))
       );
     }

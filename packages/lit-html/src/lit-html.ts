@@ -1070,10 +1070,7 @@ class ChildPartImpl {
     // to create the <template> element the first time we see it.
     const template: Template | CompiledTemplate =
       typeof _$litType$ === 'number'
-        ? this._$getTemplate(
-            (result as TemplateResult).strings,
-            result as TemplateResult
-          )
+        ? this._$getTemplate(result as TemplateResult)
         : (_$litType$.el === undefined &&
             (_$litType$.el = TemplateImpl.createElement(
               _$litType$.h,
@@ -1094,10 +1091,10 @@ class ChildPartImpl {
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
   /** @internal */
-  _$getTemplate(strings: TemplateStringsArray, result: TemplateResult) {
-    let template = templateCache.get(strings);
+  _$getTemplate(result: TemplateResult) {
+    let template = templateCache.get(result.strings);
     if (template === undefined) {
-      templateCache.set(strings, (template = new TemplateImpl(result)));
+      templateCache.set(result.strings, (template = new TemplateImpl(result)));
     }
     return template;
   }
