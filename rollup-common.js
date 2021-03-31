@@ -107,12 +107,7 @@ for (const [prop, mangle] of Object.entries(stableProperties)) {
         `(property '${prop}' violates the convention)`
     );
   }
-  if (mangle.startsWith('Σ')) {
-    if (reservedPropertySet.has(mangle)) {
-      throw new Error(`Mangled name ${mangle} used more than once`);
-    }
-    reservedPropertySet.add(mangle);
-  } else if (mangle !== validMangledNames[mangledNameCount++]) {
+  if (mangle !== validMangledNames[mangledNameCount++]) {
     throw new Error(
       `Add new stableProperties to the end of the list using ` +
         `the next available letter (mangled name '${mangle}' for property ` +
