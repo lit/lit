@@ -16,8 +16,6 @@ export const templates = {
   myId: `Hola Mundo`,
   s00ad08ebae1e0f74: `Hola ${0}!`,
   s03c68d79ad36e8d4: `described 0`,
-  s03c68e79ad36ea87: `described 1`,
-  s03c68f79ad36ec3a: `described 2`,
   s0f19e6c4e521dd53: `Mundo`,
   s8c0ec8d1fb9e6e32: `Hola Mundo!`,
 };

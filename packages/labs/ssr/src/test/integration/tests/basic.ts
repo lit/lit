@@ -31,7 +31,10 @@ import {createRef, ref} from 'lit/directives/ref.js';
 
 import {LitElement, PropertyValues} from 'lit';
 import {property} from 'lit/decorators/property.js';
-import {renderLight, RenderLightHost} from 'lit/directives/render-light.js';
+import {
+  renderLight,
+  RenderLightHost,
+} from '@lit-labs/ssr-client/directives/render-light.js';
 
 import {SSRTest} from './ssr-test';
 import {AsyncDirective} from 'lit/async-directive';

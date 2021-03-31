@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ChildPart} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
-import {getDirectiveClass} from '../directive-helpers.js';
+import {ChildPart} from 'lit';
+import {directive, Directive} from 'lit/directive.js';
+import {getDirectiveClass} from 'lit/directive-helpers.js';
 
 export interface RenderLightHost extends HTMLElement {
   renderLight(): unknown;
