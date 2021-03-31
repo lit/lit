@@ -119,11 +119,11 @@ class XlbFormatter implements Formatter {
     indent(bundle, 1);
     const messagesNode = doc.createElement('messages');
     bundle.appendChild(messagesNode);
-    for (const {name, contents, descStack} of sourceMessages) {
+    for (const {name, contents, desc} of sourceMessages) {
       const messageNode = doc.createElement('msg');
       messageNode.setAttribute('name', name);
-      if (descStack.length > 0) {
-        messageNode.setAttribute('desc', descStack.join(' / '));
+      if (desc) {
+        messageNode.setAttribute('desc', desc);
       }
       indent(messagesNode, 2);
       messagesNode.appendChild(messageNode);
