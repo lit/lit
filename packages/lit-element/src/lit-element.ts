@@ -87,10 +87,16 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
+  /**
+   * @category rendering
+   */
   readonly renderOptions: RenderOptions = {host: this};
 
   private __childPart: ChildPart | undefined = undefined;
 
+  /**
+   * @category rendering
+   */
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
@@ -107,6 +113,7 @@ export class LitElement extends ReactiveElement {
    * and calls `render` to render DOM via lit-html. Setting properties inside
    * this method will *not* trigger another update.
    * @param changedProperties Map of changed properties with old values
+   * @category updates
    */
   protected update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
@@ -120,11 +127,17 @@ export class LitElement extends ReactiveElement {
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
   // do not thrash directive callbacks
   // https://github.com/Polymer/lit-html/issues/1457
+  /**
+   * @category lifecycle
+   */
   connectedCallback() {
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
 
+  /**
+   * @category lifecycle
+   */
   disconnectedCallback() {
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
@@ -135,6 +148,7 @@ export class LitElement extends ReactiveElement {
    * any value renderable by lit-html's `ChildPart` - typically a
    * `TemplateResult`. Setting properties inside this method will *not* trigger
    * the element to update.
+   * @category rendering
    */
   protected render(): unknown {
     return noChange;
