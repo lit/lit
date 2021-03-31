@@ -45,9 +45,9 @@ class HomePage {
 }
 ```
 
-### Changed
-
 ## [0.1.1] - 2021-03-30
+
+### Changed
 
 - Bumped dependency versions for `xmldom` and `@lit/localize`
 
