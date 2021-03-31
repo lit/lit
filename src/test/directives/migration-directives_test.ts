@@ -15,19 +15,20 @@
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 /// <reference path="../../../node_modules/@types/chai/index.d.ts" />
 
-import {Directive, directive, DirectiveParameters, Part, PartType} from '../../directive.js';
+import {Directive, directive, DirectiveParameters, Part, PartType,} from '../../directive.js';
 import {render} from '../../lib/render.js';
 import {html} from '../../lit-html.js';
-import { stripExpressionMarkers } from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 
 const assert = chai.assert;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * adds the length of the parent /current node's tag name to the given value on update
+ * adds the length of the parent /current node's tag name to the given value on
+ * update
  */
- class AddParentLengthDirective extends Directive {
+class AddParentLengthDirective extends Directive {
   _targetEl: Element|null = null;
 
   render(value: number) {
@@ -47,7 +48,8 @@ const assert = chai.assert;
           this._targetEl = part.parentNode as Element;
           break;
         default:
-          throw new Error(`${part.name} is not supported for parent length directive`);
+          throw new Error(
+              `${part.name} is not supported for parent length directive`);
       }
     }
 
@@ -59,7 +61,7 @@ const assert = chai.assert;
 /**
  * concats the parent / current element's tag name to the given value on update
  */
- class AddParentNameDirective extends Directive {
+class AddParentNameDirective extends Directive {
   _targetEl: Element|null = null;
 
   render(value: string|number) {
@@ -80,7 +82,8 @@ const assert = chai.assert;
           this._targetEl = part.parentNode as Element;
           break;
         default:
-          throw new Error(`${part.name} is not supported for parent length directive`);
+          throw new Error(
+              `${part.name} is not supported for parent length directive`);
       }
     }
 
@@ -101,11 +104,10 @@ suite('migration directives', () => {
 
   suite('Each Part Type', () => {
     test('ATTRIBUTE', () => {
-      const template = html`
-          <div
-              data-length=${addParentLength(5)}
-              data-name=${addParentName(5)}>
-          </div>`;
+      const template = html` <div
+        data-length=${addParentLength(5)}
+        data-name=${addParentName(5)}
+      ></div>`;
       render(template, container);
 
       const el = container.firstElementChild as HTMLDivElement;
@@ -119,17 +121,15 @@ suite('migration directives', () => {
     });
 
     test('BOOLEAN_ATTIBUTE', () => {
-      const template = html`
-          <article ?bool=${addParentLength(5)}></article>`;
+      const template = html` <article ?bool=${addParentLength(5)}></article>`;
       const renderTemplate = () => render(template, container);
 
       assert.throws(renderTemplate);
     });
 
     test('PROPERTY', () => {
-      const template = html`
-          <input .value=${addParentLength(5)}>
-          <input .value=${addParentName(5)}>`;
+      const template = html` <input .value=${addParentLength(5)} />
+        <input .value=${addParentName(5)} />`;
       render(template, container);
 
       const el = container.firstElementChild as HTMLInputElement;
@@ -145,9 +145,8 @@ suite('migration directives', () => {
     });
 
     test('CHILD', () => {
-      const template = html`
-          <article>${addParentLength(5)}</article>
-          <article>${addParentName(5)}</article>`;
+      const template = html` <article>${addParentLength(5)}</article>
+        <article>${addParentName(5)}</article>`;
       render(template, container);
 
       const el = container.firstElementChild as HTMLInputElement;
@@ -163,8 +162,7 @@ suite('migration directives', () => {
     });
 
     test('EVENT', () => {
-      const template = html`
-          <article @event=${addParentLength(5)}></article>`;
+      const template = html` <article @event=${addParentLength(5)}></article>`;
       const renderTemplate = () => render(template, container);
 
       assert.throws(renderTemplate);
@@ -182,7 +180,7 @@ suite('migration directives', () => {
       }
 
       const template = html`
-          <input .value=${directive as unknown as string}></input>`;
+          <input .value=${(directive as unknown) as string}></input>`;
 
       render(template, container);
     };
