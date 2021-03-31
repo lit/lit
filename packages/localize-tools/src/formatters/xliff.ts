@@ -220,17 +220,17 @@ export class XliffFormatter implements Formatter {
     file.appendChild(body);
     indent(body);
 
-    for (const {name, contents: sourceContents, descStack} of sourceMessages) {
+    for (const {name, contents: sourceContents, desc} of sourceMessages) {
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#trans-unit
       const transUnit = doc.createElement('trans-unit');
       body.appendChild(transUnit);
       indent(transUnit, 1);
       transUnit.setAttribute('id', name);
 
-      if (descStack.length > 0) {
+      if (desc) {
         // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
         const note = doc.createElement('note');
-        note.appendChild(doc.createTextNode(descStack.join(' / ')));
+        note.appendChild(doc.createTextNode(desc));
         transUnit.appendChild(note);
         indent(transUnit, 1);
       }

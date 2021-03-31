@@ -23,14 +23,7 @@ export function extractMessagesFromProgram(
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of program.getSourceFiles()) {
-    extractMessagesFromNode(
-      sourcefile,
-      program,
-      sourcefile,
-      messages,
-      errors,
-      []
-    );
+    extractMessagesFromNode(sourcefile, program, sourcefile, messages, errors);
   }
   const deduped = dedupeMessages(messages);
   return {
@@ -51,19 +44,9 @@ function extractMessagesFromNode(
   program: ts.Program,
   node: ts.Node,
   messages: ProgramMessage[],
-  errors: ts.Diagnostic[],
-  descStack: MsgDesc[]
+  errors: ts.Diagnostic[]
 ): void {
-  const newDescs = extractMsgDescs(node, file.getFullText());
-  if (newDescs.length > 0) {
-    // Note we just make a copy of the stack each time we get a new description.
-    // This is a little simpler than modifying it in-place given that we have to
-    // de-duplicate. This could be a spot to optimize if we start handling
-    // humongous applications.
-    descStack = dedupeMsgDescs([...descStack, ...newDescs]);
-  }
-
-  const extractResult = extractMsg(file, program, node, descStack);
+  const extractResult = extractMsg(file, program, node);
   if (extractResult.error) {
     errors.push(extractResult.error);
   } else if (extractResult.result !== undefined) {
@@ -71,7 +54,7 @@ function extractMessagesFromNode(
   }
 
   ts.forEachChild(node, (node) => {
-    extractMessagesFromNode(file, program, node, messages, errors, descStack);
+    extractMessagesFromNode(file, program, node, messages, errors);
   });
 }
 
@@ -82,8 +65,7 @@ function extractMessagesFromNode(
 function extractMsg(
   file: ts.SourceFile,
   program: ts.Program,
-  node: ts.Node,
-  descStack: MsgDesc[]
+  node: ts.Node
 ): ResultOrError<ProgramMessage | undefined, ts.Diagnostic> {
   if (!isMsgCall(node, program.getTypeChecker())) {
     // We're not interested.
@@ -124,7 +106,9 @@ function extractMsg(
       node,
       contents,
       isLitTemplate,
-      descStack: descStack.map((desc) => desc.text),
+      // Note we pass node.parent because node is a CallExpression node, but the
+      // JSDoc tag will be attached to the parent Expression node.
+      desc: options.desc,
     },
   };
 }
@@ -135,10 +119,7 @@ function extractMsg(
 export function extractOptions(
   node: ts.Node | undefined,
   file: ts.SourceFile
-): ResultOrError<
-  {id?: string; args?: ts.NodeArray<ts.Expression>},
-  ts.Diagnostic
-> {
+): ResultOrError<{id?: string; desc?: string}, ts.Diagnostic> {
   if (node === undefined) {
     return {result: {}};
   }
@@ -152,8 +133,8 @@ export function extractOptions(
     };
   }
 
-  let id: string | undefined = undefined;
-  let args: ts.NodeArray<ts.Expression> | undefined = undefined;
+  let id: string | undefined;
+  let desc: string | undefined;
 
   for (const property of node.properties) {
     // {
@@ -201,34 +182,37 @@ export function extractOptions(
           error: createDiagnostic(
             file,
             property.initializer,
-            `Options id property must be a non-empty string literal`
+            `msg id option must be a non-empty string with no expressions`
           ),
         };
       }
       id = property.initializer.text;
-    } else if (name === 'args') {
-      if (!ts.isArrayLiteralExpression(property.initializer)) {
+    } else if (name === 'desc') {
+      if (
+        !ts.isStringLiteral(property.initializer) &&
+        !ts.isNoSubstitutionTemplateLiteral(property.initializer)
+      ) {
         return {
           error: createDiagnostic(
             file,
             property.initializer,
-            `Options args property must be an array literal`
+            `msg desc option must be a string with no expressions`
           ),
         };
       }
-      args = property.initializer.elements;
+      desc = property.initializer.text;
     } else {
       return {
         error: createDiagnostic(
           file,
           property,
-          `Options object property must be "id" or "args"`
+          `Invalid msg option. Supported: id, desc`
         ),
       };
     }
   }
 
-  return {result: {id, args}};
+  return {result: {id, desc}};
 }
 
 interface ExtractedTemplate {
@@ -493,59 +477,6 @@ function combineAdjacentPlaceholders(
     combined.push({untranslatable: phBuffer.join('')});
   }
   return combined;
-}
-
-/**
- * A message description extracted from a TypeScript comment in a particular
- * file.
- */
-interface MsgDesc {
-  /** Where the comment begins in the source text. */
-  pos: number;
-  /** Where the comment ends in the source text. */
-  end: number;
-  /** The extracted description (the part after `// msgdesc: `) */
-  text: string;
-}
-
-/**
- * Look for "// msgdesc: foo" comments attached to the given node.
- */
-function extractMsgDescs(node: ts.Node, fileText: string): MsgDesc[] {
-  const ranges = ts.getLeadingCommentRanges(fileText, node.getFullStart());
-  const descs: MsgDesc[] = [];
-  if (ranges !== undefined) {
-    for (const range of ranges) {
-      const comment = fileText.slice(range.pos, range.end);
-      const match = comment.match(/.*msgdesc:\s*(.+)/);
-      if (match !== null) {
-        descs.push({pos: range.pos, end: range.end, text: match[1].trim()});
-      }
-    }
-  }
-  return descs;
-}
-
-/**
- * The way TypeScript treats comments in the AST means that it's possible for
- * us to extract the exact same exact comment range multiple times when
- * traversing certain AST structures (e.g. both for an "expression" node and
- * some child node it has). De-duplicate these based on their source text
- * positions.
- */
-function dedupeMsgDescs(descs: MsgDesc[]): MsgDesc[] {
-  // Since Maps preserve order, we can just pick a key that will be the same for
-  // duplicate comment ranges, populate the map, and then iterate through the
-  // values.
-  const map = new Map<string, MsgDesc>();
-  for (const desc of descs) {
-    const key = `${desc.pos}:${desc.end}`;
-    if (map.has(key)) {
-      continue;
-    }
-    map.set(key, desc);
-  }
-  return [...map.values()];
 }
 
 function replaceHtmlWithPlaceholders(
