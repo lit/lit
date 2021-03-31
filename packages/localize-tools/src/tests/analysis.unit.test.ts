@@ -26,7 +26,7 @@ function checkAnalysis(
   inputTs: string,
   expectedMessages: Array<
     Pick<ProgramMessage, 'name' | 'contents'> &
-      Partial<Pick<ProgramMessage, 'descStack'>>
+      Partial<Pick<ProgramMessage, 'desc'>>
   >,
   expectedErrors: string[] = []
 ) {
@@ -49,15 +49,15 @@ function checkAnalysis(
     expectedErrors
   );
   t.deepEqual(
-    messages.map(({name, contents, descStack}) => ({
+    messages.map(({name, contents, desc}) => ({
       name,
       contents,
-      descStack,
+      desc,
     })),
-    expectedMessages.map(({name, contents, descStack}) => ({
+    expectedMessages.map(({name, contents, desc}) => ({
       name,
       contents,
-      descStack: descStack ?? [],
+      desc,
     }))
   );
   t.end();
@@ -204,39 +204,57 @@ test('parameterized HTML message', (t) => {
   ]);
 });
 
-test('immediate description', (t) => {
+test('desc option (string)', (t) => {
   const src = `
     import {msg} from '@lit/localize';
-    // msgdesc: Greeting
-    msg('Hello World', {id: 'greeting'});
+
+    msg('Hello World', {
+      desc: 'A greeting to Earth'
+    });
   `;
   checkAnalysis(t, src, [
     {
-      name: 'greeting',
+      name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
-      descStack: ['Greeting'],
+      desc: 'A greeting to Earth',
     },
   ]);
 });
 
-test('inherited description', (t) => {
+test('desc option (no substitution literal)', (t) => {
   const src = `
     import {msg} from '@lit/localize';
-    // msgdesc: Greeter
-    class XGreeter extends HTMLElement {
-      render() {
-        // msgdesc: Greeting
-        return msg('Hello World', {id: 'greeting'});
-      }
-    }
+
+    msg('Hello World', {
+      desc: \`A greeting to Earth\`
+    });
   `;
   checkAnalysis(t, src, [
     {
-      name: 'greeting',
+      name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
-      descStack: ['Greeter', 'Greeting'],
+      desc: 'A greeting to Earth',
     },
   ]);
+});
+
+test('error: desc option (substitution literal)', (t) => {
+  const src = `
+    import {msg} from '@lit/localize';
+
+    msg('Hello World', {
+      desc: \`A greeting to \${'Earth'}\`
+    });
+  `;
+  checkAnalysis(
+    t,
+    src,
+    [],
+    [
+      '__DUMMY__.ts(5,13): error TS2324: ' +
+        'msg desc option must be a string with no expressions',
+    ]
+  );
 });
 
 test('different msg function', (t) => {
@@ -259,7 +277,7 @@ test('error: message id cannot be empty', (t) => {
     src,
     [],
     [
-      '__DUMMY__.ts(3,29): error TS2324: Options id property must be a non-empty string literal',
+      '__DUMMY__.ts(3,29): error TS2324: msg id option must be a non-empty string with no expressions',
     ]
   );
 });
@@ -308,8 +326,8 @@ test('error: message id must be static', (t) => {
     src,
     [],
     [
-      '__DUMMY__.ts(4,29): error TS2324: Options id property must be a non-empty string literal',
-      '__DUMMY__.ts(5,29): error TS2324: Options id property must be a non-empty string literal',
+      '__DUMMY__.ts(4,29): error TS2324: msg id option must be a non-empty string with no expressions',
+      '__DUMMY__.ts(5,29): error TS2324: msg id option must be a non-empty string with no expressions',
     ]
   );
 });
