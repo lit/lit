@@ -140,7 +140,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```json
    {
-     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/lit-next/packages/localize/config.schema.json",
+     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/lit-next/packages/localize-tools/config.schema.json",
      "sourceLocale": "en",
      "targetLocales": ["es-419"],
      "tsConfig": "tsconfig.json",
