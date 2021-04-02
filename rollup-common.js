@@ -155,7 +155,7 @@ const prefixProperties = (
       // `prefixClassProperties` is called twice on the same `nameCache`.
       if (p.startsWith('$__') && !props[p].startsWith(classPropertyPrefix)) {
         props[p] = classPropertyPrefix + props[p];
-      } else if (!p.startsWith('$_$')) {
+      } else if (testPropertyPrefix && !(p.slice(1) in stableProperties)) {
         // Only change the names of non-stable properties when testing
         props[p] = testPropertyPrefix + props[p];
       }
