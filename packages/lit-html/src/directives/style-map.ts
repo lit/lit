@@ -75,7 +75,7 @@ class StyleMapDirective extends Directive {
     // Remove old properties that no longer exist in styleInfo
     // We use forEach() instead of for-of so that re don't require down-level
     // iteration.
-    this._previousStyleProperties!.forEach((name) => {
+    this._previousStyleProperties.forEach((name) => {
       // If the name isn't in styleInfo or it's null/undefined
       if (styleInfo[name] == null) {
         this._previousStyleProperties!.delete(name);

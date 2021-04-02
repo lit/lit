@@ -81,7 +81,7 @@ export const decorateProperty = ({
     if (descriptor !== undefined) {
       Object.defineProperty(protoOrDescriptor, name, descriptor(name));
     }
-    finisher?.(ctor, name!);
+    finisher?.(ctor, name);
     // Babel standard mode
   } else {
     // Note, the @property decorator saves `key` as `originalKey`

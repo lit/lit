@@ -166,9 +166,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       }
       const scopeCss = cssForScope(scope);
       // Remove styles and store textContent.
-      const styles = element.content.querySelectorAll(
-        'style'
-      ) as NodeListOf<HTMLStyleElement>;
+      const styles = element.content.querySelectorAll('style');
       // Store the css in this template in the scope css and remove the <style>
       // from the template _before_ the node-walk captures part indices
       scopeCss.push(

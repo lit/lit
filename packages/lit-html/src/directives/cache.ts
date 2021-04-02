@@ -20,7 +20,10 @@ import {
 } from '../directive-helpers.js';
 
 class CacheDirective extends Directive {
-  private _templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
+  private readonly _templateCache = new WeakMap<
+    TemplateStringsArray,
+    ChildPart
+  >();
   private _value?: TemplateResult;
 
   constructor(partInfo: PartInfo) {

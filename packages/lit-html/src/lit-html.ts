@@ -518,7 +518,9 @@ const getTemplateHtml = (
           end
         : s +
           marker +
-          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
+          (attrNameEndIndex === -2
+            ? (attrNames.push(undefined), String(i))
+            : end);
   }
 
   // Returned as an array for terseness

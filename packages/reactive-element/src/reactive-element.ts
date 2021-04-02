@@ -707,9 +707,9 @@ export abstract class ReactiveElement
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
-    (this.constructor as typeof ReactiveElement)._initializers?.forEach((i) =>
-      i(this)
-    );
+    (this.constructor as typeof ReactiveElement)._initializers?.forEach((i) => {
+      i(this);
+    });
   }
 
   /**
@@ -1082,7 +1082,9 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
-    this.__controllers?.forEach((c) => c.hostUpdated?.());
+    this.__controllers?.forEach((c) => {
+      c.hostUpdated?.();
+    });
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);

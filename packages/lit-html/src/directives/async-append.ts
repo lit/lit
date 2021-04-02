@@ -86,9 +86,9 @@ class AsyncAppendDirective extends AsyncDirective {
 
   disconnected() {
     // Pause iteration while disconnected
-    this._reconnectPromise = new Promise(
-      (resolve) => (this._reconnectResolver = resolve)
-    );
+    this._reconnectPromise = new Promise((resolve) => {
+      this._reconnectResolver = resolve;
+    });
   }
 
   reconnected() {
