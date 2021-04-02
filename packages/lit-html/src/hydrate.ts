@@ -6,15 +6,7 @@
 
 import type {TemplateResult} from './lit-html.js';
 
-import {
-  noChange,
-  EventPart,
-  ChildPart,
-  PropertyPart,
-  ElementPart,
-  RenderOptions,
-  _Σ,
-} from './lit-html.js';
+import {noChange, RenderOptions, _Σ} from './lit-html.js';
 import {AttributePartInfo, PartType} from './directive.js';
 import {
   isPrimitive,
@@ -32,6 +24,10 @@ const {
   _ElementPart: ElementPart,
 } = _Σ;
 
+type ChildPart = InstanceType<typeof ChildPart>;
+type EventPart = InstanceType<typeof EventPart>;
+type PropertyPart = InstanceType<typeof PropertyPart>;
+type ElementPart = InstanceType<typeof ElementPart>;
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
 /**
