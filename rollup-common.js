@@ -136,19 +136,28 @@ for (const [prop, mangle] of Object.entries(stableProperties)) {
  * chosen (at least default) by minifiers.
  */
 const addedClassPrefix = new WeakSet();
-const prefixClassProperties = (context, nameCache, prefix) => {
+const prefixProperties = (
+  context,
+  nameCache,
+  classPropertyPrefix,
+  testPropertyPrefix
+) => {
   // Only prefix class properties once per options context, as a perf optimization
   if (nameCache && !addedClassPrefix.has(context)) {
     const {
       props: {props},
     } = nameCache;
+    classPropertyPrefix = testPropertyPrefix + classPropertyPrefix;
     for (const p in props) {
       // Note all properties in the terser name cache are prefixed with '$'
       // (presumably to avoid collisions with built-ins). Checking for the
       // prefix is just to ensure we don't double-prefix properties if
       // `prefixClassProperties` is called twice on the same `nameCache`.
-      if (p.startsWith('$__') && !props[p].startsWith(prefix)) {
-        props[p] = prefix + props[p];
+      if (p.startsWith('$__') && !props[p].startsWith(classPropertyPrefix)) {
+        props[p] = classPropertyPrefix + props[p];
+      } else if (!p.startsWith('$_$')) {
+        // Only change the names of non-stable properties when testing
+        props[p] = testPropertyPrefix + props[p];
       }
     }
     addedClassPrefix.add(context);
@@ -156,7 +165,11 @@ const prefixClassProperties = (context, nameCache, prefix) => {
   return nameCache;
 };
 
-const generateTerserOptions = (nameCache = null, classPropertyPrefix = '') => ({
+const generateTerserOptions = (
+  nameCache = null,
+  classPropertyPrefix = '',
+  testPropertyPrefix = ''
+) => ({
   warnings: true,
   ecma: 2017,
   compress: {
@@ -172,7 +185,12 @@ const generateTerserOptions = (nameCache = null, classPropertyPrefix = '') => ({
   // This is implemented as a getter, so that we apply the class property prefix
   // after the `nameCacheSeeder` build runs
   get nameCache() {
-    return prefixClassProperties(this, nameCache, classPropertyPrefix);
+    return prefixProperties(
+      this,
+      nameCache,
+      classPropertyPrefix,
+      testPropertyPrefix
+    );
   },
   mangle: {
     properties: {
@@ -188,7 +206,9 @@ export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
+  testPropertyPrefix,
   classPropertyPrefix,
+  outputDir = './',
   // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
@@ -243,7 +263,11 @@ export function litProdConfig({
   ].join('\n');
   const nameCacheSeederTerserOptions = generateTerserOptions(nameCache);
 
-  const terserOptions = generateTerserOptions(nameCache, classPropertyPrefix);
+  const terserOptions = generateTerserOptions(
+    nameCache,
+    classPropertyPrefix,
+    testPropertyPrefix
+  );
 
   return [
     {
@@ -268,7 +292,7 @@ export function litProdConfig({
     {
       input: entryPoints.map((name) => `development/${name}.js`),
       output: {
-        dir: './',
+        dir: outputDir,
         format: 'esm',
         // Preserve existing module structure (e.g. preserve the "directives/"
         // directory).
