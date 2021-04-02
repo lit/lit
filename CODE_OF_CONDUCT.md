@@ -1,4 +1,4 @@
-The Polymer community is full of bright, thoughtful, helpful, supportive people - it's on all of us to keep it this way! Google and the Polymer team want to help foster and support this, and we take any breaches of mutual respect very seriously. Below is the community code of conduct, which applies to our Github repos and organizations, mailing lists, Slack channels, and any other Polymer-supported communication group.
+The Lit community is full of bright, thoughtful, helpful, supportive people - it's on all of us to keep it this way! Google and the Lit team want to help foster and support this, and we take any breaches of mutual respect very seriously. Below is the community code of conduct, which applies to our Github repos and organizations, mailing lists, Slack channels, and any other Lit-supported communication group.
 
 ### Be excellent to each other.
 
@@ -45,8 +45,8 @@ Any person communicating in a disorderly manner, engaging in harassing or uncomf
 
 ### ANTI-HARASSMENT POLICY
 
-Google and the Polymer team are dedicated to supporting a harassment-free and inclusive community for everyone regardless of gender identity and expression, sexual orientation, differing abilities, neurodiversity, physical appearance, body size, ethnicity, nationality, age, religion, or other protected category. We do not tolerate harassment of community members in any form. Sexual language and imagery is not appropriate for any Polymer-related community. Google and the Polymer team take these violations of our policy seriously and will respond appropriately. All community members must abide by our anti-harassment policy.
+Google and the Lit team are dedicated to supporting a harassment-free and inclusive community for everyone regardless of gender identity and expression, sexual orientation, differing abilities, neurodiversity, physical appearance, body size, ethnicity, nationality, age, religion, or other protected category. We do not tolerate harassment of community members in any form. Sexual language and imagery is not appropriate for any Lit-related community. Google and the Lit team take these violations of our policy seriously and will respond appropriately. All community members must abide by our anti-harassment policy.
 
 ### CONDUCT POLICY
 
-Google and the Polymer team reserve the right to remove or ban any person from a Polymer-supported community (and potentially all future Google-supported communities) at any time in its sole discretion. This includes but is not limited to community members behaving in a disorderly manner or failing to comply with the terms and conditions herein.
+Google and the Lit team reserve the right to remove or ban any person from a Lit-supported community (and potentially all future Google-supported communities) at any time in its sole discretion. This includes but is not limited to community members behaving in a disorderly manner or failing to comply with the terms and conditions herein.
