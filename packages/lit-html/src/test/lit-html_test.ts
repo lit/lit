@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {
-  AttributePart,
   ChildPart,
   CompiledTemplateResult,
   html,
@@ -33,6 +32,8 @@ import {createRef, ref} from '../directives/ref.js';
 // For compiled template tests
 import {_Σ} from '../private-ssr-support.js';
 const {AttributePart} = _Σ;
+
+type AttributePart = InstanceType<typeof AttributePart>;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;

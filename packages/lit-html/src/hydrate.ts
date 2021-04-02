@@ -6,15 +6,7 @@
 
 import type {TemplateResult} from './lit-html.js';
 
-import {
-  noChange,
-  EventPart,
-  ChildPart,
-  PropertyPart,
-  ElementPart,
-  RenderOptions,
-  _Σ,
-} from './lit-html.js';
+import {noChange, RenderOptions, _Σ} from './lit-html.js';
 import {AttributePartInfo, PartType} from './directive.js';
 import {
   isPrimitive,
@@ -27,11 +19,10 @@ const {
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
   _ChildPart: ChildPart,
-  _EventPart: EventPart,
-  _PropertyPart: PropertyPart,
   _ElementPart: ElementPart,
 } = _Σ;
 
+type ChildPart = InstanceType<typeof ChildPart>;
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
 /**
@@ -376,8 +367,8 @@ const createAttributeParts = (
         // parts since those were not serialized, and pass `noCommit` for the
         // others to avoid perf impact of touching the DOM unnecessarily
         const noCommit = !(
-          instancePart instanceof EventPart ||
-          instancePart instanceof PropertyPart
+          instancePart.type === PartType.EVENT ||
+          instancePart.type === PartType.PROPERTY
         );
         instancePart._$setValue(
           value,
