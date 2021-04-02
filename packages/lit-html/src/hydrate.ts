@@ -19,8 +19,6 @@ const {
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
   _ChildPart: ChildPart,
-  _EventPart: EventPart,
-  _PropertyPart: PropertyPart,
   _ElementPart: ElementPart,
 } = _Σ;
 
@@ -369,8 +367,8 @@ const createAttributeParts = (
         // parts since those were not serialized, and pass `noCommit` for the
         // others to avoid perf impact of touching the DOM unnecessarily
         const noCommit = !(
-          instancePart instanceof EventPart ||
-          (instancePart as unknown) instanceof PropertyPart
+          instancePart.type === PartType.EVENT ||
+          instancePart.type === PartType.PROPERTY
         );
         instancePart._$setValue(
           value,
