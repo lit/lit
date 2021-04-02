@@ -47,7 +47,7 @@ type Interface<T> = {
 };
 
 export type ChildPart = Interface<ChildPartImpl>;
-export type {ChildPartImpl};
+export type{ChildPartImpl};
 
 class ChildPartImpl {
   readonly type = PartType.CHILD;
@@ -72,7 +72,7 @@ class ChildPartImpl {
 }
 
 export type AttributePart = Interface<AttributePartImpl>;
-export type {AttributePartImpl};
+export type{AttributePartImpl};
 
 class AttributePartImpl {
   readonly type: typeof PartType.ATTRIBUTE|typeof PartType.PROPERTY;
@@ -112,7 +112,7 @@ class AttributePartImpl {
 }
 
 export type BooleanAttributePart = Interface<BooleanAttributePartImpl>;
-export type {BooleanAttributePartImpl};
+export type{BooleanAttributePartImpl};
 
 class BooleanAttributePartImpl {
   readonly type = PartType.BOOLEAN_ATTRIBUTE;
@@ -157,7 +157,7 @@ class BooleanAttributePartImpl {
  * to add and remove the part as a listener when the event options change.
  */
 export type EventPart = Interface<EventPartImpl>;
-export type {EventPartImpl};
+export type{EventPartImpl};
 class EventPartImpl {
   readonly type = PartType.EVENT;
   constructor(readonly legacyPart: legacyLit.EventPart) {
