@@ -1,13 +1,13 @@
-# Lit 2.0 Monorepo
+# Lit Monorepo
 
-The development monorepo for Lit packages, including `lit` 2.0, `lit-html` 2.0 and `LitElement` 3.0.
+The monorepo for Lit packages, including `lit`, `lit-html` and `LitElement`.
 
-To learn more and get started using Lit 2.0, check out the [About Lit 2.0 wiki page](https://github.com/Polymer/lit-html/wiki/About-Lit-2.0).
+To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/Polymer/lit-html/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/Polymer/lit-html/wiki/Lit-2.0-Upgrade-Guide).
 
 ## Packages
 
 - Core packages
-  - [`lit`](./packages/lit) - The primary user-facing package of Lit which includes everything from lit-html and lit-element
+  - [`lit`](./packages/lit) - The primary user-facing package of Lit which includes everything from lit-html and lit-element.
   - [`lit-element`](./packages/lit-element) - The web component base class used in Lit.
   - [`lit-html`](./packages/lit-html) - The rendering library used by LitElement.
   - [`@lit/reactive-element`](./packages/reactive-element) - A low level base class that provides a reactive lifecycle based on attribute/property changes.
