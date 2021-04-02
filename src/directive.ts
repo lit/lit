@@ -42,14 +42,8 @@ export interface AttributePartInfo {
 
 export type Part = ChildPart|AttributePart|BooleanAttributePart|EventPart;
 
-type Interface<T> = {
-  [P in keyof T]: T[P];
-};
-
-export type ChildPart = Interface<ChildPartImpl>;
-export type{ChildPartImpl};
-
-class ChildPartImpl {
+export type{ChildPart};
+class ChildPart {
   readonly type = PartType.CHILD;
   readonly options: legacyLit.RenderOptions|undefined;
   readonly legacyPart: legacyLit.NodePart;
@@ -71,11 +65,10 @@ class ChildPartImpl {
   }
 }
 
-export type AttributePart = Interface<AttributePartImpl>;
-export type{AttributePartImpl};
-
-class AttributePartImpl {
+export type{AttributePart};
+class AttributePart {
   readonly type: typeof PartType.ATTRIBUTE|typeof PartType.PROPERTY;
+  readonly legacyPart: legacyLit.AttributePart|legacyLit.PropertyPart;
 
   get options(): legacyLit.RenderOptions|undefined {
     return undefined;
@@ -101,21 +94,18 @@ class AttributePartImpl {
     return this.element.tagName;
   }
 
-  constructor(readonly legacyPart: legacyLit.AttributePart|
-              legacyLit.PropertyPart) {
-    if (legacyPart instanceof legacyLit.PropertyPart) {
-      this.type = PartType.PROPERTY;
-    } else {
-      this.type = PartType.ATTRIBUTE;
-    }
+  constructor(legacyPart: legacyLit.AttributePart|legacyLit.PropertyPart) {
+    this.legacyPart = legacyPart;
+    this.type = (legacyPart instanceof legacyLit.PropertyPart) ?
+        PartType.PROPERTY :
+        PartType.ATTRIBUTE;
   }
 }
 
-export type BooleanAttributePart = Interface<BooleanAttributePartImpl>;
-export type{BooleanAttributePartImpl};
-
-class BooleanAttributePartImpl {
+export type{BooleanAttributePart};
+class BooleanAttributePart {
   readonly type = PartType.BOOLEAN_ATTRIBUTE;
+  readonly legacyPart: legacyLit.BooleanAttributePart
 
   get options(): legacyLit.RenderOptions|undefined {
     return undefined;
@@ -141,7 +131,8 @@ class BooleanAttributePartImpl {
     return this.element.tagName;
   }
 
-  constructor(readonly legacyPart: legacyLit.BooleanAttributePart) {
+  constructor(legacyPart: legacyLit.BooleanAttributePart) {
+    this.legacyPart = legacyPart;
   }
 }
 
@@ -156,11 +147,13 @@ class BooleanAttributePartImpl {
  * Because event options are passed when adding listeners, we must take care
  * to add and remove the part as a listener when the event options change.
  */
-export type EventPart = Interface<EventPartImpl>;
-export type{EventPartImpl};
-class EventPartImpl {
+export type{EventPart};
+class EventPart {
   readonly type = PartType.EVENT;
-  constructor(readonly legacyPart: legacyLit.EventPart) {
+  readonly legacyPart: legacyLit.EventPart;
+
+  constructor(legacyPart: legacyLit.EventPart) {
+    this.legacyPart = legacyPart;
   }
 
   get options(): legacyLit.RenderOptions|undefined {
@@ -196,15 +189,15 @@ class EventPartImpl {
 
 function legacyPartToPart(part: legacyLit.Part): Part {
   if (part instanceof legacyLit.NodePart) {
-    return new ChildPartImpl(part);
+    return new ChildPart(part);
   } else if (part instanceof legacyLit.EventPart) {
-    return new EventPartImpl(part);
+    return new EventPart(part);
   } else if (part instanceof legacyLit.BooleanAttributePart) {
-    return new BooleanAttributePartImpl(part);
+    return new BooleanAttributePart(part);
   } else if (
       part instanceof legacyLit.PropertyPart ||
       part instanceof legacyLit.AttributePart) {
-    return new AttributePartImpl(part);
+    return new AttributePart(part);
   }
   // ElementPartInfo doesn't exist in lit-html v1
   throw new Error(`Unknown part type`);
@@ -248,9 +241,9 @@ export abstract class Directive {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(_partInfo: PartInfo) {
   }
-  abstract render(...props: Array<unknown>): unknown;
-  update(_part: Part, props: Array<unknown>): unknown {
-    return this.render(...props);
+  abstract render(...args: Array<unknown>): unknown;
+  update(_part: Part, args: Array<unknown>): unknown {
+    return this.render(...args);
   }
 }
 
@@ -265,7 +258,7 @@ export abstract class Directive {
 export function directive<C extends DirectiveClass>(directiveClass: C) {
   const partToInstance =
       new WeakMap<legacyLit.Part, readonly[Part, InstanceType<C>]>();
-  const result = legacyDirective((...props: unknown[]) => {
+  const result = legacyDirective((...args: unknown[]) => {
     return (part: legacyLit.Part) => {
       const cached = partToInstance.get(part);
       let modernPart, instance;
@@ -277,11 +270,11 @@ export function directive<C extends DirectiveClass>(directiveClass: C) {
         modernPart = cached[0];
         instance = cached[1];
       }
-      part.setValue(instance.update(modernPart, props));
+      part.setValue(instance.update(modernPart, args));
       part.commit();
     };
   });
 
-  return result as (...props: DirectiveParameters<InstanceType<C>>) =>
+  return result as (...args: DirectiveParameters<InstanceType<C>>) =>
              (part: legacyLit.Part) => void;
 }
