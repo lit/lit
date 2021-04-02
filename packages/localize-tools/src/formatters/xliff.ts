@@ -193,11 +193,7 @@ export class XliffFormatter implements Formatter {
     // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#xliff
     const xliff = doc.createElement('xliff');
     xliff.setAttribute('version', '1.2');
-    xliff.setAttribute('xmlns', 'http://www.w3.org/2001/XMLSchema-instance');
-    xliff.setAttribute(
-      'xsi:schemaLocation',
-      'urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-strict.xsd'
-    );
+    xliff.setAttribute('xmlns', 'urn:oasis:names:tc:xliff:document:1.2');
     doc.appendChild(xliff);
     indent(xliff);
 
