@@ -257,6 +257,10 @@ export abstract class Directive {
 /**
  * Creates a user-facing directive function from a Directive class. This
  * function has the same parameters as the directive's render() method.
+ *
+ * N.B. In Lit 2, the directive will lose state if another directive is
+ * executed on the same part as the directive instance is destroyed. This
+ * version deviates from this behavior and will keep its state.
  */
 export function directive<C extends DirectiveClass>(directiveClass: C) {
   const partToInstance =
