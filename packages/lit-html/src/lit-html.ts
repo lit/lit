@@ -814,15 +814,6 @@ class TemplateInstance {
 /*
  * Parts
  */
-type AttributePartConstructor<T = AttributePart> = {
-  new (
-    element: HTMLElement,
-    name: string,
-    strings: ReadonlyArray<string>,
-    parent: Disconnectable | undefined,
-    options: RenderOptions | undefined
-  ): T;
-};
 type AttributeTemplatePart = {
   readonly type: typeof ATTRIBUTE_PART;
   readonly index: number;
@@ -835,13 +826,6 @@ type AttributeTemplatePart = {
 type NodeTemplatePart = {
   readonly type: typeof CHILD_PART;
   readonly index: number;
-};
-type ElementPartConstructor = {
-  new (
-    element: HTMLElement,
-    parent: Disconnectable | undefined,
-    options: RenderOptions | undefined
-  ): ElementPart;
 };
 type ElementTemplatePart = {
   readonly type: typeof ELEMENT_PART;
@@ -1508,11 +1492,11 @@ export const _Σ = {
   _resolveDirective: resolveDirective,
   // Used in tests and private-ssr-support
   _ChildPart: ChildPart,
-  _AttributePart: AttributePart as AttributePartConstructor,
-  _BooleanAttributePart: BooleanAttributePart as AttributePartConstructor<BooleanAttributePart>,
-  _EventPart: EventPart as AttributePartConstructor<EventPart>,
-  _PropertyPart: PropertyPart as AttributePartConstructor<PropertyPart>,
-  _ElementPart: ElementPart as ElementPartConstructor,
+  _AttributePart: AttributePart,
+  _BooleanAttributePart: BooleanAttributePart,
+  _EventPart: EventPart,
+  _PropertyPart: PropertyPart,
+  _ElementPart: ElementPart,
 };
 
 // Apply polyfills if available
