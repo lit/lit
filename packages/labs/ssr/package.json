@@ -2,6 +2,9 @@
   "name": "@lit-labs/ssr",
   "type": "module",
   "version": "1.0.0-pre.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "SSR for Lit",
   "main": "index.js",
   "scripts": {
