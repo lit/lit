@@ -1,36 +1,39 @@
-# lit-html 2.0 monorepo
+# Lit Monorepo
 
-A collection of packages related to lit-html 2.0 and LitElement 3.0 work.
+The monorepo for Lit packages, including `lit`, `lit-html` and `LitElement`.
 
-This branch is currently under active development. Please see the
-following links for details on the changes being made:
-
-- [Ideas for lit-html 2.0](https://github.com/Polymer/lit-html/issues/1182)
-- [Ideas for LitElement 3.0](https://github.com/Polymer/lit-element/issues/1077)
-- [lit-next issues/PRs in github](https://github.com/Polymer/lit-html/issues?q=is%3Aissue+label%3Alit-next+)
+To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/Polymer/lit-html/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/Polymer/lit-html/wiki/Lit-2.0-Upgrade-Guide).
 
 ## Packages
 
 - Core packages
-  - [`lit`](./packages/lit)
-  - [`lit-html`](./packages/lit-html)
-  - [`lit-element`](./packages/lit-element)
-  - [`@lit/reactive-element`](./packages/reactive-element)
+  - [`lit`](./packages/lit) - The primary user-facing package of Lit which includes everything from lit-html and lit-element.
+  - [`lit-element`](./packages/lit-element) - The web component base class used in Lit.
+  - [`lit-html`](./packages/lit-html) - The rendering library used by LitElement.
+  - [`@lit/reactive-element`](./packages/reactive-element) - A low level base class that provides a reactive lifecycle based on attribute/property changes.
 - Additional libraries
-  - [`@lit/localize`](./packages/localize)
+  - [`@lit/localize`](./packages/localize) - A library and command-line tool for localizing web applications built using Lit.
 - Labs
-  - [`@lit-labs/ssr`](./packages/labs/ssr)
-  - [`@lit-labs/react`](./packages/labs/react)
-  - [`@lit-labs/task`](./packages/labs/task)
-  - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin)
+  - [`@lit/localize-tools`](./packages/localize) - Localization tooling for use with `@lit/localize`.
+- Labs
+  - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
+  - [`@lit-labs/ssr-cient`](./packages/labs/ssr) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
+  - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
+  - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
+  - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
 - Starter kits (not published to npm)
-  - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next))
-  - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/PolymerLabs/lit-element-starter-js/tree/lit-next))
+  - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next)) - A starter repo for building reusable components using Lit in TypeScript.
+  - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/PolymerLabs/lit-element-starter-js/tree/lit-next)) - A starter repo for building reusable components using Lit in Javascript.
 - Internal packages (not published to npm)
-  - [`tests`](./packages/tests)
-  - [`benchmarks`](./packages/benchmarks)
+  - [`tests`](./packages/tests) - Test infrastructure for the monorepo.
+  - [`benchmarks`](./packages/benchmarks) - Benchmarks for testing various libraries in the monorepo.
+  - [`internal-scripts`](./packages/internal-scripts) - Utility scripts used within the monorepo.
 
-## Development guide
+## Contributing to Lit
+
+Lit is open source and we appreciate issue reports and pull requests. See [CONTRIBUTING.md](./contributing.md) for more information.
+
+### Setting up the lit monorepo for development
 
 Initialize repo:
 
