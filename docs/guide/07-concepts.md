@@ -90,7 +90,7 @@ Until modules arrived, browsers have not had a standard way to import code from 
 
 The only true solution is to have one canonical version of a library that all other libraries import. Since modules support is rolling out to browsers now, and modules are very well supported by tools, it makes sense for that format to be modules.
 
-The browser current only accepts modules specified using a full or relative path (a path that starts with `/`, `./`, or `../`). For ease of authoring, many developers prefer to import modules by name (also known as node-style module specifiers). Since this isn't currently supported in the browser, you'll need to use tools that can transform these specifiers into browser-ready paths. See [Tools](tools) for information on dev servers and build tools that can perform this transformation for you:
+The browser currently only accepts modules specified using a full or relative path (a path that starts with `/`, `./`, or `../`). For ease of authoring, many developers prefer to import modules by name (also known as node-style module specifiers). Since this isn't currently supported in the browser, you'll need to use tools that can transform these specifiers into browser-ready paths. See [Tools](tools) for information on dev servers and build tools that can perform this transformation for you:
 
 ```js
 // Node-style module import:
