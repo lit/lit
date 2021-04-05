@@ -34,23 +34,31 @@
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
-      import {classMap} from 'lit-html/directives/class-map.js';
-      import {guard} from 'lit-html/directives/guard.js';
       import {flip, flyAbove, flyBelow, fade} from '../development/flip.js';
+      import {FlipController} from '../development/flip-controller.js';
 
       const lit = ['L', 'I', 'T'];
 
       class MyElement extends LitElement {
         static properties = {
           lit: {},
-          shouldAnimate: {},
         };
 
         constructor() {
           super();
           this.lit = lit;
-          this.shouldAnimate = true;
-          this.addEventListener('click', () => this.toggleAnimate());
+          this.flipController = new FlipController(this, {
+            options: {
+              animationOptions: {
+                duration: 1000,
+                easing: 'ease-in-out',
+                fill: 'backwards',
+              },
+            },
+            // startPaused: true,
+            onComplete: () => setTimeout(() => this.changeLayout(), 1000),
+          });
+          this.addEventListener('click', () => this.clickHandler());
         }
 
         static styles = [
@@ -90,25 +98,18 @@
         ];
 
         render() {
-          const animationOptions = {
-            duration: 1000,
-            easing: 'ease-in-out',
-            fill: 'backwards',
-          };
+          const delayTime = 200;
           return html`
-            <div class="info">${this.shouldAnimate ? 'animating' : ''}</div>
             ${this.lit?.map(
               (l, i) =>
                 html`<span
                   class="l"
                   ${flip({
                     animationOptions: {
-                      ...animationOptions,
-                      delay: i * 200,
+                      delay: i * delayTime,
                     },
                     in: fade,
                     out: flyBelow,
-                    onComplete: (e, f) => this._onComplete(e, f),
                   })}
                   >${l}</span
                 >`
@@ -116,22 +117,16 @@
           `;
         }
 
-        _onComplete(el, flip) {
-          if (!this._t) {
-            this._t = setTimeout(() => {
-              this._t = undefined;
-              if (this.shouldAnimate) {
-                this.lit = this.lit.length ? [] : lit;
-              }
-            }, 1500);
+        clickHandler() {
+          if (this.flipController.isAnimating) {
+            this.flipController.togglePlay();
+          } else {
+            this.changeLayout();
           }
         }
 
-        toggleAnimate() {
-          this.shouldAnimate = !this.shouldAnimate;
-          if (this.shouldAnimate) {
-            this.lit = this.lit.length ? [] : lit;
-          }
+        changeLayout() {
+          this.lit = this.lit.length ? [] : lit;
         }
       }
 

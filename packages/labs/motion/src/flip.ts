@@ -59,6 +59,9 @@ export const animationFrame = () =>
 // Presets for animating "in" and "out" of the DOM.
 export const flyBelow = [{transform: 'translateY(100%) scale(0)', opacity: 0}];
 export const flyAbove = [{transform: 'translateY(-100%) scale(0)', opacity: 0}];
+export const flyLeft = [{transform: 'translateX(-100%) scale(0)', opacity: 0}];
+export const flyRight = [{transform: 'translateX(100%) scale(0)', opacity: 0}];
+export const none = [{}];
 export const fadeOut = [{opacity: 0}];
 export const fade = fadeOut;
 export const fadeIn = [{opacity: 0}, {opacity: 1}];
@@ -153,12 +156,13 @@ export class Flip extends AsyncDirective {
 
   shouldLog = false;
   flipProps?: CSSValues;
+  frames?: Keyframe[];
   animation?: Animation;
   options!: FlipOptions;
   optionsOrCallback?: (() => FlipOptions) | FlipOptions;
 
   finished!: Promise<void>;
-  private _resolveFinished!: () => void;
+  private _resolveFinished?: () => void;
 
   constructor(part: PartInfo) {
     super(part);
@@ -171,14 +175,15 @@ export class Flip extends AsyncDirective {
   }
 
   createFinished() {
+    this.resolveFinished?.();
     this.finished = new Promise((r) => {
       this._resolveFinished = r;
     });
   }
 
-  resolveFinished() {
+  async resolveFinished() {
     this._resolveFinished?.();
-    this.createFinished();
+    this._resolveFinished = undefined;
   }
 
   render(_options?: (() => FlipOptions) | FlipOptions) {
@@ -215,7 +220,11 @@ export class Flip extends AsyncDirective {
     if (flipController !== undefined) {
       options = {
         ...flipController.options,
-        ...options,
+        ...(options ?? {}),
+      };
+      options.animationOptions = {
+        ...(flipController.options.animationOptions ?? {}),
+        ...(options.animationOptions ?? {}),
       };
     }
     // Ensure there are some properties to animation and some animation options.
@@ -301,13 +310,6 @@ export class Flip extends AsyncDirective {
     this.animation?.cancel();
   }
 
-  beforeFlip() {
-    if (this.options.reset) {
-      this.resetStyles();
-    }
-    this.options.onStart?.(this._element, this);
-  }
-
   flip() {
     if (
       !this._shouldFlip ||
@@ -316,7 +318,7 @@ export class Flip extends AsyncDirective {
     ) {
       return;
     }
-    this.beforeFlip();
+    this.beginFlip();
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
@@ -365,6 +367,22 @@ export class Flip extends AsyncDirective {
       }
     }
     this.animate(frames, animationOptions);
+  }
+
+  beginFlip() {
+    if (this.options.reset) {
+      this.resetStyles();
+    }
+    this.createFinished();
+    this.options.onStart?.(this._element, this);
+  }
+
+  completeFlip() {
+    this.options.onComplete?.(this._element, this);
+    this._fromValues = undefined;
+    this.flipProps = undefined;
+    this.frames = undefined;
+    this.resolveFinished();
   }
 
   private _getAncestors() {
@@ -418,7 +436,7 @@ export class Flip extends AsyncDirective {
     if (this.options.out === undefined) {
       return;
     }
-    await animationFrame;
+    await animationFrame();
     if (this._parentNode?.isConnected) {
       const ref =
         this._nextSibling && this._nextSibling.parentNode === this._parentNode
@@ -547,7 +565,9 @@ export class Flip extends AsyncDirective {
     frames: Keyframe[] | undefined,
     options = this.options.animationOptions
   ) {
+    this.frames = frames;
     if (this.isAnimating() || this.isDisabled() || frames === undefined) {
+      this.completeFlip();
       return;
     }
 
@@ -560,14 +580,11 @@ export class Flip extends AsyncDirective {
     } catch (e) {
       // cancelled.
     }
-    this.flipProps = undefined;
-    this._fromValues = undefined;
     controller?.remove(this);
     if (this.options.commit) {
       this.commitStyles();
     }
-    this.options.onComplete?.(this._element, this);
-    this.resolveFinished();
+    this.completeFlip();
   }
 
   protected isAnimating() {
