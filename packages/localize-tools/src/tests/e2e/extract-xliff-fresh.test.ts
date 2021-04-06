@@ -6,4 +6,7 @@
 
 import {e2eGoldensTest} from './e2e-goldens-test.js';
 
-e2eGoldensTest('extract-xliff', ['--config=lit-localize.json', 'extract']);
+e2eGoldensTest('extract-xliff-fresh', [
+  '--config=lit-localize.json',
+  'extract',
+]);
