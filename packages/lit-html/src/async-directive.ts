@@ -288,11 +288,21 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  */
 export abstract class AsyncDirective extends Directive {
   isConnected = true;
-  _pendingValue: unknown = noChange;
+  private _pendingValue: unknown = noChange;
+  // @internal
   _$disconnetableChildren?: Set<Disconnectable> = undefined;
-  constructor(partInfo: PartInfo) {
-    super(partInfo);
-    this._$parent = partInfo._$parent;
+  /**
+   * Initialize the part with internal fields
+   * @param part
+   * @param parent
+   * @param attributeIndex
+   */
+  _$initialize(
+    part: Part,
+    parent: Disconnectable,
+    attributeIndex: number | undefined
+  ) {
+    super._$initialize(part, parent, attributeIndex);
     addDisconnectableToParent(this);
   }
   /**

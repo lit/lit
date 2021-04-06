@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {
-  AttributePart,
   ChildPart,
+  CompiledTemplateResult,
   html,
   noChange,
   nothing,
@@ -16,6 +16,7 @@ import {
   SVGTemplateResult,
   SanitizerFactory,
   Part,
+  CompiledTemplate,
 } from '../lit-html.js';
 import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
@@ -25,6 +26,14 @@ import {
 } from './test-utils/strip-markers.js';
 import {repeat} from '../directives/repeat.js';
 import {AsyncDirective} from '../async-directive.js';
+
+import {createRef, ref} from '../directives/ref.js';
+
+// For compiled template tests
+import {_Σ} from '../private-ssr-support.js';
+const {AttributePart} = _Σ;
+
+type AttributePart = InstanceType<typeof AttributePart>;
 
 const ua = window.navigator.userAgent;
 const isIe = ua.indexOf('Trident/') > 0;
@@ -40,7 +49,7 @@ suite('lit-html', () => {
   });
 
   const assertRender = (
-    r: TemplateResult,
+    r: TemplateResult | CompiledTemplateResult,
     expected: string,
     options?: RenderOptions
   ) => {
@@ -570,6 +579,14 @@ suite('lit-html', () => {
       const partial = html`<h1>${'foo'}</h1>`;
       render(html`${partial}${'bar'}${partial}${'baz'}qux`, container);
       assertContent('<h1>foo</h1>bar<h1>foo</h1>bazqux');
+    });
+
+    test('renders value that switches between template and undefined', () => {
+      const go = (v: unknown) => render(html`${v}`, container);
+      go(undefined);
+      assertContent('');
+      go(html`<h1>Hello</h1>`);
+      assertContent('<h1>Hello</h1>');
     });
 
     test('renders an element', () => {
@@ -1468,6 +1485,74 @@ suite('lit-html', () => {
     );
   });
 
+  suite('compiled', () => {
+    test('only text', () => {
+      // A compiled template for html`${'A'}`
+      const _$lit_template_1: CompiledTemplate = {
+        h: '<!---->',
+        parts: [{type: 2, index: 0}],
+      };
+      assertRender(
+        {
+          _$litType$: _$lit_template_1,
+          values: ['A'],
+        },
+        'A'
+      );
+    });
+
+    test('text expression', () => {
+      // A compiled template for html`<div>${'A'}</div>`
+      const _$lit_template_1: CompiledTemplate = {
+        h: `<div><!----></div>`,
+        parts: [{type: 2, index: 1}],
+      };
+      const result = {
+        _$litType$: _$lit_template_1,
+        values: ['A'],
+      };
+      assertRender(result, '<div>A</div>');
+    });
+
+    test('attribute expression', () => {
+      // A compiled template for html`<div foo=${'A'}></div>`
+      const _$lit_template_1: CompiledTemplate = {
+        h: '<div></div>',
+        parts: [
+          {
+            type: 1,
+            index: 0,
+            name: 'foo',
+            strings: ['', ''],
+            ctor: AttributePart,
+          },
+        ],
+      };
+      const result = {
+        _$litType$: _$lit_template_1,
+        values: ['A'],
+      };
+      assertRender(result, '<div foo="A"></div>');
+    });
+
+    test('element expression', () => {
+      const r = createRef();
+      // A compiled template for html`<div ${ref(r)}></div>`
+      const _$lit_template_1: CompiledTemplate = {
+        h: '<div></div>',
+        parts: [{type: 6, index: 0}],
+      };
+      const result = {
+        _$litType$: _$lit_template_1,
+        values: [ref(r)],
+      };
+      assertRender(result, '<div></div>');
+      const div = container.firstElementChild;
+      assert.isDefined(div);
+      assert.strictEqual(r.value, div);
+    });
+  });
+
   suite('directives', () => {
     // A stateful directive
     class CountDirective extends Directive {
@@ -1492,6 +1577,27 @@ suite('lit-html', () => {
 
       render(html`<div>${testDirective('A')}</div>`, container);
       assertContent('<div>TEST:A</div>');
+    });
+
+    test('PartInfo includes metadata for directive in ChildPart', () => {
+      let partInfo: PartInfo;
+      const testDirective = directive(
+        class extends Directive {
+          constructor(info: PartInfo) {
+            super(info);
+            partInfo = info;
+          }
+          render(v: unknown) {
+            return v;
+          }
+        }
+      );
+      render(html`<div>${testDirective('test')}</div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>test</div>'
+      );
+      assert.equal(partInfo!.type, PartType.CHILD);
     });
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
@@ -1618,10 +1724,62 @@ suite('lit-html', () => {
       );
     });
 
+    test('PartInfo includes metadata for directive in AttributeParts', () => {
+      let partInfo: PartInfo;
+      const testDirective = directive(
+        class extends Directive {
+          constructor(info: PartInfo) {
+            super(info);
+            partInfo = info;
+          }
+          render(v: unknown) {
+            return v;
+          }
+        }
+      );
+      render(html`<div title="a ${testDirective(1)} b"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div title="a 1 b"></div>'
+      );
+      if (partInfo!.type !== PartType.ATTRIBUTE) {
+        throw new Error('Expected attribute PartInfo');
+      }
+      assert.equal(partInfo!.tagName, 'DIV');
+      assert.equal(partInfo!.name, 'title');
+      assert.deepEqual(partInfo!.strings, ['a ', ' b']);
+    });
+
     test('renders directives on PropertyParts', () => {
       render(html`<div .foo=${count('A')}></div>`, container);
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
       assert.strictEqual((container.firstElementChild as any).foo, 'A:1');
+    });
+
+    test('PartInfo includes metadata for directive in PropertyParts', () => {
+      let partInfo: PartInfo;
+      const testDirective = directive(
+        class extends Directive {
+          constructor(info: PartInfo) {
+            super(info);
+            partInfo = info;
+          }
+          render(v: unknown) {
+            return v;
+          }
+        }
+      );
+      render(html`<div .title="a ${testDirective(1)} b"></div>`, container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div title="a 1 b"></div>'
+      );
+      if (partInfo!.type !== PartType.PROPERTY) {
+        throw new Error('Expected property PartInfo');
+      }
+      assert.equal(partInfo!.tagName, 'DIV');
+      assert.equal(partInfo!.name, 'title');
+      assert.deepEqual(partInfo!.strings, ['a ', ' b']);
     });
 
     test('renders directives on EventParts', () => {

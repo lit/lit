@@ -130,10 +130,12 @@ packages/labs/motion/position.*
 packages/labs/motion/simple-spring.*
 packages/labs/motion/flip-controller.*
 packages/labs/react/development/
+packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/scoped-registry-mixin/development/
+packages/labs/scoped-registry-mixin/test/
 packages/labs/scoped-registry-mixin/node_modules/
 packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
 packages/labs/ssr/demo/
@@ -142,7 +144,14 @@ packages/labs/ssr/node_modules/
 packages/labs/ssr/test/
 packages/labs/ssr/index.*
 !packages/labs/ssr/custom_typings/*.d.ts
+packages/labs/ssr-client/development/
+packages/labs/ssr-client/directives/
+packages/labs/ssr-client/controllers/
+packages/labs/ssr-client/node_modules/
+packages/labs/ssr-client/index.*
+
 packages/labs/task/development/
+packages/labs/task/test/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*

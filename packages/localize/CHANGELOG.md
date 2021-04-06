@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- ## Unreleased -->
 
+## [0.9.0] - 2021-03-30
+
+### Changed
+
+- **[BREAKING]** Description comments (`// msgdesc:`) have been removed in favor
+  of the `desc` option.
+
+Before:
+
+```js
+// msgdesc: Home page
+class HomePage {
+  hello() {
+    // msgdesc: Greeting to Earth
+    return msg(html`Hello World`);
+  }
+  goodbye() {
+    // msgdesc: Farewell to Earth
+    return msg(html`Goodbye World`);
+  }
+}
+```
+
+After:
+
+```js
+class HomePage {
+  hello() {
+    return msg(html`Hello World`, {
+      desc: 'Home page / Greeting to Earth',
+    });
+  }
+  goodbye() {
+    return msg(html`Goodbye World`, {
+      desc: 'Home page / Farewell to Earth',
+    });
+  }
+}
+```
+
 ## [0.8.0] - 2021-03-24
 
 ### Changed

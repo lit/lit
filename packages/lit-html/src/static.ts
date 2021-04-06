@@ -9,8 +9,11 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  * Wraps a string so that it behaves like part of the static template
  * strings instead of a dynamic value.
  *
- * This is a very unsafe operation and may break templates if changes
- * the structure of a template. Do not pass user input to this function
+ * Users must take care to ensure that adding the static string to the template
+ * results in well-formed HTML, or else templates may break unexpectedly.
+ *
+ * Note that this function is unsafe to use on untrusted content, as it will be
+ * directly parsed into HTML. Do not pass user input to this function
  * without sanitizing it.
  *
  * Static values can be changed, but they will cause a complete re-render
@@ -18,6 +21,41 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  */
 export const unsafeStatic = (value: string) => ({
   _$litStatic$: value,
+});
+
+const textFromStatic = (value: StaticValue) => {
+  if (value._$litStatic$ !== undefined) {
+    return value._$litStatic$;
+  } else {
+    throw new Error(
+      `Value passed to 'literal' function must be a 'literal' result: ${value}. Use 'unsafeStatic' to pass non-literal values, but
+            take care to ensure page security.`
+    );
+  }
+};
+
+/**
+ * Tags a string literal so that it behaves like part of the static template
+ * strings instead of a dynamic value.
+ *
+ * The only values that may be used in template expressions are other tagged
+ * `literal` results or `unsafeStatic` values (note that untrusted content
+ * should never be passed to `unsafeStatic`).
+ *
+ * Users must take care to ensure that adding the static string to the template
+ * results in well-formed HTML, or else templates may break unexpectedly.
+ *
+ * Static values can be changed, but they will cause a complete re-render since
+ * they effectively create a new template.
+ */
+export const literal = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+) => ({
+  _$litStatic$: values.reduce(
+    (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
+    strings[0]
+  ),
 });
 
 type StaticValue = ReturnType<typeof unsafeStatic>;

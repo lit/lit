@@ -4,13 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  AttributePart,
-  Disconnectable,
-  ChildPart,
-  Part,
-  ElementPart,
-} from './lit-html';
+import {Disconnectable, Part} from './lit-html';
 
 export {
   AttributePart,
@@ -55,9 +49,6 @@ export type PartType = typeof PartType[keyof typeof PartType];
 
 export interface ChildPartInfo {
   readonly type: typeof PartType.CHILD;
-  readonly _$part: ChildPart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
 }
 
 export interface AttributePartInfo {
@@ -69,16 +60,10 @@ export interface AttributePartInfo {
   readonly strings?: ReadonlyArray<string>;
   readonly name: string;
   readonly tagName: string;
-  readonly _$part: AttributePart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: number | undefined;
 }
 
 export interface ElementPartInfo {
   readonly type: typeof PartType.ELEMENT;
-  readonly _$part: ElementPart;
-  readonly _$parent: Disconnectable;
-  readonly _$attributeIndex: undefined;
 }
 
 /**
@@ -107,14 +92,14 @@ export const directive = <C extends DirectiveClass>(c: C) => (
  */
 export abstract class Directive {
   //@internal
-  __part: Part;
+  __part!: Part;
   //@internal
   __attributeIndex: number | undefined;
   //@internal
   __directive?: Directive;
 
   //@internal
-  _$parent: Disconnectable;
+  _$parent!: Disconnectable;
 
   // These will only exist on the AsyncDirective subclass
   //@internal
@@ -122,16 +107,25 @@ export abstract class Directive {
   //@internal
   _$setDirectiveConnected?(isConnected: boolean): void;
 
-  constructor(partInfo: PartInfo) {
-    this._$parent = partInfo._$parent;
-    this.__part = partInfo._$part;
-    this.__attributeIndex = partInfo._$attributeIndex;
+  constructor(_partInfo: PartInfo) {}
+
+  /** @internal */
+  _$initialize(
+    part: Part,
+    parent: Disconnectable,
+    attributeIndex: number | undefined
+  ) {
+    this.__part = part;
+    this._$parent = parent;
+    this.__attributeIndex = attributeIndex;
   }
   /** @internal */
   _$resolve(part: Part, props: Array<unknown>): unknown {
     return this.update(part, props);
   }
+
   abstract render(...props: Array<unknown>): unknown;
+
   update(_part: Part, props: Array<unknown>): unknown {
     return this.render(...props);
   }
