@@ -717,7 +717,11 @@ export abstract class ReactiveElement
    */
   addController(controller: ReactiveController) {
     (this.__controllers ??= []).push(controller);
-    if (this.isConnected) {
+    // If a controller is added after the element has been connected,
+    // call hostConnected. Note, re-using existence of `renderRoot` here
+    // (which is set in connectedCallback) to avoid the need to track a
+    // first connected state.
+    if (this.renderRoot !== undefined && this.isConnected) {
       controller.hostConnected?.();
     }
   }
