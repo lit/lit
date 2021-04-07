@@ -12,15 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  LitElement,
-  css,
-  html,
-  customElement,
-  property,
-  query,
-} from 'lit-element';
-import {classMap} from 'lit-html/directives/class-map.js';
+import {LitElement, css, html} from 'lit';
+import {customElement, property, query} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
 import {generateElementName} from './test-helpers';
 import {flip, Flip} from '../flip.js';
 import {assert} from '@esm-bundle/chai';
@@ -48,16 +42,16 @@ suite('Flip', () => {
     }
   });
 
-  test('flips onStart/onComplete', async () => {
+  test('onStart/onComplete', async () => {
     let startEl, completeEl;
     let theFlip: Flip;
-    const onStart = (e: HTMLElement, flip: Flip) => {
+    const onStart = (flip: Flip) => {
       theFlip = flip;
-      startEl = e;
+      startEl = flip.element;
     };
 
-    const onComplete = (e: HTMLElement, _flip: Flip) => {
-      completeEl = e;
+    const onComplete = (flip: Flip) => {
+      completeEl = flip.element;
     };
 
     @customElement(generateElementName())
@@ -78,14 +72,14 @@ suite('Flip', () => {
     assert.equal(el.div, completeEl);
   });
 
-  test('flips values', async () => {
+  test('animates layout change', async () => {
     let theFlip: Flip;
     let flipProps, frames: Keyframe[];
-    const onStart = (_e: HTMLElement, flip: Flip) => {
+    const onStart = (flip: Flip) => {
       theFlip = flip;
     };
 
-    const onComplete = (_e: HTMLElement, flip: Flip) => {
+    const onComplete = (flip: Flip) => {
       flipProps = flip.flipProps;
       frames = flip.frames!;
     };
@@ -95,10 +89,6 @@ suite('Flip', () => {
       @property() shift = false;
       @query('div') div!: HTMLDivElement;
       static styles = css`
-        :host {
-          display: block;
-          position: relative;
-        }
         div {
           position: relative;
           display: inline-block;
@@ -140,4 +130,32 @@ suite('Flip', () => {
     assert.equal(r2.top - b.top, 200);
     assert.deepEqual(flipProps, {left: -200, top: -200});
   });
+
+  test('sets flip animationOptions', async () => {});
+
+  test('skipInitial', async () => {});
+
+  test('disabled', async () => {});
+
+  test('guard', async () => {});
+
+  test('commit', async () => {});
+
+  test('reset', async () => {});
+
+  test('scaleUp', async () => {});
+
+  test('sets flip properties', async () => {});
+
+  test('animates multiple layout changes', async () => {});
+
+  test('adjusts for ancestor position', async () => {});
+
+  test('animates in', async () => {});
+
+  test('animates out', async () => {});
+
+  test('animates out, stabilized', async () => {});
+
+  test('animates in based on an element that animated out', async () => {});
 });

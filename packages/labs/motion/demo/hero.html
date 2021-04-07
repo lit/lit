@@ -52,9 +52,9 @@
         mass: 2,
       });
 
-      const onFrames = (props, frames) => {
-        if (frames === undefined) {
-          return;
+      const onFrames = ({flipProps: props, frames}) => {
+        if (frames === undefined || props === undefined) {
+          return frames;
         }
         return [
           frames[0],

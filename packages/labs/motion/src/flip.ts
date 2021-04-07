@@ -1,8 +1,7 @@
-import {LitElement} from 'lit-element';
-import {nothing, AttributePart} from 'lit-html';
-import {directive, PartInfo, PartType} from 'lit-html/directive.js';
-import {AsyncDirective} from 'lit-html/async-directive.js';
-import {ReactiveControllerHost} from 'lit-element';
+import {LitElement, ReactiveControllerHost} from 'lit';
+import {nothing, AttributePart} from 'lit/html.js';
+import {directive, PartInfo, PartType} from 'lit/directive.js';
+import {AsyncDirective} from 'lit/async-directive.js';
 import {flipControllers} from './flip-controller.js';
 export {FlipController} from './flip-controller.js';
 
@@ -26,11 +25,11 @@ export type FlipOptions = {
   // If set, this flip will scale up with its ancestor flips.
   scaleUp?: boolean;
   // Callback run when the flip animation starts
-  onStart?: (element: HTMLElement, flip: Flip) => void;
+  onStart?: (flip: Flip) => void;
   // Callback run when the flip animation is complete
-  onComplete?: (element: HTMLElement, flip: Flip) => void;
+  onComplete?: (flip: Flip) => void;
   // Callback run to modify frames used to animate the flip
-  onFrames?: (props: CSSValues, frames?: Keyframe[]) => Keyframe[];
+  onFrames?: (flip: Flip) => Keyframe[];
   // Options used for the flip animation
   animationOptions?: KeyframeAnimationOptions;
   // List of css properties to animate
@@ -147,12 +146,12 @@ const flipMap: WeakMap<Node, Flip> = new WeakMap();
 export class Flip extends AsyncDirective {
   private _host?: LitElement;
   private _fromValues?: CSSValues;
-  private _element!: HTMLElement;
   private _parentNode: Element | null = null;
   private _nextSibling: Node | null = null;
   private _shouldFlip = true;
   private _previousValue: unknown;
   private _flipStyles?: string | undefined | null;
+  element!: HTMLElement;
 
   shouldLog = false;
   flipProps?: CSSValues;
@@ -203,8 +202,8 @@ export class Flip extends AsyncDirective {
     if (firstUpdate) {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);
-      this._element = part.element;
-      flipMap.set(this._element, this);
+      this.element = part.element;
+      flipMap.set(this.element, this);
     }
     this.optionsOrCallback = options;
     if (firstUpdate || typeof options !== 'function') {
@@ -244,8 +243,8 @@ export class Flip extends AsyncDirective {
   // Measures and returns metrics for the element's bounding box and styling
   private _measure() {
     const props: CSSValues = {};
-    const bounds = this._element.getBoundingClientRect();
-    const computedStyle = getComputedStyle(this._element);
+    const bounds = this.element.getBoundingClientRect();
+    const computedStyle = getComputedStyle(this.element);
     this.options.properties!.forEach((p) => {
       const v =
         bounds[p as keyof typeof bounds] ??
@@ -266,7 +265,7 @@ export class Flip extends AsyncDirective {
       !this.isDisabled() &&
       !this.isAnimating() &&
       isDirty(value, this._previousValue) &&
-      this._element.isConnected;
+      this.element.isConnected;
     if (this._shouldFlip) {
       // Copy the value if it's an array so that if it's mutated we don't forget
       // what the previous values were.
@@ -285,8 +284,8 @@ export class Flip extends AsyncDirective {
       this._fromValues = this._measure();
       // Record parent and nextSibling used to re-attach node when flipping "out"
       this._parentNode =
-        this._parentNode ?? (this._element.parentNode as Element);
-      this._nextSibling = this._element.nextSibling;
+        this._parentNode ?? (this.element.parentNode as Element);
+      this._nextSibling = this.element.nextSibling;
     }
   }
 
@@ -298,22 +297,22 @@ export class Flip extends AsyncDirective {
 
   resetStyles() {
     if (this._flipStyles !== undefined) {
-      this._element.setAttribute('style', this._flipStyles ?? '');
+      this.element.setAttribute('style', this._flipStyles ?? '');
       this._flipStyles = undefined;
     }
   }
 
   commitStyles() {
-    this._flipStyles = this._element.getAttribute('style');
+    this._flipStyles = this.element.getAttribute('style');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.animation as any)?.commitStyles();
     this.animation?.cancel();
   }
 
-  flip() {
+  async flip() {
     if (
       !this._shouldFlip ||
-      !this._element.isConnected ||
+      !this.element.isConnected ||
       (this.options.skipInitial && !this.isHostRendered)
     ) {
       return;
@@ -366,7 +365,14 @@ export class Flip extends AsyncDirective {
         frames = [...this.options.in, {}];
       }
     }
-    this.animate(frames, animationOptions);
+    await this.animate(frames, animationOptions);
+    this.completeFlip();
+  }
+
+  async flipDisconnect() {
+    this.beginFlip();
+    await this.animate(this.options.out);
+    this.completeFlip();
   }
 
   beginFlip() {
@@ -374,11 +380,11 @@ export class Flip extends AsyncDirective {
       this.resetStyles();
     }
     this.createFinished();
-    this.options.onStart?.(this._element, this);
+    this.options.onStart?.(this);
   }
 
   completeFlip() {
-    this.options.onComplete?.(this._element, this);
+    this.options.onComplete?.(this);
     this._fromValues = undefined;
     this.flipProps = undefined;
     this.frames = undefined;
@@ -388,7 +394,7 @@ export class Flip extends AsyncDirective {
   private _getAncestors() {
     const ancestors = [];
     for (
-      let p: Node | null | undefined = this._element.parentNode;
+      let p: Node | null | undefined = this.element.parentNode;
       p;
       p = p?.parentNode
     ) {
@@ -442,7 +448,7 @@ export class Flip extends AsyncDirective {
         this._nextSibling && this._nextSibling.parentNode === this._parentNode
           ? this._nextSibling
           : null;
-      this._parentNode.insertBefore(this._element, ref);
+      this._parentNode.insertBefore(this.element, ref);
       // Move to position before removal before animating
       const shifted = this._measure();
       if (this.options.stabilizeOut) {
@@ -455,20 +461,20 @@ export class Flip extends AsyncDirective {
         // or animation but setting left/top should be rare, especially via
         // animation.
         if (left !== 0) {
-          this._element.style.position = 'relative';
-          this._element.style.left = left + 'px';
+          this.element.style.position = 'relative';
+          this.element.style.left = left + 'px';
         }
         const top = diffOp(
           this._fromValues!.top as number,
           shifted.top as number
         );
         if (top !== 0) {
-          this._element.style.position = 'relative';
-          this._element.style.top = top + 'px';
+          this.element.style.position = 'relative';
+          this.element.style.top = top + 'px';
         }
       }
-      await this.animate(this.options.out);
-      this._element.remove();
+      await this.flipDisconnect();
+      this.element.remove();
     }
   }
 
@@ -553,12 +559,7 @@ export class Flip extends AsyncDirective {
       ? 'center center'
       : 'top left';
     this.flipProps = props;
-    let frames = hasFrames ? [fromFrame, toFrame] : undefined;
-    if (this.options.onFrames) {
-      frames = this.options.onFrames(this.flipProps, frames);
-      this.log('modified frames', frames);
-    }
-    return frames;
+    return hasFrames ? [fromFrame, toFrame] : undefined;
   }
 
   protected async animate(
@@ -567,12 +568,14 @@ export class Flip extends AsyncDirective {
   ) {
     this.frames = frames;
     if (this.isAnimating() || this.isDisabled() || frames === undefined) {
-      this.completeFlip();
       return;
     }
-
+    if (this.options.onFrames) {
+      this.frames = frames = this.options.onFrames(this);
+      this.log('modified frames', frames);
+    }
     this.log('animate', [frames, options]);
-    this.animation = this._element.animate(frames, options);
+    this.animation = this.element.animate(frames, options);
     const controller = this.getController();
     controller?.add(this);
     try {
@@ -584,7 +587,6 @@ export class Flip extends AsyncDirective {
     if (this.options.commit) {
       this.commitStyles();
     }
-    this.completeFlip();
   }
 
   protected isAnimating() {
