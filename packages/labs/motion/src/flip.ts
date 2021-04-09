@@ -275,12 +275,12 @@ export class Flip extends AsyncDirective {
   }
 
   hostUpdate() {
+    // TODO(sorvell): If options will change that will affect measuring,
+    // then the user must pass a callback which can be called at update time.
+    if (typeof this.optionsOrCallback === 'function') {
+      this._setOptions(this.optionsOrCallback());
+    }
     if (this._canStartFlip()) {
-      // TODO(sorvell): If options will change that will affect measuring,
-      // then the user must pass a callback which can be called at update time.
-      if (typeof this.optionsOrCallback === 'function') {
-        this._setOptions(this.optionsOrCallback());
-      }
       this._fromValues = this._measure();
       // Record parent and nextSibling used to re-attach node when flipping "out"
       this._parentNode =
