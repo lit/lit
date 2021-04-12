@@ -77,7 +77,7 @@ const passthruA = directiveA(
   }
 );
 
-const passthruB = directiveA(
+const passthruB = directiveB(
   class extends DirectiveB {
     render(v) {
       return v;
@@ -101,7 +101,7 @@ const asyncA = directiveA(
   }
 );
 
-const asyncB = directiveA(
+const asyncB = directiveB(
   class extends AsyncDirectiveB {
     render(v, cb) {
       this.cb = cb;
@@ -198,6 +198,7 @@ suite('version-stability', () => {
     assertContent('<div></div>');
     const part = renderA(template(true), container);
     assert.isTrue(connected);
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div>B</div>');
     part.setConnected(false);
@@ -216,6 +217,7 @@ suite('version-stability', () => {
     renderB(template(true), container);
     assertContent('<div></div>');
     assert.isTrue(connected);
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div>A</div>');
     renderB(template(false), container);
@@ -223,6 +225,7 @@ suite('version-stability', () => {
     assertContent('<div></div>');
     const part = renderB(template(true), container);
     assert.isTrue(connected);
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div>A</div>');
     part.setConnected(false);
@@ -270,6 +273,7 @@ suite('version-stability', () => {
     renderA(template(true, cb), container);
     assert.isTrue(connected);
     assertContent('<div><p></p></div>');
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div><p>A0</p></div>');
     renderA(template(false, cb), container);
@@ -278,6 +282,7 @@ suite('version-stability', () => {
     const part = renderA(template(true, cb), container);
     assert.isTrue(connected);
     assertContent('<div><p></p></div>');
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div><p>A0</p></div>');
     part.setConnected(false);
@@ -301,6 +306,7 @@ suite('version-stability', () => {
     renderB(template(true, cb), container);
     assert.isTrue(connected);
     assertContent('<div><p></p></div>');
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div><p>B0</p></div>');
     renderA(template(false, cb), container);
@@ -309,6 +315,7 @@ suite('version-stability', () => {
     const part = renderA(template(true, cb), container);
     assert.isTrue(connected);
     assertContent('<div><p></p></div>');
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div><p>B0</p></div>');
     part.setConnected(false);
