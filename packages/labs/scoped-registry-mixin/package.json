@@ -25,6 +25,8 @@
   "files": [
     "/src/",
     "!/src/test/",
+    "/development/",
+    "!/development/test/",
     "/scoped-registry-mixin.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
