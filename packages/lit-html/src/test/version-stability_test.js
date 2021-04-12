@@ -190,6 +190,7 @@ suite('version-stability', () => {
     renderA(template(true), container);
     assertContent('<div></div>');
     assert.isTrue(connected);
+    // Wait until directive updates value.
     await nextFrame();
     assertContent('<div>B</div>');
     renderA(template(false), container);
