@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ChildPart} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
-import {getDirectiveClass} from '../directive-helpers.js';
+import {ChildPart} from 'lit';
+import {directive, Directive} from 'lit/directive.js';
+import {getDirectiveClass} from 'lit/directive-helpers.js';
 
 export interface RenderLightHost extends HTMLElement {
   renderLight(): unknown;
 }
 
-class RenderLight extends Directive {
+class RenderLightDirective extends Directive {
   static _$litRenderLight = true;
   render() {
     /* SSR handled specially in render-lit-html */
@@ -109,7 +109,13 @@ class RenderLight extends Directive {
  * split light an shadow DOM rendering in a similar way have reported that it's
  * faster to first contentful paint than the "deep" SSR that is common place.
  */
-export const renderLight = directive(RenderLight);
+export const renderLight = directive(RenderLightDirective);
 
 export const isRenderLightDirective = (value: unknown): boolean =>
-  (getDirectiveClass(value) as typeof RenderLight)?._$litRenderLight;
+  (getDirectiveClass(value) as typeof RenderLightDirective)?._$litRenderLight;
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {RenderLightDirective};

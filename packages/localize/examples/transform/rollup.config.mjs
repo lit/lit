@@ -16,7 +16,9 @@ export default locales.map(({locale, localeTransformer}) => ({
     }),
     resolve(),
     terser(),
-    summary(),
+    summary({
+      showMinifiedSize: false
+    }),
   ],
   output: {
     file: `bundled/${locale}/index.js`,

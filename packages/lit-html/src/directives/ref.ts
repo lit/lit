@@ -129,3 +129,9 @@ class RefDirective extends AsyncDirective {
  *    render(html`<input ${ref(callback)}>`, container);
  */
 export const ref = directive(RefDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {RefDirective};

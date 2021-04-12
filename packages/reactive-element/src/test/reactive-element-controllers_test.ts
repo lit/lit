@@ -120,18 +120,6 @@ suite('Reactive controllers', () => {
     assert.equal(el.controller.disconnectedCount, 1);
   });
 
-  test('controllers added after an element is connected call `hostConnected`', () => {
-    const controller = new MyController(el);
-    el.addController(controller);
-    assert.equal(el.controller.connectedCount, 1);
-    assert.equal(el.controller.disconnectedCount, 0);
-    container.removeChild(el);
-    assert.equal(el.controller.disconnectedCount, 1);
-    container.appendChild(el);
-    assert.equal(el.controller.connectedCount, 2);
-    assert.equal(el.controller.disconnectedCount, 1);
-  });
-
   test('controllers can implement hostUpdate/hostUpdated', async () => {
     assert.equal(el.updateCount, 1);
     assert.equal(el.updatedCount, 1);
@@ -185,5 +173,32 @@ suite('Reactive controllers', () => {
       'hostDisconnected',
       'disconnectedCallback',
     ]);
+  });
+
+  test('controllers added after an element is first connected call `hostConnected`', () => {
+    const controller = new MyController(el);
+    assert.equal(controller.connectedCount, 1);
+    assert.equal(controller.disconnectedCount, 0);
+    container.removeChild(el);
+    assert.equal(controller.disconnectedCount, 1);
+    container.appendChild(el);
+    assert.equal(controller.connectedCount, 2);
+    assert.equal(controller.disconnectedCount, 1);
+  });
+
+  test('controllers added on an upgraded element call `hostConnected` once', async () => {
+    const name = generateElementName();
+    class B extends A {}
+    const el = document.createElement(name) as B;
+    container.appendChild(el);
+    customElements.define(name, B);
+    await el.updateComplete;
+    assert.equal(el.controller.connectedCount, 1);
+    assert.equal(el.controller.disconnectedCount, 0);
+    container.removeChild(el);
+    assert.equal(el.controller.disconnectedCount, 1);
+    container.appendChild(el);
+    assert.equal(el.controller.connectedCount, 2);
+    assert.equal(el.controller.disconnectedCount, 1);
   });
 });

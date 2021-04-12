@@ -20,7 +20,7 @@ export interface ClassInfo {
   readonly [name: string]: string | boolean | number;
 }
 
-class ClassMap extends Directive {
+class ClassMapDirective extends Directive {
   /**
    * Stores the ClassInfo object applied to a given AttributePart.
    * Used to unset existing values when a new ClassInfo object is applied.
@@ -104,4 +104,10 @@ class ClassMap extends Directive {
  *
  * @param classInfo
  */
-export const classMap = directive(ClassMap);
+export const classMap = directive(ClassMapDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {ClassMapDirective};

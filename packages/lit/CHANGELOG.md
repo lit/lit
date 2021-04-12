@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [2.0.0-pre.2] - 2021-03-31
+
+### Changed
+
+- Updated dependencies
+
 ## [2.0.0-pre.1] - 2021-02-11
 
 Initial release

@@ -41,10 +41,9 @@ export interface ProgramMessage extends Message {
   node: ts.Node;
 
   /**
-   * The stack of "msgdesc:" comments at the point where this message was
-   * extracted. Used for generating "desc" attributes in our XLB file.
+   * Description for this message.
    */
-  descStack: string[];
+  desc: string | undefined;
 
   /**
    * True if this message was tagged as a lit-html template, or was a function
@@ -99,11 +98,8 @@ export function sortProgramMessages(
   messages: ProgramMessage[]
 ): ProgramMessage[] {
   return messages.sort((a, b) => {
-    const descCompare = a.descStack
-      .join('')
-      .localeCompare(b.descStack.join(''));
-    if (descCompare !== 0) {
-      return descCompare;
+    if (a.desc ?? '' !== b.desc ?? '') {
+      return (a.desc ?? '').localeCompare(b.desc ?? '');
     }
     return a.file.fileName.localeCompare(b.file.fileName);
   });

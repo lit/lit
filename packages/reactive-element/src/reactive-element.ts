@@ -282,18 +282,34 @@ export abstract class ReactiveElement
   extends HTMLElement
   implements ReactiveControllerHost {
   // Note, these are patched in only in DEV_MODE.
-  /** @nocollapse */
+  /**
+   * @nocollapse
+   * @category dev-mode
+   */
   static enabledWarnings?: Warnings[];
-  /** @nocollapse */
+
+  /**
+   * @nocollapse
+   * @category dev-mode
+   */
   static enableWarning?: (type: Warnings) => void;
-  /** @nocollapse */
+
+  /**
+   * @nocollapse
+   * @category dev-mode
+   */
   static disableWarning?: (type: Warnings) => void;
-  /** @nocollapse */
+
+  /**
+   * @nocollapse
+   */
   static addInitializer(initializer: Initializer) {
     this._initializers ??= [];
     this._initializers.push(initializer);
   }
+
   static _initializers?: Initializer[];
+
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
    * all static methods and properties with initializers.  Reference:
@@ -317,6 +333,7 @@ export abstract class ReactiveElement
    * Memoized list of all element properties, including any superclass properties.
    * Created lazily on user subclasses when finalizing the class.
    * @nocollapse
+   * @category properties
    */
   static elementProperties?: PropertyDeclarationMap;
 
@@ -343,6 +360,7 @@ export abstract class ReactiveElement
    * needed, state properties can be initialized via public properties to
    * facilitate complex interactions.
    * @nocollapse
+   * @category properties
    */
   static properties: PropertyDeclarations;
 
@@ -350,6 +368,7 @@ export abstract class ReactiveElement
    * Memoized list of all element styles.
    * Created lazily on user subclasses when finalizing the class.
    * @nocollapse
+   * @category styles
    */
   static elementStyles?: CSSResultFlatArray;
 
@@ -357,12 +376,14 @@ export abstract class ReactiveElement
    * Array of styles to apply to the element. The styles should be defined
    * using the [[`css`]] tag function or via constructible stylesheets.
    * @nocollapse
+   * @category styles
    */
   static styles?: CSSResultGroup;
 
   /**
    * Returns a list of attributes corresponding to the registered properties.
    * @nocollapse
+   * @category attributes
    */
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
@@ -401,6 +422,7 @@ export abstract class ReactiveElement
    * }
    *
    * @nocollapse
+   * @category properties
    */
   static createProperty(
     name: PropertyKey,
@@ -453,6 +475,7 @@ export abstract class ReactiveElement
    *   }
    *
    * @nocollapse
+   * @category properties
    */
   protected static getPropertyDescriptor(
     name: PropertyKey,
@@ -491,6 +514,7 @@ export abstract class ReactiveElement
    *
    * @nocollapse
    * @final
+   * @category properties
    */
   protected static getPropertyOptions(name: PropertyKey) {
     return this.elementProperties!.get(name) || defaultPropertyDeclaration;
@@ -562,6 +586,7 @@ export abstract class ReactiveElement
    * Note, these options are used in `createRenderRoot`. If this method
    * is customized, options should be respected if possible.
    * @nocollapse
+   * @category rendering
    */
   static shadowRootOptions: ShadowRootInit = {mode: 'open'};
 
@@ -577,6 +602,7 @@ export abstract class ReactiveElement
    * that last added styles override previous styles.
    *
    * @nocollapse
+   * @category styles
    */
   protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
     const elementStyles = [];
@@ -598,6 +624,7 @@ export abstract class ReactiveElement
   /**
    * Node or ShadowRoot into which element DOM should be rendered. Defaults
    * to an open shadowRoot.
+   * @category rendering
    */
   readonly renderRoot!: HTMLElement | ShadowRoot;
 
@@ -627,7 +654,14 @@ export abstract class ReactiveElement
   private __pendingConnectionPromise: Promise<void> | undefined = undefined;
   private __enableConnection: (() => void) | undefined = undefined;
 
+  /**
+   * @category updates
+   */
   isUpdatePending = false;
+
+  /**
+   * @category updates
+   */
   hasUpdated = false;
 
   /**
@@ -678,13 +712,23 @@ export abstract class ReactiveElement
     );
   }
 
+  /**
+   * @category controllers
+   */
   addController(controller: ReactiveController) {
     (this.__controllers ??= []).push(controller);
-    if (this.isConnected) {
+    // If a controller is added after the element has been connected,
+    // call hostConnected. Note, re-using existence of `renderRoot` here
+    // (which is set in connectedCallback) to avoid the need to track a
+    // first connected state.
+    if (this.renderRoot !== undefined && this.isConnected) {
       controller.hostConnected?.();
     }
   }
 
+  /**
+   * @category controllers
+   */
   removeController(controller: ReactiveController) {
     // Note, if the indexOf is -1, the >>> will flip the sign which makes the
     // splice do nothing.
@@ -723,6 +767,7 @@ export abstract class ReactiveElement
    * childNodes, return `this`.
    *
    * @return Returns a node into which to render.
+   * @category rendering
    */
   protected createRenderRoot(): Element | ShadowRoot {
     const renderRoot =
@@ -740,6 +785,7 @@ export abstract class ReactiveElement
   /**
    * On first connection, creates the element's renderRoot, sets up
    * element styling, and enables updating.
+   * @category lifecycle
    */
   connectedCallback() {
     // create renderRoot before first update.
@@ -762,6 +808,7 @@ export abstract class ReactiveElement
    * Note, this method should be considered final and not overridden. It is
    * overridden on the element instance with a function that triggers the first
    * update.
+   * @category updates
    */
   protected enableUpdating(_requestedUpdate: boolean) {}
 
@@ -769,6 +816,7 @@ export abstract class ReactiveElement
    * Allows for `super.disconnectedCallback()` in extensions while
    * reserving the possibility of making non-breaking feature additions
    * when disconnecting at some point in the future.
+   * @category lifecycle
    */
   disconnectedCallback() {
     this.__controllers?.forEach((c) => c.hostDisconnected?.());
@@ -779,6 +827,7 @@ export abstract class ReactiveElement
 
   /**
    * Synchronizes property values when attributes change.
+   * @category attributes
    */
   attributeChangedCallback(
     name: string,
@@ -874,6 +923,7 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
+   * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
@@ -959,6 +1009,7 @@ export abstract class ReactiveElement
    *   super.performUpdate();
    * }
    * ```
+   * @category updates
    */
   protected performUpdate(): void | Promise<unknown> {
     // Abort any update if one is not pending when this is called.
@@ -1027,6 +1078,9 @@ export abstract class ReactiveElement
     }
   }
 
+  /**
+   * @category updates
+   */
   willUpdate(_changedProperties: PropertyValues) {}
 
   // Note, this is an override point for polyfill-support.
@@ -1073,6 +1127,7 @@ export abstract class ReactiveElement
    *
    * @return A promise of a boolean that indicates if the update resolved
    *     without triggering another update.
+   * @category updates
    */
   get updateComplete(): Promise<boolean> {
     return this.getUpdateComplete();
@@ -1093,6 +1148,7 @@ export abstract class ReactiveElement
    *       await this._myChild.updateComplete;
    *     }
    *   }
+   * @category updates
    */
   protected getUpdateComplete(): Promise<boolean> {
     return this.__updatePromise;
@@ -1104,6 +1160,7 @@ export abstract class ReactiveElement
    * customized to control when to update.
    *
    * @param _changedProperties Map of changed properties with old values
+   * @category updates
    */
   protected shouldUpdate(_changedProperties: PropertyValues): boolean {
     return true;
@@ -1116,6 +1173,7 @@ export abstract class ReactiveElement
    * another update.
    *
    * @param _changedProperties Map of changed properties with old values
+   * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
     if (this.__reflectingProperties !== undefined) {
@@ -1137,6 +1195,7 @@ export abstract class ReactiveElement
    * again after this update cycle completes.
    *
    * @param _changedProperties Map of changed properties with old values
+   * @category updates
    */
   protected updated(_changedProperties: PropertyValues) {}
 
@@ -1148,6 +1207,7 @@ export abstract class ReactiveElement
    * again after this update cycle completes.
    *
    * @param _changedProperties Map of changed properties with old values
+   * @category updates
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
@@ -1198,4 +1258,4 @@ declare global {
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-pre.2');
+((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-pre.3');

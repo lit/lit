@@ -54,65 +54,68 @@ const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
 // FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
-  // lit-html: Template (used by polyfill-support)
-  _$createElement: 'A',
-  _$element: 'B',
-  _$options: 'C',
   // lit-html: ChildPart (used by polyfill-support)
-  _$startNode: 'D',
-  _$endNode: 'E',
-  _$getTemplate: 'F',
+  _$startNode: 'A',
+  _$endNode: 'B',
+  _$getTemplate: 'C',
   // lit-html: TemplateInstance (used by polyfill-support)
-  _$template: 'G',
+  _$template: 'D',
   // reactive-element: ReactiveElement (used by polyfill-support)
-  _$didUpdate: 'H',
+  _$didUpdate: 'E',
   // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'I',
+  _$renderImpl: 'F',
   // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'J',
+  _$needsHydration: 'G',
   // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'K',
+  _$committedValue: 'H',
   // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'L',
+  _$setValue: 'I',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'M',
-  // lit-element: ReactiveElement (used bby ssr-support)
-  _$attributeToProperty: 'N',
-  // lit-element: ReactiveElement (used bby ssr-support)
-  _$changedProperties: 'O',
+  _$handlesPrepareStyles: 'J',
+  // lit-element: ReactiveElement (used by ssr-support)
+  _$attributeToProperty: 'K',
+  // lit-element: ReactiveElement (used by ssr-support)
+  _$changedProperties: 'L',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
-  // disconnectable-directive)
-  _$parent: 'P',
-  _$disconnetableChildren: 'Q',
-  // disconnectable-directive: DisconnectableDirective
-  _$setDirectiveConnected: 'R',
-  // lit-html: ChildPart (added by disconnectable-directive)
-  _$setChildPartConnected: 'S',
-  // lit-html: ChildPart (added by disconnectable-directive)
-  _$reparentDisconnectables: 'T',
+  // async-directive)
+  _$parent: 'M',
+  _$disconnetableChildren: 'N',
+  // async-directive: AsyncDirective
+  _$setDirectiveConnected: 'O',
+  // lit-html: ChildPart (added by async-directive)
+  _$setChildPartConnected: 'P',
+  // lit-html: ChildPart (added by async-directive)
+  _$reparentDisconnectables: 'Q',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'U',
+  _$clear: 'R',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'V',
+  _$resolve: 'S',
+  // lit-html: Directive (used by lit-html)
+  _$initialize: 'T',
 };
+
+const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const validMangledNames = [...alpha, ...alpha.map((c) => `A${c}`)];
 
 // Validate stableProperties list, just to be safe; catches dupes and
 // out-of-order mangled names
-Object.entries(stableProperties).forEach(([prop, mangle], i) => {
+let mangledNameCount = 0;
+
+for (const [prop, mangle] of Object.entries(stableProperties)) {
   if (!prop.startsWith('_$')) {
     throw new Error(
       `stableProperties should start with prefix '_$' ` +
         `(property '${prop}' violates the convention)`
     );
   }
-  if (mangle.charCodeAt(0) !== 'A'.charCodeAt(0) + i) {
+  if (mangle !== validMangledNames[mangledNameCount++]) {
     throw new Error(
       `Add new stableProperties to the end of the list using ` +
         `the next available letter (mangled name '${mangle}' for property ` +
         `${prop} was unexpected)`
     );
   }
-});
+}
 
 /**
  * Prefixes all class properties with the given prefix character. This is to

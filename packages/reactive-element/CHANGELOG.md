@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- (Since 1.0.0-pre.3) A controller's `hostConnected` is called only once if an element is upgraded to a custom element [#1731](https://github.com/Polymer/lit-html/issues/1731).
+
+## 1.0.0-pre.3 - 2021-03-31
+
+### Fixed
+
 - (Since 1.0.0-pre.2) The `createRenderRoot` method is now called only once [#1679](https://github.com/Polymer/lit-html/issues/1679).
 
 ## [1.0.0-pre.2] - 2021-02-11

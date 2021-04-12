@@ -107,7 +107,7 @@ resolve configuration.
 ```js
 {
   nodeResolve: {
-    exportConditions: ['development'];
+    exportConditions: ['development'],
   }
 }
 ```
@@ -120,7 +120,7 @@ resolve configuration.
     nodeResolve({
       exportConditions: ['development'],
     }),
-  ];
+  ],
 }
 ```
 
@@ -131,7 +131,7 @@ resolve configuration.
 ```js
 {
   resolve: {
-    conditionNames: ['development'];
+    conditionNames: ['development'],
   }
 }
 ```
