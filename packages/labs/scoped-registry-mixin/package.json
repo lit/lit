@@ -12,7 +12,7 @@
   "type": "module",
   "main": "scoped-registry-mixin.js",
   "module": "scoped-registry-mixin.js",
-  "typings": "index.d.ts",
+  "typings": "scoped-registry-mixin.d.ts",
   "directories": {
     "test": "test"
   },
