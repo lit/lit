@@ -323,10 +323,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     flush(value);
   };
 
-  // Depth-first node index. Initialized to -1 (corresponding to the fragment
-  // root node at the top of the ast) so that the first child node is
-  // index 0, to match client-side lit-html.
-  let nodeIndex = -1;
+  // Depth-first node index, counting only comment and element nodes, to match
+  // client-side lit-html.
+  let nodeIndex = 0;
 
   traverse(ast, {
     pre(node, parent) {
@@ -341,6 +340,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               parent && isElement(parent) && parent.isDefinedCustomElement,
           });
         }
+        nodeIndex++;
       } else if (isElement(node)) {
         // Whether to flush the start tag. This is necessary if we're changing
         // any of the attributes in the tag, so it's true for custom-elements
@@ -457,8 +457,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             type: 'custom-element-shadow',
           });
         }
+        nodeIndex++;
       }
-      nodeIndex++;
     },
     post(node) {
       if (isElement(node) && node.isDefinedCustomElement) {
