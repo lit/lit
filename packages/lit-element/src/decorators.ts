@@ -11,6 +11,7 @@
  * not an arrow function.
  */
 
+export * from '@lit/reactive-element/decorators/base.js';
 export * from '@lit/reactive-element/decorators/custom-element.js';
 export * from '@lit/reactive-element/decorators/property.js';
 export * from '@lit/reactive-element/decorators/state.js';
