@@ -19,23 +19,6 @@ import {assert} from '@esm-bundle/chai';
 
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
-// {
-//   html as htmlA,
-//   render as renderA,
-//   nothing as nothingA,
-//   noChange as noChangeA,
-// }
-
-// {
-//   directive as directiveA,
-//   Directive as DirectiveA,
-//   PartType as PartTypeA,
-// }
-
-// {AsyncDirective as AsyncDirectiveA}
-
-// {repeat as repeatA}
-
 const version1 = [litHtml1, directive1, asyncDirective1, repeat1];
 const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
 
