@@ -241,6 +241,20 @@ suite('lit-html', () => {
       assertRender(html`<script></script>${'A'}`, '<script></script>A');
     });
 
+    test('text after script element with binding 1', () => {
+      assertRender(html`<script>${'A'}</script>${'B'}`, '<script>A</script>B');
+      assertRender(html`<script>1${'A'}</script>${'B'}`, '<script>1A</script>B');
+      assertRender(html`<script>${'A'}1</script>${'B'}`, '<script>A1</script>B');
+    });
+
+    test('text after script element with binding 2', () => {
+      assertRender(html`<script>${'A'}${'B'}</script>${'C'}`, '<script>AB</script>C');
+    });
+
+    test('text after script element with binding 3', () => {
+      assertRender(html`<script>${'A'}${'B'}</script><p>${'C'}</p>`, '<script>AB</script><p>C</p>');
+    });
+
     test('text after style element', () => {
       assertRender(html`<style></style>${'A'}`, '<style></style>A');
     });
