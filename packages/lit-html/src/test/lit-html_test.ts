@@ -244,23 +244,23 @@ suite('lit-html', () => {
     test('text after script element with binding', () => {
       assertRender(
         html`<script type="foo">${'A'}</script>${'B'}`,
-        '<script>A</script>B'
+        '<script type="foo">A</script>B'
       );
       assertRender(
         html`<script type="foo">1${'A'}</script>${'B'}`,
-        '<script>1A</script>B'
+        '<script type="foo">1A</script>B'
       );
       assertRender(
         html`<script type="foo">${'A'}1</script>${'B'}`,
-        '<script>A1</script>B'
+        '<script type="foo">A1</script>B'
       );
       assertRender(
         html`<script type="foo">${'A'}${'B'}</script>${'C'}`,
-        '<script>AB</script>C'
+        '<script type="foo">AB</script>C'
       );
       assertRender(
         html`<script type="foo">${'A'}</script><p>${'B'}</p>`,
-        '<script>A</script><p>B</p>'
+        '<script type="foo">A</script><p>B</p>'
       );
     });
 
