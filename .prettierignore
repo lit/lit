@@ -59,6 +59,7 @@ packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
+packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
 packages/lit-html/test/

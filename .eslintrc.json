@@ -43,6 +43,12 @@
       }
     },
     {
+      "files": ["packages/lit-html/src/test/version-stability_test.js"],
+      "env": {
+        "mocha": true
+      }
+    },
+    {
       "files": [
         "*_test.ts",
         "**/custom_typings/*.ts",
