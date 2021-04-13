@@ -50,6 +50,10 @@ interface ClickableButton extends HTMLButtonElement {
   __wasClicked: boolean;
   __wasClicked2: boolean;
 }
+interface ClickableInput extends HTMLInputElement {
+  __wasClicked: boolean;
+  __wasClicked2: boolean;
+}
 
 const throwIfRunOnServer = () => {
   if (!(globalThis instanceof window.constructor)) {
@@ -1555,6 +1559,23 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
+  'AttributePart on void element': {
+    render(x: string) {
+      return html`<input class=${x} />`;
+    },
+    expectations: [
+      {
+        args: ['TEST'],
+        html: '<input class="TEST">',
+      },
+      {
+        args: ['TEST2'],
+        html: '<input class="TEST2">',
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * PropertyPart tests
    ******************************************************/
@@ -2790,6 +2811,27 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
+  'PropertyPart on void element': {
+    render(x: string) {
+      return html`<input .title=${x} />`;
+    },
+    expectations: [
+      {
+        args: ['TEST'],
+        html: '<input title="TEST">',
+      },
+      {
+        args: ['TEST2'],
+        html: '<input title="TEST2">',
+      },
+    ],
+    stableSelectors: ['input'],
+    // We set properties during hydration, and natively-reflecting properties
+    // will trigger a "mutation" even when set to the same value that was
+    // rendered to its attribute
+    expectMutationsDuringHydration: true,
+  },
+
   /******************************************************
    * EventPart tests
    ******************************************************/
@@ -3137,6 +3179,45 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['button'],
   },
 
+  'EventPart on a void element': {
+    render(listener: (e: Event) => void) {
+      return html`<input @click=${listener} />`;
+    },
+    expectations: [
+      {
+        args: [
+          (e: Event) => ((e.target as ClickableInput).__wasClicked = true),
+        ],
+        html: '<input>',
+        check(assert: Chai.Assert, dom: HTMLElement) {
+          const input = dom.querySelector('input')!;
+          input.click();
+          assert.strictEqual(
+            (input as ClickableInput).__wasClicked,
+            true,
+            'not clicked during first render'
+          );
+        },
+      },
+      {
+        args: [
+          (e: Event) => ((e.target as ClickableInput).__wasClicked2 = true),
+        ],
+        html: '<input>',
+        check(assert: Chai.Assert, dom: HTMLElement) {
+          const input = dom.querySelector('input')!;
+          input.click();
+          assert.strictEqual(
+            (input as ClickableInput).__wasClicked2,
+            true,
+            'not clicked during second render'
+          );
+        },
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * BooleanAttributePart tests
    ******************************************************/
@@ -3469,6 +3550,23 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
+  'BooleanAttributePart on a void element': {
+    render(hide: boolean) {
+      return html` <input ?hidden=${hide} /> `;
+    },
+    expectations: [
+      {
+        args: [true],
+        html: '<input hidden>',
+      },
+      {
+        args: [false],
+        html: '<input>',
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * ElementPart tests
    ******************************************************/
@@ -3548,6 +3646,25 @@ export const tests: {[name: string]: SSRTest} = {
         },
       ],
       stableSelectors: ['div'],
+    };
+  },
+
+  'ElementPart on void element': () => {
+    const inputRef = createRef();
+    return {
+      render() {
+        return html` <input ${ref(inputRef)} /> `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<input>',
+          check(assert: Chai.Assert) {
+            assert.equal(inputRef.value?.localName, 'input');
+          },
+        },
+      ],
+      stableSelectors: ['input'],
     };
   },
 

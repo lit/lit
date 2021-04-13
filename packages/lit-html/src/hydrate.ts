@@ -322,14 +322,20 @@ const closeChildPart = (
 };
 
 const createAttributeParts = (
-  node: Comment,
+  comment: Comment,
   stack: Array<ChildPartState>,
   options: RenderOptions
 ) => {
   // Get the nodeIndex from DOM. We're only using this for an integrity
   // check right now, we might not need it.
-  const match = /lit-node (\d+)/.exec(node.data)!;
+  const match = /lit-node (\d+)/.exec(comment.data)!;
   const nodeIndex = parseInt(match[1]);
+
+  // For void elements, the node the comment was referring to will be
+  // the previousSibling; for non-void elements, the comment is guaranteed
+  // to be the first child of the element (i.e. it won't have a previousSibling
+  // meaning it should use the parentElement)
+  const node = comment.previousSibling ?? comment.parentElement;
 
   const state = stack[stack.length - 1];
   if (state.type === 'template-instance') {
@@ -352,7 +358,7 @@ const createAttributeParts = (
         // The instance part is created based on the constructor saved in the
         // template part
         const instancePart = new templatePart.ctor(
-          node.parentElement as HTMLElement,
+          node as HTMLElement,
           templatePart.name,
           templatePart.strings,
           state.instance,
@@ -384,7 +390,7 @@ const createAttributeParts = (
       } else {
         // templatePart.type === PartType.ELEMENT
         const instancePart = new ElementPart(
-          node.parentElement as HTMLElement,
+          node as HTMLElement,
           state.instance,
           options
         );
