@@ -483,7 +483,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
+  // Stack of open custom elements (in light dom or shadow dom)
   customElementInstanceStack: Array<ElementRenderer | undefined>;
+  // Stack of open host custom elements (n-1 will be n's host)
+  customElementHostStack: Array<ElementRenderer | undefined>;
 };
 
 declare global {
@@ -492,8 +495,14 @@ declare global {
   }
 }
 
-export function* render(value: unknown): IterableIterator<string> {
-  yield* renderValue(value, {customElementInstanceStack: []});
+export function* render(
+  value: unknown,
+  renderInfo: RenderInfo = {
+    customElementInstanceStack: [],
+    customElementHostStack: [],
+  }
+): IterableIterator<string> {
+  yield* renderValue(value, renderInfo);
 }
 
 export function* renderValue(
@@ -658,7 +667,7 @@ export function* renderTemplateResult(
           // If this element is nested in another, add the `defer-hydration`
           // attribute, so that it does not enable before the host element
           // hydrates
-          if (renderInfo.customElementInstanceStack.length > 1) {
+          if (renderInfo.customElementHostStack.length > 0) {
             yield ' defer-hydration';
           }
         }
@@ -671,7 +680,7 @@ export function* renderTemplateResult(
         // to hydrate it
         if (
           op.boundAttributesCount > 0 ||
-          renderInfo.customElementInstanceStack.length > 1
+          renderInfo.customElementHostStack.length > 0
         ) {
           yield `<!--lit-node ${op.nodeIndex}-->`;
         }
@@ -680,9 +689,11 @@ export function* renderTemplateResult(
       case 'custom-element-shadow': {
         const instance = getLast(renderInfo.customElementInstanceStack);
         if (instance !== undefined && instance.renderShadow !== undefined) {
+          renderInfo.customElementHostStack.push(instance);
           yield '<template shadowroot="open">';
-          yield* instance.renderShadow();
+          yield* instance.renderShadow(renderInfo);
           yield '</template>';
+          renderInfo.customElementHostStack.pop();
         }
         break;
       }

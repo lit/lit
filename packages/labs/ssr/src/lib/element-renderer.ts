@@ -65,7 +65,7 @@ export abstract class ElementRenderer {
   /**
    * Render a single element's ShadowRoot children.
    */
-  abstract renderShadow(): IterableIterator<string>;
+  abstract renderShadow(_renderInfo: RenderInfo): IterableIterator<string>;
 
   /**
    * Render an element's light DOM children.
