@@ -38,8 +38,8 @@ import {
   RenderLightHost,
 } from '@lit-labs/ssr-client/directives/render-light.js';
 
-import {SSRTest} from './ssr-test';
-import {AsyncDirective} from 'lit/async-directive';
+import {SSRTest} from './ssr-test.js';
+import {AsyncDirective} from 'lit/async-directive.js';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -1222,26 +1222,58 @@ export const tests: {[name: string]: SSRTest} = {
         // browser)
         args: [
           {
-            background: 'red',
+            height: '5px',
             paddingTop: '10px',
-            '--my-prop': 'green',
-            webkitAppearance: 'none',
           },
         ],
-        html:
-          '<div style="background: red; padding-top: 10px; --my-prop:green; appearance: none;"></div>',
+        html: '<div style="height: 5px; padding-top: 10px;"></div>',
       },
       {
         args: [
           {
             paddingTop: '20px',
-            '--my-prop': 'gray',
             backgroundColor: 'white',
+          },
+        ],
+        html: '<div style="padding-top: 20px; background-color: white;"></div>',
+      },
+    ],
+    // styleMap does not dirty check individual properties before setting,
+    // which causes an attribute mutation even if the text has not changed
+    expectMutationsOnFirstRender: true,
+    stableSelectors: ['div'],
+  },
+
+  'AttributePart accepts directive: styleMap (custom properties & browser-prefixed)': {
+    // The parsed results of style text with custom properties and browser
+    // prefixes differs across browsers (due to whitespace and re-writing
+    // prefixed names) enough to make a single cross-platform assertion
+    // difficult. For now, just test these on Chrome.
+    skip: Boolean(globalThis.navigator && !navigator.userAgent.match(/Chrome/)),
+    render(map: {}) {
+      return html` <div style=${styleMap(map)}></div> `;
+    },
+    expectations: [
+      {
+        // Note that (at least on chrome, vendor-prefixed properties get
+        // collapsed down to the standard property name when re-parsed on the
+        // browser)
+        args: [
+          {
+            '--my-prop': 'green',
+            webkitAppearance: 'none',
+          },
+        ],
+        html: '<div style="--my-prop:green; appearance: none;"></div>',
+      },
+      {
+        args: [
+          {
+            '--my-prop': 'gray',
             webkitAppearance: 'inherit',
           },
         ],
-        html:
-          '<div style="padding-top: 20px; --my-prop:gray; appearance: inherit; background-color: white;"></div>',
+        html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
       },
     ],
     // styleMap does not dirty check individual properties before setting,
@@ -1258,8 +1290,8 @@ export const tests: {[name: string]: SSRTest} = {
     },
     expectations: [
       {
-        args: [{background: 'green'}],
-        html: '<div style="color: red; background: green; height: 3px;"></div>',
+        args: [{width: '5px'}],
+        html: '<div style="color: red; width: 5px; height: 3px;"></div>',
       },
       {
         args: [{paddingTop: '20px'}],

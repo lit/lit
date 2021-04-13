@@ -53,7 +53,10 @@ const normalize = (node: Node | null) => {
     // when reset via the property it re-serializes in a normalized form
     if (node.nodeType === node.ELEMENT_NODE) {
       if ((node as HTMLElement).hasAttribute('style')) {
-        (node as HTMLElement).style.cssText = (node as HTMLElement).style.cssText;
+        (node as HTMLElement).setAttribute(
+          'style',
+          (node as HTMLElement).style.cssText
+        );
       }
     }
     // Recurse
@@ -227,9 +230,10 @@ suite('basic', () => {
       : test;
 
     testFn(testName, async () => {
-      // Get the SSR result from the server. This path is proxied by Karma to
-      // our test server.
-      const response = await fetch(`/test/basic/${testName}`);
+      // Get the SSR result from the server.
+      const response = await fetch(
+        `http://localhost:9090/ssr-test-server/basic/${testName}`
+      );
       container.innerHTML = await response.text();
 
       // For element tests, hydrate shadowRoots
