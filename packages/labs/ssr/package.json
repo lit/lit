@@ -46,7 +46,6 @@
     "@types/tape": "^4.2.33",
     "@types/tape-promise": "^4.0.0",
     "@web/test-runner": "^0.12.19",
-    "@webcomponents/template-shadowroot": "^0.1.0",
     "chai": "^4.2.0",
     "command-line-args": "^5.1.1",
     "deepmerge": "^4.2.2",
