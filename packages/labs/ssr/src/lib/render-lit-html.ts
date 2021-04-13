@@ -184,6 +184,14 @@ type CustomElementClosedOp = {
   type: 'custom-element-close';
 };
 
+/**
+ * Operation to possibly emit the `<!--lit-node-->` marker; the operation
+ * always emits if there were attribtue parts, and may emit if the node
+ * was a custom element and it needed `defer-hydration` because it was
+ * rendered in the shadow root of another custom element host; we don't
+ * know the latter at opcode generation time, and so that test is done at
+ * runtime in the opcode.
+ */
 type PossibleNodeMarkerOp = {
   type: 'possible-node-marker';
   boundAttributesCount: number;
@@ -247,7 +255,9 @@ type Op =
  *   - Emit `renderer.renderAttributes()`
  * - `text`
  *   - Emit end of of open tag `>`
- *   - Emit `<!--lit-node n-->` marker if there were attribute parts
+ * - `possible-node-marker`
+ *   - Emit `<!--lit-node n-->` marker if there were attribute parts or
+ *      we needed to emit the `defer-hydration` attribute
  * - `custom-element-shadow`
  *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)
