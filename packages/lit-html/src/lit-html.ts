@@ -638,19 +638,14 @@ class Template {
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
+              // Walk past the marker node we just added
+              walker.nextNode();
               this.parts.push({type: CHILD_PART, index: ++nodeIndex});
               bindingIndex++;
             }
-            console.log('A', nodeIndex, `:${strings[lastIndex]}:`);
-
-            // nodeIndex--;
+            // Note the nodeIndex for this marker is accounted for in the
+            // nodeIndex++ expression at the end of the tree walker loop
             (node as Element).append(strings[lastIndex], createMarker());
-
-            // nodeIndex++;
-            // (node as Element).append(strings[lastIndex], createMarker());
-
-            // ++nodeIndex;
-            // (node as Element).append(strings[lastIndex] || (++nodeIndex, createMarker()));
           }
         }
       } else if (node.nodeType === 8) {
@@ -762,7 +757,6 @@ class TemplateInstance {
       parts: parts,
     } = this._$template;
     const fragment = (options?.creationScope ?? d).importNode(content, true);
-    console.log(this._$template);
     walker.currentNode = fragment;
 
     let node = walker.nextNode();
@@ -771,7 +765,6 @@ class TemplateInstance {
     let templatePart = parts[0];
 
     while (templatePart !== undefined && node !== null) {
-      console.log('B', nodeIndex, templatePart.index);
       if (nodeIndex === templatePart.index) {
         let part: Part | undefined;
         if (templatePart.type === CHILD_PART) {
@@ -798,10 +791,8 @@ class TemplateInstance {
       if (templatePart !== undefined && nodeIndex !== templatePart.index) {
         node = walker.nextNode();
         nodeIndex++;
-        console.log('C', nodeIndex, node);
       }
     }
-    console.log(parts);
     return fragment;
   }
 
