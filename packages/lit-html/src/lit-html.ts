@@ -643,8 +643,9 @@ class Template {
               this.parts.push({type: CHILD_PART, index: ++nodeIndex});
               bindingIndex++;
             }
-            // Note the nodeIndex for this marker is accounted for in the
-            // nodeIndex++ expression at the end of the tree walker loop
+            // Note because this marker is added after the walker's current
+            // node, it will be walked to in the outer loop (and ignored), so
+            // we don't need to adjust nodeIndex here
             (node as Element).append(strings[lastIndex], createMarker());
           }
         }
