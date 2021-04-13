@@ -241,22 +241,25 @@ suite('lit-html', () => {
       assertRender(html`<script></script>${'A'}`, '<script></script>A');
     });
 
-    test('text after script element with binding 1', () => {
-      assertRender(html`<script>${'A'}</script>${'B'}`, '<script>A</script>B');
+    test('text after script element with binding', () => {
       assertRender(
-        html`<script>1${'A'}</script>${'B'}`,
+        html`<script type="foo">${'A'}</script>${'B'}`,
+        '<script>A</script>B'
+      );
+      assertRender(
+        html`<script type="foo">1${'A'}</script>${'B'}`,
         '<script>1A</script>B'
       );
       assertRender(
-        html`<script>${'A'}1</script>${'B'}`,
+        html`<script type="foo">${'A'}1</script>${'B'}`,
         '<script>A1</script>B'
       );
       assertRender(
-        html`<script>${'A'}${'B'}</script>${'C'}`,
+        html`<script type="foo">${'A'}${'B'}</script>${'C'}`,
         '<script>AB</script>C'
       );
       assertRender(
-        html`<script>${'A'}</script><p>${'B'}</p>`,
+        html`<script type="foo">${'A'}</script><p>${'B'}</p>`,
         '<script>A</script><p>B</p>'
       );
     });
