@@ -182,7 +182,7 @@ test('simple custom element', async (t: Test) => {
   const result = await render(simpleTemplateWithElement);
   t.equal(
     result,
-    `<!--lit-part tjmYe1kHIVM=--><test-simple><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+    `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
   );
 });
 
@@ -215,7 +215,7 @@ test('no slot', async (t: Test) => {
   const result = await render(noSlot);
   t.equal(
     result,
-    `<!--lit-part OpS0yFtM48Q=--><test-simple><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
+    `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
   );
 });
 

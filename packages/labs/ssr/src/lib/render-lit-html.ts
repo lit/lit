@@ -184,6 +184,12 @@ type CustomElementClosedOp = {
   type: 'custom-element-close';
 };
 
+type PossibleNodeMarkerOp = {
+  type: 'possible-node-marker';
+  boundAttributesCount: number;
+  nodeIndex: number;
+};
+
 type Op =
   | TextOp
   | ChildPartOp
@@ -192,7 +198,8 @@ type Op =
   | CustomElementOpenOp
   | CustomElementAttributesOp
   | CustomElementShadowOp
-  | CustomElementClosedOp;
+  | CustomElementClosedOp
+  | PossibleNodeMarkerOp;
 
 /**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes
@@ -346,6 +353,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         // any of the attributes in the tag, so it's true for custom-elements
         // which might reflect their own state, or any element with a binding.
         let writeTag = false;
+        let boundAttributesCount = 0;
 
         const tagName = node.tagName;
         let ctor;
@@ -377,6 +385,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             const isElementBinding = attr.name.startsWith(marker);
             if (isAttrBinding || isElementBinding) {
               writeTag = true;
+              boundAttributesCount += 1;
               // Note that although we emit a lit-node comment marker for any
               // nodes with bindings, we don't account for it in the nodeIndex because
               // that will not be injected into the client template
@@ -444,7 +453,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           } else {
             flushTo(node.sourceCodeLocation!.startTag.endOffset);
           }
-          flush(`<!--lit-node ${nodeIndex}-->`);
+          ops.push({
+            type: 'possible-node-marker',
+            boundAttributesCount,
+            nodeIndex,
+          });
         }
 
         if (ctor !== undefined) {
@@ -648,6 +661,19 @@ export function* renderTemplateResult(
           if (renderInfo.customElementInstanceStack.length > 1) {
             yield ' defer-hydration';
           }
+        }
+        break;
+      }
+      case 'possible-node-marker': {
+        // Add a node marker if this element had attribute bindings or if it
+        // was nested in another and we rendered the `defer-hydration` attribute
+        // since the hydration node walk will need to stop at this element
+        // to hydrate it
+        if (
+          op.boundAttributesCount > 0 ||
+          renderInfo.customElementInstanceStack.length > 1
+        ) {
+          yield `<!--lit-node ${op.nodeIndex}-->`;
         }
         break;
       }
