@@ -4577,4 +4577,91 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-render-light'],
     };
   },
+
+  'LitElement: hydration ordering': () => {
+    const renderOrder: string[] = [];
+    return {
+      registerElements() {
+        // When defined in bottom-up order (as they will typically be based on
+        // import graph ordering), they should hydrate top-down
+        class LEOrder3 extends LitElement {
+          @property()
+          prop = 'from3';
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-order3:${this.prop}`;
+          }
+        }
+        customElements.define('le-order3', LEOrder3);
+        class LEOrder2 extends LitElement {
+          @property()
+          prop = 'from2';
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-order2:${this.prop}<le-order3
+                .prop=${this.prop}
+              ></le-order3>`;
+          }
+        }
+        customElements.define('le-order2', LEOrder2);
+        class LEOrder1 extends LitElement {
+          @property()
+          prop = 'from1';
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-order1:${this.prop}<le-order2
+                .prop=${this.prop}
+              ></le-order2>`;
+          }
+        }
+        customElements.define('le-order1', LEOrder1);
+        class LELight extends LitElement {
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-light`;
+          }
+        }
+        customElements.define('le-light', LELight);
+      },
+      render() {
+        return html`<le-order1><le-light></le-light></le-order1>`;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el1 = dom.querySelector('le-order1') as LitElement;
+            await el1.updateComplete;
+            const el2 = el1?.shadowRoot?.querySelector(
+              'le-order2'
+            ) as LitElement;
+            await el2.updateComplete;
+            const el3 = el2?.shadowRoot?.querySelector(
+              'le-order3'
+            ) as LitElement;
+            await el3.updateComplete;
+            assert.deepEqual(renderOrder, [
+              'le-order1',
+              'le-light',
+              'le-order2',
+              'le-order3',
+            ]);
+          },
+          html: {
+            root: `<le-order1><le-light></le-light></le-order1>`,
+            'le-order1': {
+              root: `le-order1:from1\n<le-order2></le-order2>`,
+              'le-order2': {
+                root: `le-order2:from1\n<le-order3></le-order3>`,
+                'le-order3': {
+                  root: 'le-order3:from1',
+                },
+              },
+            },
+          },
+        },
+      ],
+      stableSelectors: ['le-order1'],
+    };
+  },
 };
