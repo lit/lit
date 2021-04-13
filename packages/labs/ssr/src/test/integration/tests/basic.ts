@@ -880,9 +880,10 @@ export const tests: {[name: string]: SSRTest} = {
    * AttributePart tests
    ******************************************************/
 
-   'AttributePart after a text node': {
+  'AttributePart after a text node': {
     render(x: unknown) {
-      return html`ABC<div class=${x}></div>`;
+      return html`ABC
+        <div class=${x}></div>`;
     },
     expectations: [
       {
