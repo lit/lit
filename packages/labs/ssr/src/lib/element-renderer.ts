@@ -30,55 +30,54 @@ const rendererForPrototype: Map<
   ConcreteElementRenderer
 > = new Map();
 
+export const registerRenderer = (
+  matcher: ElementRendererMatcher,
+  renderer: ConcreteElementRenderer
+) => {
+  renderers.push({matcher, renderer});
+};
+
+const getRendererClass = (
+  tagName: string,
+  ceClass: typeof HTMLElement = customElements.get(tagName)
+): ConcreteElementRenderer | undefined => {
+  if (ceClass === undefined) {
+    console.warn(`Custom element ${tagName} was not registered.`);
+    return;
+  }
+  // Two-level lookup: first lookup CE base class if we've found it before,
+  // otherwise iterate all the renderer matchers. Using the ceClass's base
+  // class rather than ceClass makes an assumption about renderers being
+  // written for base classes that are extended, but this is an optimization
+  const ceBaseClassProto = Object.getPrototypeOf(ceClass).prototype;
+  let renderer = rendererForPrototype.get(ceBaseClassProto);
+  if (renderer === undefined) {
+    for (const info of renderers) {
+      if (info.matcher(ceClass)) {
+        renderer = info.renderer;
+        rendererForPrototype.set(ceBaseClassProto, renderer);
+        break;
+      }
+    }
+  }
+  if (renderer === undefined) {
+    console.error(`No renderer for custom element: ${tagName}`);
+    return;
+  }
+  return renderer;
+};
+
+export const getElementRenderer = (
+  tagName: string,
+  ceClass: typeof HTMLElement = customElements.get(tagName)
+): ElementRenderer | undefined => {
+  const renderer = getRendererClass(tagName, ceClass);
+  return renderer !== undefined ? new renderer(tagName) : renderer;
+};
 /**
  * An object that renders elements of a certain type.
  */
 export abstract class ElementRenderer {
-  static registerRenderer(
-    matcher: ElementRendererMatcher,
-    renderer: ConcreteElementRenderer
-  ) {
-    renderers.push({matcher, renderer});
-  }
-
-  static rendererFor(
-    tagName: string,
-    ceClass: typeof HTMLElement = customElements.get(tagName)
-  ): ConcreteElementRenderer | undefined {
-    if (ceClass === undefined) {
-      console.warn(`Custom element ${tagName} was not registered.`);
-      return;
-    }
-    // Two-level lookup: first lookup CE base class if we've found it before,
-    // otherwise iterate all the renderer matchers. Using the ceClass's base
-    // class rather than ceClass makes an assumption about renderers being
-    // written for base classes that are extended, but this is an optimization
-    const ceBaseClassProto = Object.getPrototypeOf(ceClass).prototype;
-    let renderer = rendererForPrototype.get(ceBaseClassProto);
-    if (renderer === undefined) {
-      for (const info of renderers) {
-        if (info.matcher(ceClass)) {
-          renderer = info.renderer;
-          rendererForPrototype.set(ceBaseClassProto, renderer);
-          break;
-        }
-      }
-    }
-    if (renderer === undefined) {
-      console.error(`No renderer for custom element: ${tagName}`);
-      return;
-    }
-    return renderer;
-  }
-
-  static for(
-    tagName: string,
-    ceClass: typeof HTMLElement = customElements.get(tagName)
-  ): ElementRenderer | undefined {
-    const renderer = this.rendererFor(tagName, ceClass);
-    return renderer !== undefined ? new renderer(tagName) : renderer;
-  }
-
   element!: HTMLElement;
   tagName: string;
 

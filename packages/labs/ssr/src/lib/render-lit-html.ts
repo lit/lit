@@ -34,7 +34,7 @@ const {
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
-import {ElementRenderer} from './element-renderer.js';
+import {ElementRenderer, getElementRenderer} from './element-renderer.js';
 
 import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
@@ -656,7 +656,7 @@ function* renderTemplateResult(
       }
       case 'custom-element-open': {
         // Instantiate the element and its renderer
-        const instance = ElementRenderer.for(op.tagName, op.ctor);
+        const instance = getElementRenderer(op.tagName, op.ctor);
         // Set static attributes to the element renderer
         if (instance !== undefined) {
           for (const [name, value] of op.staticAttributes) {
