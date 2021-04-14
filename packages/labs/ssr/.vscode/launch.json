@@ -10,10 +10,14 @@
       "request": "launch",
       "name": "Test: Integration (debug)",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/test/integration/test.js",
-      "args": ["--debug"],
+      "program": "${workspaceFolder}/node_modules/.bin/wtr",
+      "args": ["--watch"],
       "outFiles": ["${workspaceFolder}/./**/*.js"],
-      "runtimeArgs": ["--experimental-vm-modules"]
+      "runtimeArgs": ["--experimental-vm-modules"],
+      "console": "integratedTerminal",
+      "env": {
+        "BROWSERS": "chromium"
+      }
     },
     {
       "type": "node",
