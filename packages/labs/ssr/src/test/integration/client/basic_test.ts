@@ -8,7 +8,7 @@ import '@open-wc/testing';
 
 import {tests} from '../tests/basic.js';
 import {render} from 'lit';
-import {hydrate} from 'lit/hydrate.js';
+import {hydrate} from 'lit/experimental-hydrate.js';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot/template-shadowroot.js';
 import {SSRExpectedHTML} from '../tests/ssr-test.js';
 

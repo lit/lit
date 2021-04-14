@@ -62,13 +62,13 @@ const stableProperties = {
   _$template: 'D',
   // reactive-element: ReactiveElement (used by polyfill-support)
   _$didUpdate: 'E',
-  // lit-element: LitElement (used by hydrate-support)
+  // lit-element: LitElement (used by experimental--support)
   _$renderImpl: 'F',
-  // hydrate-support: LitElement (added by hydrate-support)
+  // experimental-hydrate-support: LitElement (added by experimental-hydrate-support)
   _$needsHydration: 'G',
-  // lit-html: Part (used by hydrate, polyfill-support)
+  // lit-html: Part (used by experimental-hydrate, polyfill-support)
   _$committedValue: 'H',
-  // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
+  // lit-html: Part (used by experimental-hydrate, directive-helpers, polyfill-support, ssr-support)
   _$setValue: 'I',
   // polyfill-support: LitElement (added by polyfill-support)
   _$handlesPrepareStyles: 'J',
