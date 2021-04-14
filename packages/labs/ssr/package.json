@@ -11,7 +11,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "start": "node --experimental-vm-modules ./demo/server.js",
-    "test": "BROWSERS=preset:local npm run test:unit && npm run test:integration",
+    "test": "npm run test:unit && npm run test:integration",
     "test:integration": "npm run test:integration:dev && npm run test:integration:prod",
     "test:integration:dev": "MODE=dev NODE_OPTIONS=--experimental-vm-modules wtr",
     "test:integration:prod": "MODE=prod NODE_OPTIONS=--experimental-vm-modules wtr",

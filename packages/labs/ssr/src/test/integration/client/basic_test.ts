@@ -16,6 +16,9 @@ const assert = chai.assert;
 
 const assertTemplate = document.createElement('template');
 
+// For now, don't run SSR tests on IE
+const runSSRTests = window.navigator.userAgent.indexOf('Trident/') < 0;
+
 /**
  * Removes comments, normalizes text content, and normalizes style attribute
  * serialization.
@@ -222,12 +225,13 @@ suite('basic', () => {
       expectMutationsDuringUpgrade,
     } = testSetup;
 
-    const testFn = testSetup.skip
-      ? test.skip
-      : testSetup.only
-      ? // eslint-disable-next-line no-only-tests/no-only-tests
-        test.only
-      : test;
+    const testFn =
+      testSetup.skip || !runSSRTests
+        ? test.skip
+        : testSetup.only
+        ? // eslint-disable-next-line no-only-tests/no-only-tests
+          test.only
+        : test;
 
     testFn(testName, async () => {
       // Get the SSR result from the server.
