@@ -24,6 +24,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added `defer-hydration` attribute handling to `experimental-hydrate`, which helps
   coordinate ordered wakeup of custom elements during hydration.
 
+### Changed
+
+- (Since 2.0.0-pre.7) Renamed `hydrate` module to `experimental-hydrate` to reflect its experimental nature. Experimental modules may undergo breaking changes within otherwise non-major releases.
+
+<!-- ### Added -->
+<!-- ### Fixed -->
+<!-- ### Removed -->
+
 ## 2.0.0-pre.7 - 2021-03-31
 
 <!-- ### Changed -->

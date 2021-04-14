@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export * from 'lit-html/hydrate.js';
+export * from 'lit-html/experimental-hydrate.js';

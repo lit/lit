@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Changed
+
+- (Since 2.0.0-pre.1) Renamed `hydrate` and `hydrate-support` modules to `experimental-hydrate` and `experimental-hydrate-support`, respectively, to reflect their experimental nature. Experimental modules may undergo breaking changes within otherwise non-major releases.
+
 ## [2.0.0-pre.2] - 2021-03-31
 
 ### Changed

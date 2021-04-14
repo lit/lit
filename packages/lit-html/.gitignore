@@ -3,7 +3,7 @@
 /directives/
 /node_modules/
 /test/
-/hydrate.*
+/experimental-hydrate.*
 /lit-html.*
 /directive.*
 /directive-helpers.*

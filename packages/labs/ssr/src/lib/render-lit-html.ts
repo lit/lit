@@ -32,7 +32,7 @@ const {
   EventPart,
 } = _Σ;
 
-import {digestForTemplateResult} from 'lit/hydrate.js';
+import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 

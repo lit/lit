@@ -8,9 +8,9 @@
  * This is a client-only file used to boot the page.
  */
 
-import 'lit/hydrate-support.js';
+import 'lit/experimental-hydrate-support.js';
 import {render} from 'lit';
-import {hydrate} from 'lit/hydrate.js';
+import {hydrate} from 'lit/experimental-hydrate.js';
 import {template, initialData} from './module.js';
 
 console.log('Page hydrating with same data as rendered with SSR.');

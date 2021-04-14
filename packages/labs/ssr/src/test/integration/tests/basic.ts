@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'lit/hydrate-support.js';
+import 'lit/experimental-hydrate-support.js';
 
 import {html, noChange, nothing, Part} from 'lit';
 import {
@@ -886,8 +886,10 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart after a text node': {
     render(x: unknown) {
-      return html`ABC
-        <div class=${x}></div>`;
+      return html`
+        ABC
+        <div class=${x}></div>
+      `;
     },
     expectations: [
       {

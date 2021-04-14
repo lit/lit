@@ -29,7 +29,7 @@ export const defaultConfig = (options = {}) =>
       'directive-helpers',
       'async-directive',
       'static',
-      'hydrate',
+      'experimental-hydrate',
       'private-ssr-support',
       'polyfill-support',
     ],
