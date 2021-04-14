@@ -11,7 +11,15 @@ Lit is a simple library for building fast, lightweight web components.
 
 At its core is a boilerplate-killing component base class that provides reactive state, scoped styles, and a declarative template system that leads the pack in size, speed, and expressiveness.
 
+### Documentation
+
 To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/Polymer/lit-html/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/Polymer/lit-html/wiki/Lit-2.0-Upgrade-Guide).
+
+To install from npm:
+
+```sh
+npm i lit
+```
 
 ## Lit Monorepo
 
@@ -26,7 +34,6 @@ This is the monorepo for Lit packages, including `lit`, `lit-html` and `lit-elem
   - [`@lit/reactive-element`](./packages/reactive-element) - A low level base class that provides a reactive lifecycle based on attribute/property changes.
 - Additional libraries
   - [`@lit/localize`](./packages/localize) - A library and command-line tool for localizing web applications built using Lit.
-- Labs
   - [`@lit/localize-tools`](./packages/localize) - Localization tooling for use with `@lit/localize`.
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
