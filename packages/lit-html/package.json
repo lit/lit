@@ -33,9 +33,9 @@
       "development": "./development/directives/",
       "default": "./directives/"
     },
-    "./hydrate.js": {
-      "development": "./development/hydrate.js",
-      "default": "./hydrate.js"
+    "./experimental-hydrate.js": {
+      "development": "./development/experimental-hydrate.js",
+      "default": "./experimental-hydrate.js"
     },
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
@@ -54,7 +54,7 @@
     "build:version-stability-test": "rollup -c rollup-version-stability-test.config.js",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf {async-directive,directive-helpers,directive,hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ version-stability-test/ *.tsbuildinfo",
+    "clean": "rm -rf {async-directive,directive-helpers,directive,experimental-hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ version-stability-test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
@@ -66,7 +66,7 @@
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
     "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
     "/directive.{d.ts,d.ts.map,js,js.map}",
-    "/hydrate.{d.ts,d.ts.map,js,js.map}",
+    "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
     "/lit-html.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",

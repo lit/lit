@@ -12,7 +12,7 @@
 
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
 import {render, RenderOptions} from 'lit-html';
-import {hydrate} from 'lit-html/hydrate.js';
+import {hydrate} from 'lit-html/experimental-hydrate.js';
 
 interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new

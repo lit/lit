@@ -34,8 +34,8 @@ packages/lit/directive-helpers.*
 packages/lit/directive.*
 packages/lit/async-directive.*
 packages/lit/html.*
-packages/lit/hydrate-support.*
-packages/lit/hydrate.*
+packages/lit/experimental-hydrate-support.*
+packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
@@ -51,7 +51,7 @@ packages/lit-element/development/
 packages/lit-element/node_modules/
 packages/lit-element/test/
 packages/lit-element/decorators.*
-packages/lit-element/hydrate-support.*
+packages/lit-element/experimental-hydrate-support.*
 packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
@@ -63,7 +63,7 @@ packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
 packages/lit-html/test/
-packages/lit-html/hydrate.*
+packages/lit-html/experimental-hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
