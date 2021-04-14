@@ -1,10 +1,23 @@
-# Lit Monorepo
+# Lit
 
-The monorepo for Lit packages, including `lit`, `lit-html` and `LitElement`.
+[![Build Status](https://github.com/Polymer/lit-html/actions/workflows/tests.yml/badge.svg?branch=lit-next)](https://github.com/Polymer/lit-html/actions/workflows/tests.yml)
+[![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
+[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://www.polymer-project.org/slack-invite)
+[![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
+
+## Simple. Fast. Web Components.
+
+Lit is a simple library for building fast, lightweight web components.
+
+At its core is a boilerplate-killing component base class that provides reactive state, scoped styles, and a declarative template system that leads the pack in size, speed, and expressiveness.
 
 To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/Polymer/lit-html/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/Polymer/lit-html/wiki/Lit-2.0-Upgrade-Guide).
 
-## Packages
+## Lit Monorepo
+
+This is the monorepo for Lit packages, including `lit`, `lit-html` and `lit-element`.
+
+### Packages
 
 - Core packages
   - [`lit`](./packages/lit) - The primary user-facing package of Lit which includes everything from lit-html and lit-element.
