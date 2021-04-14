@@ -66,20 +66,90 @@ import {assert} from '@esm-bundle/chai';
       }
     }
     customElements.define(name, E);
-    const el = document.createElement(name) as E;
-    container.appendChild(el);
+    const testInstance = async () => {
+      const el = document.createElement(name) as E;
+      container.appendChild(el);
+      // Workaround for Safari 9 Promise timing bugs.
+      (await el.updateComplete) && (await el.inner!.updateComplete);
+      await nextFrame();
+      const div = el
+        .shadowRoot!.querySelector('x-inner2')!
+        .shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '10px'
+      );
+    };
+    await testInstance();
+    await testInstance();
+    await testInstance();
+  });
 
-    // Workaround for Safari 9 Promise timing bugs.
-    (await el.updateComplete) && (await el.inner!.updateComplete);
-
-    await nextFrame();
-    const div = el
-      .shadowRoot!.querySelector('x-inner2')!
-      .shadowRoot!.querySelector('div');
-    assert.equal(
-      getComputedStyleValue(div!, 'border-top-width').trim(),
-      '10px'
+  test('part values correct when @apply is used in multiple instances', async () => {
+    customElements.define(
+      'x-inner3',
+      class extends LitElement {
+        render() {
+          return htmlWithStyles`
+        <style>
+          div {
+            @apply --bag;
+          }
+        </style>
+        <div>Testing...</div>`;
+        }
+      }
     );
+    const name = generateElementName();
+    class E extends LitElement {
+      inner: LitElement | null = null;
+      div!: HTMLDivElement;
+
+      render() {
+        return htmlWithStyles`
+        <style>
+          div {
+            border: 4px solid blue;
+          }
+          x-inner3 {
+            --bag: {
+              border: 10px solid red;
+            }
+          }
+        </style>
+        Outer Element
+        <div ?some-attr="${true}">${'Button Text'}</div>
+        <x-inner3></x-inner3>`;
+      }
+
+      firstUpdated() {
+        this.inner = this.shadowRoot!.querySelector('x-inner3') as LitElement;
+        this.div = this.shadowRoot!.querySelector('div') as HTMLDivElement;
+      }
+    }
+    customElements.define(name, E);
+
+    const testInstance = async () => {
+      const el = document.createElement(name) as E;
+      container.appendChild(el);
+
+      // Workaround for Safari 9 Promise timing bugs.
+      (await el.updateComplete) && (await el.inner!.updateComplete);
+      await nextFrame();
+      await new Promise((r) => setTimeout(r, 100));
+      const div = el
+        .shadowRoot!.querySelector('x-inner3')!
+        .shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '10px'
+      );
+      assert.ok(el.div.hasAttribute('some-attr'));
+      assert.equal(el.div.textContent, 'Button Text');
+    };
+    await testInstance();
+    await testInstance();
+    await testInstance();
   });
 
   test('@apply renders in nested elements when sub-element renders separately first', async () => {
