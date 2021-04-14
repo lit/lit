@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- `@apply` now functions correctly under native Shadow DOM when template parts are used. ([#1739](https://github.com/Polymer/lit-html/pull/1739)).
+
 - `styleMap()` now removes properties if the value is set to `undefined` or `null`, as opposed to not being a property of the style object. ([#1665](https://github.com/Polymer/lit-html/pull/1665)).
 
 <!-- ### Removed -->
