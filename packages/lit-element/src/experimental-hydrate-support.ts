@@ -54,9 +54,8 @@ interface PatchableLitElement extends HTMLElement {
   ) {
     if (name === 'defer-hydration' && value === null) {
       connectedCallback.call(this);
-    } else {
-      attributeChangedCallback.call(this, name, old, value);
     }
+    attributeChangedCallback.call(this, name, old, value);
   };
 
   // Override `connectedCallback` to capture whether we need hydration, and
