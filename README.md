@@ -37,7 +37,7 @@ This is the monorepo for Lit packages, including `lit`, `lit-html` and `lit-elem
   - [`@lit/localize-tools`](./packages/localize) - Localization tooling for use with `@lit/localize`.
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
-  - [`@lit-labs/ssr-cient`](./packages/labs/ssr) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
+  - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
   - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
   - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
