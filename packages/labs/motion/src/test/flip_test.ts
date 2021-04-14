@@ -282,14 +282,35 @@ suite('Flip', () => {
   });
 
   test('adjusts for ancestor position', async () => {
+    let shiftChild = false;
+    let shiftGChild = false;
     const El = generateFlipElement(
       {
         onStart,
         onComplete,
       },
-      css``,
-      html``
+      css`
+        .shiftChild {
+          left: -200px;
+          top: -200px;
+        }
+
+        .shiftGChild {
+          left: 100px;
+          top: 100px;
+        }
+      `,
+      html`<div class=${classMap({shiftChild})} ${flip()}>
+        Child
+        <div class=${classMap({shiftGChild})}>GChild</div>
+      </div>`
     );
+    shiftChild = true;
+    shiftGChild = true;
+    el = new El();
+    container.appendChild(el);
+    await el.updateComplete;
+    await theFlip!.finished;
   });
 
   test('scaleUp', async () => {});
