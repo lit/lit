@@ -19,9 +19,12 @@ import fetch from 'node-fetch';
  * evaluating user SSR code.  Includes a minimal shim of DOM APIs.
  *
  * @param props Additional properties to add to the window global
+ * @param domOnly Whether to only shim the DOM (as opposed to standard
+ *  JS context clobals like `console` and `setTimeout`)
  */
 export const getWindow = (
-  props: {[key: string]: unknown} = {}
+  props: {[key: string]: unknown} = {},
+  domOnly = false
 ): {[key: string]: unknown} => {
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
@@ -78,6 +81,12 @@ export const getWindow = (
     createTreeWalker() {
       return {};
     }
+    createTextNode() {
+      return {};
+    }
+    createElement() {
+      return {};
+    }
   }
 
   class CSSStyleSheet {
@@ -90,7 +99,7 @@ export const getWindow = (
   };
 
   class CustomElementRegistry {
-    __definitions = new Map<string, CustomElementRegistration>();
+    private __definitions = new Map<string, CustomElementRegistration>();
 
     define(name: string, ctor: CustomHTMLElement) {
       this.__definitions.set(name, {
@@ -113,41 +122,20 @@ export const getWindow = (
     document: new Document(),
     CSSStyleSheet,
     ShadowRoot,
+    CustomElementRegistry,
     customElements: new CustomElementRegistry(),
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    console: {
-      log(...args: unknown[]) {
-        console.log(...args);
-      },
-      info(...args: unknown[]) {
-        console.info(...args);
-      },
-      warn(...args: unknown[]) {
-        console.warn(...args);
-      },
-      debug(...args: unknown[]) {
-        console.debug(...args);
-      },
-      error(...args: unknown[]) {
-        console.error(...args);
-      },
-      assert(bool: unknown, msg: string) {
-        if (!bool) {
-          throw new Error(msg);
-        }
-      },
-    },
     fetch: (url: URL, init: {}) => fetch(url, init),
+
+    location: new URL('http://localhost'),
+    MutationObserver: class {
+      observe() {}
+    },
 
     // No-op any async tasks
     requestAnimationFrame() {},
-    setTimeout() {},
-    clearTimeout() {},
-
-    // Required for node-fetch
-    Buffer,
 
     // Set below
     window: undefined as unknown,
@@ -159,6 +147,38 @@ export const getWindow = (
 
   window.window = window;
   window.global = window; // Required for node-fetch
+
+  if (!domOnly) {
+    Object.assign(window, {
+      // No-op any async tasks
+      setTimeout() {},
+      clearTimeout() {},
+      // Required for node-fetch
+      Buffer,
+      console: {
+        log(...args: unknown[]) {
+          console.log(...args);
+        },
+        info(...args: unknown[]) {
+          console.info(...args);
+        },
+        warn(...args: unknown[]) {
+          console.warn(...args);
+        },
+        debug(...args: unknown[]) {
+          console.debug(...args);
+        },
+        error(...args: unknown[]) {
+          console.error(...args);
+        },
+        assert(bool: unknown, msg: string) {
+          if (!bool) {
+            throw new Error(msg);
+          }
+        },
+      },
+    });
+  }
 
   return window;
 };

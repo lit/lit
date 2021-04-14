@@ -6,18 +6,17 @@
 
 import '@open-wc/testing';
 
-import {tests} from '../tests/basic.js';
 import {render} from 'lit';
 import {hydrate} from 'lit/experimental-hydrate.js';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot/template-shadowroot.js';
-import {SSRExpectedHTML} from '../tests/ssr-test.js';
+import {SSRExpectedHTML, SSRTestSuite} from '../tests/ssr-test.js';
 
 const assert = chai.assert;
 
 const assertTemplate = document.createElement('template');
 
 // For now, don't run SSR tests on IE
-const runSSRTests = window.navigator.userAgent.indexOf('Trident/') < 0;
+const skipSSRTests = window.navigator.userAgent.indexOf('Trident/') >= 0;
 
 /**
  * Removes comments, normalizes text content, and normalizes style attribute
@@ -73,7 +72,11 @@ const normalize = (node: Node | null) => {
  * Wrapper around semantic-dom-diff assert.lightDom.equal to normalize the
  * content using the `normalize` implementation above.
  */
-const assertLightDom = (el: Element | ShadowRoot, str: string, opt?: any) => {
+const assertLightDom = (
+  el: Element | ShadowRoot,
+  str: string,
+  opt?: Parameters<typeof assert.lightDom.equal>[1]
+) => {
   assertTemplate.innerHTML = el.innerHTML;
   normalize(assertTemplate.content);
   assert.lightDom.equal(assertTemplate, str, opt);
@@ -169,164 +172,170 @@ const assertHTML = (
   }
 };
 
-suite('basic', () => {
-  let container: HTMLElement;
-  let observer: MutationObserver;
-  let _mutations: Array<MutationRecord>;
+const modes = ['sandboxed', 'global'] as const;
+export const setupTest = async (
+  tests: SSRTestSuite,
+  testFile: string,
+  mode: typeof modes[number] = 'sandboxed'
+) => {
+  suite(`${testFile}: ${mode}`, () => {
+    let container: HTMLElement;
+    let observer: MutationObserver;
+    let _mutations: Array<MutationRecord>;
 
-  const clearMutations = () => {
-    observer.takeRecords();
-    _mutations.length = 0;
-  };
+    const clearMutations = () => {
+      observer.takeRecords();
+      _mutations.length = 0;
+    };
 
-  const getMutations = () => {
-    _mutations.push(...observer.takeRecords());
-    return _mutations;
-  };
+    const getMutations = () => {
+      _mutations.push(...observer.takeRecords());
+      return _mutations;
+    };
 
-  const observeMutations = (container: Element) => {
-    observer.observe(container, {
-      attributes: true,
-      characterData: true,
-      childList: true,
-      subtree: true,
+    const observeMutations = (container: Element) => {
+      observer.observe(container, {
+        attributes: true,
+        characterData: true,
+        childList: true,
+        subtree: true,
+      });
+      // Deeply observe all roots
+      Array.from(container.querySelectorAll('*'))
+        .filter((el) => el.shadowRoot)
+        .forEach((el) => observeMutations(el));
+    };
+
+    setup(() => {
+      // Container is appended to body so that CE upgrades run
+      container = document.createElement('div');
+      document.body.appendChild(container);
+      _mutations = [];
+      observer = new MutationObserver((records) => {
+        _mutations.push(...records);
+      });
+      clearMutations();
     });
-    // Deeply observe all roots
-    Array.from(container.querySelectorAll('*'))
-      .filter((el) => el.shadowRoot)
-      .forEach((el) => observeMutations(el));
-  };
 
-  setup(() => {
-    // Container is appended to body so that CE upgrades run
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    _mutations = [];
-    observer = new MutationObserver((records) => {
-      _mutations.push(...records);
+    teardown(() => {
+      document.body.removeChild(container);
     });
-    clearMutations();
-  });
 
-  teardown(() => {
-    document.body.removeChild(container);
-  });
+    for (const [testName, testDescOrFn] of Object.entries(tests)) {
+      const testSetup =
+        typeof testDescOrFn === 'function' ? testDescOrFn() : testDescOrFn;
+      const {
+        render: testRender,
+        registerElements,
+        expectations,
+        stableSelectors,
+        expectMutationsOnFirstRender,
+        expectMutationsDuringHydration,
+        expectMutationsDuringUpgrade,
+      } = testSetup;
 
-  for (const [testName, testDescOrFn] of Object.entries(tests)) {
-    const testSetup =
-      typeof testDescOrFn === 'function' ? testDescOrFn() : testDescOrFn;
-    const {
-      render: testRender,
-      registerElements,
-      expectations,
-      stableSelectors,
-      expectMutationsOnFirstRender,
-      expectMutationsDuringHydration,
-      expectMutationsDuringUpgrade,
-    } = testSetup;
-
-    const testFn =
-      testSetup.skip || !runSSRTests
+      const testFn = (testSetup.skip || skipSSRTests)
         ? test.skip
         : testSetup.only
         ? // eslint-disable-next-line no-only-tests/no-only-tests
           test.only
         : test;
 
-    testFn(testName, async () => {
-      // Get the SSR result from the server.
-      const response = await fetch(
-        `http://localhost:9090/ssr-test-server/basic/${testName}`
-      );
-      container.innerHTML = await response.text();
+      testFn(testName, async () => {
+        // Get the SSR result from the server.
+        const response = await fetch(
+          `http://localhost:9090/${mode}/${testFile}/${testName}`
+        );
+        container.innerHTML = await response.text();
 
-      // For element tests, hydrate shadowRoots
-      if (typeof registerElements === 'function') {
-        hydrateShadowRoots(container);
-      }
+        // For element tests, hydrate shadowRoots
+        if (typeof registerElements === 'function') {
+          hydrateShadowRoots(container);
+        }
 
-      // Start watching for mutations (deeply into any shadowRoots)
-      observeMutations(container);
+        // Start watching for mutations (deeply into any shadowRoots)
+        observeMutations(container);
 
-      // The first expectation args are used in the server render. Check the DOM
-      // pre-hydration to make sure they're correct. The DOM is changed again
-      // against the first expectation after hydration in the loop below.
-      assertHTML(container, expectations[0].html);
-      const stableNodes = stableSelectors.map((selector) =>
-        container.querySelector(selector)
-      );
-      clearMutations();
-
-      // For element tests, register & upgrade/hydrate elements
-      if (typeof registerElements === 'function') {
-        await registerElements();
+        // The first expectation args are used in the server render. Check the DOM
+        // pre-hydration to make sure they're correct. The DOM is changed again
+        // against the first expectation after hydration in the loop below.
         assertHTML(container, expectations[0].html);
-        if (!expectMutationsDuringUpgrade) {
-          assert.isEmpty(
-            getMutations(),
-            'Upgrading elements should cause no DOM mutations'
-          );
-        }
-      }
-
-      let i = 0;
-      for (const {args, html, setup, check} of expectations) {
-        if (i === 0) {
-          hydrate(testRender(...args), container);
-          // Hydration should cause no DOM mutations, because it does not
-          // actually update the DOM - it just recreates data structures
-          if (!expectMutationsDuringHydration) {
-            assert.isEmpty(
-              getMutations(),
-              'Hydration should cause no DOM mutations'
-            );
-          }
-          clearMutations();
-        }
-
-        // Custom setup callback
-        if (setup !== undefined) {
-          const ret = setup(assert, container);
-          // Avoid introducing microtasks unless setup function was async
-          if (ret && (ret as any).then) {
-            await ret;
-          }
-        }
-
-        // After hydration, render() will be operable.
-        render(testRender(...args), container);
-
-        if (i === 0) {
-          // The first render should also cause no mutations, since it's using
-          // the same data as the server.
-          if (!expectMutationsOnFirstRender) {
-            assert.isEmpty(
-              getMutations(),
-              'First render should cause no DOM mutations'
-            );
-          }
-        }
-
-        // Custom check before HTML assertion, so it can await el.updateComplete
-        if (check !== undefined) {
-          const ret = check(assert, container);
-          // Avoid introducing microtasks unless check function was async
-          if (ret && (ret as any).then) {
-            await ret;
-          }
-        }
-
-        // Check that stable nodes didn't change
-        const checkNodes = stableSelectors.map((selector) =>
+        const stableNodes = stableSelectors.map((selector) =>
           container.querySelector(selector)
         );
-        assert.deepEqual(stableNodes, checkNodes);
+        clearMutations();
 
-        // Check the markup
-        assertHTML(container, html);
+        // For element tests, register & upgrade/hydrate elements
+        if (typeof registerElements === 'function') {
+          await registerElements();
+          assertHTML(container, expectations[0].html);
+          if (!expectMutationsDuringUpgrade) {
+            assert.isEmpty(
+              getMutations(),
+              'Upgrading elements should cause no DOM mutations'
+            );
+          }
+        }
 
-        i++;
-      }
-    });
-  }
-});
+        let i = 0;
+        for (const {args, html, setup, check} of expectations) {
+          if (i === 0) {
+            hydrate(testRender(...args), container);
+            // Hydration should cause no DOM mutations, because it does not
+            // actually update the DOM - it just recreates data structures
+            if (!expectMutationsDuringHydration) {
+              assert.isEmpty(
+                getMutations(),
+                'Hydration should cause no DOM mutations'
+              );
+            }
+            clearMutations();
+          }
+
+          // Custom setup callback
+          if (setup !== undefined) {
+            const ret = setup(assert, container);
+            // Avoid introducing microtasks unless setup function was async
+            if (ret && (ret as PromiseLike<void>).then) {
+              await ret;
+            }
+          }
+
+          // After hydration, render() will be operable.
+          render(testRender(...args), container);
+
+          if (i === 0) {
+            // The first render should also cause no mutations, since it's using
+            // the same data as the server.
+            if (!expectMutationsOnFirstRender) {
+              assert.isEmpty(
+                getMutations(),
+                'First render should cause no DOM mutations'
+              );
+            }
+          }
+
+          // Custom check before HTML assertion, so it can await el.updateComplete
+          if (check !== undefined) {
+            const ret = check(assert, container);
+            // Avoid introducing microtasks unless check function was async
+            if (ret && (ret as PromiseLike<void>).then) {
+              await ret;
+            }
+          }
+
+          // Check that stable nodes didn't change
+          const checkNodes = stableSelectors.map((selector) =>
+            container.querySelector(selector)
+          );
+          assert.deepEqual(stableNodes, checkNodes);
+
+          // Check the markup
+          assertHTML(container, html);
+
+          i++;
+        }
+      });
+    }
+  });
+};

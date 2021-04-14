@@ -87,6 +87,8 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
+  static _$litElement$ = true;
+
   /**
    * @category rendering
    */
