@@ -46,7 +46,7 @@ jobs:
           # Bump the number after `lit-node-modules` to force a cache update
           # Note there are cache actions in below in `tests-sauce` and in `benchmarks.yml`
           # that should all keep keys in sync
-          key: lit-node-modules-1-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
       # cache this.
@@ -106,7 +106,7 @@ jobs:
           # Bump the number after `lit-node-modules` to force a cache update
           # Note there are cache actions in above in `tests-local` and in `benchmarks.yml`
           # that should all keep keys in sync
-          key: lit-node-modules-1-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
       # cache this.
@@ -175,7 +175,7 @@ jobs:
           # Bump the number after `lit-node-modules` to force a cache update
           # Note there are cache actions in above in `tests-local` and in `benchmarks.yml`
           # that should all keep keys in sync
-          key: lit-node-modules-1-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       # Installs system dependencies needed for playwright. Not sure how to
       # cache this.
