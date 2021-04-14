@@ -10,10 +10,6 @@ import {html as htmlWithApply} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const testIfUsingNativeCSSVariables = (test: any) =>
-  window.ShadyCSS && !window.ShadyCSS.nativeCss ? test.skip : test;
-
 suite('@apply', () => {
   test('styles with css custom properties using @apply render', function () {
     const container = document.createElement('scope-5');
@@ -84,6 +80,7 @@ suite('@apply', () => {
             @apply --stuff;
           }
         </style>
+        Hello
         <div>Testing...</div>
       `;
 
@@ -117,13 +114,22 @@ suite('@apply', () => {
             padding-top: 20px;
           };
         }
+
+        #test {
+          color: red;
+        }
       </style>
+      <div id="test" ?some-attr=${true}>${'test'}</div>
       <apply-user></apply-user>
       <apply-user></apply-user>
     `;
       const applyProducer = document.createElement('apply-producer');
       document.body.appendChild(applyProducer);
       renderShadowRoot(producerContent, applyProducer);
+      // Check that part values are expected.
+      const div = applyProducer.shadowRoot!.querySelector('#test');
+      assert.ok(div?.hasAttribute('some-attr'));
+      assert.ok(div?.textContent, 'test');
       window.ShadyCSS!.styleElement(applyProducer);
       const usersInProducer = applyProducer.shadowRoot!.querySelectorAll(
         'apply-user'
@@ -165,12 +171,10 @@ suite('@apply', () => {
 
   // TODO(sorvell): remove skip when this ShadyCSS PR is merged:
   // https://github.com/webcomponents/shadycss/pull/227.
-  testIfUsingNativeCSSVariables(test)(
-    '@apply styles flow to custom elements that render in connectedCallback',
-    () => {
-      class E extends HTMLElement {
-        connectedCallback() {
-          const result = htmlWithApply`<style>
+  test('@apply styles flow to custom elements that render in connectedCallback', () => {
+    class E extends HTMLElement {
+      connectedCallback() {
+        const result = htmlWithApply`<style>
               div {
                 border-top: 6px solid black;
                 margin-top: 8px;
@@ -178,13 +182,13 @@ suite('@apply', () => {
               }
             </style>
             <div>Testing...</div>`;
-          renderShadowRoot(result, this);
-        }
+        renderShadowRoot(result, this);
       }
-      customElements.define('apply-user-ce1', E);
-      customElements.define('apply-user-ce2', class extends E {});
+    }
+    customElements.define('apply-user-ce1', E);
+    customElements.define('apply-user-ce2', class extends E {});
 
-      const producerContent = htmlWithApply`
+    const producerContent = htmlWithApply`
           <style>
             apply-user-ce1 {
               --stuff-ce: {
@@ -203,34 +207,33 @@ suite('@apply', () => {
           <apply-user-ce1></apply-user-ce1>
           <apply-user-ce2></apply-user-ce2>
         `;
-      const applyProducer = document.createElement('apply-producer-ce');
-      document.body.appendChild(applyProducer);
-      renderShadowRoot(producerContent, applyProducer);
-      const user1 = applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
-      const userInProducerStyle1 = getComputedStyle(
-        user1.shadowRoot!.querySelector('div')!
-      );
-      const user2 = applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
-      const userInProducerStyle2 = getComputedStyle(
-        user2.shadowRoot!.querySelector('div')!
-      );
-      assert.equal(
-        userInProducerStyle1.getPropertyValue('border-top-width').trim(),
-        '10px'
-      );
-      assert.equal(
-        userInProducerStyle1.getPropertyValue('padding-top').trim(),
-        '20px'
-      );
-      assert.equal(
-        userInProducerStyle2.getPropertyValue('border-top-width').trim(),
-        '5px'
-      );
-      assert.equal(
-        userInProducerStyle2.getPropertyValue('padding-top').trim(),
-        '10px'
-      );
-      document.body.removeChild(applyProducer);
-    }
-  );
+    const applyProducer = document.createElement('apply-producer-ce');
+    document.body.appendChild(applyProducer);
+    renderShadowRoot(producerContent, applyProducer);
+    const user1 = applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
+    const userInProducerStyle1 = getComputedStyle(
+      user1.shadowRoot!.querySelector('div')!
+    );
+    const user2 = applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
+    const userInProducerStyle2 = getComputedStyle(
+      user2.shadowRoot!.querySelector('div')!
+    );
+    assert.equal(
+      userInProducerStyle1.getPropertyValue('border-top-width').trim(),
+      '10px'
+    );
+    assert.equal(
+      userInProducerStyle1.getPropertyValue('padding-top').trim(),
+      '20px'
+    );
+    assert.equal(
+      userInProducerStyle2.getPropertyValue('border-top-width').trim(),
+      '5px'
+    );
+    assert.equal(
+      userInProducerStyle2.getPropertyValue('padding-top').trim(),
+      '10px'
+    );
+    document.body.removeChild(applyProducer);
+  });
 });
