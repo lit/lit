@@ -16,31 +16,24 @@ const escapeHtml = require('escape-html') as typeof import('escape-html');
 
 import {RenderInfo} from './render-lit-html.js';
 
-type ConcreteElementRenderer = new (tagName: string) => ElementRenderer;
+export type ConcreteElementRenderer = (new (
+  tagName: string
+) => ElementRenderer) &
+  typeof ElementRenderer;
 
-type ElementRendererMatcher = (ceClass: typeof HTMLElement) => boolean;
-
-const renderers: {
-  matcher: ElementRendererMatcher;
-  renderer: ConcreteElementRenderer;
-}[] = [];
+type StaticAttributes = Map<string, string>;
 
 const rendererForPrototype: Map<
   HTMLElement,
   ConcreteElementRenderer
 > = new Map();
 
-export const registerRenderer = (
-  matcher: ElementRendererMatcher,
-  renderer: ConcreteElementRenderer
-) => {
-  renderers.push({matcher, renderer});
-};
-
 const getRendererClass = (
+  renderers: ConcreteElementRenderer[],
   tagName: string,
-  ceClass: typeof HTMLElement = customElements.get(tagName)
-): ConcreteElementRenderer | undefined => {
+  ceClass: typeof HTMLElement = customElements.get(tagName),
+  staticAttributes: StaticAttributes = new Map()
+): ConcreteElementRenderer | null | undefined => {
   if (ceClass === undefined) {
     console.warn(`Custom element ${tagName} was not registered.`);
     return;
@@ -50,29 +43,41 @@ const getRendererClass = (
   // class rather than ceClass makes an assumption about renderers being
   // written for base classes that are extended, but this is an optimization
   const ceBaseClassProto = Object.getPrototypeOf(ceClass).prototype;
-  let renderer = rendererForPrototype.get(ceBaseClassProto);
-  if (renderer === undefined) {
-    for (const info of renderers) {
-      if (info.matcher(ceClass)) {
-        renderer = info.renderer;
-        rendererForPrototype.set(ceBaseClassProto, renderer);
+  let elementRenderer = rendererForPrototype.get(ceBaseClassProto);
+  if (elementRenderer === undefined) {
+    for (const renderer of renderers) {
+      if (renderer.matchesClass(ceClass, tagName)) {
+        elementRenderer = renderer;
+        rendererForPrototype.set(ceBaseClassProto, elementRenderer);
         break;
       }
     }
   }
-  if (renderer === undefined) {
+  // Note that returning `null` is distinct from `undefined`: null means
+  // is interpreted as a match but "do not render", whereas
+  if (elementRenderer === undefined) {
     console.error(`No renderer for custom element: ${tagName}`);
     return;
   }
-  return renderer;
+
+  return elementRenderer.matchesInstance(ceClass, tagName, staticAttributes)
+    ? elementRenderer
+    : undefined;
 };
 
 export const getElementRenderer = (
+  renderInfo: RenderInfo,
   tagName: string,
-  ceClass: typeof HTMLElement = customElements.get(tagName)
+  ceClass: typeof HTMLElement = customElements.get(tagName),
+  staticAttributes: StaticAttributes
 ): ElementRenderer | undefined => {
-  const renderer = getRendererClass(tagName, ceClass);
-  return renderer !== undefined ? new renderer(tagName) : renderer;
+  const renderer = getRendererClass(
+    renderInfo.elementRenderers,
+    tagName,
+    ceClass,
+    staticAttributes
+  );
+  return renderer ? new renderer(tagName) : undefined;
 };
 /**
  * An object that renders elements of a certain type.
@@ -80,6 +85,18 @@ export const getElementRenderer = (
 export abstract class ElementRenderer {
   element!: HTMLElement;
   tagName: string;
+
+  static matchesClass(_ceClass: typeof HTMLElement, _tagName: string) {
+    return false;
+  }
+
+  static matchesInstance(
+    _ceClass: typeof HTMLElement,
+    _tagName: string,
+    _staticAttributes: StaticAttributes
+  ) {
+    return true;
+  }
 
   constructor(tagName: string) {
     this.tagName = tagName;

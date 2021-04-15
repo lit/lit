@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ElementRenderer, registerRenderer} from './element-renderer.js';
+import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_Φ} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
@@ -13,16 +13,12 @@ export type Constructor<T> = {new (): T};
 
 const {attributeToProperty, changedProperties} = _Φ;
 
-const matcher = (ctor: typeof HTMLElement) => {
-  return ((ctor as unknown) as {_$litElement$: boolean})._$litElement$;
-};
-
 /**
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
-  static register() {
-    registerRenderer(matcher, this);
+  static matchesClass(ctor: typeof HTMLElement) {
+    return ((ctor as unknown) as {_$litElement$: boolean})._$litElement$;
   }
 
   connectedCallback() {

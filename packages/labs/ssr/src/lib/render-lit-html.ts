@@ -34,7 +34,11 @@ const {
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
-import {ElementRenderer, getElementRenderer} from './element-renderer.js';
+import {
+  ElementRenderer,
+  ConcreteElementRenderer,
+  getElementRenderer,
+} from './element-renderer.js';
 
 import {createRequire} from 'module';
 const require = createRequire(import.meta.url);
@@ -54,9 +58,7 @@ import {
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
-// Install LitElement renderer by default
 import {LitElementRenderer} from './lit-element-renderer.js';
-LitElementRenderer.register();
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -498,10 +500,18 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
+  // Element renderers to use
+  elementRenderers: ConcreteElementRenderer[];
   // Stack of open custom elements (in light dom or shadow dom)
   customElementInstanceStack: Array<ElementRenderer | undefined>;
   // Stack of open host custom elements (n-1 will be n's host)
   customElementHostStack: Array<ElementRenderer | undefined>;
+};
+
+const defaultRenderInfo = {
+  elementRenderers: [LitElementRenderer],
+  customElementInstanceStack: [],
+  customElementHostStack: [],
 };
 
 declare global {
@@ -524,11 +534,9 @@ declare global {
  */
 export function* render(
   value: unknown,
-  renderInfo: RenderInfo = {
-    customElementInstanceStack: [],
-    customElementHostStack: [],
-  }
+  renderInfo?: RenderInfo
 ): IterableIterator<string> {
+  renderInfo = {...defaultRenderInfo, ...renderInfo};
   yield* renderValue(value, renderInfo);
 }
 
@@ -656,7 +664,12 @@ function* renderTemplateResult(
       }
       case 'custom-element-open': {
         // Instantiate the element and its renderer
-        const instance = getElementRenderer(op.tagName, op.ctor);
+        const instance = getElementRenderer(
+          renderInfo,
+          op.tagName,
+          op.ctor,
+          op.staticAttributes
+        );
         // Set static attributes to the element renderer
         if (instance !== undefined) {
           for (const [name, value] of op.staticAttributes) {
