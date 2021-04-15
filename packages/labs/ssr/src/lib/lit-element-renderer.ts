@@ -18,7 +18,7 @@ const {attributeToProperty, changedProperties} = _Φ;
  */
 export class LitElementRenderer extends ElementRenderer {
   static matchesClass(ctor: typeof HTMLElement) {
-    return ((ctor as unknown) as {_$litElement$: boolean})._$litElement$;
+    return ((ctor as unknown) as typeof LitElement)._$litElement$;
   }
 
   connectedCallback() {

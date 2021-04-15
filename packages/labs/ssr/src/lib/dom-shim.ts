@@ -15,16 +15,18 @@
 import fetch from 'node-fetch';
 
 /**
- * Constructs a fresh instance of the "window" vm context to use for
- * evaluating user SSR code.  Includes a minimal shim of DOM APIs.
+ * Constructs a fresh instance of the "window" vm context to use for evaluating
+ * user SSR code. Includes a minimal shim of DOM APIs.
  *
+ * @param includeJSBuiltIns Whether certain standard JS context globals like
+ *  `console` and `setTimeout` should also be added to the global. Should
+ *  generally only be true when adding window to a sandboxed VM context that
+ *  starts with nothing.
  * @param props Additional properties to add to the window global
- * @param domOnly Whether to only shim the DOM (as opposed to standard
- *  JS context clobals like `console` and `setTimeout`)
  */
 export const getWindow = (
-  props: {[key: string]: unknown} = {},
-  domOnly = false
+  includeJSBuiltIns = false,
+  props: {[key: string]: unknown} = {}
 ): {[key: string]: unknown} => {
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
@@ -148,7 +150,7 @@ export const getWindow = (
   window.window = window;
   window.global = window; // Required for node-fetch
 
-  if (!domOnly) {
+  if (includeJSBuiltIns) {
     Object.assign(window, {
       // No-op any async tasks
       setTimeout() {},
@@ -181,4 +183,24 @@ export const getWindow = (
   }
 
   return window;
+};
+
+export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
+  if (globalThis !== globalThis.window) {
+    const window = getWindow(false, props);
+    // Setup window to proxy all globals added to window to the node global
+    window.window = new Proxy(window, {
+      set(
+        _target: {[key: string]: unknown},
+        p: PropertyKey,
+        value: unknown
+      ): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any)[p] = (globalThis as any)[p] = value;
+        return true;
+      },
+    });
+    // Copy initial window globals to node global
+    Object.assign(globalThis, window);
+  }
 };
