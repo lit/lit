@@ -16,7 +16,7 @@ const escapeHtml = require('escape-html') as typeof import('escape-html');
 
 import {RenderInfo} from './render-lit-html.js';
 
-export type ConcreteElementRenderer = (new (
+export type ElementRendererConstructor = (new (
   tagName: string
 ) => ElementRenderer) &
   typeof ElementRenderer;

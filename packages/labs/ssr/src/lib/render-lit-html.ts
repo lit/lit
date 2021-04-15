@@ -36,7 +36,7 @@ import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
 import {
   ElementRenderer,
-  ConcreteElementRenderer,
+  ElementRendererConstructor,
   getElementRenderer,
 } from './element-renderer.js';
 
@@ -501,7 +501,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 
 export type RenderInfo = {
   // Element renderers to use
-  elementRenderers: ConcreteElementRenderer[];
+  elementRenderers: ElementRendererConstructor[];
   // Stack of open custom elements (in light dom or shadow dom)
   customElementInstanceStack: Array<ElementRenderer | undefined>;
   // Stack of open host custom elements (n-1 will be n's host)
