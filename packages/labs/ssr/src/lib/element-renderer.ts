@@ -21,64 +21,31 @@ export type ConcreteElementRenderer = (new (
 ) => ElementRenderer) &
   typeof ElementRenderer;
 
-type StaticAttributes = Map<string, string>;
+type AttributesMap = Map<string, string>;
 
-const rendererForPrototype: Map<
-  HTMLElement,
-  ConcreteElementRenderer
-> = new Map();
-
-const getRendererClass = (
-  renderers: ConcreteElementRenderer[],
+export const getElementRenderer = (
+  {elementRenderers}: RenderInfo,
   tagName: string,
   ceClass: typeof HTMLElement = customElements.get(tagName),
-  staticAttributes: StaticAttributes = new Map()
-): ConcreteElementRenderer | null | undefined => {
+  attributes: AttributesMap = new Map()
+): ElementRenderer | undefined => {
   if (ceClass === undefined) {
     console.warn(`Custom element ${tagName} was not registered.`);
     return;
   }
-  // Two-level lookup: first lookup CE base class if we've found it before,
-  // otherwise iterate all the renderer matchers. Using the ceClass's base
-  // class rather than ceClass makes an assumption about renderers being
-  // written for base classes that are extended, but this is an optimization
-  const ceBaseClassProto = Object.getPrototypeOf(ceClass).prototype;
-  let elementRenderer = rendererForPrototype.get(ceBaseClassProto);
-  if (elementRenderer === undefined) {
-    for (const renderer of renderers) {
-      if (renderer.matchesClass(ceClass, tagName)) {
-        elementRenderer = renderer;
-        rendererForPrototype.set(ceBaseClassProto, elementRenderer);
-        break;
-      }
+  // TODO(kschaaf): Should we implement a caching scheme, e.g. keyed off of
+  // ceClass's base class to prevent O(n) lookups for every element (probably
+  // not a concern for the small number of element renderers we'd expect)? Doing
+  // so would preclude having cross-cutting renderers to e.g. no-op render all
+  // custom elements with a `client-only` attribute, so punting for now.
+  for (const renderer of elementRenderers) {
+    if (renderer.matchesClass(ceClass, tagName, attributes)) {
+      return new renderer(tagName);
     }
   }
-  // Note that returning `null` is distinct from `undefined`: null means
-  // is interpreted as a match but "do not render", whereas
-  if (elementRenderer === undefined) {
-    console.error(`No renderer for custom element: ${tagName}`);
-    return;
-  }
-
-  return elementRenderer.matchesInstance(ceClass, tagName, staticAttributes)
-    ? elementRenderer
-    : undefined;
+  return undefined;
 };
 
-export const getElementRenderer = (
-  renderInfo: RenderInfo,
-  tagName: string,
-  ceClass: typeof HTMLElement = customElements.get(tagName),
-  staticAttributes: StaticAttributes
-): ElementRenderer | undefined => {
-  const renderer = getRendererClass(
-    renderInfo.elementRenderers,
-    tagName,
-    ceClass,
-    staticAttributes
-  );
-  return renderer ? new renderer(tagName) : undefined;
-};
 /**
  * An object that renders elements of a certain type.
  */
@@ -86,16 +53,21 @@ export abstract class ElementRenderer {
   element!: HTMLElement;
   tagName: string;
 
-  static matchesClass(_ceClass: typeof HTMLElement, _tagName: string) {
-    return false;
-  }
-
-  static matchesInstance(
+  /**
+   * Should be implemented to return true when the given custom element class
+   * and/or tagName should be handled by this renderer.
+   *
+   * @param ceClass - Custom Element class
+   * @param tagName - Tag name of custom element instance
+   * @param attributes - Map of attribute key/value pairs
+   * @returns
+   */
+  static matchesClass(
     _ceClass: typeof HTMLElement,
     _tagName: string,
-    _staticAttributes: StaticAttributes
+    _attributes: AttributesMap
   ) {
-    return true;
+    return false;
   }
 
   constructor(tagName: string) {
@@ -154,7 +126,9 @@ export abstract class ElementRenderer {
   /**
    * Render a single element's ShadowRoot children.
    */
-  abstract renderShadow(_renderInfo: RenderInfo): IterableIterator<string>;
+  abstract renderShadow(
+    _renderInfo: RenderInfo
+  ): IterableIterator<string> | undefined;
 
   /**
    * Render an element's light DOM children.

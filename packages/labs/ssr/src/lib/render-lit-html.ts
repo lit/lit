@@ -716,9 +716,14 @@ function* renderTemplateResult(
         const instance = getLast(renderInfo.customElementInstanceStack);
         if (instance !== undefined && instance.renderShadow !== undefined) {
           renderInfo.customElementHostStack.push(instance);
-          yield '<template shadowroot="open">';
-          yield* instance.renderShadow(renderInfo);
-          yield '</template>';
+          const shadowContents = instance.renderShadow(renderInfo);
+          // Only emit a DSR if renderShadow() emitted something (returning
+          // undefined allows effectively no-op rendering the element)
+          if (shadowContents !== undefined) {
+            yield '<template shadowroot="open">';
+            yield* shadowContents;
+            yield '</template>';
+          }
           renderInfo.customElementHostStack.pop();
         }
         break;
