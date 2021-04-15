@@ -1,6 +1,6 @@
 # Lit
 
-[![Build Status](https://github.com/Polymer/lit-html/actions/workflows/tests.yml/badge.svg?branch=lit-next)](https://github.com/Polymer/lit-html/actions/workflows/tests.yml)
+[![Build Status](https://github.com/Polymer/lit-html/actions/workflows/tests.yml/badge.svg)](https://github.com/Polymer/lit-html/actions/workflows/tests.yml)
 [![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
