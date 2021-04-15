@@ -4,5 +4,5 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import './dom-shim-global.js';
-export * from './render-lit-html.js';
+import {installWindowOnGlobal} from './dom-shim.js';
+installWindowOnGlobal();
