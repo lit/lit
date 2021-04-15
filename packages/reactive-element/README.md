@@ -1,9 +1,9 @@
 # ReactiveElement 1.0 Pre-release
 
-[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg?branch=lit-next)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
+[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/lit-element/next-major)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
-[![Mentioned in Awesome lit-html](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit-html)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
 ## 🚨 About this pre-release
 

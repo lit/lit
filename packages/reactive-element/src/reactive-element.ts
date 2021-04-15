@@ -565,7 +565,7 @@ export abstract class ReactiveElement
           console.warn(
             `\`${name}\` is implemented. It ` +
               `has been removed from this version of ReactiveElement.` +
-              ` See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/reactive-element/CHANGELOG.md`
+              ` See the changelog at https://github.com/Polymer/lit-html/blob/main/packages/reactive-element/CHANGELOG.md`
           );
         }
       };

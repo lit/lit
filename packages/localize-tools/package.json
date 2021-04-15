@@ -7,7 +7,7 @@
   "description": "Localization tooling for lit-html",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html/tree/lit-next/packages/localize-tools",
+  "homepage": "https://github.com/Polymer/lit-html/tree/main/packages/localize-tools",
   "repository": {
     "type": "git",
     "url": "https://github.com/Polymer/lit-html.git",

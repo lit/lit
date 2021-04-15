@@ -8,7 +8,7 @@ import {queryParams} from '../../utils/query-params.js';
 
 (async () => {
   // Note, `decorators.js` moved from the `lib` folder to top level
-  // between previous release and lit-next. Handle this by trying to import
+  // between 2.x and 3.x. Handle this by trying to import
   // from each location.
   let decorators;
   try {

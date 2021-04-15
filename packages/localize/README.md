@@ -73,9 +73,9 @@ const {setLocale} = configureLocalization({
 ```
 
 See
-[`examples/transform`](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize/examples/transform)
+[`examples/transform`](https://github.com/Polymer/lit-html/tree/main/packages/localize/examples/transform)
 and
-[`examples/runtime`](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize/examples/runtime)
+[`examples/runtime`](https://github.com/Polymer/lit-html/tree/main/packages/localize/examples/runtime)
 for full working examples.
 
 ## Modes
@@ -140,7 +140,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```json
    {
-     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/lit-next/packages/localize-tools/config.schema.json",
+     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/main/packages/localize-tools/config.schema.json",
      "sourceLocale": "en",
      "targetLocales": ["es-419"],
      "tsConfig": "tsconfig.json",

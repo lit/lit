@@ -31,7 +31,7 @@
               "lit-html": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
-                "ref": "lit-next",
+                "ref": "main",
                 "subdir": "packages/lit-html",
                 "setupCommands": [
                   "npm ci",
@@ -42,7 +42,7 @@
               "lit-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
-                "ref": "lit-next",
+                "ref": "main",
                 "subdir": "packages/lit-element",
                 "setupCommands": [
                   "npm ci",
@@ -53,7 +53,7 @@
               "@lit/reactive-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
-                "ref": "lit-next",
+                "ref": "main",
                 "subdir": "packages/reactive-element",
                 "setupCommands": [
                   "npm ci",
@@ -74,7 +74,7 @@
               "@lit/reactive-element": {
                 "kind": "git",
                 "repo": "https://github.com/Polymer/lit-html.git",
-                "ref": "lit-next",
+                "ref": "main",
                 "subdir": "packages/reactive-element",
                 "setupCommands": [
                   "npm ci",

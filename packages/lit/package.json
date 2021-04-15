@@ -8,7 +8,7 @@
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html/tree/lit-next",
+  "homepage": "https://github.com/Polymer/lit-html",
   "main": "index.js",
   "module": "index.js",
   "type": "module",
