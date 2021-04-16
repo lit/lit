@@ -2144,74 +2144,73 @@ suite('lit-html', () => {
         assertContent(`<div a="**[B:2:Y]##"></div>`);
       });
     });
-  });
 
-  const disconnectingDirective = directive(
-    class extends AsyncDirective {
-      log!: Array<string>;
-      id!: string;
+    const disconnectingDirective = directive(
+      class extends AsyncDirective {
+        log!: Array<string>;
+        id!: string;
 
-      render(log: Array<string>, id = '', value?: unknown, bool = true) {
-        this.log = log;
-        this.id = id;
-        return bool ? value : nothing;
+        render(log: Array<string>, id = '', value?: unknown, bool = true) {
+          this.log = log;
+          this.id = id;
+          return bool ? value : nothing;
+        }
+
+        disconnected() {
+          this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+        }
+        reconnected() {
+          this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
+        }
       }
+    );
 
-      disconnected() {
-        this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+    const passthroughDirective = directive(
+      class extends Directive {
+        render(value: unknown, bool = true) {
+          return bool ? value : nothing;
+        }
       }
-      reconnected() {
-        this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
-      }
-    }
-  );
+    );
 
-  const passthroughDirective = directive(
-    class extends Directive {
-      render(value: unknown, bool = true) {
-        return bool ? value : nothing;
-      }
-    }
-  );
+    test('directives can be disconnected from ChildParts', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(html`${x ? disconnectingDirective(log) : nothing}`, container);
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives can be disconnected from ChildParts', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(html`${x ? disconnectingDirective(log) : nothing}`, container);
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives are disconnected when their template is', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(x ? html`${disconnectingDirective(log)}` : nothing, container);
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives are disconnected when their template is', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(x ? html`${disconnectingDirective(log)}` : nothing, container);
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives are disconnected when their nested template is', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(
+          x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
+          container
+        );
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives are disconnected when their nested template is', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(
-        x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
-        container
-      );
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
-
-  test('directives in different subtrees can be disconnected in separate renders', () => {
-    const log: Array<string> = [];
-    const go = (left: boolean, right: boolean) =>
-      render(
-        html`
+    test('directives in different subtrees can be disconnected in separate renders', () => {
+      const log: Array<string> = [];
+      const go = (left: boolean, right: boolean) =>
+        render(
+          html`
           ${html`${html`${
             left ? disconnectingDirective(log, 'left') : nothing
           }`}`}
@@ -2219,32 +2218,32 @@ suite('lit-html', () => {
             right ? disconnectingDirective(log, 'right') : nothing
           }`}`}
         `,
-        container
-      );
-    go(true, true);
-    assert.isEmpty(log);
-    go(true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    go(false, false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(true, true);
-    assert.isEmpty(log);
-    go(false, true);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(false, false);
-    assert.deepEqual(log, ['disconnected-right']);
-  });
+          container
+        );
+      go(true, true);
+      assert.isEmpty(log);
+      go(true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      go(false, false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(true, true);
+      assert.isEmpty(log);
+      go(false, true);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(false, false);
+      assert.deepEqual(log, ['disconnected-right']);
+    });
 
-  test('directives returned from other directives can be disconnected', () => {
-    const log: Array<string> = [];
-    const go = (clearAll: boolean, left: boolean, right: boolean) =>
-      render(
-        clearAll
-          ? nothing
-          : html`
+    test('directives returned from other directives can be disconnected', () => {
+      const log: Array<string> = [];
+      const go = (clearAll: boolean, left: boolean, right: boolean) =>
+        render(
+          clearAll
+            ? nothing
+            : html`
           ${html`${html`${passthroughDirective(
             disconnectingDirective(log, 'left'),
             left
@@ -2254,43 +2253,43 @@ suite('lit-html', () => {
             right
           )}`}`}
         `,
-        container
-      );
-    go(false, true, true);
-    assert.isEmpty(log);
-    go(true, true, true);
-    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
-    log.length = 0;
-    go(false, true, true);
-    assert.isEmpty(log);
-    go(false, true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    go(false, false, false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(false, true, true);
-    assert.isEmpty(log);
-    go(false, false, true);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(false, false, false);
-    assert.deepEqual(log, ['disconnected-right']);
-  });
+          container
+        );
+      go(false, true, true);
+      assert.isEmpty(log);
+      go(true, true, true);
+      assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+      log.length = 0;
+      go(false, true, true);
+      assert.isEmpty(log);
+      go(false, true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      go(false, false, false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(false, true, true);
+      assert.isEmpty(log);
+      go(false, false, true);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(false, false, false);
+      assert.deepEqual(log, ['disconnected-right']);
+    });
 
-  test('directives returned from other AsyncDirectives can be disconnected', () => {
-    const log: Array<string> = [];
-    const go = (
-      clearAll: boolean,
-      leftOuter: boolean,
-      leftInner: boolean,
-      rightOuter: boolean,
-      rightInner: boolean
-    ) =>
-      render(
-        clearAll
-          ? nothing
-          : html`
+    test('directives returned from other AsyncDirectives can be disconnected', () => {
+      const log: Array<string> = [];
+      const go = (
+        clearAll: boolean,
+        leftOuter: boolean,
+        leftInner: boolean,
+        rightOuter: boolean,
+        rightInner: boolean
+      ) =>
+        render(
+          clearAll
+            ? nothing
+            : html`
           ${html`${html`${
             leftOuter
               ? disconnectingDirective(
@@ -2312,120 +2311,120 @@ suite('lit-html', () => {
               : nothing
           }`}`}
         `,
-        container
-      );
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(true, true, true, true, true);
-    assert.deepEqual(log, [
-      'disconnected-left-outer',
-      'disconnected-left-inner',
-      'disconnected-right-outer',
-      'disconnected-right-inner',
-    ]);
-    log.length = 0;
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(false, false, true, true, true);
-    assert.deepEqual(log, [
-      'disconnected-left-outer',
-      'disconnected-left-inner',
-    ]);
-    log.length = 0;
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(false, true, true, false, true);
-    assert.deepEqual(log, [
-      'disconnected-right-outer',
-      'disconnected-right-inner',
-    ]);
-    log.length = 0;
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(false, true, false, true, true);
-    assert.deepEqual(log, ['disconnected-left-inner']);
-    log.length = 0;
-    go(false, true, false, true, false);
-    assert.deepEqual(log, ['disconnected-right-inner']);
-  });
+          container
+        );
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(true, true, true, true, true);
+      assert.deepEqual(log, [
+        'disconnected-left-outer',
+        'disconnected-left-inner',
+        'disconnected-right-outer',
+        'disconnected-right-inner',
+      ]);
+      log.length = 0;
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(false, false, true, true, true);
+      assert.deepEqual(log, [
+        'disconnected-left-outer',
+        'disconnected-left-inner',
+      ]);
+      log.length = 0;
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(false, true, true, false, true);
+      assert.deepEqual(log, [
+        'disconnected-right-outer',
+        'disconnected-right-inner',
+      ]);
+      log.length = 0;
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(false, true, false, true, true);
+      assert.deepEqual(log, ['disconnected-left-inner']);
+      log.length = 0;
+      go(false, true, false, true, false);
+      assert.deepEqual(log, ['disconnected-right-inner']);
+    });
 
-  test('directives can be disconnected from AttributeParts', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(
-        x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
-        container
-      );
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives can be disconnected from AttributeParts', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(
+          x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
+          container
+        );
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('deeply nested directives can be disconnected from AttributeParts', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(
-        x
-          ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
-          : nothing,
-        container
-      );
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('deeply nested directives can be disconnected from AttributeParts', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(
+          x
+            ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
+            : nothing,
+          container
+        );
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives can be disconnected from iterables', () => {
-    const log: Array<string> = [];
-    const go = (items: string[] | undefined) =>
-      render(
-        items
-          ? items.map(
-              (item) =>
-                html`<div foo=${disconnectingDirective(log, item)}></div>`
-            )
-          : nothing,
-        container
-      );
-    go(['0', '1', '2', '3']);
-    assert.isEmpty(log);
-    go(['0', '2']);
-    assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
-    log.length = 0;
-    go(undefined);
-    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
-  });
+    test('directives can be disconnected from iterables', () => {
+      const log: Array<string> = [];
+      const go = (items: string[] | undefined) =>
+        render(
+          items
+            ? items.map(
+                (item) =>
+                  html`<div foo=${disconnectingDirective(log, item)}></div>`
+              )
+            : nothing,
+          container
+        );
+      go(['0', '1', '2', '3']);
+      assert.isEmpty(log);
+      go(['0', '2']);
+      assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
+      log.length = 0;
+      go(undefined);
+      assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+    });
 
-  test('directives can be disconnected from repeat', () => {
-    const log: Array<string> = [];
-    const go = (items: string[] | undefined) =>
-      render(
-        items
-          ? repeat(
-              items,
-              (item) => item,
-              (item) =>
-                html`<div foo=${disconnectingDirective(log, item)}></div>`
-            )
-          : nothing,
-        container
-      );
-    go(['0', '1', '2', '3']);
-    assert.isEmpty(log);
-    go(['0', '2']);
-    assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
-    log.length = 0;
-    go(undefined);
-    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
-  });
+    test('directives can be disconnected from repeat', () => {
+      const log: Array<string> = [];
+      const go = (items: string[] | undefined) =>
+        render(
+          items
+            ? repeat(
+                items,
+                (item) => item,
+                (item) =>
+                  html`<div foo=${disconnectingDirective(log, item)}></div>`
+              )
+            : nothing,
+          container
+        );
+      go(['0', '1', '2', '3']);
+      assert.isEmpty(log);
+      go(['0', '2']);
+      assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
+      log.length = 0;
+      go(undefined);
+      assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+    });
 
-  test('directives in ChildParts can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: boolean, right: boolean) => {
-      return render(
-        html`
+    test('directives in ChildParts can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: boolean, right: boolean) => {
+        return render(
+          html`
           ${html`${html`${
             left ? disconnectingDirective(log, 'left') : nothing
           }`}`}
@@ -2433,32 +2432,32 @@ suite('lit-html', () => {
             right ? disconnectingDirective(log, 'right') : nothing
           }`}`}
         `,
-        container
-      );
-    };
-    const part = go(true, true);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
-    log.length = 0;
-    go(true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left']);
-  });
+          container
+        );
+      };
+      const part = go(true, true);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+      log.length = 0;
+      go(true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left']);
+    });
 
-  test('directives in AttributeParts can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: boolean, right: boolean) => {
-      return render(
-        html`
+    test('directives in AttributeParts can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: boolean, right: boolean) => {
+        return render(
+          html`
           ${html`${html`<div a=${
             left ? disconnectingDirective(log, 'left') : nothing
           }></div>`}`}
@@ -2466,32 +2465,32 @@ suite('lit-html', () => {
             right ? disconnectingDirective(log, 'right') : nothing
           }></div>`}`}
         `,
-        container
-      );
-    };
-    const part = go(true, true);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
-    log.length = 0;
-    go(true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left']);
-  });
+          container
+        );
+      };
+      const part = go(true, true);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+      log.length = 0;
+      go(true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left']);
+    });
 
-  test('directives in iterables can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: unknown[], right: unknown[]) => {
-      return render(
-        html`
+    test('directives in iterables can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: unknown[], right: unknown[]) => {
+        return render(
+          html`
           ${html`${html`${left.map(
             (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
           )}`}`}
@@ -2499,46 +2498,46 @@ suite('lit-html', () => {
             (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
           )}`}`}
         `,
-        container
-      );
-    };
-    const part = go([0, 1], [0, 1]);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, [
-      'disconnected-left-0',
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, [
-      'reconnected-left-0',
-      'reconnected-left-1',
-      'reconnected-right-0',
-      'reconnected-right-1',
-    ]);
-    log.length = 0;
-    go([0], []);
-    assert.deepEqual(log, [
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left-0']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left-0']);
-  });
+          container
+        );
+      };
+      const part = go([0, 1], [0, 1]);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, [
+        'disconnected-left-0',
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, [
+        'reconnected-left-0',
+        'reconnected-left-1',
+        'reconnected-right-0',
+        'reconnected-right-1',
+      ]);
+      log.length = 0;
+      go([0], []);
+      assert.deepEqual(log, [
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left-0']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left-0']);
+    });
 
-  test('directives in repeat can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: unknown[], right: unknown[]) => {
-      return render(
-        html`
+    test('directives in repeat can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: unknown[], right: unknown[]) => {
+        return render(
+          html`
           ${html`${html`${repeat(
             left,
             (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
@@ -2548,221 +2547,237 @@ suite('lit-html', () => {
             (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
           )}`}`}
         `,
-        container
-      );
-    };
-    const part = go([0, 1], [0, 1]);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, [
-      'disconnected-left-0',
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, [
-      'reconnected-left-0',
-      'reconnected-left-1',
-      'reconnected-right-0',
-      'reconnected-right-1',
-    ]);
-    log.length = 0;
-    go([0], []);
-    assert.deepEqual(log, [
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left-0']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left-0']);
-  });
-
-  // suite('spread', () => {
-  //   test('renders a static attr result', () => {
-  //     render(html`<div ${attr`foo=bar`} a="b"></div>`, container);
-  //     assert.equal(
-  //       stripExpressionComments(container.innerHTML),
-  //       '<div a="b" foo="bar"></div>'
-  //     );
-  //   });
-
-  //   test('renders a dynamic attr result', () => {
-  //     render(html`<div ${attr`foo=${'bar'}`} a="b"></div>`, container);
-  //     assert.equal(
-  //       stripExpressionComments(container.innerHTML),
-  //       '<div a="b" foo="bar"></div>'
-  //     );
-  //   });
-
-  //   test.skip('renders a property', () => {
-  //     render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
-  //     assert.equal(
-  //       stripExpressionComments(container.innerHTML),'<div a="b"></div>'
-  //     );
-  //     const div = container.querySelector('div');
-  //     assert.equal((div as any).foo, 'bar');
-  //   });
-  // });
-
-  let securityHooksSuiteFunction:
-    | Mocha.SuiteFunction
-    | Mocha.PendingSuiteFunction = suite;
-  if (!DEV_MODE) {
-    securityHooksSuiteFunction = suite.skip;
-  }
-  securityHooksSuiteFunction('enahnced security hooks', () => {
-    class FakeSanitizedWrapper {
-      sanitizeTo: string;
-      constructor(sanitizeTo: string) {
-        this.sanitizeTo = sanitizeTo;
-      }
-
-      toString() {
-        return `FakeSanitizedWrapper(${this.sanitizeTo})`;
-      }
-    }
-    const sanitizerCalls: Array<{
-      name: string;
-      type: 'property' | 'attribute' | 'text';
-      nodeName: string;
-      values: readonly unknown[];
-    }> = [];
-    const testSanitizer = (value: unknown) => {
-      if (value instanceof FakeSanitizedWrapper) {
-        return value.sanitizeTo;
-      }
-      return 'safeString';
-    };
-    const testSanitizerFactory: SanitizerFactory = (node, name, type) => {
-      const values: unknown[] = [];
-      sanitizerCalls.push({values, name, type, nodeName: node.nodeName});
-      return (value) => {
-        values.push(value);
-        return testSanitizer(value);
+          container
+        );
       };
-    };
-    setup(() => {
-      render.setSanitizer(testSanitizerFactory);
-    });
-    teardown(() => {
-      render._testOnlyClearSanitizerFactoryDoNotCallOrElse();
-      sanitizerCalls.length = 0;
-    });
-
-    test('sanitizes text content when the text is alone', () => {
-      const getTemplate = (value: unknown) => html`<div>${value}</div>`;
-      render(getTemplate('foo'), container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>safeString</div>'
-      );
-
-      const safeFoo = new FakeSanitizedWrapper('foo');
-      render(getTemplate(safeFoo), container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>foo</div>'
-      );
-
-      assert.deepEqual(sanitizerCalls, [
-        {
-          values: ['foo', safeFoo],
-          name: 'data',
-          type: 'property',
-          nodeName: '#text',
-        },
+      const part = go([0, 1], [0, 1]);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, [
+        'disconnected-left-0',
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
       ]);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, [
+        'reconnected-left-0',
+        'reconnected-left-1',
+        'reconnected-right-0',
+        'reconnected-right-1',
+      ]);
+      log.length = 0;
+      go([0], []);
+      assert.deepEqual(log, [
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left-0']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left-0']);
     });
 
-    test('sanitizes text content when the text is interpolated', () => {
-      const getTemplate = (value: unknown) =>
-        html`<div>hello ${value} world</div>`;
-      render(getTemplate('big'), container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>hello safeString world</div>'
-      );
+    // suite('spread', () => {
+    //   test('renders a static attr result', () => {
+    //     render(html`<div ${attr`foo=bar`} a="b"></div>`, container);
+    //     assert.equal(
+    //       stripExpressionComments(container.innerHTML),
+    //       '<div a="b" foo="bar"></div>'
+    //     );
+    //   });
 
-      const safeBig = new FakeSanitizedWrapper('big');
+    //   test('renders a dynamic attr result', () => {
+    //     render(html`<div ${attr`foo=${'bar'}`} a="b"></div>`, container);
+    //     assert.equal(
+    //       stripExpressionComments(container.innerHTML),
+    //       '<div a="b" foo="bar"></div>'
+    //     );
+    //   });
 
-      render(getTemplate(safeBig), container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div>hello big world</div>'
-      );
+    //   test.skip('renders a property', () => {
+    //     render(html`<div ${attr`.foo=${'bar'}`} a="b"></div>`, container);
+    //     assert.equal(
+    //       stripExpressionComments(container.innerHTML),'<div a="b"></div>'
+    //     );
+    //     const div = container.querySelector('div');
+    //     assert.equal((div as any).foo, 'bar');
+    //   });
+    // });
 
-      assert.deepEqual(sanitizerCalls, [
-        {
-          values: ['big', safeBig],
-          name: 'data',
-          type: 'property',
-          nodeName: '#text',
-        },
-      ]);
-    });
+    let securityHooksSuiteFunction:
+      | Mocha.SuiteFunction
+      | Mocha.PendingSuiteFunction = suite;
+    if (!DEV_MODE) {
+      securityHooksSuiteFunction = suite.skip;
+    }
+    securityHooksSuiteFunction('enahnced security hooks', () => {
+      class FakeSanitizedWrapper {
+        sanitizeTo: string;
+        constructor(sanitizeTo: string) {
+          this.sanitizeTo = sanitizeTo;
+        }
 
-    test('sanitizes full attribute values', () => {
-      const getTemplate = (value: unknown) => html`<div attrib=${value}></div>`;
-      render(getTemplate('bad'), container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div attrib="safeString"></div>'
-      );
+        toString() {
+          return `FakeSanitizedWrapper(${this.sanitizeTo})`;
+        }
+      }
+      const sanitizerCalls: Array<{
+        name: string;
+        type: 'property' | 'attribute' | 'text';
+        nodeName: string;
+        values: readonly unknown[];
+      }> = [];
+      const testSanitizer = (value: unknown) => {
+        if (value instanceof FakeSanitizedWrapper) {
+          return value.sanitizeTo;
+        }
+        return 'safeString';
+      };
+      const testSanitizerFactory: SanitizerFactory = (node, name, type) => {
+        const values: unknown[] = [];
+        sanitizerCalls.push({values, name, type, nodeName: node.nodeName});
+        return (value) => {
+          values.push(value);
+          return testSanitizer(value);
+        };
+      };
+      setup(() => {
+        render.setSanitizer(testSanitizerFactory);
+      });
+      teardown(() => {
+        render._testOnlyClearSanitizerFactoryDoNotCallOrElse();
+        sanitizerCalls.length = 0;
+      });
 
-      const safe = new FakeSanitizedWrapper('good');
-      render(getTemplate(safe), container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div attrib="good"></div>'
-      );
+      test('sanitizes text content when the text is alone', () => {
+        const getTemplate = (value: unknown) => html`<div>${value}</div>`;
+        render(getTemplate('foo'), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>safeString</div>'
+        );
 
-      assert.deepEqual(sanitizerCalls, [
-        {
-          values: ['bad', safe],
-          name: 'attrib',
-          type: 'attribute',
-          nodeName: 'DIV',
-        },
-      ]);
-    });
+        const safeFoo = new FakeSanitizedWrapper('foo');
+        render(getTemplate(safeFoo), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>foo</div>'
+        );
 
-    test('sanitizes concatonated attributes after contatonation', () => {
-      render(html`<div attrib="hello ${'big'} world"></div>`, container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<div attrib="safeString"></div>'
-      );
+        assert.deepEqual(sanitizerCalls, [
+          {
+            values: ['foo', safeFoo],
+            name: 'data',
+            type: 'property',
+            nodeName: '#text',
+          },
+        ]);
+      });
 
-      assert.deepEqual(sanitizerCalls, [
-        {
-          values: ['hello big world'],
-          name: 'attrib',
-          type: 'attribute',
-          nodeName: 'DIV',
-        },
-      ]);
-    });
+      test('sanitizes text content when the text is interpolated', () => {
+        const getTemplate = (value: unknown) =>
+          html`<div>hello ${value} world</div>`;
+        render(getTemplate('big'), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>hello safeString world</div>'
+        );
 
-    test('sanitizes properties', () => {
-      const getTemplate = (value: unknown) => html`<div .foo=${value}></div>`;
-      render(getTemplate('bad'), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-      assert.equal((container.querySelector('div')! as any).foo, 'safeString');
+        const safeBig = new FakeSanitizedWrapper('big');
 
-      const safe = new FakeSanitizedWrapper('good');
-      render(getTemplate(safe), container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
-      assert.equal((container.querySelector('div')! as any).foo, 'good');
+        render(getTemplate(safeBig), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div>hello big world</div>'
+        );
 
-      assert.deepEqual(sanitizerCalls, [
-        {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
-      ]);
+        assert.deepEqual(sanitizerCalls, [
+          {
+            values: ['big', safeBig],
+            name: 'data',
+            type: 'property',
+            nodeName: '#text',
+          },
+        ]);
+      });
+
+      test('sanitizes full attribute values', () => {
+        const getTemplate = (value: unknown) =>
+          html`<div attrib=${value}></div>`;
+        render(getTemplate('bad'), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div attrib="safeString"></div>'
+        );
+
+        const safe = new FakeSanitizedWrapper('good');
+        render(getTemplate(safe), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div attrib="good"></div>'
+        );
+
+        assert.deepEqual(sanitizerCalls, [
+          {
+            values: ['bad', safe],
+            name: 'attrib',
+            type: 'attribute',
+            nodeName: 'DIV',
+          },
+        ]);
+      });
+
+      test('sanitizes concatonated attributes after contatonation', () => {
+        render(html`<div attrib="hello ${'big'} world"></div>`, container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div attrib="safeString"></div>'
+        );
+
+        assert.deepEqual(sanitizerCalls, [
+          {
+            values: ['hello big world'],
+            name: 'attrib',
+            type: 'attribute',
+            nodeName: 'DIV',
+          },
+        ]);
+      });
+
+      test('sanitizes properties', () => {
+        const getTemplate = (value: unknown) => html`<div .foo=${value}></div>`;
+        render(getTemplate('bad'), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div></div>'
+        );
+        assert.equal(
+          (container.querySelector('div')! as any).foo,
+          'safeString'
+        );
+
+        const safe = new FakeSanitizedWrapper('good');
+        render(getTemplate(safe), container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<div></div>'
+        );
+        assert.equal((container.querySelector('div')! as any).foo, 'good');
+
+        assert.deepEqual(sanitizerCalls, [
+          {
+            values: ['bad', safe],
+            name: 'foo',
+            type: 'property',
+            nodeName: 'DIV',
+          },
+        ]);
+      });
     });
   });
 });
