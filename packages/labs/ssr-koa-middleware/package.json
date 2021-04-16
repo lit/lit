@@ -21,12 +21,13 @@
   "files": [
     "/src/",
     "!/src/test/",
-    "/index.{d.ts,d.ts.map,js,js.map}"
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/render-html-file.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts",
     "build:watch": "tsc --watch",
-    "clean": "rm -rf {index}.{js,js.map,d.ts} test/ *.tsbuildinfo",
+    "clean": "rm -rf {index,render-html-file}.{js,js.map,d.ts} test/ *.tsbuildinfo",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
   },
   "author": "Google LLC",

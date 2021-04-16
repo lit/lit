@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -16,7 +16,7 @@ export interface RenderHTMLFileOptions {
   /** A fallback file to use if the specified URL did not exist */
   fallback: string;
   /** Use separate VM context for each request */
-  useVM: boolean;
+  useVM?: boolean;
 }
 
 /**
@@ -63,13 +63,20 @@ export const renderHTMLFile = (options: RenderHTMLFileOptions) => async (
   ) {
     return next();
   }
-  // Render the file using a new VM context for each request
-  const ssrResult = await renderModule(
-    './render-html-file.js',
-    import.meta.url,
-    'renderFile',
-    [{url: ctx.href, root: options.root, fallback: options.fallback}]
-  );
+  const args = {url: ctx.href, root: options.root, fallback: options.fallback};
+  let ssrResult;
+  if (options.useVM) {
+    // Render the file using a new VM context for each request
+    ssrResult = await renderModule(
+      './render-html-file.js',
+      import.meta.url,
+      'renderFile',
+      [args]
+    );
+  } else {
+    await import('@lit-labs/ssr/lib/install-global-dom-shim.js');
+    ssrResult = (await import('./render-html-file.js')).renderFile(args);
+  }
   const stream = Readable.from(ssrResult);
   stream.on('error', (e) => {
     console.error(e.message);
