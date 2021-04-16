@@ -1201,6 +1201,16 @@ suite('lit-html', () => {
       assert.strictEqual((div as any).foo, undefined);
     });
 
+    test('noChange does not set property', () => {
+      const go = (v: any) => render(html`<div id="a" .tabIndex=${v}></div>`, container);
+
+      go(noChange);
+      const div = container.querySelector('div')!;
+      
+      // If noChange has been interpreted as undefined, tabIndex would be 0
+      assert.strictEqual(div.tabIndex, -1);
+    });
+
     test('null sets null', () => {
       const go = (v: any) => render(html`<div .foo=${v}></div>`, container);
 
