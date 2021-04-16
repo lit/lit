@@ -1,8 +1,8 @@
 # @lit-labs/eleventy-plugin-lit
 
-A plugin for [Eleventy](www.11ty.dev) for pre-rendering pages that include Lit web components. The components can then be (optionally)
+A plugin for [Eleventy](www.11ty.dev) for pre-rendering pages that include Lit web components. The components can then be (optionally) hydrated on the client for interactivity.
 
-## Overview
+## Usage
 
 Call `addPlugin` in your `.eleventy.js` config file to add `eleventy-lit-plugin`.
 
@@ -47,6 +47,10 @@ Most browsers (excluding Chrome 90+) will also need to load and invoke the `@web
   import('./_js/components.bundle.js');
 </script>
 ```
+
+## Notes
+
+This plugin is primarily focused on rendering standalone widgets which can be configured with attributes in HTML into an 11ty site (there currently no facility for passing 11ty data into components via Javascript).
 
 ## Contributing
 
