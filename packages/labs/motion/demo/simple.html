@@ -33,7 +33,8 @@
       import {FlipController} from '../development/flip-controller.js';
 
       class MyElement extends LitElement {
-        static properties = {shifted: {}, embiggen: {}, flipDisabled: {}};
+        static properties = {shifted: {}, embiggen: {}};
+        delay = 250;
         static styles = css`
           :host {
             display: flex;
@@ -82,6 +83,12 @@
             background: #b0bec5;
           }
 
+          .shifted > .circle.embiggen {
+            font-size: 3rem;
+            width: calc(3 * var(--box-size));
+            height: calc(3 * var(--box-size));
+          }
+
           label {
             position: absolute;
             left: 0;
@@ -91,22 +98,20 @@
         constructor() {
           super();
           this.flipController = new FlipController(this, {
-            options: {
+            flipOptions: {
               animationOptions: {
                 duration: 1500,
                 easing: 'ease-in-out',
               },
             },
-            // startPaused: true,
-            onComplete: () => setTimeout(() => this.changeLayout(), 1000),
+            onComplete: () => this.changeLayout(true),
           });
           this.addEventListener('click', () => this.clickHandler());
           this.embiggen = true;
-          this.flipDisabled = false;
         }
 
         firstUpdated() {
-          this.changeLayout();
+          this.changeLayout(true);
         }
 
         render() {
@@ -116,7 +121,6 @@
                 @change=${async (e) => {
                   this.flipController.finish();
                   this.shifted = false;
-                  // this.changeLayout();
                   this.embiggen = !this.embiggen;
                 }}
                 .checked=${this.embiggen}
@@ -126,21 +130,9 @@
             </label>
             <div
               class="container circle ${this.shifted ? 'shifted' : ''}"
-              ${flip({
-                id: 'container',
-                disabled: this.flipDisabled,
-              })}
+              ${flip({})}
             >
-              <span
-                class="circle"
-                ${flip(() => ({
-                  id: 'content',
-                  animationOptions: {fill: 'forwards'},
-                  commit: true,
-                  reset: true,
-                  scaleUp: this.embiggen,
-                  disabled: this.flipDisabled,
-                }))}
+              <span class="circle ${this.embiggen ? 'embiggen' : ''}" ${flip()}
                 >Simple...<br />
                 is beautiful.</span
               >
@@ -156,8 +148,11 @@
           }
         }
 
-        changeLayout() {
+        async changeLayout(useDelay = false) {
           if (!this.flipController.isAnimating) {
+            if (useDelay) {
+              await new Promise((r) => setTimeout(r, this.delay));
+            }
             this.shifted = !this.shifted;
           }
         }

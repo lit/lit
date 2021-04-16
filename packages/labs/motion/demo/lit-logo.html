@@ -55,25 +55,22 @@
           super();
           this.show = true;
           this.paths = [
-            {fill: '#324fff', d: 'M0 80v80a70.3 70.3 0 0040-40z'},
-            {fill: '#283198', d: 'M40 120c5.7 27.3 5.3 47 0 80L0 160z'},
-            {fill: '#0ff', d: 'M40 120v80l40-40a149.9 149.9 0 00-40-40z'},
-            {fill: '#324fff', d: 'M80 0v80S48.3 55.7 40 40z'},
-            {fill: '#324fff', d: 'M40 40v80a84.8 84.8 0 0040-40z'},
-            {fill: '#00e8ff', d: 'M80 80a182 182 0 010 80l-40-40z'},
-            {
-              fill: '#283198',
-              d: 'M80 80v80c17-7.5 31.5-19 40-40-5.9-17-18.1-30.9-40-40z',
-            },
+            {fill: '#324fff', d: 'M 0 80 v 80 l 40 -40 z'},
+            {fill: '#283198', d: 'M 40 120 c -0 0 0 80 0 80 L 0 160 z'},
+            {fill: '#0ff', d: 'M 40 120 v 80 l 40 -40 l -40 -40 z'},
+            {fill: '#324fff', d: 'M 80 0 v 80 L 40 40 z'},
+            {fill: '#324fff', d: 'M 40 40 v 80 l 40 -40 z'},
+            {fill: '#00e8ff', d: 'M 80 80 l 0 80 l -40 -40 z'},
+            {fill: '#283198', d: 'M 80 80 v 80 l 40 -40 l -40 -40 z'},
             {fill: '#283198', d: 'M120 40v80L80 80z'},
-            {fill: '#00e8ff', d: 'M120 120c6.1 27 4.9 53.6 0 80l-40-40z'},
-            {fill: '#324fff', d: 'M120 120v80l40-40c-5.4-15-18.3-27.9-40-40z'},
+            {fill: '#00e8ff', d: 'M 120 120 l 0 80 l -40 -40 z'},
+            {fill: '#324fff', d: 'M 120 120 v 80 l 40 -40 l -40 -40 z'},
             {fill: '#324fff', d: 'M160 80v80l-40-40z'},
           ];
           this.delayTime = 50;
           this.duration = this.paths.length * this.delayTime;
           this.flipController = new FlipController(this, {
-            options: {
+            flipOptions: {
               animationOptions: {
                 duration: this.duration,
                 fill: 'backwards',

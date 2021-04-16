@@ -44,7 +44,7 @@
           super();
           this.layout = 0;
           this.flipController = new FlipController(this, {
-            options: {
+            flipOptions: {
               animationOptions: {
                 duration: 1200,
               },
@@ -202,17 +202,7 @@
                 class="hibox box ${classMap(classes)}"
                 ${flip({id: 'hi-outer'})}
               >
-                <div
-                  ${flip({
-                    id: 'hi-inner',
-                    animationOptions: {fill: 'both'},
-                    scaleUp: true,
-                    commit: true,
-                    reset: true,
-                  })}
-                >
-                  Hi
-                </div>
+                <div ${flip()}>Hi</div>
               </div>
             </section>
             <section class="in-out">
