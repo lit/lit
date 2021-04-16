@@ -68,7 +68,7 @@ and drives its lifecycle using React hooks like `useState` and
 
 ### How it works
 
-`useController` uses `useState` to create and store an instance of a controller and a `ReactControllerHost`. If then calls the controller's lifecycle from the hook body and `useLayoutEffect` callbacks, emulating the `ReactiveElement` lifecycle as closely as possible. `ReactControllerHost` implements `addController` so that controller composition works and nested controller lifecycles are called correctly. `ReactControllerHost` also implements `requestUpdate` by calling a `useState` setter, so that a controller with new renderable state can cause its host component to re-render.
+`useController` uses `useState` to create and store an instance of a controller and a `ReactControllerHost`. It then calls the controller's lifecycle from the hook body and `useLayoutEffect` callbacks, emulating the `ReactiveElement` lifecycle as closely as possible. `ReactControllerHost` implements `addController` so that controller composition works and nested controller lifecycles are called correctly. `ReactControllerHost` also implements `requestUpdate` by calling a `useState` setter, so that a controller with new renderable state can cause its host component to re-render.
 
 Controller timings are implemented as follows:
 
@@ -91,7 +91,7 @@ import {MouseController} from '@example/mouse-controller';
 
 // Write a React hook function:
 const useMouse = () => {
-  // Use useController to create and store a conroller instance:
+  // Use useController to create and store a controller instance:
   const controller = useController(React, (host) => new MouseController(host));
   // return the controller: return controller;
   // or return a custom object for a more React-idiomatic API:

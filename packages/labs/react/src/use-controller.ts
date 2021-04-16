@@ -126,7 +126,7 @@ export const useController = <C extends ReactiveController>(
   const [kickCount, kick] = useState(0);
 
   // Create and store the controller instance. We use useState() instead of
-  // useMemo() because React does not gaurentee that it will preserve values
+  // useMemo() because React does not guarantee that it will preserve values
   // created with useMemo().
   // TODO (justinfagnani): since this controller are mutable, this may cause
   // issues such as "shearing" with React concurrent mode. The solution there
@@ -144,7 +144,7 @@ export const useController = <C extends ReactiveController>(
 
   host._updatePending = true;
 
-  // We use useLayoutEffect because we need update() called synchronously
+  // We use useLayoutEffect because we need updated() called synchronously
   // after rendering.
   useLayoutEffect(() => host._updated());
 
