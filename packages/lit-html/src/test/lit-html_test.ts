@@ -391,24 +391,12 @@ suite('lit-html', () => {
     });
 
     test('"dynamic" tag name', () => {
-      render(html`<${'A'}></${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
-    });
-
-    test('malformed "dynamic" tag name', () => {
+      assert.throws(() => render(html`<${'A'}></${'A'}>`, container));
       // `</ ` starts a comment
-      render(html`<${'A'}></ ${'A'}>`, container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<><!-- --></>'
-      );
-
-      // Currently fails:
-      // render(html`<${'A'}></ ${'A'}>${'B'}`, container);
-      // assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- -->B</>');
+      assert.throws(() => render(html`<${'A'}></ ${'A'}>`, container));
     });
 
-    test('binding after end tag name', () => {
+    test.skip('binding after end tag name', () => {
       // we don't really care what the syntax position is here
       assertRender(html`<div></div ${'A'}>`, '<div></div>');
 
@@ -2778,6 +2766,46 @@ suite('lit-html', () => {
           },
         ]);
       });
+    });
+  });
+
+  suite('<template>', () => {
+    test('bindings work in <template>', () => {
+      const t = (a: string, b: string) => html`
+        <template>
+          <span>${a}</span>
+        </template>
+        <div>${b}</div>
+      `;
+      render(t('1', '2'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        `
+        <template>
+          <span>1</span>
+        </template>
+        <div>2</div>
+      `
+      );
+    });
+
+    test('bindings work in <template> with attribute bindings', () => {
+      const t = (a: string, b: string, c: string) => html`
+        <template foo=${a}>
+          <span>${b}</span>
+        </template>
+        <div>${c}</div>
+      `;
+      render(t('1', '2', '3'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        `
+        <template foo="1">
+          <span>2</span>
+        </template>
+        <div>3</div>
+      `
+      );
     });
   });
 });

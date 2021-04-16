@@ -58,7 +58,7 @@
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.(js|html)'",
+    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/lit-html_test.js'",
     "test:prod": "MODE=prod npm run test:dev -- '../lit-html/src/test/version-stability_test.js'",
     "test:watch": "npm run test:dev -- --watch"
   },

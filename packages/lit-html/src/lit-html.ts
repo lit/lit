@@ -546,11 +546,11 @@ class Template {
     {strings, _$litType$: type}: TemplateResult,
     options?: RenderOptions
   ) {
-    let node: Node | null;
     let nodeIndex = 0;
     let attrNameIndex = 0;
-    const partCount = strings.length - 1;
+    let partCount = strings.length - 1;
     const parts = this.parts;
+    const stack: Node[] = [];
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
@@ -566,11 +566,26 @@ class Template {
     }
 
     // Walk the template to find binding markers and create TemplateParts
-    while ((node = walker.nextNode()) !== null && parts.length < partCount) {
-      if (node.nodeType === 1) {
-        // TODO (justinfagnani): for attempted dynamic tag names, we don't
-        // increment the bindingIndex, and it'll be off by 1 in the element
-        // and off by two after it.
+    while (parts.length < partCount) {
+      const node = walker.nextNode();
+      if (node === null) {
+        // We've exhausted the content inside a nested template element.
+        // Because we still have parts (the outer for-loop), we know:
+        // - There is a template in the stack
+        // - The walker will find a nextNode outside the template
+        walker.currentNode = stack.pop()!;
+        continue;
+      }
+      if (node.nodeType === 1 /* ELEMENT */) {
+        if (
+          DEV_MODE === true &&
+          (node as Element).tagName === marker.toUpperCase()
+        ) {
+          throw new Error(
+            'Dynamic tag names are not supported.\n' +
+              'Please use the static module to create a static binding instead'
+          );
+        }
         if ((node as Element).hasAttributes()) {
           // We defer removing bound attributes because on IE we might not be
           // iterating attributes in their template order, and would sometimes
@@ -611,6 +626,9 @@ class Template {
                       ? EventPart
                       : AttributePart,
                 });
+                // Reduce the expected part count by the number of _additional_
+                // bindings in this attribute part.
+                partCount -= statics.length - 2;
               } else {
                 parts.push({
                   type: ELEMENT_PART,
@@ -648,6 +666,10 @@ class Template {
             // we don't need to adjust nodeIndex here
             (node as Element).append(strings[lastIndex], createMarker());
           }
+        }
+        if ((node as Element).tagName === 'TEMPLATE') {
+          stack.push(node);
+          walker.currentNode = (node as HTMLTemplateElement).content;
         }
       } else if (node.nodeType === 8) {
         const data = (node as Comment).data;
@@ -753,8 +775,9 @@ class TemplateInstance {
   _clone(options: RenderOptions | undefined) {
     const {
       el: {content},
-      parts: parts,
+      parts,
     } = this._$template;
+    const stack: Node[] = [];
     const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
@@ -764,33 +787,46 @@ class TemplateInstance {
     let templatePart = parts[0];
 
     while (templatePart !== undefined) {
-      if (nodeIndex === templatePart.index) {
-        let part: Part | undefined;
-        if (templatePart.type === CHILD_PART) {
-          part = new ChildPart(
-            node as HTMLElement,
-            node.nextSibling,
-            this,
-            options
-          );
-        } else if (templatePart.type === ATTRIBUTE_PART) {
-          part = new templatePart.ctor(
-            node as HTMLElement,
-            templatePart.name,
-            templatePart.strings,
-            this,
-            options
-          );
-        } else if (templatePart.type === ELEMENT_PART) {
-          part = new ElementPart(node as HTMLElement, this, options);
-        }
-        this._parts.push(part);
-        templatePart = parts[++partIndex];
-      }
-      if (nodeIndex !== templatePart?.index) {
-        node = walker.nextNode()!;
+      // Progress the tree walker until we find our next part's node.
+      // Note that multiple parts may share the same node (attribute parts
+      // on a single element), so this loop may not run at all.
+      while (nodeIndex < templatePart.index) {
         nodeIndex++;
+        if (node.nodeName === 'TEMPLATE') {
+          stack.push(node);
+          walker.currentNode = (node as HTMLTemplateElement).content;
+        }
+        if ((node = walker.nextNode()!) === null) {
+          // We've exhausted the content inside a nested template element.
+          // Because we still have parts (the outer loop), we know:
+          // - There is a template in the stack
+          // - The walker will find a nextNode outside the template
+          walker.currentNode = stack.pop()!;
+          node = walker.nextNode()!;
+        }
       }
+
+      let part: Part | undefined;
+      if (templatePart.type === CHILD_PART) {
+        part = new ChildPart(
+          node as HTMLElement,
+          node.nextSibling,
+          this,
+          options
+        );
+      } else if (templatePart.type === ATTRIBUTE_PART) {
+        part = new templatePart.ctor(
+          node as HTMLElement,
+          templatePart.name,
+          templatePart.strings,
+          this,
+          options
+        );
+      } else if (templatePart.type === ELEMENT_PART) {
+        part = new ElementPart(node as HTMLElement, this, options);
+      }
+      this._parts.push(part);
+      templatePart = parts[++partIndex];
     }
     return fragment;
   }
