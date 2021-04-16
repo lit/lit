@@ -8,7 +8,7 @@ A server package for rendering Lit templates and components on the server.
 
 ## Server Usage
 
-### Rendering in the nodejs global scope
+### Rendering in the Node.js global scope
 
 The easiest way to get started is to import your Lit template modules (and any `LitElement` definitions they may use) into the node global scope and render them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-global.js` module. Since Lit-authored code may rely on DOM globals, the `render-global.js` module will install a minimal DOM shim into the nodejs global scope, which should be sufficient for typical use cases. As such, `render-global.js` should be imported before any modules containing Lit code.
 
@@ -26,9 +26,9 @@ context.body = Readable.from(ssrResult);
 
 ### Sandboxed VM rendering
 
-To avoid polluting the nodejs global scope with the DOM shim and/or ensure each request receives a fresh global scope, a sandboxed method of rendering is also provided. _Note that using this feature requires Node 14+ and passing the `--experimental-vm-modules` flag to node on because of its use of [experimental VM modules](https://nodejs.org/api/vm.html#vm_class_vm_sourcetextmodule) for creating a module-compatible VM sandbox._
+To avoid polluting the Node.js global object with the DOM shim and ensure each request receives a fresh global object, we also provide a way to load app code into, and render from, a separate VM context with its own global object. _Note that using this feature requires Node 14+ and passing the `--experimental-vm-modules` flag to node on because of its use of [experimental VM modules](https://nodejs.org/api/vm.html#vm_class_vm_sourcetextmodule) for creating a module-compatible VM sandbox._
 
-To render in a VM sandbox, the `renderModule` function from the
+To render in a VM context, the `renderModule` function from the
 `render-module.js` module will import a given module into a server-side VM
 sandbox shimmed with the minimal DOM shim required for Lit server rendering,
 execute a given function exported from that module, and return its value.
