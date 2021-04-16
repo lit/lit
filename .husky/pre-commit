@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npm run ignore-sync && lint-staged
+npm run ignore-sync && npm exec lint-staged
