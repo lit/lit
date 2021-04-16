@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-pre.3",
+  "version": "3.0.0-pre.4",
   "publishConfig": {
     "access": "public"
   },
@@ -30,9 +30,9 @@
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"
     },
-    "./hydrate-support.js": {
-      "development": "./development/hydrate-support.js",
-      "default": "./hydrate-support.js"
+    "./experimental-hydrate-support.js": {
+      "development": "./development/experimental-hydrate-support.js",
+      "default": "./experimental-hydrate-support.js"
     },
     "./decorators.js": {
       "development": "./development/decorators.js",
@@ -51,7 +51,7 @@
     "build:ts:watch": "tsc --build --watch",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf {decorators,hydrate-support,index,lit-element,polyfill-support,private-ssr-support,lit.min}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",
+    "clean": "rm -rf {decorators,experimental-hydrate-support,index,lit-element,polyfill-support,private-ssr-support,lit.min}.{js,js.map,d.ts} test/ decorators/ development/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
@@ -65,7 +65,7 @@
   },
   "files": [
     "/decorators.{d.ts,d.ts.map,js,js.map}",
-    "/hydrate-support.{d.ts,d.ts.map,js,js.map}",
+    "/experimental-hydrate-support.{d.ts,d.ts.map,js,js.map}",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/lit-element.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
@@ -77,8 +77,8 @@
     "!/src/test/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-pre.1",
-    "lit-html": "^2.0.0-pre.4"
+    "@lit/reactive-element": "^1.0.0-pre.3",
+    "lit-html": "^2.0.0-pre.7"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

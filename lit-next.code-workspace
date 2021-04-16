@@ -17,8 +17,8 @@
 			"path": "packages/reactive-element"
 		},
 		{
-			"name": "lit-ssr",
-			"path": "packages/lit-ssr"
+			"name": "ssr",
+			"path": "packages/labs/ssr"
 		},
 		{
 			"name": "lit-starter-ts",
@@ -45,7 +45,7 @@
 			"path": "packages/benchmarks"
 		},
 		{
-			"name": "lit-next",
+			"name": "lit",
 			"path": "."
 		}
 	],

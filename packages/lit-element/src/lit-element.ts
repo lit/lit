@@ -67,7 +67,7 @@ declare global {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-pre.3');
+((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-pre.4');
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -87,10 +87,16 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
-  readonly _$renderOptions: RenderOptions = {host: this};
+  /**
+   * @category rendering
+   */
+  readonly renderOptions: RenderOptions = {host: this};
 
   private __childPart: ChildPart | undefined = undefined;
 
+  /**
+   * @category rendering
+   */
   protected createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
@@ -98,7 +104,7 @@ export class LitElement extends ReactiveElement {
     // any styles in Lit content render before adoptedStyleSheets. This is
     // important so that adoptedStyleSheets have precedence over styles in
     // the shadowRoot.
-    this._$renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    this.renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
     return renderRoot;
   }
 
@@ -107,6 +113,7 @@ export class LitElement extends ReactiveElement {
    * and calls `render` to render DOM via lit-html. Setting properties inside
    * this method will *not* trigger another update.
    * @param changedProperties Map of changed properties with old values
+   * @category updates
    */
   protected update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
@@ -114,17 +121,23 @@ export class LitElement extends ReactiveElement {
     // before that.
     const value = this.render();
     super.update(changedProperties);
-    this.__childPart = render(value, this.renderRoot, this._$renderOptions);
+    this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
   // do not thrash directive callbacks
   // https://github.com/Polymer/lit-html/issues/1457
+  /**
+   * @category lifecycle
+   */
   connectedCallback() {
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
 
+  /**
+   * @category lifecycle
+   */
   disconnectedCallback() {
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
@@ -135,6 +148,7 @@ export class LitElement extends ReactiveElement {
    * any value renderable by lit-html's `ChildPart` - typically a
    * `TemplateResult`. Setting properties inside this method will *not* trigger
    * the element to update.
+   * @category rendering
    */
   protected render(): unknown {
     return noChange;
@@ -167,7 +181,7 @@ if (DEV_MODE) {
           `\`${name}\` is implemented. It ` +
             `has been removed from this version of LitElement. `
           // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/lit-element/CHANGELOG.md`
+          // + See the changelog at https://github.com/Polymer/lit-html/blob/main/packages/lit-element/CHANGELOG.md`
         );
       }
     };

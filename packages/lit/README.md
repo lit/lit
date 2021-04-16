@@ -18,4 +18,5 @@ Modules:
 - `lit/async-directive.js`: A directive base class that supports disconnection and reconnection.
 - `lit/directives/...`: The `directives/` folder contains all of the first-party lit-html directives, like `repeat`, `classMap`, etc.
 - `lit/polyfill-support.js`: A module that connects Lit to the web components polyfills where necessary to support older browsers.
-- `lit/hydrate-support.js`: A module that add hydration support to LitElement.
+- `lit/experimental-hydrate.js`: A module for hydrating `lit-html` templates that were server-rendered with `@lit-labs/ssr`. Note this module is experimental and subject to breaking changes.
+- `lit/experimental-hydrate-support.js`: A module that adds hydration support to LitElement. Note this module is experimental and subject to breaking changes.

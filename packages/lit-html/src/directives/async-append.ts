@@ -21,9 +21,9 @@ import {
 type Mapper<T> = (v: T, index?: number) => unknown;
 
 class AsyncAppendDirective extends AsyncDirective {
-  value?: AsyncIterable<unknown>;
-  reconnectResolver?: () => void;
-  reconnectPromise?: Promise<void>;
+  private _value?: AsyncIterable<unknown>;
+  private _reconnectResolver?: () => void;
+  private _reconnectPromise?: Promise<void>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -41,10 +41,10 @@ class AsyncAppendDirective extends AsyncDirective {
   update(part: ChildPart, [value, mapper]: DirectiveParameters<this>) {
     // If we've already set up this particular iterable, we don't need
     // to do anything.
-    if (value === this.value) {
+    if (value === this._value) {
       return;
     }
-    this.value = value;
+    this._value = value;
     this.__iterate(part, mapper);
     return noChange;
   }
@@ -53,17 +53,17 @@ class AsyncAppendDirective extends AsyncDirective {
   // because its return value must be `noChange`
   private async __iterate(part: ChildPart, mapper?: Mapper<unknown>) {
     let i = 0;
-    const {value} = this;
+    const {_value: value} = this;
     for await (let v of value!) {
       // Check to make sure that value is the still the current value of
       // the part, and if not bail because a new value owns this part
-      if (this.value !== value) {
+      if (this._value !== value) {
         break;
       }
 
       // If we were disconnected, pause until reconnected
-      if (this.reconnectPromise) {
-        await this.reconnectPromise;
+      if (this._reconnectPromise) {
+        await this._reconnectPromise;
       }
 
       // When we get the first value, clear the part. This lets the
@@ -86,15 +86,15 @@ class AsyncAppendDirective extends AsyncDirective {
 
   disconnected() {
     // Pause iteration while disconnected
-    this.reconnectPromise = new Promise(
-      (resolve) => (this.reconnectResolver = resolve)
+    this._reconnectPromise = new Promise(
+      (resolve) => (this._reconnectResolver = resolve)
     );
   }
 
   reconnected() {
     // Resume iteration when reconnected
-    this.reconnectPromise = undefined;
-    this.reconnectResolver!();
+    this._reconnectPromise = undefined;
+    this._reconnectResolver!();
   }
 }
 
@@ -117,3 +117,9 @@ class AsyncAppendDirective extends AsyncDirective {
  *     value. Useful for generating templates for each item in the iterable.
  */
 export const asyncAppend = directive(AsyncAppendDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {AsyncAppendDirective};

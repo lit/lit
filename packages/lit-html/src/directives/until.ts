@@ -16,21 +16,21 @@ const isPromise = (x: unknown) => {
 const _infinity = 0x7fffffff;
 
 class UntilDirective extends AsyncDirective {
-  private lastRenderedIndex: number = _infinity;
-  private values: unknown[] = [];
+  private _lastRenderedIndex: number = _infinity;
+  private _values: unknown[] = [];
 
   render(...args: Array<unknown>) {
     return args.find((x) => !isPromise(x)) ?? noChange;
   }
 
   update(_part: Part, args: Array<unknown>) {
-    const previousValues = this.values;
+    const previousValues = this._values;
     let previousLength = previousValues.length;
-    this.values = args;
+    this._values = args;
 
     for (let i = 0; i < args.length; i++) {
       // If we've rendered a higher-priority value already, stop.
-      if (i > this.lastRenderedIndex) {
+      if (i > this._lastRenderedIndex) {
         break;
       }
 
@@ -38,7 +38,7 @@ class UntilDirective extends AsyncDirective {
 
       // Render non-Promise values immediately
       if (!isPromise(value)) {
-        this.lastRenderedIndex = i;
+        this._lastRenderedIndex = i;
         // Since a lower-priority value will never overwrite a higher-priority
         // synchronous value, we can stop processing now.
         return value;
@@ -51,16 +51,16 @@ class UntilDirective extends AsyncDirective {
 
       // We have a Promise that we haven't seen before, so priorities may have
       // changed. Forget what we rendered before.
-      this.lastRenderedIndex = _infinity;
+      this._lastRenderedIndex = _infinity;
       previousLength = 0;
 
       Promise.resolve(value).then((resolvedValue: unknown) => {
-        const index = this.values.indexOf(value);
+        const index = this._values.indexOf(value);
         // If state.values doesn't contain the value, we've re-rendered without
         // the value, so don't render it. Then, only render if the value is
         // higher-priority than what's already been rendered.
-        if (index > -1 && index < this.lastRenderedIndex) {
-          this.lastRenderedIndex = index;
+        if (index > -1 && index < this._lastRenderedIndex) {
+          this._lastRenderedIndex = index;
           this.setValue(resolvedValue);
         }
       });
@@ -90,3 +90,9 @@ class UntilDirective extends AsyncDirective {
  *     html`${until(content, html`<span>Loading...</span>`)}`
  */
 export const until = directive(UntilDirective);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {UntilDirective};

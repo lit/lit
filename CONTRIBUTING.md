@@ -95,7 +95,6 @@ If you've already signed a CLA but are still getting bothered by the awfully ins
 ```bash
 git clone https://github.com/Polymer/lit-html.git
 cd lit-html
-git checkout lit-next
 npm install
 npm run bootstrap
 npm run build

@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "2.0.0-pre.6",
+  "version": "2.0.0-pre.7",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
@@ -33,9 +33,9 @@
       "development": "./development/directives/",
       "default": "./directives/"
     },
-    "./hydrate.js": {
-      "development": "./development/hydrate.js",
-      "default": "./hydrate.js"
+    "./experimental-hydrate.js": {
+      "development": "./development/experimental-hydrate.js",
+      "default": "./experimental-hydrate.js"
     },
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
@@ -47,25 +47,26 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts && rollup -c",
+    "build": "npm run clean && npm run build:ts && npm run build:version-stability-test && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
+    "build:version-stability-test": "rollup -c rollup-version-stability-test.config.js",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf {async-directive,directive-helpers,directive,hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ *.tsbuildinfo",
+    "clean": "rm -rf {async-directive,directive-helpers,directive,experimental-hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ version-stability-test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.(js|html)'",
-    "test:prod": "MODE=prod npm run test:dev",
+    "test:prod": "MODE=prod npm run test:dev -- '../lit-html/src/test/version-stability_test.js'",
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
     "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
     "/directive.{d.ts,d.ts.map,js,js.map}",
-    "/hydrate.{d.ts,d.ts.map,js,js.map}",
+    "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
     "/lit-html.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
@@ -76,7 +77,6 @@
     "/src/",
     "!/src/test/"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
     "@types/mocha": "^8.0.3",

@@ -34,8 +34,8 @@ packages/lit/directive-helpers.*
 packages/lit/directive.*
 packages/lit/async-directive.*
 packages/lit/html.*
-packages/lit/hydrate-support.*
-packages/lit/hydrate.*
+packages/lit/experimental-hydrate-support.*
+packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
@@ -51,7 +51,7 @@ packages/lit-element/development/
 packages/lit-element/node_modules/
 packages/lit-element/test/
 packages/lit-element/decorators.*
-packages/lit-element/hydrate-support.*
+packages/lit-element/experimental-hydrate-support.*
 packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
@@ -59,10 +59,11 @@ packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
+packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
 packages/lit-html/test/
-packages/lit-html/hydrate.*
+packages/lit-html/experimental-hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
@@ -70,13 +71,6 @@ packages/lit-html/async-directive.*
 packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
-
-packages/lit-ssr/demo/
-packages/lit-ssr/lib/
-packages/lit-ssr/node_modules/
-packages/lit-ssr/test/
-packages/lit-ssr/index.*
-packages/lit-ssr/**/*.d.ts
 
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
@@ -93,16 +87,18 @@ packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
 packages/localize/lib/
-packages/localize/lib_client/
 packages/localize/node_modules/
-packages/localize/testdata/*/output/
 packages/localize/tests/
-packages/localize/.tsbuildinfo.client
+packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/localized-element.*
 packages/localize/examples/*/node_modules/
 packages/localize/fnv1a64.*
 packages/localize/id-generation.*
+
+packages/localize-tools/lib/
+packages/localize-tools/node_modules/
+packages/localize-tools/testdata/*/output/
 
 packages/reactive-element/decorators/
 packages/reactive-element/development/
@@ -116,12 +112,29 @@ packages/reactive-element/reactive-controller.*
 packages/tests/node_modules/
 
 packages/labs/react/development/
+packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
+packages/labs/scoped-registry-mixin/development/
+packages/labs/scoped-registry-mixin/test/
+packages/labs/scoped-registry-mixin/node_modules/
+packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
+packages/labs/ssr/demo/
+packages/labs/ssr/lib/
+packages/labs/ssr/node_modules/
+packages/labs/ssr/test/
+packages/labs/ssr/index.*
+!packages/labs/ssr/custom_typings/*.d.ts
+packages/labs/ssr-client/development/
+packages/labs/ssr-client/directives/
+packages/labs/ssr-client/controllers/
+packages/labs/ssr-client/node_modules/
+packages/labs/ssr-client/index.*
 
 packages/labs/task/development/
+packages/labs/task/test/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*
@@ -138,5 +151,5 @@ packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
 packages/localize/examples/
-packages/localize/testdata/
-packages/localize/config.schema.json
+packages/localize-tools/testdata/
+packages/localize-tools/config.schema.json

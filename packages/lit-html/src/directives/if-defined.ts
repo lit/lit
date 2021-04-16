@@ -12,4 +12,4 @@ import {nothing} from '../lit-html.js';
  *
  * For other part types, this directive is a no-op.
  */
-export const ifDefined = (value: unknown) => value ?? nothing;
+export const ifDefined = <T>(value: T) => value ?? nothing;

@@ -46,27 +46,29 @@ interface DirectiveParent {
   __directives?: Array<Directive | undefined>;
 }
 
-interface PatchableChildPart {
+interface PatchableChildPartConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableChildPart;
+}
+
+interface PatchableChildPart {
   __directive?: Directive;
   _$committedValue: unknown;
   _$startNode: ChildNode;
   _$endNode: ChildNode | null;
   options: RenderOptions;
   _$setValue(value: unknown, directiveParent: DirectiveParent): void;
-  _$getTemplate(
-    strings: TemplateStringsArray,
-    result: ShadyTemplateResult
-  ): HTMLTemplateElement;
+  _$getTemplate(result: ShadyTemplateResult): HTMLTemplateElement;
 }
 
 interface PatchableTemplate {
+  el: HTMLTemplateElement;
+}
+
+interface PatchableTemplateConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableTemplate;
-  _$createElement(html: string): HTMLTemplateElement;
-  _$element: HTMLTemplateElement;
-  _$options: RenderOptions;
+  createElement(html: string, options?: RenderOptions): HTMLTemplateElement;
 }
 
 interface PatchableTemplateInstance {
@@ -89,8 +91,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any)['litHtmlPlatformSupport'] ??= (
-  Template: PatchableTemplate,
-  ChildPart: PatchableChildPart
+  Template: PatchableTemplateConstructor,
+  ChildPart: PatchableChildPartConstructor
 ) => {
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
@@ -128,7 +130,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
   const prepareStyles = (name: string, template: HTMLTemplateElement) => {
     // Get styles
     const scopeCss = cssForScope(name);
-    if (scopeCss.length) {
+    const hasScopeCss = scopeCss.length !== 0;
+    if (hasScopeCss) {
       const style = document.createElement('style');
       style.textContent = scopeCss.join('\n');
       // Note, it's important to add the style to the *end* of the template so
@@ -142,6 +145,12 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     // ShadyCSS removes scopes and removes the style under ShadyDOM and leaves
     // it under native Shadow DOM
     window.ShadyCSS!.prepareTemplateStyles(template, name);
+    // Note, under native Shadow DOM, the style is added to the beginning of the
+    // template. It must be moved to the *end* of the template so it doesn't
+    // mess up part indices.
+    if (hasScopeCss && window.ShadyCSS!.nativeShadow) {
+      template.content.appendChild(template.content.querySelector('style')!);
+    }
   };
 
   const scopedTemplateCache = new Map<
@@ -154,17 +163,17 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    * and store all style.textContent in the shady scope data.
    * Note, it's ok to patch Template since it's only used via ChildPart.
    */
-  const originalCreateElement = Template.prototype._$createElement;
-  Template.prototype._$createElement = function (html: string) {
-    const template = originalCreateElement.call(this, html);
-    const scope = this._$options?.scope;
+  const originalCreateElement = Template.createElement;
+  Template.createElement = function (html: string, options?: RenderOptions) {
+    const element = originalCreateElement.call(Template, html, options);
+    const scope = options?.scope;
     if (scope !== undefined) {
       if (!window.ShadyCSS!.nativeShadow) {
-        window.ShadyCSS!.prepareTemplateDom(template, scope);
+        window.ShadyCSS!.prepareTemplateDom(element, scope);
       }
       const scopeCss = cssForScope(scope);
       // Remove styles and store textContent.
-      const styles = template.content.querySelectorAll(
+      const styles = element.content.querySelectorAll(
         'style'
       ) as NodeListOf<HTMLStyleElement>;
       // Store the css in this template in the scope css and remove the <style>
@@ -176,7 +185,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
         })
       );
     }
-    return template;
+    return element;
   };
 
   const renderContainer = document.createDocumentFragment();
@@ -218,8 +227,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
       const template = (value as ShadyTemplateResult)?._$litType$
-        ? (this._$committedValue as PatchableTemplateInstance)._$template
-            ._$element
+        ? (this._$committedValue as PatchableTemplateInstance)._$template.el
         : document.createElement('template');
       prepareStyles(scope!, template);
 
@@ -247,7 +255,6 @@ const ENABLE_SHADYDOM_NOPATCH = true;
    */
   childPartProto._$getTemplate = function (
     this: PatchableChildPart,
-    strings: TemplateStringsArray,
     result: ShadyTemplateResult
   ) {
     const scope = this.options?.scope;
@@ -255,10 +262,10 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     if (templateCache === undefined) {
       scopedTemplateCache.set(scope, (templateCache = new Map()));
     }
-    let template = templateCache.get(strings);
+    let template = templateCache.get(result.strings);
     if (template === undefined) {
       templateCache.set(
-        strings,
+        result.strings,
         (template = new Template(result, this.options))
       );
     }

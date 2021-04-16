@@ -18,12 +18,12 @@ This package demonstrates an application that uses [lit-localize](https://github
 ## Setup
 
 ```bash
-git clone https://github.com/Polymer/lit-html.git --branch lit-next
+git clone https://github.com/Polymer/lit-html.git
 cd lit-html/packages/localize/examples/transform
 npm install
 npx lit-localize build
 npx tsc
-npx es-dev-server --node-resolve
+npx web-dev-server --node-resolve
 ```
 
 Visit the URL that is logged to the console to view the app.

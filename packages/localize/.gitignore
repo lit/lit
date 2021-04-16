@@ -1,9 +1,7 @@
 /lib/
-/lib_client/
 /node_modules/
-/testdata/*/output/
 /tests/
-/.tsbuildinfo.client
+/.tsbuildinfo
 /lit-localize.*
 /localized-element.*
 /examples/*/node_modules/

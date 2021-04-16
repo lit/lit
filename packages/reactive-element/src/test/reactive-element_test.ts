@@ -51,6 +51,24 @@ suite('ReactiveElement', () => {
     assert.isTrue(el.hasRenderRoot);
   });
 
+  test(`createRenderRoot is called only once`, async () => {
+    class E extends ReactiveElement {
+      renderRootCalls = 0;
+      createRenderRoot() {
+        this.renderRootCalls++;
+        return this;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    container.removeChild(el);
+    container.appendChild(el);
+    container.removeChild(el);
+    container.appendChild(el);
+    assert.equal(el.renderRootCalls, 1);
+  });
+
   test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
     class E extends ReactiveElement {
       updateCount = 0;
@@ -2429,6 +2447,30 @@ suite('ReactiveElement', () => {
     a.bar = 'yo';
     await a.updateComplete;
     assert.equal(a.getAttribute('bar'), 'yo');
+  });
+
+  test('addInitializer', () => {
+    class A extends ReactiveElement {
+      prop1?: string;
+      prop2?: string;
+      event?: string;
+    }
+    A.addInitializer((a) => {
+      (a as A).prop1 = 'prop1';
+    });
+    A.addInitializer((a) => {
+      (a as A).prop2 = 'prop2';
+    });
+    A.addInitializer((a) => {
+      a.addEventListener('click', (e) => ((a as A).event = e.type));
+    });
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    assert.equal(a.prop1, 'prop1');
+    assert.equal(a.prop2, 'prop2');
+    a.dispatchEvent(new Event('click'));
+    assert.equal(a.event, 'click');
   });
 
   suite('exceptions', () => {

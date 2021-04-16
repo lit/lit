@@ -73,9 +73,9 @@ const {setLocale} = configureLocalization({
 ```
 
 See
-[`examples/transform`](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize/examples/transform)
+[`examples/transform`](https://github.com/Polymer/lit-html/tree/main/packages/localize/examples/transform)
 and
-[`examples/runtime`](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize/examples/runtime)
+[`examples/runtime`](https://github.com/Polymer/lit-html/tree/main/packages/localize/examples/runtime)
 for full working examples.
 
 ## Modes
@@ -92,18 +92,19 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 ## Tutorial
 
-1. Install `@lit/localize`. You get both a client library and a command-line tool.
-   You'll always use both together.
+1. Install `@lit/localize` and `@lit/localize-tools`. These packages provide the
+   client library and the command-line tool.
 
    ```bash
-   npm install --save @lit/localize
+   npm i @lit/localize
+   npm i -D @lit/localize-tools
    ```
 
 2. Set up a TypeScript lit-html project if you don't have one already:
 
    ```bash
-   npm install --save lit-html
-   npm install --save-dev typescript
+   npm i lit-html
+   npm i -D typescript
    npx tsc --init
    ```
 
@@ -139,7 +140,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```json
    {
-     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/lit-next/packages/localize/config.schema.json",
+     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/main/packages/localize-tools/config.schema.json",
      "sourceLocale": "en",
      "targetLocales": ["es-419"],
      "tsConfig": "tsconfig.json",
@@ -321,13 +322,16 @@ promise resolves.
 Throws if the given locale is not contained by the configured `sourceLocale` or
 `targetLocales`.
 
-### `msg(template: TemplateResult|string|StrResult, options?: {id?: string}) => string|TemplateResult`
+### `msg(template: TemplateResult|string|StrResult, options?: {id?: string, desc?:string}) => string|TemplateResult`
 
 Make lit-html template or string localizable.
 
 The `options.id` parameter is an optional project-wide unique identifier for
 this template. If omitted, an id will be automatically generated from the
 template strings.
+
+The `options.desc` parameter is an optional description for this message
+intended to help translators understand its meaning and context.
 
 The `template` parameter can take any of these forms:
 
@@ -373,13 +377,14 @@ Name of the [`lit-localize-status`](#lit-localize-status-event) event.
 
 ## Descriptions
 
-You can add descriptions to messages using special `// msgdesc:` comments.
-Message descriptions help translators understand the context of each string they
-are translating.
+You can add a description to a message by setting the `desc` option. Message
+descriptions help translators understand the context of each string they are
+translating.
 
 ```ts
-// msgdesc: Greeting to everybody on homepage
-msg(html`Hello <b>World</b>!`);
+msg(html`Hello <b>World</b>!`, {
+  desc: 'Greeting to everybody on homepage',
+});
 ```
 
 Descriptions are represented in XLIFF using `<note>` elements.
@@ -387,29 +392,6 @@ Descriptions are represented in XLIFF using `<note>` elements.
 ```xml
 <trans-unit id="h3c44aff2d5f5ef6b">
   <note>Greeting to everybody on homepage</note>
-  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
-</trans-unit>
-```
-
-You can also apply a `// msgdesc:` comment to a class, function, or block, in
-which case the description will apply recursively to all `msg` calls within it.
-If there are multiple descriptions that apply to a `msg` call, then they are
-concatenated with a forward-slash in top-down order. This can be useful for
-describing the context of an entire group of messages.
-
-```ts
-// msgdesc: Homepage
-class MyHomepage extends Localized(LitElement) {
-  render() {
-    // msgdesc: Greeting to everybody
-    return msg(html`Hello <b>World</b>!`);
-  }
-}
-```
-
-```xml
-<trans-unit id="h3c44aff2d5f5ef6b">
-  <note>Homepage / Greeting to everybody</note>
   <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
 </trans-unit>
 ```
@@ -546,7 +528,7 @@ lit-localize command [--flags]
 
 To integrate locale transformation into a [Rollup](https://rollupjs.org/)
 project, import the `localeTransformers` function from
-`@lit/localize/lib/rollup.js`.
+`@lit/localize-tools/lib/rollup.js`.
 
 This function generates an array of `{locale, transformer}` objects, which you
 can use in conjunction with the
@@ -560,12 +542,12 @@ to generate a separate bundle for each locale.
 > TypeScript files that can be treated as normal source inputs by an existing
 > build pipeline.
 
-For example, the following `rollup.config.js` generates a minified bundle for
+For example, the following `rollup.config.mjs` generates a minified bundle for
 each of your locales into `./bundled/<locale>/` directories.
 
 ```js
 import typescript from '@rollup/plugin-typescript';
-import {localeTransformers} from '@lit/localize/lib/rollup.js';
+import {localeTransformers} from '@lit/localize-tools/lib/rollup.js';
 import resolve from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
 

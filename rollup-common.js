@@ -35,7 +35,7 @@ const skipBundleOutput = {
 // to avoid collisions since they are used to brand values in positions that
 // accept any value. We don't use a Symbol for these to support mixing and
 // matching values from different versions.
-const reservedProperties = ['_$litType$', '_$litDirective$'];
+const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
 
 // Private properties which should be stable between versions but are used on
 // unambiguous objects and thus are safe to mangle. These include properties on
@@ -52,69 +52,70 @@ const reservedProperties = ['_$litType$', '_$litDirective$'];
 // and choose the next letter.
 //
 // ONCE A MANGLED NAME HAS BEEN ASSIGNED TO A PROPERTY, IT MUST NEVER BE USED
-// FOR A DIFFERENT PROPERTY IN SUBSEQUENT VERSIONS.
+// FOR A DIFFERENT PROPERTY IN SUBSEQUENT STABLE VERSIONS.
 const stableProperties = {
-  // lit-html: Template (used by polyfill-support)
-  _$createElement: 'A',
-  _$element: 'B',
-  _$options: 'C',
   // lit-html: ChildPart (used by polyfill-support)
-  _$startNode: 'D',
-  _$endNode: 'E',
-  _$getTemplate: 'F',
+  _$startNode: 'A',
+  _$endNode: 'B',
+  _$getTemplate: 'C',
   // lit-html: TemplateInstance (used by polyfill-support)
-  _$template: 'G',
+  _$template: 'D',
   // reactive-element: ReactiveElement (used by polyfill-support)
-  _$didUpdate: 'H',
-  // lit-element: LitElement
-  _$renderOptions: 'I',
-  // lit-element: LitElement (used by hydrate-support)
-  _$renderImpl: 'J',
-  // hydrate-support: LitElement (added by hydrate-support)
-  _$needsHydration: 'K',
-  // lit-html: Part (used by hydrate, polyfill-support)
-  _$committedValue: 'L',
-  // lit-html: Part (used by hydrate, directive-helpers, polyfill-support, ssr-support)
-  _$setValue: 'M',
+  _$didUpdate: 'E',
+  // lit-element: LitElement (used by experimental--support)
+  _$renderImpl: 'F',
+  // experimental-hydrate-support: LitElement (added by experimental-hydrate-support)
+  _$needsHydration: 'G',
+  // lit-html: Part (used by experimental-hydrate, polyfill-support)
+  _$committedValue: 'H',
+  // lit-html: Part (used by experimental-hydrate, directive-helpers, polyfill-support, ssr-support)
+  _$setValue: 'I',
   // polyfill-support: LitElement (added by polyfill-support)
-  _$handlesPrepareStyles: 'N',
-  // lit-element: ReactiveElement (used by private-ssr-support)
-  _$attributeToProperty: 'O',
-  // lit-element: ReactiveElement (used by private-ssr-support)
-  _$changedProperties: 'P',
+  _$handlesPrepareStyles: 'J',
+  // lit-element: ReactiveElement (used by ssr-support)
+  _$attributeToProperty: 'K',
+  // lit-element: ReactiveElement (used by ssr-support)
+  _$changedProperties: 'L',
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // async-directive)
-  _$parent: 'Q',
-  _$disconnetableChildren: 'R',
+  _$parent: 'M',
+  _$disconnetableChildren: 'N',
   // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'S',
+  _$setDirectiveConnected: 'O',
   // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'T',
+  _$setChildPartConnected: 'P',
   // lit-html: ChildPart (added by async-directive)
-  _$reparentDisconnectables: 'U',
+  _$reparentDisconnectables: 'Q',
   // lit-html: ChildPart (used by directive-helpers)
-  _$clear: 'V',
+  _$clear: 'R',
   // lit-html: Directive (used by private-ssr-support)
-  _$resolve: 'W',
+  _$resolve: 'S',
+  // lit-html: Directive (used by lit-html)
+  _$initialize: 'T',
 };
+
+const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const validMangledNames = [...alpha, ...alpha.map((c) => `A${c}`)];
 
 // Validate stableProperties list, just to be safe; catches dupes and
 // out-of-order mangled names
-Object.entries(stableProperties).forEach(([prop, mangle], i) => {
+let mangledNameCount = 0;
+
+for (const [prop, mangle] of Object.entries(stableProperties)) {
   if (!prop.startsWith('_$')) {
     throw new Error(
       `stableProperties should start with prefix '_$' ` +
         `(property '${prop}' violates the convention)`
     );
   }
-  if (mangle.charCodeAt(0) !== 'A'.charCodeAt(0) + i) {
+  if (mangle !== validMangledNames[mangledNameCount++]) {
     throw new Error(
       `Add new stableProperties to the end of the list using ` +
         `the next available letter (mangled name '${mangle}' for property ` +
         `${prop} was unexpected)`
     );
   }
-});
+}
 
 /**
  * Prefixes all class properties with the given prefix character. This is to
@@ -135,19 +136,28 @@ Object.entries(stableProperties).forEach(([prop, mangle], i) => {
  * chosen (at least default) by minifiers.
  */
 const addedClassPrefix = new WeakSet();
-const prefixClassProperties = (context, nameCache, prefix) => {
+const prefixProperties = (
+  context,
+  nameCache,
+  classPropertyPrefix,
+  testPropertyPrefix
+) => {
   // Only prefix class properties once per options context, as a perf optimization
   if (nameCache && !addedClassPrefix.has(context)) {
     const {
       props: {props},
     } = nameCache;
+    classPropertyPrefix = testPropertyPrefix + classPropertyPrefix;
     for (const p in props) {
       // Note all properties in the terser name cache are prefixed with '$'
       // (presumably to avoid collisions with built-ins). Checking for the
       // prefix is just to ensure we don't double-prefix properties if
       // `prefixClassProperties` is called twice on the same `nameCache`.
-      if (p.startsWith('$__') && !props[p].startsWith(prefix)) {
-        props[p] = prefix + props[p];
+      if (p.startsWith('$__') && !props[p].startsWith(classPropertyPrefix)) {
+        props[p] = classPropertyPrefix + props[p];
+      } else if (testPropertyPrefix && !(p.slice(1) in stableProperties)) {
+        // Only change the names of non-stable properties when testing
+        props[p] = testPropertyPrefix + props[p];
       }
     }
     addedClassPrefix.add(context);
@@ -155,7 +165,11 @@ const prefixClassProperties = (context, nameCache, prefix) => {
   return nameCache;
 };
 
-const generateTerserOptions = (nameCache = null, classPropertyPrefix = '') => ({
+const generateTerserOptions = (
+  nameCache = null,
+  classPropertyPrefix = '',
+  testPropertyPrefix = ''
+) => ({
   warnings: true,
   ecma: 2017,
   compress: {
@@ -171,7 +185,12 @@ const generateTerserOptions = (nameCache = null, classPropertyPrefix = '') => ({
   // This is implemented as a getter, so that we apply the class property prefix
   // after the `nameCacheSeeder` build runs
   get nameCache() {
-    return prefixClassProperties(this, nameCache, classPropertyPrefix);
+    return prefixProperties(
+      this,
+      nameCache,
+      classPropertyPrefix,
+      testPropertyPrefix
+    );
   },
   mangle: {
     properties: {
@@ -187,7 +206,9 @@ export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
+  testPropertyPrefix,
   classPropertyPrefix,
+  outputDir = './',
   // eslint-disable-next-line no-undef
 } = options) {
   // The Terser shared name cache allows us to mangle the names of properties
@@ -242,7 +263,11 @@ export function litProdConfig({
   ].join('\n');
   const nameCacheSeederTerserOptions = generateTerserOptions(nameCache);
 
-  const terserOptions = generateTerserOptions(nameCache, classPropertyPrefix);
+  const terserOptions = generateTerserOptions(
+    nameCache,
+    classPropertyPrefix,
+    testPropertyPrefix
+  );
 
   return [
     {
@@ -267,7 +292,7 @@ export function litProdConfig({
     {
       input: entryPoints.map((name) => `development/${name}.js`),
       output: {
-        dir: './',
+        dir: outputDir,
         format: 'esm',
         // Preserve existing module structure (e.g. preserve the "directives/"
         // directory).

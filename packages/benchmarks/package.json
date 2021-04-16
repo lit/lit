@@ -35,13 +35,13 @@
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
+    "@lit/reactive-element": "^1.0.0-pre.2",
     "lit-element": "^3.0.0-pre.3",
     "lit-html": "^2.0.0-pre.6",
-    "tachometer": "^0.5.3",
-    "@lit/reactive-element": "^1.0.0-pre.2"
+    "tachometer": "^0.5.8"
   },
   "devDependencies": {
-    "chromedriver": "^87.0.1",
-    "typescript": "^4.1.3"
+    "chromedriver": "^89.0.0",
+    "typescript": "^4.2.3"
   }
 }

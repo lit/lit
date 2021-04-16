@@ -4,13 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  _Σ,
-  ChildPart,
-  Part,
-  DirectiveParent,
-  TemplateResult,
-} from './lit-html.js';
+import {_Σ, Part, DirectiveParent, TemplateResult} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -19,7 +13,9 @@ import {
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
-const {_ChildPart: ChildPartImpl} = _Σ;
+const {_ChildPart: ChildPart} = _Σ;
+
+type ChildPart = InstanceType<typeof ChildPart>;
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
@@ -106,7 +102,7 @@ export const insertPart = (
   if (part === undefined) {
     const startNode = wrap(container).insertBefore(createMarker(), refNode);
     const endNode = wrap(container).insertBefore(createMarker(), refNode);
-    part = new ChildPartImpl(
+    part = new ChildPart(
       startNode,
       endNode,
       containerPart,

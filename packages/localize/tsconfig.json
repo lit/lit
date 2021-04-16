@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
+    "target": "es2019",
+    "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["es2018"],
+    "lib": ["es2018", "DOM"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
     "rootDir": "src/",
-    "outDir": "lib/",
+    "outDir": ".",
     "declaration": true,
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "lib/.tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": []
 }

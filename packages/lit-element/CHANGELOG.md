@@ -17,6 +17,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Added
+
+- Added `defer-hydration` attribute handling to `experimental-hydrate-support`,
+  which helps coordinate ordered wakeup of custom elements during hydration.
+
+### Changed
+
+- (Since 3.0.0-pre.4) Renamed `hydrate-support` module to `experimental-hydrate-support` to reflect its experimental nature. Experimental modules may undergo breaking changes within otherwise non-major releases.
+
+<!-- ### Added -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
+## 3.0.0-pre.4 - 2021-03-31
+
+### Changed
+
+- (Since 3.0.0-pre.3) The `renderOptions` class field on `LitElement` is now public.
+
 ## [3.0.0-pre.3] - 2021-02-11
 
 ### Changed
