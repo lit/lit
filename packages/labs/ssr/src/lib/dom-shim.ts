@@ -187,7 +187,7 @@ export const getWindow = ({
 
 export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
   // Avoid installing the DOM shim if one already exists
-  if (globalThis !== globalThis.window) {
+  if (globalThis.window === undefined) {
     const window = getWindow({props});
     // Setup window to proxy all globals added to window to the node global
     window.window = new Proxy(window, {
