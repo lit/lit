@@ -17,8 +17,15 @@ const {attributeToProperty, changedProperties} = _Φ;
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
+  element: LitElement;
+
   static matchesClass(ctor: typeof HTMLElement) {
     return ((ctor as unknown) as typeof LitElement)._$litElement$;
+  }
+
+  constructor(tagName: string) {
+    super(tagName);
+    this.element = new (customElements.get(this.tagName))();
   }
 
   connectedCallback() {

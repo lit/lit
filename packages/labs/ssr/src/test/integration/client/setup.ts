@@ -172,11 +172,11 @@ const assertHTML = (
   }
 };
 
-const modes = ['sandboxed', 'global'] as const;
+const modes = ['vm', 'global'] as const;
 export const setupTest = async (
   tests: SSRTestSuite,
   testFile: string,
-  mode: typeof modes[number] = 'sandboxed'
+  mode: typeof modes[number] = 'vm'
 ) => {
   suite(`${testFile}: ${mode}`, () => {
     let container: HTMLElement;
@@ -234,12 +234,13 @@ export const setupTest = async (
         expectMutationsDuringUpgrade,
       } = testSetup;
 
-      const testFn = (testSetup.skip || skipSSRTests)
-        ? test.skip
-        : testSetup.only
-        ? // eslint-disable-next-line no-only-tests/no-only-tests
-          test.only
-        : test;
+      const testFn =
+        testSetup.skip || skipSSRTests
+          ? test.skip
+          : testSetup.only
+          ? // eslint-disable-next-line no-only-tests/no-only-tests
+            test.only
+          : test;
 
       testFn(testName, async () => {
         // Get the SSR result from the server.

@@ -20,14 +20,14 @@ import fetch from 'node-fetch';
  *
  * @param includeJSBuiltIns Whether certain standard JS context globals like
  *  `console` and `setTimeout` should also be added to the global. Should
- *  generally only be true when adding window to a sandboxed VM context that
+ *  generally only be true when adding window to a fresh VM context that
  *  starts with nothing.
  * @param props Additional properties to add to the window global
  */
-export const getWindow = (
+export const getWindow = ({
   includeJSBuiltIns = false,
-  props: {[key: string]: unknown} = {}
-): {[key: string]: unknown} => {
+  props = {},
+}): {[key: string]: unknown} => {
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
     let attrs = attributes.get(element);
@@ -186,8 +186,9 @@ export const getWindow = (
 };
 
 export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
+  // Avoid installing the DOM shim if one already exists
   if (globalThis !== globalThis.window) {
-    const window = getWindow(false, props);
+    const window = getWindow({props});
     // Setup window to proxy all globals added to window to the node global
     window.window = new Proxy(window, {
       set(

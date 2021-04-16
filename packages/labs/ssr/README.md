@@ -1,6 +1,6 @@
 # @lit-labs/ssr
 
-A server package for rendering Lit templates and components on the server.
+A package for server-side rendering Lit templates and components.
 
 ## Status
 
@@ -10,7 +10,7 @@ A server package for rendering Lit templates and components on the server.
 
 ### Rendering in the Node.js global scope
 
-The easiest way to get started is to import your Lit template modules (and any `LitElement` definitions they may use) into the node global scope and render them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-global.js` module. Since Lit-authored code may rely on DOM globals, the `render-global.js` module will install a minimal DOM shim into the nodejs global scope, which should be sufficient for typical use cases. As such, `render-global.js` should be imported before any modules containing Lit code.
+The easiest way to get started is to import your Lit template modules (and any `LitElement` definitions they may use) into the node global scope and render them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-global.js` module. Since Lit-authored code may rely on DOM globals, the `render-global.js` module will install a minimal DOM shim into the Node.js global scope, which should be sufficient for typical use cases. As such, `render-global.js` should be imported before any modules containing Lit code.
 
 ```js
 // Example: server.js:
@@ -24,13 +24,13 @@ const ssrResult = render(myTemplate(data));
 context.body = Readable.from(ssrResult);
 ```
 
-### Sandboxed VM rendering
+### Rendering in a separate VM context
 
-To avoid polluting the Node.js global object with the DOM shim and ensure each request receives a fresh global object, we also provide a way to load app code into, and render from, a separate VM context with its own global object. _Note that using this feature requires Node 14+ and passing the `--experimental-vm-modules` flag to node on because of its use of [experimental VM modules](https://nodejs.org/api/vm.html#vm_class_vm_sourcetextmodule) for creating a module-compatible VM sandbox._
+To avoid polluting the Node.js global object with the DOM shim and ensure each request receives a fresh global object, we also provide a way to load app code into, and render from, a separate VM context with its own global object. _Note that using this feature requires Node 14+ and passing the `--experimental-vm-modules` flag to node on because of its use of [experimental VM modules](https://nodejs.org/api/vm.html#vm_class_vm_sourcetextmodule) for creating a module-compatible VM context._
 
 To render in a VM context, the `renderModule` function from the
 `render-module.js` module will import a given module into a server-side VM
-sandbox shimmed with the minimal DOM shim required for Lit server rendering,
+context shimmed with the minimal DOM shim required for Lit server rendering,
 execute a given function exported from that module, and return its value.
 
 Within that module, you can call the `render` method from the
@@ -52,9 +52,9 @@ export const renderTemplate = (someData) => {
 
 import {renderModule} from 'lit-ssr/lib/render-module.js';
 
-// Execute the above `renderTemplate` in a sandboxed VM with a minimal DOM shim
+// Execute the above `renderTemplate` in a separate VM context with a minimal DOM shim
 const ssrResult = await (renderModule(
-  './render-template.js',  // Module to load in SSR sandbox
+  './render-template.js',  // Module to load in VM context
   import.meta.url,         // Referrer URL for module
   'renderTemplate',        // Function to call
   [{some: "data"}]         // Arguments to function
@@ -129,6 +129,13 @@ const ssrResult = render(html`
 
 context.body = Readable.from(ssrResult);
 ```
+
+Note that as a simple example, the code above assumes a static top-level
+template that does not need to be hydrated on the client, and that top-level
+components individually hydrate themselves using data supplied either by
+attributes or via a side-channel mechanism. This is in no way fundamental; the
+top-level template can be used to pass data to the top-level components, and
+that template can be loaded and hydrated on the client to apply the same data.
 
 ## Notes and limitations
 

@@ -7,4 +7,4 @@
 import {tests} from '../tests/basic.js';
 import {setupTest} from './setup.js';
 
-setupTest(tests, 'basic', 'sandboxed');
+setupTest(tests, 'basic', 'vm');

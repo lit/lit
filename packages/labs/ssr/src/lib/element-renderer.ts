@@ -50,7 +50,7 @@ export const getElementRenderer = (
  * An object that renders elements of a certain type.
  */
 export abstract class ElementRenderer {
-  element!: HTMLElement;
+  element?: HTMLElement;
   tagName: string;
 
   /**
@@ -72,12 +72,6 @@ export abstract class ElementRenderer {
 
   constructor(tagName: string) {
     this.tagName = tagName;
-    try {
-      this.element = new (customElements.get(this.tagName))();
-    } catch (e) {
-      console.error(`Exception in custom element constructor ${e}`);
-      return;
-    }
   }
 
   /**
@@ -103,8 +97,10 @@ export abstract class ElementRenderer {
    * @param value Value of the property
    */
   setProperty(name: string, value: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)[name] = value;
+    if (this.element !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.element as any)[name] = value;
+    }
   }
 
   /**
@@ -118,9 +114,11 @@ export abstract class ElementRenderer {
    * @param value Value of the attribute
    */
   setAttribute(name: string, value: string) {
-    const old = this.element.getAttribute(name);
-    this.element.setAttribute(name, value);
-    this.attributeChangedCallback(name, old, value);
+    if (this.element !== undefined) {
+      const old = this.element.getAttribute(name);
+      this.element.setAttribute(name, value);
+      this.attributeChangedCallback(name, old, value);
+    }
   }
 
   /**
@@ -141,16 +139,18 @@ export abstract class ElementRenderer {
    * Default implementation serializes all attributes on the element instance.
    */
   *renderAttributes(): IterableIterator<string> {
-    const {attributes} = this.element;
-    for (
-      let i = 0, name, value;
-      i < attributes.length && ({name, value} = attributes[i]);
-      i++
-    ) {
-      if (value === '') {
-        yield ` ${name}`;
-      } else {
-        yield ` ${name}="${escapeHtml(value)}"`;
+    if (this.element !== undefined) {
+      const {attributes} = this.element;
+      for (
+        let i = 0, name, value;
+        i < attributes.length && ({name, value} = attributes[i]);
+        i++
+      ) {
+        if (value === '') {
+          yield ` ${name}`;
+        } else {
+          yield ` ${name}="${escapeHtml(value)}"`;
+        }
       }
     }
   }

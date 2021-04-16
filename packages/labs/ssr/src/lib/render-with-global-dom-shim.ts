@@ -4,5 +4,5 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import './dom-shim-global.js';
+import './install-global-dom-shim.js';
 export * from './render-lit-html.js';

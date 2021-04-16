@@ -25,14 +25,16 @@ export const startServer = async (port = 9090) => {
     let module: typeof testModule,
       render: typeof import('../../../lib/render-lit-html.js').render;
     if (mode === 'global') {
-      render = (await import('../../../lib/render-global.js')).render;
+      render = (await import('../../../lib/render-with-global-dom-shim.js'))
+        .render;
       module = await import(`../tests/${testFile}-ssr.js`);
     } else {
+      // mode === 'vm'
       module = (
         await importModule(
           `../tests/${testFile}-ssr.js`,
           import.meta.url,
-          getWindow(true)
+          getWindow({includeJSBuiltIns: true})
         )
       ).namespace;
       render = module.render;

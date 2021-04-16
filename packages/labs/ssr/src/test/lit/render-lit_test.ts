@@ -21,7 +21,10 @@ const test = tapePromise(tape);
 const appModuleImport = importModule(
   '../test-files/render-test-module.js',
   import.meta.url,
-  getWindow(true, {require: createRequire(import.meta.url)})
+  getWindow({
+    includeJSBuiltIns: true,
+    props: {require: createRequire(import.meta.url)},
+  })
 );
 
 /* Real Tests */
