@@ -16,7 +16,15 @@ import {LitElement, css, html, CSSResultGroup, TemplateResult} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {generateElementName, nextFrame} from './test-helpers';
-import {flip, Flip, FlipOptions, CSSValues, fadeIn} from '../flip.js';
+import {
+  flip,
+  Flip,
+  FlipOptions,
+  CSSValues,
+  fadeIn,
+  flyAbove,
+  flyBelow,
+} from '../flip.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -26,6 +34,14 @@ const DEV_MODE = !!LitElement.enableWarning;
 if (DEV_MODE) {
   LitElement.disableWarning?.('change-in-update');
 }
+
+/**
+ * TODO
+ * 1. work out when onStart/onComplete and flips run
+ * 2. disabled: does this call onStart/onComplete: should not.
+ * 3. controller tests
+ * 4. remove `scaleUp` and maybe `reset` and `commit`.
+ */
 
 suite('Flip', () => {
   let el;
@@ -48,12 +64,22 @@ suite('Flip', () => {
   const generateFlipElement = (
     options: FlipOptions = {onStart, onComplete},
     extraCss?: CSSResultGroup,
-    childTemplate?: TemplateResult
+    childTemplate?: () => TemplateResult
   ) => {
     const styles = [
       css`
+        * {
+          box-sizing: border-box;
+        }
         div {
+          display: inline-block;
+          outline: 1px dotted black;
           position: relative;
+        }
+
+        .container {
+          height: 200px;
+          width: 200px;
         }
         .shift {
           left: 200px;
@@ -74,10 +100,10 @@ suite('Flip', () => {
 
       render() {
         return html`<div
-          class=${classMap({shift: this.shift})}
+          class="container ${classMap({shift: this.shift})}"
           ${flip(options)}
         >
-          Flip ${childTemplate}
+          Flip ${childTemplate?.()}
         </div>`;
       }
     }
@@ -95,10 +121,11 @@ suite('Flip', () => {
 
   teardown(() => {
     if (container && container.parentNode) {
-      //container.parentNode.removeChild(container);
+      container.parentNode.removeChild(container);
     }
   });
 
+  // TODO(sorvell): when should onComplete go?
   test('onStart/onComplete', async () => {
     let completeEl;
     const onComplete = (flip: Flip) => {
@@ -111,6 +138,9 @@ suite('Flip', () => {
     await el.updateComplete;
     assert.ok(theFlip!);
     assert.equal(el.div, flipElement);
+    await theFlip!.finished;
+    el.shift = true;
+    await el.updateComplete;
     await theFlip!.finished;
     assert.equal(el.div, completeEl);
   });
@@ -284,36 +314,86 @@ suite('Flip', () => {
   test('adjusts for ancestor position', async () => {
     let shiftChild = false;
     let shiftGChild = false;
+    let childFlipProps: CSSValues;
+    let gChildFlip: Flip, gChildFlipProps: CSSValues;
+    const childComplete = (flip: Flip) => {
+      childFlipProps = flip.flipProps!;
+    };
+    const gChildStart = (flip: Flip) => (gChildFlip = flip);
+    const gChildComplete = (flip: Flip) => {
+      gChildFlipProps = flip.flipProps!;
+    };
     const El = generateFlipElement(
       {
-        onStart,
-        onComplete,
+        animationOptions: {fill: 'both'},
       },
       css`
+        .shift {
+          height: 100px;
+          width: 100px;
+        }
+        .child {
+          position: absolute;
+          right: 0;
+          width: 100px;
+        }
         .shiftChild {
-          left: -200px;
-          top: -200px;
+          left: 0;
+          top: 20px;
+        }
+        .gChild {
+          position: absolute;
+          right: 0;
+          width: 50px;
         }
 
         .shiftGChild {
-          left: 100px;
-          top: 100px;
+          left: 0;
+          top: 20px;
         }
       `,
-      html`<div class=${classMap({shiftChild})} ${flip()}>
+      () => html`<div
+        class="child ${classMap({shiftChild})}"
+        ${flip({onComplete: childComplete})}
+      >
         Child
-        <div class=${classMap({shiftGChild})}>GChild</div>
+        <div
+          class="gChild ${classMap({shiftGChild})}"
+          ${flip({onStart: gChildStart, onComplete: gChildComplete})}
+        >
+          GChild
+        </div>
       </div>`
     );
-    shiftChild = true;
-    shiftGChild = true;
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await theFlip!.finished;
+    await gChildFlip!.finished;
+    el.shift = true;
+    shiftChild = true;
+    shiftGChild = true;
+    await el.updateComplete;
+    await gChildFlip!.finished;
+    assert.deepEqual(childFlipProps!, {
+      left: 50,
+      top: -20,
+      width: 0.5,
+      height: 0.5,
+    });
+    assert.deepEqual(gChildFlipProps!, {left: 50, top: -20});
+    el.shift = false;
+    shiftChild = false;
+    shiftGChild = false;
+    await el.updateComplete;
+    await gChildFlip!.finished;
+    assert.deepEqual(childFlipProps!, {
+      left: -100,
+      top: 40,
+      width: 2,
+      height: 2,
+    });
+    assert.deepEqual(gChildFlipProps!, {left: -50, top: 20});
   });
-
-  test('scaleUp', async () => {});
 
   test('animates in', async () => {
     const El = generateFlipElement({
@@ -331,11 +411,30 @@ suite('Flip', () => {
     assert.equal((frames![0].transform as string).trim(), 'translateX(-100px)');
   });
 
-  test('onFrames', async () => {});
-
-  test('commit', async () => {});
-
-  test('reset', async () => {});
+  test('onFrames', async () => {
+    const mod = 'translateX(100px) translateY(100px)';
+    const onFrames = (flip: Flip) => {
+      if (flip.frames === undefined) {
+        return;
+      }
+      flip.frames[0].transform! = mod;
+      return flip.frames!;
+    };
+    const El = generateFlipElement({
+      onStart,
+      onComplete,
+      onFrames,
+    });
+    el = new El();
+    container.appendChild(el);
+    await el.updateComplete;
+    await theFlip!.finished;
+    el.shift = true;
+    await el.updateComplete;
+    await theFlip!.finished;
+    assert.ok(frames);
+    assert.deepEqual(frames![0].transform, mod);
+  });
 
   test('animates in, skipInitial', async () => {
     const El = generateFlipElement({
@@ -351,9 +450,187 @@ suite('Flip', () => {
     assert.notOk(frames);
   });
 
-  test('animates out', async () => {});
+  test('animates out', async () => {
+    let shouldRender = true;
+    let disconnectFlip: Flip, disconnectFrames: Keyframe[];
+    const onDisconnectStart = (flip: Flip) => {
+      disconnectFlip = flip;
+    };
 
-  test('animates out, stabilized', async () => {});
+    const onDisconnectComplete = (flip: Flip) => {
+      disconnectFrames = flip.frames!;
+    };
+    const outFrames = flyBelow;
+    const El = generateFlipElement(
+      undefined,
+      undefined,
+      () =>
+        html`${shouldRender
+          ? html`<div
+              ${flip({
+                onStart: onDisconnectStart,
+                onComplete: onDisconnectComplete,
+                out: outFrames,
+              })}
+            >
+              Out
+            </div>`
+          : ''}`
+    );
+    el = new El();
+    container.appendChild(el);
+    await el.updateComplete;
+    await disconnectFlip!.finished;
+    shouldRender = false;
+    el.requestUpdate();
+    await el.updateComplete;
+    await disconnectFlip!.finished;
+    assert.equal(disconnectFrames!, outFrames);
+  });
 
-  test('animates in based on an element that animated out', async () => {});
+  test('animates out, stabilizeOut', async () => {
+    let shouldRender = true;
+    let disconnectFlip: Flip;
+    let disconnectElement: HTMLElement;
+    let startCalls = 0;
+    const onStart = (flip: Flip) => {
+      startCalls++;
+      disconnectFlip = flip;
+      disconnectElement = flip.element;
+      const p = disconnectElement!.parentElement!.getBoundingClientRect();
+      const r = disconnectElement!.getBoundingClientRect();
+      const s = disconnectElement!.previousElementSibling!.getBoundingClientRect();
+      if (!shouldRender) {
+        assert.equal(
+          r.bottom - p.top,
+          options.stabilizeOut ? r.height : s.height
+        );
+      }
+    };
+    const options = {
+      onStart,
+      out: flyBelow,
+      stabilizeOut: false,
+    };
+
+    const El = generateFlipElement(
+      undefined,
+      undefined,
+      () =>
+        html`<div
+            style="vertical-align: bottom; height: ${shouldRender
+              ? '0px'
+              : '100px'}"
+          ></div>
+          ${shouldRender ? html`<div ${flip(options)}>Out</div>` : ''}`
+    );
+    el = new El();
+    container.appendChild(el);
+    await el.updateComplete;
+    await disconnectFlip!.finished;
+    assert.equal(startCalls, 1);
+    shouldRender = false;
+    el.requestUpdate();
+    await el.updateComplete;
+    await disconnectFlip!.finished;
+    assert.equal(startCalls, 2);
+    shouldRender = true;
+    el.requestUpdate();
+    await el.updateComplete;
+    await disconnectFlip!.finished;
+    assert.equal(startCalls, 3);
+    options.stabilizeOut = true;
+    shouldRender = false;
+    el.requestUpdate();
+    await el.updateComplete;
+    await disconnectFlip!.finished;
+    assert.equal(startCalls, 4);
+  });
+
+  test('animates in based on an element that animated out', async () => {
+    let shouldRender = true;
+    let oneFlip: Flip | undefined, twoFlip: Flip | undefined;
+    let oneFrames: Keyframe[] | undefined, twoFrames: Keyframe[] | undefined;
+    const onOneStart = (flip: Flip) => {
+      oneFlip = flip;
+    };
+    const onOneComplete = (flip: Flip) => {
+      oneFrames = flip.frames;
+    };
+    const onTwoStart = (flip: Flip) => {
+      twoFlip = flip;
+    };
+    const onTwoComplete = (flip: Flip) => {
+      twoFrames = flip.frames;
+    };
+    const El = generateFlipElement(
+      undefined,
+      css`
+        .one {
+          position: absolute;
+          top: 20px;
+          width: 50px;
+        }
+        .two {
+          position: absolute;
+          top: 40px;
+          width: 50px;
+        }
+      `,
+      () =>
+        html`${shouldRender
+          ? html`<div
+              class="one"
+              ${flip({
+                id: '1',
+                inId: '2',
+                onStart: onOneStart,
+                onComplete: onOneComplete,
+                out: flyAbove,
+                in: fadeIn,
+                skipInitial: true,
+              })}
+            >
+              Out
+            </div>`
+          : html`<div
+              class="two"
+              ${flip({
+                id: '2',
+                inId: '1',
+                onStart: onTwoStart,
+                onComplete: onTwoComplete,
+                in: fadeIn,
+                out: flyBelow,
+              })}
+            >
+              In
+            </div>`}`
+    );
+    el = new El();
+    container.appendChild(el);
+    await el.updateComplete;
+    await oneFlip?.finished;
+    await twoFlip?.finished;
+    shouldRender = false;
+    el.requestUpdate();
+    oneFrames = twoFrames = undefined;
+    await el.updateComplete;
+    await twoFlip?.finished;
+    assert.equal(oneFrames, flyAbove);
+    assert.equal(
+      (twoFrames![0].transform! as string).trim(),
+      'translateY(-20px)'
+    );
+    oneFrames = twoFrames = undefined;
+    shouldRender = true;
+    el.requestUpdate();
+    await el.updateComplete;
+    await twoFlip?.finished;
+    assert.equal(twoFrames, flyBelow);
+    assert.equal(
+      (oneFrames![0].transform! as string).trim(),
+      'translateY(20px)'
+    );
+  });
 });

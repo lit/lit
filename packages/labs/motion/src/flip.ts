@@ -18,22 +18,18 @@ const disconnectedProps: Map<unknown, CSSValues> = new Map();
 const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
 
 export type FlipOptions = {
-  // Id for this flip; used to link to other flips via e.g. `inId`
-  id?: unknown;
-  // Set to the flip id to map to when rendering "in"
-  inId?: unknown;
-  // If set, this flip will scale up with its ancestor flips.
-  scaleUp?: boolean;
-  // Callback run when the flip animation starts
-  onStart?: (flip: Flip) => void;
-  // Callback run when the flip animation is complete
-  onComplete?: (flip: Flip) => void;
-  // Callback run to modify frames used to animate the flip
-  onFrames?: (flip: Flip) => Keyframe[];
   // Options used for the flip animation
   animationOptions?: KeyframeAnimationOptions;
   // List of css properties to animate
   properties?: CSSPropertiesList;
+  // if `true`, the flip is disabled
+  disabled?: boolean;
+  // Callback run to produce a value which is dirty checked to determine if flip should run.
+  guard?: () => unknown;
+  // Id for this flip; used to link to other flips via e.g. `inId`
+  id?: unknown;
+  // Set to the flip id to map to when rendering "in"
+  inId?: unknown;
   // Keyframes to use when animating "in"
   in?: Keyframe[];
   // Keyframes to use when animating "out"
@@ -42,14 +38,12 @@ export type FlipOptions = {
   stabilizeOut?: boolean;
   // Skips animation when initially rendering
   skipInitial?: boolean;
-  // if `true`, the flip is disabled
-  disabled?: boolean;
-  // Callback run to produce a value which is dirty checked to determine if flip should run.
-  guard?: () => unknown;
-  // If `true`, the final animation state is committed to element styles. Note, requires fill of `forwards` or `both`.
-  commit?: boolean;
-  // If `true`, any committed styling is reverted before beginning the next flip.
-  reset?: boolean;
+  // Callback run when the flip animation starts
+  onStart?: (flip: Flip) => void;
+  // Callback run when the flip animation is complete
+  onComplete?: (flip: Flip) => void;
+  // Callback run to modify frames used to animate the flip
+  onFrames?: (flip: Flip) => Keyframe[] | undefined;
 };
 
 export const animationFrame = () =>
@@ -218,25 +212,16 @@ export class Flip extends AsyncDirective {
     const flipController = this.getController();
     if (flipController !== undefined) {
       options = {
-        ...flipController.options,
+        ...flipController.flipOptions,
         ...(options ?? {}),
       };
       options.animationOptions = {
-        ...(flipController.options.animationOptions ?? {}),
+        ...(flipController.flipOptions.animationOptions ?? {}),
         ...(options.animationOptions ?? {}),
       };
     }
     // Ensure there are some properties to animation and some animation options.
     options!.properties ??= defaultCssProperties;
-    // if scaling up, don't move left/top
-    // TODO(sorvell): if these properties change, it's after hostUpdate
-    // where from is measured, meaning we could have measurements for left/top.
-    // Is that ok?
-    if (options.scaleUp) {
-      options.properties = options.properties.filter(
-        (x) => !(x === 'left' || x === 'top')
-      );
-    }
     this.options = options;
   }
 
@@ -289,10 +274,14 @@ export class Flip extends AsyncDirective {
     }
   }
 
-  async hostUpdated() {
-    // Wait for rendering so any sub-elements have a chance to render.
-    await animationFrame;
+  hostUpdated() {
     this.flip();
+  }
+
+  reconnected() {}
+
+  disconnected() {
+    this.flipDisconnect();
   }
 
   resetStyles() {
@@ -317,14 +306,16 @@ export class Flip extends AsyncDirective {
     ) {
       return;
     }
-    this.beginFlip();
+    this.beforeBeginFlip();
+    // Wait for rendering so any sub-elements have a chance to render.
+    await animationFrame;
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
     // child flips within ancestor flips.
     const animationOptions = this._calcAnimationOptions(
-      ancestors,
-      this.options.animationOptions
+      this.options.animationOptions,
+      ancestors
     );
     const toValues = this._measure();
     // Normal flip or inverse scale
@@ -332,12 +323,10 @@ export class Flip extends AsyncDirective {
       const {from, to} = this._applyAncestorAdjustments(
         this._fromValues,
         toValues,
-        ancestors,
-        this.options.scaleUp!
+        ancestors
       );
-      const shouldScale = this.options.scaleUp;
       this.log('measured', [this._fromValues, toValues, from, to]);
-      frames = this.calculateFrames(from, to, shouldScale, shouldScale);
+      frames = this.calculateFrames(from, to);
       // "In" flip.
     } else {
       const disconnected = disconnectedProps.get(this.options.inId);
@@ -365,26 +354,77 @@ export class Flip extends AsyncDirective {
         frames = [...this.options.in, {}];
       }
     }
-    await this.animate(frames, animationOptions);
-    this.completeFlip();
+    this.beginFlip();
+    const animated = await this.animate(frames, animationOptions);
+    this.completeFlip(animated);
   }
 
+  // Experimental animate out functionality.
   async flipDisconnect() {
+    if (!this._shouldFlip) {
+      return;
+    }
+    if (this.options.id !== undefined) {
+      disconnectedProps.set(this.options.id, this._fromValues!);
+    }
+    if (this.options.out === undefined) {
+      return;
+    }
+    this.beforeBeginFlip();
+    await animationFrame();
+    if (this._parentNode?.isConnected) {
+      // put element back in DOM
+      const ref =
+        this._nextSibling && this._nextSibling.parentNode === this._parentNode
+          ? this._nextSibling
+          : null;
+      this._parentNode.insertBefore(this.element, ref);
+      // Optionally move element back to its position before it was detached.
+      if (this.options.stabilizeOut) {
+        // Measure current position after re-attaching.
+        const shifted = this._measure();
+        this.log('stabilizing out');
+        // TODO(sorvell): these nudges could conflict with existing styling
+        // or animation but setting left/top should be rare, especially via
+        // animation.
+        const left =
+          (this._fromValues!.left as number) - (shifted.left as number);
+        const top = (this._fromValues!.top as number) - (shifted.top as number);
+        const isStatic = getComputedStyle(this.element).position === 'static';
+        if (isStatic && (left !== 0 || top !== 0)) {
+          this.element.style.position = 'relative';
+        }
+        if (left !== 0) {
+          this.element.style.left = left + 'px';
+        }
+        if (top !== 0) {
+          this.element.style.top = top + 'px';
+        }
+      }
+    }
+    // These inherit from ancestors. This allows easier synchronization of
+    // child flips within ancestor flips.
+    const animationOptions = this._calcAnimationOptions(
+      this.options.animationOptions
+    );
     this.beginFlip();
-    await this.animate(this.options.out);
-    this.completeFlip();
+    const animated = await this.animate(this.options.out, animationOptions);
+    this.completeFlip(animated);
+    this.element.remove();
+  }
+
+  beforeBeginFlip() {
+    this.createFinished();
   }
 
   beginFlip() {
-    if (this.options.reset) {
-      this.resetStyles();
-    }
-    this.createFinished();
     this.options.onStart?.(this);
   }
 
-  completeFlip() {
-    this.options.onComplete?.(this);
+  completeFlip(didAnimate: boolean) {
+    if (didAnimate) {
+      this.options.onComplete?.(this);
+    }
     this._fromValues = undefined;
     this.flipProps = undefined;
     this.frames = undefined;
@@ -417,8 +457,8 @@ export class Flip extends AsyncDirective {
   }
 
   private _calcAnimationOptions(
-    ancestors: Flip[],
-    options?: KeyframeAnimationOptions
+    options: KeyframeAnimationOptions | undefined,
+    ancestors: Flip[] = this._getAncestors()
   ) {
     // merges this flip's options over ancestor options over defaults
     const animationOptions = {...defaultAnimationOptions};
@@ -429,61 +469,11 @@ export class Flip extends AsyncDirective {
     return animationOptions;
   }
 
-  reconnected() {}
-
-  // Experimental animate out functionality.
-  async disconnected() {
-    if (!this._shouldFlip) {
-      return;
-    }
-    if (this.options.id !== undefined) {
-      disconnectedProps.set(this.options.id, this._fromValues!);
-    }
-    if (this.options.out === undefined) {
-      return;
-    }
-    await animationFrame();
-    if (this._parentNode?.isConnected) {
-      const ref =
-        this._nextSibling && this._nextSibling.parentNode === this._parentNode
-          ? this._nextSibling
-          : null;
-      this._parentNode.insertBefore(this.element, ref);
-      // Move to position before removal before animating
-      const shifted = this._measure();
-      if (this.options.stabilizeOut) {
-        this.log('stabilizing out');
-        const left = diffOp(
-          this._fromValues!.left as number,
-          shifted.left as number
-        );
-        // TODO(sorvell): these nudges could conflict with existing styling
-        // or animation but setting left/top should be rare, especially via
-        // animation.
-        if (left !== 0) {
-          this.element.style.position = 'relative';
-          this.element.style.left = left + 'px';
-        }
-        const top = diffOp(
-          this._fromValues!.top as number,
-          shifted.top as number
-        );
-        if (top !== 0) {
-          this.element.style.position = 'relative';
-          this.element.style.top = top + 'px';
-        }
-      }
-      await this.flipDisconnect();
-      this.element.remove();
-    }
-  }
-
   // Adjust position based on ancestor scaling.
   private _applyAncestorAdjustments(
     from: CSSValues,
     to: CSSValues,
-    ancestors: Flip[],
-    scaleUp = false
+    ancestors: Flip[]
   ) {
     from = {...from};
     to = {...to};
@@ -502,13 +492,6 @@ export class Flip extends AsyncDirective {
           dScaleY = dScaleY / (a.height as number);
         }
       });
-      // When scaling up, match from and to sizes.
-      if (scaleUp && dScaleX > 1 && to.width !== undefined) {
-        from.width = dScaleX * (to.width as number);
-      }
-      if (scaleUp && dScaleY > 1 && to.height !== undefined) {
-        from.height = dScaleY * (to.height as number);
-      }
       // Move position by ancestor scaling amount.
       if (from.left !== undefined && to.left !== undefined) {
         from.left = dScaleX * (from.left as number);
@@ -522,12 +505,7 @@ export class Flip extends AsyncDirective {
     return {from, to};
   }
 
-  protected calculateFrames(
-    from: CSSValues,
-    to: CSSValues,
-    center = false,
-    dupFrame = false
-  ) {
+  protected calculateFrames(from: CSSValues, to: CSSValues, center = false) {
     const fromFrame: Keyframe = {};
     const toFrame: Keyframe = {};
     let hasFrames = false;
@@ -545,9 +523,6 @@ export class Flip extends AsyncDirective {
           props[p] = op.value!;
           hasFrames = true;
           fromFrame.transform = `${fromFrame.transform ?? ''} ${op.transform}`;
-          if (dupFrame) {
-            toFrame.transform = `${toFrame.transform ?? ''} ${op.transform}`;
-          }
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
@@ -567,12 +542,15 @@ export class Flip extends AsyncDirective {
     options = this.options.animationOptions
   ) {
     this.frames = frames;
-    if (this.isAnimating() || this.isDisabled() || frames === undefined) {
-      return;
+    if (this.isAnimating() || this.isDisabled()) {
+      return false;
     }
     if (this.options.onFrames) {
       this.frames = frames = this.options.onFrames(this);
       this.log('modified frames', frames);
+    }
+    if (frames === undefined) {
+      return false;
     }
     this.log('animate', [frames, options]);
     this.animation = this.element.animate(frames, options);
@@ -584,9 +562,7 @@ export class Flip extends AsyncDirective {
       // cancelled.
     }
     controller?.remove(this);
-    if (this.options.commit) {
-      this.commitStyles();
-    }
+    return true;
   }
 
   protected isAnimating() {
