@@ -225,6 +225,8 @@ export type TemplateResult<T extends ResultType = ResultType> = {
   values: unknown[];
 };
 
+export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
+                           
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
 export interface CompiledTemplateResult {
