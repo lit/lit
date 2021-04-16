@@ -15,7 +15,7 @@ export const flipControllers: WeakMap<
  */
 export class FlipController {
   host: ReactiveControllerHost;
-  options: FlipOptions;
+  flipOptions: FlipOptions;
   startPaused = false;
   disabled = false;
   onComplete?: () => void;
@@ -23,14 +23,14 @@ export class FlipController {
   constructor(
     host: ReactiveControllerHost,
     info: {
-      options?: FlipOptions;
+      flipOptions?: FlipOptions;
       startPaused?: boolean;
       disabled?: boolean;
       onComplete?: () => void;
     }
   ) {
     this.host = host;
-    this.options = info.options || {};
+    this.flipOptions = info.flipOptions || {};
     this.startPaused = !!info.startPaused;
     this.disabled = !!info.disabled;
     this.onComplete = info.onComplete;
