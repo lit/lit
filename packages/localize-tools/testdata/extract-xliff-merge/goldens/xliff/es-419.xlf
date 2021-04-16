@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="se86f4e822256d113">
+  <note>Description of not translated</note>
+  <source>I am not translated</source>
+</trans-unit>
+<trans-unit id="s677cb50a446c46f4">
+  <note>Description of translated</note>
+  <source>I am translated</source>
+  <target>Estoy traducido</target>
+</trans-unit>
+</body>
+</file>
+</xliff>
