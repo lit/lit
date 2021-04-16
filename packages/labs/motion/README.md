@@ -43,7 +43,7 @@ works. It measures the styling of the flip element before a layout change
 (first) and after a layout change (last). Then it inverts the last layout
 such that it matches the first layout. Finally it plays an animation which
 removes the inverted layout such that the element animates to the "last" layout.
-See [article about flip by Paul Lewis](https://aerotwist.com/blog/flip-your-animations/)
+See the [flip article by Paul Lewis](https://aerotwist.com/blog/flip-your-animations/)
 for more information about the technique.
 
 The directive uses a reactive controller to coordinate measuring the DOM of the
