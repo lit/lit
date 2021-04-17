@@ -1873,8 +1873,8 @@ suite('lit-html', () => {
 
       log.length = 0;
       assertRender(
-        html`<div ${count('x', log)} a=${'a'}></div>`,
-        `<div a="a"></div>`
+        html`<div ${count('x', log)} a=${'a'}>${'A'}</div>${'B'}`,
+        `<div a="a">A</div>B`
       );
       assert.deepEqual(log, ['x:1']);
 

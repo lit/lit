@@ -226,7 +226,7 @@ export type TemplateResult<T extends ResultType = ResultType> = {
 };
 
 export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
-                           
+
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
 export interface CompiledTemplateResult {
@@ -548,9 +548,9 @@ class Template {
   ) {
     let node: Node | null;
     let nodeIndex = 0;
-    let bindingIndex = 0;
     let attrNameIndex = 0;
-    const l = strings.length - 1;
+    const partCount = strings.length - 1;
+    const parts = this.parts;
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
@@ -566,7 +566,7 @@ class Template {
     }
 
     // Walk the template to find binding markers and create TemplateParts
-    while ((node = walker.nextNode()) !== null && bindingIndex < l) {
+    while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
@@ -597,7 +597,7 @@ class Template {
                 )!;
                 const statics = value.split(marker);
                 const m = /([.?@])?(.*)/.exec(realName)!;
-                this.parts.push({
+                parts.push({
                   type: ATTRIBUTE_PART,
                   index: nodeIndex,
                   name: m[2],
@@ -611,9 +611,8 @@ class Template {
                       ? EventPart
                       : AttributePart,
                 });
-                bindingIndex += statics.length - 1;
               } else {
-                this.parts.push({
+                parts.push({
                   type: ELEMENT_PART,
                   index: nodeIndex,
                 });
@@ -642,8 +641,7 @@ class Template {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
               walker.nextNode();
-              this.parts.push({type: CHILD_PART, index: ++nodeIndex});
-              bindingIndex++;
+              parts.push({type: CHILD_PART, index: ++nodeIndex});
             }
             // Note because this marker is added after the walker's current
             // node, it will be walked to in the outer loop (and ignored), so
@@ -654,8 +652,7 @@ class Template {
       } else if (node.nodeType === 8) {
         const data = (node as Comment).data;
         if (data === markerMatch) {
-          bindingIndex++;
-          this.parts.push({type: CHILD_PART, index: nodeIndex});
+          parts.push({type: CHILD_PART, index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -663,8 +660,7 @@ class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this.parts.push({type: COMMENT_PART, index: nodeIndex});
-            bindingIndex++;
+            parts.push({type: COMMENT_PART, index: nodeIndex});
             // Move to the end of the match
             i += marker.length - 1;
           }
@@ -762,12 +758,12 @@ class TemplateInstance {
     const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
-    let node = walker.nextNode();
+    let node = walker.nextNode()!;
     let nodeIndex = 0;
     let partIndex = 0;
     let templatePart = parts[0];
 
-    while (templatePart !== undefined && node !== null) {
+    while (templatePart !== undefined) {
       if (nodeIndex === templatePart.index) {
         let part: Part | undefined;
         if (templatePart.type === CHILD_PART) {
@@ -791,8 +787,8 @@ class TemplateInstance {
         this._parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart.index) {
-        node = walker.nextNode();
+      if (nodeIndex !== templatePart?.index) {
+        node = walker.nextNode()!;
         nodeIndex++;
       }
     }
