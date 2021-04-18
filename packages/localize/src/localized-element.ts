@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement} from 'lit-element';
+import {LitElement} from 'lit';
 import {LOCALE_STATUS_EVENT} from './lit-localize.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,7 +24,7 @@ type Constructor<T> = new (...args: any[]) => T;
  *
  *   import {Localized} from '@lit/localize/localized-element.js';
  *   import {msg} from '@lit/localize';
- *   import {LitElement, html} from 'lit-html';
+ *   import {LitElement, html} from 'lit';
  *
  *   class MyElement extends Localized(LitElement) {
  *     render() {

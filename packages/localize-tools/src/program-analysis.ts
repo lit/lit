@@ -269,8 +269,7 @@ export function extractTemplate(
     error: createDiagnostic(
       file,
       templateArg,
-      `Expected first argument to msg() to be a string or lit-html ` +
-        `template.`
+      `Expected first argument to msg() to be a string or lit template.`
     ),
   };
 }
@@ -360,7 +359,7 @@ interface Expression {
  * These substitutions are used to delineate template string literal expressions
  * embedded within HTML during HTML parsing in a way that is:
  *
- * [1] Valid anywhere a lit-html expression binding can go without changing the
+ * [1] Valid anywhere a lit expression binding can go without changing the
  *     structure of the HTML.
  * [2] Unambiguous, so that existing code wouldn't accidentally look like this.
  * [3] Not authorable in source code even intentionally (hence the random number).

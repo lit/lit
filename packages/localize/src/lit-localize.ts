@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult} from 'lit-html';
+import {TemplateResult} from 'lit';
 import {generateMsgId} from './id-generation.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

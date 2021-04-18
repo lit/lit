@@ -531,7 +531,7 @@ class Transformer {
 }
 
 /**
- * Wrap a TemplateLiteral in the lit-html `html` tag.
+ * Wrap a TemplateLiteral in the lit `html` tag.
  */
 function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
   return ts.createTaggedTemplate(ts.createIdentifier('html'), template);

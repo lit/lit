@@ -123,7 +123,7 @@ function generateLocaleModule(
   // The unique set of message names we found in this XLB translations file.
   const translatedMsgNames = new Set<string>();
 
-  // Whether we'll need to import the lit-html "html" function.
+  // Whether we'll need to import the lit "html" function.
   let importLit = false;
 
   const entries = [];
@@ -157,7 +157,7 @@ function generateLocaleModule(
     // Do not modify this file by hand!
     // Re-generate this file by running lit-localize
 
-    ${importLit ? "import {html} from 'lit-html';" : ''}
+    ${importLit ? "import {html} from 'lit';" : ''}
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -178,8 +178,8 @@ function copyMessagesSortedByName(messages: Message[]): Message[] {
 }
 
 /**
- * Convert the contents of a message to a TypeScript string, possibly using
- * lit-html if there is embedded HTML.
+ * Convert the contents of a message to a TypeScript string, possibly using lit
+ * if there is embedded HTML.
  */
 function makeMessageString(
   contents: Array<string | Placeholder>,

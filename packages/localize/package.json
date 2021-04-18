@@ -44,8 +44,7 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "lit-element": "^2.3.1",
-    "lit-html": "^1.2.1"
+    "lit": "^2.0.0-pre.2"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

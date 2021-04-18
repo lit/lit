@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html} from 'lit-html';
+import {html} from 'lit';
 import {msg} from '@lit/localize';
 
 msg('Hello World!', {

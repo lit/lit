@@ -17,8 +17,7 @@ import {
 } from '../lit-localize.js';
 import {Localized} from '../localized-element.js';
 import {Deferred} from './deferred.js';
-import {html, render} from 'lit-html';
-import {LitElement} from 'lit-element';
+import {html, render, LitElement} from 'lit';
 
 suite('lit-localize', () => {
   let container: HTMLElement;

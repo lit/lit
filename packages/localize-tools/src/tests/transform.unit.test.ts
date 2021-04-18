@@ -13,7 +13,7 @@ import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 const IMPORT_MSG = `import { msg, str } from "@lit/localize";\n`;
-const IMPORT_LIT_HTML = `import { html } from "lit-html";\n`;
+const IMPORT_LIT = `import { html } from "lit";\n`;
 
 /**
  * Compile the given fragment of TypeScript source code using the lit-localize
@@ -40,8 +40,8 @@ function checkTransform(
       // should be un-used after litLocalizeTransformation.
     }
     if (inputTs.includes('html')) {
-      inputTs = IMPORT_LIT_HTML + inputTs;
-      expectedJs = IMPORT_LIT_HTML + expectedJs;
+      inputTs = IMPORT_LIT + inputTs;
+      expectedJs = IMPORT_LIT + expectedJs;
     }
   }
   const options = ts.getDefaultCompilerOptions();
@@ -447,7 +447,7 @@ test('different variable cast to "lit-localize-status" unchanged', (t) => {
 test('Localized(LitElement) -> LitElement', (t) => {
   checkTransform(
     t,
-    `import {LitElement, html} from 'lit-element';
+    `import {LitElement, html} from 'lit';
      import {Localized} from '@lit/localize/localized-element.js';
      import {msg} from '@lit/localize';
      class MyElement extends Localized(LitElement) {
@@ -455,7 +455,7 @@ test('Localized(LitElement) -> LitElement', (t) => {
          return html\`<b>\${msg('Hello World!', {id: 'greeting'})}</b>\`;
        }
      }`,
-    `import {LitElement, html} from 'lit-element';
+    `import {LitElement, html} from 'lit';
      class MyElement extends LitElement {
        render() {
          return html\`<b>Hello World!</b>\`;
