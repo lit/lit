@@ -15,11 +15,11 @@
 ###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [Rollup](#rollup) | [FAQ](#faq)
 
 > @lit/localize is a library and command-line tool for localizing web
-> applications that are based on lit-html and LitElement.
+> applications that are based on Lit.
 
 ## Features
 
-- 🌐 Localize your lit-html and LitElement applications
+- 🌐 Localize your Lit applications
 - 🔥 Safely embed HTML markup within localized templates
 - 🍦 Write vanilla code that works in development with no new tooling
 - 📄 Standard XLIFF interchange format
@@ -31,7 +31,7 @@
 Wrap your template with the `msg` function to make it localizable:
 
 ```typescript
-import {html} from 'lit-html';
+import {html} from 'lit';
 import {msg} from '@lit/localize';
 render(msg(html`Hello <b>World</b>!`), document.body);
 ```
@@ -50,7 +50,7 @@ file, a format which is supported by many localization tools and services:
 Use _transform_ mode to generate an optimized bundle for each locale:
 
 ```javascript
-import {html} from 'lit-html';
+import {html} from 'lit';
 render(html`Hola <b>Mundo</b>!`, document.body);
 ```
 
@@ -100,10 +100,10 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    npm i -D @lit/localize-tools
    ```
 
-2. Set up a TypeScript lit-html project if you don't have one already:
+2. Set up a TypeScript lit project if you don't have one already:
 
    ```bash
-   npm i lit-html
+   npm i lit
    npm i -D typescript
    npx tsc --init
    ```
@@ -120,14 +120,14 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 3. Create an `index.ts`, and declare a localizable template using the `msg`
    function. The first argument is a unique identifier for this template, and
-   the second is a string or lit-html template.
+   the second is a string or lit template.
 
    (Note that this code will directly compile and run, just as it would if you
    were rendering the lit template directly, so your build process doesn't need
    to change until you want to integrate localized templates.)
 
    ```typescript
-   import {html, render} from 'lit-html';
+   import {html, render} from 'lit';
    import {msg} from '@lit/localize';
 
    render(html`<p>${msg(html`Hello <b>World</b>!`)}</p>`, document.body);
@@ -191,19 +191,19 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 9. Now take a look at the generated file `es-419/index.js`:
 
    ```javascript
-   import {html, render} from 'lit-html';
+   import {html, render} from 'lit';
    render(html`<p>Hola <b>Mundo</b>!</p>`, document.body);
    ```
 
    and `en/index.js`:
 
    ```javascript
-   import {html, render} from 'lit-html';
+   import {html, render} from 'lit';
    render(html`<p>Hello <b>World</b>!</p>`, document.body);
    ```
 
    Note that the localized template has been substituted into your code, the
-   `msg` call has been removed, the lit-html template has been reduced to its
+   `msg` call has been removed, the lit template has been reduced to its
    simplest form, and the `lit-localize` module is no longer imported.
 
 ## API
@@ -324,7 +324,7 @@ Throws if the given locale is not contained by the configured `sourceLocale` or
 
 ### `msg(template: TemplateResult|string|StrResult, options?: {id?: string, desc?:string}) => string|TemplateResult`
 
-Make lit-html template or string localizable.
+Make a lit template or string localizable.
 
 The `options.id` parameter is an optional project-wide unique identifier for
 this template. If omitted, an id will be automatically generated from the
@@ -478,7 +478,7 @@ automatically re-render whenever the locale changes in runtime mode.
 ```typescript
 import {Localized} from '@lit/localize/localized-element.js';
 import {msg} from '@lit/localize';
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 
 class MyElement extends Localized(LitElement) {
   render() {
@@ -626,7 +626,7 @@ For example, this `locale-picker` custom element loads a new subdomain whenever
 a new locale is selected from a drop-down list:
 
 ```typescript
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 import {getLocale} from './localization.js';
 import {allLocales} from './locale-codes.js';
 import {Localized} from '@lit/localize/localized-element.js';
