@@ -26,6 +26,7 @@ class ClassMapDirective extends Directive {
    * Used to unset existing values when a new ClassInfo object is applied.
    */
   private _previousClasses?: Set<string>;
+  private _staticClasses?: Set<string>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -42,17 +43,30 @@ class ClassMapDirective extends Directive {
   }
 
   render(classInfo: ClassInfo) {
-    return Object.keys(classInfo)
-      .filter((key) => classInfo[key])
-      .join(' ');
+    // Add spaces to ensure separation from static classes
+    return (
+      ' ' +
+      Object.keys(classInfo)
+        .filter((key) => classInfo[key])
+        .join(' ') +
+      ' '
+    );
   }
 
   update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
     // Remember dynamic classes on the first render
     if (this._previousClasses === undefined) {
       this._previousClasses = new Set();
+      if (part.strings !== undefined) {
+        this._staticClasses = new Set(
+          part.strings
+            .join(' ')
+            .split(/\s/)
+            .filter((s) => s !== '')
+        );
+      }
       for (const name in classInfo) {
-        if (classInfo[name]) {
+        if (classInfo[name] && !this._staticClasses?.has(name)) {
           this._previousClasses.add(name);
         }
       }
@@ -76,7 +90,10 @@ class ClassMapDirective extends Directive {
       // We explicitly want a loose truthy check of `value` because it seems
       // more convenient that '' and 0 are skipped.
       const value = !!classInfo[name];
-      if (value !== this._previousClasses.has(name)) {
+      if (
+        value !== this._previousClasses.has(name) &&
+        !this._staticClasses?.has(name)
+      ) {
         if (value) {
           classList.add(name);
           this._previousClasses.add(name);

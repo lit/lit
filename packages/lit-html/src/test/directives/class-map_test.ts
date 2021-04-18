@@ -16,7 +16,7 @@ suite('classMap directive', () => {
   }
 
   function renderClassMapStatic(cssInfo: ClassInfo) {
-    render(html`<div class="aa ${classMap(cssInfo)}  bb "></div>`, container);
+    render(html`<div class="aa ${classMap(cssInfo)} bb"></div>`, container);
   }
 
   setup(() => {
@@ -84,20 +84,18 @@ suite('classMap directive', () => {
   test('can not override static classes', () => {
     renderClassMapStatic({aa: false, bb: true});
     const el = container.firstElementChild!;
-    assert.isTrue(el.classList.contains('aa'));
-    assert.isTrue(el.classList.contains('bb'));
-  });
+    assert.isTrue(el.classList.contains('aa'), '1');
+    assert.isTrue(el.classList.contains('bb'), '2');
 
-  // TODO (justinfagnani): unskip and resolve https://github.com/Polymer/lit-html/issues/1278
-  test.skip('can not override static classes', () => {
-    renderClassMapStatic({aa: false, bb: true});
-    const el = container.firstElementChild!;
-    assert.isTrue(el.classList.contains('aa'));
-    assert.isTrue(el.classList.contains('bb'));
-
+    // bb is explicitly set to false
     renderClassMapStatic({aa: true, bb: false});
-    assert.isTrue(el.classList.contains('aa'));
-    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('aa'), '3');
+    assert.isTrue(el.classList.contains('bb'), '4');
+
+    // both are now omitted
+    renderClassMapStatic({});
+    assert.isTrue(el.classList.contains('aa'), '5');
+    assert.isTrue(el.classList.contains('bb'), '6');
   });
 
   test('changes classes when used with the same object', () => {
@@ -123,6 +121,14 @@ suite('classMap directive', () => {
     assert.isTrue(classes.indexOf('foo') === -1);
     assert.isTrue(classes.indexOf('bar') > -1);
     assert.isTrue(classes.indexOf('zonk') > -1);
+  });
+
+  test('works if there are no spaces next to directive', () => {
+    render(html`<div class="aa${classMap({bb: true})}cc"></div>`, container);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'), 'aa');
+    assert.isTrue(el.classList.contains('bb'), 'bb');
+    assert.isTrue(el.classList.contains('cc'), 'cc');
   });
 
   test('throws when used on non-class attribute', () => {
