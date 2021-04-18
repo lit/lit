@@ -4,8 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult} from 'lit';
+import {TemplateResult, ReactiveController, ReactiveControllerHost} from 'lit';
 import {generateMsgId} from './id-generation.js';
+import type {ReactiveElement} from '@lit/reactive-element';
+import type {
+  Constructor,
+  ClassDescriptor,
+} from '@lit/reactive-element/decorators/base.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -441,3 +446,114 @@ function generateId(template: TemplateLike): string {
 }
 
 export const msg: typeof _msg & {_LIT_LOCALIZE_MSG_?: never} = _msg;
+
+class LocalizeController implements ReactiveController {
+  host: ReactiveControllerHost;
+
+  constructor(host: ReactiveControllerHost) {
+    this.host = host;
+  }
+
+  private readonly __litLocalizeEventHandler = (
+    event: WindowEventMap[typeof LOCALE_STATUS_EVENT]
+  ) => {
+    if (event.detail.status === 'ready') {
+      this.host.requestUpdate();
+    }
+  };
+
+  hostConnected() {
+    window.addEventListener(
+      LOCALE_STATUS_EVENT,
+      this.__litLocalizeEventHandler
+    );
+  }
+
+  hostDisconnected() {
+    window.removeEventListener(
+      LOCALE_STATUS_EVENT,
+      this.__litLocalizeEventHandler
+    );
+  }
+}
+
+/**
+ * Re-render the given LitElement whenever a new active locale has loaded.
+ *
+ * See also {@link localized} for the same functionality as a decorator.
+ *
+ * When using lit-localize in transform mode, calls to this function are
+ * replaced with undefined.
+ *
+ * Usage:
+ *
+ *   import {LitElement, html} from 'lit';
+ *   import {msg, updateWhenLocaleChanges} from '@lit/localize';
+ *
+ *   class MyElement extends LitElement {
+ *     constructor() {
+ *       super();
+ *       updateWhenLocaleChanges(this);
+ *     }
+ *
+ *     render() {
+ *       return html`<b>${msg('Hello World')}</b>`;
+ *     }
+ *   }
+ */
+const _updateWhenLocaleChanges = (host: ReactiveControllerHost) =>
+  host.addController(new LocalizeController(host));
+
+export const updateWhenLocaleChanges: typeof _updateWhenLocaleChanges & {
+  _LIT_LOCALIZE_CONTROLLER_FN_?: never;
+} = _updateWhenLocaleChanges;
+
+/**
+ * Class decorator to enable re-rendering the given LitElement whenever a new
+ * active locale has loaded.
+ *
+ * See also {@link updateWhenLocaleChanges} for the same functionality without
+ * the use of decorators.
+ *
+ * When using lit-localize in transform mode, applications of this decorator are
+ * removed.
+ *
+ * Usage:
+ *
+ *   import {LitElement, html} from 'lit';
+ *   import {customElement} from 'lit/decorators.js';
+ *   import {msg, localized} from '@lit/localize';
+ *
+ *   @localized()
+ *   @customElement('my-element')
+ *   class MyElement extends LitElement {
+ *     render() {
+ *       return html`<b>${msg('Hello World')}</b>`;
+ *     }
+ *   }
+ */
+const _localized = () => (
+  classOrDescriptor: Constructor<ReactiveElement> | ClassDescriptor
+) =>
+  typeof classOrDescriptor === 'function'
+    ? legacyLocalized((classOrDescriptor as unknown) as typeof ReactiveElement)
+    : standardLocalized(classOrDescriptor);
+
+export const localized: typeof _localized & {
+  _LIT_LOCALIZE_DECORATOR_?: never;
+} = _localized;
+
+const standardLocalized = ({kind, elements}: ClassDescriptor) => {
+  return {
+    kind,
+    elements,
+    finisher(clazz: typeof ReactiveElement) {
+      clazz.addInitializer(updateWhenLocaleChanges);
+    },
+  };
+};
+
+const legacyLocalized = (clazz: typeof ReactiveElement) => {
+  clazz.addInitializer(updateWhenLocaleChanges);
+  return clazz as any;
+};

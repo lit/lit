@@ -36,7 +36,18 @@ html`[SALT] Hello <b>World</b>!`;
 html`Hello <b><!-- comment -->World</b>!`;
 // Custom ID
 ('Hello World');
-export class MyElement extends LitElement {
+// updateWhenLocaleChanges -> undefined
+export class MyElement1 extends LitElement {
+  constructor() {
+    super();
+    undefined;
+  }
+  render() {
+    return html`<p>Hello <b>World</b>! (${getLocale()})</p>`;
+  }
+}
+// @localized -> removed
+export class MyElement2 extends LitElement {
   render() {
     return html`<p>Hello <b>World</b>! (${getLocale()})</p>`;
   }

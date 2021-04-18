@@ -12,7 +12,7 @@
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
-###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [Localized mixin](#localized-mixin) | [CLI](#cli) | [Config file](#config-file) | [Rollup](#rollup) | [FAQ](#faq)
+###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [@localized decorator](#localized-decorator) | [CLI](#cli) | [Config file](#config-file) | [Rollup](#rollup) | [FAQ](#faq)
 
 > @lit/localize is a library and command-line tool for localizing web
 > applications that are based on Lit.
@@ -28,12 +28,21 @@
 
 ## Overview
 
-Wrap your template with the `msg` function to make it localizable:
+Wrap your template with the `msg` function to make it localizable, and decorate
+your component with `@localized` to make it automatically re-render when the
+locale changes:
 
 ```typescript
-import {html} from 'lit';
-import {msg} from '@lit/localize';
-render(msg(html`Hello <b>World</b>!`), document.body);
+import {LitElement, html, customElement} from 'lit';
+import {msg, localized} from '@lit/localize';
+
+@customElement('my-element')
+@localized()
+class MyElement extends LitElement {
+  render() {
+    return msg(html`Hello <b>World</b>!`);
+  }
+}
 ```
 
 Run `lit-localize` to extract all localizable templates and generate an XLIFF
@@ -51,7 +60,12 @@ Use _transform_ mode to generate an optimized bundle for each locale:
 
 ```javascript
 import {html} from 'lit';
-render(html`Hola <b>Mundo</b>!`, document.body);
+
+class MyElement extends LitElement {
+  render() {
+    return html`Hola <b>Mundo</b>!`;
+  }
+}
 ```
 
 Alternatively, use _runtime_ mode to dynamically switch locales without a page
@@ -396,6 +410,53 @@ Descriptions are represented in XLIFF using `<note>` elements.
 </trans-unit>
 ```
 
+## `@localized` decorator
+
+If you are using [LitElement](https://lit-element.polymer-project.org/), then
+you can use the `@localized` decorator to automatically re-render your elements
+whenever the locale changes.
+
+```typescript
+import {LitElement, html} from 'lit';
+import {customElement} from 'lit/decorators.js';
+import {msg, localized} from '@lit/localize';
+
+@localized()
+@customElement('my-element')
+class MyElement extends LitElement {
+  render() {
+    // Whenever setLocale() is called, and templates for that locale have
+    // finished loading, this render() function will be re-invoked.
+    return html`<p>${msg(html`Hello <b>World!</b>`)}</p>`;
+  }
+}
+```
+
+### `updateWhenLocaleChanges`
+
+Alternatively, if your toolchain does not support decorators, you can manually
+call `updateWhenLocaleChanges` from your constructor:
+
+```typescript
+import {LitElement, html} from 'lit';
+import {msg, updateWhenLocaleChanges} from '@lit/localize';
+
+class MyElement extends LitElement {
+  constructor() {
+    super();
+    updateWhenLocaleChanges(this);
+  }
+
+  render() {
+    // Whenever setLocale() is called, and templates for that locale have
+    // finished loading, this render() function will be re-invoked.
+    return html`<p>${msg(html`Hello <b>World!</b>`)}</p>`;
+  }
+}
+```
+
+In transform mode `updateWhenLocaleChanges` calls are replaced with `undefined`.
+
 ## `lit-localize-status` event
 
 In runtime mode, whenever a locale change starts, finishes successfully, or
@@ -466,30 +527,6 @@ window.addEventListener(LIT_LOCALIZE_STATUS, (event) => {
   }
 });
 ```
-
-## `Localized` mixin
-
-If you are using [LitElement](https://lit-element.polymer-project.org/), then
-you can use the `Localized`
-[mixin](https://justinfagnani.com/2015/12/21/real-mixins-with-javascript-classes/)
-from `@lit/localize/localized-element.js` to ensure that your elements
-automatically re-render whenever the locale changes in runtime mode.
-
-```typescript
-import {Localized} from '@lit/localize/localized-element.js';
-import {msg} from '@lit/localize';
-import {LitElement, html} from 'lit';
-
-class MyElement extends Localized(LitElement) {
-  render() {
-    // Whenever setLocale() is called, and templates for that locale have
-    // finished loading, this render() function will be re-invoked.
-    return html`<p>${msg(html`Hello <b>World!</b>`)}</p>`;
-  }
-}
-```
-
-In transform mode, applications of the `Localized` mixin are removed.
 
 ## CLI
 
@@ -629,9 +666,13 @@ a new locale is selected from a drop-down list:
 import {LitElement, html} from 'lit';
 import {getLocale} from './localization.js';
 import {allLocales} from './locale-codes.js';
-import {Localized} from '@lit/localize/localized-element.js';
+import {updateWhenLocaleChanges} from '@lit/localize';
 
-export class LocalePicker extends Localized(LitElement) {
+export class LocalePicker extends LitElement {
+  super() {
+    super();
+    updateWhenLocaleChanges(this);
+  }
   render() {
     return html`
       <select @change=${this.localeChanged}>

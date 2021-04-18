@@ -14,10 +14,12 @@ import {
   LocaleModule,
   LOCALE_STATUS_EVENT,
   LocaleStatusEventDetail,
+  updateWhenLocaleChanges,
+  localized,
 } from '../lit-localize.js';
-import {Localized} from '../localized-element.js';
 import {Deferred} from './deferred.js';
 import {html, render, LitElement} from 'lit';
+import {customElement} from 'lit/decorators.js';
 
 suite('lit-localize', () => {
   let container: HTMLElement;
@@ -196,23 +198,86 @@ suite('lit-localize', () => {
     });
   });
 
-  suite('Localized mixin', () => {
-    class XGreeter extends Localized(LitElement) {
+  suite('updateWhenLocaleChanges', () => {
+    class XGreeter1 extends LitElement {
+      constructor() {
+        super();
+        updateWhenLocaleChanges(this);
+      }
+
       render() {
         return msg(html`<b>Hello World</b>`, {id: 'greeting'});
       }
     }
-    customElements.define('x-greeter', XGreeter);
+    customElements.define('x-greeter-1', XGreeter1);
 
     test('initially renders in English', async () => {
-      const greeter = document.createElement('x-greeter') as XGreeter;
+      const greeter = document.createElement('x-greeter-1') as XGreeter1;
       container.appendChild(greeter);
       await greeter.updateComplete;
       assert.equal(greeter.shadowRoot?.textContent, 'Hello World');
     });
 
     test('renders in Spanish after locale change', async () => {
-      const greeter = document.createElement('x-greeter') as XGreeter;
+      const greeter = document.createElement('x-greeter-1') as XGreeter1;
+      container.appendChild(greeter);
+      await greeter.updateComplete;
+
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+      await greeter.updateComplete;
+      assert.equal(greeter.shadowRoot?.textContent, 'Hola Mundo');
+    });
+  });
+
+  suite('@localized decorator', () => {
+    @localized()
+    @customElement('x-greeter-2')
+    class XGreeter2 extends LitElement {
+      render() {
+        return msg(html`<b>Hello World</b>`, {id: 'greeting'});
+      }
+    }
+
+    test('initially renders in English', async () => {
+      const greeter = document.createElement('x-greeter-2') as XGreeter2;
+      container.appendChild(greeter);
+      await greeter.updateComplete;
+      assert.equal(greeter.shadowRoot?.textContent, 'Hello World');
+    });
+
+    test('renders in Spanish after locale change', async () => {
+      const greeter = document.createElement('x-greeter-2') as XGreeter2;
+      container.appendChild(greeter);
+      await greeter.updateComplete;
+
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+      await greeter.updateComplete;
+      assert.equal(greeter.shadowRoot?.textContent, 'Hola Mundo');
+    });
+  });
+
+  suite('@localized decorator (reversed decorator order)', () => {
+    @customElement('x-greeter-3')
+    @localized()
+    class XGreeter3 extends LitElement {
+      render() {
+        return msg(html`<b>Hello World</b>`, {id: 'greeting'});
+      }
+    }
+
+    test('initially renders in English', async () => {
+      const greeter = document.createElement('x-greeter-3') as XGreeter3;
+      container.appendChild(greeter);
+      await greeter.updateComplete;
+      assert.equal(greeter.shadowRoot?.textContent, 'Hello World');
+    });
+
+    test('renders in Spanish after locale change', async () => {
+      const greeter = document.createElement('x-greeter-3') as XGreeter3;
       container.appendChild(greeter);
       await greeter.updateComplete;
 
