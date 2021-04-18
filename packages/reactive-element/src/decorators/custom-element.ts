@@ -46,14 +46,14 @@ const standardCustomElement = (
  *
  * ```
  * @customElement('my-element')
- * class MyElement {
+ * class MyElement extends LitElement {
  *   render() {
  *     return html``;
  *   }
  * }
  * ```
  * @category Decorator
- * @param tagName The name of the custom element to define.
+ * @param tagName The tag name of the custom element to define.
  */
 export const customElement = (tagName: string) => (
   classOrDescriptor: Constructor<HTMLElement> | ClassDescriptor
