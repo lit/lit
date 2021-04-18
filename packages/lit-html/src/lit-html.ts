@@ -226,7 +226,7 @@ export type TemplateResult<T extends ResultType = ResultType> = {
 };
 
 export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
-                           
+
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
 export interface CompiledTemplateResult {
@@ -535,6 +535,7 @@ const getTemplateHtml = (
   ];
 };
 
+/** @internal */
 export type {Template};
 class Template {
   /** @internal */
