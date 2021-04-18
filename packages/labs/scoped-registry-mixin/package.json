@@ -45,6 +45,7 @@
   },
   "author": "The Polymer Authors",
   "dependencies": {
+    "@lit/reactive-element": "1.0.0-pre.3",
     "lit": "^2.0.0-pre.2"
   },
   "devDependencies": {
