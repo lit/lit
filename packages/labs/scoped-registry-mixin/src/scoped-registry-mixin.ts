@@ -13,6 +13,7 @@
  */
 
 import type {LitElement} from 'lit';
+import {adoptStyles} from '@lit/reactive-element/css-tag.js';
 
 // Proposed interface changes
 declare global {
@@ -55,10 +56,17 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
         );
       }
 
-      return (this.renderOptions.creationScope = this.attachShadow({
+      const renderRoot = (this.renderOptions.creationScope = this.attachShadow({
         ...shadowRootOptions,
         customElements: constructor.registry,
       }));
+
+      adoptStyles(
+        renderRoot,
+        (this.constructor as typeof LitElement).elementStyles!
+      );
+
+      return renderRoot;
     }
   };
 }
