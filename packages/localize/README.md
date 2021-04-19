@@ -114,7 +114,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    npm i -D @lit/localize-tools
    ```
 
-2. Set up a TypeScript lit project if you don't have one already:
+2. Set up a TypeScript Lit project if you don't have one already:
 
    ```bash
    npm i lit
@@ -134,10 +134,10 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 3. Create an `index.ts`, and declare a localizable template using the `msg`
    function. The first argument is a unique identifier for this template, and
-   the second is a string or lit template.
+   the second is a string or Lit template.
 
    (Note that this code will directly compile and run, just as it would if you
-   were rendering the lit template directly, so your build process doesn't need
+   were rendering the Lit template directly, so your build process doesn't need
    to change until you want to integrate localized templates.)
 
    ```typescript
@@ -217,7 +217,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    ```
 
    Note that the localized template has been substituted into your code, the
-   `msg` call has been removed, the lit template has been reduced to its
+   `msg` call has been removed, the Lit template has been reduced to its
    simplest form, and the `lit-localize` module is no longer imported.
 
 ## API
@@ -338,7 +338,7 @@ Throws if the given locale is not contained by the configured `sourceLocale` or
 
 ### `msg(template: TemplateResult|string|StrResult, options?: {id?: string, desc?:string}) => string|TemplateResult`
 
-Make a lit template or string localizable.
+Make a Lit template or string localizable.
 
 The `options.id` parameter is an optional project-wide unique identifier for
 this template. If omitted, an id will be automatically generated from the
