@@ -38,14 +38,11 @@
     "/fnv1a64.d.ts",
     "/fnv1a64.js",
     "/fnv1a64.js.map",
-    "/localized-element.d.ts",
-    "/localized-element.js",
-    "/localized-element.js.map",
     "/config.schema.json"
   ],
   "dependencies": {
-    "lit-element": "^2.3.1",
-    "lit-html": "^1.2.1"
+    "@lit/reactive-element": "^1.0.0-pre.3",
+    "lit": "^2.0.0-pre.2"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

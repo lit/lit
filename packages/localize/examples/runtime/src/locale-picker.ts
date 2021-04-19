@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
+import {customElement} from 'lit/decorators.js';
 import {getLocale, setLocaleFromUrl} from './localization.js';
 import {allLocales} from './locale-codes.js';
-import {Localized} from '@lit/localize/localized-element.js';
+import {localized} from '@lit/localize';
 
 const localeNames: {
   [L in typeof allLocales[number]]: string;
@@ -17,10 +18,12 @@ const localeNames: {
   zh_CN: '中文 (简体)',
 };
 
-// Note we apply the Localized mixin here so that we're always up to date with
+// Note we use updateWhenLocaleChanges here so that we're always up to date with
 // the active locale (the result of getLocale()) when the locale changes via a
 // history navigation.
-export class LocalePicker extends Localized(LitElement) {
+@localized()
+@customElement('locale-picker')
+export class LocalePicker extends LitElement {
   render() {
     return html`
       <select @change=${this.localeChanged}>
@@ -44,4 +47,3 @@ export class LocalePicker extends Localized(LitElement) {
     }
   }
 }
-customElements.define('locale-picker', LocalePicker);

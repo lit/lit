@@ -5,7 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- ## Unreleased -->
+## Unreleased
+
+### Changed
+
+- **[BREAKING]** Lit dependency upgraded to v2.
+
+- **[BREAKING]** The `Localized` mixin has been replaced with the `@localized`
+  decorator and the `updateWhenLocaleChanges` function. These APIs register a
+  Lit 2 controller that serves the same purpose as the removed mixin.
+
+  #### Before
+
+  ```ts
+  import {LitElement} from 'lit-element';
+  import {Localized} from '@lit/localize/localized-element.js';
+
+  class MyElement extends Localized(LitElement) {}
+  ```
+
+  #### After
+
+  ###### With decorators
+
+  ```ts
+  import {LitElement, customElement} from 'lit';
+  import {localized} from '@lit/localize';
+
+  @localized()
+  @customElement('my-element');
+  class MyElement extends LitElement {}
+  ```
+
+  ###### Without decorators
+
+  ```ts
+  import {LitElement} from 'lit';
+  import {updateWhenLocaleChanges} from '@lit/localize';
+
+  class MyElement extends LitElement {
+    constructor() {
+      super();
+      updateWhenLocaleChanges(this);
+    }
+  }
+  ```
 
 ## [0.9.0] - 2021-03-30
 

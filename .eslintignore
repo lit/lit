@@ -103,7 +103,6 @@ packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
-packages/localize/localized-element.*
 packages/localize/examples/*/node_modules/
 packages/localize/fnv1a64.*
 packages/localize/id-generation.*

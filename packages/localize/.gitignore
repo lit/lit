@@ -3,7 +3,6 @@
 /tests/
 /.tsbuildinfo
 /lit-localize.*
-/localized-element.*
 /examples/*/node_modules/
 /fnv1a64.*
 /id-generation.*
