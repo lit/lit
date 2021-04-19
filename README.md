@@ -53,7 +53,7 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/Poly
 
 ## Contributing to Lit
 
-Lit is open source and we appreciate issue reports and pull requests. See [CONTRIBUTING.md](./contributing.md) for more information.
+Lit is open source and we appreciate issue reports and pull requests. See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
 
 ### Setting up the lit monorepo for development
 
