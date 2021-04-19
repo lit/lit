@@ -36,7 +36,7 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/Poly
   - [`@lit/reactive-element`](./packages/reactive-element) - A low level base class that provides a reactive lifecycle based on attribute/property changes.
 - Additional libraries
   - [`@lit/localize`](./packages/localize) - A library and command-line tool for localizing web applications built using Lit.
-  - [`@lit/localize-tools`](./packages/localize) - Localization tooling for use with `@lit/localize`.
+  - [`@lit/localize-tools`](./packages/localize-tools) - Localization tooling for use with `@lit/localize`.
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
   - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
