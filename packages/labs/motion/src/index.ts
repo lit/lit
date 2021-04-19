@@ -13,5 +13,4 @@
  */
 export * from './flip.js';
 export * from './flip-controller.js';
-export * from './simple-spring.js';
 export * from './position.js';

@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css?family=Material+Icons&display=block"
       rel="stylesheet"
     />
-    <title>Lit</title>
+    <title>Hero Animation</title>
   </head>
   <body>
     <style>
@@ -35,7 +35,6 @@
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
       import {repeat} from 'lit-html/directives/repeat.js';
-      // import {Spring} from 'wobble/dist/wobble.es.js';
       import {
         flip,
         FlipController,
@@ -44,13 +43,36 @@
         fadeOut,
         transformProps,
       } from '../development/flip.js';
-      import {SimpleSpring} from '../development/simple-spring.js';
 
-      const spring = new SimpleSpring({
-        stiffness: 700,
-        damping: 50,
-        mass: 2,
-      });
+      const springy = [
+        0,
+        0.0701,
+        0.2329,
+        0.4308,
+        0.6245,
+        0.7906,
+        0.9184,
+        1.0065,
+        1.059,
+        1.0833,
+        1.0872,
+        1.0783,
+        1.0628,
+        1.0453,
+        1.0288,
+        1.015,
+        1.0048,
+        0.9979,
+        0.994,
+        0.9925,
+        0.9925,
+        0.9935,
+        0.9949,
+        0.9964,
+        0.9978,
+        0.999,
+        0.9998,
+      ];
 
       const onFrames = ({flipProps: props, frames}) => {
         if (frames === undefined || props === undefined) {
@@ -58,7 +80,7 @@
         }
         return [
           frames[0],
-          ...spring.values.map((v) => {
+          ...springy.map((v) => {
             const frame = {};
             const x = props.left ? `translateX(${props.left * (1 - v)}px)` : '';
             const y = props.top ? `translateY(${props.top * (1 - v)}px)` : '';
@@ -263,7 +285,7 @@
           this._flipController = new FlipController(this, {
             flipOptions: {
               animationOptions: {
-                duration: 1000,
+                duration: 1500,
                 easing: 'ease-in-out',
                 fill: 'both',
               },
@@ -384,7 +406,7 @@
 
         onClick(e, item) {
           if (this._flipController.isAnimating) {
-            this._flipController.toggle();
+            this._flipController.togglePlay();
           } else {
             this.detail = item;
           }

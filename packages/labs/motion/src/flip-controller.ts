@@ -111,4 +111,8 @@ export class FlipController {
       (a) => a.animation?.playState === 'running'
     );
   }
+
+  async finished() {
+    await Promise.all(Array.from(this.flips).map((f) => f.finished));
+  }
 }

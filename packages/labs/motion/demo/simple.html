@@ -18,143 +18,51 @@
     <title>Simple Animation</title>
   </head>
   <body>
-    <style>
-      html,
-      body {
-        margin: 0;
-        font-family: sans-serif;
-        height: 100vh;
-      }
-    </style>
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit-element/lit-element.js';
-      import {flip, defaultCssProperties} from '../development/flip.js';
-      import {FlipController} from '../development/flip-controller.js';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {
+        flip,
+        flyBelow,
+        defaultCssProperties,
+      } from '../development/flip.js';
 
       class MyElement extends LitElement {
-        static properties = {shifted: {}, embiggen: {}};
-        delay = 250;
+        static properties = {shifted: {}};
         static styles = css`
-          :host {
-            display: flex;
-            padding: 20px;
-            font-weight: 800;
-            justify-content: center;
-            min-height: 500px;
-            overflow: hidden;
-            --box-size: 116px;
-            user-select: none;
-          }
-
-          * {
-            box-sizing: border-box;
-          }
-
-          .circle {
+          .box {
+            --box-size: 250px;
             position: relative;
-            will-change: transform;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: var(--box-size);
+            background: steelblue;
             height: var(--box-size);
-          }
-          .container {
-            background: #263238;
-          }
-
-          .circle {
-            text-align: center;
-            color: black;
-            background: #b0bec5;
-          }
-
-          .shifted > .circle {
-            background: #263238;
-            color: white;
+            width: var(--box-size);
+            border-radius: 50%;
           }
 
           .shifted {
-            top: 100px;
-            width: calc(3 * var(--box-size));
-            height: calc(3 * var(--box-size));
-            background: #b0bec5;
-          }
-
-          .shifted > .circle.embiggen {
-            font-size: 3rem;
-            width: calc(3 * var(--box-size));
-            height: calc(3 * var(--box-size));
-          }
-
-          label {
-            position: absolute;
-            left: 0;
+            left: calc(100% - var(--box-size));
+            background: tomato;
+            filter: blur(5em);
           }
         `;
 
-        constructor() {
-          super();
-          this.flipController = new FlipController(this, {
-            flipOptions: {
-              animationOptions: {
-                duration: 1500,
-                easing: 'ease-in-out',
-              },
-            },
-            onComplete: () => this.changeLayout(true),
-          });
-          this.addEventListener('click', () => this.clickHandler());
-          this.embiggen = true;
-        }
-
-        firstUpdated() {
-          this.changeLayout(true);
-        }
-
         render() {
           return html`
-            <label @click=${(e) => e.stopPropagation()}>
-              <input
-                @change=${async (e) => {
-                  this.flipController.finish();
-                  this.shifted = false;
-                  this.embiggen = !this.embiggen;
-                }}
-                .checked=${this.embiggen}
-                type="checkbox"
-              />
-              Embiggen Text
-            </label>
-            <div
-              class="container circle ${this.shifted ? 'shifted' : ''}"
-              ${flip({})}
-            >
-              <span class="circle ${this.embiggen ? 'embiggen' : ''}" ${flip()}
-                >Simple...<br />
-                is beautiful.</span
-              >
-            </div>
+            <p><button @click=${this._toggle}>Move</button></p>
+            <p
+              class="box ${classMap({shifted: this.shifted})}"
+              ${flip({
+                in: flyBelow,
+                properties: [...defaultCssProperties, 'filter'],
+                animationOptions: {duration: 1500},
+              })}
+            ></p>
           `;
         }
 
-        clickHandler() {
-          if (this.flipController.isAnimating) {
-            this.flipController.togglePlay();
-          } else {
-            this.changeLayout();
-          }
-        }
-
-        async changeLayout(useDelay = false) {
-          if (!this.flipController.isAnimating) {
-            if (useDelay) {
-              await new Promise((r) => setTimeout(r, this.delay));
-            }
-            this.shifted = !this.shifted;
-          }
+        _toggle() {
+          this.shifted = !this.shifted;
         }
       }
 
