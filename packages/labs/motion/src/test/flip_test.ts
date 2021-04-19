@@ -282,6 +282,50 @@ suite('Flip', () => {
     assert.ok(frames);
   });
 
+  test('guard - array', async () => {
+    let guardValue = [1, 2, 3];
+    const guard = () => guardValue;
+    const El = generateFlipElement({
+      onStart,
+      onComplete,
+      guard,
+      animationOptions: {duration: 10},
+    });
+    el = new El();
+    container.appendChild(el);
+    await el.updateComplete;
+    el.shift = true;
+    await el.updateComplete;
+    await theFlip?.finished;
+    assert.ok(frames);
+    // guardValue not changed, so should not run again.
+    el.shift = false;
+    theFlip = frames = undefined;
+    await el.updateComplete;
+    await ((theFlip as unknown) as Flip)?.finished;
+    assert.notOk(frames);
+    // guardValue changed, so should run.
+    guardValue = [1, 2, 3, 4];
+    el.shift = true;
+    theFlip = frames = undefined;
+    await el.updateComplete;
+    await theFlip!.finished;
+    assert.ok(frames);
+    // guardValue not changed, so should not run again.
+    el.shift = false;
+    theFlip = frames = undefined;
+    await el.updateComplete;
+    await ((theFlip as unknown) as Flip)?.finished;
+    assert.notOk(frames);
+    // guardValue changed, so should run.
+    guardValue = [1, 2];
+    el.shift = true;
+    theFlip = frames = undefined;
+    await el.updateComplete;
+    await theFlip!.finished;
+    assert.ok(frames);
+  });
+
   test('sets flip properties', async () => {
     const El = generateFlipElement(
       {

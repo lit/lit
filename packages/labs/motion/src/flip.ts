@@ -110,23 +110,20 @@ export const defaultCssProperties: CSSPropertiesList = [
 
 // Dirty checks the value received from the `guard` option.
 const isDirty = (value: unknown, previous: unknown) => {
-  if (value === undefined && previous === undefined) {
-    return true;
-  }
   if (Array.isArray(value)) {
     // Dirty-check arrays by item
     if (
       Array.isArray(previous) &&
       previous.length === value.length &&
-      value.every((v, i) => v !== (previous as Array<unknown>)[i])
+      value.every((v, i) => v === (previous as Array<unknown>)[i])
     ) {
-      return true;
+      return false;
     }
-  } else if (previous !== value) {
+  } else if (previous === value) {
     // Dirty-check non-arrays by identity
-    return true;
+    return false;
   }
-  return false;
+  return true;
 };
 
 // Mapping of flip directives to the node on which they are used.
@@ -206,6 +203,9 @@ export class Flip extends AsyncDirective {
     return this.render(options);
   }
 
+  // TODO(sorvell): instead of a function/object, just use an object that the
+  // user can mutate and create accessors for the data that do lookups as needed.
+  // We're doing this every hostUpdate anyway and these lookups are fast.
   private _setOptions(options?: FlipOptions) {
     options = options ?? {};
     // Mixin controller options.
@@ -244,12 +244,17 @@ export class Flip extends AsyncDirective {
 
   // Returns true if a flip should be started.
   private _canStartFlip() {
-    const value = this.options.guard?.();
+    let dirty = true,
+      value = undefined;
+    if (this.options.guard) {
+      value = this.options.guard();
+      dirty = isDirty(value, this._previousValue);
+    }
     this._shouldFlip =
       this._host!.hasUpdated &&
       !this.isDisabled() &&
       !this.isAnimating() &&
-      isDirty(value, this._previousValue) &&
+      dirty &&
       this.element.isConnected;
     if (this._shouldFlip) {
       // Copy the value if it's an array so that if it's mutated we don't forget
