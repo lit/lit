@@ -12,7 +12,8 @@
     "rootDir": "src/",
     "outDir": "lib/",
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "experimentalDecorators": true
   },
   "include": ["src/**/*"]
 }

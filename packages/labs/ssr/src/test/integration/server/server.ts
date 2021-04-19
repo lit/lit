@@ -7,6 +7,7 @@
 import {createRequire} from 'module';
 import Koa from 'koa';
 import Router from '@koa/router';
+import cors from 'koa-cors';
 
 import {importModule} from '../../../lib/import-module.js';
 import {getWindow} from '../../../lib/dom-shim.js';
@@ -19,7 +20,7 @@ export const startServer = async (port = 9090) => {
   const app = new Koa();
 
   const router = new Router();
-  router.get('/test/:suite/:test', async (context) => {
+  router.get('/ssr-test-server/:suite/:test', async (context) => {
     const suiteName = context.params.suite;
     const testName = context.params.test;
 
@@ -47,6 +48,7 @@ export const startServer = async (port = 9090) => {
     context.body = Readable.from(result);
   });
 
+  app.use(cors());
   app.use(router.routes());
   app.use(router.allowedMethods());
   return app.listen(port, () => {

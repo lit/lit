@@ -32,7 +32,7 @@ const {
   EventPart,
 } = _Σ;
 
-import {digestForTemplateResult} from 'lit/hydrate.js';
+import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
 import {ElementRenderer} from './element-renderer.js';
 
@@ -184,6 +184,20 @@ type CustomElementClosedOp = {
   type: 'custom-element-close';
 };
 
+/**
+ * Operation to possibly emit the `<!--lit-node-->` marker; the operation
+ * always emits if there were attribtue parts, and may emit if the node
+ * was a custom element and it needed `defer-hydration` because it was
+ * rendered in the shadow root of another custom element host; we don't
+ * know the latter at opcode generation time, and so that test is done at
+ * runtime in the opcode.
+ */
+type PossibleNodeMarkerOp = {
+  type: 'possible-node-marker';
+  boundAttributesCount: number;
+  nodeIndex: number;
+};
+
 type Op =
   | TextOp
   | ChildPartOp
@@ -192,7 +206,8 @@ type Op =
   | CustomElementOpenOp
   | CustomElementAttributesOp
   | CustomElementShadowOp
-  | CustomElementClosedOp;
+  | CustomElementClosedOp
+  | PossibleNodeMarkerOp;
 
 /**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes
@@ -240,7 +255,9 @@ type Op =
  *   - Emit `renderer.renderAttributes()`
  * - `text`
  *   - Emit end of of open tag `>`
- *   - Emit `<!--lit-bindings n-->` marker if there were attribute parts
+ * - `possible-node-marker`
+ *   - Emit `<!--lit-node n-->` marker if there were attribute parts or
+ *      we needed to emit the `defer-hydration` attribute
  * - `custom-element-shadow`
  *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)
@@ -323,10 +340,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     flush(value);
   };
 
-  // Depth-first node index. Initialized to -1 (corresponding to the fragment
-  // root node at the top of the ast) so that the first child node is
-  // index 0, to match client-side lit-html.
-  let nodeIndex = -1;
+  // Depth-first node index, counting only comment and element nodes, to match
+  // client-side lit-html.
+  let nodeIndex = 0;
 
   traverse(ast, {
     pre(node, parent) {
@@ -341,12 +357,13 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               parent && isElement(parent) && parent.isDefinedCustomElement,
           });
         }
+        nodeIndex++;
       } else if (isElement(node)) {
         // Whether to flush the start tag. This is necessary if we're changing
         // any of the attributes in the tag, so it's true for custom-elements
         // which might reflect their own state, or any element with a binding.
         let writeTag = false;
-        let boundAttrsCount = 0;
+        let boundAttributesCount = 0;
 
         const tagName = node.tagName;
         let ctor;
@@ -378,8 +395,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             const isElementBinding = attr.name.startsWith(marker);
             if (isAttrBinding || isElementBinding) {
               writeTag = true;
-              boundAttrsCount += 1;
-              // Note that although we emit a lit-bindings comment marker for any
+              boundAttributesCount += 1;
+              // Note that although we emit a lit-node comment marker for any
               // nodes with bindings, we don't account for it in the nodeIndex because
               // that will not be injected into the client template
               const strings = attr.value.split(marker);
@@ -446,10 +463,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           } else {
             flushTo(node.sourceCodeLocation!.startTag.endOffset);
           }
-        }
-
-        if (boundAttrsCount > 0) {
-          flush(`<!--lit-bindings ${nodeIndex}-->`);
+          ops.push({
+            type: 'possible-node-marker',
+            boundAttributesCount,
+            nodeIndex,
+          });
         }
 
         if (ctor !== undefined) {
@@ -457,8 +475,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             type: 'custom-element-shadow',
           });
         }
+        nodeIndex++;
       }
-      nodeIndex++;
     },
     post(node) {
       if (isElement(node) && node.isDefinedCustomElement) {
@@ -475,7 +493,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
+  // Stack of open custom elements (in light dom or shadow dom)
   customElementInstanceStack: Array<ElementRenderer | undefined>;
+  // Stack of open host custom elements (n-1 will be n's host)
+  customElementHostStack: Array<ElementRenderer | undefined>;
 };
 
 declare global {
@@ -484,8 +505,14 @@ declare global {
   }
 }
 
-export function* render(value: unknown): IterableIterator<string> {
-  yield* renderValue(value, {customElementInstanceStack: []});
+export function* render(
+  value: unknown,
+  renderInfo: RenderInfo = {
+    customElementInstanceStack: [],
+    customElementHostStack: [],
+  }
+): IterableIterator<string> {
+  yield* renderValue(value, renderInfo);
 }
 
 export function* renderValue(
@@ -647,15 +674,36 @@ export function* renderTemplateResult(
           // Render out any attributes on the instance (both static and those
           // that may have been dynamically set by the renderer)
           yield* instance.renderAttributes();
+          // If this element is nested in another, add the `defer-hydration`
+          // attribute, so that it does not enable before the host element
+          // hydrates
+          if (renderInfo.customElementHostStack.length > 0) {
+            yield ' defer-hydration';
+          }
+        }
+        break;
+      }
+      case 'possible-node-marker': {
+        // Add a node marker if this element had attribute bindings or if it
+        // was nested in another and we rendered the `defer-hydration` attribute
+        // since the hydration node walk will need to stop at this element
+        // to hydrate it
+        if (
+          op.boundAttributesCount > 0 ||
+          renderInfo.customElementHostStack.length > 0
+        ) {
+          yield `<!--lit-node ${op.nodeIndex}-->`;
         }
         break;
       }
       case 'custom-element-shadow': {
         const instance = getLast(renderInfo.customElementInstanceStack);
         if (instance !== undefined && instance.renderShadow !== undefined) {
+          renderInfo.customElementHostStack.push(instance);
           yield '<template shadowroot="open">';
-          yield* instance.renderShadow();
+          yield* instance.renderShadow(renderInfo);
           yield '</template>';
+          renderInfo.customElementHostStack.pop();
         }
         break;
       }

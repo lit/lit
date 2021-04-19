@@ -9,5 +9,5 @@
 [![Test status][test-img]][test-href]
 
 Tooling for @lit/localize. See the [@lit/localize
-README](https://github.com/Polymer/lit-html/tree/lit-next/packages/localize#readme)
+README](https://github.com/Polymer/lit-html/tree/main/packages/localize#readme)
 for documentation.

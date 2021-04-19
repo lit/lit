@@ -33,7 +33,7 @@
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
-    "clean": "rm -rf {index,hydrate-support,hydrate}.{js,js.map,d.ts} directives/ development/ test/ *.tsbuildinfo",
+    "clean": "rm -rf {index}.{js,js.map,d.ts} directives/ development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"

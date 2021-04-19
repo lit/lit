@@ -181,7 +181,7 @@ if (DEV_MODE) {
           `\`${name}\` is implemented. It ` +
             `has been removed from this version of LitElement. `
           // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/Polymer/lit-html/blob/lit-next/packages/lit-element/CHANGELOG.md`
+          // + See the changelog at https://github.com/Polymer/lit-html/blob/main/packages/lit-element/CHANGELOG.md`
         );
       }
     };

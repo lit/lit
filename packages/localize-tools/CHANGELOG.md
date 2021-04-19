@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- ## Unreleased -->
 
+## [0.3.0] - 2021-04-19
+
+### Changed
+
+- **[BREAKING]** Lit dependency upgraded to v2.
+
+- **[BREAKING]** Replaces `Localized` mixin transform with `@localized`
+  decorator and `updateWhenLocaleChanges` transforms.
+
 ## [0.2.1] - 2021-04-02
 
 ### Changed

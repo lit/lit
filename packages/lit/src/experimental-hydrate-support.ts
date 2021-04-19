@@ -10,4 +10,4 @@
  * @packageDocumentation
  */
 
-export * from 'lit-element/hydrate-support.js';
+export * from 'lit-element/experimental-hydrate-support.js';

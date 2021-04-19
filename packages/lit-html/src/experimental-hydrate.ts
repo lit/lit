@@ -95,7 +95,7 @@ type ChildPartState =
  *                                 # by render(). Includes the digest of the
  *                                 # template
  *   <div class="TEST_X">
- *     <!--lit-bindings 0--> # Indicates there are attribute bindings here
+ *     <!--lit-node 0--> # Indicates there are attribute bindings here
  *                           # The number is the depth-first index of the parent
  *                           # node in the template.
  *     <!--lit-part-->  # Start marker for the ${x} expression
@@ -152,10 +152,15 @@ export const hydrate = (
       // Create a new ChildPart and push it onto the stack
       currentChildPart = openChildPart(rootValue, marker, stack, options);
       rootPart ??= currentChildPart;
-    } else if (markerText.startsWith('lit-bindings')) {
+    } else if (markerText.startsWith('lit-node')) {
       // Create and hydrate attribute parts into the current ChildPart on the
       // stack
       createAttributeParts(marker, stack, options);
+      // Remove `defer-hydration` attribute, if any
+      const parent = marker.parentElement!;
+      if (parent.hasAttribute('defer-hydration')) {
+        parent.removeAttribute('defer-hydration');
+      }
     } else if (markerText.startsWith('/lit-part')) {
       // Close the current ChildPart, and pop the previous one off the stack
       if (stack.length === 1 && currentChildPart !== rootPart) {
@@ -317,19 +322,24 @@ const closeChildPart = (
 };
 
 const createAttributeParts = (
-  node: Comment,
+  comment: Comment,
   stack: Array<ChildPartState>,
   options: RenderOptions
 ) => {
   // Get the nodeIndex from DOM. We're only using this for an integrity
   // check right now, we might not need it.
-  const match = /lit-bindings (\d+)/.exec(node.data)!;
+  const match = /lit-node (\d+)/.exec(comment.data)!;
   const nodeIndex = parseInt(match[1]);
+
+  // For void elements, the node the comment was referring to will be
+  // the previousSibling; for non-void elements, the comment is guaranteed
+  // to be the first child of the element (i.e. it won't have a previousSibling
+  // meaning it should use the parentElement)
+  const node = comment.previousSibling ?? comment.parentElement;
 
   const state = stack[stack.length - 1];
   if (state.type === 'template-instance') {
     const instance = state.instance;
-    let foundOnePart = false;
     // eslint-disable-next-line no-constant-condition
     while (true) {
       // If the next template part is in attribute-position on the current node,
@@ -343,13 +353,12 @@ const createAttributeParts = (
       ) {
         break;
       }
-      foundOnePart = true;
 
       if (templatePart.type === PartType.ATTRIBUTE) {
         // The instance part is created based on the constructor saved in the
         // template part
         const instancePart = new templatePart.ctor(
-          node.parentElement as HTMLElement,
+          node as HTMLElement,
           templatePart.name,
           templatePart.strings,
           state.instance,
@@ -381,7 +390,7 @@ const createAttributeParts = (
       } else {
         // templatePart.type === PartType.ELEMENT
         const instancePart = new ElementPart(
-          node.parentElement as HTMLElement,
+          node as HTMLElement,
           state.instance,
           options
         );
@@ -392,11 +401,6 @@ const createAttributeParts = (
         instance._parts.push(instancePart);
       }
       state.templatePartIndex++;
-    }
-    if (!foundOnePart) {
-      // For a <!--lit-bindings--> marker there should be at least
-      // one attribute part.
-      throw new Error('internal error');
     }
   } else {
     throw new Error('internal error');

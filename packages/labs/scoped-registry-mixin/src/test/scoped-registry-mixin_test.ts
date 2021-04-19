@@ -13,11 +13,11 @@
  */
 
 import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
-import {LitElement, html} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {ScopedRegistryHost} from '../scoped-registry-mixin';
 import {assert} from '@esm-bundle/chai';
 
-class SimpleGreeting extends ScopedRegistryHost(LitElement) {
+class SimpleGreeting extends LitElement {
   private name: String;
 
   static get properties() {
@@ -40,6 +40,14 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
     'simple-greeting': SimpleGreeting,
   };
 
+  static get styles() {
+    return css`
+      :host {
+        color: #ff0000;
+      }
+    `;
+  }
+
   render() {
     return html` <simple-greeting
       id="greeting"
@@ -51,61 +59,77 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
 customElements.define('scoped-component', ScopedComponent);
 
 suite('scoped-registry-mixin', () => {
-  test(`scoped-component should have a registry`, async () => {
-    const $container = document.createElement('div');
-    $container.innerHTML = `<scoped-component></scoped-component>`;
+  test(`host element should have a registry`, async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `<scoped-component></scoped-component>`;
 
-    document.body.appendChild($container);
+    document.body.appendChild(container);
 
-    const $scopedComponent = $container.firstChild as LitElement;
-    await $scopedComponent.updateComplete;
+    const scopedComponent = container.firstChild as LitElement;
+    await scopedComponent.updateComplete;
     // @ts-expect-error: customElements not yet in ShadowRoot type
-    const registry = $scopedComponent?.shadowRoot?.customElements;
+    const registry = scopedComponent?.shadowRoot?.customElements;
 
     assert.exists(registry);
   });
 
-  test(`simple-greeting should not have a registry`, async () => {
-    const $container = document.createElement('div');
-    $container.innerHTML = `<scoped-component></scoped-component>`;
+  test(`hosted element should not have a registry`, async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `<scoped-component></scoped-component>`;
 
-    document.body.appendChild($container);
+    document.body.appendChild(container);
 
-    const $scopedComponent = $container.firstChild as LitElement;
-    await $scopedComponent.updateComplete;
-    const $simpleGreeting = $scopedComponent?.shadowRoot?.getElementById(
+    const scopedComponent = container.firstChild as LitElement;
+    await scopedComponent.updateComplete;
+    const simpleGreeting = scopedComponent?.shadowRoot?.getElementById(
       'greeting'
     ) as LitElement;
     // @ts-expect-error: customElements not yet in ShadowRoot type
-    const registry = $simpleGreeting?.shadowRoot?.customElements;
+    const registry = simpleGreeting?.shadowRoot?.customElements;
 
     assert.notExists(registry);
   });
 
-  test(`simple-greeting should be defined inside the ScopedComponent registry`, async () => {
-    const $container = document.createElement('div');
-    $container.innerHTML = `<scoped-component></scoped-component>`;
+  test(`hosted element should be defined inside the host element registry`, async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `<scoped-component></scoped-component>`;
 
-    document.body.appendChild($container);
+    document.body.appendChild(container);
 
-    const $scopedComponent = $container.firstChild as LitElement;
-    await $scopedComponent.updateComplete;
-    const $simpleGreeting = $scopedComponent?.shadowRoot?.getElementById(
+    const scopedComponent = container.firstChild as LitElement;
+    await scopedComponent.updateComplete;
+    const simpleGreeting = scopedComponent?.shadowRoot?.getElementById(
       'greeting'
     ) as LitElement;
 
-    assert.isTrue($simpleGreeting instanceof SimpleGreeting);
+    assert.isTrue(simpleGreeting instanceof SimpleGreeting);
   });
 
-  test(`simple-greeting should not be able in the global registry`, async () => {
-    const $container = document.createElement('div');
-    $container.innerHTML = `<simple-greeting id="global-greeting"></simple-greeting>`;
+  test(`hosted element should not be defined in the global registry`, async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `<simple-greeting id="global-greeting"></simple-greeting>`;
 
-    document.body.appendChild($container);
+    document.body.appendChild(container);
 
-    const $simpleGreeting = document.getElementById('global-greeting');
+    const simpleGreeting = document.getElementById('global-greeting');
 
-    assert.isFalse($simpleGreeting instanceof SimpleGreeting);
-    assert.isTrue($simpleGreeting instanceof HTMLElement);
+    assert.isFalse(simpleGreeting instanceof SimpleGreeting);
+    assert.isTrue(simpleGreeting instanceof HTMLElement);
+  });
+
+  test(`host element should apply static styles`, async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `<scoped-component></scoped-component>`;
+
+    document.body.appendChild(container);
+
+    const scopedComponent = container.firstChild as LitElement;
+    await scopedComponent.updateComplete;
+    const simpleGreeting = scopedComponent?.shadowRoot?.getElementById(
+      'greeting'
+    );
+    const {color} = getComputedStyle(simpleGreeting!);
+
+    assert.equal(color, 'rgb(255, 0, 0)');
   });
 });

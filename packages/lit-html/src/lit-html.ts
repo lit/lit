@@ -225,6 +225,8 @@ export type TemplateResult<T extends ResultType = ResultType> = {
   values: unknown[];
 };
 
+export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
+
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
 export interface CompiledTemplateResult {
@@ -343,7 +345,7 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
 
 const walker = d.createTreeWalker(
   d,
-  133 /* NodeFilter.SHOW_{ELEMENT|COMMENT|TEXT} */,
+  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
   null,
   false
 );
@@ -533,6 +535,7 @@ const getTemplateHtml = (
   ];
 };
 
+/** @internal */
 export type {Template};
 class Template {
   /** @internal */
@@ -637,11 +640,16 @@ class Template {
             // We can't use empty text nodes as markers because they're
             // normalized in some browsers (TODO: check)
             for (let i = 0; i < lastIndex; i++) {
-              (node as Element).append(strings[i] || createMarker());
+              (node as Element).append(strings[i], createMarker());
+              // Walk past the marker node we just added
+              walker.nextNode();
               this.parts.push({type: CHILD_PART, index: ++nodeIndex});
               bindingIndex++;
             }
-            (node as Element).append(strings[lastIndex] || createMarker());
+            // Note because this marker is added after the walker's current
+            // node, it will be walked to in the outer loop (and ignored), so
+            // we don't need to adjust nodeIndex here
+            (node as Element).append(strings[lastIndex], createMarker());
           }
         }
       } else if (node.nodeType === 8) {

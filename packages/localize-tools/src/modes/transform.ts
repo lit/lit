@@ -246,17 +246,24 @@ class Transformer {
         );
       }
 
-      // Localized(LitElement) -> LitElement
-      if (this.typeHasProperty(node.expression, '_LIT_LOCALIZE_LOCALIZED_')) {
-        if (node.arguments.length !== 1) {
-          // TODO(aomarks) Surface as diagnostic instead.
-          throw new KnownError(
-            `Expected Localized mixin call to have one argument, ` +
-              `got ${node.arguments.length}`
-          );
-        }
-        return node.arguments[0];
+      // updateWhenLocaleChanges() -> undefined
+      if (
+        this.typeHasProperty(node.expression, '_LIT_LOCALIZE_CONTROLLER_FN_')
+      ) {
+        return ts.createIdentifier('undefined');
       }
+    }
+
+    // @localized -> removed
+    if (
+      ts.isDecorator(node) &&
+      ts.isCallExpression(node.expression) &&
+      this.typeHasProperty(
+        node.expression.expression,
+        '_LIT_LOCALIZE_DECORATOR_'
+      )
+    ) {
+      return undefined;
     }
 
     // LOCALE_STATUS_EVENT -> "lit-localize-status"
@@ -507,7 +514,8 @@ class Transformer {
         props.some(
           (prop) =>
             prop.escapedName === '_LIT_LOCALIZE_MSG_' ||
-            prop.escapedName === '_LIT_LOCALIZE_LOCALIZED_'
+            prop.escapedName === '_LIT_LOCALIZE_CONTROLLER_FN_' ||
+            prop.escapedName === '_LIT_LOCALIZE_DECORATOR_'
         )
       ) {
         return true;
@@ -531,7 +539,7 @@ class Transformer {
 }
 
 /**
- * Wrap a TemplateLiteral in the lit-html `html` tag.
+ * Wrap a TemplateLiteral in the lit `html` tag.
  */
 function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
   return ts.createTaggedTemplate(ts.createIdentifier('html'), template);

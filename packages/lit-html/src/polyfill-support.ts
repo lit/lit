@@ -130,7 +130,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
   const prepareStyles = (name: string, template: HTMLTemplateElement) => {
     // Get styles
     const scopeCss = cssForScope(name);
-    if (scopeCss.length) {
+    const hasScopeCss = scopeCss.length !== 0;
+    if (hasScopeCss) {
       const style = document.createElement('style');
       style.textContent = scopeCss.join('\n');
       // Note, it's important to add the style to the *end* of the template so
@@ -144,6 +145,12 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     // ShadyCSS removes scopes and removes the style under ShadyDOM and leaves
     // it under native Shadow DOM
     window.ShadyCSS!.prepareTemplateStyles(template, name);
+    // Note, under native Shadow DOM, the style is added to the beginning of the
+    // template. It must be moved to the *end* of the template so it doesn't
+    // mess up part indices.
+    if (hasScopeCss && window.ShadyCSS!.nativeShadow) {
+      template.content.appendChild(template.content.querySelector('style')!);
+    }
   };
 
   const scopedTemplateCache = new Map<

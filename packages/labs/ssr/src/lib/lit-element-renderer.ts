@@ -40,7 +40,7 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  *renderShadow(): IterableIterator<string> {
+  *renderShadow(renderInfo: RenderInfo): IterableIterator<string> {
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
@@ -53,7 +53,7 @@ export class LitElementRenderer extends ElementRenderer {
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* render((this.element as any).render());
+    yield* render((this.element as any).render(), renderInfo);
   }
 
   *renderLight(renderInfo: RenderInfo): IterableIterator<string> {

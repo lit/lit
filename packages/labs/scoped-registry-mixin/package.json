@@ -12,7 +12,7 @@
   "type": "module",
   "main": "scoped-registry-mixin.js",
   "module": "scoped-registry-mixin.js",
-  "typings": "index.d.ts",
+  "typings": "scoped-registry-mixin.d.ts",
   "directories": {
     "test": "test"
   },
@@ -25,6 +25,8 @@
   "files": [
     "/src/",
     "!/src/test/",
+    "/development/",
+    "!/development/test/",
     "/scoped-registry-mixin.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
@@ -43,6 +45,7 @@
   },
   "author": "The Polymer Authors",
   "dependencies": {
+    "@lit/reactive-element": "1.0.0-pre.3",
     "lit": "^2.0.0-pre.2"
   },
   "devDependencies": {

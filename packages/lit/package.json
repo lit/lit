@@ -8,7 +8,7 @@
   "license": "BSD-3-Clause",
   "repository": "Polymer/lit-html",
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html/tree/lit-next",
+  "homepage": "https://github.com/Polymer/lit-html",
   "main": "index.js",
   "module": "index.js",
   "type": "module",
@@ -37,11 +37,11 @@
     "./html.js": {
       "default": "./html.js"
     },
-    "./hydrate-support.js": {
-      "default": "./hydrate-support.js"
+    "./experimental-hydrate-support.js": {
+      "default": "./experimental-hydrate-support.js"
     },
-    "./hydrate.js": {
-      "default": "./hydrate.js"
+    "./experimental-hydrate.js": {
+      "default": "./experimental-hydrate.js"
     },
     "./polyfill-support.js": {
       "default": "./polyfill-support.js"
@@ -55,7 +55,7 @@
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
-    "clean": "rm -rf {async-directive,decorators,directive-helpers,directive,html,hydrate-support,hydrate,index,polyfill-support,static-html}.{d.ts.map,d.ts,js.map,js} test/ decorators/ directives/ development/ *.tsbuildinfo",
+    "clean": "rm -rf {async-directive,decorators,directive-helpers,directive,html,experimental-hydrate-support,experimental-hydrate,index,polyfill-support,static-html}.{d.ts.map,d.ts,js.map,js} test/ decorators/ directives/ development/ *.tsbuildinfo",
     "publish-dev": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
     "test": "MODE=prod cd ../tests && npx wtr '../lit/test/**/*_test.(js|html)'"
@@ -66,8 +66,8 @@
     "/directive-helpers.{d.ts.map,d.ts,js.map,js}",
     "/directive.{d.ts.map,d.ts,js.map,js}",
     "/html.{d.ts.map,d.ts,js.map,js}",
-    "/hydrate-support.{d.ts.map,d.ts,js.map,js}",
-    "/hydrate.{d.ts.map,d.ts,js.map,js}",
+    "/experimental-hydrate-support.{d.ts.map,d.ts,js.map,js}",
+    "/experimental-hydrate.{d.ts.map,d.ts,js.map,js}",
     "/index.{d.ts.map,d.ts,js.map,js}",
     "/polyfill-support.{d.ts.map,d.ts,js.map,js}",
     "/static-html.{d.ts.map,d.ts,js.map,js}",
