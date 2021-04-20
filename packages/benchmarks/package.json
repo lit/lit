@@ -35,9 +35,9 @@
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-pre.2",
-    "lit-element": "^3.0.0-pre.3",
-    "lit-html": "^2.0.0-pre.6",
+    "@lit/reactive-element": "^1.0.0-rc.1",
+    "lit-element": "^3.0.0-rc.1",
+    "lit-html": "^2.0.0-rc.1",
     "tachometer": "^0.5.8"
   },
   "devDependencies": {

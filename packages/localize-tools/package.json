@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publishConfig": {
     "access": "public"
   },
@@ -41,7 +41,7 @@
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.4.0",
-    "lit": "^2.0.0-pre.2",
+    "lit": "^2.0.0-rc.1",
     "minimist": "^1.2.5",
     "parse5": "^6.0.0",
     "source-map-support": "^0.5.19",

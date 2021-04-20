@@ -1529,4 +1529,4 @@ export const _Σ = {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.7');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.1');
