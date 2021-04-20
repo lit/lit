@@ -34,7 +34,14 @@ const {
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
-import {ElementRenderer} from './element-renderer.js';
+import {
+  ElementRenderer,
+  ElementRendererConstructor,
+  getElementRenderer,
+} from './element-renderer.js';
+
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
@@ -49,9 +56,9 @@ import {
 } from './util/parse5-utils.js';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
-import {LitElement} from 'lit';
-import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+
+import {LitElementRenderer} from './lit-element-renderer.js';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -493,10 +500,18 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
+  // Element renderers to use
+  elementRenderers: ElementRendererConstructor[];
   // Stack of open custom elements (in light dom or shadow dom)
   customElementInstanceStack: Array<ElementRenderer | undefined>;
   // Stack of open host custom elements (n-1 will be n's host)
   customElementHostStack: Array<ElementRenderer | undefined>;
+};
+
+const defaultRenderInfo = {
+  elementRenderers: [LitElementRenderer],
+  customElementInstanceStack: [],
+  customElementHostStack: [],
 };
 
 declare global {
@@ -505,17 +520,27 @@ declare global {
   }
 }
 
+/**
+ * Renders a lit-html template (or any renderable lit-html value) to a string
+ * iterator. Any custom elements encountered will be rendered if a matching
+ * ElementRenderer is found.
+ *
+ * This method is suitable for streaming the contents of the element.
+ *
+ * @param value Value to render
+ * @param renderInfo Optional render context object that should be passed
+ *   to any re-entrant calls to `render`, e.g. from a `renderShadow` callback
+ *   on an ElementRenderer.
+ */
 export function* render(
   value: unknown,
-  renderInfo: RenderInfo = {
-    customElementInstanceStack: [],
-    customElementHostStack: [],
-  }
+  renderInfo?: RenderInfo
 ): IterableIterator<string> {
+  renderInfo = {...defaultRenderInfo, ...renderInfo};
   yield* renderValue(value, renderInfo);
 }
 
-export function* renderValue(
+function* renderValue(
   value: unknown,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
@@ -554,7 +579,7 @@ export function* renderValue(
   yield `<!--/lit-part-->`;
 }
 
-export function* renderTemplateResult(
+function* renderTemplateResult(
   result: TemplateResult,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
@@ -638,22 +663,13 @@ export function* renderTemplateResult(
         break;
       }
       case 'custom-element-open': {
-        const ctor = op.ctor;
         // Instantiate the element and its renderer
-        let instance = undefined;
-        try {
-          const element = new ctor();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (element as any).tagName = op.tagName;
-          // TODO: Move renderer instantiation into a plugin system
-          if (element instanceof LitElement) {
-            instance = new LitElementRenderer(element);
-          } else {
-            console.error(`No renderer for custom element: ${op.tagName}`);
-          }
-        } catch (e) {
-          console.error('Exception in custom element constructor', e);
-        }
+        const instance = getElementRenderer(
+          renderInfo,
+          op.tagName,
+          op.ctor,
+          op.staticAttributes
+        );
         // Set static attributes to the element renderer
         if (instance !== undefined) {
           for (const [name, value] of op.staticAttributes) {
@@ -700,9 +716,14 @@ export function* renderTemplateResult(
         const instance = getLast(renderInfo.customElementInstanceStack);
         if (instance !== undefined && instance.renderShadow !== undefined) {
           renderInfo.customElementHostStack.push(instance);
-          yield '<template shadowroot="open">';
-          yield* instance.renderShadow(renderInfo);
-          yield '</template>';
+          const shadowContents = instance.renderShadow(renderInfo);
+          // Only emit a DSR if renderShadow() emitted something (returning
+          // undefined allows effectively no-op rendering the element)
+          if (shadowContents !== undefined) {
+            yield '<template shadowroot="open">';
+            yield* shadowContents;
+            yield '</template>';
+          }
           renderInfo.customElementHostStack.pop();
         }
         break;

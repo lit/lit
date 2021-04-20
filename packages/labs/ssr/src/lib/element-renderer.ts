@@ -8,16 +8,71 @@
 
 export type Constructor<T> = {new (): T};
 
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
 
 import {RenderInfo} from './render-lit-html.js';
 
+export type ElementRendererConstructor = (new (
+  tagName: string
+) => ElementRenderer) &
+  typeof ElementRenderer;
+
+type AttributesMap = Map<string, string>;
+
+export const getElementRenderer = (
+  {elementRenderers}: RenderInfo,
+  tagName: string,
+  ceClass: typeof HTMLElement = customElements.get(tagName),
+  attributes: AttributesMap = new Map()
+): ElementRenderer | undefined => {
+  if (ceClass === undefined) {
+    console.warn(`Custom element ${tagName} was not registered.`);
+    return;
+  }
+  // TODO(kschaaf): Should we implement a caching scheme, e.g. keyed off of
+  // ceClass's base class to prevent O(n) lookups for every element (probably
+  // not a concern for the small number of element renderers we'd expect)? Doing
+  // so would preclude having cross-cutting renderers to e.g. no-op render all
+  // custom elements with a `client-only` attribute, so punting for now.
+  for (const renderer of elementRenderers) {
+    if (renderer.matchesClass(ceClass, tagName, attributes)) {
+      return new renderer(tagName);
+    }
+  }
+  return undefined;
+};
+
 /**
  * An object that renders elements of a certain type.
  */
 export abstract class ElementRenderer {
-  constructor(public element: HTMLElement) {}
+  element?: HTMLElement;
+  tagName: string;
+
+  /**
+   * Should be implemented to return true when the given custom element class
+   * and/or tagName should be handled by this renderer.
+   *
+   * @param ceClass - Custom Element class
+   * @param tagName - Tag name of custom element instance
+   * @param attributes - Map of attribute key/value pairs
+   * @returns
+   */
+  static matchesClass(
+    _ceClass: typeof HTMLElement,
+    _tagName: string,
+    _attributes: AttributesMap
+  ) {
+    return false;
+  }
+
+  constructor(tagName: string) {
+    this.tagName = tagName;
+  }
 
   /**
    * Should implement server-appropriate implementation of connectedCallback
@@ -42,8 +97,10 @@ export abstract class ElementRenderer {
    * @param value Value of the property
    */
   setProperty(name: string, value: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)[name] = value;
+    if (this.element !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.element as any)[name] = value;
+    }
   }
 
   /**
@@ -57,15 +114,19 @@ export abstract class ElementRenderer {
    * @param value Value of the attribute
    */
   setAttribute(name: string, value: string) {
-    const old = this.element.getAttribute(name);
-    this.element.setAttribute(name, value);
-    this.attributeChangedCallback(name, old, value);
+    if (this.element !== undefined) {
+      const old = this.element.getAttribute(name);
+      this.element.setAttribute(name, value);
+      this.attributeChangedCallback(name, old, value);
+    }
   }
 
   /**
    * Render a single element's ShadowRoot children.
    */
-  abstract renderShadow(_renderInfo: RenderInfo): IterableIterator<string>;
+  abstract renderShadow(
+    _renderInfo: RenderInfo
+  ): IterableIterator<string> | undefined;
 
   /**
    * Render an element's light DOM children.
@@ -78,16 +139,18 @@ export abstract class ElementRenderer {
    * Default implementation serializes all attributes on the element instance.
    */
   *renderAttributes(): IterableIterator<string> {
-    const {attributes} = this.element;
-    for (
-      let i = 0, name, value;
-      i < attributes.length && ({name, value} = attributes[i]);
-      i++
-    ) {
-      if (value === '') {
-        yield ` ${name}`;
-      } else {
-        yield ` ${name}="${escapeHtml(value)}"`;
+    if (this.element !== undefined) {
+      const {attributes} = this.element;
+      for (
+        let i = 0, name, value;
+        i < attributes.length && ({name, value} = attributes[i]);
+        i++
+      ) {
+        if (value === '') {
+          yield ` ${name}`;
+        } else {
+          yield ` ${name}="${escapeHtml(value)}"`;
+        }
       }
     }
   }

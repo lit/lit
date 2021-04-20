@@ -24,9 +24,12 @@ export const renderModule = async (
   args: unknown[]
 ) => {
   const window = getWindow({
-    // We need to give window a require to load CJS modules used by the SSR
-    // implementation. If we had only JS module dependencies, we wouldn't need this.
-    require: createRequire(import.meta.url),
+    includeJSBuiltIns: true,
+    props: {
+      // We need to give window a require to load CJS modules used by the SSR
+      // implementation. If we had only JS module dependencies, we wouldn't need this.
+      require: createRequire(import.meta.url),
+    },
   });
   const module = await importModule(specifier, referrer, window);
   const f = module.namespace[functionName] as Function;

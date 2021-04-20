@@ -4,4 +4,5 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export {};
+export * from './lib/render-lit-html.js';
+export {ElementRenderer} from './lib/element-renderer.js';

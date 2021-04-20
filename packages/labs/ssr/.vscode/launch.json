@@ -16,7 +16,8 @@
       "runtimeArgs": ["--experimental-vm-modules"],
       "console": "integratedTerminal",
       "env": {
-        "BROWSERS": "chromium"
+        "BROWSERS": "chromium",
+        "MODE": "dev"
       }
     },
     {

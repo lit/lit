@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {createRequire} from 'module';
 import Koa from 'koa';
 import Router from '@koa/router';
 import cors from 'koa-cors';
@@ -20,26 +19,30 @@ export const startServer = async (port = 9090) => {
   const app = new Koa();
 
   const router = new Router();
-  router.get('/ssr-test-server/:suite/:test', async (context) => {
-    const suiteName = context.params.suite;
-    const testName = context.params.test;
+  router.get('/:mode/:testFile/:testName', async (context) => {
+    const {mode, testFile, testName} = context.params;
 
-    const window = getWindow({
-      // We need to give window a require to load CJS modules used by the SSR
-      // implementation. If we had only JS module dependencies, we wouldn't need this.
-      require: createRequire(import.meta.url),
-    });
-    const {namespace} = await importModule(
-      `../tests/${suiteName}-ssr.js`,
-      import.meta.url,
-      window
-    );
-    const module = namespace as typeof testModule;
+    let module: typeof testModule,
+      render: typeof import('../../../lib/render-lit-html.js').render;
+    if (mode === 'global') {
+      render = (await import('../../../lib/render-with-global-dom-shim.js'))
+        .render;
+      module = await import(`../tests/${testFile}-ssr.js`);
+    } else {
+      // mode === 'vm'
+      module = (
+        await importModule(
+          `../tests/${testFile}-ssr.js`,
+          import.meta.url,
+          getWindow({includeJSBuiltIns: true})
+        )
+      ).namespace;
+      render = module.render;
+    }
 
     const testDescOrFn = module.tests[testName] as SSRTest;
     const test =
       typeof testDescOrFn === 'function' ? testDescOrFn() : testDescOrFn;
-    const {render} = module;
     if (test.registerElements) {
       await test.registerElements();
     }

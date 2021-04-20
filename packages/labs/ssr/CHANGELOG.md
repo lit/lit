@@ -21,4 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added `render-global` module for non-sandboxed rendering.
+
+- Added `elementRenderers` option to `RenderInfo`, along with `static matchesClass()` method to `ElementRenderer`, allowing the default renderer(s) to be overridden.
+
 - Added `defer-hydration` attribute handling, which helps coordinate ordered wakeup of custom elements during hydration.
