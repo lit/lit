@@ -115,7 +115,6 @@ packages/labs/motion/node_modules/
 packages/labs/motion/index.*
 packages/labs/motion/flip.*
 packages/labs/motion/position.*
-packages/labs/motion/simple-spring.*
 packages/labs/motion/flip-controller.*
 packages/labs/react/development/
 packages/labs/react/test/
