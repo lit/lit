@@ -12,8 +12,8 @@ type LitPluginOptions = {
 };
 
 module.exports = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configFunction: function (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eleventyConfig: any,
     options: LitPluginOptions = {}
   ) {
