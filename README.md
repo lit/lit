@@ -42,6 +42,7 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/Poly
   - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
   - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
   - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
+  - [`@lit-labs/motion`](./packages/labs/motion) - Lit directives for making things move
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
 - Starter kits (not published to npm)
   - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next)) - A starter repo for building reusable components using Lit in TypeScript.
