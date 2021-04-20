@@ -22,7 +22,7 @@ const wrap =
     ? window.ShadyDOM!.wrap
     : (node: Node) => node;
 
-const trustedTypes = (globalThis as unknown as  Partial<Window>).trustedTypes;
+const trustedTypes = ((globalThis as unknown) as Partial<Window>).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -32,8 +32,11 @@ const trustedTypes = (globalThis as unknown as  Partial<Window>).trustedTypes;
  * before any untrusted expressions have been mixed in. Therefor it is
  * considered safe by construction.
  */
-const policy = trustedTypes?.createPolicy(
-    'lit-html', {createHTML: (s) => s, createScript: (s) => s});
+const policy = trustedTypes
+  ? trustedTypes.createPolicy('lit-html', {
+      createHTML: (s) => s,
+    })
+  : null;
 
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
@@ -536,21 +539,17 @@ const getTemplateHtml = (
           (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
-  let htmlResult: string|TrustedHTML =
-      html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
-  if (policy) {
-    htmlResult = policy.createHTML(htmlResult);
-  }
+  const htmlResult: string | TrustedHTML =
+    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
 
   // Returned as an array for terseness
   return [
-    htmlResult as TrustedHTML,
+    policy
+      ? policy.createHTML(htmlResult)
+      : ((htmlResult as unknown) as TrustedHTML),
     attrNames,
   ];
 };
-
-
-const EMPTY_TEXT = trustedTypes?.emptyScript as unknown as '' ?? '';
 
 /** @internal */
 export type {Template};
@@ -651,7 +650,9 @@ class Template {
           const strings = (node as Element).textContent!.split(marker);
           const lastIndex = strings.length - 1;
           if (lastIndex > 0) {
-            (node as Element).textContent = EMPTY_TEXT;
+            (node as Element).textContent = trustedTypes
+              ? ((trustedTypes.emptyScript as unknown) as '')
+              : '';
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             // We can't use empty text nodes as markers because they're
@@ -695,7 +696,7 @@ class Template {
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
-    el.innerHTML = html as unknown as string;
+    el.innerHTML = (html as unknown) as string;
     return el;
   }
 }
