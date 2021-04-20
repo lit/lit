@@ -15,7 +15,6 @@
   },
   "devDependencies": {
     "@lit/localize-tools": "^0.3.0",
-    "@web/dev-server": "^0.1.10",
-    "typescript": "^4.3.5"
+    "@web/dev-server": "^0.1.10"
   }
 }
