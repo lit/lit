@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added `defer-hydration` attribute handling to `experimental-hydrate`, which helps
   coordinate ordered wakeup of custom elements during hydration.
+- Added support for running with [Trusted Types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/trusted-types) enforced.
 
 ### Changed
 

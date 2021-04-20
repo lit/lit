@@ -1509,10 +1509,15 @@ suite('lit-html', () => {
   });
 
   suite('compiled', () => {
+    const trustedTypes =
+        (globalThis as unknown as Partial<Window>).trustedTypes;
+    const policy = trustedTypes?.createPolicy(
+      'lit-html', { createHTML: (s) => s }) ?? {createHTML:(s) => s as unknown as TrustedHTML};
+
     test('only text', () => {
       // A compiled template for html`${'A'}`
       const _$lit_template_1: CompiledTemplate = {
-        h: '<!---->',
+        h: policy.createHTML('<!---->'),
         parts: [{type: 2, index: 0}],
       };
       assertRender(
@@ -1527,7 +1532,7 @@ suite('lit-html', () => {
     test('text expression', () => {
       // A compiled template for html`<div>${'A'}</div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: `<div><!----></div>`,
+        h: policy.createHTML(`<div><!----></div>`),
         parts: [{type: 2, index: 1}],
       };
       const result = {
@@ -1540,7 +1545,7 @@ suite('lit-html', () => {
     test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: '<div></div>',
+        h: policy.createHTML('<div></div>'),
         parts: [
           {
             type: 1,
@@ -1562,7 +1567,7 @@ suite('lit-html', () => {
       const r = createRef();
       // A compiled template for html`<div ${ref(r)}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: '<div></div>',
+        h: policy.createHTML('<div></div>'),
         parts: [{type: 6, index: 0}],
       };
       const result = {

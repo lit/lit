@@ -22,6 +22,22 @@ const wrap =
     ? window.ShadyDOM!.wrap
     : (node: Node) => node;
 
+const trustedTypes = ((globalThis as unknown) as Partial<Window>).trustedTypes;
+
+/**
+ * Our TrustedTypePolicy for HTML which is declared using the html template
+ * tag function.
+ *
+ * That HTML is a developer-authored constant, and is parsed with innerHTML
+ * before any untrusted expressions have been mixed in. Therefor it is
+ * considered safe by construction.
+ */
+const policy = trustedTypes
+  ? trustedTypes.createPolicy('lit-html', {
+      createHTML: (s) => s,
+    })
+  : undefined;
+
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
  * used to implement a security policy of allowed and disallowed values in
@@ -241,7 +257,7 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
   el?: HTMLTemplateElement;
 
   // The prepared HTML string to create a template element from.
-  h: string;
+  h: TrustedHTML;
 }
 
 /**
@@ -382,7 +398,7 @@ export interface DirectiveParent {
 const getTemplateHtml = (
   strings: TemplateStringsArray,
   type: ResultType
-): [string, Array<string | undefined>] => {
+): [TrustedHTML, Array<string | undefined>] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -523,14 +539,14 @@ const getTemplateHtml = (
           (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
+  const htmlResult: string | TrustedHTML =
+    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
+
   // Returned as an array for terseness
   return [
-    // We don't technically need to close the SVG tag since the parser will
-    // handle it for us, but the SSR parser doesn't like that.
-    // Note that the html must end with a node after the final expression to
-    // ensure the last ChildPart has an end node, hence adding a comment if the
-    // last string was empty.
-    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
+    policy !== undefined
+      ? policy.createHTML(htmlResult)
+      : ((htmlResult as unknown) as TrustedHTML),
     attrNames,
   ];
 };
@@ -633,7 +649,9 @@ class Template {
           const strings = (node as Element).textContent!.split(marker);
           const lastIndex = strings.length - 1;
           if (lastIndex > 0) {
-            (node as Element).textContent = '';
+            (node as Element).textContent = trustedTypes
+              ? ((trustedTypes.emptyScript as unknown) as '')
+              : '';
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             // We can't use empty text nodes as markers because they're
@@ -672,9 +690,9 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
-  static createElement(html: string, _options?: RenderOptions) {
+  static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
-    el.innerHTML = html;
+    el.innerHTML = (html as unknown) as string;
     return el;
   }
 }

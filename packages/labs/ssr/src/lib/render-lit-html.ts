@@ -286,7 +286,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    */
-  const ast = parseFragment(html, {
+  const ast = parseFragment(String(html), {
     sourceCodeLocationInfo: true,
   }) as DefaultTreeDocumentFragment;
 
@@ -343,7 +343,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     }
     const previousLastOffset = lastOffset;
     lastOffset = offset;
-    const value = html.substring(previousLastOffset, offset);
+    const value = String(html).substring(previousLastOffset, offset);
     flush(value);
   };
 
