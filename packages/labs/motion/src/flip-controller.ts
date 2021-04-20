@@ -1,4 +1,4 @@
-import {ReactiveControllerHost} from 'lit-element';
+import {ReactiveControllerHost} from 'lit';
 import {Flip, FlipOptions} from './flip.js';
 
 export const flipControllers: WeakMap<

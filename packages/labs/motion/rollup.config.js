@@ -17,5 +17,5 @@ import {litProdConfig} from '../../../rollup-common.js';
 export default litProdConfig({
   classPropertyPrefix: 'δ',
   entryPoints: ['index', 'flip', 'position', 'flip-controller'],
-  external: ['@lit/lit-element'],
+  external: ['lit'],
 });

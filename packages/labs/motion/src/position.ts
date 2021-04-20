@@ -1,7 +1,7 @@
-import {LitElement} from 'lit-element';
-import {nothing, AttributePart} from 'lit-html';
-import {directive, PartInfo, PartType} from 'lit-html/directive.js';
-import {AsyncDirective} from 'lit-html/async-directive.js';
+import {LitElement} from 'lit';
+import {nothing, AttributePart} from 'lit/html.js';
+import {directive, PartInfo, PartType} from 'lit/directive.js';
+import {AsyncDirective} from 'lit/async-directive.js';
 
 interface Positionables {
   readonly bottom: number;
