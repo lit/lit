@@ -22,14 +22,15 @@
     "/src/",
     "!/src/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/create-component.{d.ts,d.ts.map,js,js.map}"
+    "/create-component.{d.ts,d.ts.map,js,js.map}",
+    "/use-controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts --build && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
-    "clean": "rm -rf {index,create-component}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
+    "clean": "rm -rf {index,create-component,use-controller}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/react/development/**/*_test.js'",
