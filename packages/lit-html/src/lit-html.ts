@@ -36,7 +36,7 @@ const policy = trustedTypes
   ? trustedTypes.createPolicy('lit-html', {
       createHTML: (s) => s,
     })
-  : null;
+  : undefined;
 
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
@@ -544,7 +544,7 @@ const getTemplateHtml = (
 
   // Returned as an array for terseness
   return [
-    policy
+    policy !== undefined
       ? policy.createHTML(htmlResult)
       : ((htmlResult as unknown) as TrustedHTML),
     attrNames,
