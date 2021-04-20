@@ -1,14 +1,18 @@
-# Lit 2.0
+# Lit
 
-Fast, lightweight web components
+## Simple. Fast. Web Components.
+
+Lit is a simple library for building fast, lightweight web components.
+
+At its core is a boilerplate-killing component base class that provides reactive state, scoped styles, and a declarative template system that leads the pack in size, speed, and expressiveness.
 
 ## About this package
 
-The `lit` package contains everything needed to build Lit components with the LitElement base class, lit-html templates, and all first-party lit-html directives.
+The `lit` package contains everything needed to build Lit components: the LitElement base class, Lit templates, and all first-party Lit directives.
 
 Modules:
 
-- `lit`: The main module exports the core pieces needed for component development: `LitElement`, `html`, `css`, and the most
+- `lit`: The main module exports the core pieces needed for component development, including `LitElement`, `html`, and `css`
 - `lit/decorators.js`: Exports all the TypeScript/Babel decorators from one module.
 - `lit/decorators/...`: The `decorators/` folder contains a module for each decorator (`@customElement()`, `@property()`, etc.) for optimal pay-as-you-go module loading.
 - `lit/html.js`: Just the exports needed for standalone `lit-html` usage: `render()`, `html`, `svg`, etc.
