@@ -126,7 +126,7 @@ const isDirty = (value: unknown, previous: unknown) => {
   return true;
 };
 
-// Mapping of flip directives to the node on which they are used.
+// Mapping of node on which the flip directive is used to the flip directive.
 // Used to get the ancestor flip animations (which are used to modify
 // flip transforms), done by ascending the DOM.
 const flipMap: WeakMap<Node, Flip> = new WeakMap();
@@ -213,11 +213,11 @@ export class Flip extends AsyncDirective {
     if (flipController !== undefined) {
       options = {
         ...flipController.flipOptions,
-        ...(options ?? {}),
+        ...options,
       };
       options.animationOptions = {
-        ...(flipController.flipOptions.animationOptions ?? {}),
-        ...(options.animationOptions ?? {}),
+        ...flipController.flipOptions.animationOptions,
+        ...options.animationOptions,
       };
     }
     // Ensure there are some properties to animation and some animation options.
@@ -581,4 +581,25 @@ export class Flip extends AsyncDirective {
   }
 }
 
+/**
+ * The `flip` animation directive animates a node's layout between renders.
+ * It will perform a "tweening" animation between the two states based on
+ * the options given. In addition, elements can animate when they initially
+ * render to DOM and when they are removed.
+ *
+ * Options include:
+ * * animationOptions:  configure animation via standard KeyframeAnimationOptions
+ * * properties: list of properties to animate, defaults to
+ * ['left', 'top','width', 'height', 'opacity', 'color', 'background']
+ * * disabled: disables animation
+ * * guard: function producing values that must change for the flip to run
+ * * in: keyframes to use when animating in
+ * * out: keyframes to use when animating out
+ * * skipInitial: skip animating in the first time
+ * * id: used to link to other flips via `inId`
+ * * inId: id of the flip to render from when animating in
+ * * onStart: run when the flip starts
+ * * onComplete: run when the flip completes
+ * * onFrames: run when the frames are produces, use to modify frames
+ */
 export const flip = directive(Flip);

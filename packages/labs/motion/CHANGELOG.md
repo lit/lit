@@ -21,4 +21,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Adds `flip` directive for making elements move from one render to the next.
+- Adds `flip` directive. The `flip` directive animates a node's layout between renders. It will perform a "tweening" animation between the two states based on the options given. In addition, elements can animate when they initially render to DOM and when they are removed. for making elements move from one render to the next.
+- Adds `position` directive that positions and sizes an element relative to a given target element.

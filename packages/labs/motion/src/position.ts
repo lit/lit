@@ -13,16 +13,12 @@ interface Positionables {
 }
 
 type Ref = {value: HTMLElement};
-export type TargetCallbackOrRef = () => HTMLElement | Ref;
+export type TargetCallbackOrRef = (() => HTMLElement) | Ref;
 
 export type Positions = Array<keyof Positionables>;
 
 const positionedPoints = ['top', 'right', 'bottom', 'left'];
 
-/**
- * Positions and sizes the element on which the `position()` directive is used
- * relative to the given target element.
- */
 export class Position extends AsyncDirective {
   private _host?: LitElement;
   private _element?: Element;
@@ -59,8 +55,9 @@ export class Position extends AsyncDirective {
 
   private _position() {
     const target =
-      ((this._targetCallbackOrRef as unknown) as Ref).value ??
-      this._targetCallbackOrRef?.();
+      typeof this._targetCallbackOrRef === 'function'
+        ? this._targetCallbackOrRef()
+        : this._targetCallbackOrRef?.value;
     const parent = target.offsetParent;
     if (target === undefined || !parent) {
       return;
@@ -74,4 +71,8 @@ export class Position extends AsyncDirective {
   }
 }
 
+/**
+ * Positions and sizes the element on which the `position()` directive is used
+ * relative to the given target element.
+ */
 export const position = directive(Position);

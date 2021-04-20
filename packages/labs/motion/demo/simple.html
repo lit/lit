@@ -42,22 +42,13 @@
 
           .shifted {
             left: calc(100% - var(--box-size));
-            background: tomato;
-            filter: blur(5em);
           }
         `;
 
         render() {
           return html`
             <p><button @click=${this._toggle}>Move</button></p>
-            <p
-              class="box ${classMap({shifted: this.shifted})}"
-              ${flip({
-                in: flyBelow,
-                properties: [...defaultCssProperties, 'filter'],
-                animationOptions: {duration: 1500},
-              })}
-            ></p>
+            <p class="box ${classMap({shifted: this.shifted})}" ${flip()}></p>
           `;
         }
 
