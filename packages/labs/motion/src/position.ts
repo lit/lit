@@ -27,7 +27,7 @@ export class Position extends AsyncDirective {
 
   constructor(part: PartInfo) {
     super(part);
-    if (part.type === PartType.CHILD) {
+    if (part.type !== PartType.ELEMENT) {
       throw new Error(
         'The `position` directive must be used in attribute position.'
       );
