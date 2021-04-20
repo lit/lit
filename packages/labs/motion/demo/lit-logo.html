@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Lit Logo Animation</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      my-element {
+        flex: 1;
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, svg, css} from 'lit';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {flip, none} from '../development/flip.js';
+      import {FlipController} from '../development/flip-controller.js';
+
+      const a = '50';
+      const fly = [
+        [{transform: `translateY(${a}%) translateX(${a}%)`, opacity: 0}],
+        [{transform: `translateY(-${a}%) translateX(-${a}%)`, opacity: 0}],
+        [{transform: `translateY(${a}%) translateX(-${a}%)`, opacity: 0}],
+        [{transform: `translateY(-${a}%) translateX(${a}%)`, opacity: 0}],
+      ];
+
+      class MyElement extends LitElement {
+        static properties = {
+          show: {},
+        };
+
+        constructor() {
+          super();
+          this.show = true;
+          this.paths = [
+            {fill: '#324fff', d: 'M 0 80 v 80 l 40 -40 z'},
+            {fill: '#283198', d: 'M 40 120 c -0 0 0 80 0 80 L 0 160 z'},
+            {fill: '#0ff', d: 'M 40 120 v 80 l 40 -40 l -40 -40 z'},
+            {fill: '#324fff', d: 'M 80 0 v 80 L 40 40 z'},
+            {fill: '#324fff', d: 'M 40 40 v 80 l 40 -40 z'},
+            {fill: '#00e8ff', d: 'M 80 80 l 0 80 l -40 -40 z'},
+            {fill: '#283198', d: 'M 80 80 v 80 l 40 -40 l -40 -40 z'},
+            {fill: '#283198', d: 'M120 40v80L80 80z'},
+            {fill: '#00e8ff', d: 'M 120 120 l 0 80 l -40 -40 z'},
+            {fill: '#324fff', d: 'M 120 120 v 80 l 40 -40 l -40 -40 z'},
+            {fill: '#324fff', d: 'M160 80v80l-40-40z'},
+          ];
+          this.delayTime = 50;
+          this.duration = this.paths.length * this.delayTime;
+          this.flipController = new FlipController(this, {
+            flipOptions: {
+              animationOptions: {
+                duration: this.duration,
+                fill: 'backwards',
+              },
+            },
+            // disabled: true,
+            // startPaused: true,
+            onComplete: () =>
+              setTimeout(() => this.changeLayout(), this.duration * 2),
+          });
+          this.addEventListener('click', () => this.clickHandler());
+        }
+
+        clickHandler() {
+          if (this.flipController.isAnimating) {
+            this.flipController.togglePlay();
+          } else {
+            this.changeLayout();
+          }
+        }
+
+        static styles = [
+          css`
+            :host {
+              display: flex;
+              height: 100%;
+              width: 100%;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              overflow: hidden;
+              color: #040424;
+              cursor: pointer;
+            }
+
+            svg {
+              height: 50%;
+              width: 50%;
+              overflow: visible;
+            }
+          `,
+        ];
+
+        render() {
+          const logoOptions = (index) => ({
+            animationOptions: {
+              delay: index * this.delayTime,
+            },
+            in: fly[1 + (index % 3)],
+            out: fly[1 + ((index + 2) % 3)],
+          });
+
+          const paths = this.paths.map(
+            (path, i) => svg`<path
+              ${flip(logoOptions(i))}
+              fill=${path.fill} d=${path.d} />`
+          );
+
+          return html`${this.show
+            ? html` <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 160 200"
+                ${flip({
+                  out: none,
+                  animationOptions: {delay: this.duration * 2},
+                })}
+              >
+                ${paths}
+              </svg>`
+            : ''}`;
+        }
+
+        changeLayout() {
+          this.show = !this.show;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

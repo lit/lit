@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Animation</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+        overflow: hidden;
+      }
+    </style>
+    <h2>Animation</h2>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {flip, flyBelow} from '../development/flip.js';
+      import {FlipController} from '../development/flip-controller.js';
+
+      class MyElement extends LitElement {
+        static properties = {
+          layout: {},
+        };
+
+        constructor() {
+          super();
+          this.layout = 0;
+          this.flipController = new FlipController(this, {
+            flipOptions: {
+              animationOptions: {
+                duration: 1200,
+              },
+            },
+            onComplete: () => this.animationDone(),
+            // startPaused: true,
+            // disabled: true,
+          });
+          this.addEventListener('click', () => this.clickHandler());
+        }
+
+        static styles = [
+          css`
+            :host {
+              display: block;
+              height: 100%;
+              --hi-box-size: 50px;
+              --box-color: #004d40;
+              --box-text-color: white;
+            }
+            * {
+              box-sizing: border-box;
+            }
+
+            .box {
+              display: inline-block;
+              position: relative;
+              background: var(--box-color);
+              color: var(--box-text-color);
+              font-weight: 800;
+              padding: 8px;
+              margin: 4px;
+            }
+
+            .animation-list {
+              min-height: 180px;
+              display: flex;
+              flex-direction: column;
+              align-items: start;
+            }
+
+            .animation-list.layout1 {
+              flex-direction: row;
+            }
+
+            .animation-list.layout2 {
+              display: flex;
+              flex-direction: row;
+              justify-content: space-between;
+            }
+
+            .animation-list.layout1 > :nth-of-type(1) {
+              order: 4;
+            }
+
+            .animation-list.layout1 > :nth-of-type(2) {
+              order: 3;
+            }
+
+            .animation-list.layout1 > :nth-of-type(3) {
+              order: 2;
+            }
+
+            .animation-list.layout1 > :nth-of-type(4) {
+              order: 1;
+            }
+
+            .layout1,
+            .layout1 > * {
+              --box-color: magenta;
+              --box-text-color: darkgray;
+            }
+
+            .layout2,
+            .layout2 > * {
+              --box-color: steelblue;
+              --box-text-color: beige;
+            }
+
+            .layout3,
+            .layout3 > * {
+              --box-color: orange;
+              --box-text-color: black;
+            }
+
+            .hibox {
+              position: relative;
+              left: 0px;
+              padding: 0;
+              margin: 0;
+              overflow: hidden;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              --hi-box-scale: 1;
+              --hi-box-left: 0;
+              --hi-box-top: 0;
+              height: calc(var(--hi-box-size) * var(--hi-box-scale));
+              width: calc(var(--hi-box-size) * var(--hi-box-scale));
+              left: calc(var(--hi-box-size) * var(--hi-box-left));
+              top: calc(var(--hi-box-size) * var(--hi-box-top));
+            }
+
+            .hibox > div {
+              position: relative;
+              will-change: transform;
+              height: var(--hi-box-size);
+              width: var(--hi-box-size);
+              padding: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+
+            .hibox.layout1 {
+              --hi-box-scale: 3;
+              --hi-box-left: 1.5;
+            }
+
+            .hibox.layout2 {
+              --hi-box-scale: 2;
+              --hi-box-left: 1.5;
+              --hi-box-top: 1.5;
+            }
+
+            .hibox.layout3 {
+              --hi-box-scale: 1.5;
+              --hi-box-left: 0;
+              --hi-box-top: 1.5;
+            }
+
+            .in-out {
+              position: relative;
+              left: 50%;
+            }
+          `,
+        ];
+
+        render() {
+          const classes = {
+            layout1: this.layout === 1,
+            layout2: this.layout === 2,
+            layout3: this.layout === 3,
+          };
+
+          return html`
+            <section class="animation-list ${classMap(classes)}">
+              <div class="box" ${flip()}>Item 1</div>
+              <div class="box" ${flip()}>Item 2</div>
+              <div class="box" ${flip()}>Item 3</div>
+              <div class="box" ${flip()}>Item 4</div>
+            </section>
+            <section>
+              <div
+                class="hibox box ${classMap(classes)}"
+                ${flip({id: 'hi-outer'})}
+              >
+                <div ${flip()}>Hi</div>
+              </div>
+            </section>
+            <section class="in-out">
+              ${this.layout !== 0
+                ? html`<div
+                    class="box ${classMap(classes)}"
+                    ${flip({
+                      in: flyBelow,
+                      out: flyBelow,
+                      stabilizeOut: true,
+                    })}
+                  >
+                    In / Out
+                  </div>`
+                : ''}
+            </section>
+          `;
+        }
+
+        changeLayout() {
+          if (!this.flipController.isAnimating) {
+            this.layout = ++this.layout % 4;
+          }
+        }
+
+        animationDone() {
+          this.changeLayout();
+        }
+
+        firstUpdated() {
+          this.changeLayout();
+        }
+
+        async clickHandler() {
+          if (this.flipController.isAnimating) {
+            this.flipController.togglePlay();
+          } else {
+            this.changeLayout();
+          }
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

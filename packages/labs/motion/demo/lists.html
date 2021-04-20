@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Multi-list Animation</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      my-element {
+        width: 800px;
+      }
+
+      @media screen and (max-width: 800px) {
+        my-element {
+          width: 100%;
+        }
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {repeat} from 'lit/directives/repeat.js';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {
+        flip,
+        fadeOut,
+        flyBelow,
+        defaultCssProperties,
+      } from '../development/flip.js';
+      import 'https://unpkg.com/@material/mwc-textfield@0.20.0/mwc-textfield.js?module';
+      import 'https://unpkg.com/@material/mwc-checkbox@0.20.0/mwc-checkbox.js?module';
+      import 'https://unpkg.com/@material/mwc-formfield@0.20.0/mwc-formfield.js?module';
+
+      const data = [
+        {id: 1, value: 'Go running.', completed: false},
+        {id: 2, value: 'Strength training', completed: true},
+        {id: 3, value: 'Walk with friends.', completed: false},
+        {id: 4, value: 'Feed the cats.', completed: true},
+        {id: 5, value: 'Shop for dinner.', completed: false},
+        {id: 6, value: 'Order clothes.', completed: false},
+        {id: 7, value: 'BBQ!', completed: false},
+      ];
+
+      class MyElement extends LitElement {
+        static shadowRootOptions = {mode: 'open', delegatesFocus: true};
+        static styles = [
+          css`
+            :host {
+              display: inline-block;
+              outline: none;
+              padding: 8px;
+              --mdc-theme-primary: #0069c0;
+              --mdc-theme-secondary: #1b5e20;
+              --mdc-typography-body2-font-size: 1.1rem;
+              --mdc-typography-body2-font-weight: 600;
+              --mdc-checkbox-unchecked-color: black;
+            }
+
+            mwc-textfield {
+              display: block;
+              --mdc-shape-small: 12px;
+            }
+
+            .lists {
+              display: flex;
+            }
+
+            .list {
+              flex: 1;
+            }
+
+            ul {
+              margin: 0;
+              padding: 0;
+              outline: none;
+            }
+
+            li {
+              will-change: transform;
+              position: relative;
+              background: #ffeb3b;
+              padding: 8px;
+              border-radius: 12px;
+              margin: 8px;
+              display: flex;
+              align-items: center;
+            }
+
+            li > button {
+              border: none;
+              background: none;
+              outline: none;
+            }
+
+            li > mwc-formfield {
+              flex: 1;
+            }
+
+            .list.completed li {
+              background: #4caf50;
+            }
+          `,
+        ];
+
+        static properties = {
+          data: {},
+        };
+
+        constructor() {
+          super();
+          this.data = data;
+          this.length = this.data.length;
+        }
+
+        addItem(e) {
+          this.data = [
+            ...this.data,
+            {
+              id: ++this.length,
+              value: e.target.value,
+              completed: false,
+            },
+          ];
+          e.target.value = '';
+        }
+
+        removeItem(item) {
+          this.data = this.data.filter((i) => i != item);
+        }
+
+        updateItem(updatingItem, completed) {
+          this.data = this.data.map((item) => {
+            if (updatingItem === item) {
+              updatingItem.completed = completed;
+            }
+            return item;
+          });
+        }
+
+        render() {
+          const animationOptions = {
+            duration: 500,
+            easing: 'ease-in-out',
+            fill: 'both',
+          };
+          const d = animationOptions.duration / this.data.length;
+          const list = (completed) => html`<div
+            class="list ${classMap({completed})}"
+          >
+            <h3>${completed ? `Completed` : `Tasks`}</h3>
+            <ul tabindex="-1">
+              ${repeat(
+                this.data.filter((item) =>
+                  completed ? item.completed : !item.completed
+                ),
+                (item) => item.id,
+                (item) => html`<li
+                  ${flip({
+                    animationOptions,
+                    in: flyBelow,
+                    out: fadeOut,
+                    stabilizeOut: true,
+                    id: `${item.id}:${completed ? 'right' : 'left'}`,
+                    inId: `${item.id}:${completed ? 'left' : 'right'}`,
+                    skipInitial: true,
+                  })}
+                >
+                  <mwc-formfield label="${item.id}: ${item.value}"
+                    ><mwc-checkbox
+                      type="checkbox"
+                      ?checked=${completed}
+                      @change=${(e) => this.updateItem(item, e.target.checked)}
+                    ></mwc-checkbox></mwc-formfield
+                  ><button @click=${() => this.removeItem(item)}>
+                    <img src="delete.svg" title="Delete" alt="Delete" />
+                  </button>
+                </li>`
+              )}
+            </ul>
+          </div>`;
+          return html`
+            <mwc-textfield
+              outlined
+              @change=${(e) => this.addItem(e)}
+              label="Enter a task..."
+              autofocus
+            ></mwc-textfield>
+            <div class="lists">${list()} ${list(true)}</div>
+          `;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>
