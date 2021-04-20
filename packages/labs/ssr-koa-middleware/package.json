@@ -26,6 +26,7 @@
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts",
+    "build:ts": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf {index,render-html-file}.{js,js.map,d.ts} test/ *.tsbuildinfo",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
