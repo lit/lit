@@ -76,7 +76,8 @@ import {myTemplate} from './my-template.js';
 import {render, hydrate} from `lit/experimental-hydrate.js`;
 
 // Initial hydration required before render:
-const initialData = /* should be same data used to render on the server */;
+/* must be same data used to render on the server */;
+const initialData = getInitialAppData();
 hydrate(myTemplate(initialData), document.body);
 
 // After hydration, render will efficiently update the server-rendered DOM:
