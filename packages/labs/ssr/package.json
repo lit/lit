@@ -23,7 +23,11 @@
   ],
   "author": "Google LLC",
   "license": "BSD-3-Clause",
-  "repository": "PolymerLabs/lit-ssr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/ssr"
+  },
   "devDependencies": {
     "@koa/router": "^8.0.8",
     "@open-wc/testing": "^2.5.8",

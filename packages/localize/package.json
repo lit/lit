@@ -7,10 +7,10 @@
   "description": "Localization client library for lit-html",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html/tree/main/packages/localize",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/localize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Polymer/lit-html.git",
+    "url": "https://github.com/Lit/Lit.git",
     "directory": "packages/localize"
   },
   "main": "lit-localize.js",

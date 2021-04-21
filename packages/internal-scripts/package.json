@@ -3,7 +3,11 @@
   "private": true,
   "version": "1.0.0",
   "description": "Internal scripts for the Lit monorepo",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/internal-scripts"
+  },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "type": "module",

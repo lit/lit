@@ -6,9 +6,12 @@
   },
   "description": "A library for building fast, lightweight web components",
   "license": "BSD-3-Clause",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git"
+  },
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
   "type": "module",

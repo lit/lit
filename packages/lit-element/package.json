@@ -6,9 +6,13 @@
   },
   "description": "A simple base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/lit-element"
+  },
   "author": "Google LLC",
-  "homepage": "https://lit-element.polymer-project.org/",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
