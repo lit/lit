@@ -11,7 +11,7 @@ lit-html is the template system that powers the [Lit](https://lit.dev) library f
 
 ## About this release
 
-This release candidate of lit-html 2.0 is intended to be feature complete and API stable. Please note the breaking changes from lit-html 1.0 in the [lit.dev upgrade guide](https://lit-dev-5ftespv5na-uc.a.run.app/docs/releases/upgrade/).
+This release candidate of lit-html 2.0 is intended to be feature complete and API stable. Please note the minor breaking changes from lit-html 1.0 in the [lit.dev upgrade guide](https://lit-dev-5ftespv5na-uc.a.run.app/docs/releases/upgrade/).
 
 ## Documentation
 

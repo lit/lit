@@ -12,7 +12,7 @@ See the full documentation for Lit at [lit.dev](https://lit.dev)
 
 ## About this release
 
-This release candidate of Lit 2.0 is intended to be feature complete and API stable. Please note the breaking changes from lit-element 2.0 and lit-html 1.0 in the [lit.dev upgrade guide](https://lit-dev-5ftespv5na-uc.a.run.app/docs/releases/upgrade/).
+This release candidate of Lit 2.0 is intended to be feature complete and API stable. Please note the minor breaking changes from lit-element 2.0 and lit-html 1.0 in the [lit.dev upgrade guide](https://lit-dev-5ftespv5na-uc.a.run.app/docs/releases/upgrade/).
 
 ## Overview
 
