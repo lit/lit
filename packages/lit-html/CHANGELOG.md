@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+## [2.0.0-rc.2] - 2021-04-20
+
+### Changed
+
+- Add dependency on trustedtypes typings.
+
 ## 2.0.0-rc.1 - 2021-04-20
 
 ### Added
