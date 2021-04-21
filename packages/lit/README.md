@@ -1,6 +1,4 @@
-# Lit
-
-![Lit Logo](./logo.png)
+![Lit](./logo.png)
 
 ## Simple. Fast. Web Components.
 
