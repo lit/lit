@@ -34,7 +34,7 @@ Lit builds on top of standard web components, and makes them easier to write:
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-// @customElement() registers the element
+// Registers the element
 @customElement('my-element')
 export class MyElement extends LitElement {
   
@@ -45,7 +45,7 @@ export class MyElement extends LitElement {
     }
   `;
 
-  // @property() creates a reactive property that triggers rendering
+  // Creates a reactive property that triggers rendering
   @property()
   mood = 'great';
 
