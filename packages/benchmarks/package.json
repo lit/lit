@@ -46,6 +46,6 @@
   },
   "devDependencies": {
     "chromedriver": "^89.0.0",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   }
 }
