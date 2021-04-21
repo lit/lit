@@ -13,7 +13,7 @@ excellent to each other!
     Check out <code>#general</code>, <code>#beginners</code>, or
     <code>#tools</code> to get started.
 
-*   Follow us on <a href="https://twitter.com/polymerLibrary">Twitter</a>
+*   Follow us on <a href="https://twitter.com/buildWithLit">Twitter</a>
     for the latest on web components and the Polymer Project. Many
     of our team members can be found tweeting about lit-html, LitElement,
     and the latest developments in the web platform.
