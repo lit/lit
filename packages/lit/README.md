@@ -2,6 +2,11 @@
 
 ## Simple. Fast. Web Components.
 
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/lit)](https://www.npmjs.com/package/lit)
+[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
 Lit is a simple library for building fast, lightweight web components.
 
 At Lit's core is a boilerplate-killing component base class that provides reactive state, scoped styles, and a declarative template system that's tiny, fast and expressive.
@@ -12,7 +17,7 @@ See the full documentation for Lit at [lit.dev](https://lit.dev)
 
 ## About this release
 
-This release candidate of Lit 2.0 is intended to be feature complete and API stable. Please note the minor breaking changes from lit-element 2.0 and lit-html 1.0 in the [lit.dev upgrade guide](https://lit-dev-5ftespv5na-uc.a.run.app/docs/releases/upgrade/).
+This release candidate of Lit 2.0 is intended to be feature complete and API stable. Please note the minor breaking changes from lit-element 2.0 and lit-html 1.0 in the [lit.dev upgrade guide](https://lit.dev/docs/releases/upgrade/).
 
 ## Overview
 

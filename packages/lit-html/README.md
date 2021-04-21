@@ -2,8 +2,8 @@
 
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
-[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
-[![Published on npm](https://img.shields.io/npm/v/lit-html/next-major)](https://www.npmjs.com/package/lit-html)
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/lit-html/next)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
@@ -11,7 +11,7 @@ lit-html is the template system that powers the [Lit](https://lit.dev) library f
 
 ## About this release
 
-This release candidate of lit-html 2.0 is intended to be feature complete and API stable. Please note the minor breaking changes from lit-html 1.0 in the [lit.dev upgrade guide](https://lit-dev-5ftespv5na-uc.a.run.app/docs/releases/upgrade/).
+This release candidate of lit-html 2.0 is intended to be feature complete and API stable. Please note the minor breaking changes from lit-html 1.0 in the [lit.dev upgrade guide](https://lit.dev/docs/releases/upgrade/).
 
 ## Documentation
 
