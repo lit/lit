@@ -61,8 +61,8 @@ Lit is open source and we appreciate issue reports and pull requests. See [CONTR
 Initialize repo:
 
 ```sh
-git clone https://github.com/Polymer/lit-html.git
-cd lit-html
+git clone https://github.com/lit/lit.git
+cd lit
 npm install
 npm run bootstrap
 ```
