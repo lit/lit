@@ -1,10 +1,14 @@
 {
   "name": "@lit-labs/task",
-  "version": "1.0.0-pre.2",
+  "version": "1.0.0-rc.1",
   "description": "A controller for Lit that renders asynchronous tasks.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit-element.polymer-project.org/",
-  "repository": "lit-html",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/task"
+  },
   "type": "module",
   "main": "index.js",
   "module": "index.js",
@@ -53,7 +57,7 @@
     "internal-scripts": "^1.0.0"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-pre.3"
+    "@lit/reactive-element": "^1.0.0-rc.1"
   },
   "publishConfig": {
     "access": "public"

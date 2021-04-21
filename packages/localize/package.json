@@ -1,16 +1,16 @@
 {
   "name": "@lit/localize",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "publishConfig": {
     "access": "public"
   },
   "description": "Localization client library for lit-html",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html/tree/main/packages/localize",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/localize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Polymer/lit-html.git",
+    "url": "https://github.com/Lit/Lit.git",
     "directory": "packages/localize"
   },
   "main": "lit-localize.js",
@@ -41,8 +41,8 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-pre.3",
-    "lit": "^2.0.0-pre.2"
+    "@lit/reactive-element": "^1.0.0-rc.1",
+    "lit": "^2.0.0-rc.1"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

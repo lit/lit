@@ -1,11 +1,15 @@
 {
   "name": "lit-html",
-  "version": "2.0.0-pre.7",
+  "version": "2.0.0-rc.1",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/lit-html"
+  },
   "author": "Google LLC",
-  "homepage": "https://lit-html.polymer-project.org/",
+  "homepage": "https://lit.dev/",
   "main": "lit-html.js",
   "type": "module",
   "exports": {

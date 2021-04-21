@@ -4,7 +4,11 @@
   "private": true,
   "description": "Benchmarks for lit",
   "license": "BSD-3-Clause",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/benchmarks"
+  },
   "author": "Google LLC",
   "scripts": {
     "benchmark:lit-element:list": "tach --config lit-element/list/tachometer.json",
@@ -35,9 +39,9 @@
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-pre.2",
-    "lit-element": "^3.0.0-pre.3",
-    "lit-html": "^2.0.0-pre.6",
+    "@lit/reactive-element": "^1.0.0-rc.1",
+    "lit-element": "^3.0.0-rc.1",
+    "lit-html": "^2.0.0-rc.1",
     "tachometer": "^0.5.8"
   },
   "devDependencies": {

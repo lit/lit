@@ -1,16 +1,16 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publishConfig": {
     "access": "public"
   },
   "description": "Localization tooling for lit-html",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
-  "homepage": "https://github.com/Polymer/lit-html/tree/main/packages/localize-tools",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/localize-tools",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Polymer/lit-html.git",
+    "url": "https://github.com/lit/lit.git",
     "directory": "packages/localize-tools"
   },
   "bin": {
@@ -41,7 +41,7 @@
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.4.0",
-    "lit": "^2.0.0-pre.2",
+    "lit": "^2.0.0-rc.1",
     "minimist": "^1.2.5",
     "parse5": "^6.0.0",
     "source-map-support": "^0.5.19",

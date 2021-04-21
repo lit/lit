@@ -1,14 +1,18 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-pre.4",
+  "version": "3.0.0-rc.1",
   "publishConfig": {
     "access": "public"
   },
   "description": "A simple base class for creating fast, lightweight web components",
   "license": "BSD-3-Clause",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/lit-element"
+  },
   "author": "Google LLC",
-  "homepage": "https://lit-element.polymer-project.org/",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
   "types": "index.d.ts",
@@ -77,8 +81,8 @@
     "!/src/test/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-pre.3",
-    "lit-html": "^2.0.0-pre.7"
+    "@lit/reactive-element": "^1.0.0-rc.1",
+    "lit-html": "^2.0.0-rc.1"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/scoped-registry-mixin",
-  "version": "1.0.0-pre.1",
+  "version": "1.0.0-rc.1",
   "description": "A mixin for using speculative \"scoped CustomElementRegistry\" with LitElement.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit-element.polymer-project.org/",
+  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/polymer/lit-html.git",
+    "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/scoped-registry-mixin"
   },
   "type": "module",
@@ -45,8 +45,8 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "1.0.0-pre.3",
-    "lit": "^2.0.0-pre.2"
+    "@lit/reactive-element": "1.0.0-rc.1",
+    "lit": "^2.0.0-rc.1"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

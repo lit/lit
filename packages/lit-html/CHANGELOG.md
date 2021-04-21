@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## Unreleased
+## 2.0.0-rc.1 - 2021-04-20
 
 ### Added
 
@@ -29,13 +29,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - (Since 2.0.0-pre.7) Renamed `hydrate` module to `experimental-hydrate` to reflect its experimental nature. Experimental modules may undergo breaking changes within otherwise non-major releases.
 
-<!-- ### Added -->
-<!-- ### Fixed -->
-<!-- ### Removed -->
-
 ## 2.0.0-pre.7 - 2021-03-31
-
-<!-- ### Changed -->
 
 ### Added
 
@@ -48,8 +42,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `@apply` now functions correctly under native Shadow DOM when template parts are used. ([#1739](https://github.com/Polymer/lit-html/pull/1739)).
 
 - `styleMap()` now removes properties if the value is set to `undefined` or `null`, as opposed to not being a property of the style object. ([#1665](https://github.com/Polymer/lit-html/pull/1665)).
-
-<!-- ### Removed -->
 
 ## [2.0.0-pre.6] - 2021-02-11
 

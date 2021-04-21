@@ -1,10 +1,14 @@
 {
   "name": "@lit-labs/react",
-  "version": "1.0.0-pre.2",
+  "version": "1.0.0-rc.1",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit-element.polymer-project.org/",
-  "repository": "lit-html",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/react"
+  },
   "type": "module",
   "main": "index.js",
   "module": "index.js",
@@ -42,7 +46,7 @@
   "author": "Google LLC",
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
-    "@lit/reactive-element": "^1.0.0-pre.3",
+    "@lit/reactive-element": "^1.0.0-rc.1",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",
     "@types/react": "^17.0.0",
