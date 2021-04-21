@@ -18,8 +18,6 @@ This release candidate of lit-html 2.0 is intended to feature complete and API s
 
 ## Overview
 
-## Overview
-
 Lit provides developers with just the right tools to build fast web components:
 
 - A fast declarative HTML template system
