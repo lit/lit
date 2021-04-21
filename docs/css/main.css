@@ -447,6 +447,22 @@ article ol li {
   margin: 4px 0;
 }
 
+.version-banner {
+  padding: 0px 20px;
+  border: 1px solid #000;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+}
+
+.version-banner a {
+  font-weight: bold;
+}
+
+.version-banner img {
+  height: 36px;
+  margin-right: 16px;
+}
 
 .alert {
   position: relative;

@@ -10,6 +10,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
   variable_end_string='}}}}',
   autoescape=True)
 
+HOME_PAGE="/guide"
+
 redirects = [
   (r'/api/([^/]*)/lit_html', r'/api/\1/_lit_html_'),
   (r'/api/([^/]*)/shady_render', r'/api/\1/_lib_shady_render_')
@@ -34,6 +36,10 @@ def find_template(path):
 
 class MainPage(webapp2.RequestHandler):
   def get(self):
+    if (self.request.path == '/'):
+      self.redirect(HOME_PAGE, permanent=True)
+      return
+
     try:
       template = find_template(self.request.path)
       self.response.headers['Cache-Control'] = 'public, max-age=60'
