@@ -1,6 +1,6 @@
 # Lit
 
-![Lit Logo](./logo.svg | width=50%)
+![Lit Logo](./logo.png)
 
 ## Simple. Fast. Web Components.
 
