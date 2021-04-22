@@ -1,6 +1,6 @@
 # Lit
 
-[![Build Status](https://github.com/Polymer/lit-html/actions/workflows/tests.yml/badge.svg)](https://github.com/Polymer/lit-html/actions/workflows/tests.yml)
+[![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg)](https://github.com/lit/lit/actions/workflows/tests.yml)
 [![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
@@ -13,7 +13,7 @@ At Lit's core is a boilerplate-killing component base class that provides reacti
 
 ### Documentation
 
-To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/Polymer/lit-html/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/Polymer/lit-html/wiki/Lit-2.0-Upgrade-Guide).
+To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/lit/lit/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/lit/lit/wiki/Lit-2.0-Upgrade-Guide).
 
 To install from npm:
 
@@ -25,7 +25,7 @@ npm i lit
 
 This is the monorepo for upcoming Lit packages, including `lit`, `lit-html` 2.0 and `lit-element` 3.0.
 
-lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/Polymer/lit-html/tree/lit-html-1.x) branch.
+lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/lit/tree/lit-html-1.x) branch.
 
 ### Packages
 
