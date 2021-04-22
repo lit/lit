@@ -93,8 +93,8 @@ If you've already signed a CLA but are still getting bothered by the awfully ins
 ## Set up
 
 ```bash
-git clone https://github.com/Polymer/lit-html.git
-cd lit-html
+git clone https://github.com/lit/lit.git
+cd lit
 npm install
 npm run bootstrap
 npm run build

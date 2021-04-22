@@ -128,7 +128,7 @@ export class LitElement extends ReactiveElement {
 
   // TODO(kschaaf): Consider debouncing directive disconnection so element moves
   // do not thrash directive callbacks
-  // https://github.com/Polymer/lit-html/issues/1457
+  // https://github.com/lit/lit/issues/1457
   /**
    * @category lifecycle
    */
@@ -183,7 +183,7 @@ if (DEV_MODE) {
           `\`${name}\` is implemented. It ` +
             `has been removed from this version of LitElement. `
           // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/Polymer/lit-html/blob/main/packages/lit-element/CHANGELOG.md`
+          // + See the changelog at https://github.com/lit/lit/blob/main/packages/lit-element/CHANGELOG.md`
         );
       }
     };

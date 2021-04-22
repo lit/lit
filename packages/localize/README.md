@@ -2,8 +2,8 @@
 
 [npm-img]: https://img.shields.io/npm/v/@lit/localize
 [npm-href]: https://www.npmjs.com/package/@lit/localize
-[test-img]: https://github.com/Polymer/lit-html/workflows/Tests/badge.svg?branch=master
-[test-href]: https://github.com/Polymer/lit-html/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush
+[test-img]: https://github.com/lit/lit/workflows/Tests/badge.svg?branch=master
+[test-href]: https://github.com/lit/lit/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush
 
 [![Published on NPM][npm-img]][npm-href]
 [![Test status][test-img]][test-href]
@@ -87,9 +87,9 @@ const {setLocale} = configureLocalization({
 ```
 
 See
-[`examples/transform`](https://github.com/Polymer/lit-html/tree/main/packages/localize/examples/transform)
+[`examples/transform`](https://github.com/lit/lit/tree/main/packages/localize/examples/transform)
 and
-[`examples/runtime`](https://github.com/Polymer/lit-html/tree/main/packages/localize/examples/runtime)
+[`examples/runtime`](https://github.com/lit/lit/tree/main/packages/localize/examples/runtime)
 for full working examples.
 
 ## Modes
@@ -154,7 +154,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```json
    {
-     "$schema": "https://raw.githubusercontent.com/Polymer/lit-html/main/packages/localize-tools/config.schema.json",
+     "$schema": "https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/config.schema.json",
      "sourceLocale": "en",
      "targetLocales": ["es-419"],
      "tsConfig": "tsconfig.json",
@@ -412,9 +412,8 @@ Descriptions are represented in XLIFF using `<note>` elements.
 
 ## `@localized` decorator
 
-If you are using [LitElement](https://lit-element.polymer-project.org/), then
-you can use the `@localized` decorator to automatically re-render your elements
-whenever the locale changes.
+If you are using [Lit](https://lit.dev), then you can use the `@localized`
+decorator to automatically re-render your elements whenever the locale changes.
 
 ```typescript
 import {LitElement, html} from 'lit';

@@ -1,6 +1,6 @@
 # lit-localize runtime example
 
-This package demonstrates an application that uses [lit-localize](https://github.com/PolymerLabs/lit-localize) in runtime mode.
+This package demonstrates an application that uses [lit-localize](https://github.com/lit/lit/tree/main/packages/localize) in runtime mode.
 
 ## Overview
 
@@ -18,7 +18,7 @@ This package demonstrates an application that uses [lit-localize](https://github
 ## Setup
 
 ```bash
-git clone https://github.com/Polymer/lit-html.git
+git clone https://github.com/lit/lit.git
 cd lit-html/packages/localize/examples/transform
 npm install
 npx lit-localize build

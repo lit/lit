@@ -1125,7 +1125,7 @@ class ChildPart {
         // If no existing part, create a new one
         // TODO (justinfagnani): test perf impact of always creating two parts
         // instead of sharing parts between nodes
-        // https://github.com/Polymer/lit-html/issues/1266
+        // https://github.com/lit/lit/issues/1266
         itemParts.push(
           (itemPart = new ChildPart(
             this._insert(createMarker()),
