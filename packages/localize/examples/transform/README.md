@@ -1,6 +1,6 @@
 # lit-localize transform example
 
-This package demonstrates an application that uses [lit-localize](https://github.com/PolymerLabs/lit-localize) in transform
+This package demonstrates an application that uses [lit-localize](https://github.com/lit/lit/tree/main/packages/localize) in transform
 mode.
 
 ## Overview
@@ -14,7 +14,7 @@ mode.
 ## Setup
 
 ```bash
-git clone https://github.com/Polymer/lit-html.git
+git clone https://github.com/lit/lit.git
 cd lit-html/packages/localize/examples/transform
 npm i
 npx lit-localize build
