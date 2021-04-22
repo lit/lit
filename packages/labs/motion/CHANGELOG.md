@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Fixed
+
+- Included `flip-controller` in `package.json` `files` section [#1796](https://github.com/lit/lit/issues/1796).
+
 ## [1.0.0-rc.1] - 2021-04-20
 
 ### Changed
