@@ -152,7 +152,7 @@ suite('cache directive', () => {
     assert.equal(stripExpressionComments(container.innerHTML), '');
   });
 
-  test('async directives disconnet/reconnect when moved in/out of cache', () => {
+  test('async directives disconnect/reconnect when moved in/out of cache', () => {
     const disconnectable = directive(
       class extends AsyncDirective {
         log: string[] | undefined;
