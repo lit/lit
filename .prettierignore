@@ -156,6 +156,7 @@ packages/lit-starter-ts/docs-src/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
+package-lock.json
 packages/localize/examples/
 packages/localize-tools/testdata/
 packages/localize-tools/config.schema.json
