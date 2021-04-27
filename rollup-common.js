@@ -84,7 +84,7 @@ const stableProperties = {
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // async-directive)
   _$parent: 'M',
-  _$disconnetableChildren: 'N',
+  _$disconnectableChildren: 'N',
   // async-directive: AsyncDirective
   _$setDirectiveConnected: 'O',
   // lit-html: ChildPart (added by async-directive)

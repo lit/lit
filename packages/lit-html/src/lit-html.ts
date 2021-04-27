@@ -699,7 +699,7 @@ class Template {
 
 export interface Disconnectable {
   _$parent?: Disconnectable;
-  _$disconnetableChildren?: Set<Disconnectable>;
+  _$disconnectableChildren?: Set<Disconnectable>;
 }
 
 function resolveDirective(
@@ -760,7 +760,7 @@ class TemplateInstance {
   /** @internal */
   _$parent: Disconnectable;
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
@@ -895,7 +895,7 @@ class ChildPart {
   // The following fields will be patched onto ChildParts when required by
   // AsyncDirective
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
   _$setChildPartConnected?(
     isConnected: boolean,
@@ -1201,7 +1201,7 @@ class AttributePart {
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   protected _sanitizer: ValueSanitizer | undefined;
   /** @internal */
@@ -1458,7 +1458,7 @@ class ElementPart {
   _$parent: Disconnectable | undefined;
 
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   /** @internal */
   _setDirectiveConnected?: (
