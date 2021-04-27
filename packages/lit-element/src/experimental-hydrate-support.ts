@@ -38,7 +38,7 @@ interface PatchableLitElement extends HTMLElement {
 
   // Add `defer-hydration` to observedAttributes
   Object.defineProperty(LitElement, 'observedAttributes', {
-    get() {
+    get(this: PatchableLitElement) {
       return [...observedAttributes.call(this), 'defer-hydration'];
     },
   });
@@ -48,6 +48,7 @@ interface PatchableLitElement extends HTMLElement {
   const attributeChangedCallback =
     LitElement.prototype.attributeChangedCallback;
   LitElement.prototype.attributeChangedCallback = function (
+    this: PatchableLitElement,
     name: string,
     old: string | null,
     value: string | null
