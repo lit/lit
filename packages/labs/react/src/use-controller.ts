@@ -32,7 +32,7 @@ class ReactControllerHost<C extends ReactiveController>
   /* @internal */
   _updatePending = true;
   private _resolveUpdate!: (value: boolean | PromiseLike<boolean>) => void;
-
+  // Count of the number of kicks performed
   private _kickCount: number;
   // A function to trigger an update of the React component
   private _kick: (k: number) => void;
@@ -59,7 +59,10 @@ class ReactControllerHost<C extends ReactiveController>
     if (!this._updatePending) {
       this._updatePending = true;
       // Trigger a React update by updating some state
-      microtask.then(() => this._kick(this._kickCount + 1));
+      microtask.then(() => {
+        this._kickCount++;
+        this._kick(this._kickCount);
+      });
     }
   }
 
