@@ -59,7 +59,7 @@ class ReactControllerHost<C extends ReactiveController>
     if (!this._updatePending) {
       this._updatePending = true;
       // Trigger a React update by updating some state
-      microtask.then(() => this._kick(this._kickCount + 1));
+      microtask.then(() => this._kick(++this._kickCount));
     }
   }
 

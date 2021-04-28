@@ -17,6 +17,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+<!-- ### Changed -->
+<!-- ### Added -->
+<!-- ### Removed -->
+
+### Fixed
+
+- Fixed a bug where `host.requestUpdate()` only worked on the first call from within `useController()`.
+
 ## [1.0.0-rc.1] - 2021-04-20
 
 ### Added
