@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+## [1.4.0] - 2021-04-26
+
+### Added
+
+* The lit-html 2.0 directive API has been added in order to enable writing libraries that work against both lit-html 1.4 and 2.0, easing upgrades. ([#1654](https://github.com/Polymer/lit-html/pull/1654)) See the [README](./README.md) for more information.
+
 ## [1.3.0] - 2020-08-19
 
 ### Changed
