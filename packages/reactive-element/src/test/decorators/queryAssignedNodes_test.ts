@@ -52,13 +52,31 @@ const flush =
   }
   customElements.define('assigned-nodes-el-2', E);
 
+  const defaultSymbol = Symbol('default');
+  const headerSymbol = Symbol('header');
+  class S extends RenderingElement {
+    @queryAssignedNodes() [defaultSymbol]!: Node[];
+
+    @queryAssignedNodes('header') [headerSymbol]!: Node[];
+
+    render() {
+      return html`
+        <slot name="header"></slot>
+        <slot></slot>
+      `;
+    }
+  }
+  customElements.define('assigned-nodes-el-symbol', S);
+
   // Note, there are 2 elements here so that the `flatten` option of
   // the decorator can be tested.
   class C extends RenderingElement {
     div!: HTMLDivElement;
     div2!: HTMLDivElement;
+    div3!: HTMLDivElement;
     assignedNodesEl!: D;
     assignedNodesEl2!: E;
+    assignedNodesEl3!: S;
 
     render() {
       return html`
@@ -67,18 +85,25 @@ const flush =
           <slot slot="footer"></slot
         ></assigned-nodes-el>
         <assigned-nodes-el-2><div id="div2">B</div></assigned-nodes-el-2>
+        <assigned-nodes-el-symbol
+          ><div id="div3">B</div></assigned-nodes-el-symbol
+        >
       `;
     }
 
     firstUpdated() {
       this.div = this.renderRoot.querySelector('#div1') as HTMLDivElement;
       this.div2 = this.renderRoot.querySelector('#div2') as HTMLDivElement;
+      this.div3 = this.renderRoot.querySelector('#div3') as HTMLDivElement;
       this.assignedNodesEl = this.renderRoot.querySelector(
         'assigned-nodes-el'
       ) as D;
       this.assignedNodesEl2 = this.renderRoot.querySelector(
         'assigned-nodes-el-2'
       ) as E;
+      this.assignedNodesEl3 = this.renderRoot.querySelector(
+        'assigned-nodes-el-symbol'
+      ) as S;
     }
   }
   customElements.define(generateElementName(), C);
@@ -133,6 +158,10 @@ const flush =
 
   test('returns assignedNodes for unnamed slot that is not first slot', () => {
     assert.deepEqual(el.assignedNodesEl2.defaultAssigned, [el.div2]);
+  });
+
+  test('returns assignedNodes for unnamed slot via symbol property', () => {
+    assert.deepEqual(el.assignedNodesEl3[defaultSymbol], [el.div3]);
   });
 
   test('returns flattened assignedNodes for slot', () => {
