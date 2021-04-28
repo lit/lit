@@ -66,10 +66,6 @@ class StyleMapDirective extends Directive {
 
     if (this._previousStyleProperties === undefined) {
       this._previousStyleProperties = new Set();
-      for (const name in styleInfo) {
-        this._previousStyleProperties.add(name);
-      }
-      return this.render(styleInfo);
     }
 
     // Remove old properties that no longer exist in styleInfo
