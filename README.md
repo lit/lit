@@ -1,11 +1,11 @@
-# Lit
+![Lit](./packages/lit/logo.png)
+
+## Simple. Fast. Web Components.
 
 [![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg)](https://github.com/lit/lit/actions/workflows/tests.yml)
 [![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
-
-## Simple. Fast. Web Components.
 
 Lit is a simple library for building fast, lightweight web components.
 
@@ -13,7 +13,11 @@ At Lit's core is a boilerplate-killing component base class that provides reacti
 
 ### Documentation
 
-To learn more and get started using Lit, check out the [About Lit 2.0](https://github.com/lit/lit/wiki/About-Lit-2.0). For information about upgrading lit-html 1.x and lit-element 2.x code, see [Lit 2.0 Upgrade Guide](https://github.com/lit/lit/wiki/Lit-2.0-Upgrade-Guide).
+See the full documentation for Lit at [lit.dev](https://lit.dev).
+
+For information about upgrading lit-html 1.x and lit-element 2.x code, see the [Lit 2.0 Upgrade Guide](https://lit.dev/docs/releases/upgrade/).
+
+### npm
 
 To install from npm:
 
