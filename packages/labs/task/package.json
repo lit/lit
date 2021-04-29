@@ -20,6 +20,10 @@
     ".": {
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./task.js": {
+      "development": "./development/task.js",
+      "default": "./task.js"
     }
   },
   "files": [
