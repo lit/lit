@@ -5,7 +5,7 @@
  */
 
 /**
- * This is a server-old module that renders the HTML file shell.
+ * This is a server-only module that renders the HTML file shell.
  */
 
 import {render} from '../../lib/render-lit-html.js';
@@ -17,7 +17,7 @@ export function renderAppWithInitialData() {
 
 // This module runs in the app context with the client-side code, but is a
 // server-only module. It doesn't use lit-html so that it can render the HTML
-// shell in unbalanced fragments. By yielding the HTML pramable immediately
+// shell in unbalanced fragments. By yielding the HTML preamable immediately
 // with no lit-html template preparation or rendering needed, we minimize TTFB,
 // And can get the browser to start prefetch as soon as possible.
 export function* renderApp(data: typeof initialData) {
