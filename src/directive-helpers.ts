@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt
  * The complete set of authors may be found at
@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {TemplateFactory} from './template-factory.js';
+import {TemplateResult} from './lit-html.js';
+export {isPrimitive} from './lib/parts.js';
 
-export interface RenderOptions {
-  readonly templateFactory: TemplateFactory;
-  readonly eventContext?: EventTarget;
-}
+/**
+ * Tests if a value is a TemplateResult.
+ */
+export const isTemplateResult = (value: unknown): value is TemplateResult =>
+    value instanceof TemplateResult;

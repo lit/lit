@@ -212,6 +212,31 @@ main {
   display: none;
 }
 
+.hero.blm {
+  background: #696969;
+  color: #fff;
+}
+
+.hero .blm-banner {
+  position: relative;
+  background: #000;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  padding: 0 20px 0 20px;
+}
+
+.hero .blm-banner p {
+  margin: auto;
+  text-align: center;
+}
+
+.hero .blm-banner a {
+  color: #F07474;
+}
+
+
 .hero .wrapper {
   padding-top: 21vh;
   padding-bottom: 24vh;
@@ -422,6 +447,22 @@ article ol li {
   margin: 4px 0;
 }
 
+.version-banner {
+  padding: 0px 20px;
+  border: 1px solid #000;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+}
+
+.version-banner a {
+  font-weight: bold;
+}
+
+.version-banner img {
+  height: 36px;
+  margin-right: 16px;
+}
 
 .alert {
   position: relative;

@@ -6,9 +6,9 @@ Import the main lit-html functions from the [`lit-html`](./modules/lit_html.html
 import {render, html, svg} from 'lit-html';
 ```
 
-- [html](./modules/lit_html.html#html)
-- [svg](./modules/lit_html.html#svg)
-- [render](./modules/lit_html.html#render)
+- [html](./modules/_lit_html_.html#html)
+- [svg](./modules/_lit_html_.html#svg)
+- [render](./modules/_lit_html_.html#render)
 
 ## Directives
 lit-html comes with a set of directives. You can import them as individual modules from the `lit-html/directives/` folder:

@@ -15,9 +15,51 @@ To help with dynamic styling, lit-html provides two directives for manipulating 
 *   [`classMap`](template-reference#classmap) sets classes on an element based on the properties of an object.
 *   [`styleMap`](template-reference#stylemap) sets the styles on an element based on a map of style properties and values.
 
+## Setting classes with classMap {#classmap}
+
+Like `styleMap`, the `classMap` directive lets you set a group of classes based on an object.
+
+```js
+import {html} from 'lit-html';
+import {classMap} from 'lit-html/directives/class-map.js';
+
+const itemTemplate = (item) => {
+  const classes = {selected: item.selected};
+  return html`<div class="menu-item ${classMap(classes)}">Classy text</div>`;
+}
+```
+
+More information: see [classMap](template-reference#classmap) in the Template syntax reference.
+
+## Inline styles with styleMap {#stylemap}
+
+You can use the `styleMap` directive to set inline styles on an element in the template.
+
+```js
+import {html} from 'lit-html';
+import {styleMap} from 'lit-html/directives/style-map.js';
+
+...
+
+const myTemplate = () => {
+  styles = {
+    color: myTextColor,
+    backgroundColor: highlight ? myHighlightColor : myBackgroundColor,
+  };
+
+  return html`
+    <div style=${styleMap(styles)}>
+      Hi there!
+    </div>
+  `;
+};
+```
+
+More information: see [styleMap](template-reference#stylemap) in the Template syntax reference.
+
 ## Rendering in shadow DOM
 
-When rendering into a shadow root, you usually want to add a style sheet inside the shadow root to the template, to you can style the contents of the shadow root. 
+When rendering into a shadow root, you usually want to add a style sheet inside the shadow root to the template, so you can style the contents of the shadow root. 
 
 ```js
 html`
@@ -29,7 +71,7 @@ html`
 `;
 ```
 
-This pattern may seem inefficient, since the same style sheet is reproduced in a each instance of an element. However, the browser can deduplicate multiple instances of the same style sheet, so the cost of parsing the style sheet is only paid once. 
+This pattern may seem inefficient, since the same style sheet is reproduced in each instance of an element. However, the browser can deduplicate multiple instances of the same style sheet, so the cost of parsing the style sheet is only paid once. 
 
 A new feature available in some browsers is [Constructable Stylesheets Objects](https://wicg.github.io/construct-stylesheets/). This proposed standard allows multiple shadow roots to explicitly share style sheets. LitElement uses this feature in its [static `styles` property](https://lit-element.polymer-project.org/guide/styles#define-styles-in-a-static-styles-property). 
 
@@ -101,42 +143,3 @@ The [ShadyCSS README](https://github.com/webcomponents/shadycss#usage) provides 
     }
     ```
 
-## Inline styles with styleMap {#stylemap}
-
-You can use the `styleMap` directive to set inline styles on an element in the template.
-
-```js
-const normalStyles = {};
-const highlightStyles = { color: 'white', backgroundColor: 'red'};
-let highlight = true;
-
-const myTemplate = () => {
-  html`
-    <div style=${styleMap(highlight ? highlightStyles : normalStyles)}>
-      Hi there!
-    </div>
-  `;
-};
-```
-
-More information: see See [styleMap](template-reference#stylemap) in the Template syntax reference.
-
-## Setting classes with classMap {#classmap}
-
-Like `styleMap`, the `classMap` directive lets you set a group of classes based on an object:
-
-```js
-// Define a base set of classes for all menu items
-const baseClasses = { 
-  'menu-item': true,
-  // ...
-};
-
-const itemTemplate = (item) => {
-  // Merge in dynamically-generated classes
-  const mergedClasses = Object.assign({active: item.active}, baseClasses);
-  return html`<div class=${classMap(mergedClasses)}>Classy text</div>`
-}
-```
-
-More information: see [classMap](template-reference#classmap) in the Template syntax reference.
