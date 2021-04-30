@@ -8,7 +8,7 @@
  * This is a server-old module that renders the HTML file shell.
  */
 
-import {render} from '../lib/render-lit-html.js';
+import {render} from '../../lib/render-lit-html.js';
 import {template, initialData} from './module.js';
 
 export function renderAppWithInitialData() {
@@ -30,7 +30,7 @@ export function* renderApp(data: typeof initialData) {
         <script type="module">
           const button = document.querySelector('button');
           button.addEventListener('click', () => {
-            import('/demo/app-client.js');
+            import('/demo/vm-modules/app-client.js');
           });
         </script>
         <script src="./node_modules/@webcomponents/template-shadowroot/template-shadowroot.min.js"></script>

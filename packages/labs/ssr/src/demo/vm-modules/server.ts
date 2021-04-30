@@ -10,13 +10,13 @@ import koaNodeResolve from 'koa-node-resolve';
 import {URL} from 'url';
 import * as path from 'path';
 
-import {renderModule} from '../lib/render-module.js';
+import {renderModule} from '../../lib/render-module.js';
 import {Readable} from 'stream';
 
 const {nodeResolve} = koaNodeResolve;
 
 const moduleUrl = new URL(import.meta.url);
-const packageRoot = path.resolve(moduleUrl.pathname, '../..');
+const packageRoot = path.resolve(moduleUrl.pathname, '../../..');
 
 const port = 8080;
 
