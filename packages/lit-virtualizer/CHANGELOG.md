@@ -1,4 +1,4 @@
-## [0.5.0] - 2021-04-30
+## [0.6.0] - 2021-05-01
 - This is a stopgap release to unblock migrations to Lit 2.0
 - In the near future:
   - Source will move to the Lit monorepo
@@ -6,6 +6,9 @@
 
 ### Changed
 - Migrated to Lit 2.x
+
+## [0.5.0] - 2021-05-01
+### Changed
 - Significant refactoring
 - Now emits custom events, access data from `detail` object
 
