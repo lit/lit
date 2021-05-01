@@ -351,15 +351,10 @@ export interface MsgOptions {
  *     omitted, an id will be automatically generated from the template strings.
  *   - desc: Optional description
  */
-export function _msg(template: string, options?: MsgOptions): string;
-export function _msg(template: StrResult, options?: MsgOptions): string;
-
-export function _msg(
-  template: TemplateResult,
-  options?: MsgOptions
-): TemplateResult;
-
-export function _msg(
+function _msg(template: string, options?: MsgOptions): string;
+function _msg(template: StrResult, options?: MsgOptions): string;
+function _msg(template: TemplateResult, options?: MsgOptions): TemplateResult;
+function _msg(
   template: TemplateLike,
   options?: MsgOptions
 ): string | TemplateResult {
