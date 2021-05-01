@@ -4,3 +4,4 @@
 /lit-localize.*
 /examples/*/node_modules/
 /internal/
+/init/

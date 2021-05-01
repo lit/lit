@@ -30,6 +30,7 @@
     "/lit-localize.js",
     "/lit-localize.js.map",
     "/internal/",
+    "/init/",
     "/config.schema.json"
   ],
   "dependencies": {

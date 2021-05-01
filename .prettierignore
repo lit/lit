@@ -92,6 +92,7 @@ packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
 packages/localize/internal/
+packages/localize/init/
 
 packages/localize-tools/lib/
 packages/localize-tools/node_modules/
