@@ -5,7 +5,7 @@
  */
 
 import {TemplateResult, ReactiveController, ReactiveControllerHost} from 'lit';
-import {generateMsgId} from './id-generation.js';
+import {generateMsgId} from './internal/id-generation.js';
 import type {ReactiveElement} from '@lit/reactive-element';
 import type {
   Constructor,
