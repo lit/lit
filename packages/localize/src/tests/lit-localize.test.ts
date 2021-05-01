@@ -17,7 +17,7 @@ import {
   updateWhenLocaleChanges,
   localized,
 } from '../lit-localize.js';
-import {Deferred} from './deferred.js';
+import {Deferred} from '../internal/deferred.js';
 import {html, render, LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
 

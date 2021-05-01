@@ -4,15 +4,20 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ReactiveController, ReactiveControllerHost} from 'lit';
+import {TemplateResult} from 'lit';
 import {generateMsgId} from './internal/id-generation.js';
-import type {ReactiveElement} from '@lit/reactive-element';
-import type {
-  Constructor,
-  ClassDescriptor,
-} from '@lit/reactive-element/decorators/base.js';
+import {
+  LOCALE_STATUS_EVENT,
+  LocaleStatusEventDetail,
+} from './internal/locale-status-event.js';
+import {Deferred} from './internal/deferred.js';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type {StrResult} from './internal/str-tag.js';
+
+export * from './internal/locale-status-event.js';
+export * from './internal/str-tag.js';
+export * from './internal/localized-controller.js';
+export * from './internal/localized-decorator.js';
 
 /**
  * Configuration parameters for lit-localize when in runtime mode.
@@ -60,76 +65,14 @@ export type TemplateLike = string | TemplateResult | StrResult;
 export type TemplateMap = {[id: string]: TemplateLike};
 
 /**
+<<<<<<< HEAD
  * The expected exports of a locale module.
+=======
+ *
+>>>>>>> dbdd3368 (Factor out decorator)
  */
 export interface LocaleModule {
   templates: TemplateMap;
-}
-
-/**
- * Name of the event dispatched to `window` whenever a locale change starts,
- * finishes successfully, or fails. Only relevant to runtime mode.
- *
- * The `detail` of this event is an object with a `status` string that can be:
- * "loading", "ready", or "error", along with the relevant locale code, and
- * error message if applicable.
- *
- * You can listen for this event to know when your application should be
- * re-rendered following a locale change. See also the Localized mixin, which
- * automatically re-renders LitElement classes using this event.
- */
-export const LOCALE_STATUS_EVENT = 'lit-localize-status';
-
-// Misfiring eslint rule
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-declare global {
-  interface WindowEventMap {
-    [LOCALE_STATUS_EVENT]: CustomEvent<LocaleStatusEventDetail>;
-  }
-}
-
-/**
- * The possible details of the "lit-localize-status" event.
- */
-export type LocaleStatusEventDetail = LocaleLoading | LocaleReady | LocaleError;
-
-/**
- * Detail of the "lit-localize-status" event when a new locale has started to
- * load.
- *
- * A "loading" status can be followed by [1] another "loading" status (in the
- * case that a second locale is requested before the first one completed), [2] a
- * "ready" status, or [3] an "error" status.
- */
-export interface LocaleLoading {
-  status: 'loading';
-  /** Code of the locale that has started loading. */
-  loadingLocale: string;
-}
-
-/**
- * Detail of the "lit-localize-status" event when a new locale has successfully
- * loaded and is ready for rendering.
- *
- * A "ready" status can be followed only by a "loading" status.
- */
-export interface LocaleReady {
-  status: 'ready';
-  /** Code of the locale that has successfully loaded. */
-  readyLocale: string;
-}
-
-/**
- * Detail of the "lit-localize-status" event when a new locale failed to load.
- *
- * An "error" status can be followed only by a "loading" status.
- */
-export interface LocaleError {
-  status: 'error';
-  /** Code of the locale that failed to load. */
-  errorLocale: string;
-  /** Error message from locale load failure. */
-  errorMessage: string;
 }
 
 /**
@@ -137,30 +80,6 @@ export interface LocaleError {
  */
 function dispatchStatusEvent(detail: LocaleStatusEventDetail) {
   window.dispatchEvent(new CustomEvent(LOCALE_STATUS_EVENT, {detail}));
-}
-
-class Deferred<T> {
-  readonly promise: Promise<T>;
-  private _resolve!: (value: T) => void;
-  private _reject!: (error: Error) => void;
-  settled = false;
-
-  constructor() {
-    this.promise = new Promise<T>((resolve, reject) => {
-      this._resolve = resolve;
-      this._reject = reject;
-    });
-  }
-
-  resolve(value: T) {
-    this.settled = true;
-    this._resolve(value);
-  }
-
-  reject(error: Error) {
-    this.settled = true;
-    this._reject(error);
-  }
 }
 
 let activeLocale = '';
@@ -299,35 +218,6 @@ const setLocale: ((newLocale: string) => Promise<void>) & {
   return loading.promise;
 };
 
-export interface StrResult {
-  strTag: true;
-  strings: TemplateStringsArray;
-  values: unknown[];
-}
-
-/**
- * Tag that allows expressions to be used in localized non-HTML template
- * strings.
- *
- * Example: msg(str`Hello ${this.user}!`);
- *
- * The Lit html tag can also be used for this purpose, but HTML will need to be
- * escaped, and there is a small overhead for HTML parsing.
- *
- * Untagged template strings with expressions aren't supported by lit-localize
- * because they don't allow for values to be captured at runtime.
- */
-const _str = (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): StrResult => ({
-  strTag: true,
-  strings,
-  values,
-});
-
-export const str: typeof _str & {_LIT_LOCALIZE_STR_?: never} = _str;
-
 export interface MsgOptions {
   /**
    * Optional project-wide unique identifier for this template. If omitted, an
@@ -441,114 +331,3 @@ function generateId(template: TemplateLike): string {
 }
 
 export const msg: typeof _msg & {_LIT_LOCALIZE_MSG_?: never} = _msg;
-
-class LocalizeController implements ReactiveController {
-  host: ReactiveControllerHost;
-
-  constructor(host: ReactiveControllerHost) {
-    this.host = host;
-  }
-
-  private readonly __litLocalizeEventHandler = (
-    event: WindowEventMap[typeof LOCALE_STATUS_EVENT]
-  ) => {
-    if (event.detail.status === 'ready') {
-      this.host.requestUpdate();
-    }
-  };
-
-  hostConnected() {
-    window.addEventListener(
-      LOCALE_STATUS_EVENT,
-      this.__litLocalizeEventHandler
-    );
-  }
-
-  hostDisconnected() {
-    window.removeEventListener(
-      LOCALE_STATUS_EVENT,
-      this.__litLocalizeEventHandler
-    );
-  }
-}
-
-/**
- * Re-render the given LitElement whenever a new active locale has loaded.
- *
- * See also {@link localized} for the same functionality as a decorator.
- *
- * When using lit-localize in transform mode, calls to this function are
- * replaced with undefined.
- *
- * Usage:
- *
- *   import {LitElement, html} from 'lit';
- *   import {msg, updateWhenLocaleChanges} from '@lit/localize';
- *
- *   class MyElement extends LitElement {
- *     constructor() {
- *       super();
- *       updateWhenLocaleChanges(this);
- *     }
- *
- *     render() {
- *       return html`<b>${msg('Hello World')}</b>`;
- *     }
- *   }
- */
-const _updateWhenLocaleChanges = (host: ReactiveControllerHost) =>
-  host.addController(new LocalizeController(host));
-
-export const updateWhenLocaleChanges: typeof _updateWhenLocaleChanges & {
-  _LIT_LOCALIZE_CONTROLLER_FN_?: never;
-} = _updateWhenLocaleChanges;
-
-/**
- * Class decorator to enable re-rendering the given LitElement whenever a new
- * active locale has loaded.
- *
- * See also {@link updateWhenLocaleChanges} for the same functionality without
- * the use of decorators.
- *
- * When using lit-localize in transform mode, applications of this decorator are
- * removed.
- *
- * Usage:
- *
- *   import {LitElement, html} from 'lit';
- *   import {customElement} from 'lit/decorators.js';
- *   import {msg, localized} from '@lit/localize';
- *
- *   @localized()
- *   @customElement('my-element')
- *   class MyElement extends LitElement {
- *     render() {
- *       return html`<b>${msg('Hello World')}</b>`;
- *     }
- *   }
- */
-const _localized = () => (
-  classOrDescriptor: Constructor<ReactiveElement> | ClassDescriptor
-) =>
-  typeof classOrDescriptor === 'function'
-    ? legacyLocalized((classOrDescriptor as unknown) as typeof ReactiveElement)
-    : standardLocalized(classOrDescriptor);
-
-export const localized: typeof _localized & {
-  _LIT_LOCALIZE_DECORATOR_?: never;
-} = _localized;
-
-const standardLocalized = ({kind, elements}: ClassDescriptor) => {
-  return {
-    kind,
-    elements,
-    finisher(clazz: typeof ReactiveElement) {
-      clazz.addInitializer(updateWhenLocaleChanges);
-    },
-  };
-};
-
-const legacyLocalized = (clazz: typeof ReactiveElement) => {
-  clazz.addInitializer(updateWhenLocaleChanges);
-  return clazz as any;
-};
