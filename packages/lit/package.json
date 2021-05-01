@@ -31,6 +31,9 @@
     "./directive.js": {
       "default": "./directive.js"
     },
+    "./directives.js": {
+      "default": "./directives.js"
+    },
     "./directives/": {
       "default": "./directives/"
     },
