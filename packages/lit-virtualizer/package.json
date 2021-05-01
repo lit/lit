@@ -21,6 +21,7 @@
         "lint": "tslint --project ./",
         "prepare": "npm run build",
         "test": "karma start karma.conf.js",
+        "test:debug": "karma start karma.conf.js --single-run=false --debug",
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
         "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
     },
@@ -48,9 +49,8 @@
     },
     "dependencies": {
         "event-target-shim": "^5.0.1",
-        "lit-element": "next-major",
-        "lit-html": "next-major",
-        "resize-observer-polyfill": "^1.5.1",
+        "lit": "2.0.0-rc.1",
+        "resize-observer-polyfill": "github:rictic/resize-observer-polyfill#observeWithinShadowRoots",
         "tslib": "^1.10.0"
     }
 }

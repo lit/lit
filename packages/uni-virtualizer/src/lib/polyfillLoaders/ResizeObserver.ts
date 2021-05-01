@@ -17,7 +17,7 @@ async function init() {
         return (await _RO).default;
     }
     else {
-        _RO = (window as {ResizeObserver?: ResizeObserver}).ResizeObserver;
+        _RO = (window as unknown as {ResizeObserver?: ResizeObserver}).ResizeObserver;
         try {
             new _RO(function() {});
         }

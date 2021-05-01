@@ -1,7 +1,7 @@
-import { TemplateResult, nothing, ChildPart } from 'lit-html';
-import { directive, PartInfo, PartType } from 'lit-html/directive.js';
-import { DisconnectableDirective } from 'lit-html/disconnectable-directive.js';
-import { repeat } from 'lit-html/directives/repeat.js';
+import { TemplateResult, nothing, ChildPart } from 'lit';
+import { directive, PartInfo, PartType } from 'lit/directive.js';
+import { AsyncDirective } from 'lit/async-directive.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
 import { VirtualScroller, RangeChangeEvent } from './uni-virtualizer/lib/VirtualScroller.js';
 
@@ -44,7 +44,7 @@ interface ScrollConfig<Item> {
   
 const defaultKeyFunction = item => item;
 
-class ScrollDirective extends DisconnectableDirective {
+class ScrollDirective extends AsyncDirective {
     container: HTMLElement
     scroller: VirtualScroller<unknown, HTMLElement>
     first: number = 0

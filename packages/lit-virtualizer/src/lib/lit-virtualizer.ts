@@ -1,7 +1,6 @@
-import { html, LitElement } from 'lit-element';
-import { customElement } from 'lit-element/decorators/customElement';
-import { property } from 'lit-element/decorators/property';
-import { TemplateResult } from 'lit-html';
+import { html, LitElement, TemplateResult } from 'lit';
+import { customElement } from 'lit/decorators/custom-element.js';
+import { property } from 'lit/decorators/property.js';
 import { scroll } from './scroll.js';
 import { scrollerRef } from './uni-virtualizer/lib/VirtualScroller.js';
 import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
@@ -18,10 +17,10 @@ export class LitVirtualizer<Item> extends LitElement {
     @property()
     renderItem: (item: Item, index?: number) => TemplateResult;
 
-    @property()
+    @property({attribute: false})
     items: Array<Item>;
 
-    @property()
+    @property({attribute: false})
     scrollTarget: Element | Window = this;
 
     @property()
@@ -57,7 +56,7 @@ export class LitVirtualizer<Item> extends LitElement {
     //     }
     // }
 
-    @property()
+    @property({attribute:false})
     set layout(layout: Layout | Type<Layout> | LayoutConfig) {
         // TODO (graynorton): Shouldn't have to set this here
         this._layout = layout;

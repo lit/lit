@@ -1,3 +1,19 @@
+## [0.5.0] - 2021-04-30
+- This is a stopgap release to unblock migrations to Lit 2.0
+- In the near future:
+  - Source will move to the Lit monorepo
+  - Subsequent releases will likely be as `@lit-labs/virtualizer`
+
+### Changed
+- Migrated to Lit 2.x
+- Significant refactoring
+- Now emits custom events, access data from `detail` object
+
+### Added
+- Support for older browsers (IE11, legacy Edge)
+- Benchmarking support (subject to change)
+- Work-in-progress grid layouts, not ready for use
+
 ## [0.4.2] - 2019-11-15
 ### Changed
 - Appended `.js` to all local imports.
