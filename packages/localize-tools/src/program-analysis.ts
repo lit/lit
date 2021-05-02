@@ -90,14 +90,14 @@ function extractMsg(
   if (templateResult.error) {
     return {error: templateResult.error};
   }
-  const {contents, template, isLitTemplate} = templateResult.result;
+  const {contents, template, tag} = templateResult.result;
 
   const optionsResult = extractOptions(optionsArg, file);
   if (optionsResult.error) {
     return {error: optionsResult.error};
   }
   const options = optionsResult.result;
-  const name = options.id ?? generateMsgIdFromAstNode(template, isLitTemplate);
+  const name = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
 
   return {
     result: {
@@ -105,7 +105,7 @@ function extractMsg(
       file,
       node,
       contents,
-      isLitTemplate,
+      tag,
       // Note we pass node.parent because node is a CallExpression node, but the
       // JSDoc tag will be attached to the parent Expression node.
       desc: options.desc,
@@ -218,7 +218,7 @@ export function extractOptions(
 interface ExtractedTemplate {
   contents: Array<string | Placeholder>;
   params?: string[];
-  isLitTemplate: boolean;
+  tag: 'html' | 'str' | undefined;
   template: ts.TemplateLiteral | ts.StringLiteral;
 }
 
@@ -236,7 +236,7 @@ export function extractTemplate(
       result: {
         template: templateArg,
         contents: [templateArg.text],
-        isLitTemplate: false,
+        tag: undefined,
       },
     };
   }
@@ -346,7 +346,7 @@ function paramTemplate(
     result: {
       template,
       contents: combined,
-      isLitTemplate: isLit,
+      tag: isLitTemplate(arg) ? 'html' : isStrTemplate(arg) ? 'str' : undefined,
     },
   };
 }
@@ -560,6 +560,19 @@ export function isLitTemplate(
     ts.isTaggedTemplateExpression(node) &&
     ts.isIdentifier(node.tag) &&
     node.tag.escapedText === 'html'
+  );
+}
+
+/**
+ * E.g. str`foo${bar}`
+ */
+export function isStrTemplate(
+  node: ts.Node
+): node is ts.TaggedTemplateExpression {
+  return (
+    ts.isTaggedTemplateExpression(node) &&
+    ts.isIdentifier(node.tag) &&
+    node.tag.escapedText === 'str'
   );
 }
 

@@ -123,8 +123,9 @@ function generateLocaleModule(
   // The unique set of message names we found in this XLB translations file.
   const translatedMsgNames = new Set<string>();
 
-  // Whether we'll need to import the lit "html" function.
+  // Whether we need to import the lit html or localize str tags.
   let importLit = false;
+  let importStr = false;
 
   const entries = [];
   for (const msg of translations) {
@@ -141,8 +142,10 @@ function generateLocaleModule(
     entries.push(`'${msg.name}': ${patchedMsgStr},`);
   }
   for (const msg of canonMsgs) {
-    if (msg.isLitTemplate) {
+    if (msg.tag === 'html') {
       importLit = true;
+    } else if (msg.tag === 'str') {
+      importStr = true;
     }
     if (translatedMsgNames.has(msg.name)) {
       continue;
@@ -158,6 +161,7 @@ function generateLocaleModule(
     // Re-generate this file by running lit-localize
 
     ${importLit ? "import {html} from 'lit';" : ''}
+    ${importStr ? "import {str} from '@lit/localize';" : ''}
 
     /* eslint-disable no-irregular-whitespace */
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -222,6 +226,5 @@ function makeMessageString(
     }
   }
 
-  const tag = canon.isLitTemplate ? 'html' : '';
-  return `${tag}\`${fragments.join('')}\``;
+  return `${canon.tag ?? ''}\`${fragments.join('')}\``;
 }
