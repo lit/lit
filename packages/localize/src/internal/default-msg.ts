@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {isStrTagged} from './str-tag';
-import {joinStringsAndValues} from './str-tag.js';
+import {isStrTagged, joinStringsAndValues} from './str-tag.js';
 
 import type {MsgFn, TemplateLike} from './types';
 

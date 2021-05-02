@@ -5,6 +5,7 @@
  */
 
 import {defaultMsg} from './internal/default-msg.js';
+
 import type {TemplateLike, MsgFn, MsgOptions} from './internal/types.js';
 
 export * from './internal/locale-status-event.js';
@@ -50,4 +51,4 @@ export function _installMsgImplementation(msg: MsgFn) {
  *   - desc: Optional description
  */
 export const msg = ((template: TemplateLike, options?: MsgOptions) =>
-  msgImpl(template as string, options)) as MsgFn;
+  msgImpl(template, options)) as MsgFn;

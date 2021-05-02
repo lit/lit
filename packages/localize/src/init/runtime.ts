@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -9,6 +9,7 @@ import {generateMsgId} from '../internal/id-generation.js';
 import {Deferred} from '../internal/deferred.js';
 import {LOCALE_STATUS_EVENT} from '../internal/locale-status-event.js';
 import {joinStringsAndValues} from '../internal/str-tag.js';
+import {defaultMsg} from '../internal/default-msg.js';
 
 import type {TemplateResult} from 'lit';
 import type {LocaleStatusEventDetail} from '../internal/locale-status-event.js';
@@ -19,7 +20,6 @@ import type {
   MsgFn,
   MsgOptions,
 } from '../internal/types.js';
-import {defaultMsg} from '../internal/default-msg.js';
 
 /**
  * Configuration parameters for lit-localize when in runtime mode.
