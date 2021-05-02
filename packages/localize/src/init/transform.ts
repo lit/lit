@@ -5,7 +5,7 @@
  */
 
 import {_installMsgImplementation} from '../lit-localize.js';
-import type {TemplateLike, MsgFn} from '../internal/types.js';
+import {defaultMsg} from '../internal/default-msg.js';
 
 /**
  * Configuration parameters for lit-localize when in transform mode.
@@ -31,7 +31,7 @@ export const configureTransformLocalization: ((
 ) => {getLocale: () => string}) & {
   _LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_?: never;
 } = (config: TransformConfiguration) => {
-  _installMsgImplementation(((template: TemplateLike) => template) as MsgFn);
+  _installMsgImplementation(defaultMsg);
   const sourceLocale = config.sourceLocale;
   return {
     getLocale: () => sourceLocale,

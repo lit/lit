@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {defaultMsg} from './internal/default-msg.js';
 import type {TemplateLike, MsgFn, MsgOptions} from './internal/types.js';
 
 export * from './internal/locale-status-event.js';
@@ -19,7 +20,7 @@ export * from './internal/localized-decorator.js';
 export * from './init/runtime.js';
 export * from './init/transform.js';
 
-let msgImpl = ((template: TemplateLike) => template) as MsgFn;
+let msgImpl = defaultMsg;
 let installed = false;
 
 /**

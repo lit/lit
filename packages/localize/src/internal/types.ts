@@ -43,5 +43,9 @@ declare function msg(
   template: TemplateResult,
   options?: MsgOptions
 ): TemplateResult;
+declare function msg(
+  template: TemplateLike,
+  options?: MsgOptions
+): string | TemplateResult;
 
 export type MsgFn = typeof msg & {_LIT_LOCALIZE_MSG_?: never};

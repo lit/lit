@@ -8,6 +8,7 @@ import {_installMsgImplementation} from '../lit-localize.js';
 import {generateMsgId} from '../internal/id-generation.js';
 import {Deferred} from '../internal/deferred.js';
 import {LOCALE_STATUS_EVENT} from '../internal/locale-status-event.js';
+import {joinStringsAndValues} from '../internal/str-tag.js';
 
 import type {TemplateResult} from 'lit';
 import type {LocaleStatusEventDetail} from '../internal/locale-status-event.js';
@@ -18,6 +19,7 @@ import type {
   MsgFn,
   MsgOptions,
 } from '../internal/types.js';
+import {defaultMsg} from '../internal/default-msg.js';
 
 /**
  * Configuration parameters for lit-localize when in runtime mode.
@@ -206,29 +208,8 @@ function runtimeMsg(
       }
     }
   }
-  if (typeof template !== 'string' && 'strTag' in template) {
-    // E.g. str`Hello ${name}!` in original source locale.
-    return joinStringsAndValues(template.strings, template.values);
-  }
-  return template;
+  return defaultMsg(template);
 }
-
-/**
- * Render the result of a `str` tagged template to a string. Note we don't need
- * to do this for Lit templates, since Lit itself handles rendering.
- */
-const joinStringsAndValues = (
-  strings: TemplateStringsArray,
-  values: Readonly<unknown[]>,
-  valueOrder?: number[]
-) => {
-  let concat = strings[0];
-  for (let i = 1; i < strings.length; i++) {
-    concat += values[valueOrder ? valueOrder[i - 1] : i - 1];
-    concat += strings[i];
-  }
-  return concat;
-};
 
 const expressionOrders = new WeakMap<TemplateResult, number[]>();
 

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {TemplateLike} from './types';
+
 export interface StrResult {
   strTag: true;
   strings: TemplateStringsArray;
@@ -32,3 +34,23 @@ const _str = (
 });
 
 export const str: typeof _str & {_LIT_LOCALIZE_STR_?: never} = _str;
+
+export const isStrTagged = (val: TemplateLike): val is StrResult =>
+  typeof val !== 'string' && 'strTag' in val;
+
+/**
+ * Render the result of a `str` tagged template to a string. Note we don't need
+ * to do this for Lit templates, since Lit itself handles rendering.
+ */
+export const joinStringsAndValues = (
+  strings: TemplateStringsArray,
+  values: Readonly<unknown[]>,
+  valueOrder?: number[]
+) => {
+  let concat = strings[0];
+  for (let i = 1; i < strings.length; i++) {
+    concat += values[valueOrder ? valueOrder[i - 1] : i - 1];
+    concat += strings[i];
+  }
+  return concat;
+};

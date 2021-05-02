@@ -5,7 +5,6 @@
  */
 
 import {assert} from '@esm-bundle/chai';
-
 import {
   msg,
   str,
@@ -21,7 +20,7 @@ import {Deferred} from '../internal/deferred.js';
 import {html, render, LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-suite('lit-localize', () => {
+suite('runtime localization configuration', () => {
   let container: HTMLElement;
   let lastLoadLocaleResponse = new Deferred<LocaleModule>();
 
@@ -104,6 +103,15 @@ suite('lit-localize', () => {
         container
       );
       assert.equal(container.textContent, 'Hello friend');
+    });
+
+    test('renders parameterized string template in English', () => {
+      const renderAndTest = () => {
+        const x = msg(str`1:${'A'} 2:${'B'}`, {id: 'strOrderChange'});
+        render(x, container);
+        assert.equal(container.textContent, '1:A 2:B');
+      };
+      renderAndTest();
     });
 
     test('renders parameterized template in Spanish', async () => {
