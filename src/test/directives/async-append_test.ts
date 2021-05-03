@@ -119,18 +119,17 @@ suite('asyncAppend', () => {
   });
 
   test('does not render the first value if it is replaced first', async () => {
-    async function* generator(delay: Promise<any>, value: any) {
-      await delay;
-      yield value;
-    }
+    const iterable2 = new TestAsyncIterable<string>();
 
     const component = (value: any) => html`<p>${asyncAppend(value)}</p>`;
-    const delay = (delay: number) =>
-        new Promise((res) => setTimeout(res, delay));
 
-    render(component(generator(delay(20), 'slow')), container);
-    render(component(generator(delay(10), 'fast')), container);
-    await delay(30);
+    render(component(iterable), container);
+    render(component(iterable2), container);
+
+    await iterable2.push('fast');
+
+    // This write should not render, since the whole iterator was replaced
+    await iterable.push('slow');
 
     assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });

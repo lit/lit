@@ -21,6 +21,7 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/triple-slash-reference": "off",
+    "@typescript-eslint/no-parameter-properties": "error",
 
     "@typescript-eslint/no-unused-vars": ["warn", {
       "argsIgnorePattern": "^_"

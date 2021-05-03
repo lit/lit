@@ -20,27 +20,17 @@ import {reparentNodes} from './dom.js';
 import {TemplateProcessor} from './template-processor.js';
 import {boundAttributeSuffix, lastAttributeNameRegex, marker, nodeMarker} from './template.js';
 
-let policy: Pick<TrustedTypePolicy, 'createHTML'>|undefined;
-
+declare const trustedTypes: typeof window.trustedTypes;
 /**
- * Turns the value to trusted HTML. If the application uses Trusted Types the
- * value is transformed into TrustedHTML, which can be assigned to execution
- * sink. If the application doesn't use Trusted Types, the return value is the
- * same as the argument.
+ * Our TrustedTypePolicy for HTML which is declared using the html template
+ * tag function.
+ *
+ * That HTML is a developer-authored constant, and is parsed with innerHTML
+ * before any untrusted expressions have been mixed in. Therefor it is
+ * considered safe by construction.
  */
-function convertConstantTemplateStringToTrustedHTML(value: string): string|
-    TrustedHTML {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const w = window as any
-  // TrustedTypes have been renamed to trustedTypes
-  // (https://github.com/WICG/trusted-types/issues/177)
-  const trustedTypes =
-      (w.trustedTypes || w.TrustedTypes) as TrustedTypePolicyFactory;
-  if (trustedTypes && !policy) {
-    policy = trustedTypes.createPolicy('lit-html', {createHTML: (s) => s});
-  }
-  return policy ? policy.createHTML(value) : value;
-}
+const policy = window.trustedTypes &&
+    trustedTypes!.createPolicy('lit-html', {createHTML: (s) => s});
 
 const commentMarker = ` ${marker} `;
 
@@ -122,11 +112,15 @@ export class TemplateResult {
 
   getTemplateElement(): HTMLTemplateElement {
     const template = document.createElement('template');
-    // this is secure because `this.strings` is a TemplateStringsArray.
-    // TODO: validate this when
-    // https://github.com/tc39/proposal-array-is-template-object is implemented.
-    template.innerHTML =
-        convertConstantTemplateStringToTrustedHTML(this.getHTML()) as string;
+    let value = this.getHTML();
+    if (policy !== undefined) {
+      // this is secure because `this.strings` is a TemplateStringsArray.
+      // TODO: validate this when
+      // https://github.com/tc39/proposal-array-is-template-object is
+      // implemented.
+      value = policy.createHTML(value) as unknown as string;
+    }
+    template.innerHTML = value;
     return template;
   }
 }

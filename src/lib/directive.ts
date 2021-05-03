@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 import {Part} from './part.js';
 
 const directives = new WeakMap<object, true>();

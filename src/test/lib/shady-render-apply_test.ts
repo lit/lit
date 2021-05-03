@@ -15,6 +15,7 @@
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
 import {html as htmlWithApply} from '../../lib/shady-render.js';
+import {policy} from '../test-utils/security.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 
 const assert = chai.assert;
@@ -55,7 +56,7 @@ suite('shady-render @apply', () => {
     const container = document.createElement('scope-6');
     document.body.appendChild(container);
     const style = document.createElement('style');
-    style.innerHTML = `
+    style.innerHTML = policy.createHTML(`
       :host {
         --batch: {
           border: 3px solid orange;
@@ -65,7 +66,7 @@ suite('shady-render @apply', () => {
       div {
         @apply --batch;
       }
-    `;
+    `);
     const result = [style, htmlWithApply`<div>Testing...</div>`];
     renderShadowRoot(result, container);
     const div = (container.shadowRoot!).querySelector('div');

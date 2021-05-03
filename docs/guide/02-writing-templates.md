@@ -91,10 +91,14 @@ const myTemplate2 = (data) => html`<div ?disabled=${!data.active}>Stylish text.<
 You can also bind to a node's JavaScript properties using the `.` prefix and the property name:
 
 ```js
-const myTemplate3 = (data) => html`<my-list .listItems=${data.items}></my-list>`;
+const myTemplate3 = (data) => html`<input .value=${data.value}></input>`;
 ```
 
-You can use property bindings to pass complex data down the tree to subcomponents.
+You can use property bindings to pass complex data down the tree to subcomponents. For example, if you have a `my-list` component with a `listItems` property, you could pass it an array of objects:
+
+```js
+const myTemplate4 = (data) => html`<my-list .listItems=${data.items}></my-list>`;
+```
 
 Note that the property name in this example—`listItems`—is mixed case. Although HTML attributes are case-insensitive, lit-html preserves the case when it processes the template.
 
@@ -247,6 +251,9 @@ Where:
 For example:
 
 ```js
+import {html} from 'lit-html';
+import {repeat} from 'lit-html/directives/repeat.js';
+
 const employeeList = (employees) => html`
   <ul>
     ${repeat(employees, (employee) => employee.id, (employee, index) => html`
@@ -267,40 +274,76 @@ Which repeat is more efficient depends on your use case: if updating the DOM nod
 
 ### Rendering nothing
 Sometimes, you may want to render nothing at all. The values `undefined`, `null` and the empty string (`''`) in a text binding all render an empty text node. In most cases, that's exactly what you want:
-````js
+
+```js
 import {html} from 'lit-html';
 ${user.isAdmin
       ? html`<button>DELETE</button>`
       : ''
   }
-````
-The DOM is inconsistent in some cases with its behavior towards `undefined` & `null`. Using an empty string (`''`) is the most consistent. 
-#### nothing and the slot fallback content
-`nothing` is a sentinel value provided by lit-html. It really does render nothing, because
-it clears the Part.
+```
 
-Why is this important? Imagine you have a shadow DOM enabled custom element, `shadow-element`, that uses a slot. 
-The template looks like this:
+In some cases, you want to render nothing at all. In these cases, you can use the `nothing` value provided by lit-html.
+
 ```js
-import {html} from 'lit-html';
+import {html, nothing} from 'lit-html';
+${user.isAdmin
+      ? html`<button>DELETE</button>`
+      : nothing
+  }
+```
+
+In this case, when `user.isAdmin` is false, no text node is rendered.
+
+#### nothing and the slot fallback content
+
+One specific use case where an empty text node causes issues is when you're using a `<slot>` element inside a shadow root. 
+
+This use case is very specific to [shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM), and you probably won't encounter it unless you're using lit-html as part of LitElement or another web components base class.
+
+Imagine you have a custom element, `example-element`, that has a slot in
+its shadow DOM:
+
+```js
 html`<slot>Sorry, no content available. I am just fallback content</slot>`;
 ``` 
+
 The slot defines fallback content for when there is no content defined to be put in the slot. 
-So, extending on our previous example:
+
+So, extending the previous example:
+
 ```js
 import {nothing, html} from 'lit-html';
 
 html`
-<shadow-element>${user.isAdmin
+<example-element>${user.isAdmin
         ? html`<button>DELETE</button>`
         : nothing
-      }</shadow-element>
+      }</example-element>
 `;
 ``` 
-If the user is logged in, DELETE button is rendered. If the user is not logged in, nothing is rendered inside of `shadow-element`.
-therefore the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" will be rendered.
 
-**Whitespace creates text nodes.** For the example to work, the text binding inside `<shadow-element>` must be the **entire** contents of `<shadow-element>`. Any whitespace outside of the binding delimiters adds static text nodes to the template, suppressing the fallback content. However, whitespace _inside_ the binding delimiters is fine.
+If the user is logged in, the Delete button is rendered. If the user is not logged in, nothing is rendered inside of `example-element`. This means the slot is empty and its fallback content "Sorry, no content available. I am just fallback content" is rendered.
+
+Replacing `nothing` in this example with the empty string causes an empty text node to be rendered inside `example-element`, suppressing the fallback content.
+
+**Whitespace creates text nodes.** For the example to work, the text binding inside `<example-element>` must be the **entire** contents of `<example-element>`. Any whitespace outside of the binding delimiters adds static text nodes to the template, suppressing the fallback content. However, whitespace _inside_ the binding delimiters is fine.
+
+The two following examples show an element with extra whitespace surrounding the binding delimiters. 
+
+```js
+// Whitespace around the binding means the fallback content
+// doesn't render
+html`
+<example-element> ${nothing} </example-element>
+`;
+// Line breaks count as whitespace, too
+html`
+<example-element>
+${nothing}
+</example-element>
+`;
+```
 
 ## Caching template results: the cache directive 
 
@@ -309,6 +352,9 @@ In most cases, JavaScript conditionals are all you need for conditional template
 In this case, you can use the `cache` _directive_. Directives are special functions that provide extra control over rendering. The cache directive caches DOM for templates that aren't being rendered currently. 
 
 ```js
+import {html} from 'lit-html';
+import {cache} from 'lit-html/directives/cache.js';
+
 const detailView = (data) => html`<div>...</div>`; 
 const summaryView = (data) => html`<div>...</div>`;
 

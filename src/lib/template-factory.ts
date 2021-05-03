@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 import {TemplateResult} from './template-result.js';
 import {marker, Template} from './template.js';
 

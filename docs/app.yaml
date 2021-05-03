@@ -11,14 +11,18 @@ libraries:
 default_expiration: "1m"
 
 handlers:
-- url: /api
-  static_dir: api
-  secure: always
+
 - url: /css
   static_dir: css
   secure: always
 - url: /images
   static_dir: images
+  secure: always
+- url: /api/assets
+  static_dir: api/assets
+  secure: always
+- url: /api/.*
+  script: main.app
   secure: always
 - url: /.*
   script: main.app

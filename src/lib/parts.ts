@@ -12,10 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/**
- * @module lit-html
- */
-
 import {isDirective} from './directive.js';
 import {removeNodes} from './dom.js';
 import {noChange, nothing, Part} from './part.js';
@@ -110,13 +106,13 @@ export const __testOnlyClearSanitizerFactoryDoNotCallOrElse = () => {
 export class AttributeCommitter {
   readonly element: Element;
   readonly name: string;
-  readonly strings: readonly string[];
-  readonly parts: readonly AttributePart[];
+  readonly strings: ReadonlyArray<string>;
+  readonly parts: ReadonlyArray<AttributePart>;
   readonly sanitizer: ValueSanitizer;
   dirty = true;
 
   constructor(
-      element: Element, name: string, strings: readonly string[],
+      element: Element, name: string, strings: ReadonlyArray<string>,
       // Next breaking change, consider making this param required.
       templatePart?: AttributeTemplatePart,
       kind: 'property'|'attribute' = 'attribute') {
@@ -146,8 +142,8 @@ export class AttributeCommitter {
 
   protected _getValue(): unknown {
     const strings = this.strings;
-    const parts = this.parts;
     const l = strings.length - 1;
+    const parts = this.parts;
 
     // If we're assigning an attribute via syntax like:
     //    attr="${foo}"  or  attr=${foo}
@@ -162,10 +158,12 @@ export class AttributeCommitter {
     //
     // This also allows trusted values (when using TrustedTypes) being
     // assigned to DOM sinks without being stringified in the process.
-    if (l === 1 && strings[0] === '' && strings[1] === '' &&
-        parts[0] !== undefined) {
+    if (l === 1 && strings[0] === '' && strings[1] === '') {
       const v = parts[0].value;
-      if (!isIterable(v)) {
+      if (typeof v === 'symbol') {
+        return String(v);
+      }
+      if (typeof v === 'string' || !isIterable(v)) {
         return v;
       }
     }
