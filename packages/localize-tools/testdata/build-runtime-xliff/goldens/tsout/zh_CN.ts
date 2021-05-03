@@ -2,6 +2,7 @@
 // Re-generate this file by running lit-localize
 
 import {html} from 'lit';
+import {str} from '@lit/localize';
 
 /* eslint-disable no-irregular-whitespace */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -9,7 +10,7 @@ import {html} from 'lit';
 export const templates = {
   h3c44aff2d5f5ef6b: html`你好 <b>世界</b>!`,
   s8c0ec8d1fb9e6e32: `你好，世界!`,
-  s00ad08ebae1e0f74: `Hello ${0}!`,
+  s00ad08ebae1e0f74: str`Hello ${0}!`,
   h82ccc38d4d46eaa9: html`Hello <b>${0}</b>!`,
   h99e74f744fda7e25: html`Click <a href="${0}">here</a>!`,
   hc1c6bfa4414cb3e3: html`[SALT] Click <a href="${0}">here</a>!`,

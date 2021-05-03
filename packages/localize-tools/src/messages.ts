@@ -46,10 +46,9 @@ export interface ProgramMessage extends Message {
   desc: string | undefined;
 
   /**
-   * True if this message was tagged as a Lit template, or was a function that
-   * returned a Lit template.
+   * The template literal tag this message has.
    */
-  isLitTemplate: boolean;
+  tag: 'html' | 'str' | undefined;
 }
 
 /**

@@ -2,6 +2,7 @@
 // Re-generate this file by running lit-localize
 
 import {html} from 'lit';
+import {str} from '@lit/localize';
 
 /* eslint-disable no-irregular-whitespace */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -14,7 +15,7 @@ export const templates = {
   hbe936ff3da20ffdf: html`Hola <b><!-- comment -->Mundo</b>!`,
   hc1c6bfa4414cb3e3: html`[SALT] Clic <a href="${0}">aquí</a>!`,
   myId: `Hola Mundo`,
-  s00ad08ebae1e0f74: `Hola ${0}!`,
+  s00ad08ebae1e0f74: str`Hola ${0}!`,
   s03c68d79ad36e8d4: `described 0`,
   s0f19e6c4e521dd53: `Mundo`,
   s8c0ec8d1fb9e6e32: `Hola Mundo!`,

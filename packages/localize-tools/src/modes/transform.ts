@@ -324,7 +324,7 @@ class Transformer {
     if (templateResult.error) {
       throw new Error(stringifyDiagnostics([templateResult.error]));
     }
-    const {isLitTemplate: isLitTagged} = templateResult.result;
+    const {tag} = templateResult.result;
     let {template} = templateResult.result;
 
     const optionsResult = extractOptions(optionsArg, this.sourceFile);
@@ -332,7 +332,7 @@ class Transformer {
       throw new Error(stringifyDiagnostics([optionsResult.error]));
     }
     const options = optionsResult.result;
-    const id = options.id ?? generateMsgIdFromAstNode(template, isLitTagged);
+    const id = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
 
     const sourceExpressions = new Map<string, ts.Expression>();
     if (ts.isTemplateExpression(template)) {
@@ -387,7 +387,7 @@ class Transformer {
 
     // Nothing more to do with a simple string.
     if (ts.isStringLiteral(template)) {
-      if (isLitTagged) {
+      if (tag === 'html') {
         throw new KnownError(
           'Internal error: string literal cannot be html-tagged'
         );
@@ -401,9 +401,9 @@ class Transformer {
     // Given: html`Hello <b>${"World"}</b>`
     // Generate: html`Hello <b>World</b>`
     template = makeTemplateLiteral(
-      this.recursivelyFlattenTemplate(template, isLitTagged)
+      this.recursivelyFlattenTemplate(template, tag === 'html')
     );
-    return isLitTagged ? tagLit(template) : template;
+    return tag === 'html' ? tagLit(template) : template;
   }
 
   /**
