@@ -2937,7 +2937,7 @@ suite('ReactiveElement', () => {
     });
   });
 
-  suite.only('customizing observedAttributes', () => {
+  suite('customizing observedAttributes', () => {
     test('does not interfere with properties', () => {
       class E extends ReactiveElement {
         static properties = {
