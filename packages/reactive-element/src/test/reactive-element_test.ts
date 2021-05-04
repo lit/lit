@@ -2936,4 +2936,148 @@ suite('ReactiveElement', () => {
       assert.isTrue(updated);
     });
   });
+
+  suite.only('customizing observedAttributes', () => {
+    test('does not interfere with properties', () => {
+      class E extends ReactiveElement {
+        static properties = {
+          foo: {},
+          bar: {},
+        };
+
+        static get observedAttributes() {
+          // Note, `finalize` must be called when not supering to observedAttributes
+          this.finalize();
+          return ['custom'];
+        }
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      const ctor = el.constructor as typeof ReactiveElement;
+      assert.deepEqual(ctor.observedAttributes, ['custom']);
+      assert.deepEqual(Array.from(ctor.elementProperties!.keys()), [
+        'foo',
+        'bar',
+      ]);
+    });
+
+    test('using super on base class', () => {
+      class E extends ReactiveElement {
+        static get observedAttributes() {
+          return ['foo', ...super.observedAttributes];
+        }
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['foo']
+      );
+    });
+
+    test('using superclass properties', () => {
+      class S extends ReactiveElement {
+        static properties = {
+          foo: {},
+          bar: {},
+        };
+      }
+      class E extends S {
+        static get observedAttributes() {
+          return ['custom', ...super.observedAttributes];
+        }
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['custom', 'foo', 'bar']
+      );
+    });
+
+    test('using mixin', () => {
+      type Constructor<T = {}> = {new (...args: any[]): T};
+      function MyMixin<
+        B extends Constructor<
+          HTMLElement & {
+            attributeChangedCallback?(
+              name: string,
+              oldVal: string,
+              newVal: string
+            ): void;
+          }
+        > & {
+          observedAttributes?: string[];
+        }
+      >(superclass: B) {
+        class E extends superclass {
+          static get observedAttributes(): string[] {
+            return [...(superclass.observedAttributes ?? []), 'custom'];
+          }
+
+          constructor(...a: any[]) {
+            super(...a);
+          }
+
+          superAttr = '';
+
+          attributeChangedCallback(
+            name: string,
+            oldVal: string,
+            newVal: string
+          ): void {
+            if (!superclass.observedAttributes?.includes?.(name)) {
+              this.superAttr = name;
+            }
+            super.attributeChangedCallback?.(name, oldVal, newVal);
+          }
+        }
+
+        return E;
+      }
+      const E = MyMixin(ReactiveElement as any);
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['custom']
+      );
+
+      class F extends ReactiveElement {
+        static properties = {
+          foo: {},
+          bar: {},
+        };
+      }
+
+      const FE = MyMixin(F);
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), FE);
+      });
+      const el2 = new FE();
+      container.appendChild(el2);
+      const ctor = el2.constructor as typeof ReactiveElement;
+      assert.deepEqual((ctor as typeof ReactiveElement).observedAttributes, [
+        'foo',
+        'bar',
+        'custom',
+      ]);
+      assert.deepEqual(Array.from(ctor.elementProperties!.keys()), [
+        'foo',
+        'bar',
+      ]);
+    });
+  });
 });

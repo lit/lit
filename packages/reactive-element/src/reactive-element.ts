@@ -335,7 +335,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  static elementProperties?: PropertyDeclarationMap;
+  static elementProperties: PropertyDeclarationMap = new Map();
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -370,7 +370,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  static elementStyles?: CSSResultFlatArray;
+  static elementStyles: CSSResultFlatArray = [];
 
   /**
    * Array of styles to apply to the element. The styles should be defined
