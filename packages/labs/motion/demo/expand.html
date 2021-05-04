@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+  -->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Expand Animation</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {directive} from 'lit/directive.js';
+      import {
+        flip,
+        Flip,
+        flyBelow,
+        defaultCssProperties,
+      } from '../development/flip.js';
+
+      class Expand extends Flip {
+        prepareCount = 0;
+        setOptions(options) {
+          options = options ?? {};
+          options.properties = ['height'];
+          options.disableTransform = true;
+          options.animationOptions = {
+            ...options.animationOptions,
+            duration: 500,
+          };
+          super.setOptions(options);
+        }
+        async prepareFlip() {
+          console.log('prepareFlip', ++this.prepareCount);
+          if (this.animation) {
+            this.animation.cancel();
+            await this.finished;
+          }
+          this.element.style.display = '';
+          this.element.style.overflow = 'hidden';
+          super.prepareFlip();
+          console.log('done prepare');
+        }
+
+        completeFlip() {
+          console.log('completeFlip', this.flipProps);
+          if (this.flipProps?.height === 0) {
+            this.element.style.display = 'none';
+          }
+          super.completeFlip();
+        }
+      }
+      const expand = directive(Expand);
+
+      class MyElement extends LitElement {
+        static properties = {closed: {}};
+        static styles = css`
+          .box {
+            --box-size: 250px;
+            position: relative;
+            background: steelblue;
+            height: var(--box-size);
+            width: var(--box-size);
+            font-size: 10em;
+          }
+
+          .closed {
+            height: 0;
+          }
+        `;
+        constructor() {
+          super();
+          this.closed = false;
+        }
+
+        render() {
+          return html`
+            <p><button @click=${this._toggle}>Toggle</button></p>
+            <p class="box ${classMap({closed: this.closed})}" ${expand()}>Hi</p>
+          `;
+        }
+
+        _toggle() {
+          this.closed = !this.closed;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>
