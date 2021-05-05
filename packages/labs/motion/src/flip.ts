@@ -152,7 +152,7 @@ export class Flip extends AsyncDirective {
   private _previousValue: unknown;
   private _ancestors?: Flip[];
   private _flipStyles?: string | undefined | null;
-  private _enableLogging = true;
+  private _enableLogging = false;
   private _isDisconnecting = false;
   element!: HTMLElement;
   flipProps?: CSSValues;
@@ -297,7 +297,7 @@ export class Flip extends AsyncDirective {
 
   hostUpdated() {
     this.log('hostUpdated, disconnecting?', this._isDisconnecting);
-    if (this._isDisconnecting) {
+    if (!this._isDisconnecting) {
       this.flip();
     }
   }
