@@ -335,7 +335,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  static elementProperties?: PropertyDeclarationMap;
+  static elementProperties: PropertyDeclarationMap = new Map();
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -370,7 +370,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  static elementStyles?: CSSResultFlatArray;
+  static elementStyles: CSSResultFlatArray = [];
 
   /**
    * Array of styles to apply to the element. The styles should be defined
@@ -391,7 +391,7 @@ export abstract class ReactiveElement
     const attributes: string[] = [];
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
-    this.elementProperties!.forEach((v, p) => {
+    this.elementProperties.forEach((v, p) => {
       const attr = this.__attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this.__attributeToPropertyMap.set(attr, p);
@@ -437,7 +437,7 @@ export abstract class ReactiveElement
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
     this.finalize();
-    this.elementProperties!.set(name, options);
+    this.elementProperties.set(name, options);
     // Do not generate an accessor if the prototype already has one, since
     // it would be lost otherwise and that would never be the user's intention;
     // Instead, we expect users to call `requestUpdate` themselves from
@@ -517,7 +517,7 @@ export abstract class ReactiveElement
    * @category properties
    */
   protected static getPropertyOptions(name: PropertyKey) {
-    return this.elementProperties!.get(name) || defaultPropertyDeclaration;
+    return this.elementProperties.get(name) || defaultPropertyDeclaration;
   }
 
   /**
@@ -534,7 +534,7 @@ export abstract class ReactiveElement
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
-    this.elementProperties = new Map(superCtor.elementProperties!);
+    this.elementProperties = new Map(superCtor.elementProperties);
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
     // make any properties
@@ -750,7 +750,7 @@ export abstract class ReactiveElement
   private __saveInstanceProperties() {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
-    (this.constructor as typeof ReactiveElement).elementProperties!.forEach(
+    (this.constructor as typeof ReactiveElement).elementProperties.forEach(
       (_v, p) => {
         if (this.hasOwnProperty(p)) {
           this.__instanceProperties!.set(p, this[p as keyof this]);
@@ -777,7 +777,7 @@ export abstract class ReactiveElement
       );
     adoptStyles(
       renderRoot,
-      (this.constructor as typeof ReactiveElement).elementStyles!
+      (this.constructor as typeof ReactiveElement).elementStyles
     );
     return renderRoot;
   }
@@ -1023,7 +1023,7 @@ export abstract class ReactiveElement
       // Produce warning if any class properties are shadowed by class fields
       if (DEV_MODE) {
         const shadowedProperties: string[] = [];
-        (this.constructor as typeof ReactiveElement).elementProperties!.forEach(
+        (this.constructor as typeof ReactiveElement).elementProperties.forEach(
           (_v, p) => {
             if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
               shadowedProperties.push(p as string);
