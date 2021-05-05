@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+## [1.4.1] - 2021-05-05
+
+### Fixed
+
+* Added `directive.js`, `async-directive.js`, and `directive-helpers.js` to package.json files so they are actually published to npm! ([#1841](https://github.com/Polymer/lit-html/pull/1841))
+
 ## [1.4.0] - 2021-04-26
 
 ### Added
