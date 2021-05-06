@@ -269,7 +269,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 const finalized = 'finalized';
 
 /**
- * A string representing on of the supported dev mode warnings classes.
+ * A string representing one of the supported dev mode warnings classes.
  */
 export type WarningKind = 'change-in-update' | 'migration';
 
