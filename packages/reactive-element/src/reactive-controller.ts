@@ -24,7 +24,7 @@ export interface ReactiveControllerHost {
    * Requests a host update which is processed asynchronously. The update can
    * be waited on via the `updateComplete` property.
    */
-  requestUpdate(): void;
+  requestUpdate(...args: any[]): void;
 
   /**
    * Returns a Promise that resolves when the host has completed updating.
