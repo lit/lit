@@ -268,7 +268,13 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
  */
 const finalized = 'finalized';
 
-export type Warnings = 'change-in-update' | 'migration';
+/**
+ * A string representing on of the supported dev mode warnings classes.
+ */
+export type WarningKind = 'change-in-update' | 'migration';
+
+// Legacy type name
+export type Warnings = WarningKind;
 
 export type Initializer = (element: ReactiveElement) => void;
 
@@ -281,24 +287,54 @@ export type Initializer = (element: ReactiveElement) => void;
 export abstract class ReactiveElement
   extends HTMLElement
   implements ReactiveControllerHost {
-  // Note, these are patched in only in DEV_MODE.
+  // Note: these are patched in only in DEV_MODE.
   /**
+   * Read or set all the enabled warning kinds for this class.
+   *
+   * This property is only used in development builds.
+   *
    * @nocollapse
    * @category dev-mode
    */
-  static enabledWarnings?: Warnings[];
+  static enabledWarnings?: WarningKind[];
 
   /**
+   * Enable the given warning kind for this class.
+   *
+   * This method only exists in development builds, so it should be accessed
+   * with a guard like:
+   *
+   * ```ts
+   * // Enable for all ReactiveElement classes
+   * ReactiveElement.enableWarning.?('migration');
+   *
+   * // Enable for all MyElement only
+   * MyElement.enableWarning.?('migration');
+   * ```
+   *
    * @nocollapse
    * @category dev-mode
    */
-  static enableWarning?: (type: Warnings) => void;
+  static enableWarning?: (warningKind: WarningKind) => void;
 
   /**
+   * Disable the given warning kind for this class.
+   *
+   * This method only exists in development builds, so it should be accessed
+   * with a guard like:
+   *
+   * ```ts
+   * // Disable for all ReactiveElement classes
+   * ReactiveElement.disableWarning.?('migration');
+   *
+   * // Disable for all MyElement only
+   * MyElement.disableWarning.?('migration');
+   * ```
+   *
    * @nocollapse
    * @category dev-mode
    */
-  static disableWarning?: (type: Warnings) => void;
+  static disableWarning?: (warningKind: WarningKind) => void;
 
   /**
    * @nocollapse
@@ -1229,7 +1265,7 @@ if (DEV_MODE) {
   };
   ReactiveElement.enableWarning = function (
     this: typeof ReactiveElement,
-    warning: Warnings
+    warning: WarningKind
   ) {
     ensureOwnWarnings(this);
     if (this.enabledWarnings!.indexOf(warning) < 0) {
@@ -1238,7 +1274,7 @@ if (DEV_MODE) {
   };
   ReactiveElement.disableWarning = function (
     this: typeof ReactiveElement,
-    warning: Warnings
+    warning: WarningKind
   ) {
     ensureOwnWarnings(this);
     const i = this.enabledWarnings!.indexOf(warning);
