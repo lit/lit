@@ -17,6 +17,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
+## Unreleased
+
+<!-- ### Changed -->
+<!-- ### Added -->
+
+### Fixed
+
+- Exported the `Ref` interface.
+
+<!-- ### Removed -->
+
 ## [2.0.0-rc.2] - 2021-04-20
 
 ### Changed
