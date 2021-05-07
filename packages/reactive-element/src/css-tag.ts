@@ -53,15 +53,17 @@ export class CSSResult {
   }
 }
 
-/**
- * Wrap a value for interpolation in a [[`css`]] tagged template literal.
- *
- * This is unsafe because untrusted CSS text can be used to phone home
- * or exfiltrate data to an attacker controlled site. Take care to only use
- * this with trusted input.
- */
-export const unsafeCSS = (value: unknown) => {
-  return new CSSResult(String(value), constructionToken);
+const cssResultCache = new Map<string, CSSResult>();
+
+const getCSSResult = (cssText: string): CSSResult => {
+  let result = cssResultCache.get(cssText);
+  if (result === undefined) {
+    cssResultCache.set(
+      cssText,
+      (result = new CSSResult(cssText, constructionToken))
+    );
+  }
+  return result;
 };
 
 const textFromCSSResult = (value: CSSResultGroup | number) => {
@@ -71,13 +73,23 @@ const textFromCSSResult = (value: CSSResultGroup | number) => {
     return value;
   } else {
     throw new Error(
-      `Value passed to 'css' function must be a 'css' function result: ${value}. Use 'unsafeCSS' to pass non-literal values, but
-            take care to ensure page security.`
+      `Value passed to 'css' function must be a 'css' function result: ` +
+        `${value}. Use 'unsafeCSS' to pass non-literal values, but take care ` +
+        `to ensure page security.`
     );
   }
 };
 
-const cssResultCache = new Map<string, CSSResult>();
+/**
+ * Wrap a value for interpolation in a [[`css`]] tagged template literal.
+ *
+ * This is unsafe because untrusted CSS text can be used to phone home
+ * or exfiltrate data to an attacker controlled site. Take care to only use
+ * this with trusted input.
+ */
+export const unsafeCSS = (value: unknown) => {
+  return getCSSResult(typeof value === 'string' ? value : String(value));
+};
 
 /**
  * Template tag which which can be used with LitElement's [[LitElement.styles |
@@ -89,18 +101,14 @@ export const css = (
   strings: TemplateStringsArray,
   ...values: (CSSResultGroup | number)[]
 ): CSSResultGroup => {
-  const cssText = values.reduce(
-    (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
-    strings[0]
-  );
-  let result = cssResultCache.get(cssText);
-  if (result === undefined) {
-    cssResultCache.set(
-      cssText,
-      (result = new CSSResult(cssText, constructionToken))
-    );
-  }
-  return result;
+  const cssText =
+    strings.length === 1
+      ? strings[0]
+      : values.reduce(
+          (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
+          strings[0]
+        );
+  return getCSSResult(cssText);
 };
 
 /**
