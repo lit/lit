@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-rc.1",
+  "version": "3.0.0-rc.2",
   "publishConfig": {
     "access": "public"
   },
@@ -81,8 +81,8 @@
     "!/src/test/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-rc.1",
-    "lit-html": "^2.0.0-rc.1"
+    "@lit/reactive-element": "^1.0.0-rc.2",
+    "lit-html": "^2.0.0-rc.2"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
