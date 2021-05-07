@@ -272,6 +272,8 @@ export type Warnings = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
 
+const pendingUpdates: Set<ReactiveElement> = new Set();
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -287,6 +289,14 @@ export abstract class ReactiveElement
    * @category dev-mode
    */
   static enabledWarnings?: Warnings[];
+
+  static get updateComplete() {
+    return async () => {
+      for (const p of pendingUpdates) {
+        await p.updateComplete;
+      }
+    };
+  }
 
   /**
    * @nocollapse
@@ -958,6 +968,10 @@ export abstract class ReactiveElement
     }
     if (!this.isUpdatePending && shouldRequestUpdate) {
       this.__updatePromise = this.__enqueueUpdate();
+      pendingUpdates.add(this);
+      this.updateComplete.then(() => {
+        pendingUpdates.delete(this);
+      });
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
