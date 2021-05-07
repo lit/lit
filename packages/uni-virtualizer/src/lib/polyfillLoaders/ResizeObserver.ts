@@ -22,7 +22,7 @@ async function init() {
             new _RO(function() {});
         }
         catch (e) {
-            _RO = import('resize-observer-polyfill');
+            _RO = import('../polyfills/resize-observer-polyfill/ResizeObserver.es.js');
             _RO = (await _RO).default;
         }
         return (RO = _RO);   

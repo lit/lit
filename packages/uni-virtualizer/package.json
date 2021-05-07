@@ -12,7 +12,6 @@
     "author": "The Polymer Authors",
     "dependencies": {
         "event-target-shim": "^5.0.1",
-        "resize-observer-polyfill": "github:rictic/resize-observer-polyfill#observeWithinShadowRoots",
         "tslib": "^1.10.0"
     },
     "devDependencies": {
