@@ -11,6 +11,9 @@ import {directive, AsyncDirective} from '../async-directive.js';
  */
 export const createRef = <T = Element>() => new Ref<T>();
 
+/**
+ * An object that holds a ref value.
+ */
 class Ref<T = Element> {
   /**
    * The current Element value of the ref, or else `undefined` if the ref is no
@@ -18,6 +21,8 @@ class Ref<T = Element> {
    */
   readonly value?: T;
 }
+
+export type {Ref};
 
 interface RefInternal {
   value: Element | undefined;
