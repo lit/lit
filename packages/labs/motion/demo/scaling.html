@@ -134,7 +134,7 @@
 
         _embiggenChange() {
           this.flipController.finish();
-          this.shifted = false;
+          this.shifted = !this.shifted;
           this.embiggen = !this.embiggen;
         }
 
@@ -147,7 +147,6 @@
         }
 
         async changeLayout() {
-          await this.flipController.finished();
           this.shifted = !this.shifted;
         }
       }

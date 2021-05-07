@@ -196,8 +196,15 @@ suite('Flip', () => {
     const easing = 'linear';
     const fill = 'both';
 
+    let timing: EffectTiming | undefined;
+
+    const onComplete = (flip: Flip) => {
+      timing = flip.animation?.effect!.getTiming();
+    };
+
     const El = generateFlipElement({
       onPrepare,
+      onComplete,
       animationOptions: {
         duration,
         easing,
@@ -209,10 +216,9 @@ suite('Flip', () => {
     await flipReady(el);
     el.shift = true;
     await flipReady(el);
-    const timing = theFlip?.animation?.effect?.getTiming();
-    assert.equal(timing?.duration, duration);
-    assert.equal(timing?.easing, easing);
-    assert.equal(timing?.fill, fill);
+    assert.equal(timing!.duration, duration);
+    assert.equal(timing!.easing, easing);
+    assert.equal(timing!.fill, fill);
   });
 
   test('disabled', async () => {

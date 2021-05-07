@@ -70,11 +70,12 @@
         0.9998,
       ];
 
-      const onFrames = ({flipProps: props, frames}) => {
+      const onStart = (flip) => {
+        const {frames, flipProps: props} = flip;
         if (frames === undefined || props === undefined) {
-          return frames;
+          return;
         }
-        return [
+        flip.frames = [
           frames[0],
           ...springy.map((v) => {
             const frame = {};
@@ -281,11 +282,11 @@
           this._flipController = new FlipController(this, {
             flipOptions: {
               animationOptions: {
-                duration: 1500,
+                duration: 1000,
                 easing: 'ease-in-out',
                 fill: 'both',
               },
-              onFrames,
+              onStart,
             },
           });
         }

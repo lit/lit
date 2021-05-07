@@ -15,7 +15,7 @@
       name="viewport"
       content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
     />
-    <title>Expand Animation</title>
+    <title>Collapsible Animation</title>
   </head>
   <body>
     <my-element></my-element>
@@ -30,39 +30,31 @@
         defaultCssProperties,
       } from '../development/flip.js';
 
-      class Expand extends Flip {
-        prepareCount = 0;
+      class Collapsible extends Flip {
         setOptions(options) {
           options = options ?? {};
           options.properties = ['height'];
           options.disableTransform = true;
-          options.animationOptions = {
-            ...options.animationOptions,
-            duration: 500,
-          };
           super.setOptions(options);
         }
-        async prepareFlip() {
-          console.log('prepareFlip', ++this.prepareCount);
+        async prepare() {
           if (this.animation) {
-            this.animation.cancel();
+            this.animation.finish();
             await this.finished;
           }
           this.element.style.display = '';
           this.element.style.overflow = 'hidden';
-          super.prepareFlip();
-          console.log('done prepare');
+          await super.prepare();
         }
 
-        completeFlip() {
-          console.log('completeFlip', this.flipProps);
+        complete() {
           if (this.flipProps?.height === 0) {
             this.element.style.display = 'none';
           }
-          super.completeFlip();
+          super.complete();
         }
       }
-      const expand = directive(Expand);
+      const collapsible = directive(Collapsible);
 
       class MyElement extends LitElement {
         static properties = {closed: {}};
@@ -88,7 +80,9 @@
         render() {
           return html`
             <p><button @click=${this._toggle}>Toggle</button></p>
-            <p class="box ${classMap({closed: this.closed})}" ${expand()}>Hi</p>
+            <p class="box ${classMap({closed: this.closed})}" ${collapsible()}>
+              Hi
+            </p>
           `;
         }
 

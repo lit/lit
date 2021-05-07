@@ -1,4 +1,4 @@
-import {LitElement, ReactiveControllerHost} from 'lit';
+import {LitElement, ReactiveElement, ReactiveControllerHost} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
@@ -140,6 +140,11 @@ const isDirty = (value: unknown, previous: unknown) => {
 // flip transforms), done by ascending the DOM.
 const flipMap: WeakMap<Node, Flip> = new WeakMap();
 
+const IN = 'in';
+const OUT = 'out';
+const TRANSITION = 'transition';
+export type FlipType = typeof IN | typeof OUT | typeof TRANSITION | '';
+
 /**
  * `flip` animation directive class. Animates a node's position between renders.
  */
@@ -154,6 +159,7 @@ export class Flip extends AsyncDirective {
   private _flipStyles?: string | undefined | null;
   private _enableLogging = false;
   private _isDisconnecting = false;
+  type: FlipType = '';
   element!: HTMLElement;
   flipProps?: CSSValues;
   frames?: Keyframe[];
@@ -190,10 +196,6 @@ export class Flip extends AsyncDirective {
     controller?.remove(this);
   }
 
-  isFlipping() {
-    return !!this._resolveFinished;
-  }
-
   render(_options?: (() => FlipOptions) | FlipOptions) {
     return nothing;
   }
@@ -202,7 +204,15 @@ export class Flip extends AsyncDirective {
     return flipControllers.get(this._host!);
   }
 
-  isDisabled() {
+  protected isFlipping() {
+    return !!this._resolveFinished;
+  }
+
+  protected isAnimating() {
+    return this.animation?.playState === 'running' || this.animation?.pending;
+  }
+
+  protected isDisabled() {
     return this.options.disabled || this.getController()?.disabled;
   }
 
@@ -268,12 +278,7 @@ export class Flip extends AsyncDirective {
       value = this.options.guard();
       dirty = isDirty(value, this._previousValue);
     }
-    this._canFlip =
-      !this.isFlipping() &&
-      !this.isDisabled() &&
-      /*!this.isAnimating() &&*/
-      dirty &&
-      this.element.isConnected;
+    this._canFlip = !this.isDisabled() && dirty && this.element.isConnected;
     if (this._canFlip) {
       // Copy the value if it's an array so that if it's mutated we don't forget
       // what the previous values were.
@@ -285,18 +290,16 @@ export class Flip extends AsyncDirective {
   hostUpdate() {
     // TODO(sorvell): If options will change that will affect measuring,
     // then the user must pass a callback which can be called at update time.
+    // TODO(sorvell): REMOVE THIS?!?
     if (typeof this.optionsOrCallback === 'function') {
       this.setOptions(this.optionsOrCallback());
     }
-    const canFlip = this.canFlip();
-    if (canFlip) {
+    if (this.canFlip()) {
       this._fromValues = this._measure();
     }
-    this.log('hostUpdate, canFlip?', canFlip);
   }
 
   hostUpdated() {
-    this.log('hostUpdated, disconnecting?', this._isDisconnecting);
     if (!this._isDisconnecting) {
       this.flip();
     }
@@ -305,12 +308,12 @@ export class Flip extends AsyncDirective {
   reconnected() {}
 
   disconnected() {
-    let m;
     if (this.options.id !== undefined) {
-      m = this._measure();
+      const m = this._fromValues ?? this._measure();
       disconnectedProps.set(this.options.id, m);
+      this.log('disconnected', m);
     }
-    this.log('disconnected, recorded', m);
+    // Note, this state is reset when flip is complete
     this._isDisconnecting = true;
     this.flip();
   }
@@ -372,12 +375,24 @@ export class Flip extends AsyncDirective {
       return;
     }
     await this.prepare();
-    this.frames = this._isDisconnecting
-      ? this.setupOut()
-      : this._fromValues !== undefined
-      ? this.setupTransition()
-      : this.setupIn();
     if (!this.isAnimating() && !this.isDisabled()) {
+      this.type = this._isDisconnecting
+        ? OUT
+        : this._fromValues !== undefined
+        ? TRANSITION
+        : IN;
+      switch (this.type) {
+        case OUT:
+          this.frames = this.setupOut();
+          break;
+        case IN:
+          this.frames = this.setupIn();
+          break;
+        default:
+          this.frames = this.setupTransition();
+          break;
+      }
+      this.log(`flip: ${this.type}`, this.frames);
       this.start();
       await this.animate();
       if (this._isDisconnecting) {
@@ -389,7 +404,6 @@ export class Flip extends AsyncDirective {
   }
 
   setupTransition() {
-    this.log('setupTransition');
     const {from, to} = this._applyAncestorAdjustments(
       this._fromValues!,
       this._measure()
@@ -398,11 +412,13 @@ export class Flip extends AsyncDirective {
   }
 
   setupIn() {
-    this.log('setupIn');
     let frames;
     const disconnected = disconnectedProps.get(this.options.inId);
     if (disconnected) {
-      this.log('retrieved disconnected values', disconnected);
+      this.log(
+        `retrieved disconnected values from ${this.options.inId}`,
+        disconnected
+      );
       // use disconnected data only once.
       disconnectedProps.delete(this.options.inId);
       const {from, to} = this._applyAncestorAdjustments(
@@ -428,7 +444,6 @@ export class Flip extends AsyncDirective {
   }
 
   setupOut() {
-    this.log('setupOut');
     if (this._parentNode?.isConnected) {
       // put element back in DOM
       const ref =
@@ -440,7 +455,6 @@ export class Flip extends AsyncDirective {
       if (this.options.stabilizeOut) {
         // Measure current position after re-attaching.
         const shifted = this._measure();
-        this.log('stabilizing out');
         // TODO(sorvell): these nudges could conflict with existing styling
         // or animation but setting left/top should be rare, especially via
         // animation.
@@ -463,11 +477,11 @@ export class Flip extends AsyncDirective {
   }
 
   async prepare() {
-    this.log('prepare');
     this.createFinished();
     // Record parent and nextSibling used to re-attach node when flipping "out"
     this._parentNode = this.element.parentNode as Element;
     this._nextSibling = this.element.nextSibling;
+    this.type = '';
     this.options.onPrepare?.(this);
     // Wait for rendering so any sub-elements have a chance to render.
     await animationFrame();
@@ -475,17 +489,14 @@ export class Flip extends AsyncDirective {
   }
 
   start() {
-    this.log('start');
     this.options.onStart?.(this);
   }
 
   complete() {
-    this.log('complete');
     this.options.onComplete?.(this);
   }
 
   cleanup() {
-    this.log('cleanup');
     this._fromValues = undefined;
     this.flipProps = undefined;
     this.frames = undefined;
@@ -493,6 +504,9 @@ export class Flip extends AsyncDirective {
     this._isDisconnecting = false;
     this._parentNode = null;
     this._nextSibling = null;
+    this.type = '';
+    this.animation?.cancel();
+    this.animation = undefined;
     this.resolveFinished();
   }
 
@@ -606,17 +620,12 @@ export class Flip extends AsyncDirective {
     // These inherit from ancestors. This allows easier synchronization of
     // child flips within ancestor flips.
     const options = this._calcAnimationOptions(this.options.animationOptions);
-    this.log('animate', [this.frames, options]);
     this.animation = this.element.animate(this.frames!, options);
     try {
       await this.animation.finished;
     } catch (e) {
       // cancelled.
     }
-  }
-
-  protected isAnimating() {
-    return this.animation?.playState === 'running' || this.animation?.pending;
   }
 
   log(message: string, data?: unknown) {
