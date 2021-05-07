@@ -273,9 +273,6 @@ const finalized = 'finalized';
  */
 export type WarningKind = 'change-in-update' | 'migration';
 
-// Legacy type name
-export type Warnings = WarningKind;
-
 export type Initializer = (element: ReactiveElement) => void;
 
 /**
