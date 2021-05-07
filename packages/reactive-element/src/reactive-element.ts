@@ -1291,4 +1291,4 @@ declare global {
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.1');
+((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.2');
