@@ -23,7 +23,7 @@ export const unsafeStatic = (value: string) => ({
   _$litStatic$: value,
 });
 
-const textFromStatic = (value: StaticValue) => {
+const textFromStatic = (value: StaticValue): string => {
   if (value._$litStatic$ !== undefined) {
     return value._$litStatic$;
   } else {
@@ -48,19 +48,23 @@ const textFromStatic = (value: StaticValue) => {
  * Static values can be changed, but they will cause a complete re-render since
  * they effectively create a new template.
  */
-export const literal = (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-) => ({
-  _$litStatic$: values.reduce(
-    (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
-    strings[0]
-  ),
-});
+export const literal = (strings: TemplateStringsArray, ...values: unknown[]) =>
+  unsafeStatic(
+    values.reduce(
+      (acc, v, idx) =>
+        acc + textFromStatic(v as StaticValue) + strings[idx + 1],
+      strings[0]
+    ) as string
+  );
 
 type StaticValue = ReturnType<typeof unsafeStatic>;
 
-const stringsCache = new Map<string, TemplateStringsArray>();
+type StaticTemplate = {
+  strings: Array<string>;
+  values: Array<StaticValue | undefined>;
+};
+
+const stringsCache = new WeakMap<TemplateStringsArray, StaticTemplate>();
 
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
@@ -69,50 +73,48 @@ export const withStatic = (coreTag: typeof coreHtml | typeof coreSvg) => (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): TemplateResult => {
-  const l = values.length;
-  let staticValue: string | undefined;
-  let dynamicValue: unknown;
-  const staticStrings: Array<string> = [];
-  const dynamicValues: Array<unknown> = [];
-  let i = 0;
-  let hasStatics = false;
-  let s: string;
-
-  while (i < l) {
-    s = strings[i];
-    // Collect any unsafeStatic values, and their following template strings
-    // so that we treat a run of template strings and unsafe static values as
-    // a single template string.
-    while (
-      i < l &&
-      ((dynamicValue = values[i]),
-      (staticValue = (dynamicValue as StaticValue)?._$litStatic$)) !== undefined
-    ) {
-      s += staticValue + strings[++i];
-      hasStatics = true;
+  let staticTemplate = stringsCache.get(strings);
+  RESTART: for (;;) {
+    if (staticTemplate === undefined) {
+      const staticStrings = [];
+      const staticValues = [];
+      let s: string = strings[0];
+      for (let i = 0; i < values.length; ++i) {
+        let value = values[i] as StaticValue | undefined;
+        const valueString = value?._$litStatic$;
+        if (valueString !== undefined) {
+          s += valueString + strings[i + 1];
+        } else {
+          staticStrings.push(s);
+          s = strings[i + 1];
+          value = undefined;
+        }
+        staticValues.push(value);
+      }
+      staticStrings.push(s);
+      staticTemplate = {strings: staticStrings, values: staticValues};
+      stringsCache.set(strings, staticTemplate);
     }
-    dynamicValues.push(dynamicValue);
-    staticStrings.push(s);
-    i++;
-  }
-  // If the last value isn't static (which would have consumed the last
-  // string), then we need to add the last string.
-  if (i === l) {
-    staticStrings.push(strings[l]);
-  }
-
-  if (hasStatics) {
-    const key = staticStrings.join('$$lit$$');
-    strings = stringsCache.get(key)!;
-    if (strings === undefined) {
-      stringsCache.set(
-        key,
-        (strings = (staticStrings as unknown) as TemplateStringsArray)
-      );
+    const dynamicValues = [];
+    for (let i = 0; i < values.length; ++i) {
+      const staticValue = staticTemplate.values[i];
+      const value = values[i] as StaticValue | undefined;
+      if (staticValue === undefined) {
+        if (value?._$litStatic$ !== undefined) {
+          staticTemplate = undefined;
+          continue RESTART;
+        }
+        dynamicValues.push(value);
+      } else if (staticValue !== value) {
+        staticTemplate = undefined;
+        continue RESTART;
+      }
     }
-    values = dynamicValues;
+    return coreTag(
+      (staticTemplate.strings as unknown) as TemplateStringsArray,
+      ...dynamicValues
+    );
   }
-  return coreTag(strings, ...values);
 };
 
 /**
