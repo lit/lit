@@ -224,6 +224,30 @@ import {assert} from '@esm-bundle/chai';
       );
     });
 
+    test('unsafeCSS can be used standalone', async () => {
+      const name = generateElementName();
+      customElements.define(
+        name,
+        class extends RenderingElement {
+          static get styles() {
+            return unsafeCSS('div {border: 2px solid blue}');
+          }
+
+          render() {
+            return html` <div>Testing</div>`;
+          }
+        }
+      );
+      const el = document.createElement(name);
+      container.appendChild(el);
+      await (el as ReactiveElement).updateComplete;
+      const div = el.shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '2px'
+      );
+    });
+
     test('`static get styles` applies last instance of style', async () => {
       const name = generateElementName();
       const s1 = css`
