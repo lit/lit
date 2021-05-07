@@ -14,6 +14,7 @@ declare global {
   }
   interface ShadowRoot {
     importNode(node: Node, deep?: boolean): Node;
+    adoptNode: Document['adoptNode'];
   }
 }
 
