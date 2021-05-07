@@ -1,5 +1,5 @@
 {
-    "name": "lit-virtualizer",
+    "name": "@lit-labs/virtualizer",
     "version": "0.6.0",
     "description": "Virtual scrolling for Lit",
     "license": "BSD-3-Clause",
@@ -25,7 +25,7 @@
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
         "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
     },
-    "author": "The Polymer Authors",
+    "author": "Google LLC",
     "devDependencies": {
         "chai": "^4.2.0",
         "copyfiles": "^2.4.1",
