@@ -1,4 +1,4 @@
-import { render, html } from 'lit-html';
+import { render, html } from 'lit';
 import { scroll } from 'lit-virtualizer/lib/scroll.js';
 import { Layout1d } from 'lit-virtualizer';
 

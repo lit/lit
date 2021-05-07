@@ -1,7 +1,7 @@
-import {html, css, LitElement} from 'lit-element';
-import {styleMap} from 'lit-html/directives/style-map';
-import 'lit-virtualizer/lib/lit-virtualizer.js';
-import {Layout1d} from 'lit-virtualizer/lit-virtualizer.js';
+import {html, css, LitElement} from 'lit';
+import {styleMap} from 'lit/directives/style-map';
+import 'lit-virtualizer';
+import {Layout1d} from 'lit-virtualizer';
 
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 

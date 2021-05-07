@@ -1,4 +1,4 @@
-import { html } from 'lit-html';
+import { html } from 'lit';
 import { Layout1d } from 'lit-virtualizer/lit-virtualizer.js';
 import 'lit-virtualizer/lit-virtualizer.js';
 
