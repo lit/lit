@@ -88,8 +88,8 @@ Say we are building an index page for a blog, and need a list of link to all blo
 
 ...and here's how we can use the `scroll` directive to render the list of post links.
 ```js
-import scroll from 'lit-virtualizer'
-import { html, render } from 'lit-html'
+import scroll from '@lit-labs/virtualizer';
+import { html, render } from 'lit';
 
 // Post metadata that we want to virtually scroll.
 const posts = [
