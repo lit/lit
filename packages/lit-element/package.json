@@ -59,7 +59,7 @@
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "publish-dev": "npm test && VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
-    "regen-package-lock": "rimraf node_modules package-lock.json; npm install",
+    "regen-package-lock": "(rimraf node_modules package-lock.json || true) && npm install",
     "release": "np --any-branch --yolo",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../tests && npx wtr \"../lit-element/development/**/*_test.(js|html)\"",
