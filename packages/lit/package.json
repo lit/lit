@@ -61,7 +61,7 @@
     "clean": "rimraf {async-directive,decorators,directive-helpers,directive,html,experimental-hydrate-support,experimental-hydrate,index,polyfill-support,static-html}.{d.ts.map,d.ts,js.map,js} test/ decorators/ directives/ development/ *.tsbuildinfo",
     "publish-dev": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rimraf node_modules package-lock.json; npm install",
-    "test": "MODE=prod cd ../tests && npx wtr \"../lit/test/**/*_test.(js|html)\""
+    "test": "cross-env MODE=prod cd ../tests && npx wtr \"../lit/test/**/*_test.(js|html)\""
   },
   "files": [
     "/async-directive.{d.ts.map,d.ts,js.map,js}",
@@ -93,6 +93,7 @@
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.5.0",
     "chokidar-cli": "^2.1.0",
+    "cross-env": "^7.0.3",
     "downlevel-dts": "^0.6.0",
     "internal-scripts": "^1.0.0",
     "mocha": "^8.1.1",

@@ -17,10 +17,13 @@
   "scripts": {
     "build": "npm run clean && npm run build:ts",
     "build:ts": "tsc --build",
-    "clean": "rm -rf lib/"
+    "clean": "rimraf lib/"
   },
   "dependencies": {
     "fast-glob": "^3.2.5",
     "typescript": "^4.2.3"
+  },
+  "devDependencies": {
+    "rimraf": "^3.0.2"
   }
 }
