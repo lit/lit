@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## 1.0.0-rc.2 - 2021-05-07
+
+### Changed
+
+- (Since 1.0.0-rc.1) [Breaking] Change the type name `Warnings` to `WarningKind` [#1854](https://github.com/Polymer/lit-html/issues/1854).
+
 ## 1.0.0-rc.1 - 2021-04-20
 
 ### Fixed
