@@ -320,7 +320,10 @@ export interface RenderOptions {
    * `ownerDocument` of the rendered DOM, along with any inherited context.
    * Defaults to the global `document`.
    */
-  creationScope?: {adoptNode: Document['adoptNode']};
+  creationScope?: Node & {
+    adoptNode: Document['adoptNode'];
+    customElements?: CustomElementRegistry;
+  };
 }
 
 /**
@@ -811,7 +814,10 @@ class TemplateInstance {
         nodeIndex++;
       }
     }
-    return (options?.creationScope ?? d).adoptNode(fragment);
+    const creationScope = options?.creationScope;
+    (creationScope ?? d).adoptNode(fragment);
+    (creationScope?.customElements ?? window.customElements).upgrade(fragment);
+    return fragment;
   }
 
   _update(values: Array<unknown>) {
