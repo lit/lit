@@ -16,7 +16,7 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "clean": "rimraf {fnv1a64,id-generation,lit-localize}.{js,js.map,d.ts} tests/ .tsbuildinfo",
+    "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && tsc",
     "test": "web-test-runner",
     "prepack": "npm run build"
@@ -51,7 +51,6 @@
     "@web/test-runner": "^0.12.15",
     "@web/test-runner-playwright": "^0.8.4",
     "chai": "^4.2.0",
-    "mocha": "^8.1.1",
-    "rimraf": "^3.0.2"
+    "mocha": "^8.1.1"
   }
 }

@@ -19,12 +19,11 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "postinstall": "shx cp ../localize/src/fnv1a64.ts src/fnv1a64.ts && shx cp ../localize/src/id-generation.ts src/id-generation.ts",
-    "clean": "rimraf lib/",
+    "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && npm run generate-json-schema && tsc",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && npm run test:tape && npm run test:check-tsc",
-    "test:tape": "tape-es \"lib/tests/**/*.test.js\" | tap-spec",
+    "test:tape": "tape-es 'lib/tests/**/*.test.js' | tap-spec",
     "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true npm run test:tape",
     "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
     "prepack": "npm run build"
@@ -63,7 +62,6 @@
     "dir-compare": "^3.1.5",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
-    "shx": "^0.3.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.2.2",
     "tape-es": "^1.2.11",
