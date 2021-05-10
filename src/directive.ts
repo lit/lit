@@ -40,7 +40,8 @@ export interface AttributePartInfo {
   readonly tagName: string;
 }
 
-export type Part = ChildPart|AttributePart|BooleanAttributePart|EventPart;
+export type Part =
+    ChildPart|AttributePart|PropertyPart|BooleanAttributePart|EventPart;
 
 export type{ChildPart};
 class ChildPart {
@@ -67,7 +68,8 @@ class ChildPart {
 
 export type{AttributePart};
 class AttributePart {
-  readonly type: typeof PartType.ATTRIBUTE|typeof PartType.PROPERTY;
+  readonly type: typeof PartType.ATTRIBUTE|typeof PartType.PROPERTY =
+      PartType.ATTRIBUTE;
   readonly legacyPart: legacyLit.AttributePart|legacyLit.PropertyPart;
 
   get options(): legacyLit.RenderOptions|undefined {
@@ -96,11 +98,17 @@ class AttributePart {
 
   constructor(legacyPart: legacyLit.AttributePart|legacyLit.PropertyPart) {
     this.legacyPart = legacyPart;
-    this.type = (legacyPart instanceof legacyLit.PropertyPart) ?
-        PartType.PROPERTY :
-        PartType.ATTRIBUTE;
   }
 }
+
+export type{PropertyPart};
+class PropertyPart extends AttributePart {
+  readonly type = PartType.PROPERTY;
+
+  constructor(legacyPart: legacyLit.PropertyPart) {
+    super(legacyPart);
+  }
+};
 
 export type{BooleanAttributePart};
 class BooleanAttributePart {
@@ -194,9 +202,9 @@ function legacyPartToPart(part: legacyLit.Part): Part {
     return new EventPart(part);
   } else if (part instanceof legacyLit.BooleanAttributePart) {
     return new BooleanAttributePart(part);
-  } else if (
-      part instanceof legacyLit.PropertyPart ||
-      part instanceof legacyLit.AttributePart) {
+  } else if (part instanceof legacyLit.PropertyPart) {
+    return new PropertyPart(part);
+  } else if (part instanceof legacyLit.AttributePart) {
     return new AttributePart(part);
   }
   // ElementPartInfo doesn't exist in lit-html v1
