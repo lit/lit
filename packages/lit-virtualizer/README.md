@@ -182,7 +182,7 @@ const handleEvent = (e) => {
 }
 
 const example = (contacts) => html`
-  <section @rangechanged=${handleEvent}>
+  <section @visibilityChanged=${handleEvent}>
     ${scroll({
       items: contacts,
       renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
