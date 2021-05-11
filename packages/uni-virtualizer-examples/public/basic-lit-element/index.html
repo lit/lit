@@ -10,18 +10,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <!doctype html>
 <html>
   <head>
+    <script>
+      ShadyDOM = { force: false };
+    </script>
+    <script src="../shared/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../shared/boot.js"></script>
     <style>
-      body {
+      /* body {
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 300px;
         grid-gap: 1em;
-      }
+      } */
     </style>
   </head>
   <body>
-    <contact-list></contact-list>
+    <!-- <contact-list></contact-list> -->
     <contact-list></contact-list>
   </body>
 </html>

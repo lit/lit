@@ -10,12 +10,23 @@ export type Margins = {
   marginLeft: number
 };
 
-export type ItemBox = Size & Margins;
+export type ItemBox = Size | Size & Margins;
 
 export type position = 'left' | 'top';
 export type Positions = {
-  [key in position]: number
+  left: number,
+  top: number,
+  width?: number,
+  height?: number
 };
+
+export interface Type<T> extends Function {
+  new (...args: any[]): T;
+}
+
+export interface LayoutConfig {
+  type?: Type<Layout>
+}
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
@@ -23,6 +34,8 @@ export type ScrollDirection = 'vertical' | 'horizontal';
  * Interface for layouts consumed by VirtualScroller or VirtualRepeater.
  */
 export interface Layout {
+  config: LayoutConfig;
+  
   totalItems: number;
 
   direction: ScrollDirection;
@@ -31,7 +44,11 @@ export interface Layout {
 
   viewportScroll: Positions;
 
-  updateItemSizes: (sizes: {
+  readonly measureChildren?: boolean | ((e: Element, i: object) => object);
+
+  readonly listenForChildLoadEvents?: boolean;
+
+  updateItemSizes?: (sizes: {
     [key: number]: ItemBox
   }) => void;
 
@@ -87,5 +104,5 @@ export interface Layout {
    *       width: number,
    *     }
    */
-  reflowIfNeeded: () => void;
+  reflowIfNeeded: (force: boolean) => void;
 }

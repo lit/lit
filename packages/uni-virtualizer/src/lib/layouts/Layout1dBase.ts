@@ -1,5 +1,5 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, ItemBox, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
+import {Layout, Positions, ScrollDirection, Size, dimension, position, LayoutConfig} from './Layout.js';
 
 export abstract class Layout1dBase implements Layout {
   /**
@@ -22,11 +22,13 @@ export abstract class Layout1dBase implements Layout {
    */
   private _pendingReflow: boolean = false;
 
+  private _pendingLayoutUpdate: boolean = false;
+
   /**
    * Index of the item that has been scrolled to via the public API. When the
    * container is otherwise scrolled, this value is set back to -1.
    */
-  private _scrollToIndex: number = -1;
+  protected _scrollToIndex: number = -1;
 
   /**
    * When a child is scrolled to, the offset from the top of the child and the
@@ -44,7 +46,9 @@ export abstract class Layout1dBase implements Layout {
    */
   private _lastVisible: number;
 
-  private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => this._eventTarget = new Ctor()));
+  private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => {
+    this._eventTarget = new Ctor();
+  }));
 
   /**
    * Pixel offset in the scroll direction of the first child.
@@ -122,13 +126,31 @@ export abstract class Layout1dBase implements Layout {
    * Number of pixels beyond the visible size of the container to still include
    * in the active range of items.
    */
-  protected _overhang: number = 150;
+  // TODO (graynorton): Probably want to make this something we calculate based
+  // on viewport size, item size, other factors, possibly still with a dial of some kind
+  protected _overhang: number = 1000;
 
   private _eventTarget;
   protected _spacingChanged;
 
+  protected static _defaultConfig: LayoutConfig = {};
+
   constructor(config) {
-    Object.assign(this, config);
+    if (config) {
+      this.config = config;
+    }
+  }
+
+  set config(config: LayoutConfig) {
+    Object.assign(this, Object.assign({}, (<typeof Layout1dBase>this.constructor)._defaultConfig, config));
+  }
+
+  get config(): LayoutConfig {
+    const config = {};
+    for (let key in (<typeof Layout1dBase>this.constructor)._defaultConfig) {
+      config[key] = this[key];
+    }
+    return config;
   }
 
   /**
@@ -139,8 +161,9 @@ export abstract class Layout1dBase implements Layout {
     return this._totalItems;
   }
   set totalItems(num) {
-    if (num !== this._totalItems) {
-      this._totalItems = num;
+    const _num = Number(num);
+    if (_num !== this._totalItems) {
+      this._totalItems = _num;
       this._scheduleReflow();
     }
   }
@@ -160,7 +183,7 @@ export abstract class Layout1dBase implements Layout {
       this._secondarySizeDim = (dir === 'horizontal') ? 'height' : 'width';
       this._positionDim = (dir === 'horizontal') ? 'left' : 'top';
       this._secondaryPositionDim = (dir === 'horizontal') ? 'top' : 'left';
-      this._scheduleReflow();
+      this._scheduleLayoutUpdate();
     }
   }
 
@@ -177,7 +200,7 @@ export abstract class Layout1dBase implements Layout {
       if (_itemDim2 !== this._itemDim2) {
         this._itemDim2Changed();
       } else {
-        this._scheduleReflow();
+        this._scheduleLayoutUpdate();
       }
     }
   }
@@ -189,9 +212,10 @@ export abstract class Layout1dBase implements Layout {
     return this._spacing;
   }
   set spacing(px) {
-    if (px !== this._spacing) {
-      this._spacing = px;
-      this._scheduleReflow();
+    const _px = Number(px);
+    if (_px !== this._spacing) {
+      this._spacing = _px;
+      this._scheduleLayoutUpdate();
     }
   }
 
@@ -223,7 +247,7 @@ export abstract class Layout1dBase implements Layout {
     this._scrollPosition = this._latestCoords[this._positionDim];
     if (oldPos !== this._scrollPosition) {
       this._scrollPositionChanged(oldPos, this._scrollPosition);
-      this._updateVisibleIndices();
+      this._updateVisibleIndices({emit: true});
     }
     this._checkThresholds();
   }
@@ -231,8 +255,8 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Perform a reflow if one has been scheduled.
    */
-  reflowIfNeeded() {
-    if (this._pendingReflow) {
+  reflowIfNeeded(force) {
+    if (force || this._pendingReflow) {
       this._pendingReflow = false;
       this._reflow();
     }
@@ -265,7 +289,6 @@ export abstract class Layout1dBase implements Layout {
             'position must be one of: start, center, end, nearest');
     }
     this._scheduleReflow();
-    this.reflowIfNeeded();
   }
 
   async dispatchEvent(...args) {
@@ -294,15 +317,15 @@ export abstract class Layout1dBase implements Layout {
    */
   abstract _getActiveItems();
 
-  updateItemSizes(_sizes: {[key: number]: ItemBox}) {
-    // Override
-  }
-
   protected _itemDim2Changed() {
     // Override
   }
 
   protected _viewDim2Changed() {
+    // Override
+  }
+
+  protected _updateLayout() {
     // Override
   }
 
@@ -352,12 +375,22 @@ export abstract class Layout1dBase implements Layout {
     this._pendingReflow = true;
   }
 
+  protected _scheduleLayoutUpdate() {
+    this._pendingLayoutUpdate = true;
+    this._scheduleReflow();
+  }
+
   protected _reflow() {
     const {_first, _last, _scrollSize} = this;
 
+    if (this._pendingLayoutUpdate) {
+      this._updateLayout();
+      this._pendingLayoutUpdate = false;
+    }
     this._updateScrollSize();
     this._getActiveItems();
     this._scrollIfNeeded();
+    this._updateVisibleIndices();
 
     if (this._scrollSize !== _scrollSize) {
       this._emitScrollSize();
@@ -476,27 +509,36 @@ export abstract class Layout1dBase implements Layout {
    * Find the indices of the first and last items to intersect the viewport.
    * Emit a visibleindiceschange event when either index changes.
    */
-  protected _updateVisibleIndices() {
-    let firstVisible = this._firstVisible;
-    let lastVisible = this._lastVisible;
-    for (let i = this._first; i <= this._last; i++) {
-      const itemY = this._getItemPosition(i)[this._positionDim];
-      if (itemY <= this._scrollPosition) {
-        firstVisible = i;
-      }
-      if (itemY < this._scrollPosition + this._viewDim1) {
-        lastVisible = i;
-      }
+  protected _updateVisibleIndices(options?) {
+    if (this._first === -1 || this._last === -1) return;
+
+    let firstVisible = this._first;
+    while (
+      Math.round(
+        this._getItemPosition(firstVisible)[this._positionDim] +
+        this._getItemSize(firstVisible)[this._sizeDim]
+      )
+      <=
+      Math.round (this._scrollPosition)
+     ) {
+      firstVisible++;
     }
-    // If scrolling is occurring very quickly, item positions may change
-    // during this calculation. Ignore the results when that happens.
-    if (firstVisible > lastVisible) {
-      return;
+
+    let lastVisible = this._last;
+    while (
+      Math.round(this._getItemPosition(lastVisible)[this._positionDim])
+      >=
+      Math.round(this._scrollPosition + this._viewDim1)
+    ) {
+      lastVisible--;
     }
+
     if (firstVisible !== this._firstVisible || lastVisible !== this._lastVisible) {
       this._firstVisible = firstVisible;
       this._lastVisible = lastVisible;
-      this._emitRange();
+      if (options && options.emit) {
+        this._emitRange();
+      }
     }
   }
 

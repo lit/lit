@@ -1,0 +1,11 @@
+{
+    "presets": [
+      ["@babel/env", {
+          "targets": "> 0.25%, not dead, IE 11",
+          "modules": false
+          }]
+    ],
+    "plugins": [
+        "@babel/plugin-transform-runtime"
+    ]
+}

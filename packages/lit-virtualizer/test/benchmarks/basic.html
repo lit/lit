@@ -2,7 +2,7 @@
 <body>
 <div></div>
 <script type="module">
-  import {scroll} from '../../lit-virtualizer';
+  import {scroll, Layout1d} from '../../lit-virtualizer';
   import {render, html} from 'lit-html';
 
   let arr = [];
@@ -14,7 +14,7 @@
               items: arr,
               renderItem: (num) => html`<p>${num}</p>`,
               scrollTarget: window,
-              useShadowDOM: false
+              layout: Layout1d
           })}
       </section>
   `;

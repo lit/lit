@@ -1,22 +1,23 @@
-# lit-virtualizer
+# @lit-labs/virtualizer
 
-Lit-virtualizer provides tools for implementing virtual scrolling with lit-html and LitElement.
+`@lit-labs/virtualizer` provides virtual scrolling for [Lit](https://lit.dev).
 
-This package provides two main exports to be used alongside [lit-html](https://github.com/Polymer/lit-html/) and [LitElement](https://github.com/Polymer/lit-element/):
+This package provides two main exports:
 
-* `scroll`: a [lit-html directive](https://lit-html.polymer-project.org/guide/creating-directives) that turns its parent element into a virtually scrolling container.
-* `<lit-virtualizer>`: a subclass of LitElement that wraps the `scroll` directive.
+* `<lit-virtualizer>`: a Lit element that takes an array of data items and an item template and renders items on the fly as the user scrolls, keeping only enough items in the DOM to fill the viewport.
 
-You can find [documentation](#documentation) below, or view live [examples](https://polymerlabs.github.io/uni-virtualizer/). The examples are deployed from the [uni-virtualizer-examples](../uni-virtualizer-examples/) directory in this monorepo.
+* `scroll`: a Lit directive that turns its parent element into a virtually scrolling container. This is useful primarily if you're using Lit templates but not the `LitElement` base class and want to keep your imports to a minimum.
 
-⚠️ lit-virtualizer is in prerelease. All changes may be breaking until 1.0.
+You can find [documentation](#documentation) below, or view live [examples](https://polymerlabs.github.io/uni-virtualizer/).
+
+⚠️ `@lit-labs/virtualizer` is in prerelease. All changes may be breaking until 1.0.
 
 ## Getting Started
 
 Get this package:
 
 ```
-npm i lit-virtualizer
+npm i @lit-labs/virtualizer
 ```
 
 The package is shipped using [ES modules](https://developers.google.com/web/fundamentals/primers/modules). It also uses [bare specifiers](https://github.com/WICG/import-maps#bare-specifiers) to refer to other node modules such as lit-html. Shipping the package this way affords you control as a developer over your bundle delivery. For example, you could do code splitting. You will, however, have to *resolve* these module names when bundling your code.
@@ -32,7 +33,7 @@ As an example, here's how you can do module resolution with [rollup](https://rol
 
 *src/main.js*
 ```js
-import { LitVirtualizer } from 'lit-virtualizer';
+import { LitVirtualizer } from '@lit-labs/virtualizer';
 
 // use <lit-virtualizer> element or LitVirtualizer class
 ```
@@ -67,13 +68,13 @@ npx rollup --config
 
 Rollup will output build/main.js, with properly resolved module names.
 
-Other small chunks will also be present. Lit-virtualizer utilizes [dynamic imports](https://developers.google.com/web/updates/2017/11/dynamic-import) in a few places to avoid loading code unnecessarily. This allows rollup to split the code and emit several chunks.
+Other small chunks will also be present. `@lit-labs/virtualizer` utilizes [dynamic imports](https://developers.google.com/web/updates/2017/11/dynamic-import) in a few places to avoid loading code unnecessarily. This allows rollup to split the code and emit several chunks.
 
 ## Documentation
 
 ### `scroll` directive
 
-`scroll` is a lit-html directive that turns its parent element into a virtual scrolling area. It requires a `renderItem` function for rendering virtual children, and an array of items to render.
+`scroll` is a Lit directive that turns its parent element into a virtual scrolling area. It requires a `renderItem` function for rendering virtual children, and an array of items to render.
 
 Say we are building an index page for a blog, and need a list of link to all blog posts. The blog has thousands of posts, so we want the list to have virtual scrolling. Here's our index.html...
 ```html
@@ -85,10 +86,10 @@ Say we are building an index page for a blog, and need a list of link to all blo
 </body>
 ```
 
-...and here's how we can use the lit-virtualizer's `scroll` directive to render the list of post links.
+...and here's how we can use the `scroll` directive to render the list of post links.
 ```js
-import scroll from 'lit-virtualizer'
-import { html, render } from 'lit-html'
+import scroll from '@lit-labs/virtualizer';
+import { html, render } from 'lit';
 
 // Post metadata that we want to virtually scroll.
 const posts = [
@@ -133,21 +134,15 @@ A list of items to display via the renderItem function. The type of the items sh
 
 #### `renderItem`
 
-Type: `(item: T, index?: number) => lit-html.TemplateResult`
+Type: `(item: T, index?: number) => TemplateResult`
 
-A function that returns a lit-html TemplateResult. It will be used to generate the DOM for each item in the virtual list.
+A function that returns a Lit `TemplateResult`. It will be used to generate the DOM for each item in the virtual list.
 
 #### `scrollTarget`
 
 Type: `Element | Window`
 
 Optional. An element that receives scroll events for the virtual scroller. If not specified, the directive's parent element will be the target.
-
-#### `useShadowDOM`
-
-Type: `boolean`
-
-Optional. Whether to build the virtual scroller within a shadow DOM.
 
 #### `totalItems`
 
@@ -167,9 +162,9 @@ Note: Rendering with `scrollToIndex` will cause the scroll view to fix at the gi
 
 ### Events
 
-#### `rangechange` event
+#### `visibilityChanged` event
 
-Thi event is an instance of `RangeChangeEvent`, which has the following properties regarding the currently rendered range of items:
+This event is an instance of `RangeChangeEvent`, which has the following properties regarding the currently rendered range of items:
 
 * `first`: the index of the first item currently rendered. This may not be the first visible item.
 * `last`: the index of the last item currently rendered. This may not be the first visible item.
@@ -187,7 +182,7 @@ const handleEvent = (e) => {
 }
 
 const example = (contacts) => html`
-  <section @rangechange=${handleEvent}>
+  <section @visibilityChanged=${handleEvent}>
     ${scroll({
       items: contacts,
       renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
@@ -200,7 +195,7 @@ const example = (contacts) => html`
 
 ### `<lit-virtualizer>` element
 
-`<lit-virtualizer>` is a LitElement wrapper for the scroll directive. It simply provides different usage ergonomics. It doesn't add extra functionality. If your project does not otherwise use LitElement, using the scroll directive with tree-shaking will save you bytes by not unnecessarily importing LitElement.
+`<lit-virtualizer>` provides the same functionality as the `scroll` directive in element form, which you may find more ergonomic.
 
 Here's how to redo the blog post example, using `<lit-virtualizer>` instead. Construction of the final `templateResult` is the only difference:
 
@@ -226,9 +221,9 @@ A list of items to display via the renderItem function. The type of the items sh
 
 #### `renderItem` property
 
-Type: `(item: T, index?: number) => lit-html.TemplateResult`
+Type: `(item: T, index?: number) => TemplateResult`
 
-A function that returns a lit-html TemplateResult. It will be used to generate the DOM for each item in the virtual list.
+A function that returns a Lit `TemplateResult`. It will be used to generate the DOM for each item in the virtual list.
 
 #### `scrollTarget` property
 
@@ -266,8 +261,8 @@ virtualizer.scrollToIndex(100, 'center');
 
 *src/index.js* (uncompiled)
 ```javascript
-import 'lit-virtualizer'
-import { LitElement, html } from 'lit-element'
+import '@lit-labs/virtualizer';
+import { LitElement, html } from 'lit';
 
 class ContactList extends LitElement {
     static get properties() {

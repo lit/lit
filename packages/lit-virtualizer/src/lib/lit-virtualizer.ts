@@ -1,5 +1,9 @@
-import { html, LitElement, customElement, property, TemplateResult } from 'lit-element';
+import { html, LitElement, TemplateResult } from 'lit';
+import { customElement } from 'lit/decorators/custom-element.js';
+import { property } from 'lit/decorators/property.js';
 import { scroll } from './scroll.js';
+import { scrollerRef } from './uni-virtualizer/lib/VirtualScroller.js';
+import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -9,36 +13,61 @@ import { scroll } from './scroll.js';
  * to the <lit-virtualizer> element.
  */
 @customElement('lit-virtualizer')
-export class LitVirtualizer<T> extends LitElement {
+export class LitVirtualizer<Item> extends LitElement {
     @property()
-    private _renderItem: (item: T, index?: number) => TemplateResult;
+    renderItem: (item: Item, index?: number) => TemplateResult;
+
+    @property({attribute: false})
+    items: Array<Item>;
+
+    @property({attribute: false})
+    scrollTarget: Element | Window = this;
 
     @property()
-    items: Array<T>;
+    keyFunction: (item:any) => any;
 
-    @property()
-    scrollTarget: Element | Window;
+    private _layout: Layout | Type<Layout> | LayoutConfig
 
     private _scrollToIndex: {index: number, position: string};
-
-    constructor() {
-        super();
-        (this as {renderRoot: Element | DocumentFragment}).renderRoot = this;
+  
+    createRenderRoot() {
+        return this;
     }
+
+    // get items() {
+    //     return this._items;
+    // }
+
+    // set items(items) {
+    //     this._items = items;
+    //     this._scroller.totalItems = items.length;
+    // }
 
     /**
      * The method used for rendering each item.
      */
-    get renderItem() {
-        return this._renderItem;
-    }
-    set renderItem(renderItem) {
-        if (renderItem !== this.renderItem) {
-            this._renderItem = renderItem;
-            this.requestUpdate();
-        }
+    // get renderItem() {
+    //     return this._renderItem;
+    // }
+    // set renderItem(renderItem) {
+    //     if (renderItem !== this.renderItem) {
+    //         this._renderItem = renderItem;
+    //         this.requestUpdate();
+    //     }
+    // }
+
+    @property({attribute:false})
+    set layout(layout: Layout | Type<Layout> | LayoutConfig) {
+        // TODO (graynorton): Shouldn't have to set this here
+        this._layout = layout;
+        this.requestUpdate();
     }
 
+    get layout() {
+        return this[scrollerRef]!.layout;
+    }
+    
+    
     /**
      * Scroll to the specified index, placing that item at the given position
      * in the scroll view.
@@ -51,14 +80,11 @@ export class LitVirtualizer<T> extends LitElement {
     }
 
     render(): TemplateResult {
-        return html`${scroll({
-            items: this.items,
-            renderItem: this._renderItem,
-            scrollTarget: this.scrollTarget,
-            scrollToIndex: this._scrollToIndex,
-            useShadowDOM: true
-            // TODO: allow configuration of a layout.
-        })}`;
+        const { items, renderItem, keyFunction, scrollTarget } = this;
+        const layout = this._layout;
+        return html`
+            ${scroll({ items, renderItem, layout, keyFunction, scrollTarget, scrollToIndex: this._scrollToIndex })}
+        `;
     }
 }
 
