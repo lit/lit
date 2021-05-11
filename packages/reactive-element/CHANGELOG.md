@@ -17,6 +17,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Added
+
+- (Since 1.0.0-rc.2) Adds `@computed` decorator for creating computed properties. Decorator specifies an array of deps which are the names of dependent properties
+  and a compute function which is called with dependency values and should return
+  the computed property value.
+
+- (Since 1.0.0-rc.2) Adds `@observe` decorator for observing property changes. Decorator specifies an observe function which receives the current and previous
+  value of the property as well as the name of the property. Note, the observed
+  property must be a reactive property.
+
+- (Since 1.0.0-rc.2) Adds `@listen` decorator for declaratively adding event
+  listeners. The decorator should be placed on an element property which is an
+  event listener function. The decorator must provide an object which specifies
+  the event `type`, `options`, and an optional `target`. The `target` defaults
+  to the element itself or may be `root` to add the listener to the element's
+  `renderRoot`, or an instance of `EventTarget`. If `target` is an `EventTarget`,
+  the listener is dynamically added and removed when the element is connected
+  and disconnected.
+
 ## 1.0.0-rc.2 - 2021-05-07
 
 ### Changed
