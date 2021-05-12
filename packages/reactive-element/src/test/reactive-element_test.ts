@@ -240,6 +240,30 @@ suite('ReactiveElement', () => {
     assert.equal(el.updateCount, 6);
   });
 
+  test('property option `reactive`', async () => {
+    class E extends ReactiveElement {
+      static get properties() {
+        return {
+          method: {reactive: false},
+        };
+      }
+
+      called = 0;
+      method() {
+        this.called++;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    el.method();
+    assert.equal(el.called, 1);
+    el.setAttribute('method', 'test');
+    await el.updateComplete;
+    assert.notEqual((el as any).method, 'test');
+  });
+
   test('property option `converter` can use `type` info', async () => {
     const FooType = {name: 'FooType'};
     // Make test work on IE where these are undefined.
@@ -2471,6 +2495,32 @@ suite('ReactiveElement', () => {
     assert.equal(a.prop2, 'prop2');
     a.dispatchEvent(new Event('click'));
     assert.equal(a.event, 'click');
+  });
+
+  test('addInitializer composes with subclass', () => {
+    class A extends ReactiveElement {
+      prop1?: string;
+    }
+    A.addInitializer((a) => {
+      (a as A).prop1 = 'prop1';
+    });
+    customElements.define(generateElementName(), A);
+    class B extends A {
+      prop2?: string;
+    }
+    B.addInitializer((a) => {
+      (a as B).prop2 = 'prop2';
+    });
+    customElements.define(generateElementName(), B);
+
+    const a = new A();
+    container.appendChild(a);
+    assert.equal(a.prop1, 'prop1');
+    assert.notEqual((a as any).prop2, 'prop2');
+    const b = new B();
+    container.appendChild(b);
+    assert.equal(b.prop1, 'prop1');
+    assert.equal(b.prop2, 'prop2');
   });
 
   suite('exceptions', () => {

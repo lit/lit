@@ -17,6 +17,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Added
+
+- (Since 1.0.0-rc.2) Added ability to specify decorators in `static properties`
+  by adding a `decorators` array with decorator function calls. Use
+  `reactive: false` if the property should not be reactive, for example to
+  decorate a method.
+
 ## 1.0.0-rc.2 - 2021-05-07
 
 ### Changed
