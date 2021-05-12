@@ -6,7 +6,7 @@
 
 import {defaultMsg} from './internal/default-msg.js';
 
-import type {TemplateLike, MsgFn, MsgOptions} from './internal/types.js';
+import type {MsgFn} from './internal/types.js';
 
 export * from './internal/locale-status-event.js';
 export * from './internal/str-tag.js';
@@ -21,25 +21,6 @@ export * from './internal/localized-decorator.js';
 export * from './init/runtime.js';
 export * from './init/transform.js';
 
-let msgImpl = defaultMsg;
-let installed = false;
-
-/**
- * Internal only. Do not use this function.
- *
- * Installs an implementation of the msg function to replace the default
- * identity function. Throws if called more than once.
- *
- * @internal
- */
-export function _installMsgImplementation(msg: MsgFn) {
-  if (installed) {
-    throw new Error('lit-localize can only be configured once');
-  }
-  msgImpl = msg;
-  installed = true;
-}
-
 /**
  * Make a string or lit-html template localizable.
  *
@@ -50,5 +31,22 @@ export function _installMsgImplementation(msg: MsgFn) {
  *     omitted, an id will be automatically generated from the template strings.
  *   - desc: Optional description
  */
-export const msg = ((template: TemplateLike, options?: MsgOptions) =>
-  msgImpl(template, options)) as MsgFn;
+export let msg: MsgFn = defaultMsg;
+
+let installed = false;
+
+/**
+ * Internal only. Do not use this function.
+ *
+ * Installs an implementation of the msg function to replace the default
+ * identity function. Throws if called more than once.
+ *
+ * @internal
+ */
+export function _installMsgImplementation(impl: MsgFn) {
+  if (installed) {
+    throw new Error('lit-localize can only be configured once');
+  }
+  msg = impl;
+  installed = true;
+}
