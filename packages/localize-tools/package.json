@@ -19,7 +19,7 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "clean": "rimraf lib/ testdata/*/output/",
+    "clean": "rimraf lib/",
     "build": "npm run clean && npm run generate-json-schema && tsc",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && npm run test:tape && npm run test:check-tsc",

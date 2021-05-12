@@ -16,7 +16,7 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "clean": "rimraf {fnv1a64,id-generation,lit-localize}.{js,js.map,d.ts} tests/ .tsbuildinfo examples/runtime/lib/ examples/transform/{bundled/,lib/}",
+    "clean": "rimraf lit-localize.{js,js.map,d.ts} init/ internal/ tests/ .tsbuildinfo examples/runtime/lib/ examples/transform/{bundled/,lib/}",
     "build": "npm run clean && tsc",
     "test": "web-test-runner",
     "prepack": "npm run build"
