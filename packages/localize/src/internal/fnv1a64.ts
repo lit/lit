@@ -1,7 +1,7 @@
 /**
  * @license
- * Copyright 2014 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright 2014 Travis Webb
+ * SPDX-License-Identifier: MIT
  */
 
 // This module is derived from the file:

@@ -86,14 +86,13 @@ packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
-packages/localize/lib/
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
-packages/localize/fnv1a64.*
-packages/localize/id-generation.*
+packages/localize/internal/
+packages/localize/init/
 
 packages/localize-tools/lib/
 packages/localize-tools/node_modules/
