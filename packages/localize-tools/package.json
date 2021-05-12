@@ -60,7 +60,6 @@
     "diff": "^5.0.0",
     "dir-compare": "^3.1.5",
     "prettier": "^2.0.5",
-    "rimraf": "^3.0.2",
     "typescript-json-schema": "^0.50.0",
     "uvu": "^0.5.1"
   }
