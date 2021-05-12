@@ -5,10 +5,10 @@
  */
 
 /**
- * This is a server-old module that renders the HTML file shell.
+ * This is a server-only module that renders the HTML file shell.
  */
 
-import {render} from '../lib/render-lit-html.js';
+import {render} from '../../lib/render-lit-html.js';
 import {template, initialData} from './module.js';
 
 export function renderAppWithInitialData() {
@@ -17,7 +17,7 @@ export function renderAppWithInitialData() {
 
 // This module runs in the app context with the client-side code, but is a
 // server-only module. It doesn't use lit-html so that it can render the HTML
-// shell in unbalanced fragments. By yielding the HTML pramable immediately
+// shell in unbalanced fragments. By yielding the HTML preamable immediately
 // with no lit-html template preparation or rendering needed, we minimize TTFB,
 // And can get the browser to start prefetch as soon as possible.
 export function* renderApp(data: typeof initialData) {
@@ -30,7 +30,7 @@ export function* renderApp(data: typeof initialData) {
         <script type="module">
           const button = document.querySelector('button');
           button.addEventListener('click', () => {
-            import('/demo/app-client.js');
+            import('/demo/vm-modules/app-client.js');
           });
         </script>
         <script src="./node_modules/@webcomponents/template-shadowroot/template-shadowroot.min.js"></script>

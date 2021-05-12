@@ -9,14 +9,13 @@ import staticFiles from 'koa-static';
 import koaNodeResolve from 'koa-node-resolve';
 import {URL} from 'url';
 import * as path from 'path';
-
-import {renderModule} from '../lib/render-module.js';
 import {Readable} from 'stream';
+import {renderAppWithInitialData} from './app-server.js';
 
 const {nodeResolve} = koaNodeResolve;
 
 const moduleUrl = new URL(import.meta.url);
-const packageRoot = path.resolve(moduleUrl.pathname, '../..');
+const packageRoot = path.resolve(moduleUrl.pathname, '../../..');
 
 const port = 8080;
 
@@ -30,13 +29,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
     return;
   }
 
-  const ssrResult = await (renderModule(
-    './app-server.js',
-    import.meta.url,
-    'renderAppWithInitialData',
-    []
-  ) as Promise<Iterable<unknown>>);
-
+  const ssrResult = renderAppWithInitialData();
   ctx.type = 'text/html';
   ctx.body = Readable.from(ssrResult);
 });
