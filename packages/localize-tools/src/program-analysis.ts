@@ -8,7 +8,10 @@ import ts from 'typescript';
 import * as parse5 from 'parse5';
 import {ProgramMessage, Placeholder, Message} from './messages.js';
 import {createDiagnostic} from './typescript.js';
-import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
+import {
+  generateMsgId,
+  HASH_DELIMITER,
+} from '@lit/localize/internal/id-generation.js';
 
 type ResultOrError<R, E> =
   | {result: R; error?: undefined}
