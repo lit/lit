@@ -8,8 +8,10 @@
   "description": "SSR for Lit",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "npm run clean && npm run build:ts",
+    "build:ts": "tsc",
+    "build:ts:watch": "tsc --watch",
+    "clean": "rm -rf index.js demo/ test/ lib/ *.tsbuildinfo",
     "demo:vm-modules": "node --experimental-vm-modules ./demo/vm-modules/server.js",
     "demo:global": "node ./demo/global/server.js",
     "test": "npm run test:unit && npm run test:integration",
@@ -31,7 +33,7 @@
   },
   "devDependencies": {
     "@koa/router": "^8.0.8",
-    "@open-wc/testing": "^2.5.8",
+    "@open-wc/testing": "^3.0.0-next.1",
     "@open-wc/testing-karma": "^3.3.10",
     "@types/chai": "^4.2.11",
     "@types/command-line-args": "^5.0.0",
