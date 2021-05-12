@@ -6,18 +6,14 @@
 
 import * as path from 'path';
 import {execFileSync} from 'child_process';
-import test, {Test} from 'tape';
+import {suite} from 'uvu';
+import * as assert from 'uvu/assert';
 import {runAndLog} from '../../cli.js';
 import fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
 import {formatDirDiff} from '../format-dir-diff.js';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
-
-// TODO(aomarks) Add to DefinitelyTyped.
-interface TestWithTeardown extends Test {
-  teardown(fn: () => void): void;
-}
 
 /**
  * Run lit-localize end-to-end using input and golden files from the filesystem.
@@ -63,16 +59,21 @@ export function e2eGoldensTest(
   const outputDir = path.join(root, 'output');
   const goldensDir = path.join(root, 'goldens');
 
-  test(`e2e: ${name}`, async (t) => {
+  const testSuite = suite(`e2e: ${name}`);
+  let oldCwd: string;
+
+  testSuite.before(async () => {
     fsExtra.emptyDirSync(outputDir);
     fsExtra.copySync(inputDir, outputDir);
-
-    const oldCwd = process.cwd();
+    oldCwd = process.cwd();
     process.chdir(outputDir);
-    (t as TestWithTeardown).teardown(() => {
-      process.chdir(oldCwd);
-    });
+  });
 
+  testSuite.after(async () => {
+    process.chdir(oldCwd);
+  });
+
+  testSuite(`e2e: ${name}`, async () => {
     const realStdoutWrite = process.stdout.write;
     const realStderrWrite = process.stderr.write;
     let stdOutErr = '';
@@ -97,8 +98,8 @@ export function e2eGoldensTest(
       console.log(stdOutErr);
     }
 
-    t.is(exitCode, expectedExitCode);
-    t.assert(
+    assert.is(exitCode, expectedExitCode);
+    assert.ok(
       stdOutErr.includes(expectedStdOutErr),
       `stdout/stderr did not include expected value, got: ${stdOutErr}`
     );
@@ -114,19 +115,18 @@ export function e2eGoldensTest(
     if (process.env.UPDATE_TEST_GOLDENS) {
       fsExtra.emptyDirSync(goldensDir);
       fsExtra.copySync(outputDir, goldensDir);
-      t.fail('Failing on purpose because goldens were updated.');
+      assert.unreachable('Failing on purpose because goldens were updated.');
       return;
     }
 
     const diff = await dirCompare.compare(goldensDir, outputDir, {
       compareContent: true,
     });
-    if (diff.same) {
-      t.pass();
-    } else {
-      t.fail(formatDirDiff(diff));
-    }
 
-    t.end();
+    if (!diff.same) {
+      assert.unreachable(formatDirDiff(diff));
+    }
   });
+
+  testSuite.run();
 }
