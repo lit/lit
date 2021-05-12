@@ -7,9 +7,9 @@
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
-const DEV_MODE = true;
-const ENABLE_EXTRA_SECURITY_HOOKS = true;
-const ENABLE_SHADYDOM_NOPATCH = true;
+var DEV_MODE = true;
+var ENABLE_EXTRA_SECURITY_HOOKS = true;
+var ENABLE_SHADYDOM_NOPATCH = true;
 
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
