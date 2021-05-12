@@ -505,6 +505,9 @@ class Transformer {
    * strongly suspecting a lit-localize call.
    */
   fileNameAppearsToBeLitLocalize(moduleSymbol: ts.Symbol): boolean {
+    // TODO(aomarks) Find a better way to implement this. We could probably just
+    // check for any file path matching '/@lit/localize/` -- however that will
+    // fail our tests because we import with a relative path in that case.
     for (const decl of moduleSymbol.declarations) {
       if (
         ts.isSourceFile(decl) &&
