@@ -18,7 +18,7 @@
     "test:integration": "npm run test:integration:dev && npm run test:integration:prod",
     "test:integration:dev": "MODE=dev NODE_OPTIONS=--experimental-vm-modules wtr",
     "test:integration:prod": "MODE=prod NODE_OPTIONS=--experimental-vm-modules wtr",
-    "test:unit": "node --experimental-vm-modules ./test/all-tests.js | tap-spec"
+    "test:unit": "node --experimental-vm-modules ./test/all-tests.js"
   },
   "files": [
     "/lib/",
@@ -39,16 +39,14 @@
     "@types/command-line-args": "^5.0.0",
     "@types/escape-html": "^1.0.0",
     "@types/koa": "^2.0.49",
+    "@types/koa__router": "^8.0.2",
     "@types/koa-cors": "*",
     "@types/koa-static": "^4.0.1",
-    "@types/koa__router": "^8.0.2",
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.7.4",
     "@types/node-fetch": "^2.5.7",
     "@types/parse5": "^5.0.0",
     "@types/resolve": "^1.14.0",
-    "@types/tape": "^4.2.33",
-    "@types/tape-promise": "^4.0.0",
     "@web/test-runner": "^0.12.19",
     "chai": "^4.2.0",
     "command-line-args": "^5.1.1",
@@ -56,10 +54,8 @@
     "koa-cors": "^0.0.16",
     "mocha": "^7.1.1",
     "rimraf": "^3.0.2",
-    "tap-spec": "^5.0.0",
-    "tape": "^4.11.0",
-    "tape-promise": "^4.0.0",
-    "typescript": "^4.1.3"
+    "typescript": "^4.1.3",
+    "uvu": "^0.5.1"
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0-rc.1",

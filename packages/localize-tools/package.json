@@ -22,9 +22,9 @@
     "clean": "rimraf lib/",
     "build": "npm run clean && npm run generate-json-schema && tsc",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
-    "test": "npm run build && npm run test:tape && npm run test:check-tsc",
-    "test:tape": "tape-es 'lib/tests/**/*.test.js' | tap-spec",
-    "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true npm run test:tape",
+    "test": "npm run build && npm run test:unit && npm run test:check-tsc",
+    "test:unit": "uvu lib/tests '\\.test\\.js$'",
+    "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true npm run test:unit",
     "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
     "prepack": "npm run build"
   },
