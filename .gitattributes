@@ -1,0 +1,9 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Declare files that will always have LF line endings on checkout.
+/.husky/.gitignore text eol=lf
+/.prettierignore text eol=lf
+/.prettierignore-sync text eol=lf
+/.eslintignore text eol=lf
+/.eslintignore-sync text eol=lf

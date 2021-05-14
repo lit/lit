@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Declare files that will always have LF line endings on checkout.
+/src/locale-codes.ts text eol=lf
