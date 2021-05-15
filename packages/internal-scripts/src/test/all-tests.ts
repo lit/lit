@@ -3,8 +3,6 @@ import {sep} from 'path';
 import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 
-// import fastGlob from 'fast-glob';
-
 test('isSourceMap', async () => {
   const result = [
     isSourceMap('file.d.ts.map'),
