@@ -1,4 +1,5 @@
 import {isSourceMap, adjustSources} from '../utils.js';
+import {sep} from 'path';
 import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 
@@ -15,8 +16,8 @@ test('isSourceMap', async () => {
 });
 
 test('adjustSources: /development/index.d.ts.map to index.d.ts.map', async () => {
-  const original = 'C:\\package\\development\\index.d.ts.map';
-  const mirror = 'C:\\package\\index.d.ts.map';
+  const original = `root${sep}development${sep}index.d.ts.map`;
+  const mirror = `root${sep}index.d.ts.map`;
   const sources = ['../src/index.ts'];
   const expectedResult = ['./src/index.ts'];
   const result = adjustSources(original, mirror, sources);
@@ -24,8 +25,8 @@ test('adjustSources: /development/index.d.ts.map to index.d.ts.map', async () =>
 });
 
 test('adjustSources: /development/folder/index.d.ts.map to folder/index.d.ts.map', async () => {
-  const original = 'C:\\package\\development\\folder\\index.d.ts.map';
-  const mirror = 'C:\\package\\folder\\index.d.ts.map';
+  const original = `root${sep}development${sep}folder${sep}index.d.ts.map`;
+  const mirror = `root${sep}folder${sep}index.d.ts.map`;
   const sources = ['../../src/folder/index.ts'];
   const expectedResult = ['../src/folder/index.ts'];
   const result = adjustSources(original, mirror, sources);
