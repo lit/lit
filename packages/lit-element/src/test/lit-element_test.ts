@@ -23,6 +23,8 @@ import {assert} from '@esm-bundle/chai';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 (canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
 
@@ -322,7 +324,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     assert.ok(a.hasUpdated);
   });
 
-  (window.ShadyDOM && window.ShadyDOM.inUse ? test.skip : test)(
+  (extendedWindow.ShadyDOM?.inUse ? test.skip : test)(
     'can customize shadowRootOptions',
     async () => {
       class A extends LitElement {

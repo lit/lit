@@ -12,9 +12,11 @@ export const generateElementName = () => `x-${count++}`;
 export const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 export const getComputedStyleValue = (element: Element, property: string) =>
-  window.ShadyCSS
-    ? window.ShadyCSS.getComputedStyleValue(element, property)
+  extendedWindow.ShadyCSS
+    ? extendedWindow.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
 
 export const stripExpressionComments = (html: string) =>
@@ -23,8 +25,8 @@ export const stripExpressionComments = (html: string) =>
 // Only test LitElement if ShadowRoot is available and either ShadyDOM is not
 // in use or it is and LitElement platform support is available.
 export const canTestLitElement =
-  (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
-  window.litElementPlatformSupport;
+  (window.ShadowRoot && !extendedWindow.ShadyDOM?.inUse) ||
+  extendedWindow.litElementPlatformSupport;
 
 export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;

@@ -48,12 +48,14 @@ interface PatchableLitElement extends HTMLElement {
 }: {
   LitElement: PatchableLitElement;
 }) => {
+  const extendedWindow = window as unknown as WindowWithLitExtras;
+
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
   if (
-    window.ShadyCSS === undefined ||
-    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
+    extendedWindow.ShadyCSS === undefined ||
+    (extendedWindow.ShadyCSS.nativeShadow && !extendedWindow.ShadyCSS.ApplyShim)
   ) {
     return;
   }
@@ -63,7 +65,9 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
-  ((LitElement as unknown) as PatchableLitElementConstructor)._$handlesPrepareStyles = true;
+  (
+    LitElement as unknown as PatchableLitElementConstructor
+  )._$handlesPrepareStyles = true;
 
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
