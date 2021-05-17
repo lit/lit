@@ -19,11 +19,13 @@ type ChildPart = InstanceType<typeof ChildPart>;
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  extendedWindow.ShadyDOM?.inUse &&
+  extendedWindow.ShadyDOM?.noPatch === true
+    ? extendedWindow.ShadyDOM!.wrap
     : (node: Node) => node;
 
 /**
@@ -39,7 +41,8 @@ export const TemplateResultType = {
   SVG: 2,
 } as const;
 
-export type TemplateResultType = typeof TemplateResultType[keyof typeof TemplateResultType];
+export type TemplateResultType =
+  typeof TemplateResultType[keyof typeof TemplateResultType];
 
 /**
  * Tests if a value is a TemplateResult.

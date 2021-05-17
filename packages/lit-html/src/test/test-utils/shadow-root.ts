@@ -10,9 +10,13 @@ export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;
 }
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 export const wrap =
-  window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
-    ? window.ShadyDOM!.wrap
+  extendedWindow.ShadyDOM &&
+  extendedWindow.ShadyDOM.inUse &&
+  extendedWindow.ShadyDOM.noPatch === true
+    ? extendedWindow.ShadyDOM!.wrap
     : (node: Node) => node;
 
 export const shadowRoot = (element: Node) =>

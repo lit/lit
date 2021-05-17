@@ -30,7 +30,7 @@ interface ShadyDOM {
   wrap: (node: Node) => Node;
 }
 
-interface Window {
+interface WindowWithLitExtras {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   ShadowRoot: typeof ShadowRoot;

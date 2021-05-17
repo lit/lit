@@ -8,14 +8,16 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 suite('ShadyCSS scoping shim', () => {
   setup(function () {
     if (
-      typeof window.ShadyDOM === 'undefined' ||
-      !window.ShadyDOM.inUse ||
-      typeof window.ShadyCSS === 'undefined' ||
-      window.ShadyCSS.nativeShadow ||
-      window.ShadyCSS.ScopingShim === undefined
+      typeof extendedWindow.ShadyDOM === 'undefined' ||
+      !extendedWindow.ShadyDOM.inUse ||
+      typeof extendedWindow.ShadyCSS === 'undefined' ||
+      extendedWindow.ShadyCSS.nativeShadow ||
+      extendedWindow.ShadyCSS.ScopingShim === undefined
     ) {
       this.skip();
       return;
@@ -24,7 +26,7 @@ suite('ShadyCSS scoping shim', () => {
 
   test('scoped styles are applied for non-TemplateResult values', function () {
     const container = document.createElement('scope-1');
-    window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
+    extendedWindow.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
       [':host { border-top: 2px solid black; }'],
       'scope-1'
     );
@@ -39,7 +41,7 @@ suite('ShadyCSS scoping shim', () => {
 
   test('adopted CSS remains when rendering a TemplateResult after an initial non-TemplateResult', function () {
     const container = document.createElement('scope-2');
-    window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
+    extendedWindow.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
       [':host { border-top: 2px solid black; } button { font-size: 7px; } '],
       'scope-2'
     );
