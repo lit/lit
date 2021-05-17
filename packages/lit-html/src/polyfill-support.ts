@@ -84,8 +84,6 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
-const extendedWindow = window as unknown as WindowWithLitExtras;
-
 /**
  * lit-html patches. These properties cannot be renamed.
  * * ChildPart.prototype._$getTemplate
@@ -96,6 +94,8 @@ const extendedWindow = window as unknown as WindowWithLitExtras;
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
+  const extendedWindow = window as unknown as WindowWithLitExtras;
+
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
