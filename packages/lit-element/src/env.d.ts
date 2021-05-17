@@ -33,7 +33,6 @@ interface ShadyDOM {
 interface WindowWithLitExtras {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
-  ShadowRoot: typeof ShadowRoot;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reactiveElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

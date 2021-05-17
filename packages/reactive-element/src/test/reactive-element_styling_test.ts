@@ -687,7 +687,7 @@ const extendedWindow = window as unknown as WindowWithLitExtras;
     });
 
     const testAdoptedStyleSheets =
-      extendedWindow.ShadowRoot && 'replace' in CSSStyleSheet.prototype;
+      window.ShadowRoot && 'replace' in CSSStyleSheet.prototype;
     (testAdoptedStyleSheets ? test : test.skip)(
       'Can return CSSStyleSheet where adoptedStyleSheets are natively supported',
       async () => {
