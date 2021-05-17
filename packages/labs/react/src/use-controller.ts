@@ -24,7 +24,8 @@ const microtask = Promise.resolve();
  * and `useController()`.
  */
 class ReactControllerHost<C extends ReactiveController>
-  implements ReactiveControllerHost {
+  implements ReactiveControllerHost
+{
   /* @internal */
   _primaryController!: C;
   private _controllers: Array<ReactiveController> = [];

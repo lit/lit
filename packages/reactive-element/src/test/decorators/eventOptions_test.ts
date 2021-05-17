@@ -128,7 +128,7 @@ const supportsOnce = (function () {
           .addEventListener(
             'click',
             (e: Event) => this.onClick(e),
-            (this.onClick as unknown) as AddEventListenerOptions
+            this.onClick as unknown as AddEventListenerOptions
           );
       }
     }
@@ -154,7 +154,7 @@ const supportsOnce = (function () {
         this.addEventListener(
           'click',
           () => this.onClick(),
-          (this.onClick as unknown) as AddEventListenerOptions
+          this.onClick as unknown as AddEventListenerOptions
         );
       }
 
@@ -186,7 +186,7 @@ const supportsOnce = (function () {
         this.addEventListener(
           'click',
           (e: Event) => this.onClick(e),
-          (this.onClick as unknown) as AddEventListenerOptions
+          this.onClick as unknown as AddEventListenerOptions
         );
       }
 

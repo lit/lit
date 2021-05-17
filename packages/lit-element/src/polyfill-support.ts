@@ -63,7 +63,9 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
-  ((LitElement as unknown) as PatchableLitElementConstructor)._$handlesPrepareStyles = true;
+  (
+    LitElement as unknown as PatchableLitElementConstructor
+  )._$handlesPrepareStyles = true;
 
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS

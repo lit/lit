@@ -275,7 +275,6 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
 if (ENABLE_SHADYDOM_NOPATCH) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  (globalThis as any)[
-    'litHtmlPlatformSupport'
-  ].noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+  (globalThis as any)['litHtmlPlatformSupport'].noPatchSupported =
+    ENABLE_SHADYDOM_NOPATCH;
 }

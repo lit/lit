@@ -22,7 +22,7 @@ const wrap =
     ? window.ShadyDOM!.wrap
     : (node: Node) => node;
 
-const trustedTypes = ((globalThis as unknown) as Partial<Window>).trustedTypes;
+const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -264,14 +264,13 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = <T extends ResultType>(_$litType$: T) => (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): TemplateResult<T> => ({
-  _$litType$,
-  strings,
-  values,
-});
+const tag =
+  <T extends ResultType>(_$litType$: T) =>
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => ({
+    _$litType$,
+    strings,
+    values,
+  });
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -355,7 +354,8 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   render.setSanitizer = setSanitizer;
   render.createSanitizer = createSanitizer;
   if (DEV_MODE) {
-    render._testOnlyClearSanitizerFactoryDoNotCallOrElse = _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse =
+      _testOnlyClearSanitizerFactoryDoNotCallOrElse;
   }
 }
 
@@ -546,7 +546,7 @@ const getTemplateHtml = (
   return [
     policy !== undefined
       ? policy.createHTML(htmlResult)
-      : ((htmlResult as unknown) as TrustedHTML),
+      : (htmlResult as unknown as TrustedHTML),
     attrNames,
   ];
 };
@@ -650,7 +650,7 @@ class Template {
           const lastIndex = strings.length - 1;
           if (lastIndex > 0) {
             (node as Element).textContent = trustedTypes
-              ? ((trustedTypes.emptyScript as unknown) as '')
+              ? (trustedTypes.emptyScript as unknown as '')
               : '';
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
@@ -692,7 +692,7 @@ class Template {
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
-    el.innerHTML = (html as unknown) as string;
+    el.innerHTML = html as unknown as string;
     return el;
   }
 }
@@ -729,9 +729,8 @@ function resolveDirective(
       currentDirective._$initialize(part, parent, attributeIndex);
     }
     if (attributeIndex !== undefined) {
-      ((parent as AttributePart).__directives ??= [])[
-        attributeIndex
-      ] = currentDirective;
+      ((parent as AttributePart).__directives ??= [])[attributeIndex] =
+        currentDirective;
     } else {
       (parent as ChildPart | Directive).__directive = currentDirective;
     }

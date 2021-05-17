@@ -366,7 +366,7 @@ const createAttributeParts = (
         );
 
         const value = isSingleExpression(
-          (instancePart as unknown) as AttributePartInfo
+          instancePart as unknown as AttributePartInfo
         )
           ? state.result.values[state.instancePartIndex]
           : state.result.values;

@@ -20,9 +20,10 @@ type ResultOrError<R, E> =
 /**
  * Extract translation messages from all files in a TypeScript program.
  */
-export function extractMessagesFromProgram(
-  program: ts.Program
-): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
+export function extractMessagesFromProgram(program: ts.Program): {
+  messages: ProgramMessage[];
+  errors: ts.Diagnostic[];
+} {
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of program.getSourceFiles()) {
@@ -521,9 +522,10 @@ function replaceHtmlWithPlaceholders(
  *
  *   <b class="red">foo</b> --> {open: '<b class="red">, close: '</b>'}
  */
-function serializeOpenCloseTags(
-  node: parse5.ChildNode
-): {open: string; close: string} {
+function serializeOpenCloseTags(node: parse5.ChildNode): {
+  open: string;
+  close: string;
+} {
   const withoutChildren: parse5.ChildNode = {...node, childNodes: []};
   const fakeParent = {childNodes: [withoutChildren]} as parse5.Node;
   const serialized = parse5.serialize(fakeParent);
@@ -624,9 +626,10 @@ export function isStrTaggedTemplate(
  * same content, de-duplicate them. For those with the same ID and different
  * content, return an error.
  */
-function dedupeMessages(
-  messages: ProgramMessage[]
-): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
+function dedupeMessages(messages: ProgramMessage[]): {
+  messages: ProgramMessage[];
+  errors: ts.Diagnostic[];
+} {
   const errors: ts.Diagnostic[] = [];
   const cache = new Map<string, ProgramMessage>();
   for (const message of messages) {

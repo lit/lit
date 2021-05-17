@@ -66,10 +66,8 @@ declare module 'parse5' {
   }
 }
 
-const patchedDirectiveCache: WeakMap<
-  DirectiveClass,
-  DirectiveClass
-> = new Map();
+const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
+  new Map();
 
 /**
  * Looks for values of type `DirectiveResult` and replaces its Directive class
@@ -411,9 +409,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // while parsing the template strings); note that this assumes
               // parse5 attribute ordering matches string ordering
               const name = attrNames[attrIndex++];
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
@@ -450,9 +447,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // into the custom element instance, and then serialize them back
               // out along with any manually-reflected attributes. As such, we
               // skip over static attribute text here.
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               flushTo(attrSourceLocation.startOffset);
               skipTo(attrSourceLocation.endOffset);
             }

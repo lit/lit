@@ -39,7 +39,8 @@ export const TemplateResultType = {
   SVG: 2,
 } as const;
 
-export type TemplateResultType = typeof TemplateResultType[keyof typeof TemplateResultType];
+export type TemplateResultType =
+  typeof TemplateResultType[keyof typeof TemplateResultType];
 
 /**
  * Tests if a value is a TemplateResult.

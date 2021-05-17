@@ -73,9 +73,10 @@ let requestId = 0;
  *
  * Throws if called more than once.
  */
-export const configureLocalization: ((
-  config: RuntimeConfiguration
-) => {getLocale: typeof getLocale; setLocale: typeof setLocale}) & {
+export const configureLocalization: ((config: RuntimeConfiguration) => {
+  getLocale: typeof getLocale;
+  setLocale: typeof setLocale;
+}) & {
   _LIT_LOCALIZE_CONFIGURE_LOCALIZATION_?: never;
 } = (config: RuntimeConfiguration) => {
   _installMsgImplementation(runtimeMsg as MsgFn);
@@ -201,9 +202,11 @@ function runtimeMsg(
           expressionOrders.set(localized, order);
         }
         // Cast `localized.values` because it's readonly.
-        (localized as {
-          values: TemplateResult['values'];
-        }).values = order.map((i) => (template as TemplateResult).values[i]);
+        (
+          localized as {
+            values: TemplateResult['values'];
+          }
+        ).values = order.map((i) => (template as TemplateResult).values[i]);
         return localized;
       }
     }

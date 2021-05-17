@@ -1806,19 +1806,15 @@ suite('ReactiveElement', () => {
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {
-            const oldValue = ((this as unknown) as {[key: string]: unknown})[
+            const oldValue = (this as unknown as {[key: string]: unknown})[
               name as string
             ];
             if (options.validator) {
               value = options.validator(value);
             }
-            ((this as unknown) as {[key: string]: unknown})[
-              key as string
-            ] = value;
-            ((this as unknown) as ReactiveElement).requestUpdate(
-              name,
-              oldValue
-            );
+            (this as unknown as {[key: string]: unknown})[key as string] =
+              value;
+            (this as unknown as ReactiveElement).requestUpdate(name, oldValue);
           },
 
           configurable: defaultDescriptor.configurable,
@@ -1829,10 +1825,9 @@ suite('ReactiveElement', () => {
       updated(changedProperties: PropertyValues) {
         super.updated(changedProperties);
         changedProperties.forEach((value: unknown, key: PropertyKey) => {
-          const options = (this
-            .constructor as typeof ReactiveElement).getPropertyOptions(
-            key
-          ) as MyPropertyDeclaration;
+          const options = (
+            this.constructor as typeof ReactiveElement
+          ).getPropertyOptions(key) as MyPropertyDeclaration;
           const observer = options.observer;
           if (typeof observer === 'function') {
             observer.call(this, value);
@@ -1920,7 +1915,7 @@ suite('ReactiveElement', () => {
           set(this: E, value: unknown) {
             setter.call(this, value);
             if (options.sync && this.hasUpdated && !this.isUpdating) {
-              ((this as unknown) as E).performUpdate();
+              (this as unknown as E).performUpdate();
             }
           },
         });
@@ -3036,10 +3031,9 @@ suite('ReactiveElement', () => {
             newVal: string
           ): void {
             if (
-              !(super
-                .constructor as typeof ReactiveElement).observedAttributes?.includes?.(
-                name
-              )
+              !(
+                super.constructor as typeof ReactiveElement
+              ).observedAttributes?.includes?.(name)
             ) {
               this.attrValue = name;
             }

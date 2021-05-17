@@ -384,7 +384,7 @@ export abstract class AsyncDirective extends Directive {
    */
   setValue(value: unknown) {
     if (this.isConnected) {
-      if (isSingleExpression((this.__part as unknown) as PartInfo)) {
+      if (isSingleExpression(this.__part as unknown as PartInfo)) {
         this.__part._$setValue(value, this);
       } else {
         // this.__attributeIndex will be defined in this case, but

@@ -100,9 +100,8 @@ suite('@apply', () => {
       assert.ok(div?.hasAttribute('some-attr'));
       assert.ok(div?.textContent, 'test');
       window.ShadyCSS?.styleElement(applyProducer);
-      const usersInProducer = applyProducer.shadowRoot!.querySelectorAll(
-        'apply-user'
-      );
+      const usersInProducer =
+        applyProducer.shadowRoot!.querySelectorAll('apply-user');
       renderShadowRoot(applyUserContent, usersInProducer[0]);
       window.ShadyCSS?.styleElement(usersInProducer[0]);
       renderShadowRoot(applyUserContent, usersInProducer[1]);

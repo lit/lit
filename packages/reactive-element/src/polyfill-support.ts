@@ -90,19 +90,18 @@ interface PatchableReactiveElement extends HTMLElement {
       return createRenderRoot.call(this);
     } else {
       if (!this.constructor.hasOwnProperty(SCOPED)) {
-        (this.constructor as PatchableReactiveElementConstructor)[
-          SCOPED
-        ] = true;
+        (this.constructor as PatchableReactiveElementConstructor)[SCOPED] =
+          true;
         // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
-        const css = (this
-          .constructor as PatchableReactiveElementConstructor).elementStyles.map(
-          (v) =>
-            v instanceof CSSStyleSheet
-              ? Array.from(v.cssRules).reduce(
-                  (a: string, r: CSSRule) => (a += r.cssText),
-                  ''
-                )
-              : v.cssText
+        const css = (
+          this.constructor as PatchableReactiveElementConstructor
+        ).elementStyles.map((v) =>
+          v instanceof CSSStyleSheet
+            ? Array.from(v.cssRules).reduce(
+                (a: string, r: CSSRule) => (a += r.cssText),
+                ''
+              )
+            : v.cssText
         );
         window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
         if (this.constructor._$handlesPrepareStyles === undefined) {
