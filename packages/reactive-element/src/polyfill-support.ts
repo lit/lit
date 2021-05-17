@@ -49,12 +49,14 @@ interface PatchableReactiveElement extends HTMLElement {
 }: {
   ReactiveElement: PatchableReactiveElement;
 }) => {
+  const extendedWindow = window as unknown as WindowWithLitExtras;
+
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
   if (
-    window.ShadyCSS === undefined ||
-    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
+    extendedWindow.ShadyCSS === undefined ||
+    (extendedWindow.ShadyCSS.nativeShadow && !extendedWindow.ShadyCSS.ApplyShim)
   ) {
     return;
   }
@@ -69,11 +71,11 @@ interface PatchableReactiveElement extends HTMLElement {
   // In noPatch mode, patch the ReactiveElement prototype so that no
   // ReactiveElements must be wrapped.
   if (
-    window.ShadyDOM &&
-    window.ShadyDOM.inUse &&
-    window.ShadyDOM.noPatch === true
+    extendedWindow.ShadyDOM &&
+    extendedWindow.ShadyDOM.inUse &&
+    extendedWindow.ShadyDOM.noPatch === true
   ) {
-    window.ShadyDOM.patchElementProto(elementProto);
+    extendedWindow.ShadyDOM.patchElementProto(elementProto);
   }
 
   /**
@@ -86,27 +88,26 @@ interface PatchableReactiveElement extends HTMLElement {
     const name = this.localName;
     // If using native Shadow DOM must adoptStyles normally,
     // otherwise do nothing.
-    if (window.ShadyCSS!.nativeShadow) {
+    if (extendedWindow.ShadyCSS!.nativeShadow) {
       return createRenderRoot.call(this);
     } else {
       if (!this.constructor.hasOwnProperty(SCOPED)) {
-        (this.constructor as PatchableReactiveElementConstructor)[
-          SCOPED
-        ] = true;
+        (this.constructor as PatchableReactiveElementConstructor)[SCOPED] =
+          true;
         // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
-        const css = (this
-          .constructor as PatchableReactiveElementConstructor).elementStyles.map(
-          (v) =>
-            v instanceof CSSStyleSheet
-              ? Array.from(v.cssRules).reduce(
-                  (a: string, r: CSSRule) => (a += r.cssText),
-                  ''
-                )
-              : v.cssText
+        const css = (
+          this.constructor as PatchableReactiveElementConstructor
+        ).elementStyles.map((v) =>
+          v instanceof CSSStyleSheet
+            ? Array.from(v.cssRules).reduce(
+                (a: string, r: CSSRule) => (a += r.cssText),
+                ''
+              )
+            : v.cssText
         );
-        window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
+        extendedWindow.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
         if (this.constructor._$handlesPrepareStyles === undefined) {
-          window.ShadyCSS!.prepareTemplateStyles(
+          extendedWindow.ShadyCSS!.prepareTemplateStyles(
             document.createElement('template'),
             name
           );
@@ -131,7 +132,7 @@ interface PatchableReactiveElement extends HTMLElement {
     // Note, must do first update separately so that we're ensured
     // that rendering has completed before calling this.
     if (this.hasUpdated) {
-      window.ShadyCSS!.styleElement(this);
+      extendedWindow.ShadyCSS!.styleElement(this);
     }
   };
 
@@ -149,7 +150,7 @@ interface PatchableReactiveElement extends HTMLElement {
     // Note, must do first update here so rendering has completed before
     // calling this and styles are correct by updated/firstUpdated.
     if (isFirstUpdate) {
-      window.ShadyCSS!.styleElement(this);
+      extendedWindow.ShadyCSS!.styleElement(this);
     }
   };
 };

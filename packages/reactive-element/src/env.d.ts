@@ -31,7 +31,7 @@ interface ShadyDOM {
   patchElementProto: (node: Object) => void;
 }
 
-interface Window {
+interface WindowWithLitExtras {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   ShadowRoot: typeof ShadowRoot;

@@ -19,6 +19,8 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 (canTestReactiveElement ? suite : suite.skip)('Styling', () => {
   suite('Static get styles', () => {
     let container: HTMLElement;
@@ -85,7 +87,7 @@ import {assert} from '@esm-bundle/chai';
     // Test this in Shadow DOM without `adoptedStyleSheets` only since it's easily
     // detectable in that case.
     const testShadowDOMStyleCount =
-      (!window.ShadyDOM || !window.ShadyDOM.inUse) &&
+      (!extendedWindow.ShadyDOM || !extendedWindow.ShadyDOM.inUse) &&
       !('adoptedStyleSheets' in Document.prototype);
     (testShadowDOMStyleCount ? test : test.skip)(
       'when an array is returned from `static get styles`, one style is generated per array item',
@@ -685,7 +687,7 @@ import {assert} from '@esm-bundle/chai';
     });
 
     const testAdoptedStyleSheets =
-      window.ShadowRoot && 'replace' in CSSStyleSheet.prototype;
+      extendedWindow.ShadowRoot && 'replace' in CSSStyleSheet.prototype;
     (testAdoptedStyleSheets ? test : test.skip)(
       'Can return CSSStyleSheet where adoptedStyleSheets are natively supported',
       async () => {
@@ -729,7 +731,8 @@ import {assert} from '@esm-bundle/chai';
         // our styles as they're already flattened (so expect 4px). Otherwise,
         // look for the updated value.
         const usesAdoptedStyleSheet =
-          window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow;
+          extendedWindow.ShadyCSS === undefined ||
+          extendedWindow.ShadyCSS.nativeShadow;
         const expectedValue = usesAdoptedStyleSheet ? '2px' : '4px';
         sheet.replaceSync('div { border: 2px solid red; }');
 
@@ -746,8 +749,8 @@ import {assert} from '@esm-bundle/chai';
     const testShadyCSSWithAdoptedStyleSheetSupport =
       window.ShadowRoot &&
       'replace' in CSSStyleSheet.prototype &&
-      window.ShadyCSS !== undefined &&
-      !window.ShadyCSS.nativeShadow;
+      extendedWindow.ShadyCSS !== undefined &&
+      !extendedWindow.ShadyCSS.nativeShadow;
     (testShadyCSSWithAdoptedStyleSheetSupport ? test : test.skip)(
       'CSSStyleSheet is flattened where ShadyCSS is enabled yet adoptedStyleSheets are supported',
       async () => {

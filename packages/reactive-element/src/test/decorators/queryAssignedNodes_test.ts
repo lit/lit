@@ -13,8 +13,12 @@ import {
 } from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+const extendedWindow = window as unknown as WindowWithLitExtras;
+
 const flush =
-  window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
+  extendedWindow.ShadyDOM && extendedWindow.ShadyDOM.flush
+    ? extendedWindow.ShadyDOM.flush
+    : () => {};
 
 (canTestReactiveElement ? suite : suite.skip)('@queryAssignedNodes', () => {
   let container: HTMLElement;
