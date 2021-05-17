@@ -19,7 +19,7 @@ type ChildPart = InstanceType<typeof ChildPart>;
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
-const extendedWindow = window as unknown as WindowWithLitExtras;
+const extendedWindow = window as unknown as LitExtraGlobals;
 
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&

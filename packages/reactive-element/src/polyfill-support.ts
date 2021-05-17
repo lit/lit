@@ -49,7 +49,7 @@ interface PatchableReactiveElement extends HTMLElement {
 }: {
   ReactiveElement: PatchableReactiveElement;
 }) => {
-  const extendedWindow = window as unknown as WindowWithLitExtras;
+  const extendedWindow = window as unknown as LitExtraGlobals;
 
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load

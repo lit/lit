@@ -10,7 +10,7 @@ import {html as htmlWithApply} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 
-const extendedWindow = window as unknown as WindowWithLitExtras;
+const extendedWindow = window as unknown as LitExtraGlobals;
 
 suite('@apply', () => {
   test('styles with css custom properties using @apply render', function () {

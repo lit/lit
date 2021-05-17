@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const extendedWindow = window as unknown as WindowWithLitExtras;
+const extendedWindow = window as unknown as LitExtraGlobals;
 
 /**
  * Whether the current browser supports `adoptedStyleSheets`.

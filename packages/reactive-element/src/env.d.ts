@@ -31,7 +31,7 @@ interface ShadyDOM {
   patchElementProto: (node: Object) => void;
 }
 
-interface WindowWithLitExtras {
+interface LitExtraGlobals {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

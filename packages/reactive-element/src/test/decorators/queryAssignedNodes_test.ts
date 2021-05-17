@@ -13,7 +13,7 @@ import {
 } from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extendedWindow = window as unknown as WindowWithLitExtras;
+const extendedWindow = window as unknown as LitExtraGlobals;
 
 const flush =
   extendedWindow.ShadyDOM && extendedWindow.ShadyDOM.flush

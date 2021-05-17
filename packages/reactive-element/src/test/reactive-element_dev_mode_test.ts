@@ -18,7 +18,7 @@ if (DEV_MODE) {
     let warnings: string[] = [];
 
     const missingPlatformSupport =
-      (window as unknown as WindowWithLitExtras).ShadyDOM?.inUse &&
+      (window as unknown as LitExtraGlobals).ShadyDOM?.inUse &&
       !(globalThis as any)['reactiveElementPlatformSupport'];
 
     const consoleWarn = console.warn;

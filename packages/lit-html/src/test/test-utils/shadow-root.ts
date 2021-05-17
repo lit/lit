@@ -10,7 +10,7 @@ export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;
 }
 
-const extendedWindow = window as unknown as WindowWithLitExtras;
+const extendedWindow = window as unknown as LitExtraGlobals;
 
 export const wrap =
   extendedWindow.ShadyDOM &&
