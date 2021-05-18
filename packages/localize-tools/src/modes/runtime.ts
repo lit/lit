@@ -157,19 +157,19 @@ function generateLocaleModule(
     entries.push(`'${msg.name}': ${msgStr},`);
   }
   return `
-     // Do not modify this file by hand!
-     // Re-generate this file by running lit-localize
+    // Do not modify this file by hand!
+    // Re-generate this file by running lit-localize
 
-     ${importLit ? "import {html} from 'lit';" : ''}
-     ${importStr ? "import {str} from '@lit/localize';" : ''}
+    ${importLit ? "import {html} from 'lit';" : ''}
+    ${importStr ? "import {str} from '@lit/localize';" : ''}
 
-     /* eslint-disable no-irregular-whitespace */
-     /* eslint-disable @typescript-eslint/no-explicit-any */
+    /* eslint-disable no-irregular-whitespace */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
 
-     export const templates = {
-       ${entries.join('\n')}
-     };
-   `;
+    export const templates = {
+      ${entries.join('\n')}
+    };
+  `;
 }
 
 /**
