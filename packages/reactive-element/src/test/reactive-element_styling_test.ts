@@ -19,7 +19,7 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extendedWindow = window as unknown as LitExtraGlobals;
+const extraGlobals = window as unknown as LitExtraGlobals;
 
 (canTestReactiveElement ? suite : suite.skip)('Styling', () => {
   suite('Static get styles', () => {
@@ -87,7 +87,7 @@ const extendedWindow = window as unknown as LitExtraGlobals;
     // Test this in Shadow DOM without `adoptedStyleSheets` only since it's easily
     // detectable in that case.
     const testShadowDOMStyleCount =
-      (!extendedWindow.ShadyDOM || !extendedWindow.ShadyDOM.inUse) &&
+      (!extraGlobals.ShadyDOM || !extraGlobals.ShadyDOM.inUse) &&
       !('adoptedStyleSheets' in Document.prototype);
     (testShadowDOMStyleCount ? test : test.skip)(
       'when an array is returned from `static get styles`, one style is generated per array item',
@@ -731,8 +731,8 @@ const extendedWindow = window as unknown as LitExtraGlobals;
         // our styles as they're already flattened (so expect 4px). Otherwise,
         // look for the updated value.
         const usesAdoptedStyleSheet =
-          extendedWindow.ShadyCSS === undefined ||
-          extendedWindow.ShadyCSS.nativeShadow;
+          extraGlobals.ShadyCSS === undefined ||
+          extraGlobals.ShadyCSS.nativeShadow;
         const expectedValue = usesAdoptedStyleSheet ? '2px' : '4px';
         sheet.replaceSync('div { border: 2px solid red; }');
 
@@ -749,8 +749,8 @@ const extendedWindow = window as unknown as LitExtraGlobals;
     const testShadyCSSWithAdoptedStyleSheetSupport =
       window.ShadowRoot &&
       'replace' in CSSStyleSheet.prototype &&
-      extendedWindow.ShadyCSS !== undefined &&
-      !extendedWindow.ShadyCSS.nativeShadow;
+      extraGlobals.ShadyCSS !== undefined &&
+      !extraGlobals.ShadyCSS.nativeShadow;
     (testShadyCSSWithAdoptedStyleSheetSupport ? test : test.skip)(
       'CSSStyleSheet is flattened where ShadyCSS is enabled yet adoptedStyleSheets are supported',
       async () => {

@@ -48,14 +48,14 @@ interface PatchableLitElement extends HTMLElement {
 }: {
   LitElement: PatchableLitElement;
 }) => {
-  const extendedWindow = window as unknown as LitExtraGlobals;
+  const extraGlobals = window as unknown as LitExtraGlobals;
 
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
   if (
-    extendedWindow.ShadyCSS === undefined ||
-    (extendedWindow.ShadyCSS.nativeShadow && !extendedWindow.ShadyCSS.ApplyShim)
+    extraGlobals.ShadyCSS === undefined ||
+    (extraGlobals.ShadyCSS.nativeShadow && !extraGlobals.ShadyCSS.ApplyShim)
   ) {
     return;
   }

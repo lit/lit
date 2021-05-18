@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const extendedWindow = window as unknown as LitExtraGlobals;
+const extraGlobals = window as unknown as LitExtraGlobals;
 
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
 export const supportsAdoptingStyleSheets =
   window.ShadowRoot &&
-  (extendedWindow.ShadyCSS === undefined ||
-    extendedWindow.ShadyCSS.nativeShadow) &&
+  (extraGlobals.ShadyCSS === undefined || extraGlobals.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
   'replace' in CSSStyleSheet.prototype;
 
