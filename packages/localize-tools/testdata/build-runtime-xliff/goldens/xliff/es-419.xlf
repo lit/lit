@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-strict.xsd">
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
 <file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="s8c0ec8d1fb9e6e32">
@@ -39,27 +39,21 @@
   <target>Hola <ph id="0">&lt;b>&lt;!-- comment --></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
 </trans-unit>
 <trans-unit id="hf979404a36e879cb">
-  <source>a:<ph id="0">${"A"}</ph> b:<ph id="1">${"B"}</ph> c:<ph id="2">${"C"}</ph></source>
-  <target>c:<ph id="2">${"C"}</ph> a:<ph id="0">${"A"}</ph> b:<ph id="1">${"B"}</ph></target>
+  <source>a:<ph id="0">${'A'}</ph> b:<ph id="1">${'B'}</ph> c:<ph id="2">${'C'}</ph></source>
+  <target>c:<ph id="2">${'C'}</ph> a:<ph id="0">${'A'}</ph> b:<ph id="1">${'B'}</ph></target>
 </trans-unit>
 <trans-unit id="myId">
   <source>Hello World</source>
   <target>Hola Mundo</target>
 </trans-unit>
+<trans-unit id="h8d70dfec810d1eae">
+  <source><ph id="0">&lt;b></ph>Hello<ph id="1">&lt;/b></ph>! Click <ph id="2">&lt;a href="${urlBase}/${urlPath}"></ph>here<ph id="3">&lt;/a></ph>!</source>
+  <target><ph id="0">&lt;b></ph>Hola<ph id="1">&lt;/b></ph>! Clic <ph id="2">&lt;a href="${urlBase}/${urlPath}"></ph>aquí<ph id="3">&lt;/a></ph>!</target>
+</trans-unit>
 <trans-unit id="s03c68d79ad36e8d4">
   <note>Description of 0</note>
   <source>described 0</source>
   <target>described 0</target>
-</trans-unit>
-<trans-unit id="s03c68e79ad36ea87">
-  <note>Parent description / Description of 1</note>
-  <source>described 1</source>
-  <target>described 1</target>
-</trans-unit>
-<trans-unit id="s03c68f79ad36ec3a">
-  <note>Parent description / Description of 2</note>
-  <source>described 2</source>
-  <target>described 2</target>
 </trans-unit>
 </body>
 </file>
