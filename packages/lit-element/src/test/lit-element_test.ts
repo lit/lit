@@ -324,7 +324,7 @@ const extendedWindow = window as unknown as LitExtraGlobals;
     assert.ok(a.hasUpdated);
   });
 
-  (extendedWindow.ShadyDOM?.inUse ? test.skip : test)(
+  (extendedWindow.ShadyDOM && extendedWindow.ShadyDOM.inUse ? test.skip : test)(
     'can customize shadowRootOptions',
     async () => {
       class A extends LitElement {
