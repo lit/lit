@@ -15,7 +15,7 @@ if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
 
-const extraGlobals = window as LitExtraGlobals & typeof globalThis;
+const extraGlobals = window as LitExtendedWindow;
 
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&

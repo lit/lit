@@ -21,7 +21,7 @@ import '../directives/repeat_test.js';
 import '../directives/template-content_test.js';
 import '../directives/unsafe-html_test.js';
 
-const extraGlobals = window as LitExtraGlobals & typeof globalThis;
+const extraGlobals = window as LitExtendedWindow;
 
 suite('polyfill-support rendering', () => {
   test('style elements apply in shadowRoots', () => {

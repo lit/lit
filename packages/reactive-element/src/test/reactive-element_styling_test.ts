@@ -19,7 +19,7 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals & typeof globalThis;
+const extraGlobals = window as LitExtendedWindow;
 
 (canTestReactiveElement ? suite : suite.skip)('Styling', () => {
   suite('Static get styles', () => {

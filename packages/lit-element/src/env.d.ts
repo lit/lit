@@ -41,6 +41,8 @@ interface LitExtraGlobals extends Window {
   litHtmlPlatformSupport: (template: unknown, childPart: unknown) => void;
 }
 
+type LitExtendedWindow = typeof globalThis & LitExtraGlobals;
+
 // Augment existing types with styling API
 interface ShadowRoot {
   adoptedStyleSheets: CSSStyleSheet[];

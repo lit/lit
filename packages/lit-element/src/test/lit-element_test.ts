@@ -23,7 +23,7 @@ import {assert} from '@esm-bundle/chai';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
 
-const extraGlobals = window as LitExtraGlobals & typeof globalThis;
+const extraGlobals = window as LitExtendedWindow;
 
 (canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
