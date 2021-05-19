@@ -30,7 +30,7 @@ interface ShadyDOM {
   wrap: (node: Node) => Node;
 }
 
-interface LitExtraGlobals {
+interface LitExtraGlobals extends Window {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
