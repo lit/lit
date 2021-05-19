@@ -30,7 +30,7 @@ interface ShadyDOM {
   wrap: (node: Node) => Node;
 }
 
-interface LitExtraGlobals extends Window {
+interface LitExtendedWindow extends Window {
   ShadyCSS?: ShadyCSS;
   ShadyDOM?: ShadyDOM;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +41,7 @@ interface LitExtraGlobals extends Window {
   litHtmlPlatformSupport: (template: unknown, childPart: unknown) => void;
 }
 
-type LitExtendedWindow = typeof globalThis & LitExtraGlobals;
+type LitExtraGlobals = typeof globalThis & LitExtendedWindow;
 
 // Augment existing types with styling API
 interface ShadowRoot {

@@ -8,7 +8,7 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtendedWindow;
+const extraGlobals = window as LitExtraGlobals;
 
 suite('ShadyCSS scoping shim', () => {
   setup(function () {
