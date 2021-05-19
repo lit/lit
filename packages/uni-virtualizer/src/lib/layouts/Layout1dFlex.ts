@@ -1,11 +1,17 @@
-import {Layout1dBase} from './Layout1dBase';
-import {ItemBox, Positions, Size, LayoutConfig, Type} from './Layout';
+import {Layout1dBase, Layout1dBaseConfig} from './Layout1dBase';
+import {ItemBox, Positions, Size, LayoutSpecifier} from './Layout';
 
-export interface Layout1dFlexConfig extends LayoutConfig {
-  type?: Type<Layout1dFlex>,
-  direction?: "horizontal" | "vertical",
+interface Layout1dFlexConfig extends Layout1dBaseConfig {
   spacing?: number,
   idealSize?: number
+}
+
+export type Layout1dFlexSpecifier = LayoutSpecifier<Layout1dFlex, Layout1dFlexConfig>;
+
+declare global {
+  interface VirtualizerLayoutSpecifiers {
+    Layout1dFlex: Layout1dFlexSpecifier,
+  }
 }
 
 interface Rolumn {
@@ -22,33 +28,53 @@ interface Chunk {
   _dirty: boolean
 }
 
+interface AspectRatios {
+  // conceptually,  key is a number, but strictly speaking it's a string
+  [key: string]: number
+}
+
+/**
+ * TODO graynorton@ Don't hard-code Flickr - probably need a config option
+ */
+ interface FlickrImageData {
+  o_width: number,
+  o_height: number
+}
+
 /**
  * TODO @straversi: document and test this Layout.
  */
-export class Layout1dFlex extends Layout1dBase {
+export class Layout1dFlex extends Layout1dBase<Layout1dFlexConfig> {
   private _itemSizes: Array<Size> = [];
   // private _itemPositions: Array<Positions> = [];
   // private _rolumnStartIdx: Array<number> = [];
   // private _rolumnStartPos: Array<number> = [];
-  private _chunkSize: number;
+  private _chunkSize: number | null = null;
   private _chunks: Array<Chunk> = [];
-  private _aspectRatios: object = {};
+  private _aspectRatios: AspectRatios = {};
   private _numberOfAspectRatiosMeasured: number = 0;
-  protected _idealSize: number;
+  protected _idealSize: number | null = null;
   protected _config: Layout1dFlexConfig = {};
-  protected static _defaultConfig: Layout1dFlexConfig = {
-    direction: 'vertical',
+  protected _defaultConfig: Layout1dFlexConfig = Object.assign({}, super._defaultConfig, {
     spacing: 0,
     idealSize: 200
-  }
+  });
 
   listenForChildLoadEvents = true;
 
-  measureChildren: ((e: Element, i: object) => object) = function (e, i) {
-    return {
-      width: i['o_width'] || (e as any).naturalWidth || undefined,
-      height: i['o_height'] || (e as any).naturalHeight || undefined
-    };
+/**
+ * TODO graynorton@ Don't hard-code Flickr - probably need a config option
+ */
+  measureChildren: ((e: Element, i: unknown) => (ItemBox)) = function (e, i) {
+    const { naturalWidth, naturalHeight } = e as HTMLImageElement;
+    if (naturalWidth !== undefined && naturalHeight != undefined) {
+      return { width: naturalWidth, height: naturalHeight };
+    }
+    const { o_width, o_height } = i as FlickrImageData;
+    if (o_width !== undefined && o_height !== undefined) {
+      return { width: o_width, height: o_height };
+    }
+    return { width: -1, height: -1 };
   }
 
   set idealSize(px) {
@@ -66,15 +92,16 @@ export class Layout1dFlex extends Layout1dBase {
   updateItemSizes(sizes: {[key: number]: ItemBox}) {
     let dirty;
     Object.keys(sizes).forEach((key) => {
-        const chunk = this._getChunk(key);
-        const dims = sizes[key];
-        const prevDims = this._itemSizes[key];
+        const n = Number(key);
+        const chunk = this._getChunk(n);
+        const dims = sizes[n];
+        const prevDims = this._itemSizes[n];
         if (dims.width && dims.height) {
           if (!prevDims || prevDims.width !== dims.width || prevDims.height !== dims.height) {
             chunk._dirty = true;
             dirty = true;
-            this._itemSizes[Number(key)] = sizes[key];
-            this._recordAspectRatio(sizes[key]);
+            this._itemSizes[n] = sizes[n];
+            this._recordAspectRatio(sizes[n]);
           }
         }
     });
@@ -93,10 +120,10 @@ export class Layout1dFlex extends Layout1dBase {
   }
 
   _getChunk(idx: number | string) {
-    return this._chunks[Math.floor(Number(idx) / this._chunkSize)] || this._newChunk();
+    return this._chunks[Math.floor(Number(idx) / this._chunkSize!)] || this._newChunk();
   }
 
-  _recordAspectRatio(dims) {
+  _recordAspectRatio(dims: ItemBox) {
     if (dims.width && dims.height) {
       const bucket = Math.round(dims.width / dims.height * 10) / 10;
       if (this._aspectRatios[bucket]) {
@@ -161,12 +188,12 @@ export class Layout1dFlex extends Layout1dBase {
   _getItemSize(idx: number): Size {
     const chunk = this._getChunk(0);
     const {width, height} = chunk._itemPositions[idx];
-    return {width, height};
+    return {width, height} as Size;
   }
 
   _getNaturalItemDims(idx: number): Size {
     let itemDims = this._itemSizes[idx];
-    if (itemDims === undefined || itemDims.width === undefined || itemDims.height === undefined) {
+    if (itemDims === undefined || itemDims.width === -1 || itemDims.height === -1) {
       itemDims = this._getRandomAspectRatio();
     }
     return itemDims;
@@ -179,7 +206,7 @@ export class Layout1dFlex extends Layout1dBase {
     let idx = 0;
     let rolumnSize2 = 0;
     let lastRatio = Infinity;
-    const finishRolumn = (lastIdx) => {
+    const finishRolumn = (lastIdx: number) => {
         const rolumn = {
           _startIdx: startIdx,
           _endIdx: lastIdx,
@@ -190,20 +217,20 @@ export class Layout1dFlex extends Layout1dBase {
         let itemStartPos = this._spacing;
         for (let i = startIdx; i <= lastIdx; i++) {
             const pos = chunk._itemPositions[i];
-            pos.width = pos.width * lastRatio;
-            pos.height = pos.height * lastRatio;
+            pos.width = pos.width! * lastRatio;
+            pos.height = pos.height! * lastRatio;
             pos.left = this._positionDim === 'left' ? startPos : itemStartPos;
             pos.top = this._positionDim === 'top' ? startPos : itemStartPos;
-            itemStartPos += pos[this._secondarySizeDim] + this._spacing;
+            itemStartPos += pos[this._secondarySizeDim]! + this._spacing;
         }
-        rolumn._size = chunk._itemPositions[lastIdx][this._sizeDim];
+        rolumn._size = chunk._itemPositions[lastIdx][this._sizeDim]!;
     }
-    while (idx < this._chunkSize) {
+    while (idx < this._chunkSize!) {
       const itemDims = this._getNaturalItemDims(idx);
       const availableSpace = this._viewDim2 - (this._spacing * (idx - startIdx + 2));
       const itemSize = itemDims[this._sizeDim];
       const itemSize2 = itemDims[this._secondarySizeDim];
-      const idealScaleFactor = this._idealSize / itemSize;
+      const idealScaleFactor = this._idealSize! / itemSize;
       const adjItemSize = idealScaleFactor * itemSize;
       const adjItemSize2 = idealScaleFactor * itemSize2;
       chunk._itemPositions[idx] = {
@@ -217,7 +244,7 @@ export class Layout1dFlex extends Layout1dBase {
           // rolumn is better without adding this item
           finishRolumn(idx - 1);
           startIdx = idx;
-          startPos += (this._idealSize * lastRatio) + this._spacing;
+          startPos += (this._idealSize! * lastRatio) + this._spacing;
           lastRatio = (this._viewDim2 - (2 * this._spacing)) / adjItemSize2;
           rolumnSize2 = adjItemSize2;
       }
@@ -226,7 +253,7 @@ export class Layout1dFlex extends Layout1dBase {
           rolumnSize2 += adjItemSize2;
           lastRatio = ratio;
       }
-      if (idx === this._chunkSize - 1) {
+      if (idx === this._chunkSize! - 1) {
           finishRolumn(idx);
       }
       idx++;
@@ -238,7 +265,7 @@ export class Layout1dFlex extends Layout1dBase {
 
   _updateLayout(): void {
     if (/*this._rolumnStartIdx === undefined ||*/ this._viewDim2 === 0) return;
-    this._chunkSize = Math.ceil(2 * (this._viewDim1 * this._viewDim2) / (this._idealSize * this._idealSize));
+    this._chunkSize = Math.ceil(2 * (this._viewDim1 * this._viewDim2) / (this._idealSize! * this._idealSize!));
     console.log('chunkSize', this._chunkSize);
     // TODO: An odd place to do this, need to think through the logistics of getting size info to the layout
     // in all cases

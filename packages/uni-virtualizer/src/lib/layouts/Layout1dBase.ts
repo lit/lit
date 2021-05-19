@@ -1,7 +1,16 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, Positions, ScrollDirection, Size, dimension, position, LayoutConfig} from './Layout.js';
+import {Layout, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
 
-export abstract class Layout1dBase implements Layout {
+type UpdateVisibleIndicesOptions = {
+  emit?: boolean
+}
+
+export interface Layout1dBaseConfig {
+  direction?: ScrollDirection,
+  totalItems?: number
+}
+
+export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layout<C> {
   /**
    * The last set viewport scroll position.
    */
@@ -20,31 +29,31 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Flag for debouncing asynchnronous reflow requests.
    */
-  private _pendingReflow: boolean = false;
+  private _pendingReflow = false;
 
-  private _pendingLayoutUpdate: boolean = false;
+  private _pendingLayoutUpdate = false;
 
   /**
    * Index of the item that has been scrolled to via the public API. When the
    * container is otherwise scrolled, this value is set back to -1.
    */
-  protected _scrollToIndex: number = -1;
+  protected _scrollToIndex = -1;
 
   /**
    * When a child is scrolled to, the offset from the top of the child and the
    * top of the viewport. Value is a proportion of the item size.
    */
-  private _scrollToAnchor: number = 0;
+  private _scrollToAnchor = 0;
 
   /**
    * The index of the first item intersecting the viewport.
    */
-  private _firstVisible: number;
+  private _firstVisible = 0;
 
   /**
    * The index of the last item intersecting the viewport.
    */
-  private _lastVisible: number;
+  private _lastVisible = 0;
 
   private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => {
     this._eventTarget = new Ctor();
@@ -53,22 +62,22 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Pixel offset in the scroll direction of the first child.
    */
-  protected _physicalMin: number = 0;
+  protected _physicalMin = 0;
 
   /**
    * Pixel offset in the scroll direction of the last child.
    */
-  protected _physicalMax: number = 0;
+  protected _physicalMax = 0;
 
   /**
    * Index of the first child.
    */
-  protected _first: number = -1;
+  protected _first = -1;
 
   /**
    * Index of the last child.
    */
-  protected _last: number = -1;
+  protected _last = -1;
 
   /**
    * The _estimated_ size of a child.
@@ -78,7 +87,7 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Space in pixels between children.
    */
-  protected _spacing: number = 0;
+  protected _spacing = 0;
 
   /**
    * Length in the scrolling direction.
@@ -103,24 +112,24 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Current scroll offset in pixels.
    */
-  protected _scrollPosition: number = 0;
+  protected _scrollPosition = 0;
 
   /**
    * Difference between current scroll offset and scroll offset calculated due
    * to a reflow.
    */
-  protected _scrollError: number = 0;
+  protected _scrollError = 0;
 
   /**
    * Total number of items that could possibly be displayed. Used to help
    * calculate the scroll size.
    */
-  protected _totalItems: number = 0;
+  protected _totalItems = 0;
 
   /**
    * The total (estimated) length of all items in the scrolling direction.
    */
-  protected _scrollSize: number = 1;
+  protected _scrollSize = 1;
 
   /**
    * Number of pixels beyond the visible size of the container to still include
@@ -128,29 +137,27 @@ export abstract class Layout1dBase implements Layout {
    */
   // TODO (graynorton): Probably want to make this something we calculate based
   // on viewport size, item size, other factors, possibly still with a dial of some kind
-  protected _overhang: number = 1000;
+  protected _overhang = 1000;
 
-  private _eventTarget;
-  protected _spacingChanged;
+  private _eventTarget: EventTarget | null = null;
+  protected _spacingChanged = false;
 
-  protected static _defaultConfig: LayoutConfig = {};
+  protected _defaultConfig: C = {
+    direction: 'vertical'
+  } as C
 
-  constructor(config) {
-    if (config) {
-      this.config = config;
-    }
+  constructor(config?: C) {
+    this.config = config || this._defaultConfig;
   }
 
-  set config(config: LayoutConfig) {
-    Object.assign(this, Object.assign({}, (<typeof Layout1dBase>this.constructor)._defaultConfig, config));
+  set config(config: C) {
+    Object.assign(this, Object.assign({}, this._defaultConfig, config));
   }
 
-  get config(): LayoutConfig {
-    const config = {};
-    for (let key in (<typeof Layout1dBase>this.constructor)._defaultConfig) {
-      config[key] = this[key];
-    }
-    return config;
+  get config(): C {
+    return {
+      direction: this.direction
+    } as C;
   }
 
   /**
@@ -255,7 +262,7 @@ export abstract class Layout1dBase implements Layout {
   /**
    * Perform a reflow if one has been scheduled.
    */
-  reflowIfNeeded(force) {
+  reflowIfNeeded(force: boolean) {
     if (force || this._pendingReflow) {
       this._pendingReflow = false;
       this._reflow();
@@ -266,7 +273,7 @@ export abstract class Layout1dBase implements Layout {
    * Scroll to the child at the given index, and the given position within that
    * child.
    */
-  scrollToIndex(index, position = 'start') {
+  scrollToIndex(index: number, position = 'start') {
     if (!Number.isFinite(index))
       return;
     index = Math.min(this.totalItems, Math.max(0, index));
@@ -291,19 +298,19 @@ export abstract class Layout1dBase implements Layout {
     this._scheduleReflow();
   }
 
-  async dispatchEvent(...args) {
+  async dispatchEvent(evt: Event) {
     await this._eventTargetPromise;
-    this._eventTarget.dispatchEvent(...args);
+    this._eventTarget!.dispatchEvent(evt);
   }
 
-  async addEventListener(...args) {
+  async addEventListener(type: string, listener: EventListener | EventListenerObject | null, options?: boolean | AddEventListenerOptions | undefined) {
     await this._eventTargetPromise;
-    this._eventTarget.addEventListener(...args);
+    this._eventTarget!.addEventListener(type, listener, options);
   }
 
-  async removeEventListener(...args) {
+  async removeEventListener(type: string, callback: EventListener | EventListenerObject | null, options?: boolean | EventListenerOptions | undefined) {
     await this._eventTargetPromise;
-    this._eventTarget.removeEventListener(...args);
+    this._eventTarget!.removeEventListener(type, callback, options);
   }
 
   /**
@@ -315,7 +322,7 @@ export abstract class Layout1dBase implements Layout {
    * Update _first and _last based on items that should be in the current
    * range.
    */
-  abstract _getActiveItems();
+  abstract _getActiveItems(): void;
 
   protected _itemDim2Changed() {
     // Override
@@ -437,7 +444,7 @@ export abstract class Layout1dBase implements Layout {
     this._scrollPosition = scrollPosition;
   }
 
-  protected _emitRange(inProps = undefined) {
+  protected _emitRange(inProps: unknown = undefined) {
     const detail = Object.assign(
         {
           first: this._first,
@@ -474,7 +481,7 @@ export abstract class Layout1dBase implements Layout {
    * Emit an itempositionchange event with these positions.
    */
   protected _emitChildPositions() {
-    const detail = {};
+    const detail: {[key: number]: Positions} = {};
     for (let idx = this._first; idx <= this._last; idx++) {
       detail[idx] = this._getItemPosition(idx);
     }
@@ -509,7 +516,7 @@ export abstract class Layout1dBase implements Layout {
    * Find the indices of the first and last items to intersect the viewport.
    * Emit a visibleindiceschange event when either index changes.
    */
-  protected _updateVisibleIndices(options?) {
+   protected _updateVisibleIndices(options?: UpdateVisibleIndicesOptions) {
     if (this._first === -1 || this._last === -1) return;
 
     let firstVisible = this._first;
@@ -542,7 +549,7 @@ export abstract class Layout1dBase implements Layout {
     }
   }
 
-  private _scrollPositionChanged(oldPos, newPos) {
+  private _scrollPositionChanged(oldPos: number, newPos: number) {
     // When both values are bigger than the max scroll position, keep the
     // current _scrollToIndex, otherwise invalidate it.
     const maxPos = this._scrollSize - this._viewDim1;

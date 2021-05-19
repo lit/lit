@@ -1,11 +1,18 @@
-let _ET, ET;
+type EventTargetModule = typeof import('event-target-shim');
+
+interface EventTargetConstructor {
+    new(): EventTarget
+}
+
+let _ET: EventTargetModule | EventTargetConstructor;
+let ET: EventTargetConstructor;
 
 export default async function EventTarget() {
     return ET || init();
 }
 
 async function init() {
-    _ET = (window as unknown as {EventTarget?: EventTarget}).EventTarget;
+    _ET = window.EventTarget;
     try {
         new _ET();
     }

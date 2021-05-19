@@ -2,4 +2,5 @@
 /lit-virtualizer.js
 /lit-virtualizer.d.ts
 /lit-virtualizer.d.ts.map
+/lit-virtualizer.js.map
 /test/screenshot/cases/*/actual.*.png

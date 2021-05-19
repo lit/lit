@@ -1,24 +1,24 @@
-import { TemplateResult, nothing, ChildPart } from 'lit';
+import { TemplateResult, nothing, ChildPart, html } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
-import { VirtualScroller, RangeChangeEvent } from './uni-virtualizer/lib/VirtualScroller.js';
+import { Layout, LayoutConstructor, KnownLayoutSpecifier } from './uni-virtualizer/lib/layouts/Layout.js';
+import { VirtualScroller, ScrollToIndexValue } from './uni-virtualizer/lib/VirtualScroller.js';
 
 /**
  * Configuration options for the scroll directive.
  */
-interface ScrollConfig<Item> {
+interface ScrollConfig {
     /**
      * A function that returns a lit-html TemplateResult. It will be used
      * to generate the DOM for each item in the virtual list.
      */
-    renderItem?: (item: Item, index?: number) => TemplateResult;
+    renderItem?: (item: unknown, index?: number) => TemplateResult;
 
-    keyFunction?: (item:any) => any;
+    keyFunction?: (item: unknown) => unknown;
   
     // TODO (graynorton): Document...
-    layout?: Layout | Type<Layout> | LayoutConfig;
+    layout?: Layout | LayoutConstructor | KnownLayoutSpecifier | null;
   
     /**
      * An element that receives scroll events for the virtual scroller.
@@ -28,7 +28,7 @@ interface ScrollConfig<Item> {
     /**
      * The list of items to display via the renderItem function.
      */
-    items?: Array<Item>;
+    items?: Array<unknown>;
   
     /**
      * Limit for the number of items to display. Defaults to the length of the
@@ -39,19 +39,20 @@ interface ScrollConfig<Item> {
     /**
      * Index and position of the item to scroll to.
      */
-    scrollToIndex?: {index: number, position?: string};
+    scrollToIndex?: ScrollToIndexValue;
   }
   
-const defaultKeyFunction = item => item;
+export const defaultKeyFunction = (item: unknown) => item;
+export const defaultRenderItem = (item: unknown) => html`${JSON.stringify(item, null, 2)}`;
 
 class ScrollDirective extends AsyncDirective {
-    container: HTMLElement
-    scroller: VirtualScroller<unknown, HTMLElement>
-    first: number = 0
-    last: number = -1
-    renderItem: (item: any, index?: number) => TemplateResult
-    keyFunction: (item: any) => any
-    items: Array<any>
+    container: HTMLElement | null = null
+    scroller: VirtualScroller | null = null
+    first = 0
+    last = -1
+    renderItem: (item: unknown, index?: number) => TemplateResult = defaultRenderItem;
+    keyFunction: (item: unknown) => unknown = defaultKeyFunction;
+    items: Array<unknown> = []
 
     constructor(part: PartInfo) {
         super(part);
@@ -60,10 +61,10 @@ class ScrollDirective extends AsyncDirective {
         }
     }
     
-    render<T>(config?: ScrollConfig<T>) {
+    render(config?: ScrollConfig) {
         if (config) {
-            this.renderItem = config.renderItem;
-            this.keyFunction = config.keyFunction;
+            this.renderItem = config.renderItem || this.renderItem;
+            this.keyFunction = config.keyFunction || this.keyFunction;
         }
         const itemsToRender = [];
         if (this.first >= 0 && this.last >= this.first) {
@@ -74,28 +75,28 @@ class ScrollDirective extends AsyncDirective {
         return repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem);
     }
 
-    update<T>(part: ChildPart, [config]: [ScrollConfig<T>]) {
+    update(part: ChildPart, [config]: [ScrollConfig]) {
         if (this.scroller || this._initialize(part, config)) {
             const { scroller } = this;
-            this.items = scroller.items = config.items;
-            scroller.totalItems = config.totalItems || config.items?.length || 0;
-            scroller.layout = config.layout;
-            scroller.scrollTarget = config.scrollTarget || this.container;
+            this.items = scroller!.items = config.items || [];
+            scroller!.totalItems = config.totalItems || config.items?.length || 0;
+            scroller!.layout = config.layout || null;
+            scroller!.scrollTarget = config.scrollTarget || this.container;
             if (config.scrollToIndex) {
-                scroller.scrollToIndex = config.scrollToIndex;
+                scroller!.scrollToIndex = config.scrollToIndex;
             }
             return this.render(config);    
         }
         return nothing;
     }
 
-    private _initialize<T>(part: ChildPart, config: ScrollConfig<T>) {
+    private _initialize(part: ChildPart, config: ScrollConfig) {
         const container = this.container = part.parentNode as HTMLElement;
         if (container && container.nodeType === 1) {
             this.scroller = new VirtualScroller({ container });
-            container.addEventListener('rangeChanged', (e: CustomEvent<RangeChangeEvent>) => {
-                this.first = e.detail.first;
-                this.last = e.detail.last;
+            container.addEventListener('rangeChanged', (e: Event) => {
+                this.first = (e as CustomEvent).detail.first;
+                this.last = (e as CustomEvent).detail.last;
                 this.setValue(this.render());
             });
             return true;

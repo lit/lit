@@ -3,13 +3,13 @@ import {Layout1dBase} from './Layout1dBase.js';
 /**
  * TODO @straversi: document and test this Layout.
  */
-export abstract class Layout1dGrid extends Layout1dBase {
-  protected _rolumns;
+export abstract class Layout1dGrid<Config> extends Layout1dBase<Config> {
+  protected _rolumns: number = 1;
 
-  constructor(config) {
-    super(config);
-    this._rolumns = 1;
-  }
+  // constructor(config) {
+  //   super(config);
+  //   this._rolumns = 1;
+  // }
 
   _viewDim2Changed() {
     this._scheduleLayoutUpdate();

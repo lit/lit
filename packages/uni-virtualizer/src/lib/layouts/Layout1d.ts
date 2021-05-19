@@ -1,12 +1,24 @@
-import {Layout1dBase} from './Layout1dBase.js';
-import {ItemBox, Positions, Size} from './Layout.js';
+import {Layout1dBase, Layout1dBaseConfig} from './Layout1dBase.js';
+import {ItemBox, Positions, Size, Margins, LayoutSpecifier} from './Layout.js';
 
 type ItemBounds = {
   pos: number,
   size: number
 };
 
-export class Layout1d extends Layout1dBase {
+// interface Layout1dConfig extends Layout1dBaseConfig {
+//   fake?: Function
+// }
+
+export type Layout1dSpecifier = LayoutSpecifier<Layout1d, Layout1dBaseConfig>;
+
+declare global {
+  interface VirtualizerLayoutSpecifiers {
+    Layout1d: Layout1dSpecifier,
+  }
+}
+
+export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
   /**
    * Indices of children mapped to their (position and length) in the scrolling
    * direction. Used to keep track of children that are in range.
@@ -29,40 +41,44 @@ export class Layout1d extends Layout1dBase {
    * jumping to any point of the scroll size. We choose it once and stick with
    * it until stable. _first and _last are deduced around it.
    */
-  _anchorIdx: number = null;
+  _anchorIdx: number | null = null;
 
   /**
    * Position in the scrolling direction of the anchor child.
    */
-  _anchorPos: number = null;
+  _anchorPos: number | null = null;
 
   /**
    * Whether all children in range were in range during the previous reflow.
    */
-  _stable: boolean = true;
+  _stable = true;
 
   /**
    * Whether to remeasure children during the next reflow.
    */
-  _needsRemeasure: boolean = false;
+  _needsRemeasure = false;
 
   /**
    * Number of children to lay out.
    */
-  private _nMeasured: number = 0;
+  private _nMeasured = 0;
 
   /**
    * Total length in the scrolling direction of the laid out children.
    */
-  private _tMeasured: number = 0;
+  private _tMeasured = 0;
 
   private _measureChildren = true;
 
-  _estimate: boolean = true;
+  _estimate = true;
 
-  constructor(config) {
-    super(config);
-  }
+  // protected _defaultConfig: Layout1dBaseConfig = Object.assign({}, super._defaultConfig, {
+
+  // })
+
+  // constructor(config: Layout1dConfig) {
+  //   super(config);
+  // }
 
   get measureChildren() {
     return this._measureChildren;
@@ -74,24 +90,24 @@ export class Layout1d extends Layout1dBase {
    */
   updateItemSizes(sizes: {[key: number]: ItemBox}) {
     Object.keys(sizes).forEach((key) => {
-      const metrics = sizes[key], mi = this._getMetrics(Number(key)),
+      const metrics = sizes[Number(key)], mi = this._getMetrics(Number(key)),
             prevSize = mi[this._sizeDim];
 
       // TODO(valdrin) Handle margin collapsing.
       // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing
-      mi.width = metrics.width + (metrics.marginLeft || 0) +
-          (metrics.marginRight || 0);
-      mi.height = metrics.height + (metrics.marginTop || 0) +
-          (metrics.marginBottom || 0);
+      mi.width = metrics.width + ((metrics as Margins).marginLeft || 0) +
+          ((metrics as Margins).marginRight || 0);
+      mi.height = metrics.height + ((metrics as Margins).marginTop || 0) +
+          ((metrics as Margins).marginBottom || 0);
 
       const size = mi[this._sizeDim];
       const item = this._getPhysicalItem(Number(key));
       if (item) {
-        let delta;
+        let delta = 0;
 
         if (size !== undefined) {
           item.size = size;
-          if (prevSize === undefined) {
+          if (prevSize === -1) {
             delta = size;
             this._nMeasured++;
           } else {
@@ -118,10 +134,15 @@ export class Layout1d extends Layout1dBase {
   }
 
   _getMetrics(idx: number): ItemBox {
-    return (this._metrics[idx] = this._metrics[idx] || {});
+    let metrics = this._metrics.get(idx);
+    if (metrics === undefined) {
+      metrics = {height: -1, width: -1};
+      this._metrics.set(idx, metrics);
+    }
+    return metrics;
   }
 
-  _getPhysicalItem(idx: number): ItemBounds {
+  _getPhysicalItem(idx: number): ItemBounds | undefined {
     return this._newPhysicalItems.get(idx) || this._physicalItems.get(idx);
   }
 
@@ -134,7 +155,7 @@ export class Layout1d extends Layout1dBase {
    * Returns the position in the scrolling direction of the item at idx.
    * Estimates it if the item at idx is not in the DOM.
    */
-  _getPosition(idx): number {
+  _getPosition(idx: number): number {
     const item = this._getPhysicalItem(idx);
     return item ? item.pos : (idx * (this._delta)) + this._spacing;
   }
@@ -168,8 +189,8 @@ export class Layout1d extends Layout1dBase {
 
     const firstItem = this._getPhysicalItem(this._first),
           lastItem = this._getPhysicalItem(this._last),
-          firstMin = firstItem.pos, firstMax = firstMin + firstItem.size,
-          lastMin = lastItem.pos, lastMax = lastMin + lastItem.size;
+          firstMin = firstItem!.pos, firstMax = firstMin + firstItem!.size,
+          lastMin = lastItem!.pos, lastMax = lastMin + lastItem!.size;
 
     if (lastMax < lower) {
       // Window is entirely past physical items, calculate new anchor
@@ -193,7 +214,7 @@ export class Layout1d extends Layout1dBase {
     while (true) {
       const candidateIdx = Math.round((maxIdx + minIdx) / 2),
             candidate = this._physicalItems.get(candidateIdx),
-            cMin = candidate.pos, cMax = cMin + candidate.size;
+            cMin = candidate!.pos, cMax = cMin + candidate!.size;
 
       if ((cMin >= lower && cMin <= upper) ||
           (cMax >= lower && cMax <= upper)) {
@@ -409,7 +430,7 @@ export class Layout1d extends Layout1dBase {
     return {
       [this._positionDim]: this._getPosition(idx),
       [this._secondaryPositionDim]: 0,
-    } as unknown as Positions;
+    } as Positions;
   }
 
   /**
@@ -419,7 +440,7 @@ export class Layout1d extends Layout1dBase {
     return {
       [this._sizeDim]: this._getSize(idx) || this._itemDim1,
       [this._secondarySizeDim]: this._itemDim2,
-    } as unknown as Size;
+    } as Size;
   }
 
   _viewDim2Changed() {

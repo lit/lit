@@ -10,7 +10,7 @@ export type Margins = {
   marginLeft: number
 };
 
-export type ItemBox = Size | Size & Margins;
+export type ItemBox = Size | (Size & Margins);
 
 export type position = 'left' | 'top';
 export type Positions = {
@@ -20,22 +20,35 @@ export type Positions = {
   height?: number
 };
 
-export interface Type<T> extends Function {
-  new (...args: any[]): T;
+
+export interface LayoutConstructor extends Function {
+  new (config: object): Layout
 }
 
-export interface LayoutConfig {
-  type?: Type<Layout>
+export interface TypeWithConfig<T, C> extends Function {
+  new (config?: C): T;
 }
+
+export type LayoutSpecifier<L extends Layout, C> = C & {
+  type: TypeWithConfig<L, C>
+}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface VirtualizerLayoutSpecifiers {}
+}
+
+// export type KnownLayoutConfig = VirtualizerLayoutConfigs[keyof VirtualizerLayoutConfigs];
+export type KnownLayoutSpecifier = VirtualizerLayoutSpecifiers[keyof VirtualizerLayoutSpecifiers];
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
 /**
  * Interface for layouts consumed by VirtualScroller or VirtualRepeater.
  */
-export interface Layout {
-  config: LayoutConfig;
-  
+ export interface Layout<C extends object = {}> {
+  config?: C;
+   
   totalItems: number;
 
   direction: ScrollDirection;
@@ -44,7 +57,7 @@ export interface Layout {
 
   viewportScroll: Positions;
 
-  readonly measureChildren?: boolean | ((e: Element, i: object) => object);
+  readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
 
   readonly listenForChildLoadEvents?: boolean;
 
@@ -52,9 +65,9 @@ export interface Layout {
     [key: number]: ItemBox
   }) => void;
 
-  addEventListener;
+  addEventListener: Function;
 
-  removeEventListener;
+  removeEventListener: Function;
 
   scrollToIndex: (index: number, position: string) => void;
 

@@ -2,8 +2,8 @@ import { html, LitElement, TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
 import { scroll } from './scroll.js';
-import { scrollerRef } from './uni-virtualizer/lib/VirtualScroller.js';
-import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout.js';
+import { scrollerRef, ContainerElement } from './uni-virtualizer/lib/VirtualScroller.js';
+import { KnownLayoutSpecifier, Layout, LayoutConstructor } from './uni-virtualizer/lib/layouts/Layout.js';
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -13,22 +13,22 @@ import { Type, Layout, LayoutConfig } from './uni-virtualizer/lib/layouts/Layout
  * to the <lit-virtualizer> element.
  */
 @customElement('lit-virtualizer')
-export class LitVirtualizer<Item> extends LitElement {
+export class LitVirtualizer extends LitElement {
     @property()
-    renderItem: (item: Item, index?: number) => TemplateResult;
+    renderItem: ((item: unknown, index?: number) => TemplateResult) | undefined = undefined;
 
     @property({attribute: false})
-    items: Array<Item>;
+    items: Array<unknown> = [];
 
     @property({attribute: false})
     scrollTarget: Element | Window = this;
 
     @property()
-    keyFunction: (item:any) => any;
+    keyFunction: ((item:unknown) => unknown) | undefined = undefined;
 
-    private _layout: Layout | Type<Layout> | LayoutConfig
+    private _layout: Layout | LayoutConstructor | KnownLayoutSpecifier | null = null;
 
-    private _scrollToIndex: {index: number, position: string};
+    private _scrollToIndex: {index: number, position: string} | null = null;
   
     createRenderRoot() {
         return this;
@@ -57,14 +57,14 @@ export class LitVirtualizer<Item> extends LitElement {
     // }
 
     @property({attribute:false})
-    set layout(layout: Layout | Type<Layout> | LayoutConfig) {
+    set layout(layout: Layout | LayoutConstructor | KnownLayoutSpecifier | null) {
         // TODO (graynorton): Shouldn't have to set this here
         this._layout = layout;
         this.requestUpdate();
     }
 
-    get layout() {
-        return this[scrollerRef]!.layout;
+    get layout(): Layout | LayoutConstructor | KnownLayoutSpecifier | null {
+        return (this as ContainerElement)[scrollerRef]!.layout;
     }
     
     
@@ -90,6 +90,6 @@ export class LitVirtualizer<Item> extends LitElement {
 
 declare global {
     interface HTMLElementTagNameMap {
-        'lit-virtualizer': LitVirtualizer<unknown>;
+        'lit-virtualizer': LitVirtualizer;
     }
 }

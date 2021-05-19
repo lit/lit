@@ -1,5 +1,5 @@
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import { ItemBox, Margins, Type, Layout, LayoutConfig } from './layouts/Layout.js';
+import { ItemBox, Margins, Layout, LayoutConstructor, KnownLayoutSpecifier } from './layouts/Layout.js';
 
 export const scrollerRef = Symbol('scrollerRef');
 
@@ -12,7 +12,7 @@ declare global {
 let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
 
 const HOST_CLASSNAME = 'uni-virtualizer-host';
-let globalContainerStylesheet: HTMLStyleElement = null;
+let globalContainerStylesheet: HTMLStyleElement | null = null;
 
 interface Range {
   first: number;
@@ -53,9 +53,27 @@ export type RangeChangeEvent = {
   lastVisible: number;
 };
 
-// TODO (graynorton): Import this from somewhere upstream
-interface VirtualScrollerConfig {
-  layout?: Layout | Type<Layout> | LayoutConfig;
+interface ElementWithOptionalScrollerRef extends Element {
+  [scrollerRef]?: VirtualScroller
+}
+
+interface ShadowRootWithOptionalScrollerRef extends ShadowRoot {
+  [scrollerRef]?: VirtualScroller
+}
+
+type Container = ElementWithOptionalScrollerRef | ShadowRootWithOptionalScrollerRef;
+export type ContainerElement = ElementWithOptionalScrollerRef;
+
+type VerticalScrollSize = {height: number};
+type HorizontalScrollSize = {width: number};
+type ScrollSize = VerticalScrollSize | HorizontalScrollSize;
+
+type ChildMeasurements = {[key: number]: ItemBox};
+
+export type ScrollToIndexValue = {index: number, position?: string} | null;
+
+export interface VirtualScrollerConfig {
+  layout?: Layout | LayoutConstructor | KnownLayoutSpecifier;
 
   /**
    * An element that receives scroll events for the virtual scroller.
@@ -76,15 +94,15 @@ interface VirtualScrollerConfig {
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
  */
-export class VirtualScroller<Item, Child extends HTMLElement> {
-  private _benchmarkStart = null;
+export class VirtualScroller {
+  private _benchmarkStart: number | null = null;
   /**
    * Whether the layout should receive an updated viewport size on the next
    * render.
    */
   // private _needsUpdateView: boolean = false;
 
-  private _layout: Layout = null;
+  private _layout: Layout | null = null;
 
   /**
    * The element that generates scroll events and defines the container
@@ -97,77 +115,77 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * element. This ensures the scroll bar accurately reflects the total
    * size of the list.
    */
-  private _sizer: HTMLElement = null;
+  private _sizer: HTMLElement | null = null;
 
   /**
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: {height: number} | {width: number} = null;
+  private _scrollSize: ScrollSize | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
    * Provided by layout.
    */
-  private _scrollErr: {left: number, top: number} = null;
+  private _scrollErr: {left: number, top: number} | null = null;
 
   /**
    * A list of the positions (top, left) of the children in the current range.
    */
-  private _childrenPos: Array<{top: number, left: number}> = null;
+  private _childrenPos: Array<{top: number, left: number}> | null = null;
 
   // TODO: (graynorton): type
-  private _childMeasurements: any = null;
+  private _childMeasurements: ChildMeasurements | null = null;
 
-  private _toBeMeasured: Map<HTMLElement, any> = new Map();
+  private _toBeMeasured: Map<HTMLElement, unknown> = new Map();
 
-  private _rangeChanged: boolean = true;
+  private _rangeChanged = true;
 
-  private _itemsChanged: boolean = true;
+  private _itemsChanged = true;
 
-  private _visibilityChanged: boolean = true;
+  private _visibilityChanged = true;
 
   /**
    * Containing element. Set by container.
    */
-  protected _container: Element | ShadowRoot = null;
+  protected _container: Container | null = null;
 
   /**
    * The parent of all child nodes to be rendered. Set by container.
    */
-  private _containerElement: Element = null;
+  private _containerElement: ContainerElement | null = null;
 
   /**
    * Keep track of original inline style of the container, so it can be
    * restored when container is changed.
    */
-  private _containerInlineStyle = null;
+  private _containerInlineStyle: string | null = null;
 
   /**
    * Keep track of original container stylesheet, so it can be restored
    * when container is changed.
    */
-  private _containerStylesheet = null;
+  private _containerStylesheet: HTMLStyleElement | null = null;
 
   /**
    * Size of the container.
    */
-  private _containerSize: {width: number, height: number} = null;
+  private _containerSize: {width: number, height: number} | null = null;
 
   /**
    * Resize observer attached to container.
    */
-  private _containerRO: ResizeObserver = null;
+  private _containerRO: ResizeObserver | null = null;
 
   /**
    * Resize observer attached to children.
    */
-  private _childrenRO: ResizeObserver = null;
+  private _childrenRO: ResizeObserver | null = null;
 
-  private _mutationObserver: MutationObserver = null;
-  private _mutationPromise: Promise<void> = null;
-  private _mutationPromiseResolver: Function = null;
-  private _mutationsObserved: boolean = false;
+  private _mutationObserver: MutationObserver | null = null;
+  private _mutationPromise: Promise<void> | null = null;
+  private _mutationPromiseResolver: Function | null = null;
+  private _mutationsObserved = false;
 
   // TODO (graynorton): Rethink, per longer comment below
 
@@ -176,38 +194,38 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   /**
    * Index and position of item to scroll to.
    */
-  private _scrollToIndex: {index: number, position?: string} = null;
+  private _scrollToIndex: ScrollToIndexValue = null;
 
   /**
    * Items to render. Set by items.
    */
-  private _items: Array<Item> = [];
+  private _items: Array<unknown> = [];
 
   /**
    * Total number of items to render. Set by totalItems.
    */
-  private _totalItems: number = null;
+  private _totalItems: number | null = null;
 
   /**
    * Index of the first child in the range, not necessarily the first visible child.
    * TODO @straversi: Consider renaming these.
    */
-  protected _first: number = 0;
+  protected _first = 0;
 
   /**
    * Index of the last child in the range.
    */
-  protected _last: number = 0;
+  protected _last = 0;
 
   /**
    * Index of the first item intersecting the container element.
    */
-  private _firstVisible: number;
+  private _firstVisible = 0;
 
   /**
    * Index of the last item intersecting the container element.
    */
-  private _lastVisible: number;
+  private _lastVisible = 0;
 
   protected _scheduled = new WeakSet();
 
@@ -216,9 +234,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * measured, and their dimensions passed to this callback. Use it to layout
    * children as needed.
    */
-  protected _measureCallback: (sizes: {[key: number]: ItemBox}) => void = null;
+   protected _measureCallback: ((sizes: ChildMeasurements) => void) | null = null;
 
-  protected _measureChildOverride: (element: Element, item: object) => object = null;
+   protected _measureChildOverride: ((element: Element, item: unknown) => ItemBox) | null = null;
 
   constructor(config?: VirtualScrollerConfig) {
     this._first = -1;
@@ -229,8 +247,8 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     }
   }
 
-  set items(items) {
-    if (items !== this._items) {
+  set items(items: Array<unknown> | undefined) {
+    if (Array.isArray(items) && items !== this._items) {
       this._itemsChanged = true;
       this._items = items;
       this._schedule(this._updateLayout);
@@ -261,11 +279,11 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   /**
    * The parent of all child nodes to be rendered.
    */
-  get container(): Element | ShadowRoot {
+  get container(): Container | null {
     return this._container;
   }
 
-  set container(container: Element | ShadowRoot) {
+  set container(container: Container | null) {
     if (container === this._container) {
       return;
     }
@@ -274,7 +292,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       // Remove children from old container.
       // TODO (graynorton): Decide whether we'd rather fire an event to clear
       // the range and let the renderer take care of removing the DOM children
-      this._children.forEach(child => child.parentNode.removeChild(child));
+      this._children.forEach(child => child.parentNode!.removeChild(child));
     }
 
     this._container = container;
@@ -292,14 +310,14 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           return;
         }
   
-        this._containerRO.disconnect();
+        this._containerRO!.disconnect();
         this._containerSize = null;
   
         if (oldEl) {
           if (this._containerInlineStyle) {
-            oldEl.setAttribute('style', this._containerInlineStyle);
+            (oldEl as Element).setAttribute('style', this._containerInlineStyle!);
           } else {
-            oldEl.removeAttribute('style');
+            (oldEl as Element).removeAttribute('style');
           }
           this._containerInlineStyle = null;
           if (oldEl === this._scrollTarget) {
@@ -308,7 +326,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           }
           oldEl.removeEventListener('load', this._loadListener, true);
 
-          this._mutationObserver.disconnect();
+          this._mutationObserver!.disconnect();
         } else {
           // First time container was setup, add listeners only now.
           addEventListener('scroll', this, {passive: true});
@@ -321,11 +339,11 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           this._applyContainerStyles();
           if (newEl === this._scrollTarget) {
             this._sizer = this._sizer || this._createContainerSizer();
-            this._container.insertBefore(this._sizer, this._container.firstChild);
+            this._container!.insertBefore(this._sizer, this._container!.firstChild);
           }
           this._schedule(this._updateLayout);
-          this._containerRO.observe(newEl);
-          this._mutationObserver.observe(newEl, { childList: true });
+          this._containerRO!.observe(newEl);
+          this._mutationObserver!.observe(newEl, { childList: true });
           this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
   
           if (this._layout && this._layout.listenForChildLoadEvents) {
@@ -337,23 +355,24 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
 
   // This will always actually return a layout instance,
   // but TypeScript wants the getter and setter types to be the same
-  get layout(): Layout | Type<Layout> | LayoutConfig {
+  get layout(): Layout | LayoutConstructor | KnownLayoutSpecifier | null {
     return this._layout;
   }
 
-  set layout(layout: Layout | Type<Layout> | LayoutConfig) {
+  set layout(layout: Layout | LayoutConstructor | KnownLayoutSpecifier | null) {
     if (this._layout === layout) {
       return;
     }
 
-    let _layout, _config;
+    let _layout: LayoutConstructor | Layout | null = null;
+    let _config: object = {};
 
     if (typeof layout === 'object') {
-      if ((layout as LayoutConfig).type !== undefined) {
-        _layout = (layout as LayoutConfig).type;
-        delete (layout as LayoutConfig).type;
+      if ((layout as KnownLayoutSpecifier).type !== undefined) {
+        _layout = (layout as KnownLayoutSpecifier).type;
+        // delete (layout as KnownLayoutSpecifier).type;
       }
-      _config = layout;
+      _config = layout as object;
     }
     else {
       _layout = layout;
@@ -362,7 +381,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     if (typeof _layout === 'function') {
       if (this._layout instanceof _layout) {
         if (_config) {
-          this._layout.config = _config;
+          this._layout!.config = _config;
         }
         return;
       }
@@ -378,15 +397,15 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
-      delete this.container[scrollerRef];
-      this.container.removeEventListener('load', this._loadListener, true);
+      delete this.container![scrollerRef];
+      this.container!.removeEventListener('load', this._loadListener, true);
       // Reset container size so layout can get correct viewport size.
       if (this._containerElement) {
         this._sizeContainer(undefined);
       }
     }
 
-    this._layout = _layout;
+    this._layout = _layout as Layout | null;
 
     if (this._layout) {
       if (this._layout.measureChildren && typeof this._layout.updateItemSizes === 'function') {
@@ -399,9 +418,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
-      this._container[scrollerRef] = this;
+      this._container![scrollerRef] = this;
       if (this._layout.listenForChildLoadEvents) {
-        this._container.addEventListener('load', this._loadListener, true);
+        this._container!.addEventListener('load', this._loadListener, true);
       }
       this._schedule(this._updateLayout);
     }
@@ -421,7 +440,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       const timeElapsed = now - this._benchmarkStart;
       const entries = performance.getEntriesByName('uv-virtualizing', 'measure');
       const virtualizationTime = entries
-        .filter(e => e.startTime >= this._benchmarkStart && e.startTime < now)
+        .filter(e => e.startTime >= this._benchmarkStart! && e.startTime < now)
         .reduce((t, m) => t + m.duration, 0);
       this._benchmarkStart = null;
       return { timeElapsed, virtualizationTime };
@@ -430,14 +449,14 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   private _measureChildren(): void {
-    const mm = {};
+    const mm: ChildMeasurements = {};
     const children = this._children;
     const fn = this._measureChildOverride || this._measureChild;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
       if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(this, child, this._items[idx]);
+        mm[idx] = fn.call(this, child, this._items[idx] /*as unknown as object*/);
       }
     }
     this._childMeasurements = mm;
@@ -486,7 +505,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       target.addEventListener('scroll', this, {passive: true});
       if (target === this._containerElement) {
         this._sizer = this._sizer || this._createContainerSizer();
-        this._container.insertBefore(this._sizer, this._container.firstChild);
+        this._container!.insertBefore(this._sizer, this._container!.firstChild);
       }
     }
   }
@@ -495,12 +514,12 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * Index and position of item to scroll to. The scroller will fix to that point
    * until the user scrolls.
    */
-  set scrollToIndex(newValue: {index: number, position?: string}) {
+  set scrollToIndex(newValue: ScrollToIndexValue) {
     this._scrollToIndex = newValue;
     this._schedule(this._updateLayout);
   }
 
-  protected async _schedule(method): Promise<void> {
+  protected async _schedule(method: Function): Promise<void> {
     if (!this._scheduled.has(method)) {
       this._scheduled.add(method);
       await Promise.resolve();
@@ -521,10 +540,10 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       this._itemsChanged = false;
       await this._mutationPromise;
     }
-    if (this._layout.measureChildren) {
-      this._children.forEach((child) => this._childrenRO.observe(child));
+    if (this._layout!.measureChildren) {
+      this._children.forEach((child) => this._childrenRO!.observe(child));
     }
-    this._positionChildren(this._childrenPos);
+    this._positionChildren(this._childrenPos!);
     this._sizeContainer(this._scrollSize);
     if (this._scrollErr) {
       this._correctScrollError(this._scrollErr);
@@ -536,9 +555,9 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   _updateLayout() {
-    this._layout.totalItems = this._totalItems;
+    this._layout!.totalItems = this._totalItems!;
     if (this._scrollToIndex !== null) {
-      this._layout.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex.position);
+      this._layout!.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex!.position!);
       this._scrollToIndex = null;
     }
     this._updateView();
@@ -549,7 +568,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
       }
       this._childMeasurements = null;
     }
-    this._layout.reflowIfNeeded(this._itemsChanged);
+    this._layout!.reflowIfNeeded(this._itemsChanged);
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
     }
@@ -563,13 +582,15 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
           'uv-start',
           'uv-end'
         );
-      } catch(e) {}
+      } catch(e) {
+        console.warn('Error measuring performance data: ', e);
+      }
       window.performance.mark('uv-start');
     }
     this._schedule(this._updateLayout);
   }
 
-  handleEvent(event) {
+  handleEvent(event: CustomEvent) {
     switch (event.type) {
       case 'scroll':
         if (!this._scrollTarget || event.target === this._scrollTarget) {
@@ -601,7 +622,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     if (this._containerRO === null) {
       const ResizeObserver = await getResizeObserver();
       this._containerRO = new ResizeObserver(
-        (entries) => this._containerSizeChanged(entries[0].contentRect));
+        (entries: ResizeObserverEntry[]) => this._containerSizeChanged(entries[0].contentRect));
       this._childrenRO =
         new ResizeObserver(this._childrenSizeChanged.bind(this));
       this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
@@ -614,7 +635,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
         const sheet = (this._containerStylesheet = document.createElement('style'));
         sheet.textContent = containerStyles(':host', '::slotted(*)');
       }
-      const root = this._containerElement.shadowRoot || this._containerElement.attachShadow({mode: 'open'});
+      const root = this._containerElement!.shadowRoot || this._containerElement!.attachShadow({mode: 'open'});
       const slot = root.querySelector('slot:not([name])');
       root.appendChild(this._containerStylesheet);
       if (!slot) {
@@ -645,15 +666,15 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     return sizer;
   }
 
-  get _children(): Array<Child> {
+  get _children(): Array<HTMLElement> {
     const arr = [];
-    let next = this.container.firstElementChild;
+    let next = this.container!.firstElementChild as HTMLElement;
     while (next) {
       // Skip our spacer. TODO (graynorton): Feels a bit hacky. Anything better?
       if (next.id !== 'uni-virtualizer-spacer') {
         arr.push(next);
       }
-      next = next.nextElementSibling;
+      next = next.nextElementSibling as HTMLElement;
     }
     return arr;
   }
@@ -711,18 +732,18 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
    * Styles the _sizer element or the container so that its size reflects the
    * total size of all items.
    */
-  private _sizeContainer(size) {
+  private _sizeContainer(size?: ScrollSize | null) {
     if (this._scrollTarget === this._containerElement) {
-      const left = size && size.width ? size.width - 1 : 0;
-      const top = size && size.height ? size.height - 1 : 0;
+      const left = size && (size as HorizontalScrollSize).width ? (size as HorizontalScrollSize).width - 1 : 0;
+      const top = size && (size as VerticalScrollSize).height ? (size as VerticalScrollSize).height - 1 : 0;
       if (this._sizer) {
         this._sizer.style.transform = `translate(${left}px, ${top}px)`;
       }
     } else {
       if (this._containerElement) {
         const style = (this._containerElement as HTMLElement).style;
-        style.minWidth = size && size.width ? size.width + 'px' : null;
-        style.minHeight = size && size.height ? size.height + 'px' : null;  
+        (style.minWidth as string | null) = size && (size as HorizontalScrollSize).width ? (size as HorizontalScrollSize).width + 'px' : null;
+        (style.minHeight as string | null) = size && (size as VerticalScrollSize).height ? (size as VerticalScrollSize).height + 'px' : null;  
       }
     }
   }
@@ -738,7 +759,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
         const idx = (key as unknown as number) - this._first;
         const child = children[idx];
         if (child) {
-          const {top, left, width, height} = pos[key];
+          const {top, left, width, height} = pos[key as unknown as number];
           child.style.position = 'absolute';
           child.style.transform = `translate(${left}px, ${top}px)`;
           if (width !== undefined) {
@@ -789,7 +810,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     // range change events are mainly intended for "internal" consumption by the
     // renderer, whereas visibility change events are mainly intended for "external"
     // consumption by application code.
-    this._container.dispatchEvent(
+    this._container!.dispatchEvent(
         new CustomEvent('rangeChanged', {detail:{
           first: this._first,
           last: this._last,
@@ -800,7 +821,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   }
 
   private _notifyVisibility() {
-    this._container.dispatchEvent(
+    this._container!.dispatchEvent(
         new CustomEvent('visibilityChanged', {detail:{
           first: this._first,
           last: this._last,
@@ -823,7 +844,7 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
   private async _observeMutations() {
     if (!this._mutationsObserved) {
       this._mutationsObserved = true;
-      this._mutationPromiseResolver();
+      this._mutationPromiseResolver!();
       this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
       this._mutationsObserved = false;
     }
@@ -838,16 +859,16 @@ export class VirtualScroller<Item, Child extends HTMLElement> {
     // this.requestRemeasure();
   }
 
-  private _childrenSizeChanged(changes) {
-    for (let change of changes) {
-      this._toBeMeasured.set(change.target, change.contentRect);
+  private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
+    for (const change of changes) {
+      this._toBeMeasured.set(change.target as HTMLElement, change.contentRect);
     }
     this._measureChildren();
     this._schedule(this._updateLayout);
   }
 }
 
-function getMargins(el): Margins {
+function getMargins(el: Element): Margins {
   const style = window.getComputedStyle(el);
   return {
     marginTop: getMarginValue(style.marginTop),

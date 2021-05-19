@@ -1,17 +1,31 @@
+import {Layout1dBaseConfig} from './Layout1dBase.js';
 import {Layout1dGrid} from './Layout1dGrid.js';
-import {Positions} from './Layout.js';
+import {Positions, LayoutSpecifier} from './Layout.js';
 
-export class Layout1dSquareGrid extends Layout1dGrid {
-  protected _idealSize: number;
+interface Layout1dSquareGridConfig extends Layout1dBaseConfig {
+  spacing?: number,
+  idealSize?: number
+}
 
-  constructor(config) {
-    super(config);
-    if (config.idealSize === undefined) {
-        this._idealSize = 200;
-    }
+export type Layout1dSquareGridSpecifier = LayoutSpecifier<Layout1dSquareGrid, Layout1dSquareGridConfig>;
+
+declare global {
+  interface VirtualizerLayoutSpecifiers {
+    Layout1dSquareGrid: Layout1dSquareGridSpecifier,
   }
+}
 
-  set idealSize(px) {
+export class Layout1dSquareGrid extends Layout1dGrid<Layout1dSquareGridConfig> {
+  protected _idealSize: number = 200;
+
+  // constructor(config) {
+  //   super(config);
+  //   if (config.idealSize === undefined) {
+  //       this._idealSize = 200;
+  //   }
+  // }
+
+  set idealSize(px: number) {
     if (px !== this._idealSize) {
       this._idealSize = px;
       this._scheduleLayoutUpdate();
