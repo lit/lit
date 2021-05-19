@@ -45,4 +45,13 @@ msg(html`a:${'A'} b:${'B'} c:${'C'}`);
 // Custom ID
 msg('Hello World', {id: 'myId'});
 
+// Description
 msg('described 0', {desc: 'Description of 0'});
+
+// This example has 4 <ph> placeholders. The 2nd has two expressions, and the
+// rest have 0 expressions. Ensure that we index these expressions as [0, 1] by
+// counting _expressions_, instead of [2, 2] by counting _placeholders_ See
+// https://github.com/lit/lit/issues/1896).
+const urlBase = 'http://example.com/';
+const urlPath = 'foo';
+msg(html`<b>Hello</b>! Click <a href="${urlBase}/${urlPath}">here</a>!`);

@@ -20,4 +20,5 @@ export const templates = {
   hf979404a36e879cb: html`a:${0} b:${1} c:${2}`,
   myId: `Hello World`,
   s03c68d79ad36e8d4: `described 0`,
+  h8d70dfec810d1eae: html`<b>Hello</b>! Click <a href="${0}/${1}">here</a>!`,
 };
