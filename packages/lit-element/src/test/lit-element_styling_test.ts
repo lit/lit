@@ -13,7 +13,7 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as unknown as LitExtraGlobals;
+const extraGlobals = window as LitExtraGlobals & typeof globalThis;
 
 (canTestLitElement ? suite : suite.skip)('Styling', () => {
   suite('Basic styling', () => {
