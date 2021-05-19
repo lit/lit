@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const extraGlobals = window as unknown as LitExtraGlobals;
+const extraGlobals = window as LitExtraGlobals;
 
 /**
  * Whether the current browser supports `adoptedStyleSheets`.

@@ -12,7 +12,7 @@ export const generateElementName = () => `x-${count++}`;
 export const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
 
-const extraGlobals = window as unknown as LitExtraGlobals;
+const extraGlobals = window as LitExtraGlobals;
 
 export const getComputedStyleValue = (element: Element, property: string) =>
   extraGlobals.ShadyCSS

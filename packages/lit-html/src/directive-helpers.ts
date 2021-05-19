@@ -19,7 +19,7 @@ type ChildPart = InstanceType<typeof ChildPart>;
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
-const extraGlobals = window as unknown as LitExtraGlobals;
+const extraGlobals = window as LitExtraGlobals;
 
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
