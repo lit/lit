@@ -11,7 +11,6 @@
 import {html} from 'lit';
 import {LitElement, css} from 'lit';
 import {property} from 'lit/decorators/property.js';
-//import {repeat} from 'lit/directives/repeat.js';
 
 export const initialData = {
   name: 'SSR',

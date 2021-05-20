@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import test, {Test} from 'tape';
+import {test} from 'uvu';
+import * as assert from 'uvu/assert';
 
 import {extractMessagesFromProgram} from '../program-analysis.js';
 import {ProgramMessage} from '../messages.js';
@@ -22,7 +23,6 @@ const cache = new CompilerHostCache();
  * diagnostics are returned.
  */
 function checkAnalysis(
-  t: Test,
   inputTs: string,
   expectedMessages: Array<
     Pick<ProgramMessage, 'name' | 'contents'> &
@@ -44,11 +44,11 @@ function checkAnalysis(
     () => undefined
   );
   const {messages, errors} = extractMessagesFromProgram(program);
-  t.deepEqual(
+  assert.equal(
     errors.map((diagnostic) => ts.formatDiagnostic(diagnostic, host).trim()),
     expectedErrors
   );
-  t.deepEqual(
+  assert.equal(
     messages.map(({name, contents, desc}) => ({
       name,
       contents,
@@ -60,20 +60,19 @@ function checkAnalysis(
       desc,
     }))
   );
-  t.end();
 }
 
-test('irrelevant code', (t) => {
+test('irrelevant code', () => {
   const src = 'const foo = "foo";';
-  checkAnalysis(t, src, []);
+  checkAnalysis(src, []);
 });
 
-test('string message', (t) => {
+test('string message', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World', {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: ['Hello World'],
@@ -81,12 +80,12 @@ test('string message', (t) => {
   ]);
 });
 
-test('string message unnecessarily tagged with str', (t) => {
+test('string message unnecessarily tagged with str', () => {
   const src = `
     import {msg, str} from '@lit/localize';
     msg(str\`Hello World\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: ['Hello World'],
@@ -94,12 +93,12 @@ test('string message unnecessarily tagged with str', (t) => {
   ]);
 });
 
-test('string message (auto ID)', (t) => {
+test('string message (auto ID)', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World');
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
@@ -107,12 +106,12 @@ test('string message (auto ID)', (t) => {
   ]);
 });
 
-test('HTML message', (t) => {
+test('HTML message', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg(html\`<b>Hello World</b>\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: [
@@ -124,12 +123,12 @@ test('HTML message', (t) => {
   ]);
 });
 
-test('HTML message (auto ID)', (t) => {
+test('HTML message (auto ID)', () => {
   const src = `
     import {msg} from '@lit/localize');
     msg(html\`<b>Hello World</b>\`);
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'hc468c061c2d171f4',
       contents: [
@@ -141,12 +140,12 @@ test('HTML message (auto ID)', (t) => {
   ]);
 });
 
-test('HTML message with comment', (t) => {
+test('HTML message with comment', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg(html\`<b><!-- greeting -->Hello World</b>\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: [
@@ -158,13 +157,13 @@ test('HTML message with comment', (t) => {
   ]);
 });
 
-test('parameterized string message', (t) => {
+test('parameterized string message', () => {
   const src = `
     import {msg, str} from '@lit/localize';
     const name = "friend";
     msg(str\`Hello \${name}\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: ['Hello ', {untranslatable: '${name}'}],
@@ -172,13 +171,13 @@ test('parameterized string message', (t) => {
   ]);
 });
 
-test('parameterized string message (auto ID)', (t) => {
+test('parameterized string message (auto ID)', () => {
   const src = `
     import {msg, str} from '@lit/localize';
     const name = "friend";
     msg(str\`Hello \${name}\`);
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'saed7d3734ce7f09d',
       contents: ['Hello ', {untranslatable: '${name}'}],
@@ -186,13 +185,13 @@ test('parameterized string message (auto ID)', (t) => {
   ]);
 });
 
-test('parameterized HTML message', (t) => {
+test('parameterized HTML message', () => {
   const src = `
     import {msg} from '@lit/localize';
     const name = "Friend";
     msg(html\`<b>Hello \${friend}</b>\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: [
@@ -204,7 +203,7 @@ test('parameterized HTML message', (t) => {
   ]);
 });
 
-test('desc option (string)', (t) => {
+test('desc option (string)', () => {
   const src = `
     import {msg} from '@lit/localize';
 
@@ -212,7 +211,7 @@ test('desc option (string)', (t) => {
       desc: 'A greeting to Earth'
     });
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
@@ -221,7 +220,7 @@ test('desc option (string)', (t) => {
   ]);
 });
 
-test('desc option (no substitution literal)', (t) => {
+test('desc option (no substitution literal)', () => {
   const src = `
     import {msg} from '@lit/localize';
 
@@ -229,7 +228,7 @@ test('desc option (no substitution literal)', (t) => {
       desc: \`A greeting to Earth\`
     });
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
@@ -238,7 +237,7 @@ test('desc option (no substitution literal)', (t) => {
   ]);
 });
 
-test('error: desc option (substitution literal)', (t) => {
+test('error: desc option (substitution literal)', () => {
   const src = `
     import {msg} from '@lit/localize';
 
@@ -247,7 +246,6 @@ test('error: desc option (substitution literal)', (t) => {
     });
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -257,23 +255,22 @@ test('error: desc option (substitution literal)', (t) => {
   );
 });
 
-test('different msg function', (t) => {
+test('different msg function', () => {
   const src = `
     function msg(id: string, template: string) {
       return template;
     }
     msg('Greeting', {id: 'greeting'});
   `;
-  checkAnalysis(t, src, []);
+  checkAnalysis(src, []);
 });
 
-test('error: message id cannot be empty', (t) => {
+test('error: message id cannot be empty', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World', {id: ''});
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -282,14 +279,13 @@ test('error: message id cannot be empty', (t) => {
   );
 });
 
-test('error: options must be object literal', (t) => {
+test('error: options must be object literal', () => {
   const src = `
     import {msg} from '@lit/localize';
     const options = {id: 'greeting'};
     msg('Hello World', options);
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -298,14 +294,13 @@ test('error: options must be object literal', (t) => {
   );
 });
 
-test('error: options must be long-form', (t) => {
+test('error: options must be long-form', () => {
   const src = `
     import {msg} from '@lit/localize';
     const id = 'greeting';
     msg('Hello World', {id});
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -314,7 +309,7 @@ test('error: options must be long-form', (t) => {
   );
 });
 
-test('error: message id must be static', (t) => {
+test('error: message id must be static', () => {
   const src = `
     import {msg} from '@lit/localize';
     const id = 'greeting';
@@ -322,7 +317,6 @@ test('error: message id must be static', (t) => {
     msg('Hello World', {id: \`\${id}\`});
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -332,14 +326,13 @@ test('error: message id must be static', (t) => {
   );
 });
 
-test('error: different message contents', (t) => {
+test('error: different message contents', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World', {id: 'greeting'});
     msg('Hello Friend', {id: 'greeting'});
   `;
   checkAnalysis(
-    t,
     src,
     [
       {
@@ -353,14 +346,13 @@ test('error: different message contents', (t) => {
   );
 });
 
-test('error: string with expressions must use str tag', (t) => {
+test('error: string with expressions must use str tag', () => {
   const src = `
     import {msg} from '@lit/localize';
     const name = 'friend';
     msg(\`Hello \${name}\`);
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -368,3 +360,5 @@ test('error: string with expressions must use str tag', (t) => {
     ]
   );
 });
+
+test.run();

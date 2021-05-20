@@ -21,6 +21,8 @@ import '../directives/repeat_test.js';
 import '../directives/template-content_test.js';
 import '../directives/unsafe-html_test.js';
 
+const extraGlobals = window as LitExtraGlobals;
+
 suite('polyfill-support rendering', () => {
   test('style elements apply in shadowRoots', () => {
     const container = document.createElement('scope-1');
@@ -76,7 +78,7 @@ suite('polyfill-support rendering', () => {
     // all styles are removed
     const styles = shadowRoot(container)!.querySelectorAll('style');
     // if ShadyDOM is in use, all styles should be removed from the template.
-    if (window.ShadyDOM?.inUse) {
+    if (extraGlobals.ShadyDOM?.inUse) {
       assert.equal(styles.length, 0);
     }
     wrap(document.body).removeChild(container);
@@ -130,8 +132,8 @@ suite('polyfill-support rendering', () => {
       <div>Testing...</div>
     `;
     renderShadowRoot(result, container);
-    if (window.ShadyCSS) {
-      window.ShadyCSS.styleElement(container);
+    if (extraGlobals.ShadyCSS) {
+      extraGlobals.ShadyCSS.styleElement(container);
     }
     const div = shadowRoot(container)!.querySelector('div');
     assert.equal(
@@ -163,13 +165,13 @@ suite('polyfill-support rendering', () => {
       <scope-4a-sub></scope-4a-sub>
     `;
     renderShadowRoot(result, container);
-    if (window.ShadyCSS) {
-      window.ShadyCSS.styleElement(container);
+    if (extraGlobals.ShadyCSS) {
+      extraGlobals.ShadyCSS.styleElement(container);
     }
     const e = shadowRoot(container)!.querySelector('scope-4a-sub')!;
     renderShadowRoot(shadowContent, e);
-    if (window.ShadyCSS) {
-      window.ShadyCSS.styleElement(e);
+    if (extraGlobals.ShadyCSS) {
+      extraGlobals.ShadyCSS.styleElement(e);
     }
     assert.equal(
       getComputedStyle(e).getPropertyValue('border-top-width').trim(),
@@ -205,12 +207,12 @@ suite('polyfill-support rendering', () => {
     );
     const elements = shadowRoot(container)!.querySelectorAll('scope-4b-sub');
     renderShadowRoot(nestedContent, elements[0]);
-    if (window.ShadyCSS) {
-      window.ShadyCSS.styleSubtree(elements[0]);
+    if (extraGlobals.ShadyCSS) {
+      extraGlobals.ShadyCSS.styleSubtree(elements[0]);
     }
     renderShadowRoot(nestedContent, elements[1]);
-    if (window.ShadyCSS) {
-      window.ShadyCSS.styleSubtree(elements[1]);
+    if (extraGlobals.ShadyCSS) {
+      extraGlobals.ShadyCSS.styleSubtree(elements[1]);
     }
     assert.equal(
       getComputedStyle(elements[0]).getPropertyValue('border-top-width').trim(),
@@ -344,7 +346,10 @@ suite('polyfill-support rendering', () => {
 
   // TODO(sorvell): This will only be supported via static bindings.
   test.skip('part values render into styles once per scope', function () {
-    if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
+    if (
+      typeof extraGlobals.ShadyDOM === 'undefined' ||
+      !extraGlobals.ShadyDOM.inUse
+    ) {
       this.skip();
       return;
     }

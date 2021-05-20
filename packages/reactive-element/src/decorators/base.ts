@@ -70,7 +70,7 @@ export const decorateProperty = ({
   descriptor?: (property: PropertyKey) => PropertyDescriptor;
 }) => (
   protoOrDescriptor: ReactiveElement | ClassElement,
-  name?: string
+  name?: PropertyKey
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): void | any => {

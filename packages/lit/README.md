@@ -1,10 +1,10 @@
-![Lit](./logo.png)
+<img src="./logo.svg" alt="Lit" width="300" height="141">
 
-## Simple. Fast. Web Components.
+### Simple. Fast. Web Components.
 
-[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
-[![Published on npm](https://img.shields.io/npm/v/lit)](https://www.npmjs.com/package/lit)
-[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
+[![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg)](https://github.com/lit/lit/actions/workflows/tests.yml)
+[![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
+[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://lit.dev/slack-invite/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
 Lit is a simple library for building fast, lightweight web components.

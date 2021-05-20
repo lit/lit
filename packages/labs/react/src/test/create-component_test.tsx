@@ -7,11 +7,14 @@
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-import * as ReactModule from 'react';
+import type * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '../create-component.js';
 import {assert} from '@esm-bundle/chai';
+
+// Needed for JSX expressions
+const React = window.React;
 
 const elementName = 'basic-element';
 @customElement(elementName)
@@ -81,12 +84,23 @@ suite('createComponent', () => {
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
     window.ReactDOM.render(
-      window.React.createElement(BasicElementComponent, props),
+      <BasicElementComponent {...props}/>,
       container
     );
     el = container.querySelector(elementName)! as BasicElement;
     await el.updateComplete;
   };
+
+  test('works with text children', async () => {
+    const name = 'World';
+    window.ReactDOM.render(
+      <BasicElementComponent>Hello {name}</BasicElementComponent>,
+      container
+    );
+    el = container.querySelector(elementName)! as BasicElement;
+    await el.updateComplete;
+    assert.equal(el.textContent, 'Hello World');
+  });
 
   test('wrapper renders custom element that updates', async () => {
     await renderReactComponent();

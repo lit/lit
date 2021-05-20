@@ -10,6 +10,8 @@ import {html as htmlWithApply} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 
+const extraGlobals = window as LitExtraGlobals;
+
 suite('@apply', () => {
   test('styles with css custom properties using @apply render', function () {
     const container = document.createElement('scope-5');
@@ -29,38 +31,7 @@ suite('@apply', () => {
       <div>Testing...</div>
     `;
     renderShadowRoot(result, container);
-    if (window.ShadyCSS) {
-      window.ShadyCSS.styleElement(container);
-    }
-    const div = container.shadowRoot!.querySelector('div');
-    const computedStyle = getComputedStyle(div!);
-    assert.equal(
-      computedStyle.getPropertyValue('border-top-width').trim(),
-      '3px'
-    );
-    assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
-    document.body.removeChild(container);
-  });
-
-  // TODO(sorvell): No longer supported. Only styles in TemplateResults are
-  // identified.
-  test.skip('styles with mixins that are not in a TemplateInstance', function () {
-    const container = document.createElement('scope-6');
-    document.body.appendChild(container);
-    const style = document.createElement('style');
-    style.innerHTML = `
-      :host {
-        --batch: {
-          border: 3px solid orange;
-          padding: 4px;
-        };
-      }
-      div {
-        @apply --batch;
-      }
-    `;
-    const result = [style, htmlWithApply`<div>Testing...</div>`];
-    renderShadowRoot(result, container);
+    extraGlobals.ShadyCSS?.styleElement(container);
     const div = container.shadowRoot!.querySelector('div');
     const computedStyle = getComputedStyle(div!);
     assert.equal(
@@ -90,7 +61,7 @@ suite('@apply', () => {
       const applyUser = document.createElement('apply-user');
       document.body.appendChild(applyUser);
       renderShadowRoot(applyUserContent, applyUser);
-      window.ShadyCSS!.styleElement(applyUser);
+      extraGlobals.ShadyCSS?.styleElement(applyUser);
       const applyUserDiv = applyUser.shadowRoot!.querySelector('div');
       const applyUserStyle = getComputedStyle(applyUserDiv!);
       assert.equal(
@@ -130,14 +101,13 @@ suite('@apply', () => {
       const div = applyProducer.shadowRoot!.querySelector('#test');
       assert.ok(div?.hasAttribute('some-attr'));
       assert.ok(div?.textContent, 'test');
-      window.ShadyCSS!.styleElement(applyProducer);
-      const usersInProducer = applyProducer.shadowRoot!.querySelectorAll(
-        'apply-user'
-      );
+      extraGlobals.ShadyCSS?.styleElement(applyProducer);
+      const usersInProducer =
+        applyProducer.shadowRoot!.querySelectorAll('apply-user');
       renderShadowRoot(applyUserContent, usersInProducer[0]);
-      window.ShadyCSS!.styleElement(usersInProducer[0]);
+      extraGlobals.ShadyCSS?.styleElement(usersInProducer[0]);
       renderShadowRoot(applyUserContent, usersInProducer[1]);
-      window.ShadyCSS!.styleElement(usersInProducer[1]);
+      extraGlobals.ShadyCSS?.styleElement(usersInProducer[1]);
       const userInProducerStyle1 = getComputedStyle(
         usersInProducer[0].shadowRoot!.querySelector('div')!
       );
@@ -169,8 +139,6 @@ suite('@apply', () => {
     testApplyProducer();
   });
 
-  // TODO(sorvell): remove skip when this ShadyCSS PR is merged:
-  // https://github.com/webcomponents/shadycss/pull/227.
   test('@apply styles flow to custom elements that render in connectedCallback', () => {
     class E extends HTMLElement {
       connectedCallback() {
@@ -183,6 +151,7 @@ suite('@apply', () => {
             </style>
             <div>Testing...</div>`;
         renderShadowRoot(result, this);
+        extraGlobals.ShadyCSS?.styleElement(this);
       }
     }
     customElements.define('apply-user-ce1', E);

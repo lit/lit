@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "publishConfig": {
     "access": "public"
   },
@@ -26,18 +26,11 @@
     "!/src/tests/",
     "/src_client/",
     "!/src_client/tests/",
-    "/lib/",
-    "!/lib/tests/",
-    "!/lib/.tsbuildinfo",
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",
-    "/id-generation.d.ts",
-    "/id-generation.js",
-    "/id-generation.js.map",
-    "/fnv1a64.d.ts",
-    "/fnv1a64.js",
-    "/fnv1a64.js.map",
+    "/internal/",
+    "/init/",
     "/config.schema.json"
   ],
   "dependencies": {

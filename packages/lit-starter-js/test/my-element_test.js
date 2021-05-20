@@ -5,9 +5,8 @@
  */
 
 import {MyElement} from '../my-element.js';
-import {fixture, html} from '@open-wc/testing';
-
-const assert = chai.assert;
+import {fixture, assert} from '@open-wc/testing';
+import {html} from 'lit/static-html.js';
 
 suite('my-element', () => {
   test('is defined', () => {

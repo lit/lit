@@ -45,8 +45,8 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "1.0.0-rc.1",
-    "lit": "^2.0.0-rc.1"
+    "@lit/reactive-element": "1.0.0-rc.2",
+    "lit": "^2.0.0-rc.2"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
