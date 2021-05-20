@@ -40,6 +40,7 @@ const reservedProperties = [
   '_$litDirective$',
   '_$litPart$',
   '_$litElement$',
+  '_$cssResult$',
 ];
 
 // Private properties which should be stable between versions but are used on
