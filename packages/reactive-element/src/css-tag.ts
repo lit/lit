@@ -33,6 +33,8 @@ export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
 
 const constructionToken = Symbol();
 
+const styleSheetCache = new Map<string, CSSStyleSheet>();
+
 /**
  * A container for a string of CSS text, that may be used to create a CSSStyleSheet.
  *
@@ -43,7 +45,6 @@ const constructionToken = Symbol();
 export class CSSResult {
   _$cssResult$ = true;
   readonly cssText: string;
-  private _styleSheet?: CSSStyleSheet;
 
   private constructor(cssText: string, safeToken: symbol) {
     if (safeToken !== constructionToken) {
@@ -59,11 +60,12 @@ export class CSSResult {
   get styleSheet(): CSSStyleSheet | undefined {
     // Note, if `supportsAdoptingStyleSheets` is true then we assume
     // CSSStyleSheet is constructable.
-    if (supportsAdoptingStyleSheets && this._styleSheet === undefined) {
-      this._styleSheet = new CSSStyleSheet();
-      this._styleSheet.replaceSync(this.cssText);
+    let styleSheet = styleSheetCache.get(this.cssText);
+    if (supportsAdoptingStyleSheets && styleSheet === undefined) {
+      styleSheetCache.set(this.cssText, (styleSheet = new CSSStyleSheet()));
+      styleSheet.replaceSync(this.cssText);
     }
-    return this._styleSheet;
+    return styleSheet;
   }
 
   toString(): string {
@@ -73,22 +75,6 @@ export class CSSResult {
 
 type ConstructableCSSResult = CSSResult & {
   new (cssText: string, safeToken: symbol): CSSResult;
-};
-
-const cssResultCache = new Map<string, CSSResult>();
-
-const getCSSResult = (cssText: string): CSSResult => {
-  let result = cssResultCache.get(cssText);
-  if (result === undefined) {
-    cssResultCache.set(
-      cssText,
-      (result = new (CSSResult as ConstructableCSSResult)(
-        cssText,
-        constructionToken
-      ))
-    );
-  }
-  return result;
 };
 
 const textFromCSSResult = (value: CSSResultGroup | number) => {
@@ -112,9 +98,11 @@ const textFromCSSResult = (value: CSSResultGroup | number) => {
  * or exfiltrate data to an attacker controlled site. Take care to only use
  * this with trusted input.
  */
-export const unsafeCSS = (value: unknown) => {
-  return getCSSResult(typeof value === 'string' ? value : String(value));
-};
+export const unsafeCSS = (value: unknown) =>
+  new (CSSResult as ConstructableCSSResult)(
+    typeof value === 'string' ? value : String(value),
+    constructionToken
+  );
 
 /**
  * A template literal tag which can be used with LitElement's
@@ -135,7 +123,7 @@ export const css = (
           (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
           strings[0]
         );
-  return getCSSResult(cssText);
+  return new (CSSResult as ConstructableCSSResult)(cssText, constructionToken);
 };
 
 /**

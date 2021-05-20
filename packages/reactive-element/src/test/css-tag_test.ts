@@ -9,19 +9,26 @@ import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {
   suite('css tag', () => {
-    test('caches CSSResults with no expressions', () => {
-      // Alias avoids syntax highlighting issues in editors
-      const cssValue = css;
-      const makeStyle = () => cssValue`foo`;
-      const style1 = makeStyle();
-      const style2 = makeStyle();
-      assert.strictEqual(style1, style2);
-    });
-
     test('CSSResults always produce the same stylesheet', () => {
       // Alias avoids syntax highlighting issues in editors
       const cssValue = css;
       const makeStyle = () => cssValue`foo`;
+      const style1 = makeStyle();
+      assert.equal(
+        (style1 as CSSResult).styleSheet,
+        (style1 as CSSResult).styleSheet
+      );
+      const style2 = makeStyle();
+      assert.equal(
+        (style1 as CSSResult).styleSheet,
+        (style2 as CSSResult).styleSheet
+      );
+    });
+
+    test('css with same values always produce the same stylesheet', () => {
+      // Alias avoids syntax highlighting issues in editors
+      const cssValue = css;
+      const makeStyle = () => cssValue`background: ${cssValue`blue`}`;
       const style1 = makeStyle();
       assert.equal(
         (style1 as CSSResult).styleSheet,
@@ -47,20 +54,6 @@ suite('Styling', () => {
         (style1 as CSSResult).styleSheet,
         (style2 as CSSResult).styleSheet
       );
-    });
-
-    test('caches CSSResults with same-valued expressions', () => {
-      const makeStyle = () => css`foo ${1}`;
-      const style1 = makeStyle();
-      const style2 = makeStyle();
-      assert.strictEqual(style1, style2);
-    });
-
-    test('does not cache CSSResults with diferent-valued expressions', () => {
-      const makeStyle = (x: number) => css`foo ${x}`;
-      const style1 = makeStyle(1);
-      const style2 = makeStyle(2);
-      assert.notStrictEqual(style1, style2);
     });
 
     test('`css` get styles throws when unsafe values are used', async () => {
