@@ -7,7 +7,7 @@ import {
   css,
   ReactiveElement,
   unsafeCSS,
-  CSSResultArray,
+  CSSResultGroup,
 } from '../reactive-element.js';
 
 import {
@@ -586,7 +586,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         base,
         class extends RenderingElement {
-          static finalizeStyles(styles: CSSResultArray) {
+          static finalizeStyles(styles: CSSResultGroup) {
             getStylesCounter++;
             return super.finalizeStyles(styles);
           }
