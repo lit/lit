@@ -45,7 +45,10 @@ export class QueryAllVisitor {
     if (!ts.isStringLiteral(arg0)) {
       return;
     }
-    const name = property.name.getText();
+    if (!ts.isIdentifier(property.name)) {
+      return;
+    }
+    const name = property.name.text;
     const selector = arg0.text;
     mutations.removeNodes.add(property);
     mutations.classMembers.push(this._createQueryAllGetter(name, selector));

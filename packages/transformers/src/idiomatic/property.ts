@@ -43,7 +43,10 @@ export class PropertyVisitor {
     if (!(options === undefined || ts.isObjectLiteralExpression(options))) {
       return;
     }
-    const name = property.name.getText();
+    if (!ts.isIdentifier(property.name)) {
+      return;
+    }
+    const name = property.name.text;
     mutations.removeNodes.add(decorator);
     mutations.reactiveProperties.push({name, options});
   }

@@ -55,7 +55,10 @@ export class QueryVisitor {
     if (!ts.isStringLiteral(arg0)) {
       return;
     }
-    const name = property.name.getText();
+    if (!ts.isIdentifier(property.name)) {
+      return;
+    }
+    const name = property.name.text;
     const selector = arg0.text;
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
     mutations.removeNodes.add(property);

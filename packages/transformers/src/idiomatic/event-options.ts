@@ -56,7 +56,10 @@ export class EventOptionsVisitor {
     if (!ts.isObjectLiteralExpression(options)) {
       return;
     }
-    const methodName = method.name.getText();
+    if (!ts.isIdentifier(method.name)) {
+      return;
+    }
+    const methodName = method.name.text;
     mutations.removeNodes.add(method);
     mutations.classMembers.push(
       this._createEventOptionsAssignment(

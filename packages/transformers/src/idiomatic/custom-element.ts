@@ -45,7 +45,7 @@ export class CustomElementVisitor {
       return;
     }
     const elementName = arg0.text;
-    const className = class_.name.getText();
+    const className = class_.name.text;
     mutations.removeNodes.add(decorator);
     mutations.adjacentStatements.push(
       this._createCustomElementsDefineCall(elementName, className)

@@ -43,8 +43,11 @@ export class QueryAssignedNodesVisitor {
     if (!ts.isCallExpression(decorator.expression)) {
       return;
     }
+    if (!ts.isIdentifier(property.name)) {
+      return;
+    }
+    const name = property.name.text;
     const [arg0, arg1, arg2] = decorator.expression.arguments;
-    const name = property.name.getText();
     const slotName =
       arg0 !== undefined && ts.isStringLiteral(arg0) ? arg0.text : '';
     const flatten = arg1?.kind === ts.SyntaxKind.TrueKeyword;

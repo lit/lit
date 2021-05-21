@@ -112,7 +112,7 @@ export class LitTransformer {
       ) {
         continue;
       }
-      const decoratorName = decorator.expression.expression.getText();
+      const decoratorName = decorator.expression.expression.text;
       const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
       for (const visitor of visitors) {
         visitor.visit(mutations, class_, decorator);
@@ -128,7 +128,7 @@ export class LitTransformer {
         ) {
           continue;
         }
-        const decoratorName = decorator.expression.expression.getText();
+        const decoratorName = decorator.expression.expression.text;
         const visitors = this._memberDecoratorVisitors.get(decoratorName) ?? [];
         for (const visitor of visitors) {
           visitor.visit(mutations, member, decorator);
@@ -228,7 +228,7 @@ export class LitTransformer {
       (member) =>
         ts.isGetAccessor(member) &&
         ts.isIdentifier(member.name) &&
-        member.name.getText() === 'properties'
+        member.name.text === 'properties'
     );
     if (
       getter === undefined ||

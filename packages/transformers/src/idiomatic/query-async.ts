@@ -42,7 +42,10 @@ export class QueryAsyncVisitor {
     if (!ts.isCallExpression(decorator.expression)) {
       return;
     }
-    const name = property.name.getText();
+    if (!ts.isIdentifier(property.name)) {
+      return;
+    }
+    const name = property.name.text;
     const [arg0] = decorator.expression.arguments;
     if (!ts.isStringLiteral(arg0)) {
       return;

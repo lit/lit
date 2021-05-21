@@ -47,8 +47,11 @@ export class StateVisitor {
     if (arg0 !== undefined && !ts.isObjectLiteralExpression(arg0)) {
       return;
     }
+    if (!ts.isIdentifier(property.name)) {
+      return;
+    }
 
-    const name = property.name.getText();
+    const name = property.name.text;
     const options = this._createOptions(arg0);
     mutations.removeNodes.add(decorator);
     mutations.reactiveProperties.push({name, options});
@@ -59,7 +62,10 @@ export class StateVisitor {
     return f.createObjectLiteralExpression([
       ...(options !== undefined
         ? options.properties.filter((option) => {
-            const name = option.name?.getText();
+            const name =
+              option.name !== undefined && ts.isIdentifier(option.name)
+                ? option.name.text
+                : undefined;
             return !(name === 'state' || name === 'attribute');
           })
         : []),
