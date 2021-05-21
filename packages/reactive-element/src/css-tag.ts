@@ -102,7 +102,7 @@ export const unsafeCSS = (value: unknown) => {
 export const css = (
   strings: TemplateStringsArray,
   ...values: (CSSResultGroup | number)[]
-): CSSResultGroup => {
+): CSSResult => {
   const cssText =
     strings.length === 1
       ? strings[0]

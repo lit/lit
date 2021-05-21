@@ -402,7 +402,7 @@ const extraGlobals = window as LitExtraGlobals;
             div {
               border: 2px solid blue;
             }
-          `;
+          ` as CSSResultGroup;
         }
 
         render() {
@@ -439,7 +439,7 @@ const extraGlobals = window as LitExtraGlobals;
         class extends BaseClass {
           static get styles() {
             return [
-              super.styles,
+              BaseClass.styles,
               css`
                 p {
                   display: block;
