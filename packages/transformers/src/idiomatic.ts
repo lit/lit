@@ -13,6 +13,7 @@ import {StateVisitor} from './idiomatic/state.js';
 import {QueryVisitor} from './idiomatic/query.js';
 import {QueryAllVisitor} from './idiomatic/query-all.js';
 import {QueryAsyncVisitor} from './idiomatic/query-async.js';
+import {QueryAssignedNodesVisitor} from './idiomatic/query-assigned-nodes.js';
 
 /**
  * TypeScript transformer which transforms all Lit decorators to their idiomatic
@@ -64,6 +65,7 @@ export default function idiomaticLitDecoratorTransformer(): ts.TransformerFactor
         new QueryVisitor(context),
         new QueryAllVisitor(context),
         new QueryAsyncVisitor(context),
+        new QueryAssignedNodesVisitor(context),
       ]);
       return ts.visitNode(file, transformer.visit);
     };

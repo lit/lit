@@ -264,4 +264,100 @@ test('@queryAsync', () => {
   checkTransform(input, expected);
 });
 
+test('@queryAssignedNodes (default slot)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {queryAssignedNodes} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @queryAssignedNodes()
+    listItems: NodeListOf<HTMLElement>;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get listItems() {
+      return this.renderRoot
+        ?.querySelector('slot:not([name])')
+        ?.assignedNodes();
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('@queryAssignedNodes (with slot name)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {queryAssignedNodes} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @queryAssignedNodes('list')
+    listItems: NodeListOf<HTMLElement>;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get listItems() {
+      return this.renderRoot
+        ?.querySelector('slot[name=list]')
+        ?.assignedNodes();
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('@queryAssignedNodes (with flatten)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {queryAssignedNodes} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @queryAssignedNodes('list', true)
+    listItems: NodeListOf<HTMLElement>;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get listItems() {
+      return this.renderRoot
+        ?.querySelector('slot[name=list]')
+        ?.assignedNodes({flatten: true});
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('@queryAssignedNodes (with selector)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {queryAssignedNodes} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @queryAssignedNodes('list', false, '.item')
+    listItems: NodeListOf<HTMLElement>;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get listItems() {
+      return this.renderRoot
+        ?.querySelector('slot[name=list]')
+        ?.assignedNodes()
+        ?.filter((node) =>
+          node.nodeType === Node.ELEMENT_NODE &&
+            node.matches('.item')
+        );
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
