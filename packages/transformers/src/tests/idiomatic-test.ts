@@ -221,4 +221,25 @@ test('@query (caching)', () => {
   checkTransform(input, expected);
 });
 
+test('@queryAll', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {queryAll} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @queryAll('.myInput')
+    inputs: NodeListOf<HTMLInputElement>;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get inputs() {
+      return this.renderRoot?.querySelectorAll('.myInput');
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
