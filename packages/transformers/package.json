@@ -24,7 +24,9 @@
     "typescript": "^4.2.4"
   },
   "devDependencies": {
+    "@lit/reactive-element": "^1.0.0-rc.2",
     "@types/prettier": "^2.2.3",
+    "lit-element": "^3.0.0-rc.2",
     "lit": "^2.0.0-rc.2",
     "prettier": "^2.3.0",
     "uvu": "^0.5.1"

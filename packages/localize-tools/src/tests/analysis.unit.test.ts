@@ -39,6 +39,7 @@ function checkAnalysis(
   options.typeRoots = [];
   const {program, host} = createTsProgramFromFragment(
     inputTs,
+    '',
     options,
     cache,
     () => undefined

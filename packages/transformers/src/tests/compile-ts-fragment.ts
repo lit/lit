@@ -5,6 +5,7 @@
  */
 
 import * as ts from 'typescript';
+import * as pathlib from 'path';
 
 /**
  * Filesystem caching for the TypeScript CompilerHost implementation used in
@@ -37,6 +38,7 @@ export interface CompileResult {
  */
 export function compileTsFragment(
   inputCode: string,
+  cwd: string,
   options: ts.CompilerOptions,
   cache: CompilerHostCache,
   transformers?: (program: ts.Program) => ts.CustomTransformers
@@ -44,6 +46,7 @@ export function compileTsFragment(
   let outputCode = '';
   const {program, host} = createTsProgramFromFragment(
     inputCode,
+    cwd,
     options,
     cache,
     (code: string) => (outputCode = code)
@@ -71,12 +74,13 @@ export function compileTsFragment(
  */
 export function createTsProgramFromFragment(
   inputCode: string,
+  cwd: string,
   options: ts.CompilerOptions,
   cache: CompilerHostCache,
   writeFileCallback: (code: string) => void
 ): {host: ts.CompilerHost; program: ts.Program} {
-  const dummyTsFilename = '__DUMMY__.ts';
-  const dummyJsFilename = '__DUMMY__.js';
+  const dummyTsFilename = pathlib.join(cwd, '__DUMMY__.ts');
+  const dummyJsFilename = pathlib.join(cwd, '__DUMMY__.js');
   const dummySourceFile = ts.createSourceFile(
     dummyTsFilename,
     inputCode,

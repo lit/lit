@@ -28,9 +28,15 @@ function checkTransform(inputTs: string, expectedJs: string) {
   // them here, so it's a waste of time.
   options.typeRoots = [];
   options.experimentalDecorators = true;
-  const result = compileTsFragment(inputTs, options, cache, () => ({
-    before: [idiomaticLitDecoratorTransformer()],
-  }));
+  const result = compileTsFragment(
+    inputTs,
+    __dirname,
+    options,
+    cache,
+    (program) => ({
+      before: [idiomaticLitDecoratorTransformer(program)],
+    })
+  );
 
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
   // TypeScript >= 4 will add an empty export statement if there are no imports
@@ -382,6 +388,146 @@ test('@eventOptions', () => {
           console.log('click', event.target);
         },
         once: true
+      };
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+for (const specifier of [
+  'lit/decorators.js',
+  'lit/decorators',
+  'lit/decorators/custom-element.js',
+  'lit/decorators/custom-element',
+  '@lit/reactive-element/decorators.js',
+  '@lit/reactive-element/decorators',
+  '@lit/reactive-element/decorators/custom-element.js',
+  '@lit/reactive-element/decorators/custom-element',
+  'lit-element',
+  'lit-element/index.js',
+  'lit-element/index',
+  'lit-element/decorators.js',
+  'lit-element/decorators',
+]) {
+  test(`various import specifiers [${specifier}]`, () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {customElement} from '${specifier}';
+    @customElement('my-element')
+    class MyElement extends LitElement {
+    }
+    `;
+
+    const expected = `
+    import {LitElement} from 'lit';
+    class MyElement extends LitElement {
+    }
+    customElements.define('my-element', MyElement);
+    `;
+    checkTransform(input, expected);
+  });
+}
+
+test('only remove imports that will be transformed', () => {
+  const input = `
+  import {LitElement, customElement} from 'lit-element';
+  @customElement('my-element')
+  class MyElement extends LitElement {
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit-element';
+  class MyElement extends LitElement {
+  }
+  customElements.define('my-element', MyElement);
+  `;
+  checkTransform(input, expected);
+});
+
+test('ignore non-lit class decorator', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {customElement} from './different-decorators.js';
+  @customElement('my-element')
+  class MyElement extends LitElement {
+  }
+  `;
+
+  const expected = `
+  import {__decorate} from 'tslib';
+  import {LitElement} from 'lit';
+  import {customElement} from './different-decorators.js';
+  let MyElement = class MyElement extends LitElement {};
+  MyElement = __decorate([customElement("my-element")], MyElement);
+  `;
+  checkTransform(input, expected);
+});
+
+test('ignore non-lit method decorator', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {property} from './non-lit-decorators.js';
+  class MyElement extends LitElement {
+    @property()
+    foo;
+  }
+  `;
+
+  const expected = `
+  import {__decorate} from 'tslib';
+  import {LitElement} from 'lit';
+  import {property} from './non-lit-decorators.js';
+  class MyElement extends LitElement {};
+  __decorate([property()], MyElement.prototype, "foo", void 0);
+  `;
+  checkTransform(input, expected);
+});
+
+test('aliased class decorator import', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {customElement as cabbage} from 'lit/decorators.js';
+  @cabbage('my-element')
+  class MyElement extends LitElement {
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+  }
+  customElements.define('my-element', MyElement);
+  `;
+  checkTransform(input, expected);
+});
+
+test('aliased property decorator import', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {property as potato} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @potato()
+    str = "foo";
+
+    @potato({type: Number, attribute: false})
+    num = 42;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    constructor() {
+      super(...arguments);
+      this.str = "foo";
+      this.num = 42;
+    }
+    static get properties() {
+      return {
+        str: {},
+        num: {type: Number, attribute: false},
       };
     }
   }

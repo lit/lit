@@ -37,6 +37,7 @@ const unreachable = (x: never) => x;
  * Configurable transformer for LitElement classes.
  */
 export class LitTransformer {
+  private _typeChecker: ts.TypeChecker;
   private _context: ts.TransformationContext;
 
   private _classDecoratorVisitors = new Map<
@@ -49,9 +50,15 @@ export class LitTransformer {
     MemberDecoratorTransformer[]
   >();
 
+  private _importedLitDecorators = new Map<ts.Node, string>();
   private _removeNodes = new Set<ts.Node>();
 
-  constructor(context: ts.TransformationContext, visitors: Array<Visitor>) {
+  constructor(
+    program: ts.Program,
+    context: ts.TransformationContext,
+    visitors: Array<Visitor>
+  ) {
+    this._typeChecker = program.getTypeChecker();
     this._context = context;
     for (const visitor of visitors) {
       if (visitor.kind === 'classDecorator') {
@@ -79,6 +86,11 @@ export class LitTransformer {
   }
 
   visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
+    if (ts.isSourceFile(node)) {
+      // New file, new imports.
+      this._importedLitDecorators.clear();
+      this._removeNodes.clear();
+    }
     if (this._removeNodes.delete(node)) {
       return undefined;
     }
@@ -92,13 +104,70 @@ export class LitTransformer {
   };
 
   private _visitImportDeclaration(node: ts.ImportDeclaration) {
+    // Check if this is one of the many modules that export Lit decorators.
+    const specifier = ts.isStringLiteral(node.moduleSpecifier)
+      ? node.moduleSpecifier.text
+      : '';
     if (
-      ts.isStringLiteral(node.moduleSpecifier) &&
-      node.moduleSpecifier.text === 'lit/decorators.js'
+      !(
+        specifier.startsWith('lit/decorators') ||
+        specifier.startsWith('lit-element/decorators') ||
+        specifier.startsWith('@lit/reactive-element/decorators') ||
+        specifier === 'lit-element' ||
+        specifier === 'lit-element/index.js' ||
+        specifier === 'lit-element/index'
+      )
     ) {
-      return undefined;
+      return node;
     }
+
+    // TODO(aomarks) Maybe handle NamespaceImport (import * as decorators).
+    const bindings = node.importClause?.namedBindings;
+    if (bindings == undefined || !ts.isNamedImports(bindings)) {
+      return node;
+    }
+
+    let importsNeedPruning = false;
+    for (const importSpecifier of bindings.elements) {
+      // Name as exported (Lit's name for it, not whatever the alias is).
+      const realName =
+        importSpecifier.propertyName?.text ?? importSpecifier.name.text;
+      if (
+        // Only handle the decorators we're configured to transform.
+        this._classDecoratorVisitors.has(realName) ||
+        this._memberDecoratorVisitors.has(realName)
+      ) {
+        this._importedLitDecorators.set(importSpecifier, realName);
+        this._removeNodes.add(importSpecifier);
+        importsNeedPruning = true;
+      }
+    }
+
+    if (importsNeedPruning) {
+      const pruned = ts.visitEachChild(node, this.visit, this._context);
+      return (pruned.importClause?.namedBindings as ts.NamedImports).elements
+        .length > 0
+        ? pruned
+        : // Remove the import altogether if there are no remaining bindings.
+          undefined;
+    }
+
     return node;
+  }
+
+  private _identifyImportedLitDecorator(
+    decorator: ts.Decorator
+  ): string | undefined {
+    if (ts.isCallExpression(decorator.expression)) {
+      const symbol = this._typeChecker.getSymbolAtLocation(
+        decorator.expression.expression
+      );
+      const firstDeclaration = symbol?.declarations[0];
+      if (firstDeclaration !== undefined) {
+        return this._importedLitDecorators.get(firstDeclaration);
+      }
+    }
+    return undefined;
   }
 
   private _visitClassDeclaration(class_: ts.ClassDeclaration) {
@@ -106,32 +175,25 @@ export class LitTransformer {
 
     // Class decorators
     for (const decorator of class_.decorators ?? []) {
-      if (
-        !ts.isCallExpression(decorator.expression) ||
-        !ts.isIdentifier(decorator.expression.expression)
-      ) {
-        continue;
-      }
-      const decoratorName = decorator.expression.expression.text;
-      const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
-      for (const visitor of visitors) {
-        visitor.visit(mutations, class_, decorator);
+      const decoratorName = this._identifyImportedLitDecorator(decorator);
+      if (decoratorName !== undefined) {
+        const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
+        for (const visitor of visitors) {
+          visitor.visit(mutations, class_, decorator);
+        }
       }
     }
 
     // Class member decorators
     for (const member of class_.members ?? []) {
       for (const decorator of member.decorators ?? []) {
-        if (
-          !ts.isCallExpression(decorator.expression) ||
-          !ts.isIdentifier(decorator.expression.expression)
-        ) {
-          continue;
-        }
-        const decoratorName = decorator.expression.expression.text;
-        const visitors = this._memberDecoratorVisitors.get(decoratorName) ?? [];
-        for (const visitor of visitors) {
-          visitor.visit(mutations, member, decorator);
+        const decoratorName = this._identifyImportedLitDecorator(decorator);
+        if (decoratorName !== undefined) {
+          const visitors =
+            this._memberDecoratorVisitors.get(decoratorName) ?? [];
+          for (const visitor of visitors) {
+            visitor.visit(mutations, member, decorator);
+          }
         }
       }
     }

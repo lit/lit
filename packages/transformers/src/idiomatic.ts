@@ -56,10 +56,12 @@ import {EventOptionsVisitor} from './idiomatic/event-options.js';
  *   }
  *   customElements.define('simple-greeting', SimpleGreeting);
  */
-export default function idiomaticLitDecoratorTransformer(): ts.TransformerFactory<ts.SourceFile> {
+export default function idiomaticLitDecoratorTransformer(
+  program: ts.Program
+): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
     return (file) => {
-      const transformer = new LitTransformer(context, [
+      const transformer = new LitTransformer(program, context, [
         new CustomElementVisitor(context),
         new PropertyVisitor(context),
         new StateVisitor(context),

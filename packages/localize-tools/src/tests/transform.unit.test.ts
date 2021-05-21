@@ -55,7 +55,7 @@ function checkTransform(
   // them here, so it's a waste of time.
   options.typeRoots = [];
   options.experimentalDecorators = true;
-  const result = compileTsFragment(inputTs, options, cache, (program) => ({
+  const result = compileTsFragment(inputTs, '', options, cache, (program) => ({
     before: [
       litLocalizeTransform(
         makeMessageIdMap(opts?.messages ?? []),

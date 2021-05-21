@@ -143,6 +143,6 @@ import ts from 'typescript';
 // https://github.com/microsoft/TypeScript-wiki/blob/master/Using-the-Compiler-API.md
 const program = ts.createProgram(rootNames, options);
 const result = program.emit(undefined, undefined, undefined, undefined, {
-  before: [idiomaticLitDecoratorTransformer()],
+  before: [idiomaticLitDecoratorTransformer(program)],
 });
 ```
