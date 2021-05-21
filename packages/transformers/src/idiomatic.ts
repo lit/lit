@@ -10,6 +10,7 @@ import {LitTransformer} from './lit-transformer.js';
 import {CustomElementVisitor} from './idiomatic/custom-element.js';
 import {PropertyVisitor} from './idiomatic/property.js';
 import {StateVisitor} from './idiomatic/state.js';
+import {QueryVisitor} from './idiomatic/query.js';
 
 /**
  * TypeScript transformer which transforms all Lit decorators to their idiomatic
@@ -58,6 +59,7 @@ export default function idiomaticLitDecoratorTransformer(): ts.TransformerFactor
         new CustomElementVisitor(context),
         new PropertyVisitor(context),
         new StateVisitor(context),
+        new QueryVisitor(context),
       ]);
       return ts.visitNode(file, transformer.visit);
     };

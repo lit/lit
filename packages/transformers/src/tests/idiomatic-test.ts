@@ -176,4 +176,49 @@ test('@state', () => {
   checkTransform(input, expected);
 });
 
+test('@query (non-caching)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {query} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @query('#myDiv')
+    div?: HTMLDivElement;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get div() {
+      return this.renderRoot?.querySelector('#myDiv');
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('@query (caching)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {query} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @query('#mySpan', true)
+    span?: HTMLSpanElement;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    get span() {
+      if (this.__span === undefined) {
+        this.__span = this.renderRoot?.querySelector('#mySpan');
+      }
+      return this.__span;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
