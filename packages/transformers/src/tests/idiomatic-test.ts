@@ -74,4 +74,74 @@ test('@customElement', () => {
   checkTransform(input, expected);
 });
 
+test('@property', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {property} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @property()
+    str = "foo";
+
+    @property({type: Number, attribute: false})
+    num = 42;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    constructor() {
+      super(...arguments);
+      this.str = "foo";
+      this.num = 42;
+    }
+    static get properties() {
+      return {
+        str: {},
+        num: {type: Number, attribute: false},
+      };
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('@property (merge with existing static properties)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {property} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    static get properties() {
+      return {
+        str: {},
+      };
+    }
+
+    @property({type: Number})
+    num = 42;
+
+    constructor() {
+      super();
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    constructor() {
+      super();
+      this.num = 42;
+    }
+    static get properties() {
+      return {
+        str: {},
+        num: {type: Number},
+      };
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();

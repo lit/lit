@@ -7,7 +7,7 @@
 import * as ts from 'typescript';
 import {LitElementMutations} from './mutations.js';
 
-type Visitor = ClassDecoratorTransformer;
+type Visitor = ClassDecoratorTransformer | MemberDecoratorTransformer;
 
 interface ClassDecoratorTransformer {
   kind: 'classDecorator';
@@ -20,6 +20,19 @@ interface ClassDecoratorTransformer {
   ): void;
 }
 
+interface MemberDecoratorTransformer {
+  kind: 'memberDecorator';
+  decoratorName: string;
+
+  visit(
+    mutations: LitElementMutations,
+    member: ts.ClassElement,
+    decorator: ts.Decorator
+  ): void;
+}
+
+const unreachable = (x: never) => x;
+
 /**
  * Configurable transformer for LitElement classes.
  */
@@ -29,6 +42,11 @@ export class LitTransformer {
   private _classDecoratorVisitors = new Map<
     string,
     ClassDecoratorTransformer[]
+  >();
+
+  private _memberDecoratorVisitors = new Map<
+    string,
+    MemberDecoratorTransformer[]
   >();
 
   private _removeNodes = new Set<ts.Node>();
@@ -43,8 +61,19 @@ export class LitTransformer {
           this._classDecoratorVisitors.set(visitor.decoratorName, arr);
         }
         arr.push(visitor);
+      } else if (visitor.kind === 'memberDecorator') {
+        let arr = this._memberDecoratorVisitors.get(visitor.decoratorName);
+        if (arr === undefined) {
+          arr = [];
+          this._memberDecoratorVisitors.set(visitor.decoratorName, arr);
+        }
+        arr.push(visitor);
       } else {
-        throw new Error(`Internal error: unknown visitor kind ${visitor.kind}`);
+        throw new Error(
+          `Internal error: unknown visitor kind ${
+            (unreachable(visitor) as Visitor).kind
+          }`
+        );
       }
     }
   }
@@ -90,6 +119,36 @@ export class LitTransformer {
       }
     }
 
+    // Class member decorators
+    for (const member of class_.members ?? []) {
+      for (const decorator of member.decorators ?? []) {
+        if (
+          !ts.isCallExpression(decorator.expression) ||
+          !ts.isIdentifier(decorator.expression.expression)
+        ) {
+          continue;
+        }
+        const decoratorName = decorator.expression.expression.getText();
+        const visitors = this._memberDecoratorVisitors.get(decoratorName) ?? [];
+        for (const visitor of visitors) {
+          visitor.visit(mutations, member, decorator);
+        }
+      }
+    }
+
+    if (mutations.reactiveProperties.length > 0) {
+      const existing = this._findExistingStaticProperties(class_);
+      if (existing !== undefined) {
+        this._removeNodes.add(existing.getter);
+      }
+      mutations.classMembers.unshift(
+        this._createStaticProperties(
+          existing?.properties,
+          mutations.reactiveProperties
+        )
+      );
+    }
+
     // Note `mutations.nodesToRemove` is scoped only to this class visitor, so
     // we copy the entries to this broader AST scoped visitor so that we can
     // identify nodes to delete as we descend down through `ts.visitEachChild`.
@@ -102,11 +161,96 @@ export class LitTransformer {
     // property decorator or a property itself), and [2] in theory there could
     // be a nested custom element definition somewhere in this class.
     const transformedClass = ts.visitEachChild(
-      class_,
+      this._context.factory.updateClassDeclaration(
+        class_,
+        class_.decorators,
+        class_.modifiers,
+        class_.name,
+        class_.typeParameters,
+        class_.heritageClauses,
+        [...mutations.classMembers, ...class_.members]
+      ),
       this.visit,
       this._context
     );
 
     return [transformedClass, ...mutations.adjacentStatements];
+  }
+
+  /**
+   * Create the AST from e.g. `@property({type: String}) myProperty`:
+   *
+   *   static get properties() {
+   *     return {
+   *       myProperty: { type: String },
+   *       ...
+   *     }
+   *   }
+   */
+  private _createStaticProperties(
+    existingProperties: ts.NodeArray<ts.ObjectLiteralElementLike> | undefined,
+    newProperties: Array<{name: string; options?: ts.ObjectLiteralExpression}>
+  ) {
+    const f = this._context.factory;
+    const properties = [
+      ...(existingProperties ?? []),
+      ...newProperties.map(({name, options}) =>
+        f.createPropertyAssignment(
+          f.createIdentifier(name),
+          options ? options : f.createObjectLiteralExpression([], false)
+        )
+      ),
+    ];
+    return f.createGetAccessorDeclaration(
+      undefined,
+      [f.createModifier(ts.SyntaxKind.StaticKeyword)],
+      f.createIdentifier('properties'),
+      [],
+      undefined,
+      f.createBlock(
+        [
+          f.createReturnStatement(
+            f.createObjectLiteralExpression(properties, true)
+          ),
+        ],
+        true
+      )
+    );
+  }
+
+  private _findExistingStaticProperties(class_: ts.ClassDeclaration):
+    | {
+        getter: ts.ClassElement;
+        properties: ts.NodeArray<ts.ObjectLiteralElementLike>;
+      }
+    | undefined {
+    const getter = class_.members.find(
+      (member) =>
+        ts.isGetAccessor(member) &&
+        ts.isIdentifier(member.name) &&
+        member.name.getText() === 'properties'
+    );
+    if (
+      getter === undefined ||
+      !ts.isGetAccessorDeclaration(getter) ||
+      getter.body === undefined
+    ) {
+      return undefined;
+    }
+    const returnStatement = getter.body.statements[0];
+    if (
+      returnStatement === undefined ||
+      !ts.isReturnStatement(returnStatement)
+    ) {
+      return undefined;
+    }
+    const objectLiteral = returnStatement.expression;
+    if (
+      objectLiteral === undefined ||
+      !ts.isObjectLiteralExpression(objectLiteral)
+    ) {
+      return undefined;
+    }
+    return {getter, properties: objectLiteral.properties};
   }
 }
