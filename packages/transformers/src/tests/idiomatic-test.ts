@@ -144,4 +144,36 @@ test('@property (merge with existing static properties)', () => {
   checkTransform(input, expected);
 });
 
+test('@state', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {state} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @state()
+    num = 42;
+
+    @state({hasChanged: () => false})
+    num2 = 24;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    constructor() {
+      super(...arguments);
+      this.num = 42;
+      this.num2 = 24;
+    }
+    static get properties() {
+      return {
+        num: {state: true, attribute: false},
+        num2: {hasChanged: () => false, state: true, attribute: false},
+      };
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
