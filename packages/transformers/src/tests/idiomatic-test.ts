@@ -242,4 +242,26 @@ test('@queryAll', () => {
   checkTransform(input, expected);
 });
 
+test('@queryAsync', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {queryAsync} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @queryAsync('#myButton')
+    button: Promise<HTMLElement>;
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    async get button() {
+      await this.updateComplete;
+      return this.renderRoot?.querySelector('#myButton');
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
