@@ -988,6 +988,17 @@ suite('lit-html', () => {
       assertContent('<div attribute=""></div>');
     });
 
+    test('renders noChange in attributes, sets attribute only once', () => {
+      const go = (v: any) =>
+        render(html`<div attribute="${v}"></div>`, container);
+      go(noChange);
+      assertContent('<div attribute=""></div>');
+      const div = container.querySelector('div');
+      div?.setAttribute('attribute', 'A');
+      go(noChange);
+      assertContent('<div attribute="A"></div>');
+    });
+
     test('nothing sentinel removes an attribute', () => {
       const go = (v: any) => html`<div a=${v}></div>`;
       render(go(nothing), container);

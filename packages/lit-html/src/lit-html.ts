@@ -1276,7 +1276,7 @@ class AttributePart {
         !isPrimitive(value) ||
         (value !== this._$committedValue && value !== noChange);
       if (change) {
-        this._$committedValue = value;
+        this._$committedValue = value = value === noChange ? '' : value;
       }
     } else {
       // Interpolation case
@@ -1317,7 +1317,7 @@ class AttributePart {
     if (value === nothing) {
       (wrap(this.element) as Element).removeAttribute(this.name);
     } else {
-      value = value == null || value === noChange ? '' : value;
+      value ??= '';
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._sanitizer === undefined) {
           this._sanitizer = sanitizerFactoryInternal(
