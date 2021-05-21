@@ -360,4 +360,33 @@ test('@queryAssignedNodes (with selector)', () => {
   checkTransform(input, expected);
 });
 
+test('@eventOptions', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {eventOptions} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @eventOptions({once: true})
+    _onClick(event) {
+      console.log('click', event.target);
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  class MyElement extends LitElement {
+    constructor() {
+      super(...arguments);
+      this._onClick = {
+        handleEvent: (event) => {
+          console.log('click', event.target);
+        },
+        once: true
+      };
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
