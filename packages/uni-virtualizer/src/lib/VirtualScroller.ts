@@ -1,5 +1,5 @@
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import { ItemBox, Margins, Layout, LayoutConstructor, KnownLayoutSpecifier } from './layouts/Layout.js';
+import { ItemBox, Margins, Layout, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
 
 export const scrollerRef = Symbol('scrollerRef');
 
@@ -73,7 +73,7 @@ type ChildMeasurements = {[key: number]: ItemBox};
 export type ScrollToIndexValue = {index: number, position?: string} | null;
 
 export interface VirtualScrollerConfig {
-  layout?: Layout | LayoutConstructor | KnownLayoutSpecifier;
+  layout?: Layout | LayoutConstructor | LayoutSpecifier;
 
   /**
    * An element that receives scroll events for the virtual scroller.
@@ -355,11 +355,11 @@ export class VirtualScroller {
 
   // This will always actually return a layout instance,
   // but TypeScript wants the getter and setter types to be the same
-  get layout(): Layout | LayoutConstructor | KnownLayoutSpecifier | null {
+  get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
     return this._layout;
   }
 
-  set layout(layout: Layout | LayoutConstructor | KnownLayoutSpecifier | null) {
+  set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
     if (this._layout === layout) {
       return;
     }
@@ -368,9 +368,9 @@ export class VirtualScroller {
     let _config: object = {};
 
     if (typeof layout === 'object') {
-      if ((layout as KnownLayoutSpecifier).type !== undefined) {
-        _layout = (layout as KnownLayoutSpecifier).type;
-        // delete (layout as KnownLayoutSpecifier).type;
+      if ((layout as LayoutSpecifier).type !== undefined) {
+        _layout = (layout as LayoutSpecifier).type;
+        // delete (layout as LayoutSpecifier).type;
       }
       _config = layout as object;
     }

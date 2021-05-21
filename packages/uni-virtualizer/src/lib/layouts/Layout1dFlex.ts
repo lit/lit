@@ -1,18 +1,20 @@
 import {Layout1dBase, Layout1dBaseConfig} from './Layout1dBase';
-import {ItemBox, Positions, Size, LayoutSpecifier} from './Layout';
+import {ItemBox, Positions, Size} from './Layout';
 
 interface Layout1dFlexConfig extends Layout1dBaseConfig {
   spacing?: number,
   idealSize?: number
 }
 
-export type Layout1dFlexSpecifier = LayoutSpecifier<Layout1dFlex, Layout1dFlexConfig>;
-
-declare global {
-  interface VirtualizerLayoutSpecifiers {
-    Layout1dFlex: Layout1dFlexSpecifier,
-  }
+type Layout1dFlexSpecifier = Layout1dFlexConfig & {
+  type: new(config?: Layout1dFlexConfig) => Layout1dFlex
 }
+
+type Layout1dFlexSpecifierFactory = (config?: Layout1dFlexConfig) => Layout1dFlexSpecifier;
+
+export const layout1dFlex: Layout1dFlexSpecifierFactory = (config?: Layout1dFlexConfig) => Object.assign({
+  type: Layout1dFlex
+}, config);
 
 interface Rolumn {
   _startIdx: number,

@@ -1,22 +1,26 @@
 import {Layout1dBase, Layout1dBaseConfig} from './Layout1dBase.js';
-import {ItemBox, Positions, Size, Margins, LayoutSpecifier} from './Layout.js';
+import {ItemBox, Positions, Size, Margins} from './Layout.js';
 
 type ItemBounds = {
   pos: number,
   size: number
 };
 
-// interface Layout1dConfig extends Layout1dBaseConfig {
-//   fake?: Function
-// }
-
-export type Layout1dSpecifier = LayoutSpecifier<Layout1d, Layout1dBaseConfig>;
-
-declare global {
-  interface VirtualizerLayoutSpecifiers {
-    Layout1d: Layout1dSpecifier,
-  }
+type Layout1dConstructor = {
+  prototype: Layout1d,
+  new(config?: Layout1dBaseConfig): Layout1d
 }
+
+type Layout1dSpecifier = Layout1dBaseConfig & {
+  type: Layout1dConstructor
+}
+
+type Layout1dSpecifierFactory = (config?: Layout1dBaseConfig) => Layout1dSpecifier;
+
+export const layout1d: Layout1dSpecifierFactory = (config?: Layout1dBaseConfig) => Object.assign({
+  type: Layout1d
+}, config);
+
 
 export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
   /**

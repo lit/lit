@@ -2,7 +2,7 @@ import { TemplateResult, nothing, ChildPart, html } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Layout, LayoutConstructor, KnownLayoutSpecifier } from './uni-virtualizer/lib/layouts/Layout.js';
+import { Layout, LayoutConstructor, LayoutSpecifier } from './uni-virtualizer/lib/layouts/Layout.js';
 import { VirtualScroller, ScrollToIndexValue } from './uni-virtualizer/lib/VirtualScroller.js';
 
 /**
@@ -13,12 +13,12 @@ interface ScrollConfig {
      * A function that returns a lit-html TemplateResult. It will be used
      * to generate the DOM for each item in the virtual list.
      */
-    renderItem?: (item: unknown, index?: number) => TemplateResult;
+    renderItem?: (item: any, index?: number) => TemplateResult;
 
-    keyFunction?: (item: unknown) => unknown;
+    keyFunction?: (item: any) => unknown;
   
     // TODO (graynorton): Document...
-    layout?: Layout | LayoutConstructor | KnownLayoutSpecifier | null;
+    layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
   
     /**
      * An element that receives scroll events for the virtual scroller.
@@ -28,7 +28,7 @@ interface ScrollConfig {
     /**
      * The list of items to display via the renderItem function.
      */
-    items?: Array<unknown>;
+    items?: Array<any>;
   
     /**
      * Limit for the number of items to display. Defaults to the length of the
@@ -42,16 +42,16 @@ interface ScrollConfig {
     scrollToIndex?: ScrollToIndexValue;
   }
   
-export const defaultKeyFunction = (item: unknown) => item;
-export const defaultRenderItem = (item: unknown) => html`${JSON.stringify(item, null, 2)}`;
+export const defaultKeyFunction = (item: any) => item;
+export const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
 class ScrollDirective extends AsyncDirective {
     container: HTMLElement | null = null
     scroller: VirtualScroller | null = null
     first = 0
     last = -1
-    renderItem: (item: unknown, index?: number) => TemplateResult = defaultRenderItem;
-    keyFunction: (item: unknown) => unknown = defaultKeyFunction;
+    renderItem: (item: any, index?: number) => TemplateResult = defaultRenderItem;
+    keyFunction: (item: any) => unknown = defaultKeyFunction;
     items: Array<unknown> = []
 
     constructor(part: PartInfo) {

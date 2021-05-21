@@ -21,33 +21,22 @@ export type Positions = {
 };
 
 
-export interface LayoutConstructor extends Function {
-  new (config: object): Layout
+export type LayoutConstructor = new(config?: object) => Layout;
+
+export interface LayoutSpecifier {
+  type: LayoutConstructor
 }
 
-export interface TypeWithConfig<T, C> extends Function {
-  new (config?: C): T;
-}
+export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 
-export type LayoutSpecifier<L extends Layout, C> = C & {
-  type: TypeWithConfig<L, C>
-}
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface VirtualizerLayoutSpecifiers {}
-}
-
-// export type KnownLayoutConfig = VirtualizerLayoutConfigs[keyof VirtualizerLayoutConfigs];
-export type KnownLayoutSpecifier = VirtualizerLayoutSpecifiers[keyof VirtualizerLayoutSpecifiers];
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
 /**
  * Interface for layouts consumed by VirtualScroller or VirtualRepeater.
  */
- export interface Layout<C extends object = {}> {
-  config?: C;
+ export interface Layout {
+  config?: object;
    
   totalItems: number;
 

@@ -3,7 +3,7 @@ import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
 import { scroll } from './scroll.js';
 import { scrollerRef, ContainerElement } from './uni-virtualizer/lib/VirtualScroller.js';
-import { KnownLayoutSpecifier, Layout, LayoutConstructor } from './uni-virtualizer/lib/layouts/Layout.js';
+import { LayoutSpecifier, Layout, LayoutConstructor } from './uni-virtualizer/lib/layouts/Layout.js';
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -15,7 +15,7 @@ import { KnownLayoutSpecifier, Layout, LayoutConstructor } from './uni-virtualiz
 @customElement('lit-virtualizer')
 export class LitVirtualizer extends LitElement {
     @property()
-    renderItem: ((item: unknown, index?: number) => TemplateResult) | undefined = undefined;
+    renderItem?: ((item: any, index?: number) => TemplateResult);
 
     @property({attribute: false})
     items: Array<unknown> = [];
@@ -26,7 +26,7 @@ export class LitVirtualizer extends LitElement {
     @property()
     keyFunction: ((item:unknown) => unknown) | undefined = undefined;
 
-    private _layout: Layout | LayoutConstructor | KnownLayoutSpecifier | null = null;
+    private _layout: Layout | LayoutConstructor | LayoutSpecifier | null = null;
 
     private _scrollToIndex: {index: number, position: string} | null = null;
   
@@ -57,13 +57,13 @@ export class LitVirtualizer extends LitElement {
     // }
 
     @property({attribute:false})
-    set layout(layout: Layout | LayoutConstructor | KnownLayoutSpecifier | null) {
+    set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
         // TODO (graynorton): Shouldn't have to set this here
         this._layout = layout;
         this.requestUpdate();
     }
 
-    get layout(): Layout | LayoutConstructor | KnownLayoutSpecifier | null {
+    get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
         return (this as ContainerElement)[scrollerRef]!.layout;
     }
     

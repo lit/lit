@@ -1,19 +1,21 @@
 import {Layout1dBaseConfig} from './Layout1dBase.js';
 import {Layout1dGrid} from './Layout1dGrid.js';
-import {Positions, LayoutSpecifier} from './Layout.js';
+import {Positions} from './Layout.js';
 
 interface Layout1dSquareGridConfig extends Layout1dBaseConfig {
   spacing?: number,
   idealSize?: number
 }
 
-export type Layout1dSquareGridSpecifier = LayoutSpecifier<Layout1dSquareGrid, Layout1dSquareGridConfig>;
-
-declare global {
-  interface VirtualizerLayoutSpecifiers {
-    Layout1dSquareGrid: Layout1dSquareGridSpecifier,
-  }
+type Layout1dSquareGridSpecifier = Layout1dSquareGridConfig & {
+  type: new(config?: Layout1dSquareGridConfig) => Layout1dSquareGrid
 }
+
+type Layout1dSquareGridSpecifierFactory = (config?: Layout1dSquareGridConfig) => Layout1dSquareGridSpecifier;
+
+export const layout1dSquareGrid: Layout1dSquareGridSpecifierFactory = (config?: Layout1dSquareGridConfig) => Object.assign({
+  type: Layout1dSquareGrid
+}, config);
 
 export class Layout1dSquareGrid extends Layout1dGrid<Layout1dSquareGridConfig> {
   protected _idealSize: number = 200;
