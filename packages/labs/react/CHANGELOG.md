@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Fixed
+
+- Included `development` folder in release [#1912](https://github.com/lit/lit/issues/1912).
+
 ## [1.0.0-rc.2] - 2021-05-07
 
 ### Fixed
