@@ -539,11 +539,9 @@ export abstract class ReactiveElement
         Object.defineProperty(this.prototype, name, descriptor);
       }
     }
-    if (options.decorators !== undefined) {
-      options.decorators.forEach((decorator) => {
-        decorator(this.prototype, name);
-      });
-    }
+    options.decorators?.forEach((decorator) => {
+      decorator(this.prototype, name);
+    });
   }
 
   /**
