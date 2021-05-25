@@ -1,10 +1,8 @@
 import {ReactiveControllerHost} from 'lit';
 import {Flip, FlipOptions} from './flip.js';
 
-export const flipControllers: WeakMap<
-  ReactiveControllerHost,
-  FlipController
-> = new WeakMap();
+export const flipControllers: WeakMap<ReactiveControllerHost, FlipController> =
+  new WeakMap();
 
 /**
  * FlipController can be used to provide default configuration options to all

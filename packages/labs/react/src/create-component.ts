@@ -14,10 +14,8 @@ const reservedReactProperties = new Set([
   'className',
 ]);
 
-const listenedEvents: WeakMap<
-  Element,
-  Map<string, EventListenerObject>
-> = new WeakMap();
+const listenedEvents: WeakMap<Element, Map<string, EventListenerObject>> =
+  new WeakMap();
 
 /**
  * Adds an event listener for the specified event to the given node. In the

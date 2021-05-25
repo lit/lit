@@ -117,9 +117,8 @@ suite('scoped-registry-mixin', () => {
 
     const scopedComponent = container.firstChild as LitElement;
     await scopedComponent.updateComplete;
-    const simpleGreeting = scopedComponent?.shadowRoot?.getElementById(
-      'greeting'
-    );
+    const simpleGreeting =
+      scopedComponent?.shadowRoot?.getElementById('greeting');
     const {color} = getComputedStyle(simpleGreeting!);
 
     assert.equal(color, 'rgb(255, 0, 0)');

@@ -1509,10 +1509,11 @@ suite('lit-html', () => {
   });
 
   suite('compiled', () => {
-    const trustedTypes =
-        (globalThis as unknown as Partial<Window>).trustedTypes;
-    const policy = trustedTypes?.createPolicy(
-      'lit-html', { createHTML: (s) => s }) ?? {createHTML:(s) => s as unknown as TrustedHTML};
+    const trustedTypes = (globalThis as unknown as Partial<Window>)
+      .trustedTypes;
+    const policy = trustedTypes?.createPolicy('lit-html', {
+      createHTML: (s) => s,
+    }) ?? {createHTML: (s) => s as unknown as TrustedHTML};
 
     test('only text', () => {
       // A compiled template for html`${'A'}`

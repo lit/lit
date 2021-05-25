@@ -86,7 +86,7 @@ export type StatusRenderer<R> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class Task<T extends [...unknown[]] = any, R = any> {
-  private _previousDeps: T = ([] as unknown) as T;
+  private _previousDeps: T = [] as unknown as T;
   private _task: TaskFunction<T, R>;
   private _getDependencies: DepsFunction<T>;
   private _callId = 0;
