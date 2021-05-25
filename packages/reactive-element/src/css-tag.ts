@@ -41,6 +41,7 @@ const constructionToken = Symbol();
  * `css` tag and `unsafeCSS()`, CSSResult cannot be constructed directly.
  */
 export class CSSResult {
+  _$cssResult$ = true;
   readonly cssText: string;
   private _styleSheet?: CSSStyleSheet;
 
@@ -91,8 +92,8 @@ const getCSSResult = (cssText: string): CSSResult => {
 };
 
 const textFromCSSResult = (value: CSSResultGroup | number) => {
-  if (value instanceof CSSResult) {
-    return value.cssText;
+  if ((value as CSSResult)._$cssResult$ === true) {
+    return (value as CSSResult).cssText;
   } else if (typeof value === 'number') {
     return value;
   } else {
