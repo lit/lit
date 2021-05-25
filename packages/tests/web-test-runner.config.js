@@ -30,8 +30,8 @@ const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
   local: [
     'chromium', // keep browsers on separate lines
-    'firefox', // to make it easier to comment out
-    'webkit', // individual browsers
+    // 'firefox', // to make it easier to comment out
+    // 'webkit', // individual browsers
   ],
 
   // Browsers to test during automated continuous integration.
@@ -198,7 +198,7 @@ export default {
     }),
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  // filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 60000, // default 30000
   testsStartTimeout: 60000, // default 10000
   testsFinishTimeout: 120000, // default 20000
