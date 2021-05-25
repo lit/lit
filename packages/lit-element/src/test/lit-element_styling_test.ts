@@ -13,6 +13,8 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+const extraGlobals = window as LitExtraGlobals;
+
 (canTestLitElement ? suite : suite.skip)('Styling', () => {
   suite('Basic styling', () => {
     let container: HTMLElement;
@@ -307,7 +309,7 @@ import {assert} from '@esm-bundle/chai';
         '3px'
       );
       // Verify there is one scoping style under ShadyDOM
-      if (window.ShadyDOM?.inUse) {
+      if (extraGlobals.ShadyDOM?.inUse) {
         assert.equal(
           document.querySelectorAll(`style[scope=${name}`).length,
           1
@@ -320,7 +322,7 @@ import {assert} from '@esm-bundle/chai';
     let container: HTMLElement;
 
     setup(function () {
-      if (!window.ShadyDOM) {
+      if (!extraGlobals.ShadyDOM) {
         this.skip();
       } else {
         container = document.createElement('div');

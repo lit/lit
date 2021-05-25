@@ -11,6 +11,7 @@ export const templates = {
   h349c3c4777670217: html`[SALT] Hola <b>${0}</b>!`,
   h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
   h82ccc38d4d46eaa9: html`Hola <b>${0}</b>!`,
+  h8d70dfec810d1eae: html`<b>Hola</b>! Clic <a href="${0}/${1}">aquí</a>!`,
   h99e74f744fda7e25: html`Clic <a href="${0}">aquí</a>!`,
   hbe936ff3da20ffdf: html`Hola <b><!-- comment -->Mundo</b>!`,
   hc1c6bfa4414cb3e3: html`[SALT] Clic <a href="${0}">aquí</a>!`,

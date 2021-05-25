@@ -370,7 +370,9 @@ interface Expression {
  */
 const EXPRESSION_RAND = String(Math.random()).slice(2);
 const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_START_REGEXP = new RegExp(EXPRESSION_START, 'g');
 const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_END_REGEXP = new RegExp(EXPRESSION_END, 'g');
 
 /**
  * Our template is split apart based on template string literal expressions.
@@ -429,8 +431,8 @@ function replaceExpressionsAndHtmlWithPlaceholders(
       // need to fix the syntax.
       contents.push({
         untranslatable: part.untranslatable
-          .replace(EXPRESSION_START, '${')
-          .replace(EXPRESSION_END, '}'),
+          .replace(EXPRESSION_START_REGEXP, '${')
+          .replace(EXPRESSION_END_REGEXP, '}'),
       });
     }
   }

@@ -19,11 +19,13 @@ type ChildPart = InstanceType<typeof ChildPart>;
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+const extraGlobals = window as LitExtraGlobals;
+
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  extraGlobals.ShadyDOM?.inUse &&
+  extraGlobals.ShadyDOM?.noPatch === true
+    ? extraGlobals.ShadyDOM!.wrap
     : (node: Node) => node;
 
 /**

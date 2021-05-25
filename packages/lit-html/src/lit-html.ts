@@ -15,11 +15,13 @@ if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
 
+const extraGlobals = window as LitExtraGlobals;
+
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  extraGlobals.ShadyDOM?.inUse &&
+  extraGlobals.ShadyDOM?.noPatch === true
+    ? extraGlobals.ShadyDOM!.wrap
     : (node: Node) => node;
 
 const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
