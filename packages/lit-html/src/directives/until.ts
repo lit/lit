@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Part, noChange} from '../lit-html.js';
+import {Part, noChange, nothing} from '../lit-html.js';
 import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
 import {AsyncDirective} from '../async-directive.js';
@@ -20,7 +20,7 @@ class UntilDirective extends AsyncDirective {
   private _values: unknown[] = [];
 
   render(...args: Array<unknown>) {
-    return args.find((x) => !isPromise(x)) ?? noChange;
+    return args.find((x) => !isPromise(x)) ?? nothing;
   }
 
   update(_part: Part, args: Array<unknown>) {
