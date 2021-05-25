@@ -269,7 +269,7 @@ suite('@property', () => {
     const el1 = new E();
 
     class F extends E {
-      @property({type: Number}) foo = 2;
+      @property({type: Number, reflect: false}) foo = 2;
     }
 
     customElements.define(generateElementName(), F);

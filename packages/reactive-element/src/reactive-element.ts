@@ -522,7 +522,13 @@ export abstract class ReactiveElement
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
     this.finalize();
-    this.elementProperties.set(name, options);
+    // Allow multiple calls to `createProperty` to merge compose options.
+    let propertyOptions = this.elementProperties.get(name);
+    if (propertyOptions !== undefined) {
+      Object.assign(propertyOptions, options);
+    } else {
+      this.elementProperties.set(name, (propertyOptions = options));
+    }
     // Do not generate an accessor if the prototype already has one, since
     // it would be lost otherwise and that would never be the user's intention;
     // Instead, we expect users to call `requestUpdate` themselves from
@@ -534,7 +540,7 @@ export abstract class ReactiveElement
       this.prototype.hasOwnProperty(name);
     if (!skipAccessor) {
       const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-      const descriptor = this.getPropertyDescriptor(name, key, options);
+      const descriptor = this.getPropertyDescriptor(name, key, propertyOptions);
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
       }
@@ -626,7 +632,15 @@ export abstract class ReactiveElement
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
-    this.elementProperties = new Map(superCtor.elementProperties);
+    // When subclassing, copy options so multiple calls to `createProperty` can
+    // merge them safely.
+    const properties = new Map(superCtor.elementProperties);
+    if (superCtor.elementProperties !== undefined) {
+      for (const [key, value] of properties) {
+        properties.set(key, {...value});
+      }
+    }
+    this.elementProperties = properties;
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
     // make any properties

@@ -7,6 +7,7 @@
 import {decorateProperty} from '../../decorators/base.js';
 import {query} from '../../decorators/query.js';
 import {property} from '../../decorators/property.js';
+import {state} from '../../decorators/state.js';
 import {ReactiveElement, PropertyValues} from '../../reactive-element.js';
 import {
   generateElementName,
@@ -28,9 +29,9 @@ suite('decorators in static properties', () => {
     document.body.removeChild(container);
   });
 
-  class WithDecorations extends ReactiveElement {
+  type WithDecorations<T = ReactiveElement> = T & {
     decorations?: {name: PropertyKey; value: string}[];
-  }
+  };
 
   const wasDecorated = (value: string) =>
     decorateProperty({
@@ -44,7 +45,7 @@ suite('decorators in static properties', () => {
 
   test('can apply decorator to reactive property', async () => {
     let changedSnapshot: PropertyValues;
-    class A extends WithDecorations {
+    class A extends ReactiveElement {
       static get properties() {
         return {
           foo: {decorators: [wasDecorated('a'), wasDecorated('b')]},
@@ -52,12 +53,15 @@ suite('decorators in static properties', () => {
         };
       }
 
+      declare foo: string;
+      declare bar: string;
+
       updated(changed: PropertyValues) {
         changedSnapshot = new Map(changed);
       }
     }
     customElements.define(generateElementName(), A);
-    const el = new A();
+    const el = new A() as WithDecorations<A>;
     container.appendChild(el);
     await el.updateComplete;
     assert.deepEqual(changedSnapshot!, new Map());
@@ -67,8 +71,8 @@ suite('decorators in static properties', () => {
       {name: 'bar', value: 'c'},
       {name: 'bar', value: 'd'},
     ]);
-    (el as any).foo = 'test';
-    (el as any).bar = 'test2';
+    el.foo = 'test';
+    el.bar = 'test2';
     await el.updateComplete;
     assert.deepEqual(
       changedSnapshot!,
@@ -80,7 +84,7 @@ suite('decorators in static properties', () => {
   });
 
   test('can apply decorators to non-reactive property', async () => {
-    class A extends WithDecorations {
+    class A extends ReactiveElement {
       static get properties() {
         return {
           method: {
@@ -95,7 +99,7 @@ suite('decorators in static properties', () => {
       }
     }
     customElements.define(generateElementName(), A);
-    const el = new A();
+    const el = new A() as WithDecorations<A>;
     container.appendChild(el);
     await el.updateComplete;
     assert.deepEqual(el.decorations, [
@@ -117,7 +121,7 @@ suite('decorators in static properties', () => {
           };
         }
 
-        div?: HTMLDivElement;
+        declare div: HTMLDivElement;
 
         render() {
           return html` <div id="blah">This one</div> `;
@@ -132,7 +136,7 @@ suite('decorators in static properties', () => {
   );
 
   test('can compose decorators via subclassing', async () => {
-    class A extends WithDecorations {
+    class A extends ReactiveElement {
       static get properties() {
         return {
           foo: {
@@ -173,7 +177,7 @@ suite('decorators in static properties', () => {
       }
     }
     customElements.define(generateElementName(), B);
-    const el1 = new A();
+    const el1 = new A() as WithDecorations<A>;
     container.appendChild(el1);
     await el1.updateComplete;
     assert.deepEqual(el1.decorations, [
@@ -181,7 +185,7 @@ suite('decorators in static properties', () => {
       {name: 'method', value: 'm1'},
       {name: 'method', value: 'm2'},
     ]);
-    const el2 = new B();
+    const el2 = new B() as WithDecorations<B>;
     container.appendChild(el2);
     assert.deepEqual(el2.decorations, [
       {name: 'foo', value: 'a'},
@@ -196,30 +200,69 @@ suite('decorators in static properties', () => {
     ]);
   });
 
-  test('can applying property decorator', async () => {
-    class A extends WithDecorations {
+  test('can apply property decorator', async () => {
+    const hasChanged = (a: number, b: number) => b === undefined || a > b;
+    class A extends ReactiveElement {
       static get properties() {
         return {
           foo: {
-            hasChanged: (a: number, b: number) => a > b,
+            hasChanged,
             decorators: [property({reflect: true})],
           },
         };
       }
 
-      foo: number;
+      declare foo: number;
+
       constructor() {
         super();
         this.foo = 1;
       }
     }
     customElements.define(generateElementName(), A);
-    const el = new A();
+    const el = new A() as WithDecorations<A>;
     container.appendChild(el);
     await el.updateComplete;
     assert.equal(el.getAttribute('foo'), '1');
     el.foo = -1;
     await el.updateComplete;
     assert.equal(el.getAttribute('foo'), '1');
+  });
+
+  test('can apply state decorator', async () => {
+    const hasChanged = (a: number, b: number) => b === undefined || a > b;
+    class A extends ReactiveElement {
+      static get properties() {
+        return {
+          foo: {
+            hasChanged,
+            decorators: [state()],
+          },
+        };
+      }
+
+      declare foo: number;
+
+      constructor() {
+        super();
+        this.foo = 1;
+      }
+
+      didUpdate = false;
+
+      updated() {
+        this.didUpdate = true;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const el = new A() as WithDecorations<A>;
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.isTrue(el.didUpdate);
+    assert.isFalse(el.hasAttribute('foo'));
+    el.didUpdate = false;
+    el.foo = -1;
+    await el.updateComplete;
+    assert.isFalse(el.didUpdate);
   });
 });

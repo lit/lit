@@ -7,6 +7,7 @@
 import {
   ComplexAttributeConverter,
   defaultConverter,
+  notEqual,
   PropertyDeclaration,
   PropertyDeclarations,
   PropertyValues,
@@ -870,6 +871,51 @@ suite('ReactiveElement', () => {
     assert.equal(el.updateCount, 6);
   });
 
+  test('property options merge when subclassing', async () => {
+    class E extends ReactiveElement {
+      static get properties(): PropertyDeclarations {
+        return {
+          customAttr: {attribute: 'custom'},
+        };
+      }
+      customAttr?: boolean;
+    }
+    customElements.define(generateElementName(), E);
+
+    class F extends E {
+      static get properties(): PropertyDeclarations {
+        return {
+          customAttr: {reflect: true},
+        };
+      }
+    }
+
+    class G extends F {
+      static get properties(): PropertyDeclarations {
+        return {
+          customAttr: {type: Boolean},
+        };
+      }
+
+      constructor() {
+        super();
+        this.customAttr = true;
+      }
+    }
+
+    customElements.define(generateElementName(), G);
+
+    const el = new G();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.customAttr, true);
+    assert.equal(el.getAttribute('custom'), '');
+    el.customAttr = false;
+    await el.updateComplete;
+    assert.equal(el.customAttr, false);
+    assert.equal(el.getAttribute('custom'), null);
+  });
+
   test('superclass properties not affected by subclass', async () => {
     class E extends ReactiveElement {
       static get properties(): PropertyDeclarations {
@@ -1172,7 +1218,7 @@ suite('ReactiveElement', () => {
       __bar?: string;
 
       static get properties(): PropertyDeclarations {
-        return {bar: {}, foo: {reflect: true}};
+        return {bar: {hasChanged: notEqual}, foo: {reflect: true}};
       }
 
       get bar() {
@@ -1195,7 +1241,10 @@ suite('ReactiveElement', () => {
 
     class G extends F {
       static get properties(): PropertyDeclarations {
-        return {bar: {hasChanged, reflect: true}, foo: {hasChanged}};
+        return {
+          bar: {hasChanged, reflect: true},
+          foo: {hasChanged, reflect: false},
+        };
       }
     }
 
