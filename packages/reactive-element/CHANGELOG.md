@@ -17,6 +17,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Changed
+
+- (Since 1.0.0-rc.2) Reverted change of the `css` tag's return to CSSResultGroup, which was a breaking change. The `css` tag again returns a `CSSResult` object.
+- (Since 1.0.0-rc.2) Remove the `CSSResultFlatArray` type alias in `css-tag.ts`.
+
+<!-- ### Added -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
 ## 1.0.0-rc.2 - 2021-05-07
 
 ### Changed

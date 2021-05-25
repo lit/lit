@@ -91,7 +91,7 @@ suite('Styling', () => {
     test('`CSSResult` cannot be constructed', async () => {
       // Note, this is done for security, instead use `css` or `unsafeCSS`
       assert.throws(() => {
-        new CSSResult('throw', Symbol());
+        new (CSSResult as any)('throw', Symbol());
       });
     });
 

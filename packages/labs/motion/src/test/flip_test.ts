@@ -58,7 +58,7 @@ suite('Flip', () => {
     extraCss?: CSSResultGroup,
     childTemplate?: () => TemplateResult
   ) => {
-    const styles = [
+    const styles: CSSResultGroup = [
       css`
         * {
           box-sizing: border-box;
