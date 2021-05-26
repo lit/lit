@@ -20,16 +20,9 @@ export type RangeChangeEvent = {
   lastVisible: number;
 };
 
-interface ElementWithOptionalScrollerRef extends Element {
+export interface ContainerElement extends HTMLElement {
   [scrollerRef]?: VirtualScroller
 }
-
-interface ShadowRootWithOptionalScrollerRef extends ShadowRoot {
-  [scrollerRef]?: VirtualScroller
-}
-
-type Container = ElementWithOptionalScrollerRef | ShadowRootWithOptionalScrollerRef;
-export type ContainerElement = ElementWithOptionalScrollerRef;
 
 type VerticalScrollSize = {height: number};
 type HorizontalScrollSize = {width: number};
@@ -115,12 +108,7 @@ export class VirtualScroller {
   /**
    * Containing element. Set by container.
    */
-  protected _container: Container | null = null;
-
-  /**
-   * The parent of all child nodes to be rendered. Set by container.
-   */
-  private _containerElement: ContainerElement | null = null;
+  protected _container: ContainerElement | null = null;
 
   /**
    * Keep track of original inline style of the container, so it can be
@@ -240,86 +228,81 @@ export class VirtualScroller {
   /**
    * The parent of all child nodes to be rendered.
    */
-  get container(): Container | null {
+  // Won't ever return a ShadowRoot, but TypeScript wants setter and getter
+  // types to be the same
+  get container(): ContainerElement | ShadowRoot | null {
     return this._container;
   }
 
-  set container(container: Container | null) {
-    if (container === this._container) {
-      return;
-    }
-
-    if (this._container) {
-      // Remove children from old container.
-      // TODO (graynorton): Decide whether we'd rather fire an event to clear
-      // the range and let the renderer take care of removing the DOM children
-      this._children.forEach(child => child.parentNode!.removeChild(child));
-    }
-
-    this._container = container;
-
-    this._schedule(this._updateLayout);
-
+  set container(container: ContainerElement | ShadowRoot | null) {
     this._initResizeObservers().then(() => {
-        const oldEl = this._containerElement as HTMLElement;
-        // Consider document fragments as shadowRoots.
-        const newEl =
-            (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
-            (container as ShadowRoot).host as HTMLElement :
-            container as HTMLElement;
-        if (oldEl === newEl) {
-          return;
-        }
+      const oldContainer = this._container;
+      // Consider document fragments as shadowRoots.
+      const newContainer =
+          (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
+          (container as ShadowRoot).host as ContainerElement :
+          container as ContainerElement;
+      if (oldContainer === newContainer) {
+        return;
+      }
   
-        this._containerRO!.disconnect();
-        this._containerSize = null;
+      this._schedule(this._updateLayout);
   
-        if (oldEl) {
-          if (this._containerInlineStyle) {
-            oldEl.setAttribute('style', this._containerInlineStyle!);
-          } else {
-            oldEl.removeAttribute('style');
-          }
-          this._containerInlineStyle = null;
-          if (oldEl === this._scrollTarget) {
-            oldEl.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
-            this._sizer && this._sizer.remove();
-          }
-          oldEl.removeEventListener('load', this._loadListener, true);
+      this._containerRO!.disconnect();
+      this._containerSize = null;
 
-          this._mutationObserver!.disconnect();
+      if (oldContainer) {
+        if (this._containerInlineStyle) {
+          oldContainer.setAttribute('style', this._containerInlineStyle!);
         } else {
-          // First time container was setup, add listeners only now.
-          addEventListener('scroll', this, {passive: true});
+          oldContainer.removeAttribute('style');
         }
-  
-        this._containerElement = newEl;
-  
-        if (newEl) {
-          this._containerInlineStyle = newEl.getAttribute('style') || null;
-          // Would rather set these CSS properties on the host using Shadow Root
-          // style scoping (and falling back to a global stylesheet where native
-          // Shadow DOM is not available), but this Mobile Safari bug is preventing
-          // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
-          const style = newEl.style as CSSStyleDeclaration & { contain: string };
-          style.display = style.display || 'block';
-          style.position = style.position || 'relative';
-          style.overflow = style.overflow || 'auto';
-          style.contain = style.contain || 'strict';
-          if (newEl === this._scrollTarget) {
-            this._sizer = this._sizer || this._createContainerSizer();
-            this._container!.insertBefore(this._sizer, this._container!.firstChild);
-          }
-          this._schedule(this._updateLayout);
-          this._containerRO!.observe(newEl);
-          this._mutationObserver!.observe(newEl, { childList: true });
-          this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
-  
-          if (this._layout && this._layout.listenForChildLoadEvents) {
-            newEl.addEventListener('load', this._loadListener, true);
-          }
+        this._containerInlineStyle = null;
+        if (oldContainer === this._scrollTarget) {
+          oldContainer.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
+          this._sizer && this._sizer.remove();
         }
-      });  
+        oldContainer.removeEventListener('load', this._loadListener, true);
+        // Remove children from old container.
+        // TODO (graynorton): Decide whether we'd rather fire an event to clear
+        // the range and let the renderer take care of removing the DOM children
+        this._children.forEach(child => child.parentNode!.removeChild(child));
+        this._mutationObserver!.disconnect();
+        delete oldContainer[scrollerRef];
+        oldContainer.removeEventListener('load', this._loadListener, true);
+      } else {
+        // First time container was setup, add listeners only now.
+        addEventListener('scroll', this, {passive: true});
+      }
+
+      this._container = newContainer;
+
+      if (newContainer) {
+        this._containerInlineStyle = newContainer.getAttribute('style') || null;
+        // Would rather set these CSS properties on the host using Shadow Root
+        // style scoping (and falling back to a global stylesheet where native
+        // Shadow DOM is not available), but this Mobile Safari bug is preventing
+        // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
+        const style = newContainer.style as CSSStyleDeclaration & { contain: string };
+        style.display = style.display || 'block';
+        style.position = style.position || 'relative';
+        style.overflow = style.overflow || 'auto';
+        style.contain = style.contain || 'strict';
+        if (newContainer === this._scrollTarget) {
+          this._sizer = this._sizer || this._createContainerSizer();
+          this._container!.insertBefore(this._sizer, this._container!.firstChild);
+        }
+        // this._schedule(this._updateLayout);
+        this._containerRO!.observe(newContainer);
+        this._mutationObserver!.observe(newContainer, { childList: true });
+        this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
+        newContainer[scrollerRef] = this;
+
+        if (this._layout && this._layout.listenForChildLoadEvents) {
+          newContainer.addEventListener('load', this._loadListener, true);
+        }
+      }
+    });  
   }
 
   // This will always actually return a layout instance,
@@ -366,11 +349,10 @@ export class VirtualScroller {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
-      delete this.container![scrollerRef];
-      this.container!.removeEventListener('load', this._loadListener, true);
       // Reset container size so layout can get correct viewport size.
-      if (this._containerElement) {
+      if (this._container) {
         this._sizeContainer(undefined);
+        this._container.removeEventListener('load', this._loadListener, true);
       }
     }
 
@@ -387,9 +369,8 @@ export class VirtualScroller {
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
-      this._container![scrollerRef] = this;
-      if (this._layout.listenForChildLoadEvents) {
-        this._container!.addEventListener('load', this._loadListener, true);
+      if (this._container && this._layout.listenForChildLoadEvents) {
+        this._container.addEventListener('load', this._loadListener, true);
       }
       this._schedule(this._updateLayout);
     }
@@ -463,7 +444,7 @@ export class VirtualScroller {
     this._sizeContainer(undefined);
     if (this._scrollTarget) {
       this._scrollTarget.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
-      if (this._sizer && this._scrollTarget === this._containerElement) {
+      if (this._sizer && this._scrollTarget === this._container) {
         this._sizer.remove();
       }
     }
@@ -472,7 +453,7 @@ export class VirtualScroller {
 
     if (target) {
       target.addEventListener('scroll', this, {passive: true});
-      if (target === this._containerElement) {
+      if (target === this._container) {
         this._sizer = this._sizer || this._createContainerSizer();
         this._container!.insertBefore(this._sizer, this._container!.firstChild);
       }
@@ -628,17 +609,17 @@ export class VirtualScroller {
   }
 
   private _updateView() {
-    if (!this.container || !this._containerElement || !this._layout) {
+    if (!this.container || !this._container || !this._layout) {
       return;
     }
     let width, height, top, left;
-    if (this._scrollTarget === this._containerElement && this._containerSize !== null) {
+    if (this._scrollTarget === this._container && this._containerSize !== null) {
       width = this._containerSize.width;
       height = this._containerSize.height;
-      left = this._containerElement.scrollLeft;
-      top = this._containerElement.scrollTop;
+      left = this._container.scrollLeft;
+      top = this._container.scrollTop;
     } else {
-      const containerBounds = this._containerElement.getBoundingClientRect();
+      const containerBounds = this._container.getBoundingClientRect();
       const scrollBounds = this._scrollTarget ?
           this._scrollTarget.getBoundingClientRect() :
           {
@@ -681,15 +662,15 @@ export class VirtualScroller {
    * total size of all items.
    */
   private _sizeContainer(size?: ScrollSize | null) {
-    if (this._scrollTarget === this._containerElement) {
+    if (this._scrollTarget === this._container) {
       const left = size && (size as HorizontalScrollSize).width ? (size as HorizontalScrollSize).width - 1 : 0;
       const top = size && (size as VerticalScrollSize).height ? (size as VerticalScrollSize).height - 1 : 0;
       if (this._sizer) {
         this._sizer.style.transform = `translate(${left}px, ${top}px)`;
       }
     } else {
-      if (this._containerElement) {
-        const style = (this._containerElement as HTMLElement).style;
+      if (this._container) {
+        const style = this._container.style;
         (style.minWidth as string | null) = size && (size as HorizontalScrollSize).width ? (size as HorizontalScrollSize).width + 'px' : null;
         (style.minHeight as string | null) = size && (size as VerticalScrollSize).height ? (size as VerticalScrollSize).height + 'px' : null;  
       }
