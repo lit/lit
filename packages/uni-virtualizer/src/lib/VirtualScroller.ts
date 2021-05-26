@@ -3,17 +3,6 @@ import { ItemBox, Margins, Layout, LayoutConstructor, LayoutSpecifier } from './
 
 export const scrollerRef = Symbol('scrollerRef');
 
-// TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
-declare global {
-  interface Window {
-      ShadyDOM?: any;
-  }
-}
-let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
-
-const HOST_CLASSNAME = 'uni-virtualizer-host';
-let globalContainerStylesheet: HTMLStyleElement | null = null;
-
 interface Range {
   first: number;
   last: number;
@@ -22,28 +11,6 @@ interface Range {
   stable: boolean;
   firstVisible: number;
   lastVisible: number;
-}
-
-function containerStyles(hostSel: string, childSel: string): string {
-  return `
-    ${hostSel} {
-      display: block;
-      position: relative;
-      contain: strict;
-      height: 150px;
-      overflow: auto;
-    }
-    ${childSel} {
-      box-sizing: border-box;
-    }`;
-}
-
-function attachGlobalContainerStylesheet() {
-  if (!globalContainerStylesheet) {
-    globalContainerStylesheet = document.createElement('style');
-    globalContainerStylesheet.textContent = containerStyles(`.${HOST_CLASSNAME}`, `.${HOST_CLASSNAME} > *`);
-    document.head.appendChild(globalContainerStylesheet);
-  }
 }
 
 export type RangeChangeEvent = {
@@ -160,12 +127,6 @@ export class VirtualScroller {
    * restored when container is changed.
    */
   private _containerInlineStyle: string | null = null;
-
-  /**
-   * Keep track of original container stylesheet, so it can be restored
-   * when container is changed.
-   */
-  private _containerStylesheet: HTMLStyleElement | null = null;
 
   /**
    * Size of the container.
@@ -300,12 +261,12 @@ export class VirtualScroller {
     this._schedule(this._updateLayout);
 
     this._initResizeObservers().then(() => {
-        const oldEl = this._containerElement;
+        const oldEl = this._containerElement as HTMLElement;
         // Consider document fragments as shadowRoots.
         const newEl =
             (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
-            (container as ShadowRoot).host :
-            container as Element;
+            (container as ShadowRoot).host as HTMLElement :
+            container as HTMLElement;
         if (oldEl === newEl) {
           return;
         }
@@ -315,9 +276,9 @@ export class VirtualScroller {
   
         if (oldEl) {
           if (this._containerInlineStyle) {
-            (oldEl as Element).setAttribute('style', this._containerInlineStyle!);
+            oldEl.setAttribute('style', this._containerInlineStyle!);
           } else {
-            (oldEl as Element).removeAttribute('style');
+            oldEl.removeAttribute('style');
           }
           this._containerInlineStyle = null;
           if (oldEl === this._scrollTarget) {
@@ -336,7 +297,15 @@ export class VirtualScroller {
   
         if (newEl) {
           this._containerInlineStyle = newEl.getAttribute('style') || null;
-          this._applyContainerStyles();
+          // Would rather set these CSS properties on the host using Shadow Root
+          // style scoping (and falling back to a global stylesheet where native
+          // Shadow DOM is not available), but this Mobile Safari bug is preventing
+          // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
+          const style = newEl.style as CSSStyleDeclaration & { contain: string };
+          style.display = style.display || 'block';
+          style.position = style.position || 'relative';
+          style.overflow = style.overflow || 'auto';
+          style.contain = style.contain || 'strict';
           if (newEl === this._scrollTarget) {
             this._sizer = this._sizer || this._createContainerSizer();
             this._container!.insertBefore(this._sizer, this._container!.firstChild);
@@ -629,27 +598,6 @@ export class VirtualScroller {
     }
   }
 
-  private _applyContainerStyles() {
-    if (nativeShadowDOM) {
-      if (this._containerStylesheet === null) {
-        const sheet = (this._containerStylesheet = document.createElement('style'));
-        sheet.textContent = containerStyles(':host', '::slotted(*)');
-      }
-      const root = this._containerElement!.shadowRoot || this._containerElement!.attachShadow({mode: 'open'});
-      const slot = root.querySelector('slot:not([name])');
-      root.appendChild(this._containerStylesheet);
-      if (!slot) {
-        root.appendChild(document.createElement('slot'));
-      }
-    }
-    else {
-      attachGlobalContainerStylesheet();
-      if (this._containerElement) {
-        this._containerElement.classList.add(HOST_CLASSNAME);
-      }
-    }
-  }
-
   private _createContainerSizer(): HTMLDivElement {
     const sizer = document.createElement('div');
     // When the scrollHeight is large, the height of this element might be
@@ -761,6 +709,7 @@ export class VirtualScroller {
         if (child) {
           const {top, left, width, height} = pos[key as unknown as number];
           child.style.position = 'absolute';
+          child.style.boxSizing = 'border-box';
           child.style.transform = `translate(${left}px, ${top}px)`;
           if (width !== undefined) {
             child.style.width = width + 'px';
