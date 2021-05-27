@@ -55,7 +55,7 @@ suite('Forward compatiblity directive API', () => {
       const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
-      render(html`<div p=${testDirective()}></div>`, template.content);
+      render(html`<div attr-name=${testDirective()}></div>`, template.content);
 
       assert.equal(getPartInfoType(), PartType.ATTRIBUTE);
     });
@@ -66,7 +66,7 @@ suite('Forward compatiblity directive API', () => {
       const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
-      render(html`<div .p=${testDirective()}></div>`, template.content);
+      render(html`<div .propName=${testDirective()}></div>`, template.content);
 
       assert.equal(getPartInfoType(), PartType.PROPERTY);
     });
@@ -77,7 +77,7 @@ suite('Forward compatiblity directive API', () => {
       const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
-      render(html`<div ?p=${testDirective()}></div>`, template.content);
+      render(html`<div ?attr-name=${testDirective()}></div>`, template.content);
 
       assert.equal(getPartInfoType(), PartType.BOOLEAN_ATTRIBUTE);
     });
@@ -88,7 +88,7 @@ suite('Forward compatiblity directive API', () => {
       const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
-      render(html`<div @p=${testDirective()}></div>`, template.content);
+      render(html`<div @event-name=${testDirective()}></div>`, template.content);
 
       assert.equal(getPartInfoType(), PartType.EVENT);
     });
