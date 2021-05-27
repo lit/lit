@@ -108,7 +108,7 @@ class PropertyPart extends AttributePart {
   constructor(legacyPart: legacyLit.PropertyPart) {
     super(legacyPart);
   }
-};
+}
 
 export type{BooleanAttributePart};
 class BooleanAttributePart {
