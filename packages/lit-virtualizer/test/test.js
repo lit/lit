@@ -1,5 +1,5 @@
 import { LitVirtualizer, scroll, Layout1d } from '../lit-virtualizer.js'
-import { html, render } from 'lit-html'
+import { html, render } from 'lit'
 
 describe('<lit-virtualizer>', function () {
   it('registers lit-virtualizer as a custom element', function () {
@@ -27,7 +27,8 @@ describe('scroll', function () {
       ${scroll({
         items: ['foo', 'bar', 'baz'],
         renderItem: (item) => html`<p>${item}</p>`,
-        layout: Layout1d
+        layout: Layout1d,
+        scrollTarget: window
       })}
     `;
 
