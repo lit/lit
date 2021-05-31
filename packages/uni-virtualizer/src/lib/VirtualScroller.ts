@@ -43,7 +43,7 @@ export interface VirtualScrollerConfig {
   /**
    * The parent of all child nodes to be rendered.
    */
-  container: Element | ShadowRoot;
+  container: HTMLElement | ShadowRoot;
 }
 
 /**
@@ -68,7 +68,7 @@ export class VirtualScroller {
    * The element that generates scroll events and defines the container
    * viewport. Set by scrollTarget.
    */
-  private _scrollTarget: Element | null = null;
+  private _scrollTarget?: Element | Window;
 
   /**
    * A sentinel element that sizes the container when it is a scrolling
@@ -108,13 +108,7 @@ export class VirtualScroller {
   /**
    * Containing element. Set by container.
    */
-  protected _container: ContainerElement | null = null;
-
-  /**
-   * Keep track of original inline style of the container, so it can be
-   * restored when container is changed.
-   */
-  private _containerInlineStyle: string | null = null;
+  protected _container?: ContainerElement;
 
   /**
    * Size of the container.
@@ -159,22 +153,22 @@ export class VirtualScroller {
    * Index of the first child in the range, not necessarily the first visible child.
    * TODO @straversi: Consider renaming these.
    */
-  protected _first = 0;
+  protected _first = -1;
 
   /**
    * Index of the last child in the range.
    */
-  protected _last = 0;
+  protected _last = -1;
 
   /**
    * Index of the first item intersecting the container element.
    */
-  private _firstVisible = 0;
+  private _firstVisible = -1;
 
   /**
    * Index of the last item intersecting the container element.
    */
-  private _lastVisible = 0;
+  private _lastVisible = -1;
 
   protected _scheduled = new WeakSet();
 
@@ -187,13 +181,24 @@ export class VirtualScroller {
 
    protected _measureChildOverride: ((element: Element, item: unknown) => ItemBox) | null = null;
 
-  constructor(config?: VirtualScrollerConfig) {
-    this._first = -1;
-    this._last = -1;
-
-    if (config) {
-      Object.assign(this, config);
+  constructor(config: VirtualScrollerConfig) {
+    if (!config) {
+      throw new Error('VirtualScroller constructor requires a configuration object');
     }
+    if (config.container) {
+      this._init(config);
+    }
+    else {
+      throw new Error('VirtualScroller configuration requires the "container" property');
+    }
+  }
+
+  async _init(config: VirtualScrollerConfig) {
+    const { container, scrollTarget, layout } = config;
+    await this._initResizeObservers();
+    this._initContainer(container);
+    this._initScrollTarget(scrollTarget);
+    if (layout) this.layout = layout;
   }
 
   set items(items: Array<unknown> | undefined) {
@@ -230,79 +235,40 @@ export class VirtualScroller {
    */
   // Won't ever return a ShadowRoot, but TypeScript wants setter and getter
   // types to be the same
-  get container(): ContainerElement | ShadowRoot | null {
+  get container(): ContainerElement | ShadowRoot | undefined {
     return this._container;
   }
 
-  set container(container: ContainerElement | ShadowRoot | null) {
-    this._initResizeObservers().then(() => {
-      const oldContainer = this._container;
-      // Consider document fragments as shadowRoots.
-      const newContainer =
-          (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
-          (container as ShadowRoot).host as ContainerElement :
-          container as ContainerElement;
-      if (oldContainer === newContainer) {
-        return;
-      }
-  
-      this._schedule(this._updateLayout);
-  
-      this._containerRO!.disconnect();
-      this._containerSize = null;
+  _initContainer(container: ContainerElement | ShadowRoot) {
+    // Consider document fragments as shadowRoots.
+    const newContainer =
+        (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
+        (container as ShadowRoot).host as ContainerElement :
+        container as ContainerElement;
 
-      if (oldContainer) {
-        if (this._containerInlineStyle) {
-          oldContainer.setAttribute('style', this._containerInlineStyle!);
-        } else {
-          oldContainer.removeAttribute('style');
-        }
-        this._containerInlineStyle = null;
-        if (oldContainer === this._scrollTarget) {
-          oldContainer.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
-          this._sizer && this._sizer.remove();
-        }
-        oldContainer.removeEventListener('load', this._loadListener, true);
-        // Remove children from old container.
-        // TODO (graynorton): Decide whether we'd rather fire an event to clear
-        // the range and let the renderer take care of removing the DOM children
-        this._children.forEach(child => child.parentNode!.removeChild(child));
-        this._mutationObserver!.disconnect();
-        delete oldContainer[scrollerRef];
-        oldContainer.removeEventListener('load', this._loadListener, true);
-      } else {
-        // First time container was setup, add listeners only now.
-        addEventListener('scroll', this, {passive: true});
-      }
+    this._schedule(this._updateLayout);
 
-      this._container = newContainer;
+    // First time container was setup, add listeners only now.
+    // TODO (graynorton): Don't think we want this.
+    // addEventListener('scroll', this, {passive: true});
 
-      if (newContainer) {
-        this._containerInlineStyle = newContainer.getAttribute('style') || null;
-        // Would rather set these CSS properties on the host using Shadow Root
-        // style scoping (and falling back to a global stylesheet where native
-        // Shadow DOM is not available), but this Mobile Safari bug is preventing
-        // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
-        const style = newContainer.style as CSSStyleDeclaration & { contain: string };
-        style.display = style.display || 'block';
-        style.position = style.position || 'relative';
-        style.overflow = style.overflow || 'auto';
-        style.contain = style.contain || 'strict';
-        if (newContainer === this._scrollTarget) {
-          this._sizer = this._sizer || this._createContainerSizer();
-          this._container!.insertBefore(this._sizer, this._container!.firstChild);
-        }
-        // this._schedule(this._updateLayout);
-        this._containerRO!.observe(newContainer);
-        this._mutationObserver!.observe(newContainer, { childList: true });
-        this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
-        newContainer[scrollerRef] = this;
+    this._container = newContainer;
 
-        if (this._layout && this._layout.listenForChildLoadEvents) {
-          newContainer.addEventListener('load', this._loadListener, true);
-        }
-      }
-    });  
+    // Would rather set these CSS properties on the host using Shadow Root
+    // style scoping (and falling back to a global stylesheet where native
+    // Shadow DOM is not available), but this Mobile Safari bug is preventing
+    // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
+    const style = newContainer.style as CSSStyleDeclaration & { contain: string };
+    style.display = style.display || 'block';
+    style.position = style.position || 'relative';
+    style.overflow = style.overflow || 'auto';
+    style.contain = style.contain || 'strict';
+
+    this._containerRO!.observe(newContainer);
+    this._mutationObserver!.observe(newContainer, { childList: true });
+    this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
+
+    newContainer[scrollerRef] = this;
   }
 
   // This will always actually return a layout instance,
@@ -430,34 +396,21 @@ export class VirtualScroller {
    * viewport. The value `null` (default) corresponds to `window` as scroll
    * target.
    */
-  get scrollTarget(): Element | Window | null {
+  get scrollTarget(): Element | Window | undefined {
     return this._scrollTarget;
   }
-  set scrollTarget(target: Element | Window | null) {
-    // Consider window as null.
-    if (target === window) {
-      target = null;
-    }
-    if (this._scrollTarget === target) {
-      return;
-    }
-    this._sizeContainer(undefined);
-    if (this._scrollTarget) {
-      this._scrollTarget.removeEventListener('scroll', this, {passive: true} as EventListenerOptions);
-      if (this._sizer && this._scrollTarget === this._container) {
-        this._sizer.remove();
-      }
-    }
+  _initScrollTarget(target: Element | Window | undefined) {
+    // this._sizeContainer(undefined);
 
-    this._scrollTarget = target as (Element | null);
+    this._scrollTarget = target || window;
 
-    if (target) {
-      target.addEventListener('scroll', this, {passive: true});
+    // if (target) {
+      this._scrollTarget.addEventListener('scroll', this, {passive: true});
       if (target === this._container) {
         this._sizer = this._sizer || this._createContainerSizer();
         this._container!.insertBefore(this._sizer, this._container!.firstChild);
       }
-    }
+    // }
   }
 
   /**
@@ -543,7 +496,7 @@ export class VirtualScroller {
   handleEvent(event: CustomEvent) {
     switch (event.type) {
       case 'scroll':
-        if (!this._scrollTarget || event.target === this._scrollTarget) {
+        if (event.currentTarget === this._scrollTarget) {
           this._handleScrollEvent();
         }
         break;
@@ -620,14 +573,15 @@ export class VirtualScroller {
       top = this._container.scrollTop;
     } else {
       const containerBounds = this._container.getBoundingClientRect();
-      const scrollBounds = this._scrollTarget ?
-          this._scrollTarget.getBoundingClientRect() :
-          {
+      const scrollBounds = this._scrollTarget == window
+          ? {
             top: containerBounds.top + window.pageYOffset,
             left: containerBounds.left + window.pageXOffset,
-            width: innerWidth,
-            height: innerHeight
-          };
+            width: window.innerWidth,
+            height: window.innerHeight
+          }
+          : (this._scrollTarget as Element).getBoundingClientRect();
+
       const scrollerWidth = scrollBounds.width;
       const scrollerHeight = scrollBounds.height;
       const xMin = Math.max(
@@ -722,9 +676,10 @@ export class VirtualScroller {
   }
 
   private _correctScrollError(err: {top: number, left: number}) {
-    if (this._scrollTarget) {
-      this._scrollTarget.scrollTop -= err.top;
-      this._scrollTarget.scrollLeft -= err.left;
+    if (this._scrollTarget !== window) {
+      const target = this._scrollTarget as Element;
+      target.scrollTop -= err.top;
+      target.scrollLeft -= err.left;
     } else {
       window.scroll(window.pageXOffset - err.left, window.pageYOffset - err.top);
     }

@@ -81,7 +81,6 @@ class ScrollDirective extends AsyncDirective {
             this.items = scroller!.items = config.items || [];
             scroller!.totalItems = config.totalItems || config.items?.length || 0;
             scroller!.layout = config.layout || null;
-            scroller!.scrollTarget = config.scrollTarget || this.container;
             if (config.scrollToIndex) {
                 scroller!.scrollToIndex = config.scrollToIndex;
             }
@@ -92,8 +91,9 @@ class ScrollDirective extends AsyncDirective {
 
     private _initialize(part: ChildPart, config: ScrollConfig) {
         const container = this.container = part.parentNode as HTMLElement;
+        const scrollTarget = config.scrollTarget || container;
         if (container && container.nodeType === 1) {
-            this.scroller = new VirtualScroller({ container });
+            this.scroller = new VirtualScroller({ container, scrollTarget });
             container.addEventListener('rangeChanged', (e: Event) => {
                 this.first = (e as CustomEvent).detail.first;
                 this.last = (e as CustomEvent).detail.last;
