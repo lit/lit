@@ -46,17 +46,17 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/mocha": "^8.0.3",
-    "@types/chai": "^4.0.1",
-    "@types/trusted-types": "^1.0.1",
-    "@web/test-runner-mocha": "^0.3.5",
-    "@web/dev-server": "^0.1.5",
+    "@esm-bundle/chai": "^4.3.4",
+    "@types/mocha": "^8.2.2",
+    "@types/chai": "^4.2.18",
+    "@types/trusted-types": "^2.0.0",
+    "@web/test-runner-mocha": "^0.7.2",
+    "@web/dev-server": "^0.1.17",
     "chokidar-cli": "^2.1.0",
-    "concurrently": "^5.3.0",
-    "mocha": "^8.1.3",
-    "rollup": "^2.28.2",
-    "typescript": "^4.1.3"
+    "concurrently": "^6.2.0",
+    "mocha": "^8.4.0",
+    "rollup": "^2.50.5",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
     "lit": "2.0.0-rc.2"
