@@ -34,16 +34,16 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-rc.1",
-    "lit": "^2.0.0-rc.1"
+    "@lit/reactive-element": "^1.0.0-rc.2",
+    "lit": "^2.0.0-rc.2"
   },
   "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/chai": "^4.2.12",
-    "@types/mocha": "^8.0.2",
-    "@web/test-runner": "^0.12.15",
-    "@web/test-runner-playwright": "^0.8.4",
-    "chai": "^4.2.0",
-    "mocha": "^8.1.1"
+    "@esm-bundle/chai": "^4.3.4",
+    "@types/chai": "^4.2.18",
+    "@types/mocha": "^8.2.2",
+    "@web/test-runner": "^0.13.5",
+    "@web/test-runner-playwright": "^0.8.6",
+    "chai": "^4.3.4",
+    "mocha": "^8.4.0"
   }
 }
