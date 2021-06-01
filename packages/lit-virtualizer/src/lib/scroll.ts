@@ -80,7 +80,9 @@ class ScrollDirective extends AsyncDirective {
             const { scroller } = this;
             this.items = scroller!.items = config.items || [];
             scroller!.totalItems = config.totalItems || config.items?.length || 0;
-            scroller!.layout = config.layout || null;
+            if (config.layout) {
+                scroller!.layout = config.layout;
+            }
             if (config.scrollToIndex) {
                 scroller!.scrollToIndex = config.scrollToIndex;
             }

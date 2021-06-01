@@ -194,11 +194,19 @@ export class VirtualScroller {
   }
 
   async _init(config: VirtualScrollerConfig) {
-    const { container, scrollTarget, layout } = config;
     await this._initResizeObservers();
-    this._initContainer(container);
-    this._initScrollTarget(scrollTarget);
-    if (layout) this.layout = layout;
+    this._initContainer(config);
+    this._initScrollTarget(config);
+    this._initLayout(config);
+  }
+
+  async _initLayout(config: VirtualScrollerConfig) {
+    if (config.layout) {
+      this.layout = config.layout;
+    }
+    else {
+      this.layout = (await import('./layouts/Layout1d')).Layout1d;
+    }
   }
 
   set items(items: Array<unknown> | undefined) {
@@ -239,7 +247,8 @@ export class VirtualScroller {
     return this._container;
   }
 
-  _initContainer(container: ContainerElement | ShadowRoot) {
+  _initContainer(config: VirtualScrollerConfig) {
+    const { container } = config;
     // Consider document fragments as shadowRoots.
     const newContainer =
         (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
@@ -399,18 +408,13 @@ export class VirtualScroller {
   get scrollTarget(): Element | Window | undefined {
     return this._scrollTarget;
   }
-  _initScrollTarget(target: Element | Window | undefined) {
-    // this._sizeContainer(undefined);
-
-    this._scrollTarget = target || window;
-
-    // if (target) {
-      this._scrollTarget.addEventListener('scroll', this, {passive: true});
-      if (target === this._container) {
-        this._sizer = this._sizer || this._createContainerSizer();
-        this._container!.insertBefore(this._sizer, this._container!.firstChild);
-      }
-    // }
+  _initScrollTarget(config: VirtualScrollerConfig) {
+    const target = this._scrollTarget = config.scrollTarget || window;
+    target.addEventListener('scroll', this, {passive: true});
+    if (target === this._container) {
+      this._sizer = this._sizer || this._createContainerSizer();
+      this._container!.insertBefore(this._sizer, this._container!.firstChild);
+    }
   }
 
   /**
@@ -458,22 +462,24 @@ export class VirtualScroller {
   }
 
   _updateLayout() {
-    this._layout!.totalItems = this._totalItems!;
-    if (this._scrollToIndex !== null) {
-      this._layout!.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex!.position!);
-      this._scrollToIndex = null;
-    }
-    this._updateView();
-    if (this._childMeasurements !== null) {
-      // If the layout has been changed, we may have measurements but no callback
-      if (this._measureCallback) {
-        this._measureCallback(this._childMeasurements);
+    if (this._layout) {
+      this._layout!.totalItems = this._totalItems!;
+      if (this._scrollToIndex !== null) {
+        this._layout!.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex!.position!);
+        this._scrollToIndex = null;
       }
-      this._childMeasurements = null;
-    }
-    this._layout!.reflowIfNeeded(this._itemsChanged);
-    if (this._benchmarkStart && 'mark' in window.performance) {
-      window.performance.mark('uv-end');
+      this._updateView();
+      if (this._childMeasurements !== null) {
+        // If the layout has been changed, we may have measurements but no callback
+        if (this._measureCallback) {
+          this._measureCallback(this._childMeasurements);
+        }
+        this._childMeasurements = null;
+      }
+      this._layout!.reflowIfNeeded(this._itemsChanged);
+      if (this._benchmarkStart && 'mark' in window.performance) {
+        window.performance.mark('uv-end');
+      }  
     }
   }
 
