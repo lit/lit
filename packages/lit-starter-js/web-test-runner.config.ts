@@ -1,18 +1,18 @@
 /**
- * @license
+ * 
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {legacyPlugin} from '@web/dev-server-legacy';
-import {playwrightLauncher} from '@web/test-runner-playwright';
+ {legacyPlugin}  '@web/dev-server-legacy';
+ {playwrightLauncher}  '@web/test-runner-playwright';
 
-// Uncomment for testing on Sauce Labs
-// Must run `npm i --save-dev @web/test-runner-saucelabs` and set
-// SAUCE_USERNAME and SAUCE_USERNAME environment variables
+// Uncomment testing Sauce Labs
+// Must run `npm i --save-dev @web/test-runner-saucelabs`
+// SAUCE_USERNAME SAUCE_USERNAME environment variables
 // ===========
-// import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
-// const sauceLabsLauncher = createSauceLabsLauncher(
+//  {createSauceLabsLauncher}  '@web/test-runner-saucelabs';
+//  sauceLabsLauncher  createSauceLabsLauncher(
 //   {
 //     user: process.env.SAUCE_USERNAME,
 //     key: process.env.SAUCE_USERNAME,
@@ -27,12 +27,12 @@ import {playwrightLauncher} from '@web/test-runner-playwright';
 //   }
 // );
 
-// Uncomment for testing on BrowserStack
-// Must run `npm i --save-dev @web/test-runner-browserstack` and set
-// BROWSER_STACK_USERNAME and BROWSER_STACK_ACCESS_KEY environment variables
+// Uncomment  testing  BrowserStack
+// Must  `npm i --save-dev @web/test-runner-browserstack`
+// BROWSER_STACK_USERNAME  BROWSER_STACK_ACCESS_KEY environment variables
 // ===========
-// import {browserstackLauncher as createBrowserstackLauncher} from '@web/test-runner-browserstack';
-// const browserstackLauncher = (config) => createBrowserstackLauncher({
+//  {browserstackLauncher createBrowserstackLauncher} '@web/test-runner-browserstack';
+//  browserstackLauncher  (config) => createBrowserstackLauncher({
 //   capabilities: {
 //     'browserstack.user': process.env.BROWSER_STACK_USERNAME,
 //     'browserstack.key': process.env.BROWSER_STACK_ACCESS_KEY,
@@ -45,14 +45,14 @@ import {playwrightLauncher} from '@web/test-runner-playwright';
 //   }
 // });
 
-const browsers = {
-  // Local browser testing via playwright
+ browsers = {
+  // Local browser testing playwright
   // ===========
   chromium: playwrightLauncher({product: 'chromium'}),
   firefox: playwrightLauncher({product: 'firefox'}),
   webkit: playwrightLauncher({product: 'webkit'}),
 
-  // Uncomment example launchers for running on Sauce Labs
+  // Uncomment example launchers running Sauce Labs
   // ===========
   // chromium: sauceLabsLauncher({browserName: 'chrome', browserVersion: 'latest', platformName: 'Windows 10'}),
   // firefox: sauceLabsLauncher({browserName: 'firefox', browserVersion: 'latest', platformName: 'Windows 10'}),
@@ -60,7 +60,7 @@ const browsers = {
   // ie11: sauceLabsLauncher({browserName: 'internet explorer', browserVersion: '11.0', platformName: 'Windows 10'}),
   // safari: sauceLabsLauncher({browserName: 'safari', browserVersion: 'latest', platformName: 'macOS 10.15'}),
 
-  // Uncomment example launchers for running on Sauce Labs
+  // Uncomment example launchers running Sauce Labs
   // ===========
   // chromium: browserstackLauncher({browserName: 'Chrome', os: 'Windows', os_version: '10'}),
   // firefox: browserstackLauncher({browserName: 'Firefox', os: 'Windows', os_version: '10'}),
@@ -69,26 +69,26 @@ const browsers = {
   // safari: browserstackLauncher({browserName: 'Safari', browser_version: '14.0', os: 'OS X', os_version: 'Big Sur'}),
 };
 
-// Prepend BROWSERS=x,y to `npm run test` to run a subset of browsers
-// e.g. `BROWSERS=chromium,firefox npm run test`
-const noBrowser = (b) => {
-  throw new Error(`No browser configured named '${b}'; using defaults`);
+// Prepend BROWSERS=x,y `npm run test` subset browsers
+// e.g. `BROWSERS=chromium,firefox npm  `
+ noBrowser = (b) => {
+   Error(`No browser configured named '${b}'; using defaults`);
 };
-let commandLineBrowsers;
-try {
+ commandLineBrowsers;
+   {
   commandLineBrowsers = process.env.BROWSERS?.split(',').map(
     (b) => browsers[b] ?? noBrowser(b)
   );
-} catch (e) {
+}  (e) {
   console.warn(e);
 }
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
-export default {
+ {
   rootDir: '.',
   files: ['./test/**/*_test.js'],
-  nodeResolve: true,
-  preserveSymlinks: true,
+  nodeResolve: ,
+  preserveSymlinks: ,
   browsers: commandLineBrowsers ?? Object.values(browsers),
   testFramework: {
     // https://mochajs.org/api/mocha
@@ -101,15 +101,15 @@ export default {
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
       polyfills: {
-        webcomponents: true,
-        // Inject lit's polyfill-support module into test files, which is required
-        // for interfacing with the webcomponents polyfills
+        webcomponents: ,
+        // Inject lit's polyfill-support module files, required
+        // interfacing webcomponents polyfills
         custom: [
           {
             name: 'lit-polyfill-support',
             path: 'node_modules/lit/polyfill-support.js',
             test: "!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force",
-            module: false,
+            module: ,
           },
         ],
       },
