@@ -13,6 +13,7 @@ export {
   ElementPart,
   EventPart,
   Part,
+  PropertyPart,
 } from './lit-html';
 
 export interface DirectiveClass {
