@@ -41,7 +41,8 @@ suite('Forward compatiblity directive API', () => {
 
   suite('ChildPart', () => {
     test('PartInfo has the correct type.', () => {
-      const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
+      const {directive: testDirective, getPartInfoType} =
+          makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
       render(html`<div>${testDirective()}</div>`, template.content);
@@ -52,7 +53,8 @@ suite('Forward compatiblity directive API', () => {
 
   suite('AttributePart', () => {
     test('PartInfo has the correct type.', () => {
-      const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
+      const {directive: testDirective, getPartInfoType} =
+          makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
       render(html`<div attr-name=${testDirective()}></div>`, template.content);
@@ -63,7 +65,8 @@ suite('Forward compatiblity directive API', () => {
 
   suite('PropertyPart', () => {
     test('PartInfo has the correct type.', () => {
-      const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
+      const {directive: testDirective, getPartInfoType} =
+          makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
       render(html`<div .propName=${testDirective()}></div>`, template.content);
@@ -74,7 +77,8 @@ suite('Forward compatiblity directive API', () => {
 
   suite('BooleanAttributePart', () => {
     test('PartInfo has the correct type.', () => {
-      const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
+      const {directive: testDirective, getPartInfoType} =
+          makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
       render(html`<div ?attr-name=${testDirective()}></div>`, template.content);
@@ -85,10 +89,12 @@ suite('Forward compatiblity directive API', () => {
 
   suite('EventPart', () => {
     test('PartInfo has the correct type.', () => {
-      const {directive: testDirective, getPartInfoType} = makePartInfoTypeTestDirective();
+      const {directive: testDirective, getPartInfoType} =
+          makePartInfoTypeTestDirective();
 
       const template = document.createElement('template');
-      render(html`<div @event-name=${testDirective()}></div>`, template.content);
+      render(
+          html`<div @event-name=${testDirective()}></div>`, template.content);
 
       assert.equal(getPartInfoType(), PartType.EVENT);
     });
