@@ -104,10 +104,6 @@ class AttributePart {
 export type{PropertyPart};
 class PropertyPart extends AttributePart {
   readonly type = PartType.PROPERTY;
-
-  constructor(legacyPart: legacyLit.PropertyPart) {
-    super(legacyPart);
-  }
 }
 
 export type{BooleanAttributePart};
