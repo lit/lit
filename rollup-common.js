@@ -12,6 +12,36 @@ import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
 
+// Greek prefixes used with minified class and stable properties on objects to
+// avoid collisions with user code and/or subclasses between packages. They are
+// defined here rather than via an argument to litProdConfig() so we can
+// validate the list used by each package is unique (since copy/pasting the
+// individual package-based configs is common and error-prone)
+const STABLE_PROPERTY_PREFIX = 'Ξ';
+const PACKAGE_CLASS_PREFIXES = {
+  lit: 'ϖ',
+  'lit-html': 'Σ',
+  'lit-element': 'Φ',
+  '@lit/reactive-element': 'Π',
+  '@lit-labs/motion': 'δ',
+  '@lit-labs/react': 'Ω',
+  '@lit-labs/scoped-registry-mixin': 'Ϋ',
+  '@lit-labs/ssr-client': 'Λ',
+  '@lit-labs/task': '⍶',
+};
+
+// Validate prefix uniqueness
+const classPrefixes = Object.values(PACKAGE_CLASS_PREFIXES);
+const uniqueClassPrefixes = new Set(classPrefixes);
+if (classPrefixes.length !== uniqueClassPrefixes.size) {
+  throw new Error('PACKAGE_CLASS_PREFIXES list must be unique.');
+}
+if (uniqueClassPrefixes.has(STABLE_PROPERTY_PREFIX)) {
+  throw new Error(
+    'STABLE_PROPERTY_PREFIX was duplicated in PACKAGE_CLASS_PREFIXES.'
+  );
+}
+
 // In CHECKSIZE mode we:
 // 1) Don't emit any files.
 // 2) Don't include copyright header comments.
@@ -213,10 +243,18 @@ export function litProdConfig({
   external = [],
   bundled = [],
   testPropertyPrefix,
-  classPropertyPrefix,
+  packageName,
   outputDir = './',
   // eslint-disable-next-line no-undef
 } = options) {
+  const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
+  if (classPropertyPrefix === undefined) {
+    throw new Error(
+      `Package ${packageName} was being built using 'litProdConfig' ` +
+        `but does not have a PACKAGE_CLASS_PREFIXES mapping in rollup-common.js.`
+    );
+  }
+
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. directive-helpers.js can safely
   // access internal details of lit-html.js.
@@ -248,7 +286,7 @@ export function litProdConfig({
       props: Object.entries(stableProperties).reduce(
         (obj, [name, val]) => ({
           ...obj,
-          ['$' + name]: val,
+          ['$' + name]: STABLE_PROPERTY_PREFIX + val,
         }),
         {}
       ),
