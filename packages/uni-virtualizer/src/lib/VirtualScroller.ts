@@ -147,7 +147,7 @@ export class VirtualScroller {
   /**
    * Total number of items to render. Set by totalItems.
    */
-  private _totalItems: number | null = null;
+  private _totalItems?: number;
 
   /**
    * Index of the first child in the range, not necessarily the first visible child.
@@ -221,13 +221,14 @@ export class VirtualScroller {
    * The total number of items, regardless of the range, that can be rendered
    * as child nodes.
    */
-  get totalItems(): number {
-    return (this._totalItems === null ? this._items.length : this._totalItems);
+  // Never actually returns undefined, but TS requires getter and setter types to be the same
+  get totalItems(): number | undefined {
+    return (this._totalItems === undefined ? this._items.length : this._totalItems);
   }
 
-  set totalItems(num: number) {
-    if (typeof num !== 'number' && num !== null) {
-      throw new Error('New value must be a number.');
+  set totalItems(num: number | undefined) {
+    if (typeof num !== 'number' && num !== undefined) {
+      throw new Error('The value of totalItems must be a number.');
     }
 
     // TODO(valdrin) should we check if it is a finite number?
@@ -463,7 +464,7 @@ export class VirtualScroller {
 
   _updateLayout() {
     if (this._layout) {
-      this._layout!.totalItems = this._totalItems!;
+      this._layout!.totalItems = this.totalItems!;
       if (this._scrollToIndex !== null) {
         this._layout!.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex!.position!);
         this._scrollToIndex = null;
@@ -755,7 +756,6 @@ export class VirtualScroller {
       this._toBeMeasured.set(change.target as HTMLElement, change.contentRect);
     }
     this._measureChildren();
-    this._schedule(this._updateLayout);
   }
 }
 

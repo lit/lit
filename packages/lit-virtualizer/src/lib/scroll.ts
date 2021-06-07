@@ -1,4 +1,4 @@
-import { TemplateResult, nothing, ChildPart, html } from 'lit';
+import { TemplateResult, noChange, ChildPart, html } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -63,8 +63,7 @@ class ScrollDirective extends AsyncDirective {
     
     render(config?: ScrollConfig) {
         if (config) {
-            this.renderItem = config.renderItem || this.renderItem;
-            this.keyFunction = config.keyFunction || this.keyFunction;
+            this._setFunctions(config);
         }
         const itemsToRender = [];
         if (this.first >= 0 && this.last >= this.first) {
@@ -79,16 +78,21 @@ class ScrollDirective extends AsyncDirective {
         if (this.scroller || this._initialize(part, config)) {
             const { scroller } = this;
             this.items = scroller!.items = config.items || [];
-            scroller!.totalItems = config.totalItems || config.items?.length || 0;
+            scroller!.totalItems = config.totalItems;
             if (config.layout) {
                 scroller!.layout = config.layout;
             }
             if (config.scrollToIndex) {
                 scroller!.scrollToIndex = config.scrollToIndex;
             }
-            return this.render(config);    
+            this._setFunctions(config);
         }
-        return nothing;
+        return noChange;
+    }
+
+    private _setFunctions(config: ScrollConfig) {
+        this.renderItem = config.renderItem || this.renderItem;
+        this.keyFunction = config.keyFunction || this.keyFunction;
     }
 
     private _initialize(part: ChildPart, config: ScrollConfig) {
