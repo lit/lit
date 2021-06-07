@@ -1,6 +1,5 @@
 import { render, html } from 'lit';
-import { scroll } from 'lit-virtualizer/lib/scroll.js';
-import { Layout1d } from 'lit-virtualizer';
+import { scroll } from '@lit-labs/virtualizer/lib/scroll.js';
 
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
@@ -15,7 +14,6 @@ const example = (contacts) => html`
     <section @visibilityChanged=${handleVisibilityChange} style="height: 100%;">
         ${scroll({
             items: contacts,
-            layout: Layout1d,
             renderItem: ({ mediumText, index }) =>
                 html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`,
             useShadowDOM: true

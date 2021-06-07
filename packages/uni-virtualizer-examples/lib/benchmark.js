@@ -1,4 +1,4 @@
-import { scrollerRef } from 'lit-virtualizer';
+import { scrollerRef } from '@lit-labs/virtualizer/lib/lit-virtualizer.js';
 
 const targetFPS = 60;
 const t = 1000 / targetFPS;

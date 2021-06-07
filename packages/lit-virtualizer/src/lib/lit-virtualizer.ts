@@ -5,6 +5,8 @@ import { scroll } from './scroll.js';
 import { scrollerRef, ContainerElement } from './uni-virtualizer/lib/VirtualScroller.js';
 import { LayoutSpecifier, Layout, LayoutConstructor } from './uni-virtualizer/lib/layouts/Layout.js';
 
+export { scrollerRef } from './uni-virtualizer/lib/VirtualScroller.js';
+
 /**
  * A LitElement wrapper of the scroll directive.
  *
