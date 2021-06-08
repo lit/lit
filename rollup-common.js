@@ -333,6 +333,7 @@ export function litProdConfig({
             'const ENABLE_EXTRA_SECURITY_HOOKS = false',
           'const ENABLE_SHADYDOM_NOPATCH = true':
             'const ENABLE_SHADYDOM_NOPATCH = false',
+          'export const INTERNAL = true': 'const INTERNAL = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -396,6 +397,7 @@ const litMonoBundleConfig = ({
         'const ENABLE_EXTRA_SECURITY_HOOKS = false',
       'const ENABLE_SHADYDOM_NOPATCH = true':
         'const ENABLE_SHADYDOM_NOPATCH = false',
+      'export const INTERNAL = true': 'const INTERNAL = false',
       // For downleveled ES5 build of polyfill-support
       'var ENABLE_SHADYDOM_NOPATCH = true':
         'var ENABLE_SHADYDOM_NOPATCH = false',

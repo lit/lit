@@ -11,6 +11,13 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+/**
+ * `true` if we're building for google3 with temporary back-compat helpers.
+ * This export is not present in prod builds.
+ * @internal
+ */
+export const INTERNAL = true;
+
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
@@ -325,6 +332,18 @@ export interface RenderOptions {
 }
 
 /**
+ * Internally we can export this interface and change the type of
+ * render()'s options.
+ */
+interface InternalRenderOptions extends RenderOptions {
+  /**
+   * An internal-only migration flag
+   * @internal
+   */
+  clearContainerForLit2MigrationOnly?: boolean;
+}
+
+/**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  * @param value
  * @param container
@@ -339,6 +358,14 @@ export const render = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)._$litPart$;
   if (part === undefined) {
+    // Internal modification: don't clear container to match lit-html 2.0
+    if (
+      INTERNAL &&
+      (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
+        true
+    ) {
+      container.childNodes.forEach((c) => c.remove());
+    }
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any)._$litPart$ = part = new ChildPart(
