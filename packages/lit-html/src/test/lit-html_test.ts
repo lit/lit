@@ -18,6 +18,8 @@ import {
   Part,
   CompiledTemplate,
 } from '../lit-html.js';
+import * as litHtmlLib from '../lit-html.js';
+
 import {directive, Directive, PartType, PartInfo} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -40,6 +42,10 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
+/**
+ * litHtmlLib.INTERNAL is not exported in prod mode
+ */
+const INTERNAL = litHtmlLib.INTERNAL === true;
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -2773,6 +2779,19 @@ suite('lit-html', () => {
       assert.deepEqual(sanitizerCalls, [
         {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
       ]);
+    });
+  });
+
+  suite('internal', () => {
+    test('clearContainerForLit2MigrationOnly', () => {
+      container.innerHTML = '<div>TEST</div>';
+      render(html`<p>HELLO</p>`, container, {
+        clearContainerForLit2MigrationOnly: true,
+      } as RenderOptions);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        INTERNAL ? '<p>HELLO</p>' : '<div>TEST</div><p>HELLO</p>'
+      );
     });
   });
 });
