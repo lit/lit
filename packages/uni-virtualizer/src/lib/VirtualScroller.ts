@@ -444,13 +444,9 @@ export class VirtualScroller {
     }
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
-      this._rangeChanged = false;
-      this._itemsChanged = false;
       await this._mutationPromise;
     }
-    if (this._layout!.measureChildren) {
-      this._children.forEach((child) => this._childrenRO!.observe(child));
-    }
+    this._children.forEach((child) => this._childrenRO!.observe(child));
     this._positionChildren(this._childrenPos!);
     this._sizeContainer(this._scrollSize);
     if (this._scrollErr) {
@@ -751,11 +747,25 @@ export class VirtualScroller {
     // this.requestRemeasure();
   }
 
+  // This is the callback for the ResizeObserver that watches the
+  // scroller's children. We land here at the end of every scroller
+  // update cycle that results in changes to physical items, and we also
+  // end up here if one or more children change size independently of
+  // the scroller update cycle.
   private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
-    for (const change of changes) {
-      this._toBeMeasured.set(change.target as HTMLElement, change.contentRect);
+    // Only measure if the layout requires it
+    if (this._layout!.measureChildren) {
+      for (const change of changes) {
+        this._toBeMeasured.set(change.target as HTMLElement, change.contentRect);
+      }
+      this._measureChildren();
     }
-    this._measureChildren();
+    // If this is the end of an update cycle, we need to reset some
+    // internal state. This should be a harmless no-op if we're handling
+    // an out-of-cycle ResizeObserver callback, so we don't need to
+    // distinguish between the two cases.
+    this._itemsChanged = false;
+    this._rangeChanged = false;
   }
 }
 
