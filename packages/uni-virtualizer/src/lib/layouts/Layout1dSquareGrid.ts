@@ -20,17 +20,10 @@ export const layout1dSquareGrid: Layout1dSquareGridSpecifierFactory = (config?: 
 export class Layout1dSquareGrid extends Layout1dGrid<Layout1dSquareGridConfig> {
   protected _idealSize: number = 200;
 
-  // constructor(config) {
-  //   super(config);
-  //   if (config.idealSize === undefined) {
-  //       this._idealSize = 200;
-  //   }
-  // }
-
   set idealSize(px: number) {
     if (px !== this._idealSize) {
       this._idealSize = px;
-      this._scheduleLayoutUpdate();
+      this._triggerReflow();
     }
   }
 
@@ -44,7 +37,6 @@ export class Layout1dSquareGrid extends Layout1dGrid<Layout1dSquareGridConfig> {
     const adjSize = (this._viewDim2 - ((this._rolumns + 1) * this._spacing)) / this._rolumns;
     if (adjSize !== this._itemSize.width) {
       this._itemSize = { width: adjSize, height: adjSize };
-      this._spacingChanged = true;
     }
   }    
 }

@@ -28,7 +28,7 @@ export class LitVirtualizer extends LitElement {
     @property()
     keyFunction: ((item:unknown) => unknown) | undefined = undefined;
 
-    private _layout: Layout | LayoutConstructor | LayoutSpecifier | null = null;
+    private _layout?: Layout | LayoutConstructor | LayoutSpecifier;
 
     private _scrollToIndex: {index: number, position: string} | null = null;
   
@@ -59,14 +59,16 @@ export class LitVirtualizer extends LitElement {
     // }
 
     @property({attribute:false})
-    set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
+    set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | undefined) {
         // TODO (graynorton): Shouldn't have to set this here
         this._layout = layout;
         this.requestUpdate();
     }
 
-    get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
-        return (this as ContainerElement)[scrollerRef]!.layout;
+    get layout(): Layout | LayoutConstructor | LayoutSpecifier | undefined {
+        // TODO: graynorton@: Coercing null to undefined here. Should review
+        // use of null for defaults in VirtualScroller and see if we can eliminate.
+        return (this as ContainerElement)[scrollerRef]!.layout || undefined;
     }
     
     

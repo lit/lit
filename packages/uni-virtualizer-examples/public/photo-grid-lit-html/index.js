@@ -160,9 +160,9 @@ function renderExample() {
                 </details>
             </div>
         </div>
-        <div class="scroller" @rangechange=${(e) => {
+        <div class="scroller" @visibilityChanged=${(e) => {
             if (showRange) {
-                const {first, last, firstVisible, lastVisible} = e;
+                const {first, last, firstVisible, lastVisible} = e.detail;
                 setState({first, last, firstVisible, lastVisible});
             }
         }}>

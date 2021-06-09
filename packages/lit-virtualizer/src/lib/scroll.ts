@@ -18,7 +18,7 @@ interface ScrollConfig {
     keyFunction?: (item: any) => unknown;
   
     // TODO (graynorton): Document...
-    layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
+    layout?: Layout | LayoutConstructor | LayoutSpecifier;
   
     /**
      * An element that receives scroll events for the virtual scroller.
@@ -98,8 +98,9 @@ class ScrollDirective extends AsyncDirective {
     private _initialize(part: ChildPart, config: ScrollConfig) {
         const container = this.container = part.parentNode as HTMLElement;
         const scrollTarget = config.scrollTarget || container;
+        const layout = config.layout;
         if (container && container.nodeType === 1) {
-            this.scroller = new VirtualScroller({ container, scrollTarget });
+            this.scroller = new VirtualScroller({ container, scrollTarget, layout });
             container.addEventListener('rangeChanged', (e: Event) => {
                 this.first = (e as CustomEvent).detail.first;
                 this.last = (e as CustomEvent).detail.last;

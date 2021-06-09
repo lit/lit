@@ -140,14 +140,14 @@ export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layo
   protected _overhang = 1000;
 
   private _eventTarget: EventTarget | null = null;
-  protected _spacingChanged = false;
 
   protected _defaultConfig: C = {
     direction: 'vertical'
   } as C
 
   constructor(config?: C) {
-    this.config = config || this._defaultConfig;
+    // Delay setting config so that subclasses can override values
+    Promise.resolve().then(() => this.config = config || this._defaultConfig);
   }
 
   set config(config: C) {
@@ -190,7 +190,7 @@ export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layo
       this._secondarySizeDim = (dir === 'horizontal') ? 'height' : 'width';
       this._positionDim = (dir === 'horizontal') ? 'left' : 'top';
       this._secondaryPositionDim = (dir === 'horizontal') ? 'top' : 'left';
-      this._scheduleLayoutUpdate();
+      this._triggerReflow();
     }
   }
 
@@ -222,7 +222,7 @@ export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layo
     const _px = Number(px);
     if (_px !== this._spacing) {
       this._spacing = _px;
-      this._scheduleLayoutUpdate();
+      this._triggerReflow();
     }
   }
 
@@ -387,9 +387,17 @@ export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layo
     this._scheduleReflow();
   }
 
-  protected _reflow() {
-    const {_first, _last, _scrollSize} = this;
+  // For triggering a reflow based on incoming changes to
+  // the layout config.
+  protected _triggerReflow() {
+    this._scheduleLayoutUpdate();
+    // TODO graynorton@: reflowIfNeeded() isn't really supposed
+    // to be called internally. Address in larger cleanup
+    // of scroller / layout interaction pattern.
+    this.reflowIfNeeded(true);
+  }
 
+  protected _reflow() {
     if (this._pendingLayoutUpdate) {
       this._updateLayout();
       this._pendingLayoutUpdate = false;
@@ -398,21 +406,9 @@ export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layo
     this._getActiveItems();
     this._scrollIfNeeded();
     this._updateVisibleIndices();
-
-    if (this._scrollSize !== _scrollSize) {
-      this._emitScrollSize();
-    }
-
-    if (this._first === -1 && this._last === -1) {
-      // TODO: have default empty object for emitRange instead
-      this._emitRange();
-    } else if (
-        this._first !== _first || this._last !== _last ||
-        this._spacingChanged) {
-      // TODO: have default empty object for emitRange instead
-      this._emitRange();
-      this._emitChildPositions();
-    }
+    this._emitScrollSize();
+    this._emitRange();
+    this._emitChildPositions();
     this._emitScrollError();
   }
 

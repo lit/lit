@@ -81,9 +81,12 @@ export class Layout1dFlex extends Layout1dBase<Layout1dFlexConfig> {
 
   set idealSize(px) {
     const _px = Number(px);
+    if (_px <= 0) {
+      throw new Error('idealSize must be greater than zero');
+    }
     if (_px !== this._idealSize) {
       this._idealSize = _px;
-      this._scheduleLayoutUpdate();
+      this._triggerReflow();
     }
   }
 
@@ -273,8 +276,6 @@ export class Layout1dFlex extends Layout1dBase<Layout1dFlexConfig> {
     // in all cases
     // this._itemSizes.length = 100;//this._totalItems;
     this._chunks[0] = this._layOutChunk(0);
-    // TODO (graynorton): This is a hack to force reflow
-    this._spacingChanged = true;
 }
 
   _updateScrollSize() {
