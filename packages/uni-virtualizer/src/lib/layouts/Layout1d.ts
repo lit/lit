@@ -272,7 +272,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
     if (this._scrollToIndex >= 0) {
       // If we have a scrollToIndex, we anchor on the given
       // index and set the scroll position accordingly
-      this._anchorIdx = this._scrollToIndex;
+      this._anchorIdx = Math.min(this._scrollToIndex, this._totalItems - 1);
       this._anchorPos = this._getPosition(this._anchorIdx);
       this._scrollIfNeeded();
       lower = Math.max(0, this._scrollPosition - this._overhang);
@@ -385,13 +385,6 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
           ((this._totalItems - 1 - this._last) * this._delta));
     }
     return 0;
-  }
-
-  _updateScrollSize() {
-    // Reuse previously calculated physical max, as it might be higher than the
-    // estimated size.
-    super._updateScrollSize();
-    this._scrollSize = Math.max(this._physicalMax, this._scrollSize);
   }
 
   // TODO: Can this be made to inherit from base, with proper hooks?
