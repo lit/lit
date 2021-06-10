@@ -42,7 +42,7 @@
     "@lit/reactive-element": "^1.0.0-rc.1",
     "lit-element": "^3.0.0-rc.1",
     "lit-html": "^2.0.0-rc.1",
-    "tachometer": "^0.5.8"
+    "tachometer": "^0.5.9"
   },
   "devDependencies": {
     "chromedriver": "^91.0.0",
