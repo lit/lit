@@ -449,7 +449,7 @@ test('only remove imports that will be transformed', () => {
 test('ignore non-lit class decorator', () => {
   const input = `
   import {LitElement} from 'lit';
-  import {customElement} from './different-decorators.js';
+  import {customElement} from './non-lit-decorators.js';
   @customElement('my-element')
   class MyElement extends LitElement {
   }
@@ -458,7 +458,7 @@ test('ignore non-lit class decorator', () => {
   const expected = `
   import {__decorate} from 'tslib';
   import {LitElement} from 'lit';
-  import {customElement} from './different-decorators.js';
+  import {customElement} from './non-lit-decorators.js';
   let MyElement = class MyElement extends LitElement {};
   MyElement = __decorate([customElement("my-element")], MyElement);
   `;
