@@ -366,7 +366,36 @@ test('@queryAssignedNodes (with selector)', () => {
   checkTransform(input, expected);
 });
 
-test('@eventOptions', () => {
+test('private @eventOptions', () => {
+  const input = `
+  import {LitElement, html} from 'lit';
+  import {eventOptions} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @eventOptions({passive: true})
+    private _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`<button @click=\${this._onClick}></button>\`;
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement, html} from 'lit';
+  class MyElement extends LitElement {
+    _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`<button @click=\${{handleEvent: (e) => this._onClick(e), passive: true}}></button>\`;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('public @eventOptions', () => {
   const input = `
   import {LitElement} from 'lit';
   import {eventOptions} from 'lit/decorators.js';

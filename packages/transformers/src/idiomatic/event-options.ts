@@ -5,9 +5,10 @@
  */
 
 import * as ts from 'typescript';
+import {cloneNode} from 'ts-clone-node';
 
 import type {LitElementMutations} from '../mutations.js';
-import type {MemberDecoratorVisitor} from '../visitor.js';
+import type {MemberDecoratorVisitor, GenericVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -34,9 +35,14 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
   readonly decoratorName = 'eventOptions';
 
   private _factory: ts.NodeFactory;
+  private _typeChecker: ts.TypeChecker;
 
-  constructor({factory}: ts.TransformationContext) {
+  constructor(
+    {factory}: ts.TransformationContext,
+    typeChecker: ts.TypeChecker
+  ) {
     this._factory = factory;
+    this._typeChecker = typeChecker;
   }
 
   visit(
@@ -59,6 +65,23 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
     }
     if (!ts.isIdentifier(method.name)) {
       return;
+    }
+    if (
+      method.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword)
+    ) {
+      const methodSymbol = this._typeChecker.getSymbolAtLocation(method.name);
+      if (methodSymbol !== undefined) {
+        mutations.removeNodes.add(decorator);
+        mutations.visitors.add(
+          new EventOptionsBindingVisitor(
+            this._factory,
+            this._typeChecker,
+            methodSymbol,
+            options
+          )
+        );
+        return;
+      }
     }
     const methodName = method.name.text;
     mutations.removeNodes.add(method);
@@ -102,6 +125,73 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
         ],
         true
       )
+    );
+  }
+}
+
+class EventOptionsBindingVisitor implements GenericVisitor {
+  readonly kind = 'generic';
+
+  private _factory: ts.NodeFactory;
+  private _symbol: ts.Symbol;
+  private _typeChecker: ts.TypeChecker;
+  private _optionsNode: ts.ObjectLiteralExpression;
+
+  constructor(
+    factory: ts.NodeFactory,
+    typeChecker: ts.TypeChecker,
+    methodSymbol: ts.Symbol,
+    optionsNode: ts.ObjectLiteralExpression
+  ) {
+    this._factory = factory;
+    this._typeChecker = typeChecker;
+    this._symbol = methodSymbol;
+    this._optionsNode = optionsNode;
+  }
+
+  visit(node: ts.Node): ts.Node {
+    if (!ts.isPropertyAccessExpression(node)) {
+      return node;
+    }
+    const symbol = this._typeChecker.getSymbolAtLocation(node.name);
+    if (symbol !== this._symbol) {
+      return node;
+    }
+    return this._createEventHandlerObject(node);
+  }
+
+  private _createEventHandlerObject(
+    node: ts.PropertyAccessExpression
+  ): ts.ObjectLiteralExpression {
+    const f = this._factory;
+    return f.createObjectLiteralExpression(
+      [
+        f.createPropertyAssignment(
+          f.createIdentifier('handleEvent'),
+          f.createArrowFunction(
+            undefined,
+            undefined,
+            [
+              f.createParameterDeclaration(
+                undefined,
+                undefined,
+                undefined,
+                f.createIdentifier('e'),
+                undefined,
+                undefined,
+                undefined
+              ),
+            ],
+            undefined,
+            f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            f.createCallExpression(cloneNode(node), undefined, [
+              f.createIdentifier('e'),
+            ])
+          )
+        ),
+        ...this._optionsNode.properties.map((property) => cloneNode(property)),
+      ],
+      false
     );
   }
 }
