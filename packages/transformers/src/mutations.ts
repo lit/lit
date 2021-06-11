@@ -5,6 +5,7 @@
  */
 
 import type * as ts from 'typescript';
+import type {Visitor} from './visitor.js';
 
 /**
  * Changes that need making to a LitElement class.
@@ -34,4 +35,9 @@ export class LitElementMutations {
    * this element (e.g. a customElements.define() call).
    */
   adjacentStatements: ts.Node[] = [];
+
+  /**
+   * Additional visitors that will run only in the scope of the current class.
+   */
+  visitors = new Set<Visitor>();
 }

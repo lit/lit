@@ -22,11 +22,14 @@ export class LitTransformer {
   private _typeChecker: ts.TypeChecker;
   private _context: ts.TransformationContext;
 
-  private _classDecoratorVisitors = new Map<string, ClassDecoratorVisitor[]>();
-
-  private _memberDecoratorVisitors = new Map<
+  private _classDecoratorVisitors = new MultiMap<
     string,
-    MemberDecoratorVisitor[]
+    ClassDecoratorVisitor
+  >();
+
+  private _memberDecoratorVisitors = new MultiMap<
+    string,
+    MemberDecoratorVisitor
   >();
 
   private _importedLitDecorators = new Map<ts.Node, string>();
@@ -40,23 +43,43 @@ export class LitTransformer {
     this._typeChecker = program.getTypeChecker();
     this._context = context;
     for (const visitor of visitors) {
-      if (visitor.kind === 'classDecorator') {
-        let arr = this._classDecoratorVisitors.get(visitor.decoratorName);
-        if (arr === undefined) {
-          arr = [];
-          this._classDecoratorVisitors.set(visitor.decoratorName, arr);
-        }
-        arr.push(visitor);
-      } else if (visitor.kind === 'memberDecorator') {
-        let arr = this._memberDecoratorVisitors.get(visitor.decoratorName);
-        if (arr === undefined) {
-          arr = [];
-          this._memberDecoratorVisitors.set(visitor.decoratorName, arr);
-        }
-        arr.push(visitor);
-      } else {
+      this._registerVisitor(visitor);
+    }
+  }
+
+  private _registerVisitor(visitor: Visitor) {
+    switch (visitor.kind) {
+      case 'classDecorator': {
+        this._classDecoratorVisitors.add(visitor.decoratorName, visitor);
+        break;
+      }
+      case 'memberDecorator': {
+        this._memberDecoratorVisitors.add(visitor.decoratorName, visitor);
+        break;
+      }
+      default: {
         throw new Error(
-          `Internal error: unknown visitor kind ${
+          `Internal error: registering unknown visitor kind ${
+            (unreachable(visitor) as Visitor).kind
+          }`
+        );
+      }
+    }
+  }
+
+  private _unregisterVisitor(visitor: Visitor) {
+    switch (visitor.kind) {
+      case 'classDecorator': {
+        this._classDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        break;
+      }
+      case 'memberDecorator': {
+        this._memberDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        break;
+      }
+      default: {
+        throw new Error(
+          `Internal error: unregistering unknown visitor kind ${
             (unreachable(visitor) as Visitor).kind
           }`
         );
@@ -197,6 +220,10 @@ export class LitTransformer {
       this._removeNodes.add(node);
     }
 
+    for (const visitor of mutations.visitors) {
+      this._registerVisitor(visitor);
+    }
+
     // Note we do need to `ts.visitEachChild` here, because [1] there might be
     // nodes that still need to be deleted via `this._nodesToRemove` (e.g. a
     // property decorator or a property itself), and [2] in theory there could
@@ -214,6 +241,11 @@ export class LitTransformer {
       this.visit,
       this._context
     );
+
+    // These visitors only apply within the scope of the current class.
+    for (const visitor of mutations.visitors) {
+      this._unregisterVisitor(visitor);
+    }
 
     return [transformedClass, ...mutations.adjacentStatements];
   }
@@ -293,5 +325,43 @@ export class LitTransformer {
       return undefined;
     }
     return {getter, properties: objectLiteral.properties};
+  }
+}
+
+/**
+ * Maps from a key to a Set of values.
+ */
+class MultiMap<K, V> {
+  private readonly _map = new Map<K, Set<V>>();
+
+  get(key: K): Set<V> | undefined {
+    return this._map.get(key);
+  }
+
+  has(key: K): boolean {
+    return this._map.has(key);
+  }
+
+  get size(): number {
+    return this._map.size;
+  }
+
+  add(key: K, val: V) {
+    let set = this._map.get(key);
+    if (set === undefined) {
+      set = new Set();
+      this._map.set(key, set);
+    }
+    set.add(val);
+  }
+
+  delete(key: K, val: V) {
+    const set = this._map.get(key);
+    if (set === undefined) {
+      return;
+    }
+    if (set.delete(val) && set.size === 0) {
+      this._map.delete(key);
+    }
   }
 }
