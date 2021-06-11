@@ -371,12 +371,14 @@ test('private @eventOptions', () => {
   import {LitElement, html} from 'lit';
   import {eventOptions} from 'lit/decorators.js';
   class MyElement extends LitElement {
-    @eventOptions({passive: true})
+    @eventOptions({capture: true, once: false, passive: true})
     private _onClick(event) {
       console.log('click', event.target);
     }
     render() {
-      return html\`<button @click=\${this._onClick}></button>\`;
+      return html\`
+        <button @click=\${this._onClick}></button>
+      \`;
     }
   }
   `;
@@ -388,7 +390,14 @@ test('private @eventOptions', () => {
       console.log('click', event.target);
     }
     render() {
-      return html\`<button @click=\${{handleEvent: (e) => this._onClick(e), passive: true}}></button>\`;
+      return html\`
+        <button @click=\${{
+          handleEvent: (e) => this._onClick(e),
+          capture: true,
+          once: false,
+          passive: true
+        }}></button>
+      \`;
     }
   }
   `;
@@ -397,29 +406,38 @@ test('private @eventOptions', () => {
 
 test('public @eventOptions', () => {
   const input = `
-  import {LitElement} from 'lit';
+  import {LitElement, html} from 'lit';
   import {eventOptions} from 'lit/decorators.js';
   class MyElement extends LitElement {
-    @eventOptions({once: true})
+    @eventOptions({capture: true, once: false, passive: true})
     _onClick(event) {
       console.log('click', event.target);
+    }
+    render() {
+      return html\`
+        <button @click=\${this._onClick}></button>
+      \`;
     }
   }
   `;
 
   const expected = `
-  import {LitElement} from 'lit';
+  import {LitElement, html} from 'lit';
   class MyElement extends LitElement {
-    constructor() {
-      super(...arguments);
-      this._onClick = {
-        handleEvent: (event) => {
-          console.log('click', event.target);
-        },
-        once: true
-      };
+    _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`
+        <button @click=\${this._onClick}></button>
+      \`;
     }
   }
+  Object.assign(MyElement.prototype._onClick, {
+    capture: true,
+    once: false,
+    passive: true
+  });
   `;
   checkTransform(input, expected);
 });

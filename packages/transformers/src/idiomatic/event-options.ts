@@ -13,22 +13,49 @@ import type {MemberDecoratorVisitor, GenericVisitor} from '../visitor.js';
 /**
  * Transform:
  *
- *   @eventOptions({once: true}})
- *   _onClick(event) {
- *     console.log('click', event.target);
+ *   class MyElement extends LitElement {
+ *
+ *     @eventOptions({capture: true})
+ *     private _onClick(event) {
+ *       console.log('click', event.target);
+ *     }
+ *
+ *     @eventOptions({passive: true})
+ *     public onKeydown(event) {
+ *       console.log('keydown', event.target);
+ *     }
+ *
+ *     render() {
+ *       return html`
+ *         <button @click=${this._onClick}
+ *                 @keydown=${this.onKeydown}>
+ *           Foo
+ *         </button>`;
+ *     }
  *   }
  *
  * Into:
  *
- *   constructor() {
- *     super();
- *     this._onClick = {
- *       handleEvent: (event) => {
- *         console.log('click', event.target);
- *       },
- *       once: true
- *     };
+ *   class MyElement extends LitElement {
+ *
+ *     _onClick(event) {
+ *       console.log('click', event.target);
+ *     }
+ *
+ *     onKeydown(event) {
+ *       console.log('keydown', event.target);
+ *     }
+ *
+ *     render() {
+ *       return html`
+ *         <button @click=${{handleEvent: (e) => this._onClick(e), capture: true}}
+ *                 @keydown=${this.onKeydown}>
+ *           Foo
+ *         </button>
+ *       `;
+ *     }
  *   }
+ *   Object.assign(MyElement.prototype.onKeydown, {passive: true});
  */
 export class EventOptionsVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
@@ -66,12 +93,20 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
     if (!ts.isIdentifier(method.name)) {
       return;
     }
+    if (!ts.isClassLike(method.parent) || method.parent.name === undefined) {
+      return;
+    }
+
+    mutations.removeNodes.add(decorator);
+
+    // If private, assume no outside access is possible, and transform any
+    // references to this function inside template event bindings to
+    // `{handleEvent: (e) => this._onClick(e), ...options}` objects.
     if (
       method.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword)
     ) {
       const methodSymbol = this._typeChecker.getSymbolAtLocation(method.name);
       if (methodSymbol !== undefined) {
-        mutations.removeNodes.add(decorator);
         mutations.visitors.add(
           new EventOptionsBindingVisitor(
             this._factory,
@@ -83,48 +118,40 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
         return;
       }
     }
-    const methodName = method.name.text;
-    mutations.removeNodes.add(method);
-    mutations.classMembers.push(
-      this._createEventOptionsAssignment(
-        methodName,
-        [...method.parameters],
-        method.body,
-        [...options.properties]
+
+    // If not private, keep the method as it is and annotate options on it
+    // directly, exactly like the decorator does.
+    mutations.adjacentStatements.push(
+      this._createMethodOptionsAssignment(
+        method.parent.name.text,
+        method.name.text,
+        options
       )
     );
   }
 
-  private _createEventOptionsAssignment(
+  private _createMethodOptionsAssignment(
+    className: string,
     methodName: string,
-    methodParams: ts.ParameterDeclaration[],
-    methodBody: ts.Block,
-    eventOptions: ts.ObjectLiteralElementLike[]
-  ) {
+    options: ts.ObjectLiteralExpression
+  ): ts.Node {
     const f = this._factory;
-    return f.createPropertyDeclaration(
+    return f.createCallExpression(
+      f.createPropertyAccessExpression(
+        f.createIdentifier('Object'),
+        f.createIdentifier('assign')
+      ),
       undefined,
-      undefined,
-      f.createIdentifier(methodName),
-      undefined,
-      undefined,
-      f.createObjectLiteralExpression(
-        [
-          f.createPropertyAssignment(
-            f.createIdentifier('handleEvent'),
-            f.createArrowFunction(
-              undefined,
-              undefined,
-              methodParams,
-              undefined,
-              f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              methodBody
-            )
+      [
+        f.createPropertyAccessExpression(
+          f.createPropertyAccessExpression(
+            f.createIdentifier(className),
+            f.createIdentifier('prototype')
           ),
-          ...eventOptions,
-        ],
-        true
-      )
+          f.createIdentifier(methodName)
+        ),
+        cloneNode(options, {factory: this._factory}),
+      ]
     );
   }
 }
@@ -184,12 +211,16 @@ class EventOptionsBindingVisitor implements GenericVisitor {
             ],
             undefined,
             f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            f.createCallExpression(cloneNode(node), undefined, [
-              f.createIdentifier('e'),
-            ])
+            f.createCallExpression(
+              cloneNode(node, {factory: this._factory}),
+              undefined,
+              [f.createIdentifier('e')]
+            )
           )
         ),
-        ...this._optionsNode.properties.map((property) => cloneNode(property)),
+        ...this._optionsNode.properties.map((property) =>
+          cloneNode(property, {factory: this._factory})
+        ),
       ],
       false
     );
