@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import type * as ts from 'typescript';
 
 /**
  * Changes that need making to a LitElement class.

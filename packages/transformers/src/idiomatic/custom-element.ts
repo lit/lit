@@ -7,6 +7,7 @@
 import * as ts from 'typescript';
 
 import type {LitElementMutations} from '../mutations.js';
+import type {ClassDecoratorVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -19,7 +20,7 @@ import type {LitElementMutations} from '../mutations.js';
  *   class MyElement extends HTMLElement {}
  *   customElements.define('my-element', MyElement)
  */
-export class CustomElementVisitor {
+export class CustomElementVisitor implements ClassDecoratorVisitor {
   readonly kind = 'classDecorator';
   readonly decoratorName = 'customElement';
 

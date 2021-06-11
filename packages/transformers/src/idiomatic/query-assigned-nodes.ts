@@ -7,6 +7,7 @@
 import * as ts from 'typescript';
 
 import type {LitElementMutations} from '../mutations.js';
+import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -22,7 +23,7 @@ import type {LitElementMutations} from '../mutations.js';
  *       ?.assignedNodes();
  *   }
  */
-export class QueryAssignedNodesVisitor {
+export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'queryAssignedNodes';
 

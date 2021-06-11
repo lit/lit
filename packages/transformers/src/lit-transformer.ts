@@ -7,29 +7,11 @@
 import * as ts from 'typescript';
 import {LitElementMutations} from './mutations.js';
 
-type Visitor = ClassDecoratorTransformer | MemberDecoratorTransformer;
-
-interface ClassDecoratorTransformer {
-  kind: 'classDecorator';
-  decoratorName: string;
-
-  visit(
-    mutations: LitElementMutations,
-    class_: ts.ClassDeclaration,
-    decorator: ts.Decorator
-  ): void;
-}
-
-interface MemberDecoratorTransformer {
-  kind: 'memberDecorator';
-  decoratorName: string;
-
-  visit(
-    mutations: LitElementMutations,
-    member: ts.ClassElement,
-    decorator: ts.Decorator
-  ): void;
-}
+import type {
+  Visitor,
+  ClassDecoratorVisitor,
+  MemberDecoratorVisitor,
+} from './visitor.js';
 
 const unreachable = (x: never) => x;
 
@@ -40,14 +22,11 @@ export class LitTransformer {
   private _typeChecker: ts.TypeChecker;
   private _context: ts.TransformationContext;
 
-  private _classDecoratorVisitors = new Map<
-    string,
-    ClassDecoratorTransformer[]
-  >();
+  private _classDecoratorVisitors = new Map<string, ClassDecoratorVisitor[]>();
 
   private _memberDecoratorVisitors = new Map<
     string,
-    MemberDecoratorTransformer[]
+    MemberDecoratorVisitor[]
   >();
 
   private _importedLitDecorators = new Map<ts.Node, string>();

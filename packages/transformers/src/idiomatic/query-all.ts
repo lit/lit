@@ -7,6 +7,7 @@
 import * as ts from 'typescript';
 
 import type {LitElementMutations} from '../mutations.js';
+import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -20,7 +21,7 @@ import type {LitElementMutations} from '../mutations.js';
  *     return this.renderRoot?.queryAll('.myInput');
  *   }
  */
-export class QueryAllVisitor {
+export class QueryAllVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'queryAll';
 

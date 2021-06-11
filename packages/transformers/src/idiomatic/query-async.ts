@@ -7,6 +7,7 @@
 import * as ts from 'typescript';
 
 import type {LitElementMutations} from '../mutations.js';
+import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -21,7 +22,7 @@ import type {LitElementMutations} from '../mutations.js';
  *     return this.renderRoot?.querySelector('#myButton');
  *   }
  */
-export class QueryAsyncVisitor {
+export class QueryAsyncVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'queryAsync';
 

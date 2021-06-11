@@ -7,6 +7,7 @@
 import * as ts from 'typescript';
 
 import type {LitElementMutations} from '../mutations.js';
+import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -30,7 +31,7 @@ import type {LitElementMutations} from '../mutations.js';
  *     return this.__span;
  *   }
  */
-export class QueryVisitor {
+export class QueryVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'query';
 
