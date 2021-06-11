@@ -11,6 +11,7 @@ import type {
   Visitor,
   ClassDecoratorVisitor,
   MemberDecoratorVisitor,
+  GenericVisitor,
 } from './visitor.js';
 
 const unreachable = (x: never) => x;
@@ -31,6 +32,8 @@ export class LitTransformer {
     string,
     MemberDecoratorVisitor
   >();
+
+  private _genericVisitors = new Set<GenericVisitor>();
 
   private _importedLitDecorators = new Map<ts.Node, string>();
   private _removeNodes = new Set<ts.Node>();
@@ -57,6 +60,10 @@ export class LitTransformer {
         this._memberDecoratorVisitors.add(visitor.decoratorName, visitor);
         break;
       }
+      case 'generic': {
+        this._genericVisitors.add(visitor);
+        break;
+      }
       default: {
         throw new Error(
           `Internal error: registering unknown visitor kind ${
@@ -77,6 +84,10 @@ export class LitTransformer {
         this._memberDecoratorVisitors.delete(visitor.decoratorName, visitor);
         break;
       }
+      case 'generic': {
+        this._genericVisitors.delete(visitor);
+        break;
+      }
       default: {
         throw new Error(
           `Internal error: unregistering unknown visitor kind ${
@@ -95,6 +106,9 @@ export class LitTransformer {
     }
     if (this._removeNodes.delete(node)) {
       return undefined;
+    }
+    for (const visitor of this._genericVisitors) {
+      node = visitor.visit(node);
     }
     if (ts.isImportDeclaration(node)) {
       return this._visitImportDeclaration(node);
