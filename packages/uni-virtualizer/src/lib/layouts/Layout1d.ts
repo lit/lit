@@ -6,6 +6,8 @@ type ItemBounds = {
   size: number
 };
 
+type CachedMetrics = Size & Margins & {size: number | null};
+
 type Layout1dConstructor = {
   prototype: Layout1d,
   new(config?: Layout1dBaseConfig): Layout1d
@@ -38,7 +40,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
   /**
    * Width and height of children by their index.
    */
-  _metrics: Map<number, Size> = new Map();
+  _metrics: Map<number, CachedMetrics> = new Map();
 
   /**
    * anchorIdx is the anchor around which we reflow. It is designed to allow
@@ -94,32 +96,81 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    */
   updateItemSizes(sizes: {[key: number]: ItemBox}) {
     Object.keys(sizes).forEach((key) => {
-      const metrics = sizes[Number(key)], mi = this._getMetrics(Number(key)),
-            prevSize = mi[this._sizeDim];
-
-      // TODO(valdrin) Handle margin collapsing.
-      // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing
-      mi.width = metrics.width + ((metrics as Margins).marginLeft || 0) +
-          ((metrics as Margins).marginRight || 0);
-      mi.height = metrics.height + ((metrics as Margins).marginTop || 0) +
-          ((metrics as Margins).marginBottom || 0);
-
-      const size = mi[this._sizeDim];
-      const item = this._getPhysicalItem(Number(key));
-      if (item) {
-        let delta = 0;
-
-        if (size !== undefined) {
-          item.size = size;
-          if (prevSize === -1) {
-            delta = size;
-            this._nMeasured++;
-          } else {
-            delta = size - prevSize;
-          }
-        }
-        this._tMeasured = this._tMeasured + delta;
+      const
+        k = Number(key),
+        newMetrics = sizes[k] as (Size & Margins),
+        cachedMetrics = this._getMetrics(k) as (Size & Margins),
+        leadingMargin = this.direction === 'horizontal' ? 'marginLeft' : 'marginTop',
+        trailingMargin = this.direction === 'horizontal' ? 'marginRight' : 'marginBottom',
+        dirty = [];
+      
+      if (k > 0) {
+        dirty.push(k - 1);
       }
+      dirty.push(k);
+      if (k < this._totalItems - 1) {
+        dirty.push(k + 1);
+      }
+
+      Object.assign(cachedMetrics, newMetrics);
+
+      for (const d of dirty) {
+        const metrics = this._getMetrics(d);
+        const m = [
+          metrics[trailingMargin],
+          d < this._totalItems - 1 ? this._getMetrics(d + 1)[leadingMargin] : 0
+        ].sort();
+        const margin = m[1] <= 0
+          ? Math.min(...m)
+          : m[0] >= 0
+            ? Math.max(...m)
+            : m[0] + m[1];
+        let size = metrics[this._sizeDim]
+          + margin
+          + 0;//d === this._totalItems - 1 ? this._getMetrics(0)[leadingMargin] : 0;
+        if (d === this._totalItems - 1) {
+          size += this._getMetrics(0)[leadingMargin];
+        }
+        const prevSize = metrics.size;
+        if (prevSize === null) {
+          this._tMeasured += size;
+          this._nMeasured++;
+        }
+        else {
+          this._tMeasured += size - prevSize;
+        }
+        metrics.size = size;
+        const physicalItem = this._getPhysicalItem(d);
+        if (physicalItem) {
+          physicalItem.size = size;
+        }
+      }
+      //   prevSize = mi[this._sizeDim],
+      //   mi_ = this._getMetrics(k + 1);
+
+      // // TODO(valdrin) Handle margin collapsing.
+      // // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing
+      // mi.width = metrics.width + (metrics.marginLeft || 0) +
+      //     (metrics.marginRight || 0);
+      // mi.height = metrics.height + (metrics.marginTop || 0) +
+      //     (metrics.marginBottom || 0);
+
+      // const size = mi[this._sizeDim];
+      // const item = this._getPhysicalItem(Number(key));
+      // if (item) {
+      //   let delta = 0;
+
+      //   if (size !== undefined) {
+      //     item.size = size;
+      //     if (prevSize === -1) {
+      //       delta = size;
+      //       this._nMeasured++;
+      //     } else {
+      //       delta = size - prevSize;
+      //     }
+      //   }
+      //   this._tMeasured = this._tMeasured + delta;
+      // }
     });
     if (this._nMeasured) {
       this._updateItemSize();
@@ -137,10 +188,10 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
         Math.round(this._tMeasured / this._nMeasured);
   }
 
-  _getMetrics(idx: number): ItemBox {
+  _getMetrics(idx: number): CachedMetrics {
     let metrics = this._metrics.get(idx);
     if (metrics === undefined) {
-      metrics = {height: -1, width: -1};
+      metrics = {height: -1, width: -1, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, size: null};
       this._metrics.set(idx, metrics);
     }
     return metrics;
