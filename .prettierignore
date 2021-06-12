@@ -125,6 +125,13 @@ packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
 
+packages/labs/context/development/
+packages/labs/context/test/
+packages/labs/context/node_modules/
+packages/labs/context/lib/
+packages/labs/context/index.*
+packages/labs/context/context.*
+
 packages/labs/motion/development/
 packages/labs/motion/test/
 packages/labs/motion/node_modules/
