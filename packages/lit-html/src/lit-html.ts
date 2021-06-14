@@ -925,11 +925,11 @@ class ChildPart {
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setChildPartConnected?(
+  _$setChildPartConnected?: (
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
-  ): void;
+  ) => void;
   /** @internal */
   _$reparentDisconnectables?(parent: Disconnectable): void;
 
