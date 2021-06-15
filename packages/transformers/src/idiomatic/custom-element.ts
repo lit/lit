@@ -24,7 +24,7 @@ export class CustomElementVisitor implements ClassDecoratorVisitor {
   readonly kind = 'classDecorator';
   readonly decoratorName = 'customElement';
 
-  private _factory: ts.NodeFactory;
+  private readonly _factory: ts.NodeFactory;
 
   constructor({factory}: ts.TransformationContext) {
     this._factory = factory;

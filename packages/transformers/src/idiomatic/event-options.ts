@@ -62,8 +62,8 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'eventOptions';
 
-  private _factory: ts.NodeFactory;
-  private _program: ts.Program;
+  private readonly _factory: ts.NodeFactory;
+  private readonly _program: ts.Program;
 
   constructor({factory}: ts.TransformationContext, program: ts.Program) {
     this._factory = factory;
@@ -159,10 +159,10 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
 class EventOptionsBindingVisitor implements GenericVisitor {
   readonly kind = 'generic';
 
-  private _factory: ts.NodeFactory;
-  private _symbol: ts.Symbol;
-  private _program: ts.Program;
-  private _optionsNode: ts.ObjectLiteralExpression;
+  private readonly _factory: ts.NodeFactory;
+  private readonly _symbol: ts.Symbol;
+  private readonly _program: ts.Program;
+  private readonly _optionsNode: ts.ObjectLiteralExpression;
 
   constructor(
     factory: ts.NodeFactory,

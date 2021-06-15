@@ -25,7 +25,7 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'queryAll';
 
-  private _factory: ts.NodeFactory;
+  private readonly _factory: ts.NodeFactory;
 
   constructor({factory}: ts.TransformationContext) {
     this._factory = factory;

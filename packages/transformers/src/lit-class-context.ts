@@ -12,25 +12,25 @@ import type {Visitor} from './visitor.js';
  * Changes that need making to a LitElement class.
  */
 export class LitClassContext {
-  litFileContext: LitFileContext;
+  readonly litFileContext: LitFileContext;
 
-  class_: ts.ClassLikeDeclaration;
+  readonly class_: ts.ClassLikeDeclaration;
 
   /**
    * Remove a node from the AST (e.g. a decorator that is no longer required).
    * Note the node must be a descendant of this specific element class.
    */
-  removeNodes = new Set<ts.Node>();
+  readonly removeNodes = new Set<ts.Node>();
 
   /**
    * Add a new class member to this element (e.g. a new getter).
    */
-  classMembers: ts.ClassElement[] = [];
+  readonly classMembers: ts.ClassElement[] = [];
 
   /**
    * Add a new property to the `static get properties` block of this element.
    */
-  reactiveProperties: Array<{
+  readonly reactiveProperties: Array<{
     name: string;
     options?: ts.ObjectLiteralExpression;
   }> = [];
@@ -39,12 +39,12 @@ export class LitClassContext {
    * Add a new statement that will be inserted into the AST immediately after
    * this element (e.g. a customElements.define() call).
    */
-  adjacentStatements: ts.Node[] = [];
+  readonly adjacentStatements: ts.Node[] = [];
 
   /**
    * Additional visitors that will run only in the scope of the current class.
    */
-  visitors = new Set<Visitor>();
+  readonly visitors = new Set<Visitor>();
 
   constructor(litFileContext: LitFileContext, class_: ts.ClassLikeDeclaration) {
     this.litFileContext = litFileContext;

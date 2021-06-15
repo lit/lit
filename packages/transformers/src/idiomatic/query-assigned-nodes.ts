@@ -27,7 +27,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'queryAssignedNodes';
 
-  private _factory: ts.NodeFactory;
+  private readonly _factory: ts.NodeFactory;
 
   constructor({factory}: ts.TransformationContext) {
     this._factory = factory;

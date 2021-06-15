@@ -22,17 +22,17 @@ const unreachable = (x: never) => x;
  * Configurable transformer for LitElement classes.
  */
 export class LitTransformer {
-  private _program: ts.Program;
-  private _context: ts.TransformationContext;
-  private _classDecoratorVisitors = new MultiMap<
+  private readonly _program: ts.Program;
+  private readonly _context: ts.TransformationContext;
+  private readonly _classDecoratorVisitors = new MultiMap<
     string,
     ClassDecoratorVisitor
   >();
-  private _memberDecoratorVisitors = new MultiMap<
+  private readonly _memberDecoratorVisitors = new MultiMap<
     string,
     MemberDecoratorVisitor
   >();
-  private _genericVisitors = new Set<GenericVisitor>();
+  private readonly _genericVisitors = new Set<GenericVisitor>();
   private _litFileContext: LitFileContext | undefined;
 
   constructor(
