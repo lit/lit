@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {$$LE as p} from './lit-element.js';
+import {$LE as p} from './lit-element.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.

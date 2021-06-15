@@ -5,7 +5,7 @@
  */
 
 import {Directive, PartInfo} from './directive.js';
-import {$$LH as p, AttributePart, noChange, Part} from './lit-html.js';
+import {$LH as p, AttributePart, noChange, Part} from './lit-html.js';
 export type {Template} from './lit-html.js';
 
 /**
