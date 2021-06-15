@@ -1411,7 +1411,7 @@ class AttributePart implements Disconnectable {
     | typeof PROPERTY_PART
     | typeof BOOLEAN_ATTRIBUTE_PART
     | typeof EVENT_PART;
-  readonly element: HTMLElement;
+  readonly element: Element;
   readonly name: string;
   readonly options: RenderOptions | undefined;
 
@@ -1442,7 +1442,7 @@ class AttributePart implements Disconnectable {
   }
 
   constructor(
-    element: HTMLElement,
+    element: Element,
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable,
