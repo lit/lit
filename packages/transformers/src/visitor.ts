@@ -5,6 +5,7 @@
  */
 
 import type * as ts from 'typescript';
+import {LitFileContext} from './lit-file-context.js';
 import type {LitElementMutations} from './mutations.js';
 
 export type Visitor =
@@ -19,7 +20,8 @@ export interface ClassDecoratorVisitor {
   visit(
     mutations: LitElementMutations,
     class_: ts.ClassDeclaration,
-    decorator: ts.Decorator
+    decorator: ts.Decorator,
+    litFileContext: LitFileContext
   ): void;
 }
 
@@ -30,7 +32,8 @@ export interface MemberDecoratorVisitor {
   visit(
     mutations: LitElementMutations,
     member: ts.ClassElement,
-    decorator: ts.Decorator
+    decorator: ts.Decorator,
+    litFileContext: LitFileContext
   ): void;
 }
 

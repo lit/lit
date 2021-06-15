@@ -9,6 +9,7 @@ import {cloneNode} from 'ts-clone-node';
 
 import type {LitElementMutations} from '../mutations.js';
 import type {MemberDecoratorVisitor, GenericVisitor} from '../visitor.js';
+import type {LitFileContext} from '../lit-file-context.js';
 
 /**
  * Transform:
@@ -72,7 +73,8 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
   visit(
     mutations: LitElementMutations,
     method: ts.ClassElement,
-    decorator: ts.Decorator
+    decorator: ts.Decorator,
+    litFileContext: LitFileContext
   ) {
     if (!ts.isMethodDeclaration(method)) {
       return;
@@ -111,7 +113,8 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
             this._factory,
             this._program,
             methodSymbol,
-            options
+            options,
+            litFileContext
           )
         );
         return;
@@ -162,53 +165,27 @@ class EventOptionsBindingVisitor implements GenericVisitor {
   private _symbol: ts.Symbol;
   private _program: ts.Program;
   private _optionsNode: ts.ObjectLiteralExpression;
+  private _litFileContext: LitFileContext;
 
   constructor(
     factory: ts.NodeFactory,
     program: ts.Program,
     methodSymbol: ts.Symbol,
-    optionsNode: ts.ObjectLiteralExpression
+    optionsNode: ts.ObjectLiteralExpression,
+    litFileContext: LitFileContext
   ) {
     this._factory = factory;
     this._program = program;
     this._symbol = methodSymbol;
     this._optionsNode = optionsNode;
+    this._litFileContext = litFileContext;
   }
 
   visit(node: ts.Node): ts.Node {
     if (!ts.isPropertyAccessExpression(node)) {
       return node;
     }
-    const span = node.parent;
-    if (span === undefined || !ts.isTemplateSpan(node.parent)) {
-      return node;
-    }
-    const template = span.parent;
-    if (template === undefined || !ts.isTemplateExpression(template)) {
-      return node;
-    }
-    const tagged = template.parent;
-    if (
-      tagged === undefined ||
-      !ts.isTaggedTemplateExpression(tagged) ||
-      !ts.isIdentifier(tagged.tag) ||
-      // TODO(aomarks) Check this as a symbol against imports.
-      tagged.tag.text !== 'html'
-    ) {
-      return node;
-    }
-    const pos = template.templateSpans.indexOf(span as ts.TemplateSpan);
-    if (pos === -1) {
-      return node;
-    }
-    let priorText;
-    if (pos === 0) {
-      priorText = template.head.text;
-    } else {
-      priorText = template.templateSpans[pos - 1].literal.text;
-    }
-    // TODO(aomarks) Check this regexp more thoroughly.
-    if (!priorText.match(/@[^\s"'>]+\s*=\s*["']*$/)) {
+    if (node.parent === undefined || !this._isLitEventBinding(node.parent)) {
       return node;
     }
     const symbol = this._program
@@ -218,6 +195,38 @@ class EventOptionsBindingVisitor implements GenericVisitor {
       return node;
     }
     return this._createEventHandlerObject(node);
+  }
+
+  private _isLitEventBinding(span: ts.Node) {
+    if (!ts.isTemplateSpan(span)) {
+      return false;
+    }
+    const template = span.parent;
+    if (template === undefined || !ts.isTemplateExpression(template)) {
+      return false;
+    }
+    const tagged = template.parent;
+    if (!ts.isTaggedTemplateExpression(tagged)) {
+      return false;
+    }
+    const pos = template.templateSpans.indexOf(span as ts.TemplateSpan);
+    if (pos === -1) {
+      return false;
+    }
+    const priorText =
+      pos === 0
+        ? template.head.text
+        : template.templateSpans[pos - 1].literal.text;
+    // TODO(aomarks) Check this regexp more thoroughly.
+    if (priorText.match(/@[^\s"'>]+\s*=\s*["']*$/) === null) {
+      return false;
+    }
+    // Note we check for the lit tag last because it requires the type checker
+    // which is expensive.
+    if (this._litFileContext.getCanonicalName(tagged.tag) !== 'html') {
+      return false;
+    }
+    return true;
   }
 
   private _createEventHandlerObject(

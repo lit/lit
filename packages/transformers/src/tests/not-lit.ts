@@ -23,3 +23,9 @@ export const property =
   (options?: unknown) => (_protoOrDescriptor: unknown, _name: string) => {
     console.log(options);
   };
+
+/**
+ * A function that looks like the Lit `html` function, but isn't.
+ */
+export const html = (_strings: TemplateStringsArray, ..._values: unknown[]) =>
+  '';

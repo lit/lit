@@ -6,6 +6,7 @@
 
 import * as ts from 'typescript';
 import {LitElementMutations} from './mutations.js';
+import {LitFileContext} from './lit-file-context.js';
 import {cloneNode} from 'ts-clone-node';
 
 import type {
@@ -32,8 +33,7 @@ export class LitTransformer {
     MemberDecoratorVisitor
   >();
   private _genericVisitors = new Set<GenericVisitor>();
-  private _importedLitDecorators = new Map<ts.Node, string>();
-  private _removeNodes = new Set<ts.Node>();
+  private _litFileContext: LitFileContext | undefined;
 
   constructor(
     program: ts.Program,
@@ -99,24 +99,21 @@ export class LitTransformer {
     if (!ts.isSourceFile(node)) {
       return node;
     }
+    this._litFileContext = new LitFileContext(this._program);
     for (const statement of node.statements) {
       if (ts.isImportDeclaration(statement)) {
         this._analyzeImportDeclaration(statement);
       }
     }
-    if (this._importedLitDecorators.size === 0) {
-      // No Lit imports, we can ignore this file.
+    if (this._litFileContext.imports.size === 0) {
+      // No relevant Lit imports, we can ignore this file.
       return node;
     }
-    node = ts.visitEachChild(node, this.visit, this._context);
-    // Reset per-file state.
-    this._importedLitDecorators.clear();
-    this._removeNodes.clear();
-    return node;
+    return ts.visitEachChild(node, this.visit, this._context);
   };
 
   visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
-    if (this._removeNodes.delete(node)) {
+    if (this._litFileContext!.removeNodes.delete(node)) {
       return undefined;
     }
     for (const visitor of this._genericVisitors) {
@@ -132,19 +129,19 @@ export class LitTransformer {
   };
 
   private _analyzeImportDeclaration(node: ts.ImportDeclaration) {
-    // Check if this is one of the many modules that export Lit decorators.
+    // Check if this is one of the many Lit modules.
     if (!ts.isStringLiteral(node.moduleSpecifier)) {
       return;
     }
     const specifier = node.moduleSpecifier.text;
     if (
       !(
-        specifier.startsWith('lit/decorators') ||
-        specifier.startsWith('lit-element/decorators') ||
-        specifier.startsWith('@lit/reactive-element/decorators') ||
+        specifier === 'lit' ||
+        specifier.startsWith('lit/') ||
         specifier === 'lit-element' ||
-        specifier === 'lit-element/index.js' ||
-        specifier === 'lit-element/index'
+        specifier.startsWith('lit-element/') ||
+        specifier === '@lit/reactive-element' ||
+        specifier.startsWith('@lit/reactive-element/')
       )
     ) {
       return;
@@ -160,13 +157,18 @@ export class LitTransformer {
       // Name as exported (Lit's name for it, not whatever the alias is).
       const realName =
         importSpecifier.propertyName?.text ?? importSpecifier.name.text;
-      if (
+      if (realName === 'html') {
+        this._litFileContext!.imports.set(importSpecifier, realName);
+      } else if (
         // Only handle the decorators we're configured to transform.
         this._classDecoratorVisitors.has(realName) ||
         this._memberDecoratorVisitors.has(realName)
       ) {
-        this._importedLitDecorators.set(importSpecifier, realName);
-        this._removeNodes.add(importSpecifier);
+        this._litFileContext!.imports.set(importSpecifier, realName);
+        // Assume if there's a visitor for a decorator, it's always going to
+        // remove any uses of that decorator, and hence we should remove the
+        // import too.
+        this._litFileContext!.removeNodes.add(importSpecifier);
       }
     }
   }
@@ -189,7 +191,7 @@ export class LitTransformer {
         .getSymbolAtLocation(decorator.expression.expression);
       const firstDeclaration = symbol?.declarations[0];
       if (firstDeclaration !== undefined) {
-        return this._importedLitDecorators.get(firstDeclaration);
+        return this._litFileContext!.imports.get(firstDeclaration);
       }
     }
     return undefined;
@@ -204,7 +206,7 @@ export class LitTransformer {
       if (decoratorName !== undefined) {
         const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
         for (const visitor of visitors) {
-          visitor.visit(mutations, class_, decorator);
+          visitor.visit(mutations, class_, decorator, this._litFileContext!);
         }
       }
     }
@@ -217,7 +219,7 @@ export class LitTransformer {
           const visitors =
             this._memberDecoratorVisitors.get(decoratorName) ?? [];
           for (const visitor of visitors) {
-            visitor.visit(mutations, member, decorator);
+            visitor.visit(mutations, member, decorator, this._litFileContext!);
           }
         }
       }
@@ -226,7 +228,7 @@ export class LitTransformer {
     if (mutations.reactiveProperties.length > 0) {
       const existing = this._findExistingStaticProperties(class_);
       if (existing !== undefined) {
-        this._removeNodes.add(existing.getter);
+        this._litFileContext!.removeNodes.add(existing.getter);
       }
       mutations.classMembers.unshift(
         this._createStaticProperties(
@@ -240,7 +242,7 @@ export class LitTransformer {
     // we copy the entries to this broader AST scoped visitor so that we can
     // identify nodes to delete as we descend down through `ts.visitEachChild`.
     for (const node of mutations.removeNodes) {
-      this._removeNodes.add(node);
+      this._litFileContext!.removeNodes.add(node);
     }
 
     for (const visitor of mutations.visitors) {

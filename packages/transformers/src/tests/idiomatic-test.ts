@@ -445,6 +445,37 @@ test('private @eventOptions but not an event binding', () => {
   checkTransform(input, expected);
 });
 
+test('private @eventOptions but different html tag', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {eventOptions} from 'lit/decorators.js';
+  import {html} from './not-lit.js';
+  class MyElement extends LitElement {
+    @eventOptions({capture: true, once: false, passive: true})
+    private _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`<p @click=\${this._onClick}</p>\`;
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+  import {html} from './not-lit.js';
+  class MyElement extends LitElement {
+    _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`<p @click=\${this._onClick}</p>\`;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test('public @eventOptions', () => {
   const input = `
   import {LitElement, html} from 'lit';
@@ -537,7 +568,7 @@ test('only remove imports that will be transformed', () => {
 test('ignore non-lit class decorator', () => {
   const input = `
   import {LitElement} from 'lit';
-  import {customElement} from './non-lit-decorators.js';
+  import {customElement} from './not-lit.js';
   @customElement('my-element')
   class MyElement extends LitElement {
   }
@@ -546,7 +577,7 @@ test('ignore non-lit class decorator', () => {
   const expected = `
   import {__decorate} from 'tslib';
   import {LitElement} from 'lit';
-  import {customElement} from './non-lit-decorators.js';
+  import {customElement} from './not-lit.js';
   let MyElement = class MyElement extends LitElement {};
   MyElement = __decorate([customElement("my-element")], MyElement);
   `;
@@ -556,7 +587,7 @@ test('ignore non-lit class decorator', () => {
 test('ignore non-lit method decorator', () => {
   const input = `
   import {LitElement} from 'lit';
-  import {property} from './non-lit-decorators.js';
+  import {property} from './not-lit.js';
   class MyElement extends LitElement {
     @property()
     foo;
@@ -566,7 +597,7 @@ test('ignore non-lit method decorator', () => {
   const expected = `
   import {__decorate} from 'tslib';
   import {LitElement} from 'lit';
-  import {property} from './non-lit-decorators.js';
+  import {property} from './not-lit.js';
   class MyElement extends LitElement {};
   __decorate([property()], MyElement.prototype, "foo", void 0);
   `;
