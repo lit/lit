@@ -62,14 +62,11 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
   readonly decoratorName = 'eventOptions';
 
   private _factory: ts.NodeFactory;
-  private _typeChecker: ts.TypeChecker;
+  private _program: ts.Program;
 
-  constructor(
-    {factory}: ts.TransformationContext,
-    typeChecker: ts.TypeChecker
-  ) {
+  constructor({factory}: ts.TransformationContext, program: ts.Program) {
     this._factory = factory;
-    this._typeChecker = typeChecker;
+    this._program = program;
   }
 
   visit(
@@ -105,12 +102,14 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
     if (
       method.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.PrivateKeyword)
     ) {
-      const methodSymbol = this._typeChecker.getSymbolAtLocation(method.name);
+      const methodSymbol = this._program
+        .getTypeChecker()
+        .getSymbolAtLocation(method.name);
       if (methodSymbol !== undefined) {
         mutations.visitors.add(
           new EventOptionsBindingVisitor(
             this._factory,
-            this._typeChecker,
+            this._program,
             methodSymbol,
             options
           )
@@ -161,17 +160,17 @@ class EventOptionsBindingVisitor implements GenericVisitor {
 
   private _factory: ts.NodeFactory;
   private _symbol: ts.Symbol;
-  private _typeChecker: ts.TypeChecker;
+  private _program: ts.Program;
   private _optionsNode: ts.ObjectLiteralExpression;
 
   constructor(
     factory: ts.NodeFactory,
-    typeChecker: ts.TypeChecker,
+    program: ts.Program,
     methodSymbol: ts.Symbol,
     optionsNode: ts.ObjectLiteralExpression
   ) {
     this._factory = factory;
-    this._typeChecker = typeChecker;
+    this._program = program;
     this._symbol = methodSymbol;
     this._optionsNode = optionsNode;
   }
@@ -212,7 +211,9 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     if (!priorText.match(/@[^\s"'>]+\s*=\s*["']*$/)) {
       return node;
     }
-    const symbol = this._typeChecker.getSymbolAtLocation(node.name);
+    const symbol = this._program
+      .getTypeChecker()
+      .getSymbolAtLocation(node.name);
     if (symbol !== this._symbol) {
       return node;
     }

@@ -68,7 +68,7 @@ export default function idiomaticLitDecoratorTransformer(
       new QueryAllVisitor(context),
       new QueryAsyncVisitor(context),
       new QueryAssignedNodesVisitor(context),
-      new EventOptionsVisitor(context, program.getTypeChecker()),
+      new EventOptionsVisitor(context, program),
     ]);
     return (file) => {
       return ts.visitNode(file, transformer.visitFile);

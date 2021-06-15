@@ -21,7 +21,7 @@ const unreachable = (x: never) => x;
  * Configurable transformer for LitElement classes.
  */
 export class LitTransformer {
-  private _typeChecker: ts.TypeChecker;
+  private _program: ts.Program;
   private _context: ts.TransformationContext;
   private _classDecoratorVisitors = new MultiMap<
     string,
@@ -40,7 +40,7 @@ export class LitTransformer {
     context: ts.TransformationContext,
     visitors: Array<Visitor>
   ) {
-    this._typeChecker = program.getTypeChecker();
+    this._program = program;
     this._context = context;
     for (const visitor of visitors) {
       this._registerVisitor(visitor);
@@ -184,9 +184,9 @@ export class LitTransformer {
     decorator: ts.Decorator
   ): string | undefined {
     if (ts.isCallExpression(decorator.expression)) {
-      const symbol = this._typeChecker.getSymbolAtLocation(
-        decorator.expression.expression
-      );
+      const symbol = this._program
+        .getTypeChecker()
+        .getSymbolAtLocation(decorator.expression.expression);
       const firstDeclaration = symbol?.declarations[0];
       if (firstDeclaration !== undefined) {
         return this._importedLitDecorators.get(firstDeclaration);
