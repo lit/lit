@@ -180,6 +180,38 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     if (!ts.isPropertyAccessExpression(node)) {
       return node;
     }
+    const span = node.parent;
+    if (span === undefined || !ts.isTemplateSpan(node.parent)) {
+      return node;
+    }
+    const template = span.parent;
+    if (template === undefined || !ts.isTemplateExpression(template)) {
+      return node;
+    }
+    const tagged = template.parent;
+    if (
+      tagged === undefined ||
+      !ts.isTaggedTemplateExpression(tagged) ||
+      !ts.isIdentifier(tagged.tag) ||
+      // TODO(aomarks) Check this as a symbol against imports.
+      tagged.tag.text !== 'html'
+    ) {
+      return node;
+    }
+    const pos = template.templateSpans.indexOf(span as ts.TemplateSpan);
+    if (pos === -1) {
+      return node;
+    }
+    let priorText;
+    if (pos === 0) {
+      priorText = template.head.text;
+    } else {
+      priorText = template.templateSpans[pos - 1].literal.text;
+    }
+    // TODO(aomarks) Check this regexp more thoroughly.
+    if (!priorText.match(/@[^\s"'>]+\s*=\s*["']*$/)) {
+      return node;
+    }
     const symbol = this._typeChecker.getSymbolAtLocation(node.name);
     if (symbol !== this._symbol) {
       return node;

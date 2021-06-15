@@ -404,6 +404,47 @@ test('private @eventOptions', () => {
   checkTransform(input, expected);
 });
 
+test('private @eventOptions but not an event binding', () => {
+  const input = `
+  import {LitElement, html, svg} from 'lit';
+  import {eventOptions} from 'lit/decorators.js';
+  class MyElement extends LitElement {
+    @eventOptions({capture: true, once: false, passive: true})
+    private _onClick(event) {
+      console.log('click', event.target);
+    }
+    a() {
+      return this._onClick;
+    }
+    b() {
+      return html\`<p click=\${this._onClick}</p>\`;
+    }
+    c() {
+      return svg\`<p @click=\${this._onClick}</p>\`;
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement, html, svg} from 'lit';
+  class MyElement extends LitElement {
+    _onClick(event) {
+      console.log('click', event.target);
+    }
+    a() {
+      return this._onClick;
+    }
+    b() {
+      return html\`<p click=\${this._onClick}</p>\`;
+    }
+    c() {
+      return svg\`<p @click=\${this._onClick}</p>\`;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test('public @eventOptions', () => {
   const input = `
   import {LitElement, html} from 'lit';

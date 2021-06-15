@@ -22,19 +22,15 @@ const unreachable = (x: never) => x;
 export class LitTransformer {
   private _typeChecker: ts.TypeChecker;
   private _context: ts.TransformationContext;
-
   private _classDecoratorVisitors = new MultiMap<
     string,
     ClassDecoratorVisitor
   >();
-
   private _memberDecoratorVisitors = new MultiMap<
     string,
     MemberDecoratorVisitor
   >();
-
   private _genericVisitors = new Set<GenericVisitor>();
-
   private _importedLitDecorators = new Map<ts.Node, string>();
   private _removeNodes = new Set<ts.Node>();
 
@@ -280,6 +276,7 @@ export class LitTransformer {
   ) {
     const f = this._context.factory;
     const properties = [
+      // TODO(aomarks) existingProperties should be cloned.
       ...(existingProperties ?? []),
       ...newProperties.map(({name, options}) =>
         f.createPropertyAssignment(
