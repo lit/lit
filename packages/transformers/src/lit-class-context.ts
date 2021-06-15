@@ -9,18 +9,18 @@ import type {LitFileContext} from './lit-file-context.js';
 import type {Visitor} from './visitor.js';
 
 /**
- * Changes that need making to a LitElement class.
+ * State scoped to one Lit class.
  */
 export class LitClassContext {
+  /**
+   * The file state.
+   */
   readonly litFileContext: LitFileContext;
 
-  readonly class_: ts.ClassLikeDeclaration;
-
   /**
-   * Remove a node from the AST (e.g. a decorator that is no longer required).
-   * Note the node must be a descendant of this specific element class.
+   * The Lit class AST node.
    */
-  readonly removeNodes = new Set<ts.Node>();
+  readonly class: ts.ClassDeclaration;
 
   /**
    * Add a new class member to this element (e.g. a new getter).
@@ -44,10 +44,10 @@ export class LitClassContext {
   /**
    * Additional visitors that will run only in the scope of the current class.
    */
-  readonly visitors = new Set<Visitor>();
+  readonly additionalClassVisitors = new Set<Visitor>();
 
-  constructor(litFileContext: LitFileContext, class_: ts.ClassLikeDeclaration) {
+  constructor(litFileContext: LitFileContext, class_: ts.ClassDeclaration) {
     this.litFileContext = litFileContext;
-    this.class_ = class_;
+    this.class = class_;
   }
 }

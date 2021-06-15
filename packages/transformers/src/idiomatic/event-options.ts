@@ -84,18 +84,21 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
     if (!method.body) {
       return;
     }
-    const [options] = decorator.expression.arguments;
-    if (!ts.isObjectLiteralExpression(options)) {
+    const [eventOptionsNode] = decorator.expression.arguments;
+    if (!ts.isObjectLiteralExpression(eventOptionsNode)) {
       return;
     }
     if (!ts.isIdentifier(method.name)) {
       return;
     }
-    if (!ts.isClassLike(method.parent) || method.parent.name === undefined) {
+    if (
+      !ts.isClassDeclaration(method.parent) ||
+      method.parent.name === undefined
+    ) {
       return;
     }
 
-    litClassContext.removeNodes.add(decorator);
+    litClassContext.litFileContext.nodesToRemove.add(decorator);
 
     // If private, assume no outside access is possible, and transform any
     // references to this function inside template event bindings to
@@ -107,12 +110,12 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
         .getTypeChecker()
         .getSymbolAtLocation(method.name);
       if (methodSymbol !== undefined) {
-        litClassContext.visitors.add(
+        litClassContext.additionalClassVisitors.add(
           new EventOptionsBindingVisitor(
             this._factory,
             this._program,
             methodSymbol,
-            options
+            eventOptionsNode
           )
         );
         return;
@@ -125,7 +128,7 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
       this._createMethodOptionsAssignment(
         method.parent.name.text,
         method.name.text,
-        options
+        eventOptionsNode
       )
     );
   }
@@ -156,24 +159,28 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
   }
 }
 
+/**
+ * Transforms Lit template event bindings for a particular event handler method
+ * that was annotated with @eventOptions.
+ */
 class EventOptionsBindingVisitor implements GenericVisitor {
   readonly kind = 'generic';
 
   private readonly _factory: ts.NodeFactory;
-  private readonly _symbol: ts.Symbol;
   private readonly _program: ts.Program;
-  private readonly _optionsNode: ts.ObjectLiteralExpression;
+  private readonly _eventHandlerSymbol: ts.Symbol;
+  private readonly _eventOptionsNode: ts.ObjectLiteralExpression;
 
   constructor(
     factory: ts.NodeFactory,
     program: ts.Program,
-    methodSymbol: ts.Symbol,
-    optionsNode: ts.ObjectLiteralExpression
+    eventHandlerSymbol: ts.Symbol,
+    eventOptionsNode: ts.ObjectLiteralExpression
   ) {
     this._factory = factory;
     this._program = program;
-    this._symbol = methodSymbol;
-    this._optionsNode = optionsNode;
+    this._eventHandlerSymbol = eventHandlerSymbol;
+    this._eventOptionsNode = eventOptionsNode;
   }
 
   visit(litFileContext: LitFileContext, node: ts.Node): ts.Node {
@@ -189,7 +196,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     const symbol = this._program
       .getTypeChecker()
       .getSymbolAtLocation(node.name);
-    if (symbol !== this._symbol) {
+    if (symbol !== this._eventHandlerSymbol) {
       return node;
     }
     return this._createEventHandlerObject(node);
@@ -215,7 +222,6 @@ class EventOptionsBindingVisitor implements GenericVisitor {
       pos === 0
         ? template.head.text
         : template.templateSpans[pos - 1].literal.text;
-    // TODO(aomarks) Check this regexp more thoroughly.
     if (priorText.match(/@[^\s"'>]+\s*=\s*["']*$/) === null) {
       return false;
     }
@@ -258,7 +264,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
             )
           )
         ),
-        ...this._optionsNode.properties.map((property) =>
+        ...this._eventOptionsNode.properties.map((property) =>
           cloneNode(property, {factory: this._factory})
         ),
       ],

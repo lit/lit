@@ -33,7 +33,7 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
 
   visit(
     litClassContext: LitClassContext,
-    property: ts.PropertyDeclaration,
+    property: ts.ClassElement,
     decorator: ts.Decorator
   ) {
     if (!ts.isPropertyDeclaration(property)) {
@@ -51,7 +51,7 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
     }
     const name = property.name.text;
     const selector = arg0.text;
-    litClassContext.removeNodes.add(property);
+    litClassContext.litFileContext.nodesToRemove.add(property);
     litClassContext.classMembers.push(
       this._createQueryAllGetter(name, selector)
     );

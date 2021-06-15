@@ -35,7 +35,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
 
   visit(
     litClassContext: LitClassContext,
-    property: ts.PropertyDeclaration,
+    property: ts.ClassElement,
     decorator: ts.Decorator
   ) {
     if (!ts.isPropertyDeclaration(property)) {
@@ -54,7 +54,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
     const flatten = arg1?.kind === ts.SyntaxKind.TrueKeyword;
     const selector =
       arg2 !== undefined && ts.isStringLiteral(arg2) ? arg2.text : '';
-    litClassContext.removeNodes.add(property);
+    litClassContext.litFileContext.nodesToRemove.add(property);
     litClassContext.classMembers.push(
       this._createQueryAssignedNodesGetter(name, slotName, flatten, selector)
     );

@@ -43,7 +43,7 @@ export class QueryVisitor implements MemberDecoratorVisitor {
 
   visit(
     litClassContext: LitClassContext,
-    property: ts.PropertyDeclaration,
+    property: ts.ClassElement,
     decorator: ts.Decorator
   ) {
     if (!ts.isPropertyDeclaration(property)) {
@@ -62,7 +62,7 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     const name = property.name.text;
     const selector = arg0.text;
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
-    litClassContext.removeNodes.add(property);
+    litClassContext.litFileContext.nodesToRemove.add(property);
     litClassContext.classMembers.push(
       cache
         ? this._createCachingQueryGetter(name, selector)

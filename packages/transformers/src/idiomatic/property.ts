@@ -48,7 +48,7 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
       return;
     }
     const name = property.name.text;
-    litClassContext.removeNodes.add(decorator);
+    litClassContext.litFileContext.nodesToRemove.add(decorator);
     litClassContext.reactiveProperties.push({name, options});
   }
 }

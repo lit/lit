@@ -44,7 +44,7 @@ class SimpleGreeting extends LitElement {
   }
 
   @eventOptions({capture: true})
-  _onClick(event: Event) {
+  private _onClick(event: Event) {
     this.counter++;
     console.log('click', event.target);
   }
@@ -72,20 +72,25 @@ class MyElement extends LitElement {
     super(...arguments);
     this.name = 'Somebody';
     this.counter = 0;
-    this._onClick = {
-      handleEvent: (event) => {
-        console.log('click', event.target);
-      },
-      capture: true,
-    };
   }
 
   render() {
     return html`
-      <button id="myButton" @click=${this._onClick}>
+      <button
+        id="myButton"
+        @click=${{
+          handleEvent: (e) => this._onClick(e),
+          capture: true,
+        }}
+      >
         Hello ${this.name} (${this.counter})
       </button>
     `;
+  }
+
+  private _onClick(event: Event) {
+    this.counter++;
+    console.log('click', event.target);
   }
 }
 

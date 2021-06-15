@@ -11,7 +11,9 @@ import * as pathlib from 'path';
  * Filesystem caching for the TypeScript CompilerHost implementation used in
  * `compileTsFragment`. Shared across multiple invocations to significantly
  * speed up the loading of common files (e.g. TypeScript core lib d.ts files).
- * Assumes files on disk never change.
+ *
+ * Important! This caches file contents and metadata indefinitely, so it assumes
+ * files never change. Designed for testing, not suitable for real file systems.
  */
 export class CompilerHostCache {
   fileExists = new Map<string, boolean>();

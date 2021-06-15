@@ -35,7 +35,7 @@ export class StateVisitor implements MemberDecoratorVisitor {
 
   visit(
     litClassContext: LitClassContext,
-    property: ts.PropertyDeclaration,
+    property: ts.ClassElement,
     decorator: ts.Decorator
   ) {
     if (!ts.isPropertyDeclaration(property)) {
@@ -54,7 +54,7 @@ export class StateVisitor implements MemberDecoratorVisitor {
 
     const name = property.name.text;
     const options = this._createOptions(arg0);
-    litClassContext.removeNodes.add(decorator);
+    litClassContext.litFileContext.nodesToRemove.add(decorator);
     litClassContext.reactiveProperties.push({name, options});
   }
 
