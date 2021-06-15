@@ -6,6 +6,7 @@
 
 import * as ts from 'typescript';
 import {LitElementMutations} from './mutations.js';
+import {cloneNode} from 'ts-clone-node';
 
 import type {
   Visitor,
@@ -276,8 +277,11 @@ export class LitTransformer {
   ) {
     const f = this._context.factory;
     const properties = [
-      // TODO(aomarks) existingProperties should be cloned.
-      ...(existingProperties ?? []),
+      ...(existingProperties
+        ? existingProperties.map((prop) =>
+            cloneNode(prop, {factory: this._context.factory})
+          )
+        : []),
       ...newProperties.map(({name, options}) =>
         f.createPropertyAssignment(
           f.createIdentifier(name),
