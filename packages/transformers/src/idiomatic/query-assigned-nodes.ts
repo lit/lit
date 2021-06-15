@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 
-import type {LitElementMutations} from '../mutations.js';
+import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
@@ -34,7 +34,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
   }
 
   visit(
-    mutations: LitElementMutations,
+    litClassContext: LitClassContext,
     property: ts.PropertyDeclaration,
     decorator: ts.Decorator
   ) {
@@ -54,8 +54,8 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
     const flatten = arg1?.kind === ts.SyntaxKind.TrueKeyword;
     const selector =
       arg2 !== undefined && ts.isStringLiteral(arg2) ? arg2.text : '';
-    mutations.removeNodes.add(property);
-    mutations.classMembers.push(
+    litClassContext.removeNodes.add(property);
+    litClassContext.classMembers.push(
       this._createQueryAssignedNodesGetter(name, slotName, flatten, selector)
     );
   }

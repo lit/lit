@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 
-import type {LitElementMutations} from '../mutations.js';
+import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
@@ -34,7 +34,7 @@ export class StateVisitor implements MemberDecoratorVisitor {
   }
 
   visit(
-    mutations: LitElementMutations,
+    litClassContext: LitClassContext,
     property: ts.PropertyDeclaration,
     decorator: ts.Decorator
   ) {
@@ -54,8 +54,8 @@ export class StateVisitor implements MemberDecoratorVisitor {
 
     const name = property.name.text;
     const options = this._createOptions(arg0);
-    mutations.removeNodes.add(decorator);
-    mutations.reactiveProperties.push({name, options});
+    litClassContext.removeNodes.add(decorator);
+    litClassContext.reactiveProperties.push({name, options});
   }
 
   private _createOptions(options: ts.ObjectLiteralExpression) {

@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 
-import type {LitElementMutations} from '../mutations.js';
+import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
@@ -42,7 +42,7 @@ export class QueryVisitor implements MemberDecoratorVisitor {
   }
 
   visit(
-    mutations: LitElementMutations,
+    litClassContext: LitClassContext,
     property: ts.PropertyDeclaration,
     decorator: ts.Decorator
   ) {
@@ -62,8 +62,8 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     const name = property.name.text;
     const selector = arg0.text;
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
-    mutations.removeNodes.add(property);
-    mutations.classMembers.push(
+    litClassContext.removeNodes.add(property);
+    litClassContext.classMembers.push(
       cache
         ? this._createCachingQueryGetter(name, selector)
         : this._createNonCachingQueryGetter(name, selector)

@@ -5,12 +5,17 @@
  */
 
 import type * as ts from 'typescript';
+import type {LitFileContext} from './lit-file-context.js';
 import type {Visitor} from './visitor.js';
 
 /**
  * Changes that need making to a LitElement class.
  */
-export class LitElementMutations {
+export class LitClassContext {
+  litFileContext: LitFileContext;
+
+  class_: ts.ClassLikeDeclaration;
+
   /**
    * Remove a node from the AST (e.g. a decorator that is no longer required).
    * Note the node must be a descendant of this specific element class.
@@ -40,4 +45,9 @@ export class LitElementMutations {
    * Additional visitors that will run only in the scope of the current class.
    */
   visitors = new Set<Visitor>();
+
+  constructor(litFileContext: LitFileContext, class_: ts.ClassLikeDeclaration) {
+    this.litFileContext = litFileContext;
+    this.class_ = class_;
+  }
 }

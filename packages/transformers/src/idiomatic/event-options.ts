@@ -7,9 +7,9 @@
 import * as ts from 'typescript';
 import {cloneNode} from 'ts-clone-node';
 
-import type {LitElementMutations} from '../mutations.js';
-import type {MemberDecoratorVisitor, GenericVisitor} from '../visitor.js';
+import type {LitClassContext} from '../lit-class-context.js';
 import type {LitFileContext} from '../lit-file-context.js';
+import type {MemberDecoratorVisitor, GenericVisitor} from '../visitor.js';
 
 /**
  * Transform:
@@ -71,10 +71,9 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
   }
 
   visit(
-    mutations: LitElementMutations,
+    litClassContext: LitClassContext,
     method: ts.ClassElement,
-    decorator: ts.Decorator,
-    litFileContext: LitFileContext
+    decorator: ts.Decorator
   ) {
     if (!ts.isMethodDeclaration(method)) {
       return;
@@ -96,7 +95,7 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
       return;
     }
 
-    mutations.removeNodes.add(decorator);
+    litClassContext.removeNodes.add(decorator);
 
     // If private, assume no outside access is possible, and transform any
     // references to this function inside template event bindings to
@@ -108,13 +107,12 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
         .getTypeChecker()
         .getSymbolAtLocation(method.name);
       if (methodSymbol !== undefined) {
-        mutations.visitors.add(
+        litClassContext.visitors.add(
           new EventOptionsBindingVisitor(
             this._factory,
             this._program,
             methodSymbol,
-            options,
-            litFileContext
+            options
           )
         );
         return;
@@ -123,7 +121,7 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
 
     // If not private, keep the method as it is and annotate options on it
     // directly, exactly like the decorator does.
-    mutations.adjacentStatements.push(
+    litClassContext.adjacentStatements.push(
       this._createMethodOptionsAssignment(
         method.parent.name.text,
         method.name.text,
@@ -165,27 +163,27 @@ class EventOptionsBindingVisitor implements GenericVisitor {
   private _symbol: ts.Symbol;
   private _program: ts.Program;
   private _optionsNode: ts.ObjectLiteralExpression;
-  private _litFileContext: LitFileContext;
 
   constructor(
     factory: ts.NodeFactory,
     program: ts.Program,
     methodSymbol: ts.Symbol,
-    optionsNode: ts.ObjectLiteralExpression,
-    litFileContext: LitFileContext
+    optionsNode: ts.ObjectLiteralExpression
   ) {
     this._factory = factory;
     this._program = program;
     this._symbol = methodSymbol;
     this._optionsNode = optionsNode;
-    this._litFileContext = litFileContext;
   }
 
-  visit(node: ts.Node): ts.Node {
+  visit(litFileContext: LitFileContext, node: ts.Node): ts.Node {
     if (!ts.isPropertyAccessExpression(node)) {
       return node;
     }
-    if (node.parent === undefined || !this._isLitEventBinding(node.parent)) {
+    if (
+      node.parent === undefined ||
+      !this._isLitEventBinding(litFileContext, node.parent)
+    ) {
       return node;
     }
     const symbol = this._program
@@ -197,7 +195,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     return this._createEventHandlerObject(node);
   }
 
-  private _isLitEventBinding(span: ts.Node) {
+  private _isLitEventBinding(litFileContext: LitFileContext, span: ts.Node) {
     if (!ts.isTemplateSpan(span)) {
       return false;
     }
@@ -223,7 +221,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     }
     // Note we check for the lit tag last because it requires the type checker
     // which is expensive.
-    if (this._litFileContext.getCanonicalName(tagged.tag) !== 'html') {
+    if (litFileContext.getCanonicalName(tagged.tag) !== 'html') {
       return false;
     }
     return true;

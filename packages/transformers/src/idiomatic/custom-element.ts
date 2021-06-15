@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 
-import type {LitElementMutations} from '../mutations.js';
+import type {LitClassContext} from '../lit-class-context.js';
 import type {ClassDecoratorVisitor} from '../visitor.js';
 
 /**
@@ -30,12 +30,8 @@ export class CustomElementVisitor implements ClassDecoratorVisitor {
     this._factory = factory;
   }
 
-  visit(
-    mutations: LitElementMutations,
-    class_: ts.ClassDeclaration,
-    decorator: ts.Decorator
-  ) {
-    if (!class_.name) {
+  visit(litClassContext: LitClassContext, decorator: ts.Decorator) {
+    if (!litClassContext.class_.name) {
       return;
     }
     if (!ts.isCallExpression(decorator.expression)) {
@@ -46,9 +42,9 @@ export class CustomElementVisitor implements ClassDecoratorVisitor {
       return;
     }
     const elementName = arg0.text;
-    const className = class_.name.text;
-    mutations.removeNodes.add(decorator);
-    mutations.adjacentStatements.push(
+    const className = litClassContext.class_.name.text;
+    litClassContext.removeNodes.add(decorator);
+    litClassContext.adjacentStatements.push(
       this._createCustomElementsDefineCall(elementName, className)
     );
   }

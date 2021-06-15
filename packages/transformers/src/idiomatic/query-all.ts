@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 
-import type {LitElementMutations} from '../mutations.js';
+import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
@@ -32,7 +32,7 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
   }
 
   visit(
-    mutations: LitElementMutations,
+    litClassContext: LitClassContext,
     property: ts.PropertyDeclaration,
     decorator: ts.Decorator
   ) {
@@ -51,8 +51,10 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
     }
     const name = property.name.text;
     const selector = arg0.text;
-    mutations.removeNodes.add(property);
-    mutations.classMembers.push(this._createQueryAllGetter(name, selector));
+    litClassContext.removeNodes.add(property);
+    litClassContext.classMembers.push(
+      this._createQueryAllGetter(name, selector)
+    );
   }
 
   private _createQueryAllGetter(name: string, selector: string) {

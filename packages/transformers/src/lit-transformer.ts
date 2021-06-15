@@ -5,7 +5,7 @@
  */
 
 import * as ts from 'typescript';
-import {LitElementMutations} from './mutations.js';
+import {LitClassContext} from './lit-class-context.js';
 import {LitFileContext} from './lit-file-context.js';
 import {cloneNode} from 'ts-clone-node';
 
@@ -117,7 +117,7 @@ export class LitTransformer {
       return undefined;
     }
     for (const visitor of this._genericVisitors) {
-      node = visitor.visit(node);
+      node = visitor.visit(this._litFileContext!, node);
     }
     if (ts.isImportDeclaration(node)) {
       return this._visitImportDeclaration(node);
@@ -198,7 +198,7 @@ export class LitTransformer {
   }
 
   private _visitClassDeclaration(class_: ts.ClassDeclaration) {
-    const mutations = new LitElementMutations();
+    const mutations = new LitClassContext(this._litFileContext!, class_);
 
     // Class decorators
     for (const decorator of class_.decorators ?? []) {
@@ -206,7 +206,7 @@ export class LitTransformer {
       if (decoratorName !== undefined) {
         const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
         for (const visitor of visitors) {
-          visitor.visit(mutations, class_, decorator, this._litFileContext!);
+          visitor.visit(mutations, decorator);
         }
       }
     }
@@ -219,7 +219,7 @@ export class LitTransformer {
           const visitors =
             this._memberDecoratorVisitors.get(decoratorName) ?? [];
           for (const visitor of visitors) {
-            visitor.visit(mutations, member, decorator, this._litFileContext!);
+            visitor.visit(mutations, member, decorator);
           }
         }
       }
