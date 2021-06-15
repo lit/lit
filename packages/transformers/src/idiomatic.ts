@@ -60,18 +60,18 @@ export default function idiomaticLitDecoratorTransformer(
   program: ts.Program
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
+    const transformer = new LitTransformer(program, context, [
+      new CustomElementVisitor(context),
+      new PropertyVisitor(context),
+      new StateVisitor(context),
+      new QueryVisitor(context),
+      new QueryAllVisitor(context),
+      new QueryAsyncVisitor(context),
+      new QueryAssignedNodesVisitor(context),
+      new EventOptionsVisitor(context, program.getTypeChecker()),
+    ]);
     return (file) => {
-      const transformer = new LitTransformer(program, context, [
-        new CustomElementVisitor(context),
-        new PropertyVisitor(context),
-        new StateVisitor(context),
-        new QueryVisitor(context),
-        new QueryAllVisitor(context),
-        new QueryAsyncVisitor(context),
-        new QueryAssignedNodesVisitor(context),
-        new EventOptionsVisitor(context, program.getTypeChecker()),
-      ]);
-      return ts.visitNode(file, transformer.visit);
+      return ts.visitNode(file, transformer.visitFile);
     };
   };
 }

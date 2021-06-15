@@ -95,12 +95,27 @@ export class LitTransformer {
     }
   }
 
-  visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
-    if (ts.isSourceFile(node)) {
-      // New file, new imports.
-      this._importedLitDecorators.clear();
-      this._removeNodes.clear();
+  visitFile = (node: ts.Node): ts.VisitResult<ts.Node> => {
+    if (!ts.isSourceFile(node)) {
+      return node;
     }
+    for (const statement of node.statements) {
+      if (ts.isImportDeclaration(statement)) {
+        this._analyzeImportDeclaration(statement);
+      }
+    }
+    if (this._importedLitDecorators.size === 0) {
+      // No Lit imports, we can ignore this file.
+      return node;
+    }
+    node = ts.visitEachChild(node, this.visit, this._context);
+    // Reset per-file state.
+    this._importedLitDecorators.clear();
+    this._removeNodes.clear();
+    return node;
+  };
+
+  visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
     if (this._removeNodes.delete(node)) {
       return undefined;
     }
@@ -116,11 +131,12 @@ export class LitTransformer {
     return ts.visitEachChild(node, this.visit, this._context);
   };
 
-  private _visitImportDeclaration(node: ts.ImportDeclaration) {
+  private _analyzeImportDeclaration(node: ts.ImportDeclaration) {
     // Check if this is one of the many modules that export Lit decorators.
-    const specifier = ts.isStringLiteral(node.moduleSpecifier)
-      ? node.moduleSpecifier.text
-      : '';
+    if (!ts.isStringLiteral(node.moduleSpecifier)) {
+      return;
+    }
+    const specifier = node.moduleSpecifier.text;
     if (
       !(
         specifier.startsWith('lit/decorators') ||
@@ -131,16 +147,15 @@ export class LitTransformer {
         specifier === 'lit-element/index'
       )
     ) {
-      return node;
+      return;
     }
 
     // TODO(aomarks) Maybe handle NamespaceImport (import * as decorators).
     const bindings = node.importClause?.namedBindings;
     if (bindings == undefined || !ts.isNamedImports(bindings)) {
-      return node;
+      return;
     }
 
-    let importsNeedPruning = false;
     for (const importSpecifier of bindings.elements) {
       // Name as exported (Lit's name for it, not whatever the alias is).
       const realName =
@@ -152,20 +167,17 @@ export class LitTransformer {
       ) {
         this._importedLitDecorators.set(importSpecifier, realName);
         this._removeNodes.add(importSpecifier);
-        importsNeedPruning = true;
       }
     }
+  }
 
-    if (importsNeedPruning) {
-      const pruned = ts.visitEachChild(node, this.visit, this._context);
-      return (pruned.importClause?.namedBindings as ts.NamedImports).elements
-        .length > 0
-        ? pruned
-        : // Remove the import altogether if there are no remaining bindings.
-          undefined;
-    }
-
-    return node;
+  private _visitImportDeclaration(node: ts.ImportDeclaration) {
+    const pruned = ts.visitEachChild(node, this.visit, this._context);
+    return (pruned.importClause?.namedBindings as ts.NamedImports).elements
+      .length > 0
+      ? pruned
+      : // Remove the import altogether if there are no remaining bindings.
+        undefined;
   }
 
   private _identifyImportedLitDecorator(
