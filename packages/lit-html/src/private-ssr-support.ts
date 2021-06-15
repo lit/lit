@@ -5,7 +5,7 @@
  */
 
 import {Directive, PartInfo} from './directive.js';
-import {_Σ as p, AttributePart, noChange, Part} from './lit-html.js';
+import {$$LH as p, AttributePart, noChange, Part} from './lit-html.js';
 export type {Template} from './lit-html.js';
 
 /**
@@ -19,7 +19,7 @@ export type {Template} from './lit-html.js';
  * client-side code is being used in `dev` mode or `prod` mode.
  * @private
  */
-export const _Σ = {
+export const $LH = {
   boundAttributeSuffix: p._boundAttributeSuffix,
   marker: p._marker,
   markerMatch: p._markerMatch,

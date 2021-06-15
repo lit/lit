@@ -32,8 +32,8 @@ import {AsyncDirective} from '../async-directive.js';
 import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
-import {_Σ} from '../private-ssr-support.js';
-const {AttributePart} = _Σ;
+import {$$LH} from '../private-ssr-support.js';
+const {AttributePart} = $$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
 

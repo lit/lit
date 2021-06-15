@@ -217,7 +217,7 @@ if (DEV_MODE) {
  *
  * @private
  */
-export const _Φ = {
+export const $LE = {
   _$attributeToProperty: (
     el: LitElement,
     name: string,

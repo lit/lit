@@ -17,17 +17,17 @@ import virtual from '@rollup/plugin-virtual';
 // defined here rather than via an argument to litProdConfig() so we can
 // validate the list used by each package is unique (since copy/pasting the
 // individual package-based configs is common and error-prone)
-const STABLE_PROPERTY_PREFIX = 'Ξ';
+const STABLE_PROPERTY_PREFIX = '$A';
 const PACKAGE_CLASS_PREFIXES = {
-  lit: 'ϖ',
-  'lit-html': 'Σ',
-  'lit-element': 'Φ',
-  '@lit/reactive-element': 'Π',
-  '@lit-labs/motion': 'δ',
-  '@lit-labs/react': 'Ω',
-  '@lit-labs/scoped-registry-mixin': 'Ϋ',
-  '@lit-labs/ssr-client': 'Λ',
-  '@lit-labs/task': '⍶',
+  lit: '$B',
+  'lit-html': '$C',
+  'lit-element': '$D',
+  '@lit/reactive-element': '$E',
+  '@lit-labs/motion': '$F',
+  '@lit-labs/react': '$G',
+  '@lit-labs/scoped-registry-mixin': '$H',
+  '@lit-labs/ssr-client': '$I',
+  '@lit-labs/task': '$J',
 };
 
 // Validate prefix uniqueness

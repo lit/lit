@@ -1529,7 +1529,7 @@ class ElementPart {
  *
  * @private
  */
-export const _Σ = {
+export const $LH = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
   _marker: marker,

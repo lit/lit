@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_Φ as p} from './lit-element.js';
+import {$$LE as p} from './lit-element.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -18,7 +18,7 @@ import {_Φ as p} from './lit-element.js';
  *
  * @private
  */
-export const _Φ = {
+export const $LE = {
   attributeToProperty: p._$attributeToProperty,
   changedProperties: p._$changedProperties,
 };
