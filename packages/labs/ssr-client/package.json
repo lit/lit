@@ -27,11 +27,9 @@
     }
   },
   "files": [
-    "/src/",
     "/development/",
-    "!/src/test/",
-    "/index.{d.ts,d.ts.map,js,js.map}",
-    "/directives/"
+    "/directives/",
+    "/index.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts && rollup -c",

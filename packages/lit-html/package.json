@@ -77,9 +77,7 @@
     "/static.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
-    "/directives/",
-    "/src/",
-    "!/src/test/"
+    "/directives/"
   ],
   "dependencies": {
     "@types/trusted-types": "^1.0.1"

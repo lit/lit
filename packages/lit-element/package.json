@@ -75,10 +75,7 @@
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
-    "/development/",
-    "/src/",
-    "!/src/demo/",
-    "!/src/test/"
+    "/development/"
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0-rc.2",
