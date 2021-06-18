@@ -35,8 +35,8 @@ jobs:
         with:
           path: node_modules
           # Bump the number after `lit-1.x-node-modules` to force a cache
-          # update. Note there are cache actions in below in `tests-sauce` and
-          # in `benchmarks.yml` that should all keep keys in sync.
+          # update. Note there are cache actions in other jobs in this file that
+          # should all keep keys in sync.
           key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: NPM install
@@ -72,8 +72,8 @@ jobs:
         with:
           path: node_modules
           # Bump the number after `lit-1.x-node-modules` to force a cache
-          # update. Note there are cache actions in above in `tests-local` and
-          # in `benchmarks.yml` that should all keep keys in sync.
+          # update. Note there are cache actions in other jobs in this file that
+          # should all keep keys in sync.
           key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: NPM install
