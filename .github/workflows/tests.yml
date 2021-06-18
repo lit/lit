@@ -43,11 +43,14 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
+      - name: Install XVFB
+        run: sudo apt-get install xvfb
+
       - name: Build
         run: npm run build
 
       - name: Test
-        run: npx wct --npm
+        run: xvfb-run npx wct --npm
 
   tests-sauce:
     # We can't run Sauce tests on PRs from forked repos, since they don't have
