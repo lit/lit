@@ -19,6 +19,8 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@changesets/changelog-git": "^0.1.7",
+    "@changesets/cli": "^2.16.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-virtual": "^2.0.3",
