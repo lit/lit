@@ -22,10 +22,6 @@
     "prepack": "npm run build"
   },
   "files": [
-    "/src/",
-    "!/src/tests/",
-    "/src_client/",
-    "!/src_client/tests/",
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",
