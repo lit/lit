@@ -529,7 +529,8 @@ export class EventPart implements Part {
 
   handleEvent(event: Event) {
     if (typeof this.value === 'function') {
-      (this.value as EventListener).call(this.eventContext || this.element, event);
+      (this.value as EventListener)
+          .call(this.eventContext || this.element, event);
     } else {
       (this.value as EventListenerObject).handleEvent(event);
     }
