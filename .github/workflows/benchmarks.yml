@@ -28,7 +28,7 @@ jobs:
           # Bump the number after `lit-1.x-node-modules` to force a cache
           # update. Note there are multiple cache actions in `tests.yml` that
           # should all keep keys in sync.
-          key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: NPM install
         if: steps.cache.outputs.cache-hit != 'true'
