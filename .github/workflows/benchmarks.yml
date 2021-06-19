@@ -19,113 +19,38 @@ jobs:
         with:
           node-version: 14
 
-      # Note this is the way to set an environment variable that lives across
-      # all steps
-      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
-      - name: Set environment variables
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
-
-      # Cache all of our node_modules/ directories and playwright browser
-      # binaries to save ~30 seconds of install time.
       - name: Restore node_modules
         id: cache
         uses: actions/cache@v2
         with:
           path: |
             node_modules
-            **/node_modules
-            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          # Bump the number after `lit-node-modules` to force a cache update
-          # Note there are 2 cache actions in `tests.yml` that should all keep keys in sync
-          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          # Bump the number after `lit-1.x-node-modules` to force a cache
+          # update. Note there are multiple cache actions in `tests.yml` that
+          # should all keep keys in sync.
+          key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: NPM install
         if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Lerna bootstrap
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: npm run bootstrap
-
       - name: Build
         run: npm run build
 
-      # lit-html:kitchen-sink
-      - name: Benchmark lit-html/kitchen-sink
+      - name: Benchmarks
         run: |
-          cd packages/benchmarks
-          npx tachometer \
-            --config lit-html/kitchen-sink/tachometer.json \
-            --json-file lit-html/kitchen-sink/results.json
+          npx tach shack=./node_modules/lit-html-benchmarks/shack \
+            --browser=chrome-headless \
+            --sample-size=50 --horizon="0%,1%,10%" --timeout=3 \
+            --package-version=this=lit-html@github:${{ github.sha }} \
+            --package-version=parent=lit-html@github:${{ github.sha }}^ \
+            --package-version=published=lit-html@^1 \
+            --json-file results.json
 
-      - name: Report lit-html-kitchen-sink
+      - name: Report lit-html-1.x
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: lit-html-kitchen-sink
-          path: packages/benchmarks/lit-html/kitchen-sink/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
-
-      # lit-html:template-heavy
-      - name: Benchmark lit-html/template-heavy
-        run: |
-          cd packages/benchmarks
-          npx tachometer \
-            --config lit-html/template-heavy/tachometer.json \
-            --json-file lit-html/template-heavy/results.json
-
-      - name: Report lit-html-template-heavy
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-html-template-heavy
-          path: packages/benchmarks/lit-html/template-heavy/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
-
-      # lit-html:repeat
-      - name: Benchmark lit-html/repeat
-        run: |
-          cd packages/benchmarks
-          npx tachometer \
-            --config lit-html/repeat/tachometer.json \
-            --json-file lit-html/repeat/results.json
-
-      - name: Report lit-html-repeat
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-html-repeat
-          path: packages/benchmarks/lit-html/repeat/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
-
-      # lit-element:list
-      - name: Benchmark lit-element/list
-        run: |
-          cd packages/benchmarks
-          npx tachometer \
-            --config lit-element/list/tachometer.json \
-            --json-file lit-element/list/results.json
-
-      - name: Report lit-element-list
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-element-list
-          path: packages/benchmarks/lit-element/list/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
-
-      # reactive-element:list
-      - name: Benchmark reactive-element/list
-        run: |
-          cd packages/benchmarks
-          npx tachometer \
-            --config reactive-element/list/tachometer.json \
-            --json-file reactive-element/list/results.json
-
-      - name: Report reactive-element-list
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: reactive-element-list
-          path: packages/benchmarks/reactive-element/list/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+          report-id: lit-html-1.x
+          path: results.json
+          pr-bench-name: this
+          base-bench-name: parent
