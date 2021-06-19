@@ -1,12 +1,10 @@
-import {Layout1dBase, Layout1dBaseConfig} from './Layout1dBase.js';
-import {ItemBox, Positions, Size, Margins} from './Layout.js';
+import {Layout1dBase, Layout1dBaseConfig, dim1/*, pos1*/} from './Layout1dBase.js';
+import {ItemBox, Positions, Size, Margins, margin, ScrollDirection, offsetAxis} from './Layout.js';
 
 type ItemBounds = {
   pos: number,
   size: number
 };
-
-type CachedMetrics = Size & Margins & {size: number | null};
 
 type Layout1dConstructor = {
   prototype: Layout1d,
@@ -23,6 +21,106 @@ export const layout1d: Layout1dSpecifierFactory = (config?: Layout1dBaseConfig) 
   type: Layout1d
 }, config);
 
+function leadingMargin(direction: ScrollDirection): margin {
+  return direction === 'horizontal' ? 'marginLeft' : 'marginTop';
+}
+
+function trailingMargin(direction: ScrollDirection): margin {
+  return direction === 'horizontal' ? 'marginRight' : 'marginBottom';
+}
+
+function offset(direction: ScrollDirection): offsetAxis {
+  return direction === 'horizontal' ? 'xOffset' : 'yOffset';
+}
+
+class SizeCache {
+  private _map: Map<number, number> = new Map();
+  totalSize: number = 0;
+
+  set(index: number, value: number): void {
+    const prev = this._map.get(index) || 0;
+    this._map.set(index, value);
+    this.totalSize += value - prev;
+  }
+
+  get averageSize(): number {
+    return this._map.size === 0 ? 0 : Math.round(this.totalSize / this._map.size);
+  }
+
+  getSize(index: number) {
+    return this._map.get(index);
+  }
+
+  clear() {
+    this._map.clear();
+    this.totalSize = 0;
+  }
+}
+
+function collapseMargins(a: number, b: number): number {
+  const m = [a, b].sort();
+  return m[1] <= 0
+  ? Math.min(...m)
+  : m[0] >= 0
+    ? Math.max(...m)
+    : m[0] + m[1];
+}
+
+class MetricsCache {
+  private _childSizeCache = new SizeCache();
+  private _marginSizeCache = new SizeCache();
+  private _metricsCache: Map<number, Size & Margins> = new Map();
+
+  update(metrics: {[key: number]: Size & Margins}, direction: ScrollDirection) {
+    const marginsToUpdate: Set<number> = new Set();
+    Object.keys(metrics).forEach((key) => {
+      const k = Number(key);
+      this._metricsCache.set(k, metrics[k]);
+      this._childSizeCache.set(k, metrics[k][dim1(direction)]);
+      marginsToUpdate.add(k);
+      marginsToUpdate.add(k + 1);
+    });
+    for (const k of marginsToUpdate) {
+      const a = this._metricsCache.get(k)?.[leadingMargin(direction)] || 0;
+      const b = this._metricsCache.get(k - 1)?.[trailingMargin(direction)] || 0;
+      this._marginSizeCache.set(k, collapseMargins(a, b))
+    }
+  }
+
+  get averageChildSize(): number {
+    return this._childSizeCache.averageSize;
+  }
+
+  get totalChildSize(): number {
+    return this._childSizeCache.totalSize;
+  }
+
+  get averageMarginSize(): number {
+    return this._marginSizeCache.averageSize;
+  }
+
+  get totalMarginSize(): number {
+    return this._marginSizeCache.totalSize;
+  }
+
+  getLeadingMarginValue(index: number, direction: ScrollDirection) {
+    return this._metricsCache.get(index)?.[leadingMargin(direction)] || 0;
+  }
+
+  getChildSize(index: number) {
+    return this._childSizeCache.getSize(index);
+  }
+
+  getMarginSize(index: number) {
+    return this._marginSizeCache.getSize(index);
+  }
+
+  clear() {
+    this._childSizeCache.clear();
+    this._marginSizeCache.clear();
+    this._metricsCache.clear();
+  }
+}
 
 export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
   /**
@@ -40,7 +138,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
   /**
    * Width and height of children by their index.
    */
-  _metrics: Map<number, CachedMetrics> = new Map();
+  _metricsCache = new MetricsCache();
 
   /**
    * anchorIdx is the anchor around which we reflow. It is designed to allow
@@ -64,16 +162,6 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    */
   _needsRemeasure = false;
 
-  /**
-   * Number of children to lay out.
-   */
-  private _nMeasured = 0;
-
-  /**
-   * Total length in the scrolling direction of the laid out children.
-   */
-  private _tMeasured = 0;
-
   private _measureChildren = true;
 
   _estimate = true;
@@ -95,87 +183,11 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    * argument.
    */
   updateItemSizes(sizes: {[key: number]: ItemBox}) {
-    Object.keys(sizes).forEach((key) => {
-      const
-        k = Number(key),
-        newMetrics = sizes[k] as (Size & Margins),
-        cachedMetrics = this._getMetrics(k) as (Size & Margins),
-        leadingMargin = this.direction === 'horizontal' ? 'marginLeft' : 'marginTop',
-        trailingMargin = this.direction === 'horizontal' ? 'marginRight' : 'marginBottom',
-        dirty = [];
-      
-      if (k > 0) {
-        dirty.push(k - 1);
-      }
-      dirty.push(k);
-      if (k < this._totalItems - 1) {
-        dirty.push(k + 1);
-      }
-
-      Object.assign(cachedMetrics, newMetrics);
-
-      for (const d of dirty) {
-        const metrics = this._getMetrics(d);
-        const m = [
-          metrics[trailingMargin],
-          d < this._totalItems - 1 ? this._getMetrics(d + 1)[leadingMargin] : 0
-        ].sort();
-        const margin = m[1] <= 0
-          ? Math.min(...m)
-          : m[0] >= 0
-            ? Math.max(...m)
-            : m[0] + m[1];
-        let size = metrics[this._sizeDim]
-          + margin
-          + 0;//d === this._totalItems - 1 ? this._getMetrics(0)[leadingMargin] : 0;
-        if (d === this._totalItems - 1) {
-          size += this._getMetrics(0)[leadingMargin];
-        }
-        const prevSize = metrics.size;
-        if (prevSize === null) {
-          this._tMeasured += size;
-          this._nMeasured++;
-        }
-        else {
-          this._tMeasured += size - prevSize;
-        }
-        metrics.size = size;
-        const physicalItem = this._getPhysicalItem(d);
-        if (physicalItem) {
-          physicalItem.size = size;
-        }
-      }
-      //   prevSize = mi[this._sizeDim],
-      //   mi_ = this._getMetrics(k + 1);
-
-      // // TODO(valdrin) Handle margin collapsing.
-      // // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing
-      // mi.width = metrics.width + (metrics.marginLeft || 0) +
-      //     (metrics.marginRight || 0);
-      // mi.height = metrics.height + (metrics.marginTop || 0) +
-      //     (metrics.marginBottom || 0);
-
-      // const size = mi[this._sizeDim];
-      // const item = this._getPhysicalItem(Number(key));
-      // if (item) {
-      //   let delta = 0;
-
-      //   if (size !== undefined) {
-      //     item.size = size;
-      //     if (prevSize === -1) {
-      //       delta = size;
-      //       this._nMeasured++;
-      //     } else {
-      //       delta = size - prevSize;
-      //     }
-      //   }
-      //   this._tMeasured = this._tMeasured + delta;
-      // }
-    });
-    if (this._nMeasured) {
+    this._metricsCache.update(sizes as Size & Margins, this.direction);
+    // if (this._nMeasured) {
       this._updateItemSize();
       this._scheduleReflow();
-    }
+    // }
   }
 
   /**
@@ -184,26 +196,16 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    */
   _updateItemSize() {
     // Keep integer values.
-    this._itemSize[this._sizeDim] =
-        Math.round(this._tMeasured / this._nMeasured);
-  }
-
-  _getMetrics(idx: number): CachedMetrics {
-    let metrics = this._metrics.get(idx);
-    if (metrics === undefined) {
-      metrics = {height: -1, width: -1, marginTop: 0, marginRight: 0, marginBottom: 0, marginLeft: 0, size: null};
-      this._metrics.set(idx, metrics);
-    }
-    return metrics;
+    this._itemSize[this._sizeDim] = this._metricsCache.averageChildSize;
   }
 
   _getPhysicalItem(idx: number): ItemBounds | undefined {
-    return this._newPhysicalItems.get(idx) || this._physicalItems.get(idx);
+    return this._newPhysicalItems.get(idx) ?? this._physicalItems.get(idx);
   }
 
   _getSize(idx: number): number | undefined {
     const item = this._getPhysicalItem(idx);
-    return item && item.size;
+    return item && this._metricsCache.getChildSize(idx);
   }
 
   /**
@@ -212,7 +214,12 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    */
   _getPosition(idx: number): number {
     const item = this._getPhysicalItem(idx);
-    return item ? item.pos : (idx * (this._delta)) + this._spacing;
+    const { averageMarginSize } = this._metricsCache;
+    return idx === 0
+      ? this._metricsCache.getMarginSize(0) ?? averageMarginSize
+      : item
+        ? item.pos
+        : averageMarginSize + idx * (averageMarginSize + this._itemSize[this._sizeDim]);
   }
 
   _calculateAnchor(lower: number, upper: number): number {
@@ -244,8 +251,8 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
 
     const firstItem = this._getPhysicalItem(this._first),
           lastItem = this._getPhysicalItem(this._last),
-          firstMin = firstItem!.pos, firstMax = firstMin + firstItem!.size,
-          lastMin = lastItem!.pos, lastMax = lastMin + lastItem!.size;
+          firstMin = firstItem!.pos, firstMax = firstMin + this._metricsCache.getChildSize(this._first)!,
+          lastMin = lastItem!.pos, lastMax = lastMin + this._metricsCache.getChildSize(this._last)!;
 
     if (lastMax < lower) {
       // Window is entirely past physical items, calculate new anchor
@@ -269,7 +276,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
     while (true) {
       const candidateIdx = Math.round((maxIdx + minIdx) / 2),
             candidate = this._physicalItems.get(candidateIdx),
-            cMin = candidate!.pos, cMax = cMin + candidate!.size;
+            cMin = candidate!.pos, cMax = cMin + this._metricsCache.getChildSize(candidateIdx)!;
 
       if ((cMin >= lower && cMin <= upper) ||
           (cMax >= lower && cMax <= upper)) {
@@ -314,6 +321,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    */
   _getItems() {
     const items = this._newPhysicalItems;
+    this._stable = true;
     let lower, upper;
 
     // The anchorIdx is the anchor around which we reflow. It is designed to
@@ -338,6 +346,8 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
       );
       lower = Math.max(0, upper - this._viewDim1 - (2 * this._overhang));
 
+      // Since it can take multiple passes to stabilize, we may already
+      // have an anchor. If so, keep it; if not, establish it.
       if (this._anchorIdx === null || this._anchorPos === null) {
         this._anchorIdx = this._getAnchor(lower, upper);
         this._anchorPos = this._getPosition(this._anchorIdx);    
@@ -346,15 +356,27 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
 
     let anchorSize = this._getSize(this._anchorIdx);
     if (anchorSize === undefined) {
+      this._stable = false;
       anchorSize = this._itemDim1;
+    }
+
+    let anchorLeadingMargin = this._metricsCache.getMarginSize(this._anchorIdx) ?? this._metricsCache.averageMarginSize;
+    let anchorTrailingMargin = this._metricsCache.getMarginSize(this._anchorIdx + 1) ?? this._metricsCache.averageMarginSize;
+
+    if (this._anchorIdx === 0) {
+      this._anchorPos = anchorLeadingMargin;
+    }
+
+    if (this._anchorIdx === this._totalItems - 1) {
+      this._anchorPos = this._scrollSize - anchorTrailingMargin - anchorSize;
     }
 
     // Anchor might be outside bounds, so prefer correcting the error and keep
     // that anchorIdx.
     let anchorErr = 0;
 
-    if (this._anchorPos + anchorSize + this._spacing < lower) {
-      anchorErr = lower - (this._anchorPos + anchorSize + this._spacing);
+    if (this._anchorPos + anchorSize + anchorTrailingMargin < lower) {
+      anchorErr = lower - (this._anchorPos + anchorSize + anchorTrailingMargin);
     }
 
     if (this._anchorPos > upper) {
@@ -368,13 +390,11 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
       this._scrollError += anchorErr;
     }
 
-    // TODO @straversi: If size is always itemDim1, then why keep track of it?
     items.set(this._anchorIdx, {pos: this._anchorPos, size: anchorSize});
 
     this._first = (this._last = this._anchorIdx);
-    this._physicalMin = (this._physicalMax = this._anchorPos);
-
-    this._stable = true;
+    this._physicalMin = this._anchorPos;
+    this._physicalMax = this._anchorPos + anchorSize;
 
     while (this._physicalMin > lower && this._first > 0) {
       let size = this._getSize(--this._first);
@@ -382,28 +402,37 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
         this._stable = false;
         size = this._itemDim1;
       }
-      const pos = (this._physicalMin -= size + this._spacing);
+      let margin = this._metricsCache.getMarginSize(this._first + 1);
+      if (margin === undefined) {
+        this._stable = false;
+        margin = this._metricsCache.averageMarginSize;
+      }
+      this._physicalMin -= size + margin;
+      const pos = this._physicalMin;
       items.set(this._first, {pos, size});
       if (this._stable === false && this._estimate === false) {
         break;
       }
     }
 
-    while (this._physicalMax < upper && this._last < this._totalItems) {
+    while (this._physicalMax < upper && this._last < this._totalItems - 1) {
+      let margin = this._metricsCache.getMarginSize(++this._last);
+      if (margin === undefined) {
+        this._stable = false;
+        margin = this._metricsCache.averageMarginSize;
+      }
       let size = this._getSize(this._last);
       if (size === undefined) {
         this._stable = false;
         size = this._itemDim1;
       }
-      items.set(this._last++, {pos: this._physicalMax, size});
+      const pos = this._physicalMax + margin;
+      items.set(this._last, {pos, size});
+      this._physicalMax += margin + size;
       if (this._stable === false && this._estimate === false) {
         break;
-      } else {
-        this._physicalMax += size + this._spacing;
       }
     }
-
-    this._last--;
 
     // This handles the cases where we were relying on estimated sizes.
     const extentErr = this._calculateError();
@@ -424,12 +453,13 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
   }
 
   _calculateError(): number {
+    const { averageMarginSize } = this._metricsCache;
     if (this._first === 0) {
-      return this._physicalMin;
+      return this._physicalMin - (this._metricsCache.getMarginSize(0) ?? averageMarginSize);
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - (this._first * this._delta);
     } else if (this._last === this._totalItems - 1) {
-      return this._physicalMax - this._scrollSize;
+      return (this._physicalMax + (this._metricsCache.getMarginSize(this._totalItems) ?? averageMarginSize)) - this._scrollSize;
     } else if (this._physicalMax >= this._scrollSize) {
       return (
           (this._physicalMax - this._scrollSize) +
@@ -471,6 +501,16 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
     this._stable = true;
   }
 
+  _updateScrollSize() {
+    const { averageMarginSize } = this._metricsCache;
+    this._scrollSize = Math.max(1, this._totalItems * (averageMarginSize + this._itemSize[this._sizeDim]) + averageMarginSize);
+  }
+
+  protected get _delta(): number {
+    const { averageMarginSize } = this._metricsCache;
+    return this._itemSize[this._sizeDim] + averageMarginSize;
+  }
+
   /**
    * Returns the top and left positioning of the item at idx.
    */
@@ -478,6 +518,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
     return {
       [this._positionDim]: this._getPosition(idx),
       [this._secondaryPositionDim]: 0,
+      [offset(this.direction)]: -(this._metricsCache.getLeadingMarginValue(idx, this.direction) ?? this._metricsCache.averageMarginSize)
     } as Positions;
   }
 
@@ -486,7 +527,7 @@ export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
    */
   _getItemSize(idx: number): Size {
     return {
-      [this._sizeDim]: this._getSize(idx) || this._itemDim1,
+      [this._sizeDim]: (this._getSize(idx) || this._itemDim1) + (this._metricsCache.getMarginSize(idx + 1) ?? this._metricsCache.averageMarginSize),
       [this._secondarySizeDim]: this._itemDim2,
     } as Size;
   }

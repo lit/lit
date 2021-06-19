@@ -1,5 +1,5 @@
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import { ItemBox, Margins, Layout, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
+import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
 
 export const scrollerRef = Symbol('scrollerRef');
 
@@ -638,14 +638,14 @@ export class VirtualScroller {
    * Sets the top and left transform style of the children from the values in
    * pos.
    */
-  private _positionChildren(pos: Array<{top: number, left: number, width?: number, height?: number}>) {
+  private _positionChildren(pos: Array<Positions>) {
     if (pos) {
       const children = this._children;
       Object.keys(pos).forEach((key) => {
         const idx = (key as unknown as number) - this._first;
         const child = children[idx];
         if (child) {
-          const {top, left, width, height} = pos[key as unknown as number];
+          const {top, left, width, height, xOffset, yOffset} = pos[key as unknown as number];
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
           child.style.transform = `translate(${left}px, ${top}px)`;
@@ -654,6 +654,12 @@ export class VirtualScroller {
           }
           if (height !== undefined) {
             child.style.height = height + 'px';
+          }
+          if (xOffset !== undefined) {
+            child.style.left = `${xOffset}px`;
+          }
+          if (yOffset !== undefined) {
+            child.style.top = `${yOffset}px`;
           }
         }
       });  

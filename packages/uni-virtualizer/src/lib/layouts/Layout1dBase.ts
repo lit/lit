@@ -10,6 +10,22 @@ export interface Layout1dBaseConfig {
   totalItems?: number
 }
 
+export function dim1(direction: ScrollDirection): dimension {
+  return direction === 'horizontal' ? 'width': 'height';
+}
+
+export function dim2(direction: ScrollDirection): dimension {
+  return direction === 'horizontal' ? 'height': 'width';
+}
+
+export function pos1(direction: ScrollDirection): position {
+  return direction === 'horizontal' ? 'left': 'top';
+}
+
+export function pos2(direction: ScrollDirection): position {
+  return direction === 'horizontal' ? 'top': 'left';
+}
+
 export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layout {
   /**
    * The last set viewport scroll position.

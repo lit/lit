@@ -35,14 +35,13 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
     setTimeout(function() {
         scroller = getScroller(scrollerNodeOrQuery);
         // TODO (graynorton): support horizontal?
-        if (scroller.scrollTarget) {
-            target = scroller.scrollTarget;
-            scrolled = () => target.scrollTop;
-            scrollTo = y => target.scrollTop = y;
-        } else {
-            target = window;
+        const target = scroller.scrollTarget;
+        if (target === window) {
             scrolled = () => target.pageYOffset;
             scrollTo = y => target.scrollTo(0, y);
+        } else {
+            scrolled = () => target.scrollTop;
+            scrollTo = y => target.scrollTop = y;
         }
         scroller.startBenchmarking();
         setTimeout(onFrame, t);

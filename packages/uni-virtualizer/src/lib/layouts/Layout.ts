@@ -3,21 +3,29 @@ export type Size = {
   [key in dimension]: number
 };
 
+export type margin = 'marginTop' | 'marginRight' | 'marginBottom' | 'marginLeft';
+
 export type Margins = {
-  marginTop: number,
-  marginRight: number,
-  marginBottom: number,
-  marginLeft: number
+  [key in margin]: number
 };
 
 export type ItemBox = Size | (Size & Margins);
 
 export type position = 'left' | 'top';
+export type offsetAxis = 'xOffset' | 'yOffset';
+
+// TODO (graynorton@): This has become a bit of a
+// grab-bag. It might make sense to let each layout define
+// its own type and provide its own implementation of
+// `positionChildren()` that knows how to translate the
+// provided fields into the appropriate DOM manipulations.
 export type Positions = {
   left: number,
   top: number,
   width?: number,
-  height?: number
+  height?: number,
+  xOffset?: number,
+  yOffset?: number
 };
 
 

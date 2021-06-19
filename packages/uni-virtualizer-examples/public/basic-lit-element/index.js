@@ -19,7 +19,7 @@ class ContactCard extends LitElement {
             :host {
                 display: block;
                 width: 100%;
-                margin: 0.25em 0;
+                margin: 0.5em 0;
             }
             div, details {
                 padding: 1em;
