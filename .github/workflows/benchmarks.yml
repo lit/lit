@@ -38,14 +38,7 @@ jobs:
         run: npm run build
 
       - name: Benchmark
-        run: |
-          npx tach shack=./node_modules/lit-html-benchmarks/shack \
-            --browser=chrome-headless \
-            --sample-size=50 --horizon="0%,1%,10%" --timeout=3 \
-            --package-version=this=lit-html@git+https://github.com/lit/lit.git#${{ github.sha }} \
-            --package-version=parent=lit-html@git+https://github.com/lit/lit.git#${{ github.sha }}^ \
-            --package-version=published=lit-html@git+https://github.com/lit/lit.git#semver:^1 \
-            --json-file results.json
+        run: npx tach --config tachometer.json --json-file results.json
 
       - name: Report
         uses: andrewiggins/tachometer-reporter-action@v2

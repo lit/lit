@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 50,
+  "timeout": 3,
+  "horizons": ["0%", "1%", "10%"],
+  "benchmarks": [
+    {
+      "url": "./node_modules/lit-html-benchmarks/shack",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "expand": [
+        {
+          "name": "this-change"
+        },
+        {
+          "name": "lit-html-1.x",
+          "packageVersions": {
+            "label": "lit-html-1.x",
+            "dependencies": {
+              "lit-html": {
+                "kind": "git",
+                "repo": "https://github.com/lit/lit-html.git",
+                "ref": "lit-html-1.x",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run build"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "previous-1.x-release",
+          "packageVersions": {
+            "label": "previous-1.x-release",
+            "dependencies": {
+              "lit-html": "^1"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
