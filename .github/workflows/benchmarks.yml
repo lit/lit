@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
 
@@ -37,7 +37,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Benchmarks
+      - name: Benchmark
         run: |
           npx tach shack=./node_modules/lit-html-benchmarks/shack \
             --browser=chrome-headless \
@@ -47,7 +47,7 @@ jobs:
             --package-version=published=lit-html@^1 \
             --json-file results.json
 
-      - name: Report lit-html-1.x
+      - name: Report
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
           report-id: lit-html-1.x
