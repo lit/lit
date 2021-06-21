@@ -23,8 +23,7 @@ jobs:
         id: cache
         uses: actions/cache@v2
         with:
-          path: |
-            node_modules
+          path: node_modules
           # Bump the number after `lit-1.x-node-modules` to force a cache
           # update. Note there are multiple cache actions in `tests.yml` that
           # should all keep keys in sync.
@@ -45,5 +44,5 @@ jobs:
         with:
           report-id: lit-html-1.x
           path: results.json
-          pr-bench-name: this
-          base-bench-name: parent
+          pr-bench-name: this-change
+          base-bench-name: lit-html-1.x
