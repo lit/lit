@@ -5,14 +5,28 @@
   "horizons": ["0%", "1%", "10%"],
   "benchmarks": [
     {
-      "url": "./node_modules/lit-html-benchmarks/shack",
+      "url": "./node_modules/lit-html-benchmarks/shack/",
       "browser": {
         "name": "chrome",
         "headless": true
       },
       "expand": [
         {
-          "name": "this-change"
+          "name": "this-change",
+          "packageVersions": {
+            "label": "this-change",
+            "dependencies": {
+              "lit-html": {
+                "kind": "git",
+                "repo": ".",
+                "ref": "HEAD",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run build"
+                ]
+              }
+            }
+          }
         },
         {
           "name": "lit-html-1.x",
@@ -21,7 +35,7 @@
             "dependencies": {
               "lit-html": {
                 "kind": "git",
-                "repo": "https://github.com/lit/lit-html.git",
+                "repo": ".",
                 "ref": "lit-html-1.x",
                 "setupCommands": [
                   "npm ci",
