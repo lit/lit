@@ -43,7 +43,8 @@ const styleSheetCache = new Map<string, CSSStyleSheet>();
  * `css` tag and `unsafeCSS()`, CSSResult cannot be constructed directly.
  */
 export class CSSResult {
-  _$cssResult$ = true;
+  // This property needs to remain unminified.
+  ['_$cssResult$'] = true;
   readonly cssText: string;
 
   private constructor(cssText: string, safeToken: symbol) {
@@ -78,7 +79,8 @@ type ConstructableCSSResult = CSSResult & {
 };
 
 const textFromCSSResult = (value: CSSResultGroup | number) => {
-  if ((value as CSSResult)._$cssResult$ === true) {
+  // This property needs to remain unminified.
+  if ((value as CSSResult)['_$cssResult$'] === true) {
     return (value as CSSResult).cssText;
   } else if (typeof value === 'number') {
     return value;

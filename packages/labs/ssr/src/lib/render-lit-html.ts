@@ -74,7 +74,8 @@ const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
  * with a subclass that calls `render` rather than `update`
  */
 const patchIfDirective = (value: unknown) => {
-  const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  const directiveCtor = (value as DirectiveResult)?.['_$litDirective$'];
   if (directiveCtor !== undefined) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
@@ -88,7 +89,8 @@ const patchIfDirective = (value: unknown) => {
       );
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
-    (value as DirectiveResult)._$litDirective$ = patchedCtor;
+    // This property needs to remain unminified.
+    (value as DirectiveResult)['_$litDirective$'] = patchedCtor;
   }
   return value;
 };
@@ -277,7 +279,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  const [html, attrNames] = getTemplateHtml(result.strings, result._$litType$);
+  // The property '_$litType$' needs to remain unminified.
+  const [html, attrNames] = getTemplateHtml(
+    result.strings,
+    result['_$litType$']
+  );
 
   /**
    * The html string is parsed into a parse5 AST with source code information

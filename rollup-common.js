@@ -65,6 +65,8 @@ const skipBundleOutput = {
 // to avoid collisions since they are used to brand values in positions that
 // accept any value. We don't use a Symbol for these to support mixing and
 // matching values from different versions.
+// Note for compatibility with other build tools, these properties are manually
+// quoted in the source.
 const reservedProperties = [
   '_$litType$',
   '_$litDirective$',

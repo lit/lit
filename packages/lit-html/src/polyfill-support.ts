@@ -32,7 +32,8 @@ interface RenderOptions {
 
 interface ShadyTemplateResult {
   strings: TemplateStringsArray;
-  _$litType$?: string;
+  // This property needs to remain unminified.
+  ['_$litType$']?: string;
 }
 
 // Note, this is a dummy type as the full type here is big.
@@ -228,7 +229,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
-      const template = (value as ShadyTemplateResult)?._$litType$
+      // This property needs to remain unminified.
+      const template = (value as ShadyTemplateResult)?.['_$litType$']
         ? (this._$committedValue as PatchableTemplateInstance)._$template.el
         : document.createElement('template');
       prepareStyles(scope!, template);

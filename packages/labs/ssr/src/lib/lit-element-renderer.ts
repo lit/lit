@@ -20,7 +20,8 @@ export class LitElementRenderer extends ElementRenderer {
   element: LitElement;
 
   static matchesClass(ctor: typeof HTMLElement) {
-    return (ctor as unknown as typeof LitElement)._$litElement$;
+    // This property needs to remain unminified.
+    return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
 
   constructor(tagName: string) {

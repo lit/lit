@@ -87,7 +87,8 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
-  static _$litElement$ = true;
+  // This property needs to remain unminified.
+  static ['_$litElement$'] = true;
 
   /**
    * @category rendering
