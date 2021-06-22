@@ -6,8 +6,8 @@ import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 const firstVisibleResult = document.querySelector("#first-visible");
 const lastVisibleResult = document.querySelector("#last-visible");
 const handleVisibilityChange = (e) => {
-    firstVisibleResult.innerHTML = e.detail.firstVisible;
-    lastVisibleResult.innerHTML = e.detail.lastVisible;
+    firstVisibleResult.innerHTML = e.first;
+    lastVisibleResult.innerHTML = e.last;
 }
 
 let virtualizer;

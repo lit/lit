@@ -95,8 +95,8 @@ describe('scroll', function () {
       let firstVisible;
       let lastVisible;
       container.addEventListener('visibilityChanged', e => {
-        firstVisible = e.detail.firstVisible;
-        lastVisible = e.detail.lastVisible;
+        firstVisible = e.first;
+        lastVisible = e.last;
       });
   
       render(directive, container);

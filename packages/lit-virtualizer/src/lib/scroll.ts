@@ -3,7 +3,7 @@ import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Layout, LayoutConstructor, LayoutSpecifier } from './uni-virtualizer/lib/layouts/Layout.js';
-import { VirtualScroller, ScrollToIndexValue } from './uni-virtualizer/lib/VirtualScroller.js';
+import { VirtualScroller, ScrollToIndexValue, RangeChangedEvent } from './uni-virtualizer/lib/VirtualScroller.js';
 
 /**
  * Configuration options for the scroll directive.
@@ -101,9 +101,9 @@ class ScrollDirective extends AsyncDirective {
         const layout = config.layout;
         if (container && container.nodeType === 1) {
             this.scroller = new VirtualScroller({ container, scrollTarget, layout });
-            container.addEventListener('rangeChanged', (e: Event) => {
-                this.first = (e as CustomEvent).detail.first;
-                this.last = (e as CustomEvent).detail.last;
+            container.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+                this.first = e.first;
+                this.last = e.last;
                 this.setValue(this.render());
             });
             return true;

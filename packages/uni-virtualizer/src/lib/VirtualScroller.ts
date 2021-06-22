@@ -3,7 +3,7 @@ import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier
 
 export const scrollerRef = Symbol('scrollerRef');
 
-interface Range {
+interface InternalRange {
   first: number;
   last: number;
   num: number;
@@ -13,12 +13,43 @@ interface Range {
   lastVisible: number;
 }
 
-export type RangeChangeEvent = {
+interface Range {
+  first: number,
+  last: number
+}
+
+export class RangeChangedEvent extends Event {
+  static eventName = 'rangeChanged';
+
   first: number;
   last: number;
-  firstVisible: number;
-  lastVisible: number;
-};
+
+  constructor(range: Range) {
+    super(RangeChangedEvent.eventName, {bubbles: true});
+    this.first = range.first;
+    this.last = range.last;
+  }
+}
+
+export class VisibilityChangedEvent extends Event {
+  static eventName = 'visibilityChanged';
+
+  first: number;
+  last: number;
+
+  constructor(range: Range) {
+    super(VisibilityChangedEvent.eventName, {bubbles: true});
+    this.first = range.first;
+    this.last = range.last;
+  }
+}
+
+declare global {
+  interface HTMLElementEventMap {
+    'rangeChanged': RangeChangedEvent;
+    'visibilityChanged': VisibilityChangedEvent;
+  }
+}
 
 export interface ContainerElement extends HTMLElement {
   [scrollerRef]?: VirtualScroller
@@ -666,7 +697,7 @@ export class VirtualScroller {
     }
   }
 
-  private async _adjustRange(range: Range) {
+  private async _adjustRange(range: InternalRange) {
     const {_first, _last, _firstVisible, _lastVisible} = this;
     this._first = range.first;
     this._last = range.last;
@@ -699,30 +730,11 @@ export class VirtualScroller {
    * lastVisible.
    */
   private _notifyRange() {
-    // TODO (graynorton): Including visibility here for backward compat, but 
-    // may decide to remove at some point. The rationale for separating is that
-    // range change events are mainly intended for "internal" consumption by the
-    // renderer, whereas visibility change events are mainly intended for "external"
-    // consumption by application code.
-    this._container!.dispatchEvent(
-        new CustomEvent('rangeChanged', {detail:{
-          first: this._first,
-          last: this._last,
-          firstVisible: this._firstVisible,
-          lastVisible: this._lastVisible,
-        }})
-    );
+    this._container!.dispatchEvent(new RangeChangedEvent({ first: this._first, last: this._last }));
   }
 
   private _notifyVisibility() {
-    this._container!.dispatchEvent(
-        new CustomEvent('visibilityChanged', {detail:{
-          first: this._first,
-          last: this._last,
-          firstVisible: this._firstVisible,
-          lastVisible: this._lastVisible,
-        }})
-    );
+    this._container!.dispatchEvent(new VisibilityChangedEvent({ first: this._firstVisible, last: this._lastVisible }));
   }
 
   /**

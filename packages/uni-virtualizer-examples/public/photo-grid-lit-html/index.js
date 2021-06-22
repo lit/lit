@@ -160,12 +160,20 @@ function renderExample() {
                 </details>
             </div>
         </div>
-        <div class="scroller" @visibilityChanged=${(e) => {
-            if (showRange) {
-                const {first, last, firstVisible, lastVisible} = e.detail;
-                setState({first, last, firstVisible, lastVisible});
-            }
-        }}>
+        <div class="scroller"
+            @rangeChanged=${(e) => {
+                if (showRange) {
+                    const {first, last} = e;
+                    setState({first, last});
+                }
+            }}
+            @visibilityChanged=${(e) => {
+                if (showRange) {
+                    const {first, last} = e;
+                    setState({firstVisible: first, lastVisible: last});
+                }
+            }}
+        >
             ${scroll({items, renderItem, layout: {
                 type: Layout,
                 idealSize,
