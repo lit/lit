@@ -35,7 +35,7 @@
             "dependencies": {
               "lit-html": {
                 "kind": "git",
-                "repo": ".",
+                "repo": "https://github.com/lit/lit.git",
                 "ref": "lit-html-1.x",
                 "setupCommands": [
                   "npm ci",
