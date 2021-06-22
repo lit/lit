@@ -6,7 +6,7 @@
 
 import type {TemplateResult} from './lit-html.js';
 
-import {noChange, RenderOptions, $LH} from './lit-html.js';
+import {noChange, RenderOptions, _$LH} from './lit-html.js';
 import {AttributePartInfo, PartType} from './directive.js';
 import {
   isPrimitive,
@@ -20,7 +20,7 @@ const {
   _resolveDirective: resolveDirective,
   _ChildPart: ChildPart,
   _ElementPart: ElementPart,
-} = $LH;
+} = _$LH;
 
 type ChildPart = InstanceType<typeof ChildPart>;
 type TemplateInstance = InstanceType<typeof TemplateInstance>;

@@ -1,0 +1,17 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@lit-labs/motion": "1.0.0-rc.2",
+    "@lit-labs/react": "1.0.0-rc.2",
+    "@lit-labs/scoped-registry-mixin": "1.0.0-rc.1",
+    "@lit-labs/ssr": "1.0.0-rc.1",
+    "@lit-labs/ssr-client": "1.0.0-rc.1",
+    "@lit-labs/task": "1.0.0-rc.2",
+    "lit": "2.0.0-rc.2",
+    "lit-element": "3.0.0-rc.2",
+    "lit-html": "2.0.0-rc.3",
+    "@lit/reactive-element": "1.0.0-rc.2"
+  },
+  "changesets": []
+}

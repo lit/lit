@@ -6,12 +6,12 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
-import {$LE} from 'lit-element/private-ssr-support.js';
+import {_$LE} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty, changedProperties} = $LE;
+const {attributeToProperty, changedProperties} = _$LE;
 
 /**
  * ElementRenderer implementation for LitElements
