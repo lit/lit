@@ -49,4 +49,8 @@ export const render =
       }
       part.setValue(result);
       part.commit();
+      const start = performance.now();
+      while (performance.now() - start < 5) {
+        console.log('oops');
+      }
     };
