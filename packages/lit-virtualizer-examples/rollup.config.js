@@ -69,7 +69,8 @@ const samples = [
   'scroll-to-index-lit-html',
   'visible-indices-lit-element',
   'visible-indices-lit-html',
-  'photo-grid-lit-html'
+  'photo-grid-lit-html',
+  'photo-scroller'
 ];
 
 let configs = [

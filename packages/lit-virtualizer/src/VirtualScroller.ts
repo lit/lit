@@ -623,18 +623,18 @@ export class VirtualScroller {
    * total size of all items.
    */
   private _sizeContainer(size?: ScrollSize | null) {
+    // Some browsers seem to crap out if the container gets larger than
+    // a certain size, so we clamp it here (this value based on ad hoc
+    // testing in Firefox)
+    const max = 8850000;
+    const h = size && (size as HorizontalScrollSize).width ? Math.min(max, (size as HorizontalScrollSize).width) : 0;
+    const v = size && (size as VerticalScrollSize).height ? Math.min(max, (size as VerticalScrollSize).height) : 0;
     if (this._scrollTarget === this._container) {
-      const left = size && (size as HorizontalScrollSize).width ? (size as HorizontalScrollSize).width - 1 : 0;
-      const top = size && (size as VerticalScrollSize).height ? (size as VerticalScrollSize).height - 1 : 0;
-      if (this._sizer) {
-        this._sizer.style.transform = `translate(${left}px, ${top}px)`;
-      }
+        this._sizer!.style.transform = `translate(${h}px, ${v}px)`;
     } else {
-      if (this._container) {
-        const style = this._container.style;
-        (style.minWidth as string | null) = size && (size as HorizontalScrollSize).width ? (size as HorizontalScrollSize).width + 'px' : null;
-        (style.minHeight as string | null) = size && (size as VerticalScrollSize).height ? (size as VerticalScrollSize).height + 'px' : null;  
-      }
+      const style = this._container!.style;
+      (style.minWidth as string | null) = h ? `${h}px` : null;
+      (style.minHeight as string | null) = v ? `${v}px` : null;
     }
   }
 
@@ -659,12 +659,8 @@ export class VirtualScroller {
           if (height !== undefined) {
             child.style.height = height + 'px';
           }
-          if (xOffset !== undefined) {
-            child.style.left = `${xOffset}px`;
-          }
-          if (yOffset !== undefined) {
-            child.style.top = `${yOffset}px`;
-          }
+          (child.style.left as string | null) = xOffset === undefined ? null : xOffset + 'px';
+          (child.style.top as string | null) = yOffset === undefined ? null : yOffset + 'px';
         }
       });  
     }

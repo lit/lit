@@ -63,12 +63,12 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The index of the first item intersecting the viewport.
    */
-  private _firstVisible = 0;
+  protected _firstVisible = 0;
 
   /**
    * The index of the last item intersecting the viewport.
    */
-  private _lastVisible = 0;
+  protected _lastVisible = 0;
 
   private _eventTargetPromise: Promise<void> = (EventTarget().then((Ctor) => {
     this._eventTarget = new Ctor();
@@ -532,6 +532,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
     let firstVisible = this._first;
     while (
+      firstVisible < this._last &&
       Math.round(
         this._getItemPosition(firstVisible)[this._positionDim] +
         this._getItemSize(firstVisible)[this._sizeDim]
@@ -544,6 +545,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
     let lastVisible = this._last;
     while (
+      lastVisible > this._first &&
       Math.round(this._getItemPosition(lastVisible)[this._positionDim])
       >=
       Math.round(this._scrollPosition + this._viewDim1)

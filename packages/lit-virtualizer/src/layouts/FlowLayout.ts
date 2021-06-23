@@ -251,8 +251,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     const firstItem = this._getPhysicalItem(this._first),
           lastItem = this._getPhysicalItem(this._last),
-          firstMin = firstItem!.pos, firstMax = firstMin + this._metricsCache.getChildSize(this._first)!,
-          lastMin = lastItem!.pos, lastMax = lastMin + this._metricsCache.getChildSize(this._last)!;
+          firstMin = firstItem!.pos,
+          lastMin = lastItem!.pos,
+          lastMax = lastMin + this._metricsCache.getChildSize(this._last)!;
 
     if (lastMax < lower) {
       // Window is entirely past physical items, calculate new anchor
@@ -262,31 +263,15 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       // Window is entirely before physical items, calculate new anchor
       return this._calculateAnchor(lower, upper);
     }
-    if (firstMin >= lower || firstMax >= lower) {
-      // First physical item overlaps window, choose it
-      return this._first;
+    // Window contains a physical item
+    // Find one, starting with the one that was previously first visible
+    let candidateIdx = this._firstVisible - 1;
+    let cMax = -Infinity;
+    while (cMax < lower) {
+      const candidate = this._getPhysicalItem(++candidateIdx);
+      cMax = candidate!.pos + this._metricsCache.getChildSize(candidateIdx)!;
     }
-    if (lastMax <= upper || lastMin <= upper) {
-      // Last physical overlaps window, choose it
-      return this._last;
-    }
-    // Window contains a physical item, but not the first or last
-    let maxIdx = this._last, minIdx = this._first;
-
-    while (true) {
-      const candidateIdx = Math.round((maxIdx + minIdx) / 2),
-            candidate = this._physicalItems.get(candidateIdx),
-            cMin = candidate!.pos, cMax = cMin + this._metricsCache.getChildSize(candidateIdx)!;
-
-      if ((cMin >= lower && cMin <= upper) ||
-          (cMax >= lower && cMax <= upper)) {
-        return candidateIdx;
-      } else if (cMax < lower) {
-        minIdx = candidateIdx + 1;
-      } else if (cMin > upper) {
-        maxIdx = candidateIdx - 1;
-      }
-    }
+    return candidateIdx;
   }
 
   /**

@@ -1,4 +1,5 @@
 import {jsonp} from './jsonp-promise.js';
+import { VirtualArray } from './VirtualArray.js';
 
 const apiKey = '241fe87a3ad5e19014a2ed498f4afcb5';
 
@@ -36,4 +37,19 @@ export function getUrl(photo) {
   return true ? `https://farm${farm}.staticflickr.com/${server}/${id}_${
                     secret}_${size}.jpg` :
                 'http://via.placeholder.com/200x200&text=+';
+}
+
+export function getPhotos(query, placeholder, callback, mock=false) {
+  return new VirtualArray({
+      pageSize: 5,
+      fetchPage: async (pageSize, pageNum) => {
+          const resp = await searchFlickr(query, pageSize, pageNum, mock);
+          return {
+              items: resp.photo,
+              totalItems: resp.total
+          };
+      },
+      placeholder,
+      callback
+  });
 }

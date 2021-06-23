@@ -13,7 +13,7 @@ interface ScrollConfig {
      * A function that returns a lit-html TemplateResult. It will be used
      * to generate the DOM for each item in the virtual list.
      */
-    renderItem?: (item: any, index?: number) => TemplateResult;
+    renderItem?: (item: any, index: number) => TemplateResult;
 
     keyFunction?: (item: any) => unknown;
   
@@ -44,7 +44,7 @@ class ScrollDirective extends AsyncDirective {
     scroller: VirtualScroller | null = null
     first = 0
     last = -1
-    renderItem: (item: any, index?: number) => TemplateResult = defaultRenderItem;
+    renderItem: (item: any, index: number) => TemplateResult = defaultRenderItem;
     keyFunction: (item: any) => unknown = defaultKeyFunction;
     items: Array<unknown> = []
 
@@ -84,8 +84,13 @@ class ScrollDirective extends AsyncDirective {
     }
 
     private _setFunctions(config: ScrollConfig) {
-        this.renderItem = config.renderItem || this.renderItem;
-        this.keyFunction = config.keyFunction || this.keyFunction;
+        const { renderItem, keyFunction } = config;
+        if (renderItem) {
+            this.renderItem = (item, idx) => renderItem(item, idx + this.first);
+        }
+        if (keyFunction) {
+            this.keyFunction = keyFunction;
+        };
     }
 
     private _initialize(part: ChildPart, config: ScrollConfig) {

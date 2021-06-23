@@ -3,9 +3,7 @@ import {scroll} from '@lit-labs/virtualizer/scroll.js';
 import {scrollerRef} from '@lit-labs/virtualizer/VirtualScroller.js';
 import {Layout1dSquareGrid} from '@lit-labs/virtualizer/layouts/Layout1dSquareGrid.js';
 import {Layout1dFlex} from '@lit-labs/virtualizer/layouts/Layout1dFlex.js';
-import {getDims, getUrl, searchFlickr} from './flickr.js';
-
-import {VirtualArray} from './VirtualArray.js';
+import {getUrl, getPhotos} from '../../lib/flickr.js';
 
 import '@material/mwc-drawer';
 import '@material/mwc-top-app-bar';
@@ -27,30 +25,6 @@ const renderPhoto = photo => {
         // }
         return html`<img src=${url} style="width: 200px; height: 200px;" />`;
     }
-}
-
-async function getPhotos(query, mock=false) {
-    return new VirtualArray({
-        pageSize: 5,
-        fetchPage: async (pageSize, pageNum) => {
-            const resp = await searchFlickr(query, pageSize, pageNum, mock);
-            return {
-                // items: resp.photo.map(p => Object.assign({}, {width_o: 1920, height_o: 1080}, p)),
-                items: resp.photo,
-                totalItems: resp.total
-            };
-            // return resp.photo.filter(p => p.width_o);
-        },
-        placeholder: () => {
-            // return {"id":"TEMP","height_o":769,"width_o":1024};
-            return {id: "TEMP"};
-        },
-        callback: items => {
-            setState({ items });
-        }
-    });
-    // const resp = await searchFlickr(query, 500, 1, mock);
-    // return resp.photo.filter(p => p.width_o);
 }
 
 ///
@@ -212,8 +186,16 @@ function updateItemSizes(items) {
     }
 }
 
+const placeholder = () => {
+    return {id: "TEMP"};
+}
+
+const callback = items => {
+    setState({ items });
+}
+
 async function search(query) {
-    const items = await getPhotos(query, mock);
+    const items = await getPhotos(query, placeholder, callback, mock);
     // for (let i = 0; i < items.length; i++) {
     //     console.log(items[i]);
     // }
