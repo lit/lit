@@ -5,7 +5,7 @@ type UpdateVisibleIndicesOptions = {
   emit?: boolean
 }
 
-export interface Layout1dBaseConfig {
+export interface BaseLayoutConfig {
   direction?: ScrollDirection,
   totalItems?: number
 }
@@ -26,7 +26,7 @@ export function pos2(direction: ScrollDirection): position {
   return direction === 'horizontal' ? 'top': 'left';
 }
 
-export abstract class Layout1dBase<C extends Layout1dBaseConfig> implements Layout {
+export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The last set viewport scroll position.
    */

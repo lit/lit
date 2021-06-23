@@ -1,8 +1,8 @@
 import {Layout1dGrid} from './Layout1dGrid.js';
-import {Layout1dBaseConfig} from './Layout1dBase.js';
+import {BaseLayoutConfig} from './BaseLayout.js';
 import {ItemBox} from './Layout';
 
-export class Layout1dNaturalSizeGrid extends Layout1dGrid<Layout1dBaseConfig> {
+export class Layout1dNaturalSizeGrid extends Layout1dGrid<BaseLayoutConfig> {
     updateItemSizes(sizes: {[key: number]: ItemBox}) {
         // Assume all items have the same size.
         const size = Object.values(sizes)[0];

@@ -1,8 +1,8 @@
-import {Layout1dBaseConfig} from './Layout1dBase.js';
+import {BaseLayoutConfig} from './BaseLayout.js';
 import {Layout1dGrid} from './Layout1dGrid.js';
 import {Positions} from './Layout.js';
 
-interface Layout1dSquareGridConfig extends Layout1dBaseConfig {
+interface Layout1dSquareGridConfig extends BaseLayoutConfig {
   spacing?: number,
   idealSize?: number
 }

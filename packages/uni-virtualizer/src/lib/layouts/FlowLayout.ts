@@ -1,4 +1,4 @@
-import {Layout1dBase, Layout1dBaseConfig, dim1/*, pos1*/} from './Layout1dBase.js';
+import {BaseLayout, BaseLayoutConfig, dim1/*, pos1*/} from './BaseLayout.js';
 import {ItemBox, Positions, Size, Margins, margin, ScrollDirection, offsetAxis} from './Layout.js';
 
 type ItemBounds = {
@@ -8,16 +8,16 @@ type ItemBounds = {
 
 type FlowLayoutConstructor = {
   prototype: FlowLayout,
-  new(config?: Layout1dBaseConfig): FlowLayout
+  new(config?: BaseLayoutConfig): FlowLayout
 }
 
-type FlowLayoutSpecifier = Layout1dBaseConfig & {
+type FlowLayoutSpecifier = BaseLayoutConfig & {
   type: FlowLayoutConstructor
 }
 
-type FlowLayoutSpecifierFactory = (config?: Layout1dBaseConfig) => FlowLayoutSpecifier;
+type FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) => FlowLayoutSpecifier;
 
-export const flow: FlowLayoutSpecifierFactory = (config?: Layout1dBaseConfig) => Object.assign({
+export const flow: FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) => Object.assign({
   type: FlowLayout
 }, config);
 
@@ -122,7 +122,7 @@ class MetricsCache {
   }
 }
 
-export class FlowLayout extends Layout1dBase<Layout1dBaseConfig> {
+export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   /**
    * Indices of children mapped to their (position and length) in the scrolling
    * direction. Used to keep track of children that are in range.
@@ -166,7 +166,7 @@ export class FlowLayout extends Layout1dBase<Layout1dBaseConfig> {
 
   _estimate = true;
 
-  // protected _defaultConfig: Layout1dBaseConfig = Object.assign({}, super._defaultConfig, {
+  // protected _defaultConfig: BaseLayoutConfig = Object.assign({}, super._defaultConfig, {
 
   // })
 

@@ -1,7 +1,7 @@
-import {Layout1dBase, Layout1dBaseConfig} from './Layout1dBase';
+import {BaseLayout, BaseLayoutConfig} from './BaseLayout';
 import {ItemBox, Positions, Size} from './Layout';
 
-interface Layout1dFlexConfig extends Layout1dBaseConfig {
+interface Layout1dFlexConfig extends BaseLayoutConfig {
   spacing?: number,
   idealSize?: number
 }
@@ -46,7 +46,7 @@ interface AspectRatios {
 /**
  * TODO @straversi: document and test this Layout.
  */
-export class Layout1dFlex extends Layout1dBase<Layout1dFlexConfig> {
+export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
   private _itemSizes: Array<Size> = [];
   // private _itemPositions: Array<Positions> = [];
   // private _rolumnStartIdx: Array<number> = [];

@@ -1,9 +1,9 @@
-import {Layout1dBase} from './Layout1dBase.js';
+import {BaseLayout} from './BaseLayout.js';
 
 /**
  * TODO @straversi: document and test this Layout.
  */
-export abstract class Layout1dGrid<Config> extends Layout1dBase<Config> {
+export abstract class Layout1dGrid<Config> extends BaseLayout<Config> {
   protected _rolumns: number = 1;
 
   _viewDim2Changed() {
