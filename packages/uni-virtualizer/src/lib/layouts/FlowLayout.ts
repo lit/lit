@@ -6,19 +6,19 @@ type ItemBounds = {
   size: number
 };
 
-type Layout1dConstructor = {
-  prototype: Layout1d,
-  new(config?: Layout1dBaseConfig): Layout1d
+type FlowLayoutConstructor = {
+  prototype: FlowLayout,
+  new(config?: Layout1dBaseConfig): FlowLayout
 }
 
-type Layout1dSpecifier = Layout1dBaseConfig & {
-  type: Layout1dConstructor
+type FlowLayoutSpecifier = Layout1dBaseConfig & {
+  type: FlowLayoutConstructor
 }
 
-type Layout1dSpecifierFactory = (config?: Layout1dBaseConfig) => Layout1dSpecifier;
+type FlowLayoutSpecifierFactory = (config?: Layout1dBaseConfig) => FlowLayoutSpecifier;
 
-export const layout1d: Layout1dSpecifierFactory = (config?: Layout1dBaseConfig) => Object.assign({
-  type: Layout1d
+export const flow: FlowLayoutSpecifierFactory = (config?: Layout1dBaseConfig) => Object.assign({
+  type: FlowLayout
 }, config);
 
 function leadingMargin(direction: ScrollDirection): margin {
@@ -122,7 +122,7 @@ class MetricsCache {
   }
 }
 
-export class Layout1d extends Layout1dBase<Layout1dBaseConfig> {
+export class FlowLayout extends Layout1dBase<Layout1dBaseConfig> {
   /**
    * Indices of children mapped to their (position and length) in the scrolling
    * direction. Used to keep track of children that are in range.

@@ -236,7 +236,7 @@ export class VirtualScroller {
       this.layout = config.layout;
     }
     else {
-      this.layout = (await import('./layouts/Layout1d')).Layout1d;
+      this.layout = (await import('./layouts/FlowLayout')).FlowLayout;
     }
   }
 

@@ -1,5 +1,5 @@
 import './lazy-image.mjs';
-import {Layout1d} from '../../src/layouts/Layout1d.mjs';
+import {FlowLayout} from '../../src/layouts/FlowLayout.mjs';
 import {VirtualScroller} from '../../src/VirtualScroller.mjs';
 import {getDims, getUrl, searchFlickr} from './flickr.mjs';
 
@@ -8,7 +8,7 @@ export {getDims, getUrl, searchFlickr};
 export class Sample {
   constructor() {
     this.items = [];
-    this.layout = new Layout1d();
+    this.layout = new FlowLayout();
 
     document.body.style.margin = 0;
     document.body.style.height = '100vh';
