@@ -42,7 +42,6 @@ jobs:
       - name: Report
         uses: andrewiggins/tachometer-reporter-action@v2
         with:
-          report-id: lit-html-1.x
           path: results.json
           pr-bench-name: this-change
           base-bench-name: lit-html-1.x
