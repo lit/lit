@@ -36,28 +36,6 @@ export class LitVirtualizer extends LitElement {
         return this;
     }
 
-    // get items() {
-    //     return this._items;
-    // }
-
-    // set items(items) {
-    //     this._items = items;
-    //     this._scroller.totalItems = items.length;
-    // }
-
-    /**
-     * The method used for rendering each item.
-     */
-    // get renderItem() {
-    //     return this._renderItem;
-    // }
-    // set renderItem(renderItem) {
-    //     if (renderItem !== this.renderItem) {
-    //         this._renderItem = renderItem;
-    //         this.requestUpdate();
-    //     }
-    // }
-
     @property({attribute:false})
     set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | undefined) {
         // TODO (graynorton): Shouldn't have to set this here

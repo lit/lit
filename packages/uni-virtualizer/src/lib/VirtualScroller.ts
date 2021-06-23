@@ -176,11 +176,6 @@ export class VirtualScroller {
   private _items: Array<unknown> = [];
 
   /**
-   * Total number of items to render. Set by totalItems.
-   */
-  private _totalItems?: number;
-
-  /**
    * Index of the first child in the range, not necessarily the first visible child.
    * TODO @straversi: Consider renaming these.
    */
@@ -244,28 +239,6 @@ export class VirtualScroller {
     if (Array.isArray(items) && items !== this._items) {
       this._itemsChanged = true;
       this._items = items;
-      this._schedule(this._updateLayout);
-    }
-  }
-
-  /**
-   * The total number of items, regardless of the range, that can be rendered
-   * as child nodes.
-   */
-  // Never actually returns undefined, but TS requires getter and setter types to be the same
-  get totalItems(): number | undefined {
-    return (this._totalItems === undefined ? this._items.length : this._totalItems);
-  }
-
-  set totalItems(num: number | undefined) {
-    if (typeof num !== 'number' && num !== undefined) {
-      throw new Error('The value of totalItems must be a number.');
-    }
-
-    // TODO(valdrin) should we check if it is a finite number?
-    // Technically, Infinity would break Layout, not VirtualRepeater.
-    if (num !== this._totalItems) {
-      this._totalItems = num;
       this._schedule(this._updateLayout);
     }
   }
@@ -491,7 +464,7 @@ export class VirtualScroller {
 
   _updateLayout() {
     if (this._layout) {
-      this._layout!.totalItems = this.totalItems!;
+      this._layout!.totalItems = this._items.length;
       if (this._scrollToIndex !== null) {
         this._layout!.scrollToIndex(this._scrollToIndex.index, this._scrollToIndex!.position!);
         this._scrollToIndex = null;

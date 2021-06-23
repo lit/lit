@@ -6,8 +6,7 @@ type UpdateVisibleIndicesOptions = {
 }
 
 export interface BaseLayoutConfig {
-  direction?: ScrollDirection,
-  totalItems?: number
+  direction?: ScrollDirection
 }
 
 export function dim1(direction: ScrollDirection): dimension {

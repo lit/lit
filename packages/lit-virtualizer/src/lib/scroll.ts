@@ -31,12 +31,6 @@ interface ScrollConfig {
     items?: Array<any>;
   
     /**
-     * Limit for the number of items to display. Defaults to the length of the
-     * items array.
-     */
-    totalItems?: number;
-  
-    /**
      * Index and position of the item to scroll to.
      */
     scrollToIndex?: ScrollToIndexValue;
@@ -78,7 +72,6 @@ class ScrollDirective extends AsyncDirective {
         if (this.scroller || this._initialize(part, config)) {
             const { scroller } = this;
             this.items = scroller!.items = config.items || [];
-            scroller!.totalItems = config.totalItems;
             if (config.layout) {
                 scroller!.layout = config.layout;
             }
