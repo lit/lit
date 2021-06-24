@@ -1,7 +1,8 @@
 import {html, render} from 'lit';
-import {scroll, scrollerRef} from '@lit-labs/virtualizer';
-import {Layout1dSquareGrid} from '@lit-labs/virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dSquareGrid.js';
-import {Layout1dFlex} from '@lit-labs/virtualizer/lib/uni-virtualizer/lib/layouts/Layout1dFlex.js';
+import {scroll} from '@lit-labs/virtualizer/scroll.js';
+import {scrollerRef} from '@lit-labs/virtualizer/VirtualScroller.js';
+import {Layout1dSquareGrid} from '@lit-labs/virtualizer/layouts/Layout1dSquareGrid.js';
+import {Layout1dFlex} from '@lit-labs/virtualizer/layouts/Layout1dFlex.js';
 import {getDims, getUrl, searchFlickr} from './flickr.js';
 
 import {VirtualArray} from './VirtualArray.js';

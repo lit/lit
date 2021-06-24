@@ -1,5 +1,5 @@
 import { render, html } from 'lit';
-import { scroll } from '@lit-labs/virtualizer/lib/scroll.js';
+import { scroll } from '@lit-labs/virtualizer/scroll.js';
 
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 

@@ -2,8 +2,8 @@ import { TemplateResult, noChange, ChildPart, html } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Layout, LayoutConstructor, LayoutSpecifier } from './uni-virtualizer/lib/layouts/Layout.js';
-import { VirtualScroller, ScrollToIndexValue, RangeChangedEvent } from './uni-virtualizer/lib/VirtualScroller.js';
+import { Layout, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
+import { VirtualScroller, ScrollToIndexValue, RangeChangedEvent } from './VirtualScroller.js';
 
 /**
  * Configuration options for the scroll directive.
@@ -36,8 +36,8 @@ interface ScrollConfig {
     scrollToIndex?: ScrollToIndexValue;
   }
   
-export const defaultKeyFunction = (item: any) => item;
-export const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
+/*export */const defaultKeyFunction = (item: any) => item;
+/*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
 class ScrollDirective extends AsyncDirective {
     container: HTMLElement | null = null

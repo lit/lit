@@ -1,4 +1,6 @@
-import { LitVirtualizer, scroll, FlowLayout } from '../lit-virtualizer.js'
+import { LitVirtualizer } from '../lit-virtualizer.js';
+import { scroll } from '../scroll.js'
+import { flow } from '../layouts/FlowLayout.js'
 import { html, render } from 'lit'
 
 describe('<lit-virtualizer>', function () {
@@ -27,7 +29,7 @@ describe('scroll', function () {
       ${scroll({
         items: ['foo', 'bar', 'baz'],
         renderItem: (item) => html`<p>${item}</p>`,
-        layout: FlowLayout,
+        layout: flow(),
         scrollTarget: window
       })}
     `;
@@ -89,7 +91,7 @@ describe('scroll', function () {
       const directive = scroll({
         items: ['foo', 'bar', 'baz', 'qux'],
         renderItem: (item) => html`<div style='height: 50px'>${item}</div>`,
-        layout: FlowLayout
+        layout: flow()
       });
       container.style.height = '100px';
       let firstVisible;

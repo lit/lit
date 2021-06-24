@@ -15,7 +15,7 @@
         "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "bench:debug": "tach --root=../.. test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "bench:scroll": "tach --force-clean-npm-install --config=test/benchmarks/scrollingBenchmarks.json",
-        "build": "tsc & copyfiles -u 2 src/lib/uni-virtualizer/lib/polyfills/resize-observer-polyfill/ResizeObserver.js lib",
+        "build": "tsc & copyfiles -u 1 src/polyfills/resize-observer-polyfill/ResizeObserver.js .",
         "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
         "clean": "rm -r node_modules/",
         "lint": "tslint --project ./",

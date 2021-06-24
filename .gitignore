@@ -2,3 +2,4 @@ node_modules
 build
 gh-pages
 **/**/tsconfig.tsbuildinfo
+**/**/.DS_Store

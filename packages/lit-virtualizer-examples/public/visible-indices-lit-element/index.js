@@ -1,5 +1,5 @@
 import { html } from 'lit';
-import '@lit-labs/virtualizer/lib/lit-virtualizer.js';
+import '@lit-labs/virtualizer';
 
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
