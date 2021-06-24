@@ -1,0 +1,90 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - run: npm ci
+
+      - run: >-
+          npm run format && git diff --exit-code || (echo -e '\n\033[31mERROR:\033[0m
+          Project is not formatted. Please run "npm run format".' && false)
+
+  tests-local:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Restore node_modules
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          # Bump the number after `lit-1.x-node-modules` to force a cache
+          # update. Note there are cache actions in other jobs in this file that
+          # should all keep keys in sync.
+          key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: NPM install
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Install XVFB
+        run: sudo apt-get install xvfb
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: xvfb-run npx wct --npm
+
+  tests-sauce:
+    # We can't run Sauce tests on PRs from forked repos, since they don't have
+    # access to secrets.
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Restore node_modules
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          # Bump the number after `lit-1.x-node-modules` to force a cache
+          # update. Note there are cache actions in other jobs in this file that
+          # should all keep keys in sync.
+          key: lit-1.x-node-modules-0-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: NPM install
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: npx wct -s 'windows 10/microsoftedge@17' -s 'windows 10/microsoftedge@15' -s 'macos 10.13/safari@11' -s 'macos 10.12/safari@10' -s 'windows 8.1/internet explorer@11' -s 'Linux/chrome@41' --npm
