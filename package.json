@@ -16,9 +16,13 @@
     "nuke": "rm -rf node_modules && npm install && lerna exec 'rm -rf node_modules' && lerna bootstrap && npm run clean",
     "upgrade": "rm -rf node_modules package-lock.json && npm install && lerna exec 'rm -rf node_modules package-lock.json' && lerna bootstrap && npm run clean",
     "test": "(cd packages/tests && npm test) && (cd packages/labs/ssr && npm test) && (cd packages/localize && npm test) && (cd packages/localize-tools && npm test) && (cd packages/lit-starter-ts && npm test) && (cd packages/lit-starter-js && npm test)",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "changeset": "changeset",
+    "release": "npm run build && npm run changeset publish"
   },
   "devDependencies": {
+    "@changesets/changelog-git": "^0.1.7",
+    "@changesets/cli": "^2.16.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-virtual": "^2.0.3",
