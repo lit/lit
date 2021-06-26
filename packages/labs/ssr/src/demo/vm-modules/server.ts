@@ -31,7 +31,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
   }
 
   const ssrResult = await (renderModule(
-    './app-server.js',
+    './render-app.js',
     import.meta.url,
     'renderAppWithInitialData',
     []

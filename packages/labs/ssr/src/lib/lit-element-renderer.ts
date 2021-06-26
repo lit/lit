@@ -6,14 +6,14 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
-import {_$LE} from 'lit-element/private-ssr-support.js';
+import {_Φ} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
 
 import {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty, changedProperties, getControllers} = _$LE;
+const {attributeToProperty, changedProperties, getControllers} = _Φ;
 
 /**
  * ElementRenderer implementation for LitElements

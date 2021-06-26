@@ -26,7 +26,11 @@ export const initialData = {
 };
 
 const asyncContent = (content: unknown, timeout = 500) =>
-  new Promise((r) => setTimeout(() => r(content), timeout));
+  new Promise((r) => {
+    setTimeout(() => {
+      r(content);
+    }, timeout);
+  });
 
 class FetchController<T> extends Task implements ServerController {
   get serverUpdateComplete() {
@@ -49,7 +53,7 @@ class FetchController<T> extends Task implements ServerController {
 }
 
 interface DataModel {
-  company: string;
+  name: string;
 }
 
 export class MyElement extends LitElement {
@@ -83,7 +87,7 @@ export class MyElement extends LitElement {
 
   private fetchController = new FetchController<DataModel[]>(
     this,
-    'https://next.json-generator.com/api/json/get/VJ_MbcMNc'
+    'https://gist.githubusercontent.com/kevinpschaaf/c2baac9c299fb8912bedaafa41f0148f/raw/d23e618049da61c9405ea5464f51d07aa13f5f21/response.json'
   );
 
   render() {
@@ -98,7 +102,7 @@ export class MyElement extends LitElement {
         pending: () => 'Loading...',
         complete: (list) =>
           html`<ul>
-            ${list.map((item) => html`<li>${item.company}</li>`)}
+            ${list.map((item) => html`<li>${item.name}</li>`)}
           </ul>`,
         error: (error: unknown) => `Error loading: ${error}`,
       })}
@@ -117,8 +121,7 @@ export const template = (data: {
   attr: string;
   wasUpdated: boolean;
 }) =>
-  html`
-    ${header(data.name)}
+  html` ${header(data.name)}
     <p>${data.message}</p>
     <h4>repeating:</h4>
     <div>${data.items.map((item, i) => html` <p>${i}) ${item}</p> `)}</div>
@@ -132,5 +135,34 @@ export const template = (data: {
             attr=${`${data.attr}: ${i}`}
           ></my-element>
         `
-      )}
-  `;
+      )}`;
+
+export function* renderApp(body: () => Iterable<string>) {
+  yield `
+    <!doctype html>
+    <html>
+      <head>
+        <!-- This little script loads the client script on a button click. This
+             lets us see that only the HTML loads for first render -->
+        <script type="module">
+          const button = document.querySelector('button');
+          button.addEventListener('click', () => {
+            import('/demo/app-client.js');
+          });
+        </script>
+        <script src="./node_modules/@webcomponents/template-shadowroot/template-shadowroot.min.js"></script>
+        `;
+  yield `
+      </head>
+      <body>
+        <button>Hydrate</button>
+        <div id="body-container">`;
+
+  yield* body();
+
+  yield `
+        </div>
+        <script>TemplateShadowRoot.hydrateShadowRoots(document.body);</script>
+      </body>
+</html>`;
+}
