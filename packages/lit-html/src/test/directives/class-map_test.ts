@@ -88,7 +88,7 @@ suite('classMap directive', () => {
     assert.isTrue(el.classList.contains('bb'));
   });
 
-  // TODO (justinfagnani): unskip and resolve https://github.com/Polymer/lit-html/issues/1278
+  // TODO (justinfagnani): unskip and resolve https://github.com/lit/lit/issues/1278
   test.skip('can not override static classes', () => {
     renderClassMapStatic({aa: false, bb: true});
     const el = container.firstElementChild!;

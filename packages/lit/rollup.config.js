@@ -5,9 +5,10 @@
  */
 
 import {litProdConfig} from '../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: 'ϖ',
+  packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: [
     'decorators',
     'decorators/custom-element',
@@ -36,8 +37,8 @@ export default litProdConfig({
     'directives/until',
     'async-directive',
     'html',
-    'hydrate-support',
-    'hydrate',
+    'experimental-hydrate-support',
+    'experimental-hydrate',
     'index',
     'static-html',
   ],

@@ -45,7 +45,7 @@
 			"path": "packages/benchmarks"
 		},
 		{
-			"name": "lit-next",
+			"name": "lit",
 			"path": "."
 		}
 	],

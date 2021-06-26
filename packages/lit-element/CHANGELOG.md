@@ -17,6 +17,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## 3.0.0-rc.2 - 2021-05-07
+
+### Fixed
+
+- (Since 3.0.0-rc.1) Improves support for customizing `observedAttributes` by
+  ensuring that `ReactiveElement.observedAttributes` is callable, allowing
+  mixins to directly reference it ([#1835](https://github.com/Polymer/lit-element/issues/#1835)).
+
+## 3.0.0-rc.1 - 2021-04-20
+
+### Added
+
+- Added `defer-hydration` attribute handling to `experimental-hydrate-support`,
+  which helps coordinate ordered wakeup of custom elements during hydration.
+
+### Changed
+
+- (Since 3.0.0-pre.4) Renamed `hydrate-support` module to `experimental-hydrate-support` to reflect its experimental nature. Experimental modules may undergo breaking changes within otherwise non-major releases.
+
 ## 3.0.0-pre.4 - 2021-03-31
 
 ### Changed

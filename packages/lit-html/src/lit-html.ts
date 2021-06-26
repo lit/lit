@@ -11,16 +11,41 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+/**
+ * `true` if we're building for google3 with temporary back-compat helpers.
+ * This export is not present in prod builds.
+ * @internal
+ */
+export const INTERNAL = true;
+
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
 
+const extraGlobals = window as LitExtraGlobals;
+
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  extraGlobals.ShadyDOM?.inUse &&
+  extraGlobals.ShadyDOM?.noPatch === true
+    ? extraGlobals.ShadyDOM!.wrap
     : (node: Node) => node;
+
+const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
+
+/**
+ * Our TrustedTypePolicy for HTML which is declared using the html template
+ * tag function.
+ *
+ * That HTML is a developer-authored constant, and is parsed with innerHTML
+ * before any untrusted expressions have been mixed in. Therefor it is
+ * considered safe by construction.
+ */
+const policy = trustedTypes
+  ? trustedTypes.createPolicy('lit-html', {
+      createHTML: (s) => s,
+    })
+  : undefined;
 
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
@@ -225,6 +250,8 @@ export type TemplateResult<T extends ResultType = ResultType> = {
   values: unknown[];
 };
 
+export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
+
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
 export interface CompiledTemplateResult {
@@ -239,21 +266,20 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
   el?: HTMLTemplateElement;
 
   // The prepared HTML string to create a template element from.
-  h: string;
+  h: TrustedHTML;
 }
 
 /**
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = <T extends ResultType>(_$litType$: T) => (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): TemplateResult<T> => ({
-  _$litType$,
-  strings,
-  values,
-});
+const tag =
+  <T extends ResultType>(_$litType$: T) =>
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => ({
+    _$litType$,
+    strings,
+    values,
+  });
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -306,6 +332,18 @@ export interface RenderOptions {
 }
 
 /**
+ * Internally we can export this interface and change the type of
+ * render()'s options.
+ */
+interface InternalRenderOptions extends RenderOptions {
+  /**
+   * An internal-only migration flag
+   * @internal
+   */
+  clearContainerForLit2MigrationOnly?: boolean;
+}
+
+/**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  * @param value
  * @param container
@@ -320,6 +358,14 @@ export const render = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)._$litPart$;
   if (part === undefined) {
+    // Internal modification: don't clear container to match lit-html 2.0
+    if (
+      INTERNAL &&
+      (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
+        true
+    ) {
+      container.childNodes.forEach((c) => c.remove());
+    }
     const endNode = options?.renderBefore ?? null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any)._$litPart$ = part = new ChildPart(
@@ -337,7 +383,8 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   render.setSanitizer = setSanitizer;
   render.createSanitizer = createSanitizer;
   if (DEV_MODE) {
-    render._testOnlyClearSanitizerFactoryDoNotCallOrElse = _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse =
+      _testOnlyClearSanitizerFactoryDoNotCallOrElse;
   }
 }
 
@@ -380,7 +427,7 @@ export interface DirectiveParent {
 const getTemplateHtml = (
   strings: TemplateStringsArray,
   type: ResultType
-): [string, Array<string | undefined>] => {
+): [TrustedHTML, Array<string | undefined>] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -521,18 +568,19 @@ const getTemplateHtml = (
           (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
+  const htmlResult: string | TrustedHTML =
+    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
+
   // Returned as an array for terseness
   return [
-    // We don't technically need to close the SVG tag since the parser will
-    // handle it for us, but the SSR parser doesn't like that.
-    // Note that the html must end with a node after the final expression to
-    // ensure the last ChildPart has an end node, hence adding a comment if the
-    // last string was empty.
-    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
+    policy !== undefined
+      ? policy.createHTML(htmlResult)
+      : (htmlResult as unknown as TrustedHTML),
     attrNames,
   ];
 };
 
+/** @internal */
 export type {Template};
 class Template {
   /** @internal */
@@ -546,9 +594,9 @@ class Template {
   ) {
     let node: Node | null;
     let nodeIndex = 0;
-    let bindingIndex = 0;
     let attrNameIndex = 0;
-    const l = strings.length - 1;
+    const partCount = strings.length - 1;
+    const parts = this.parts;
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
@@ -564,7 +612,7 @@ class Template {
     }
 
     // Walk the template to find binding markers and create TemplateParts
-    while ((node = walker.nextNode()) !== null && bindingIndex < l) {
+    while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
@@ -595,7 +643,7 @@ class Template {
                 )!;
                 const statics = value.split(marker);
                 const m = /([.?@])?(.*)/.exec(realName)!;
-                this.parts.push({
+                parts.push({
                   type: ATTRIBUTE_PART,
                   index: nodeIndex,
                   name: m[2],
@@ -609,9 +657,8 @@ class Template {
                       ? EventPart
                       : AttributePart,
                 });
-                bindingIndex += statics.length - 1;
               } else {
-                this.parts.push({
+                parts.push({
                   type: ELEMENT_PART,
                   index: nodeIndex,
                 });
@@ -631,7 +678,9 @@ class Template {
           const strings = (node as Element).textContent!.split(marker);
           const lastIndex = strings.length - 1;
           if (lastIndex > 0) {
-            (node as Element).textContent = '';
+            (node as Element).textContent = trustedTypes
+              ? (trustedTypes.emptyScript as unknown as '')
+              : '';
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             // We can't use empty text nodes as markers because they're
@@ -640,8 +689,7 @@ class Template {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
               walker.nextNode();
-              this.parts.push({type: CHILD_PART, index: ++nodeIndex});
-              bindingIndex++;
+              parts.push({type: CHILD_PART, index: ++nodeIndex});
             }
             // Note because this marker is added after the walker's current
             // node, it will be walked to in the outer loop (and ignored), so
@@ -652,8 +700,7 @@ class Template {
       } else if (node.nodeType === 8) {
         const data = (node as Comment).data;
         if (data === markerMatch) {
-          bindingIndex++;
-          this.parts.push({type: CHILD_PART, index: nodeIndex});
+          parts.push({type: CHILD_PART, index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
@@ -661,8 +708,7 @@ class Template {
             // The binding won't work, but subsequent bindings will
             // TODO (justinfagnani): consider whether it's even worth it to
             // make bindings in comments work
-            this.parts.push({type: COMMENT_PART, index: nodeIndex});
-            bindingIndex++;
+            parts.push({type: COMMENT_PART, index: nodeIndex});
             // Move to the end of the match
             i += marker.length - 1;
           }
@@ -673,16 +719,16 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
-  static createElement(html: string, _options?: RenderOptions) {
+  static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
-    el.innerHTML = html;
+    el.innerHTML = html as unknown as string;
     return el;
   }
 }
 
 export interface Disconnectable {
   _$parent?: Disconnectable;
-  _$disconnetableChildren?: Set<Disconnectable>;
+  _$disconnectableChildren?: Set<Disconnectable>;
 }
 
 function resolveDirective(
@@ -712,9 +758,8 @@ function resolveDirective(
       currentDirective._$initialize(part, parent, attributeIndex);
     }
     if (attributeIndex !== undefined) {
-      ((parent as AttributePart).__directives ??= [])[
-        attributeIndex
-      ] = currentDirective;
+      ((parent as AttributePart).__directives ??= [])[attributeIndex] =
+        currentDirective;
     } else {
       (parent as ChildPart | Directive).__directive = currentDirective;
     }
@@ -743,7 +788,7 @@ class TemplateInstance {
   /** @internal */
   _$parent: Disconnectable;
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
@@ -760,12 +805,12 @@ class TemplateInstance {
     const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
-    let node = walker.nextNode();
+    let node = walker.nextNode()!;
     let nodeIndex = 0;
     let partIndex = 0;
     let templatePart = parts[0];
 
-    while (templatePart !== undefined && node !== null) {
+    while (templatePart !== undefined) {
       if (nodeIndex === templatePart.index) {
         let part: Part | undefined;
         if (templatePart.type === CHILD_PART) {
@@ -789,8 +834,8 @@ class TemplateInstance {
         this._parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart.index) {
-        node = walker.nextNode();
+      if (nodeIndex !== templatePart?.index) {
+        node = walker.nextNode()!;
         nodeIndex++;
       }
     }
@@ -878,7 +923,7 @@ class ChildPart {
   // The following fields will be patched onto ChildParts when required by
   // AsyncDirective
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
   _$setChildPartConnected?(
     isConnected: boolean,
@@ -1108,7 +1153,7 @@ class ChildPart {
         // If no existing part, create a new one
         // TODO (justinfagnani): test perf impact of always creating two parts
         // instead of sharing parts between nodes
-        // https://github.com/Polymer/lit-html/issues/1266
+        // https://github.com/lit/lit/issues/1266
         itemParts.push(
           (itemPart = new ChildPart(
             this._insert(createMarker()),
@@ -1184,7 +1229,7 @@ class AttributePart {
   /** @internal */
   _$parent: Disconnectable | undefined;
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   protected _sanitizer: ValueSanitizer | undefined;
   /** @internal */
@@ -1441,7 +1486,7 @@ class ElementPart {
   _$parent: Disconnectable | undefined;
 
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   /** @internal */
   _setDirectiveConnected?: (
@@ -1512,4 +1557,4 @@ export const _Σ = {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.7');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.3');

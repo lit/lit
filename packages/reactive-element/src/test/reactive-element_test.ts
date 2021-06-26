@@ -1806,19 +1806,15 @@ suite('ReactiveElement', () => {
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {
-            const oldValue = ((this as unknown) as {[key: string]: unknown})[
+            const oldValue = (this as unknown as {[key: string]: unknown})[
               name as string
             ];
             if (options.validator) {
               value = options.validator(value);
             }
-            ((this as unknown) as {[key: string]: unknown})[
-              key as string
-            ] = value;
-            ((this as unknown) as ReactiveElement).requestUpdate(
-              name,
-              oldValue
-            );
+            (this as unknown as {[key: string]: unknown})[key as string] =
+              value;
+            (this as unknown as ReactiveElement).requestUpdate(name, oldValue);
           },
 
           configurable: defaultDescriptor.configurable,
@@ -1829,10 +1825,9 @@ suite('ReactiveElement', () => {
       updated(changedProperties: PropertyValues) {
         super.updated(changedProperties);
         changedProperties.forEach((value: unknown, key: PropertyKey) => {
-          const options = (this
-            .constructor as typeof ReactiveElement).getPropertyOptions(
-            key
-          ) as MyPropertyDeclaration;
+          const options = (
+            this.constructor as typeof ReactiveElement
+          ).getPropertyOptions(key) as MyPropertyDeclaration;
           const observer = options.observer;
           if (typeof observer === 'function') {
             observer.call(this, value);
@@ -1920,7 +1915,7 @@ suite('ReactiveElement', () => {
           set(this: E, value: unknown) {
             setter.call(this, value);
             if (options.sync && this.hasUpdated && !this.isUpdating) {
-              ((this as unknown) as E).performUpdate();
+              (this as unknown as E).performUpdate();
             }
           },
         });
@@ -2934,6 +2929,268 @@ suite('ReactiveElement', () => {
       el.foo++;
       await nextFrame();
       assert.isTrue(updated);
+    });
+  });
+
+  suite('customizing observedAttributes', () => {
+    test('does not interfere with properties', () => {
+      class E extends ReactiveElement {
+        static properties = {
+          foo: {},
+          bar: {},
+        };
+
+        static get observedAttributes() {
+          // Note, `finalize` must be called when not supering to observedAttributes
+          this.finalize();
+          return ['custom'];
+        }
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      const ctor = el.constructor as typeof ReactiveElement;
+      assert.deepEqual(ctor.observedAttributes, ['custom']);
+      assert.deepEqual(Array.from(ctor.elementProperties!.keys()), [
+        'foo',
+        'bar',
+      ]);
+    });
+
+    test('using super on base class', () => {
+      class E extends ReactiveElement {
+        static get observedAttributes() {
+          return ['foo', ...super.observedAttributes];
+        }
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['foo']
+      );
+    });
+
+    test('using superclass properties', () => {
+      class S extends ReactiveElement {
+        static properties = {
+          foo: {},
+          bar: {},
+        };
+      }
+      class E extends S {
+        static get observedAttributes() {
+          return ['custom', ...super.observedAttributes];
+        }
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['custom', 'foo', 'bar']
+      );
+    });
+
+    test('using mixin, calling super.observedAttributes', () => {
+      type Constructor<T = {}> = {new (...args: any[]): T};
+      function MyMixin<
+        B extends Constructor<
+          HTMLElement & {
+            attributeChangedCallback?(
+              name: string,
+              oldVal: string,
+              newVal: string
+            ): void;
+          }
+        > & {
+          observedAttributes?: string[];
+        }
+      >(superclass: B) {
+        class E extends superclass {
+          static get observedAttributes(): string[] {
+            return [...(super.observedAttributes ?? []), 'custom'];
+          }
+
+          constructor(...a: any[]) {
+            super(...a);
+          }
+
+          attrValue = '';
+
+          attributeChangedCallback(
+            name: string,
+            oldVal: string,
+            newVal: string
+          ): void {
+            if (
+              !(
+                super.constructor as typeof ReactiveElement
+              ).observedAttributes?.includes?.(name)
+            ) {
+              this.attrValue = name;
+            }
+            super.attributeChangedCallback?.(name, oldVal, newVal);
+          }
+        }
+
+        return E;
+      }
+      const E = MyMixin(ReactiveElement as any);
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['custom']
+      );
+
+      class F extends ReactiveElement {
+        static properties: PropertyDeclarations = {
+          foo: {},
+          bar: {},
+        };
+      }
+
+      const FE = MyMixin(F);
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), FE);
+      });
+      const el2 = new FE();
+      container.appendChild(el2);
+      const ctor = el2.constructor as typeof ReactiveElement;
+      assert.deepEqual((ctor as typeof ReactiveElement).observedAttributes, [
+        'foo',
+        'bar',
+        'custom',
+      ]);
+      assert.deepEqual(Array.from(ctor.elementProperties!.keys()), [
+        'foo',
+        'bar',
+      ]);
+      el2.setAttribute('custom', 'custom');
+      assert.equal(el2.attrValue, 'custom');
+      el2.setAttribute('foo', 'foo');
+      assert.equal(el2.attrValue, 'custom');
+
+      class GE extends FE {
+        static properties: PropertyDeclarations = {
+          zot: {},
+          nug: {},
+        };
+      }
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), GE);
+      });
+      const el3 = new GE();
+      container.appendChild(el3);
+      const ctor3 = el3.constructor as typeof ReactiveElement;
+      assert.deepEqual((ctor3 as typeof ReactiveElement).observedAttributes, [
+        'foo',
+        'bar',
+        'zot',
+        'nug',
+        'custom',
+      ]);
+      assert.deepEqual(Array.from(ctor3.elementProperties!.keys()), [
+        'foo',
+        'bar',
+        'zot',
+        'nug',
+      ]);
+      el3.setAttribute('custom', 'custom');
+      assert.equal(el3.attrValue, 'custom');
+      el3.setAttribute('foo', 'foo');
+      assert.equal(el3.attrValue, 'custom');
+    });
+
+    test('using mixin, calling superclass.observedAttributes directly', () => {
+      type Constructor<T = {}> = {new (...args: any[]): T};
+      function MyMixin<
+        B extends Constructor<
+          HTMLElement & {
+            attributeChangedCallback?(
+              name: string,
+              oldVal: string,
+              newVal: string
+            ): void;
+          }
+        > & {
+          observedAttributes?: string[];
+        }
+      >(superclass: B) {
+        class E extends superclass {
+          static get observedAttributes(): string[] {
+            return [...(superclass.observedAttributes ?? []), 'custom'];
+          }
+
+          constructor(...a: any[]) {
+            super(...a);
+          }
+
+          attrValue = '';
+
+          attributeChangedCallback(
+            name: string,
+            oldVal: string,
+            newVal: string
+          ): void {
+            if (!superclass.observedAttributes?.includes?.(name)) {
+              this.attrValue = name;
+            }
+            super.attributeChangedCallback?.(name, oldVal, newVal);
+          }
+        }
+
+        return E;
+      }
+      const E = MyMixin(ReactiveElement as any);
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), E);
+      });
+      const el = new E();
+      container.appendChild(el);
+      assert.deepEqual(
+        (el.constructor as typeof ReactiveElement).observedAttributes,
+        ['custom']
+      );
+
+      class F extends ReactiveElement {
+        static properties: PropertyDeclarations = {
+          foo: {},
+          bar: {},
+        };
+      }
+
+      const FE = MyMixin(F);
+      assert.doesNotThrow(() => {
+        customElements.define(generateElementName(), FE);
+      });
+      const el2 = new FE();
+      container.appendChild(el2);
+      const ctor2 = el2.constructor as typeof ReactiveElement;
+      assert.deepEqual((ctor2 as typeof ReactiveElement).observedAttributes, [
+        'foo',
+        'bar',
+        'custom',
+      ]);
+      assert.deepEqual(Array.from(ctor2.elementProperties!.keys()), [
+        'foo',
+        'bar',
+      ]);
+      el2.setAttribute('custom', 'custom');
+      assert.equal(el2.attrValue, 'custom');
+      el2.setAttribute('foo', 'foo');
+      assert.equal(el2.attrValue, 'custom');
     });
   });
 });

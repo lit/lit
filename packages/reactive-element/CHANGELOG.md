@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 
+### Changed
+
+- (Since 1.0.0-rc.2) Reverted change of the `css` tag's return to CSSResultGroup, which was a breaking change. The `css` tag again returns a `CSSResult` object.
+- (Since 1.0.0-rc.2) Remove the `CSSResultFlatArray` type alias in `css-tag.ts`.
+
+<!-- ### Added -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
+## 1.0.0-rc.2 - 2021-05-07
+
+### Changed
+
+- (Since 1.0.0-rc.1) [Breaking] Change the type name `Warnings` to `WarningKind` [#1854](https://github.com/Polymer/lit-html/issues/1854).
+
+## 1.0.0-rc.1 - 2021-04-20
+
 ### Fixed
 
 - (Since 1.0.0-pre.3) A controller's `hostConnected` is called only once if an element is upgraded to a custom element [#1731](https://github.com/Polymer/lit-html/issues/1731).

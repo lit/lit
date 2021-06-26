@@ -17,9 +17,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## 2.0.0-pre.7 - 2021-03-31
+## [2.0.0-rc.3] - 2021-05-07
 
-<!-- ### Changed -->
+### Fixed
+
+- Exported the `Ref` interface.
+
+## [2.0.0-rc.2] - 2021-04-20
+
+### Changed
+
+- Add dependency on trustedtypes typings.
+
+## 2.0.0-rc.1 - 2021-04-20
+
+### Added
+
+- Added `defer-hydration` attribute handling to `experimental-hydrate`, which helps
+  coordinate ordered wakeup of custom elements during hydration.
+- Added support for running with [Trusted Types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/trusted-types) enforced.
+
+### Changed
+
+- (Since 2.0.0-pre.7) Renamed `hydrate` module to `experimental-hydrate` to reflect its experimental nature. Experimental modules may undergo breaking changes within otherwise non-major releases.
+
+## 2.0.0-pre.7 - 2021-03-31
 
 ### Added
 
@@ -29,9 +51,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- `styleMap()` now removes properties if the value is set to `undefined` or `null`, as opposed to not being a property of the style object. ([#1665](https://github.com/Polymer/lit-html/pull/1665)).
+- `@apply` now functions correctly under native Shadow DOM when template parts are used. ([#1739](https://github.com/Polymer/lit-html/pull/1739)).
 
-<!-- ### Removed -->
+- `styleMap()` now removes properties if the value is set to `undefined` or `null`, as opposed to not being a property of the style object. ([#1665](https://github.com/Polymer/lit-html/pull/1665)).
 
 ## [2.0.0-pre.6] - 2021-02-11
 

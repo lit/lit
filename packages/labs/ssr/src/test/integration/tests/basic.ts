@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'lit/hydrate-support.js';
+import 'lit/experimental-hydrate-support.js';
 
 import {html, noChange, nothing, Part} from 'lit';
 import {
@@ -47,6 +47,10 @@ interface DivWithProp extends HTMLDivElement {
 }
 
 interface ClickableButton extends HTMLButtonElement {
+  __wasClicked: boolean;
+  __wasClicked2: boolean;
+}
+interface ClickableInput extends HTMLInputElement {
   __wasClicked: boolean;
   __wasClicked2: boolean;
 }
@@ -869,8 +873,7 @@ export const tests: {[name: string]: SSRTest} = {
       },
       {
         args: ['<ellipse cx="100" cy="50" rx="100" ry="50" />'],
-        html:
-          '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
+        html: '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
       },
     ],
     stableSelectors: ['div'],
@@ -882,8 +885,10 @@ export const tests: {[name: string]: SSRTest} = {
 
   'AttributePart after a text node': {
     render(x: unknown) {
-      return html`ABC
-        <div class=${x}></div>`;
+      return html`
+        ABC
+        <div class=${x}></div>
+      `;
     },
     expectations: [
       {
@@ -1262,43 +1267,46 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'AttributePart accepts directive: styleMap (custom properties & browser-prefixed)': {
-    // The parsed results of style text with custom properties and browser
-    // prefixes differs across browsers (due to whitespace and re-writing
-    // prefixed names) enough to make a single cross-platform assertion
-    // difficult. For now, just test these on Chrome.
-    skip: Boolean(globalThis.navigator && !navigator.userAgent.match(/Chrome/)),
-    render(map: {}) {
-      return html` <div style=${styleMap(map)}></div> `;
+  'AttributePart accepts directive: styleMap (custom properties & browser-prefixed)':
+    {
+      // The parsed results of style text with custom properties and browser
+      // prefixes differs across browsers (due to whitespace and re-writing
+      // prefixed names) enough to make a single cross-platform assertion
+      // difficult. For now, just test these on Chrome.
+      skip: Boolean(
+        globalThis.navigator && !navigator.userAgent.match(/Chrome/)
+      ),
+      render(map: {}) {
+        return html` <div style=${styleMap(map)}></div> `;
+      },
+      expectations: [
+        {
+          // Note that (at least on chrome, vendor-prefixed properties get
+          // collapsed down to the standard property name when re-parsed on the
+          // browser)
+          args: [
+            {
+              '--my-prop': 'green',
+              webkitAppearance: 'none',
+            },
+          ],
+          html: '<div style="--my-prop:green; appearance: none;"></div>',
+        },
+        {
+          args: [
+            {
+              '--my-prop': 'gray',
+              webkitAppearance: 'inherit',
+            },
+          ],
+          html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
+        },
+      ],
+      // styleMap does not dirty check individual properties before setting,
+      // which causes an attribute mutation even if the text has not changed
+      expectMutationsOnFirstRender: true,
+      stableSelectors: ['div'],
     },
-    expectations: [
-      {
-        // Note that (at least on chrome, vendor-prefixed properties get
-        // collapsed down to the standard property name when re-parsed on the
-        // browser)
-        args: [
-          {
-            '--my-prop': 'green',
-            webkitAppearance: 'none',
-          },
-        ],
-        html: '<div style="--my-prop:green; appearance: none;"></div>',
-      },
-      {
-        args: [
-          {
-            '--my-prop': 'gray',
-            webkitAppearance: 'inherit',
-          },
-        ],
-        html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
-      },
-    ],
-    // styleMap does not dirty check individual properties before setting,
-    // which causes an attribute mutation even if the text has not changed
-    expectMutationsOnFirstRender: true,
-    stableSelectors: ['div'],
-  },
 
   'AttributePart accepts directive: styleMap (with statics)': {
     render(map: {}) {
@@ -1553,6 +1561,23 @@ export const tests: {[name: string]: SSRTest} = {
       },
     ],
     stableSelectors: ['div'],
+  },
+
+  'AttributePart on void element': {
+    render(x: string) {
+      return html`<input class=${x} />`;
+    },
+    expectations: [
+      {
+        args: ['TEST'],
+        html: '<input class="TEST">',
+      },
+      {
+        args: ['TEST2'],
+        html: '<input class="TEST2">',
+      },
+    ],
+    stableSelectors: ['input'],
   },
 
   /******************************************************
@@ -2427,45 +2452,49 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'PropertyPart accepts directive: until (promise, primitive) (reflected)': () => {
-    let resolve: (v: string) => void;
-    const promise = new Promise((r) => (resolve = r));
-    return {
-      render(...args) {
-        return html` <div .className="${until(...args)}"></div> `;
-      },
-      expectations: [
-        {
-          args: [promise, 'foo'],
-          html: '<div class="foo"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-          },
+  'PropertyPart accepts directive: until (promise, primitive) (reflected)':
+    () => {
+      let resolve: (v: string) => void;
+      const promise = new Promise((r) => (resolve = r));
+      return {
+        render(...args) {
+          return html` <div .className="${until(...args)}"></div> `;
         },
-        {
-          async setup() {
-            resolve('promise');
-            await promise;
+        expectations: [
+          {
+            args: [promise, 'foo'],
+            html: '<div class="foo"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(dom.querySelector('div')!.className, 'foo');
+            },
           },
-          args: [promise, 'foo'],
-          html: '<div class="promise"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise');
+          {
+            async setup() {
+              resolve('promise');
+              await promise;
+            },
+            args: [promise, 'foo'],
+            html: '<div class="promise"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(
+                dom.querySelector('div')!.className,
+                'promise'
+              );
+            },
           },
-        },
-      ],
-      stableSelectors: ['div'],
-      // We set properties during hydration, and natively-reflecting properties
-      // will trigger a "mutation" even when set to the same value that was
-      // rendered to its attribute
-      expectMutationsDuringHydration: true,
-      // until always calls setValue each render, with no dirty-check of previous
-      // value
-      expectMutationsOnFirstRender: true,
-    };
-  },
+        ],
+        stableSelectors: ['div'],
+        // We set properties during hydration, and natively-reflecting properties
+        // will trigger a "mutation" even when set to the same value that was
+        // rendered to its attribute
+        expectMutationsDuringHydration: true,
+        // until always calls setValue each render, with no dirty-check of previous
+        // value
+        expectMutationsOnFirstRender: true,
+      };
+    },
 
   'PropertyPart accepts directive: until (promise, promise)': () => {
     let resolve1: (v: string) => void;
@@ -2517,52 +2546,59 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'PropertyPart accepts directive: until (promise, promise) (reflected)': () => {
-    let resolve1: (v: string) => void;
-    let resolve2: (v: string) => void;
-    const promise1 = new Promise((r) => (resolve1 = r));
-    const promise2 = new Promise((r) => (resolve2 = r));
-    return {
-      render(...args) {
-        return html` <div .className="${until(...args)}"></div> `;
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, '');
-          },
+  'PropertyPart accepts directive: until (promise, promise) (reflected)':
+    () => {
+      let resolve1: (v: string) => void;
+      let resolve2: (v: string) => void;
+      const promise1 = new Promise((r) => (resolve1 = r));
+      const promise2 = new Promise((r) => (resolve2 = r));
+      return {
+        render(...args) {
+          return html` <div .className="${until(...args)}"></div> `;
         },
-        {
-          async setup() {
-            resolve1('promise1');
-            await promise1;
+        expectations: [
+          {
+            args: [promise2, promise1],
+            html: '<div></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(dom.querySelector('div')!.className, '');
+            },
           },
-          args: [promise2, promise1],
-          html: '<div class="promise1"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise1');
+          {
+            async setup() {
+              resolve1('promise1');
+              await promise1;
+            },
+            args: [promise2, promise1],
+            html: '<div class="promise1"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(
+                dom.querySelector('div')!.className,
+                'promise1'
+              );
+            },
           },
-        },
-        {
-          async setup() {
-            resolve2('promise2');
-            await promise2;
+          {
+            async setup() {
+              resolve2('promise2');
+              await promise2;
+            },
+            args: [promise2, promise1],
+            html: '<div class="promise2"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(
+                dom.querySelector('div')!.className,
+                'promise2'
+              );
+            },
           },
-          args: [promise2, promise1],
-          html: '<div class="promise2"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise2');
-          },
-        },
-      ],
-      stableSelectors: ['div'],
-    };
-  },
+        ],
+        stableSelectors: ['div'],
+      };
+    },
 
   'PropertyPart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -2788,6 +2824,27 @@ export const tests: {[name: string]: SSRTest} = {
       },
     ],
     stableSelectors: ['div'],
+  },
+
+  'PropertyPart on void element': {
+    render(x: string) {
+      return html`<input .title=${x} />`;
+    },
+    expectations: [
+      {
+        args: ['TEST'],
+        html: '<input title="TEST">',
+      },
+      {
+        args: ['TEST2'],
+        html: '<input title="TEST2">',
+      },
+    ],
+    stableSelectors: ['input'],
+    // We set properties during hydration, and natively-reflecting properties
+    // will trigger a "mutation" even when set to the same value that was
+    // rendered to its attribute
+    expectMutationsDuringHydration: true,
   },
 
   /******************************************************
@@ -3137,6 +3194,45 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['button'],
   },
 
+  'EventPart on a void element': {
+    render(listener: (e: Event) => void) {
+      return html`<input @click=${listener} />`;
+    },
+    expectations: [
+      {
+        args: [
+          (e: Event) => ((e.target as ClickableInput).__wasClicked = true),
+        ],
+        html: '<input>',
+        check(assert: Chai.Assert, dom: HTMLElement) {
+          const input = dom.querySelector('input')!;
+          input.click();
+          assert.strictEqual(
+            (input as ClickableInput).__wasClicked,
+            true,
+            'not clicked during first render'
+          );
+        },
+      },
+      {
+        args: [
+          (e: Event) => ((e.target as ClickableInput).__wasClicked2 = true),
+        ],
+        html: '<input>',
+        check(assert: Chai.Assert, dom: HTMLElement) {
+          const input = dom.querySelector('input')!;
+          input.click();
+          assert.strictEqual(
+            (input as ClickableInput).__wasClicked2,
+            true,
+            'not clicked during second render'
+          );
+        },
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * BooleanAttributePart tests
    ******************************************************/
@@ -3469,6 +3565,23 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
+  'BooleanAttributePart on a void element': {
+    render(hide: boolean) {
+      return html` <input ?hidden=${hide} /> `;
+    },
+    expectations: [
+      {
+        args: [true],
+        html: '<input hidden>',
+      },
+      {
+        args: [false],
+        html: '<input>',
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * ElementPart tests
    ******************************************************/
@@ -3529,8 +3642,7 @@ export const tests: {[name: string]: SSRTest} = {
       expectations: [
         {
           args: [true],
-          html:
-            '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
+          html: '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
           check(assert: Chai.Assert) {
             assert.equal(ref1.value?.id, 'div1');
             assert.equal(ref2.value?.id, 'div2');
@@ -3548,6 +3660,25 @@ export const tests: {[name: string]: SSRTest} = {
         },
       ],
       stableSelectors: ['div'],
+    };
+  },
+
+  'ElementPart on void element': () => {
+    const inputRef = createRef();
+    return {
+      render() {
+        return html` <input ${ref(inputRef)} /> `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<input>',
+          check(assert: Chai.Assert) {
+            assert.equal(inputRef.value?.localName, 'input');
+          },
+        },
+      ],
+      stableSelectors: ['input'],
     };
   },
 
@@ -3612,13 +3743,11 @@ export const tests: {[name: string]: SSRTest} = {
     expectations: [
       {
         args: [html` <a attr=${'a'} ${'ignored'}></a> `, 'b', 'c'],
-        html:
-          'text:\n<a attr="a"></a><div><a attr="a"></a></div><span a1="b" a2="b"><a attr="a"></a><p a="b">b</p>c</span>',
+        html: 'text:\n<a attr="a"></a><div><a attr="a"></a></div><span a1="b" a2="b"><a attr="a"></a><p a="b">b</p>c</span>',
       },
       {
         args: ['x', 'y', html` <i ${'ignored'} attr=${'i'}></i> `],
-        html:
-          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i attr="i"></i></span>',
+        html: 'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i attr="i"></i></span>',
       },
     ],
     stableSelectors: ['div', 'span', 'p'],
@@ -4575,6 +4704,93 @@ export const tests: {[name: string]: SSRTest} = {
         },
       ],
       stableSelectors: ['le-render-light'],
+    };
+  },
+
+  'LitElement: hydration ordering': () => {
+    const renderOrder: string[] = [];
+    return {
+      registerElements() {
+        // When defined in bottom-up order (as they will typically be based on
+        // import graph ordering), they should hydrate top-down
+        class LEOrder3 extends LitElement {
+          @property()
+          prop = 'from3';
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-order3:${this.prop}`;
+          }
+        }
+        customElements.define('le-order3', LEOrder3);
+        class LEOrder2 extends LitElement {
+          @property()
+          prop = 'from2';
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-order2:${this.prop}<le-order3
+                .prop=${this.prop}
+              ></le-order3>`;
+          }
+        }
+        customElements.define('le-order2', LEOrder2);
+        class LEOrder1 extends LitElement {
+          @property()
+          prop = 'from1';
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-order1:${this.prop}<le-order2
+                .prop=${this.prop}
+              ></le-order2>`;
+          }
+        }
+        customElements.define('le-order1', LEOrder1);
+        class LELight extends LitElement {
+          render() {
+            renderOrder.push(this.localName);
+            return html`le-light`;
+          }
+        }
+        customElements.define('le-light', LELight);
+      },
+      render() {
+        return html`<le-order1><le-light></le-light></le-order1>`;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el1 = dom.querySelector('le-order1') as LitElement;
+            await el1.updateComplete;
+            const el2 = el1?.shadowRoot?.querySelector(
+              'le-order2'
+            ) as LitElement;
+            await el2.updateComplete;
+            const el3 = el2?.shadowRoot?.querySelector(
+              'le-order3'
+            ) as LitElement;
+            await el3.updateComplete;
+            assert.deepEqual(renderOrder, [
+              'le-order1',
+              'le-light',
+              'le-order2',
+              'le-order3',
+            ]);
+          },
+          html: {
+            root: `<le-order1><le-light></le-light></le-order1>`,
+            'le-order1': {
+              root: `le-order1:from1\n<le-order2></le-order2>`,
+              'le-order2': {
+                root: `le-order2:from1\n<le-order3></le-order3>`,
+                'le-order3': {
+                  root: 'le-order3:from1',
+                },
+              },
+            },
+          },
+        },
+      ],
+      stableSelectors: ['le-order1'],
     };
   },
 };

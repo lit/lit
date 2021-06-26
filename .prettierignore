@@ -34,8 +34,8 @@ packages/lit/directive-helpers.*
 packages/lit/directive.*
 packages/lit/async-directive.*
 packages/lit/html.*
-packages/lit/hydrate-support.*
-packages/lit/hydrate.*
+packages/lit/experimental-hydrate-support.*
+packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
@@ -51,7 +51,7 @@ packages/lit-element/development/
 packages/lit-element/node_modules/
 packages/lit-element/test/
 packages/lit-element/decorators.*
-packages/lit-element/hydrate-support.*
+packages/lit-element/experimental-hydrate-support.*
 packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
@@ -63,7 +63,7 @@ packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
 packages/lit-html/test/
-packages/lit-html/hydrate.*
+packages/lit-html/experimental-hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
@@ -86,15 +86,13 @@ packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
-packages/localize/lib/
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
-packages/localize/localized-element.*
 packages/localize/examples/*/node_modules/
-packages/localize/fnv1a64.*
-packages/localize/id-generation.*
+packages/localize/internal/
+packages/localize/init/
 
 packages/localize-tools/lib/
 packages/localize-tools/node_modules/
@@ -111,11 +109,19 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 
+packages/labs/motion/development/
+packages/labs/motion/node_modules/
+packages/labs/motion/index.*
+packages/labs/motion/flip.*
+packages/labs/motion/position.*
+packages/labs/motion/flip-controller.*
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
+packages/labs/react/use-controller.*
+
 packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
 packages/labs/scoped-registry-mixin/node_modules/
@@ -149,6 +155,7 @@ packages/lit-starter-ts/docs-src/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 
+package-lock.json
 packages/localize/examples/
 packages/localize-tools/testdata/
 packages/localize-tools/config.schema.json

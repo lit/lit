@@ -65,55 +65,55 @@ const stringsCache = new Map<string, TemplateStringsArray>();
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
  */
-export const withStatic = (coreTag: typeof coreHtml | typeof coreSvg) => (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): TemplateResult => {
-  const l = values.length;
-  let staticValue: string | undefined;
-  let dynamicValue: unknown;
-  const staticStrings: Array<string> = [];
-  const dynamicValues: Array<unknown> = [];
-  let i = 0;
-  let hasStatics = false;
-  let s: string;
+export const withStatic =
+  (coreTag: typeof coreHtml | typeof coreSvg) =>
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => {
+    const l = values.length;
+    let staticValue: string | undefined;
+    let dynamicValue: unknown;
+    const staticStrings: Array<string> = [];
+    const dynamicValues: Array<unknown> = [];
+    let i = 0;
+    let hasStatics = false;
+    let s: string;
 
-  while (i < l) {
-    s = strings[i];
-    // Collect any unsafeStatic values, and their following template strings
-    // so that we treat a run of template strings and unsafe static values as
-    // a single template string.
-    while (
-      i < l &&
-      ((dynamicValue = values[i]),
-      (staticValue = (dynamicValue as StaticValue)?._$litStatic$)) !== undefined
-    ) {
-      s += staticValue + strings[++i];
-      hasStatics = true;
+    while (i < l) {
+      s = strings[i];
+      // Collect any unsafeStatic values, and their following template strings
+      // so that we treat a run of template strings and unsafe static values as
+      // a single template string.
+      while (
+        i < l &&
+        ((dynamicValue = values[i]),
+        (staticValue = (dynamicValue as StaticValue)?._$litStatic$)) !==
+          undefined
+      ) {
+        s += staticValue + strings[++i];
+        hasStatics = true;
+      }
+      dynamicValues.push(dynamicValue);
+      staticStrings.push(s);
+      i++;
     }
-    dynamicValues.push(dynamicValue);
-    staticStrings.push(s);
-    i++;
-  }
-  // If the last value isn't static (which would have consumed the last
-  // string), then we need to add the last string.
-  if (i === l) {
-    staticStrings.push(strings[l]);
-  }
+    // If the last value isn't static (which would have consumed the last
+    // string), then we need to add the last string.
+    if (i === l) {
+      staticStrings.push(strings[l]);
+    }
 
-  if (hasStatics) {
-    const key = staticStrings.join('$$lit$$');
-    strings = stringsCache.get(key)!;
-    if (strings === undefined) {
-      stringsCache.set(
-        key,
-        (strings = (staticStrings as unknown) as TemplateStringsArray)
-      );
+    if (hasStatics) {
+      const key = staticStrings.join('$$lit$$');
+      strings = stringsCache.get(key)!;
+      if (strings === undefined) {
+        stringsCache.set(
+          key,
+          (strings = staticStrings as unknown as TemplateStringsArray)
+        );
+      }
+      values = dynamicValues;
     }
-    values = dynamicValues;
-  }
-  return coreTag(strings, ...values);
-};
+    return coreTag(strings, ...values);
+  };
 
 /**
  * Interprets a template literal as an HTML template that can efficiently

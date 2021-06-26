@@ -26,10 +26,24 @@ export function formatDirDiff(result: dirCompare.Result): string {
     let golden = '';
     let actual = '';
     if (diff.path1 && diff.name1) {
-      golden = fsExtra.readFileSync(path.join(diff.path1, diff.name1), 'utf8');
+      try {
+        golden = fsExtra.readFileSync(
+          path.join(diff.path1, diff.name1),
+          'utf8'
+        );
+      } catch {
+        // Keep empty string.
+      }
     }
     if (diff.path2 && diff.name2) {
-      actual = fsExtra.readFileSync(path.join(diff.path2, diff.name2), 'utf8');
+      try {
+        actual = fsExtra.readFileSync(
+          path.join(diff.path2, diff.name2),
+          'utf8'
+        );
+      } catch {
+        // Keep empty string.
+      }
     }
     const relativePath = path.join(
       diff.relativePath,

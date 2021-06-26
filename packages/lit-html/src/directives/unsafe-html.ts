@@ -47,7 +47,7 @@ export class UnsafeHTMLDirective extends Directive {
       return this._templateResult;
     }
     this._value = value;
-    const strings = ([value] as unknown) as TemplateStringsArray;
+    const strings = [value] as unknown as TemplateStringsArray;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (strings as any).raw = strings;
     // WARNING: impersonating a TemplateResult like this is extremely

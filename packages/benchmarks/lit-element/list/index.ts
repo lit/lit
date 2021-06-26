@@ -8,17 +8,17 @@ import {queryParams} from '../../utils/query-params.js';
 
 (async () => {
   // Note, `decorators.js` moved from the `lib` folder to top level
-  // between previous release and lit-next. Handle this by trying to import
+  // between 2.x and 3.x. Handle this by trying to import
   // from each location.
   let decorators;
   try {
     decorators = await import('lit-element/decorators.js');
   } catch (e) {
-    decorators = await ((import(
+    decorators = await (import(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       'lit-element/lib/decorators.js'
-    ) as unknown) as typeof import('lit-element/decorators.js'));
+    ) as unknown as typeof import('lit-element/decorators.js'));
   }
   const {property} = decorators;
   // Settings

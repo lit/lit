@@ -55,15 +55,15 @@ export function query(selector: string, cache?: boolean) {
         const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
         descriptor.get = function (this: ReactiveElement) {
           if (
-            ((this as unknown) as {[key: string]: Element | null})[
+            (this as unknown as {[key: string]: Element | null})[
               key as string
             ] === undefined
           ) {
-            ((this as unknown) as {[key: string]: Element | null})[
+            (this as unknown as {[key: string]: Element | null})[
               key as string
             ] = this.renderRoot?.querySelector(selector);
           }
-          return ((this as unknown) as {[key: string]: Element | null})[
+          return (this as unknown as {[key: string]: Element | null})[
             key as string
           ];
         };

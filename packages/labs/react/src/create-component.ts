@@ -14,10 +14,8 @@ const reservedReactProperties = new Set([
   'className',
 ]);
 
-const listenedEvents: WeakMap<
-  Element,
-  Map<string, EventListenerObject>
-> = new WeakMap();
+const listenedEvents: WeakMap<Element, Map<string, EventListenerObject>> =
+  new WeakMap();
 
 /**
  * Adds an event listener for the specified event to the given node. In the
@@ -123,8 +121,10 @@ export const createComponent = <I extends HTMLElement, E>(
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
+  // TODO: we might need to omit more properties from HTMLElement than just
+  // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<Partial<I> & Events<E>>
+    React.PropsWithRef<Partial<Omit<I, 'children'>> & Events<E>>
   >;
 
   // Props used by this component wrapper. This is the UserProps and the

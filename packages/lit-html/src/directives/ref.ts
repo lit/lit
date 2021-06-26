@@ -11,6 +11,9 @@ import {directive, AsyncDirective} from '../async-directive.js';
  */
 export const createRef = <T = Element>() => new Ref<T>();
 
+/**
+ * An object that holds a ref value.
+ */
 class Ref<T = Element> {
   /**
    * The current Element value of the ref, or else `undefined` if the ref is no
@@ -19,6 +22,8 @@ class Ref<T = Element> {
   readonly value?: T;
 }
 
+export type {Ref};
+
 interface RefInternal {
   value: Element | undefined;
 }
@@ -26,10 +31,8 @@ interface RefInternal {
 // When callbacks are used for refs, this map tracks the last value the callback
 // was called with, for ensuring a directive doesn't clear the ref if the ref
 // has already been rendered to a new spot
-const lastElementForCallback: WeakMap<
-  Function,
-  Element | undefined
-> = new WeakMap();
+const lastElementForCallback: WeakMap<Function, Element | undefined> =
+  new WeakMap();
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 

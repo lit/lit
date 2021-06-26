@@ -91,21 +91,21 @@ const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
 let vmContextId = 0;
 
 /**
- * Imports a module given by `path` into a new VM context with `sandbox` as the
+ * Imports a module given by `path` into a new VM context with `contextGlobal` as the
  * global object.
  *
  * @param specifier
  * @param referrer
- * @param sandbox The object that will become the global, via vm.createContext
+ * @param contextGlobal The object that will become the global, via vm.createContext
  */
 export const importModule = async (
   specifier: string,
   referrer: string,
-  sandbox: vm.Context
+  contextGlobal: vm.Context
 ) => {
   // TODO: maybe move this call outside this function and share across requests.
   // Only if we can freeze all globals though.
-  const context = vm.createContext(sandbox);
+  const context = vm.createContext(contextGlobal);
   vmContextId++;
 
   // TODO: consider a multi-level cache with one cache shared across requests.

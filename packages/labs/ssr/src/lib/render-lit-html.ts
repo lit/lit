@@ -32,9 +32,16 @@ const {
   EventPart,
 } = _Σ;
 
-import {digestForTemplateResult} from 'lit/hydrate.js';
+import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
-import {ElementRenderer} from './element-renderer.js';
+import {
+  ElementRenderer,
+  ElementRendererConstructor,
+  getElementRenderer,
+} from './element-renderer.js';
+
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
@@ -50,7 +57,6 @@ import {
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {isServerUntilDirective} from '@lit-labs/ssr-client/directives/server-until.js';
-import {LitElement} from 'lit';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
@@ -60,10 +66,8 @@ declare module 'parse5' {
   }
 }
 
-const patchedDirectiveCache: WeakMap<
-  DirectiveClass,
-  DirectiveClass
-> = new Map();
+const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
+  new Map();
 
 /**
  * Looks for values of type `DirectiveResult` and replaces its Directive class
@@ -185,6 +189,20 @@ type CustomElementClosedOp = {
   type: 'custom-element-close';
 };
 
+/**
+ * Operation to possibly emit the `<!--lit-node-->` marker; the operation
+ * always emits if there were attribtue parts, and may emit if the node
+ * was a custom element and it needed `defer-hydration` because it was
+ * rendered in the shadow root of another custom element host; we don't
+ * know the latter at opcode generation time, and so that test is done at
+ * runtime in the opcode.
+ */
+type PossibleNodeMarkerOp = {
+  type: 'possible-node-marker';
+  boundAttributesCount: number;
+  nodeIndex: number;
+};
+
 type Op =
   | TextOp
   | ChildPartOp
@@ -193,7 +211,8 @@ type Op =
   | CustomElementOpenOp
   | CustomElementAttributesOp
   | CustomElementShadowOp
-  | CustomElementClosedOp;
+  | CustomElementClosedOp
+  | PossibleNodeMarkerOp;
 
 /**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes
@@ -241,7 +260,9 @@ type Op =
  *   - Emit `renderer.renderAttributes()`
  * - `text`
  *   - Emit end of of open tag `>`
- *   - Emit `<!--lit-bindings n-->` marker if there were attribute parts
+ * - `possible-node-marker`
+ *   - Emit `<!--lit-node n-->` marker if there were attribute parts or
+ *      we needed to emit the `defer-hydration` attribute
  * - `custom-element-shadow`
  *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)
@@ -263,7 +284,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    */
-  const ast = parseFragment(html, {
+  const ast = parseFragment(String(html), {
     sourceCodeLocationInfo: true,
   }) as DefaultTreeDocumentFragment;
 
@@ -320,7 +341,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     }
     const previousLastOffset = lastOffset;
     lastOffset = offset;
-    const value = html.substring(previousLastOffset, offset);
+    const value = String(html).substring(previousLastOffset, offset);
     flush(value);
   };
 
@@ -347,7 +368,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         // any of the attributes in the tag, so it's true for custom-elements
         // which might reflect their own state, or any element with a binding.
         let writeTag = false;
-        let boundAttrsCount = 0;
+        let boundAttributesCount = 0;
 
         const tagName = node.tagName;
         let ctor;
@@ -379,8 +400,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             const isElementBinding = attr.name.startsWith(marker);
             if (isAttrBinding || isElementBinding) {
               writeTag = true;
-              boundAttrsCount += 1;
-              // Note that although we emit a lit-bindings comment marker for any
+              boundAttributesCount += 1;
+              // Note that although we emit a lit-node comment marker for any
               // nodes with bindings, we don't account for it in the nodeIndex because
               // that will not be injected into the client template
               const strings = attr.value.split(marker);
@@ -388,9 +409,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // while parsing the template strings); note that this assumes
               // parse5 attribute ordering matches string ordering
               const name = attrNames[attrIndex++];
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
@@ -427,9 +447,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // into the custom element instance, and then serialize them back
               // out along with any manually-reflected attributes. As such, we
               // skip over static attribute text here.
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               flushTo(attrSourceLocation.startOffset);
               skipTo(attrSourceLocation.endOffset);
             }
@@ -447,10 +466,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           } else {
             flushTo(node.sourceCodeLocation!.startTag.endOffset);
           }
-        }
-
-        if (boundAttrsCount > 0) {
-          flush(`<!--lit-bindings ${nodeIndex}-->`);
+          ops.push({
+            type: 'possible-node-marker',
+            boundAttributesCount,
+            nodeIndex,
+          });
         }
 
         if (ctor !== undefined) {
@@ -476,7 +496,18 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
+  // Element renderers to use
+  elementRenderers: ElementRendererConstructor[];
+  // Stack of open custom elements (in light dom or shadow dom)
   customElementInstanceStack: Array<ElementRenderer | undefined>;
+  // Stack of open host custom elements (n-1 will be n's host)
+  customElementHostStack: Array<ElementRenderer | undefined>;
+};
+
+const defaultRenderInfo = {
+  elementRenderers: [LitElementRenderer],
+  customElementInstanceStack: [],
+  customElementHostStack: [],
 };
 
 declare global {
@@ -485,11 +516,27 @@ declare global {
   }
 }
 
-export function* render(value: unknown): IterableIterator<string> {
-  yield* renderValue(value, {customElementInstanceStack: []});
+/**
+ * Renders a lit-html template (or any renderable lit-html value) to a string
+ * iterator. Any custom elements encountered will be rendered if a matching
+ * ElementRenderer is found.
+ *
+ * This method is suitable for streaming the contents of the element.
+ *
+ * @param value Value to render
+ * @param renderInfo Optional render context object that should be passed
+ *   to any re-entrant calls to `render`, e.g. from a `renderShadow` callback
+ *   on an ElementRenderer.
+ */
+export function* render(
+  value: unknown,
+  renderInfo?: RenderInfo
+): IterableIterator<string> {
+  renderInfo = {...defaultRenderInfo, ...renderInfo};
+  yield* renderValue(value, renderInfo);
 }
 
-export function* renderValue(
+function* renderValue(
   value: unknown,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
@@ -506,7 +553,7 @@ export function* renderValue(
     const promise = (value as DirectiveResult)
       .values[0] as PromiseLike<unknown>;
     const continuation = promise.then((v) => renderValue(v, renderInfo));
-    yield (continuation as unknown) as string;
+    yield continuation as unknown as string;
     return;
   } else {
     value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
@@ -534,7 +581,7 @@ export function* renderValue(
   yield `<!--/lit-part-->`;
 }
 
-export function* renderTemplateResult(
+function* renderTemplateResult(
   result: TemplateResult,
   renderInfo: RenderInfo
 ): IterableIterator<string> {
@@ -618,22 +665,13 @@ export function* renderTemplateResult(
         break;
       }
       case 'custom-element-open': {
-        const ctor = op.ctor;
         // Instantiate the element and its renderer
-        let instance = undefined;
-        try {
-          const element = new ctor();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (element as any).tagName = op.tagName;
-          // TODO: Move renderer instantiation into a plugin system
-          if (element instanceof LitElement) {
-            instance = new LitElementRenderer(element);
-          } else {
-            console.error(`No renderer for custom element: ${op.tagName}`);
-          }
-        } catch (e) {
-          console.error('Exception in custom element constructor', e);
-        }
+        const instance = getElementRenderer(
+          renderInfo,
+          op.tagName,
+          op.ctor,
+          op.staticAttributes
+        );
         // Set static attributes to the element renderer
         if (instance !== undefined) {
           for (const [name, value] of op.staticAttributes) {
@@ -654,15 +692,41 @@ export function* renderTemplateResult(
           // Render out any attributes on the instance (both static and those
           // that may have been dynamically set by the renderer)
           yield* instance.renderAttributes();
+          // If this element is nested in another, add the `defer-hydration`
+          // attribute, so that it does not enable before the host element
+          // hydrates
+          if (renderInfo.customElementHostStack.length > 0) {
+            yield ' defer-hydration';
+          }
+        }
+        break;
+      }
+      case 'possible-node-marker': {
+        // Add a node marker if this element had attribute bindings or if it
+        // was nested in another and we rendered the `defer-hydration` attribute
+        // since the hydration node walk will need to stop at this element
+        // to hydrate it
+        if (
+          op.boundAttributesCount > 0 ||
+          renderInfo.customElementHostStack.length > 0
+        ) {
+          yield `<!--lit-node ${op.nodeIndex}-->`;
         }
         break;
       }
       case 'custom-element-shadow': {
         const instance = getLast(renderInfo.customElementInstanceStack);
         if (instance !== undefined && instance.renderShadow !== undefined) {
-          yield '<template shadowroot="open">';
-          yield* instance.renderShadow();
-          yield '</template>';
+          renderInfo.customElementHostStack.push(instance);
+          const shadowContents = instance.renderShadow(renderInfo);
+          // Only emit a DSR if renderShadow() emitted something (returning
+          // undefined allows effectively no-op rendering the element)
+          if (shadowContents !== undefined) {
+            yield '<template shadowroot="open">';
+            yield* shadowContents;
+            yield '</template>';
+          }
+          renderInfo.customElementHostStack.pop();
         }
         break;
       }

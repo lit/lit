@@ -7,7 +7,7 @@
 /node_modules/
 /test/
 /decorators.*
-/hydrate-support.*
+/experimental-hydrate-support.*
 /index.*
 /lit-element.*
 /lit.min.*

@@ -5,10 +5,11 @@
  */
 
 import {litProdConfig} from '../../rollup-common.js';
+import {createRequire} from 'module';
 
 export const defaultConfig = (options = {}) =>
   litProdConfig({
-    classPropertyPrefix: 'Σ',
+    packageName: createRequire(import.meta.url)('./package.json').name,
     entryPoints: [
       'directives/async-append',
       'directives/async-replace',
@@ -29,7 +30,7 @@ export const defaultConfig = (options = {}) =>
       'directive-helpers',
       'async-directive',
       'static',
-      'hydrate',
+      'experimental-hydrate',
       'private-ssr-support',
       'polyfill-support',
     ],

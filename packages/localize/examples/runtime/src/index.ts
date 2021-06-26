@@ -6,7 +6,7 @@
 
 import {setLocaleFromUrl} from './localization.js';
 import {LOCALE_STATUS_EVENT} from '@lit/localize';
-import {html, render} from 'lit-html';
+import {html, render} from 'lit';
 import './locale-picker.js';
 import './x-greeter.js';
 import '@material/mwc-circular-progress';

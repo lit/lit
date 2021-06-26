@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "Template benchmark generator",
-  "license": "ISC",
-  "repository": "Polymer/lit-html",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/benchmarks"
+  },
   "author": "Google LLC",
   "main": "index.js",
   "type": "module",

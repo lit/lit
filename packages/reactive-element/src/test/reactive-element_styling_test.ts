@@ -7,7 +7,7 @@ import {
   css,
   ReactiveElement,
   unsafeCSS,
-  CSSResultArray,
+  CSSResultGroup,
 } from '../reactive-element.js';
 
 import {
@@ -18,6 +18,8 @@ import {
   html,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
+
+const extraGlobals = window as LitExtraGlobals;
 
 (canTestReactiveElement ? suite : suite.skip)('Styling', () => {
   suite('Static get styles', () => {
@@ -85,7 +87,7 @@ import {assert} from '@esm-bundle/chai';
     // Test this in Shadow DOM without `adoptedStyleSheets` only since it's easily
     // detectable in that case.
     const testShadowDOMStyleCount =
-      (!window.ShadyDOM || !window.ShadyDOM.inUse) &&
+      (!extraGlobals.ShadyDOM || !extraGlobals.ShadyDOM.inUse) &&
       !('adoptedStyleSheets' in Document.prototype);
     (testShadowDOMStyleCount ? test : test.skip)(
       'when an array is returned from `static get styles`, one style is generated per array item',
@@ -207,6 +209,30 @@ import {assert} from '@esm-bundle/chai';
                 border: ${unsafeCSS(someVar)};
               }
             `;
+          }
+
+          render() {
+            return html` <div>Testing</div>`;
+          }
+        }
+      );
+      const el = document.createElement(name);
+      container.appendChild(el);
+      await (el as ReactiveElement).updateComplete;
+      const div = el.shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '2px'
+      );
+    });
+
+    test('unsafeCSS can be used standalone', async () => {
+      const name = generateElementName();
+      customElements.define(
+        name,
+        class extends RenderingElement {
+          static get styles() {
+            return unsafeCSS('div {border: 2px solid blue}');
           }
 
           render() {
@@ -376,7 +402,7 @@ import {assert} from '@esm-bundle/chai';
             div {
               border: 2px solid blue;
             }
-          `;
+          ` as CSSResultGroup;
         }
 
         render() {
@@ -413,7 +439,7 @@ import {assert} from '@esm-bundle/chai';
         class extends BaseClass {
           static get styles() {
             return [
-              super.styles,
+              BaseClass.styles,
               css`
                 p {
                   display: block;
@@ -560,7 +586,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         base,
         class extends RenderingElement {
-          static finalizeStyles(styles: CSSResultArray) {
+          static finalizeStyles(styles: CSSResultGroup) {
             getStylesCounter++;
             return super.finalizeStyles(styles);
           }
@@ -705,7 +731,8 @@ import {assert} from '@esm-bundle/chai';
         // our styles as they're already flattened (so expect 4px). Otherwise,
         // look for the updated value.
         const usesAdoptedStyleSheet =
-          window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow;
+          extraGlobals.ShadyCSS === undefined ||
+          extraGlobals.ShadyCSS.nativeShadow;
         const expectedValue = usesAdoptedStyleSheet ? '2px' : '4px';
         sheet.replaceSync('div { border: 2px solid red; }');
 
@@ -722,8 +749,8 @@ import {assert} from '@esm-bundle/chai';
     const testShadyCSSWithAdoptedStyleSheetSupport =
       window.ShadowRoot &&
       'replace' in CSSStyleSheet.prototype &&
-      window.ShadyCSS !== undefined &&
-      !window.ShadyCSS.nativeShadow;
+      extraGlobals.ShadyCSS !== undefined &&
+      !extraGlobals.ShadyCSS.nativeShadow;
     (testShadyCSSWithAdoptedStyleSheetSupport ? test : test.skip)(
       'CSSStyleSheet is flattened where ShadyCSS is enabled yet adoptedStyleSheets are supported',
       async () => {

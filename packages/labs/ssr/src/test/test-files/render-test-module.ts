@@ -9,7 +9,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
-export {digestForTemplateResult} from 'lit/hydrate.js';
+export {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
 export {render} from '../../lib/render-lit-html.js';
 

@@ -77,7 +77,7 @@ function writeConfigSchemaIfMissing(config: ConfigFile, configPath: string) {
   }
   const withSchema = {
     $schema:
-      'https://raw.githubusercontent.com/PolymerLabs/lit-localize/master/config.schema.json',
+      'https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/tsconfig.schema.json',
     ...config,
   };
   const json = JSON.stringify(withSchema, null, 2);

@@ -6,21 +6,28 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
-import {_Φ} from 'lit-element/private-ssr-support.js';
-import {render, renderValue, RenderInfo} from './render-lit-html.js';
+import {_$LE} from 'lit-element/private-ssr-support.js';
+import {render, RenderInfo} from './render-lit-html.js';
 
 import {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty, changedProperties, getControllers} = _Φ;
+const {attributeToProperty, changedProperties, getControllers} = _$LE;
 
 /**
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
-  constructor(public element: LitElement) {
-    super(element);
+  element: LitElement;
+
+  static matchesClass(ctor: typeof HTMLElement) {
+    return (ctor as unknown as typeof LitElement)._$litElement$;
+  }
+
+  constructor(tagName: string) {
+    super(tagName);
+    this.element = new (customElements.get(this.tagName))();
   }
 
   connectedCallback() {
@@ -42,21 +49,23 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  *renderShadow(): IterableIterator<string> {
+  *renderShadow(renderInfo: RenderInfo): IterableIterator<string> {
     const serverControllers = getControllers(this.element)
       ?.map((c: ServerController) => c.serverUpdateComplete)
       .filter((p: Promise<unknown>) => !!p);
     if (serverControllers?.length > 0) {
       const continuation = Promise.all(serverControllers).then((_) =>
-        this._renderShadowContents()
+        this._renderShadowContents(renderInfo)
       );
-      yield (continuation as unknown) as string;
+      yield continuation as unknown as string;
     } else {
-      yield* this._renderShadowContents();
+      yield* this._renderShadowContents(renderInfo);
     }
   }
 
-  private *_renderShadowContents(): IterableIterator<string> {
+  private *_renderShadowContents(
+    renderInfo: RenderInfo
+  ): IterableIterator<string> {
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
@@ -69,14 +78,14 @@ export class LitElementRenderer extends ElementRenderer {
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* render((this.element as any).render());
+    yield* render((this.element as any).render(), renderInfo);
   }
 
   *renderLight(renderInfo: RenderInfo): IterableIterator<string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      yield* render(value, renderInfo);
     } else {
       yield '';
     }

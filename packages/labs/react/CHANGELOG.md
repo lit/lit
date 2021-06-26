@@ -17,6 +17,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Fixed
+
+- Included `development` folder in release [#1912](https://github.com/lit/lit/issues/1912).
+
+## [1.0.0-rc.2] - 2021-05-07
+
+### Fixed
+
+- Fixed a bug where `host.requestUpdate()` only worked on the first call from within `useController()`.
+
+## [1.0.0-rc.1] - 2021-04-20
+
+### Added
+
+- Added `useControler()` hook for creating React hooks from Reactive Controllers ([#1532](https://github.com/Polymer/lit-html/pulls/1532)).
+
 ## [1.0.0-pre.2] - 2021-03-31
 
 ### Changed
@@ -27,4 +45,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Adds react component wrapper for custom elements. Use by calling `createComponent` ([#1420](https://github.com/Polymer/lit-html/pulls/1420)).
+- Adds React component wrapper for custom elements. Use by calling `createComponent` ([#1420](https://github.com/Polymer/lit-html/pulls/1420)).

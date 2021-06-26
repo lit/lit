@@ -9,8 +9,8 @@
 /directive.*
 /async-directive.*
 /html.*
-/hydrate-support.*
-/hydrate.*
+/experimental-hydrate-support.*
+/experimental-hydrate.*
 /index.*
 /static-html.*
 

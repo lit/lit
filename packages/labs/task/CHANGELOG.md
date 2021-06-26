@@ -17,6 +17,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## Unreleased
+
+### Fixed
+
+- Included `development` folder in release [#1912](https://github.com/lit/lit/issues/1912).
+
+## 1.0.0-rc.2 - 2021-05-07
+
+### Fixed
+
+- Added `task.js` to the package exports ([#1824](https://github.com/lit/lit/issues/1824)).
+
+## 1.0.0-rc.1 - 2021-04-20
+
+### Changed
+
+- Updated dependencies
+
 ## 1.0.0-pre.2 - 2021-03-31
 
 ### Changed

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 import {getLocale} from './localization.js';
 import {allLocales} from './locale-codes.js';
 
