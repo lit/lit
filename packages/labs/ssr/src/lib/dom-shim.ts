@@ -137,7 +137,10 @@ export const getWindow = ({
     },
 
     // No-op any async tasks
-    requestAnimationFrame() {},
+    requestAnimationFrame: setTimeout,
+
+    // Required for node-fetch
+    Buffer,
 
     // Set below
     window: undefined as unknown,
@@ -152,9 +155,8 @@ export const getWindow = ({
 
   if (includeJSBuiltIns) {
     Object.assign(window, {
-      // No-op any async tasks
-      setTimeout() {},
-      clearTimeout() {},
+      setTimeout,
+      clearTimeout,
       // Required for node-fetch
       Buffer,
       console: {

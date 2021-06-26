@@ -21,4 +21,5 @@ import {_Φ as p} from './lit-element.js';
 export const _Φ = {
   attributeToProperty: p._$attributeToProperty,
   changedProperties: p._$changedProperties,
+  getControllers: p._$controllers,
 };

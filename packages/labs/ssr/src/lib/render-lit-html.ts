@@ -56,9 +56,9 @@ import {
 } from './util/parse5-utils.js';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
-import {reflectedAttributeName} from './reflected-attributes.js';
-
+import {isServerUntilDirective} from '@lit-labs/ssr-client/directives/server-until.js';
 import {LitElementRenderer} from './lit-element-renderer.js';
+import {reflectedAttributeName} from './reflected-attributes.js';
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -549,6 +549,12 @@ function* renderValue(
       yield* instance.renderLight(renderInfo);
     }
     value = null;
+  } else if (isServerUntilDirective(value)) {
+    const promise = (value as DirectiveResult)
+      .values[0] as PromiseLike<unknown>;
+    const continuation = promise.then((v) => renderValue(v, renderInfo));
+    yield continuation as unknown as string;
+    return;
   } else {
     value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
   }

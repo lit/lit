@@ -35,9 +35,19 @@
       "type": "node",
       "runtimeVersion": "14.4.0",
       "request": "launch",
-      "name": "Demo Server",
+      "name": "Demo Server (global)",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/demo/server.js",
+      "program": "${workspaceFolder}/demo/global/server.js",
+      "outFiles": ["${workspaceFolder}/./**/*.js"],
+      "runtimeArgs": ["--experimental-vm-modules"]
+    },
+    {
+      "type": "node",
+      "runtimeVersion": "14.4.0",
+      "request": "launch",
+      "name": "Demo Server (vm-modules)",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/demo/vm-modules/server.js",
       "outFiles": ["${workspaceFolder}/./**/*.js"],
       "runtimeArgs": ["--experimental-vm-modules"]
     }

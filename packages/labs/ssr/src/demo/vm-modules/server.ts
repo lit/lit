@@ -11,7 +11,7 @@ import {URL} from 'url';
 import * as path from 'path';
 
 import {renderModule} from '../../lib/render-module.js';
-import {Readable} from 'stream';
+import {readableFrom} from '../../lib/readable.js';
 
 const {nodeResolve} = koaNodeResolve;
 
@@ -31,14 +31,14 @@ app.use(async (ctx: Koa.Context, next: Function) => {
   }
 
   const ssrResult = await (renderModule(
-    './app-server.js',
+    './render-app.js',
     import.meta.url,
     'renderAppWithInitialData',
     []
-  ) as Promise<Iterable<unknown>>);
+  ) as Promise<Iterable<string>>);
 
   ctx.type = 'text/html';
-  ctx.body = Readable.from(ssrResult);
+  ctx.body = readableFrom(ssrResult, true);
 });
 app.use(nodeResolve({}));
 app.use(staticFiles(packageRoot));

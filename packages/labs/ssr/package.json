@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0-rc.1",
+    "@lit-labs/task": "^1.0.0-rc.1",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "escape-html": "^1.0.3",
     "koa": "^2.7.0",
