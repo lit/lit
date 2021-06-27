@@ -63,14 +63,16 @@ const copyConfig = {
 };
 
 const samples = [
+  'category-headers',
+  'category-headers-2',
+  'photo-scroller',
   'basic-lit-element',
   'basic-lit-html',
   'scroll-to-index-lit-element',
   'scroll-to-index-lit-html',
   'visible-indices-lit-element',
   'visible-indices-lit-html',
-  'photo-grid-lit-html',
-  'photo-scroller'
+  'photo-grid-lit-html'
 ];
 
 let configs = [
