@@ -16,7 +16,7 @@ import type {
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
 import {isTemplateResult} from 'lit/directive-helpers.js';
-import {_Σ} from 'lit-html/private-ssr-support.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
   getTemplateHtml,
@@ -30,7 +30,7 @@ const {
   PropertyPart,
   BooleanAttributePart,
   EventPart,
-} = _Σ;
+} = _$LH;
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
