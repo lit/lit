@@ -151,7 +151,12 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     // template. It must be moved to the *end* of the template so it doesn't
     // mess up part indices.
     if (hasScopeCss && extraGlobals.ShadyCSS!.nativeShadow) {
-      template.content.appendChild(template.content.querySelector('style')!);
+      // If there were styles but the CSS text was empty, ShadyCSS will
+      // eliminate the style altogether, so the style here could be null
+      const style = template.content.querySelector('style');
+      if (style !== null) {
+        template.content.appendChild(style);
+      }
     }
   };
 
