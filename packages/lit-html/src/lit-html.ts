@@ -719,6 +719,7 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  /** @nocollapse */
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
     el.innerHTML = html as unknown as string;
