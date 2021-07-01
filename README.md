@@ -1,7 +1,7 @@
 # lit-html
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
-[![Build Status](https://travis-ci.org/lit/lit.svg?branch=lit-html-1.4.x)](https://travis-ci.org/Polymer/lit-html)
+[![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg?branch=lit-html-1.x)](https://github.com/lit/lit/actions/workflows/tests.yml?query=branch%3Alit-html-1.x)
 [![Published on npm](https://img.shields.io/npm/v/lit-html.svg)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://lit.dev/slack-invite/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
