@@ -1,5 +1,5 @@
 import EventTarget from '../polyfillLoaders/EventTarget.js';
-import {Layout, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
+import {Layout, Positions, Offsets, ScrollDirection, Size, dimension, position} from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
   emit?: boolean
@@ -40,6 +40,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Dimensions of the viewport.
    */
   private _viewportSize: Size = {width: 0, height: 0};
+
+  public viewportOffset: Offsets = {top: 0, right: 0, bottom: 0, left: 0};
 
   /**
    * Flag for debouncing asynchnronous reflow requests.

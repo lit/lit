@@ -12,6 +12,7 @@ export type Margins = {
 export type ItemBox = Size | (Size & Margins);
 
 export type position = 'left' | 'top';
+export type offset = 'top' | 'right' | 'bottom' | 'left';
 export type offsetAxis = 'xOffset' | 'yOffset';
 
 // TODO (graynorton@): This has become a bit of a
@@ -27,6 +28,13 @@ export type Positions = {
   xOffset?: number,
   yOffset?: number
 };
+
+export type Offsets = {
+  top: number,
+  right: number,
+  bottom: number,
+  left: number;
+}
 
 
 export type LayoutConstructor = new(config?: object) => Layout;
@@ -53,6 +61,8 @@ export type ScrollDirection = 'vertical' | 'horizontal';
   viewportSize: Size;
 
   viewportScroll: Positions;
+
+  viewportOffset: Offsets;
 
   readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
 

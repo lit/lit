@@ -63,6 +63,7 @@ const copyConfig = {
 };
 
 const samples = [
+  'stacked',
   'category-headers',
   'category-headers-2',
   'photo-scroller',

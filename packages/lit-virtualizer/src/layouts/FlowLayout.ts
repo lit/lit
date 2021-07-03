@@ -1,4 +1,4 @@
-import {BaseLayout, BaseLayoutConfig, dim1/*, pos1*/} from './BaseLayout.js';
+import {BaseLayout, BaseLayoutConfig, dim1} from './BaseLayout.js';
 import {ItemBox, Positions, Size, Margins, margin, ScrollDirection, offsetAxis} from './Layout.js';
 
 type ItemBounds = {
@@ -223,7 +223,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _calculateAnchor(lower: number, upper: number): number {
-    if (lower === 0) {
+    if (lower <= 0) {
       return 0;
     }
     if (upper > this._scrollSize - this._viewDim1) {
@@ -313,30 +313,30 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     // allow jumping to any point of the scroll size. We choose it once and
     // stick with it until stable. first and last are deduced around it.
 
+    // If we have a scrollToIndex, we anchor on the given
+    // index and set the scroll position accordingly
     if (this._scrollToIndex >= 0) {
-      // If we have a scrollToIndex, we anchor on the given
-      // index and set the scroll position accordingly
       this._anchorIdx = Math.min(this._scrollToIndex, this._totalItems - 1);
       this._anchorPos = this._getPosition(this._anchorIdx);
       this._scrollIfNeeded();
-      lower = Math.max(0, this._scrollPosition - this._overhang);
-      upper = Math.min(this._scrollSize, this._scrollPosition + this._viewDim1 + this._overhang);
     }
-    else {
-      // Otherwise, we find an appropriate index to anchor on
-      // given the current scroll position
-      upper = Math.min(
-        this._scrollSize,
-        this._scrollPosition + this._viewDim1 + this._overhang
-      );
-      lower = Math.max(0, upper - this._viewDim1 - (2 * this._overhang));
 
-      // Since it can take multiple passes to stabilize, we may already
-      // have an anchor. If so, keep it; if not, establish it.
-      if (this._anchorIdx === null || this._anchorPos === null) {
-        this._anchorIdx = this._getAnchor(lower, upper);
-        this._anchorPos = this._getPosition(this._anchorIdx);    
-      }
+    // Determine the lower and upper bounds of the region to be
+    // rendered, relative to the viewport
+    lower = this._scrollPosition - this._overhang;//leadingOverhang;
+    upper = this._scrollPosition + this._viewDim1 + this._overhang;// trailingOverhang;
+
+    if (upper < 0 || lower > this._scrollSize) {
+      this._clearItems();
+      return;
+    }
+
+    // If we are scrolling to a specific index or if we are doing another
+    // pass to stabilize a previously started reflow, we will already
+    // have an anchor. If not, establish an anchor now.
+    if (this._anchorIdx === null || this._anchorPos === null) {
+      this._anchorIdx = this._getAnchor(lower, upper);
+      this._anchorPos = this._getPosition(this._anchorIdx);    
     }
 
     let anchorSize = this._getSize(this._anchorIdx);
@@ -364,8 +364,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       anchorErr = lower - (this._anchorPos + anchorSize + anchorTrailingMargin);
     }
 
-    if (this._anchorPos > upper) {
-      anchorErr = upper - this._anchorPos;
+    if (this._anchorPos - anchorLeadingMargin > upper) {
+      anchorErr = upper - (this._anchorPos - anchorLeadingMargin);
     }
 
     if (anchorErr) {

@@ -142,11 +142,6 @@ export class VirtualScroller {
   protected _container?: ContainerElement;
 
   /**
-   * Size of the container.
-   */
-  private _containerSize: {width: number, height: number} | null = null;
-
-  /**
    * Resize observer attached to container.
    */
   private _containerRO: ResizeObserver | null = null;
@@ -261,10 +256,6 @@ export class VirtualScroller {
         container as ContainerElement;
 
     this._schedule(this._updateLayout);
-
-    // First time container was setup, add listeners only now.
-    // TODO (graynorton): Don't think we want this.
-    // addEventListener('scroll', this, {passive: true});
 
     this._container = newContainer;
 
@@ -532,7 +523,8 @@ export class VirtualScroller {
     if (this._containerRO === null) {
       const ResizeObserver = await getResizeObserver();
       this._containerRO = new ResizeObserver(
-        (entries: ResizeObserverEntry[]) => this._containerSizeChanged(entries[0].contentRect));
+        () => this._containerSizeChanged()
+      );
       this._childrenRO =
         new ResizeObserver(this._childrenSizeChanged.bind(this));
       this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
@@ -569,53 +561,56 @@ export class VirtualScroller {
   }
 
   private _updateView() {
+    // TODO (graynorton): Can probably greatly simplify this
+    // by using IntersectionObserver
     if (!this.container || !this._container || !this._layout) {
       return;
     }
-    let width, height, top, left;
-    if (this._scrollTarget === this._container && this._containerSize !== null) {
-      width = this._containerSize.width;
-      height = this._containerSize.height;
-      left = this._container.scrollLeft;
-      top = this._container.scrollTop;
-    } else {
-      const containerBounds = this._container.getBoundingClientRect();
-      const scrollBounds = this._scrollTarget == window
-          ? {
-            top: containerBounds.top + window.pageYOffset,
-            left: containerBounds.left + window.pageXOffset,
-            width: window.innerWidth,
-            height: window.innerHeight
-          }
-          : (this._scrollTarget as Element).getBoundingClientRect();
 
-      const scrollerWidth = scrollBounds.width;
-      const scrollerHeight = scrollBounds.height;
-      const xMin = Math.max(
-          0, Math.min(scrollerWidth, containerBounds.left - scrollBounds.left));
-      const yMin = Math.max(
-          0, Math.min(scrollerHeight, containerBounds.top - scrollBounds.top));
-      // TODO (graynorton): Direction is intended to be a layout-level concept, not a scroller-level concept,
-      // so this feels like a factoring problem
-      const xMax = this._layout.direction === 'vertical' ?
-          Math.max(
-              0,
-              Math.min(
-                  scrollerWidth, containerBounds.right - scrollBounds.left)) :
-          scrollerWidth;
-      const yMax = this._layout.direction === 'vertical' ?
-          scrollerHeight :
-          Math.max(
-              0,
-              Math.min(
-                  scrollerHeight, containerBounds.bottom - scrollBounds.top));
-      width = xMax - xMin;
-      height = yMax - yMin;
-      left = Math.max(0, -(containerBounds.left - scrollBounds.left));
-      top = Math.max(0, -(containerBounds.top - scrollBounds.top));
+    let top, left, bottom, right, scrollTop, scrollLeft, offsetTop, offsetLeft, offsetBottom, offsetRight;
+
+    const containerBounds = this._container.getBoundingClientRect();
+    if (this._scrollTarget === this._container || this._scrollTarget === window) {
+      top = Math.max(containerBounds.top, 0);
+      left = Math.max(containerBounds.left, 0);
+      bottom = Math.min(containerBounds.bottom, window.innerHeight);
+      right = Math.min(containerBounds.right, window.innerWidth);
+      if (this._scrollTarget === this._container) {
+        scrollTop = this._container.scrollTop;
+        scrollLeft = this._container.scrollLeft;
+        offsetTop = 0;
+        offsetLeft = 0;
+        offsetBottom = 0;
+        offsetRight = 0;
+      }
+      else { // this._scrollTarget === window
+        scrollTop = -containerBounds.top;
+        scrollLeft = -containerBounds.left;
+        offsetTop = window.scrollY + containerBounds.top;
+        offsetLeft = window.scrollX + containerBounds.left;
+        offsetBottom = document.body.offsetHeight - (window.scrollY + containerBounds.top + containerBounds.height);
+        offsetRight = document.body.offsetWidth - (window.scrollX + containerBounds.left + containerBounds.width);
+      }
     }
+    else {
+      const scrollTargetBounds = (this._scrollTarget as HTMLElement).getBoundingClientRect();
+      top = Math.max(containerBounds.top, scrollTargetBounds.top, 0);
+      left = Math.max(containerBounds.left, scrollTargetBounds.left, 0);
+      bottom = Math.min(containerBounds.bottom, scrollTargetBounds.bottom, window.innerHeight);
+      right = Math.min(containerBounds.right, scrollTargetBounds.right, window.innerWidth);
+      scrollTop = top - containerBounds.top;
+      scrollLeft = left - containerBounds.left;
+      offsetTop = containerBounds.top - scrollTargetBounds.top - (this._scrollTarget as HTMLElement).scrollTop;
+      offsetLeft = containerBounds.left - scrollTargetBounds.left - (this._scrollTarget as HTMLElement).scrollLeft;
+      offsetBottom = containerBounds.bottom - scrollTargetBounds.bottom - (this._scrollTarget as HTMLElement).scrollTop;
+      offsetRight = containerBounds.right - scrollTargetBounds.right - (this._scrollTarget as HTMLElement).scrollLeft;
+    }
+    const height = Math.max(1, bottom - top);
+    const width = Math.max(1, right - left);
+
     this._layout.viewportSize = {width, height};
-    this._layout.viewportScroll = {top, left};
+    this._layout.viewportScroll = {top: scrollTop, left: scrollLeft};
+    this._layout.viewportOffset = {top: offsetTop, left: offsetLeft, bottom: offsetBottom, right: offsetRight}
   }
 
   /**
@@ -710,9 +705,7 @@ export class VirtualScroller {
    * Render and update the view at the next opportunity with the given
    * container size.
    */
-  private _containerSizeChanged(size: {width: number, height: number}) {
-    const {width, height} = size;
-    this._containerSize = {width, height};
+  private _containerSizeChanged() {
     this._schedule(this._updateLayout);
   }
 
