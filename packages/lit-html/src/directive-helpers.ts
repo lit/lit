@@ -52,20 +52,23 @@ export const isTemplateResult = (
   type?: TemplateResultType
 ): value is TemplateResult =>
   type === undefined
-    ? (value as TemplateResult)?._$litType$ !== undefined
-    : (value as TemplateResult)?._$litType$ === type;
+    ? // This property needs to remain unminified.
+      (value as TemplateResult)?.['_$litType$'] !== undefined
+    : (value as TemplateResult)?.['_$litType$'] === type;
 
 /**
  * Tests if a value is a DirectiveResult.
  */
 export const isDirectiveResult = (value: unknown): value is DirectiveResult =>
-  (value as DirectiveResult)?._$litDirective$ !== undefined;
+  // This property needs to remain unminified.
+  (value as DirectiveResult)?.['_$litDirective$'] !== undefined;
 
 /**
  * Retrieves the Directive class for a DirectiveResult
  */
 export const getDirectiveClass = (value: unknown): DirectiveClass | undefined =>
-  (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  (value as DirectiveResult)?.['_$litDirective$'];
 
 /**
  * Tests whether a part has only a single-expression with no strings to
