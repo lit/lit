@@ -17,12 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## Unreleased
-
-### Changed
-
-- Properties that must remain unminified are now compatible with build tools other than rollup/terser [#1970](https://github.com/lit/lit/issues/1970).
-
 ## 1.0.0-rc.1 - 2021-04-20
 
 ### Added

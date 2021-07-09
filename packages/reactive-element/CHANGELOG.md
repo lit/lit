@@ -21,7 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- (Since 1.0.0-rc.2) Properties that must remain unminified are now compatible with build tools other than rollup/terser [#1970](https://github.com/lit/lit/issues/1970).
 - (Since 1.0.0-rc.2) Reverted change of the `css` tag's return to CSSResultGroup, which was a breaking change. The `css` tag again returns a `CSSResult` object.
 - (Since 1.0.0-rc.2) Remove the `CSSResultFlatArray` type alias in `css-tag.ts`.
 
