@@ -205,4 +205,16 @@ suite('@apply', () => {
     );
     document.body.removeChild(applyProducer);
   });
+
+  test('empty style', function () {
+    const container = document.createElement('empty-style');
+    document.body.appendChild(container);
+    const result = htmlWithApply`
+      <style></style>
+      <div>Testing...</div>
+    `;
+    renderShadowRoot(result, container);
+    extraGlobals.ShadyCSS?.styleElement(container);
+    document.body.removeChild(container);
+  });
 });
