@@ -32,7 +32,8 @@ interface RenderOptions {
 
 interface ShadyTemplateResult {
   strings: TemplateStringsArray;
-  _$litType$?: string;
+  // This property needs to remain unminified.
+  ['_$litType$']?: string;
 }
 
 // Note, this is a dummy type as the full type here is big.
@@ -151,7 +152,12 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     // template. It must be moved to the *end* of the template so it doesn't
     // mess up part indices.
     if (hasScopeCss && extraGlobals.ShadyCSS!.nativeShadow) {
-      template.content.appendChild(template.content.querySelector('style')!);
+      // If there were styles but the CSS text was empty, ShadyCSS will
+      // eliminate the style altogether, so the style here could be null
+      const style = template.content.querySelector('style');
+      if (style !== null) {
+        template.content.appendChild(style);
+      }
     }
   };
 
@@ -228,7 +234,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
-      const template = (value as ShadyTemplateResult)?._$litType$
+      // This property needs to remain unminified.
+      const template = (value as ShadyTemplateResult)?.['_$litType$']
         ? (this._$committedValue as PatchableTemplateInstance)._$template.el
         : document.createElement('template');
       prepareStyles(scope!, template);

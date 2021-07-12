@@ -294,9 +294,8 @@ class Transformer {
         while (!ts.isSourceFile(sourceFile)) {
           sourceFile = sourceFile.parent;
         }
-        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
-          sourceFile
-        );
+        const sourceFileSymbol =
+          this.typeChecker.getSymbolAtLocation(sourceFile);
         if (
           sourceFileSymbol &&
           this.fileNameAppearsToBeLitLocalize(sourceFileSymbol)

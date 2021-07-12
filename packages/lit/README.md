@@ -37,7 +37,6 @@ import {customElement, property} from 'lit/decorators.js';
 // Registers the element
 @customElement('my-element')
 export class MyElement extends LitElement {
-  
   // Styles are applied to the shadow root and scoped to this element
   static styles = css`
     span {

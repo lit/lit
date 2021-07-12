@@ -7,7 +7,7 @@ import {
   css,
   ReactiveElement,
   unsafeCSS,
-  CSSResultArray,
+  CSSResultGroup,
 } from '../reactive-element.js';
 
 import {
@@ -402,7 +402,7 @@ const extraGlobals = window as LitExtraGlobals;
             div {
               border: 2px solid blue;
             }
-          `;
+          ` as CSSResultGroup;
         }
 
         render() {
@@ -439,7 +439,7 @@ const extraGlobals = window as LitExtraGlobals;
         class extends BaseClass {
           static get styles() {
             return [
-              super.styles,
+              BaseClass.styles,
               css`
                 p {
                   display: block;
@@ -586,7 +586,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         base,
         class extends RenderingElement {
-          static finalizeStyles(styles: CSSResultArray) {
+          static finalizeStyles(styles: CSSResultGroup) {
             getStylesCounter++;
             return super.finalizeStyles(styles);
           }

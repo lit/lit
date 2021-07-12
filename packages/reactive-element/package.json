@@ -68,10 +68,7 @@
     "/reactive-controller.{d.ts,d.ts.map,js,js.map}",
     "/reactive-element.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
-    "/development/",
-    "/src/",
-    "!/src/demo/",
-    "!/src/test/"
+    "/development/"
   ],
   "devDependencies": {
     "@babel/cli": "^7.12.10",
