@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import test from 'tape';
+import {test} from 'uvu';
+import * as assert from 'uvu/assert';
 import {configureSsrLocalization} from '../ssr.js';
 import {render} from '../../../labs/ssr/lib/render-with-global-dom-shim.js';
 import {html} from 'lit';
@@ -62,27 +63,29 @@ const renderHelloWorld = (locale: string) =>
     });
   });
 
-test('renders en in isolation', async (t) => {
-  t.is(await renderHelloWorld('en'), 'Hello World');
+test('renders en in isolation', async () => {
+  assert.equal(await renderHelloWorld('en'), 'Hello World');
 });
 
-test('renders es in isolation', async (t) => {
-  t.is(await renderHelloWorld('es'), 'Hola Mundo');
+test('renders es in isolation', async () => {
+  assert.equal(await renderHelloWorld('es'), 'Hola Mundo');
 });
 
-test('renders nl in isolation', async (t) => {
-  t.is(await renderHelloWorld('nl'), 'Hallo Wereld');
+test('renders nl in isolation', async () => {
+  assert.equal(await renderHelloWorld('nl'), 'Hallo Wereld');
 });
 
-test('renders all 3 locales concurrently', async (t) => {
+test('renders all 3 locales concurrently', async () => {
   // Run a bunch of times to simulate more concurrency.
   for (let i = 0; i < 10; i++) {
     const en = renderHelloWorld('en');
     const es = renderHelloWorld('es');
     const nl = renderHelloWorld('nl');
 
-    t.is(await en, 'Hello World', `[${i}] en`);
-    t.is(await es, 'Hola Mundo', `[${i}] es`);
-    t.is(await nl, 'Hallo Wereld', `[${i}] nl`);
+    assert.equal(await en, 'Hello World', `[${i}] en`);
+    assert.equal(await es, 'Hola Mundo', `[${i}] es`);
+    assert.equal(await nl, 'Hallo Wereld', `[${i}] nl`);
   }
 });
+
+test.run();
