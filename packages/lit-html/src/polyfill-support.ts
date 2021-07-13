@@ -179,19 +179,23 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       if (!extraGlobals.ShadyCSS!.nativeShadow) {
         extraGlobals.ShadyCSS!.prepareTemplateDom(element, scope);
       }
-      const scopeCss = cssForScope(scope);
-      // Remove styles and store textContent.
-      const styles = element.content.querySelectorAll(
-        'style'
-      ) as NodeListOf<HTMLStyleElement>;
-      // Store the css in this template in the scope css and remove the <style>
-      // from the template _before_ the node-walk captures part indices
-      scopeCss.push(
-        ...Array.from(styles).map((style) => {
-          style.parentNode?.removeChild(style);
-          return style.textContent!;
-        })
-      );
+      // Process styles only if this scope is being prepared. Otherwise,
+      // leave styles as is for back compat with Lit1.
+      if (needsPrepareStyles(scope)) {
+        const scopeCss = cssForScope(scope);
+        // Remove styles and store textContent.
+        const styles = element.content.querySelectorAll(
+          'style'
+        ) as NodeListOf<HTMLStyleElement>;
+        // Store the css in this template in the scope css and remove the <style>
+        // from the template _before_ the node-walk captures part indices
+        scopeCss.push(
+          ...Array.from(styles).map((style) => {
+            style.parentNode?.removeChild(style);
+            return style.textContent!;
+          })
+        );
+      }
     }
     return element;
   };

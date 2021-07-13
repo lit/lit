@@ -15,6 +15,7 @@ import {
   generateElementName,
   getComputedStyleValue,
   RenderingElement,
+  nextFrame,
   html,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -788,5 +789,197 @@ const extraGlobals = window as LitExtraGlobals;
         );
       }
     );
+  });
+
+  suite('CSS Custom Properties', () => {
+    let container: HTMLElement;
+
+    setup(() => {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    });
+
+    test('custom properties render', async () => {
+      const name = generateElementName();
+
+      const testStyle = (el: HTMLElement) => {
+        const div = el.shadowRoot!.querySelector('div');
+        assert.equal(
+          getComputedStyleValue(div!, 'border-top-width').trim(),
+          '8px'
+        );
+      };
+      customElements.define(
+        name,
+        class extends RenderingElement {
+          static get styles() {
+            return css`
+              :host {
+                --border: 8px solid red;
+              }
+              div {
+                border: var(--border);
+              }
+            `;
+          }
+
+          render() {
+            return html`<div>Testing...</div>`;
+          }
+
+          firstUpdated() {
+            testStyle(this);
+          }
+        }
+      );
+      const el = document.createElement(name);
+      container.appendChild(el);
+      await (el as ReactiveElement).updateComplete;
+      testStyle(el);
+    });
+
+    test('custom properties flow to nested elements', async () => {
+      customElements.define(
+        'x-inner',
+        class extends RenderingElement {
+          static get styles() {
+            return css`
+              div {
+                border: var(--border);
+              }
+            `;
+          }
+
+          render() {
+            return html`<div>Testing...</div>`;
+          }
+        }
+      );
+      const name = generateElementName();
+      class E extends RenderingElement {
+        inner: RenderingElement | null = null;
+
+        static get styles() {
+          return css`
+            x-inner {
+              --border: 8px solid red;
+            }
+          `;
+        }
+
+        render() {
+          return html`<x-inner></x-inner>`;
+        }
+
+        firstUpdated() {
+          this.inner = this.shadowRoot!.querySelector(
+            'x-inner'
+          )! as RenderingElement;
+        }
+      }
+      customElements.define(name, E);
+      const el = document.createElement(name) as E;
+      container.appendChild(el);
+
+      // Workaround for Safari 9 Promise timing bugs.
+      (await el.updateComplete) && (await el.inner!.updateComplete);
+
+      await nextFrame();
+      const div = el.inner!.shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '8px'
+      );
+    });
+
+    test('elements with custom properties can move between elements', async () => {
+      customElements.define(
+        'x-inner1',
+        class extends RenderingElement {
+          static get styles() {
+            return css`
+              div {
+                border: var(--border);
+              }
+            `;
+          }
+
+          render() {
+            return html`<div>Testing...</div>`;
+          }
+        }
+      );
+      const name1 = generateElementName();
+      customElements.define(
+        name1,
+        class extends RenderingElement {
+          inner: Element | null = null;
+
+          static get styles() {
+            return css`
+              x-inner1 {
+                --border: 2px solid red;
+              }
+            `;
+          }
+
+          render() {
+            return html`<x-inner1></x-inner1>`;
+          }
+
+          firstUpdated() {
+            this.inner = this.shadowRoot!.querySelector('x-inner1');
+          }
+        }
+      );
+      const name2 = generateElementName();
+      customElements.define(
+        name2,
+        class extends RenderingElement {
+          static get styles() {
+            return css`
+              x-inner1 {
+                --border: 8px solid red;
+              }
+            `;
+          }
+
+          render() {
+            return html``;
+          }
+        }
+      );
+      const el = document.createElement(name1) as ReactiveElement;
+      const el2 = document.createElement(name2);
+      container.appendChild(el);
+      container.appendChild(el2);
+
+      // Workaround for Safari 9 Promise timing bugs.
+      await el.updateComplete;
+
+      await nextFrame();
+      const inner = el.shadowRoot!.querySelector('x-inner1');
+      const div = inner!.shadowRoot!.querySelector('div');
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '2px'
+      );
+      el2.shadowRoot!.appendChild(inner!);
+
+      // Workaround for Safari 9 Promise timing bugs.
+      await el.updateComplete;
+
+      await nextFrame();
+      assert.equal(
+        getComputedStyleValue(div!, 'border-top-width').trim(),
+        '8px'
+      );
+    });
   });
 });

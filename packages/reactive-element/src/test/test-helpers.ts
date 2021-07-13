@@ -36,11 +36,17 @@ export class RenderingElement extends ReactiveElement {
     const result = this.render();
     super.update(changedProperties);
     if (result !== undefined) {
-      // Save and replace any existing styles in root to simulate
-      // adoptedStylesheets.
-      const styles = this.renderRoot.querySelectorAll('style');
-      this.renderRoot.innerHTML = result;
-      this.renderRoot.append(...styles);
+      // Note, don't use `innerHTML` here to avoid a polyfill issue
+      // where `innerHTML` is not patched by CE on shadowRoot.
+      // https://github.com/webcomponents/custom-elements/issues/73
+      Array.from(this.renderRoot.childNodes).forEach((e) => {
+        this.renderRoot.removeChild(e);
+      });
+      const div = document.createElement('div');
+      div.innerHTML = result;
+      Array.from(div.childNodes).forEach((e) => {
+        this.renderRoot.appendChild(e);
+      });
     }
   }
 }
