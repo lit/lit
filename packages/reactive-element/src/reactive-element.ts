@@ -274,6 +274,43 @@ export type WarningKind = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
 
+// Currently updating host.
+let updatingHost: ReactiveElement | undefined;
+// List of elements pending update, mapped to the host element that triggered
+// the update.
+const updatingElements: Map<ReactiveElement, ReactiveElement | undefined> =
+  new Map();
+
+// Iterates the tree of updating elements, and calls the given callback
+// for all elements once the target element has been reached.
+const onUpdatingSubtree = async (
+  host: ReactiveElement,
+  callback: (e: ReactiveElement) => unknown
+) => {
+  // Set of `hostDependencies` that are within the `host`'s updating subtree.
+  const hostDependencies = new Set();
+  let isStarted = false,
+    isUpdated = true;
+  // Iterate through updatingElements. Start processing only when the `host`
+  // is reached.
+  for (const [e, h] of updatingElements) {
+    const isStarting = host === e;
+    isStarted = isStarted || isStarting;
+    if (!isStarted) {
+      continue;
+      // Process relevant elements
+    } else if (hostDependencies.has(h) || isStarting) {
+      hostDependencies.add(e);
+      const r = callback(e);
+      const didUpdate = r == null || (await r);
+      if (isUpdated && !didUpdate) {
+        isUpdated = false;
+      }
+    }
+  }
+  return isUpdated;
+};
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -369,6 +406,8 @@ export abstract class ReactiveElement
    * @category properties
    */
   static elementProperties: PropertyDeclarationMap = new Map();
+
+  static MAX_UPDATE_CYCLES = 25;
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -1004,6 +1043,8 @@ export abstract class ReactiveElement
    */
   private async __enqueueUpdate() {
     this.isUpdatePending = true;
+    // Put this element in the list of elements pending updates.
+    updatingElements.set(this, updatingHost);
     try {
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
@@ -1039,14 +1080,14 @@ export abstract class ReactiveElement
    * For instance, to schedule updates to occur just before the next frame:
    *
    * ```
-   * protected async performUpdate(): Promise<unknown> {
+   * async performUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
    *   super.performUpdate();
    * }
    * ```
    * @category updates
    */
-  protected performUpdate(): void | Promise<unknown> {
+  performUpdate(): void | Promise<unknown> {
     // Abort any update if one is not pending when this is called.
     // This can happen if `performUpdate` is called early to "flush"
     // the update.
@@ -1090,6 +1131,8 @@ export abstract class ReactiveElement
     }
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
+    // Make this element the current updating host.
+    updatingHost = this;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
@@ -1144,6 +1187,10 @@ export abstract class ReactiveElement
   }
 
   private __markUpdated() {
+    // This element is no longer the updating host.
+    updatingHost = undefined;
+    // This element has completed its update and is no longer pending.
+    updatingElements.delete(this);
     this._$changedProperties = new Map();
     this.isUpdatePending = false;
   }
@@ -1166,6 +1213,48 @@ export abstract class ReactiveElement
    */
   get updateComplete(): Promise<boolean> {
     return this.getUpdateComplete();
+  }
+
+  /**
+   * Await the `updateComplete` promise until it resolves to true as not
+   * needing further updates, up to the maximum number of update cycles.
+   * @param deep {boolean} If true, also awaits any "child" elements that
+   * update as a result of this element updating.
+   * @return A promise of a boolean that indicates if the update resolved
+   *     without needing further updates.
+   */
+  async updateUntilComplete(deep = false): Promise<boolean> {
+    if (deep) {
+      return onUpdatingSubtree(this, (e) => e.updateUntilComplete());
+    } else {
+      let cycle = 0;
+      const count = (this.constructor as typeof ReactiveElement)
+        .MAX_UPDATE_CYCLES;
+      while (!(await this.updateComplete) && cycle < count) {
+        cycle++;
+      }
+      return !this.isUpdatePending;
+    }
+  }
+
+  /**
+   * If needed, performs updates until the state of the element settles
+   * as not needing an update, up to the max number of cycles.
+   * @param deep {boolean} If true, also flushes any "child" elements that
+   * trigger updates as a result of flushing this element.
+   */
+  flush(deep = false) {
+    if (deep) {
+      onUpdatingSubtree(this, (e) => e.flush());
+    } else {
+      let cycle = 0;
+      const count = (this.constructor as typeof ReactiveElement)
+        .MAX_UPDATE_CYCLES;
+      while (this.isUpdatePending && cycle < count) {
+        cycle++;
+        this.performUpdate();
+      }
+    }
   }
 
   /**
