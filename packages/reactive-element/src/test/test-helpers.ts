@@ -40,12 +40,17 @@ export class RenderingElement extends ReactiveElement {
       // where `innerHTML` is not patched by CE on shadowRoot.
       // https://github.com/webcomponents/custom-elements/issues/73
       Array.from(this.renderRoot.childNodes).forEach((e) => {
-        this.renderRoot.removeChild(e);
+        // Leave any style elements that might be simulating
+        // adoptedStylesheets
+        if ((e as Element).localName !== 'style') {
+          this.renderRoot.removeChild(e);
+        }
       });
       const div = document.createElement('div');
       div.innerHTML = result;
+      const ref = this.renderRoot.firstChild;
       Array.from(div.childNodes).forEach((e) => {
-        this.renderRoot.appendChild(e);
+        this.renderRoot.insertBefore(e, ref);
       });
     }
   }
