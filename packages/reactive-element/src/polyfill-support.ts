@@ -145,12 +145,11 @@ interface PatchableReactiveElement extends HTMLElement {
     this: PatchableReactiveElement,
     changedProperties: unknown
   ) {
-    const isFirstUpdate = !this.hasUpdated;
-    didUpdate.call(this, changedProperties);
     // Note, must do first update here so rendering has completed before
     // calling this and styles are correct by updated/firstUpdated.
-    if (isFirstUpdate) {
+    if (!this.hasUpdated) {
       extraGlobals.ShadyCSS!.styleElement(this);
     }
+    didUpdate.call(this, changedProperties);
   };
 };
