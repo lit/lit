@@ -58,7 +58,7 @@ export class CSSResult {
 
   // Note, this is a getter so that it's lazy. In practice, this means
   // stylesheets are not created until the first element instance is made.
-  get styleSheet(): CSSStyleSheet | undefined {
+  get styleSheet(): CSSStyleSheet | null {
     // Note, if `supportsAdoptingStyleSheets` is true then we assume
     // CSSStyleSheet is constructable.
     let styleSheet = styleSheetCache.get(this.cssText);
@@ -66,7 +66,7 @@ export class CSSResult {
       styleSheetCache.set(this.cssText, (styleSheet = new CSSStyleSheet()));
       styleSheet.replaceSync(this.cssText);
     }
-    return styleSheet;
+    return styleSheet ?? null;
   }
 
   toString(): string {
