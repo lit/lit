@@ -112,7 +112,8 @@ export class LitTransformer {
   };
 
   visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
-    if (this._litFileContext.nodesToRemove.delete(node)) {
+    if (this._litFileContext.nodesToRemove.has(node)) {
+      // A node that some previous visitor has requested to remove from the AST.
       return undefined;
     }
     for (const visitor of this._genericVisitors) {
