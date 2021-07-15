@@ -136,6 +136,9 @@ export class LitTransformer {
   private _updateFileContextWithLitImports(
     node: ts.ImportDeclaration
   ): boolean {
+    // TODO(aomarks) Support re-exports (e.g. if a user re-exports a Lit
+    // decorator from one of their own modules).
+
     // We're only interested in imports from one of the official lit packages.
     if (
       !ts.isStringLiteral(node.moduleSpecifier) ||
