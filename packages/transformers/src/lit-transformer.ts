@@ -99,7 +99,7 @@ export class LitTransformer {
     let traversalNeeded = false;
     for (const statement of node.statements) {
       if (ts.isImportDeclaration(statement)) {
-        traversalNeeded ||= this._analyzeImportDeclaration(statement);
+        traversalNeeded ||= this._updateFileContextWithLitImports(statement);
       }
     }
     if (!traversalNeeded) {
@@ -128,24 +128,17 @@ export class LitTransformer {
   };
 
   /**
-   * Check the given import declaration to see if it imports any symbols from
-   * Lit modules that apply to the configured visitors. Return whether or not a
-   * relevant import was found.
+   * Add an entry to our "litImports" map for each relevant imported symbol, if
+   * this is an import from an official Lit package. Returns whether or not
+   * anything relevant was found.
    */
-  private _analyzeImportDeclaration(node: ts.ImportDeclaration): boolean {
-    if (!ts.isStringLiteral(node.moduleSpecifier)) {
-      return false;
-    }
-    const specifier = node.moduleSpecifier.text;
+  private _updateFileContextWithLitImports(
+    node: ts.ImportDeclaration
+  ): boolean {
+    // We're only interested in imports from one of the official lit packages.
     if (
-      !(
-        specifier === 'lit' ||
-        specifier.startsWith('lit/') ||
-        specifier === 'lit-element' ||
-        specifier.startsWith('lit-element/') ||
-        specifier === '@lit/reactive-element' ||
-        specifier.startsWith('@lit/reactive-element/')
-      )
+      !ts.isStringLiteral(node.moduleSpecifier) ||
+      !isLitImport(node.moduleSpecifier.text)
     ) {
       return false;
     }
@@ -394,3 +387,11 @@ class MultiMap<K, V> {
     }
   }
 }
+
+const isLitImport = (specifier: string) =>
+  specifier === 'lit' ||
+  specifier.startsWith('lit/') ||
+  specifier === 'lit-element' ||
+  specifier.startsWith('lit-element/') ||
+  specifier === '@lit/reactive-element' ||
+  specifier.startsWith('@lit/reactive-element/');
