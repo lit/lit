@@ -17,7 +17,16 @@ import type {
 } from './visitor.js';
 
 /**
- * Configurable transformer for Lit.
+ * A transformer for Lit code.
+ *
+ * Configured with an array of visitors, each of which handles a specific Lit
+ * feature such as a decorator. All visitors are invoked from a single pass
+ * through each file.
+ *
+ * Files are only traversed at all if there is at least one feature imported
+ * from an official Lit module (e.g. the "property" decorator), and there is a
+ * registered visitor that declares it will handle that feature (e.g. the
+ * PropertyVisitor).
  */
 export class LitTransformer {
   private readonly _context: ts.TransformationContext;
