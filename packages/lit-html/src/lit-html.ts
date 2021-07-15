@@ -11,18 +11,27 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+/**
+ * `true` if we're building for google3 with temporary back-compat helpers.
+ * This export is not present in prod builds.
+ * @internal
+ */
+export const INTERNAL = true;
+
 if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
 
+const extraGlobals = window as LitExtraGlobals;
+
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  extraGlobals.ShadyDOM?.inUse &&
+  extraGlobals.ShadyDOM?.noPatch === true
+    ? extraGlobals.ShadyDOM!.wrap
     : (node: Node) => node;
 
-const trustedTypes = ((globalThis as unknown) as Partial<Window>).trustedTypes;
+const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -232,7 +241,8 @@ const COMMENT_PART = 7;
  * The return type of the template tag functions.
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
-  _$litType$: T;
+  // This property needs to remain unminified.
+  ['_$litType$']: T;
   // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
   // semi-public API though. We can't just let Terser rename them for us,
   // because we need TemplateResults to work between compatible versions of
@@ -248,7 +258,8 @@ export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 export interface CompiledTemplateResult {
   // This is a factory in order to make template initialization lazy
   // and allow ShadyRenderOptions scope to be passed in.
-  _$litType$: CompiledTemplate;
+  // This property needs to remain unminified.
+  ['_$litType$']: CompiledTemplate;
   values: unknown[];
 }
 
@@ -264,14 +275,14 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = <T extends ResultType>(_$litType$: T) => (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): TemplateResult<T> => ({
-  _$litType$,
-  strings,
-  values,
-});
+const tag =
+  <T extends ResultType>(type: T) =>
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => ({
+    // This property needs to remain unminified.
+    ['_$litType$']: type,
+    strings,
+    values,
+  });
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -324,6 +335,18 @@ export interface RenderOptions {
 }
 
 /**
+ * Internally we can export this interface and change the type of
+ * render()'s options.
+ */
+interface InternalRenderOptions extends RenderOptions {
+  /**
+   * An internal-only migration flag
+   * @internal
+   */
+  clearContainerForLit2MigrationOnly?: boolean;
+}
+
+/**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  * @param value
  * @param container
@@ -335,12 +358,22 @@ export const render = (
   options?: RenderOptions
 ): ChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
+  // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart$;
+  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
+    // Internal modification: don't clear container to match lit-html 2.0
+    if (
+      INTERNAL &&
+      (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
+        true
+    ) {
+      container.childNodes.forEach((c) => c.remove());
+    }
     const endNode = options?.renderBefore ?? null;
+    // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart$ = part = new ChildPart(
+    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -355,7 +388,8 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   render.setSanitizer = setSanitizer;
   render.createSanitizer = createSanitizer;
   if (DEV_MODE) {
-    render._testOnlyClearSanitizerFactoryDoNotCallOrElse = _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse =
+      _testOnlyClearSanitizerFactoryDoNotCallOrElse;
   }
 }
 
@@ -546,7 +580,7 @@ const getTemplateHtml = (
   return [
     policy !== undefined
       ? policy.createHTML(htmlResult)
-      : ((htmlResult as unknown) as TrustedHTML),
+      : (htmlResult as unknown as TrustedHTML),
     attrNames,
   ];
 };
@@ -560,7 +594,8 @@ class Template {
   parts: Array<TemplatePart> = [];
 
   constructor(
-    {strings, _$litType$: type}: TemplateResult,
+    // This property needs to remain unminified.
+    {strings, ['_$litType$']: type}: TemplateResult,
     options?: RenderOptions
   ) {
     let node: Node | null;
@@ -650,7 +685,7 @@ class Template {
           const lastIndex = strings.length - 1;
           if (lastIndex > 0) {
             (node as Element).textContent = trustedTypes
-              ? ((trustedTypes.emptyScript as unknown) as '')
+              ? (trustedTypes.emptyScript as unknown as '')
               : '';
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
@@ -690,9 +725,10 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  /** @nocollapse */
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
-    el.innerHTML = (html as unknown) as string;
+    el.innerHTML = html as unknown as string;
     return el;
   }
 }
@@ -719,9 +755,11 @@ function resolveDirective(
       : (parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
-    : (value as DirectiveResult)._$litDirective$;
+    : // This property needs to remain unminified.
+      (value as DirectiveResult)['_$litDirective$'];
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
-    currentDirective?._$setDirectiveConnected?.(false);
+    // This property needs to remain unminified.
+    currentDirective?.['_$setDirectiveConnected']?.(false);
     if (nextDirectiveConstructor === undefined) {
       currentDirective = undefined;
     } else {
@@ -729,9 +767,8 @@ function resolveDirective(
       currentDirective._$initialize(part, parent, attributeIndex);
     }
     if (attributeIndex !== undefined) {
-      ((parent as AttributePart).__directives ??= [])[
-        attributeIndex
-      ] = currentDirective;
+      ((parent as AttributePart).__directives ??= [])[attributeIndex] =
+        currentDirective;
     } else {
       (parent as ChildPart | Directive).__directive = currentDirective;
     }
@@ -982,7 +1019,8 @@ class ChildPart {
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
-    } else if ((value as TemplateResult)._$litType$ !== undefined) {
+      // This property needs to remain unminified.
+    } else if ((value as TemplateResult)['_$litType$'] !== undefined) {
       this._commitTemplateResult(value as TemplateResult);
     } else if ((value as Node).nodeType !== undefined) {
       this._commitNode(value as Node);
@@ -1062,20 +1100,18 @@ class ChildPart {
   private _commitTemplateResult(
     result: TemplateResult | CompiledTemplateResult
   ): void {
-    const {values, _$litType$} = result;
+    // This property needs to remain unminified.
+    const {values, ['_$litType$']: type} = result;
     // If $litType$ is a number, result is a plain TemplateResult and we get
     // the template from the template cache. If not, result is a
     // CompiledTemplateResult and _$litType$ is a CompiledTemplate and we need
     // to create the <template> element the first time we see it.
     const template: Template | CompiledTemplate =
-      typeof _$litType$ === 'number'
+      typeof type === 'number'
         ? this._$getTemplate(result as TemplateResult)
-        : (_$litType$.el === undefined &&
-            (_$litType$.el = Template.createElement(
-              _$litType$.h,
-              this.options
-            )),
-          _$litType$);
+        : (type.el === undefined &&
+            (type.el = Template.createElement(type.h, this.options)),
+          type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
@@ -1204,12 +1240,6 @@ class AttributePart {
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   protected _sanitizer: ValueSanitizer | undefined;
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
 
   get tagName() {
     return this.element.tagName;
@@ -1460,13 +1490,6 @@ class ElementPart {
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
-
   options: RenderOptions | undefined;
 
   constructor(
@@ -1491,7 +1514,7 @@ class ElementPart {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Σ object containing those members (or
+ * client side code, we export a _$LH object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -1501,7 +1524,7 @@ class ElementPart {
  *
  * @private
  */
-export const _Σ = {
+export const _$LH = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
   _marker: marker,

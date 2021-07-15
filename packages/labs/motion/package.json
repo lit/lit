@@ -23,8 +23,7 @@
     }
   },
   "files": [
-    "/src/",
-    "!/src/test/",
+    "/development/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/flip.{d.ts,d.ts.map,js,js.map}",
     "/flip-controller.{d.ts,d.ts.map,js,js.map}",
@@ -33,10 +32,10 @@
   "scripts": {
     "start": "web-dev-server -- --node-resolve --watch --preserve-sym-links --open demo/index.html",
     "build": "npm run clean && tsc --build && rollup -c",
+    "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
+    "build:ts:watch": "tsc  --build --watch",
     "clean": "rm -rf {index,flip,position}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/motion/development/**/*_test.js'",
     "test:prod": "TEST_PROD_BUILD=true npm run test:dev",

@@ -6,12 +6,12 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
-import {_Φ} from 'lit-element/private-ssr-support.js';
+import {_$LE} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty, changedProperties} = _Φ;
+const {attributeToProperty, changedProperties} = _$LE;
 
 /**
  * ElementRenderer implementation for LitElements
@@ -20,7 +20,8 @@ export class LitElementRenderer extends ElementRenderer {
   element: LitElement;
 
   static matchesClass(ctor: typeof HTMLElement) {
-    return ((ctor as unknown) as typeof LitElement)._$litElement$;
+    // This property needs to remain unminified.
+    return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
 
   constructor(tagName: string) {

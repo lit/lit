@@ -58,7 +58,7 @@ suite('Flip', () => {
     extraCss?: CSSResultGroup,
     childTemplate?: () => TemplateResult
   ) => {
-    const styles = [
+    const styles: CSSResultGroup = [
       css`
         * {
           box-sizing: border-box;
@@ -226,7 +226,7 @@ suite('Flip', () => {
     options.disabled = true;
     el.shift = true;
     await el.updateComplete;
-    await ((theFlip as unknown) as Flip)?.finished;
+    await (theFlip as unknown as Flip)?.finished;
     assert.notOk(frames);
   });
 
@@ -250,7 +250,7 @@ suite('Flip', () => {
     el.shift = false;
     theFlip = frames = undefined;
     await el.updateComplete;
-    await ((theFlip as unknown) as Flip)?.finished;
+    await (theFlip as unknown as Flip)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = 1;
@@ -263,7 +263,7 @@ suite('Flip', () => {
     el.shift = false;
     theFlip = frames = undefined;
     await el.updateComplete;
-    await ((theFlip as unknown) as Flip)?.finished;
+    await (theFlip as unknown as Flip)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = 2;
@@ -294,7 +294,7 @@ suite('Flip', () => {
     el.shift = false;
     theFlip = frames = undefined;
     await el.updateComplete;
-    await ((theFlip as unknown) as Flip)?.finished;
+    await (theFlip as unknown as Flip)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = [1, 2, 3, 4];
@@ -307,7 +307,7 @@ suite('Flip', () => {
     el.shift = false;
     theFlip = frames = undefined;
     await el.updateComplete;
-    await ((theFlip as unknown) as Flip)?.finished;
+    await (theFlip as unknown as Flip)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = [1, 2];
@@ -535,7 +535,8 @@ suite('Flip', () => {
       disconnectElement = flip.element;
       const p = disconnectElement!.parentElement!.getBoundingClientRect();
       const r = disconnectElement!.getBoundingClientRect();
-      const s = disconnectElement!.previousElementSibling!.getBoundingClientRect();
+      const s =
+        disconnectElement!.previousElementSibling!.getBoundingClientRect();
       if (!shouldRender) {
         assert.equal(
           r.bottom - p.top,

@@ -15,7 +15,6 @@ import {
   adoptStyles,
   CSSResultGroup,
   CSSResultOrNative,
-  CSSResultFlatArray,
 } from './css-tag.js';
 import type {
   ReactiveController,
@@ -43,7 +42,7 @@ if (DEV_MODE) {
 
   // Issue platform support warning.
   if (
-    window.ShadyDOM?.inUse &&
+    (window as LitExtraGlobals).ShadyDOM?.inUse &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any)['reactiveElementPlatformSupport'] === undefined
   ) {
@@ -283,7 +282,8 @@ export type Initializer = (element: ReactiveElement) => void;
  */
 export abstract class ReactiveElement
   extends HTMLElement
-  implements ReactiveControllerHost {
+  implements ReactiveControllerHost
+{
   // Note: these are patched in only in DEV_MODE.
   /**
    * Read or set all the enabled warning kinds for this class.
@@ -403,7 +403,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  static elementStyles: CSSResultFlatArray = [];
+  static elementStyles: Array<CSSResultOrNative> = [];
 
   /**
    * Array of styles to apply to the element. The styles should be defined
@@ -521,11 +521,11 @@ export abstract class ReactiveElement
         return (this as {[key: string]: unknown})[key as string];
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = ((this as {}) as {[key: string]: unknown})[
+        const oldValue = (this as {} as {[key: string]: unknown})[
           name as string
         ];
-        ((this as {}) as {[key: string]: unknown})[key as string] = value;
-        ((this as unknown) as ReactiveElement).requestUpdate(
+        (this as {} as {[key: string]: unknown})[key as string] = value;
+        (this as unknown as ReactiveElement).requestUpdate(
           name,
           oldValue,
           options
@@ -637,7 +637,9 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
+  protected static finalizeStyles(
+    styles?: CSSResultGroup
+  ): Array<CSSResultOrNative> {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
@@ -823,9 +825,11 @@ export abstract class ReactiveElement
   connectedCallback() {
     // create renderRoot before first update.
     if (this.renderRoot === undefined) {
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
+      (
+        this as {
+          renderRoot: Element | DocumentFragment;
+        }
+      ).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
@@ -875,11 +879,9 @@ export abstract class ReactiveElement
     value: unknown,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
-    const attr = (this
-      .constructor as typeof ReactiveElement).__attributeNameForProperty(
-      name,
-      options
-    );
+    const attr = (
+      this.constructor as typeof ReactiveElement
+    ).__attributeNameForProperty(name, options);
     if (attr !== undefined && options.reflect === true) {
       const toAttribute =
         (options.converter as ComplexAttributeConverter)?.toAttribute ??
@@ -994,7 +996,7 @@ export abstract class ReactiveElement
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? ((requestUpdateThenable as unknown) as void) : undefined;
+    return DEV_MODE ? (requestUpdateThenable as unknown as void) : undefined;
   }
 
   /**
