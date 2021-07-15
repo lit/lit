@@ -1,7 +1,7 @@
-# @lit/transformers
+# @lit/ts-transformers
 
-[npm-img]: https://img.shields.io/npm/v/@lit/transformers
-[npm-href]: https://www.npmjs.com/package/@lit/transformers
+[npm-img]: https://img.shields.io/npm/v/@lit/ts-transformers
+[npm-href]: https://www.npmjs.com/package/@lit/ts-transformers
 [test-img]: https://github.com/lit/lit/workflows/Tests/badge.svg?branch=master
 [test-href]: https://github.com/lit/lit/actions?query=workflow%3ATests+branch%3Amaster+event%3Apush
 
@@ -100,7 +100,7 @@ customElements.define('simple-greeting', SimpleGreeting);
 ## Install
 
 ```sh
-npm i @lit/transformers
+npm i @lit/ts-transformers
 ```
 
 ## Usage
@@ -121,7 +121,7 @@ Update your `tsconfig.json`:
   "compilerOptions": {
     "plugins": [
       {
-        "transform": "@lit/transformers/lib/idiomatic.js"
+        "transform": "@lit/ts-transformers/lib/idiomatic.js"
       }
     ]
   }
@@ -141,7 +141,7 @@ API](https://github.com/microsoft/TypeScript-wiki/blob/master/Using-the-Compiler
 pass the transformer to the `customTransformers` parameter of `Program.emit`:
 
 ```ts
-import idiomaticLitDecoratorsTransform from '@lit/transformers/lib/idiomatic.js';
+import idiomaticLitDecoratorsTransform from '@lit/ts-transformers/lib/idiomatic.js';
 import ts from 'typescript';
 
 // Note this is not a complete example. For more information see

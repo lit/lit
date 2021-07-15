@@ -13,7 +13,7 @@ import ts from 'typescript';
 import {
   createTsProgramFromFragment,
   CompilerHostCache,
-} from '@lit/transformers/lib/tests/compile-ts-fragment.js';
+} from '@lit/ts-transformers/lib/tests/compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 

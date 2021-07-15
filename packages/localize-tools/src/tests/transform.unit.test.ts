@@ -13,7 +13,7 @@ import prettier from 'prettier';
 import {
   compileTsFragment,
   CompilerHostCache,
-} from '@lit/transformers/lib/tests/compile-ts-fragment.js';
+} from '@lit/ts-transformers/lib/tests/compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 const IMPORT_MSG = `import { msg, str } from "@lit/localize";\n`;
