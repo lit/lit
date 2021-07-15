@@ -16,8 +16,6 @@ import type {
   GenericVisitor,
 } from './visitor.js';
 
-const unreachable = (x: never) => x;
-
 /**
  * Configurable transformer for Lit.
  */
@@ -63,7 +61,7 @@ export class LitTransformer {
       default: {
         throw new Error(
           `Internal error: registering unknown visitor kind ${
-            (unreachable(visitor) as Visitor).kind
+            (visitor as void as unknown as Visitor).kind
           }`
         );
       }
@@ -87,7 +85,7 @@ export class LitTransformer {
       default: {
         throw new Error(
           `Internal error: unregistering unknown visitor kind ${
-            (unreachable(visitor) as Visitor).kind
+            (visitor as void as unknown as Visitor).kind
           }`
         );
       }
