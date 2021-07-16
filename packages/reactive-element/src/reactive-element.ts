@@ -281,6 +281,8 @@ let updatingHost: ReactiveElement | undefined;
 const updatingElements: Map<ReactiveElement, ReactiveElement | undefined> =
   new Map();
 
+let isAwaitingSubtree = false;
+
 // Iterates the tree of updating elements, and calls the given callback
 // for all elements once the target element has been reached.
 const onUpdatingSubtree = async (
@@ -302,12 +304,16 @@ const onUpdatingSubtree = async (
     } else if (hostDependencies.has(h) || isStarting) {
       hostDependencies.add(e);
       const r = callback(e);
+      isAwaitingSubtree = r != null;
       const didUpdate = r == null || (await r);
       if (isUpdated && !didUpdate) {
         isUpdated = false;
       }
+      isAwaitingSubtree = false;
     }
   }
+  // is this safe?
+  updatingElements.clear();
   return isUpdated;
 };
 
@@ -1131,11 +1137,12 @@ export abstract class ReactiveElement
     }
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
-    // Make this element the current updating host.
-    updatingHost = this;
     try {
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
+        // TODO(sorvell): How do we make this pay for play?
+        // Make this element the current updating host.
+        updatingHost = this;
         this.willUpdate(changedProperties);
         this.__controllers?.forEach((c) => c.hostUpdate?.());
         this.update(changedProperties);
@@ -1164,6 +1171,15 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
+    // This element is no longer the updating host.
+    updatingHost = undefined;
+    // This element has completed its update and is no longer pending.
+    // Note, if `onElementSubtree` is processing, we don't want to remove
+    // the element. This allows it to continue to participate in the update
+    // tree.
+    if (!isAwaitingSubtree) {
+      updatingElements.delete(this);
+    }
     this.__controllers?.forEach((c) => c.hostUpdated?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;
@@ -1187,10 +1203,6 @@ export abstract class ReactiveElement
   }
 
   private __markUpdated() {
-    // This element is no longer the updating host.
-    updatingHost = undefined;
-    // This element has completed its update and is no longer pending.
-    updatingElements.delete(this);
     this._$changedProperties = new Map();
     this.isUpdatePending = false;
   }

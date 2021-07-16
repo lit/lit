@@ -36,23 +36,27 @@ export class RenderingElement extends ReactiveElement {
     const result = this.render();
     super.update(changedProperties);
     if (result !== undefined) {
-      // Note, don't use `innerHTML` here to avoid a polyfill issue
-      // where `innerHTML` is not patched by CE on shadowRoot.
-      // https://github.com/webcomponents/custom-elements/issues/73
-      Array.from(this.renderRoot.childNodes).forEach((e) => {
-        // Leave any style elements that might be simulating
-        // adoptedStylesheets
-        if ((e as Element).localName !== 'style') {
-          this.renderRoot.removeChild(e);
-        }
-      });
-      const div = document.createElement('div');
-      div.innerHTML = result;
-      const ref = this.renderRoot.firstChild;
-      Array.from(div.childNodes).forEach((e) => {
-        this.renderRoot.insertBefore(e, ref);
-      });
+      this.renderToDOM(result);
     }
+  }
+
+  renderToDOM(html: string) {
+    // Note, don't use `innerHTML` here to avoid a polyfill issue
+    // where `innerHTML` is not patched by CE on shadowRoot.
+    // https://github.com/webcomponents/custom-elements/issues/73
+    Array.from(this.renderRoot.childNodes).forEach((e) => {
+      // Leave any style elements that might be simulating
+      // adoptedStylesheets
+      if ((e as Element).localName !== 'style') {
+        this.renderRoot.removeChild(e);
+      }
+    });
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const ref = this.renderRoot.firstChild;
+    Array.from(div.childNodes).forEach((e) => {
+      this.renderRoot.insertBefore(e, ref);
+    });
   }
 }
 

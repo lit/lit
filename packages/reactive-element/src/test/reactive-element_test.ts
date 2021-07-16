@@ -12,7 +12,12 @@ import {
   PropertyValues,
   ReactiveElement,
 } from '../reactive-element.js';
-import {generateElementName, nextFrame} from './test-helpers.js';
+import {
+  generateElementName,
+  nextFrame,
+  RenderingElement,
+  html,
+} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -3191,6 +3196,202 @@ suite('ReactiveElement', () => {
       assert.equal(el2.attrValue, 'custom');
       el2.setAttribute('foo', 'foo');
       assert.equal(el2.attrValue, 'custom');
+    });
+  });
+
+  suite('deep updates', () => {
+    class TestElement extends RenderingElement {
+      static properties = {prop: {type: String}};
+      prop = '';
+      childNames?: string[];
+      updateCount = 0;
+      childrenToUpdateCount = 100;
+      renderToDOM(html: string) {
+        // console.log(this.localName, 'renderToDOM');
+        if (!this.hasUpdated) {
+          super.renderToDOM(html);
+        } else {
+          this.propNode.textContent = this.prop;
+          this.childElements.forEach((e, i) => {
+            if (i < this.childrenToUpdateCount) {
+              (e as any).prop = this.prop;
+            }
+          });
+        }
+      }
+
+      get propNode() {
+        return this.renderRoot.querySelector('.prop')!;
+      }
+
+      get childElements() {
+        return Array.from(
+          this.renderRoot.querySelector('.container')!.children
+        ) as TestElement[];
+      }
+      updated() {
+        this.updateCount++;
+      }
+    }
+
+    const getElCount = (d: number, b: number) => {
+      let c = 0;
+      for (let i = d - 1; i >= 0; i--) {
+        const count = Math.pow(b, i);
+        for (let j = 0; j < count; j++) {
+          c++;
+        }
+      }
+      return c;
+    };
+
+    const getElementSubtree = (el: TestElement) => {
+      const elements = [el];
+      el.childElements.forEach((e) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        elements.push(...getElementSubtree(e));
+      });
+      return elements;
+    };
+
+    const generateTree = (depth = 3, breadth = 3, updateBreadth = 2) => {
+      const generateElement = (children: string[] = []) => {
+        const name = generateElementName();
+        customElements.define(
+          name,
+          class extends TestElement {
+            childNames = children;
+            childrenToUpdateCount = updateBreadth;
+            render() {
+              return html`<div>
+                ${this.localName}: <span class="prop">${this.prop}</span>
+                <blockquote class="container">
+                  ${children.map((c) => html`<${c}></${c}>`).join('')}
+                </blockquote>
+              </div>`;
+            }
+          }
+        );
+        return name;
+      };
+
+      let lastElName = '';
+      const childrenAtDepth = [];
+      for (let i = depth - 1; i >= 0; i--) {
+        const children: string[] = (childrenAtDepth[i] = []);
+        const deeperChildren = childrenAtDepth[i + 1] ?? [];
+        const count = Math.pow(breadth, i);
+        for (let j = 0; j < count; j++) {
+          const c = deeperChildren.splice(0, breadth);
+          lastElName = generateElement(c);
+          children.push(lastElName);
+        }
+      }
+      return lastElName;
+    };
+
+    test('updateUntilComplete', async () => {
+      const name = generateTree();
+      const el = document.createElement(name) as TestElement;
+      container.appendChild(el);
+      await el.updateUntilComplete();
+      assert.equal(el.updateCount, 1);
+      el.prop = 'hi';
+      await el.updateUntilComplete();
+      assert.equal(el.updateCount, 2);
+      assert.equal(el.propNode.textContent, 'hi');
+      container.removeChild(el);
+    });
+
+    test('deep updateUntilComplete(true)', async () => {
+      const d = 10,
+        b = 1;
+      const count = getElCount(d, b);
+      const name = generateTree(d, b, b);
+      const el = document.createElement(name) as TestElement;
+      container.appendChild(el);
+      await el.updateUntilComplete(true);
+      const els = getElementSubtree(el);
+      assert.equal(els.length, count);
+      els.forEach((e) => {
+        assert.equal(e.updateCount, 1);
+      });
+      el.prop = 'hi';
+      await el.updateUntilComplete(true);
+      els.forEach((e) => {
+        assert.equal(e.updateCount, 2);
+        assert.equal(e.propNode.textContent, 'hi');
+      });
+      container.removeChild(el);
+    });
+
+    test('flush', () => {
+      const name = generateTree();
+      const el = document.createElement(name) as TestElement;
+      container.appendChild(el);
+      el.flush();
+      assert.equal(el.updateCount, 1);
+      el.prop = 'hi';
+      el.flush();
+      assert.equal(el.updateCount, 2);
+      assert.equal(el.propNode.textContent, 'hi');
+      container.removeChild(el);
+    });
+
+    test('deep flush(true)', async () => {
+      const d = 6,
+        b = 2;
+      const elCount = getElCount(d, b);
+      const name = generateTree(d, b, b);
+      const el = document.createElement(name) as TestElement;
+      container.appendChild(el);
+      el.flush(true);
+      const els = getElementSubtree(el);
+      assert.equal(els.length, elCount);
+      els.forEach((e) => {
+        assert.equal(e.updateCount, 1);
+      });
+      el.prop = 'hi';
+      el.flush(true);
+      els.forEach((e) => {
+        assert.equal(e.updateCount, 2);
+        assert.equal(e.propNode.textContent, 'hi');
+      });
+      container.removeChild(el);
+    });
+
+    test('deep flush(true) only flushes dependent elements', async () => {
+      const d = 6,
+        b = 3,
+        u = b - 1;
+      const elCount = getElCount(d, b);
+      const updateCount = getElCount(d, u);
+      const name = generateTree(d, b, u);
+      const el = document.createElement(name) as TestElement;
+      container.appendChild(el);
+      el.flush(true);
+      const els = getElementSubtree(el);
+      assert.equal(els.length, elCount);
+      let updated = 0;
+      els.forEach((e) => {
+        if (e.updateCount === 1) {
+          updated++;
+        }
+      });
+      // first flush updates everything.
+      assert.equal(updated, elCount);
+      // next flush, should only update elements that are set.
+      el.prop = 'hi';
+      el.flush(true);
+      updated = 0;
+      els.forEach((e) => {
+        if (e.updateCount === 2) {
+          updated++;
+          assert.equal(e.propNode.textContent, 'hi');
+        }
+      });
+      assert.equal(updated, updateCount);
+      container.removeChild(el);
     });
   });
 });
