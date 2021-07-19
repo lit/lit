@@ -2630,12 +2630,8 @@ suite('lit-html', () => {
   //   });
   // });
 
-  let securityHooksSuiteFunction:
-    | Mocha.SuiteFunction
-    | Mocha.PendingSuiteFunction = suite;
-  if (!DEV_MODE) {
-    securityHooksSuiteFunction = suite.skip;
-  }
+  const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
+
   securityHooksSuiteFunction('enahnced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
@@ -2786,7 +2782,9 @@ suite('lit-html', () => {
     });
   });
 
-  suite('warnings', () => {
+  const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
+
+  warningsSuiteFunction('warnings', () => {
     test('warns on octal escape', () => {
       const warnings: Array<unknown[]> = [];
       const originalWarn = console.warn;
