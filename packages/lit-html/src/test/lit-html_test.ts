@@ -2786,6 +2786,26 @@ suite('lit-html', () => {
     });
   });
 
+  suite('warnings', () => {
+    test('warns on octal escape', () => {
+      const warnings: Array<unknown[]> = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args);
+        return originalWarn.call(console, ...args);
+      };
+      try {
+        render(html`\2022`, container);
+        assert.fail();
+      } catch (e) {
+        assert.equal(warnings.length, 1);
+        assert.include(warnings[0][0], 'escape');
+      } finally {
+        console.warn = originalWarn;
+      }
+    });
+  });
+
   suite('internal', () => {
     test('clearContainerForLit2MigrationOnly', () => {
       container.innerHTML = '<div>TEST</div>';
