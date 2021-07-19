@@ -527,7 +527,7 @@ suite('Animate', () => {
   test('animates out, stabilizeOut', async () => {
     let shouldRender = true;
     let disconnectAnimate: Animate;
-    let disconnectElement: HTMLElement;
+    let disconnectElement: HTMLElement | SVGElement;
     let startCalls = 0;
     const onStart = (animate: Animate) => {
       startCalls++;

@@ -1411,7 +1411,7 @@ class AttributePart implements Disconnectable {
     | typeof PROPERTY_PART
     | typeof BOOLEAN_ATTRIBUTE_PART
     | typeof EVENT_PART;
-  readonly element: Element;
+  readonly element: HTMLElement | SVGElement;
   readonly name: string;
   readonly options: RenderOptions | undefined;
 
@@ -1442,7 +1442,7 @@ class AttributePart implements Disconnectable {
   }
 
   constructor(
-    element: Element,
+    element: HTMLElement | SVGElement,
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable,
@@ -1705,13 +1705,16 @@ class ElementPart implements Disconnectable {
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
+  element: HTMLElement | SVGElement;
+
   options: RenderOptions | undefined;
 
   constructor(
-    public element: Element,
+    element: HTMLElement | SVGElement,
     parent: Disconnectable,
     options: RenderOptions | undefined
   ) {
+    this.element = element;
     this._$parent = parent;
     this.options = options;
   }
