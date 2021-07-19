@@ -2630,12 +2630,8 @@ suite('lit-html', () => {
   //   });
   // });
 
-  let securityHooksSuiteFunction:
-    | Mocha.SuiteFunction
-    | Mocha.PendingSuiteFunction = suite;
-  if (!DEV_MODE) {
-    securityHooksSuiteFunction = suite.skip;
-  }
+  const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
+
   securityHooksSuiteFunction('enahnced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
@@ -2783,6 +2779,28 @@ suite('lit-html', () => {
       assert.deepEqual(sanitizerCalls, [
         {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
       ]);
+    });
+  });
+
+  const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
+
+  warningsSuiteFunction('warnings', () => {
+    test('warns on octal escape', () => {
+      const warnings: Array<unknown[]> = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args);
+        return originalWarn.call(console, ...args);
+      };
+      try {
+        render(html`\2022`, container);
+        assert.fail();
+      } catch (e) {
+        assert.equal(warnings.length, 1);
+        assert.include(warnings[0][0], 'escape');
+      } finally {
+        console.warn = originalWarn;
+      }
     });
   });
 

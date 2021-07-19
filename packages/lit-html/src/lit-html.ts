@@ -277,12 +277,23 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
  */
 const tag =
   <T extends ResultType>(type: T) =>
-  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => ({
-    // This property needs to remain unminified.
-    ['_$litType$']: type,
-    strings,
-    values,
-  });
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => {
+    // Warn against templates octal escape sequences
+    // We do this here rather than in render so that the warning is closer to the
+    // template definition.
+    if (DEV_MODE && strings.some((s) => s === undefined)) {
+      console.warn(
+        'Some template strings are undefined.\n' +
+          'This is probably caused by illegal octal escape sequences.'
+      );
+    }
+    return {
+      // This property needs to remain unminified.
+      ['_$litType$']: type,
+      strings,
+      values,
+    };
+  };
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
