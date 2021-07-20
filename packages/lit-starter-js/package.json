@@ -52,7 +52,7 @@
     "@web/test-runner": "^0.12.15",
     "@web/test-runner-mocha": "^0.3.5",
     "@web/test-runner-playwright": "^0.8.4",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/webcomponentsjs": "../../webcomponents-webcomponentsjs-2.5.0.tgz",
     "babel-eslint": "^10.1.0",
     "deepmerge": "^4.2.2",
     "eslint": "^6.8.0",
