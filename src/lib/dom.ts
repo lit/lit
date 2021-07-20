@@ -17,8 +17,7 @@
  */
 export const isCEPolyfill = typeof window !== 'undefined' &&
     window.customElements != null &&
-    window.customElements.polyfillWrapFlushCallback !==
-        undefined;
+    window.customElements.polyfillWrapFlushCallback !== undefined;
 
 /**
  * Reparents nodes, starting from `start` (inclusive) to `end` (exclusive),
