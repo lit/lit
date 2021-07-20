@@ -12,16 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-interface MaybePolyfilledCe extends CustomElementRegistry {
-  readonly polyfillWrapFlushCallback?: object;
-}
-
 /**
  * True if the custom elements polyfill is in use.
  */
 export const isCEPolyfill = typeof window !== 'undefined' &&
     window.customElements != null &&
-    (window.customElements as MaybePolyfilledCe).polyfillWrapFlushCallback !==
+    window.customElements.polyfillWrapFlushCallback !==
         undefined;
 
 /**

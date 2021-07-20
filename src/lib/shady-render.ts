@@ -311,6 +311,6 @@ export const render =
       // so we leave it up to the user to call `ShadyCSS.styleElement`
       // for dynamic changes.
       if (!hasRendered && needsScoping) {
-        window.ShadyCSS!.styleElement((container as ShadowRoot).host);
+        window.ShadyCSS!.styleElement((container as ShadowRoot).host as HTMLElement);
       }
     };
