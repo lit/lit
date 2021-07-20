@@ -63,6 +63,7 @@ const copyConfig = {
 };
 
 const samples = [
+  'nested',
   'stacked',
   'category-headers',
   'category-headers-2',

@@ -100,6 +100,7 @@ class ScrollDirective extends AsyncDirective {
         if (container && container.nodeType === 1) {
             this.scroller = new VirtualScroller({ container, scrollTarget, layout });
             container.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+                e.stopPropagation();
                 this.first = e.first;
                 this.last = e.last;
                 this.setValue(this.render());
