@@ -570,29 +570,31 @@ export class VirtualScroller {
     let top, left, bottom, right, scrollTop, scrollLeft, offsetTop, offsetLeft, offsetBottom, offsetRight;
 
     const containerBounds = this._container.getBoundingClientRect();
-    if (this._scrollTarget === this._container || this._scrollTarget === window) {
+    if (this._scrollTarget === this._container) {
       top = Math.max(containerBounds.top, 0);
       left = Math.max(containerBounds.left, 0);
       bottom = Math.min(containerBounds.bottom, window.innerHeight);
       right = Math.min(containerBounds.right, window.innerWidth);
-      if (this._scrollTarget === this._container) {
-        scrollTop = this._container.scrollTop;
-        scrollLeft = this._container.scrollLeft;
-        offsetTop = 0;
-        offsetLeft = 0;
-        offsetBottom = 0;
-        offsetRight = 0;
-      }
-      else { // this._scrollTarget === window
-        scrollTop = -containerBounds.top;
-        scrollLeft = -containerBounds.left;
-        offsetTop = window.scrollY + containerBounds.top;
-        offsetLeft = window.scrollX + containerBounds.left;
-        offsetBottom = document.body.offsetHeight - (window.scrollY + containerBounds.top + containerBounds.height);
-        offsetRight = document.body.offsetWidth - (window.scrollX + containerBounds.left + containerBounds.width);
-      }
+      scrollTop = this._container.scrollTop;
+      scrollLeft = this._container.scrollLeft;
+      offsetTop = 0;
+      offsetLeft = 0;
+      offsetBottom = 0;
+      offsetRight = 0;
     }
-    else {
+    else if (this._scrollTarget === window) {
+      top = 0;
+      left = 0;
+      bottom = window.innerHeight;
+      right = window.innerWidth;
+      scrollTop = -containerBounds.top;
+      scrollLeft = -containerBounds.left;
+      offsetTop = window.scrollY + containerBounds.top;
+      offsetLeft = window.scrollX + containerBounds.left;
+      offsetBottom = document.body.offsetHeight - (window.scrollY + containerBounds.top + containerBounds.height);
+      offsetRight = document.body.offsetWidth - (window.scrollX + containerBounds.left + containerBounds.width);
+    }
+    else { // this._scrollTarget is some other node, most likely an ancestor
       const scrollTargetBounds = (this._scrollTarget as HTMLElement).getBoundingClientRect();
       top = Math.max(containerBounds.top, scrollTargetBounds.top, 0);
       left = Math.max(containerBounds.left, scrollTargetBounds.left, 0);

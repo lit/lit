@@ -63,6 +63,7 @@ const copyConfig = {
 };
 
 const samples = [
+  'ancestor-scroll-target',
   'nested',
   'stacked',
   'category-headers',
