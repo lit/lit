@@ -376,6 +376,8 @@ export abstract class ReactiveElement
    */
   static disableWarning?: (warningKind: WarningKind) => void;
 
+  static trackUpdates = true;
+
   /**
    * @nocollapse
    */
@@ -1050,7 +1052,9 @@ export abstract class ReactiveElement
   private async __enqueueUpdate() {
     this.isUpdatePending = true;
     // Put this element in the list of elements pending updates.
-    updatingElements.set(this, updatingHost);
+    if ((this.constructor as typeof ReactiveElement).trackUpdates) {
+      updatingElements.set(this, updatingHost);
+    }
     try {
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
@@ -1177,7 +1181,10 @@ export abstract class ReactiveElement
     // Note, if `onElementSubtree` is processing, we don't want to remove
     // the element. This allows it to continue to participate in the update
     // tree.
-    if (!isAwaitingSubtree) {
+    if (
+      (this.constructor as typeof ReactiveElement).trackUpdates &&
+      !isAwaitingSubtree
+    ) {
       updatingElements.delete(this);
     }
     this.__controllers?.forEach((c) => c.hostUpdated?.());
