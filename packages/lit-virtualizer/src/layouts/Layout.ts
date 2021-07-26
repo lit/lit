@@ -29,14 +29,6 @@ export type Positions = {
   yOffset?: number
 };
 
-export type Offsets = {
-  top: number,
-  right: number,
-  bottom: number,
-  left: number;
-}
-
-
 export type LayoutConstructor = new(config?: object) => Layout;
 
 export interface LayoutSpecifier {
@@ -61,8 +53,6 @@ export type ScrollDirection = 'vertical' | 'horizontal';
   viewportSize: Size;
 
   viewportScroll: Positions;
-
-  viewportOffset: Offsets;
 
   readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
 

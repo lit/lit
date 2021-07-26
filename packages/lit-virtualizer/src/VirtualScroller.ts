@@ -101,6 +101,8 @@ export class VirtualScroller {
    */
   private _scrollTarget?: Element | Window;
 
+  private _clippingAncestors: Element[] = [];
+
   /**
    * A sentinel element that sizes the container when it is a scrolling
    * element. This ensures the scroll bar accurately reflects the total
@@ -255,6 +257,8 @@ export class VirtualScroller {
         (container as ShadowRoot).host as ContainerElement :
         container as ContainerElement;
 
+    this._clippingAncestors = getClippingAncestors(container as Element);
+
     this._schedule(this._updateLayout);
 
     this._container = newContainer;
@@ -282,6 +286,9 @@ export class VirtualScroller {
     return this._layout;
   }
 
+  // TODO (graynorton): Consider not allowing dynamic layout changes and
+  // instead just creating a new VirtualScroller instance when a layout
+  // change is desired. Might simplify quite a bit.
   set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
     if (this._layout === layout) {
       return;
@@ -407,6 +414,8 @@ export class VirtualScroller {
   _initScrollTarget(config: VirtualScrollerConfig) {
     const target = this._scrollTarget = config.scrollTarget || window;
     target.addEventListener('scroll', this, {passive: true});
+    // TODO: move this. Also: intersection observers?
+    this._clippingAncestors.forEach(ancestor => ancestor.addEventListener('scroll', this, {passive: true}));
     if (target === this._container) {
       this._sizer = this._sizer || this._createContainerSizer();
       this._container!.insertBefore(this._sizer, this._container!.firstChild);
@@ -494,7 +503,7 @@ export class VirtualScroller {
   handleEvent(event: CustomEvent) {
     switch (event.type) {
       case 'scroll':
-        if (event.currentTarget === this._scrollTarget) {
+        if (event.currentTarget === this._scrollTarget || this._clippingAncestors.includes(event.currentTarget as Element)) {
           this._handleScrollEvent();
         }
         break;
@@ -561,58 +570,40 @@ export class VirtualScroller {
   }
 
   private _updateView() {
-    // TODO (graynorton): Can probably greatly simplify this
-    // by using IntersectionObserver
     if (!this.container || !this._container || !this._layout) {
       return;
     }
 
-    let top, left, bottom, right, scrollTop, scrollLeft, offsetTop, offsetLeft, offsetBottom, offsetRight;
+    let top, left, bottom, right, scrollTop, scrollLeft;
 
     const containerBounds = this._container.getBoundingClientRect();
+
+    top = 0
+    left = 0;
+    bottom = window.innerHeight;
+    right = window.innerWidth;
+
+    for (let ancestor of this._clippingAncestors) {
+      const ancestorBounds = ancestor.getBoundingClientRect();
+      top = Math.max(top, ancestorBounds.top);
+      left = Math.max(left, ancestorBounds.left);
+      bottom = Math.min(bottom, ancestorBounds.bottom);
+      right = Math.min(right, ancestorBounds.right);
+    }
     if (this._scrollTarget === this._container) {
-      top = Math.max(containerBounds.top, 0);
-      left = Math.max(containerBounds.left, 0);
-      bottom = Math.min(containerBounds.bottom, window.innerHeight);
-      right = Math.min(containerBounds.right, window.innerWidth);
       scrollTop = this._container.scrollTop;
       scrollLeft = this._container.scrollLeft;
-      offsetTop = 0;
-      offsetLeft = 0;
-      offsetBottom = 0;
-      offsetRight = 0;
     }
-    else if (this._scrollTarget === window) {
-      top = 0;
-      left = 0;
-      bottom = window.innerHeight;
-      right = window.innerWidth;
-      scrollTop = -containerBounds.top;
-      scrollLeft = -containerBounds.left;
-      offsetTop = window.scrollY + containerBounds.top;
-      offsetLeft = window.scrollX + containerBounds.left;
-      offsetBottom = document.body.offsetHeight - (window.scrollY + containerBounds.top + containerBounds.height);
-      offsetRight = document.body.offsetWidth - (window.scrollX + containerBounds.left + containerBounds.width);
-    }
-    else { // this._scrollTarget is some other node, most likely an ancestor
-      const scrollTargetBounds = (this._scrollTarget as HTMLElement).getBoundingClientRect();
-      top = Math.max(containerBounds.top, scrollTargetBounds.top, 0);
-      left = Math.max(containerBounds.left, scrollTargetBounds.left, 0);
-      bottom = Math.min(containerBounds.bottom, scrollTargetBounds.bottom, window.innerHeight);
-      right = Math.min(containerBounds.right, scrollTargetBounds.right, window.innerWidth);
+    else {
       scrollTop = top - containerBounds.top;
       scrollLeft = left - containerBounds.left;
-      offsetTop = containerBounds.top - scrollTargetBounds.top - (this._scrollTarget as HTMLElement).scrollTop;
-      offsetLeft = containerBounds.left - scrollTargetBounds.left - (this._scrollTarget as HTMLElement).scrollLeft;
-      offsetBottom = containerBounds.bottom - scrollTargetBounds.bottom - (this._scrollTarget as HTMLElement).scrollTop;
-      offsetRight = containerBounds.right - scrollTargetBounds.right - (this._scrollTarget as HTMLElement).scrollLeft;
     }
+    
     const height = Math.max(1, bottom - top);
     const width = Math.max(1, right - left);
 
     this._layout.viewportSize = {width, height};
     this._layout.viewportScroll = {top: scrollTop, left: scrollLeft};
-    this._layout.viewportOffset = {top: offsetTop, left: offsetLeft, bottom: offsetBottom, right: offsetRight}
   }
 
   /**
@@ -764,4 +755,31 @@ function getMargins(el: Element): Margins {
 function getMarginValue(value: string): number {
   const float = value ? parseFloat(value) : NaN;
   return Number.isNaN(float) ? 0 : float;
+}
+
+// TODO (graynorton): Deal with iframes?
+function getParentElement(el: Element) {
+  if (el.parentElement !== null) {
+    return el.parentElement;
+  }
+  const parentNode = el.parentNode;
+  if (parentNode && parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+    return (parentNode as ShadowRoot).host;
+  }
+  return null;
+}
+
+function getElementAncestors(el: Element) {
+  const ancestors = [];
+  let parent = getParentElement(el);
+  while(parent !== null) {
+    ancestors.push(parent);
+    parent = getParentElement(parent);
+  }
+  return ancestors;
+}
+
+function getClippingAncestors(el: Element) {
+  return getElementAncestors(el)
+    .filter(a => getComputedStyle(a).overflow !== 'visible');
 }
