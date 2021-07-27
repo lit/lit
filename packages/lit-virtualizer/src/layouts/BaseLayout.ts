@@ -50,7 +50,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   /**
    * Index of the item that has been scrolled to via the public API. When the
-   * container is otherwise scrolled, this value is set back to -1.
+   * viewport is otherwise scrolled, this value is set back to -1.
    */
   protected _scrollToIndex = -1;
 
@@ -147,7 +147,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _scrollSize = 1;
 
   /**
-   * Number of pixels beyond the visible size of the container to still include
+   * Number of pixels beyond the viewport to still include
    * in the active range of items.
    */
   // TODO (graynorton): Probably want to make this something we calculate based

@@ -86,9 +86,7 @@ export type ScrollDirection = 'vertical' | 'horizontal';
    *       'height' | 'width': number
    *     }
    * - rangechange
-   *     Dispatch when the range of children that should be displayed changes
-   *     (based on layout calculations and the size of the container) or when
-   *     the first or last item to intersect the container changes.
+   *     Dispatch when the range of children that should be displayed changes.
    *     detail: {
    *       first: number,
    *       last: number,

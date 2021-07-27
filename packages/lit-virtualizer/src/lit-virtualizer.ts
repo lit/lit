@@ -1,8 +1,8 @@
 import { html, LitElement, TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
-import { scroll } from './scroll.js';
-import { scrollerRef, ContainerElement } from './VirtualScroller.js';
+import { scroll as scrollDirective } from './scroll.js';
+import { scrollerRef, VirtualizerHostElement } from './VirtualScroller.js';
 import { LayoutSpecifier, Layout, LayoutConstructor } from './layouts/Layout.js';
 
 // export { scrollerRef } from './VirtualScroller.js';
@@ -23,7 +23,7 @@ export class LitVirtualizer extends LitElement {
     items: Array<unknown> = [];
 
     @property({attribute: false})
-    scrollTarget: Element | Window = this;
+    scroller = true; //false;
 
     @property()
     keyFunction: ((item:unknown) => unknown) | undefined = undefined;
@@ -46,7 +46,7 @@ export class LitVirtualizer extends LitElement {
     get layout(): Layout | LayoutConstructor | LayoutSpecifier | undefined {
         // TODO: graynorton@: Coercing null to undefined here. Should review
         // use of null for defaults in VirtualScroller and see if we can eliminate.
-        return (this as ContainerElement)[scrollerRef]!.layout || undefined;
+        return (this as VirtualizerHostElement)[scrollerRef]!.layout || undefined;
     }
     
     
@@ -62,10 +62,10 @@ export class LitVirtualizer extends LitElement {
     }
 
     render(): TemplateResult {
-        const { items, renderItem, keyFunction, scrollTarget } = this;
+        const { items, renderItem, keyFunction, scroller } = this;
         const layout = this._layout;
         return html`
-            ${scroll({ items, renderItem, layout, keyFunction, scrollTarget, scrollToIndex: this._scrollToIndex })}
+            ${scrollDirective({ items, renderItem, layout, keyFunction, scroller, scrollToIndex: this._scrollToIndex })}
         `;
     }
 }

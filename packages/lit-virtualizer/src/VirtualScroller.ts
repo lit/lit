@@ -51,7 +51,7 @@ declare global {
   }
 }
 
-export interface ContainerElement extends HTMLElement {
+export interface VirtualizerHostElement extends HTMLElement {
   [scrollerRef]?: VirtualScroller
 }
 
@@ -63,24 +63,24 @@ type ChildMeasurements = {[key: number]: ItemBox};
 
 export type ScrollToIndexValue = {index: number, position?: string} | null;
 
-export interface VirtualScrollerConfig {
+export interface VirtualizerConfig {
   layout?: Layout | LayoutConstructor | LayoutSpecifier;
 
   /**
-   * An element that receives scroll events for the virtual scroller.
+   * Whether the virtualizer's host element should be scrollable.
    */
-  scrollTarget?: Element | Window;
+  scroller: boolean;
 
   /**
    * The parent of all child nodes to be rendered.
    */
-  container: HTMLElement | ShadowRoot;
+  hostElement: HTMLElement;
 }
 
 /**
  * Provides virtual scrolling boilerplate.
  *
- * Extensions of this class must set container, layout, and scrollTarget.
+ * Extensions of this class must set hostElement, layout, and scrollTarget.
  *
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
@@ -96,19 +96,11 @@ export class VirtualScroller {
   private _layout: Layout | null = null;
 
   /**
-   * The element that generates scroll events and defines the container
-   * viewport. Set by scrollTarget.
+   * Whether the virtualizer's host element should be scrollable.
    */
-  private _scrollTarget?: Element | Window;
+  private _scroller = false;
 
   private _clippingAncestors: Element[] = [];
-
-  /**
-   * A sentinel element that sizes the container when it is a scrolling
-   * element. This ensures the scroll bar accurately reflects the total
-   * size of the list.
-   */
-  private _sizer: HTMLElement | null = null;
 
   /**
    * Layout provides these values, we set them on _render().
@@ -139,14 +131,16 @@ export class VirtualScroller {
   private _visibilityChanged = true;
 
   /**
-   * Containing element. Set by container.
+   * The HTMLElement that hosts the virtualizer. Set by hostElement.
    */
-  protected _container?: ContainerElement;
+  protected _hostElement?: VirtualizerHostElement;
+
+  protected _containerElement?: HTMLElement;
 
   /**
-   * Resize observer attached to container.
+   * Resize observer attached to hostElement.
    */
-  private _containerRO: ResizeObserver | null = null;
+  private _hostElementRO: ResizeObserver | null = null;
 
   /**
    * Resize observer attached to children.
@@ -184,12 +178,12 @@ export class VirtualScroller {
   protected _last = -1;
 
   /**
-   * Index of the first item intersecting the container element.
+   * Index of the first item intersecting the viewport.
    */
   private _firstVisible = -1;
 
   /**
-   * Index of the last item intersecting the container element.
+   * Index of the last item intersecting the viewport.
    */
   private _lastVisible = -1;
 
@@ -204,26 +198,26 @@ export class VirtualScroller {
 
    protected _measureChildOverride: ((element: Element, item: unknown) => ItemBox) | null = null;
 
-  constructor(config: VirtualScrollerConfig) {
+  constructor(config: VirtualizerConfig) {
     if (!config) {
       throw new Error('VirtualScroller constructor requires a configuration object');
     }
-    if (config.container) {
+    if (config.hostElement) {
       this._init(config);
     }
     else {
-      throw new Error('VirtualScroller configuration requires the "container" property');
+      throw new Error('VirtualScroller configuration requires the "hostElement" property');
     }
   }
 
-  async _init(config: VirtualScrollerConfig) {
+  async _init(config: VirtualizerConfig) {
     await this._initResizeObservers();
-    this._initContainer(config);
-    this._initScrollTarget(config);
+    this._initHostElement(config);
+    this._initScrollListeners();
     this._initLayout(config);
   }
 
-  async _initLayout(config: VirtualScrollerConfig) {
+  async _initLayout(config: VirtualizerConfig) {
     if (config.layout) {
       this.layout = config.layout;
     }
@@ -241,43 +235,56 @@ export class VirtualScroller {
   }
 
   /**
-   * The parent of all child nodes to be rendered.
+   * The element hosting the virtualizer and containing all of its child elements
    */
-  // Won't ever return a ShadowRoot, but TypeScript wants setter and getter
-  // types to be the same
-  get container(): ContainerElement | ShadowRoot | undefined {
-    return this._container;
+  get hostElement(): VirtualizerHostElement {
+    return this._hostElement!;
   }
 
-  _initContainer(config: VirtualScrollerConfig) {
-    const { container } = config;
-    // Consider document fragments as shadowRoots.
-    const newContainer =
-        (container && container.nodeType === Node.DOCUMENT_FRAGMENT_NODE) ?
-        (container as ShadowRoot).host as ContainerElement :
-        container as ContainerElement;
-
-    this._clippingAncestors = getClippingAncestors(container as Element);
-
+  _initHostElement(config: VirtualizerConfig) {
+    const hostElement = (this._hostElement = config.hostElement as VirtualizerHostElement);
+    this._scroller = Boolean(config.scroller);
+    this._applyVirtualizerStyles();
+    this._clippingAncestors = getClippingAncestors(this._containerElement!);
     this._schedule(this._updateLayout);
-
-    this._container = newContainer;
-
-    // Would rather set these CSS properties on the host using Shadow Root
-    // style scoping (and falling back to a global stylesheet where native
-    // Shadow DOM is not available), but this Mobile Safari bug is preventing
-    // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
-    const style = newContainer.style as CSSStyleDeclaration & { contain: string };
-    style.display = style.display || 'block';
-    style.position = style.position || 'relative';
-    style.overflow = style.overflow || 'auto';
-    style.contain = style.contain || 'strict';
-
-    this._containerRO!.observe(newContainer);
-    this._mutationObserver!.observe(newContainer, { childList: true });
+    this._hostElementRO!.observe(hostElement);
+    this._mutationObserver!.observe(hostElement, { childList: true });
     this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
+    hostElement[scrollerRef] = this;
+  }
 
-    newContainer[scrollerRef] = this;
+  private _applyVirtualizerStyles() {
+    const hostElement = this._hostElement!;
+    if (nativeShadowDOM) {
+      const root = hostElement.shadowRoot || hostElement.attachShadow({mode: 'open'});
+      const slot = root.querySelector('slot:not([name])') || document.createElement('slot');
+      const sheet = document.createElement('style');
+      root.appendChild(sheet);
+      if (this._scroller) {
+        this._containerElement = document.createElement('div');
+        this._containerElement.classList.add(CONTAINER_CLASSNAME);
+        sheet.textContent = virtualizerStyles(':host', `.${CONTAINER_CLASSNAME}`, '::slotted(*)');
+        root.appendChild(this._containerElement);
+      }
+      else {
+        this._containerElement = hostElement;
+        sheet.textContent = virtualizerStyles(null, ':host', '::slotted(*)');
+      }
+      this._containerElement!.appendChild(slot);
+    }
+    else {
+      attachGlobalStylesheet();
+      if (this._scroller) {
+        this._containerElement = document.createElement('div');
+        hostElement.appendChild(this._containerElement);
+        this._containerElement.classList.add(CONTAINER_CLASSNAME);
+        this._hostElement!.classList.add(HOST_CLASSNAME);
+      }
+      else {
+        this._containerElement = hostElement;
+        this._containerElement.classList.add(CONTAINER_CLASSNAME);
+      }
+    }
   }
 
   // This will always actually return a layout instance,
@@ -327,10 +334,9 @@ export class VirtualScroller {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
-      // Reset container size so layout can get correct viewport size.
-      if (this._container) {
+      if (this._hostElement) {
         this._sizeContainer(undefined);
-        this._container.removeEventListener('load', this._loadListener, true);
+        this._hostElement.removeEventListener('load', this._loadListener, true);
       }
     }
 
@@ -347,8 +353,8 @@ export class VirtualScroller {
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
-      if (this._container && this._layout.listenForChildLoadEvents) {
-        this._container.addEventListener('load', this._loadListener, true);
+      if (this._hostElement && this._layout.listenForChildLoadEvents) {
+        this._hostElement.addEventListener('load', this._loadListener, true);
       }
       this._schedule(this._updateLayout);
     }
@@ -402,24 +408,9 @@ export class VirtualScroller {
     return Object.assign({width, height}, getMargins(element));
   }
 
-
-  /**
-   * The element that generates scroll events and defines the container
-   * viewport. The value `null` (default) corresponds to `window` as scroll
-   * target.
-   */
-  get scrollTarget(): Element | Window | undefined {
-    return this._scrollTarget;
-  }
-  _initScrollTarget(config: VirtualScrollerConfig) {
-    const target = this._scrollTarget = config.scrollTarget || window;
-    target.addEventListener('scroll', this, {passive: true});
-    // TODO: move this. Also: intersection observers?
+  _initScrollListeners() {
+    window.addEventListener('scroll', this, {passive: true});
     this._clippingAncestors.forEach(ancestor => ancestor.addEventListener('scroll', this, {passive: true}));
-    if (target === this._container) {
-      this._sizer = this._sizer || this._createContainerSizer();
-      this._container!.insertBefore(this._sizer, this._container!.firstChild);
-    }
   }
 
   /**
@@ -503,7 +494,7 @@ export class VirtualScroller {
   handleEvent(event: CustomEvent) {
     switch (event.type) {
       case 'scroll':
-        if (event.currentTarget === this._scrollTarget || this._clippingAncestors.includes(event.currentTarget as Element)) {
+        if (event.currentTarget === window || this._clippingAncestors.includes(event.currentTarget as Element)) {
           this._handleScrollEvent();
         }
         break;
@@ -529,10 +520,10 @@ export class VirtualScroller {
   }
 
   private async _initResizeObservers() {
-    if (this._containerRO === null) {
+    if (this._hostElementRO === null) {
       const ResizeObserver = await getResizeObserver();
-      this._containerRO = new ResizeObserver(
-        () => this._containerSizeChanged()
+      this._hostElementRO = new ResizeObserver(
+        () => this._hostElementSizeChanged()
       );
       this._childrenRO =
         new ResizeObserver(this._childrenSizeChanged.bind(this));
@@ -540,25 +531,9 @@ export class VirtualScroller {
     }
   }
 
-  private _createContainerSizer(): HTMLDivElement {
-    const sizer = document.createElement('div');
-    // When the scrollHeight is large, the height of this element might be
-    // ignored. Setting content and font-size ensures the element has a size.
-    Object.assign(sizer.style, {
-      position: 'absolute',
-      margin: '-2px 0 0 0',
-      padding: 0,
-      visibility: 'hidden',
-      fontSize: '2px',
-    });
-    sizer.innerHTML = '&nbsp;';
-    sizer.id = 'uni-virtualizer-spacer';
-    return sizer;
-  }
-
   get _children(): Array<HTMLElement> {
     const arr = [];
-    let next = this.container!.firstElementChild as HTMLElement;
+    let next = this.hostElement!.firstElementChild as HTMLElement;
     while (next) {
       // Skip our spacer. TODO (graynorton): Feels a bit hacky. Anything better?
       if (next.id !== 'uni-virtualizer-spacer') {
@@ -570,13 +545,12 @@ export class VirtualScroller {
   }
 
   private _updateView() {
-    if (!this.container || !this._container || !this._layout) {
-      return;
-    }
+    const containerElement = this._containerElement!;
+    const layout = this._layout!;
 
     let top, left, bottom, right, scrollTop, scrollLeft;
 
-    const containerBounds = this._container.getBoundingClientRect();
+    const containerElementBounds = containerElement.getBoundingClientRect();
 
     top = 0
     left = 0;
@@ -590,24 +564,18 @@ export class VirtualScroller {
       bottom = Math.min(bottom, ancestorBounds.bottom);
       right = Math.min(right, ancestorBounds.right);
     }
-    if (this._scrollTarget === this._container) {
-      scrollTop = this._container.scrollTop;
-      scrollLeft = this._container.scrollLeft;
-    }
-    else {
-      scrollTop = top - containerBounds.top;
-      scrollLeft = left - containerBounds.left;
-    }
+    scrollTop = top - containerElementBounds.top;
+    scrollLeft = left - containerElementBounds.left;
     
     const height = Math.max(1, bottom - top);
     const width = Math.max(1, right - left);
 
-    this._layout.viewportSize = {width, height};
-    this._layout.viewportScroll = {top: scrollTop, left: scrollLeft};
+    layout.viewportSize = {width, height};
+    layout.viewportScroll = {top: scrollTop, left: scrollLeft};
   }
 
   /**
-   * Styles the _sizer element or the container so that its size reflects the
+   * Styles the container so that its size reflects the
    * total size of all items.
    */
   private _sizeContainer(size?: ScrollSize | null) {
@@ -617,13 +585,9 @@ export class VirtualScroller {
     const max = 8850000;
     const h = size && (size as HorizontalScrollSize).width ? Math.min(max, (size as HorizontalScrollSize).width) : 0;
     const v = size && (size as VerticalScrollSize).height ? Math.min(max, (size as VerticalScrollSize).height) : 0;
-    if (this._scrollTarget === this._container) {
-        this._sizer!.style.transform = `translate(${h}px, ${v}px)`;
-    } else {
-      const style = this._container!.style;
-      (style.minWidth as string | null) = h ? `${h}px` : null;
-      (style.minHeight as string | null) = v ? `${v}px` : null;
-    }
+    const style = this._containerElement!.style;
+    (style.minWidth as string | null) = h ? `${h}px` : null;
+    (style.minHeight as string | null) = v ? `${v}px` : null;
   }
 
   /**
@@ -673,8 +637,8 @@ export class VirtualScroller {
   }
 
   private _correctScrollError(err: {top: number, left: number}) {
-    if (this._scrollTarget !== window) {
-      const target = this._scrollTarget as Element;
+    const target = this._clippingAncestors[0];
+    if (target) {
       target.scrollTop -= err.top;
       target.scrollLeft -= err.left;
     } else {
@@ -687,18 +651,18 @@ export class VirtualScroller {
    * lastVisible.
    */
   private _notifyRange() {
-    this._container!.dispatchEvent(new RangeChangedEvent({ first: this._first, last: this._last }));
+    this._hostElement!.dispatchEvent(new RangeChangedEvent({ first: this._first, last: this._last }));
   }
 
   private _notifyVisibility() {
-    this._container!.dispatchEvent(new VisibilityChangedEvent({ first: this._firstVisible, last: this._lastVisible }));
+    this._hostElement!.dispatchEvent(new VisibilityChangedEvent({ first: this._firstVisible, last: this._lastVisible }));
   }
 
   /**
    * Render and update the view at the next opportunity with the given
-   * container size.
+   * hostElement size.
    */
-  private _containerSizeChanged() {
+  private _hostElementSizeChanged() {
     this._schedule(this._updateLayout);
   }
 
@@ -782,4 +746,46 @@ function getElementAncestors(el: Element) {
 function getClippingAncestors(el: Element) {
   return getElementAncestors(el)
     .filter(a => getComputedStyle(a).overflow !== 'visible');
+}
+
+///
+
+// TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
+declare global {
+  interface Window {
+      ShadyDOM?: any;
+  }
+}
+let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
+
+const HOST_CLASSNAME = 'lit-virtualizer-host';
+const CONTAINER_CLASSNAME = 'lit-virtualizer-container';
+let globalStylesheet: HTMLStyleElement | null = null;
+
+function virtualizerStyles(scrollingHostSel: string | null, containerSel: string, childSel: string): string {
+  let styles = scrollingHostSel
+    ? `
+      ${scrollingHostSel} {
+        display: block;
+        height: 150px;
+        overflow: auto;
+      }`
+    : '';
+  styles += `
+    ${containerSel} {
+      position: relative;
+      contain: strict;
+    }
+    ${childSel} {
+      box-sizing: border-box;
+    }`;
+  return styles;
+}
+
+function attachGlobalStylesheet() {
+  if (!globalStylesheet) {
+    globalStylesheet = document.createElement('style');
+    globalStylesheet.textContent = virtualizerStyles(`.${HOST_CLASSNAME}`, `.${CONTAINER_CLASSNAME}`,`.${CONTAINER_CLASSNAME} > *`);
+    document.head.appendChild(globalStylesheet);
+  }
 }

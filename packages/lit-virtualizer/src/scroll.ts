@@ -23,7 +23,7 @@ interface ScrollConfig {
     /**
      * An element that receives scroll events for the virtual scroller.
      */
-    scrollTarget?: Element | Window;
+    scroller?: boolean;
   
     /**
      * The list of items to display via the renderItem function.
@@ -40,7 +40,7 @@ interface ScrollConfig {
 /*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
 class ScrollDirective extends AsyncDirective {
-    container: HTMLElement | null = null
+    hostElement: HTMLElement | null = null
     scroller: VirtualScroller | null = null
     first = 0
     last = -1
@@ -94,12 +94,12 @@ class ScrollDirective extends AsyncDirective {
     }
 
     private _initialize(part: ChildPart, config: ScrollConfig) {
-        const container = this.container = part.parentNode as HTMLElement;
-        const scrollTarget = config.scrollTarget || container;
+        const hostElement = this.hostElement = part.parentNode as HTMLElement;
+        const scroller = config.scroller || true; //false;
         const layout = config.layout;
-        if (container && container.nodeType === 1) {
-            this.scroller = new VirtualScroller({ container, scrollTarget, layout });
-            container.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+        if (hostElement && hostElement.nodeType === 1) {
+            this.scroller = new VirtualScroller({ hostElement, scroller, layout });
+            hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this.first = e.first;
                 this.last = e.last;
