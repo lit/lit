@@ -19,7 +19,7 @@ import {
 } from '../program-analysis.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
@@ -356,7 +356,7 @@ class Transformer {
         const templateLiteralBody = translation.contents
           .map((content) =>
             typeof content === 'string'
-              ? escapeStringToEmbedInTemplateLiteral(content)
+              ? escapeTextContentToEmbedInTemplateLiteral(content)
               : content.untranslatable
           )
           .join('');
