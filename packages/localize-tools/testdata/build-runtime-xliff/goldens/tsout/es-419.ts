@@ -8,6 +8,7 @@ import {str} from '@lit/localize';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const templates = {
+  h02c268d9b1fcb031: html`&lt;Hola<b>&lt;Mundo &amp; Amigos&gt;</b>!&gt;`,
   h349c3c4777670217: html`[SALT] Hola <b>${0}</b>!`,
   h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
   h82ccc38d4d46eaa9: html`Hola <b>${0}</b>!`,
