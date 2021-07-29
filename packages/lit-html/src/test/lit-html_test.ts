@@ -2630,12 +2630,8 @@ suite('lit-html', () => {
   //   });
   // });
 
-  let securityHooksSuiteFunction:
-    | Mocha.SuiteFunction
-    | Mocha.PendingSuiteFunction = suite;
-  if (!DEV_MODE) {
-    securityHooksSuiteFunction = suite.skip;
-  }
+  const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
+
   securityHooksSuiteFunction('enahnced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
@@ -2786,15 +2782,42 @@ suite('lit-html', () => {
     });
   });
 
+  const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
+
+  warningsSuiteFunction('warnings', () => {
+    test('warns on octal escape', () => {
+      const warnings: Array<unknown[]> = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args);
+        return originalWarn.call(console, ...args);
+      };
+      try {
+        render(html`\2022`, container);
+        assert.fail();
+      } catch (e) {
+        assert.equal(warnings.length, 1);
+        assert.include(warnings[0][0], 'escape');
+      } finally {
+        console.warn = originalWarn;
+      }
+    });
+  });
+
   suite('internal', () => {
     test('clearContainerForLit2MigrationOnly', () => {
-      container.innerHTML = '<div>TEST</div>';
+      const clearedHtml = `<div>TEST 1</div><div>TEST 2</div>`;
+      const remainingHtml = `<div class="renderBefore">REMAIN 1</div><div>REMAIN 2</div>`;
+      container.innerHTML = `${clearedHtml}${remainingHtml}`;
       render(html`<p>HELLO</p>`, container, {
         clearContainerForLit2MigrationOnly: true,
+        renderBefore: container.querySelector('.renderBefore'),
       } as RenderOptions);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        INTERNAL ? '<p>HELLO</p>' : '<div>TEST</div><p>HELLO</p>'
+        INTERNAL
+          ? `<p>HELLO</p>${remainingHtml}`
+          : `${clearedHtml}<p>HELLO</p>${remainingHtml}`
       );
     });
   });

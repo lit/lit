@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- ## Unreleased -->
 
+## [0.3.6] - 2021-07-28
+
+## Fixed
+
+- Escaped `<`, `>`, and `&` characters in HTML text content are now preserved
+  when generating runtime & transform mode output. Previously they sometimes
+  were emitted unescaped, generating invalid markup.
+
 ## [0.3.5] - 2021-07-14
 
 ## Added

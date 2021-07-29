@@ -277,12 +277,23 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
  */
 const tag =
   <T extends ResultType>(type: T) =>
-  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => ({
-    // This property needs to remain unminified.
-    ['_$litType$']: type,
-    strings,
-    values,
-  });
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => {
+    // Warn against templates octal escape sequences
+    // We do this here rather than in render so that the warning is closer to the
+    // template definition.
+    if (DEV_MODE && strings.some((s) => s === undefined)) {
+      console.warn(
+        'Some template strings are undefined.\n' +
+          'This is probably caused by illegal octal escape sequences.'
+      );
+    }
+    return {
+      // This property needs to remain unminified.
+      ['_$litType$']: type,
+      strings,
+      values,
+    };
+  };
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -362,15 +373,21 @@ export const render = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
+    const endNode = options?.renderBefore ?? null;
     // Internal modification: don't clear container to match lit-html 2.0
     if (
       INTERNAL &&
       (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
         true
     ) {
-      container.childNodes.forEach((c) => c.remove());
+      let n = container.firstChild;
+      // Clear only up to the `endNode` aka `renderBefore` node.
+      while (n && n !== endNode) {
+        const next = n.nextSibling;
+        n.remove();
+        n = next;
+      }
     }
-    const endNode = options?.renderBefore ?? null;
     // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
