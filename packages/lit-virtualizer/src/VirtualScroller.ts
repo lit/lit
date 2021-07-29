@@ -67,14 +67,13 @@ export interface VirtualizerConfig {
   layout?: Layout | LayoutConstructor | LayoutSpecifier;
 
   /**
-   * Whether the virtualizer's host element should be scrollable.
-   */
-  scroller: boolean;
-
-  /**
    * The parent of all child nodes to be rendered.
    */
-  hostElement: HTMLElement;
+  hostElement: VirtualizerHostElement;
+
+  containerElement?: HTMLElement;
+
+  mutationObserverTarget?: HTMLElement;
 }
 
 /**
@@ -94,11 +93,6 @@ export class VirtualScroller {
   // private _needsUpdateView: boolean = false;
 
   private _layout: Layout | null = null;
-
-  /**
-   * Whether the virtualizer's host element should be scrollable.
-   */
-  private _scroller = false;
 
   private _clippingAncestors: Element[] = [];
 
@@ -136,6 +130,8 @@ export class VirtualScroller {
   protected _hostElement?: VirtualizerHostElement;
 
   protected _containerElement?: HTMLElement;
+
+  protected _mutationObserverTarget?: HTMLElement;
 
   /**
    * Resize observer attached to hostElement.
@@ -237,55 +233,38 @@ export class VirtualScroller {
   /**
    * The element hosting the virtualizer and containing all of its child elements
    */
-  get hostElement(): VirtualizerHostElement {
-    return this._hostElement!;
-  }
+  // get hostElement(): VirtualizerHostElement {
+  //   return this._hostElement!;
+  // }
 
   _initHostElement(config: VirtualizerConfig) {
-    const hostElement = (this._hostElement = config.hostElement as VirtualizerHostElement);
-    this._scroller = Boolean(config.scroller);
-    this._applyVirtualizerStyles();
-    this._clippingAncestors = getClippingAncestors(this._containerElement!);
+    const hostElement = (this._hostElement = config.hostElement);
+    const containerElement = (this._containerElement = config.containerElement || hostElement);
+    const mutationObserverTarget = (this._mutationObserverTarget = config.mutationObserverTarget || hostElement);
+    // this._applyVirtualizerStyles();
+    this._clippingAncestors = getClippingAncestors(containerElement);
     this._schedule(this._updateLayout);
-    this._hostElementRO!.observe(hostElement);
-    this._mutationObserver!.observe(hostElement, { childList: true });
+    // this._hostElementRO!.observe(hostElement);
+    this._mutationObserver!.observe(mutationObserverTarget, { childList: true });
     this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
     hostElement[scrollerRef] = this;
   }
 
-  private _applyVirtualizerStyles() {
-    const hostElement = this._hostElement!;
-    if (nativeShadowDOM) {
-      const root = hostElement.shadowRoot || hostElement.attachShadow({mode: 'open'});
-      const slot = root.querySelector('slot:not([name])') || document.createElement('slot');
-      const sheet = document.createElement('style');
-      root.appendChild(sheet);
-      if (this._scroller) {
-        this._containerElement = document.createElement('div');
-        this._containerElement.classList.add(CONTAINER_CLASSNAME);
-        sheet.textContent = virtualizerStyles(':host', `.${CONTAINER_CLASSNAME}`, '::slotted(*)');
-        root.appendChild(this._containerElement);
-      }
-      else {
-        this._containerElement = hostElement;
-        sheet.textContent = virtualizerStyles(null, ':host', '::slotted(*)');
-      }
-      this._containerElement!.appendChild(slot);
-    }
-    else {
-      attachGlobalStylesheet();
-      if (this._scroller) {
-        this._containerElement = document.createElement('div');
-        hostElement.appendChild(this._containerElement);
-        this._containerElement.classList.add(CONTAINER_CLASSNAME);
-        this._hostElement!.classList.add(HOST_CLASSNAME);
-      }
-      else {
-        this._containerElement = hostElement;
-        this._containerElement.classList.add(CONTAINER_CLASSNAME);
-      }
-    }
-  }
+  // private _applyVirtualizerStyles() {
+  //   const hostElement = this._hostElement!;
+  //   if (nativeShadowDOM) {
+  //     const root = hostElement.shadowRoot || hostElement.attachShadow({mode: 'open'});
+  //     const slot = root.querySelector('slot:not([name])') || document.createElement('slot');
+  //     const sheet = document.createElement('style');
+  //     sheet.textContent = virtualizerStyles(':host', '::slotted(*)');
+  //     root.appendChild(sheet);
+  //     root.appendChild(slot);
+  //   }
+  //   else {
+  //     attachGlobalStylesheet();
+  //     hostElement.classList.add(CONTAINER_CLASSNAME);
+  //   }
+  // }
 
   // This will always actually return a layout instance,
   // but TypeScript wants the getter and setter types to be the same
@@ -334,10 +313,8 @@ export class VirtualScroller {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
-      if (this._hostElement) {
-        this._sizeContainer(undefined);
-        this._hostElement.removeEventListener('load', this._loadListener, true);
-      }
+      this._sizeContainer(undefined);
+      this._hostElement!.removeEventListener('load', this._loadListener, true);
     }
 
     this._layout = _layout as Layout | null;
@@ -353,8 +330,8 @@ export class VirtualScroller {
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
-      if (this._hostElement && this._layout.listenForChildLoadEvents) {
-        this._hostElement.addEventListener('load', this._loadListener, true);
+      if (this._layout.listenForChildLoadEvents) {
+        this._hostElement!.addEventListener('load', this._loadListener, true);
       }
       this._schedule(this._updateLayout);
     }
@@ -533,7 +510,7 @@ export class VirtualScroller {
 
   get _children(): Array<HTMLElement> {
     const arr = [];
-    let next = this.hostElement!.firstElementChild as HTMLElement;
+    let next = this._hostElement!.firstElementChild as HTMLElement;
     while (next) {
       // Skip our spacer. TODO (graynorton): Feels a bit hacky. Anything better?
       if (next.id !== 'uni-virtualizer-spacer') {
@@ -750,42 +727,32 @@ function getClippingAncestors(el: Element) {
 
 ///
 
-// TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
-declare global {
-  interface Window {
-      ShadyDOM?: any;
-  }
-}
-let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
+// // TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
+// declare global {
+//   interface Window {
+//       ShadyDOM?: any;
+//   }
+// }
+// let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
 
-const HOST_CLASSNAME = 'lit-virtualizer-host';
-const CONTAINER_CLASSNAME = 'lit-virtualizer-container';
-let globalStylesheet: HTMLStyleElement | null = null;
+// const CONTAINER_CLASSNAME = 'lit-virtualizer-container';
+// let globalStylesheet: HTMLStyleElement | null = null;
 
-function virtualizerStyles(scrollingHostSel: string | null, containerSel: string, childSel: string): string {
-  let styles = scrollingHostSel
-    ? `
-      ${scrollingHostSel} {
-        display: block;
-        height: 150px;
-        overflow: auto;
-      }`
-    : '';
-  styles += `
-    ${containerSel} {
-      position: relative;
-      contain: strict;
-    }
-    ${childSel} {
-      box-sizing: border-box;
-    }`;
-  return styles;
-}
+// function virtualizerStyles(containerSel: string, childSel: string): string {
+//   return `
+//     ${containerSel} {
+//       position: relative;
+//       contain: strict;
+//     }
+//     ${childSel} {
+//       box-sizing: border-box;
+//     }`;
+// }
 
-function attachGlobalStylesheet() {
-  if (!globalStylesheet) {
-    globalStylesheet = document.createElement('style');
-    globalStylesheet.textContent = virtualizerStyles(`.${HOST_CLASSNAME}`, `.${CONTAINER_CLASSNAME}`,`.${CONTAINER_CLASSNAME} > *`);
-    document.head.appendChild(globalStylesheet);
-  }
-}
+// function attachGlobalStylesheet() {
+//   if (!globalStylesheet) {
+//     globalStylesheet = document.createElement('style');
+//     globalStylesheet.textContent = virtualizerStyles(`.${CONTAINER_CLASSNAME}`,`.${CONTAINER_CLASSNAME} > *`);
+//     document.head.appendChild(globalStylesheet);
+//   }
+// }

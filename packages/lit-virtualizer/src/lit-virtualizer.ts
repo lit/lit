@@ -1,4 +1,4 @@
-import { html, LitElement, TemplateResult } from 'lit';
+import { html, css, LitElement, TemplateResult, render } from 'lit';
 import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
 import { scroll as scrollDirective } from './scroll.js';
@@ -22,8 +22,8 @@ export class LitVirtualizer extends LitElement {
     @property({attribute: false})
     items: Array<unknown> = [];
 
-    @property({attribute: false})
-    scroller = true; //false;
+    @property({reflect: true, type: Boolean})
+    scroller = false;
 
     @property()
     keyFunction: ((item:unknown) => unknown) | undefined = undefined;
@@ -32,10 +32,6 @@ export class LitVirtualizer extends LitElement {
 
     private _scrollToIndex: {index: number, position: string} | null = null;
   
-    createRenderRoot() {
-        return this;
-    }
-
     @property({attribute:false})
     set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | undefined) {
         // TODO (graynorton): Shouldn't have to set this here
@@ -48,8 +44,26 @@ export class LitVirtualizer extends LitElement {
         // use of null for defaults in VirtualScroller and see if we can eliminate.
         return (this as VirtualizerHostElement)[scrollerRef]!.layout || undefined;
     }
-    
-    
+
+    static styles = css`
+        :host {
+            display: block;
+            contain: strict;
+        }
+        :host([scroller]) {
+            overflow: auto;
+            min-height: 150px;
+        }
+        :host(not([scroller])),
+        div {
+            position: relative;
+        }
+        div > ::slotted(*) {
+            position: absolute;
+            box-sizing: border-box;
+        }
+    `;
+
     /**
      * Scroll to the specified index, placing that item at the given position
      * in the scroll view.
@@ -61,12 +75,21 @@ export class LitVirtualizer extends LitElement {
         this._scrollToIndex = null;
     }
 
+    updated() {
+        render(this._renderChildren(), this);
+    }
+
     render(): TemplateResult {
-        const { items, renderItem, keyFunction, scroller } = this;
+        return this.scroller
+            ? html`<div lit-virtualizer-container><slot></slot></div>`
+            : html`<slot></slot>`
+        ;
+    }
+
+    _renderChildren(): TemplateResult {
+        const { items, renderItem, keyFunction } = this;
         const layout = this._layout;
-        return html`
-            ${scrollDirective({ items, renderItem, layout, keyFunction, scroller, scrollToIndex: this._scrollToIndex })}
-        `;
+        return html`${scrollDirective({ items, renderItem, layout, keyFunction, scrollToIndex: this._scrollToIndex })}`;
     }
 }
 

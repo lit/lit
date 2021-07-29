@@ -1,4 +1,4 @@
-import { TemplateResult, noChange, ChildPart, html } from 'lit';
+import { TemplateResult, noChange, ChildPart, html, render } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -21,11 +21,6 @@ interface ScrollConfig {
     layout?: Layout | LayoutConstructor | LayoutSpecifier;
   
     /**
-     * An element that receives scroll events for the virtual scroller.
-     */
-    scroller?: boolean;
-  
-    /**
      * The list of items to display via the renderItem function.
      */
     items?: Array<any>;
@@ -40,7 +35,6 @@ interface ScrollConfig {
 /*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
 class ScrollDirective extends AsyncDirective {
-    hostElement: HTMLElement | null = null
     scroller: VirtualScroller | null = null
     first = 0
     last = -1
@@ -94,23 +88,32 @@ class ScrollDirective extends AsyncDirective {
     }
 
     private _initialize(part: ChildPart, config: ScrollConfig) {
-        const hostElement = this.hostElement = part.parentNode as HTMLElement;
-        const scroller = config.scroller || true; //false;
-        const layout = config.layout;
+        const hostElement = part.parentNode as HTMLElement;
         if (hostElement && hostElement.nodeType === 1) {
-            this.scroller = new VirtualScroller({ hostElement, scroller, layout });
+            let containerElement, mutationObserverTarget;
+            if (hostElement.shadowRoot) {
+                containerElement = hostElement.shadowRoot.querySelector('[lit-virtualizer-container]') as HTMLElement || undefined;
+                if (containerElement) {
+                    mutationObserverTarget = '__shady' in hostElement.shadowRoot ? containerElement : hostElement;
+                }
+            }
+            const layout = config.layout;
+            this.scroller = new VirtualScroller({ hostElement, containerElement, mutationObserverTarget, layout });
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this.first = e.first;
                 this.last = e.last;
-                this.setValue(this.render());
+                render(this.render(), hostElement);
             });
             return true;
         }
+
         // TODO (GN): This seems to be needed in the case where the `scroll`
         // directive is used within the `LitVirtualizer` element. Figure out why
         // and see if there's a cleaner solution.
-        Promise.resolve().then(() => this.update(part, [config]));
+        // Promise.resolve().then(() => this.update(part, [config]));
+        // requestAnimationFrame(() => this.update(part, [config]));
+        // setTimeout(() => this.update(part, [config]), 5000);
         return false;
     }
 }
