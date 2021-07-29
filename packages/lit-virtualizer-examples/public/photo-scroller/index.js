@@ -109,6 +109,7 @@ export class PhotoScroller extends LitElement {
         return html`
             <div>${this.query}</div>
             <lit-virtualizer
+                scroller
                 class=${this.direction}
                 .items=${this.photos}
                 .renderItem=${(photo, idx) => photo

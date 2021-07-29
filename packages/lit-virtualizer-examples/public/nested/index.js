@@ -59,6 +59,7 @@ export class NestTest extends LitElement {
     render() {
         return html`
             <lit-virtualizer
+                scroller
                 .items=${this.data}
                 .renderItem=${this.renderNested}
             ></lit-virtualizer>
@@ -73,7 +74,6 @@ export class NestTest extends LitElement {
         data.push(rawData.slice(30, 60));
         data.push(rawData.slice(60, 90));
         this.data = data;
-        this.v = this.shadowRoot.querySelector('lit-virtualizer');
         runBenchmarkIfRequested(this.shadowRoot.querySelector('lit-virtualizer'));
     }
 
@@ -86,7 +86,6 @@ export class NestTest extends LitElement {
     renderNested(data, idx) {
         return html`
             <lit-virtualizer id=${idx} style="min-height: 100vh; width: 100%;"
-                .scrollTarget=${this.v}
                 .items=${data}
                 .renderItem=${this.renderItem}
             ></lit-virtualizer>

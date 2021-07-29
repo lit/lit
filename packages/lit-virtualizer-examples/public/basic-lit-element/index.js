@@ -100,7 +100,7 @@ class ContactList extends LitElement {
 
     render() {
         return html`
-            <lit-virtualizer
+            <lit-virtualizer scroller
                 .items=${this.data}
                 .renderItem=${this._renderContact}>
             </lit-virtualizer>

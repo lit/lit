@@ -7,6 +7,7 @@ let virtualizer;
 
 (async function go() {
     virtualizer = document.createElement('lit-virtualizer');
+    virtualizer.setAttribute('scroller', true);
     const contacts = await(await fetch('../shared/contacts.json')).json();
     virtualizer.items = contacts;
     virtualizer.renderItem = function (item, index) {

@@ -58,6 +58,7 @@ export class ContactList extends LitElement {
     render() {
         return html`
             <lit-virtualizer
+                scroller
                 .items=${this.data}
                 .renderItem=${this.renderItem}
             ></lit-virtualizer>

@@ -11,7 +11,7 @@ const handleVisibilityChange = (e) => {
 }
 
 const example = (contacts) => html`
-    <section @visibilityChanged=${handleVisibilityChange} style="height: 100%;">
+    <section @visibilityChanged=${handleVisibilityChange} style="position: relative; contain: strict;">
         ${scroll({
             items: contacts,
             renderItem: ({ mediumText, index }) =>

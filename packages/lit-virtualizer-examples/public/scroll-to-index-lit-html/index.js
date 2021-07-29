@@ -4,7 +4,7 @@ import { scroll } from '@lit-labs/virtualizer/scroll.js';
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
 const example = (contacts, scrollToIndex = null) => html`
-    <section style="height: 100%;">
+    <section style="postion: relative; contain: strict;">
         ${scroll({
             items: contacts,
             renderItem: ({ longText, index }) => html`<p>${index}) ${longText}</p>`,
