@@ -148,12 +148,27 @@ export class LitTransformer {
     // TODO(aomarks) Support re-exports (e.g. if a user re-exports a Lit
     // decorator from one of their own modules).
 
-    // We're only interested in imports from one of the official lit packages.
-    if (
-      !ts.isStringLiteral(node.moduleSpecifier) ||
-      !isLitImport(node.moduleSpecifier.text)
-    ) {
+    if (!ts.isStringLiteral(node.moduleSpecifier)) {
       return false;
+    }
+    const specifier = node.moduleSpecifier.text;
+    // We're only interested in imports from one of the official lit packages.
+    if (!isLitImport(specifier)) {
+      return false;
+    }
+
+    if (!hasJsExtensionOrIsDefaultModule(specifier)) {
+      // Note there is no way to properly surface a TypeScript diagnostic during
+      // transform: https://github.com/Microsoft/TypeScript/issues/19615.
+      throw new Error(
+        stringifyDiagnostics([
+          createDiagnostic(
+            node.getSourceFile(),
+            node.moduleSpecifier,
+            `Invalid Lit import style. Did you mean '${specifier}.js'?`
+          ),
+        ])
+      );
     }
 
     // TODO(aomarks) Maybe handle NamespaceImport (import * as decorators).
@@ -408,3 +423,48 @@ const isLitImport = (specifier: string) =>
   specifier.startsWith('lit-element/') ||
   specifier === '@lit/reactive-element' ||
   specifier.startsWith('@lit/reactive-element/');
+
+/**
+ * Returns true for:
+ *   lit
+ *   lit/decorators.js
+ *   @lit/reactive-element
+ *   @lit/reactive-element/decorators.js
+ *
+ * Returns false for:
+ *   lit/decorators
+ *   @lit/reactive-element/decorators
+ */
+const hasJsExtensionOrIsDefaultModule = (specifier: string) =>
+  specifier.endsWith('.js') || /^(@[^/]+\/)?[^/]+$/.test(specifier);
+
+const createDiagnostic = (
+  file: ts.SourceFile,
+  node: ts.Node,
+  message: string,
+  relatedInformation?: ts.DiagnosticRelatedInformation[]
+): ts.DiagnosticWithLocation => {
+  return {
+    file,
+    start: node.getStart(file),
+    length: node.getWidth(file),
+    category: ts.DiagnosticCategory.Error,
+    code: 2325, // Meaningless but unique number.
+    messageText: message,
+    relatedInformation,
+  };
+};
+
+const stringifyDiagnostics = (diagnostics: ts.Diagnostic[]) => {
+  return ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+    getCanonicalFileName(name: string) {
+      return name;
+    },
+    getCurrentDirectory() {
+      return process.cwd();
+    },
+    getNewLine() {
+      return '\n';
+    },
+  });
+};

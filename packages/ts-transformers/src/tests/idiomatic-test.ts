@@ -516,20 +516,14 @@ test('public @eventOptions', () => {
 
 for (const specifier of [
   'lit/decorators.js',
-  'lit/decorators',
   'lit/decorators/custom-element.js',
-  'lit/decorators/custom-element',
   '@lit/reactive-element/decorators.js',
-  '@lit/reactive-element/decorators',
   '@lit/reactive-element/decorators/custom-element.js',
-  '@lit/reactive-element/decorators/custom-element',
   'lit-element',
   'lit-element/index.js',
-  'lit-element/index',
   'lit-element/decorators.js',
-  'lit-element/decorators',
 ]) {
-  test(`various import specifiers [${specifier}]`, () => {
+  test(`various valid import specifiers [${specifier}]`, () => {
     const input = `
     import {LitElement} from 'lit';
     import {customElement} from '${specifier}';
@@ -545,6 +539,29 @@ for (const specifier of [
     customElements.define('my-element', MyElement);
     `;
     checkTransform(input, expected);
+  });
+}
+
+for (const specifier of [
+  'lit/decorators',
+  'lit/decorators/custom-element',
+  '@lit/reactive-element/decorators',
+  '@lit/reactive-element/decorators/custom-element',
+  'lit-element/index',
+  'lit-element/decorators',
+]) {
+  test(`various invalid import specifiers [${specifier}]`, () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {customElement} from '${specifier}';
+    @customElement('my-element')
+    class MyElement extends LitElement {
+    }
+    `;
+    assert.throws(
+      () => checkTransform(input, ''),
+      `xInvalid Lit import style. Did you mean '${specifier}.js'?`
+    );
   });
 }
 
