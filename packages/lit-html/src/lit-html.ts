@@ -373,15 +373,21 @@ export const render = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
+    const endNode = options?.renderBefore ?? null;
     // Internal modification: don't clear container to match lit-html 2.0
     if (
       INTERNAL &&
       (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
         true
     ) {
-      container.childNodes.forEach((c) => c.remove());
+      let n = container.firstChild;
+      // Clear only up to the `endNode` aka `renderBefore` node.
+      while (n && n !== endNode) {
+        const next = n.nextSibling;
+        n.remove();
+        n = next;
+      }
     }
-    const endNode = options?.renderBefore ?? null;
     // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
