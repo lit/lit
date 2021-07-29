@@ -25,10 +25,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *   }
  *
  *   get span() {
- *     if (this.__span === undefined) {
- *       this.__span = this.renderRoot?.querySelector('#mySpan');
- *     }
- *     return this.__span;
+ *     return this.__span ??= this.renderRoot?.querySelector('#myDiv');
  *   }
  */
 export class QueryVisitor implements MemberDecoratorVisitor {
@@ -64,14 +61,25 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
     litClassContext.litFileContext.nodesToRemove.add(property);
     litClassContext.classMembers.push(
-      cache
-        ? this._createCachingQueryGetter(name, selector)
-        : this._createNonCachingQueryGetter(name, selector)
+      this._createQueryGetter(name, selector, cache)
     );
   }
 
-  private _createNonCachingQueryGetter(name: string, selector: string) {
+  private _createQueryGetter(name: string, selector: string, cache: boolean) {
     const f = this._factory;
+    const querySelectorCall = f.createCallChain(
+      f.createPropertyAccessChain(
+        f.createPropertyAccessExpression(
+          f.createThis(),
+          f.createIdentifier('renderRoot')
+        ),
+        f.createToken(ts.SyntaxKind.QuestionDotToken),
+        f.createIdentifier('querySelector')
+      ),
+      undefined,
+      undefined,
+      [f.createStringLiteral(selector)]
+    );
     return f.createGetAccessorDeclaration(
       undefined,
       undefined,
@@ -81,80 +89,16 @@ export class QueryVisitor implements MemberDecoratorVisitor {
       f.createBlock(
         [
           f.createReturnStatement(
-            f.createCallChain(
-              f.createPropertyAccessChain(
-                f.createPropertyAccessExpression(
-                  f.createThis(),
-                  f.createIdentifier('renderRoot')
-                ),
-                f.createToken(ts.SyntaxKind.QuestionDotToken),
-                f.createIdentifier('querySelector')
-              ),
-              undefined,
-              undefined,
-              [f.createStringLiteral(selector)]
-            )
-          ),
-        ],
-        true
-      )
-    );
-  }
-
-  private _createCachingQueryGetter(name: string, selector: string) {
-    const f = this._factory;
-    const internalName = `__${name}`;
-    return f.createGetAccessorDeclaration(
-      undefined,
-      undefined,
-      f.createIdentifier(name),
-      [],
-      undefined,
-      f.createBlock(
-        [
-          f.createIfStatement(
-            f.createBinaryExpression(
-              f.createPropertyAccessExpression(
-                f.createThis(),
-                f.createIdentifier(internalName)
-              ),
-              f.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-              f.createIdentifier('undefined')
-            ),
-            f.createBlock(
-              [
-                f.createExpressionStatement(
-                  f.createBinaryExpression(
-                    f.createPropertyAccessExpression(
-                      f.createThis(),
-                      f.createIdentifier(internalName)
-                    ),
-                    f.createToken(ts.SyntaxKind.EqualsToken),
-                    f.createCallChain(
-                      f.createPropertyAccessChain(
-                        f.createPropertyAccessExpression(
-                          f.createThis(),
-                          f.createIdentifier('renderRoot')
-                        ),
-                        f.createToken(ts.SyntaxKind.QuestionDotToken),
-                        f.createIdentifier('querySelector')
-                      ),
-                      undefined,
-                      undefined,
-                      [f.createStringLiteral(selector)]
-                    )
-                  )
-                ),
-              ],
-              true
-            ),
-            undefined
-          ),
-          f.createReturnStatement(
-            f.createPropertyAccessExpression(
-              f.createThis(),
-              f.createIdentifier(internalName)
-            )
+            cache
+              ? f.createBinaryExpression(
+                  f.createPropertyAccessExpression(
+                    f.createThis(),
+                    f.createIdentifier(`__${name}`)
+                  ),
+                  ts.SyntaxKind.QuestionQuestionEqualsToken,
+                  querySelectorCall
+                )
+              : querySelectorCall
           ),
         ],
         true

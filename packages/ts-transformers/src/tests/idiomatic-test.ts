@@ -217,10 +217,7 @@ test('@query (caching)', () => {
   import {LitElement} from 'lit';
   class MyElement extends LitElement {
     get span() {
-      if (this.__span === undefined) {
-        this.__span = this.renderRoot?.querySelector('#mySpan');
-      }
-      return this.__span;
+      return this.__span ??= this.renderRoot?.querySelector('#mySpan');
     }
   }
   `;
