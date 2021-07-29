@@ -19,7 +19,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *
  *   static get properties() {
  *     return {
- *       foo: {state: true, attribute: false}
+ *       foo: {state: true}
  *     }
  *   }
  */
@@ -67,14 +67,10 @@ export class StateVisitor implements MemberDecoratorVisitor {
               option.name !== undefined && ts.isIdentifier(option.name)
                 ? option.name.text
                 : undefined;
-            return !(name === 'state' || name === 'attribute');
+            return name !== 'state';
           })
         : []),
       f.createPropertyAssignment(f.createIdentifier('state'), f.createTrue()),
-      f.createPropertyAssignment(
-        f.createIdentifier('attribute'),
-        f.createFalse()
-      ),
     ]);
   }
 }

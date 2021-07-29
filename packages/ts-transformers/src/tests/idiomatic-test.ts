@@ -173,8 +173,8 @@ test('@state', () => {
     }
     static get properties() {
       return {
-        num: {state: true, attribute: false},
-        num2: {hasChanged: () => false, state: true, attribute: false},
+        num: {state: true},
+        num2: {hasChanged: () => false, state: true},
       };
     }
   }
