@@ -49,6 +49,7 @@
     "xmldom": "^0.5.0"
   },
   "devDependencies": {
+    "@lit/ts-transformers": "^0.0.1",
     "@lit-labs/ssr": "^1.0.0-rc.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",

@@ -53,9 +53,11 @@ export function runtimeMsg(
           expressionOrders.set(localized, order);
         }
         // Cast `localized.values` because it's readonly.
-        (localized as {
-          values: TemplateResult['values'];
-        }).values = order.map((i) => (template as TemplateResult).values[i]);
+        (
+          localized as {
+            values: TemplateResult['values'];
+          }
+        ).values = order.map((i) => (template as TemplateResult).values[i]);
         return localized;
       }
     }
