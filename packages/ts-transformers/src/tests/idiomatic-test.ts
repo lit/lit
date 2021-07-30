@@ -557,7 +557,7 @@ for (const specifier of [
     `;
     assert.throws(
       () => checkTransform(input, ''),
-      `xInvalid Lit import style. Did you mean '${specifier}.js'?`
+      `Invalid Lit import style. Did you mean '${specifier}.js'?`
     );
   });
 }
