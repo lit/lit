@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "lib": ["es2020"],
+    "lib": ["es2020", "DOM"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -14,9 +13,7 @@
     "outDir": "lib/",
     "declaration": true,
     "sourceMap": true,
-    "incremental": true,
-    "tsBuildInfoFile": "lib/.tsbuildinfo"
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
-  "references": [{"path": "../labs/ssr"}]
+  "include": ["src/**/*"]
 }

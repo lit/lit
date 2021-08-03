@@ -21,4 +21,5 @@ export const templates = {
   myId: `Hello World`,
   s03c68d79ad36e8d4: `described 0`,
   h8d70dfec810d1eae: html`<b>Hello</b>! Click <a href="${0}/${1}">here</a>!`,
+  h02c268d9b1fcb031: html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`,
 };
