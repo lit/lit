@@ -87,7 +87,7 @@
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "../../webcomponents-webcomponentsjs-2.5.0.tgz",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "chokidar-cli": "^2.1.0",
     "downlevel-dts": "^0.6.0",
     "internal-scripts": "^1.0.0",
