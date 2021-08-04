@@ -5,10 +5,11 @@
  */
 
 import {asyncReplace} from '../../directives/async-replace.js';
-import {render, html} from '../../lit-html.js';
+import {render, html, nothing} from '../../lit-html.js';
 import {TestAsyncIterable} from './test-async-iterable.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
+import {forceGC, memorySuite} from '../test-utils/memory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -225,18 +226,105 @@ suite('asyncReplace', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });
 
-  test('does not render while disconnected', async () => {
-    const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
-    const part = render(component(iterable), container);
-    await iterable.push('1');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
-    part.setConnected(false);
-    await iterable.push('2');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
-    part.setConnected(true);
-    await new Promise<void>((r) => requestAnimationFrame(() => r()));
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
-    await iterable.push('3');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>3</p>');
+  suite('disconnection', () => {
+    test('does not render when iterable resolves while while disconnected', async () => {
+      const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
+      const part = render(component(iterable), container);
+      await iterable.push('1');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(false);
+      await iterable.push('2');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(true);
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
+      await iterable.push('3');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>3</p>');
+    });
+
+    test('does not render when newly rendered while disconnected', async () => {
+      const component = (value: any) => html`<p>${value}</p>`;
+      const part = render(component('static'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>static</p>'
+      );
+      part.setConnected(false);
+      render(component(asyncReplace(iterable)), container);
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>static</p>'
+      );
+      part.setConnected(true);
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      await iterable.push('2');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
+    });
+
+    test('does not render when resolved and changed while disconnected', async () => {
+      const component = (value: any) => html`<p>${value}</p>`;
+      const part = render(component('staticA'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticA</p>'
+      );
+      part.setConnected(false);
+      render(component(asyncReplace(iterable)), container);
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticA</p>'
+      );
+      render(component('staticB'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+      part.setConnected(true);
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+    });
+  });
+  memorySuite('memory leak tests', () => {
+    test('tree with asyncReplace cleared while iterables are pending', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      // Make a big array set on an expando exaggerate any leaked DOM
+      const big = () => new Array(10000).fill(0);
+      // Hold onto the iterables to prevent them from being gc'ed
+      const iterables: Array<TestAsyncIterable<string>> = [];
+      forceGC();
+      const heap = performance.memory.usedJSHeapSize;
+      for (let i = 0; i < 1000; i++) {
+        // Promise passed to until that will never resolve
+        const iterable = new TestAsyncIterable<string>();
+        iterables.push(iterable);
+        // Render the until into a `<span>` with a 10kb expando, to exaggerate
+        // when DOM is not being gc'ed
+        render(
+          template(html`<span .p=${big()}>${asyncReplace(iterable)}</span>`),
+          container
+        );
+        // Clear the `<span>` + directive
+        render(template(nothing), container);
+      }
+      forceGC();
+      // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
+      // DOM leak will be orders of magnitude larger
+      assert.isAtMost(
+        performance.memory.usedJSHeapSize,
+        heap * 1.5,
+        'memory leak detected'
+      );
+    });
   });
 });

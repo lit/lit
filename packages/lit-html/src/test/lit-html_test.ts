@@ -2028,22 +2028,23 @@ suite('lit-html', () => {
   });
 
   suite('async directives', () => {
-    const aDirective = directive(
-      class extends AsyncDirective {
-        value: unknown;
-        promise!: Promise<unknown>;
-        render(_promise: Promise<unknown>) {
-          return 'initial';
-        }
-        update(_part: Part, [promise]: Parameters<this['render']>) {
-          if (promise !== this.promise) {
-            this.promise = promise;
-            promise.then((value) => this.setValue((this.value = value)));
-          }
-          return this.value ?? this.render(promise);
-        }
+    class ADirective extends AsyncDirective {
+      value: unknown;
+      promise!: Promise<unknown>;
+      render(_promise: Promise<unknown>) {
+        return 'initial';
       }
-    );
+      update(_part: Part, [promise]: Parameters<this['render']>) {
+        aDirectiveInst = this;
+        if (promise !== this.promise) {
+          this.promise = promise;
+          promise.then((value) => this.setValue((this.value = value)));
+        }
+        return this.value ?? this.render(promise);
+      }
+    }
+    const aDirective = directive(ADirective);
+    let aDirectiveInst: ADirective;
     const bDirective = directive(
       class extends Directive {
         count = 0;
@@ -2066,16 +2067,35 @@ suite('lit-html', () => {
       assertContent(`<div>resolved2</div>`);
     });
 
-    test('async directives while disconnected in ChildPart', async () => {
+    test('async directives change to disconnected in ChildPart', async () => {
       const template = (promise: Promise<unknown>) =>
         html`<div>${aDirective(promise)}</div>`;
       const promise = Promise.resolve('resolved1');
       const part = assertRender(template(promise), `<div>initial</div>`);
+      assert.isTrue(aDirectiveInst.isConnected);
       part.setConnected(false);
-      await promise;
       assertContent(`<div>initial</div>`);
-      part.setConnected(true);
+      await promise;
+      assert.isFalse(aDirectiveInst.isConnected);
       assertContent(`<div>resolved1</div>`);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertContent(`<div>resolved1</div>`);
+    });
+
+    test('async directives rendered while disconnected in ChildPart', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      const promise = Promise.resolve('resolved1');
+      const part = assertRender(template('initial'), `<div>initial</div>`);
+      part.setConnected(false);
+      assertRender(template(aDirective(promise)), `<div>initial</div>`);
+      assert.isFalse(aDirectiveInst.isConnected);
+      await promise;
+      assertContent(`<div>resolved1</div>`);
+      assert.isFalse(aDirectiveInst.isConnected);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertRender(template(aDirective(promise)), `<div>resolved1</div>`);
     });
 
     test('async directives while disconnected in ChildPart clears its value', async () => {
@@ -2095,13 +2115,15 @@ suite('lit-html', () => {
       assert.deepEqual(log, []);
       // Disconnect the tree before the clear is committed
       part.setConnected(false);
+      assert.isFalse(aDirectiveInst.isConnected);
       assert.deepEqual(log, ['disconnected-dd']);
       await promise;
       assert.deepEqual(log, ['disconnected-dd']);
-      assertContent(`<div>dd</div>`);
+      assertContent(`<div></div>`);
       // Re-connect the tree, which should clear the part but not reconnect
       // the AsyncDirective that was cleared
       part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
       assertRender(template(promise), `<div></div>`);
       assert.deepEqual(log, ['disconnected-dd']);
     });
@@ -2142,9 +2164,11 @@ suite('lit-html', () => {
         `<div a="**initial##"></div>`
       );
       part.setConnected(false);
+      assert.isFalse(aDirectiveInst.isConnected);
       await promise;
-      assertContent(`<div a="**initial##"></div>`);
+      assertContent(`<div a="**resolved1##"></div>`);
       part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
       assertContent(`<div a="**resolved1##"></div>`);
     });
 

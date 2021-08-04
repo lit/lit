@@ -121,8 +121,8 @@ import {
   AttributePart,
   ChildPart,
   Disconnectable,
-  noChange,
   Part,
+  PrivateRenderOptions,
 } from './lit-html.js';
 import {isSingleExpression} from './directive-helpers.js';
 import {Directive, PartInfo, PartType} from './directive.js';
@@ -289,7 +289,6 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  */
 export abstract class AsyncDirective extends Directive {
   isConnected = true;
-  private _pendingValue: unknown = noChange;
   // @internal
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /**
@@ -303,6 +302,7 @@ export abstract class AsyncDirective extends Directive {
     parent: Disconnectable,
     attributeIndex: number | undefined
   ) {
+    this.isConnected = (part.options as PrivateRenderOptions)._$isConnected;
     super._$initialize(part, parent, attributeIndex);
     addDisconnectableToParent(this);
   }
@@ -345,33 +345,12 @@ export abstract class AsyncDirective extends Directive {
     if (isConnected !== this.isConnected) {
       if (isConnected) {
         this.isConnected = true;
-        if (this._pendingValue !== noChange) {
-          this.setValue(this._pendingValue);
-          this._pendingValue = noChange;
-        }
         this.reconnected?.();
       } else {
         this.isConnected = false;
         this.disconnected?.();
       }
     }
-  }
-
-  /**
-   * Override of the base `_resolve` method to ensure `reconnected` is run
-   * prior to the next render.
-   *
-   * @override
-   * @internal
-   */
-  _$resolve(part: Part, props: Array<unknown>): unknown {
-    if (!this.isConnected) {
-      throw new Error(
-        `AsyncDirective ${this.constructor.name} was ` +
-          `rendered while its tree was disconnected.`
-      );
-    }
-    return super._$resolve(part, props);
   }
 
   /**
@@ -388,21 +367,17 @@ export abstract class AsyncDirective extends Directive {
    * @param value The value to set
    */
   setValue(value: unknown) {
-    if (this.isConnected) {
-      if (isSingleExpression(this.__part as unknown as PartInfo)) {
-        this.__part._$setValue(value, this);
-      } else {
-        // this.__attributeIndex will be defined in this case, but
-        // assert it in dev mode
-        if (DEV_MODE && this.__attributeIndex === undefined) {
-          throw new Error(`Expected this.__attributeIndex to be a number`);
-        }
-        const newValues = [...(this.__part._$committedValue as Array<unknown>)];
-        newValues[this.__attributeIndex!] = value;
-        (this.__part as AttributePart)._$setValue(newValues, this, 0);
-      }
+    if (isSingleExpression(this.__part as unknown as PartInfo)) {
+      this.__part._$setValue(value, this);
     } else {
-      this._pendingValue = value;
+      // this.__attributeIndex will be defined in this case, but
+      // assert it in dev mode
+      if (DEV_MODE && this.__attributeIndex === undefined) {
+        throw new Error(`Expected this.__attributeIndex to be a number`);
+      }
+      const newValues = [...(this.__part._$committedValue as Array<unknown>)];
+      newValues[this.__attributeIndex!] = value;
+      (this.__part as AttributePart)._$setValue(newValues, this, 0);
     }
   }
 

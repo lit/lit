@@ -130,6 +130,8 @@ const stableProperties = {
   _$resolve: 'S',
   // lit-html: Directive (used by lit-html)
   _$initialize: 'T',
+  // lit-html: PrivateRenderOptions (used by lit-html and AsyncDirective)
+  _$isConnected: 'U',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

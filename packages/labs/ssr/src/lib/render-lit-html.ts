@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateResult, ChildPart} from 'lit';
+import type {TemplateResult, ChildPart, RenderOptions} from 'lit';
 import type {
   Directive,
   DirectiveClass,
@@ -556,7 +556,13 @@ function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
+    value = resolveDirective(
+      {
+        type: PartType.CHILD,
+        options: {isConnected: true} as RenderOptions,
+      } as ChildPart,
+      value
+    );
   }
   if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;

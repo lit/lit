@@ -346,6 +346,14 @@ export interface RenderOptions {
 }
 
 /**
+ * Private render options used internally by lit-html
+ * @internal
+ */
+export interface PrivateRenderOptions extends RenderOptions {
+  _$isConnected: boolean;
+}
+
+/**
  * Internally we can export this interface and change the type of
  * render()'s options.
  */
@@ -394,9 +402,10 @@ export const render = (
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
-      options
+      options || {}
     );
   }
+  (part.options as PrivateRenderOptions)._$isConnected = part.__isConnected;
   part._$setValue(value);
   return part;
 };
@@ -945,6 +954,8 @@ class ChildPart {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
+  /** @internal */
+  __isConnected = true;
 
   // The following fields will be patched onto ChildParts when required by
   // AsyncDirective
@@ -981,6 +992,7 @@ class ChildPart {
    * to the `isConnected` argument.
    */
   setConnected(isConnected: boolean) {
+    this.__isConnected = isConnected;
     this._$setChildPartConnected?.(isConnected);
   }
 
