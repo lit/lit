@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
 
@@ -480,7 +486,7 @@ export class VirtualScroller {
       this._layout!.reflowIfNeeded(this._itemsChanged);
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
-      }  
+      }
     }
   }
 
@@ -598,7 +604,7 @@ export class VirtualScroller {
       scrollTop = top - containerBounds.top;
       scrollLeft = left - containerBounds.left;
     }
-    
+
     const height = Math.max(1, bottom - top);
     const width = Math.max(1, right - left);
 
@@ -650,7 +656,7 @@ export class VirtualScroller {
           (child.style.left as string | null) = xOffset === undefined ? null : xOffset + 'px';
           (child.style.top as string | null) = yOffset === undefined ? null : yOffset + 'px';
         }
-      });  
+      });
     }
   }
 

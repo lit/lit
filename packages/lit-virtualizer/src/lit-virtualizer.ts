@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import { html, LitElement, TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
@@ -31,7 +37,7 @@ export class LitVirtualizer extends LitElement {
     private _layout?: Layout | LayoutConstructor | LayoutSpecifier;
 
     private _scrollToIndex: {index: number, position: string} | null = null;
-  
+
     createRenderRoot() {
         return this;
     }
@@ -48,8 +54,8 @@ export class LitVirtualizer extends LitElement {
         // use of null for defaults in VirtualScroller and see if we can eliminate.
         return (this as ContainerElement)[scrollerRef]!.layout || undefined;
     }
-    
-    
+
+
     /**
      * Scroll to the specified index, placing that item at the given position
      * in the scroll view.

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import EventTarget from '../polyfillLoaders/EventTarget.js';
 import {Layout, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
 

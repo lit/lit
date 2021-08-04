@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import resolve from 'rollup-plugin-node-resolve';
 const { readdirSync } = require('fs')
 
@@ -14,7 +20,7 @@ for (let name of pages) {
     },
     plugins: [
       resolve(),
-    ]        
+    ]
   });
 }
 

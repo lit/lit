@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import { scroll } from '../../../../lit-virtualizer.js'
 import { html, render } from 'lit-html';
 

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 const httpServer = require('http-server');
 const pixelmatch = require('pixelmatch');
 const puppeteer = require('puppeteer');
