@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import { LitVirtualizer } from '../lit-virtualizer.js';
 import { scroll } from '../scroll.js'
 import { flow } from '../layouts/FlowLayout.js'
@@ -61,7 +67,7 @@ describe('scroll', function () {
   //     `;
 
   //     render(example, container);
-  
+
   //     await (new Promise(resolve => requestAnimationFrame(resolve)));
   //     assert.exists(container.shadowRoot);
 
@@ -78,7 +84,7 @@ describe('scroll', function () {
   //     `;
 
   //     render(example, container);
-  
+
   //     await (new Promise(resolve => requestAnimationFrame(resolve)));
   //     assert.notExists(container.shadowRoot);
 
@@ -100,9 +106,9 @@ describe('scroll', function () {
         firstVisible = e.first;
         lastVisible = e.last;
       });
-  
+
       render(directive, container);
-  
+
       await (new Promise(resolve => requestAnimationFrame(resolve)));
       container.scrollTop = 50;
       await (new Promise(resolve => requestAnimationFrame(resolve)));

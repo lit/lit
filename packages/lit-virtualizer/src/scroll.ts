@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import { TemplateResult, noChange, ChildPart, html } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
@@ -16,26 +22,26 @@ interface ScrollConfig {
     renderItem?: (item: any, index: number) => TemplateResult;
 
     keyFunction?: (item: any) => unknown;
-  
+
     // TODO (graynorton): Document...
     layout?: Layout | LayoutConstructor | LayoutSpecifier;
-  
+
     /**
      * An element that receives scroll events for the virtual scroller.
      */
     scrollTarget?: Element | Window;
-  
+
     /**
      * The list of items to display via the renderItem function.
      */
     items?: Array<any>;
-  
+
     /**
      * Index and position of the item to scroll to.
      */
     scrollToIndex?: ScrollToIndexValue;
   }
-  
+
 /*export */const defaultKeyFunction = (item: any) => item;
 /*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
@@ -54,7 +60,7 @@ class ScrollDirective extends AsyncDirective {
             throw new Error('The scroll directive can only be used in child expressions');
         }
     }
-    
+
     render(config?: ScrollConfig) {
         if (config) {
             this._setFunctions(config);
@@ -63,7 +69,7 @@ class ScrollDirective extends AsyncDirective {
         if (this.first >= 0 && this.last >= this.first) {
             for (let i = this.first; i < this.last + 1; i++) {
                 itemsToRender.push(this.items[i]);
-            }    
+            }
         }
         return repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem);
     }
