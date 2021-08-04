@@ -64,7 +64,7 @@ type ChildMeasurements = {[key: number]: ItemBox};
 export type ScrollToIndexValue = {index: number, position?: string} | null;
 
 export interface VirtualizerConfig {
-  layout?: Layout | LayoutConstructor | LayoutSpecifier;
+  layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
 
   /**
    * The parent of all child nodes to be rendered.
