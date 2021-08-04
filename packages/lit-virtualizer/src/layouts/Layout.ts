@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 export type dimension = 'height' | 'width';
 export type Size = {
   [key in dimension]: number
@@ -45,7 +51,7 @@ export type ScrollDirection = 'vertical' | 'horizontal';
  */
  export interface Layout {
   config?: object;
-   
+
   totalItems: number;
 
   direction: ScrollDirection;

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {BaseLayout, BaseLayoutConfig, dim1} from './BaseLayout.js';
 import {ItemBox, Positions, Size, Margins, margin, ScrollDirection, offsetAxis} from './Layout.js';
 
@@ -336,7 +342,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     // have an anchor. If not, establish an anchor now.
     if (this._anchorIdx === null || this._anchorPos === null) {
       this._anchorIdx = this._getAnchor(lower, upper);
-      this._anchorPos = this._getPosition(this._anchorIdx);    
+      this._anchorPos = this._getPosition(this._anchorIdx);
     }
 
     let anchorSize = this._getSize(this._anchorIdx);

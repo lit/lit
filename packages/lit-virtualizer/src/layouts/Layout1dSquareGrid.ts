@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {BaseLayoutConfig} from './BaseLayout.js';
 import {Layout1dGrid} from './Layout1dGrid.js';
 import {Positions} from './Layout.js';
@@ -38,5 +44,5 @@ export class Layout1dSquareGrid extends Layout1dGrid<Layout1dSquareGridConfig> {
     if (adjSize !== this._itemSize.width) {
       this._itemSize = { width: adjSize, height: adjSize };
     }
-  }    
+  }
 }

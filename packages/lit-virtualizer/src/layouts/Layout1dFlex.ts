@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {BaseLayout, BaseLayoutConfig} from './BaseLayout';
 import {ItemBox, Positions, Size} from './Layout';
 
@@ -120,7 +126,7 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
       ['_rolumns']: [],
       _itemPositions: [],
       _size: 0,
-      _dirty: false  
+      _dirty: false
     }
   }
 
@@ -137,7 +143,7 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
       else {
         this._aspectRatios[bucket] = 1;
       }
-      this._numberOfAspectRatiosMeasured++;  
+      this._numberOfAspectRatiosMeasured++;
     }
   }
 
@@ -265,7 +271,7 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
     }
     const lastRolumn = chunk._rolumns[chunk._rolumns.length - 1];
     chunk._size = lastRolumn._startPos + lastRolumn._size;
-    return chunk;  
+    return chunk;
   }
 
   _updateLayout(): void {
