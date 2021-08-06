@@ -18,6 +18,7 @@
     "noImplicitThis": true
   },
   "include": [
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
     "src/**/*.ts"
   ],
   "exclude": []
