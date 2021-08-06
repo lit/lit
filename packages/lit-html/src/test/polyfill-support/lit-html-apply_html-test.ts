@@ -105,9 +105,9 @@ suite('@apply', () => {
       const usersInProducer =
         applyProducer.shadowRoot!.querySelectorAll('apply-user');
       renderShadowRoot(applyUserContent, usersInProducer[0]);
-      extraGlobals.ShadyCSS?.styleElement(usersInProducer[0]);
+      extraGlobals.ShadyCSS?.styleElement(usersInProducer[0] as HTMLElement);
       renderShadowRoot(applyUserContent, usersInProducer[1]);
-      extraGlobals.ShadyCSS?.styleElement(usersInProducer[1]);
+      extraGlobals.ShadyCSS?.styleElement(usersInProducer[1] as HTMLElement);
       const userInProducerStyle1 = getComputedStyle(
         usersInProducer[0].shadowRoot!.querySelector('div')!
       );

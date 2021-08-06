@@ -21,7 +21,10 @@
     "allowSyntheticDefaultImports": true,
     "stripInternal": false
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "src/**/*.ts"
+  ],
   "exclude": ["src/polyfill-support.ts"],
   "references": [{"path": "./tsconfig.polyfill-support.json"}]
 }

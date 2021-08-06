@@ -216,7 +216,7 @@ suite('polyfill-support rendering', () => {
     const e = shadowRoot(container)!.querySelector('scope-4a-sub')!;
     renderShadowRoot(shadowContent, e);
     if (extraGlobals.ShadyCSS) {
-      extraGlobals.ShadyCSS.styleElement(e);
+      extraGlobals.ShadyCSS.styleElement(e as HTMLElement);
     }
     assert.equal(
       getComputedStyle(e).getPropertyValue('border-top-width').trim(),
@@ -253,11 +253,11 @@ suite('polyfill-support rendering', () => {
     const elements = shadowRoot(container)!.querySelectorAll('scope-4b-sub');
     renderShadowRoot(nestedContent, elements[0]);
     if (extraGlobals.ShadyCSS) {
-      extraGlobals.ShadyCSS.styleSubtree(elements[0]);
+      extraGlobals.ShadyCSS.styleSubtree(elements[0] as HTMLElement);
     }
     renderShadowRoot(nestedContent, elements[1]);
     if (extraGlobals.ShadyCSS) {
-      extraGlobals.ShadyCSS.styleSubtree(elements[1]);
+      extraGlobals.ShadyCSS.styleSubtree(elements[1] as HTMLElement);
     }
     assert.equal(
       getComputedStyle(elements[0]).getPropertyValue('border-top-width').trim(),
