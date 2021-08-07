@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-interface LitExtendedWindow extends Window {
+interface Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reactiveElementPlatformSupport: (options: {[index: string]: any}) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,5 +12,3 @@ interface LitExtendedWindow extends Window {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   litHtmlPlatformSupport: (template: unknown, childPart: unknown) => void;
 }
-
-type LitExtraGlobals = typeof globalThis & LitExtendedWindow;
