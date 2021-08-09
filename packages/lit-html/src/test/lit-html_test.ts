@@ -1298,26 +1298,57 @@ suite('lit-html', () => {
     test('allows capturing events', () => {
       let event!: Event;
       let eventPhase!: number;
-      const listener = {
-        handleEvent(e: Event) {
-          event = e;
-          // read here because it changes
-          eventPhase = event.eventPhase;
-        },
-        capture: true,
+      const currentTargets: EventTarget[] = [];
+      const listener = (e: Event) => {
+        event = e;
+        // read here because it changes
+        eventPhase = event.eventPhase;
+        currentTargets.push(e.currentTarget!);
       };
+      listener.capture = true;
       render(
         html`
           <div id="outer" @test=${listener}>
-            <div id="inner"><div></div></div>
+            <div id="inner" @test=${listener}><div id="dispatcher"></div></div>
           </div>
         `,
         container
       );
       const inner = container.querySelector('#inner')!;
-      inner.dispatchEvent(new Event('test'));
+      const outer = container.querySelector('#outer')!;
+      const dispatcher = container.querySelector('#dispatcher')!;
+      dispatcher.dispatchEvent(new Event('test'));
       assert.isOk(event);
       assert.equal(eventPhase, Event.CAPTURING_PHASE);
+      assert.deepEqual(currentTargets, [outer, inner]);
+    });
+
+    test('allows bubbling events', () => {
+      let event!: Event;
+      let eventPhase!: number;
+      const currentTargets: EventTarget[] = [];
+      const listener = (e: Event) => {
+        event = e;
+        // read here because it changes
+        eventPhase = event.eventPhase;
+        currentTargets.push(e.currentTarget!);
+      };
+      listener.capture = false;
+      render(
+        html`
+          <div id="outer" @test=${listener}>
+            <div id="inner" @test=${listener}><div id="dispatcher"></div></div>
+          </div>
+        `,
+        container
+      );
+      const inner = container.querySelector('#inner')!;
+      const outer = container.querySelector('#outer')!;
+      const dispatcher = container.querySelector('#dispatcher')!;
+      dispatcher.dispatchEvent(new Event('test', {bubbles: true}));
+      assert.isOk(event);
+      assert.equal(eventPhase, Event.BUBBLING_PHASE);
+      assert.deepEqual(currentTargets, [inner, outer]);
     });
 
     test('event listeners can see events fired by dynamic children', () => {
