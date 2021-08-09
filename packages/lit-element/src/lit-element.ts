@@ -163,8 +163,7 @@ export class LitElement extends ReactiveElement {
 (globalThis as any)['litElementHydrateSupport']?.({LitElement});
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport']?.({LitElement});
+globalThis.litElementPlatformSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {

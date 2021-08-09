@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-interface Window {
+// eslint-disable-next-line no-var
+declare var litElementPlatformSupport:
+  | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  litElementPlatformSupport: (options: {[index: string]: any}) => void;
-}
+  | ((options: {LitElement: any}) => void);
