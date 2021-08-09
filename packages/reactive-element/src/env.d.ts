@@ -9,6 +9,8 @@ declare var reactiveElementPlatformSupport:
   | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | ((options: {ReactiveElement: any}) => void);
+// eslint-disable-next-line no-var
+declare var reactiveElementVersions: undefined | Array<string>;
 
 // Augment existing types with styling API
 interface ShadowRoot {
