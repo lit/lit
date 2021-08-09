@@ -158,8 +158,7 @@ export class LitElement extends ReactiveElement {
 }
 
 // Install hydration if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementHydrateSupport']?.({LitElement});
+globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
 globalThis.litElementPlatformSupport?.({LitElement});
