@@ -2083,7 +2083,7 @@ suite('lit-html', () => {
       assertContent(`<div>resolved1</div>`);
     });
 
-    test('async directives rendered while disconnected in ChildPart', async () => {
+    test('async directives render while disconnected in ChildPart', async () => {
       const template = (v: unknown) => html`<div>${v}</div>`;
       const promise = Promise.resolve('resolved1');
       const part = assertRender(template('initial'), `<div>initial</div>`);
