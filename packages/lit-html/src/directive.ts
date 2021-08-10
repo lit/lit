@@ -94,7 +94,7 @@ export const directive =
  * implement `render` and/or `update`, and then pass their subclass to
  * `directive`.
  */
-export abstract class Directive {
+export abstract class Directive implements Disconnectable {
   //@internal
   __part!: Part;
   //@internal
@@ -110,9 +110,13 @@ export abstract class Directive {
   _$disconnectableChildren?: Set<Disconnectable>;
   // This property needs to remain unminified.
   //@internal
-  ['_$setDirectiveConnected']?(isConnected: boolean): void;
+  ['_$notifyDirectiveConnectionChanged']?(isConnected: boolean): void;
 
   constructor(_partInfo: PartInfo) {}
+
+  get _$isConnected() {
+    return this._$parent._$isConnected;
+  }
 
   /** @internal */
   _$initialize(

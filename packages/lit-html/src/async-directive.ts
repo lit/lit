@@ -26,13 +26,14 @@
  * The sparse tree created by means of the `AsyncDirective` constructor
  * crawling up the `_$parent` tree and placing a `_$disconnectableChildren` Set
  * on each parent that includes each child that contains a
- * `AsyncDirective` directly or transitively via its children. In order
- * disconnect (or reconnect) a tree, the `_$setChildPartConnected` API is patched
- * onto ChildParts as a directive climbs the parent tree, which is called by the
- * core when clearing a part if it exists. When called, that method iterates
- * over the sparse tree of Set<DisconnectableChildren> built up by
- * AsyncDirectives, and calls `_$setDirectiveConnected` on any
- * directives that are encountered in that tree, running the required callbacks.
+ * `AsyncDirective` directly or transitively via its children. In order to
+ * notify connection state changes and disconnect (or reconnect) a tree, the
+ * `_$notifyConnectionChanged` API is patched onto ChildParts as a directive
+ * climbs the parent tree, which is called by the core when clearing a part if
+ * it exists. When called, that method iterates over the sparse tree of
+ * Set<DisconnectableChildren> built up by AsyncDirectives, and calls
+ * `_$notifyDirectiveConnectionChanged` on any directives that are encountered
+ * in that tree, running the required callbacks.
  *
  * A given "logical tree" of lit-html data-structures might look like this:
  *
@@ -88,7 +89,7 @@
  * Example 1: The directive in ChildPart(N12) updates and returns `nothing`. The
  * ChildPart will _clear() itself, and so we need to disconnect the "value" of
  * the ChildPart (but not its directive). In this case, when `_clear()` calls
- * `_$setChildPartConnected()`, we don't iterate all of the
+ * `_$notifyConnectionChanged()`, we don't iterate all of the
  * _$disconnectableChildren, rather we do a value-specific disconnection: i.e.
  * since the _value was an Array<ChildPart> (because an iterable had been
  * committed), we iterate the array of ChildParts (N14, N16) and run
@@ -110,20 +111,14 @@
  *
  * Example 3: If the LitElement containing the entire tree above becomes
  * disconnected, it will run `childPart.setConnected()` (which calls
- * `childPart._$setChildPartConnected()` if it exists); in this case, we
+ * `childPart._$notifyConnectionChanged()` if it exists); in this case, we
  * recursively run `setConnected()` over the entire tree, without removing any
  * children from `_$disconnectableChildren`, since this tree is required to
  * re-connect the tree, which does the same operation, simply passing
  * `isConnectd: true` down the tree, signaling which callback to run.
  */
 
-import {
-  AttributePart,
-  ChildPart,
-  Disconnectable,
-  Part,
-  PrivateRenderOptions,
-} from './lit-html.js';
+import {AttributePart, ChildPart, Disconnectable, Part} from './lit-html.js';
 import {isSingleExpression} from './directive-helpers.js';
 import {Directive, PartInfo, PartType} from './directive.js';
 export {directive} from './directive.js';
@@ -137,7 +132,7 @@ const DEV_MODE = true;
  *
  * @return True if there were children to disconnect; false otherwise
  */
-const setChildrenConnected = (
+const notifyChildrenConnectedChanged = (
   parent: Disconnectable,
   isConnected: boolean
 ): boolean => {
@@ -146,17 +141,20 @@ const setChildrenConnected = (
     return false;
   }
   for (const obj of children) {
-    // The existence of `_$setDirectiveConnected` is used as a "brand" to
+    // The existence of `_$notifyDirectiveConnectionChanged` is used as a "brand" to
     // disambiguate AsyncDirectives from other DisconnectableChildren
     // (as opposed to using an instanceof check to know when to call it); the
     // redundancy of "Directive" in the API name is to avoid conflicting with
-    // `_$setChildPartConnected`, which exists `ChildParts` which are also in
+    // `_$notifyConnectionChanged`, which exists `ChildParts` which are also in
     // this list
     // Disconnect Directive (and any nested directives contained within)
     // This property needs to remain unminified.
-    (obj as AsyncDirective)['_$setDirectiveConnected']?.(isConnected, false);
+    (obj as AsyncDirective)['_$notifyDirectiveConnectionChanged']?.(
+      isConnected,
+      false
+    );
     // Disconnect Part/TemplateInstance
-    setChildrenConnected(obj, isConnected);
+    notifyChildrenConnectedChanged(obj, isConnected);
   }
   return true;
 };
@@ -234,7 +232,7 @@ function reparentDisconnectables(this: ChildPart, newParent: Disconnectable) {
  * core code when parts are cleared or the connection state is changed by the
  * user.
  */
-function setChildPartConnected(
+function notifyChildPartConnectedChanged(
   this: ChildPart,
   isConnected: boolean,
   isClearingValue = false,
@@ -251,18 +249,18 @@ function setChildPartConnected(
       // disconnected and removed from this ChildPart's disconnectable
       // children (starting at `fromPartIndex` in the case of truncation)
       for (let i = fromPartIndex; i < value.length; i++) {
-        setChildrenConnected(value[i], false);
+        notifyChildrenConnectedChanged(value[i], false);
         removeDisconnectableFromParent(value[i]);
       }
     } else if (value != null) {
       // TemplateInstance case: If the value has disconnectable children (will
       // only be in the case that it is a TemplateInstance), we disconnect it
       // and remove it from this ChildPart's disconnectable children
-      setChildrenConnected(value as Disconnectable, false);
+      notifyChildrenConnectedChanged(value as Disconnectable, false);
       removeDisconnectableFromParent(value as Disconnectable);
     }
   } else {
-    setChildrenConnected(this, isConnected);
+    notifyChildrenConnectedChanged(this, isConnected);
   }
 }
 
@@ -271,7 +269,8 @@ function setChildPartConnected(
  */
 const installDisconnectAPI = (obj: Disconnectable) => {
   if ((obj as ChildPart).type == PartType.CHILD) {
-    (obj as ChildPart)._$setChildPartConnected ??= setChildPartConnected;
+    (obj as ChildPart)._$notifyConnectionChanged ??=
+      notifyChildPartConnectedChanged;
     (obj as ChildPart)._$reparentDisconnectables ??= reparentDisconnectables;
   }
 };
@@ -288,7 +287,11 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  * `reconnected` should also be implemented to be compatible with reconnection.
  */
 export abstract class AsyncDirective extends Directive {
-  isConnected = true;
+  private __lastIsConnected!: boolean;
+
+  get isConnected() {
+    return this._$isConnected;
+  }
   // @internal
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /**
@@ -302,9 +305,9 @@ export abstract class AsyncDirective extends Directive {
     parent: Disconnectable,
     attributeIndex: number | undefined
   ) {
-    this.isConnected = (part.options as PrivateRenderOptions)._$isConnected;
     super._$initialize(part, parent, attributeIndex);
     addDisconnectableToParent(this);
+    this.__lastIsConnected = part._$isConnected;
   }
   // This property needs to remain unminified.
   /**
@@ -319,37 +322,21 @@ export abstract class AsyncDirective extends Directive {
    *     removed; false when the tree is being disconnected
    * @internal
    */
-  ['_$setDirectiveConnected'](
+  ['_$notifyDirectiveConnectionChanged'](
     isConnected: boolean,
     isClearingDirective = true
   ) {
-    this._setConnected(isConnected);
-    if (isClearingDirective) {
-      setChildrenConnected(this, isConnected);
-      removeDisconnectableFromParent(this);
-    }
-  }
-  /**
-   * Private method used to set the connection state of the directive and call
-   * the respective `disconnected` or `reconnected` callback. Note thatsince
-   * `isConnected` defaults to true, we do not run `reconnected` on first
-   * render.
-   *
-   * If a call to `setValue` was made while disconnected, flush it to the part
-   * before reconnecting.
-   *
-   * @param isConnected
-   * @internal
-   */
-  private _setConnected(isConnected: boolean) {
-    if (isConnected !== this.isConnected) {
+    if (isConnected !== this.__lastIsConnected) {
+      this.__lastIsConnected = isConnected;
       if (isConnected) {
-        this.isConnected = true;
         this.reconnected?.();
       } else {
-        this.isConnected = false;
         this.disconnected?.();
       }
+    }
+    if (isClearingDirective) {
+      notifyChildrenConnectedChanged(this, isConnected);
+      removeDisconnectableFromParent(this);
     }
   }
 

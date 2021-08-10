@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ChildPart, render, nothing} from '../lit-html.js';
+import {
+  TemplateResult,
+  ChildPart,
+  RootChildPart,
+  render,
+  nothing,
+} from '../lit-html.js';
 import {
   directive,
   Directive,
@@ -20,7 +26,7 @@ import {
 } from '../directive-helpers.js';
 
 class CacheDirective extends Directive {
-  private _templateCache = new WeakMap<TemplateStringsArray, ChildPart>();
+  private _templateCache = new WeakMap<TemplateStringsArray, RootChildPart>();
   private _value?: TemplateResult;
 
   constructor(partInfo: PartInfo) {
@@ -48,12 +54,12 @@ class CacheDirective extends Directive {
       if (cachedContainerPart === undefined) {
         const fragment = document.createDocumentFragment();
         cachedContainerPart = render(nothing, fragment);
+        cachedContainerPart.setConnected(false);
         this._templateCache.set(this._value.strings, cachedContainerPart);
       }
       // Move into cache
       setCommittedValue(cachedContainerPart, [childPart]);
       insertPart(cachedContainerPart, undefined, childPart);
-      childPart.setConnected(false);
     }
     // If the new value is a TemplateResult and the previous value is not,
     // or is a different Template as the previous value, restore the child
@@ -71,7 +77,6 @@ class CacheDirective extends Directive {
           clearPart(containerPart);
           insertPart(containerPart, undefined, cachedPart);
           setCommittedValue(containerPart, [cachedPart]);
-          cachedPart.setConnected(true);
         }
       }
       this._value = v;

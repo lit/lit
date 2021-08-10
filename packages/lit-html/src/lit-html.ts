@@ -346,14 +346,6 @@ export interface RenderOptions {
 }
 
 /**
- * Private render options used internally by lit-html
- * @internal
- */
-export interface PrivateRenderOptions extends RenderOptions {
-  _$isConnected: boolean;
-}
-
-/**
  * Internally we can export this interface and change the type of
  * render()'s options.
  */
@@ -375,11 +367,11 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): ChildPart => {
+): RootChildPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
+  let part: RootChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // Internal modification: don't clear container to match lit-html 2.0
@@ -398,17 +390,13 @@ export const render = (
     }
     // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
+    (partOwnerNode as any)['_$litPart$'] = part = new RootChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
-      // Make a copy of any user options, since we will modify it to pass
-      // part connection state on each render
-      {...options}
+      options ?? {}
     );
   }
-  // Pass top-level part connection status to AsyncDirectives via options
-  (part.options as PrivateRenderOptions)._$isConnected = part.__isConnected;
   part._$setValue(value);
   return part;
 };
@@ -442,6 +430,7 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 // `resolveDirective`
 export interface DirectiveParent {
   _$parent?: DirectiveParent;
+  _$isConnected: boolean;
   __directive?: Directive;
   __directives?: Array<Directive | undefined>;
 }
@@ -765,6 +754,7 @@ class Template {
 export interface Disconnectable {
   _$parent?: Disconnectable;
   _$disconnectableChildren?: Set<Disconnectable>;
+  _$isConnected: boolean;
 }
 
 function resolveDirective(
@@ -788,7 +778,7 @@ function resolveDirective(
       (value as DirectiveResult)['_$litDirective$'];
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
     // This property needs to remain unminified.
-    currentDirective?.['_$setDirectiveConnected']?.(false);
+    currentDirective?.['_$notifyDirectiveConnectionChanged']?.(false);
     if (nextDirectiveConstructor === undefined) {
       currentDirective = undefined;
     } else {
@@ -817,7 +807,7 @@ function resolveDirective(
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
-class TemplateInstance {
+class TemplateInstance implements Disconnectable {
   /** @internal */
   _$template: Template;
   /** @internal */
@@ -831,6 +821,10 @@ class TemplateInstance {
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
+  }
+
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -944,7 +938,7 @@ export type Part =
   | EventPart;
 
 export type {ChildPart};
-class ChildPart {
+class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
@@ -957,15 +951,19 @@ class ChildPart {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
-  /** @internal */
-  __isConnected = true;
+
+  get _$isConnected() {
+    // ChildParts that are not at the root should always be created with a
+    // parent; only RootChildNode's won't, and they override _$isConnected
+    return this._$parent!._$isConnected;
+  }
 
   // The following fields will be patched onto ChildParts when required by
   // AsyncDirective
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setChildPartConnected?(
+  _$notifyConnectionChanged?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -987,16 +985,6 @@ class ChildPart {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
     }
-  }
-
-  /**
-   * Sets the connection state for any `AsyncDirectives` contained
-   * within this part and runs their `disconnected` or `reconnected`, according
-   * to the `isConnected` argument.
-   */
-  setConnected(isConnected: boolean) {
-    this.__isConnected = isConnected;
-    this._$setChildPartConnected?.(isConnected);
   }
 
   /**
@@ -1236,7 +1224,7 @@ class ChildPart {
     start: ChildNode | null = wrap(this._$startNode).nextSibling,
     from?: number
   ) {
-    this._$setChildPartConnected?.(false, true, from);
+    this._$notifyConnectionChanged?.(false, true, from);
     while (start && start !== this._$endNode) {
       const n = wrap(start!).nextSibling;
       (wrap(start!) as Element).remove();
@@ -1245,8 +1233,31 @@ class ChildPart {
   }
 }
 
+/**
+ * A top-level `ChildPart` returned from render that manages the connected state
+ * of `AsyncDirective`s created throughout the tree below it.
+ */
+export type {RootChildPart};
+class RootChildPart extends ChildPart {
+  private __isConnected = true;
+
+  get _$isConnected() {
+    return this.__isConnected;
+  }
+
+  /**
+   * Sets the connection state for any `AsyncDirectives` contained
+   * within this part and runs their `disconnected` or `reconnected`, according
+   * to the `isConnected` argument.
+   */
+  setConnected(isConnected: boolean) {
+    this.__isConnected = isConnected;
+    this._$notifyConnectionChanged?.(isConnected);
+  }
+}
+
 export type {AttributePart};
-class AttributePart {
+class AttributePart implements Disconnectable {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
@@ -1267,7 +1278,7 @@ class AttributePart {
   /** @internal */
   __directives?: Array<Directive | undefined>;
   /** @internal */
-  _$parent: Disconnectable | undefined;
+  _$parent: Disconnectable;
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
@@ -1277,11 +1288,15 @@ class AttributePart {
     return this.element.tagName;
   }
 
+  get _$isConnected() {
+    return this._$parent._$isConnected;
+  }
+
   constructor(
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent: Disconnectable | undefined,
+    parent: Disconnectable,
     options: RenderOptions | undefined
   ) {
     this.element = element;
@@ -1507,7 +1522,7 @@ class EventPart extends AttributePart {
 }
 
 export type {ElementPart};
-class ElementPart {
+class ElementPart implements Disconnectable {
   readonly type = ELEMENT_PART;
 
   /** @internal */
@@ -1517,7 +1532,7 @@ class ElementPart {
   _$committedValue: undefined;
 
   /** @internal */
-  _$parent: Disconnectable | undefined;
+  _$parent!: Disconnectable;
 
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
@@ -1531,6 +1546,10 @@ class ElementPart {
   ) {
     this._$parent = parent;
     this.options = options;
+  }
+
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   _$setValue(value: unknown): void {
