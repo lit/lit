@@ -30,6 +30,7 @@ const {
   PropertyPart,
   BooleanAttributePart,
   EventPart,
+  connectedDisconnectable,
 } = _$LH;
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
@@ -557,10 +558,7 @@ function* renderValue(
     value = null;
   } else {
     value = resolveDirective(
-      {
-        type: PartType.CHILD,
-        options: {isConnected: true} as RenderOptions,
-      } as ChildPart,
+      connectedDisconnectable({type: PartType.CHILD}) as ChildPart,
       value
     );
   }
@@ -630,7 +628,7 @@ function* renderTemplateResult(
           {tagName: op.tagName} as HTMLElement,
           op.name,
           statics,
-          undefined,
+          connectedDisconnectable(),
           {}
         );
         const value =

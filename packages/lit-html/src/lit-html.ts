@@ -1588,6 +1588,7 @@ export const _$LH = {
   _resolveDirective: resolveDirective,
   // Used in tests and private-ssr-support
   _ChildPart: ChildPart,
+  _RootChildPart: RootChildPart,
   _AttributePart: AttributePart,
   _BooleanAttributePart: BooleanAttributePart,
   _EventPart: EventPart,

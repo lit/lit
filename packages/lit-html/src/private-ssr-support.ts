@@ -5,7 +5,13 @@
  */
 
 import {Directive, PartInfo} from './directive.js';
-import {_$LH as p, AttributePart, noChange, Part} from './lit-html.js';
+import {
+  _$LH as p,
+  AttributePart,
+  noChange,
+  Part,
+  Disconnectable,
+} from './lit-html.js';
 export type {Template} from './lit-html.js';
 
 /**
@@ -49,6 +55,10 @@ export const _$LH = {
     part._$setValue(value, part, index);
     return committedValue;
   },
+  connectedDisconnectable: (props?: object): Disconnectable => ({
+    ...props,
+    _$isConnected: true,
+  }),
   resolveDirective: p._resolveDirective,
   AttributePart: p._AttributePart,
   PropertyPart: p._PropertyPart,

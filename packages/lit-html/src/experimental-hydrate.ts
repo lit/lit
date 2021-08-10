@@ -19,6 +19,7 @@ const {
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
   _ChildPart: ChildPart,
+  _RootChildPart: RootChildPart,
   _ElementPart: ElementPart,
 } = _$LH;
 
@@ -191,7 +192,7 @@ const openChildPart = (
   // TODO(kschaaf): Current constructor takes both nodes
   let part;
   if (stack.length === 0) {
-    part = new ChildPart(marker, null, undefined, options);
+    part = new RootChildPart(marker, null, undefined, options);
     value = rootValue;
   } else {
     const state = stack[stack.length - 1];
