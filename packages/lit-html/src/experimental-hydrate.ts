@@ -114,8 +114,7 @@ export const hydrate = (
   container: Element | DocumentFragment,
   options: Partial<RenderOptions> = {}
 ) => {
-  options ??= {};
-  (options as PrivateRenderOptions)._$isConnected = true;
+  (options as PrivateRenderOptions) = {...options, _$isConnected: true};
 
   // TODO(kschaaf): Do we need a helper for _$litPart$ ("part for node")?
   // This property needs to remain unminified.

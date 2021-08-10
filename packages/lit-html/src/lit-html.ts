@@ -405,7 +405,11 @@ export const render = (
       options || {}
     );
   }
-  (part.options as PrivateRenderOptions)._$isConnected = part.__isConnected;
+  // Pass top-level part connection status to AsyncDirectives via options
+  (part.options as PrivateRenderOptions) = {
+    ...part.options,
+    _$isConnected: part.__isConnected,
+  };
   part._$setValue(value);
   return part;
 };
