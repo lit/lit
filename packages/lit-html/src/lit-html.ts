@@ -1432,6 +1432,21 @@ export type {EventPart};
 class EventPart extends AttributePart {
   readonly type = EVENT_PART;
 
+  constructor(
+    element: HTMLElement,
+    name: string,
+    strings: ReadonlyArray<string>,
+    parent: Disconnectable | undefined,
+    options: RenderOptions | undefined
+  ) {
+    super(element, name, strings, parent, options);
+
+    if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
+      throw new Error('An event listener in a template has extra content ' +
+        'surrounding the listener expression.');
+    }
+  }
+
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
