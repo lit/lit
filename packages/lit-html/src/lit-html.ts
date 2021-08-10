@@ -402,14 +402,13 @@ export const render = (
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
-      options || {}
+      // Make a copy of any user options, since we will modify it to pass
+      // part connection state on each render
+      {...options}
     );
   }
   // Pass top-level part connection status to AsyncDirectives via options
-  (part.options as PrivateRenderOptions) = {
-    ...part.options,
-    _$isConnected: part.__isConnected,
-  };
+  (part.options as PrivateRenderOptions)._$isConnected = part.__isConnected;
   part._$setValue(value);
   return part;
 };
