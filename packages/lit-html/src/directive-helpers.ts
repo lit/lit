@@ -134,7 +134,7 @@ export const insertPart = (
         (newConnectionState = containerPart._$isConnected) !==
           oldParent!._$isConnected
       ) {
-        part._$notifyConnectionChanged!(newConnectionState);
+        part._$notifyConnectionChanged(newConnectionState);
       }
     }
     if (endNode !== refNode || parentChanged) {
