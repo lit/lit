@@ -31,16 +31,6 @@ export class AsyncReplaceDirective extends AsyncDirective {
   private __nextPromise?: Promise<IteratorResult<unknown>>;
   private __mapper?: Mapper<unknown>;
 
-  constructor(partInfo: PartInfo) {
-    super(partInfo);
-    this.validatePartType(partInfo);
-  }
-
-  // Override point for AsyncReplace, which can only be used in ChildParts
-  protected validatePartType(_partInfo: PartInfo) {
-    // AsyncReplace can be used in any part type
-  }
-
   // @ts-expect-error value not used, but we want a nice parameter for docs
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   render<T>(value: AsyncIterable<T>, _mapper?: Mapper<T>) {
@@ -114,7 +104,7 @@ export class AsyncReplaceDirective extends AsyncDirective {
     this.__awaitNextValue();
   }
 
-  // Override point for AsyncReplace to replace rather than append
+  // Override point for AsyncAppend to append rather than replace
   protected commitValue(value: unknown) {
     this.setValue(value);
   }

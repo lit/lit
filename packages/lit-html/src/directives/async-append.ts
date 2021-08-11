@@ -21,24 +21,28 @@ import {
 class AsyncAppendDirective extends AsyncReplaceDirective {
   private __childPart!: ChildPart;
 
-  protected validatePartType(partInfo: PartInfo) {
+  // Override AsyncReplace to narrow the allowed part type to ChildPart only
+  constructor(partInfo: PartInfo) {
+    super(partInfo);
     if (partInfo.type !== PartType.CHILD) {
       throw new Error('asyncAppend can only be used in child expressions');
     }
   }
 
+  // Override AsyncReplace to save the part since we need to append into it
   update(part: ChildPart, params: DirectiveParameters<this>) {
     this.__childPart = part;
     return super.update(part, params);
   }
 
-  // Override point for AsyncReplace to replace rather than append
+  // Override AsyncReplace to append rather than replace
   protected commitValue(value: unknown) {
     // When we get the first value, clear the part. This lets the
     // previous value display until we can replace it.
     if (this.index === 0) {
       clearPart(this.__childPart);
     }
+    // Create and insert a new part and set its value to the next value
     const newPart = insertPart(this.__childPart);
     setChildPartValue(newPart, value);
   }

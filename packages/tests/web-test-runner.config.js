@@ -149,7 +149,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         }
       : {}),
   };
-  console.log(config);
   return [playwrightLauncher(config)];
 }
 

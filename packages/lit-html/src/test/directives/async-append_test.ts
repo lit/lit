@@ -219,10 +219,10 @@ suite('asyncAppend', () => {
       forceGC();
       const heap = performance.memory.usedJSHeapSize;
       for (let i = 0; i < 1000; i++) {
-        // Promise passed to until that will never resolve
+        // Iterable passed to asyncAppend that will never yield
         const iterable = new TestAsyncIterable<string>();
         iterables.push(iterable);
-        // Render the until into a `<span>` with a 10kb expando, to exaggerate
+        // Render the directive into a `<span>` with a 10kb expando, to exaggerate
         // when DOM is not being gc'ed
         render(
           template(html`<span .p=${big()}>${asyncAppend(iterable)}</span>`),
