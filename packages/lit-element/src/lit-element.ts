@@ -47,7 +47,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
-import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
+import {render, RenderOptions, noChange, RootChildPart} from 'lit-html';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
 
@@ -95,7 +95,7 @@ export class LitElement extends ReactiveElement {
    */
   readonly renderOptions: RenderOptions = {host: this};
 
-  private __childPart: ChildPart | undefined = undefined;
+  private __childPart: RootChildPart | undefined = undefined;
 
   /**
    * @category rendering
