@@ -305,7 +305,7 @@ suite('asyncReplace', () => {
       forceGC();
       const heap = performance.memory.usedJSHeapSize;
       for (let i = 0; i < 1000; i++) {
-        // Iterable passed to asyncAppend that will never yield
+        // Iterable passed to asyncReplace that will never yield
         const iterable = new TestAsyncIterable<string>();
         iterables.push(iterable);
         // Render the directive into a `<span>` with a 10kb expando, to exaggerate
