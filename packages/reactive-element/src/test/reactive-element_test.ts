@@ -1027,6 +1027,32 @@ suite('ReactiveElement', () => {
     assert.equal(el.updatedText, 'changed');
   });
 
+  test('updates when disconnected', async () => {
+    let updateCount = 0;
+    class E extends ReactiveElement {
+      updated() {
+        updateCount++;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(updateCount, 1);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 2);
+
+    container.removeChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 3);
+    container.appendChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 4);
+  });
+
   test('User defined accessor can trigger update', async () => {
     class E extends ReactiveElement {
       __bar?: number;
