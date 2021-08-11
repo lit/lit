@@ -685,7 +685,6 @@ export abstract class ReactiveElement
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
-  private __enableConnection: (() => void) | undefined = undefined;
 
   /**
    * @category updates
@@ -831,11 +830,6 @@ export abstract class ReactiveElement
     }
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
-    // If we were disconnected, re-enable updating by resolving the pending
-    // connection promise
-    if (this.__enableConnection) {
-      this.__enableConnection();
-    }
   }
 
   /**
