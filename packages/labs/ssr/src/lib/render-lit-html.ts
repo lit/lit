@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateResult, ChildPart, RenderOptions} from 'lit';
+import type {TemplateResult, ChildPart} from 'lit';
 import type {
   Directive,
   DirectiveClass,
