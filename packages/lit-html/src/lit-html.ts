@@ -955,6 +955,7 @@ class ChildPart implements Disconnectable {
   get _$isConnected() {
     // ChildParts that are not at the root should always be created with a
     // parent; only RootChildNode's won't, and they override _$isConnected
+    // to return a local state variable rather than asking the parent
     return this._$parent!._$isConnected;
   }
 
