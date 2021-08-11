@@ -116,20 +116,25 @@ export const insertPart = (
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
-    const parentChanged = part._$parent !== containerPart;
+    const oldParent = part._$parent;
+    const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
-      const newConnectionState = containerPart._$isConnected;
-      const shouldNotifyConnectionChanged =
-        part._$notifyConnectionChanged !== undefined &&
-        newConnectionState !== part._$isConnected;
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
       // `_$parent` reference after unlinking from its current parent, that
       // method only exists if Disconnectables are present, so we need to
       // unconditionally set it here
       part._$parent = containerPart;
-      if (shouldNotifyConnectionChanged) {
-        part._$notifyConnectionChanged?.(newConnectionState);
+      // Since the _$isConnected getter is somewhat costly, only
+      // read it once we know the subtree has directives that need
+      // to be notified
+      let newConnectionState;
+      if (
+        part._$notifyConnectionChanged !== undefined &&
+        (newConnectionState = containerPart._$isConnected) !==
+          oldParent!._$isConnected
+      ) {
+        part._$notifyConnectionChanged!(newConnectionState);
       }
     }
     if (endNode !== refNode || parentChanged) {
