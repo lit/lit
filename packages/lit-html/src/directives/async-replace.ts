@@ -5,7 +5,7 @@
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
-import {directive, DirectiveParameters, PartInfo} from '../directive.js';
+import {directive, DirectiveParameters} from '../directive.js';
 import {AsyncDirective} from '../async-directive.js';
 
 type Mapper<T> = (v: T, index?: number) => unknown;
