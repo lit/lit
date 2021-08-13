@@ -518,7 +518,7 @@ const extraGlobals = window as LitExtraGlobals;
       });
 
       // TODO(kschaaf): render does not currently support rendering to an
-      // initially disconnected ChildPart
+      // initially disconnected ChildPart (https://github.com/lit/lit/issues/2051)
       test.skip('directives render with isConnected: false if first render is while element is disconnected', async () => {
         container.appendChild(host);
         container.remove();

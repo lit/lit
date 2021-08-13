@@ -955,6 +955,7 @@ class ChildPart implements Disconnectable {
   // of a part be `isConnected: false`. We may want to add this via renderOptions
   // so that if a LitElement ends up performing its initial render while
   // disconnected, the directives aren't in the wrong state
+  // https://github.com/lit/lit/issues/2051
   /** @internal */
   __isConnected = true;
 
