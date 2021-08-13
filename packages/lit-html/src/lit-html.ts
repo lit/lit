@@ -951,6 +951,10 @@ class ChildPart implements Disconnectable {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
+  // TODO(kschaaf): There's currently no way to have the initial render
+  // of a part be `isConnected: false`. We may want to add this via renderOptions
+  // so that if a LitElement ends up performing its initial render while
+  // disconnected, the directives aren't in the wrong state
   /** @internal */
   __isConnected = true;
 
