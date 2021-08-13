@@ -1237,7 +1237,8 @@ class ChildPart implements Disconnectable {
   /** @internal */
   setConnected(isConnected: boolean) {
     if (this._$parent === undefined) {
-      this._$notifyConnectionChanged?.((this.__isConnected = isConnected));
+      this.__isConnected = isConnected;
+      this._$notifyConnectionChanged?.(isConnected);
     } else if (DEV_MODE) {
       throw new Error(
         'part.setConnected() may only be called on a ' +
