@@ -287,11 +287,8 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  * `reconnected` should also be implemented to be compatible with reconnection.
  */
 export abstract class AsyncDirective extends Directive {
-  private __lastIsConnected!: boolean;
+  isConnected!: boolean;
 
-  get isConnected() {
-    return this._$isConnected;
-  }
   // @internal
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /**
@@ -307,7 +304,7 @@ export abstract class AsyncDirective extends Directive {
   ) {
     super._$initialize(part, parent, attributeIndex);
     addDisconnectableToParent(this);
-    this.__lastIsConnected = part._$isConnected;
+    this.isConnected = part._$isConnected;
   }
   // This property needs to remain unminified.
   /**
@@ -326,8 +323,8 @@ export abstract class AsyncDirective extends Directive {
     isConnected: boolean,
     isClearingDirective = true
   ) {
-    if (isConnected !== this.__lastIsConnected) {
-      this.__lastIsConnected = isConnected;
+    if (isConnected !== this.isConnected) {
+      this.isConnected = isConnected;
       if (isConnected) {
         this.reconnected?.();
       } else {

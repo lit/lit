@@ -754,6 +754,13 @@ class Template {
 export interface Disconnectable {
   _$parent?: Disconnectable;
   _$disconnectableChildren?: Set<Disconnectable>;
+  // Rather than hold connection state on instances, Disconnectables recursively
+  // fetch the connection state from the RootChildPart they are connected in via
+  // getters up the Disconnectable tree via _$parent references. This pushes the
+  // cost of tracking the isConnected state to `AsyncDirectives`, and avoids
+  // needing to pass all Disconnectables (parts, template instances, and
+  // directives) their connection state each time it changes, which would be
+  // costly for trees that have no AsyncDirectives.
   _$isConnected: boolean;
 }
 
@@ -823,6 +830,7 @@ class TemplateInstance implements Disconnectable {
     this._$parent = parent;
   }
 
+  // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
     return this._$parent._$isConnected;
   }
@@ -959,6 +967,7 @@ class ChildPart implements Disconnectable {
   /** @internal */
   __isConnected = true;
 
+  // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
     // ChildParts that are not at the root should always be created with a
     // parent; only RootChildNode's won't, so they return the local isConnected
@@ -1293,6 +1302,7 @@ class AttributePart implements Disconnectable {
     return this.element.tagName;
   }
 
+  // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
     return this._$parent._$isConnected;
   }
@@ -1553,6 +1563,7 @@ class ElementPart implements Disconnectable {
     this.options = options;
   }
 
+  // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
     return this._$parent._$isConnected;
   }

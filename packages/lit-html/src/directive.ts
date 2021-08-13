@@ -114,6 +114,7 @@ export abstract class Directive implements Disconnectable {
 
   constructor(_partInfo: PartInfo) {}
 
+  // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
     return this._$parent._$isConnected;
   }
