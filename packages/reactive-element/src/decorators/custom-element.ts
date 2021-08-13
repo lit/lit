@@ -46,7 +46,7 @@ const standardCustomElement = (
 /**
  * Class decorator factory that defines the decorated class as a custom element.
  *
- * ```
+ * ```js
  * @customElement('my-element')
  * class MyElement extends LitElement {
  *   render() {

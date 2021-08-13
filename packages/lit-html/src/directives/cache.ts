@@ -88,7 +88,7 @@ class CacheDirective extends Directive {
  *
  * Example:
  *
- * ```
+ * ```js
  * let checked = false;
  *
  * html`
