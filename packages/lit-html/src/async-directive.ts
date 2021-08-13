@@ -287,6 +287,14 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  * `reconnected` should also be implemented to be compatible with reconnection.
  */
 export abstract class AsyncDirective extends Directive {
+  // As opposed to other Disconnectables, AsyncDirectives always get notified
+  // when the RootChildPart connection changes, so the public `isConnected`
+  // is a locally stored variable initialized via its part's getter and synced
+  // via `_$notifyDirectiveConnectionChanged`. This is cheaper than using
+  // the _$isConnected getter, which has to look back up the tree each time.
+  /**
+   * The connection state for this Directive.
+   */
   isConnected!: boolean;
 
   // @internal
