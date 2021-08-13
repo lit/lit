@@ -371,7 +371,7 @@ export const render = (
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: RootChildPart = (partOwnerNode as any)['_$litPart$'];
+  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // Internal modification: don't clear container to match lit-html 2.0
@@ -390,7 +390,7 @@ export const render = (
     }
     // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)['_$litPart$'] = part = new RootChildPart(
+    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
@@ -398,7 +398,7 @@ export const render = (
     );
   }
   part._$setValue(value);
-  return part;
+  return part as RootChildPart;
 };
 
 if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -951,12 +951,14 @@ class ChildPart implements Disconnectable {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
+  /** @internal */
+  __isConnected = true;
 
   get _$isConnected() {
     // ChildParts that are not at the root should always be created with a
-    // parent; only RootChildNode's won't, and they override _$isConnected
-    // to return a local state variable rather than asking the parent
-    return this._$parent!._$isConnected;
+    // parent; only RootChildNode's won't, so they return the local isConnected
+    // state
+    return this._$parent?._$isConnected ?? this.__isConnected;
   }
 
   // The following fields will be patched onto ChildParts when required by
@@ -1232,29 +1234,25 @@ class ChildPart implements Disconnectable {
       start = n;
     }
   }
+  /** @internal */
+  setConnected(isConnected: boolean) {
+    if (this._$parent === undefined) {
+      this._$notifyConnectionChanged?.((this.__isConnected = isConnected));
+    } else if (DEV_MODE) {
+      throw new Error(
+        'part.setConnected() may only be called on a ' +
+          'RootChildPart returned from render().'
+      );
+    }
+  }
 }
 
 /**
  * A top-level `ChildPart` returned from render that manages the connected state
  * of `AsyncDirective`s created throughout the tree below it.
  */
-export type {RootChildPart};
-class RootChildPart extends ChildPart {
-  private __isConnected = true;
-
-  get _$isConnected() {
-    return this.__isConnected;
-  }
-
-  /**
-   * Sets the connection state for any `AsyncDirectives` contained
-   * within this part and runs their `disconnected` or `reconnected`, according
-   * to the `isConnected` argument.
-   */
-  setConnected(isConnected: boolean) {
-    this.__isConnected = isConnected;
-    this._$notifyConnectionChanged?.(isConnected);
-  }
+export interface RootChildPart extends ChildPart {
+  setConnected(isConnected: boolean): void;
 }
 
 export type {AttributePart};
@@ -1589,7 +1587,6 @@ export const _$LH = {
   _resolveDirective: resolveDirective,
   // Used in tests and private-ssr-support
   _ChildPart: ChildPart,
-  _RootChildPart: RootChildPart,
   _AttributePart: AttributePart,
   _BooleanAttributePart: BooleanAttributePart,
   _EventPart: EventPart,

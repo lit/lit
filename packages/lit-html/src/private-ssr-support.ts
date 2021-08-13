@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Directive, PartInfo} from './directive.js';
+import {
+  Directive,
+  PartInfo,
+  DirectiveClass,
+  DirectiveResult,
+} from './directive.js';
 import {
   _$LH as p,
   AttributePart,
@@ -40,6 +45,10 @@ export const _$LH = {
         return resolveOverrideFn(this, values);
       }
     },
+  setDirectiveClass(value: DirectiveResult, directiveClass: DirectiveClass) {
+    // This property needs to remain unminified.
+    value['_$litDirective$'] = directiveClass;
+  },
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
