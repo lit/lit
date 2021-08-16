@@ -12,8 +12,10 @@ import { repeat } from 'lit/directives/repeat.js';
 import { scrollerRef, VirtualizerHostElement, VirtualScroller, RangeChangedEvent } from './VirtualScroller.js';
 import { LayoutSpecifier, Layout, LayoutConstructor } from './layouts/Layout.js';
 
+
+type RenderItemFunction = ((item: any, index: number) => TemplateResult)
 const defaultKeyFunction = (item: any) => item;
-const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
+const defaultRenderItem: RenderItemFunction = (item: any, idx: number) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
 
 /**
  * A LitElement wrapper of the scroll directive.
@@ -24,8 +26,16 @@ const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
  */
 @customElement('lit-virtualizer')
 export class LitVirtualizer extends LitElement {
+    private _renderItem: RenderItemFunction = (item, idx) => defaultRenderItem(item, idx + this._first);
+
+    set renderItem(fn: RenderItemFunction) {
+        this._renderItem = (item, idx) => fn(item, idx + this._first);
+    }
+
     @property()
-    renderItem?: ((item: any, index?: number) => TemplateResult) = defaultRenderItem;
+    get renderItem() {
+        return this._renderItem;
+    }
 
     @property({attribute: false})
     items: Array<unknown> = [];
@@ -66,23 +76,43 @@ export class LitVirtualizer extends LitElement {
         this._virtualizer!.scrollToIndex = { index, position };
     }
 
-    firstUpdated() {
-        const hostElement = this;
-        const layout = this._layout;
-        this._virtualizer = new VirtualScroller({ hostElement, layout });
-        hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
-            e.stopPropagation();
-            this._first = e.first;
-            this._last = e.last;
-            render(this.render(), this);
-        });
-    }
+    // // firstUpdated() {
+    // constructor() {
+    //     super();
+    //     const hostElement = this;
+    //     const layout = this._layout;
+    //     this._virtualizer = new VirtualScroller({ hostElement, layout });
+    //     hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+    //         e.stopPropagation();
+    //         this._first = e.first;
+    //         this._last = e.last;
+    //         render(this.render(), this);
+    //     });
+    // }
 
     updated() {
-        if (this._layout !== undefined) {
-            this._virtualizer!.layout = this._layout;
+        if (this._virtualizer) {
+            if (this._layout !== undefined) {
+                this._virtualizer!.layout = this._layout;
+            }
+            this._virtualizer!.items = this.items;
         }
-        this._virtualizer!.items = this.items;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        if (!this._virtualizer) {
+            const hostElement = this;
+            const layout = this._layout;
+            this._virtualizer = new VirtualScroller({ hostElement, layout });
+            hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+                e.stopPropagation();
+                this._first = e.first;
+                this._last = e.last;
+                render(this.render(), this);
+            });    
+        }
+        this._virtualizer!.connected();
     }
 
     createRenderRoot() {

@@ -15,16 +15,8 @@ import '@material/mwc-radio';
 ///
 
 const renderPhoto = photo => {
-    if (photo) {
-        // const {width, height} = getDims(photo);
-        // return html`<div style="--ratio: ${width / height}"><img src=${getUrl(photo)} /></div>`;
-        // return html`<img src=${getUrl(photo)} />`;
-        const url = photo.id === 'TEMP' ? '' : getUrl(photo);
-        // if (photo.id === 'TEMP') {
-        //     return html`<div class="box"></div>`;
-        // }
-        return html`<img src=${url} style="width: 200px; height: 200px;" />`;
-    }
+    const url = photo.id === 'TEMP' ? '' : getUrl(photo);
+    return html`<img src=${url} style="width: 200px; height: 200px;" />`;
 }
 
 ///
@@ -90,7 +82,8 @@ function renderExample() {
     .scroller {height: unset; flex: 1;}
     .open .controls {transform: translateX(0);}
     .open .sheet {width: 256px;}
-    .scroller > * {transition: all 0.25s;}
+    .scroller { overflow: auto; contain: strict; }
+    .virtualizer > * {transition: all 0.25s;}
     .box {background: #DDD;}
     .sheet {font-family: Roboto, sans-serif; font-size: 0.75rem; font-weight: 400; color: rgba(0, 0, 0, 0.6);}
     mwc-formfield {display: block;}
@@ -135,26 +128,28 @@ function renderExample() {
                 </details>
             </div>
         </div>
-        <div class="scroller"
-            @rangeChanged=${(e) => {
-                if (showRange) {
-                    const {first, last} = e;
-                    setState({first, last});
-                }
-            }}
-            @visibilityChanged=${(e) => {
-                if (showRange) {
-                    const {first, last} = e;
-                    setState({firstVisible: first, lastVisible: last});
-                }
-            }}
-        >
-            ${scroll({items, renderItem, layout: {
-                type: Layout,
-                idealSize,
-                spacing,
-                direction
-            }})}
+        <div class="scroller">
+            <div class="virtualizer"
+                @rangeChanged=${(e) => {
+                    if (showRange) {
+                        const {first, last} = e;
+                        setState({first, last});
+                    }
+                }}
+                @visibilityChanged=${(e) => {
+                    if (showRange) {
+                        const {first, last} = e;
+                        setState({firstVisible: first, lastVisible: last});
+                    }
+                }}
+            >
+                ${scroll({items, renderItem, layout: {
+                    type: Layout,
+                    idealSize,
+                    spacing,
+                    direction
+                }})}
+            </div>
         </div>
     </div>
 </div>
@@ -180,7 +175,7 @@ function itemSizes(items) {
 }
 
 function updateItemSizes(items) {
-    const layout = document.querySelector('.scroller')[scrollerRef].layout;
+    const layout = document.querySelector('.virtualizer')[scrollerRef].layout;
     if (layout && typeof layout.updateItemSizes === 'function') {
        layout.updateItemSizes(itemSizes(items));
     }

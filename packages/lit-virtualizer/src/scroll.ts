@@ -29,7 +29,7 @@ interface ScrollConfig {
     /**
      * The list of items to display via the renderItem function.
      */
-    items?: Array<any>;
+    items?: Array<unknown>;
 
     /**
      * Index and position of the item to scroll to.
@@ -44,6 +44,7 @@ class ScrollDirective extends AsyncDirective {
     scroller: VirtualScroller | null = null
     first = 0
     last = -1
+    cachedConfig?: ScrollConfig
     renderItem: (item: any, index: number) => TemplateResult = defaultRenderItem;
     keyFunction: (item: any) => unknown = defaultKeyFunction;
     items: Array<unknown> = []
@@ -69,18 +70,30 @@ class ScrollDirective extends AsyncDirective {
     }
 
     update(part: ChildPart, [config]: [ScrollConfig]) {
-        if (this.scroller || this._initialize(part, config)) {
-            const { scroller } = this;
-            this.items = scroller!.items = config.items || [];
-            if (config.layout) {
-                scroller!.layout = config.layout;
+        this._setFunctions(config);
+        this.items = config.items || [];
+        if (this.scroller) {
+            this._updateScrollerConfig(config);
+        }
+        else {
+            if (!this.cachedConfig) {
+                setTimeout(() => this._initialize(part));
             }
-            if (config.scrollToIndex) {
-                scroller!.scrollToIndex = config.scrollToIndex;
-            }
-            this._setFunctions(config);
+            this.cachedConfig = config;
         }
         return noChange;
+    }
+
+    _updateScrollerConfig(config: ScrollConfig) {
+        const { scroller } = this;
+        scroller!.items = this.items;
+        if (config.layout) {
+            scroller!.layout = config.layout;
+        }
+        if (config.scrollToIndex) {
+            scroller!.scrollToIndex = config.scrollToIndex;
+        }
+        // this._setFunctions(config);
     }
 
     private _setFunctions(config: ScrollConfig) {
@@ -93,34 +106,40 @@ class ScrollDirective extends AsyncDirective {
         };
     }
 
-    private _initialize(part: ChildPart, config: ScrollConfig) {
+    private _initialize(part: ChildPart) {
+        const config = this.cachedConfig!;
         const hostElement = part.parentNode as HTMLElement;
         if (hostElement && hostElement.nodeType === 1) {
-            let containerElement, mutationObserverTarget;
-            if (hostElement.shadowRoot) {
-                containerElement = hostElement.shadowRoot.querySelector('[lit-virtualizer-container]') as HTMLElement || undefined;
-                if (containerElement) {
-                    mutationObserverTarget = '__shady' in hostElement.shadowRoot ? containerElement : hostElement;
-                }
-            }
+            // let containerElement, mutationObserverTarget;
+            // if (hostElement.shadowRoot) {
+            //     containerElement = hostElement.shadowRoot.querySelector('[lit-virtualizer-container]') as HTMLElement || undefined;
+            //     if (containerElement) {
+            //         mutationObserverTarget = '__shady' in hostElement.shadowRoot ? containerElement : hostElement;
+            //     }
+            // }
             const layout = config.layout;
-            this.scroller = new VirtualScroller({ hostElement, containerElement, mutationObserverTarget, layout });
+            this.scroller = new VirtualScroller({ hostElement, /*containerElement, mutationObserverTarget,*/ layout });
+            // setTimeout(() => this.scroller!.connected());
+            this.scroller!.connected();
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this.first = e.first;
                 this.last = e.last;
                 render(this.render(), hostElement);
             });
-            return true;
+            this.update(part, [config]);
         }
+        else {
+            console.log('uh-oh!');
+        }
+    }
 
-        // TODO (GN): This seems to be needed in the case where the `scroll`
-        // directive is used within the `LitVirtualizer` element. Figure out why
-        // and see if there's a cleaner solution.
-        // Promise.resolve().then(() => this.update(part, [config]));
-        // requestAnimationFrame(() => this.update(part, [config]));
-        // setTimeout(() => this.update(part, [config]), 5000);
-        return false;
+    disconnected() {
+        this.scroller?.disconnected();
+    }
+
+    reconnected() {
+        this.scroller?.connected();
     }
 }
 
