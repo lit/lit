@@ -63,8 +63,8 @@ export class AsyncReplaceDirective extends AsyncDirective {
     return noChange;
   }
 
-  private __awaitNextValue(nextPromise = this.__iterator!.next()) {
-    this.__nextPromise = nextPromise;
+  private __awaitNextValue() {
+    const nextPromise = (this.__nextPromise = this.__iterator!.next());
     if (this.isConnected) {
       // We still await the nextPromise even when disconnected (since if the
       // directive reconnects it will need to handle the result), but only
