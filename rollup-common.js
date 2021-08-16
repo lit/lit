@@ -72,6 +72,7 @@ const reservedProperties = [
   '_$litDirective$',
   '_$litPart$',
   '_$litElement$',
+  '_$litStatic$',
   '_$cssResult$',
 ];
 
