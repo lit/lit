@@ -1441,9 +1441,14 @@ class EventPart extends AttributePart {
   ) {
     super(element, name, strings, parent, options);
 
-    if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      throw new Error('An event listener in a template has extra content ' +
-        'surrounding the listener expression.');
+    if (
+      DEV_MODE &&
+      (strings.length > 2 || strings[0] !== '' || strings[1] !== '')
+    ) {
+      throw new Error(
+        'An event listener in a template has extra content surrounding the ' +
+          'listener expression.'
+      );
     }
   }
 
