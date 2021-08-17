@@ -9,7 +9,7 @@ import {until} from '../../directives/until.js';
 import {html, nothing, render} from '../../lit-html.js';
 import {Deferred} from '../test-utils/deferred.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
-import {memorySuite, forceGC} from '../test-utils/memory.js';
+import {memorySuite} from '../test-utils/memory.js';
 
 const laterTask = () => new Promise((resolve) => setTimeout(resolve));
 
@@ -763,7 +763,7 @@ suite('until directive', () => {
       const big = () => new Array(10000).fill(0);
       // Hold onto the resolvers to prevent the promises from being gc'ed
       const resolvers: Array<() => void> = [];
-      forceGC();
+      window.gc();
       const heap = performance.memory.usedJSHeapSize;
       for (let i = 0; i < 1000; i++) {
         // Promise passed to until that will never resolve
@@ -777,7 +777,7 @@ suite('until directive', () => {
         // Clear the `<span>` + directive
         render(template(nothing), container);
       }
-      forceGC();
+      window.gc();
       // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
       // DOM leak will be orders of magnitude larger
       assert.isAtMost(
