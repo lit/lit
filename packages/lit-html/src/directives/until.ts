@@ -14,7 +14,7 @@ const isPromise = (x: unknown) => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
 };
 // Effectively infinity, but a SMI.
-const _infinity = 0x7fffffff;
+const _infinity = 0x3fffffff;
 
 export class UntilDirective extends AsyncDirective {
   private __lastRenderedIndex: number = _infinity;
