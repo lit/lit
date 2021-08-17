@@ -1443,7 +1443,7 @@ class EventPart extends AttributePart {
 
     if (
       DEV_MODE &&
-      (strings.length > 2 || strings[0] !== '' || strings[1] !== '')
+      (strings.length !== 2 || strings[0] !== '' || strings[1] !== '')
     ) {
       throw new Error(
         'An event listener in a template has extra content surrounding the ' +

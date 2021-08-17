@@ -1920,6 +1920,31 @@ suite('lit-html', () => {
       assert.deepEqual(log, ['x:2', 'y:2']);
     });
 
+    if (DEV_MODE) {
+      test('EventPart attributes must consist of one value and no extra text', () => {
+        const listener = () => {};
+
+        render(html`<div @click=${listener}></div>`, container);
+        render(html`<div @click="${listener}"></div>`, container);
+
+        assert.throws(() => {
+          render(html`<div @click=EXTRA_TEXT${listener}></div>`, container);
+        });
+        assert.throws(() => {
+          render(html`<div @click=${listener}EXTRA_TEXT></div>`, container);
+        });
+        assert.throws(() => {
+          render(html`<div @click=${listener}${listener}></div>`, container);
+        });
+        assert.throws(() => {
+          render(
+            html`<div @click="${listener}EXTRA_TEXT${listener}"></div>`,
+            container
+          );
+        });
+      });
+    }
+
     test('directives have access to renderOptions', () => {
       const hostEl = document.createElement('input');
       hostEl.value = 'host';
