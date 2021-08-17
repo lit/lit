@@ -294,7 +294,7 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  */
 export abstract class AsyncDirective extends Directive {
   // As opposed to other Disconnectables, AsyncDirectives always get notified
-  // when the RootChildPart connection changes, so the public `isConnected`
+  // when the RootPart connection changes, so the public `isConnected`
   // is a locally stored variable initialized via its part's getter and synced
   // via `_$notifyDirectiveConnectionChanged`. This is cheaper than using
   // the _$isConnected getter, which has to look back up the tree each time.

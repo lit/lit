@@ -367,7 +367,7 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): RootChildPart => {
+): RootPart => {
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -398,7 +398,7 @@ export const render = (
     );
   }
   part._$setValue(value);
-  return part as RootChildPart;
+  return part as RootPart;
 };
 
 if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -755,7 +755,7 @@ export interface Disconnectable {
   _$parent?: Disconnectable;
   _$disconnectableChildren?: Set<Disconnectable>;
   // Rather than hold connection state on instances, Disconnectables recursively
-  // fetch the connection state from the RootChildPart they are connected in via
+  // fetch the connection state from the RootPart they are connected in via
   // getters up the Disconnectable tree via _$parent references. This pushes the
   // cost of tracking the isConnected state to `AsyncDirectives`, and avoids
   // needing to pass all Disconnectables (parts, template instances, and
@@ -1248,7 +1248,13 @@ class ChildPart implements Disconnectable {
       start = n;
     }
   }
-  /** @internal */
+  /**
+   * Implementation of RootPart's `isConnected`. Note that this metod
+   * should only be called on `RootPart`s (the `ChildPart` returned from a
+   * top-level `render()` call). It has no effect on non-root ChildParts.
+   * @param isConnected Whether to set
+   * @internal
+   */
   setConnected(isConnected: boolean) {
     if (this._$parent === undefined) {
       this.__isConnected = isConnected;
@@ -1256,17 +1262,32 @@ class ChildPart implements Disconnectable {
     } else if (DEV_MODE) {
       throw new Error(
         'part.setConnected() may only be called on a ' +
-          'RootChildPart returned from render().'
+          'RootPart returned from render().'
       );
     }
   }
 }
 
 /**
- * A top-level `ChildPart` returned from render that manages the connected state
- * of `AsyncDirective`s created throughout the tree below it.
+ * A top-level `ChildPart` returned from `render` that manages the connected
+ * state of `AsyncDirective`s created throughout the tree below it.
  */
-export interface RootChildPart extends ChildPart {
+export interface RootPart extends ChildPart {
+  /**
+   * Sets the connection state for `AsyncDirective`s contained within this root
+   * ChildPart.
+   *
+   * lit-html does not automatically monitor the connectedness of DOM rendered;
+   * as such, it is the responsibility of the caller to `render` to ensure that
+   * `part.setConnected(false)` is called before the part object is potentially
+   * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
+   * any resources being held. If a RootPart that was prevously
+   * disconnected is subsequently re-connected (and its `AsyncDirective`s should
+   * re-connect), `setConnected(true)` should be called.
+   *
+   * @param isConnected Whether directives within this tree should be connected
+   * or not
+   */
   setConnected(isConnected: boolean): void;
 }
 

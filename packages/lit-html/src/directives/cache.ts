@@ -7,7 +7,7 @@
 import {
   TemplateResult,
   ChildPart,
-  RootChildPart,
+  RootPart,
   render,
   nothing,
 } from '../lit-html.js';
@@ -26,7 +26,7 @@ import {
 } from '../directive-helpers.js';
 
 class CacheDirective extends Directive {
-  private _templateCache = new WeakMap<TemplateStringsArray, RootChildPart>();
+  private _templateCache = new WeakMap<TemplateStringsArray, RootPart>();
   private _value?: TemplateResult;
 
   constructor(partInfo: PartInfo) {
