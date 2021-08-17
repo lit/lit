@@ -15,7 +15,7 @@ import type {
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
-import {isTemplateResult} from 'lit/directive-helpers.js';
+import {isTemplateResult, getDirectiveClass} from 'lit/directive-helpers.js';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -24,12 +24,14 @@ const {
   markerMatch,
   boundAttributeSuffix,
   overrideDirectiveResolve,
+  setDirectiveClass,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
+  connectedDisconnectable,
 } = _$LH;
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
@@ -75,7 +77,7 @@ const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
  */
 const patchIfDirective = (value: unknown) => {
   // This property needs to remain unminified.
-  const directiveCtor = (value as DirectiveResult)?.['_$litDirective$'];
+  const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
@@ -90,7 +92,7 @@ const patchIfDirective = (value: unknown) => {
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
     // This property needs to remain unminified.
-    (value as DirectiveResult)['_$litDirective$'] = patchedCtor;
+    setDirectiveClass(value as DirectiveResult, patchedCtor);
   }
   return value;
 };
@@ -556,7 +558,10 @@ function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
+    value = resolveDirective(
+      connectedDisconnectable({type: PartType.CHILD}) as ChildPart,
+      value
+    );
   }
   if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -624,7 +629,7 @@ function* renderTemplateResult(
           {tagName: op.tagName} as HTMLElement,
           op.name,
           statics,
-          undefined,
+          connectedDisconnectable(),
           {}
         );
         const value =

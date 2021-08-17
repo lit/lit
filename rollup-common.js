@@ -72,6 +72,7 @@ const reservedProperties = [
   '_$litDirective$',
   '_$litPart$',
   '_$litElement$',
+  '_$litStatic$',
   '_$cssResult$',
 ];
 
@@ -119,9 +120,9 @@ const stableProperties = {
   _$parent: 'M',
   _$disconnectableChildren: 'N',
   // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'O',
+  _$notifyDirectiveConnectionChanged: 'O',
   // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'P',
+  _$notifyConnectionChanged: 'P',
   // lit-html: ChildPart (added by async-directive)
   _$reparentDisconnectables: 'Q',
   // lit-html: ChildPart (used by directive-helpers)
@@ -130,6 +131,8 @@ const stableProperties = {
   _$resolve: 'S',
   // lit-html: Directive (used by lit-html)
   _$initialize: 'T',
+  // lit-html: Disconnectable interface (used by lit-html and AsyncDirective)
+  _$isConnected: 'U',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

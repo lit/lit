@@ -448,10 +448,12 @@ export abstract class ReactiveElement
    * `getPropertyDescriptor`. To customize the options for a property,
    * implement `createProperty` like this:
    *
+   * ```ts
    * static createProperty(name, options) {
    *   options = Object.assign(options, {myOption: true});
    *   super.createProperty(name, options);
    * }
+   * ```
    *
    * @nocollapse
    * @category properties
@@ -489,22 +491,24 @@ export abstract class ReactiveElement
    * If no descriptor is returned, the property will not become an accessor.
    * For example,
    *
-   *   class MyElement extends LitElement {
-   *     static getPropertyDescriptor(name, key, options) {
-   *       const defaultDescriptor =
-   *           super.getPropertyDescriptor(name, key, options);
-   *       const setter = defaultDescriptor.set;
-   *       return {
-   *         get: defaultDescriptor.get,
-   *         set(value) {
-   *           setter.call(this, value);
-   *           // custom action.
-   *         },
-   *         configurable: true,
-   *         enumerable: true
-   *       }
+   * ```ts
+   * class MyElement extends LitElement {
+   *   static getPropertyDescriptor(name, key, options) {
+   *     const defaultDescriptor =
+   *         super.getPropertyDescriptor(name, key, options);
+   *     const setter = defaultDescriptor.set;
+   *     return {
+   *       get: defaultDescriptor.get,
+   *       set(value) {
+   *         setter.call(this, value);
+   *         // custom action.
+   *       },
+   *       configurable: true,
+   *       enumerable: true
    *     }
    *   }
+   * }
+   * ```
    *
    * @nocollapse
    * @category properties
@@ -685,9 +689,6 @@ export abstract class ReactiveElement
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
 
-  private __pendingConnectionPromise: Promise<void> | undefined = undefined;
-  private __enableConnection: (() => void) | undefined = undefined;
-
   /**
    * @category updates
    */
@@ -832,12 +833,6 @@ export abstract class ReactiveElement
     }
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
-    // If we were disconnected, re-enable updating by resolving the pending
-    // connection promise
-    if (this.__enableConnection) {
-      this.__enableConnection();
-      this.__pendingConnectionPromise = this.__enableConnection = undefined;
-    }
   }
 
   /**
@@ -856,9 +851,6 @@ export abstract class ReactiveElement
    */
   disconnectedCallback() {
     this.__controllers?.forEach((c) => c.hostDisconnected?.());
-    this.__pendingConnectionPromise = new Promise(
-      (r) => (this.__enableConnection = r)
-    );
   }
 
   /**
@@ -1007,10 +999,6 @@ export abstract class ReactiveElement
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
       await this.__updatePromise;
-      // If we were disconnected, wait until re-connected to flush an update
-      while (this.__pendingConnectionPromise) {
-        await this.__pendingConnectionPromise;
-      }
     } catch (e) {
       // Refire any previous errors async so they do not disrupt the update
       // cycle. Errors are refired so developers have a chance to observe
@@ -1037,7 +1025,7 @@ export abstract class ReactiveElement
    *
    * For instance, to schedule updates to occur just before the next frame:
    *
-   * ```
+   * ```js
    * protected async performUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
    *   super.performUpdate();
@@ -1176,12 +1164,14 @@ export abstract class ReactiveElement
    * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
    * This method should be overridden instead. For example:
    *
-   *   class MyElement extends LitElement {
-   *     async getUpdateComplete() {
-   *       await super.getUpdateComplete();
-   *       await this._myChild.updateComplete;
-   *     }
+   * ```js
+   * class MyElement extends LitElement {
+   *   async getUpdateComplete() {
+   *     await super.getUpdateComplete();
+   *     await this._myChild.updateComplete;
    *   }
+   * }
+   * ```
    * @category updates
    */
   protected getUpdateComplete(): Promise<boolean> {

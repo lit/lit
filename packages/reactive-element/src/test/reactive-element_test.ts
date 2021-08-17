@@ -1027,6 +1027,32 @@ suite('ReactiveElement', () => {
     assert.equal(el.updatedText, 'changed');
   });
 
+  test('updates when disconnected', async () => {
+    let updateCount = 0;
+    class E extends ReactiveElement {
+      updated() {
+        updateCount++;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(updateCount, 1);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 2);
+
+    container.removeChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 3);
+    container.appendChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 4);
+  });
+
   test('User defined accessor can trigger update', async () => {
     class E extends ReactiveElement {
       __bar?: number;
@@ -2778,157 +2804,6 @@ suite('ReactiveElement', () => {
       a.foo = 15;
       await a.updateComplete;
       assert.equal(a.updateCount, 4);
-    });
-  });
-
-  suite('disconnection handling', () => {
-    let el: El;
-    let updated: boolean;
-
-    class El extends ReactiveElement {
-      static properties = {foo: {}};
-      foo = 5;
-
-      update(_changedProperties: Map<PropertyKey, unknown>) {
-        super.update(_changedProperties);
-        updated = true;
-      }
-    }
-    customElements.define(generateElementName(), El);
-
-    setup(() => {
-      updated = false;
-      el = new El();
-    });
-
-    teardown(() => {
-      if (el.isConnected) {
-        container.removeChild(el);
-      }
-    });
-
-    test('disconnect then requestUpdate', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Disconnect, then requestUpdate
-      updated = false;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      el.foo++;
-      await nextFrame();
-      assert.isFalse(updated);
-      // Re-connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('requestUpdate then disconnect', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // requestUpdate, then disconnect
-      updated = false;
-      el.foo++;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isFalse(updated);
-      // Re-connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('requestUpdate, then disconnect and immediately reconnect', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // requestUpdate, then disconnect + reconnect
-      updated = false;
-      el.foo++;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('thrash disconnection', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // requestUpdate, then disconnect + reconnect + disconnect
-      updated = false;
-      el.foo++;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      container.appendChild(el);
-      assert.isFalse(updated);
-      container.removeChild(el);
-      await nextFrame();
-      // still no update: reconnect + disconnect
-      assert.isFalse(updated);
-      container.appendChild(el);
-      assert.isFalse(updated);
-      container.removeChild(el);
-      await nextFrame();
-      // still no update: reconnect
-      assert.isFalse(updated);
-      container.appendChild(el);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('connect and immediately disconnect before first update', async () => {
-      // Connect and disconnect
-      container.appendChild(el);
-      container.removeChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isFalse(updated);
-      // Re-connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
     });
   });
 
