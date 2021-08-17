@@ -345,7 +345,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         class extends AsyncDirective {
           id!: unknown;
           render(id: unknown) {
-            log.push(`render-${id}`);
+            log.push(`render-${id}-${this.isConnected}`);
             return (this.id = id);
           }
           disconnected() {
@@ -371,7 +371,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         }
         get child() {
           // Cast to child so we can access .prop off of the div
-          return this.shadowRoot!.firstElementChild as Child;
+          return this.shadowRoot?.firstElementChild;
         }
       }
       customElements.define('disc-child', Child);
@@ -390,14 +390,16 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
       customElements.define('disc-host', Host);
 
       const assertRendering = (host: Host) => {
-        let child = host.child;
+        const child = host.child;
         assert.equal(child.getAttribute('attr'), 'host-attr');
         assert.equal(child.prop, 'host-prop');
         assert.equal(child.textContent?.trim(), 'host-node');
-        child = child.child;
-        assert.equal(child.getAttribute('attr'), 'child-attr');
-        assert.equal(child.prop, 'child-prop');
-        assert.equal(child.textContent?.trim(), 'child-node');
+        const grandChild = child.child as Child;
+        if (grandChild) {
+          assert.equal(grandChild.getAttribute('attr'), 'child-attr');
+          assert.equal(grandChild.prop, 'child-prop');
+          assert.equal(grandChild.textContent?.trim(), 'child-node');
+        }
       };
 
       setup(() => {
@@ -416,12 +418,12 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         await nextFrame();
         assertRendering(host);
         assert.deepEqual(log, [
-          'render-host-attr',
-          'render-host-prop',
-          'render-host-node',
-          'render-child-attr',
-          'render-child-prop',
-          'render-child-node',
+          'render-host-attr-true',
+          'render-host-prop-true',
+          'render-host-node-true',
+          'render-child-attr-true',
+          'render-child-prop-true',
+          'render-child-node-true',
         ]);
       });
 
@@ -504,12 +506,26 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         await nextFrame();
         assertRendering(host);
         assert.deepEqual(log, [
-          'render-host-attr',
-          'render-host-prop',
-          'render-host-node',
-          'render-child-attr',
-          'render-child-prop',
-          'render-child-node',
+          'render-host-attr-true',
+          'render-host-prop-true',
+          'render-host-node-true',
+          'render-child-attr-true',
+          'render-child-prop-true',
+          'render-child-node-true',
+        ]);
+      });
+
+      // TODO(kschaaf): render does not currently support rendering to an
+      // initially disconnected ChildPart (https://github.com/lit/lit/issues/2051)
+      test.skip('directives render with isConnected: false if first render is while element is disconnected', async () => {
+        container.appendChild(host);
+        container.remove();
+        await nextFrame();
+        assertRendering(host);
+        assert.deepEqual(log, [
+          'render-host-attr-false',
+          'render-host-prop-false',
+          'render-host-node-false',
         ]);
       });
     });
