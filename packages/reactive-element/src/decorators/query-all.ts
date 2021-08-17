@@ -23,7 +23,6 @@ import {decorateProperty} from './base.js';
  * See:
  * https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
  *
- * @example
  * ```ts
  * class MyElement {
  *   @queryAll('div')

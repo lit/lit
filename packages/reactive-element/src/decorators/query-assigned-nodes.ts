@@ -33,7 +33,6 @@ const legacyMatches =
  * @param selector A string which filters the results to elements that match
  *     the given css selector.
  *
- * @example
  * ```ts
  * class MyElement {
  *   @queryAssignedNodes('list', true, '.item')
