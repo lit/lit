@@ -116,7 +116,8 @@ export const insertPart = (
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
-    const parentChanged = part._$parent !== containerPart;
+    const oldParent = part._$parent;
+    const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
@@ -124,6 +125,17 @@ export const insertPart = (
       // method only exists if Disconnectables are present, so we need to
       // unconditionally set it here
       part._$parent = containerPart;
+      // Since the _$isConnected getter is somewhat costly, only
+      // read it once we know the subtree has directives that need
+      // to be notified
+      let newConnectionState;
+      if (
+        part._$notifyConnectionChanged !== undefined &&
+        (newConnectionState = containerPart._$isConnected) !==
+          oldParent!._$isConnected
+      ) {
+        part._$notifyConnectionChanged(newConnectionState);
+      }
     }
     if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
@@ -203,7 +215,7 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
  * @param part The Part to remove
  */
 export const removePart = (part: ChildPart) => {
-  part._$setChildPartConnected?.(false, true);
+  part._$notifyConnectionChanged?.(false, true);
   let start: ChildNode | null = part._$startNode;
   const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
   while (start !== end) {

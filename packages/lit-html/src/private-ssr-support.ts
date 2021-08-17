@@ -4,8 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Directive, PartInfo} from './directive.js';
-import {_$LH as p, AttributePart, noChange, Part} from './lit-html.js';
+import {
+  Directive,
+  PartInfo,
+  DirectiveClass,
+  DirectiveResult,
+} from './directive.js';
+import {
+  _$LH as p,
+  AttributePart,
+  noChange,
+  Part,
+  Disconnectable,
+} from './lit-html.js';
 export type {Template} from './lit-html.js';
 
 /**
@@ -34,6 +45,10 @@ export const _$LH = {
         return resolveOverrideFn(this, values);
       }
     },
+  setDirectiveClass(value: DirectiveResult, directiveClass: DirectiveClass) {
+    // This property needs to remain unminified.
+    value['_$litDirective$'] = directiveClass;
+  },
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
@@ -49,6 +64,10 @@ export const _$LH = {
     part._$setValue(value, part, index);
     return committedValue;
   },
+  connectedDisconnectable: (props?: object): Disconnectable => ({
+    ...props,
+    _$isConnected: true,
+  }),
   resolveDirective: p._resolveDirective,
   AttributePart: p._AttributePart,
   PropertyPart: p._PropertyPart,
