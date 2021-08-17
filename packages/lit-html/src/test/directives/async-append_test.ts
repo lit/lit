@@ -9,7 +9,7 @@ import {render, html, nothing} from '../../lit-html.js';
 import {TestAsyncIterable} from './test-async-iterable.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import {memorySuite, forceGC} from '../test-utils/memory.js';
+import {memorySuite} from '../test-utils/memory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -216,7 +216,7 @@ suite('asyncAppend', () => {
       const big = () => new Array(10000).fill(0);
       // Hold onto the iterables to prevent them from being gc'ed
       const iterables: Array<TestAsyncIterable<string>> = [];
-      forceGC();
+      window.gc();
       const heap = performance.memory.usedJSHeapSize;
       for (let i = 0; i < 1000; i++) {
         // Iterable passed to asyncAppend that will never yield
@@ -231,7 +231,7 @@ suite('asyncAppend', () => {
         // Clear the `<span>` + directive
         render(template(nothing), container);
       }
-      forceGC();
+      window.gc();
       // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
       // DOM leak will be orders of magnitude larger
       assert.isAtMost(
