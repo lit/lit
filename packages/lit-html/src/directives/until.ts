@@ -8,19 +8,7 @@ import {Part, noChange} from '../lit-html.js';
 import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
 import {AsyncDirective} from '../async-directive.js';
-
-// When a directive is connected and actively awaiting a result from a promise,
-// the directive will be stored in `promiseToDirectiveMap`. The resolver will
-// get a reference back to the directive to perform the commit via the WeakMap
-// rather than closing over the directive instance, which would hold the
-// directive until the promise resolved.
-const promiseToDirectiveMap: WeakMap<Promise<unknown>, UntilDirective> =
-  new WeakMap();
-
-// When a directive is disconnected and an awaited promise resolves, the
-// result will be stored in `promiseToResultMap` such that it can be retrieved
-// if/when it reconnects
-const promiseToResultMap: WeakMap<Promise<unknown>, unknown> = new WeakMap();
+import {DisconnectableAwaiter} from './disconnectable-awaiter.js';
 
 const isPromise = (x: unknown) => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
@@ -31,8 +19,10 @@ const _infinity = 0x7fffffff;
 export class UntilDirective extends AsyncDirective {
   private __lastRenderedIndex: number = _infinity;
   private __values: unknown[] = [];
-  private __pendingValueToPromiseMap: Map<unknown, Promise<unknown>> =
-    new Map();
+  private __pendingValueToAwaiterMap: Map<
+    unknown,
+    DisconnectableAwaiter<this>
+  > = new Map();
 
   render(...args: Array<unknown>) {
     return args.find((x) => !isPromise(x)) ?? noChange;
@@ -69,32 +59,19 @@ export class UntilDirective extends AsyncDirective {
       this.__lastRenderedIndex = _infinity;
       previousLength = 0;
 
-      const promise = Promise.resolve(value);
-      this.__pendingValueToPromiseMap.set(value, promise);
-      if (this.isConnected) {
-        // We still await the promise even when disconnected (since if the
-        // directive reconnects it will need to handle the result), but only
-        // associate the directive to the promise when connected
-        promiseToDirectiveMap.set(promise, this);
-      }
-      promise.then((result) => {
-        const directive = promiseToDirectiveMap.get(promise);
-        if (directive === undefined) {
-          // The directive was disconnected, so weakly hold onto the result
-          // in case the directive reconnects
-          promiseToResultMap.set(promise, result);
-        } else {
-          promiseToDirectiveMap.delete(promise);
-          directive.__commitResult(value, result);
-        }
-      });
+      const awaiter = new DisconnectableAwaiter(
+        Promise.resolve(value),
+        this,
+        (directive, result) => directive.__commitResult(value, result)
+      );
+      this.__pendingValueToAwaiterMap.set(value, awaiter);
     }
 
     return noChange;
   }
 
   __commitResult(value: unknown, result: unknown) {
-    this.__pendingValueToPromiseMap.delete(value);
+    this.__pendingValueToAwaiterMap.delete(value);
     const index = this.__values.indexOf(value);
     // If state.values doesn't contain the value, we've re-rendered without
     // the value, so don't render it. Then, only render if the value is
@@ -106,26 +83,14 @@ export class UntilDirective extends AsyncDirective {
   }
 
   disconnected() {
-    // Clearing the refrence from the promises to the directive allows the
-    // directive (and all the DOM associated with it) to be gc'ed even if the
-    // promise hasn't resolved
-    for (const promise of this.__pendingValueToPromiseMap.values()) {
-      promiseToDirectiveMap.delete(promise);
+    for (const awaiter of this.__pendingValueToAwaiterMap.values()) {
+      awaiter.disconnect();
     }
   }
 
   reconnected() {
-    for (const [value, promise] of this.__pendingValueToPromiseMap) {
-      const result = promiseToResultMap.get(promise);
-      if (result !== undefined) {
-        // The next result resolved while we were disconnected; commit it and
-        // continue
-        this.__commitResult(value, result);
-      } else {
-        // The next result is still pending, so reassociate this directive with
-        // the promise
-        promiseToDirectiveMap.set(promise, this);
-      }
+    for (const awaiter of this.__pendingValueToAwaiterMap.values()) {
+      awaiter.reconnect(this);
     }
   }
 }
@@ -146,10 +111,8 @@ export class UntilDirective extends AsyncDirective {
  *
  * Example:
  *
- * ```js
- * const content = fetch('./content.txt').then(r => r.text());
- * html`${until(content, html`<span>Loading...</span>`)}`
- * ```
+ *     const content = fetch('./content.txt').then(r => r.text());
+ *     html`${until(content, html`<span>Loading...</span>`)}`
  */
 export const until = directive(UntilDirective);
 
