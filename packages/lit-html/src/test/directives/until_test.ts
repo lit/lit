@@ -754,6 +754,33 @@ suite('until directive', () => {
       await laterTask();
       assert.equal(stripExpressionMarkers(container.innerHTML), '<div>2</div>');
     });
+
+    test('the same promise can be rendered into two until instances', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      render(
+        html`<div>${until(promise, 'unresolved1')}</div><span>${until(
+          promise,
+          'unresolved2'
+        )}</span>`,
+        container
+      );
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>unresolved1</div><span>unresolved2</span>'
+      );
+
+      resolvePromise!('resolved');
+      await promise;
+
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>resolved</div><span>resolved</span>'
+      );
+    });
   });
 
   memorySuite('memory leak tests', () => {
