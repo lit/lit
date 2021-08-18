@@ -39,7 +39,7 @@ export class PseudoWeakRef<T> {
  * A helper to pause and resume waiting on a condition in an async function
  */
 export class Pauser {
-  private _promise?: Promise<void>;
+  private _promise?: Promise<void> = undefined;
   private _resolve?: () => void = undefined;
   /**
    * When paused, returns a promise to be awaited; when unpaused, returns
