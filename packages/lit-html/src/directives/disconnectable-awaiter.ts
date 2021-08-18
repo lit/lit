@@ -6,13 +6,6 @@
 
 import type {AsyncDirective} from '../async-directive.js';
 
-// When a directive is connected and actively awaiting a result from a promise,
-// the directive will be stored in `promiseToDirectiveMap`. The resolver will
-// get a reference back to the directive to perform the commit via the WeakMap
-// rather than closing over the directive instance, which would hold the
-// directive until the promise resolved.
-const directiveMap: WeakMap<object, unknown> = new WeakMap();
-
 const unresolved = Symbol();
 
 /**
@@ -28,6 +21,7 @@ export class DisconnectableAwaiter<
   ResultType = unknown,
   RejectType = unknown
 > {
+  private _directive: DirectiveType | undefined;
   private _thenFn: (directive: DirectiveType, value: ResultType) => void;
   private _catchFn?: (directive: DirectiveType, reason: RejectType) => void;
   private _result: ResultType | typeof unresolved = unresolved;
@@ -49,13 +43,12 @@ export class DisconnectableAwaiter<
     // we can flush the result if/when the promise is reconnected to the
     // directive. This is a small value-add that is easy to forget.
     if (directive.isConnected) {
-      directiveMap.set(this, directive);
+      this._directive = directive;
     }
     this._thenFn = thenFn;
     promise.then((result: ResultType) => {
-      const weakDirective = directiveMap.get(this) as DirectiveType;
-      if (weakDirective !== undefined) {
-        thenFn(weakDirective, result);
+      if (this._directive !== undefined) {
+        thenFn(this._directive, result);
       } else {
         this._result = result;
       }
@@ -63,9 +56,8 @@ export class DisconnectableAwaiter<
     if (catchFn !== undefined) {
       this._catchFn = catchFn;
       promise.catch((reason: RejectType) => {
-        const weakDirective = directiveMap.get(this) as DirectiveType;
-        if (weakDirective !== undefined) {
-          catchFn(weakDirective, reason);
+        if (this._directive !== undefined) {
+          catchFn(this._directive, reason);
         } else {
           this._error = reason;
         }
@@ -76,7 +68,7 @@ export class DisconnectableAwaiter<
    * Call to (possibly temporarily) disassociate the promise from the directive
    */
   disconnect() {
-    directiveMap.delete(this);
+    this._directive = undefined;
   }
   /**
    * Call to re-associate the promise to the directive
@@ -91,7 +83,7 @@ export class DisconnectableAwaiter<
       this._error = unresolved;
       this._catchFn?.(directive, _error);
     } else {
-      directiveMap.set(this, directive);
+      this._directive = directive;
     }
   }
 }
