@@ -36,10 +36,10 @@ class AsyncAppendDirective extends AsyncReplaceDirective {
   }
 
   // Override AsyncReplace to append rather than replace
-  protected commitValue(value: unknown) {
+  protected commitValue(value: unknown, index: number) {
     // When we get the first value, clear the part. This lets the
     // previous value display until we can replace it.
-    if (this.index === 0) {
+    if (index === 0) {
       clearPart(this.__childPart);
     }
     // Create and insert a new part and set its value to the next value

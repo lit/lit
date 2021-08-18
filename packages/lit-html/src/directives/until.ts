@@ -8,7 +8,7 @@ import {Part, noChange} from '../lit-html.js';
 import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
 import {AsyncDirective} from '../async-directive.js';
-import {DisconnectableAwaiter} from './disconnectable-awaiter.js';
+import {Pauser, PseudoWeakRef} from './async-helpers.js';
 
 const isPromise = (x: unknown) => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
@@ -19,10 +19,8 @@ const _infinity = 0x3fffffff;
 export class UntilDirective extends AsyncDirective {
   private __lastRenderedIndex: number = _infinity;
   private __values: unknown[] = [];
-  private __pendingValueToAwaiterMap: Map<
-    unknown,
-    DisconnectableAwaiter<this>
-  > = new Map();
+  private __weakThis = new PseudoWeakRef(this);
+  private __pauser = new Pauser();
 
   render(...args: Array<unknown>) {
     return args.find((x) => !isPromise(x)) ?? noChange;
@@ -32,6 +30,13 @@ export class UntilDirective extends AsyncDirective {
     const previousValues = this.__values;
     let previousLength = previousValues.length;
     this.__values = args;
+
+    const weakThis = this.__weakThis;
+    const pauser = this.__pauser;
+
+    if (!this.isConnected) {
+      this.disconnected();
+    }
 
     for (let i = 0; i < args.length; i++) {
       // If we've rendered a higher-priority value already, stop.
@@ -59,19 +64,26 @@ export class UntilDirective extends AsyncDirective {
       this.__lastRenderedIndex = _infinity;
       previousLength = 0;
 
-      const awaiter = new DisconnectableAwaiter(
-        Promise.resolve(value),
-        this,
-        (directive, result) => directive.__commitResult(value, result)
-      );
-      this.__pendingValueToAwaiterMap.set(value, awaiter);
+      // Note, the callback avoids closing over `this` so that the directive
+      // can be gc'ed before the promise resolves
+      Promise.resolve(value).then(async (result: unknown) => {
+        // If we're disconnected, wait until we're (maybe) reconnected
+        // The while loop here handles the case that the connection state
+        // thrashes, causing the pauser to resume and then get re-paused
+        while (pauser.get()) {
+          await pauser.get();
+        }
+        const _this = weakThis.deref();
+        if (_this !== undefined) {
+          _this.__commitResult(value, result);
+        }
+      });
     }
 
     return noChange;
   }
 
   __commitResult(value: unknown, result: unknown) {
-    this.__pendingValueToAwaiterMap.delete(value);
     const index = this.__values.indexOf(value);
     // If state.values doesn't contain the value, we've re-rendered without
     // the value, so don't render it. Then, only render if the value is
@@ -83,15 +95,13 @@ export class UntilDirective extends AsyncDirective {
   }
 
   disconnected() {
-    for (const awaiter of this.__pendingValueToAwaiterMap.values()) {
-      awaiter.disconnect();
-    }
+    this.__weakThis.disconnect();
+    this.__pauser.pause();
   }
 
   reconnected() {
-    for (const awaiter of this.__pendingValueToAwaiterMap.values()) {
-      awaiter.reconnect(this);
-    }
+    this.__weakThis.reconnect(this);
+    this.__pauser.resume();
   }
 }
 

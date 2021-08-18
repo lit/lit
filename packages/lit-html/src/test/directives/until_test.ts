@@ -703,6 +703,32 @@ suite('until directive', () => {
       );
     });
 
+    test('disconnection thrashing', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      const part = render(html`<div>${until(promise)}</div>`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(false);
+      resolvePromise!('resolved');
+      await laterTask();
+      part.setConnected(true);
+      part.setConnected(false);
+
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(true);
+      await laterTask();
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>resolved</div>'
+      );
+    });
+
     test('until does not render when newly rendered while disconnected', async () => {
       let resolvePromise: (arg: any) => void;
       const promise = new Promise((resolve, _reject) => {
@@ -786,7 +812,7 @@ suite('until directive', () => {
   memorySuite('memory leak tests', () => {
     test('tree with until cleared while promise is pending', async () => {
       const template = (v: unknown) => html`<div>${v}</div>`;
-      // Make a big array set on an expando exaggerate any leaked DOM
+      // Make a big array set on an expando to exaggerate any leaked DOM
       const big = () => new Array(10000).fill(0);
       // Hold onto the resolvers to prevent the promises from being gc'ed
       const resolvers: Array<() => void> = [];

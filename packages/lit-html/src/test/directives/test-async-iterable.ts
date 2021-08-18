@@ -50,5 +50,6 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
     // when devtools is closed. Waiting for rAF might be more reliable, but
     // this waits the minimum that seems reliable now.
     await Promise.resolve();
+    await Promise.resolve();
   }
 }
