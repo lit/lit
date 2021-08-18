@@ -13,12 +13,8 @@ import {
 } from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 const flush =
-  extraGlobals.ShadyDOM && extraGlobals.ShadyDOM.flush
-    ? extraGlobals.ShadyDOM.flush
-    : () => {};
+  window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
 
 (canTestReactiveElement ? suite : suite.skip)('@queryAssignedNodes', () => {
   let container: HTMLElement;

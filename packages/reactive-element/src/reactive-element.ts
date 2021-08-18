@@ -42,7 +42,7 @@ if (DEV_MODE) {
 
   // Issue platform support warning.
   if (
-    (window as LitExtraGlobals).ShadyDOM?.inUse &&
+    window.ShadyDOM?.inUse &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any)['reactiveElementPlatformSupport'] === undefined
   ) {

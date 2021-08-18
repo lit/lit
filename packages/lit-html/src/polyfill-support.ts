@@ -95,14 +95,12 @@ const ENABLE_SHADYDOM_NOPATCH = true;
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
-  const extraGlobals = window as LitExtraGlobals;
-
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
   if (
-    extraGlobals.ShadyCSS === undefined ||
-    (extraGlobals.ShadyCSS.nativeShadow && !extraGlobals.ShadyCSS.ApplyShim)
+    window.ShadyCSS === undefined ||
+    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
   ) {
     return;
   }
@@ -114,9 +112,9 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
   const wrap =
     ENABLE_SHADYDOM_NOPATCH &&
-    extraGlobals.ShadyDOM?.inUse &&
-    extraGlobals.ShadyDOM?.noPatch === true
-      ? extraGlobals.ShadyDOM!.wrap
+    window.ShadyDOM?.inUse &&
+    window.ShadyDOM?.noPatch === true
+      ? window.ShadyDOM!.wrap
       : (node: Node) => node;
 
   const needsPrepareStyles = (name: string | undefined) =>
@@ -147,11 +145,11 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     scopeCssStore.delete(name);
     // ShadyCSS removes scopes and removes the style under ShadyDOM and leaves
     // it under native Shadow DOM
-    extraGlobals.ShadyCSS!.prepareTemplateStyles(template, name);
+    window.ShadyCSS!.prepareTemplateStyles(template, name);
     // Note, under native Shadow DOM, the style is added to the beginning of the
     // template. It must be moved to the *end* of the template so it doesn't
     // mess up part indices.
-    if (hasScopeCss && extraGlobals.ShadyCSS!.nativeShadow) {
+    if (hasScopeCss && window.ShadyCSS!.nativeShadow) {
       // If there were styles but the CSS text was empty, ShadyCSS will
       // eliminate the style altogether, so the style here could be null
       const style = template.content.querySelector('style');
@@ -176,8 +174,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     const element = originalCreateElement.call(Template, html, options);
     const scope = options?.scope;
     if (scope !== undefined) {
-      if (!extraGlobals.ShadyCSS!.nativeShadow) {
-        extraGlobals.ShadyCSS!.prepareTemplateDom(element, scope);
+      if (!window.ShadyCSS!.nativeShadow) {
+        window.ShadyCSS!.prepareTemplateDom(element, scope);
       }
       // Process styles only if this scope is being prepared. Otherwise,
       // leave styles as is for back compat with Lit1.
@@ -247,7 +245,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       // Note, this is the temporary startNode.
       renderContainer.removeChild(renderContainerMarker);
       // When using native Shadow DOM, include prepared style in shadowRoot.
-      if (extraGlobals.ShadyCSS?.nativeShadow) {
+      if (window.ShadyCSS?.nativeShadow) {
         const style = template.content.querySelector('style');
         if (style !== null) {
           renderContainer.appendChild(style.cloneNode(true));

@@ -12,11 +12,9 @@ export const generateElementName = () => `x-${count++}`;
 export const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
 
-const extraGlobals = window as LitExtraGlobals;
-
 export const getComputedStyleValue = (element: Element, property: string) =>
-  extraGlobals.ShadyCSS
-    ? extraGlobals.ShadyCSS.getComputedStyleValue(element, property)
+  window.ShadyCSS
+    ? window.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
 
 export const stripExpressionComments = (html: string) =>
@@ -25,8 +23,8 @@ export const stripExpressionComments = (html: string) =>
 // Only test if ShadowRoot is available and either ShadyDOM is not
 // in use or it is and platform support is available.
 export const canTestReactiveElement =
-  (window.ShadowRoot && !extraGlobals.ShadyDOM?.inUse) ||
-  extraGlobals.reactiveElementPlatformSupport;
+  (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
+  window.reactiveElementPlatformSupport;
 
 export class RenderingElement extends ReactiveElement {
   render(): string | undefined {
