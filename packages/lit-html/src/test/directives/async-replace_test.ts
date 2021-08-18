@@ -294,7 +294,28 @@ suite('asyncReplace', () => {
         '<p>staticB</p>'
       );
     });
+
+    test('the same promise can be rendered into two asyncReplace instances', async () => {
+      const component = (iterable: AsyncIterable<unknown>) =>
+        html`<p>${asyncReplace(iterable)}</p><p>${asyncReplace(iterable)}</p>`;
+      render(component(iterable), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p></p><p></p>'
+      );
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>1</p><p>1</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>2</p><p>2</p>'
+      );
+    });
   });
+
   memorySuite('memory leak tests', () => {
     test('tree with asyncReplace cleared while iterables are pending', async () => {
       const template = (v: unknown) => html`<div>${v}</div>`;

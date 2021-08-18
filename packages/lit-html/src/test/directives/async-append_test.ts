@@ -207,6 +207,26 @@ suite('asyncAppend', () => {
         '<p>staticB</p>'
       );
     });
+
+    test('the same promise can be rendered into two asyncAppend instances', async () => {
+      const component = (iterable: AsyncIterable<unknown>) =>
+        html`<p>${asyncAppend(iterable)}</p><p>${asyncAppend(iterable)}</p>`;
+      render(component(iterable), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p></p><p></p>'
+      );
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>1</p><p>1</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>12</p><p>12</p>'
+      );
+    });
   });
 
   memorySuite('memory leak tests', () => {
