@@ -34,6 +34,8 @@ export class UntilDirective extends AsyncDirective {
     const weakThis = this.__weakThis;
     const pauser = this.__pauser;
 
+    // If our initial render occurs while disconnected, ensure that the pauser
+    // and weakThis are in the disconnected state
     if (!this.isConnected) {
       this.disconnected();
     }
