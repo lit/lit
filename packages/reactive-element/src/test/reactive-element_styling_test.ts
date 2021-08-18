@@ -20,8 +20,6 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 (canTestReactiveElement ? suite : suite.skip)('Styling', () => {
   suite('Static get styles', () => {
     let container: HTMLElement;
@@ -88,7 +86,7 @@ const extraGlobals = window as LitExtraGlobals;
     // Test this in Shadow DOM without `adoptedStyleSheets` only since it's easily
     // detectable in that case.
     const testShadowDOMStyleCount =
-      (!extraGlobals.ShadyDOM || !extraGlobals.ShadyDOM.inUse) &&
+      (!window.ShadyDOM || !window.ShadyDOM.inUse) &&
       !('adoptedStyleSheets' in Document.prototype);
     (testShadowDOMStyleCount ? test : test.skip)(
       'when an array is returned from `static get styles`, one style is generated per array item',
@@ -732,8 +730,7 @@ const extraGlobals = window as LitExtraGlobals;
         // our styles as they're already flattened (so expect 4px). Otherwise,
         // look for the updated value.
         const usesAdoptedStyleSheet =
-          extraGlobals.ShadyCSS === undefined ||
-          extraGlobals.ShadyCSS.nativeShadow;
+          window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow;
         const expectedValue = usesAdoptedStyleSheet ? '2px' : '4px';
         sheet.replaceSync('div { border: 2px solid red; }');
 
@@ -750,8 +747,8 @@ const extraGlobals = window as LitExtraGlobals;
     const testShadyCSSWithAdoptedStyleSheetSupport =
       window.ShadowRoot &&
       'replace' in CSSStyleSheet.prototype &&
-      extraGlobals.ShadyCSS !== undefined &&
-      !extraGlobals.ShadyCSS.nativeShadow;
+      window.ShadyCSS !== undefined &&
+      !window.ShadyCSS.nativeShadow;
     (testShadyCSSWithAdoptedStyleSheetSupport ? test : test.skip)(
       'CSSStyleSheet is flattened where ShadyCSS is enabled yet adoptedStyleSheets are supported',
       async () => {

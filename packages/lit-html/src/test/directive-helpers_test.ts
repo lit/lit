@@ -14,12 +14,18 @@ import {
   isPrimitive,
   isTemplateResult,
   removePart,
+  setChildPartValue,
   TemplateResultType,
 } from '../directive-helpers.js';
 import {classMap} from '../directives/class-map.js';
+import {AsyncDirective} from '../async-directive.js';
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
+
+  const assertContent = (html: string, root = container) => {
+    return assert.equal(stripExpressionComments(root.innerHTML), html);
+  };
 
   setup(() => {
     container = document.createElement('div');
@@ -94,6 +100,74 @@ suite('directive-helpers', () => {
       render(html`<div>${testDirective(v)}</div>`, container);
 
     go('A');
-    assert.equal(stripExpressionComments(container.innerHTML), '<div>A</div>');
+    assertContent('<div>A</div>');
+  });
+
+  test('insertPart keeps connectinon state in sync', () => {
+    // Directive that tracks/renders connected state
+    let connected = false;
+    const aDirective = directive(
+      class extends AsyncDirective {
+        render() {
+          connected = this.isConnected;
+          return this.isConnected;
+        }
+        disconnected() {
+          connected = false;
+          assert.equal(connected, this.isConnected);
+          this.setValue(connected);
+        }
+        reconnected() {
+          connected = true;
+          assert.equal(connected, this.isConnected);
+          this.setValue(connected);
+        }
+      }
+    );
+
+    const container1 = container.appendChild(document.createElement('div'));
+    const container2 = container.appendChild(document.createElement('div'));
+
+    // Create disconnected root part
+    const rootPart1 = render('rootPart1:', container1);
+    rootPart1.setConnected(false);
+
+    // Create connected root part
+    const rootPart2 = render('rootPart2:', container2);
+
+    // Insert child part into disconnected root part
+    const movingPart = insertPart(rootPart1);
+    const template = (v: unknown) => html`<p>${v}</p>`;
+    setChildPartValue(movingPart, template(aDirective()));
+
+    // Verify child part is not connected
+    assertContent('rootPart1:<p>false</p>', container1);
+    assertContent('rootPart2:', container2);
+    assert.isFalse(connected);
+
+    // Move child part into connected root part
+    insertPart(rootPart2, undefined, movingPart);
+
+    // Verify child part is connected
+    assertContent('rootPart1:', container1);
+    assertContent('rootPart2:<p>true</p>', container2);
+    assert.isTrue(connected);
+
+    // Flip connection state of parts
+    rootPart1.setConnected(true);
+    rootPart2.setConnected(false);
+
+    // Verify child part is not connected
+    assertContent('rootPart1:', container1);
+    assertContent('rootPart2:<p>false</p>', container2);
+    assert.isFalse(connected);
+
+    // Move child part into connected root part
+    insertPart(rootPart1, undefined, movingPart);
+
+    // Verify child part is connected
+    assertContent('rootPart1:<p>true</p>', container1);
+    assertContent('rootPart2:', container2);
+    assert.isTrue(connected);
   });
 });

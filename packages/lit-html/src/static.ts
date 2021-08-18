@@ -20,12 +20,12 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  * since they effectively create a new template.
  */
 export const unsafeStatic = (value: string) => ({
-  _$litStatic$: value,
+  ['_$litStatic$']: value,
 });
 
 const textFromStatic = (value: StaticValue) => {
-  if (value._$litStatic$ !== undefined) {
-    return value._$litStatic$;
+  if (value['_$litStatic$'] !== undefined) {
+    return value['_$litStatic$'];
   } else {
     throw new Error(
       `Value passed to 'literal' function must be a 'literal' result: ${value}. Use 'unsafeStatic' to pass non-literal values, but
@@ -52,7 +52,7 @@ export const literal = (
   strings: TemplateStringsArray,
   ...values: unknown[]
 ) => ({
-  _$litStatic$: values.reduce(
+  ['_$litStatic$']: values.reduce(
     (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
     strings[0]
   ),
@@ -85,7 +85,7 @@ export const withStatic =
       while (
         i < l &&
         ((dynamicValue = values[i]),
-        (staticValue = (dynamicValue as StaticValue)?._$litStatic$)) !==
+        (staticValue = (dynamicValue as StaticValue)?.['_$litStatic$'])) !==
           undefined
       ) {
         s += staticValue + strings[++i];
