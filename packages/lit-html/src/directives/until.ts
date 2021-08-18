@@ -75,23 +75,19 @@ export class UntilDirective extends AsyncDirective {
         }
         const _this = weakThis.deref();
         if (_this !== undefined) {
-          _this.__commitResult(value, result);
+          const index = _this.__values.indexOf(value);
+          // If state.values doesn't contain the value, we've re-rendered without
+          // the value, so don't render it. Then, only render if the value is
+          // higher-priority than what's already been rendered.
+          if (index > -1 && index < _this.__lastRenderedIndex) {
+            _this.__lastRenderedIndex = index;
+            _this.setValue(result);
+          }
         }
       });
     }
 
     return noChange;
-  }
-
-  __commitResult(value: unknown, result: unknown) {
-    const index = this.__values.indexOf(value);
-    // If state.values doesn't contain the value, we've re-rendered without
-    // the value, so don't render it. Then, only render if the value is
-    // higher-priority than what's already been rendered.
-    if (index > -1 && index < this.__lastRenderedIndex) {
-      this.__lastRenderedIndex = index;
-      this.setValue(result);
-    }
   }
 
   disconnected() {
