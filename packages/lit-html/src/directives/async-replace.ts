@@ -45,16 +45,11 @@ export class AsyncReplaceDirective extends AsyncDirective {
       return;
     }
     this.__value = value;
-    this.__iterate(mapper);
-    return noChange;
-  }
-
-  // Separate function to avoid an iffe in update; update can't be async
-  // because its return value must be `noChange`
-  private async __iterate(mapper?: Mapper<unknown>) {
     let i = 0;
-    const {__value: value, __weakThis: weakThis, __pauser: pauser} = this;
-    forAwaitOf(value!, async (v: unknown) => {
+    const {__weakThis: weakThis, __pauser: pauser} = this;
+    // Note, the callback avoids closing over `this` so that the directive
+    // can be gc'ed before the promise resolves
+    forAwaitOf(value, async (v: unknown) => {
       // The while loop here handles the case that the connection state
       // thrashes, causing the pauser to resume and then get re-paused
       while (pauser.get()) {
@@ -81,6 +76,7 @@ export class AsyncReplaceDirective extends AsyncDirective {
       }
       return true;
     });
+    return noChange;
   }
 
   // Override point for AsyncAppend to append rather than replace
