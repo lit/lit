@@ -7,20 +7,9 @@
 import {ChildPart, noChange} from '../lit-html.js';
 import {directive, DirectiveParameters} from '../directive.js';
 import {AsyncDirective} from '../async-directive.js';
-import {Pauser, PseudoWeakRef} from './async-helpers.js';
+import {Pauser, PseudoWeakRef, forAwaitOf} from './private-async-helpers.js';
 
 type Mapper<T> = (v: T, index?: number) => unknown;
-
-const forAwaitOf = async <T>(
-  iterable: AsyncIterable<T>,
-  callback: (value: T) => Promise<boolean>
-) => {
-  for await (const v of iterable) {
-    if ((await callback(v)) === false) {
-      return;
-    }
-  }
-};
 
 export class AsyncReplaceDirective extends AsyncDirective {
   private __value?: AsyncIterable<unknown>;

@@ -8,7 +8,7 @@ import {Part, noChange} from '../lit-html.js';
 import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
 import {AsyncDirective} from '../async-directive.js';
-import {Pauser, PseudoWeakRef} from './async-helpers.js';
+import {Pauser, PseudoWeakRef} from './private-async-helpers.js';
 
 const isPromise = (x: unknown) => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';

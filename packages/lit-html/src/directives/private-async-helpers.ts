@@ -4,6 +4,27 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// Note, this module is not included in package exports so that it's private to
+// our first-party directives. If it ends up being useful, we can open it up and
+// export it.
+
+/**
+ * Helper to iterate an AsyncIterable in its own closure.
+ * @param iterable The iterable to iterate
+ * @param callback The callback to call for each value. If the callback returns
+ * `false`, the loop will be broken.
+ */
+export const forAwaitOf = async <T>(
+  iterable: AsyncIterable<T>,
+  callback: (value: T) => Promise<boolean>
+) => {
+  for await (const v of iterable) {
+    if ((await callback(v)) === false) {
+      return;
+    }
+  }
+};
+
 /**
  * Holds a reference to an instance that can be disconnected and reconnected,
  * so that a closure over the ref (e.g. in a then function to a promise) does
