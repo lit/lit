@@ -26,7 +26,7 @@ export class UntilDirective extends AsyncDirective {
     return args.find((x) => !isPromise(x)) ?? noChange;
   }
 
-  update(_part: Part, args: Array<unknown>) {
+  override update(_part: Part, args: Array<unknown>) {
     const previousValues = this.__values;
     let previousLength = previousValues.length;
     this.__values = args;
@@ -97,12 +97,12 @@ export class UntilDirective extends AsyncDirective {
     return noChange;
   }
 
-  disconnected() {
+  override disconnected() {
     this.__weakThis.disconnect();
     this.__pauser.pause();
   }
 
-  reconnected() {
+  override reconnected() {
     this.__weakThis.reconnect(this);
     this.__pauser.resume();
   }

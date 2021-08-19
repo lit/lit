@@ -22,7 +22,10 @@ export class AsyncReplaceDirective extends AsyncDirective {
     return noChange;
   }
 
-  update(_part: ChildPart, [value, mapper]: DirectiveParameters<this>) {
+  override update(
+    _part: ChildPart,
+    [value, mapper]: DirectiveParameters<this>
+  ) {
     // If our initial render occurs while disconnected, ensure that the pauser
     // and weakThis are in the disconnected state
     if (!this.isConnected) {
@@ -78,12 +81,12 @@ export class AsyncReplaceDirective extends AsyncDirective {
     this.setValue(value);
   }
 
-  disconnected() {
+  override disconnected() {
     this.__weakThis.disconnect();
     this.__pauser.pause();
   }
 
-  reconnected() {
+  override reconnected() {
     this.__weakThis.reconnect(this);
     this.__pauser.resume();
   }

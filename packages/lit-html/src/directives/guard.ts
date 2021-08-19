@@ -17,7 +17,7 @@ class GuardDirective extends Directive {
     return f();
   }
 
-  update(_part: Part, [value, f]: DirectiveParameters<this>) {
+  override update(_part: Part, [value, f]: DirectiveParameters<this>) {
     if (Array.isArray(value)) {
       // Dirty-check arrays by item
       if (

@@ -304,14 +304,14 @@ export abstract class AsyncDirective extends Directive {
   isConnected!: boolean;
 
   // @internal
-  _$disconnectableChildren?: Set<Disconnectable> = undefined;
+  override _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /**
    * Initialize the part with internal fields
    * @param part
    * @param parent
    * @param attributeIndex
    */
-  _$initialize(
+  override _$initialize(
     part: Part,
     parent: Disconnectable,
     attributeIndex: number | undefined
@@ -333,7 +333,7 @@ export abstract class AsyncDirective extends Directive {
    *     removed; false when the tree is being disconnected
    * @internal
    */
-  ['_$notifyDirectiveConnectionChanged'](
+  override ['_$notifyDirectiveConnectionChanged'](
     isConnected: boolean,
     isClearingDirective = true
   ) {

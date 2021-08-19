@@ -45,7 +45,7 @@ class RefDirective extends AsyncDirective {
     return nothing;
   }
 
-  update(part: ElementPart, [ref]: Parameters<this['render']>) {
+  override update(part: ElementPart, [ref]: Parameters<this['render']>) {
     const refChanged = ref !== this._ref;
     if (refChanged && this._ref !== undefined) {
       // The ref passed to the directive has changed;
@@ -89,7 +89,7 @@ class RefDirective extends AsyncDirective {
       : this._ref?.value;
   }
 
-  disconnected() {
+  override disconnected() {
     // Only clear the box if our element is still the one in it (i.e. another
     // directive instance hasn't rendered its element to it before us); that
     // only happens in the event of the directive being cleared (not via manual
@@ -99,7 +99,7 @@ class RefDirective extends AsyncDirective {
     }
   }
 
-  reconnected() {
+  override reconnected() {
     // If we were manually disconnected, we can safely put our element back in
     // the box, since no rendering could have occurred to change its state
     this._updateRefValue(this._element);

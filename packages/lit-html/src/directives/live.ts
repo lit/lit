@@ -37,7 +37,7 @@ class LiveDirective extends Directive {
     return value;
   }
 
-  update(part: AttributePart, [value]: DirectiveParameters<this>) {
+  override update(part: AttributePart, [value]: DirectiveParameters<this>) {
     if (value === noChange || value === nothing) {
       return value;
     }

@@ -1445,10 +1445,10 @@ class AttributePart implements Disconnectable {
 
 export type {PropertyPart};
 class PropertyPart extends AttributePart {
-  readonly type = PROPERTY_PART;
+  override readonly type = PROPERTY_PART;
 
   /** @internal */
-  _commitValue(value: unknown) {
+  override _commitValue(value: unknown) {
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       if (this._sanitizer === undefined) {
         this._sanitizer = sanitizerFactoryInternal(
@@ -1466,10 +1466,10 @@ class PropertyPart extends AttributePart {
 
 export type {BooleanAttributePart};
 class BooleanAttributePart extends AttributePart {
-  readonly type = BOOLEAN_ATTRIBUTE_PART;
+  override readonly type = BOOLEAN_ATTRIBUTE_PART;
 
   /** @internal */
-  _commitValue(value: unknown) {
+  override _commitValue(value: unknown) {
     if (value && value !== nothing) {
       (wrap(this.element) as Element).setAttribute(this.name, '');
     } else {
@@ -1494,12 +1494,15 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export type {EventPart};
 class EventPart extends AttributePart {
-  readonly type = EVENT_PART;
+  override readonly type = EVENT_PART;
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
-  _$setValue(newListener: unknown, directiveParent: DirectiveParent = this) {
+  override _$setValue(
+    newListener: unknown,
+    directiveParent: DirectiveParent = this
+  ) {
     newListener =
       resolveDirective(this, newListener, directiveParent, 0) ?? nothing;
     if (newListener === noChange) {
