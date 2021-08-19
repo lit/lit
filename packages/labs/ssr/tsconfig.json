@@ -17,7 +17,8 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitOverride": true
   },
   "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
   "exclude": [],
