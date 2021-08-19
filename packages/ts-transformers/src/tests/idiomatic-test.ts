@@ -96,17 +96,14 @@ test('@property', () => {
   const expected = `
   import {LitElement} from 'lit';
   class MyElement extends LitElement {
-    constructor() {
-      super(...arguments);
-      this.str = "foo";
-      this.num = 42;
-    }
     static get properties() {
       return {
         str: {},
         num: {type: Number, attribute: false},
       };
     }
+    str = "foo";
+    num = 42;
   }
   `;
   checkTransform(input, expected);
@@ -135,15 +132,15 @@ test('@property (merge with existing static properties)', () => {
   const expected = `
   import {LitElement} from 'lit';
   class MyElement extends LitElement {
-    constructor() {
-      super();
-      this.num = 42;
-    }
     static get properties() {
       return {
         str: {},
         num: {type: Number},
       };
+    }
+    num = 42;
+    constructor() {
+      super();
     }
   }
   `;
@@ -166,17 +163,14 @@ test('@state', () => {
   const expected = `
   import {LitElement} from 'lit';
   class MyElement extends LitElement {
-    constructor() {
-      super(...arguments);
-      this.num = 42;
-      this.num2 = 24;
-    }
     static get properties() {
       return {
         num: {state: true},
         num2: {hasChanged: () => false, state: true},
       };
     }
+    num = 42;
+    num2 = 24;
   }
   `;
   checkTransform(input, expected);
@@ -612,7 +606,9 @@ test('ignore non-lit method decorator', () => {
   import {__decorate} from 'tslib';
   import {LitElement} from 'lit';
   import {property} from './not-lit.js';
-  class MyElement extends LitElement {};
+  class MyElement extends LitElement {
+    foo;
+  };
   __decorate([property()], MyElement.prototype, "foo", void 0);
   `;
   checkTransform(input, expected);
@@ -652,17 +648,14 @@ test('aliased property decorator import', () => {
   const expected = `
   import {LitElement} from 'lit';
   class MyElement extends LitElement {
-    constructor() {
-      super(...arguments);
-      this.str = "foo";
-      this.num = 42;
-    }
     static get properties() {
       return {
         str: {},
         num: {type: Number, attribute: false},
       };
     }
+    str = "foo";
+    num = 42;
   }
   `;
   checkTransform(input, expected);

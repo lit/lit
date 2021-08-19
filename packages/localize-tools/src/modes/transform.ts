@@ -289,7 +289,7 @@ class Transformer {
         // but not in the case of `import * as ...`.
         eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
       }
-      for (const decl of eventSymbol.declarations) {
+      for (const decl of eventSymbol.declarations ?? []) {
         let sourceFile: ts.Node = decl;
         while (!ts.isSourceFile(sourceFile)) {
           sourceFile = sourceFile.parent;
@@ -507,7 +507,7 @@ class Transformer {
     // TODO(aomarks) Find a better way to implement this. We could probably just
     // check for any file path matching '/@lit/localize/` -- however that will
     // fail our tests because we import with a relative path in that case.
-    for (const decl of moduleSymbol.declarations) {
+    for (const decl of moduleSymbol.declarations ?? []) {
       if (
         ts.isSourceFile(decl) &&
         (decl.fileName.endsWith('/localize/lit-localize.d.ts') ||
