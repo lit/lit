@@ -188,7 +188,7 @@ export class Flip extends AsyncDirective {
     return this.options.disabled || this.getController()?.disabled;
   }
 
-  update(part: AttributePart, [options]: Parameters<this['render']>) {
+  override update(part: AttributePart, [options]: Parameters<this['render']>) {
     const firstUpdate = this._host === undefined;
     if (firstUpdate) {
       this._host = part.options?.host as LitElement;
@@ -283,9 +283,9 @@ export class Flip extends AsyncDirective {
     this.flip();
   }
 
-  reconnected() {}
+  override reconnected() {}
 
-  disconnected() {
+  override disconnected() {
     this.flipDisconnect();
   }
 
