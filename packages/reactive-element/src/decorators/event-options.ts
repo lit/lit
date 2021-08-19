@@ -24,7 +24,6 @@ import {decorateProperty} from './base.js';
  * Current browsers support the `capture`, `passive`, and `once` options. See:
  * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Parameters
  *
- * @example
  * ```ts
  * class MyElement {
  *   clicked = false;
