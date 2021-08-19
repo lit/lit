@@ -2,4 +2,4 @@
 '@lit-labs/ssr': patch
 ---
 
-Add demo for using global DOM shim instead of isolated VM contexts
+pr: #1881 Add demo for using global DOM shim instead of isolated VM contexts

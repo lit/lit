@@ -10,4 +10,4 @@
 '@lit/reactive-element': patch
 ---
 
-For minified class fields on classes in lit libraries, added prefix to stable properties to avoid collisions with user properties.
+pr: #1942 For minified class fields on classes in lit libraries, added prefix to stable properties to avoid collisions with user properties.

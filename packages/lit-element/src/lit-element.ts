@@ -63,12 +63,6 @@ declare global {
   }
 }
 
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.2');
-
 /**
  * Base element class that manages element properties and attributes, and
  * renders a lit-html template.
@@ -230,3 +224,9 @@ export const _$LE = {
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for LitElement usage.
+// TODO(justinfagnani): inject version number at build time
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.3');

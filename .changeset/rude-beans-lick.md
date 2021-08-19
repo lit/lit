@@ -4,4 +4,4 @@
 '@lit/reactive-element': patch
 ---
 
-Clean up internal TypeScript types
+pr: #2016 Clean up internal TypeScript types
