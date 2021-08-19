@@ -11,4 +11,4 @@
 '@lit/reactive-element': patch
 ---
 
-Don't publish src/ to npm.
+pr: #1964 Don't publish src/ to npm.

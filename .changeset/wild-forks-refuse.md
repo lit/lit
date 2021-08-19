@@ -3,4 +3,4 @@
 '@lit/reactive-element': patch
 ---
 
-Fix syntax highlighting in some documentation examples
+pr: #2050 Fix syntax highlighting in some documentation examples

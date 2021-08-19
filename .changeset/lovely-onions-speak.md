@@ -2,4 +2,4 @@
 'lit-html': patch
 ---
 
-Re-export PropertyPart from 'directive.ts'
+pr: #1937 Re-export PropertyPart from 'directive.ts'
