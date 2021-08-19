@@ -46,7 +46,7 @@ export function query(selector: string, cache?: boolean) {
     descriptor: (name: PropertyKey) => {
       const descriptor = {
         get(this: ReactiveElement) {
-          return this.renderRoot?.querySelector(selector);
+          return this.renderRoot?.querySelector(selector) ?? null;
         },
         enumerable: true,
         configurable: true,
@@ -63,9 +63,11 @@ export function query(selector: string, cache?: boolean) {
               key as string
             ] = this.renderRoot?.querySelector(selector);
           }
-          return (this as unknown as {[key: string]: Element | null})[
-            key as string
-          ];
+          return (
+            (this as unknown as {[key: string]: Element | null})[
+              key as string
+            ] ?? null
+          );
         };
       }
       return descriptor;

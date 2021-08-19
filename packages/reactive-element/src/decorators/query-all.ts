@@ -43,7 +43,7 @@ export function queryAll(selector: string) {
   return decorateProperty({
     descriptor: (_name: PropertyKey) => ({
       get(this: ReactiveElement) {
-        return this.renderRoot?.querySelectorAll(selector);
+        return this.renderRoot?.querySelectorAll(selector) ?? [];
       },
       enumerable: true,
       configurable: true,
