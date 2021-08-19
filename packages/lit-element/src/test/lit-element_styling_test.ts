@@ -33,7 +33,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -64,7 +64,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -91,7 +91,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             :host {
@@ -119,7 +119,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         'x-inner',
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -134,7 +134,7 @@ import {assert} from '@esm-bundle/chai';
       class E extends LitElement {
         inner: LitElement | null = null;
 
-        render() {
+        override render() {
           return htmlWithStyles`
           <style>
             x-inner {
@@ -144,7 +144,7 @@ import {assert} from '@esm-bundle/chai';
           <x-inner></x-inner>`;
         }
 
-        firstUpdated() {
+        override firstUpdated() {
           this.inner = this.shadowRoot!.querySelector('x-inner')! as LitElement;
         }
       }
@@ -167,7 +167,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         'x-inner1',
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -184,7 +184,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           inner: Element | null = null;
 
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             x-inner1 {
@@ -194,7 +194,7 @@ import {assert} from '@esm-bundle/chai';
           <x-inner1></x-inner1>`;
           }
 
-          firstUpdated() {
+          override firstUpdated() {
             this.inner = this.shadowRoot!.querySelector('x-inner1');
           }
         }
@@ -203,7 +203,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name2,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             x-inner1 {
@@ -260,7 +260,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends LitElement {
-          static get styles() {
+          static override get styles() {
             return [
               css`
                 div {
@@ -276,7 +276,7 @@ import {assert} from '@esm-bundle/chai';
             ];
           }
 
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -342,7 +342,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
