@@ -341,6 +341,14 @@ export interface RenderOptions {
    * any inherited context. Defaults to the global `document`.
    */
   creationScope?: {importNode(node: Node, deep?: boolean): Node};
+  /**
+   * The initial connected state for the top-level part being rendered.
+   * The `part.setConnected()` method must be used sebsequent to initial render
+   * to change the connected state of the part. Set to `false` if the initial
+   * render occurs in a disconnected tree and `AsyncDirective`s should see
+   * `isConnected === false` for their initial render.
+   */
+  initialIsConnected?: boolean;
 }
 
 /**
@@ -957,13 +965,15 @@ class ChildPart implements Disconnectable {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
-  // TODO(kschaaf): There's currently no way to have the initial render
-  // of a part be `isConnected: false`. We may want to add this via renderOptions
-  // so that if a LitElement ends up performing its initial render while
-  // disconnected, the directives aren't in the wrong state
-  // https://github.com/lit/lit/issues/2051
-  /** @internal */
-  __isConnected = true;
+  /**
+   * Connection state for RootParts only (i.e. ChildPart without _$parent
+   * returned from top-level `render`). This field is unsed otherwise. The
+   * intention would clearer if we made `RootPart` a subclass of `ChildPart`
+   * with this field (and a different _$isConnected getter), but the subclass
+   * caused a perf regression, possibly due to making call sites polymorphic.
+   * @internal
+   */
+  __isConnected: boolean;
 
   // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
@@ -996,6 +1006,10 @@ class ChildPart implements Disconnectable {
     this._$endNode = endNode;
     this._$parent = parent;
     this.options = options;
+    // Note __isConnected is only ever accessed on RootParts (i.e. when there is
+    // no _$parent); the value on a non-root-part is "don't care", but checking
+    // for parent would be more code
+    this.__isConnected = options?.initialIsConnected ?? true;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
@@ -1279,7 +1293,7 @@ export interface RootPart extends ChildPart {
    * as such, it is the responsibility of the caller to `render` to ensure that
    * `part.setConnected(false)` is called before the part object is potentially
    * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
-   * any resources being held. If a RootPart that was prevously
+   * any resources being held. If a `RootPart` that was prevously
    * disconnected is subsequently re-connected (and its `AsyncDirective`s should
    * re-connect), `setConnected(true)` should be called.
    *

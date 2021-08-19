@@ -134,6 +134,7 @@ export class LitElement extends ReactiveElement {
    * @category lifecycle
    */
   connectedCallback() {
+    this.renderOptions.initialIsConnected = true;
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
@@ -142,6 +143,7 @@ export class LitElement extends ReactiveElement {
    * @category lifecycle
    */
   disconnectedCallback() {
+    this.renderOptions.initialIsConnected = false;
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
   }
