@@ -11,28 +11,13 @@
 * Updated dependencies [[`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705)]:
   - lit@2.0.0-rc.3
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
-
-<!--
-   PRs should document their user-visible changes (if any) in the
-   Unreleased section, uncommenting the header as necessary.
--->
-
-<!-- ## [x.y.z] - YYYY-MM-DD -->
-<!-- ## Unreleased -->
-<!-- ### Changed -->
-<!-- ### Added -->
-<!-- ### Removed -->
-<!-- ### Fixed -->
-
-## Unreleased
-
-### Fixed
-
 - Included `development` folder in release [#1912](https://github.com/lit/lit/issues/1912).
+
+---
+
+Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) format. All changes above are generated automatically by [Changesets](https://github.com/atlassian/changesets).
+
+---
 
 ## [1.0.0-rc.2] - 2021-04-07
 
