@@ -118,11 +118,11 @@ const supportsOnce = (function () {
         this.eventPhase = e.eventPhase;
       }
 
-      render() {
+      override render() {
         return html`<div><button></button></div>`;
       }
 
-      firstUpdated() {
+      override firstUpdated() {
         this.renderRoot
           .querySelector('div')!
           .addEventListener(

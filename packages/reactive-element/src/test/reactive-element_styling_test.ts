@@ -40,7 +40,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return [
               css`
                 div {
@@ -56,7 +56,7 @@ import {assert} from '@esm-bundle/chai';
             ];
           }
 
-          render() {
+          override render() {
             return html` <div>Testing1</div>
               <span>Testing2</span>`;
           }
@@ -95,7 +95,7 @@ import {assert} from '@esm-bundle/chai';
         customElements.define(
           name,
           class extends RenderingElement {
-            static get styles() {
+            static override get styles() {
               return [
                 css`
                   div {
@@ -111,7 +111,7 @@ import {assert} from '@esm-bundle/chai';
               ];
             }
 
-            render() {
+            override render() {
               return html` <div>Testing1</div>
                 <span>Testing2</span>`;
             }
@@ -129,7 +129,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return css`
               div {
                 border: 2px solid blue;
@@ -137,7 +137,7 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html` <div>Testing</div>`;
           }
         }
@@ -157,7 +157,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             // Alias avoids syntax highlighting issues in editors
             const cssValue = css;
             return [
@@ -175,7 +175,7 @@ import {assert} from '@esm-bundle/chai';
             ];
           }
 
-          render() {
+          override render() {
             return html` <div>Testing1</div>
               <span>Testing2</span>`;
           }
@@ -202,7 +202,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return css`
               div {
                 border: ${unsafeCSS(someVar)};
@@ -210,7 +210,7 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html` <div>Testing</div>`;
           }
         }
@@ -230,11 +230,11 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return unsafeCSS('div {border: 2px solid blue}');
           }
 
-          render() {
+          override render() {
             return html` <div>Testing</div>`;
           }
         }
@@ -264,11 +264,11 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return [s1, s2, s1];
           }
 
-          render() {
+          override render() {
             return html` <div>Testing1</div>`;
           }
         }
@@ -316,11 +316,11 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return [styles];
           }
 
-          render() {
+          override render() {
             return html` <div class="level1">Testing1</div>
               <div class="level2">Testing2</div>
               <div class="level3">Testing3</div>
@@ -358,7 +358,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static styles = [
+          static override styles = [
             css`
               div {
                 border: 2px solid blue;
@@ -372,7 +372,7 @@ import {assert} from '@esm-bundle/chai';
             `,
           ];
 
-          render() {
+          override render() {
             return html` <div>Testing1</div>
               <span>Testing2</span>`;
           }
@@ -396,7 +396,7 @@ import {assert} from '@esm-bundle/chai';
     test('can extend and augment `styles`', async () => {
       const base = generateElementName();
       class BaseClass extends RenderingElement {
-        static get styles() {
+        static override get styles() {
           return css`
             div {
               border: 2px solid blue;
@@ -404,7 +404,7 @@ import {assert} from '@esm-bundle/chai';
           ` as CSSResultGroup;
         }
 
-        render() {
+        override render() {
           return html` <div>Testing1</div>`;
         }
       }
@@ -413,7 +413,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         sub,
         class extends BaseClass {
-          static get styles() {
+          static override get styles() {
             return [
               super.styles,
               css`
@@ -425,7 +425,7 @@ import {assert} from '@esm-bundle/chai';
             ];
           }
 
-          render() {
+          override render() {
             return html` ${super.render()}
               <span>Testing2</span>`;
           }
@@ -436,7 +436,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         subsub,
         class extends BaseClass {
-          static get styles() {
+          static override get styles() {
             return [
               BaseClass.styles,
               css`
@@ -448,7 +448,7 @@ import {assert} from '@esm-bundle/chai';
             ];
           }
 
-          render() {
+          override render() {
             return html` ${super.render()}
               <p>Testing3</p>`;
           }
@@ -480,7 +480,7 @@ import {assert} from '@esm-bundle/chai';
     test('can extend and override `styles`', async () => {
       const base = generateElementName();
       class BaseClass extends RenderingElement {
-        static get styles() {
+        static override get styles() {
           return css`
             div {
               border: 2px solid blue;
@@ -488,7 +488,7 @@ import {assert} from '@esm-bundle/chai';
           `;
         }
 
-        render() {
+        override render() {
           return html` <div>Testing1</div>`;
         }
       }
@@ -498,7 +498,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         sub,
         class extends BaseClass {
-          static get styles() {
+          static override get styles() {
             return css`
               div {
                 border: 3px solid blue;
@@ -512,7 +512,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         subsub,
         class extends BaseClass {
-          static get styles() {
+          static override get styles() {
             return css`
               div {
                 border: 4px solid blue;
@@ -550,7 +550,7 @@ import {assert} from '@esm-bundle/chai';
     test('elements should inherit `styles` by default', async () => {
       const base = generateElementName();
       class BaseClass extends RenderingElement {
-        static styles = css`
+        static override styles = css`
           div {
             border: 4px solid black;
           }
@@ -562,7 +562,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         sub,
         class extends BaseClass {
-          render() {
+          override render() {
             return html`<div></div>`;
           }
         }
@@ -585,12 +585,12 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         base,
         class extends RenderingElement {
-          static finalizeStyles(styles: CSSResultGroup) {
+          static override finalizeStyles(styles: CSSResultGroup) {
             getStylesCounter++;
             return super.finalizeStyles(styles);
           }
 
-          static get styles() {
+          static override get styles() {
             stylesCounter++;
             return css`
               :host {
@@ -598,7 +598,7 @@ import {assert} from '@esm-bundle/chai';
               }
             `;
           }
-          render() {
+          override render() {
             return html`<div>styled</div>`;
           }
         }
@@ -633,7 +633,7 @@ import {assert} from '@esm-bundle/chai';
       const localName = generateElementName();
 
       class SomeCustomElement extends RenderingElement {
-        static styles = css`
+        static override styles = css`
           :host {
             border: 4px solid black;
           }
@@ -646,7 +646,7 @@ import {assert} from '@esm-bundle/chai';
           this.renderUndefined = true;
         }
 
-        static get properties() {
+        static override get properties() {
           return {
             renderUndefined: {
               type: Boolean,
@@ -655,7 +655,7 @@ import {assert} from '@esm-bundle/chai';
           };
         }
 
-        render() {
+        override render() {
           if (this.renderUndefined) {
             return undefined;
           }
@@ -702,9 +702,9 @@ import {assert} from '@esm-bundle/chai';
         customElements.define(
           base,
           class extends RenderingElement {
-            static styles = [sheet, normal];
+            static override styles = [sheet, normal];
 
-            render() {
+            override render() {
               return html`<div></div>
                 <span></span>`;
             }
@@ -759,9 +759,9 @@ import {assert} from '@esm-bundle/chai';
         customElements.define(
           base,
           class extends RenderingElement {
-            static styles = sheet;
+            static override styles = sheet;
 
-            render() {
+            override render() {
               return html`<div></div>`;
             }
           }
@@ -815,7 +815,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return css`
               :host {
                 --border: 8px solid red;
@@ -826,11 +826,11 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html`<div>Testing...</div>`;
           }
 
-          firstUpdated() {
+          override firstUpdated() {
             testStyle(this);
           }
         }
@@ -845,7 +845,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         'x-inner',
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return css`
               div {
                 border: var(--border);
@@ -853,7 +853,7 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html`<div>Testing...</div>`;
           }
         }
@@ -862,7 +862,7 @@ import {assert} from '@esm-bundle/chai';
       class E extends RenderingElement {
         inner: RenderingElement | null = null;
 
-        static get styles() {
+        static override get styles() {
           return css`
             x-inner {
               --border: 8px solid red;
@@ -870,11 +870,11 @@ import {assert} from '@esm-bundle/chai';
           `;
         }
 
-        render() {
+        override render() {
           return html`<x-inner></x-inner>`;
         }
 
-        firstUpdated() {
+        override firstUpdated() {
           this.inner = this.shadowRoot!.querySelector(
             'x-inner'
           )! as RenderingElement;
@@ -899,7 +899,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         'x-inner1',
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return css`
               div {
                 border: var(--border);
@@ -907,7 +907,7 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html`<div>Testing...</div>`;
           }
         }
@@ -918,7 +918,7 @@ import {assert} from '@esm-bundle/chai';
         class extends RenderingElement {
           inner: Element | null = null;
 
-          static get styles() {
+          static override get styles() {
             return css`
               x-inner1 {
                 --border: 2px solid red;
@@ -926,11 +926,11 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html`<x-inner1></x-inner1>`;
           }
 
-          firstUpdated() {
+          override firstUpdated() {
             this.inner = this.shadowRoot!.querySelector('x-inner1');
           }
         }
@@ -939,7 +939,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name2,
         class extends RenderingElement {
-          static get styles() {
+          static override get styles() {
             return css`
               x-inner1 {
                 --border: 8px solid red;
@@ -947,7 +947,7 @@ import {assert} from '@esm-bundle/chai';
             `;
           }
 
-          render() {
+          override render() {
             return html``;
           }
         }

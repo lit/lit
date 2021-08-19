@@ -71,11 +71,11 @@
     "/development/"
   ],
   "devDependencies": {
-    "@babel/cli": "^7.12.10",
-    "@babel/core": "^7.13.10",
-    "@babel/plugin-proposal-class-properties": "^7.13.0",
-    "@babel/plugin-proposal-decorators": "^7.13.5",
-    "@babel/plugin-transform-typescript": "^7.13.0",
+    "@babel/cli": "^7.14.6",
+    "@babel/core": "^7.14.6",
+    "@babel/plugin-proposal-class-properties": "^7.14.5",
+    "@babel/plugin-proposal-decorators": "^7.14.5",
+    "@babel/plugin-transform-typescript": "^7.14.6",
     "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^8.0.3",

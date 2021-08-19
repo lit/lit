@@ -22,7 +22,7 @@ import {assert} from '@esm-bundle/chai';
     @query('#blah', true) divCached?: HTMLDivElement;
     @query('span', true) span?: HTMLSpanElement;
 
-    static properties = {condition: {}};
+    static override properties = {condition: {}};
 
     declare condition: boolean;
 
@@ -32,7 +32,7 @@ import {assert} from '@esm-bundle/chai';
       this.condition = false;
     }
 
-    render() {
+    override render() {
       return html`
         <div>Not this one</div>
         <div id="blah">This one</div>
