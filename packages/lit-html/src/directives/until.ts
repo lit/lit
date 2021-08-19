@@ -67,7 +67,9 @@ export class UntilDirective extends AsyncDirective {
       previousLength = 0;
 
       // Note, the callback avoids closing over `this` so that the directive
-      // can be gc'ed before the promise resolves
+      // can be gc'ed before the promise resolves; instead `this` is retrieved
+      // from `weakThis`, which can break the hard reference in the closure when
+      // the directive disconnects
       Promise.resolve(value).then(async (result: unknown) => {
         // If we're disconnected, wait until we're (maybe) reconnected
         // The while loop here handles the case that the connection state
@@ -75,6 +77,9 @@ export class UntilDirective extends AsyncDirective {
         while (pauser.get()) {
           await pauser.get();
         }
+        // If the callback gets here and there is no `this`, it means that the
+        // directive has been disconnected and garbage collected and we don't
+        // need to do anything else
         const _this = weakThis.deref();
         if (_this !== undefined) {
           const index = _this.__values.indexOf(value);

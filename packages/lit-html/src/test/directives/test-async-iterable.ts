@@ -9,6 +9,8 @@ if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
   Object.defineProperty(Symbol, 'asyncIterator', {value: Symbol()});
 }
 
+const nextFrame = () => new Promise((r) => requestAnimationFrame(r));
+
 /**
  * An async iterable that can have values pushed into it for testing code
  * that consumes async iterables. This iterable can only be safely consumed
@@ -46,10 +48,9 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
     currentResolveValue(value);
     // Waits for the value to be emitted
     await currentValue;
-    // Need to wait for one more microtask for value to be rendered, but only
-    // when devtools is closed. Waiting for rAF might be more reliable, but
-    // this waits the minimum that seems reliable now.
-    await Promise.resolve();
-    await Promise.resolve();
+    // Since this is used in tests, awaiting a rAF here is a convenience so
+    // that we get past any async code in directives used to resolve/commit
+    // the itereable value; when this returns it should be rendered
+    await nextFrame();
   }
 }
