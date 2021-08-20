@@ -1043,7 +1043,7 @@ class ChildPart implements Disconnectable {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     if (DEV_MODE && this.parentNode === null) {
       throw new Error(
-        `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept the value of ${value}. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`
+        `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept a value. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`
       );
     }
     value = resolveDirective(this, value, directiveParent);
