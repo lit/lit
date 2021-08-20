@@ -365,6 +365,45 @@ test('@queryAssignedNodes (with selector)', () => {
 
 test('private @eventOptions', () => {
   const input = `
+  import {eventOptions} from 'lit/decorators.js';
+  import {LitElement, html} from 'lit';
+  class MyElement extends LitElement {
+    @eventOptions({capture: true, once: false, passive: true})
+    private _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`
+        <button @click=\${this._onClick}></button>
+      \`;
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement, html} from 'lit';
+  class MyElement extends LitElement {
+    _onClick(event) {
+      console.log('click', event.target);
+    }
+    render() {
+      return html\`
+        <button @click=\${{
+          handleEvent: (e) => this._onClick(e),
+          capture: true,
+          once: false,
+          passive: true
+        }}></button>
+      \`;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('private @eventOptions with reversed import order', () => {
+  // Regression test for a bug where import order mattered.
+  const input = `
   import {LitElement, html} from 'lit';
   import {eventOptions} from 'lit/decorators.js';
   class MyElement extends LitElement {

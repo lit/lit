@@ -108,7 +108,12 @@ export class LitTransformer {
     let traversalNeeded = false;
     for (const statement of node.statements) {
       if (ts.isImportDeclaration(statement)) {
-        traversalNeeded ||= this._updateFileContextWithLitImports(statement);
+        if (this._updateFileContextWithLitImports(statement)) {
+          // Careful with short-circuiting here! We must run
+          // `_updateFileContextWithLitImports` on every import statement, even
+          // if we already know we need a traversal.
+          traversalNeeded = true;
+        }
       }
     }
     if (!traversalNeeded) {
