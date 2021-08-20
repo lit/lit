@@ -59,27 +59,6 @@
               }
             }
           }
-        },
-        {
-          "name": "previous-release",
-          "packageVersions": {
-            "label": "previous-release",
-            "dependencies": {
-              "lit-html": "^1.0.0",
-              "lit-element": "^2.0.0",
-              "@lit/reactive-element": {
-                "kind": "git",
-                "repo": "https://github.com/lit/lit-html.git",
-                "ref": "main",
-                "subdir": "packages/reactive-element",
-                "setupCommands": [
-                  "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
-                ]
-              }
-            }
-          }
         }
       ]
     }

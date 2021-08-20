@@ -120,16 +120,16 @@ class RefDirective extends AsyncDirective {
  * removed in a subsequent render, it will first be called with `undefined`,
  * followed by another call with the new element it was rendered to (if any).
  *
- * @example
+ * ```js
+ * // Using Ref object
+ * const inputRef = createRef();
+ * render(html`<input ${ref(inputRef)}>`, container);
+ * inputRef.value.focus();
  *
- *    // Using Ref object
- *    const inputRef = createRef();
- *    render(html`<input ${ref(inputRef)}>`, container);
- *    inputRef.value.focus();
- *
- *    // Using callback
- *    const callback = (inputElement) => inputElement.focus();
- *    render(html`<input ${ref(callback)}>`, container);
+ * // Using callback
+ * const callback = (inputElement) => inputElement.focus();
+ * render(html`<input ${ref(callback)}>`, container);
+ * ```
  */
 export const ref = directive(RefDirective);
 

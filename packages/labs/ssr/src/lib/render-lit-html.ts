@@ -15,8 +15,8 @@ import type {
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
-import {isTemplateResult} from 'lit/directive-helpers.js';
-import {_Σ} from 'lit-html/private-ssr-support.js';
+import {isTemplateResult, getDirectiveClass} from 'lit/directive-helpers.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
   getTemplateHtml,
@@ -24,13 +24,15 @@ const {
   markerMatch,
   boundAttributeSuffix,
   overrideDirectiveResolve,
+  setDirectiveClass,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
-} = _Σ;
+  connectedDisconnectable,
+} = _$LH;
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
@@ -74,7 +76,8 @@ const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
  * with a subclass that calls `render` rather than `update`
  */
 const patchIfDirective = (value: unknown) => {
-  const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
@@ -88,7 +91,8 @@ const patchIfDirective = (value: unknown) => {
       );
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
-    (value as DirectiveResult)._$litDirective$ = patchedCtor;
+    // This property needs to remain unminified.
+    setDirectiveClass(value as DirectiveResult, patchedCtor);
   }
   return value;
 };
@@ -277,7 +281,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  const [html, attrNames] = getTemplateHtml(result.strings, result._$litType$);
+  // The property '_$litType$' needs to remain unminified.
+  const [html, attrNames] = getTemplateHtml(
+    result.strings,
+    result['_$litType$']
+  );
 
   /**
    * The html string is parsed into a parse5 AST with source code information
@@ -550,7 +558,10 @@ function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
+    value = resolveDirective(
+      connectedDisconnectable({type: PartType.CHILD}) as ChildPart,
+      value
+    );
   }
   if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -618,7 +629,7 @@ function* renderTemplateResult(
           {tagName: op.tagName} as HTMLElement,
           op.name,
           statics,
-          undefined,
+          connectedDisconnectable(),
           {}
         );
         const value =

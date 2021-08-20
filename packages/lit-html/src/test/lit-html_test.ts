@@ -32,8 +32,8 @@ import {AsyncDirective} from '../async-directive.js';
 import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
-import {_Σ} from '../private-ssr-support.js';
-const {AttributePart} = _Σ;
+import {_$LH} from '../private-ssr-support.js';
+const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
 
@@ -1529,7 +1529,8 @@ suite('lit-html', () => {
       };
       assertRender(
         {
-          _$litType$: _$lit_template_1,
+          // This property needs to remain unminified.
+          ['_$litType$']: _$lit_template_1,
           values: ['A'],
         },
         'A'
@@ -1543,7 +1544,8 @@ suite('lit-html', () => {
         parts: [{type: 2, index: 1}],
       };
       const result = {
-        _$litType$: _$lit_template_1,
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
         values: ['A'],
       };
       assertRender(result, '<div>A</div>');
@@ -1564,7 +1566,8 @@ suite('lit-html', () => {
         ],
       };
       const result = {
-        _$litType$: _$lit_template_1,
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
         values: ['A'],
       };
       assertRender(result, '<div foo="A"></div>');
@@ -1578,7 +1581,8 @@ suite('lit-html', () => {
         parts: [{type: 6, index: 0}],
       };
       const result = {
-        _$litType$: _$lit_template_1,
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
         values: [ref(r)],
       };
       assertRender(result, '<div></div>');
@@ -2024,22 +2028,23 @@ suite('lit-html', () => {
   });
 
   suite('async directives', () => {
-    const aDirective = directive(
-      class extends AsyncDirective {
-        value: unknown;
-        promise!: Promise<unknown>;
-        render(_promise: Promise<unknown>) {
-          return 'initial';
-        }
-        update(_part: Part, [promise]: Parameters<this['render']>) {
-          if (promise !== this.promise) {
-            this.promise = promise;
-            promise.then((value) => this.setValue((this.value = value)));
-          }
-          return this.value ?? this.render(promise);
-        }
+    class ADirective extends AsyncDirective {
+      value: unknown;
+      promise!: Promise<unknown>;
+      render(_promise: Promise<unknown>) {
+        return 'initial';
       }
-    );
+      update(_part: Part, [promise]: Parameters<this['render']>) {
+        aDirectiveInst = this;
+        if (promise !== this.promise) {
+          this.promise = promise;
+          promise.then((value) => this.setValue((this.value = value)));
+        }
+        return this.value ?? this.render(promise);
+      }
+    }
+    const aDirective = directive(ADirective);
+    let aDirectiveInst: ADirective;
     const bDirective = directive(
       class extends Directive {
         count = 0;
@@ -2062,16 +2067,35 @@ suite('lit-html', () => {
       assertContent(`<div>resolved2</div>`);
     });
 
-    test('async directives while disconnected in ChildPart', async () => {
+    test('async directives change to disconnected in ChildPart', async () => {
       const template = (promise: Promise<unknown>) =>
         html`<div>${aDirective(promise)}</div>`;
       const promise = Promise.resolve('resolved1');
       const part = assertRender(template(promise), `<div>initial</div>`);
+      assert.isTrue(aDirectiveInst.isConnected);
       part.setConnected(false);
-      await promise;
       assertContent(`<div>initial</div>`);
-      part.setConnected(true);
+      await promise;
+      assert.isFalse(aDirectiveInst.isConnected);
       assertContent(`<div>resolved1</div>`);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertContent(`<div>resolved1</div>`);
+    });
+
+    test('async directives render while disconnected in ChildPart', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      const promise = Promise.resolve('resolved1');
+      const part = assertRender(template('initial'), `<div>initial</div>`);
+      part.setConnected(false);
+      assertRender(template(aDirective(promise)), `<div>initial</div>`);
+      assert.isFalse(aDirectiveInst.isConnected);
+      await promise;
+      assertContent(`<div>resolved1</div>`);
+      assert.isFalse(aDirectiveInst.isConnected);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertRender(template(aDirective(promise)), `<div>resolved1</div>`);
     });
 
     test('async directives while disconnected in ChildPart clears its value', async () => {
@@ -2091,13 +2115,15 @@ suite('lit-html', () => {
       assert.deepEqual(log, []);
       // Disconnect the tree before the clear is committed
       part.setConnected(false);
+      assert.isFalse(aDirectiveInst.isConnected);
       assert.deepEqual(log, ['disconnected-dd']);
       await promise;
       assert.deepEqual(log, ['disconnected-dd']);
-      assertContent(`<div>dd</div>`);
+      assertContent(`<div></div>`);
       // Re-connect the tree, which should clear the part but not reconnect
       // the AsyncDirective that was cleared
       part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
       assertRender(template(promise), `<div></div>`);
       assert.deepEqual(log, ['disconnected-dd']);
     });
@@ -2138,9 +2164,11 @@ suite('lit-html', () => {
         `<div a="**initial##"></div>`
       );
       part.setConnected(false);
+      assert.isFalse(aDirectiveInst.isConnected);
       await promise;
-      assertContent(`<div a="**initial##"></div>`);
+      assertContent(`<div a="**resolved1##"></div>`);
       part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
       assertContent(`<div a="**resolved1##"></div>`);
     });
 
@@ -2626,12 +2654,8 @@ suite('lit-html', () => {
   //   });
   // });
 
-  let securityHooksSuiteFunction:
-    | Mocha.SuiteFunction
-    | Mocha.PendingSuiteFunction = suite;
-  if (!DEV_MODE) {
-    securityHooksSuiteFunction = suite.skip;
-  }
+  const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
+
   securityHooksSuiteFunction('enahnced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
@@ -2782,15 +2806,42 @@ suite('lit-html', () => {
     });
   });
 
+  const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
+
+  warningsSuiteFunction('warnings', () => {
+    test('warns on octal escape', () => {
+      const warnings: Array<unknown[]> = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args);
+        return originalWarn.call(console, ...args);
+      };
+      try {
+        render(html`\2022`, container);
+        assert.fail();
+      } catch (e) {
+        assert.equal(warnings.length, 1);
+        assert.include(warnings[0][0], 'escape');
+      } finally {
+        console.warn = originalWarn;
+      }
+    });
+  });
+
   suite('internal', () => {
     test('clearContainerForLit2MigrationOnly', () => {
-      container.innerHTML = '<div>TEST</div>';
+      const clearedHtml = `<div>TEST 1</div><div>TEST 2</div>`;
+      const remainingHtml = `<div class="renderBefore">REMAIN 1</div><div>REMAIN 2</div>`;
+      container.innerHTML = `${clearedHtml}${remainingHtml}`;
       render(html`<p>HELLO</p>`, container, {
         clearContainerForLit2MigrationOnly: true,
+        renderBefore: container.querySelector('.renderBefore'),
       } as RenderOptions);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        INTERNAL ? '<p>HELLO</p>' : '<div>TEST</div><p>HELLO</p>'
+        INTERNAL
+          ? `<p>HELLO</p>${remainingHtml}`
+          : `${clearedHtml}<p>HELLO</p>${remainingHtml}`
       );
     });
   });

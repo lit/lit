@@ -47,7 +47,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
-import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
+import {render, RenderOptions, noChange, RootPart} from 'lit-html';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
 
@@ -62,12 +62,6 @@ declare global {
     litElementVersions: string[];
   }
 }
-
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.2');
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -87,14 +81,15 @@ export class LitElement extends ReactiveElement {
    */
   protected static ['finalized'] = true;
 
-  static _$litElement$ = true;
+  // This property needs to remain unminified.
+  static ['_$litElement$'] = true;
 
   /**
    * @category rendering
    */
   readonly renderOptions: RenderOptions = {host: this};
 
-  private __childPart: ChildPart | undefined = undefined;
+  private __childPart: RootPart | undefined = undefined;
 
   /**
    * @category rendering
@@ -207,7 +202,7 @@ if (DEV_MODE) {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Φ object containing those members (or
+ * client side code, we export a _$LE object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -217,7 +212,7 @@ if (DEV_MODE) {
  *
  * @private
  */
-export const _Φ = {
+export const _$LE = {
   _$attributeToProperty: (
     el: LitElement,
     name: string,
@@ -229,3 +224,9 @@ export const _Φ = {
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for LitElement usage.
+// TODO(justinfagnani): inject version number at build time
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.3');

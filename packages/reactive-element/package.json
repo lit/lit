@@ -1,6 +1,6 @@
 {
   "name": "@lit/reactive-element",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "publishConfig": {
     "access": "public"
   },
@@ -68,7 +68,8 @@
     "/reactive-controller.{d.ts,d.ts.map,js,js.map}",
     "/reactive-element.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
-    "/development/"
+    "/development/",
+    "!/development/test/"
   ],
   "devDependencies": {
     "@babel/cli": "^7.12.10",
@@ -81,7 +82,7 @@
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "chokidar-cli": "^2.1.0",
     "internal-scripts": "^1.0.0",
     "mocha": "^8.1.1",

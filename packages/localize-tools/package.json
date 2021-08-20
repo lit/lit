@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.3.4",
+  "version": "0.3.6",
   "publishConfig": {
     "access": "public"
   },
@@ -20,10 +20,10 @@
   "type": "module",
   "scripts": {
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
-    "build": "npm run clean && npm run generate-json-schema && tsc",
+    "build": "npm run clean && npm run generate-json-schema && tsc --build",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
     "test": "npm run build && npm run test:unit && npm run test:check-tsc",
-    "test:unit": "uvu lib/tests '\\.test\\.js$'",
+    "test:unit": "uvu lib/tests '\\.test\\.js$' --ignore 'ssr\\.unit\\.test\\.js$' && uvu lib/tests '\\ssr\\.unit\\.test\\.js$'",
     "test:update-goldens": "npm run build && UPDATE_TEST_GOLDENS=true npm run test:unit",
     "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
     "prepack": "npm run build"
@@ -37,7 +37,7 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "@lit/localize": "^0.10.2",
+    "@lit/localize": "^0.10.3",
     "fs-extra": "^9.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.4.0",
@@ -49,6 +49,8 @@
     "xmldom": "^0.5.0"
   },
   "devDependencies": {
+    "@lit/ts-transformers": "^0.0.1",
+    "@lit-labs/ssr": "^1.0.0-rc.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
     "@types/glob": "^7.1.1",

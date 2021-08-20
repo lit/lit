@@ -22,13 +22,11 @@ if (DEV_MODE) {
   console.warn('lit-html is in dev mode. Not recommended for production!');
 }
 
-const extraGlobals = window as LitExtraGlobals;
-
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  extraGlobals.ShadyDOM?.inUse &&
-  extraGlobals.ShadyDOM?.noPatch === true
-    ? extraGlobals.ShadyDOM!.wrap
+  window.ShadyDOM?.inUse &&
+  window.ShadyDOM?.noPatch === true
+    ? window.ShadyDOM!.wrap
     : (node: Node) => node;
 
 const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
@@ -241,7 +239,8 @@ const COMMENT_PART = 7;
  * The return type of the template tag functions.
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
-  _$litType$: T;
+  // This property needs to remain unminified.
+  ['_$litType$']: T;
   // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
   // semi-public API though. We can't just let Terser rename them for us,
   // because we need TemplateResults to work between compatible versions of
@@ -257,7 +256,8 @@ export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 export interface CompiledTemplateResult {
   // This is a factory in order to make template initialization lazy
   // and allow ShadyRenderOptions scope to be passed in.
-  _$litType$: CompiledTemplate;
+  // This property needs to remain unminified.
+  ['_$litType$']: CompiledTemplate;
   values: unknown[];
 }
 
@@ -274,12 +274,24 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
  * the given result type.
  */
 const tag =
-  <T extends ResultType>(_$litType$: T) =>
-  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => ({
-    _$litType$,
-    strings,
-    values,
-  });
+  <T extends ResultType>(type: T) =>
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => {
+    // Warn against templates octal escape sequences
+    // We do this here rather than in render so that the warning is closer to the
+    // template definition.
+    if (DEV_MODE && strings.some((s) => s === undefined)) {
+      console.warn(
+        'Some template strings are undefined.\n' +
+          'This is probably caused by illegal octal escape sequences.'
+      );
+    }
+    return {
+      // This property needs to remain unminified.
+      ['_$litType$']: type,
+      strings,
+      values,
+    };
+  };
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -353,30 +365,38 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): ChildPart => {
+): RootPart => {
   const partOwnerNode = options?.renderBefore ?? container;
+  // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart$;
+  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
+    const endNode = options?.renderBefore ?? null;
     // Internal modification: don't clear container to match lit-html 2.0
     if (
       INTERNAL &&
       (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
         true
     ) {
-      container.childNodes.forEach((c) => c.remove());
+      let n = container.firstChild;
+      // Clear only up to the `endNode` aka `renderBefore` node.
+      while (n && n !== endNode) {
+        const next = n.nextSibling;
+        n.remove();
+        n = next;
+      }
     }
-    const endNode = options?.renderBefore ?? null;
+    // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart$ = part = new ChildPart(
+    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
-      options
+      options ?? {}
     );
   }
   part._$setValue(value);
-  return part;
+  return part as RootPart;
 };
 
 if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -408,6 +428,7 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 // `resolveDirective`
 export interface DirectiveParent {
   _$parent?: DirectiveParent;
+  _$isConnected: boolean;
   __directive?: Directive;
   __directives?: Array<Directive | undefined>;
 }
@@ -589,7 +610,8 @@ class Template {
   parts: Array<TemplatePart> = [];
 
   constructor(
-    {strings, _$litType$: type}: TemplateResult,
+    // This property needs to remain unminified.
+    {strings, ['_$litType$']: type}: TemplateResult,
     options?: RenderOptions
   ) {
     let node: Node | null;
@@ -719,6 +741,7 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  /** @nocollapse */
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
     el.innerHTML = html as unknown as string;
@@ -729,6 +752,14 @@ class Template {
 export interface Disconnectable {
   _$parent?: Disconnectable;
   _$disconnectableChildren?: Set<Disconnectable>;
+  // Rather than hold connection state on instances, Disconnectables recursively
+  // fetch the connection state from the RootPart they are connected in via
+  // getters up the Disconnectable tree via _$parent references. This pushes the
+  // cost of tracking the isConnected state to `AsyncDirectives`, and avoids
+  // needing to pass all Disconnectables (parts, template instances, and
+  // directives) their connection state each time it changes, which would be
+  // costly for trees that have no AsyncDirectives.
+  _$isConnected: boolean;
 }
 
 function resolveDirective(
@@ -748,9 +779,11 @@ function resolveDirective(
       : (parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
-    : (value as DirectiveResult)._$litDirective$;
+    : // This property needs to remain unminified.
+      (value as DirectiveResult)['_$litDirective$'];
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
-    currentDirective?._$setDirectiveConnected?.(false);
+    // This property needs to remain unminified.
+    currentDirective?.['_$notifyDirectiveConnectionChanged']?.(false);
     if (nextDirectiveConstructor === undefined) {
       currentDirective = undefined;
     } else {
@@ -779,7 +812,7 @@ function resolveDirective(
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
-class TemplateInstance {
+class TemplateInstance implements Disconnectable {
   /** @internal */
   _$template: Template;
   /** @internal */
@@ -793,6 +826,11 @@ class TemplateInstance {
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
+  }
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -906,7 +944,7 @@ export type Part =
   | EventPart;
 
 export type {ChildPart};
-class ChildPart {
+class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
@@ -919,13 +957,28 @@ class ChildPart {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
+  // TODO(kschaaf): There's currently no way to have the initial render
+  // of a part be `isConnected: false`. We may want to add this via renderOptions
+  // so that if a LitElement ends up performing its initial render while
+  // disconnected, the directives aren't in the wrong state
+  // https://github.com/lit/lit/issues/2051
+  /** @internal */
+  __isConnected = true;
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    // ChildParts that are not at the root should always be created with a
+    // parent; only RootChildNode's won't, so they return the local isConnected
+    // state
+    return this._$parent?._$isConnected ?? this.__isConnected;
+  }
 
   // The following fields will be patched onto ChildParts when required by
   // AsyncDirective
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setChildPartConnected?(
+  _$notifyConnectionChanged?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -947,15 +1000,6 @@ class ChildPart {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
     }
-  }
-
-  /**
-   * Sets the connection state for any `AsyncDirectives` contained
-   * within this part and runs their `disconnected` or `reconnected`, according
-   * to the `isConnected` argument.
-   */
-  setConnected(isConnected: boolean) {
-    this._$setChildPartConnected?.(isConnected);
   }
 
   /**
@@ -1010,7 +1054,8 @@ class ChildPart {
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
-    } else if ((value as TemplateResult)._$litType$ !== undefined) {
+      // This property needs to remain unminified.
+    } else if ((value as TemplateResult)['_$litType$'] !== undefined) {
       this._commitTemplateResult(value as TemplateResult);
     } else if ((value as Node).nodeType !== undefined) {
       this._commitNode(value as Node);
@@ -1090,20 +1135,18 @@ class ChildPart {
   private _commitTemplateResult(
     result: TemplateResult | CompiledTemplateResult
   ): void {
-    const {values, _$litType$} = result;
+    // This property needs to remain unminified.
+    const {values, ['_$litType$']: type} = result;
     // If $litType$ is a number, result is a plain TemplateResult and we get
     // the template from the template cache. If not, result is a
     // CompiledTemplateResult and _$litType$ is a CompiledTemplate and we need
     // to create the <template> element the first time we see it.
     const template: Template | CompiledTemplate =
-      typeof _$litType$ === 'number'
+      typeof type === 'number'
         ? this._$getTemplate(result as TemplateResult)
-        : (_$litType$.el === undefined &&
-            (_$litType$.el = Template.createElement(
-              _$litType$.h,
-              this.options
-            )),
-          _$litType$);
+        : (type.el === undefined &&
+            (type.el = Template.createElement(type.h, this.options)),
+          type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
@@ -1196,17 +1239,58 @@ class ChildPart {
     start: ChildNode | null = wrap(this._$startNode).nextSibling,
     from?: number
   ) {
-    this._$setChildPartConnected?.(false, true, from);
+    this._$notifyConnectionChanged?.(false, true, from);
     while (start && start !== this._$endNode) {
       const n = wrap(start!).nextSibling;
       (wrap(start!) as Element).remove();
       start = n;
     }
   }
+  /**
+   * Implementation of RootPart's `isConnected`. Note that this metod
+   * should only be called on `RootPart`s (the `ChildPart` returned from a
+   * top-level `render()` call). It has no effect on non-root ChildParts.
+   * @param isConnected Whether to set
+   * @internal
+   */
+  setConnected(isConnected: boolean) {
+    if (this._$parent === undefined) {
+      this.__isConnected = isConnected;
+      this._$notifyConnectionChanged?.(isConnected);
+    } else if (DEV_MODE) {
+      throw new Error(
+        'part.setConnected() may only be called on a ' +
+          'RootPart returned from render().'
+      );
+    }
+  }
+}
+
+/**
+ * A top-level `ChildPart` returned from `render` that manages the connected
+ * state of `AsyncDirective`s created throughout the tree below it.
+ */
+export interface RootPart extends ChildPart {
+  /**
+   * Sets the connection state for `AsyncDirective`s contained within this root
+   * ChildPart.
+   *
+   * lit-html does not automatically monitor the connectedness of DOM rendered;
+   * as such, it is the responsibility of the caller to `render` to ensure that
+   * `part.setConnected(false)` is called before the part object is potentially
+   * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
+   * any resources being held. If a RootPart that was prevously
+   * disconnected is subsequently re-connected (and its `AsyncDirective`s should
+   * re-connect), `setConnected(true)` should be called.
+   *
+   * @param isConnected Whether directives within this tree should be connected
+   * or not
+   */
+  setConnected(isConnected: boolean): void;
 }
 
 export type {AttributePart};
-class AttributePart {
+class AttributePart implements Disconnectable {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
@@ -1227,27 +1311,26 @@ class AttributePart {
   /** @internal */
   __directives?: Array<Directive | undefined>;
   /** @internal */
-  _$parent: Disconnectable | undefined;
+  _$parent: Disconnectable;
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   protected _sanitizer: ValueSanitizer | undefined;
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
 
   get tagName() {
     return this.element.tagName;
+  }
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   constructor(
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent: Disconnectable | undefined,
+    parent: Disconnectable,
     options: RenderOptions | undefined
   ) {
     this.element = element;
@@ -1473,7 +1556,7 @@ class EventPart extends AttributePart {
 }
 
 export type {ElementPart};
-class ElementPart {
+class ElementPart implements Disconnectable {
   readonly type = ELEMENT_PART;
 
   /** @internal */
@@ -1483,17 +1566,10 @@ class ElementPart {
   _$committedValue: undefined;
 
   /** @internal */
-  _$parent: Disconnectable | undefined;
+  _$parent!: Disconnectable;
 
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
-
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
 
   options: RenderOptions | undefined;
 
@@ -1504,6 +1580,11 @@ class ElementPart {
   ) {
     this._$parent = parent;
     this.options = options;
+  }
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   _$setValue(value: unknown): void {
@@ -1519,7 +1600,7 @@ class ElementPart {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Σ object containing those members (or
+ * client side code, we export a _$LH object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -1529,7 +1610,7 @@ class ElementPart {
  *
  * @private
  */
-export const _Σ = {
+export const _$LH = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
   _marker: marker,
@@ -1557,4 +1638,4 @@ export const _Σ = {
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.3');
+((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.4');

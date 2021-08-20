@@ -55,3 +55,6 @@ msg('described 0', {desc: 'Description of 0'});
 const urlBase = 'http://example.com/';
 const urlPath = 'foo';
 msg(html`<b>Hello</b>! Click <a href="${urlBase}/${urlPath}">here</a>!`);
+
+// Escaped markup characters should remain escaped
+msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);

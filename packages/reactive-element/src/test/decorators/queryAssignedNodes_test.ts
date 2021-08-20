@@ -13,12 +13,8 @@ import {
 } from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 const flush =
-  extraGlobals.ShadyDOM && extraGlobals.ShadyDOM.flush
-    ? extraGlobals.ShadyDOM.flush
-    : () => {};
+  window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
 
 (canTestReactiveElement ? suite : suite.skip)('@queryAssignedNodes', () => {
   let container: HTMLElement;
@@ -81,6 +77,7 @@ const flush =
     assignedNodesEl!: D;
     assignedNodesEl2!: E;
     assignedNodesEl3!: S;
+    @queryAssignedNodes() missingSlotAssignedNodes!: Node[];
 
     render() {
       return html`
@@ -228,5 +225,9 @@ const flush =
     if (descriptor !== undefined) {
       Object.defineProperty(Element.prototype, 'matches', descriptor);
     }
+  });
+
+  test('always returns an array, even if the slot is not rendered', () => {
+    assert.isArray(el.missingSlotAssignedNodes);
   });
 });

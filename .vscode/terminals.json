@@ -47,7 +47,7 @@
       "name": "TS: ssr",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/labs/ssr",
-      "command": "npm run build:watch",
+      "command": "npm run build:ts:watch",
       "focus": true
     },
     {

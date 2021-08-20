@@ -4,14 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const extraGlobals = window as LitExtraGlobals;
-
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
 export const supportsAdoptingStyleSheets =
   window.ShadowRoot &&
-  (extraGlobals.ShadyCSS === undefined || extraGlobals.ShadyCSS.nativeShadow) &&
+  (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
   'replace' in CSSStyleSheet.prototype;
 
@@ -43,7 +41,8 @@ const styleSheetCache = new Map<string, CSSStyleSheet>();
  * `css` tag and `unsafeCSS()`, CSSResult cannot be constructed directly.
  */
 export class CSSResult {
-  _$cssResult$ = true;
+  // This property needs to remain unminified.
+  ['_$cssResult$'] = true;
   readonly cssText: string;
 
   private constructor(cssText: string, safeToken: symbol) {
@@ -78,7 +77,8 @@ type ConstructableCSSResult = CSSResult & {
 };
 
 const textFromCSSResult = (value: CSSResultGroup | number) => {
-  if ((value as CSSResult)._$cssResult$ === true) {
+  // This property needs to remain unminified.
+  if ((value as CSSResult)['_$cssResult$'] === true) {
     return (value as CSSResult).cssText;
   } else if (typeof value === 'number') {
     return value;

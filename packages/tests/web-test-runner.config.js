@@ -139,11 +139,17 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  return [
-    playwrightLauncher({
-      product: browser,
-    }),
-  ];
+  const config = {
+    product: browser,
+    ...(browser === 'chromium'
+      ? {
+          launchOptions: {
+            args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'],
+          },
+        }
+      : {}),
+  };
+  return [playwrightLauncher(config)];
 }
 
 const browsers = (process.env.BROWSERS || 'preset:local')

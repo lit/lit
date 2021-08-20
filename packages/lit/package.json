@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.0.0-rc.2",
+  "version": "2.0.0-rc.3",
   "publishConfig": {
     "access": "public"
   },
@@ -80,7 +80,7 @@
   "dependencies": {
     "@lit/reactive-element": "^1.0.0-rc.2",
     "lit-element": "^3.0.0-rc.2",
-    "lit-html": "^2.0.0-rc.3"
+    "lit-html": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
@@ -88,7 +88,7 @@
     "@types/mocha": "^8.0.3",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "chokidar-cli": "^2.1.0",
     "downlevel-dts": "^0.6.0",
     "internal-scripts": "^1.0.0",

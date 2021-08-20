@@ -55,7 +55,8 @@ export class UnsafeHTMLDirective extends Directive {
     return (this._templateResult = {
       // Cast to a known set of integers that satisfy ResultType so that we
       // don't have to export ResultType and possibly encourage this pattern.
-      _$litType$: (this.constructor as typeof UnsafeHTMLDirective)
+      // This property needs to remain unminified.
+      ['_$litType$']: (this.constructor as typeof UnsafeHTMLDirective)
         .resultType as 1 | 2,
       strings,
       values: [],

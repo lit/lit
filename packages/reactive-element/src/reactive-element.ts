@@ -42,7 +42,7 @@ if (DEV_MODE) {
 
   // Issue platform support warning.
   if (
-    (window as LitExtraGlobals).ShadyDOM?.inUse &&
+    window.ShadyDOM?.inUse &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any)['reactiveElementPlatformSupport'] === undefined
   ) {
@@ -449,7 +449,7 @@ export abstract class ReactiveElement
    * `getPropertyDescriptor`. To customize the options for a property,
    * implement `createProperty` like this:
    *
-   * ```js
+   * ```ts
    * static createProperty(name, options) {
    *   options = Object.assign(options, {myOption: true});
    *   super.createProperty(name, options);
@@ -492,7 +492,7 @@ export abstract class ReactiveElement
    * If no descriptor is returned, the property will not become an accessor.
    * For example,
    *
-   * ```js
+   * ```ts
    * class MyElement extends LitElement {
    *   static getPropertyDescriptor(name, key, options) {
    *     const defaultDescriptor =
@@ -690,9 +690,6 @@ export abstract class ReactiveElement
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
 
-  private __pendingConnectionPromise: Promise<void> | undefined = undefined;
-  private __enableConnection: (() => void) | undefined = undefined;
-
   /**
    * @category updates
    */
@@ -837,12 +834,6 @@ export abstract class ReactiveElement
     }
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
-    // If we were disconnected, re-enable updating by resolving the pending
-    // connection promise
-    if (this.__enableConnection) {
-      this.__enableConnection();
-      this.__pendingConnectionPromise = this.__enableConnection = undefined;
-    }
   }
 
   /**
@@ -861,9 +852,6 @@ export abstract class ReactiveElement
    */
   disconnectedCallback() {
     this.__controllers?.forEach((c) => c.hostDisconnected?.());
-    this.__pendingConnectionPromise = new Promise(
-      (r) => (this.__enableConnection = r)
-    );
   }
 
   /**
@@ -1012,10 +1000,6 @@ export abstract class ReactiveElement
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
       await this.__updatePromise;
-      // If we were disconnected, wait until re-connected to flush an update
-      while (this.__pendingConnectionPromise) {
-        await this.__pendingConnectionPromise;
-      }
     } catch (e) {
       // Refire any previous errors async so they do not disrupt the update
       // cycle. Errors are refired so developers have a chance to observe
@@ -1303,4 +1287,4 @@ declare global {
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.2');
+((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.3');

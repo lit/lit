@@ -42,6 +42,10 @@
   <source>Hello World</source>
   <target>Hola Mundo</target>
 </trans-unit>
+<trans-unit id="h02c268d9b1fcb031">
+  <source>&lt;Hello<ph id="0">&lt;b></ph>&lt;World &amp; Friends><ph id="1">&lt;/b></ph>!></source>
+  <target>&lt;Hola<ph id="0">&lt;b></ph>&lt;Mundo &amp; Amigos><ph id="1">&lt;/b></ph>!></target>
+</trans-unit>
 </body>
 </file>
 </xliff>
