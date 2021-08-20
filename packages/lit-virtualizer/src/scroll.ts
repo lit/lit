@@ -9,7 +9,7 @@ import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Layout, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
-import { Virtualizer, ScrollToIndexValue, RangeChangedEvent } from './VirtualScroller.js';
+import { Virtualizer, ScrollToIndexValue, RangeChangedEvent } from './Virtualizer.js';
 
 /**
  * Configuration options for the scroll directive.

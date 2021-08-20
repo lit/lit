@@ -1,6 +1,6 @@
 import {html, render} from 'lit';
 import {scroll} from '@lit-labs/virtualizer/scroll.js';
-import {virtualizerRef} from '@lit-labs/virtualizer/VirtualScroller.js';
+import {virtualizerRef} from '@lit-labs/virtualizer/Virtualizer.js';
 import {Layout1dSquareGrid} from '@lit-labs/virtualizer/layouts/Layout1dSquareGrid.js';
 import {Layout1dFlex} from '@lit-labs/virtualizer/layouts/Layout1dFlex.js';
 import {getUrl, getPhotos} from '../../lib/flickr.js';

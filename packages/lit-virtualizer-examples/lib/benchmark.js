@@ -1,4 +1,4 @@
-import { virtualizerRef } from '@lit-labs/virtualizer/VirtualScroller.js';
+import { virtualizerRef } from '@lit-labs/virtualizer/Virtualizer.js';
 
 const targetFPS = 60;
 const t = 1000 / targetFPS;
