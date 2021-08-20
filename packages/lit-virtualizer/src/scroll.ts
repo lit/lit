@@ -9,7 +9,7 @@ import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Layout, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
-import { VirtualScroller, ScrollToIndexValue, RangeChangedEvent } from './VirtualScroller.js';
+import { Virtualizer, ScrollToIndexValue, RangeChangedEvent } from './VirtualScroller.js';
 
 /**
  * Configuration options for the scroll directive.
@@ -43,7 +43,7 @@ interface ScrollConfig {
 /*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
 class ScrollDirective extends AsyncDirective {
-    scroller: VirtualScroller | null = null
+    virtualizer: Virtualizer | null = null
     first = 0
     last = -1
     cachedConfig?: ScrollConfig
@@ -74,8 +74,8 @@ class ScrollDirective extends AsyncDirective {
     update(part: ChildPart, [config]: [ScrollConfig]) {
         this._setFunctions(config);
         this.items = config.items || [];
-        if (this.scroller) {
-            this._updateScrollerConfig(config);
+        if (this.virtualizer) {
+            this._updateVirtualizerConfig(config);
         }
         else {
             if (!this.cachedConfig) {
@@ -87,14 +87,14 @@ class ScrollDirective extends AsyncDirective {
         // super.update(part, [config]);
     }
 
-    _updateScrollerConfig(config: ScrollConfig) {
-        const { scroller } = this;
-        scroller!.items = this.items;
+    _updateVirtualizerConfig(config: ScrollConfig) {
+        const { virtualizer } = this;
+        virtualizer!.items = this.items;
         if (config.layout) {
-            scroller!.layout = config.layout;
+            virtualizer!.layout = config.layout;
         }
         if (config.scrollToIndex) {
-            scroller!.scrollToIndex = config.scrollToIndex;
+            virtualizer!.scrollToIndex = config.scrollToIndex;
         }
     }
 
@@ -113,8 +113,8 @@ class ScrollDirective extends AsyncDirective {
         const hostElement = part.parentNode as HTMLElement;
         if (hostElement && hostElement.nodeType === 1) {
             const { layout, scroll } = config;
-            this.scroller = new VirtualScroller({ hostElement, layout, scroll });
-            this.scroller!.connected();
+            this.virtualizer = new Virtualizer({ hostElement, layout, scroll });
+            this.virtualizer!.connected();
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this.first = e.first;
@@ -129,11 +129,11 @@ class ScrollDirective extends AsyncDirective {
     }
 
     disconnected() {
-        this.scroller?.disconnected();
+        this.virtualizer?.disconnected();
     }
 
     reconnected() {
-        this.scroller?.connected();
+        this.virtualizer?.connected();
     }
 }
 

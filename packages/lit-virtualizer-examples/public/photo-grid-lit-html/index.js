@@ -1,6 +1,6 @@
 import {html, render} from 'lit';
 import {scroll} from '@lit-labs/virtualizer/scroll.js';
-import {scrollerRef} from '@lit-labs/virtualizer/VirtualScroller.js';
+import {virtualizerRef} from '@lit-labs/virtualizer/VirtualScroller.js';
 import {Layout1dSquareGrid} from '@lit-labs/virtualizer/layouts/Layout1dSquareGrid.js';
 import {Layout1dFlex} from '@lit-labs/virtualizer/layouts/Layout1dFlex.js';
 import {getUrl, getPhotos} from '../../lib/flickr.js';
@@ -172,7 +172,7 @@ function itemSizes(items) {
 }
 
 function updateItemSizes(items) {
-    const layout = document.querySelector('.virtualizer')[scrollerRef].layout;
+    const layout = document.querySelector('.virtualizer')[virtualizerRef].layout;
     if (layout && typeof layout.updateItemSizes === 'function') {
        layout.updateItemSizes(itemSizes(items));
     }

@@ -414,7 +414,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     this._scheduleLayoutUpdate();
     // TODO graynorton@: reflowIfNeeded() isn't really supposed
     // to be called internally. Address in larger cleanup
-    // of scroller / layout interaction pattern.
+    // of virtualizer / layout interaction pattern.
     this.reflowIfNeeded(true);
   }
 

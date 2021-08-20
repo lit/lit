@@ -1,10 +1,10 @@
-import { scrollerRef } from '@lit-labs/virtualizer/VirtualScroller.js';
+import { virtualizerRef } from '@lit-labs/virtualizer/VirtualScroller.js';
 
 const targetFPS = 60;
 const t = 1000 / targetFPS;
 
-export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000, delay=1000) {
-    let scroller, target, scrolled, scrollTo, start;
+export function runBenchmark(virtualizerNodeOrQuery, distance=10000, duration=5000, delay=1000) {
+    let virtualizer, scrolled, scrollTo, start;
     let frames = 0;
 
     function onFrame() {
@@ -20,7 +20,7 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
         }
         else {
             const fps = Math.floor(1000 / ((stamp - start) / frames));
-            const { timeElapsed, virtualizationTime } = scroller.stopBenchmarking();
+            const { timeElapsed, virtualizationTime } = virtualizer.stopBenchmarking();
             const normalized = virtualizationTime / timeElapsed * duration;
             console.log(JSON.stringify({
                 fps,
@@ -33,9 +33,9 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
     }
 
     setTimeout(function() {
-        scroller = getScroller(scrollerNodeOrQuery);
+        virtualizer = getVirtualizer(virtualizerNodeOrQuery);
         // TODO (graynorton): support horizontal?
-        const target = scroller.scrollTarget;
+        const target = virtualizer._clippingAncestors[0] || window;
         if (target === window) {
             scrolled = () => target.pageYOffset;
             scrollTo = y => target.scrollTo(0, y);
@@ -43,7 +43,7 @@ export function runBenchmark(scrollerNodeOrQuery, distance=10000, duration=5000,
             scrolled = () => target.scrollTop;
             scrollTo = y => target.scrollTop = y;
         }
-        scroller.startBenchmarking();
+        virtualizer.startBenchmarking();
         setTimeout(onFrame, t);
     }, delay);
 }
@@ -60,32 +60,32 @@ function getSearchParams() {
     return params;
 }
 
-export function runBenchmarkIfRequested(scrollerNodeOrQuery) {
+export function runBenchmarkIfRequested(virtualizerNodeOrQuery) {
     setTimeout(() => {
         const { benchmark, distance, duration, delay } = getSearchParams();
-        registerScroller(scrollerNodeOrQuery);
+        registerVirtualizer(virtualizerNodeOrQuery);
         if (benchmark) {
-            runBenchmark(scrollerNodeOrQuery, distance, duration, delay);
+            runBenchmark(virtualizerNodeOrQuery, distance, duration, delay);
         }    
     }, 0);
 }
 
-function getScroller(nodeOrQuery) {
+function getVirtualizer(nodeOrQuery) {
     const node = nodeOrQuery instanceof HTMLElement
         ? nodeOrQuery
         : document.querySelector(nodeOrQuery);
     if (!node) {
-        throw new Error(`Scroller not found: ${scrollerNodeOrQuery}`);
+        throw new Error(`Virtualizer not found: ${virtualizerNodeOrQuery}`);
     }
-    return node[scrollerRef];
+    return node[virtualizerRef];
 }
 
-export function registerScroller(scrollerNodeOrQuery) {
-    const scroller = getScroller(scrollerNodeOrQuery);
-    if (scroller) {
-        const scrollers = window.scrollers || (window.scrollers = []);
-        if (!scrollers.find(s => s === scroller)) {
-            scrollers.push(scroller);
+export function registerVirtualizer(virtualizerNodeOrQuery) {
+    const virtualizer = getVirtualizer(virtualizerNodeOrQuery);
+    if (virtualizer) {
+        const virtualizers = window.virtualizers || (window.virtualizers = []);
+        if (!virtualizers.find(v => v === virtualizer)) {
+            virtualizers.push(virtualizer);
         }
     }
 }

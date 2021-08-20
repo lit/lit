@@ -7,7 +7,7 @@
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
 
-export const scrollerRef = Symbol('scrollerRef');
+export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
 
 interface InternalRange {
@@ -59,7 +59,7 @@ declare global {
 }
 
 export interface VirtualizerHostElement extends HTMLElement {
-  [scrollerRef]?: VirtualScroller
+  [virtualizerRef]?: Virtualizer
 }
 
 type VerticalScrollSize = {height: number};
@@ -89,7 +89,7 @@ export interface VirtualizerConfig {
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
  */
-export class VirtualScroller {
+export class Virtualizer {
   private _benchmarkStart: number | null = null;
   /**
    * Whether the layout should receive an updated viewport size on the next
@@ -205,13 +205,13 @@ export class VirtualScroller {
 
   constructor(config: VirtualizerConfig) {
     if (!config) {
-      throw new Error('VirtualScroller constructor requires a configuration object');
+      throw new Error('Virtualizer constructor requires a configuration object');
     }
     if (config.hostElement) {
       this._init(config);
     }
     else {
-      throw new Error('VirtualScroller configuration requires the "hostElement" property');
+      throw new Error('Virtualizer configuration requires the "hostElement" property');
     }
   }
 
@@ -243,7 +243,7 @@ export class VirtualScroller {
     const hostElement = (this._hostElement = config.hostElement);
     this._applyVirtualizerStyles();
     this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
-    hostElement[scrollerRef] = this;
+    hostElement[virtualizerRef] = this;
   }
 
   connected() {
@@ -312,7 +312,7 @@ export class VirtualScroller {
   }
 
   // TODO (graynorton): Consider not allowing dynamic layout changes and
-  // instead just creating a new VirtualScroller instance when a layout
+  // instead just creating a new Virtualizer instance when a layout
   // change is desired. Might simplify quite a bit.
   set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
     if (this._layout === layout) {
@@ -430,7 +430,7 @@ export class VirtualScroller {
   }
 
   /**
-   * Index and position of item to scroll to. The scroller will fix to that point
+   * Index and position of item to scroll to. The virtualizer will fix to that point
    * until the user scrolls.
    */
   set scrollToIndex(newValue: ScrollToIndexValue) {
@@ -706,10 +706,10 @@ export class VirtualScroller {
   }
 
   // This is the callback for the ResizeObserver that watches the
-  // scroller's children. We land here at the end of every scroller
+  // virtualizer's children. We land here at the end of every virtualizer
   // update cycle that results in changes to physical items, and we also
   // end up here if one or more children change size independently of
-  // the scroller update cycle.
+  // the virtualizer update cycle.
   private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
     // Only measure if the layout requires it
     if (this._layout!.measureChildren) {

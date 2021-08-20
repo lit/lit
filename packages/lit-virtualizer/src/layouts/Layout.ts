@@ -47,7 +47,7 @@ export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 export type ScrollDirection = 'vertical' | 'horizontal';
 
 /**
- * Interface for layouts consumed by VirtualScroller or VirtualRepeater.
+ * Interface for layouts consumed by Virtualizer.
  */
  export interface Layout {
   config?: object;
@@ -75,12 +75,12 @@ export type ScrollDirection = 'vertical' | 'horizontal';
   scrollToIndex: (index: number, position: string) => void;
 
   /**
-   * Called by a VirtualRepeater or VirtualScroller when an update that
+   * Called by a Virtualizer when an update that
    * potentially affects layout has occurred. For example, a viewport size
    * change.
    *
    * The layout is in turn responsible for dispatching events, as necessary,
-   * to the VirtualRepeater or VirtualScroller. Each of the following events
+   * to the Virtualizer. Each of the following events
    * represents an update that should be determined during a reflow. Dispatch
    * each event at maximum once during a single reflow.
    *

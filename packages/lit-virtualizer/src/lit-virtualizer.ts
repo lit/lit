@@ -9,7 +9,7 @@ import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
 import { state } from 'lit/decorators/state.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { scrollerRef, VirtualizerHostElement, VirtualScroller, RangeChangedEvent } from './VirtualScroller.js';
+import { Virtualizer, VirtualizerHostElement, virtualizerRef, RangeChangedEvent } from './VirtualScroller.js';
 import { LayoutSpecifier, Layout, LayoutConstructor } from './layouts/Layout.js';
 
 
@@ -54,7 +54,7 @@ export class LitVirtualizer extends LitElement {
 
     private _layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
 
-    private _virtualizer?: VirtualScroller;
+    private _virtualizer?: Virtualizer;
   
     @property({attribute:false})
     set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
@@ -65,7 +65,7 @@ export class LitVirtualizer extends LitElement {
     }
 
     get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
-        return (this as VirtualizerHostElement)[scrollerRef]!.layout;
+        return (this as VirtualizerHostElement)[virtualizerRef]!.layout;
     }
 
     /**
@@ -81,7 +81,7 @@ export class LitVirtualizer extends LitElement {
     //     super();
     //     const hostElement = this;
     //     const layout = this._layout;
-    //     this._virtualizer = new VirtualScroller({ hostElement, layout });
+    //     this._virtualizer = new Virtualizer({ hostElement, layout });
     //     hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
     //         e.stopPropagation();
     //         this._first = e.first;
@@ -103,7 +103,7 @@ export class LitVirtualizer extends LitElement {
         // if (!this._virtualizer) {
             const hostElement = this;
             const layout = this._layout;
-            this._virtualizer = new VirtualScroller({ hostElement, layout, scroll: this.scroller });
+            this._virtualizer = new Virtualizer({ hostElement, layout, scroll: this.scroller });
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this._first = e.first;
@@ -134,8 +134,6 @@ export class LitVirtualizer extends LitElement {
             }    
         }
         return repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
-        // const children = repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
-        // return this.scroller ? html`${children}<div virtualizer-sizer></div>` : children;
     }
 }
 
