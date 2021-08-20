@@ -14,6 +14,8 @@ jobs:
         with:
           node-version: 14
 
+      - run: git fetch origin main:main
+
       - run: npm ci
 
       - run: npm run changeset status -- --since=main
