@@ -72,20 +72,6 @@ export class LitVirtualizer extends LitElement {
         this._virtualizer!.scrollToIndex = { index, position };
     }
 
-    // // firstUpdated() {
-    // constructor() {
-    //     super();
-    //     const hostElement = this;
-    //     const layout = this._layout;
-    //     this._virtualizer = new Virtualizer({ hostElement, layout });
-    //     hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
-    //         e.stopPropagation();
-    //         this._first = e.first;
-    //         this._last = e.last;
-    //         render(this.render(), this);
-    //     });
-    // }
-
     updated() {
         if (this._virtualizer) {
             if (this._layout !== undefined) {
@@ -115,6 +101,13 @@ export class LitVirtualizer extends LitElement {
         if (this._virtualizer) {
             this._virtualizer.connected();
         }
+    }
+
+    disconnectedCallback() {
+        if (this._virtualizer) {
+            this._virtualizer.disconnected();
+        }
+        super.disconnectedCallback();
     }
 
     createRenderRoot() {

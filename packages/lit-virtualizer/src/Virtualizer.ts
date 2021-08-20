@@ -138,10 +138,6 @@ export class Virtualizer {
 
   private _sizer: HTMLElement | null = null;
 
-  // private _pendingConnection = false;
-
-  private _stylesheet: HTMLStyleElement | null = null;
-
   /**
    * Resize observer attached to hostElement.
    */
@@ -156,6 +152,9 @@ export class Virtualizer {
   private _mutationPromise: Promise<void> | null = null;
   private _mutationPromiseResolver: Function | null = null;
   private _mutationsObserved = false;
+
+  private _scrollEventListeners: (Element | Window)[] = [];
+  private _scrollEventListenerOptions: AddEventListenerOptions = { passive: true };
 
   // TODO (graynorton): Rethink, per longer comment below
 
@@ -215,11 +214,28 @@ export class Virtualizer {
     }
   }
 
+  set items(items: Array<unknown> | undefined) {
+    if (Array.isArray(items) && items !== this._items) {
+      this._itemsChanged = true;
+      this._items = items;
+      this._schedule(this._updateLayout);
+    }
+  }
+
   _init(config: VirtualizerConfig) {
     this._isScroller  = !!config.scroller;
     this._initHostElement(config);
     this._initLayout(config);
-    this._initResizeObservers();
+  }
+
+  private async _initObservers() {
+    this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
+    const ResizeObserver = await getResizeObserver();
+    this._hostElementRO = new ResizeObserver(
+      () => this._hostElementSizeChanged()
+    );
+    this._childrenRO =
+      new ResizeObserver(this._childrenSizeChanged.bind(this));
   }
 
   async _initLayout(config: VirtualizerConfig) {
@@ -231,34 +247,41 @@ export class Virtualizer {
     }
   }
 
-  set items(items: Array<unknown> | undefined) {
-    if (Array.isArray(items) && items !== this._items) {
-      this._itemsChanged = true;
-      this._items = items;
-      this._schedule(this._updateLayout);
-    }
-  }
-
   _initHostElement(config: VirtualizerConfig) {
     const hostElement = (this._hostElement = config.hostElement);
     this._applyVirtualizerStyles();
-    this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
     hostElement[virtualizerRef] = this;
   }
 
-  connected() {
+  async connected() {
+      await this._initObservers();
       const includeSelf = this._isScroller;
       this._clippingAncestors = getClippingAncestors(this._hostElement!, includeSelf);
       this._schedule(this._updateLayout);
-      this._mutationObserver!.observe(this._hostElement!, { childList: true });
-      this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
-      this._initScrollListeners();
+      this._observeAndListen();
+  }
+
+  _observeAndListen() {
+    this._mutationObserver!.observe(this._hostElement!, { childList: true });
+    this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
+    this._hostElementRO!.observe(this._hostElement!);
+    this._scrollEventListeners.push(window);
+    window.addEventListener('scroll', this, this._scrollEventListenerOptions);
+    this._clippingAncestors.forEach(ancestor => {
+      ancestor.addEventListener('scroll', this, this._scrollEventListenerOptions)
+      this._scrollEventListeners.push(ancestor);
+      this._hostElementRO!.observe(ancestor);
+    });
+    this._scrollEventListeners.forEach(target => target.addEventListener('scroll', this, this._scrollEventListenerOptions));
   }
 
   disconnected() {
+    this._scrollEventListeners.forEach((target) => target.removeEventListener('scroll', this, this._scrollEventListenerOptions));
+    this._scrollEventListeners = [];
     this._clippingAncestors = [];
     this._mutationObserver!.disconnect();
-    this._stylesheet?.parentNode?.removeChild(this._stylesheet);
+    this._hostElementRO!.disconnect();
+    this._childrenRO!.disconnect();
   }
 
   private _applyVirtualizerStyles() {
@@ -424,11 +447,6 @@ export class Virtualizer {
     return Object.assign({width, height}, getMargins(element));
   }
 
-  _initScrollListeners() {
-    window.addEventListener('scroll', this, {passive: true});
-    this._clippingAncestors.forEach(ancestor => ancestor.addEventListener('scroll', this, {passive: true}));
-  }
-
   /**
    * Index and position of item to scroll to. The virtualizer will fix to that point
    * until the user scrolls.
@@ -532,17 +550,6 @@ export class Virtualizer {
         break;
       default:
         console.warn('event not handled', event);
-    }
-  }
-
-  private async _initResizeObservers() {
-    if (this._hostElementRO === null) {
-      const ResizeObserver = await getResizeObserver();
-      this._hostElementRO = new ResizeObserver(
-        () => this._hostElementSizeChanged()
-      );
-      this._childrenRO =
-        new ResizeObserver(this._childrenSizeChanged.bind(this));
     }
   }
 
