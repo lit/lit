@@ -1026,8 +1026,8 @@ export abstract class ReactiveElement
    *
    * For instance, to schedule updates to occur just before the next frame:
    *
-   * ```js
-   * protected async performUpdate(): Promise<unknown> {
+   * ```ts
+   * override protected async performUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
    *   super.performUpdate();
    * }
@@ -1165,9 +1165,9 @@ export abstract class ReactiveElement
    * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
    * This method should be overridden instead. For example:
    *
-   * ```js
+   * ```ts
    * class MyElement extends LitElement {
-   *   async getUpdateComplete() {
+   *   override async getUpdateComplete() {
    *     const result = await super.getUpdateComplete();
    *     await this._myChild.updateComplete;
    *     return result;
