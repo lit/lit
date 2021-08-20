@@ -28,6 +28,7 @@
   },
   "files": [
     "/development/",
+    "!/development/test/",
     "/directives/",
     "/index.{d.ts,d.ts.map,js,js.map}"
   ],

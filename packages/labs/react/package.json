@@ -24,6 +24,7 @@
   },
   "files": [
     "/development/",
+    "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/create-component.{d.ts,d.ts.map,js,js.map}",
     "/use-controller.{d.ts,d.ts.map,js,js.map}"
