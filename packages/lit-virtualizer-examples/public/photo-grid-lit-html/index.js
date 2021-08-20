@@ -79,11 +79,10 @@ function renderExample() {
     .sheet {width: 0; border-right: 1px solid #DDD; transition: width 0.25s ease-out;}
     .controls {display: flex; flex-direction: column; width: 256px; transform: translateX(-256px); transition: transform 0.25s ease-out;}
     .controls > * {display: block; margin: 8px;}
-    .scroller {height: unset; flex: 1;}
+    .virtualizer {flex: 1;}
+    .virtualizer > * {transition: all 0.25s;}
     .open .controls {transform: translateX(0);}
     .open .sheet {width: 256px;}
-    .scroller { overflow: auto; contain: strict; }
-    .virtualizer > * {transition: all 0.25s;}
     .box {background: #DDD;}
     .sheet {font-family: Roboto, sans-serif; font-size: 0.75rem; font-weight: 400; color: rgba(0, 0, 0, 0.6);}
     mwc-formfield {display: block;}
@@ -128,28 +127,26 @@ function renderExample() {
                 </details>
             </div>
         </div>
-        <div class="scroller">
-            <div class="virtualizer"
-                @rangeChanged=${(e) => {
-                    if (showRange) {
-                        const {first, last} = e;
-                        setState({first, last});
-                    }
-                }}
-                @visibilityChanged=${(e) => {
-                    if (showRange) {
-                        const {first, last} = e;
-                        setState({firstVisible: first, lastVisible: last});
-                    }
-                }}
-            >
-                ${scroll({items, renderItem, layout: {
-                    type: Layout,
-                    idealSize,
-                    spacing,
-                    direction
-                }})}
-            </div>
+        <div class="virtualizer"
+            @rangeChanged=${(e) => {
+                if (showRange) {
+                    const {first, last} = e;
+                    setState({first, last});
+                }
+            }}
+            @visibilityChanged=${(e) => {
+                if (showRange) {
+                    const {first, last} = e;
+                    setState({firstVisible: first, lastVisible: last});
+                }
+            }}
+        >
+            ${scroll({items, renderItem, scroll: true, layout: {
+                type: Layout,
+                idealSize,
+                spacing,
+                direction
+            }})}
         </div>
     </div>
 </div>

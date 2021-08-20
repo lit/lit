@@ -15,8 +15,7 @@ const example = (contacts) => html`
         ${scroll({
             items: contacts,
             renderItem: ({ mediumText, index }) =>
-                html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`,
-            useShadowDOM: true
+                html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`
         })}
     </section>
 `;

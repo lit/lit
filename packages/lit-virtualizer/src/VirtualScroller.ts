@@ -8,6 +8,7 @@ import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
 
 export const scrollerRef = Symbol('scrollerRef');
+const SIZER_ATTRIBUTE = 'virtualizer-sizer';
 
 interface InternalRange {
   first: number;
@@ -77,9 +78,11 @@ export interface VirtualizerConfig {
    */
   hostElement: VirtualizerHostElement;
 
-  containerElement?: HTMLElement;
+  scroll?: boolean
 
-  mutationObserverTarget?: HTMLElement;
+  // containerElement?: HTMLElement;
+
+  // mutationObserverTarget?: HTMLElement;
 }
 
 /**
@@ -138,6 +141,10 @@ export class VirtualScroller {
   protected _containerElement?: HTMLElement;
 
   protected _mutationObserverTarget?: HTMLElement;
+
+  private _scroll = false;
+
+  private _sizer: HTMLElement | null = null;
 
   // private _pendingConnection = false;
 
@@ -217,6 +224,7 @@ export class VirtualScroller {
   }
 
   _init(config: VirtualizerConfig) {
+    this._scroll  = !!config.scroll;
     this._initHostElement(config);
     this._initLayout(config);
     this._initResizeObservers();
@@ -241,7 +249,8 @@ export class VirtualScroller {
 
   _initHostElement(config: VirtualizerConfig) {
     const hostElement = (this._hostElement = config.hostElement);
-    hostElement.setAttribute(HOST_ATTRIBUTE, '');
+    // hostElement.setAttribute(HOST_ATTRIBUTE, '');
+    this._applyVirtualizerStyles();
     this._containerElement = hostElement;
     this._mutationObserverTarget = hostElement;
     this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
@@ -249,11 +258,12 @@ export class VirtualScroller {
   }
 
   connected() {
-      this._clippingAncestors = getClippingAncestors(this._containerElement!);
+      const includeSelf = this._scroll;
+      this._clippingAncestors = getClippingAncestors(this._containerElement!, includeSelf);
       this._schedule(this._updateLayout);
       this._mutationObserver!.observe(this._mutationObserverTarget!, { childList: true });
       this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
-      this._applyVirtualizerStyles();
+      // this._applyVirtualizerStyles();
       this._initScrollListeners();
   }
 
@@ -265,17 +275,46 @@ export class VirtualScroller {
 
   private _applyVirtualizerStyles() {
     const hostElement = this._hostElement!;
-    if (nativeShadowDOM) {
-      const root = getAncestorShadowRoot(hostElement);
-      if (root) {
-        if (!this._stylesheet) {
-          this._stylesheet = createStylesheet();
-        }
-        root.appendChild(this._stylesheet);
-        return;
-      }
+    // Would rather set these CSS properties on the host using Shadow Root
+    // style scoping (and falling back to a global stylesheet where native
+    // Shadow DOM is not available), but this Mobile Safari bug is preventing
+    // that from working: https://bugs.webkit.org/show_bug.cgi?id=226195
+    const style = hostElement.style as CSSStyleDeclaration & { contain: string };
+    style.display = style.display || 'block';
+    style.position = style.position || 'relative';
+    style.contain = style.contain || 'strict';
+
+    if (this._scroll) {
+      style.overflow = style.overflow || 'auto';
+      style.minHeight = style.minHeight || '150px';
     }
-    attachGlobalStylesheet();
+  }
+
+  _getSizer() {
+    const hostElement = this._hostElement!;
+    if (!this._sizer) {
+      // Use a pre-existing sizer element if provided (for better integration
+      // with vDOM renderers)
+      let sizer = hostElement.querySelector('[virtualizer-sizer]') as HTMLElement;
+      if (!sizer) {
+        sizer = document.createElement('div');
+        sizer.setAttribute('virtualizer-sizer', '');
+        hostElement.appendChild(sizer);
+      }
+      // When the scrollHeight is large, the height of this element might be
+      // ignored. Setting content and font-size ensures the element has a size.
+      Object.assign(sizer.style, {
+        position: 'absolute',
+        margin: '-2px 0 0 0',
+        padding: 0,
+        visibility: 'hidden',
+        fontSize: '2px',
+      });
+      sizer.innerHTML = '&nbsp;';
+      sizer.setAttribute(SIZER_ATTRIBUTE, '');
+      this._sizer = sizer;
+    }
+    return this._sizer;
   }
 
   // This will always actually return a layout instance,
@@ -523,7 +562,9 @@ export class VirtualScroller {
     const arr = [];
     let next = this._hostElement!.firstElementChild as HTMLElement;
     while (next) {
-      arr.push(next);
+      if (!next.hasAttribute(SIZER_ATTRIBUTE)) {
+        arr.push(next);
+      }
       next = next.nextElementSibling as HTMLElement;
     }
     return arr;
@@ -549,8 +590,8 @@ export class VirtualScroller {
       bottom = Math.min(bottom, ancestorBounds.bottom);
       right = Math.min(right, ancestorBounds.right);
     }
-    scrollTop = top - containerElementBounds.top;
-    scrollLeft = left - containerElementBounds.left;
+    scrollTop = top - containerElementBounds.top + containerElement.scrollTop;
+    scrollLeft = left - containerElementBounds.left + containerElement.scrollLeft;
     
     const height = Math.max(1, bottom - top);
     const width = Math.max(1, right - left);
@@ -570,9 +611,15 @@ export class VirtualScroller {
     const max = 8850000;
     const h = size && (size as HorizontalScrollSize).width ? Math.min(max, (size as HorizontalScrollSize).width) : 0;
     const v = size && (size as VerticalScrollSize).height ? Math.min(max, (size as VerticalScrollSize).height) : 0;
-    const style = this._containerElement!.style;
-    (style.minWidth as string | null) = h ? `${h}px` : '100%';
-    (style.minHeight as string | null) = v ? `${v}px` : '100%';
+
+    if (this._scroll) {
+      this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+    }
+    else {
+      const style = this._containerElement!.style;
+      (style.minWidth as string | null) = h ? `${h}px` : '100%';
+      (style.minHeight as string | null) = v ? `${v}px` : '100%';  
+    }
   }
 
   /**
@@ -718,9 +765,9 @@ function getParentElement(el: Element) {
   return null;
 }
 
-function getElementAncestors(el: Element) {
+function getElementAncestors(el: Element, includeSelf=false) {
   const ancestors = [];
-  let parent = getParentElement(el);
+  let parent = includeSelf ? el : getParentElement(el);
   while(parent !== null) {
     ancestors.push(parent);
     parent = getParentElement(parent);
@@ -728,62 +775,69 @@ function getElementAncestors(el: Element) {
   return ancestors;
 }
 
-function getClippingAncestors(el: Element) {
-  return getElementAncestors(el)
+function getClippingAncestors(el: Element, includeSelf=false) {
+  return getElementAncestors(el, includeSelf)
     .filter(a => getComputedStyle(a).overflow !== 'visible');
 }
 
-function getAncestorShadowRoot(el: Element) {
-  let parentNode = el.parentNode;
-  while(parentNode !== null) {
-    if (
-      parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-      && (parentNode as ShadowRoot).host
-    ) {
-      return parentNode;
-    }
-    parentNode = parentNode.parentNode;
-  }
-  return null;
-}
+// function getAncestorShadowRoot(el: Element) {
+//   let parentNode = el.parentNode;
+//   while(parentNode !== null) {
+//     if (
+//       parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+//       && (parentNode as ShadowRoot).host
+//     ) {
+//       return parentNode;
+//     }
+//     parentNode = parentNode.parentNode;
+//   }
+//   return null;
+// }
 
 ///
 
-// TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
-declare global {
-  interface Window {
-      ShadyDOM?: any;
-  }
-}
-let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
+// // TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
+// declare global {
+//   interface Window {
+//       ShadyDOM?: any;
+//   }
+// }
+// let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
 
-const HOST_ATTRIBUTE = 'virtualizer-host';
-let globalStylesheet: HTMLStyleElement | null = null;
+// const HOST_ATTRIBUTE = 'virtualizer-host';
+// let globalStylesheet: HTMLStyleElement | null = null;
 
-function virtualizerStyles(hostSel: string, childSel: string): string {
-  return `
-    ${hostSel} {
-      display: block;
-      contain: strict;
-      position: relative;
-    }
-    ${childSel} {
-      position: absolute;
-      box-sizing: border-box;
-    }`;
-}
+// function virtualizerStyles(hostSel: string, childSel: string): string {
+//   return `
+//     ${hostSel} {
+//       display: block;
+//       contain: strict;
+//       position: relative;
+//       min-height: 150px;
+//       overflow: auto;
+//     }
+//     ${childSel} {
+//       position: absolute;
+//       box-sizing: border-box;
+//     }
+//     ${hostSel}:not([scroller] > ${hostSel}) {
+//       min-height: unset;
+//       overflow: unset;
+//     }
+//     `;
+// }
 
-function createStylesheet() {
-  const sheet = document.createElement('style');
-  sheet.textContent = virtualizerStyles(
-    `[${HOST_ATTRIBUTE}]`,
-    `[${HOST_ATTRIBUTE}] > *`
-  );
-  return sheet;
-}
+// function createStylesheet() {
+//   const sheet = document.createElement('style');
+//   sheet.textContent = virtualizerStyles(
+//     `[${HOST_ATTRIBUTE}]`,
+//     `[${HOST_ATTRIBUTE}] > *`
+//   );
+//   return sheet;
+// }
 
-function attachGlobalStylesheet() {
-  if (!globalStylesheet) {
-    document.head.appendChild((globalStylesheet = createStylesheet()));
-  }
-}
+// function attachGlobalStylesheet() {
+//   if (!globalStylesheet) {
+//     document.head.appendChild((globalStylesheet = createStylesheet()));
+//   }
+// }

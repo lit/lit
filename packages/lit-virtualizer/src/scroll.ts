@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { TemplateResult, noChange, ChildPart, html, render } from 'lit';
+import { TemplateResult, /*noChange, */ChildPart, html, noChange } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -22,6 +22,8 @@ interface ScrollConfig {
     renderItem?: (item: any, index: number) => TemplateResult;
 
     keyFunction?: (item: any) => unknown;
+
+    scroll?: boolean;
 
     // TODO (graynorton): Document...
     layout?: Layout | LayoutConstructor | LayoutSpecifier;
@@ -82,6 +84,7 @@ class ScrollDirective extends AsyncDirective {
             this.cachedConfig = config;
         }
         return noChange;
+        // super.update(part, [config]);
     }
 
     _updateScrollerConfig(config: ScrollConfig) {
@@ -93,7 +96,6 @@ class ScrollDirective extends AsyncDirective {
         if (config.scrollToIndex) {
             scroller!.scrollToIndex = config.scrollToIndex;
         }
-        // this._setFunctions(config);
     }
 
     private _setFunctions(config: ScrollConfig) {
@@ -110,22 +112,14 @@ class ScrollDirective extends AsyncDirective {
         const config = this.cachedConfig!;
         const hostElement = part.parentNode as HTMLElement;
         if (hostElement && hostElement.nodeType === 1) {
-            // let containerElement, mutationObserverTarget;
-            // if (hostElement.shadowRoot) {
-            //     containerElement = hostElement.shadowRoot.querySelector('[lit-virtualizer-container]') as HTMLElement || undefined;
-            //     if (containerElement) {
-            //         mutationObserverTarget = '__shady' in hostElement.shadowRoot ? containerElement : hostElement;
-            //     }
-            // }
-            const layout = config.layout;
-            this.scroller = new VirtualScroller({ hostElement, /*containerElement, mutationObserverTarget,*/ layout });
-            // setTimeout(() => this.scroller!.connected());
+            const { layout, scroll } = config;
+            this.scroller = new VirtualScroller({ hostElement, layout, scroll });
             this.scroller!.connected();
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this.first = e.first;
                 this.last = e.last;
-                render(this.render(), hostElement);
+                this.setValue(this.render());
             });
             this.update(part, [config]);
         }

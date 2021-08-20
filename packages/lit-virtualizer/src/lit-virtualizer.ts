@@ -99,20 +99,26 @@ export class LitVirtualizer extends LitElement {
         }
     }
 
-    connectedCallback() {
-        super.connectedCallback();
-        if (!this._virtualizer) {
+    firstUpdated() {
+        // if (!this._virtualizer) {
             const hostElement = this;
             const layout = this._layout;
-            this._virtualizer = new VirtualScroller({ hostElement, layout });
+            this._virtualizer = new VirtualScroller({ hostElement, layout, scroll: this.scroller });
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this._first = e.first;
                 this._last = e.last;
                 render(this.render(), this);
             });    
-        }
+        // }
         this._virtualizer!.connected();
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        if (this._virtualizer) {
+            this._virtualizer.connected();
+        }
     }
 
     createRenderRoot() {
@@ -127,7 +133,8 @@ export class LitVirtualizer extends LitElement {
                 itemsToRender.push(items[i]);
             }    
         }
-        return repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
+        const children = repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
+        return this.scroller ? html`${children}<div virtualizer-sizer></div>` : children;
     }
 }
 
