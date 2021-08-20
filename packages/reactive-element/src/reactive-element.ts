@@ -1025,8 +1025,8 @@ export abstract class ReactiveElement
    *
    * For instance, to schedule updates to occur just before the next frame:
    *
-   * ```js
-   * protected async performUpdate(): Promise<unknown> {
+   * ```ts
+   * override protected async performUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
    *   super.performUpdate();
    * }
@@ -1147,7 +1147,7 @@ export abstract class ReactiveElement
    * before fulfilling this Promise. To do this, first await
    * `super.getUpdateComplete()`, then any subsequent state.
    *
-   * @return A promise of a boolean that indicates if the update resolved
+   * @return A promise of a boolean that resolves to true if the update completed
    *     without triggering another update.
    * @category updates
    */
@@ -1164,14 +1164,18 @@ export abstract class ReactiveElement
    * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
    * This method should be overridden instead. For example:
    *
-   * ```js
+   * ```ts
    * class MyElement extends LitElement {
-   *   async getUpdateComplete() {
-   *     await super.getUpdateComplete();
+   *   override async getUpdateComplete() {
+   *     const result = await super.getUpdateComplete();
    *     await this._myChild.updateComplete;
+   *     return result;
    *   }
    * }
    * ```
+   *
+   * @return A promise of a boolean that resolves to true if the update completed
+   *     without triggering another update.
    * @category updates
    */
   protected getUpdateComplete(): Promise<boolean> {
@@ -1280,4 +1284,4 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
-(globalThis.reactiveElementVersions ??= []).push('1.0.0-rc.2');
+(globalThis.reactiveElementVersions ??= []).push('1.0.0-rc.3');

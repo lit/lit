@@ -62,4 +62,10 @@ import {assert} from '@esm-bundle/chai';
       Array.from(el.renderRoot.querySelectorAll('span'))
     );
   });
+
+  test('returns empty array when no match and accessed before first update', () => {
+    const notYetUpdatedEl = new C();
+    assert.lengthOf(notYetUpdatedEl.spans, 0);
+    assert.deepEqual(Array.from(notYetUpdatedEl.spans), []);
+  });
 });
