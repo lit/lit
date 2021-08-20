@@ -141,7 +141,7 @@ function renderExample() {
                 }
             }}
         >
-            ${virtualize({items, renderItem, scroll: true, layout: {
+            ${virtualize({items, renderItem, scroller: true, layout: {
                 type: Layout,
                 idealSize,
                 spacing,

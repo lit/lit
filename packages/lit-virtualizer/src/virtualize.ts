@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { TemplateResult, /*noChange, */ChildPart, html, noChange } from 'lit';
+import { TemplateResult, ChildPart, html, noChange } from 'lit';
 import { directive, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -14,7 +14,7 @@ import { Virtualizer, ScrollToIndexValue, RangeChangedEvent } from './Virtualize
 /**
  * Configuration options for the virtualize directive.
  */
-interface VirtualizeConfig {
+interface VirtualizeDirectiveConfig {
     /**
      * A function that returns a lit-html TemplateResult. It will be used
      * to generate the DOM for each item in the virtual list.
@@ -23,7 +23,7 @@ interface VirtualizeConfig {
 
     keyFunction?: (item: any) => unknown;
 
-    scroll?: boolean;
+    scroller?: boolean;
 
     // TODO (graynorton): Document...
     layout?: Layout | LayoutConstructor | LayoutSpecifier;
@@ -46,7 +46,7 @@ class VirtualizeDirective extends AsyncDirective {
     virtualizer: Virtualizer | null = null
     first = 0
     last = -1
-    cachedConfig?: VirtualizeConfig
+    cachedConfig?: VirtualizeDirectiveConfig
     renderItem: (item: any, index: number) => TemplateResult = defaultRenderItem;
     keyFunction: (item: any) => unknown = defaultKeyFunction;
     items: Array<unknown> = []
@@ -58,7 +58,7 @@ class VirtualizeDirective extends AsyncDirective {
         }
     }
 
-    render(config?: VirtualizeConfig) {
+    render(config?: VirtualizeDirectiveConfig) {
         if (config) {
             this._setFunctions(config);
         }
@@ -71,7 +71,7 @@ class VirtualizeDirective extends AsyncDirective {
         return repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem);
     }
 
-    update(part: ChildPart, [config]: [VirtualizeConfig]) {
+    update(part: ChildPart, [config]: [VirtualizeDirectiveConfig]) {
         this._setFunctions(config);
         this.items = config.items || [];
         if (this.virtualizer) {
@@ -87,7 +87,7 @@ class VirtualizeDirective extends AsyncDirective {
         // super.update(part, [config]);
     }
 
-    _updateVirtualizerConfig(config: VirtualizeConfig) {
+    _updateVirtualizerConfig(config: VirtualizeDirectiveConfig) {
         const { virtualizer } = this;
         virtualizer!.items = this.items;
         if (config.layout) {
@@ -98,7 +98,7 @@ class VirtualizeDirective extends AsyncDirective {
         }
     }
 
-    private _setFunctions(config: VirtualizeConfig) {
+    private _setFunctions(config: VirtualizeDirectiveConfig) {
         const { renderItem, keyFunction } = config;
         if (renderItem) {
             this.renderItem = (item, idx) => renderItem(item, idx + this.first);
@@ -112,8 +112,8 @@ class VirtualizeDirective extends AsyncDirective {
         const config = this.cachedConfig!;
         const hostElement = part.parentNode as HTMLElement;
         if (hostElement && hostElement.nodeType === 1) {
-            const { layout, scroll } = config;
-            this.virtualizer = new Virtualizer({ hostElement, layout, scroll });
+            const { layout, scroller } = config;
+            this.virtualizer = new Virtualizer({ hostElement, layout, scroller });
             this.virtualizer!.connected();
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();

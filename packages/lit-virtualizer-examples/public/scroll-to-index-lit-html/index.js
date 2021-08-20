@@ -5,7 +5,7 @@ import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
 const example = (contacts, scrollToIndex = null) => html`
     ${virtualize({
-        scroll: true,
+        scroller: true,
         items: contacts,
         renderItem: ({ longText, index }) => html`<p>${index}) ${longText}</p>`,
         scrollToIndex: scrollToIndex

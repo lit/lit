@@ -99,7 +99,7 @@ export class LitVirtualizer extends LitElement {
         // if (!this._virtualizer) {
             const hostElement = this;
             const layout = this._layout;
-            this._virtualizer = new Virtualizer({ hostElement, layout, scroll: this.scroller });
+            this._virtualizer = new Virtualizer({ hostElement, layout, scroller: this.scroller });
             hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
                 e.stopPropagation();
                 this._first = e.first;

@@ -78,7 +78,7 @@ export interface VirtualizerConfig {
    */
   hostElement: VirtualizerHostElement;
 
-  scroll?: boolean
+  scroller?: boolean
 }
 
 /**
@@ -111,7 +111,7 @@ export class Virtualizer {
    * Difference between scroll target's current and required scroll offsets.
    * Provided by layout.
    */
-  private _scrollErr: {left: number, top: number} | null = null;
+  private _scrollError: {left: number, top: number} | null = null;
 
   /**
    * A list of the positions (top, left) of the children in the current range.
@@ -134,7 +134,7 @@ export class Virtualizer {
    */
   protected _hostElement?: VirtualizerHostElement;
 
-  private _scroll = false;
+  private _isScroller = false;
 
   private _sizer: HTMLElement | null = null;
 
@@ -216,7 +216,7 @@ export class Virtualizer {
   }
 
   _init(config: VirtualizerConfig) {
-    this._scroll  = !!config.scroll;
+    this._isScroller  = !!config.scroller;
     this._initHostElement(config);
     this._initLayout(config);
     this._initResizeObservers();
@@ -247,7 +247,7 @@ export class Virtualizer {
   }
 
   connected() {
-      const includeSelf = this._scroll;
+      const includeSelf = this._isScroller;
       this._clippingAncestors = getClippingAncestors(this._hostElement!, includeSelf);
       this._schedule(this._updateLayout);
       this._mutationObserver!.observe(this._hostElement!, { childList: true });
@@ -272,7 +272,7 @@ export class Virtualizer {
     style.position = style.position || 'relative';
     style.contain = style.contain || 'strict';
 
-    if (this._scroll) {
+    if (this._isScroller) {
       style.overflow = style.overflow || 'auto';
       style.minHeight = style.minHeight || '150px';
     }
@@ -460,9 +460,9 @@ export class Virtualizer {
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._positionChildren(this._childrenPos!);
     this._sizeHostElement(this._scrollSize);
-    if (this._scrollErr) {
-      this._correctScrollError(this._scrollErr);
-      this._scrollErr = null;
+    if (this._scrollError) {
+      this._correctScrollError(this._scrollError);
+      this._scrollError = null;
     }
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
@@ -519,7 +519,7 @@ export class Virtualizer {
         this._schedule(this._updateDOM);
         break;
       case 'scrollerrorchange':
-        this._scrollErr = event.detail;
+        this._scrollError = event.detail;
         this._schedule(this._updateDOM);
         break;
       case 'itempositionchange':
@@ -601,7 +601,7 @@ export class Virtualizer {
     const h = size && (size as HorizontalScrollSize).width ? Math.min(max, (size as HorizontalScrollSize).width) : 0;
     const v = size && (size as VerticalScrollSize).height ? Math.min(max, (size as VerticalScrollSize).height) : 0;
 
-    if (this._scroll) {
+    if (this._isScroller) {
       this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
     }
     else {
