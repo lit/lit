@@ -133,8 +133,9 @@ export class LitVirtualizer extends LitElement {
                 itemsToRender.push(items[i]);
             }    
         }
-        const children = repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
-        return this.scroller ? html`${children}<div virtualizer-sizer></div>` : children;
+        return repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
+        // const children = repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
+        // return this.scroller ? html`${children}<div virtualizer-sizer></div>` : children;
     }
 }
 

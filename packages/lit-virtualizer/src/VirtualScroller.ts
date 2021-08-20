@@ -79,10 +79,6 @@ export interface VirtualizerConfig {
   hostElement: VirtualizerHostElement;
 
   scroll?: boolean
-
-  // containerElement?: HTMLElement;
-
-  // mutationObserverTarget?: HTMLElement;
 }
 
 /**
@@ -137,10 +133,6 @@ export class VirtualScroller {
    * The HTMLElement that hosts the virtualizer. Set by hostElement.
    */
   protected _hostElement?: VirtualizerHostElement;
-
-  protected _containerElement?: HTMLElement;
-
-  protected _mutationObserverTarget?: HTMLElement;
 
   private _scroll = false;
 
@@ -249,21 +241,17 @@ export class VirtualScroller {
 
   _initHostElement(config: VirtualizerConfig) {
     const hostElement = (this._hostElement = config.hostElement);
-    // hostElement.setAttribute(HOST_ATTRIBUTE, '');
     this._applyVirtualizerStyles();
-    this._containerElement = hostElement;
-    this._mutationObserverTarget = hostElement;
     this._mutationObserver = new MutationObserver(this._observeMutations.bind(this));
     hostElement[scrollerRef] = this;
   }
 
   connected() {
       const includeSelf = this._scroll;
-      this._clippingAncestors = getClippingAncestors(this._containerElement!, includeSelf);
+      this._clippingAncestors = getClippingAncestors(this._hostElement!, includeSelf);
       this._schedule(this._updateLayout);
-      this._mutationObserver!.observe(this._mutationObserverTarget!, { childList: true });
+      this._mutationObserver!.observe(this._hostElement!, { childList: true });
       this._mutationPromise = new Promise(resolve => this._mutationPromiseResolver = resolve);
-      // this._applyVirtualizerStyles();
       this._initScrollListeners();
   }
 
@@ -295,10 +283,10 @@ export class VirtualScroller {
     if (!this._sizer) {
       // Use a pre-existing sizer element if provided (for better integration
       // with vDOM renderers)
-      let sizer = hostElement.querySelector('[virtualizer-sizer]') as HTMLElement;
+      let sizer = hostElement.querySelector(`[${SIZER_ATTRIBUTE}]`) as HTMLElement;
       if (!sizer) {
         sizer = document.createElement('div');
-        sizer.setAttribute('virtualizer-sizer', '');
+        sizer.setAttribute(SIZER_ATTRIBUTE, '');
         hostElement.appendChild(sizer);
       }
       // When the scrollHeight is large, the height of this element might be
@@ -364,7 +352,7 @@ export class VirtualScroller {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
-      this._sizeContainer(undefined);
+      this._sizeHostElement(undefined);
       this._hostElement!.removeEventListener('load', this._loadListener, true);
     }
 
@@ -471,7 +459,7 @@ export class VirtualScroller {
     }
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._positionChildren(this._childrenPos!);
-    this._sizeContainer(this._scrollSize);
+    this._sizeHostElement(this._scrollSize);
     if (this._scrollErr) {
       this._correctScrollError(this._scrollErr);
       this._scrollErr = null;
@@ -571,12 +559,12 @@ export class VirtualScroller {
   }
 
   private _updateView() {
-    const containerElement = this._containerElement!;
+    const hostElement = this._hostElement!;
     const layout = this._layout!;
 
     let top, left, bottom, right, scrollTop, scrollLeft;
 
-    const containerElementBounds = containerElement.getBoundingClientRect();
+    const hostElementBounds = hostElement.getBoundingClientRect();
 
     top = 0
     left = 0;
@@ -590,8 +578,9 @@ export class VirtualScroller {
       bottom = Math.min(bottom, ancestorBounds.bottom);
       right = Math.min(right, ancestorBounds.right);
     }
-    scrollTop = top - containerElementBounds.top + containerElement.scrollTop;
-    scrollLeft = left - containerElementBounds.left + containerElement.scrollLeft;
+
+    scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
+    scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
     
     const height = Math.max(1, bottom - top);
     const width = Math.max(1, right - left);
@@ -601,14 +590,14 @@ export class VirtualScroller {
   }
 
   /**
-   * Styles the container so that its size reflects the
+   * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeContainer(size?: ScrollSize | null) {
-    // Some browsers seem to crap out if the container gets larger than
+  private _sizeHostElement(size?: ScrollSize | null) {
+    // Some browsers seem to crap out if the host element gets larger than
     // a certain size, so we clamp it here (this value based on ad hoc
-    // testing in Firefox)
-    const max = 8850000;
+    // testing in Chrome / Safari / Firefox Mac)
+    const max = 8200000;
     const h = size && (size as HorizontalScrollSize).width ? Math.min(max, (size as HorizontalScrollSize).width) : 0;
     const v = size && (size as VerticalScrollSize).height ? Math.min(max, (size as VerticalScrollSize).height) : 0;
 
@@ -616,7 +605,7 @@ export class VirtualScroller {
       this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
     }
     else {
-      const style = this._containerElement!.style;
+      const style = this._hostElement!.style;
       (style.minWidth as string | null) = h ? `${h}px` : '100%';
       (style.minHeight as string | null) = v ? `${v}px` : '100%';  
     }
@@ -779,65 +768,3 @@ function getClippingAncestors(el: Element, includeSelf=false) {
   return getElementAncestors(el, includeSelf)
     .filter(a => getComputedStyle(a).overflow !== 'visible');
 }
-
-// function getAncestorShadowRoot(el: Element) {
-//   let parentNode = el.parentNode;
-//   while(parentNode !== null) {
-//     if (
-//       parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-//       && (parentNode as ShadowRoot).host
-//     ) {
-//       return parentNode;
-//     }
-//     parentNode = parentNode.parentNode;
-//   }
-//   return null;
-// }
-
-///
-
-// // TODO (graynorton): Make a better test that doesn't know anything about ShadyDOM?
-// declare global {
-//   interface Window {
-//       ShadyDOM?: any;
-//   }
-// }
-// let nativeShadowDOM = 'attachShadow' in Element.prototype && (!('ShadyDOM' in window) || !window['ShadyDOM'].inUse);
-
-// const HOST_ATTRIBUTE = 'virtualizer-host';
-// let globalStylesheet: HTMLStyleElement | null = null;
-
-// function virtualizerStyles(hostSel: string, childSel: string): string {
-//   return `
-//     ${hostSel} {
-//       display: block;
-//       contain: strict;
-//       position: relative;
-//       min-height: 150px;
-//       overflow: auto;
-//     }
-//     ${childSel} {
-//       position: absolute;
-//       box-sizing: border-box;
-//     }
-//     ${hostSel}:not([scroller] > ${hostSel}) {
-//       min-height: unset;
-//       overflow: unset;
-//     }
-//     `;
-// }
-
-// function createStylesheet() {
-//   const sheet = document.createElement('style');
-//   sheet.textContent = virtualizerStyles(
-//     `[${HOST_ATTRIBUTE}]`,
-//     `[${HOST_ATTRIBUTE}] > *`
-//   );
-//   return sheet;
-// }
-
-// function attachGlobalStylesheet() {
-//   if (!globalStylesheet) {
-//     document.head.appendChild((globalStylesheet = createStylesheet()));
-//   }
-// }
