@@ -12,9 +12,9 @@ import { Layout, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js'
 import { Virtualizer, ScrollToIndexValue, RangeChangedEvent } from './Virtualizer.js';
 
 /**
- * Configuration options for the scroll directive.
+ * Configuration options for the virtualize directive.
  */
-interface ScrollConfig {
+interface VirtualizeConfig {
     /**
      * A function that returns a lit-html TemplateResult. It will be used
      * to generate the DOM for each item in the virtual list.
@@ -42,11 +42,11 @@ interface ScrollConfig {
 /*export */const defaultKeyFunction = (item: any) => item;
 /*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
 
-class ScrollDirective extends AsyncDirective {
+class VirtualizeDirective extends AsyncDirective {
     virtualizer: Virtualizer | null = null
     first = 0
     last = -1
-    cachedConfig?: ScrollConfig
+    cachedConfig?: VirtualizeConfig
     renderItem: (item: any, index: number) => TemplateResult = defaultRenderItem;
     keyFunction: (item: any) => unknown = defaultKeyFunction;
     items: Array<unknown> = []
@@ -54,11 +54,11 @@ class ScrollDirective extends AsyncDirective {
     constructor(part: PartInfo) {
         super(part);
         if (part.type !== PartType.CHILD) {
-            throw new Error('The scroll directive can only be used in child expressions');
+            throw new Error('The virtualize directive can only be used in child expressions');
         }
     }
 
-    render(config?: ScrollConfig) {
+    render(config?: VirtualizeConfig) {
         if (config) {
             this._setFunctions(config);
         }
@@ -71,7 +71,7 @@ class ScrollDirective extends AsyncDirective {
         return repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem);
     }
 
-    update(part: ChildPart, [config]: [ScrollConfig]) {
+    update(part: ChildPart, [config]: [VirtualizeConfig]) {
         this._setFunctions(config);
         this.items = config.items || [];
         if (this.virtualizer) {
@@ -87,7 +87,7 @@ class ScrollDirective extends AsyncDirective {
         // super.update(part, [config]);
     }
 
-    _updateVirtualizerConfig(config: ScrollConfig) {
+    _updateVirtualizerConfig(config: VirtualizeConfig) {
         const { virtualizer } = this;
         virtualizer!.items = this.items;
         if (config.layout) {
@@ -98,7 +98,7 @@ class ScrollDirective extends AsyncDirective {
         }
     }
 
-    private _setFunctions(config: ScrollConfig) {
+    private _setFunctions(config: VirtualizeConfig) {
         const { renderItem, keyFunction } = config;
         if (renderItem) {
             this.renderItem = (item, idx) => renderItem(item, idx + this.first);
@@ -137,4 +137,4 @@ class ScrollDirective extends AsyncDirective {
     }
 }
 
-export const scroll = directive(ScrollDirective);
+export const virtualize = directive(VirtualizeDirective);

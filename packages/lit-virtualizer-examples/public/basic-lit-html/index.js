@@ -1,13 +1,12 @@
 import { render, html } from 'lit';
-import { scroll } from '@lit-labs/virtualizer/scroll.js';
+import { virtualize } from '@lit-labs/virtualizer/virtualize.js';
 
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
 const example = (contacts) => html`
-        ${scroll({
+        ${virtualize({
             items: contacts,
-            renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
-            scrollTarget: window
+            renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`
         })}
 `;
 

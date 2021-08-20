@@ -2,7 +2,7 @@
 <body>
 <div></div>
 <script type="module">
-  import {scroll, FlowLayout} from '../../lit-virtualizer';
+  import {virtualize, FlowLayout} from '../../lit-virtualizer';
   import {render, html} from 'lit-html';
 
   let arr = [];
@@ -10,10 +10,9 @@
 
   const example = html`
       <section>
-          ${scroll({
+          ${virtualize({
               items: arr,
               renderItem: (num) => html`<p>${num}</p>`,
-              scrollTarget: window,
               layout: FlowLayout
           })}
       </section>

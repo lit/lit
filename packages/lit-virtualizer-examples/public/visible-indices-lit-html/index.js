@@ -1,5 +1,5 @@
 import { render, html } from 'lit';
-import { scroll } from '@lit-labs/virtualizer/scroll.js';
+import { virtualize } from '@lit-labs/virtualizer/virtualize.js';
 
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
@@ -12,7 +12,7 @@ const handleVisibilityChange = (e) => {
 
 const example = (contacts) => html`
     <section @visibilityChanged=${handleVisibilityChange}>
-        ${scroll({
+        ${virtualize({
             items: contacts,
             renderItem: ({ mediumText, index }) =>
                 html`<div style="border-top: 3px solid blue; border-bottom: 3px dashed red; width: 100%;">${index}) ${mediumText}</div>`

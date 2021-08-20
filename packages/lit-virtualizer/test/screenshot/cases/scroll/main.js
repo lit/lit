@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { scroll } from '../../../../lit-virtualizer.js'
+import { virtualize } from '../../../../lit-virtualizer.js'
 import { html, render } from 'lit-html';
 
 (async function go() {
@@ -15,7 +15,7 @@ import { html, render } from 'lit-html';
   const position = urlParams.get('position') || undefined;
 
   const virtualized = html`<div id="main">
-    ${scroll({
+    ${virtualize({
       items: contacts,
       renderItem: ({ mediumText }, i) => html`<p>${i}) ${mediumText}</p>`,
       scrollToIndex: { index, position },

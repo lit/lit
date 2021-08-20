@@ -18,11 +18,7 @@ const defaultKeyFunction = (item: any) => item;
 const defaultRenderItem: RenderItemFunction = (item: any, idx: number) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
 
 /**
- * A LitElement wrapper of the scroll directive.
- *
  * Import this module to declare the lit-virtualizer custom element.
- * Pass an items array, renderItem method, and scroll target as properties
- * to the <lit-virtualizer> element.
  */
 @customElement('lit-virtualizer')
 export class LitVirtualizer extends LitElement {

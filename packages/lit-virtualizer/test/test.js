@@ -5,7 +5,7 @@
  */
 
 import { LitVirtualizer } from '../lit-virtualizer.js';
-import { scroll } from '../scroll.js'
+import { virtualize } from '../scroll.js'
 import { flow } from '../layouts/FlowLayout.js'
 import { html, render } from 'lit'
 
@@ -16,7 +16,7 @@ describe('<lit-virtualizer>', function () {
   });
 });
 
-describe('scroll', function () {
+describe('virtualize', function () {
   let container;
 
   beforeEach(function() {
@@ -32,7 +32,7 @@ describe('scroll', function () {
 
   it('uses the provided method to render items', async function () {
     const example = html`
-      ${scroll({
+      ${virtualize({
         items: ['foo', 'bar', 'baz'],
         renderItem: (item) => html`<p>${item}</p>`,
         layout: flow(),
@@ -94,7 +94,7 @@ describe('scroll', function () {
 
   describe('visible indices', function() {
     it('emits visibilityChanged events with the proper indices', async function() {
-      const directive = scroll({
+      const directive = virtualize({
         items: ['foo', 'bar', 'baz', 'qux'],
         renderItem: (item) => html`<div style='height: 50px'>${item}</div>`,
         layout: flow()
