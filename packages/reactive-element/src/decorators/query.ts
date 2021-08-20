@@ -61,13 +61,11 @@ export function query(selector: string, cache?: boolean) {
           ) {
             (this as unknown as {[key: string]: Element | null})[
               key as string
-            ] = this.renderRoot?.querySelector(selector);
+            ] = this.renderRoot?.querySelector(selector) ?? null;
           }
-          return (
-            (this as unknown as {[key: string]: Element | null})[
-              key as string
-            ] ?? null
-          );
+          return (this as unknown as {[key: string]: Element | null})[
+            key as string
+          ];
         };
       }
       return descriptor;
