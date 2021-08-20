@@ -1164,7 +1164,7 @@ export abstract class ReactiveElement
    * before fulfilling this Promise. To do this, first await
    * `super.getUpdateComplete()`, then any subsequent state.
    *
-   * @return A promise of a boolean that indicates if the update resolved
+   * @return A promise of a boolean that resolves to true if the update resolved
    *     without triggering another update.
    * @category updates
    */
@@ -1191,6 +1191,8 @@ export abstract class ReactiveElement
    * }
    * ```
    *
+   * @return A promise of a boolean that resolves to true if the update resolved
+   *     without triggering another update.
    * @category updates
    */
   protected getUpdateComplete(): Promise<boolean> {
