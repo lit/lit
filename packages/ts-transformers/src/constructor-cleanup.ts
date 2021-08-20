@@ -67,7 +67,7 @@ const cleanupClassConstructor = (
   // Otherwise, the constructor has been repositioned. Whenever TypeScript
   // touches the constructor, it moves it to the very top of the class,
   // regardless of its original source order. Let's move it somewhere more sane.
-  let newConstructorIdx;
+  let newCtorIdx;
 
   // When TypeScript synthesizes a constructor from scratch, it gives it the
   // position of its class.
@@ -75,10 +75,10 @@ const cleanupClassConstructor = (
 
   if (hasOriginalSourcePosition) {
     // The constructor existed in the original source. Move it back.
-    newConstructorIdx = class_.members.length - 1;
+    newCtorIdx = class_.members.length - 1;
     for (let i = 0; i < class_.members.length; i++) {
       if (ctor.pos < class_.members[i].pos) {
-        newConstructorIdx = i - 1;
+        newCtorIdx = i - 1;
         break;
       }
     }
@@ -86,18 +86,18 @@ const cleanupClassConstructor = (
     // The constructor was fully synthesized, so it has no original source
     // position. Move it just below the final static member, since that's a more
     // common style.
-    newConstructorIdx = 0;
+    newCtorIdx = 0;
     for (let i = class_.members.length - 1; i >= 0; i--) {
       const isStatic =
         class_.members[i].modifiers?.find(
           (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
         ) !== undefined;
       if (isStatic) {
-        newConstructorIdx = i;
+        newCtorIdx = i;
         break;
       }
     }
-    if (newConstructorIdx > 0) {
+    if (newCtorIdx > 0) {
       // Also add a blank line placeholder comment.
       ts.addSyntheticLeadingComment(
         ctor,
@@ -108,13 +108,13 @@ const cleanupClassConstructor = (
     }
   }
 
-  if (newConstructorIdx === ctorIdx) {
+  if (newCtorIdx === ctorIdx) {
     return class_;
   }
 
   const newMembers = [...class_.members];
   newMembers.splice(ctorIdx, 1);
-  newMembers.splice(newConstructorIdx, 0, ctor);
+  newMembers.splice(newCtorIdx, 0, ctor);
 
   const newClass = context.factory.createClassDeclaration(
     class_.decorators,

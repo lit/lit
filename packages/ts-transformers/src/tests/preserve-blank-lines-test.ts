@@ -77,6 +77,36 @@ test('no blank lines', () => {
   checkTransform(input, expected);
 });
 
+test('blank line before code', () => {
+  const input = `
+
+    const foo = 0;
+  `;
+  const expected = `
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+    const foo = 0;
+  `;
+  checkTransform(input, expected);
+});
+
+test('comment and blank line before code', () => {
+  const input = `
+    /**
+     * @license Foo
+     */
+
+    const foo = 0;
+  `;
+  const expected = `
+    /**
+     * @license Foo
+     */
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+    const foo = 0;
+  `;
+  checkTransform(input, expected);
+});
+
 test('blank line after imports', () => {
   const input = `
   import 'foo';
@@ -103,7 +133,7 @@ test('blank line between methods', () => {
   const input = `
     class Foo {
       foo() {}
-      
+
       bar() {}
     }
   `;
@@ -121,7 +151,7 @@ test('multiple blank lines between methods', () => {
   const input = `
     class Foo {
       foo() {}
-      
+
 
       bar() {}
     }
@@ -243,6 +273,84 @@ test('blank line and comment before return statement', () => {
       // Comment
       return "Hello";
     }`;
+  checkTransform(input, expected);
+});
+
+// TODO(aomarks) The following tests are failing because it does not seem
+// possible to manipulate comments trailing at the end of the file. They are
+// associated with the EndOfFileToken node, but modifying that node has no
+// effect.
+
+test.skip('only blank lines', () => {
+  const input = `
+
+  `;
+  const expected = `
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  `;
+  checkTransform(input, expected);
+});
+
+test.skip('only comments and blank lines', () => {
+  const input = `
+
+  // Comment 1
+
+  /* Comment 2 */
+
+  `;
+  const expected = `
+  //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  // Comment 1
+  //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  /* Comment 2 */
+  //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  `;
+  checkTransform(input, expected);
+});
+
+test.skip('interlaced comments and blank lines before code', () => {
+  const input = `
+
+    /**
+     * @license Foo
+     */
+
+    // Another comment
+
+    const foo = 0;
+  `;
+  const expected = `
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+    /**
+     * @license Foo
+     */
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+    // Another comment
+    //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+    const foo = 0;
+  `;
+  checkTransform(input, expected);
+});
+
+test.skip('blank lines and comments after code', () => {
+  const input = `
+  const foo = 0;
+
+  // Comment 1
+
+  /* Comment 2 */
+
+  `;
+  const expected = `
+  const foo = 0;
+  //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  // Comment 1
+  //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  /* Comment 2 */
+  //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+  `;
   checkTransform(input, expected);
 });
 

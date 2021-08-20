@@ -65,7 +65,12 @@ export default function preserveBlankLinesTransformer(): ts.TransformerFactory<t
       if (!sourceFileText) {
         return file;
       }
-      const transformer = new PreserveBlankLinesTransformer(sourceFileText);
+      // SourceFile > SyntaxList > first child
+      const firstChild = file.getChildAt(0).getChildAt(0);
+      const transformer = new PreserveBlankLinesTransformer(
+        sourceFileText,
+        firstChild
+      );
       const visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
         transformer.addComments(node);
         return ts.visitEachChild(node, visit, context);
@@ -82,14 +87,23 @@ const BLANK_LINE = Symbol();
  */
 class PreserveBlankLinesTransformer {
   private readonly _sourceFileText: string;
+  private readonly _firstChild: ts.Node;
   private readonly _handledTriviaRanges = new Set<string>();
   private readonly _deletedTriviaRanges = new Set<string>();
 
-  constructor(sourceFileText: string) {
+  constructor(sourceFileText: string, firstChild: ts.Node) {
     this._sourceFileText = sourceFileText;
+    this._firstChild = firstChild;
   }
 
   addComments(node: ts.Node): void {
+    if (ts.isSourceFile(node)) {
+      // Source files get the same trivia as the first child, but it is not
+      // possible to remove existing trivia nor add synthetic comments to a
+      // source file (it has no effect). Skip it so that we handle leading
+      // trivia from the first child instead.
+      return;
+    }
     if (ts.isPropertyDeclaration(node)) {
       // Skip property declarations because TypeScript moves them to the
       // constructor, where preceding blank lines look odd.
@@ -119,20 +133,30 @@ class PreserveBlankLinesTransformer {
     const existingComments =
       ts.getLeadingCommentRanges(this._sourceFileText, node.getFullStart()) ??
       [];
-    let anyBlankLinesAdded = false;
+    let anyBlankLinesToAdd = false;
+    let anyExistingCommentsToResynthesize = false;
 
     // Each of the existing comments.
     let previousRegionEnd = node.getFullStart();
     for (const comment of existingComments) {
-      const leadingWhitespace = this._sourceFileText.slice(
-        previousRegionEnd,
-        comment.pos
-      );
-      for (let i = 0; i < countBlankLines(leadingWhitespace); i++) {
-        newComments.push(BLANK_LINE);
-        anyBlankLinesAdded = true;
+      if (node !== this._firstChild) {
+        const leadingWhitespace = this._sourceFileText.slice(
+          previousRegionEnd,
+          comment.pos
+        );
+        for (let i = 0; i < countBlankLines(leadingWhitespace); i++) {
+          newComments.push(BLANK_LINE);
+          anyBlankLinesToAdd = true;
+        }
+        newComments.push(comment);
+        anyExistingCommentsToResynthesize = true;
       }
-      newComments.push(comment);
+      // If this is the first child node, we are restricted in what we can do,
+      // because the source file node has the same trivia as the first child,
+      // and there is no way to prevent it from being emitted (the
+      // `deleteTrivaRange` trick doesn't work). This means we can't preserve
+      // blank lines before or between leading comments at start of the file --
+      // but we can at least preserve blank lines after those leading comments.
       previousRegionEnd = comment.end;
     }
 
@@ -145,21 +169,21 @@ class PreserveBlankLinesTransformer {
       );
       for (let i = 0; i < countBlankLines(postCommentText); i++) {
         newComments.push(BLANK_LINE);
-        anyBlankLinesAdded = true;
+        anyBlankLinesToAdd = true;
       }
     }
 
-    if (!anyBlankLinesAdded) {
+    if (!anyBlankLinesToAdd) {
       return;
     }
 
     // The TypeScript APIs around manipulating comments are a bit crude.
     // Original source comments are represented differently to "synthetic"
-    // comments (ones created during a transform) .We don't have the ability to
+    // comments (ones created during a transform). We don't have the ability to
     // insert a comment before or between existing source comments, so we
     // instead delete all of the source trivia, and then reconstruct all of the
     // original comments + new blank line comments as synthetic comments.
-    if (existingComments.length > 0) {
+    if (anyExistingCommentsToResynthesize) {
       deleteTriviaRange(node);
       this._deletedTriviaRanges.add(triviaRangeKey);
     }
