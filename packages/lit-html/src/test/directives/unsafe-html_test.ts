@@ -5,7 +5,7 @@
  */
 
 import {unsafeHTML} from '../../directives/unsafe-html.js';
-import {render, html} from '../../lit-html.js';
+import {render, html, nothing, noChange} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -24,6 +24,22 @@ suite('unsafeHTML directive', () => {
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<div>before<span>inner</span>after</div>'
+    );
+  });
+
+  test('renders nothing', () => {
+    render(html`<div>before${unsafeHTML(nothing)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
+    );
+  });
+
+  test('renders noChange', () => {
+    render(html`<div>before${unsafeHTML(noChange)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
     );
   });
 
