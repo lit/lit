@@ -1360,10 +1360,11 @@ suite('lit-html', () => {
       const text = container.querySelector('div')!;
       assert.equal(text.textContent, 'aaa');
 
-      // Set textContent manually. Since lit-html doesn't dirty check against
-      // actual DOM, but again previous part values, this modification should
-      // persist through the next render with the same value.
-      text.textContent = 'bbb';
+      // Set textContent manually (without disturbing the part marker node).
+      // Since lit-html doesn't dirty check against actual DOM, but again
+      // previous part values, this modification should persist through the
+      // next render with the same value.
+      text.lastChild!.textContent = 'bbb';
       assert.equal(text.textContent, 'bbb');
       assertContent('<div>bbb</div>');
 

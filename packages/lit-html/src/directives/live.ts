@@ -83,7 +83,7 @@ class LiveDirective extends Directive {
  * value with the bound value no matter what--use the `live()` directive:
  *
  * ```js
- *     html`<input .value=${live(x)}>`
+ * html`<input .value=${live(x)}>`
  * ```
  *
  * `live()` performs a strict equality check agains the live DOM value, and if
