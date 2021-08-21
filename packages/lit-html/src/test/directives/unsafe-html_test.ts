@@ -43,6 +43,22 @@ suite('unsafeHTML directive', () => {
     );
   });
 
+  test('renders undefined', () => {
+    render(html`<div>before${unsafeHTML(undefined)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
+    );
+  });
+
+  test('renders null', () => {
+    render(html`<div>before${unsafeHTML(null)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
+    );
+  });
+
   test('dirty checks primitive values', () => {
     const value = 'aaa';
     const t = () => html`<div>${unsafeHTML(value)}</div>`;

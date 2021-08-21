@@ -49,6 +49,22 @@ suite('unsafeSVG', () => {
     );
   });
 
+  test('renders undefined', () => {
+    render(html`<svg>before${unsafeSVG(undefined)}after</svg>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>beforeafter</svg>'
+    );
+  });
+
+  test('renders null', () => {
+    render(html`<svg>before${unsafeSVG(null)}after</svg>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>beforeafter</svg>'
+    );
+  });
+
   test('dirty checks primitive values', () => {
     const value = 'aaa';
     const t = () => html`<svg>${unsafeSVG(value)}</svg>`;

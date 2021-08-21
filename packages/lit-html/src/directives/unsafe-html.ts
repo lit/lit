@@ -27,8 +27,8 @@ export class UnsafeHTMLDirective extends Directive {
     }
   }
 
-  render(value: string | typeof nothing | typeof noChange) {
-    if (value === nothing) {
+  render(value: string | typeof nothing | typeof noChange | undefined | null) {
+    if (value === nothing || value == null) {
       this._templateResult = undefined;
       return (this._value = value);
     }
