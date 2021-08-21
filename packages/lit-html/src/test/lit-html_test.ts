@@ -47,7 +47,6 @@ const DEV_MODE = render.setSanitizer != null;
  */
 const INTERNAL = litHtmlLib.INTERNAL === true;
 
-
 class FireEventDirective extends Directive {
   render() {
     return nothing;
