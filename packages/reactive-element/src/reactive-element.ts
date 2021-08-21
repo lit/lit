@@ -1054,7 +1054,6 @@ export abstract class ReactiveElement
           }
         );
         if (shadowedProperties.length) {
-          // TODO(sorvell): Link to docs explanation of this issue.
           console.warn(
             `The following properties will not trigger updates as expected ` +
               `because they are set using class fields: ` +
@@ -1063,7 +1062,10 @@ export abstract class ReactiveElement
               `accessors used for detecting changes. To fix this issue, ` +
               `either initialize properties in the constructor or adjust ` +
               `your compiler settings; for example, for TypeScript set ` +
-              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.`
+              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.` +
+              `See https://lit.dev/docs/components/properties/#declare and ` +
+              `https://lit.dev/docs/components/decorators/` +
+              `#avoiding-issues-with-class-fields for more information.`
           );
         }
       }

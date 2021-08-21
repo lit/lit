@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {css, html as htmlWithStyles, LitElement} from '../lit-element.js';
+import {html as staticHtml, unsafeStatic} from 'lit-html/static.js';
 
 import {
   canTestLitElement,
@@ -334,19 +335,17 @@ import {assert} from '@esm-bundle/chai';
       }
     });
 
-    // TODO(sorvell): Bindings in styles are no longer supported.
-    // This will be supported via static bindings only.
-    test.skip('properties in styles render with initial value and cannot be changed', async () => {
+    test('static properties in styles render with initial value and cannot be changed', async () => {
       let border = `6px solid blue`;
       const name = generateElementName();
       customElements.define(
         name,
         class extends LitElement {
           render() {
-            return htmlWithStyles`
+            return staticHtml`
           <style>
             div {
-              border: ${border};
+              border: ${unsafeStatic(border)};
             }
           </style>
           <div>Testing...</div>`;
@@ -356,7 +355,7 @@ import {assert} from '@esm-bundle/chai';
       const el = document.createElement(name) as LitElement;
       container.appendChild(el);
       await el.updateComplete;
-      const div = el.shadowRoot!.querySelector('div');
+      let div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '6px'
@@ -364,6 +363,7 @@ import {assert} from '@esm-bundle/chai';
       border = `4px solid orange`;
       el.requestUpdate();
       await el.updateComplete;
+      div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '6px'
