@@ -1,5 +1,7 @@
 # lit-html 2.0 Release Candidate
 
+Test should cause changeset error
+
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
 [![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
