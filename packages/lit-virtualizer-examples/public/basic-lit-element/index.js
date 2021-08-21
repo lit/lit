@@ -108,4 +108,6 @@ class ContactList extends LitElement {
     }
 }
 
+window.html = html;
+
 customElements.define('contact-list', ContactList);

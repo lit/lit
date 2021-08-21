@@ -2,7 +2,7 @@ import { LitElement, html, css } from "lit";
 // import { classMap } from 'lit/directives/class-map.js';
 import '@lit-labs/virtualizer';
 // import { flow } from '@lit-labs/virtualizer/layouts/FlowLayout.js';
-// import { scrollerRef } from '@lit-labs/virtualizer/VirtualScroller.js';
+import { virtualizerRef } from '@lit-labs/virtualizer/Virtualizer.js';
 // import { getPhotos, getUrl } from "../../lib/flickr";
 import { runBenchmarkIfRequested } from '../../lib/benchmark.js';
 
@@ -37,8 +37,8 @@ export class MyExample extends LitElement {
         this.renderItem = this.renderItem.bind(this);
     }
 
-    get scroller() {
-        return this.shadowRoot.querySelector('lit-virtualizer')[scrollerRef];
+    get virtualizer() {
+        return this.shadowRoot.querySelector('lit-virtualizer')[virtualizerRef];
     }
 
     render() {
@@ -46,7 +46,6 @@ export class MyExample extends LitElement {
             <lit-virtualizer
                 .items=${this.data}
                 .renderItem=${this.renderItem}
-                .scrollTarget=${this}
             ></lit-virtualizer>
         `;
     }

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { html, LitElement, TemplateResult, render } from 'lit';
+import { html, LitElement, TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators/custom-element.js';
 import { property } from 'lit/decorators/property.js';
 import { state } from 'lit/decorators/state.js';
@@ -23,14 +23,17 @@ const defaultRenderItem: RenderItemFunction = (item: any, idx: number) => html`$
 @customElement('lit-virtualizer')
 export class LitVirtualizer extends LitElement {
     private _renderItem: RenderItemFunction = (item, idx) => defaultRenderItem(item, idx + this._first);
+    private _providedRenderItem: RenderItemFunction = defaultRenderItem;
 
     set renderItem(fn: RenderItemFunction) {
+        this._providedRenderItem = fn;
         this._renderItem = (item, idx) => fn(item, idx + this._first);
+        this.requestUpdate();
     }
 
     @property()
     get renderItem() {
-        return this._renderItem;
+        return this._providedRenderItem;
     }
 
     @property({attribute: false})
@@ -82,17 +85,14 @@ export class LitVirtualizer extends LitElement {
     }
 
     firstUpdated() {
-        // if (!this._virtualizer) {
-            const hostElement = this;
-            const layout = this._layout;
-            this._virtualizer = new Virtualizer({ hostElement, layout, scroller: this.scroller });
-            hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
-                e.stopPropagation();
-                this._first = e.first;
-                this._last = e.last;
-                render(this.render(), this);
-            });    
-        // }
+        const hostElement = this;
+        const layout = this._layout;
+        this._virtualizer = new Virtualizer({ hostElement, layout, scroller: this.scroller });
+        hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+            e.stopPropagation();
+            this._first = e.first;
+            this._last = e.last;
+        });    
         this._virtualizer!.connected();
     }
 
@@ -115,14 +115,14 @@ export class LitVirtualizer extends LitElement {
     }
 
     render(): TemplateResult {
-        const { items, renderItem, keyFunction } = this;
+        const { items, _renderItem, keyFunction } = this;
         const itemsToRender = [];
         if (this._first >= 0 && this._last >= this._first) {
             for (let i = this._first; i < this._last + 1; i++) {
                 itemsToRender.push(items[i]);
             }    
         }
-        return repeat(itemsToRender, keyFunction || defaultKeyFunction, renderItem) as TemplateResult;
+        return repeat(itemsToRender, keyFunction || defaultKeyFunction, _renderItem) as TemplateResult;
     }
 }
 
