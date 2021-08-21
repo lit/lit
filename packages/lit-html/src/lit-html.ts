@@ -241,10 +241,6 @@ const COMMENT_PART = 7;
 export type TemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
   ['_$litType$']: T;
-  // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
-  // semi-public API though. We can't just let Terser rename them for us,
-  // because we need TemplateResults to work between compatible versions of
-  // lit-html.
   strings: TemplateStringsArray;
   values: unknown[];
 };
@@ -706,7 +702,8 @@ class Template {
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             // We can't use empty text nodes as markers because they're
-            // normalized in some browsers (TODO: check)
+            // normalized when cloning in IE (could simplify when
+            // IE is no longer supported)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
@@ -728,8 +725,6 @@ class Template {
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
             // Comment node has a binding marker inside, make an inactive part
             // The binding won't work, but subsequent bindings will
-            // TODO (justinfagnani): consider whether it's even worth it to
-            // make bindings in comments work
             parts.push({type: COMMENT_PART, index: nodeIndex});
             // Move to the end of the match
             i += marker.length - 1;
@@ -1551,8 +1546,6 @@ class EventPart extends AttributePart {
 
   handleEvent(event: Event) {
     if (typeof this._$committedValue === 'function') {
-      // TODO (justinfagnani): do we need to default to this.element?
-      // It'll always be the same as `e.currentTarget`.
       this._$committedValue.call(this.options?.host ?? this.element, event);
     } else {
       (this._$committedValue as EventListenerObject).handleEvent(event);

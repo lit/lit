@@ -243,7 +243,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
   });
 
   test('exceptions in `render` throw but do not prevent further updates', async () => {
-    // TODO(sorvell): console errors produced by wtr and upset it.
+    // console errors produced by wtr upset it, so no-op console.error
     const consoleError = console.error;
     console.error = () => {};
     let shouldThrow = false;
@@ -277,7 +277,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     assert.equal(a.shadowRoot!.textContent, '5');
     shouldThrow = false;
     a.foo = 20;
-    // TODO(sorvell): Make sure to wait beyond error timing or wtr is sad.
+    // Make sure to wait beyond error timing or wtr is sad.
     await new Promise((r) => setTimeout(r));
     assert.equal(a.foo, 20);
     assert.equal(a.shadowRoot!.textContent, '20');
