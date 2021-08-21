@@ -43,19 +43,17 @@ if (DEV_MODE) {
       }
     });
 
-    // TODO(sorvell): To enable these, need to either configure the test
-    // environment before loading any code or tweak the code to make the
-    // console output detectable
-    // under testing.
-    suite.skip('Initial warnings', () => {
-      test('warns for dev mode', async () => {
-        assert.include(warnings[0], 'Do not use in production!');
+    suite('Initial warnings', () => {
+      test('warns for dev mode', () => {
+        assert.isTrue((globalThis as any)['litIssuedWarnings'].has('DEV_MODE'));
       });
 
       (missingPlatformSupport ? test : test.skip)(
         'warns for missing polyfill-support',
-        async () => {
-          assert.include(warnings[1], 'polyfill-support');
+        () => {
+          assert.isTrue(
+            (globalThis as any)['litIssuedWarnings'].has('POLYFILL_SUPPORT')
+          );
         }
       );
     });
@@ -67,6 +65,7 @@ if (DEV_MODE) {
       customElements.define(generateElementName(), A);
       new A();
       assert.equal(warnings.length, 1);
+      assert.include(warnings[0], A.name);
       assert.include(warnings[0], 'initialize');
     });
 
@@ -79,6 +78,21 @@ if (DEV_MODE) {
       new A();
       new A();
       assert.equal(warnings.length, 1);
+      assert.include(warnings[0], A.name);
+      assert.include(warnings[0], 'initialize');
+    });
+
+    test('warns once per implementation (does not spam)', () => {
+      class A extends ReactiveElement {
+        initialize() {}
+      }
+      customElements.define(generateElementName(), A);
+      class B extends A {}
+      customElements.define(generateElementName(), B);
+      new A();
+      new B();
+      assert.equal(warnings.length, 1);
+      assert.include(warnings[0], A.name);
       assert.include(warnings[0], 'initialize');
     });
 
@@ -123,6 +137,11 @@ if (DEV_MODE) {
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'fooProp, barProp');
       assert.include(warnings[0], 'class field');
+      // warns once, does not spam.
+      const b = new A();
+      container.appendChild(b);
+      await b.updateComplete;
+      assert.equal(warnings.length, 1);
     });
 
     test('warns when awaiting `requestUpdate`', async () => {
@@ -134,6 +153,9 @@ if (DEV_MODE) {
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'requestUpdate');
       assert.include(warnings[0], 'Promise');
+      // warns once, does not spam.
+      await a.requestUpdate();
+      assert.equal(warnings.length, 1);
     });
 
     suite('conditional warnings', () => {
@@ -152,6 +174,10 @@ if (DEV_MODE) {
         await a.updateComplete;
         assert.equal(warnings.length, 1);
         assert.include(warnings[0], 'undefined');
+        // warns once, does not spam
+        a.foo = 'more';
+        await a.updateComplete;
+        assert.equal(warnings.length, 1);
       });
 
       test('warns when update triggers another update if element', async () => {
@@ -173,14 +199,15 @@ if (DEV_MODE) {
         a.requestUpdate();
         await a.updateComplete;
         assert.equal(warnings.length, 1);
+        assert.include(warnings[0], a.localName);
         assert.include(warnings[0], 'update');
-        assert.include(warnings[0], 'requested');
+        assert.include(warnings[0], 'scheduled');
         warnings = [];
         a.requestUpdate();
         await a.updateComplete;
         assert.equal(warnings.length, 0);
+        // warns once, does not spam
         a.shouldUpdateAgain = true;
-        A.disableWarning?.('change-in-update');
         a.requestUpdate();
         await a.updateComplete;
         assert.equal(warnings.length, 0);

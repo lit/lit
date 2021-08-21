@@ -19,7 +19,11 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 export const INTERNAL = true;
 
 if (DEV_MODE) {
-  console.warn('lit-html is in dev mode. Not recommended for production!');
+  console.warn(
+    `lit-html is in dev mode. Not recommended for production! See ` +
+      `https://lit.dev/docs/tools/development/` +
+      `#development-and-production-builds for more information.`
+  );
 }
 
 const wrap =

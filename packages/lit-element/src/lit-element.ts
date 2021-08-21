@@ -57,6 +57,28 @@ export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
+let issueWarning: (warning: string, key?: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litIssuedWarnings'] ??
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((globalThis as any)['litIssuedWarnings'] = new Set());
+
+  // Issue a warning, de-duped by the given key.
+  issueWarning = (warning: string, key?: string) => {
+    if (!issuedWarnings.has(key)) {
+      console.warn(warning);
+      if (key) {
+        issuedWarnings.add(key);
+      }
+    }
+  };
+}
+
 declare global {
   interface Window {
     litElementVersions: string[];
@@ -162,6 +184,27 @@ export class LitElement extends ReactiveElement {
 
 // DEV mode warnings
 if (DEV_MODE) {
+  // Finds the base implementation of a given property on a ReactiveElement
+  // subclass. Helps with issuing warnings only per unique implementation.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const findObjWithOwnProperty = (obj: any, key: PropertyKey) => {
+    while (obj && !obj.hasOwnProperty(key)) {
+      obj = Object.getPrototypeOf(obj);
+    }
+    return obj;
+  };
+
+  let key = 0;
+  const objKeys: WeakMap<ReactiveElement, number> = new WeakMap();
+  // Helper to generate a unique key for an element for warning de-duping.
+  const keyForObj = (obj: ReactiveElement) => {
+    let k = objKeys.get(obj);
+    if (k === undefined) {
+      objKeys.set(obj, (k = ++key));
+    }
+    return k;
+  };
+
   // Note, for compatibility with closure compilation, this access
   // needs to be as a string property index.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -174,11 +217,15 @@ if (DEV_MODE) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const warnRemoved = (obj: any, name: string) => {
       if (obj[name] !== undefined) {
-        console.warn(
-          `\`${name}\` is implemented. It ` +
-            `has been removed from this version of LitElement. `
-          // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/lit/lit/blob/main/packages/lit-element/CHANGELOG.md`
+        const base = findObjWithOwnProperty(obj, name);
+        const baseName = (typeof base === 'function' ? base : base.constructor)
+          .name;
+        issueWarning(
+          `\`${name}\` is implemented on class ${baseName}. It ` +
+            `has been removed from this version of LitElement. ` +
+            `See the changelog at https://github.com/lit/lit/blob/main/` +
+            `packages/lit-element/CHANGELOG.md`,
+          `${keyForObj(base)}:${name}`
         );
       }
     };
@@ -230,3 +277,15 @@ export const _$LE = {
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.3');
+if (DEV_MODE) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const versions = (globalThis as any)['litElementVersions'];
+  if (versions.length > 1) {
+    issueWarning!(
+      `Multiple versions of \`LitElement\` loaded. ` +
+        `First version: ${versions[0]}; Just added version: ` +
+        `${versions[versions.length - 1]}. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  }
+}

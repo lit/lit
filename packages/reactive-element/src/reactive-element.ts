@@ -29,16 +29,67 @@ export type {
 
 const DEV_MODE = true;
 
-let requestUpdateThenable: {
+let requestUpdateThenable: (name: string) => {
   then: (
     onfulfilled?: (value: boolean) => void,
     _onrejected?: () => void
   ) => void;
 };
 
+let issueWarning: (warning: string, key?: string) => void;
+
+let findObjWithOwnProperty: (
+  obj: ReactiveElement,
+  key: PropertyKey
+) => ReactiveElement;
+let keyForObj: (obj: ReactiveElement) => number;
+
 if (DEV_MODE) {
-  // TODO(sorvell): Add a link to the docs about using dev v. production mode.
-  console.warn(`Running in dev mode. Do not use in production!`);
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litIssuedWarnings'] ??
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((globalThis as any)['litIssuedWarnings'] = new Set());
+
+  // Issue a warning, de-duped by the given key.
+  issueWarning = (warning: string, key?: string) => {
+    if (!issuedWarnings.has(key)) {
+      console.warn(warning);
+      if (key) {
+        issuedWarnings.add(key);
+      }
+    }
+  };
+
+  // Finds the base implementation of a given property on a ReactiveElement
+  // subclass. Helps with issuing warnings only per unique implementation.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  findObjWithOwnProperty = (obj: any, key: PropertyKey) => {
+    while (obj && !obj.hasOwnProperty(key)) {
+      obj = Object.getPrototypeOf(obj);
+    }
+    return obj;
+  };
+
+  let key = 0;
+  const objKeys: WeakMap<ReactiveElement, number> = new WeakMap();
+  // Helper to generate a unique key for an element for warning de-duping.
+  keyForObj = (obj: ReactiveElement) => {
+    let k = objKeys.get(obj);
+    if (k === undefined) {
+      objKeys.set(obj, (k = ++key));
+    }
+    return k;
+  };
+
+  issueWarning(
+    `Lit is in dev mode. Not recommended for production! See ` +
+      `https://lit.dev/docs/tools/development/` +
+      `#development-and-production-builds for more information.`,
+    'DEV_MODE'
+  );
 
   // Issue platform support warning.
   if (
@@ -46,26 +97,30 @@ if (DEV_MODE) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (globalThis as any)['reactiveElementPlatformSupport'] === undefined
   ) {
-    console.warn(
-      `Shadow DOM is being polyfilled via ShadyDOM but ` +
-        `the \`polyfill-support\` module has not been loaded.`
+    issueWarning(
+      `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
+        `the \`polyfill-support\` module has not been loaded. See ` +
+        `https://lit.dev/docs/tools/requirements/#polyfills ` +
+        `for more information.`,
+      'POLYFILL_SUPPORT'
     );
   }
 
-  requestUpdateThenable = {
+  requestUpdateThenable = (name) => ({
     then: (
       onfulfilled?: (value: boolean) => void,
       _onrejected?: () => void
     ) => {
-      console.warn(
-        `\`requestUpdate\` no longer returns a Promise.` +
-          `Use \`updateComplete\` instead.`
+      issueWarning(
+        `The \`requestUpdate\` method should no longer return a Promise but ` +
+          `does so on \`${name}\`. Use \`updateComplete\` instead.`,
+        `${name}:requestUpdatePromise`
       );
       if (onfulfilled !== undefined) {
         onfulfilled(false);
       }
     },
-  };
+  });
 }
 
 /*
@@ -596,20 +651,20 @@ export abstract class ReactiveElement
     this.elementStyles = this.finalizeStyles(this.styles);
     // DEV mode warnings
     if (DEV_MODE) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const warnRemoved = (obj: any, name: string) => {
-        if (obj[name] !== undefined) {
-          console.warn(
-            `\`${name}\` is implemented. It ` +
-              `has been removed from this version of ReactiveElement.` +
-              ` See the changelog at https://github.com/lit/lit/blob/main/packages/reactive-element/CHANGELOG.md`
-          );
-        }
-      };
       [`initialize`, `requestUpdateInternal`, `_getUpdateComplete`].forEach(
-        (name: string) =>
+        (name: string) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          warnRemoved(this.prototype as any, name)
+          if ((this.prototype as any)[name] !== undefined) {
+            const base = findObjWithOwnProperty(this.prototype, name);
+            const baseName = base.constructor.name;
+            issueWarning(
+              `\`${name}\` is implemented on class ${baseName}. It ` +
+                `has been removed from this version of \`ReactiveElement\`.` +
+                ` See the changelog at https://github.com/lit/lit/blob/main/packages/reactive-element/CHANGELOG.md`,
+              `${keyForObj(base)}:${name}`
+            );
+          }
+        }
       );
     }
     return true;
@@ -886,11 +941,12 @@ export abstract class ReactiveElement
         ) >= 0 &&
         attrValue === undefined
       ) {
-        console.warn(
-          `The attribute value for the ` +
-            `${name as string} property is undefined. The attribute will be ` +
-            `removed, but in the previous version of ReactiveElement, the ` +
-            `attribute would not have changed.`
+        issueWarning(
+          `The attribute value for the ${name as string} property is ` +
+            `undefined on element ${this.localName}. The attribute will be ` +
+            `removed, but in the previous version of \`ReactiveElement\`, ` +
+            `the attribute would not have changed.`,
+          `${this.localName}:attribute:${name as string}`
         );
       }
       // Track if the property is being reflected to avoid
@@ -988,7 +1044,9 @@ export abstract class ReactiveElement
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? (requestUpdateThenable as unknown as void) : undefined;
+    return DEV_MODE
+      ? (requestUpdateThenable(this.localName) as unknown as void)
+      : undefined;
   }
 
   /**
@@ -1054,16 +1112,18 @@ export abstract class ReactiveElement
           }
         );
         if (shadowedProperties.length) {
-          // TODO(sorvell): Link to docs explanation of this issue.
-          console.warn(
-            `The following properties will not trigger updates as expected ` +
-              `because they are set using class fields: ` +
-              `${shadowedProperties.join(', ')}. ` +
+          issueWarning(
+            `The following properties on element ${this.localName} will not ` +
+              `trigger updates as expected because they are set using class ` +
+              `fields: ${shadowedProperties.join(', ')}. ` +
               `Native class fields and some compiled output will overwrite ` +
               `accessors used for detecting changes. To fix this issue, ` +
               `either initialize properties in the constructor or adjust ` +
               `your compiler settings; for example, for TypeScript set ` +
-              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.`
+              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.` +
+              `See https://lit.dev/docs/components/properties/#declare ` +
+              `for more information.`,
+            `${this.localName}:shadowedProperties`
           );
         }
       }
@@ -1122,11 +1182,13 @@ export abstract class ReactiveElement
         'change-in-update'
       ) >= 0
     ) {
-      console.warn(
-        `An update was requested (generally because a property was set) ` +
+      issueWarning(
+        `Element ${this.localName} scheduled an update ` +
+          `(generally because a property was set) ` +
           `after an update completed, causing a new update to be scheduled. ` +
           `This is inefficient and should be avoided unless the next update ` +
-          `can only be scheduled as a side effect of the previous update.`
+          `can only be scheduled as a side effect of the previous update.`,
+        `${this.localName}:change-in-update`
       );
     }
   }
@@ -1288,3 +1350,15 @@ declare global {
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.3');
+if (DEV_MODE) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const versions = (globalThis as any)['reactiveElementVersions'];
+  if (versions.length > 1) {
+    issueWarning!(
+      `Multiple versions of \`ReactiveElement\` loaded. ` +
+        `First version: ${versions[0]}; Just added version: ` +
+        `${versions[versions.length - 1]}. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  }
+}

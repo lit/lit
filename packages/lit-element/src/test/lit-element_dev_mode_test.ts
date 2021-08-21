@@ -61,6 +61,20 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'render');
     });
 
+    test('warns once per implementation (does not spam)', () => {
+      class A extends LitElement {
+        static render() {}
+      }
+      customElements.define(generateElementName(), A);
+      class B extends A {}
+      customElements.define(generateElementName(), B);
+      new A();
+      new B();
+      assert.equal(warnings.length, 1);
+      assert.include(warnings[0], A.name);
+      assert.include(warnings[0], 'render');
+    });
+
     test('warns when `static getStyles` is implemented', () => {
       class A extends LitElement {
         static getStyles() {}
