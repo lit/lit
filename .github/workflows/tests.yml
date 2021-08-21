@@ -9,12 +9,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v1
         with:
           node-version: 14
+      
+      - run: git checkout main
 
-      - run: git fetch origin main:main
+      - run: git checkout ${{ github.ref }}
 
       - run: npm ci
 
