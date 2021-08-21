@@ -325,6 +325,14 @@ export const nothing = Symbol.for('lit-nothing');
  */
 const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
+/**
+ * Object specifying options for controlling lit-html rendering. Note that
+ * while `render` may be called multiple times on the same `container` (and
+ * `renderBefore` reference node) to efficiently update the rendered content,
+ * only the options passed in during the first render are respected during
+ * the lifetime of renders to that unique `container` + `renderBefore`
+ * combination.
+ */
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
@@ -348,7 +356,7 @@ export interface RenderOptions {
    * render occurs in a disconnected tree and `AsyncDirective`s should see
    * `isConnected === false` for their initial render.
    */
-  initialIsConnected?: boolean;
+  isConnected?: boolean;
 }
 
 /**
@@ -1009,7 +1017,7 @@ class ChildPart implements Disconnectable {
     // Note __isConnected is only ever accessed on RootParts (i.e. when there is
     // no _$parent); the value on a non-root-part is "don't care", but checking
     // for parent would be more code
-    this.__isConnected = options?.initialIsConnected ?? true;
+    this.__isConnected = options?.isConnected ?? true;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
