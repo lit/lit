@@ -947,7 +947,7 @@ export type {ChildPart};
 class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
-  _$committedValue: unknown;
+  _$committedValue: unknown = nothing;
   /** @internal */
   __directive?: Directive;
   /** @internal */
@@ -1099,23 +1099,20 @@ class ChildPart implements Disconnectable {
   }
 
   private _commitText(value: unknown): void {
-    const node = wrap(this._$startNode).nextSibling;
-    // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
+    // If the committed value is a primitive it means we called _commitText on
+    // the previous render, and we know that this._$startNode.nextSibling is a
+    // Text node. We can now just replace the text content (.data) of the node.
     if (
-      node !== null &&
-      node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this._$endNode === null
-        ? wrap(node).nextSibling === null
-        : node === wrap(this._$endNode).previousSibling)
+      this._$committedValue !== nothing &&
+      isPrimitive(this._$committedValue)
     ) {
+      const node = wrap(this._$startNode).nextSibling as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
         }
         value = this._textSanitizer(value);
       }
-      // If we only have a single text node between the markers, we can just
-      // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
