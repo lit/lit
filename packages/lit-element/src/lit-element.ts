@@ -121,9 +121,6 @@ export class LitElement extends ReactiveElement {
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
-  // TODO(kschaaf): Consider debouncing directive disconnection so element moves
-  // do not thrash directive callbacks
-  // https://github.com/lit/lit/issues/1457
   /**
    * @category lifecycle
    */
