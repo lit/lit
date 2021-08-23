@@ -33,7 +33,7 @@ suite('unsafeSVG', () => {
     assert.equal(lineElement.namespaceURI, 'http://www.w3.org/2000/svg');
   });
 
-  test('renders nothing', () => {
+  test('rendering `nothing` renders empty string to content', () => {
     render(html`<svg>before${unsafeSVG(nothing)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -41,7 +41,7 @@ suite('unsafeSVG', () => {
     );
   });
 
-  test('renders noChange', () => {
+  test('rendering `noChange` renders empty string to content', () => {
     render(html`<svg>before${unsafeSVG(noChange)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -49,7 +49,7 @@ suite('unsafeSVG', () => {
     );
   });
 
-  test('renders undefined', () => {
+  test('rendering `undefined` renders empty string to content', () => {
     render(html`<svg>before${unsafeSVG(undefined)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -57,7 +57,7 @@ suite('unsafeSVG', () => {
     );
   });
 
-  test('renders null', () => {
+  test('rendering `null` renders empty string to content', () => {
     render(html`<svg>before${unsafeSVG(null)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),

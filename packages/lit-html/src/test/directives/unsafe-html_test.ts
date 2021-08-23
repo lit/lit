@@ -27,7 +27,7 @@ suite('unsafeHTML directive', () => {
     );
   });
 
-  test('does not render `nothing`', () => {
+  test('rendering `nothing` renders empty string to content', () => {
     render(html`<div>before${unsafeHTML(nothing)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -35,7 +35,7 @@ suite('unsafeHTML directive', () => {
     );
   });
 
-  test('does not render `noChange`', () => {
+  test('rendering `noChange` renders empty string to content', () => {
     render(html`<div>before${unsafeHTML(noChange)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -43,7 +43,7 @@ suite('unsafeHTML directive', () => {
     );
   });
 
-  test('does not render `undefined`', () => {
+  test('rendering `undefined` renders empty string to content', () => {
     render(html`<div>before${unsafeHTML(undefined)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -51,7 +51,7 @@ suite('unsafeHTML directive', () => {
     );
   });
 
-  test('does not render null', () => {
+  test('rendering `null` renders empty string to content', () => {
     render(html`<div>before${unsafeHTML(null)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
