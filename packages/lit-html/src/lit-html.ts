@@ -1648,3 +1648,35 @@ export const _$LH = {
 // TODO(justinfagnani): inject version number at build time
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.4');
+if (DEV_MODE) {
+  const issuedWarnings: Set<string | undefined> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litIssuedWarnings'] ??
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((globalThis as any)['litIssuedWarnings'] = new Set());
+
+  // Issue a warning, de-duped by the given key.
+  const issueWarning = (warning: string, key?: string) => {
+    if (!issuedWarnings.has(key)) {
+      console.warn(warning);
+      if (key) {
+        issuedWarnings.add(key);
+      }
+    }
+  };
+  if (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['reactiveElementVersions']?.length > 1 ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litElementVersions']?.length > 1 ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litHtmlVersions']?.length > 1
+  ) {
+    issueWarning(
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+        `for more information.`,
+      'MULTIPLE_VERSIONS'
+    );
+  }
+}

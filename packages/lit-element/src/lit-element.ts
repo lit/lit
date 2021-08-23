@@ -278,14 +278,19 @@ export const _$LE = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.3');
 if (DEV_MODE) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const versions = (globalThis as any)['litElementVersions'];
-  if (versions.length > 1) {
+  if (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['reactiveElementVersions']?.length > 1 ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litElementVersions']?.length > 1 ||
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any)['litHtmlVersions']?.length > 1
+  ) {
     issueWarning!(
-      `Multiple versions of \`LitElement\` loaded. ` +
-        `First version: ${versions[0]}; Just added version: ` +
-        `${versions[versions.length - 1]}. Loading multiple versions ` +
-        `is not recommended.`
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+        `for more information.`,
+      'MULTIPLE_VERSIONS'
     );
   }
 }
