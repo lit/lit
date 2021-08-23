@@ -117,6 +117,9 @@ export class LitElement extends ReactiveElement {
     // updates are allowed after super.update, it's important to call `render`
     // before that.
     const value = this.render();
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     super.update(changedProperties);
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
@@ -128,7 +131,6 @@ export class LitElement extends ReactiveElement {
    * @category lifecycle
    */
   connectedCallback() {
-    this.renderOptions.isConnected = true;
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
@@ -137,7 +139,6 @@ export class LitElement extends ReactiveElement {
    * @category lifecycle
    */
   disconnectedCallback() {
-    this.renderOptions.isConnected = false;
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
   }
