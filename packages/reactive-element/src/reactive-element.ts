@@ -36,7 +36,7 @@ let requestUpdateThenable: (name: string) => {
   ) => void;
 };
 
-let issueWarning: (warning: string, key?: string) => void;
+let issueWarning: (warning: string) => void;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
@@ -47,21 +47,18 @@ if (DEV_MODE) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((globalThis as any)['litIssuedWarnings'] = new Set());
 
-  // Issue a warning, de-duped by the given key.
-  issueWarning = (warning: string, key?: string) => {
-    if (!issuedWarnings.has(key)) {
+  // Issue a warning, if we haven't already.
+  issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
       console.warn(warning);
-      if (key) {
-        issuedWarnings.add(key);
-      }
+      issuedWarnings.add(warning);
     }
   };
 
   issueWarning(
     `Lit is in dev mode. Not recommended for production! See ` +
       `https://lit.dev/docs/tools/development/` +
-      `#development-and-production-builds for more information.`,
-    'DEV_MODE'
+      `#development-and-production-builds for more information.`
   );
 
   // Issue platform support warning.
@@ -74,8 +71,7 @@ if (DEV_MODE) {
       `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
         `the \`polyfill-support\` module has not been loaded. See ` +
         `https://lit.dev/docs/tools/requirements/#polyfills ` +
-        `for more information.`,
-      'POLYFILL_SUPPORT'
+        `for more information.`
     );
   }
 
@@ -86,8 +82,7 @@ if (DEV_MODE) {
     ) => {
       issueWarning(
         `The \`requestUpdate\` method should no longer return a Promise but ` +
-          `does so on \`${name}\`. Use \`updateComplete\` instead.`,
-        `${name}:requestUpdatePromise`
+          `does so on \`${name}\`. Use \`updateComplete\` instead.`
       );
       if (onfulfilled !== undefined) {
         onfulfilled(false);
@@ -630,8 +625,7 @@ export abstract class ReactiveElement
             issueWarning(
               `\`${name}\` is implemented on class ${this.name}. It ` +
                 `has been removed from this version of \`ReactiveElement\`.` +
-                ` See the changelog at https://github.com/lit/lit/blob/main/packages/reactive-element/CHANGELOG.md`,
-              `${this.name}:${name}`
+                ` See the changelog at https://github.com/lit/lit/blob/main/packages/reactive-element/CHANGELOG.md`
             );
           }
         }
@@ -915,8 +909,7 @@ export abstract class ReactiveElement
           `The attribute value for the ${name as string} property is ` +
             `undefined on element ${this.localName}. The attribute will be ` +
             `removed, but in the previous version of \`ReactiveElement\`, ` +
-            `the attribute would not have changed.`,
-          `${this.localName}:attribute:${name as string}`
+            `the attribute would not have changed.`
         );
       }
       // Track if the property is being reflected to avoid
@@ -1092,8 +1085,7 @@ export abstract class ReactiveElement
               `your compiler settings; for example, for TypeScript set ` +
               `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.` +
               `See https://lit.dev/docs/components/properties/#declare ` +
-              `for more information.`,
-            `${this.localName}:shadowedProperties`
+              `for more information.`
           );
         }
       }
@@ -1157,8 +1149,7 @@ export abstract class ReactiveElement
           `(generally because a property was set) ` +
           `after an update completed, causing a new update to be scheduled. ` +
           `This is inefficient and should be avoided unless the next update ` +
-          `can only be scheduled as a side effect of the previous update.`,
-        `${this.localName}:change-in-update`
+          `can only be scheduled as a side effect of the previous update.`
       );
     }
   }
@@ -1332,8 +1323,7 @@ if (DEV_MODE) {
     issueWarning!(
       `Multiple versions of Lit loaded. Loading multiple versions ` +
         `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-        `for more information.`,
-      'MULTIPLE_VERSIONS'
+        `for more information.`
     );
   }
 }

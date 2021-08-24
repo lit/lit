@@ -1655,13 +1655,11 @@ if (DEV_MODE) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((globalThis as any)['litIssuedWarnings'] = new Set());
 
-  // Issue a warning, de-duped by the given key.
-  const issueWarning = (warning: string, key?: string) => {
-    if (!issuedWarnings.has(key)) {
+  // Issue a warning, if we haven't already.
+  const issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
       console.warn(warning);
-      if (key) {
-        issuedWarnings.add(key);
-      }
+      issuedWarnings.add(warning);
     }
   };
   if (
@@ -1675,8 +1673,7 @@ if (DEV_MODE) {
     issueWarning(
       `Multiple versions of Lit loaded. Loading multiple versions ` +
         `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-        `for more information.`,
-      'MULTIPLE_VERSIONS'
+        `for more information.`
     );
   }
 }

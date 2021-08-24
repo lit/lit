@@ -57,7 +57,7 @@ export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
-let issueWarning: (warning: string, key?: string) => void;
+let issueWarning: (warning: string) => void;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
@@ -68,13 +68,11 @@ if (DEV_MODE) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((globalThis as any)['litIssuedWarnings'] = new Set());
 
-  // Issue a warning, de-duped by the given key.
-  issueWarning = (warning: string, key?: string) => {
-    if (!issuedWarnings.has(key)) {
+  // Issue a warning, if we haven't already.
+  issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
       console.warn(warning);
-      if (key) {
-        issuedWarnings.add(key);
-      }
+      issuedWarnings.add(warning);
     }
   };
 }
@@ -202,8 +200,7 @@ if (DEV_MODE) {
           `\`${name}\` is implemented on class ${ctorName}. It ` +
             `has been removed from this version of LitElement. ` +
             `See the changelog at https://github.com/lit/lit/blob/main/` +
-            `packages/lit-element/CHANGELOG.md`,
-          `${ctorName}:${name}`
+            `packages/lit-element/CHANGELOG.md`
         );
       }
     };
@@ -267,8 +264,7 @@ if (DEV_MODE) {
     issueWarning!(
       `Multiple versions of Lit loaded. Loading multiple versions ` +
         `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-        `for more information.`,
-      'MULTIPLE_VERSIONS'
+        `for more information.`
     );
   }
 }
