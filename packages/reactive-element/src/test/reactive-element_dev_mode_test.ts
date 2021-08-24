@@ -59,55 +59,55 @@ if (DEV_MODE) {
     });
 
     test('warns when `initialize` is implemented', () => {
-      class A extends ReactiveElement {
+      class WarnInitialize extends ReactiveElement {
         initialize() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
+      customElements.define(generateElementName(), WarnInitialize);
+      new WarnInitialize();
       assert.equal(warnings.length, 1);
-      assert.include(warnings[0], A.name);
+      assert.include(warnings[0], WarnInitialize.name);
       assert.include(warnings[0], 'initialize');
     });
 
     test('warns on first instance only', () => {
-      class A extends ReactiveElement {
+      class WarnFirstInstance extends ReactiveElement {
         initialize() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
-      new A();
-      new A();
+      customElements.define(generateElementName(), WarnFirstInstance);
+      new WarnFirstInstance();
+      new WarnFirstInstance();
+      new WarnFirstInstance();
       assert.equal(warnings.length, 1);
-      assert.include(warnings[0], A.name);
+      assert.include(warnings[0], WarnFirstInstance.name);
       assert.include(warnings[0], 'initialize');
     });
 
     test('warns once per implementation (does not spam)', () => {
-      class A extends ReactiveElement {
+      class WarnPerImplBase extends ReactiveElement {
         initialize() {}
       }
-      customElements.define(generateElementName(), A);
-      class B extends A {}
-      customElements.define(generateElementName(), B);
-      new A();
-      new B();
+      customElements.define(generateElementName(), WarnPerImplBase);
+      class WarnPerImplSub extends WarnPerImplBase {}
+      customElements.define(generateElementName(), WarnPerImplSub);
+      new WarnPerImplBase();
+      new WarnPerImplSub();
       assert.equal(warnings.length, 1);
-      assert.include(warnings[0], A.name);
+      assert.include(warnings[0], WarnPerImplBase.name);
       assert.include(warnings[0], 'initialize');
     });
 
     test('warns when `requestUpdateInternal` is implemented', () => {
-      class A extends ReactiveElement {
+      class WarnRequestUpdateInternal extends ReactiveElement {
         requestUpdateInternal() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
+      customElements.define(generateElementName(), WarnRequestUpdateInternal);
+      new WarnRequestUpdateInternal();
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'requestUpdateInternal');
     });
 
     test('warns when updating properties are shadowed', async () => {
-      class A extends ReactiveElement {
+      class WarnShadowed extends ReactiveElement {
         static properties = {
           fooProp: {},
           barProp: {},
@@ -130,24 +130,24 @@ if (DEV_MODE) {
           });
         }
       }
-      customElements.define(generateElementName(), A);
-      const a = new A();
+      customElements.define(generateElementName(), WarnShadowed);
+      const a = new WarnShadowed();
       container.appendChild(a);
       await a.updateComplete;
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'fooProp, barProp');
       assert.include(warnings[0], 'class field');
       // warns once, does not spam.
-      const b = new A();
+      const b = new WarnShadowed();
       container.appendChild(b);
       await b.updateComplete;
       assert.equal(warnings.length, 1);
     });
 
     test('warns when awaiting `requestUpdate`', async () => {
-      class A extends ReactiveElement {}
-      customElements.define(generateElementName(), A);
-      const a = new A();
+      class WarnAwaitRequestUpdate extends ReactiveElement {}
+      customElements.define(generateElementName(), WarnAwaitRequestUpdate);
+      const a = new WarnAwaitRequestUpdate();
       container.appendChild(a);
       await a.requestUpdate();
       assert.equal(warnings.length, 1);
@@ -160,16 +160,16 @@ if (DEV_MODE) {
 
     suite('conditional warnings', () => {
       test('warns when `toAttribute` returns undefined with migration warnings on', async () => {
-        class A extends ReactiveElement {
+        class WarnAttribute extends ReactiveElement {
           static properties = {
             foo: {converter: {toAttribute: () => undefined}, reflect: true},
           };
 
           foo = 'hi';
         }
-        A.enableWarning?.('migration');
-        customElements.define(generateElementName(), A);
-        const a = new A();
+        WarnAttribute.enableWarning?.('migration');
+        customElements.define(generateElementName(), WarnAttribute);
+        const a = new WarnAttribute();
         container.appendChild(a);
         await a.updateComplete;
         assert.equal(warnings.length, 1);
@@ -181,7 +181,7 @@ if (DEV_MODE) {
       });
 
       test('warns when update triggers another update if element', async () => {
-        class A extends ReactiveElement {
+        class WarnUpdate extends ReactiveElement {
           shouldUpdateAgain = false;
           updated() {
             if (this.shouldUpdateAgain) {
@@ -190,8 +190,8 @@ if (DEV_MODE) {
             }
           }
         }
-        customElements.define(generateElementName(), A);
-        const a = new A();
+        customElements.define(generateElementName(), WarnUpdate);
+        const a = new WarnUpdate();
         container.appendChild(a);
         await a.updateComplete;
         assert.equal(warnings.length, 0);
@@ -214,7 +214,7 @@ if (DEV_MODE) {
       });
 
       test('warning settings can be set on base class and per class', async () => {
-        class A extends ReactiveElement {
+        class WarningSettings extends ReactiveElement {
           shouldUpdateAgain = false;
           updated() {
             if (this.shouldUpdateAgain) {
@@ -223,12 +223,12 @@ if (DEV_MODE) {
             }
           }
         }
-        customElements.define(generateElementName(), A);
-        class B extends A {}
-        customElements.define(generateElementName(), B);
-        const a = new A();
+        customElements.define(generateElementName(), WarningSettings);
+        class WarningSettingsSub extends WarningSettings {}
+        customElements.define(generateElementName(), WarningSettingsSub);
+        const a = new WarningSettings();
         container.appendChild(a);
-        const b = new B();
+        const b = new WarningSettingsSub();
         container.appendChild(b);
         await a.updateComplete;
         await b.updateComplete;
@@ -242,17 +242,17 @@ if (DEV_MODE) {
           await b.updateComplete;
         };
         // Defeat warning in base class
-        A.disableWarning?.('change-in-update');
+        WarningSettings.disableWarning?.('change-in-update');
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 0);
         // Explicitly turn on warning in subclass
-        B.enableWarning?.('change-in-update');
+        WarningSettingsSub.enableWarning?.('change-in-update');
         warnings = [];
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 1);
         // Turn of warning in subclass and back on in base class
-        B.disableWarning?.('change-in-update');
-        A.enableWarning?.('change-in-update');
+        WarningSettingsSub.disableWarning?.('change-in-update');
+        WarningSettings.enableWarning?.('change-in-update');
         warnings = [];
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 1);

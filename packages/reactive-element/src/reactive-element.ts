@@ -38,12 +38,6 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (warning: string, key?: string) => void;
 
-let findObjWithOwnProperty: (
-  obj: ReactiveElement,
-  key: PropertyKey
-) => ReactiveElement;
-let keyForObj: (obj: ReactiveElement) => number;
-
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
@@ -61,27 +55,6 @@ if (DEV_MODE) {
         issuedWarnings.add(key);
       }
     }
-  };
-
-  // Finds the base implementation of a given property on a ReactiveElement
-  // subclass. Helps with issuing warnings only per unique implementation.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  findObjWithOwnProperty = (obj: any, key: PropertyKey) => {
-    while (obj && !obj.hasOwnProperty(key)) {
-      obj = Object.getPrototypeOf(obj);
-    }
-    return obj;
-  };
-
-  let key = 0;
-  const objKeys: WeakMap<ReactiveElement, number> = new WeakMap();
-  // Helper to generate a unique key for an element for warning de-duping.
-  keyForObj = (obj: ReactiveElement) => {
-    let k = objKeys.get(obj);
-    if (k === undefined) {
-      objKeys.set(obj, (k = ++key));
-    }
-    return k;
   };
 
   issueWarning(
@@ -653,15 +626,12 @@ export abstract class ReactiveElement
     if (DEV_MODE) {
       [`initialize`, `requestUpdateInternal`, `_getUpdateComplete`].forEach(
         (name: string) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if ((this.prototype as any)[name] !== undefined) {
-            const base = findObjWithOwnProperty(this.prototype, name);
-            const baseName = base.constructor.name;
+          if (this.prototype.hasOwnProperty(name)) {
             issueWarning(
-              `\`${name}\` is implemented on class ${baseName}. It ` +
+              `\`${name}\` is implemented on class ${this.name}. It ` +
                 `has been removed from this version of \`ReactiveElement\`.` +
                 ` See the changelog at https://github.com/lit/lit/blob/main/packages/reactive-element/CHANGELOG.md`,
-              `${keyForObj(base)}:${name}`
+              `${this.name}:${name}`
             );
           }
         }

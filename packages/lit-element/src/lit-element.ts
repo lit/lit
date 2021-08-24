@@ -184,27 +184,6 @@ export class LitElement extends ReactiveElement {
 
 // DEV mode warnings
 if (DEV_MODE) {
-  // Finds the base implementation of a given property on a ReactiveElement
-  // subclass. Helps with issuing warnings only per unique implementation.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const findObjWithOwnProperty = (obj: any, key: PropertyKey) => {
-    while (obj && !obj.hasOwnProperty(key)) {
-      obj = Object.getPrototypeOf(obj);
-    }
-    return obj;
-  };
-
-  let key = 0;
-  const objKeys: WeakMap<ReactiveElement, number> = new WeakMap();
-  // Helper to generate a unique key for an element for warning de-duping.
-  const keyForObj = (obj: ReactiveElement) => {
-    let k = objKeys.get(obj);
-    if (k === undefined) {
-      objKeys.set(obj, (k = ++key));
-    }
-    return k;
-  };
-
   // Note, for compatibility with closure compilation, this access
   // needs to be as a string property index.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -216,16 +195,15 @@ if (DEV_MODE) {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const warnRemoved = (obj: any, name: string) => {
-      if (obj[name] !== undefined) {
-        const base = findObjWithOwnProperty(obj, name);
-        const baseName = (typeof base === 'function' ? base : base.constructor)
+      if (obj.hasOwnProperty(name)) {
+        const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
           .name;
         issueWarning(
-          `\`${name}\` is implemented on class ${baseName}. It ` +
+          `\`${name}\` is implemented on class ${ctorName}. It ` +
             `has been removed from this version of LitElement. ` +
             `See the changelog at https://github.com/lit/lit/blob/main/` +
             `packages/lit-element/CHANGELOG.md`,
-          `${keyForObj(base)}:${name}`
+          `${ctorName}:${name}`
         );
       }
     };
