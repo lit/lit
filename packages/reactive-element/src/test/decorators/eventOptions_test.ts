@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement} from '../../reactive-element.js';
 import {eventOptions} from '../../decorators/event-options.js';
 import {
   canTestReactiveElement,
@@ -13,6 +12,11 @@ import {
   html,
 } from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
+
+const wrap =
+  window.ShadyDOM?.inUse && window.ShadyDOM?.noPatch === true
+    ? window.ShadyDOM!.wrap
+    : (node: Node) => node;
 
 let hasOptions;
 const supportsOptions = (function () {
@@ -92,6 +96,45 @@ const supportsOnce = (function () {
 (canTestReactiveElement ? suite : suite.skip)('@eventOptions', () => {
   let container: HTMLElement;
 
+  class EventOptionsBase extends RenderingElement {
+    button!: HTMLButtonElement;
+    div!: HTMLDivElement;
+    dispatcher!: HTMLSpanElement;
+
+    currentTargets: Array<EventTarget | null> = [];
+
+    onClick(e: Event) {
+      this.currentTargets.push(e.currentTarget);
+    }
+
+    render() {
+      return html`<div>
+        <button><span></span></button>
+      </div>`;
+    }
+
+    addListener(target: EventTarget) {
+      wrap(target as Node).addEventListener(
+        'click',
+        (e: Event) => this.onClick(e),
+        this.onClick as unknown as AddEventListenerOptions
+      );
+    }
+
+    firstUpdated() {
+      this.button = this.renderRoot.querySelector(
+        'button'
+      )! as HTMLButtonElement;
+      this.div = this.renderRoot.querySelector('div')! as HTMLDivElement;
+      this.dispatcher = this.renderRoot.querySelector(
+        'span'
+      )! as HTMLSpanElement;
+      this.addListener(this.button);
+      this.addListener(this.div);
+      this.addListener(this);
+    }
+  }
+
   setup(() => {
     container = document.createElement('div');
     container.id = 'test-container';
@@ -110,26 +153,10 @@ const supportsOnce = (function () {
       this.skip();
     }
 
-    class C extends RenderingElement {
-      eventPhase?: number;
-
+    class C extends EventOptionsBase {
       @eventOptions({capture: true})
       onClick(e: Event) {
-        this.eventPhase = e.eventPhase;
-      }
-
-      render() {
-        return html`<div><button></button></div>`;
-      }
-
-      firstUpdated() {
-        this.renderRoot
-          .querySelector('div')!
-          .addEventListener(
-            'click',
-            (e: Event) => this.onClick(e),
-            this.onClick as unknown as AddEventListenerOptions
-          );
+        super.onClick(e);
       }
     }
     customElements.define(generateElementName(), C);
@@ -137,8 +164,31 @@ const supportsOnce = (function () {
     const c = new C();
     container.appendChild(c);
     await c.updateComplete;
-    c.renderRoot.querySelector('button')!.click();
-    assert.equal(c.eventPhase, Event.CAPTURING_PHASE);
+    wrap(c.dispatcher).dispatchEvent(
+      new Event('click', {bubbles: true, composed: true})
+    );
+    assert.deepEqual(c.currentTargets, [c, c.div, c.button]);
+  });
+
+  test('allows bubbling listeners', async function () {
+    if (!supportsOptions) {
+      this.skip();
+    }
+    class C extends EventOptionsBase {
+      @eventOptions({capture: false})
+      onClick(e: Event) {
+        super.onClick(e);
+      }
+    }
+    customElements.define(generateElementName(), C);
+
+    const c = new C();
+    container.appendChild(c);
+    await c.updateComplete;
+    wrap(c.dispatcher).dispatchEvent(
+      new Event('click', {bubbles: true, composed: true})
+    );
+    assert.deepEqual(c.currentTargets, [c.button, c.div, c]);
   });
 
   test('allows once listeners', async function () {
@@ -146,17 +196,8 @@ const supportsOnce = (function () {
       this.skip();
     }
 
-    class C extends ReactiveElement {
+    class C extends EventOptionsBase {
       clicked = 0;
-
-      constructor() {
-        super();
-        this.addEventListener(
-          'click',
-          () => this.onClick(),
-          this.onClick as unknown as AddEventListenerOptions
-        );
-      }
 
       @eventOptions({once: true})
       onClick() {
@@ -178,17 +219,8 @@ const supportsOnce = (function () {
       this.skip();
     }
 
-    class C extends ReactiveElement {
+    class C extends EventOptionsBase {
       defaultPrevented?: boolean;
-
-      constructor() {
-        super();
-        this.addEventListener(
-          'click',
-          (e: Event) => this.onClick(e),
-          this.onClick as unknown as AddEventListenerOptions
-        );
-      }
 
       @eventOptions({passive: true})
       onClick(e: Event) {
