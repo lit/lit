@@ -43,16 +43,20 @@ if (DEV_MODE) {
       }
     });
 
+    const litWarnings = (globalThis as any)['litIssuedWarnings'] as Set<string>;
+
     suite('Initial warnings', () => {
       test('warns for dev mode', () => {
-        assert.isTrue((globalThis as any)['litIssuedWarnings'].has('DEV_MODE'));
+        assert.isTrue(
+          Array.from(litWarnings).some((v) => v.includes('Lit is in dev mode'))
+        );
       });
 
       (missingPlatformSupport ? test : test.skip)(
         'warns for missing polyfill-support',
         () => {
           assert.isTrue(
-            (globalThis as any)['litIssuedWarnings'].has('POLYFILL_SUPPORT')
+            Array.from(litWarnings).some((v) => v.includes('polyfill-support'))
           );
         }
       );
