@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.0-rc.2",
+  "version": "3.0.0-rc.3",
   "publishConfig": {
     "access": "public"
   },
@@ -75,11 +75,12 @@
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
-    "/development/"
+    "/development/",
+    "!/development/test/"
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0-rc.2",
-    "lit-html": "^2.0.0-rc.3"
+    "lit-html": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

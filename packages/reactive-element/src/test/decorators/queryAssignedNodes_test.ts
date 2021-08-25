@@ -77,6 +77,7 @@ const flush =
     assignedNodesEl!: D;
     assignedNodesEl2!: E;
     assignedNodesEl3!: S;
+    @queryAssignedNodes() missingSlotAssignedNodes!: Node[];
 
     override render() {
       return html`
@@ -224,5 +225,9 @@ const flush =
     if (descriptor !== undefined) {
       Object.defineProperty(Element.prototype, 'matches', descriptor);
     }
+  });
+
+  test('always returns an array, even if the slot is not rendered', () => {
+    assert.isArray(el.missingSlotAssignedNodes);
   });
 });

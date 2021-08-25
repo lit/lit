@@ -68,6 +68,11 @@ import {assert} from '@esm-bundle/chai';
     assert.isNull(el.span);
   });
 
+  test('returns null when no match and accessed before first update', () => {
+    const notYetUpdatedEl = new C();
+    assert.isNull(notYetUpdatedEl.span);
+  });
+
   test('returns cached value', async () => {
     el.condition = true;
     await el.updateComplete;
@@ -83,5 +88,13 @@ import {assert} from '@esm-bundle/chai';
     await el.updateComplete;
     assert.instanceOf(el.span, HTMLSpanElement);
     assert.notEqual(el.span, el.renderRoot.querySelector('span'));
+  });
+
+  test('returns cached value when accessed before first update', async () => {
+    const notYetUpdatedEl = new C();
+    assert.equal(notYetUpdatedEl.divCached, null);
+    container.appendChild(notYetUpdatedEl);
+    await notYetUpdatedEl.updateComplete;
+    assert.equal(notYetUpdatedEl.divCached, null);
   });
 });

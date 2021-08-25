@@ -85,8 +85,8 @@ class RepeatDirective extends Directive {
       ItemTemplate<T>
     ]
   ) {
-    // Old part & key lists are retrieved from the last update
-    // TODO: deal with directive being swapped out?
+    // Old part & key lists are retrieved from the last update (which may
+    // be primed by hydration)
     const oldParts = getCommittedValue(
       containerPart
     ) as Array<ChildPart | null>;
@@ -304,7 +304,7 @@ class RepeatDirective extends Directive {
     //   remaining clauses is is just a simple guess at which cases
     //   will be most common.
     //
-    // * TODO(kschaaf) Note, we could calculate the longest
+    // * Note, we could calculate the longest
     //   increasing subsequence (LIS) of old items in new position,
     //   and only move those not in the LIS set. However that costs
     //   O(nlogn) time and adds a bit more code, and only helps
@@ -452,8 +452,13 @@ export interface RepeatDirectiveFn {
  * The `keyFn` takes two parameters, the item and its index, and returns a unique key value.
  *
  * ```js
- * ${repeat(this.items, (item) => item.id, (item, index) =>
-     html`<li>${index}: ${item.name}</li>`)}
+ * html`
+ *   <ol>
+ *     ${repeat(this.items, (item) => item.id, (item, index) => {
+ *       return html`<li>${index}: ${item.name}</li>`;
+ *     })}
+ *   </ol>
+ * `
  * ```
  *
  * **Important**: If providing a `keyFn`, keys *must* be unique for all items in a
