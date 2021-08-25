@@ -1510,8 +1510,9 @@ class EventPart extends AttributePart {
       (strings.length !== 2 || strings[0] !== '' || strings[1] !== '')
     ) {
       throw new Error(
-        'An event listener in a template must have exactly one expression ' +
-          'and no surrounding text.'
+        `A \`<${element.localName}>\` has a \`@${name}=...\` listener with ` +
+          'invalid content. Event listeners in templates must have exactly ' +
+          'one expression and no surrounding text.'
       );
     }
   }
