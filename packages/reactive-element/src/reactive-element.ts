@@ -43,8 +43,7 @@ if (DEV_MODE) {
   // Issue platform support warning.
   if (
     window.ShadyDOM?.inUse &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['reactiveElementPlatformSupport'] === undefined
+    globalThis.reactiveElementPlatformSupport === undefined
   ) {
     console.warn(
       `Shadow DOM is being polyfilled via ShadyDOM but ` +
@@ -1242,8 +1241,7 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['reactiveElementPlatformSupport']?.({ReactiveElement});
+globalThis.reactiveElementPlatformSupport?.({ReactiveElement});
 
 // Dev mode warnings...
 if (DEV_MODE) {
@@ -1286,5 +1284,4 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.3');
+(globalThis.reactiveElementVersions ??= []).push('1.0.0-rc.3');

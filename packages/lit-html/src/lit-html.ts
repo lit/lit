@@ -1629,11 +1629,9 @@ export const _$LH = {
 };
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.(Template, ChildPart);
+globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.4');
+(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');

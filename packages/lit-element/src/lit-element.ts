@@ -150,12 +150,10 @@ export class LitElement extends ReactiveElement {
 }
 
 // Install hydration if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementHydrateSupport']?.({LitElement});
+globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport']?.({LitElement});
+globalThis.litElementPlatformSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
@@ -225,5 +223,4 @@ export const _$LE = {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.3');
+(globalThis.litElementVersions ??= []).push('3.0.0-rc.3');
