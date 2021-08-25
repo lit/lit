@@ -155,6 +155,7 @@ test('@property (merge with existing static properties)', () => {
       };
     }
     num = 42;
+
     constructor() {
       super();
     }
@@ -501,7 +502,7 @@ test('private @eventOptions but not an event binding', () => {
 
   const expected = `
   import {LitElement, html, svg} from 'lit';
-  
+
   class MyElement extends LitElement {
     _onClick(event) {
       console.log('click', event.target);
@@ -708,6 +709,7 @@ test('ignore non-lit method decorator', () => {
   import {__decorate} from 'tslib';
   import {LitElement} from 'lit';
   import {property} from './not-lit.js';
+
   class MyElement extends LitElement {
     foo;
   };
