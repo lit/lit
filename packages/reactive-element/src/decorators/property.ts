@@ -94,7 +94,6 @@ const legacyProperty = (
  * state properties can be initialized via public properties to facilitate
  * complex interactions.
  *
- * @example
  * ```ts
  * class MyElement {
  *   @property({ type: Boolean })

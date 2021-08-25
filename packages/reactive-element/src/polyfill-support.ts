@@ -43,8 +43,7 @@ interface PatchableReactiveElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['reactiveElementPlatformSupport'] ??= ({
+globalThis.reactiveElementPlatformSupport ??= ({
   ReactiveElement,
 }: {
   ReactiveElement: PatchableReactiveElement;

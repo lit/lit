@@ -44,9 +44,6 @@ class LiveDirective extends Directive {
     const element = part.element;
     const name = part.name;
 
-    // TODO (justinfagnani): This is essentially implementing a getLiveValue()
-    // method for each part type. Should that be moved into the AttributePart
-    // interface?
     if (part.type === PartType.PROPERTY) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (value === (element as any)[name]) {
@@ -83,7 +80,7 @@ class LiveDirective extends Directive {
  * value with the bound value no matter what--use the `live()` directive:
  *
  * ```js
- *     html`<input .value=${live(x)}>`
+ * html`<input .value=${live(x)}>`
  * ```
  *
  * `live()` performs a strict equality check agains the live DOM value, and if

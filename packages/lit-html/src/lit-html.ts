@@ -241,10 +241,6 @@ const COMMENT_PART = 7;
 export type TemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
   ['_$litType$']: T;
-  // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
-  // semi-public API though. We can't just let Terser rename them for us,
-  // because we need TemplateResults to work between compatible versions of
-  // lit-html.
   strings: TemplateStringsArray;
   values: unknown[];
 };
@@ -706,7 +702,8 @@ class Template {
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             // We can't use empty text nodes as markers because they're
-            // normalized in some browsers (TODO: check)
+            // normalized when cloning in IE (could simplify when
+            // IE is no longer supported)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
@@ -728,8 +725,6 @@ class Template {
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
             // Comment node has a binding marker inside, make an inactive part
             // The binding won't work, but subsequent bindings will
-            // TODO (justinfagnani): consider whether it's even worth it to
-            // make bindings in comments work
             parts.push({type: COMMENT_PART, index: nodeIndex});
             // Move to the end of the match
             i += marker.length - 1;
@@ -1041,6 +1036,11 @@ class ChildPart implements Disconnectable {
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
+    if (DEV_MODE && this.parentNode === null) {
+      throw new Error(
+        `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept a value. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`
+      );
+    }
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
       // Non-rendering child values. It's important that these do not render
@@ -1566,8 +1566,6 @@ class EventPart extends AttributePart {
 
   handleEvent(event: Event) {
     if (typeof this._$committedValue === 'function') {
-      // TODO (justinfagnani): do we need to default to this.element?
-      // It'll always be the same as `e.currentTarget`.
       this._$committedValue.call(this.options?.host ?? this.element, event);
     } else {
       (this._$committedValue as EventListenerObject).handleEvent(event);
@@ -1651,11 +1649,9 @@ export const _$LH = {
 };
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.(Template, ChildPart);
+globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.3');
+(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');

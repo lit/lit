@@ -6,9 +6,10 @@
 
 import {assert} from '@esm-bundle/chai';
 import {until} from '../../directives/until.js';
-import {html, render} from '../../lit-html.js';
+import {html, nothing, render} from '../../lit-html.js';
 import {Deferred} from '../test-utils/deferred.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {memorySuite} from '../test-utils/memory.js';
 
 const laterTask = () => new Promise((resolve) => setTimeout(resolve));
 
@@ -678,4 +679,165 @@ suite('until directive', () => {
       assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
     }
   );
+
+  suite('disconnection', () => {
+    test('until does not render when promise resolves while disconnected', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      const part = render(html`<div>${until(promise)}</div>`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(false);
+      resolvePromise!('resolved');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(true);
+      await laterTask();
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>resolved</div>'
+      );
+    });
+
+    test('disconnection thrashing', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      const part = render(html`<div>${until(promise)}</div>`, container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(false);
+      resolvePromise!('resolved');
+      await laterTask();
+      part.setConnected(true);
+      part.setConnected(false);
+
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(true);
+      await laterTask();
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>resolved</div>'
+      );
+    });
+
+    test('until does not render when newly rendered while disconnected', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      const template = (v: unknown) => html`<div>${v}</div>`;
+
+      const part = render(template(''), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(false);
+      render(template(until(promise)), container);
+      resolvePromise!('resolved');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+      part.setConnected(true);
+      await laterTask();
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>resolved</div>'
+      );
+    });
+
+    test('until does not render when resolved and changed while disconnected', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      const template = (v: unknown) => html`<div>${v}</div>`;
+
+      const part = render(template('1'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div>1</div>');
+
+      part.setConnected(false);
+      render(template(until(promise)), container);
+      await laterTask();
+
+      render(template('2'), container);
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div>2</div>');
+
+      resolvePromise!('resolved');
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div>2</div>');
+
+      part.setConnected(true);
+      await laterTask();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<div>2</div>');
+    });
+
+    test('the same promise can be rendered into two until instances', async () => {
+      let resolvePromise: (arg: any) => void;
+      const promise = new Promise((resolve, _reject) => {
+        resolvePromise = resolve;
+      });
+
+      render(
+        html`<div>${until(promise, 'unresolved1')}</div><span>${until(
+          promise,
+          'unresolved2'
+        )}</span>`,
+        container
+      );
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>unresolved1</div><span>unresolved2</span>'
+      );
+
+      resolvePromise!('resolved');
+      await promise;
+
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<div>resolved</div><span>resolved</span>'
+      );
+    });
+  });
+
+  memorySuite('memory leak tests', () => {
+    test('tree with until cleared while promise is pending', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      // Make a big array set on an expando to exaggerate any leaked DOM
+      const big = () => new Array(10000).fill(0);
+      // Hold onto the resolvers to prevent the promises from being gc'ed
+      const resolvers: Array<() => void> = [];
+      window.gc();
+      const heap = performance.memory.usedJSHeapSize;
+      for (let i = 0; i < 1000; i++) {
+        // Promise passed to until that will never resolve
+        const promise: Promise<void> = new Promise((r) => resolvers.push(r));
+        // Render the until into a `<span>` with a 10kb expando, to exaggerate
+        // when DOM is not being gc'ed
+        render(
+          template(html`<span .p=${big()}>${until(promise)}</span>`),
+          container
+        );
+        // Clear the `<span>` + directive
+        render(template(nothing), container);
+      }
+      window.gc();
+      // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
+      // DOM leak will be orders of magnitude larger
+      assert.isAtMost(
+        performance.memory.usedJSHeapSize,
+        heap * 1.5,
+        'memory leak detected'
+      );
+    });
+  });
 });

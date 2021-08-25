@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "publishConfig": {
     "access": "public"
   },
@@ -65,7 +65,7 @@
     "koa-static": "^5.0.0",
     "lit": "^2.0.0-rc.1",
     "lit-element": "^3.0.0-rc.1",
-    "lit-html": "^2.0.0-rc.1",
+    "lit-html": "^2.0.0-rc.4",
     "node-fetch": "^2.6.0",
     "parse5": "^5.1.0",
     "resolve": "^1.10.1"
