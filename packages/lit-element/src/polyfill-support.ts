@@ -42,8 +42,7 @@ interface PatchableLitElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport'] ??= ({
+globalThis.litElementPlatformSupport ??= ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;

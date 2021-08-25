@@ -4,10 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-interface Window {
+// eslint-disable-next-line no-var
+declare var reactiveElementPlatformSupport:
+  | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  reactiveElementPlatformSupport: (options: {[index: string]: any}) => void;
-}
+  | ((options: {ReactiveElement: any}) => void);
+// eslint-disable-next-line no-var
+declare var reactiveElementVersions: undefined | Array<string>;
 
 // Augment existing types with styling API
 interface ShadowRoot {

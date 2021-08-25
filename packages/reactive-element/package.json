@@ -1,6 +1,6 @@
 {
   "name": "@lit/reactive-element",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "publishConfig": {
     "access": "public"
   },
@@ -68,7 +68,8 @@
     "/reactive-controller.{d.ts,d.ts.map,js,js.map}",
     "/reactive-element.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
-    "/development/"
+    "/development/",
+    "!/development/test/"
   ],
   "devDependencies": {
     "@babel/cli": "^7.14.6",
