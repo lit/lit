@@ -1018,7 +1018,9 @@ export abstract class ReactiveElement
 
   /**
    * Schedules an element update. You can override this method to change the
-   * timing of updates. If this method is overridden, `super.scheduleUpdate()`
+   * timing of updates by returning a Promise. The update will await the
+   * returned Promise, and you should resolve the Promise to allow the update
+   * to proceed. If this method is overridden, `super.scheduleUpdate()`
    * must be called.
    *
    * For instance, to schedule updates to occur just before the next frame:
