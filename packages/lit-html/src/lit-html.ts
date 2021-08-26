@@ -1496,6 +1496,24 @@ export type {EventPart};
 class EventPart extends AttributePart {
   override readonly type = EVENT_PART;
 
+  constructor(
+    element: HTMLElement,
+    name: string,
+    strings: ReadonlyArray<string>,
+    parent: Disconnectable,
+    options: RenderOptions | undefined
+  ) {
+    super(element, name, strings, parent, options);
+
+    if (DEV_MODE && this.strings !== undefined) {
+      throw new Error(
+        `A \`<${element.localName}>\` has a \`@${name}=...\` listener with ` +
+          'invalid content. Event listeners in templates must have exactly ' +
+          'one expression and no surrounding text.'
+      );
+    }
+  }
+
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
