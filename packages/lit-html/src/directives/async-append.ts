@@ -30,13 +30,13 @@ class AsyncAppendDirective extends AsyncReplaceDirective {
   }
 
   // Override AsyncReplace to save the part since we need to append into it
-  update(part: ChildPart, params: DirectiveParameters<this>) {
+  override update(part: ChildPart, params: DirectiveParameters<this>) {
     this.__childPart = part;
     return super.update(part, params);
   }
 
   // Override AsyncReplace to append rather than replace
-  protected commitValue(value: unknown, index: number) {
+  protected override commitValue(value: unknown, index: number) {
     // When we get the first value, clear the part. This lets the
     // previous value display until we can replace it.
     if (index === 0) {
