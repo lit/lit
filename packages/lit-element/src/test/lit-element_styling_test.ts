@@ -341,7 +341,7 @@ import {assert} from '@esm-bundle/chai';
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return staticHtml`
           <style>
             div {
