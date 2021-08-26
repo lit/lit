@@ -1159,7 +1159,8 @@ class ChildPart implements Disconnectable {
     } else {
       const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
-      (fragment as DocumentFragmentWithParent)._$litParent$ = () => this.parentNode;
+      (fragment as DocumentFragmentWithParent)._$litParent$ = () =>
+        this.parentNode;
       instance._update(values);
       this._commitNode(fragment);
       this._$committedValue = instance;
