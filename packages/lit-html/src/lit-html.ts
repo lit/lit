@@ -350,11 +350,12 @@ export interface RenderOptions {
    */
   creationScope?: {importNode(node: Node, deep?: boolean): Node};
   /**
-   * The initial connected state for the top-level part being rendered.
-   * The `part.setConnected()` method must be used subsequent to initial render
-   * to change the connected state of the part. Set to `false` if the initial
-   * render occurs in a disconnected tree and `AsyncDirective`s should see
-   * `isConnected === false` for their initial render.
+   * The initial connected state for the top-level part being rendered. If no
+   * `isConnected` option is set, `AsyncDirective`s will be connected by
+   * default. Set to `false` if the initial render occurs in a disconnected tree
+   * and `AsyncDirective`s should see `isConnected === false` for their initial
+   * render. The `part.setConnected()` method must be used subsequent to initial
+   * render to change the connected state of the part.
    */
   isConnected?: boolean;
 }
