@@ -83,7 +83,7 @@ suite('directive-helpers', () => {
         return v;
       }
 
-      update(part: ChildPart, [v]: Parameters<this['render']>) {
+      override update(part: ChildPart, [v]: Parameters<this['render']>) {
         // Create two parts and remove the first, then the second to make sure
         // that removing the first doesn't move the second's markers. This
         // fails if the parts accidentally share a marker.
@@ -112,12 +112,12 @@ suite('directive-helpers', () => {
           connected = this.isConnected;
           return this.isConnected;
         }
-        disconnected() {
+        override disconnected() {
           connected = false;
           assert.equal(connected, this.isConnected);
           this.setValue(connected);
         }
-        reconnected() {
+        override reconnected() {
           connected = true;
           assert.equal(connected, this.isConnected);
           this.setValue(connected);

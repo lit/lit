@@ -20,7 +20,8 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "jsx": "react"
+    "jsx": "react",
+    "noImplicitOverride": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [],

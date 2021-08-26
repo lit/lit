@@ -64,8 +64,7 @@ if (DEV_MODE) {
   // Issue platform support warning.
   if (
     window.ShadyDOM?.inUse &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['reactiveElementPlatformSupport'] === undefined
+    globalThis.reactiveElementPlatformSupport === undefined
   ) {
     issueWarning(
       `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
@@ -666,7 +665,7 @@ export abstract class ReactiveElement
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
-      // TODO(sorvell): casting to Array<unknown> works around TS error that
+      // Casting to Array<unknown> works around TS error that
       // appears to come from trying to flatten a type CSSResultArray.
       const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
       // Then preserve original order by adding the set items in reverse order.
@@ -1265,8 +1264,7 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['reactiveElementPlatformSupport']?.({ReactiveElement});
+globalThis.reactiveElementPlatformSupport?.({ReactiveElement});
 
 // Dev mode warnings...
 if (DEV_MODE) {

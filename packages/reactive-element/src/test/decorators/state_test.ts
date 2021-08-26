@@ -21,7 +21,7 @@ suite('@state', () => {
 
     updateCount = 0;
 
-    update(changed: PropertyValues) {
+    override update(changed: PropertyValues) {
       this.updateCount++;
       super.update(changed);
     }

@@ -50,7 +50,7 @@ export const renderTemplate = (someData) => {
 ```js
 // Example: server.js:
 
-import {renderModule} from 'lit-ssr/lib/render-module.js';
+import {renderModule} from '@lit-labs/ssr/lib/render-module.js';
 
 // Execute the above `renderTemplate` in a separate VM context with a minimal DOM shim
 const ssrResult = await (renderModule(

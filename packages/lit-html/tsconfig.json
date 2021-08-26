@@ -19,7 +19,8 @@
     "noImplicitThis": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "stripInternal": true
+    "stripInternal": true,
+    "noImplicitOverride": true
   },
   "include": [
     "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",

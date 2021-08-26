@@ -105,7 +105,7 @@ suite('Task', () => {
       () => [this.zot]
     );
 
-    update(changedProperties: PropertyValues) {
+    override update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       this.taskValue = this.task.value ?? this.task.error;
       this.taskControllerValue =

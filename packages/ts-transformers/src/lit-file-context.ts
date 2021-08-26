@@ -39,7 +39,7 @@ export class LitFileContext {
    */
   getCanonicalName(node: ts.Node): string | undefined {
     const symbol = this._program.getTypeChecker().getSymbolAtLocation(node);
-    const firstDeclaration = symbol?.declarations[0];
+    const firstDeclaration = symbol?.declarations?.[0];
     if (
       firstDeclaration === undefined ||
       !ts.isImportSpecifier(firstDeclaration)
