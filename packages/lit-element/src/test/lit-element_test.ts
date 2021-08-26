@@ -203,7 +203,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
   });
 
   test('adds a version number', () => {
-    assert.equal(window['litElementVersions'].length, 1);
+    assert.equal(window.litElementVersions!.length, 1);
   });
 
   test('event fired during rendering element can trigger an update', async () => {

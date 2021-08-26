@@ -74,12 +74,6 @@ if (DEV_MODE) {
   };
 }
 
-declare global {
-  interface Window {
-    litElementVersions: string[];
-  }
-}
-
 /**
  * Base element class that manages element properties and attributes, and
  * renders a lit-html template.

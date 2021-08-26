@@ -29,12 +29,6 @@ export type {
 
 const DEV_MODE = true;
 
-declare global {
-  interface Window {
-    reactiveElementVersions: string[];
-  }
-}
-
 let requestUpdateThenable: (name: string) => {
   then: (
     onfulfilled?: (value: boolean) => void,
