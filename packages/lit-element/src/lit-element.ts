@@ -63,10 +63,7 @@ if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
   const issuedWarnings: Set<string | undefined> =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['litIssuedWarnings'] ??
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((globalThis as any)['litIssuedWarnings'] = new Set());
+    (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
   issueWarning = (warning: string) => {
@@ -245,21 +242,11 @@ export const _$LE = {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.3');
-if (DEV_MODE) {
-  if (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['reactiveElementVersions']?.length > 1 ||
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['litElementVersions']?.length > 1 ||
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['litHtmlVersions']?.length > 1
-  ) {
-    issueWarning!(
-      `Multiple versions of Lit loaded. Loading multiple versions ` +
-        `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-        `for more information.`
-    );
-  }
+(globalThis.litElementVersions ??= []).push('3.0.0-rc.3');
+if (DEV_MODE && globalThis.litElementVersions.length > 1) {
+  issueWarning!(
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+      `for more information.`
+  );
 }

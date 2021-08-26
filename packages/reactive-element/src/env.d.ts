@@ -11,6 +11,8 @@ declare var reactiveElementPlatformSupport:
   | ((options: {ReactiveElement: any}) => void);
 // eslint-disable-next-line no-var
 declare var reactiveElementVersions: undefined | Array<string>;
+// eslint-disable-next-line no-var
+declare var litIssuedWarnings: undefined | Set<string | undefined>;
 
 // Augment existing types with styling API
 interface ShadowRoot {

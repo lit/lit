@@ -1641,14 +1641,10 @@ globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-rc.4');
-if (DEV_MODE) {
+(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
+if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   const issuedWarnings: Set<string | undefined> =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['litIssuedWarnings'] ??
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((globalThis as any)['litIssuedWarnings'] = new Set());
+    (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
   const issueWarning = (warning: string) => {
@@ -1657,18 +1653,9 @@ if (DEV_MODE) {
       issuedWarnings.add(warning);
     }
   };
-  if (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['reactiveElementVersions']?.length > 1 ||
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['litElementVersions']?.length > 1 ||
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['litHtmlVersions']?.length > 1
-  ) {
-    issueWarning(
-      `Multiple versions of Lit loaded. Loading multiple versions ` +
-        `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-        `for more information.`
-    );
-  }
+  issueWarning(
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+      `for more information.`
+  );
 }
