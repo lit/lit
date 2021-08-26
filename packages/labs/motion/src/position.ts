@@ -38,7 +38,10 @@ export class Position extends AsyncDirective {
     return nothing;
   }
 
-  update(part: AttributePart, [target, positions]: Parameters<this['render']>) {
+  override update(
+    part: AttributePart,
+    [target, positions]: Parameters<this['render']>
+  ) {
     if (this._host === undefined) {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);

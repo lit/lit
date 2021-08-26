@@ -12,7 +12,7 @@ import {assert} from '@esm-bundle/chai';
 class SimpleGreeting extends LitElement {
   private name: String;
 
-  static get properties() {
+  static override get properties() {
     return {name: {type: String}};
   }
 
@@ -22,7 +22,7 @@ class SimpleGreeting extends LitElement {
     this.name = 'World';
   }
 
-  render() {
+  override render() {
     return html`<span>hello ${this.name}!</span>`;
   }
 }
@@ -32,7 +32,7 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
     'simple-greeting': SimpleGreeting,
   };
 
-  static get styles() {
+  static override get styles() {
     return css`
       :host {
         color: #ff0000;
@@ -40,7 +40,7 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
     `;
   }
 
-  render() {
+  override render() {
     return html` <simple-greeting
       id="greeting"
       name="scoped world"

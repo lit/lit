@@ -10,8 +10,8 @@ import {UnsafeHTMLDirective} from './unsafe-html.js';
 const SVG_RESULT = 2;
 
 class UnsafeSVGDirective extends UnsafeHTMLDirective {
-  static directiveName = 'unsafeSVG';
-  static resultType = SVG_RESULT;
+  static override directiveName = 'unsafeSVG';
+  static override resultType = SVG_RESULT;
 }
 
 /**

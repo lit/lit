@@ -88,9 +88,9 @@ suite('Flip', () => {
     class A extends LitElement {
       @property() shift = false;
       @query('div') div!: HTMLDivElement;
-      static styles = styles;
+      static override styles = styles;
 
-      render() {
+      override render() {
         return html`<div
           class="container ${classMap({shift: this.shift})}"
           ${flip(options)}

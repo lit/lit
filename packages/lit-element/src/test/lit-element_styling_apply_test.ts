@@ -35,7 +35,7 @@ import {assert} from '@esm-bundle/chai';
     customElements.define(
       'x-inner2',
       class extends LitElement {
-        render() {
+        override render() {
           return htmlWithStyles`
         <style>
           div {
@@ -49,7 +49,7 @@ import {assert} from '@esm-bundle/chai';
     const name = generateElementName();
     class E extends LitElement {
       inner: LitElement | null = null;
-      render() {
+      override render() {
         return htmlWithStyles`
         <style>
           x-inner2 {
@@ -61,7 +61,7 @@ import {assert} from '@esm-bundle/chai';
         <x-inner2></x-inner2>`;
       }
 
-      firstUpdated() {
+      override firstUpdated() {
         this.inner = this.shadowRoot!.querySelector('x-inner2') as LitElement;
       }
     }
@@ -89,7 +89,7 @@ import {assert} from '@esm-bundle/chai';
     customElements.define(
       'x-inner3',
       class extends LitElement {
-        render() {
+        override render() {
           return htmlWithStyles`
         <style>
           div {
@@ -105,7 +105,7 @@ import {assert} from '@esm-bundle/chai';
       inner: LitElement | null = null;
       div!: HTMLDivElement;
 
-      render() {
+      override render() {
         return htmlWithStyles`
         <style>
           div {
@@ -122,7 +122,7 @@ import {assert} from '@esm-bundle/chai';
         <x-inner3></x-inner3>`;
       }
 
-      firstUpdated() {
+      override firstUpdated() {
         this.inner = this.shadowRoot!.querySelector('x-inner3') as LitElement;
         this.div = this.shadowRoot!.querySelector('div') as HTMLDivElement;
       }
@@ -154,7 +154,7 @@ import {assert} from '@esm-bundle/chai';
 
   test('@apply renders in nested elements when sub-element renders separately first', async () => {
     class I extends LitElement {
-      render() {
+      override render() {
         return htmlWithStyles`
         <style>
           :host {
@@ -174,7 +174,7 @@ import {assert} from '@esm-bundle/chai';
     class E extends LitElement {
       applied: HTMLElement | undefined;
 
-      render() {
+      override render() {
         return htmlWithStyles`
         <style>
           :host {
@@ -187,7 +187,7 @@ import {assert} from '@esm-bundle/chai';
         <x-applied></x-applied>`;
       }
 
-      firstUpdated() {
+      override firstUpdated() {
         this.applied = this.shadowRoot!.querySelector(
           'x-applied'
         ) as LitElement;
@@ -229,7 +229,7 @@ import {assert} from '@esm-bundle/chai';
     customElements.define(
       name,
       class extends LitElement {
-        static get styles() {
+        static override get styles() {
           return [
             css`
               div {
@@ -245,7 +245,7 @@ import {assert} from '@esm-bundle/chai';
           ];
         }
 
-        render() {
+        override render() {
           return htmlWithStyles`
         <div>Testing1</div>
         <span>Testing2</span>`;

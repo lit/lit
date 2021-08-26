@@ -116,12 +116,8 @@ test('@property', () => {
         num: {type: Number, attribute: false},
       };
     }
-
-    constructor() {
-      super(...arguments);
-      this.str = "foo";
-      this.num = 42;
-    }
+    str = "foo";
+    num = 42;
   }
   `;
   checkTransform(input, expected);
@@ -158,10 +154,10 @@ test('@property (merge with existing static properties)', () => {
         num: {type: Number},
       };
     }
+    num = 42;
 
     constructor() {
       super();
-      this.num = 42;
     }
   }
   `;
@@ -192,12 +188,8 @@ test('@state', () => {
         num2: {hasChanged: () => false, state: true},
       };
     }
-
-    constructor() {
-      super(...arguments);
-      this.num = 42;
-      this.num2 = 24;
-    }
+    num = 42;
+    num2 = 24;
   }
   `;
   checkTransform(input, expected);
@@ -510,7 +502,7 @@ test('private @eventOptions but not an event binding', () => {
 
   const expected = `
   import {LitElement, html, svg} from 'lit';
-  
+
   class MyElement extends LitElement {
     _onClick(event) {
       console.log('click', event.target);
@@ -718,7 +710,9 @@ test('ignore non-lit method decorator', () => {
   import {LitElement} from 'lit';
   import {property} from './not-lit.js';
 
-  class MyElement extends LitElement {};
+  class MyElement extends LitElement {
+    foo;
+  };
   __decorate([property()], MyElement.prototype, "foo", void 0);
   `;
   checkTransform(input, expected);
@@ -768,12 +762,8 @@ test('aliased property decorator import', () => {
         num: {type: Number, attribute: false},
       };
     }
-
-    constructor() {
-      super(...arguments);
-      this.str = "foo";
-      this.num = 42;
-    }
+    str = "foo";
+    num = 42;
   }
   `;
   checkTransform(input, expected);
