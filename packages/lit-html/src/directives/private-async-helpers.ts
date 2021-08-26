@@ -76,7 +76,9 @@ export class Pauser {
    * Creates a promise to be awaited
    */
   pause() {
-    this._promise ??= new Promise((resolve) => (this._resolve = resolve));
+    this._promise ??= new Promise((resolve) => {
+      this._resolve = resolve;
+    });
   }
   /**
    * Resolves the promise which may be awaited

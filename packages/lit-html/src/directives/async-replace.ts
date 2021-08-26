@@ -13,8 +13,8 @@ type Mapper<T> = (v: T, index?: number) => unknown;
 
 export class AsyncReplaceDirective extends AsyncDirective {
   private __value?: AsyncIterable<unknown>;
-  private __weakThis = new PseudoWeakRef(this);
-  private __pauser = new Pauser();
+  private readonly __weakThis = new PseudoWeakRef(this);
+  private readonly __pauser = new Pauser();
 
   // @ts-expect-error value not used, but we want a nice parameter for docs
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

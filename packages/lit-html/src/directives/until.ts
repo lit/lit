@@ -19,8 +19,8 @@ const _infinity = 0x3fffffff;
 export class UntilDirective extends AsyncDirective {
   private __lastRenderedIndex: number = _infinity;
   private __values: unknown[] = [];
-  private __weakThis = new PseudoWeakRef(this);
-  private __pauser = new Pauser();
+  private readonly __weakThis = new PseudoWeakRef(this);
+  private readonly __pauser = new Pauser();
 
   render(...args: Array<unknown>) {
     return args.find((x) => !isPromise(x)) ?? noChange;
@@ -130,9 +130,3 @@ export class UntilDirective extends AsyncDirective {
  * ```
  */
 export const until = directive(UntilDirective);
-
-/**
- * The type of the class that powers this directive. Necessary for naming the
- * directive's return type.
- */
-// export type {UntilDirective};

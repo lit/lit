@@ -26,7 +26,7 @@ const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
   window.ShadyDOM?.inUse &&
   window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+    ? window.ShadyDOM.wrap
     : (node: Node) => node;
 
 const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;

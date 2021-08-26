@@ -113,7 +113,7 @@ globalThis.litHtmlPlatformSupport ??= (
     ENABLE_SHADYDOM_NOPATCH &&
     window.ShadyDOM?.inUse &&
     window.ShadyDOM?.noPatch === true
-      ? window.ShadyDOM!.wrap
+      ? window.ShadyDOM.wrap
       : (node: Node) => node;
 
   const needsPrepareStyles = (name: string | undefined) =>
@@ -284,5 +284,5 @@ globalThis.litHtmlPlatformSupport ??= (
 };
 
 if (ENABLE_SHADYDOM_NOPATCH) {
-  globalThis.litHtmlPlatformSupport!.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+  globalThis.litHtmlPlatformSupport.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
 }
