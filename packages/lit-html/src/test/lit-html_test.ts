@@ -20,7 +20,7 @@ import {
 } from '../lit-html.js';
 import * as litHtmlLib from '../lit-html.js';
 
-import {directive, Directive, PartType, PartInfo} from '../directive.js';
+import {directive, Directive, PartType, PartInfo, DirectiveParameters} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -1642,11 +1642,11 @@ suite('lit-html', () => {
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
       class CheckNodePropertiesBehavior extends Directive {
-        render() {
+        render(_parentId?: string) {
           return nothing;
         }
 
-        override update(part: ChildPart) {
+        override update(part: ChildPart, [parentId]: DirectiveParameters<this>) {
           const {parentNode, startNode, endNode} = part;
 
           if (endNode !== null) {
@@ -1663,6 +1663,10 @@ suite('lit-html', () => {
           } else {
             // The part covers all siblings between `startNode` and `endNode`.
             assert.equal<Node | null>(startNode.nextSibling, endNode);
+          }
+
+          if (parentId !== undefined) {
+            assert.equal((parentNode as HTMLElement).id, parentId);
           }
 
           return nothing;
@@ -1696,6 +1700,27 @@ suite('lit-html', () => {
         // Render twice so that `update` is called.
         render(makeTemplate(checkNodePropertiesBehavior()), container);
         render(makeTemplate(checkNodePropertiesBehavior()), container);
+      });
+
+      test('directive parent is the logical DOM parent', () => {
+        const makeTemplate = (content1: unknown, content2: unknown, content3: unknown) =>
+          html`
+            <div id="parent1">${content1}</div>
+            <div id="parent2">${content2}</div>
+            <div id="parent3">${content3}</div>
+          `;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(
+          checkNodePropertiesBehavior('parent1'), 
+          html`x ${checkNodePropertiesBehavior('parent2')} x`,
+          html`x ${html`x ${checkNodePropertiesBehavior('parent3')} x`} x`
+        ), container);
+        render(makeTemplate(
+          checkNodePropertiesBehavior('parent1'), 
+          html`x ${checkNodePropertiesBehavior('parent2')} x`,
+          html`x ${html`x ${checkNodePropertiesBehavior('parent3')} x`} x`
+        ), container);
       });
     });
 

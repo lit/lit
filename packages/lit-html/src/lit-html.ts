@@ -31,6 +31,10 @@ const wrap =
 
 const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
 
+interface DocumentFragmentWithParent extends DocumentFragment {
+  _$litParent$: () => Node | null;
+}
+
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
  * tag function.
@@ -1016,7 +1020,9 @@ class ChildPart implements Disconnectable {
    * consists of all child nodes of `.parentNode`.
    */
   get parentNode(): Node {
-    return wrap(this._$startNode).parentNode!;
+    const parent = wrap(this._$startNode).parentNode!;
+    const parentFn = (parent as DocumentFragmentWithParent)._$litParent$;
+    return parentFn?.() ?? parent;
   }
 
   /**
@@ -1153,6 +1159,7 @@ class ChildPart implements Disconnectable {
     } else {
       const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
+      (fragment as DocumentFragmentWithParent)._$litParent$ = () => this.parentNode;
       instance._update(values);
       this._commitNode(fragment);
       this._$committedValue = instance;
