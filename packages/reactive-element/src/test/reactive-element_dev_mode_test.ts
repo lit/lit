@@ -42,12 +42,12 @@ if (DEV_MODE) {
       }
     });
 
-    const litWarnings = (globalThis as any)['litIssuedWarnings'] as Set<string>;
+    const litWarnings = globalThis.litIssuedWarnings!;
 
     suite('Initial warnings', () => {
       test('warns for dev mode', () => {
         assert.isTrue(
-          Array.from(litWarnings).some((v) => v.includes('Lit is in dev mode'))
+          Array.from(litWarnings).some((v) => v?.includes('Lit is in dev mode'))
         );
       });
 
@@ -55,7 +55,7 @@ if (DEV_MODE) {
         'warns for missing polyfill-support',
         () => {
           assert.isTrue(
-            Array.from(litWarnings).some((v) => v.includes('polyfill-support'))
+            Array.from(litWarnings).some((v) => v?.includes('polyfill-support'))
           );
         }
       );

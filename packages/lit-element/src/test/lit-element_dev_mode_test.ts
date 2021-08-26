@@ -39,6 +39,15 @@ if (DEV_MODE) {
       }
     });
 
+    const litWarnings = globalThis.litIssuedWarnings!;
+
+    test('warns for dev mode only 1x', () => {
+      assert.equal(
+        Array.from(litWarnings).filter((v) => v?.includes('dev mode')).length,
+        1
+      );
+    });
+
     test('warns when `static render` is implemented', () => {
       class WarnRender extends LitElement {
         static render() {}
