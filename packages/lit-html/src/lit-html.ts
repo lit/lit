@@ -1505,10 +1505,7 @@ class EventPart extends AttributePart {
   ) {
     super(element, name, strings, parent, options);
 
-    if (
-      DEV_MODE &&
-      (strings.length !== 2 || strings[0] !== '' || strings[1] !== '')
-    ) {
+    if (DEV_MODE && this.strings !== undefined) {
       throw new Error(
         `A \`<${element.localName}>\` has a \`@${name}=...\` listener with ` +
           'invalid content. Event listeners in templates must have exactly ' +
