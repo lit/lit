@@ -17,9 +17,9 @@ const {attributeToProperty, changedProperties} = _$LE;
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
-  element: LitElement;
+  override element: LitElement;
 
-  static matchesClass(ctor: typeof HTMLElement) {
+  static override matchesClass(ctor: typeof HTMLElement) {
     // This property needs to remain unminified.
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }

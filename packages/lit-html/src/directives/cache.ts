@@ -39,7 +39,7 @@ class CacheDirective extends Directive {
     return [v];
   }
 
-  update(containerPart: ChildPart, [v]: DirectiveParameters<this>) {
+  override update(containerPart: ChildPart, [v]: DirectiveParameters<this>) {
     // If the previous value is a TemplateResult and the new value is not,
     // or is a different Template as the previous value, move the child part
     // into the cache.

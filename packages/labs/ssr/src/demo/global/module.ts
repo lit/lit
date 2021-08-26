@@ -22,7 +22,7 @@ export const initialData = {
 };
 
 export class MyElement extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: inline-block;
       border: 1px dashed gray;
@@ -50,7 +50,7 @@ export class MyElement extends LitElement {
   @property({type: Boolean, reflect: true})
   wasUpdated = false;
 
-  render() {
+  override render() {
     return html`
       <header>I'm a my-element!</header>
       <div><i>this.prop</i>: ${this.prop}</div>

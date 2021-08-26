@@ -61,7 +61,7 @@ class StyleMapDirective extends Directive {
     }, '');
   }
 
-  update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
+  override update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
 
     if (this._previousStyleProperties === undefined) {

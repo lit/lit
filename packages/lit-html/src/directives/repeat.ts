@@ -77,7 +77,7 @@ class RepeatDirective extends Directive {
     return this._getValuesAndKeys(items, keyFnOrTemplate, template).values;
   }
 
-  update<T>(
+  override update<T>(
     containerPart: ChildPart,
     [items, keyFnOrTemplate, template]: [
       Iterable<T>,
@@ -85,8 +85,8 @@ class RepeatDirective extends Directive {
       ItemTemplate<T>
     ]
   ) {
-    // Old part & key lists are retrieved from the last update
-    // TODO: deal with directive being swapped out?
+    // Old part & key lists are retrieved from the last update (which may
+    // be primed by hydration)
     const oldParts = getCommittedValue(
       containerPart
     ) as Array<ChildPart | null>;
@@ -304,7 +304,7 @@ class RepeatDirective extends Directive {
     //   remaining clauses is is just a simple guess at which cases
     //   will be most common.
     //
-    // * TODO(kschaaf) Note, we could calculate the longest
+    // * Note, we could calculate the longest
     //   increasing subsequence (LIS) of old items in new position,
     //   and only move those not in the LIS set. However that costs
     //   O(nlogn) time and adds a bit more code, and only helps

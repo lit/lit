@@ -30,7 +30,7 @@ export class RenderingElement extends ReactiveElement {
   render(): string | undefined {
     return '';
   }
-  update(changedProperties: PropertyValues) {
+  override update(changedProperties: PropertyValues) {
     const result = this.render();
     super.update(changedProperties);
     if (result !== undefined) {

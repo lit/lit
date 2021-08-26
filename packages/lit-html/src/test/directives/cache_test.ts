@@ -163,10 +163,10 @@ suite('cache directive', () => {
           this.log.push(`render-${this.id}`);
           return id;
         }
-        disconnected() {
+        override disconnected() {
           this.log!.push(`disconnected-${this.id}`);
         }
-        reconnected() {
+        override reconnected() {
           this.log!.push(`reconnected-${this.id}`);
         }
       }

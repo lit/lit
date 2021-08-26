@@ -37,16 +37,13 @@ class LiveDirective extends Directive {
     return value;
   }
 
-  update(part: AttributePart, [value]: DirectiveParameters<this>) {
+  override update(part: AttributePart, [value]: DirectiveParameters<this>) {
     if (value === noChange || value === nothing) {
       return value;
     }
     const element = part.element;
     const name = part.name;
 
-    // TODO (justinfagnani): This is essentially implementing a getLiveValue()
-    // method for each part type. Should that be moved into the AttributePart
-    // interface?
     if (part.type === PartType.PROPERTY) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (value === (element as any)[name]) {
