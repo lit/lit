@@ -77,7 +77,7 @@ class RepeatDirective extends Directive {
     return this._getValuesAndKeys(items, keyFnOrTemplate, template).values;
   }
 
-  update<T>(
+  override update<T>(
     containerPart: ChildPart,
     [items, keyFnOrTemplate, template]: [
       Iterable<T>,

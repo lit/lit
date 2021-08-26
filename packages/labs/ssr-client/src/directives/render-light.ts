@@ -17,7 +17,7 @@ class RenderLightDirective extends Directive {
   render() {
     /* SSR handled specially in render-lit-html */
   }
-  update(part: ChildPart) {
+  override update(part: ChildPart) {
     const instance = part.parentNode as RenderLightHost;
     if (typeof instance.renderLight === 'function') {
       return instance.renderLight();

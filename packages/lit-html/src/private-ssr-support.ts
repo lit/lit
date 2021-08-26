@@ -41,7 +41,11 @@ export const _$LH = {
     resolveOverrideFn: (directive: Directive, values: unknown[]) => unknown
   ) =>
     class extends directiveClass {
-      _$resolve(this: Directive, _part: Part, values: unknown[]): unknown {
+      override _$resolve(
+        this: Directive,
+        _part: Part,
+        values: unknown[]
+      ): unknown {
         return resolveOverrideFn(this, values);
       }
     },

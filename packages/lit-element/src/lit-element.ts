@@ -79,7 +79,7 @@ export class LitElement extends ReactiveElement {
    * Note this property name is a string to prevent breaking Closure JS Compiler
    * optimizations. See @lit/reactive-element for more information.
    */
-  protected static ['finalized'] = true;
+  protected static override ['finalized'] = true;
 
   // This property needs to remain unminified.
   static ['_$litElement$'] = true;
@@ -94,7 +94,7 @@ export class LitElement extends ReactiveElement {
   /**
    * @category rendering
    */
-  protected createRenderRoot() {
+  protected override createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
     // shadowRoot by createRenderRoot. Adjust the renderBefore node so that
@@ -112,7 +112,7 @@ export class LitElement extends ReactiveElement {
    * @param changedProperties Map of changed properties with old values
    * @category updates
    */
-  protected update(changedProperties: PropertyValues) {
+  protected override update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.
@@ -124,7 +124,7 @@ export class LitElement extends ReactiveElement {
   /**
    * @category lifecycle
    */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
@@ -132,7 +132,7 @@ export class LitElement extends ReactiveElement {
   /**
    * @category lifecycle
    */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
   }

@@ -456,7 +456,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -524,7 +524,7 @@ export const tests: {[name: string]: SSRTest} = {
   'ChildPart accepts nested directives': () => {
     const aDirective = directive(
       class extends Directive {
-        update(_part: Part, [bool, v]: DirectiveParameters<this>) {
+        override update(_part: Part, [bool, v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(bool, v);
         }
@@ -537,7 +537,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -1079,7 +1079,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -1148,7 +1148,7 @@ export const tests: {[name: string]: SSRTest} = {
   'AttributePart accepts nested directives': () => {
     const aDirective = directive(
       class extends Directive {
-        update(_part: Part, [bool, v]: DirectiveParameters<this>) {
+        override update(_part: Part, [bool, v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(bool, v);
         }
@@ -1161,7 +1161,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -3593,7 +3593,7 @@ export const tests: {[name: string]: SSRTest} = {
         render(_v: string) {
           log.push('render should not be called');
         }
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           log.push(v);
         }
@@ -3776,7 +3776,7 @@ export const tests: {[name: string]: SSRTest} = {
     const dir = directive(
       class extends Directive {
         value: string | undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -4174,7 +4174,7 @@ export const tests: {[name: string]: SSRTest} = {
           log.push(`render-${this.id}`);
           return id;
         }
-        disconnected() {
+        override disconnected() {
           log.push(`disconnected-${this.id}`);
         }
       }
@@ -4258,7 +4258,7 @@ export const tests: {[name: string]: SSRTest} = {
     const log: number[] = [];
     const nest = directive(
       class extends Directive {
-        update(_part: Part, [n]: DirectiveParameters<this>) {
+        override update(_part: Part, [n]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(n);
         }
@@ -4310,7 +4310,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'le-basic',
           class extends LitElement {
-            render() {
+            override render() {
               return html` <div>[le-basic: <slot></slot>]</div> `;
             }
           }
@@ -4338,7 +4338,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'le-nested1',
           class extends LitElement {
-            render() {
+            override render() {
               return html`
                 <div>
                   [le-nested1: <le-nested2><slot></slot></le-nested2>]
@@ -4350,7 +4350,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'le-nested2',
           class extends LitElement {
-            render() {
+            override render() {
               return html` <div>[le-nested2: <slot></slot>]</div> `;
             }
           }
@@ -4381,7 +4381,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEPropBinding extends LitElement {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4430,7 +4430,7 @@ export const tests: {[name: string]: SSRTest} = {
           last?: string;
           fullName = '';
 
-          willUpdate(changedProperties: PropertyValues) {
+          override willUpdate(changedProperties: PropertyValues) {
             if (
               changedProperties.has('first') ||
               changedProperties.has('last')
@@ -4439,7 +4439,7 @@ export const tests: {[name: string]: SSRTest} = {
             }
           }
 
-          render() {
+          override render() {
             // prettier-ignore
             return html`<main>${this.fullName}</main>`;
           }
@@ -4487,7 +4487,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEReflectedBinding extends LitElement {
           @property({reflect: true})
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4538,7 +4538,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEAttrBinding extends LitElement {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4583,7 +4583,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEStaticAttr extends LitElement {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4616,7 +4616,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LENodeBinding extends LitElement {
           @property()
           template: unknown = 'default';
-          render() {
+          override render() {
             return html` <div>${this.template}</div> `;
           }
         }
@@ -4663,7 +4663,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LERenderLight extends LitElement implements RenderLightHost {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[shadow:${this.prop}<slot></slot>]</div> `;
           }
           renderLight() {
@@ -4716,7 +4716,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEOrder3 extends LitElement {
           @property()
           prop = 'from3';
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-order3:${this.prop}`;
           }
@@ -4725,7 +4725,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEOrder2 extends LitElement {
           @property()
           prop = 'from2';
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-order2:${this.prop}<le-order3
                 .prop=${this.prop}
@@ -4736,7 +4736,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEOrder1 extends LitElement {
           @property()
           prop = 'from1';
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-order1:${this.prop}<le-order2
                 .prop=${this.prop}
@@ -4745,7 +4745,7 @@ export const tests: {[name: string]: SSRTest} = {
         }
         customElements.define('le-order1', LEOrder1);
         class LELight extends LitElement {
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-light`;
           }

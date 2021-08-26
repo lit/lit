@@ -1646,7 +1646,7 @@ suite('lit-html', () => {
           return nothing;
         }
 
-        update(part: ChildPart) {
+        override update(part: ChildPart) {
           const {parentNode, startNode, endNode} = part;
 
           if (endNode !== null) {
@@ -1720,7 +1720,7 @@ suite('lit-html', () => {
           return v;
         }
 
-        update(part: ChildPart, [v]: Parameters<this['render']>) {
+        override update(part: ChildPart, [v]: Parameters<this['render']>) {
           receivedPart = part;
           receivedValue = v;
           return this.render(v);
@@ -1854,7 +1854,7 @@ suite('lit-html', () => {
           return nothing;
         }
         // TODO (justinfagnani): make this work on SpreadPart
-        update(part: AttributePart) {
+        override update(part: AttributePart) {
           part.element.dispatchEvent(
             new CustomEvent('test-event', {
               bubbles: true,
@@ -1957,7 +1957,7 @@ suite('lit-html', () => {
           return `${(this.host as HTMLInputElement)?.value}:${v}`;
         }
 
-        update(part: Part, props: [v: string]) {
+        override update(part: Part, props: [v: string]) {
           this.host ??= part.options!.host as HTMLInputElement;
           return this.render(...props);
         }
@@ -2060,7 +2060,7 @@ suite('lit-html', () => {
       render(_promise: Promise<unknown>) {
         return 'initial';
       }
-      update(_part: Part, [promise]: Parameters<this['render']>) {
+      override update(_part: Part, [promise]: Parameters<this['render']>) {
         aDirectiveInst = this;
         if (promise !== this.promise) {
           this.promise = promise;
@@ -2222,10 +2222,10 @@ suite('lit-html', () => {
           return bool ? value : nothing;
         }
 
-        disconnected() {
+        override disconnected() {
           this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
         }
-        reconnected() {
+        override reconnected() {
           this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
         }
       }

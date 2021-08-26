@@ -93,7 +93,7 @@ if (DEV_MODE) {
 
     test('warns when updating properties are shadowed', async () => {
       class A extends ReactiveElement {
-        static properties = {
+        static override properties = {
           fooProp: {},
           barProp: {},
         };
@@ -138,7 +138,7 @@ if (DEV_MODE) {
     suite('conditional warnings', () => {
       test('warns when `toAttribute` returns undefined with migration warnings on', async () => {
         class A extends ReactiveElement {
-          static properties = {
+          static override properties = {
             foo: {converter: {toAttribute: () => undefined}, reflect: true},
           };
 
@@ -156,7 +156,7 @@ if (DEV_MODE) {
       test('warns when update triggers another update if element', async () => {
         class A extends ReactiveElement {
           shouldUpdateAgain = false;
-          updated() {
+          override updated() {
             if (this.shouldUpdateAgain) {
               this.shouldUpdateAgain = false;
               this.requestUpdate();
@@ -188,7 +188,7 @@ if (DEV_MODE) {
       test('warning settings can be set on base class and per class', async () => {
         class A extends ReactiveElement {
           shouldUpdateAgain = false;
-          updated() {
+          override updated() {
             if (this.shouldUpdateAgain) {
               this.shouldUpdateAgain = false;
               this.requestUpdate();
