@@ -225,4 +225,17 @@ const flush =
       Object.defineProperty(Element.prototype, 'matches', descriptor);
     }
   });
+
+  test('returns empty array when no match and accessed before first update', () => {
+    const notYetUpdatedEl = new D();
+
+    assert.lengthOf(notYetUpdatedEl.defaultAssigned, 0);
+    assert.deepEqual(Array.from(notYetUpdatedEl.defaultAssigned), []);
+
+    assert.lengthOf(notYetUpdatedEl.footerAssigned, 0);
+    assert.deepEqual(Array.from(notYetUpdatedEl.footerAssigned), []);
+
+    assert.lengthOf(notYetUpdatedEl.footerAssignedItems, 0);
+    assert.deepEqual(Array.from(notYetUpdatedEl.footerAssignedItems), []);
+  });
 });

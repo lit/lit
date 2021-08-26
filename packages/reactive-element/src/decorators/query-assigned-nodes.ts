@@ -70,7 +70,7 @@ export function queryAssignedNodes(
                 : legacyMatches.call(node as Element, selector))
           );
         }
-        return nodes;
+        return nodes ?? [];
       },
       enumerable: true,
       configurable: true,
