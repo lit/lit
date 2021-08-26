@@ -1021,6 +1021,9 @@ class ChildPart implements Disconnectable {
    */
   get parentNode(): Node {
     const parent = wrap(this._$startNode).parentNode!;
+    // If the `_$litParent$` function exists, that means this is an initial
+    // render for the part and the DOM is still in the cloned document fragment,
+    // so retrieve the part's actual parent node rather than the fragment
     const parentFn = (parent as DocumentFragmentWithParent)._$litParent$;
     return parentFn?.() ?? parent;
   }
@@ -1159,6 +1162,10 @@ class ChildPart implements Disconnectable {
     } else {
       const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
+      // Put a function to retrieve the parentNode for this part on the fragment
+      // so that directives can see their to-be parentNode rather than the
+      // DocumentFragment during initial render, which occurs before the fragment
+      // is inserted into the part's spot in the DOM
       (fragment as DocumentFragmentWithParent)._$litParent$ = () =>
         this.parentNode;
       instance._update(values);
