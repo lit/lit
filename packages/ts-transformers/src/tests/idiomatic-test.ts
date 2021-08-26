@@ -672,6 +672,27 @@ test('only remove imports that will be transformed', () => {
   checkTransform(input, expected);
 });
 
+test("don't remove existing no-binding import", () => {
+  const input = `
+  import {LitElement, customElement} from 'lit-element';
+  import './my-custom-element.js';
+
+  @customElement('my-element')
+  class MyElement extends LitElement {
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit-element';
+  import './my-custom-element.js';
+
+  class MyElement extends LitElement {
+  }
+  customElements.define('my-element', MyElement);
+  `;
+  checkTransform(input, expected);
+});
+
 test('ignore non-lit class decorator', () => {
   const input = `
   import {LitElement} from 'lit';

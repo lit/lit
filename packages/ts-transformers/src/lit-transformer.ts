@@ -211,12 +211,21 @@ export class LitTransformer {
   }
 
   private _visitImportDeclaration(node: ts.ImportDeclaration) {
-    const pruned = ts.visitEachChild(node, this.visit, this._context);
-    return (pruned.importClause?.namedBindings as ts.NamedImports).elements
-      .length > 0
-      ? pruned
-      : // Remove the import altogether if there are no remaining bindings.
-        undefined;
+    const numBindingsBefore =
+      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
+      0;
+    node = ts.visitEachChild(node, this.visit, this._context);
+    const numBindingsAfter =
+      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
+      0;
+    if (numBindingsBefore !== numBindingsAfter && numBindingsAfter === 0) {
+      // Remove the import altogether if we modified the import and there are
+      // none left. Note it's important we include the first part of this check,
+      // since otherwise we might remove no-binding imports from the original
+      // source (e.g. `import './my-custom-element.js'`).
+      return undefined;
+    }
+    return node;
   }
 
   private _visitClassDeclaration(class_: ts.ClassDeclaration) {
