@@ -35,11 +35,18 @@ suite('unsafeHTML directive', () => {
     );
   });
 
-  test('rendering `noChange` renders empty string to content', () => {
-    render(html`<div>before${unsafeHTML(noChange)}after</div>`, container);
+  test('rendering `noChange` does not change the previous content', () => {
+    const template = (v: string | typeof noChange) =>
+      html`<div>before${unsafeHTML(v)}after</div>`;
+    render(template('<p>Hi</p>'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>beforeafter</div>'
+      '<div>before<p>Hi</p>after</div>'
+    );
+    render(template(noChange), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>before<p>Hi</p>after</div>'
     );
   });
 

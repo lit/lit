@@ -41,11 +41,18 @@ suite('unsafeSVG', () => {
     );
   });
 
-  test('rendering `noChange` renders empty string to content', () => {
-    render(html`<svg>before${unsafeSVG(noChange)}after</svg>`, container);
+  test('rendering `noChange` does not change the previous content', () => {
+    const template = (v: string | typeof noChange) =>
+      html`<svg>before${unsafeSVG(v)}after</svg>`;
+    render(template('<g>Hi</g>'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<svg>beforeafter</svg>'
+      '<svg>before<g>Hi</g>after</svg>'
+    );
+    render(template(noChange), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>before<g>Hi</g>after</svg>'
     );
   });
 
