@@ -1101,8 +1101,9 @@ export abstract class ReactiveElement
               `either initialize properties in the constructor or adjust ` +
               `your compiler settings; for example, for TypeScript set ` +
               `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.` +
-              `See https://lit.dev/docs/components/properties/#declare ` +
-              `for more information.`
+              `See https://lit.dev/docs/components/properties/#declare and ` +
+              `https://lit.dev/docs/components/decorators/` +
+              `#avoiding-issues-with-class-fields for more information.`
           );
         }
       }

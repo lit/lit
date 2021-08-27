@@ -184,9 +184,9 @@ if (DEV_MODE) {
           .name;
         issueWarning(
           `\`${name}\` is implemented on class ${ctorName}. It ` +
-            `has been removed from this version of LitElement. ` +
-            `See the changelog at https://github.com/lit/lit/blob/main/` +
-            `packages/lit-element/CHANGELOG.md`
+            `has been removed from this version of LitElement. See ` +
+            `https://lit.dev/docs/releases/upgrade/#litelement ` +
+            `for more information.`
         );
       }
     };
