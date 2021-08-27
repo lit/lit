@@ -22,11 +22,6 @@ import type {
  * Configured with an array of visitors, each of which handles a specific Lit
  * feature such as a decorator. All visitors are invoked from a single pass
  * through each file.
- *
- * Files are only traversed at all if there is at least one feature imported
- * from an official Lit module (e.g. the "property" decorator), and there is a
- * registered visitor that declares it will handle that feature (e.g. the
- * PropertyVisitor).
  */
 export class LitTransformer {
   private readonly _context: ts.TransformationContext;
@@ -105,20 +100,10 @@ export class LitTransformer {
     if (!ts.isSourceFile(node)) {
       return node;
     }
-    let traversalNeeded = false;
     for (const statement of node.statements) {
       if (ts.isImportDeclaration(statement)) {
-        if (this._updateFileContextWithLitImports(statement)) {
-          // Careful with short-circuiting here! We must run
-          // `_updateFileContextWithLitImports` on every import statement, even
-          // if we already know we need a traversal.
-          traversalNeeded = true;
-        }
+        this._updateFileContextWithLitImports(statement);
       }
-    }
-    if (!traversalNeeded) {
-      // No relevant transforms could apply, we can ignore this file.
-      return node;
     }
     node = ts.visitEachChild(node, this.visit, this._context);
     this._litFileContext.clear();
@@ -144,22 +129,19 @@ export class LitTransformer {
 
   /**
    * Add an entry to our "litImports" map for each relevant imported symbol, if
-   * this is an import from an official Lit package. Returns whether or not
-   * anything relevant was found.
+   * this is an import from an official Lit package.
    */
-  private _updateFileContextWithLitImports(
-    node: ts.ImportDeclaration
-  ): boolean {
+  private _updateFileContextWithLitImports(node: ts.ImportDeclaration): void {
     // TODO(aomarks) Support re-exports (e.g. if a user re-exports a Lit
     // decorator from one of their own modules).
 
     if (!ts.isStringLiteral(node.moduleSpecifier)) {
-      return false;
+      return;
     }
     const specifier = node.moduleSpecifier.text;
     // We're only interested in imports from one of the official lit packages.
     if (!isLitImport(specifier)) {
-      return false;
+      return;
     }
 
     if (!hasJsExtensionOrIsDefaultModule(specifier)) {
@@ -179,10 +161,9 @@ export class LitTransformer {
     // TODO(aomarks) Maybe handle NamespaceImport (import * as decorators).
     const bindings = node.importClause?.namedBindings;
     if (bindings == undefined || !ts.isNamedImports(bindings)) {
-      return false;
+      return;
     }
 
-    let traversalNeeded = false;
     for (const importSpecifier of bindings.elements) {
       // Name as exported (Lit's name for it, not whatever the alias is).
       const realName =
@@ -204,10 +185,8 @@ export class LitTransformer {
         // remove any uses of that decorator, and hence we should remove the
         // import too.
         this._litFileContext.nodesToRemove.add(importSpecifier);
-        traversalNeeded = true;
       }
     }
-    return traversalNeeded;
   }
 
   private _visitImportDeclaration(node: ts.ImportDeclaration) {
