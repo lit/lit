@@ -19,11 +19,35 @@
     ".": {
       "default": "./index.js"
     },
+    "./async-directive.js": {
+      "default": "./async-directive.js"
+    },
     "./decorators.js": {
       "default": "./decorators.js"
     },
-    "./decorators/": {
-      "default": "./decorators/"
+    "./decorators/custom-element.js": {
+      "default": "./decorators/custom-element.js"
+    },
+    "./decorators/event-options.js": {
+      "default": "./decorators/event-options.js"
+    },
+    "./decorators/property.js": {
+      "default": "./decorators/property.js"
+    },
+    "./decorators/query-all.js": {
+      "default": "./decorators/query-all.js"
+    },
+    "./decorators/query-assigned-nodes.js": {
+      "default": "./decorators/query-assigned-nodes.js"
+    },
+    "./decorators/query-async.js": {
+      "default": "./decorators/query-async.js"
+    },
+    "./decorators/query.js": {
+      "default": "./decorators/query.js"
+    },
+    "./decorators/state.js": {
+      "default": "./decorators/state.js"
     },
     "./directive-helpers.js": {
       "default": "./directive-helpers.js"
@@ -31,20 +55,56 @@
     "./directive.js": {
       "default": "./directive.js"
     },
-    "./directives/": {
-      "default": "./directives/"
+    "./directives/async-append.js": {
+      "default": "./directives/async-append.js"
     },
-    "./async-directive.js": {
-      "default": "./async-directive.js"
+    "./directives/async-replace.js": {
+      "default": "./directives/async-replace.js"
     },
-    "./html.js": {
-      "default": "./html.js"
+    "./directives/cache.js": {
+      "default": "./directives/cache.js"
+    },
+    "./directives/class-map.js": {
+      "default": "./directives/class-map.js"
+    },
+    "./directives/guard.js": {
+      "default": "./directives/guard.js"
+    },
+    "./directives/if-defined.js": {
+      "default": "./directives/if-defined.js"
+    },
+    "./directives/live.js": {
+      "default": "./directives/live.js"
+    },
+    "./directives/ref.js": {
+      "default": "./directives/ref.js"
+    },
+    "./directives/repeat.js": {
+      "default": "./directives/repeat.js"
+    },
+    "./directives/style-map.js": {
+      "default": "./directives/style-map.js"
+    },
+    "./directives/template-content.js": {
+      "default": "./directives/template-content.js"
+    },
+    "./directives/unsafe-html.js": {
+      "default": "./directives/unsafe-html.js"
+    },
+    "./directives/unsafe-svg.js": {
+      "default": "./directives/unsafe-svg.js"
+    },
+    "./directives/until.js": {
+      "default": "./directives/until.js"
     },
     "./experimental-hydrate-support.js": {
       "default": "./experimental-hydrate-support.js"
     },
     "./experimental-hydrate.js": {
       "default": "./experimental-hydrate.js"
+    },
+    "./html.js": {
+      "default": "./html.js"
     },
     "./polyfill-support.js": {
       "default": "./polyfill-support.js"
