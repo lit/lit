@@ -15,7 +15,7 @@ import {customElement, property} from 'lit/decorators.js';
  */
 @customElement('my-element')
 export class MyElement extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
       border: solid 1px gray;
@@ -36,7 +36,7 @@ export class MyElement extends LitElement {
   @property({type: Number})
   count = 0;
 
-  render() {
+  override render() {
     return html`
       <h1>Hello, ${this.name}!</h1>
       <button @click=${this._onClick} part="button">

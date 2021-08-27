@@ -32,7 +32,8 @@ interface RenderOptions {
 
 interface ShadyTemplateResult {
   strings: TemplateStringsArray;
-  _$litType$?: string;
+  // This property needs to remain unminified.
+  ['_$litType$']?: string;
 }
 
 // Note, this is a dummy type as the full type here is big.
@@ -89,19 +90,16 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  * * ChildPart.prototype._$getTemplate
  * * ChildPart.prototype._$setValue
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport'] ??= (
+globalThis.litHtmlPlatformSupport ??= (
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
-  const extraGlobals = window as LitExtraGlobals;
-
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
   if (
-    extraGlobals.ShadyCSS === undefined ||
-    (extraGlobals.ShadyCSS.nativeShadow && !extraGlobals.ShadyCSS.ApplyShim)
+    window.ShadyCSS === undefined ||
+    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
   ) {
     return;
   }
@@ -113,9 +111,9 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
   const wrap =
     ENABLE_SHADYDOM_NOPATCH &&
-    extraGlobals.ShadyDOM?.inUse &&
-    extraGlobals.ShadyDOM?.noPatch === true
-      ? extraGlobals.ShadyDOM!.wrap
+    window.ShadyDOM?.inUse &&
+    window.ShadyDOM?.noPatch === true
+      ? window.ShadyDOM!.wrap
       : (node: Node) => node;
 
   const needsPrepareStyles = (name: string | undefined) =>
@@ -146,12 +144,17 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     scopeCssStore.delete(name);
     // ShadyCSS removes scopes and removes the style under ShadyDOM and leaves
     // it under native Shadow DOM
-    extraGlobals.ShadyCSS!.prepareTemplateStyles(template, name);
+    window.ShadyCSS!.prepareTemplateStyles(template, name);
     // Note, under native Shadow DOM, the style is added to the beginning of the
     // template. It must be moved to the *end* of the template so it doesn't
     // mess up part indices.
-    if (hasScopeCss && extraGlobals.ShadyCSS!.nativeShadow) {
-      template.content.appendChild(template.content.querySelector('style')!);
+    if (hasScopeCss && window.ShadyCSS!.nativeShadow) {
+      // If there were styles but the CSS text was empty, ShadyCSS will
+      // eliminate the style altogether, so the style here could be null
+      const style = template.content.querySelector('style');
+      if (style !== null) {
+        template.content.appendChild(style);
+      }
     }
   };
 
@@ -170,22 +173,26 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     const element = originalCreateElement.call(Template, html, options);
     const scope = options?.scope;
     if (scope !== undefined) {
-      if (!extraGlobals.ShadyCSS!.nativeShadow) {
-        extraGlobals.ShadyCSS!.prepareTemplateDom(element, scope);
+      if (!window.ShadyCSS!.nativeShadow) {
+        window.ShadyCSS!.prepareTemplateDom(element, scope);
       }
-      const scopeCss = cssForScope(scope);
-      // Remove styles and store textContent.
-      const styles = element.content.querySelectorAll(
-        'style'
-      ) as NodeListOf<HTMLStyleElement>;
-      // Store the css in this template in the scope css and remove the <style>
-      // from the template _before_ the node-walk captures part indices
-      scopeCss.push(
-        ...Array.from(styles).map((style) => {
-          style.parentNode?.removeChild(style);
-          return style.textContent!;
-        })
-      );
+      // Process styles only if this scope is being prepared. Otherwise,
+      // leave styles as is for back compat with Lit1.
+      if (needsPrepareStyles(scope)) {
+        const scopeCss = cssForScope(scope);
+        // Remove styles and store textContent.
+        const styles = element.content.querySelectorAll(
+          'style'
+        ) as NodeListOf<HTMLStyleElement>;
+        // Store the css in this template in the scope css and remove the <style>
+        // from the template _before_ the node-walk captures part indices
+        scopeCss.push(
+          ...Array.from(styles).map((style) => {
+            style.parentNode?.removeChild(style);
+            return style.textContent!;
+          })
+        );
+      }
     }
     return element;
   };
@@ -228,7 +235,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
-      const template = (value as ShadyTemplateResult)?._$litType$
+      // This property needs to remain unminified.
+      const template = (value as ShadyTemplateResult)?.['_$litType$']
         ? (this._$committedValue as PatchableTemplateInstance)._$template.el
         : document.createElement('template');
       prepareStyles(scope!, template);
@@ -236,7 +244,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       // Note, this is the temporary startNode.
       renderContainer.removeChild(renderContainerMarker);
       // When using native Shadow DOM, include prepared style in shadowRoot.
-      if (extraGlobals.ShadyCSS?.nativeShadow) {
+      if (window.ShadyCSS?.nativeShadow) {
         const style = template.content.querySelector('style');
         if (style !== null) {
           renderContainer.appendChild(style.cloneNode(true));
@@ -276,7 +284,5 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 };
 
 if (ENABLE_SHADYDOM_NOPATCH) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  (globalThis as any)['litHtmlPlatformSupport'].noPatchSupported =
-    ENABLE_SHADYDOM_NOPATCH;
+  globalThis.litHtmlPlatformSupport!.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
 }

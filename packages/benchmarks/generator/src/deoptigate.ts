@@ -69,8 +69,10 @@ export const deoptigate = async (
   browser.close();
   // From https://gist.github.com/billti/a2ee40e60611ec9b37b89c7c00cd39ab
   const logText = fs.readFileSync(logFile, 'utf8');
-  const badLines = /(extensions::SafeBuiltins:)|(v8\/LoadTimes:)|(, :\d)|(code-creation,Script)/;
-  const webPrefix = /(?:(?:https?:\/\/[^/]*\/)|(?:file:\/\/\/[a-zA-Z]:)|(?:file:\/\/))/;
+  const badLines =
+    /(extensions::SafeBuiltins:)|(v8\/LoadTimes:)|(, :\d)|(code-creation,Script)/;
+  const webPrefix =
+    /(?:(?:https?:\/\/[^/]*\/)|(?:file:\/\/\/[a-zA-Z]:)|(?:file:\/\/))/;
   const badWrap = /(?:\d)code-creation/;
   const processedLogFile = path.join(deoptFolder, 'v8.log');
   fs.writeFileSync(

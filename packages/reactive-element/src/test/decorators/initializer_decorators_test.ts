@@ -54,9 +54,11 @@ suite('Decorators using initializers', () => {
         finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
           ctor.addInitializer((e: ReactiveElement) => {
             const listener = (event: Event) =>
-              ((((ctor.prototype as unknown) as T)[
-                name as keyof T
-              ] as unknown) as Function).call(e, event);
+              (
+                (ctor.prototype as unknown as T)[
+                  name as keyof T
+                ] as unknown as Function
+              ).call(e, event);
             let l = listeners.get(e);
             if (l === undefined) {
               listeners.set(e, (l = []));
@@ -126,8 +128,8 @@ suite('Decorators using initializers', () => {
               e.addController({
                 hostUpdate() {
                   v!.forEach(({key, validator}) => {
-                    ((e as unknown) as T)[key as keyof T] = validator(
-                      ((e as unknown) as T)[key as keyof T]
+                    (e as unknown as T)[key as keyof T] = validator(
+                      (e as unknown as T)[key as keyof T]
                     );
                   });
                 },
@@ -176,7 +178,7 @@ suite('Decorators using initializers', () => {
               e.addController({
                 hostUpdated() {
                   v!.forEach((info) => {
-                    const value = ((e as unknown) as T)[info.key as keyof T];
+                    const value = (e as unknown as T)[info.key as keyof T];
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const hasChanged =
                       (e.constructor as any).getPropertyOptions(name)

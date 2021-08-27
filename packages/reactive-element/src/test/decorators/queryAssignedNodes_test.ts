@@ -13,12 +13,8 @@ import {
 } from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 const flush =
-  extraGlobals.ShadyDOM && extraGlobals.ShadyDOM.flush
-    ? extraGlobals.ShadyDOM.flush
-    : () => {};
+  window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};
 
 (canTestReactiveElement ? suite : suite.skip)('@queryAssignedNodes', () => {
   let container: HTMLElement;
@@ -33,7 +29,7 @@ const flush =
     @queryAssignedNodes('footer', true, '.item')
     footerAssignedItems!: Element[];
 
-    render() {
+    override render() {
       return html`
         <slot></slot>
         <slot name="footer"></slot>
@@ -47,7 +43,7 @@ const flush =
 
     @queryAssignedNodes('header') headerAssigned!: Node[];
 
-    render() {
+    override render() {
       return html`
         <slot name="header"></slot>
         <slot></slot>
@@ -63,7 +59,7 @@ const flush =
 
     @queryAssignedNodes('header') [headerSymbol]!: Node[];
 
-    render() {
+    override render() {
       return html`
         <slot name="header"></slot>
         <slot></slot>
@@ -81,8 +77,9 @@ const flush =
     assignedNodesEl!: D;
     assignedNodesEl2!: E;
     assignedNodesEl3!: S;
+    @queryAssignedNodes() missingSlotAssignedNodes!: Node[];
 
-    render() {
+    override render() {
       return html`
         <assigned-nodes-el
           ><div id="div1">A</div>
@@ -95,7 +92,7 @@ const flush =
       `;
     }
 
-    firstUpdated() {
+    override firstUpdated() {
       this.div = this.renderRoot.querySelector('#div1') as HTMLDivElement;
       this.div2 = this.renderRoot.querySelector('#div2') as HTMLDivElement;
       this.div3 = this.renderRoot.querySelector('#div3') as HTMLDivElement;
@@ -201,15 +198,7 @@ const flush =
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
   });
 
-  test('returns assignedNodes for slot that contains text nodes filtered by selector when Element.matches does not exist', () => {
-    const descriptor = Object.getOwnPropertyDescriptor(
-      Element.prototype,
-      'matches'
-    );
-    Object.defineProperty(Element.prototype, 'matches', {
-      value: undefined,
-      configurable: true,
-    });
+  test('returns assignedNodes for slot that contains text nodes filtered by selector', () => {
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
@@ -225,8 +214,9 @@ const flush =
     el.removeChild(child2);
     flush();
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
-    if (descriptor !== undefined) {
-      Object.defineProperty(Element.prototype, 'matches', descriptor);
-    }
+  });
+
+  test('always returns an array, even if the slot is not rendered', () => {
+    assert.isArray(el.missingSlotAssignedNodes);
   });
 });

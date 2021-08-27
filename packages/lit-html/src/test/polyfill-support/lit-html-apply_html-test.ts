@@ -10,8 +10,6 @@ import {html as htmlWithApply} from '../../lit-html.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 suite('@apply', () => {
   test('styles with css custom properties using @apply render', function () {
     const container = document.createElement('scope-5');
@@ -31,7 +29,7 @@ suite('@apply', () => {
       <div>Testing...</div>
     `;
     renderShadowRoot(result, container);
-    extraGlobals.ShadyCSS?.styleElement(container);
+    window.ShadyCSS?.styleElement(container);
     const div = container.shadowRoot!.querySelector('div');
     const computedStyle = getComputedStyle(div!);
     assert.equal(
@@ -61,7 +59,7 @@ suite('@apply', () => {
       const applyUser = document.createElement('apply-user');
       document.body.appendChild(applyUser);
       renderShadowRoot(applyUserContent, applyUser);
-      extraGlobals.ShadyCSS?.styleElement(applyUser);
+      window.ShadyCSS?.styleElement(applyUser);
       const applyUserDiv = applyUser.shadowRoot!.querySelector('div');
       const applyUserStyle = getComputedStyle(applyUserDiv!);
       assert.equal(
@@ -101,13 +99,13 @@ suite('@apply', () => {
       const div = applyProducer.shadowRoot!.querySelector('#test');
       assert.ok(div?.hasAttribute('some-attr'));
       assert.ok(div?.textContent, 'test');
-      extraGlobals.ShadyCSS?.styleElement(applyProducer);
+      window.ShadyCSS?.styleElement(applyProducer);
       const usersInProducer =
         applyProducer.shadowRoot!.querySelectorAll('apply-user');
       renderShadowRoot(applyUserContent, usersInProducer[0]);
-      extraGlobals.ShadyCSS?.styleElement(usersInProducer[0]);
+      window.ShadyCSS?.styleElement(usersInProducer[0] as HTMLElement);
       renderShadowRoot(applyUserContent, usersInProducer[1]);
-      extraGlobals.ShadyCSS?.styleElement(usersInProducer[1]);
+      window.ShadyCSS?.styleElement(usersInProducer[1] as HTMLElement);
       const userInProducerStyle1 = getComputedStyle(
         usersInProducer[0].shadowRoot!.querySelector('div')!
       );
@@ -151,7 +149,7 @@ suite('@apply', () => {
             </style>
             <div>Testing...</div>`;
         renderShadowRoot(result, this);
-        extraGlobals.ShadyCSS?.styleElement(this);
+        window.ShadyCSS?.styleElement(this);
       }
     }
     customElements.define('apply-user-ce1', E);
@@ -204,5 +202,17 @@ suite('@apply', () => {
       '10px'
     );
     document.body.removeChild(applyProducer);
+  });
+
+  test('empty style', function () {
+    const container = document.createElement('empty-style');
+    document.body.appendChild(container);
+    const result = htmlWithApply`
+      <style></style>
+      <div>Testing...</div>
+    `;
+    renderShadowRoot(result, container);
+    window.ShadyCSS?.styleElement(container);
+    document.body.removeChild(container);
   });
 });

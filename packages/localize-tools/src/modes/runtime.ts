@@ -11,7 +11,7 @@ import type {Config} from '../types/config.js';
 import type {RuntimeOutputConfig} from '../types/modes.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
 import fsExtra from 'fs-extra';
@@ -242,7 +242,7 @@ function makeMessageString(
   const fragments = [];
   for (const content of contents) {
     if (typeof content === 'string') {
-      fragments.push(escapeStringToEmbedInTemplateLiteral(content));
+      fragments.push(escapeTextContentToEmbedInTemplateLiteral(content));
     } else {
       const template = parseStringAsTemplateLiteral(content.untranslatable);
       if (ts.isNoSubstitutionTemplateLiteral(template)) {

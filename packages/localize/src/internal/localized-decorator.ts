@@ -36,12 +36,11 @@ import type {
  *     }
  *   }
  */
-const _localized = () => (
-  classOrDescriptor: Constructor<ReactiveElement> | ClassDescriptor
-) =>
-  typeof classOrDescriptor === 'function'
-    ? legacyLocalized((classOrDescriptor as unknown) as typeof ReactiveElement)
-    : standardLocalized(classOrDescriptor);
+const _localized =
+  () => (classOrDescriptor: Constructor<ReactiveElement> | ClassDescriptor) =>
+    typeof classOrDescriptor === 'function'
+      ? legacyLocalized(classOrDescriptor as unknown as typeof ReactiveElement)
+      : standardLocalized(classOrDescriptor);
 
 export const localized: typeof _localized & {
   _LIT_LOCALIZE_DECORATOR_?: never;

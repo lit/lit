@@ -48,7 +48,7 @@ suite('Reactive controllers', () => {
   }
 
   class A extends ReactiveElement {
-    static properties = {foo: {}};
+    static override properties = {foo: {}};
     foo = 'foo';
     updateCount = 0;
     updatedCount = 0;
@@ -57,29 +57,29 @@ suite('Reactive controllers', () => {
 
     controller = new MyController(this);
 
-    connectedCallback() {
+    override connectedCallback() {
       this.connectedCount++;
       super.connectedCallback();
       this.controller.callbackOrder.push('connectedCallback');
     }
 
-    disconnectedCallback() {
+    override disconnectedCallback() {
       this.disconnectedCount++;
       super.disconnectedCallback();
       this.controller.callbackOrder.push('disconnectedCallback');
     }
 
-    update(changedProperties: PropertyValues) {
+    override update(changedProperties: PropertyValues) {
       this.updateCount++;
       super.update(changedProperties);
       this.controller.callbackOrder.push('update');
     }
 
-    firstUpdated() {
+    override firstUpdated() {
       this.controller.callbackOrder.push('firstUpdated');
     }
 
-    updated() {
+    override updated() {
       this.updatedCount++;
       this.controller.callbackOrder.push('updated');
     }

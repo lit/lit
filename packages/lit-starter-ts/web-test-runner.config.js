@@ -108,8 +108,7 @@ export default {
           {
             name: 'lit-polyfill-support',
             path: 'node_modules/lit/polyfill-support.js',
-            test:
-              "!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force",
+            test: "!('attachShadow' in Element.prototype) || !('getRootNode' in Element.prototype) || window.ShadyDOM && window.ShadyDOM.force",
             module: false,
           },
         ],

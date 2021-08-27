@@ -23,8 +23,6 @@ import {assert} from '@esm-bundle/chai';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
 
-const extraGlobals = window as LitExtraGlobals;
-
 (canTestLitElement ? suite : suite.skip)('LitElement', () => {
   let container: HTMLElement;
 
@@ -45,7 +43,7 @@ const extraGlobals = window as LitExtraGlobals;
     customElements.define(
       name,
       class extends LitElement {
-        render() {
+        override render() {
           return html`${rendered}`;
         }
       }
@@ -70,11 +68,11 @@ const extraGlobals = window as LitExtraGlobals;
     customElements.define(
       name,
       class extends LitElement {
-        render() {
+        override render() {
           return html`${rendered}`;
         }
 
-        createRenderRoot() {
+        override createRenderRoot() {
           return this;
         }
       }
@@ -89,7 +87,7 @@ const extraGlobals = window as LitExtraGlobals;
   test('renders when created via constructor', async () => {
     const rendered = `hello world`;
     class E extends LitElement {
-      render() {
+      override render() {
         return html`${rendered}`;
       }
     }
@@ -105,7 +103,7 @@ const extraGlobals = window as LitExtraGlobals;
     class E extends LitElement {
       _event?: Event;
 
-      render() {
+      override render() {
         const attr = 'attr';
         const prop = 'prop';
         const event = function (this: E, e: Event) {
@@ -130,7 +128,7 @@ const extraGlobals = window as LitExtraGlobals;
     class E extends LitElement {
       event?: Event;
 
-      render() {
+      override render() {
         return html`<div @test=${this.onTest}></div>`;
       }
 
@@ -150,13 +148,13 @@ const extraGlobals = window as LitExtraGlobals;
 
   test('can set properties and attributes on sub-element', async () => {
     class E extends LitElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}, attr: {}, bool: {type: Boolean}};
       }
       foo = 'hi';
       bool = false;
 
-      render() {
+      override render() {
         return html`${this.foo}`;
       }
     }
@@ -165,13 +163,13 @@ const extraGlobals = window as LitExtraGlobals;
     class F extends LitElement {
       inner: E | null = null;
 
-      static get properties() {
+      static override get properties() {
         return {bar: {}, bool: {type: Boolean}};
       }
       bar = 'outer';
       bool = false;
 
-      render() {
+      override render() {
         return html`<x-2448
           .foo="${this.bar}"
           attr="${this.bar}"
@@ -179,11 +177,11 @@ const extraGlobals = window as LitExtraGlobals;
         ></x-2448>`;
       }
 
-      firstUpdated() {
+      override firstUpdated() {
         this.inner = this.shadowRoot!.querySelector('x-2448');
       }
 
-      get updateComplete() {
+      override get updateComplete() {
         return super.updateComplete.then(() => this.inner!.updateComplete);
       }
     }
@@ -205,12 +203,12 @@ const extraGlobals = window as LitExtraGlobals;
   });
 
   test('adds a version number', () => {
-    assert.equal(window['litElementVersions'].length, 1);
+    assert.equal(window.litElementVersions!.length, 1);
   });
 
   test('event fired during rendering element can trigger an update', async () => {
     class E extends LitElement {
-      connectedCallback() {
+      override connectedCallback() {
         super.connectedCallback();
         this.dispatchEvent(
           new CustomEvent('foo', {bubbles: true, detail: 'foo'})
@@ -220,13 +218,13 @@ const extraGlobals = window as LitExtraGlobals;
     customElements.define('x-child-61012', E);
 
     class F extends LitElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {type: String}};
       }
 
       foo = '';
 
-      render() {
+      override render() {
         return html`<x-child-61012 @foo=${this._handleFoo}></x-child-61012
           ><span>${this.foo}</span>`;
       }
@@ -245,16 +243,16 @@ const extraGlobals = window as LitExtraGlobals;
   });
 
   test('exceptions in `render` throw but do not prevent further updates', async () => {
-    // TODO(sorvell): console errors produced by wtr and upset it.
+    // console errors produced by wtr upset it, so no-op console.error
     const consoleError = console.error;
     console.error = () => {};
     let shouldThrow = false;
     class A extends LitElement {
-      static properties = {foo: {}};
+      static override properties = {foo: {}};
       foo = 5;
       updatedFoo = 0;
 
-      render() {
+      override render() {
         if (shouldThrow) {
           throw new Error('test error');
         }
@@ -279,7 +277,7 @@ const extraGlobals = window as LitExtraGlobals;
     assert.equal(a.shadowRoot!.textContent, '5');
     shouldThrow = false;
     a.foo = 20;
-    // TODO(sorvell): Make sure to wait beyond error timing or wtr is sad.
+    // Make sure to wait beyond error timing or wtr is sad.
     await new Promise((r) => setTimeout(r));
     assert.equal(a.foo, 20);
     assert.equal(a.shadowRoot!.textContent, '20');
@@ -289,7 +287,7 @@ const extraGlobals = window as LitExtraGlobals;
   test('if `render` is unimplemented, do not overwrite renderRoot', async () => {
     class A extends LitElement {
       addedDom: HTMLElement | null = null;
-      createRenderRoot() {
+      override createRenderRoot() {
         return this;
       }
     }
@@ -324,11 +322,11 @@ const extraGlobals = window as LitExtraGlobals;
     assert.ok(a.hasUpdated);
   });
 
-  (extraGlobals.ShadyDOM && extraGlobals.ShadyDOM.inUse ? test.skip : test)(
+  (window.ShadyDOM && window.ShadyDOM.inUse ? test.skip : test)(
     'can customize shadowRootOptions',
     async () => {
       class A extends LitElement {
-        static shadowRootOptions: ShadowRootInit = {mode: 'closed'};
+        static override shadowRootOptions: ShadowRootInit = {mode: 'closed'};
       }
       customElements.define(generateElementName(), A);
       const a = new A();
@@ -347,39 +345,39 @@ const extraGlobals = window as LitExtraGlobals;
         class extends AsyncDirective {
           id!: unknown;
           render(id: unknown) {
-            log.push(`render-${id}`);
+            log.push(`render-${id}-${this.isConnected}`);
             return (this.id = id);
           }
-          disconnected() {
+          override disconnected() {
             log.push(`disconnect-${this.id}`);
           }
-          reconnected() {
+          override reconnected() {
             log.push(`reconnect-${this.id}`);
           }
         }
       );
 
       class Child extends LitElement {
-        static properties = {
+        static override properties = {
           attr: {type: String},
           prop: {type: String},
         };
         attr = 'default';
         prop = 'default';
-        render() {
+        override render() {
           return html`<div attr=${d('child-attr')} .prop=${d('child-prop')}>
             ${d('child-node')}
           </div>`;
         }
         get child() {
           // Cast to child so we can access .prop off of the div
-          return this.shadowRoot!.firstElementChild as Child;
+          return this.shadowRoot?.firstElementChild;
         }
       }
       customElements.define('disc-child', Child);
 
       class Host extends LitElement {
-        render() {
+        override render() {
           return html`<disc-child attr=${d('host-attr')} .prop=${d('host-prop')}
             >${d('host-node')}</disc-child
           >`;
@@ -392,14 +390,16 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define('disc-host', Host);
 
       const assertRendering = (host: Host) => {
-        let child = host.child;
+        const child = host.child;
         assert.equal(child.getAttribute('attr'), 'host-attr');
         assert.equal(child.prop, 'host-prop');
         assert.equal(child.textContent?.trim(), 'host-node');
-        child = child.child;
-        assert.equal(child.getAttribute('attr'), 'child-attr');
-        assert.equal(child.prop, 'child-prop');
-        assert.equal(child.textContent?.trim(), 'child-node');
+        const grandChild = child.child as Child;
+        if (grandChild) {
+          assert.equal(grandChild.getAttribute('attr'), 'child-attr');
+          assert.equal(grandChild.prop, 'child-prop');
+          assert.equal(grandChild.textContent?.trim(), 'child-node');
+        }
       };
 
       setup(() => {
@@ -418,12 +418,12 @@ const extraGlobals = window as LitExtraGlobals;
         await nextFrame();
         assertRendering(host);
         assert.deepEqual(log, [
-          'render-host-attr',
-          'render-host-prop',
-          'render-host-node',
-          'render-child-attr',
-          'render-child-prop',
-          'render-child-node',
+          'render-host-attr-true',
+          'render-host-prop-true',
+          'render-host-node-true',
+          'render-child-attr-true',
+          'render-child-prop-true',
+          'render-child-node-true',
         ]);
       });
 
@@ -506,12 +506,46 @@ const extraGlobals = window as LitExtraGlobals;
         await nextFrame();
         assertRendering(host);
         assert.deepEqual(log, [
-          'render-host-attr',
-          'render-host-prop',
-          'render-host-node',
-          'render-child-attr',
-          'render-child-prop',
-          'render-child-node',
+          'render-host-attr-true',
+          'render-host-prop-true',
+          'render-host-node-true',
+          'render-child-attr-true',
+          'render-child-prop-true',
+          'render-child-node-true',
+        ]);
+      });
+
+      test('directives render with isConnected: false if first render is while element is disconnected', async () => {
+        container.appendChild(host);
+        container.remove();
+        await nextFrame();
+        assertRendering(host);
+        // Host directives render in an initially disconnected state.
+        // Note that child directives didn't render because by the time the
+        // host render happened, the child was not connected and is still
+        // pending
+        assert.deepEqual(log, [
+          'render-host-attr-false',
+          'render-host-prop-false',
+          'render-host-node-false',
+        ]);
+        log.length = 0;
+        document.body.appendChild(container);
+        assertRendering(host);
+        // Directive reconnection happens synchronous to connectedCallback
+        assert.deepEqual(log, [
+          'reconnect-host-attr',
+          'reconnect-host-prop',
+          'reconnect-host-node',
+        ]);
+        log.length = 0;
+        // The initial render of the child happens a microtask after the host
+        // reconnects, at which point its directives run in the connected state
+        await nextFrame();
+        assert.deepEqual(log, [
+          'render-child-attr-true',
+          'render-child-prop-true',
+          'render-child-node-true',
         ]);
       });
     });
@@ -519,7 +553,7 @@ const extraGlobals = window as LitExtraGlobals;
 
   test('bind refs between elements', async () => {
     class RefChild extends LitElement {
-      static properties = {
+      static override properties = {
         bool: {},
         ref: {},
       };
@@ -527,7 +561,7 @@ const extraGlobals = window as LitExtraGlobals;
       // default ref, should be unused
       ref = createRef();
       cb = (_el: Element | undefined) => {};
-      render() {
+      override render() {
         return html` <span>
           ${this.bool
             ? html`<div id="true" ${ref(this.ref)} ${ref(this.cb)}></div>`
@@ -544,7 +578,7 @@ const extraGlobals = window as LitExtraGlobals;
     customElements.define('ref-child', RefChild);
 
     class RefHost extends LitElement {
-      static properties = {
+      static override properties = {
         bool: {type: Boolean},
       };
       bool = false;
@@ -555,7 +589,7 @@ const extraGlobals = window as LitExtraGlobals;
         this.count++;
         this.el = el;
       };
-      render() {
+      override render() {
         return html`<ref-child
           .bool=${this.bool}
           .ref=${this.elRef}
@@ -618,25 +652,25 @@ const extraGlobals = window as LitExtraGlobals;
         hostUpdated() {
           log.push(`hostUpdated-${this.host!.x}`);
         }
-        update(part: Part) {
+        override update(part: Part) {
           if (this.part === undefined) {
             this.part = part;
           }
           this.ensureHost();
           this.render();
         }
-        disconnected() {
+        override disconnected() {
           this.host?.removeController(this);
           this.host = undefined;
         }
-        reconnected() {
+        override reconnected() {
           this.ensureHost();
         }
       }
     );
 
     class Host extends LitElement {
-      static properties = {
+      static override properties = {
         bool: {},
         x: {},
       };
@@ -648,7 +682,7 @@ const extraGlobals = window as LitExtraGlobals;
         this.bool = true;
         this.x = 0;
       }
-      render() {
+      override render() {
         return html` ${this.bool
           ? html`<div ${controllerDirective()}></div>`
           : nothing}`;

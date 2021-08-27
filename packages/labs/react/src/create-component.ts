@@ -188,7 +188,7 @@ export const createComponent = <I extends HTMLElement, E>(
      * Updates element properties correctly setting properties
      * on mount.
      */
-    componentDidMount() {
+    override componentDidMount() {
       this._updateElement();
     }
 
@@ -196,7 +196,7 @@ export const createComponent = <I extends HTMLElement, E>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    componentDidUpdate(old: ComponentProps) {
+    override componentDidUpdate(old: ComponentProps) {
       this._updateElement(old);
     }
 
@@ -208,7 +208,7 @@ export const createComponent = <I extends HTMLElement, E>(
      * are updated in componentDidMount/componentDidUpdate.
      *
      */
-    render() {
+    override render() {
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {css, html as htmlWithStyles, LitElement} from '../lit-element.js';
+import {html as staticHtml, unsafeStatic} from 'lit-html/static.js';
 
 import {
   canTestLitElement,
@@ -12,8 +13,6 @@ import {
   nextFrame,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
-
-const extraGlobals = window as LitExtraGlobals;
 
 (canTestLitElement ? suite : suite.skip)('Styling', () => {
   suite('Basic styling', () => {
@@ -35,7 +34,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -66,7 +65,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -93,7 +92,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             :host {
@@ -121,7 +120,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         'x-inner',
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -136,7 +135,7 @@ const extraGlobals = window as LitExtraGlobals;
       class E extends LitElement {
         inner: LitElement | null = null;
 
-        render() {
+        override render() {
           return htmlWithStyles`
           <style>
             x-inner {
@@ -146,7 +145,7 @@ const extraGlobals = window as LitExtraGlobals;
           <x-inner></x-inner>`;
         }
 
-        firstUpdated() {
+        override firstUpdated() {
           this.inner = this.shadowRoot!.querySelector('x-inner')! as LitElement;
         }
       }
@@ -169,7 +168,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         'x-inner1',
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -186,7 +185,7 @@ const extraGlobals = window as LitExtraGlobals;
         class extends LitElement {
           inner: Element | null = null;
 
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             x-inner1 {
@@ -196,7 +195,7 @@ const extraGlobals = window as LitExtraGlobals;
           <x-inner1></x-inner1>`;
           }
 
-          firstUpdated() {
+          override firstUpdated() {
             this.inner = this.shadowRoot!.querySelector('x-inner1');
           }
         }
@@ -205,7 +204,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name2,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             x-inner1 {
@@ -262,7 +261,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          static get styles() {
+          static override get styles() {
             return [
               css`
                 div {
@@ -278,7 +277,7 @@ const extraGlobals = window as LitExtraGlobals;
             ];
           }
 
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -309,7 +308,7 @@ const extraGlobals = window as LitExtraGlobals;
         '3px'
       );
       // Verify there is one scoping style under ShadyDOM
-      if (extraGlobals.ShadyDOM?.inUse) {
+      if (window.ShadyDOM?.inUse) {
         assert.equal(
           document.querySelectorAll(`style[scope=${name}`).length,
           1
@@ -322,7 +321,7 @@ const extraGlobals = window as LitExtraGlobals;
     let container: HTMLElement;
 
     setup(function () {
-      if (!extraGlobals.ShadyDOM) {
+      if (!window.ShadyDOM) {
         this.skip();
       } else {
         container = document.createElement('div');
@@ -336,19 +335,17 @@ const extraGlobals = window as LitExtraGlobals;
       }
     });
 
-    // TODO(sorvell): Bindings in styles are no longer supported.
-    // This will be supported via static bindings only.
-    test.skip('properties in styles render with initial value and cannot be changed', async () => {
+    test('static properties in styles render with initial value and cannot be changed', async () => {
       let border = `6px solid blue`;
       const name = generateElementName();
       customElements.define(
         name,
         class extends LitElement {
-          render() {
-            return htmlWithStyles`
+          override render() {
+            return staticHtml`
           <style>
             div {
-              border: ${border};
+              border: ${unsafeStatic(border)};
             }
           </style>
           <div>Testing...</div>`;
@@ -358,7 +355,7 @@ const extraGlobals = window as LitExtraGlobals;
       const el = document.createElement(name) as LitElement;
       container.appendChild(el);
       await el.updateComplete;
-      const div = el.shadowRoot!.querySelector('div');
+      let div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '6px'
@@ -366,6 +363,7 @@ const extraGlobals = window as LitExtraGlobals;
       border = `4px solid orange`;
       el.requestUpdate();
       await el.updateComplete;
+      div = el.shadowRoot!.querySelector('div');
       assert.equal(
         getComputedStyleValue(div!, 'border-top-width').trim(),
         '6px'
