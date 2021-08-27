@@ -5,7 +5,7 @@
  */
 
 import {unsafeHTML} from '../../directives/unsafe-html.js';
-import {render, html} from '../../lit-html.js';
+import {render, html, nothing, noChange} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -24,6 +24,45 @@ suite('unsafeHTML directive', () => {
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<div>before<span>inner</span>after</div>'
+    );
+  });
+
+  test('rendering `nothing` renders empty string to content', () => {
+    render(html`<div>before${unsafeHTML(nothing)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
+    );
+  });
+
+  test('rendering `noChange` does not change the previous content', () => {
+    const template = (v: string | typeof noChange) =>
+      html`<div>before${unsafeHTML(v)}after</div>`;
+    render(template('<p>Hi</p>'), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>before<p>Hi</p>after</div>'
+    );
+    render(template(noChange), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>before<p>Hi</p>after</div>'
+    );
+  });
+
+  test('rendering `undefined` renders empty string to content', () => {
+    render(html`<div>before${unsafeHTML(undefined)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
+    );
+  });
+
+  test('rendering `null` renders empty string to content', () => {
+    render(html`<div>before${unsafeHTML(null)}after</div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>beforeafter</div>'
     );
   });
 

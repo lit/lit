@@ -27,9 +27,8 @@ export class UnsafeHTMLDirective extends Directive {
     }
   }
 
-  render(value: string | typeof nothing | typeof noChange) {
-    // TODO: add tests for nothing and noChange
-    if (value === nothing) {
+  render(value: string | typeof nothing | typeof noChange | undefined | null) {
+    if (value === nothing || value == null) {
       this._templateResult = undefined;
       return (this._value = value);
     }
@@ -66,6 +65,9 @@ export class UnsafeHTMLDirective extends Directive {
 
 /**
  * Renders the result as HTML, rather than text.
+ *
+ * The values `undefined`, `null`, and `nothing`, will all result in no content
+ * (empty string) being rendered.
  *
  * Note, this is unsafe to use with any user-provided input that hasn't been
  * sanitized or escaped, as it may lead to cross-site-scripting

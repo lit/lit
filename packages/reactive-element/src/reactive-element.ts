@@ -1024,8 +1024,8 @@ export abstract class ReactiveElement
       // `window.onunhandledrejection`.
       Promise.reject(e);
     }
-    const result = this.performUpdate();
-    // If `performUpdate` returns a Promise, we await it. This is done to
+    const result = this.scheduleUpdate();
+    // If `scheduleUpdate` returns a Promise, we await it. This is done to
     // enable coordinating updates with a scheduler. Note, the result is
     // checked to avoid delaying an additional microtask unless we need to.
     if (result != null) {
@@ -1035,20 +1035,41 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Performs an element update. Note, if an exception is thrown during the
-   * update, `firstUpdated` and `updated` will not be called.
-   *
-   * You can override this method to change the timing of updates. If this
-   * method is overridden, `super.performUpdate()` must be called.
+   * Schedules an element update. You can override this method to change the
+   * timing of updates by returning a Promise. The update will await the
+   * returned Promise, and you should resolve the Promise to allow the update
+   * to proceed. If this method is overridden, `super.scheduleUpdate()`
+   * must be called.
    *
    * For instance, to schedule updates to occur just before the next frame:
    *
    * ```ts
-   * override protected async performUpdate(): Promise<unknown> {
+   * override protected async scheduleUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-   *   super.performUpdate();
+   *   super.scheduleUpdate();
    * }
    * ```
+   * @category updates
+   */
+  protected scheduleUpdate(): void | Promise<unknown> {
+    return this.performUpdate();
+  }
+
+  /**
+   * Performs an element update. Note, if an exception is thrown during the
+   * update, `firstUpdated` and `updated` will not be called.
+   *
+   * Call performUpdate() to immediately process a pending update. This should
+   * generally not be needed, but it can be done in rare cases when you need to
+   * update synchronously.
+   *
+   * Note: To ensure `performUpdate()` synchronously completes a pending update,
+   * it should not be overridden. In LitElement 2.x it was suggested to override
+   * `performUpdate()` to also customizing update scheduling. Instead, you should now
+   * override `scheduleUpdate()`. For backwards compatibility with LitElement 2.x,
+   * scheduling updates via `performUpdate()` continues to work, but will make
+   * also calling `performUpdate()` to synchronously process updates difficult.
+   *
    * @category updates
    */
   protected performUpdate(): void | Promise<unknown> {

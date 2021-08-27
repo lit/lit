@@ -47,6 +47,21 @@ const DEV_MODE = render.setSanitizer != null;
  */
 const INTERNAL = litHtmlLib.INTERNAL === true;
 
+class FireEventDirective extends Directive {
+  render() {
+    return nothing;
+  }
+  override update(part: AttributePart) {
+    part.element.dispatchEvent(
+      new CustomEvent('test-event', {
+        bubbles: true,
+      })
+    );
+    return nothing;
+  }
+}
+const fireEvent = directive(FireEventDirective);
+
 suite('lit-html', () => {
   let container: HTMLDivElement;
 
@@ -1849,27 +1864,24 @@ suite('lit-html', () => {
     });
 
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective extends Directive {
-        render() {
-          return nothing;
-        }
-        // TODO (justinfagnani): make this work on SpreadPart
-        override update(part: AttributePart) {
-          part.element.dispatchEvent(
-            new CustomEvent('test-event', {
-              bubbles: true,
-            })
-          );
-          return nothing;
-        }
-      }
-      const fireEvent = directive(FireEventDirective);
       let event = undefined;
       const listener = (e: Event) => {
         event = e;
       };
       render(
         html`<div @test-event=${listener} b=${fireEvent()}></div>`,
+        container
+      );
+      assert.isOk(event);
+    });
+
+    test('event listeners can see events fired in element directives', () => {
+      let event = undefined;
+      const listener = (e: Event) => {
+        event = e;
+      };
+      render(
+        html`<div @test-event=${listener} ${fireEvent()}></div>`,
         container
       );
       assert.isOk(event);
@@ -1920,6 +1932,31 @@ suite('lit-html', () => {
       assertRender(template, `<div a="a"></div>`);
       assert.deepEqual(log, ['x:2', 'y:2']);
     });
+
+    if (DEV_MODE) {
+      test('EventPart attributes must consist of one value and no extra text', () => {
+        const listener = () => {};
+
+        render(html`<div @click=${listener}></div>`, container);
+        render(html`<div @click="${listener}"></div>`, container);
+
+        assert.throws(() => {
+          render(html`<div @click=EXTRA_TEXT${listener}></div>`, container);
+        });
+        assert.throws(() => {
+          render(html`<div @click=${listener}EXTRA_TEXT></div>`, container);
+        });
+        assert.throws(() => {
+          render(html`<div @click=${listener}${listener}></div>`, container);
+        });
+        assert.throws(() => {
+          render(
+            html`<div @click="${listener}EXTRA_TEXT${listener}"></div>`,
+            container
+          );
+        });
+      });
+    }
 
     test('directives have access to renderOptions', () => {
       const hostEl = document.createElement('input');
