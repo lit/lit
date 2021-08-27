@@ -2331,17 +2331,17 @@ suite('ReactiveElement', () => {
     assert.equal((el as any).zug, objectValue);
   });
 
-  test('can override performUpdate()', async () => {
+  test('can override scheduleUpdate()', async () => {
     let resolve: ((value?: unknown) => void) | undefined;
 
     class A extends ReactiveElement {
-      performUpdateCalled = false;
+      scheduleUpdateCalled = false;
       updateCalled = false;
 
-      override async performUpdate() {
-        this.performUpdateCalled = true;
+      override async scheduleUpdate() {
+        this.scheduleUpdateCalled = true;
         await new Promise((r) => (resolve = r));
-        await super.performUpdate();
+        await super.scheduleUpdate();
       }
 
       override update(changedProperties: Map<PropertyKey, unknown>) {
@@ -2365,21 +2365,21 @@ suite('ReactiveElement', () => {
     await new Promise((r) => setTimeout(r, 10));
     assert.isFalse(a.updateCalled);
 
-    // update is called after performUpdate allowed to complete
+    // update is called after scheduleUpdate allowed to complete
     resolve!();
     await a.updateComplete;
     assert.isTrue(a.updateCalled);
   });
 
-  test('overriding performUpdate() allows nested invalidations', async () => {
+  test('overriding scheduleUpdate() allows nested invalidations', async () => {
     class A extends ReactiveElement {
-      performUpdateCalledCount = 0;
+      scheduleUpdateCalledCount = 0;
       updatedCalledCount = 0;
 
-      override async performUpdate() {
-        this.performUpdateCalledCount++;
+      override async scheduleUpdate() {
+        this.scheduleUpdateCalledCount++;
         await new Promise((r) => setTimeout(r));
-        super.performUpdate();
+        super.scheduleUpdate();
       }
 
       override updated(_changedProperties: Map<PropertyKey, unknown>) {
@@ -2399,14 +2399,14 @@ suite('ReactiveElement', () => {
     const updateComplete1 = a.updateComplete;
     await updateComplete1;
     assert.equal(a.updatedCalledCount, 1);
-    assert.equal(a.performUpdateCalledCount, 1);
+    assert.equal(a.scheduleUpdateCalledCount, 1);
 
     const updateComplete2 = a.updateComplete;
     assert.notStrictEqual(updateComplete1, updateComplete2);
 
     await updateComplete2;
     assert.equal(a.updatedCalledCount, 2);
-    assert.equal(a.performUpdateCalledCount, 2);
+    assert.equal(a.scheduleUpdateCalledCount, 2);
   });
 
   test('update does not occur before element is connected', async () => {
