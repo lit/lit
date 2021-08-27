@@ -22,6 +22,46 @@
       "development": "./development/index.js",
       "default": "./index.js"
     },
+    "./decorators.js": {
+      "development": "./development/decorators.js",
+      "default": "./decorators.js"
+    },
+    "./decorators/custom-element.js": {
+      "development": "./development/decorators/custom-element.js",
+      "default": "./decorators/custom-element.js"
+    },
+    "./decorators/event-options.js": {
+      "development": "./development/decorators/event-options.js",
+      "default": "./decorators/event-options.js"
+    },
+    "./decorators/property.js": {
+      "development": "./development/decorators/property.js",
+      "default": "./decorators/property.js"
+    },
+    "./decorators/query-all.js": {
+      "development": "./development/decorators/query-all.js",
+      "default": "./decorators/query-all.js"
+    },
+    "./decorators/query-assigned-nodes.js": {
+      "development": "./development/decorators/query-assigned-nodes.js",
+      "default": "./decorators/query-assigned-nodes.js"
+    },
+    "./decorators/query-async.js": {
+      "development": "./development/decorators/query-async.js",
+      "default": "./decorators/query-async.js"
+    },
+    "./decorators/query.js": {
+      "development": "./development/decorators/query.js",
+      "default": "./decorators/query.js"
+    },
+    "./decorators/state.js": {
+      "development": "./development/decorators/state.js",
+      "default": "./decorators/state.js"
+    },
+    "./experimental-hydrate-support.js": {
+      "development": "./development/experimental-hydrate-support.js",
+      "default": "./experimental-hydrate-support.js"
+    },
     "./lit-element.js": {
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
@@ -33,18 +73,6 @@
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"
-    },
-    "./experimental-hydrate-support.js": {
-      "development": "./development/experimental-hydrate-support.js",
-      "default": "./experimental-hydrate-support.js"
-    },
-    "./decorators.js": {
-      "development": "./development/decorators.js",
-      "default": "./decorators.js"
-    },
-    "./decorators/": {
-      "development": "./development/decorators/",
-      "default": "./decorators/"
     }
   },
   "scripts": {
