@@ -44,3 +44,5 @@ export interface SSRTestDescription {
 export type SSRTestFactory = () => SSRTestDescription;
 
 export type SSRTest = SSRTestDescription | SSRTestFactory;
+
+export type SSRTestSuite = {[name: string]: SSRTest};

@@ -36,15 +36,15 @@
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "lit": "^2.0.0-pre.2",
-    "lit-element": "^3.0.0-pre.4"
+    "lit": "^2.0.0-rc.1",
+    "lit-element": "^3.0.0-rc.1"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^0.10.0",
+    "@11ty/eleventy": "^0.12.1",
     "@11ty/eleventy-plugin-syntaxhighlight": "^3.0.1",
     "@esm-bundle/chai": "^4.1.5",
-    "@open-wc/testing": "^2.5.32",
-    "@open-wc/testing-karma": "^3.3.11",
+    "@open-wc/testing": "^3.0.0-next.1",
+    "@open-wc/testing-karma": "^4.0.9",
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-replace": "^2.3.3",
     "@types/mocha": "^7.0.2",
@@ -56,17 +56,17 @@
     "@web/test-runner": "^0.12.15",
     "@web/test-runner-mocha": "^0.3.5",
     "@web/test-runner-playwright": "^0.8.4",
-    "@webcomponents/webcomponentsjs": "^2.5.0",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "deepmerge": "^4.2.2",
     "eslint": "^6.8.0",
     "lit-analyzer": "^1.1.10",
     "mocha": "^7.1.1",
-    "prettier": "^2.0.4",
+    "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.28.2",
     "rollup-plugin-summary": "^1.2.3",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "^3.8.3",
+    "typescript": "^4.3.5",
     "web-component-analyzer": "^1.0.3"
   }
 }

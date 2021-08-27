@@ -15,14 +15,19 @@
 import fetch from 'node-fetch';
 
 /**
- * Constructs a fresh instance of the "window" vm context to use for
- * evaluating user SSR code.  Includes a minimal shim of DOM APIs.
+ * Constructs a fresh instance of the "window" vm context to use for evaluating
+ * user SSR code. Includes a minimal shim of DOM APIs.
  *
+ * @param includeJSBuiltIns Whether certain standard JS context globals like
+ *  `console` and `setTimeout` should also be added to the global. Should
+ *  generally only be true when adding window to a fresh VM context that
+ *  starts with nothing.
  * @param props Additional properties to add to the window global
  */
-export const getWindow = (
-  props: {[key: string]: unknown} = {}
-): {[key: string]: unknown} => {
+export const getWindow = ({
+  includeJSBuiltIns = false,
+  props = {},
+}): {[key: string]: unknown} => {
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
     let attrs = attributes.get(element);
@@ -78,6 +83,12 @@ export const getWindow = (
     createTreeWalker() {
       return {};
     }
+    createTextNode() {
+      return {};
+    }
+    createElement() {
+      return {};
+    }
   }
 
   class CSSStyleSheet {
@@ -90,7 +101,7 @@ export const getWindow = (
   };
 
   class CustomElementRegistry {
-    __definitions = new Map<string, CustomElementRegistration>();
+    private __definitions = new Map<string, CustomElementRegistration>();
 
     define(name: string, ctor: CustomHTMLElement) {
       this.__definitions.set(name, {
@@ -113,41 +124,20 @@ export const getWindow = (
     document: new Document(),
     CSSStyleSheet,
     ShadowRoot,
+    CustomElementRegistry,
     customElements: new CustomElementRegistry(),
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    console: {
-      log(...args: unknown[]) {
-        console.log(...args);
-      },
-      info(...args: unknown[]) {
-        console.info(...args);
-      },
-      warn(...args: unknown[]) {
-        console.warn(...args);
-      },
-      debug(...args: unknown[]) {
-        console.debug(...args);
-      },
-      error(...args: unknown[]) {
-        console.error(...args);
-      },
-      assert(bool: unknown, msg: string) {
-        if (!bool) {
-          throw new Error(msg);
-        }
-      },
-    },
     fetch: (url: URL, init: {}) => fetch(url, init),
+
+    location: new URL('http://localhost'),
+    MutationObserver: class {
+      observe() {}
+    },
 
     // No-op any async tasks
     requestAnimationFrame() {},
-    setTimeout() {},
-    clearTimeout() {},
-
-    // Required for node-fetch
-    Buffer,
 
     // Set below
     window: undefined as unknown,
@@ -160,5 +150,58 @@ export const getWindow = (
   window.window = window;
   window.global = window; // Required for node-fetch
 
+  if (includeJSBuiltIns) {
+    Object.assign(window, {
+      // No-op any async tasks
+      setTimeout() {},
+      clearTimeout() {},
+      // Required for node-fetch
+      Buffer,
+      console: {
+        log(...args: unknown[]) {
+          console.log(...args);
+        },
+        info(...args: unknown[]) {
+          console.info(...args);
+        },
+        warn(...args: unknown[]) {
+          console.warn(...args);
+        },
+        debug(...args: unknown[]) {
+          console.debug(...args);
+        },
+        error(...args: unknown[]) {
+          console.error(...args);
+        },
+        assert(bool: unknown, msg: string) {
+          if (!bool) {
+            throw new Error(msg);
+          }
+        },
+      },
+    });
+  }
+
   return window;
+};
+
+export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
+  // Avoid installing the DOM shim if one already exists
+  if (globalThis.window === undefined) {
+    const window = getWindow({props});
+    // Setup window to proxy all globals added to window to the node global
+    window.window = new Proxy(window, {
+      set(
+        _target: {[key: string]: unknown},
+        p: PropertyKey,
+        value: unknown
+      ): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any)[p] = (globalThis as any)[p] = value;
+        return true;
+      },
+    });
+    // Copy initial window globals to node global
+    Object.assign(globalThis, window);
+  }
 };

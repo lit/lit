@@ -6,7 +6,7 @@
 
 import type {TemplateResult} from './lit-html.js';
 
-import {noChange, RenderOptions, _Σ} from './lit-html.js';
+import {noChange, RenderOptions, _$LH} from './lit-html.js';
 import {AttributePartInfo, PartType} from './directive.js';
 import {
   isPrimitive,
@@ -20,7 +20,7 @@ const {
   _resolveDirective: resolveDirective,
   _ChildPart: ChildPart,
   _ElementPart: ElementPart,
-} = _Σ;
+} = _$LH;
 
 type ChildPart = InstanceType<typeof ChildPart>;
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -115,8 +115,9 @@ export const hydrate = (
   options: Partial<RenderOptions> = {}
 ) => {
   // TODO(kschaaf): Do we need a helper for _$litPart$ ("part for node")?
+  // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((container as any)._$litPart$ !== undefined) {
+  if ((container as any)['_$litPart$'] !== undefined) {
     throw new Error('container already contains a live render');
   }
 
@@ -173,8 +174,9 @@ export const hydrate = (
     rootPart !== undefined,
     'there should be exactly one root part in a render container'
   );
+  // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (container as any)._$litPart$ = rootPart;
+  (container as any)['_$litPart$'] = rootPart;
 };
 
 const openChildPart = (
@@ -217,7 +219,7 @@ const openChildPart = (
       // we need to decide what to do in this case. Note that this part won't be
       // retained by any parent TemplateInstance, since a primitive had been
       // rendered in its place.
-      // https://github.com/Polymer/lit-html/issues/1434
+      // https://github.com/lit/lit/issues/1434
       // throw new Error('Hydration value mismatch: Found a TemplateInstance' +
       //  'where a leaf value was expected');
       part = new ChildPart(marker, null, state.part, options);
@@ -245,7 +247,7 @@ const openChildPart = (
     // TODO(kschaaf): We can detect when a primitive is being hydrated on the
     // client where a TemplateResult was rendered on the server, but we need to
     // decide on a strategy for what to do next.
-    // https://github.com/Polymer/lit-html/issues/1434
+    // https://github.com/lit/lit/issues/1434
     // if (marker.data !== 'lit-part') {
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
@@ -366,7 +368,7 @@ const createAttributeParts = (
         );
 
         const value = isSingleExpression(
-          (instancePart as unknown) as AttributePartInfo
+          instancePart as unknown as AttributePartInfo
         )
           ? state.result.values[state.instancePartIndex]
           : state.result.values;

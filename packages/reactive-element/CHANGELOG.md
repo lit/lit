@@ -1,23 +1,51 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
+## 1.0.0-rc.3
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
+### Patch Changes
 
-<!--
-   PRs should document their user-visible changes (if any) in the
-   Unreleased section, uncommenting the header as necessary.
--->
+- [#2002](https://github.com/lit/lit/pull/2002) [`ff0d1556`](https://github.com/lit/lit/commit/ff0d15568fe79019ebfa6b72b88ba86aac4af91b) - Fixes polyfill-support styling issues: styling should be fully applied by firstUpdated/update time; late added styles are now retained (matching Lit1 behavior)
 
-<!-- ## [x.y.z] - YYYY-MM-DD -->
-<!-- ## Unreleased -->
-<!-- ### Changed -->
-<!-- ### Added -->
-<!-- ### Removed -->
-<!-- ### Fixed -->
+* [#2030](https://github.com/lit/lit/pull/2030) [`34280cb0`](https://github.com/lit/lit/commit/34280cb0c6ac1dc14ce5cc900f36b4326b0a1d98) - Remove unnecessary attribute:false assignment in @state decorator
 
-## Unreleased
+- [#2034](https://github.com/lit/lit/pull/2034) [`5768cc60`](https://github.com/lit/lit/commit/5768cc604dc7fcb2c95165399180179d406bb257) - Reverts the change in Lit 2 to pause ReactiveElement's update cycle while the element is disconnected. The update cycle for elements will now run while disconnected as in Lit 1, however AsyncDirectives must now check the `this.isConnected` flag during `update` to ensure that e.g. subscriptions that could lead to memory leaks are not made when AsyncDirectives update while disconnected.
+
+* [#1918](https://github.com/lit/lit/pull/1918) [`72877fd`](https://github.com/lit/lit/commit/72877fd1de43ccdd579778d5df407e960cb64b03) - Changed the caching strategy used in CSSResults returned from the css tag to cache the stylesheet rather than individual CSSResults.
+
+- [#1942](https://github.com/lit/lit/pull/1942) [`c8fe1d4`](https://github.com/lit/lit/commit/c8fe1d4c4a8b1c9acdd5331129ae3641c51d9904) - For minified class fields on classes in lit libraries, added prefix to stable properties to avoid collisions with user properties.
+
+* [#2041](https://github.com/lit/lit/pull/2041) [`52a47c7e`](https://github.com/lit/lit/commit/52a47c7e25d71ff802083ca9b0751724efd3a4f4) - Remove some unnecessary internal type declarations.
+
+- [#1917](https://github.com/lit/lit/pull/1917) [`550a218`](https://github.com/lit/lit/commit/550a2186eaeffef9d2d87025de09bdd2bb9c82ac) - Use a brand property instead of instanceof to identify CSSResults to make the checks compatible with multiple copies of the @lit/reactive-element package.
+
+* [#1959](https://github.com/lit/lit/pull/1959) [`6938995`](https://github.com/lit/lit/commit/69389958ab41b2ad3074fd86926ed18dc9968302) - Changed prefix used for minifying class field names on lit libraries to stay within ASCII subset, to avoid needing to explicitly set the charset for scripts in some browsers.
+
+- [#1964](https://github.com/lit/lit/pull/1964) [`f43b811`](https://github.com/lit/lit/commit/f43b811405be32ce6caf82e80d25cb6170eeb7dc) - Don't publish src/ to npm.
+
+* [#1943](https://github.com/lit/lit/pull/1943) [`39ad574`](https://github.com/lit/lit/commit/39ad574e2a386627ec30a4be19ae6a003e3a4766) - Add support for private custom element constructors in @customElement().
+
+- [#2016](https://github.com/lit/lit/pull/2016) [`e6dc6a7`](https://github.com/lit/lit/commit/e6dc6a708adacec6a17a884784f821c3250d7532) - Clean up internal TypeScript types
+
+* [#1972](https://github.com/lit/lit/pull/1972) [`a791514b`](https://github.com/lit/lit/commit/a791514b426b790de2bfa4c78754fb62815e71d4) - Properties that must remain unminified are now compatible with build tools other than rollup/terser.
+
+- [#2050](https://github.com/lit/lit/pull/2050) [`8758e06`](https://github.com/lit/lit/commit/8758e06c7a142332fd4c3334d8806b3b51c7f249) - Fix syntax highlighting in some documentation examples
+
+- (Since 1.0.0-rc.2) Reverted change of the `css` tag's return to CSSResultGroup, which was a breaking change. The `css` tag again returns a `CSSResult` object.
+- (Since 1.0.0-rc.2) Remove the `CSSResultFlatArray` type alias in `css-tag.ts`.
+
+---
+
+Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) format. All changes above are generated automatically by [Changesets](https://github.com/atlassian/changesets).
+
+---
+
+## 1.0.0-rc.2 - 2021-05-07
+
+### Changed
+
+- (Since 1.0.0-rc.1) [Breaking] Change the type name `Warnings` to `WarningKind` [#1854](https://github.com/Polymer/lit-html/issues/1854).
+
+## 1.0.0-rc.1 - 2021-04-20
 
 ### Fixed
 

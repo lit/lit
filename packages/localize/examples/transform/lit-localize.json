@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/PolymerLabs/lit-localize/master/config.schema.json",
+  "$schema": "https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/tsconfig.schema.json",
   "sourceLocale": "en",
   "targetLocales": ["es-419", "zh_CN"],
   "tsConfig": "tsconfig.json",

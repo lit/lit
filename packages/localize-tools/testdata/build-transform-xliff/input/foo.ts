@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 import {
   msg,
   str,
   configureTransformLocalization,
+  updateWhenLocaleChanges,
+  localized,
   LOCALE_STATUS_EVENT,
 } from '@lit/localize';
-import {Localized} from '@lit/localize/localized-element.js';
 
 const {getLocale} = configureTransformLocalization({sourceLocale: 'en'});
 console.log(`Locale is ${getLocale()}`);
@@ -44,7 +45,7 @@ msg(html`Click <a href=${url}>here</a>!`);
 //
 // TODO(aomarks) The "SALT" text is here because we have a check to make sure
 // that two messages can't have the same ID unless they have identical template
-// contents. After https://github.com/Polymer/lit-html/issues/1621 is
+// contents. After https://github.com/lit/lit/issues/1621 is
 // implemented, add a "meaning" parameter instead.
 msg(html`[SALT] Click <a href="${'https://www.example.com/'}">here</a>!`);
 
@@ -57,8 +58,24 @@ msg(html`Hello <b><!-- comment -->World</b>!`);
 // Custom ID
 msg('Hello World', {id: 'myId'});
 
-export class MyElement extends Localized(LitElement) {
+// updateWhenLocaleChanges -> undefined
+export class MyElement1 extends LitElement {
+  constructor() {
+    super();
+    updateWhenLocaleChanges(this);
+  }
   render() {
     return html`<p>${msg(html`Hello <b>World</b>!`)} (${getLocale()})</p>`;
   }
 }
+
+// @localized -> removed
+@localized()
+export class MyElement2 extends LitElement {
+  render() {
+    return html`<p>${msg(html`Hello <b>World</b>!`)} (${getLocale()})</p>`;
+  }
+}
+
+// Escaped markup characters should remain escaped
+msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);

@@ -14,13 +14,6 @@
 import {ReactiveElement} from '../reactive-element.js';
 import {decorateProperty} from './base.js';
 
-// TODO(sorvell): Remove when https://github.com/webcomponents/polyfills/issues/397 is addressed.
-// x-browser support for matches
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ElementProto = Element.prototype as any;
-const legacyMatches =
-  ElementProto.msMatchesSelector || ElementProto.webkitMatchesSelector;
-
 /**
  * A property decorator that converts a class property into a getter that
  * returns the `assignedNodes` of the given named `slot`. Note, the type of
@@ -33,7 +26,6 @@ const legacyMatches =
  * @param selector A string which filters the results to elements that match
  *     the given css selector.
  *
- * * @example
  * ```ts
  * class MyElement {
  *   @queryAssignedNodes('list', true, '.item')
@@ -60,15 +52,12 @@ export function queryAssignedNodes(
           slotName ? `[name=${slotName}]` : ':not([name])'
         }`;
         const slot = this.renderRoot?.querySelector(slotSelector);
-        let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
-        if (nodes && selector) {
+        let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten}) ?? [];
+        if (selector) {
           nodes = nodes.filter(
             (node) =>
               node.nodeType === Node.ELEMENT_NODE &&
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ((node as any).matches
-                ? (node as Element).matches(selector)
-                : legacyMatches.call(node as Element, selector))
+              (node as Element).matches(selector)
           );
         }
         return nodes;

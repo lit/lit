@@ -53,7 +53,7 @@ class ClassMapDirective extends Directive {
     );
   }
 
-  update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
+  override update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
     // Remember dynamic classes on the first render
     if (this._previousClasses === undefined) {
       this._previousClasses = new Set();

@@ -17,5 +17,6 @@
     "incremental": true,
     "tsBuildInfoFile": "lib/.tsbuildinfo"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "references": [{"path": "../labs/ssr"}]
 }

@@ -3,7 +3,7 @@
 Benchmarks for lit-html and LitElement.
 
 ```bash
-git clone git@github.com:Polymer/lit-html.git
+git clone git@github.com:lit/lit.git
 cd lit-html
 
 npm install

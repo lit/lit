@@ -31,7 +31,6 @@ import {decorateProperty} from './base.js';
  *
  * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
- * @example
  * ```ts
  * class MyElement {
  *   @queryAsync('#first')

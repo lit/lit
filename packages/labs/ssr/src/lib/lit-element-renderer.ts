@@ -6,19 +6,27 @@
 
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
-import {_Φ} from 'lit-element/private-ssr-support.js';
-import {render, renderValue, RenderInfo} from './render-lit-html.js';
+import {_$LE} from 'lit-element/private-ssr-support.js';
+import {render, RenderInfo} from './render-lit-html.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty, changedProperties} = _Φ;
+const {attributeToProperty, changedProperties} = _$LE;
 
 /**
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
-  constructor(public element: LitElement) {
-    super(element);
+  override element: LitElement;
+
+  static override matchesClass(ctor: typeof HTMLElement) {
+    // This property needs to remain unminified.
+    return (ctor as unknown as typeof LitElement)['_$litElement$'];
+  }
+
+  constructor(tagName: string) {
+    super(tagName);
+    this.element = new (customElements.get(this.tagName))();
   }
 
   connectedCallback() {
@@ -60,7 +68,7 @@ export class LitElementRenderer extends ElementRenderer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      yield* render(value, renderInfo);
     } else {
       yield '';
     }

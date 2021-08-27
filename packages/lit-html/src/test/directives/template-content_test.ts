@@ -59,10 +59,7 @@ suite('templateContent', () => {
     );
   });
 
-  // TODO (justinfagnani): lit-html core has a bug/limitiation around swapping
-  // a directive with a non-directive.
-  // See https://github.com/Polymer/lit-html/issues/1286
-  test.skip('re-renders a template over a non-templateContent value', () => {
+  test('re-renders a template over a non-templateContent value', () => {
     const go = (v: unknown) => render(html`<div>${v}</div>`, container);
     go(templateContent(template));
     assert.equal(

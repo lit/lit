@@ -7,6 +7,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- ## Unreleased -->
 
+## [0.10.3] - 2021-07-14
+
+### Added
+
+- Added `configureReentrantLocalization` in `init/reentrant.js` which allows for
+  safe concurrent rendering across multiple locales by asynchronous tasks, such
+  as in an SSR context.
+
+  In this configuration, there is no global `setLocale` function. Instead, the
+  caller _provides_ a `getLocale` function, which is then called by every `msg`
+  invocation.
+
+  This pairs well with an asynchronous storage manager like
+  [`AsyncLocalStorage`](https://nodejs.org/api/async_hooks.html#async_hooks_class_asynclocalstorage).
+  See `configureSsrLocalization` from `@lit/localize-tools/lib/ssr.js` which
+  does exactly this.
+
+### Fixed
+
+- Removed accidental export of `_msg` (use `msg` instead).
+
+## [0.10.2] - 2021-05-18
+
+### Fixed
+
+- Internal refactoring.
+
+## [0.10.1] - 2021-04-20
+
+### Changed
+
+- Bumped versions of deps
+
+## [0.10.0] - 2021-04-19
+
+### Changed
+
+- **[BREAKING]** Lit dependency upgraded to v2.
+
+- **[BREAKING]** The `Localized` mixin has been replaced with the `@localized`
+  decorator and the `updateWhenLocaleChanges` function. These APIs register a
+  Lit 2 controller that serves the same purpose as the removed mixin.
+
+  #### Before
+
+  ```ts
+  import {LitElement} from 'lit-element';
+  import {Localized} from '@lit/localize/localized-element.js';
+
+  class MyElement extends Localized(LitElement) {}
+  ```
+
+  #### After
+
+  ###### With decorators
+
+  ```ts
+  import {LitElement, customElement} from 'lit';
+  import {localized} from '@lit/localize';
+
+  @localized()
+  @customElement('my-element');
+  class MyElement extends LitElement {}
+  ```
+
+  ###### Without decorators
+
+  ```ts
+  import {LitElement} from 'lit';
+  import {updateWhenLocaleChanges} from '@lit/localize';
+
+  class MyElement extends LitElement {
+    constructor() {
+      super();
+      updateWhenLocaleChanges(this);
+    }
+  }
+  ```
+
 ## [0.9.0] - 2021-03-30
 
 ### Changed

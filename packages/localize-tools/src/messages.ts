@@ -46,10 +46,9 @@ export interface ProgramMessage extends Message {
   desc: string | undefined;
 
   /**
-   * True if this message was tagged as a lit-html template, or was a function
-   * that returned a lit-html template.
+   * The template literal tag this message has.
    */
-  isLitTemplate: boolean;
+  tag: 'html' | 'str' | undefined;
 }
 
 /**
@@ -62,8 +61,8 @@ export interface Bundle {
 
 /**
  * A placeholder is a allows a bit of untranslatable text to be re-positioned by
- * the translator, but not modified. We use placeholders to contain embedded HTML
- * extracted from lit-html templates.
+ * the translator, but not modified. We use placeholders to contain embedded
+ * HTML extracted from Lit templates.
  */
 export interface Placeholder {
   untranslatable: string;

@@ -33,7 +33,7 @@ Options:
   --help      Display this help message.
   --config    Path to JSON configuration file.
               Default: ./lit-localize.json
-              See https://github.com/Polymer/lit-html/tree/main/packages/localize#readme for details.
+              See https://github.com/lit/lit/tree/main/packages/localize#readme for details.
 `;
 
 const commands = ['build', 'extract'] as const;

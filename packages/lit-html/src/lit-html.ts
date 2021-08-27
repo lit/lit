@@ -11,8 +11,32 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+/**
+ * `true` if we're building for google3 with temporary back-compat helpers.
+ * This export is not present in prod builds.
+ * @internal
+ */
+export const INTERNAL = true;
+
+let issueWarning: (warning: string) => void;
+
 if (DEV_MODE) {
-  console.warn('lit-html is in dev mode. Not recommended for production!');
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+
+  issueWarning(
+    `Lit is in dev mode. Not recommended for production! See ` +
+      `https://lit.dev/docs/tools/development/` +
+      `#development-and-production-builds for more information.`
+  );
 }
 
 const wrap =
@@ -21,6 +45,22 @@ const wrap =
   window.ShadyDOM?.noPatch === true
     ? window.ShadyDOM!.wrap
     : (node: Node) => node;
+
+const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
+
+/**
+ * Our TrustedTypePolicy for HTML which is declared using the html template
+ * tag function.
+ *
+ * That HTML is a developer-authored constant, and is parsed with innerHTML
+ * before any untrusted expressions have been mixed in. Therefor it is
+ * considered safe by construction.
+ */
+const policy = trustedTypes
+  ? trustedTypes.createPolicy('lit-html', {
+      createHTML: (s) => s,
+    })
+  : undefined;
 
 /**
  * Used to sanitize any value before it is written into the DOM. This can be
@@ -216,11 +256,8 @@ const COMMENT_PART = 7;
  * The return type of the template tag functions.
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
-  _$litType$: T;
-  // TODO (justinfagnani): consider shorter names, like `s` and `v`. This is a
-  // semi-public API though. We can't just let Terser rename them for us,
-  // because we need TemplateResults to work between compatible versions of
-  // lit-html.
+  // This property needs to remain unminified.
+  ['_$litType$']: T;
   strings: TemplateStringsArray;
   values: unknown[];
 };
@@ -232,7 +269,8 @@ export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 export interface CompiledTemplateResult {
   // This is a factory in order to make template initialization lazy
   // and allow ShadyRenderOptions scope to be passed in.
-  _$litType$: CompiledTemplate;
+  // This property needs to remain unminified.
+  ['_$litType$']: CompiledTemplate;
   values: unknown[];
 }
 
@@ -241,21 +279,32 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
   el?: HTMLTemplateElement;
 
   // The prepared HTML string to create a template element from.
-  h: string;
+  h: TrustedHTML;
 }
 
 /**
  * Generates a template literal tag function that returns a TemplateResult with
  * the given result type.
  */
-const tag = <T extends ResultType>(_$litType$: T) => (
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): TemplateResult<T> => ({
-  _$litType$,
-  strings,
-  values,
-});
+const tag =
+  <T extends ResultType>(type: T) =>
+  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult<T> => {
+    // Warn against templates octal escape sequences
+    // We do this here rather than in render so that the warning is closer to the
+    // template definition.
+    if (DEV_MODE && strings.some((s) => s === undefined)) {
+      console.warn(
+        'Some template strings are undefined.\n' +
+          'This is probably caused by illegal octal escape sequences.'
+      );
+    }
+    return {
+      // This property needs to remain unminified.
+      ['_$litType$']: type,
+      strings,
+      values,
+    };
+  };
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -289,6 +338,14 @@ export const nothing = Symbol.for('lit-nothing');
  */
 const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
+/**
+ * Object specifying options for controlling lit-html rendering. Note that
+ * while `render` may be called multiple times on the same `container` (and
+ * `renderBefore` reference node) to efficiently update the rendered content,
+ * only the options passed in during the first render are respected during
+ * the lifetime of renders to that unique `container` + `renderBefore`
+ * combination.
+ */
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
@@ -305,6 +362,27 @@ export interface RenderOptions {
    * any inherited context. Defaults to the global `document`.
    */
   creationScope?: {importNode(node: Node, deep?: boolean): Node};
+  /**
+   * The initial connected state for the top-level part being rendered. If no
+   * `isConnected` option is set, `AsyncDirective`s will be connected by
+   * default. Set to `false` if the initial render occurs in a disconnected tree
+   * and `AsyncDirective`s should see `isConnected === false` for their initial
+   * render. The `part.setConnected()` method must be used subsequent to initial
+   * render to change the connected state of the part.
+   */
+  isConnected?: boolean;
+}
+
+/**
+ * Internally we can export this interface and change the type of
+ * render()'s options.
+ */
+interface InternalRenderOptions extends RenderOptions {
+  /**
+   * An internal-only migration flag
+   * @internal
+   */
+  clearContainerForLit2MigrationOnly?: boolean;
 }
 
 /**
@@ -317,29 +395,46 @@ export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
-): ChildPart => {
+): RootPart => {
   const partOwnerNode = options?.renderBefore ?? container;
+  // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)._$litPart$;
+  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
+    // Internal modification: don't clear container to match lit-html 2.0
+    if (
+      INTERNAL &&
+      (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
+        true
+    ) {
+      let n = container.firstChild;
+      // Clear only up to the `endNode` aka `renderBefore` node.
+      while (n && n !== endNode) {
+        const next = n.nextSibling;
+        n.remove();
+        n = next;
+      }
+    }
+    // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)._$litPart$ = part = new ChildPart(
+    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
-      options
+      options ?? {}
     );
   }
   part._$setValue(value);
-  return part;
+  return part as RootPart;
 };
 
 if (ENABLE_EXTRA_SECURITY_HOOKS) {
   render.setSanitizer = setSanitizer;
   render.createSanitizer = createSanitizer;
   if (DEV_MODE) {
-    render._testOnlyClearSanitizerFactoryDoNotCallOrElse = _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse =
+      _testOnlyClearSanitizerFactoryDoNotCallOrElse;
   }
 }
 
@@ -363,6 +458,7 @@ let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 // `resolveDirective`
 export interface DirectiveParent {
   _$parent?: DirectiveParent;
+  _$isConnected: boolean;
   __directive?: Directive;
   __directives?: Array<Directive | undefined>;
 }
@@ -382,7 +478,7 @@ export interface DirectiveParent {
 const getTemplateHtml = (
   strings: TemplateStringsArray,
   type: ResultType
-): [string, Array<string | undefined>] => {
+): [TrustedHTML, Array<string | undefined>] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -441,7 +537,12 @@ const getTemplateHtml = (
           }
           regex = tagEndRegex;
         } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
-          // dynamic tag name
+          if (DEV_MODE) {
+            throw new Error(
+              'Bindings in tag names are not supported. Please use static templates instead. ' +
+                'See https://lit.dev/docs/templates/expressions/#static-expressions'
+            );
+          }
           regex = tagEndRegex;
         }
       } else if (regex === tagEndRegex) {
@@ -523,14 +624,14 @@ const getTemplateHtml = (
           (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
   }
 
+  const htmlResult: string | TrustedHTML =
+    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
+
   // Returned as an array for terseness
   return [
-    // We don't technically need to close the SVG tag since the parser will
-    // handle it for us, but the SSR parser doesn't like that.
-    // Note that the html must end with a node after the final expression to
-    // ensure the last ChildPart has an end node, hence adding a comment if the
-    // last string was empty.
-    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : ''),
+    policy !== undefined
+      ? policy.createHTML(htmlResult)
+      : (htmlResult as unknown as TrustedHTML),
     attrNames,
   ];
 };
@@ -544,14 +645,15 @@ class Template {
   parts: Array<TemplatePart> = [];
 
   constructor(
-    {strings, _$litType$: type}: TemplateResult,
+    // This property needs to remain unminified.
+    {strings, ['_$litType$']: type}: TemplateResult,
     options?: RenderOptions
   ) {
     let node: Node | null;
     let nodeIndex = 0;
-    let bindingIndex = 0;
     let attrNameIndex = 0;
-    const l = strings.length - 1;
+    const partCount = strings.length - 1;
+    const parts = this.parts;
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
@@ -567,7 +669,7 @@ class Template {
     }
 
     // Walk the template to find binding markers and create TemplateParts
-    while ((node = walker.nextNode()) !== null && bindingIndex < l) {
+    while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
@@ -598,7 +700,7 @@ class Template {
                 )!;
                 const statics = value.split(marker);
                 const m = /([.?@])?(.*)/.exec(realName)!;
-                this.parts.push({
+                parts.push({
                   type: ATTRIBUTE_PART,
                   index: nodeIndex,
                   name: m[2],
@@ -612,9 +714,8 @@ class Template {
                       ? EventPart
                       : AttributePart,
                 });
-                bindingIndex += statics.length - 1;
               } else {
-                this.parts.push({
+                parts.push({
                   type: ELEMENT_PART,
                   index: nodeIndex,
                 });
@@ -634,17 +735,19 @@ class Template {
           const strings = (node as Element).textContent!.split(marker);
           const lastIndex = strings.length - 1;
           if (lastIndex > 0) {
-            (node as Element).textContent = '';
+            (node as Element).textContent = trustedTypes
+              ? (trustedTypes.emptyScript as unknown as '')
+              : '';
             // Generate a new text node for each literal section
             // These nodes are also used as the markers for node parts
             // We can't use empty text nodes as markers because they're
-            // normalized in some browsers (TODO: check)
+            // normalized when cloning in IE (could simplify when
+            // IE is no longer supported)
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
               walker.nextNode();
-              this.parts.push({type: CHILD_PART, index: ++nodeIndex});
-              bindingIndex++;
+              parts.push({type: CHILD_PART, index: ++nodeIndex});
             }
             // Note because this marker is added after the walker's current
             // node, it will be walked to in the outer loop (and ignored), so
@@ -655,17 +758,13 @@ class Template {
       } else if (node.nodeType === 8) {
         const data = (node as Comment).data;
         if (data === markerMatch) {
-          bindingIndex++;
-          this.parts.push({type: CHILD_PART, index: nodeIndex});
+          parts.push({type: CHILD_PART, index: nodeIndex});
         } else {
           let i = -1;
           while ((i = (node as Comment).data.indexOf(marker, i + 1)) !== -1) {
             // Comment node has a binding marker inside, make an inactive part
             // The binding won't work, but subsequent bindings will
-            // TODO (justinfagnani): consider whether it's even worth it to
-            // make bindings in comments work
-            this.parts.push({type: COMMENT_PART, index: nodeIndex});
-            bindingIndex++;
+            parts.push({type: COMMENT_PART, index: nodeIndex});
             // Move to the end of the match
             i += marker.length - 1;
           }
@@ -676,16 +775,25 @@ class Template {
   }
 
   // Overridden via `litHtmlPlatformSupport` to provide platform support.
-  static createElement(html: string, _options?: RenderOptions) {
+  /** @nocollapse */
+  static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
-    el.innerHTML = html;
+    el.innerHTML = html as unknown as string;
     return el;
   }
 }
 
 export interface Disconnectable {
   _$parent?: Disconnectable;
-  _$disconnetableChildren?: Set<Disconnectable>;
+  _$disconnectableChildren?: Set<Disconnectable>;
+  // Rather than hold connection state on instances, Disconnectables recursively
+  // fetch the connection state from the RootPart they are connected in via
+  // getters up the Disconnectable tree via _$parent references. This pushes the
+  // cost of tracking the isConnected state to `AsyncDirectives`, and avoids
+  // needing to pass all Disconnectables (parts, template instances, and
+  // directives) their connection state each time it changes, which would be
+  // costly for trees that have no AsyncDirectives.
+  _$isConnected: boolean;
 }
 
 function resolveDirective(
@@ -705,9 +813,11 @@ function resolveDirective(
       : (parent as ChildPart | ElementPart | Directive).__directive;
   const nextDirectiveConstructor = isPrimitive(value)
     ? undefined
-    : (value as DirectiveResult)._$litDirective$;
+    : // This property needs to remain unminified.
+      (value as DirectiveResult)['_$litDirective$'];
   if (currentDirective?.constructor !== nextDirectiveConstructor) {
-    currentDirective?._$setDirectiveConnected?.(false);
+    // This property needs to remain unminified.
+    currentDirective?.['_$notifyDirectiveConnectionChanged']?.(false);
     if (nextDirectiveConstructor === undefined) {
       currentDirective = undefined;
     } else {
@@ -715,9 +825,8 @@ function resolveDirective(
       currentDirective._$initialize(part, parent, attributeIndex);
     }
     if (attributeIndex !== undefined) {
-      ((parent as AttributePart).__directives ??= [])[
-        attributeIndex
-      ] = currentDirective;
+      ((parent as AttributePart).__directives ??= [])[attributeIndex] =
+        currentDirective;
     } else {
       (parent as ChildPart | Directive).__directive = currentDirective;
     }
@@ -737,7 +846,7 @@ function resolveDirective(
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
-class TemplateInstance {
+class TemplateInstance implements Disconnectable {
   /** @internal */
   _$template: Template;
   /** @internal */
@@ -746,11 +855,16 @@ class TemplateInstance {
   /** @internal */
   _$parent: Disconnectable;
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
+  }
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   // This method is separate from the constructor because we need to return a
@@ -763,12 +877,12 @@ class TemplateInstance {
     const fragment = (options?.creationScope ?? d).importNode(content, true);
     walker.currentNode = fragment;
 
-    let node = walker.nextNode();
+    let node = walker.nextNode()!;
     let nodeIndex = 0;
     let partIndex = 0;
     let templatePart = parts[0];
 
-    while (templatePart !== undefined && node !== null) {
+    while (templatePart !== undefined) {
       if (nodeIndex === templatePart.index) {
         let part: Part | undefined;
         if (templatePart.type === CHILD_PART) {
@@ -792,8 +906,8 @@ class TemplateInstance {
         this._parts.push(part);
         templatePart = parts[++partIndex];
       }
-      if (templatePart !== undefined && nodeIndex !== templatePart.index) {
-        node = walker.nextNode();
+      if (nodeIndex !== templatePart?.index) {
+        node = walker.nextNode()!;
         nodeIndex++;
       }
     }
@@ -864,7 +978,7 @@ export type Part =
   | EventPart;
 
 export type {ChildPart};
-class ChildPart {
+class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
   _$committedValue: unknown;
@@ -877,13 +991,30 @@ class ChildPart {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
+  /**
+   * Connection state for RootParts only (i.e. ChildPart without _$parent
+   * returned from top-level `render`). This field is unsed otherwise. The
+   * intention would clearer if we made `RootPart` a subclass of `ChildPart`
+   * with this field (and a different _$isConnected getter), but the subclass
+   * caused a perf regression, possibly due to making call sites polymorphic.
+   * @internal
+   */
+  __isConnected: boolean;
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    // ChildParts that are not at the root should always be created with a
+    // parent; only RootChildNode's won't, so they return the local isConnected
+    // state
+    return this._$parent?._$isConnected ?? this.__isConnected;
+  }
 
   // The following fields will be patched onto ChildParts when required by
   // AsyncDirective
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
   /** @internal */
-  _$setChildPartConnected?(
+  _$notifyConnectionChanged?(
     isConnected: boolean,
     removeFromParent?: boolean,
     from?: number
@@ -901,19 +1032,14 @@ class ChildPart {
     this._$endNode = endNode;
     this._$parent = parent;
     this.options = options;
+    // Note __isConnected is only ever accessed on RootParts (i.e. when there is
+    // no _$parent); the value on a non-root-part is "don't care", but checking
+    // for parent would be more code
+    this.__isConnected = options?.isConnected ?? true;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
     }
-  }
-
-  /**
-   * Sets the connection state for any `AsyncDirectives` contained
-   * within this part and runs their `disconnected` or `reconnected`, according
-   * to the `isConnected` argument.
-   */
-  setConnected(isConnected: boolean) {
-    this._$setChildPartConnected?.(isConnected);
   }
 
   /**
@@ -955,6 +1081,11 @@ class ChildPart {
   }
 
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
+    if (DEV_MODE && this.parentNode === null) {
+      throw new Error(
+        `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept a value. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`
+      );
+    }
     value = resolveDirective(this, value, directiveParent);
     if (isPrimitive(value)) {
       // Non-rendering child values. It's important that these do not render
@@ -968,7 +1099,8 @@ class ChildPart {
       } else if (value !== this._$committedValue && value !== noChange) {
         this._commitText(value);
       }
-    } else if ((value as TemplateResult)._$litType$ !== undefined) {
+      // This property needs to remain unminified.
+    } else if ((value as TemplateResult)['_$litType$'] !== undefined) {
       this._commitTemplateResult(value as TemplateResult);
     } else if ((value as Node).nodeType !== undefined) {
       this._commitNode(value as Node);
@@ -1048,20 +1180,18 @@ class ChildPart {
   private _commitTemplateResult(
     result: TemplateResult | CompiledTemplateResult
   ): void {
-    const {values, _$litType$} = result;
+    // This property needs to remain unminified.
+    const {values, ['_$litType$']: type} = result;
     // If $litType$ is a number, result is a plain TemplateResult and we get
     // the template from the template cache. If not, result is a
     // CompiledTemplateResult and _$litType$ is a CompiledTemplate and we need
     // to create the <template> element the first time we see it.
     const template: Template | CompiledTemplate =
-      typeof _$litType$ === 'number'
+      typeof type === 'number'
         ? this._$getTemplate(result as TemplateResult)
-        : (_$litType$.el === undefined &&
-            (_$litType$.el = Template.createElement(
-              _$litType$.h,
-              this.options
-            )),
-          _$litType$);
+        : (type.el === undefined &&
+            (type.el = Template.createElement(type.h, this.options)),
+          type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       (this._$committedValue as TemplateInstance)._update(values);
@@ -1111,7 +1241,7 @@ class ChildPart {
         // If no existing part, create a new one
         // TODO (justinfagnani): test perf impact of always creating two parts
         // instead of sharing parts between nodes
-        // https://github.com/Polymer/lit-html/issues/1266
+        // https://github.com/lit/lit/issues/1266
         itemParts.push(
           (itemPart = new ChildPart(
             this._insert(createMarker()),
@@ -1154,17 +1284,58 @@ class ChildPart {
     start: ChildNode | null = wrap(this._$startNode).nextSibling,
     from?: number
   ) {
-    this._$setChildPartConnected?.(false, true, from);
+    this._$notifyConnectionChanged?.(false, true, from);
     while (start && start !== this._$endNode) {
       const n = wrap(start!).nextSibling;
       (wrap(start!) as Element).remove();
       start = n;
     }
   }
+  /**
+   * Implementation of RootPart's `isConnected`. Note that this metod
+   * should only be called on `RootPart`s (the `ChildPart` returned from a
+   * top-level `render()` call). It has no effect on non-root ChildParts.
+   * @param isConnected Whether to set
+   * @internal
+   */
+  setConnected(isConnected: boolean) {
+    if (this._$parent === undefined) {
+      this.__isConnected = isConnected;
+      this._$notifyConnectionChanged?.(isConnected);
+    } else if (DEV_MODE) {
+      throw new Error(
+        'part.setConnected() may only be called on a ' +
+          'RootPart returned from render().'
+      );
+    }
+  }
+}
+
+/**
+ * A top-level `ChildPart` returned from `render` that manages the connected
+ * state of `AsyncDirective`s created throughout the tree below it.
+ */
+export interface RootPart extends ChildPart {
+  /**
+   * Sets the connection state for `AsyncDirective`s contained within this root
+   * ChildPart.
+   *
+   * lit-html does not automatically monitor the connectedness of DOM rendered;
+   * as such, it is the responsibility of the caller to `render` to ensure that
+   * `part.setConnected(false)` is called before the part object is potentially
+   * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
+   * any resources being held. If a `RootPart` that was prevously
+   * disconnected is subsequently re-connected (and its `AsyncDirective`s should
+   * re-connect), `setConnected(true)` should be called.
+   *
+   * @param isConnected Whether directives within this tree should be connected
+   * or not
+   */
+  setConnected(isConnected: boolean): void;
 }
 
 export type {AttributePart};
-class AttributePart {
+class AttributePart implements Disconnectable {
   readonly type = ATTRIBUTE_PART as
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
@@ -1185,27 +1356,26 @@ class AttributePart {
   /** @internal */
   __directives?: Array<Directive | undefined>;
   /** @internal */
-  _$parent: Disconnectable | undefined;
+  _$parent: Disconnectable;
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   protected _sanitizer: ValueSanitizer | undefined;
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
 
   get tagName() {
     return this.element.tagName;
+  }
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   constructor(
     element: HTMLElement,
     name: string,
     strings: ReadonlyArray<string>,
-    parent: Disconnectable | undefined,
+    parent: Disconnectable,
     options: RenderOptions | undefined
   ) {
     this.element = element;
@@ -1320,10 +1490,10 @@ class AttributePart {
 
 export type {PropertyPart};
 class PropertyPart extends AttributePart {
-  readonly type = PROPERTY_PART;
+  override readonly type = PROPERTY_PART;
 
   /** @internal */
-  _commitValue(value: unknown) {
+  override _commitValue(value: unknown) {
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       if (this._sanitizer === undefined) {
         this._sanitizer = sanitizerFactoryInternal(
@@ -1341,10 +1511,10 @@ class PropertyPart extends AttributePart {
 
 export type {BooleanAttributePart};
 class BooleanAttributePart extends AttributePart {
-  readonly type = BOOLEAN_ATTRIBUTE_PART;
+  override readonly type = BOOLEAN_ATTRIBUTE_PART;
 
   /** @internal */
-  _commitValue(value: unknown) {
+  override _commitValue(value: unknown) {
     if (value && value !== nothing) {
       (wrap(this.element) as Element).setAttribute(this.name, '');
     } else {
@@ -1369,12 +1539,33 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
  */
 export type {EventPart};
 class EventPart extends AttributePart {
-  readonly type = EVENT_PART;
+  override readonly type = EVENT_PART;
+
+  constructor(
+    element: HTMLElement,
+    name: string,
+    strings: ReadonlyArray<string>,
+    parent: Disconnectable,
+    options: RenderOptions | undefined
+  ) {
+    super(element, name, strings, parent, options);
+
+    if (DEV_MODE && this.strings !== undefined) {
+      throw new Error(
+        `A \`<${element.localName}>\` has a \`@${name}=...\` listener with ` +
+          'invalid content. Event listeners in templates must have exactly ' +
+          'one expression and no surrounding text.'
+      );
+    }
+  }
 
   // EventPart does not use the base _$setValue/_resolveValue implementation
   // since the dirty checking is more complex
   /** @internal */
-  _$setValue(newListener: unknown, directiveParent: DirectiveParent = this) {
+  override _$setValue(
+    newListener: unknown,
+    directiveParent: DirectiveParent = this
+  ) {
     newListener =
       resolveDirective(this, newListener, directiveParent, 0) ?? nothing;
     if (newListener === noChange) {
@@ -1421,8 +1612,6 @@ class EventPart extends AttributePart {
 
   handleEvent(event: Event) {
     if (typeof this._$committedValue === 'function') {
-      // TODO (justinfagnani): do we need to default to this.element?
-      // It'll always be the same as `e.currentTarget`.
       this._$committedValue.call(this.options?.host ?? this.element, event);
     } else {
       (this._$committedValue as EventListenerObject).handleEvent(event);
@@ -1431,7 +1620,7 @@ class EventPart extends AttributePart {
 }
 
 export type {ElementPart};
-class ElementPart {
+class ElementPart implements Disconnectable {
   readonly type = ELEMENT_PART;
 
   /** @internal */
@@ -1441,17 +1630,10 @@ class ElementPart {
   _$committedValue: undefined;
 
   /** @internal */
-  _$parent: Disconnectable | undefined;
+  _$parent!: Disconnectable;
 
   /** @internal */
-  _$disconnetableChildren?: Set<Disconnectable> = undefined;
-
-  /** @internal */
-  _setDirectiveConnected?: (
-    directive: Directive | undefined,
-    isConnected: boolean,
-    removeFromParent?: boolean
-  ) => void = undefined;
+  _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   options: RenderOptions | undefined;
 
@@ -1462,6 +1644,11 @@ class ElementPart {
   ) {
     this._$parent = parent;
     this.options = options;
+  }
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
   }
 
   _$setValue(value: unknown): void {
@@ -1477,7 +1664,7 @@ class ElementPart {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Σ object containing those members (or
+ * client side code, we export a _$LH object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -1487,7 +1674,7 @@ class ElementPart {
  *
  * @private
  */
-export const _Σ = {
+export const _$LH = {
   // Used in lit-ssr
   _boundAttributeSuffix: boundAttributeSuffix,
   _marker: marker,
@@ -1508,11 +1695,16 @@ export const _Σ = {
 };
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport']?.(Template, ChildPart);
+globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litHtmlVersions'] ??= []).push('2.0.0-pre.7');
+(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
+if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
+  issueWarning!(
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+      `for more information.`
+  );
+}

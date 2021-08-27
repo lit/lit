@@ -7,11 +7,8 @@
 import {createRequire} from 'module';
 import {importModule} from '../../lib/import-module.js';
 import {getWindow} from '../../lib/dom-shim.js';
-import tape, {Test} from 'tape';
-import tapePromiseLib from 'tape-promise';
-
-const tapePromise = (tapePromiseLib as any).default as typeof tapePromiseLib;
-const test = tapePromise(tape);
+import {test} from 'uvu';
+import * as assert from 'uvu/assert';
 
 /**
  * Promise for importing the "app module". This is a module that implements the
@@ -21,7 +18,10 @@ const test = tapePromise(tape);
 const appModuleImport = importModule(
   '../test-files/render-test-module.js',
   import.meta.url,
-  getWindow({require: createRequire(import.meta.url)})
+  getWindow({
+    includeJSBuiltIns: true,
+    props: {require: createRequire(import.meta.url)},
+  })
 );
 
 /* Real Tests */
@@ -55,37 +55,37 @@ const setup = async () => {
   };
 };
 
-test('simple TemplateResult', async (t: Test) => {
+test('simple TemplateResult', async () => {
   const {render, simpleTemplateResult, digestForTemplateResult} = await setup();
   const digest = digestForTemplateResult(simpleTemplateResult);
   const result = await render(simpleTemplateResult);
-  t.equal(result, `<!--lit-part ${digest}--><div></div><!--/lit-part-->`);
+  assert.is(result, `<!--lit-part ${digest}--><div></div><!--/lit-part-->`);
 });
 
 /* Text Expressions */
 
-test('text expression with string value', async (t: Test) => {
+test('text expression with string value', async () => {
   const {render, templateWithTextExpression} = await setup();
   const result = await render(templateWithTextExpression('foo'));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->foo<!--/lit-part--></div><!--/lit-part-->`
   );
 });
 
-test('text expression with undefined value', async (t: Test) => {
+test('text expression with undefined value', async () => {
   const {render, templateWithTextExpression} = await setup();
   const result = await render(templateWithTextExpression(undefined));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--/lit-part--></div><!--/lit-part-->`
   );
 });
 
-test('text expression with null value', async (t: Test) => {
+test('text expression with null value', async () => {
   const {render, templateWithTextExpression} = await setup();
   const result = await render(templateWithTextExpression(null));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--/lit-part--></div><!--/lit-part-->`
   );
@@ -93,34 +93,34 @@ test('text expression with null value', async (t: Test) => {
 
 /* Attribute Expressions */
 
-test('attribute expression with string value', async (t: Test) => {
+test('attribute expression with string value', async () => {
   const {render, templateWithAttributeExpression} = await setup();
   const result = await render(templateWithAttributeExpression('foo'));
   // TODO: test for the marker comment for attribute binding
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part FAR9hgjJqTI=--><div class="foo"><!--lit-node 0--></div><!--/lit-part-->`
   );
 });
 
-test('multiple attribute expressions with string value', async (t: Test) => {
+test('multiple attribute expressions with string value', async () => {
   const {render, templateWithMultipleAttributeExpressions} = await setup();
   const result = await render(
     templateWithMultipleAttributeExpressions('foo', 'bar')
   );
   // Has marker attribute for number of bound attributes.
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part FQlA2/EioQk=--><div x="foo" y="bar" z="not-dynamic"><!--lit-node 0--></div><!--/lit-part-->`
   );
 });
 
-test('attribute expression with multiple bindings', async (t: Test) => {
+test('attribute expression with multiple bindings', async () => {
   const {render, templateWithMultiBindingAttributeExpression} = await setup();
   const result = await render(
     templateWithMultiBindingAttributeExpression('foo', 'bar')
   );
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part D+PQMst9obo=--><div test="a foo b bar c"><!--lit-node 0--></div><!--/lit-part-->`
   );
@@ -128,37 +128,37 @@ test('attribute expression with multiple bindings', async (t: Test) => {
 
 /* Reflected property Expressions */
 
-test('HTMLInputElement.value', async (t: Test) => {
+test('HTMLInputElement.value', async () => {
   const {render, inputTemplateWithValueProperty} = await setup();
   const result = await render(inputTemplateWithValueProperty('foo'));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part AxWziS+Adpk=--><input value="foo"><!--lit-node 0--><!--/lit-part-->`
   );
 });
 
-test('HTMLElement.className', async (t: Test) => {
+test('HTMLElement.className', async () => {
   const {render, elementTemplateWithClassNameProperty} = await setup();
   const result = await render(elementTemplateWithClassNameProperty('foo'));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part I7NxrdZ/Zxo=--><div class="foo"><!--lit-node 0--></div><!--/lit-part-->`
   );
 });
 
-test('HTMLElement.classname does not reflect', async (t: Test) => {
+test('HTMLElement.classname does not reflect', async () => {
   const {render, elementTemplateWithClassnameProperty} = await setup();
   const result = await render(elementTemplateWithClassnameProperty('foo'));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part I7NxrbZzZGA=--><div ><!--lit-node 0--></div><!--/lit-part-->`
   );
 });
 
-test('HTMLElement.id', async (t: Test) => {
+test('HTMLElement.id', async () => {
   const {render, elementTemplateWithIDProperty} = await setup();
   const result = await render(elementTemplateWithIDProperty('foo'));
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part IgnmhhM3LsA=--><div id="foo"><!--lit-node 0--></div><!--/lit-part-->`
   );
@@ -166,10 +166,10 @@ test('HTMLElement.id', async (t: Test) => {
 
 /* Nested Templates */
 
-test('nested template', async (t: Test) => {
+test('nested template', async () => {
   const {render, nestedTemplate} = await setup();
   const result = await render(nestedTemplate);
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part P/cIB3F0dnw=--><p>Hi</p><!--/lit-part--></div><!--/lit-part-->`
   );
@@ -177,30 +177,30 @@ test('nested template', async (t: Test) => {
 
 /* Custom Elements */
 
-test('simple custom element', async (t: Test) => {
+test('simple custom element', async () => {
   const {render, simpleTemplateWithElement} = await setup();
   const result = await render(simpleTemplateWithElement);
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
   );
 });
 
-test('element with property', async (t: Test) => {
+test('element with property', async () => {
   const {render, elementWithProperty} = await setup();
   const result = await render(elementWithProperty);
   // TODO: we'd like to remove the extra space in the start tag
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part v2CxGIW+qHI=--><test-property ><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
   );
 });
 
-test('element with `willUpdate`', async (t: Test) => {
+test('element with `willUpdate`', async () => {
   const {render, elementWithWillUpdate} = await setup();
   const result = await render(elementWithWillUpdate);
   // TODO: we'd like to remove the extra space in the start tag
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part Q0bbGrx71ic=--><test-will-update  ><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
   );
@@ -210,10 +210,10 @@ test('element with `willUpdate`', async (t: Test) => {
 
 /* Declarative Shadow Root */
 
-test('no slot', async (t: Test) => {
+test('no slot', async () => {
   const {render, noSlot} = await setup();
   const result = await render(noSlot);
-  t.equal(
+  assert.is(
     result,
     `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
   );
@@ -221,10 +221,10 @@ test('no slot', async (t: Test) => {
 
 /* Directives */
 
-test('repeat directive with a template result', async (t: Test) => {
+test('repeat directive with a template result', async () => {
   const {render, repeatDirectiveWithTemplateResult} = await setup();
   const result = await render(repeatDirectiveWithTemplateResult);
-  t.equal(
+  assert.is(
     result,
     '<!--lit-part AEmR7W+R0Ak=-->' +
       '<div>' +
@@ -244,10 +244,10 @@ test('repeat directive with a template result', async (t: Test) => {
   );
 });
 
-test('repeat directive with a string', async (t: Test) => {
+test('repeat directive with a string', async () => {
   const {render, repeatDirectiveWithString} = await setup();
   const result = await render(repeatDirectiveWithString);
-  t.equal(
+  assert.is(
     result,
     '<!--lit-part BRUAAAUVAAA=-->' +
       '<!--lit-part-->' + // part that wraps the directive
@@ -267,20 +267,22 @@ test('repeat directive with a string', async (t: Test) => {
   );
 });
 
-test('simple class-map directive', async (t: Test) => {
+test('simple class-map directive', async () => {
   const {render, classMapDirective} = await setup();
   const result = await render(classMapDirective);
-  t.equal(
+  assert.is(
     result,
     '<!--lit-part PkF/hiJU4II=--><div class="a c"><!--lit-node 0--></div><!--/lit-part-->'
   );
 });
 
-test.skip('class-map directive with other bindings', async (t: Test) => {
+test.skip('class-map directive with other bindings', async () => {
   const {render, classMapDirectiveMultiBinding} = await setup();
   const result = await render(classMapDirectiveMultiBinding);
-  t.equal(
+  assert.is(
     result,
     '<!--lit-part pNgepkKFbd0=--><div class="z hi a c"><!--lit-node 0--></div><!--/lit-part-->'
   );
 });
+
+test.run();

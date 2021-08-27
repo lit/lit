@@ -12,6 +12,36 @@ import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
 
+// Greek prefixes used with minified class and stable properties on objects to
+// avoid collisions with user code and/or subclasses between packages. They are
+// defined here rather than via an argument to litProdConfig() so we can
+// validate the list used by each package is unique (since copy/pasting the
+// individual package-based configs is common and error-prone)
+const STABLE_PROPERTY_PREFIX = '_$A';
+const PACKAGE_CLASS_PREFIXES = {
+  lit: '_$B',
+  'lit-html': '_$C',
+  'lit-element': '_$D',
+  '@lit/reactive-element': '_$E',
+  '@lit-labs/motion': '_$F',
+  '@lit-labs/react': '_$G',
+  '@lit-labs/scoped-registry-mixin': '_$H',
+  '@lit-labs/ssr-client': '_$I',
+  '@lit-labs/task': '_$J',
+};
+
+// Validate prefix uniqueness
+const classPrefixes = Object.values(PACKAGE_CLASS_PREFIXES);
+const uniqueClassPrefixes = new Set(classPrefixes);
+if (classPrefixes.length !== uniqueClassPrefixes.size) {
+  throw new Error('PACKAGE_CLASS_PREFIXES list must be unique.');
+}
+if (uniqueClassPrefixes.has(STABLE_PROPERTY_PREFIX)) {
+  throw new Error(
+    'STABLE_PROPERTY_PREFIX was duplicated in PACKAGE_CLASS_PREFIXES.'
+  );
+}
+
 // In CHECKSIZE mode we:
 // 1) Don't emit any files.
 // 2) Don't include copyright header comments.
@@ -35,7 +65,16 @@ const skipBundleOutput = {
 // to avoid collisions since they are used to brand values in positions that
 // accept any value. We don't use a Symbol for these to support mixing and
 // matching values from different versions.
-const reservedProperties = ['_$litType$', '_$litDirective$', '_$litPart$'];
+// Note for compatibility with other build tools, these properties are manually
+// quoted in the source.
+const reservedProperties = [
+  '_$litType$',
+  '_$litDirective$',
+  '_$litPart$',
+  '_$litElement$',
+  '_$litStatic$',
+  '_$cssResult$',
+];
 
 // Private properties which should be stable between versions but are used on
 // unambiguous objects and thus are safe to mangle. These include properties on
@@ -79,11 +118,11 @@ const stableProperties = {
   // lit-html: ChildPart, AttributePart, TemplateInstance, Directive (accessed by
   // async-directive)
   _$parent: 'M',
-  _$disconnetableChildren: 'N',
+  _$disconnectableChildren: 'N',
   // async-directive: AsyncDirective
-  _$setDirectiveConnected: 'O',
+  _$notifyDirectiveConnectionChanged: 'O',
   // lit-html: ChildPart (added by async-directive)
-  _$setChildPartConnected: 'P',
+  _$notifyConnectionChanged: 'P',
   // lit-html: ChildPart (added by async-directive)
   _$reparentDisconnectables: 'Q',
   // lit-html: ChildPart (used by directive-helpers)
@@ -92,6 +131,8 @@ const stableProperties = {
   _$resolve: 'S',
   // lit-html: Directive (used by lit-html)
   _$initialize: 'T',
+  // lit-html: Disconnectable interface (used by lit-html and AsyncDirective)
+  _$isConnected: 'U',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -207,10 +248,18 @@ export function litProdConfig({
   external = [],
   bundled = [],
   testPropertyPrefix,
-  classPropertyPrefix,
+  packageName,
   outputDir = './',
   // eslint-disable-next-line no-undef
 } = options) {
+  const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
+  if (classPropertyPrefix === undefined) {
+    throw new Error(
+      `Package ${packageName} was being built using 'litProdConfig' ` +
+        `but does not have a PACKAGE_CLASS_PREFIXES mapping in rollup-common.js.`
+    );
+  }
+
   // The Terser shared name cache allows us to mangle the names of properties
   // consistently across modules, so that e.g. directive-helpers.js can safely
   // access internal details of lit-html.js.
@@ -242,7 +291,7 @@ export function litProdConfig({
       props: Object.entries(stableProperties).reduce(
         (obj, [name, val]) => ({
           ...obj,
-          ['$' + name]: val,
+          ['$' + name]: STABLE_PROPERTY_PREFIX + val,
         }),
         {}
       ),
@@ -327,6 +376,7 @@ export function litProdConfig({
             'const ENABLE_EXTRA_SECURITY_HOOKS = false',
           'const ENABLE_SHADYDOM_NOPATCH = true':
             'const ENABLE_SHADYDOM_NOPATCH = false',
+          'export const INTERNAL = true': 'const INTERNAL = false',
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -390,6 +440,7 @@ const litMonoBundleConfig = ({
         'const ENABLE_EXTRA_SECURITY_HOOKS = false',
       'const ENABLE_SHADYDOM_NOPATCH = true':
         'const ENABLE_SHADYDOM_NOPATCH = false',
+      'export const INTERNAL = true': 'const INTERNAL = false',
       // For downleveled ES5 build of polyfill-support
       'var ENABLE_SHADYDOM_NOPATCH = true':
         'var ENABLE_SHADYDOM_NOPATCH = false',

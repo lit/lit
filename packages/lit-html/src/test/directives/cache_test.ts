@@ -152,7 +152,7 @@ suite('cache directive', () => {
     assert.equal(stripExpressionComments(container.innerHTML), '');
   });
 
-  test('async directives disconnet/reconnect when moved in/out of cache', () => {
+  test('async directives disconnect/reconnect when moved in/out of cache', () => {
     const disconnectable = directive(
       class extends AsyncDirective {
         log: string[] | undefined;
@@ -163,10 +163,10 @@ suite('cache directive', () => {
           this.log.push(`render-${this.id}`);
           return id;
         }
-        disconnected() {
+        override disconnected() {
           this.log!.push(`disconnected-${this.id}`);
         }
-        reconnected() {
+        override reconnected() {
           this.log!.push(`reconnected-${this.id}`);
         }
       }

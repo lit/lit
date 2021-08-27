@@ -42,8 +42,7 @@ interface PatchableLitElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport'] ??= ({
+globalThis.litElementPlatformSupport ??= ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;
@@ -63,7 +62,9 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
-  ((LitElement as unknown) as PatchableLitElementConstructor)._$handlesPrepareStyles = true;
+  (
+    LitElement as unknown as PatchableLitElementConstructor
+  )._$handlesPrepareStyles = true;
 
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS

@@ -1,6 +1,6 @@
 # ReactiveElement 1.0 Pre-release
 
-[![Build Status](https://github.com/polymer/lit-html/workflows/Tests/badge.svg)](https://github.com/Polymer/lit-html/actions?query=workflow%3ATests)
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/lit-element/next-major)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
@@ -21,7 +21,7 @@ A simple low level base class for creating fast, lightweight web components.
 
 ## Documentation
 
-Full documentation is available at [lit-element.polymer-project.org](https://lit-element.polymer-project.org).
+Full documentation is available at [lit.dev](https://lit.dev/docs/api/ReactiveElement/).
 
 ## Overview
 
@@ -78,7 +78,7 @@ export class MyElement extends ReactiveElement {
 ```
 
 Note, this example uses decorators to create properties. Decorators are a proposed
-standard currently available in [TypeScript](https://www.typescriptlang.org/) or [Babel](https://babeljs.io/docs/en/babel-plugin-proposal-decorators). ReactiveElement also supports a [vanilla JavaScript method](https://lit-element.polymer-project.org/guide/properties#declare) of declaring reactive properties.
+standard currently available in [TypeScript](https://www.typescriptlang.org/) or [Babel](https://babeljs.io/docs/en/babel-plugin-proposal-decorators). ReactiveElement also supports a [vanilla JavaScript method](https://lit.dev/docs/components/properties/#declaring-properties-in-a-static-properties-field) of declaring reactive properties.
 
 ## Installation
 

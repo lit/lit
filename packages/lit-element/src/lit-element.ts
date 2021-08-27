@@ -47,7 +47,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
-import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
+import {render, RenderOptions, noChange, RootPart} from 'lit-html';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
 
@@ -57,17 +57,22 @@ export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
-declare global {
-  interface Window {
-    litElementVersions: string[];
-  }
-}
+let issueWarning: (warning: string) => void;
 
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-pre.4');
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+}
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -85,19 +90,22 @@ export class LitElement extends ReactiveElement {
    * Note this property name is a string to prevent breaking Closure JS Compiler
    * optimizations. See @lit/reactive-element for more information.
    */
-  protected static ['finalized'] = true;
+  protected static override ['finalized'] = true;
+
+  // This property needs to remain unminified.
+  static ['_$litElement$'] = true;
 
   /**
    * @category rendering
    */
   readonly renderOptions: RenderOptions = {host: this};
 
-  private __childPart: ChildPart | undefined = undefined;
+  private __childPart: RootPart | undefined = undefined;
 
   /**
    * @category rendering
    */
-  protected createRenderRoot() {
+  protected override createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
     // shadowRoot by createRenderRoot. Adjust the renderBefore node so that
@@ -115,22 +123,22 @@ export class LitElement extends ReactiveElement {
    * @param changedProperties Map of changed properties with old values
    * @category updates
    */
-  protected update(changedProperties: PropertyValues) {
+  protected override update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.
     const value = this.render();
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     super.update(changedProperties);
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
-  // TODO(kschaaf): Consider debouncing directive disconnection so element moves
-  // do not thrash directive callbacks
-  // https://github.com/Polymer/lit-html/issues/1457
   /**
    * @category lifecycle
    */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
@@ -138,7 +146,7 @@ export class LitElement extends ReactiveElement {
   /**
    * @category lifecycle
    */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
   }
@@ -156,12 +164,10 @@ export class LitElement extends ReactiveElement {
 }
 
 // Install hydration if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementHydrateSupport']?.({LitElement});
+globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport']?.({LitElement});
+globalThis.litElementPlatformSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
@@ -176,12 +182,14 @@ if (DEV_MODE) {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const warnRemoved = (obj: any, name: string) => {
-      if (obj[name] !== undefined) {
-        console.warn(
-          `\`${name}\` is implemented. It ` +
-            `has been removed from this version of LitElement. `
-          // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/Polymer/lit-html/blob/main/packages/lit-element/CHANGELOG.md`
+      if (obj.hasOwnProperty(name)) {
+        const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
+          .name;
+        issueWarning(
+          `\`${name}\` is implemented on class ${ctorName}. It ` +
+            `has been removed from this version of LitElement. See ` +
+            `https://lit.dev/docs/releases/upgrade/#litelement ` +
+            `for more information.`
         );
       }
     };
@@ -205,7 +213,7 @@ if (DEV_MODE) {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Φ object containing those members (or
+ * client side code, we export a _$LE object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -215,7 +223,7 @@ if (DEV_MODE) {
  *
  * @private
  */
-export const _Φ = {
+export const _$LE = {
   _$attributeToProperty: (
     el: LitElement,
     name: string,
@@ -227,3 +235,15 @@ export const _Φ = {
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for LitElement usage.
+// TODO(justinfagnani): inject version number at build time
+(globalThis.litElementVersions ??= []).push('3.0.0-rc.3');
+if (DEV_MODE && globalThis.litElementVersions.length > 1) {
+  issueWarning!(
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+      `for more information.`
+  );
+}

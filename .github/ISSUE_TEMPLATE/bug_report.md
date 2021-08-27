@@ -8,7 +8,7 @@ assignees: ''
 
 <!--
 Please read our contribution guidelines:
-  https://github.com/Polymer/lit-html/blob/master/CONTRIBUTING.md#filing-issues
+  https://github.com/lit/lit/blob/master/CONTRIBUTING.md#filing-issues
 -->
 
 # Description

@@ -36,6 +36,5 @@ export function state(options?: InternalPropertyDeclaration) {
   return property({
     ...options,
     state: true,
-    attribute: false,
   });
 }

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html} from 'lit-html';
+import {html} from 'lit';
 import {msg, str} from '@lit/localize';
 
 const user = 'Friend';
@@ -29,7 +29,7 @@ msg(html`Click <a href=${url}>here</a>!`);
 //
 // TODO(aomarks) The "SALT" text is here because we have a check to make sure
 // that two messages can't have the same ID unless they have identical template
-// contents. After https://github.com/Polymer/lit-html/issues/1621 is
+// contents. After https://github.com/lit/lit/issues/1621 is
 // implemented, add a "meaning" parameter instead.
 msg(html`[SALT] Click <a href="${'https://www.example.com/'}">here</a>!`);
 

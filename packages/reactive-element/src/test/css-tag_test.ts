@@ -4,20 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {css, CSSResult} from '../css-tag.js';
+import {css, CSSResult, unsafeCSS} from '../css-tag.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {
   suite('css tag', () => {
-    test('caches CSSResults with no expressions', () => {
-      // Alias avoids syntax highlighting issues in editors
-      const cssValue = css;
-      const makeStyle = () => cssValue`foo`;
-      const style1 = makeStyle();
-      const style2 = makeStyle();
-      assert.strictEqual(style1, style2);
-    });
-
     test('CSSResults always produce the same stylesheet', () => {
       // Alias avoids syntax highlighting issues in editors
       const cssValue = css;
@@ -34,18 +25,35 @@ suite('Styling', () => {
       );
     });
 
-    test('caches CSSResults with same-valued expressions', () => {
-      const makeStyle = () => css`foo ${1}`;
+    test('css with same values always produce the same stylesheet', () => {
+      // Alias avoids syntax highlighting issues in editors
+      const cssValue = css;
+      const makeStyle = () => cssValue`background: ${cssValue`blue`}`;
       const style1 = makeStyle();
+      assert.equal(
+        (style1 as CSSResult).styleSheet,
+        (style1 as CSSResult).styleSheet
+      );
       const style2 = makeStyle();
-      assert.strictEqual(style1, style2);
+      assert.equal(
+        (style1 as CSSResult).styleSheet,
+        (style2 as CSSResult).styleSheet
+      );
     });
 
-    test('does not cache CSSResults with diferent-valued expressions', () => {
-      const makeStyle = (x: number) => css`foo ${x}`;
-      const style1 = makeStyle(1);
-      const style2 = makeStyle(2);
-      assert.notStrictEqual(style1, style2);
+    test('unsafeCSS() CSSResults always produce the same stylesheet', () => {
+      // Alias avoids syntax highlighting issues in editors
+      const makeStyle = () => unsafeCSS(`foo`);
+      const style1 = makeStyle();
+      assert.equal(
+        (style1 as CSSResult).styleSheet,
+        (style1 as CSSResult).styleSheet
+      );
+      const style2 = makeStyle();
+      assert.equal(
+        (style1 as CSSResult).styleSheet,
+        (style2 as CSSResult).styleSheet
+      );
     });
 
     test('`css` get styles throws when unsafe values are used', async () => {
@@ -76,7 +84,7 @@ suite('Styling', () => {
     test('`CSSResult` cannot be constructed', async () => {
       // Note, this is done for security, instead use `css` or `unsafeCSS`
       assert.throws(() => {
-        new CSSResult('throw', Symbol());
+        new (CSSResult as any)('throw', Symbol());
       });
     });
 

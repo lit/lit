@@ -1,8 +1,10 @@
 # @lit-labs/react
 
-A React component wrapper for web components.
+React integration for Web Components and Reactive Controllers.
 
 ## Overview
+
+## `createComponent`
 
 While React can render Web Components, it [cannot](https://custom-elements-everywhere.com/libraries/react/results/results.html)
 easily pass React props to custom element properties or event listeners.
@@ -12,7 +14,7 @@ React component wrapper for a custom element class. The wrapper correctly
 passes React `props` to properties accepted by the custom element and listens
 for events dispatched by the custom element.
 
-## How it works
+### How it works
 
 For properties, the wrapper interrogates the web component class to discover
 its available properties. Then any React `props` passed with property names are
@@ -23,15 +25,7 @@ to events fired by the custom element. For example passing `{onfoo: 'foo'}`
 means a function passed via a `prop` named `onfoo` will be called when the
 custom element fires the foo event with the event as an argument.
 
-## Installation
-
-From inside your project folder, run:
-
-```bash
-$ npm install @lit-labs/react
-```
-
-## Usage
+### Usage
 
 Import `React`, a custom element class, and `createComponent`.
 
@@ -59,6 +53,69 @@ React component.
   active={isActive}
   onactivate={(e) => (isActive = e.active)}
 />
+```
+
+## `useController`
+
+Reactive Controllers allow developers to hook a component's lifecycle to bundle
+together state and behavior related to a feature. They are similar to React
+hooks in the user cases and capabilities, but are plain JavaScript objects
+instead of functions with hidden state.
+
+`useController` is a React hook that create and stores a Reactive Controller
+and drives its lifecycle using React hooks like `useState` and
+`useLayoutEffect`.
+
+### How it works
+
+`useController` uses `useState` to create and store an instance of a controller and a `ReactControllerHost`. It then calls the controller's lifecycle from the hook body and `useLayoutEffect` callbacks, emulating the `ReactiveElement` lifecycle as closely as possible. `ReactControllerHost` implements `addController` so that controller composition works and nested controller lifecycles are called correctly. `ReactControllerHost` also implements `requestUpdate` by calling a `useState` setter, so that a controller with new renderable state can cause its host component to re-render.
+
+Controller timings are implemented as follows:
+
+| Controller API   | React hook equivalent               |
+| ---------------- | ----------------------------------- |
+| constructor      | useState initial value              |
+| hostConnected    | useState initial value              |
+| hostDisconnected | useLayoutEffect cleanup, empty deps |
+| hostUpdate       | hook body                           |
+| hostUpdated      | useLayoutEffect                     |
+| requestUpdate    | useState setter                     |
+| updateComplete   | useLayoutEffect                     |
+
+### Usage
+
+```jsx
+import * as React from 'react';
+import {useController} from '@lit-labs/react/use-controller.js';
+import {MouseController} from '@example/mouse-controller';
+
+// Write a React hook function:
+const useMouse = () => {
+  // Use useController to create and store a controller instance:
+  const controller = useController(React, (host) => new MouseController(host));
+  // return the controller: return controller;
+  // or return a custom object for a more React-idiomatic API:
+  return controller.position;
+};
+
+// Now use the new hook in a React component:
+const Component = (props) => {
+  const mousePosition = useMouse();
+  return (
+    <pre>
+      x: {mousePosition.x}
+      y: {mousePosition.y}
+    </pre>
+  );
+};
+```
+
+## Installation
+
+From inside your project folder, run:
+
+```bash
+$ npm install @lit-labs/react
 ```
 
 ## Contributing
