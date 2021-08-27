@@ -114,7 +114,7 @@ class RepeatDirective extends Directive {
     // TODO (justinfagnani): We need to clarify that that explaination is
     // accurate and add hydration tests that use different data than SSR in
     // repeat().
-    const oldKeys = (this._itemKeys ??= []);
+    const oldKeys = this._itemKeys;
 
     // New part list will be built up as we go (either reused from
     // old parts or created for new keys in this update). This is
