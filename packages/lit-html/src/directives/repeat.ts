@@ -111,9 +111,6 @@ class RepeatDirective extends Directive {
     // keys to an empty array. This will cause all oldKey/newKey comparisons
     // to fail and execution to fall to the last nested brach below which
     // reuses the oldPart.
-    // TODO (justinfagnani): We need to clarify that that explaination is
-    // accurate and add hydration tests that use different data than SSR in
-    // repeat().
     const oldKeys = (this._itemKeys ??= []);
 
     // New part list will be built up as we go (either reused from
