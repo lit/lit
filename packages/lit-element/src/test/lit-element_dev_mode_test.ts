@@ -39,44 +39,67 @@ if (DEV_MODE) {
       }
     });
 
+    const litWarnings = globalThis.litIssuedWarnings!;
+
+    test('warns for dev mode only 1x', () => {
+      assert.equal(
+        Array.from(litWarnings).filter((v) => v?.includes('dev mode')).length,
+        1
+      );
+    });
+
     test('warns when `static render` is implemented', () => {
-      class A extends LitElement {
+      class WarnRender extends LitElement {
         static render() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
+      customElements.define(generateElementName(), WarnRender);
+      new WarnRender();
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'render');
     });
 
     test('warns on first instance only', () => {
-      class A extends LitElement {
+      class WarnFirstInstance extends LitElement {
         static render() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
-      new A();
-      new A();
+      customElements.define(generateElementName(), WarnFirstInstance);
+      new WarnFirstInstance();
+      new WarnFirstInstance();
+      new WarnFirstInstance();
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'render');
     });
 
+    test('warns once per implementation (does not spam)', () => {
+      class WarnPerImpl extends LitElement {
+        static render() {}
+      }
+      customElements.define(generateElementName(), WarnPerImpl);
+      class WarnPerImplSub extends WarnPerImpl {}
+      customElements.define(generateElementName(), WarnPerImplSub);
+      new WarnPerImpl();
+      new WarnPerImplSub();
+      assert.equal(warnings.length, 1);
+      assert.include(warnings[0], WarnPerImpl.name);
+      assert.include(warnings[0], 'render');
+    });
+
     test('warns when `static getStyles` is implemented', () => {
-      class A extends LitElement {
+      class WarnGetStyles extends LitElement {
         static getStyles() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
+      customElements.define(generateElementName(), WarnGetStyles);
+      new WarnGetStyles();
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'getStyles');
     });
 
     test('warns when `adoptStyles` is implemented', () => {
-      class A extends LitElement {
+      class WarnAdoptStyles extends LitElement {
         adoptStyles() {}
       }
-      customElements.define(generateElementName(), A);
-      new A();
+      customElements.define(generateElementName(), WarnAdoptStyles);
+      new WarnAdoptStyles();
       assert.equal(warnings.length, 1);
       assert.include(warnings[0], 'adoptStyles');
     });

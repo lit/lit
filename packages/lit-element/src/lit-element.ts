@@ -57,10 +57,21 @@ export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
-declare global {
-  interface Window {
-    litElementVersions: string[];
-  }
+let issueWarning: (warning: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
 }
 
 /**
@@ -117,6 +128,9 @@ export class LitElement extends ReactiveElement {
     // updates are allowed after super.update, it's important to call `render`
     // before that.
     const value = this.render();
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     super.update(changedProperties);
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
@@ -168,12 +182,14 @@ if (DEV_MODE) {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const warnRemoved = (obj: any, name: string) => {
-      if (obj[name] !== undefined) {
-        console.warn(
-          `\`${name}\` is implemented. It ` +
-            `has been removed from this version of LitElement. `
-          // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/lit/lit/blob/main/packages/lit-element/CHANGELOG.md`
+      if (obj.hasOwnProperty(name)) {
+        const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
+          .name;
+        issueWarning(
+          `\`${name}\` is implemented on class ${ctorName}. It ` +
+            `has been removed from this version of LitElement. See ` +
+            `https://lit.dev/docs/releases/upgrade/#litelement ` +
+            `for more information.`
         );
       }
     };
@@ -224,3 +240,10 @@ export const _$LE = {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 (globalThis.litElementVersions ??= []).push('3.0.0-rc.3');
+if (DEV_MODE && globalThis.litElementVersions.length > 1) {
+  issueWarning!(
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+      `for more information.`
+  );
+}

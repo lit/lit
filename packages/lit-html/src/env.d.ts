@@ -11,3 +11,5 @@ declare var litHtmlPlatformSupport:
   | (((template: any, childPart: any) => void) & {noPatchSupported?: boolean});
 // eslint-disable-next-line no-var
 declare var litHtmlVersions: undefined | Array<string>;
+// eslint-disable-next-line no-var
+declare var litIssuedWarnings: undefined | Set<string | undefined>;

@@ -203,7 +203,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
   });
 
   test('adds a version number', () => {
-    assert.equal(window['litElementVersions'].length, 1);
+    assert.equal(window.litElementVersions!.length, 1);
   });
 
   test('event fired during rendering element can trigger an update', async () => {
@@ -515,17 +515,37 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
         ]);
       });
 
-      // TODO(kschaaf): render does not currently support rendering to an
-      // initially disconnected ChildPart (https://github.com/lit/lit/issues/2051)
-      test.skip('directives render with isConnected: false if first render is while element is disconnected', async () => {
+      test('directives render with isConnected: false if first render is while element is disconnected', async () => {
         container.appendChild(host);
         container.remove();
         await nextFrame();
         assertRendering(host);
+        // Host directives render in an initially disconnected state.
+        // Note that child directives didn't render because by the time the
+        // host render happened, the child was not connected and is still
+        // pending
         assert.deepEqual(log, [
           'render-host-attr-false',
           'render-host-prop-false',
           'render-host-node-false',
+        ]);
+        log.length = 0;
+        document.body.appendChild(container);
+        assertRendering(host);
+        // Directive reconnection happens synchronous to connectedCallback
+        assert.deepEqual(log, [
+          'reconnect-host-attr',
+          'reconnect-host-prop',
+          'reconnect-host-node',
+        ]);
+        log.length = 0;
+        // The initial render of the child happens a microtask after the host
+        // reconnects, at which point its directives run in the connected state
+        await nextFrame();
+        assert.deepEqual(log, [
+          'render-child-attr-true',
+          'render-child-prop-true',
+          'render-child-node-true',
         ]);
       });
     });

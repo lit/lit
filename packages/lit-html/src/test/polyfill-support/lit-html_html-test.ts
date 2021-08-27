@@ -10,6 +10,7 @@ import {repeat} from '../../directives/repeat.js';
 import {cache} from '../../directives/cache.js';
 import {assert} from '@esm-bundle/chai';
 import {renderShadowRoot, wrap, shadowRoot} from '../test-utils/shadow-root.js';
+import {html as staticHtml, unsafeStatic} from '../../static.js';
 
 import '../lit-html_test.js';
 // selected directive tests
@@ -387,8 +388,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).removeChild(container2);
   });
 
-  // TODO(sorvell): This will only be supported via static bindings.
-  test.skip('part values render into styles once per scope', function () {
+  test('static part values render into styles once per scope', function () {
     if (typeof window.ShadyDOM === 'undefined' || !window.ShadyDOM.inUse) {
       this.skip();
       return;
@@ -396,10 +396,10 @@ suite('polyfill-support rendering', () => {
     const container = document.createElement('scope-3');
     wrap(document.body).appendChild(container);
     const renderTemplate = (border: string) => {
-      const result = html`
+      const result = staticHtml`
         <style>
           div {
-            border: ${border};
+            border: ${unsafeStatic(border)};
           }
         </style>
         <div>Testing...</div>
@@ -407,12 +407,13 @@ suite('polyfill-support rendering', () => {
       renderShadowRoot(result, container);
     };
     renderTemplate('1px solid black');
-    const div = shadowRoot(container)!.querySelector('div');
+    let div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
       '1px'
     );
     renderTemplate('2px solid black');
+    div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
       '1px'

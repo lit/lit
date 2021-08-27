@@ -16,3 +16,5 @@ declare var litElementPlatformSupport:
   | ((options: {LitElement: any}) => void);
 // eslint-disable-next-line no-var
 declare var litElementVersions: undefined | Array<string>;
+// eslint-disable-next-line no-var
+declare var litIssuedWarnings: undefined | Set<string | undefined>;

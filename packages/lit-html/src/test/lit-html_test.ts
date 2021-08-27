@@ -412,21 +412,31 @@ suite('lit-html', () => {
     });
 
     test('"dynamic" tag name', () => {
-      render(html`<${'A'}></${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      const template = html`<${'A'}></${'A'}>`;
+      if (DEV_MODE) {
+        assert.throws(() => {
+          render(template, container);
+        });
+      } else {
+        render(template, container);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      }
     });
 
     test('malformed "dynamic" tag name', () => {
       // `</ ` starts a comment
-      render(html`<${'A'}></ ${'A'}>`, container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<><!-- --></>'
-      );
-
-      // Currently fails:
-      // render(html`<${'A'}></ ${'A'}>${'B'}`, container);
-      // assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- -->B</>');
+      const template = html`<${'A'}></ ${'A'}>`;
+      if (DEV_MODE) {
+        assert.throws(() => {
+          render(template, container);
+        });
+      } else {
+        render(template, container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<><!-- --></>'
+        );
+      }
     });
 
     test('binding after end tag name', () => {
