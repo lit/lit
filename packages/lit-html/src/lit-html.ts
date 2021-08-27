@@ -537,7 +537,12 @@ const getTemplateHtml = (
           }
           regex = tagEndRegex;
         } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
-          // dynamic tag name
+          if (DEV_MODE) {
+            throw new Error(
+              'Bindings in tag names are not supported. Please use static templates instead. ' +
+                'See https://lit.dev/docs/templates/expressions/#static-expressions'
+            );
+          }
           regex = tagEndRegex;
         }
       } else if (regex === tagEndRegex) {
