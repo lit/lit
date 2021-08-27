@@ -18,8 +18,25 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 export const INTERNAL = true;
 
+let issueWarning: (warning: string) => void;
+
 if (DEV_MODE) {
-  console.warn('lit-html is in dev mode. Not recommended for production!');
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (warning: string) => {
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+
+  issueWarning(
+    `Lit is in dev mode. Not recommended for production! See ` +
+      `https://lit.dev/docs/tools/development/` +
+      `#development-and-production-builds for more information.`
+  );
 }
 
 const wrap =
@@ -1679,3 +1696,10 @@ globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 (globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
+if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
+  issueWarning!(
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
+      `for more information.`
+  );
+}
