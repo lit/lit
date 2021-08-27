@@ -61,12 +61,7 @@ class StyleMapDirective extends Directive {
     }, '');
   }
 
-  // The wider return type is only provided here so that one of the tests can
-  // extend this class and return a different type.
-  override update(
-    part: AttributePart,
-    [styleInfo]: DirectiveParameters<this>
-  ): string | typeof noChange {
+  override update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
 
     // Remove old properties that no longer exist in styleInfo
