@@ -39,6 +39,7 @@ import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
 import {_$LH} from '../private-ssr-support.js';
+import {until} from '../directives/until.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
@@ -1682,16 +1683,14 @@ suite('lit-html', () => {
           return nothing;
         }
       }
-      const checkNodePropertiesBehavior = directive(
-        CheckNodePropertiesBehavior
-      );
+      const checkPart = directive(CheckNodePropertiesBehavior);
 
       test('when the directive is the only child', () => {
         const makeTemplate = (content: unknown) => html`<div>${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is the last child', () => {
@@ -1699,8 +1698,8 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is not the last child', () => {
@@ -1708,25 +1707,33 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content} Later sibling.</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
-      test('directive parent is the logical DOM parent', () => {
+      test(`part's parentNode is the logical DOM parent`, async () => {
+        const asyncCheckDiv = Promise.resolve(checkPart('divPromise'));
         const makeTemplate = () =>
           html`
-            ${checkNodePropertiesBehavior('container')}
-            <div id="parent1">${checkNodePropertiesBehavior('parent1')}/div>
-            <div id="parent2">${html`x ${checkNodePropertiesBehavior(
-              'parent2'
-            )} x`}</div>
-            <div id="parent3">${html`x ${html`x ${checkNodePropertiesBehavior(
-              'parent3'
-            )} x`} x`}</div>
+            ${checkPart('container')}
+            <div id="div">
+              ${checkPart('div')}
+              ${html`x ${checkPart('div')} x`}
+              ${html`x ${html`x ${checkPart('div')} x`} x`}
+              ${html`x ${html`x ${[checkPart('div'), checkPart('div')]} x`} x`}
+              ${html`x ${html`x ${[
+                [checkPart('div'), checkPart('div')],
+              ]} x`} x`}
+              ${html`x ${html`x ${[
+                [repeat([checkPart('div'), checkPart('div')], (v) => v)],
+              ]} x`} x`}
+              ${until(asyncCheckDiv)}
+            </div>
           `;
 
         // Render twice so that `update` is called.
         render(makeTemplate(), container);
+        await asyncCheckDiv;
         render(makeTemplate(), container);
       });
     });

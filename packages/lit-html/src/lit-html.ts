@@ -31,10 +31,6 @@ const wrap =
 
 const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
 
-interface DocumentFragmentWithParent extends DocumentFragment {
-  _$litParent$: () => Node | null;
-}
-
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
  * tag function.
@@ -1020,12 +1016,22 @@ class ChildPart implements Disconnectable {
    * consists of all child nodes of `.parentNode`.
    */
   get parentNode(): Node {
-    const parent = wrap(this._$startNode).parentNode!;
-    // If the `_$litParent$` function exists, that means this is an initial
-    // render for the part and the DOM is still in the cloned document fragment,
-    // so retrieve the part's actual parent node rather than the fragment
-    const parentFn = (parent as DocumentFragmentWithParent)._$litParent$;
-    return parentFn?.() ?? parent;
+    let parentNode: Node = wrap(this._$startNode).parentNode!;
+    if (parentNode.nodeType === 11) {
+      // Node.DOCUMENT_FRAGMENT
+      // If the parentNode is a DocumentFragment, it may be because the DOM is
+      // still in the cloned fragment during initial render; if so, ascend the
+      // parent tree to find the real parentNode the part will be committed
+      // into; note the while loop helps deal with ambiguity over whether the
+      // ChildPart's parent is a TemplateInstance (normal case) or another
+      // ChildPart (iterable / directive-inserted part case): only ChildPart's
+      // have `parentNode`.
+      let parent = this._$parent;
+      while (parent && !(parentNode = (parent as ChildPart).parentNode!)) {
+        parent = parent._$parent;
+      }
+    }
+    return parentNode;
   }
 
   /**
@@ -1162,12 +1168,6 @@ class ChildPart implements Disconnectable {
     } else {
       const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
-      // Put a function to retrieve the parentNode for this part on the fragment
-      // so that directives can see their to-be parentNode rather than the
-      // DocumentFragment during initial render, which occurs before the fragment
-      // is inserted into the part's spot in the DOM
-      (fragment as DocumentFragmentWithParent)._$litParent$ = () =>
-        this.parentNode;
       instance._update(values);
       this._commitNode(fragment);
       this._$committedValue = instance;
