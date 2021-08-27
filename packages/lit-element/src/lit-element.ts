@@ -117,6 +117,9 @@ export class LitElement extends ReactiveElement {
     // updates are allowed after super.update, it's important to call `render`
     // before that.
     const value = this.render();
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     super.update(changedProperties);
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
