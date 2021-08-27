@@ -96,11 +96,24 @@ class RepeatDirective extends Directive {
       template
     );
 
-    if (!oldParts) {
+    // We check that oldParts, the committed value, is an Array as an
+    // indicator that the previous value came from a repeat() call. If
+    // oldParts is not an Array then this is the first render and we return
+    // an array for lit-html's array handling to render, and remember the
+    // keys.
+    if (!Array.isArray(oldParts)) {
       this._itemKeys = newKeys;
       return newValues;
     }
 
+    // In SSR hydration it's possible for oldParts to be an arrray but for us
+    // to not have item keys because the update() hasn't run yet. We set the
+    // keys to an empty array. This will cause all oldKey/newKey comparisons
+    // to fail and execution to fall to the last nested brach below which
+    // reuses the oldPart.
+    // TODO (justinfagnani): We need to clarify that that explaination is
+    // accurate and add hydration tests that use different data than SSR in
+    // repeat().
     const oldKeys = (this._itemKeys ??= []);
 
     // New part list will be built up as we go (either reused from
