@@ -814,13 +814,18 @@ class TemplateInstance implements Disconnectable {
   _parts: Array<Part | undefined> = [];
 
   /** @internal */
-  _$parent: Disconnectable;
+  _$parent: ChildPart;
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
+  }
+
+  // Called by ChildPart parentNode getter
+  get parentNode() {
+    return this._$parent.parentNode;
   }
 
   // See comment in Disconnectable interface for why this is a getter
@@ -1017,19 +1022,12 @@ class ChildPart implements Disconnectable {
    */
   get parentNode(): Node {
     let parentNode: Node = wrap(this._$startNode).parentNode!;
-    if (parentNode.nodeType === 11) {
-      // Node.DOCUMENT_FRAGMENT
+    const parent = this._$parent;
+    if (parent && parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
-      // still in the cloned fragment during initial render; if so, ascend the
-      // parent tree to find the real parentNode the part will be committed
-      // into; note the while loop helps deal with ambiguity over whether the
-      // ChildPart's parent is a TemplateInstance (normal case) or another
-      // ChildPart (iterable / directive-inserted part case): only ChildPart's
-      // have `parentNode`.
-      let parent = this._$parent;
-      while (parent && !(parentNode = (parent as ChildPart).parentNode!)) {
-        parent = parent._$parent;
-      }
+      // still in the cloned fragment during initial render; if so, get the real
+      // parentNode the part will be committed into by asking the parent.
+      parentNode = (parent as ChildPart | TemplateInstance).parentNode;
     }
     return parentNode;
   }

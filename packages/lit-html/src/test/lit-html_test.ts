@@ -1736,6 +1736,16 @@ suite('lit-html', () => {
         await asyncCheckDiv;
         render(makeTemplate(), container);
       });
+
+      test(`part's parentNode is correct when rendered into a document fragment`, async () => {
+        const fragment = document.createDocumentFragment();
+        (fragment as unknown as {id: string}).id = 'fragment';
+        const makeTemplate = () => html`${checkPart('fragment')}`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), fragment);
+        render(makeTemplate(), fragment);
+      });
     });
 
     test('directives are stateful', () => {
