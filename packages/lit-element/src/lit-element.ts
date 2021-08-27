@@ -171,9 +171,9 @@ if (DEV_MODE) {
       if (obj[name] !== undefined) {
         console.warn(
           `\`${name}\` is implemented. It ` +
-            `has been removed from this version of LitElement. `
-          // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/lit/lit/blob/main/packages/lit-element/CHANGELOG.md`
+            `has been removed from this version of LitElement. See ` +
+            `https://lit.dev/docs/releases/upgrade/#litelement ` +
+            `for more information.`
         );
       }
     };
