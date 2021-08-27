@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "publishConfig": {
     "access": "public"
   },
@@ -22,10 +22,6 @@
     "prepack": "npm run build"
   },
   "files": [
-    "/src/",
-    "!/src/tests/",
-    "/src_client/",
-    "!/src_client/tests/",
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",

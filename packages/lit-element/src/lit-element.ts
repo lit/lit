@@ -47,7 +47,7 @@
  * @packageDocumentation
  */
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
-import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
+import {render, RenderOptions, noChange, RootPart} from 'lit-html';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
 
@@ -62,12 +62,6 @@ declare global {
     litElementVersions: string[];
   }
 }
-
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.2');
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -85,21 +79,22 @@ export class LitElement extends ReactiveElement {
    * Note this property name is a string to prevent breaking Closure JS Compiler
    * optimizations. See @lit/reactive-element for more information.
    */
-  protected static ['finalized'] = true;
+  protected static override ['finalized'] = true;
 
-  static _$litElement$ = true;
+  // This property needs to remain unminified.
+  static ['_$litElement$'] = true;
 
   /**
    * @category rendering
    */
   readonly renderOptions: RenderOptions = {host: this};
 
-  private __childPart: ChildPart | undefined = undefined;
+  private __childPart: RootPart | undefined = undefined;
 
   /**
    * @category rendering
    */
-  protected createRenderRoot() {
+  protected override createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
     // shadowRoot by createRenderRoot. Adjust the renderBefore node so that
@@ -117,7 +112,7 @@ export class LitElement extends ReactiveElement {
    * @param changedProperties Map of changed properties with old values
    * @category updates
    */
-  protected update(changedProperties: PropertyValues) {
+  protected override update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.
@@ -126,13 +121,10 @@ export class LitElement extends ReactiveElement {
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
-  // TODO(kschaaf): Consider debouncing directive disconnection so element moves
-  // do not thrash directive callbacks
-  // https://github.com/lit/lit/issues/1457
   /**
    * @category lifecycle
    */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
@@ -140,7 +132,7 @@ export class LitElement extends ReactiveElement {
   /**
    * @category lifecycle
    */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
   }
@@ -158,12 +150,10 @@ export class LitElement extends ReactiveElement {
 }
 
 // Install hydration if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementHydrateSupport']?.({LitElement});
+globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport']?.({LitElement});
+globalThis.litElementPlatformSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
@@ -207,7 +197,7 @@ if (DEV_MODE) {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Φ object containing those members (or
+ * client side code, we export a _$LE object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -217,7 +207,7 @@ if (DEV_MODE) {
  *
  * @private
  */
-export const _Φ = {
+export const _$LE = {
   _$attributeToProperty: (
     el: LitElement,
     name: string,
@@ -229,3 +219,8 @@ export const _Φ = {
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for LitElement usage.
+// TODO(justinfagnani): inject version number at build time
+(globalThis.litElementVersions ??= []).push('3.0.0-rc.3');

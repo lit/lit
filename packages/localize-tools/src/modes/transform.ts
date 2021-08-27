@@ -19,7 +19,7 @@ import {
 } from '../program-analysis.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
@@ -289,14 +289,13 @@ class Transformer {
         // but not in the case of `import * as ...`.
         eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
       }
-      for (const decl of eventSymbol.declarations) {
+      for (const decl of eventSymbol.declarations ?? []) {
         let sourceFile: ts.Node = decl;
         while (!ts.isSourceFile(sourceFile)) {
           sourceFile = sourceFile.parent;
         }
-        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
-          sourceFile
-        );
+        const sourceFileSymbol =
+          this.typeChecker.getSymbolAtLocation(sourceFile);
         if (
           sourceFileSymbol &&
           this.fileNameAppearsToBeLitLocalize(sourceFileSymbol)
@@ -357,7 +356,7 @@ class Transformer {
         const templateLiteralBody = translation.contents
           .map((content) =>
             typeof content === 'string'
-              ? escapeStringToEmbedInTemplateLiteral(content)
+              ? escapeTextContentToEmbedInTemplateLiteral(content)
               : content.untranslatable
           )
           .join('');
@@ -508,7 +507,7 @@ class Transformer {
     // TODO(aomarks) Find a better way to implement this. We could probably just
     // check for any file path matching '/@lit/localize/` -- however that will
     // fail our tests because we import with a relative path in that case.
-    for (const decl of moduleSymbol.declarations) {
+    for (const decl of moduleSymbol.declarations ?? []) {
       if (
         ts.isSourceFile(decl) &&
         (decl.fileName.endsWith('/localize/lit-localize.d.ts') ||

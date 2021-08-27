@@ -8,16 +8,14 @@ import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {html} from '../../lit-html.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 suite('ShadyCSS scoping shim', () => {
   setup(function () {
     if (
-      typeof extraGlobals.ShadyDOM === 'undefined' ||
-      !extraGlobals.ShadyDOM.inUse ||
-      typeof extraGlobals.ShadyCSS === 'undefined' ||
-      extraGlobals.ShadyCSS.nativeShadow ||
-      extraGlobals.ShadyCSS.ScopingShim === undefined
+      typeof window.ShadyDOM === 'undefined' ||
+      !window.ShadyDOM.inUse ||
+      typeof window.ShadyCSS === 'undefined' ||
+      window.ShadyCSS.nativeShadow ||
+      window.ShadyCSS.ScopingShim === undefined
     ) {
       this.skip();
       return;
@@ -26,7 +24,7 @@ suite('ShadyCSS scoping shim', () => {
 
   test('scoped styles are applied for non-TemplateResult values', function () {
     const container = document.createElement('scope-1');
-    extraGlobals.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
+    window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
       [':host { border-top: 2px solid black; }'],
       'scope-1'
     );
@@ -41,7 +39,7 @@ suite('ShadyCSS scoping shim', () => {
 
   test('adopted CSS remains when rendering a TemplateResult after an initial non-TemplateResult', function () {
     const container = document.createElement('scope-2');
-    extraGlobals.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
+    window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
       [':host { border-top: 2px solid black; } button { font-size: 7px; } '],
       'scope-2'
     );

@@ -5,7 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.3.6] - 2021-07-28
+
+## Fixed
+
+- Escaped `<`, `>`, and `&` characters in HTML text content are now preserved
+  when generating runtime & transform mode output. Previously they sometimes
+  were emitted unescaped, generating invalid markup.
+
+## [0.3.5] - 2021-07-14
+
+## Added
+
+- Added `configureSsrLocalization` in `@lit/localize-tools/lib/ssr.js` which
+  allows for safe concurrent rendering of localized templates with
+  `@lit-labs/ssr` or other renderers using
+  [`AsyncLocalStorage`](https://nodejs.org/api/async_hooks.html#async_hooks_class_asynclocalstorage).
+
+  ```ts
+  import {configureSsrLocalization} from '@lit/localize-tools/lib/ssr.js';
+  import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+  import {html} from 'lit';
+
+  const {withLocale} = await configureSsrLocalization({
+    sourceLocale: 'en',
+    targetLocales: ['es', 'nl'],
+    loadLocale: (locale) => import(`./locales/${locale}.js`)),
+  });
+
+  const handleHttpRequest = (req, res) => {
+    const locale = localeForRequest(req);
+    withLocale(locale, async () => {
+      // Any async work can happen in this function, and the request's locale
+      // context will be safely preserved for every msg() call.
+      await doSomeAsyncWork();
+      for (const chunk of render(msg(html`Hello World`))) {
+        res.write(chunk);
+      }
+      res.end();
+    });
+  };
+  ```
 
 ## [0.3.4] - 2021-05-18
 

@@ -76,3 +76,6 @@ export class MyElement2 extends LitElement {
     return html`<p>${msg(html`Hello <b>World</b>!`)} (${getLocale()})</p>`;
   }
 }
+
+// Escaped markup characters should remain escaped
+msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);

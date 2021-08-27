@@ -26,7 +26,7 @@ interface PatchableLitElement extends HTMLElement {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementHydrateSupport'] = ({
+globalThis.litElementHydrateSupport = ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;

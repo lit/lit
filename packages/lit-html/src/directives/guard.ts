@@ -17,7 +17,7 @@ class GuardDirective extends Directive {
     return f();
   }
 
-  update(_part: Part, [value, f]: DirectiveParameters<this>) {
+  override update(_part: Part, [value, f]: DirectiveParameters<this>) {
     if (Array.isArray(value)) {
       // Dirty-check arrays by item
       if (
@@ -57,6 +57,7 @@ class GuardDirective extends Directive {
  *   <div>
  *     ${guard([user.id, company.id], () => html`...`)}
  *   </div>
+ * `
  * ```
  *
  * In this case, the template only rerenders if either `user.id` or `company.id`
@@ -72,6 +73,7 @@ class GuardDirective extends Directive {
  *   <div>
  *     ${guard([immutableItems], () => immutableItems.map(i => html`${i}`))}
  *   </div>
+ * `
  * ```
  *
  * In this case, items are mapped over only when the array reference changes.

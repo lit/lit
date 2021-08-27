@@ -20,5 +20,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/env.d.ts", "src/polyfill-support.ts"]
+  "include": [
+    "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "src/env.d.ts",
+    "src/polyfill-support.ts"
+  ]
 }

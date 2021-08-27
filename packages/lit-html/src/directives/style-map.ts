@@ -63,7 +63,7 @@ class StyleMapDirective extends Directive {
 
   // The wider return type is only provided here so that one of the tests can
   // extend this class and return a different type.
-  update(
+  override update(
     part: AttributePart,
     [styleInfo]: DirectiveParameters<this>
   ): string | typeof noChange {

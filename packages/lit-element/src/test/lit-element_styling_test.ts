@@ -13,8 +13,6 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extraGlobals = window as LitExtraGlobals;
-
 (canTestLitElement ? suite : suite.skip)('Styling', () => {
   suite('Basic styling', () => {
     let container: HTMLElement;
@@ -35,7 +33,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -66,7 +64,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -93,7 +91,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             :host {
@@ -121,7 +119,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         'x-inner',
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -136,7 +134,7 @@ const extraGlobals = window as LitExtraGlobals;
       class E extends LitElement {
         inner: LitElement | null = null;
 
-        render() {
+        override render() {
           return htmlWithStyles`
           <style>
             x-inner {
@@ -146,7 +144,7 @@ const extraGlobals = window as LitExtraGlobals;
           <x-inner></x-inner>`;
         }
 
-        firstUpdated() {
+        override firstUpdated() {
           this.inner = this.shadowRoot!.querySelector('x-inner')! as LitElement;
         }
       }
@@ -169,7 +167,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         'x-inner1',
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -186,7 +184,7 @@ const extraGlobals = window as LitExtraGlobals;
         class extends LitElement {
           inner: Element | null = null;
 
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             x-inner1 {
@@ -196,7 +194,7 @@ const extraGlobals = window as LitExtraGlobals;
           <x-inner1></x-inner1>`;
           }
 
-          firstUpdated() {
+          override firstUpdated() {
             this.inner = this.shadowRoot!.querySelector('x-inner1');
           }
         }
@@ -205,7 +203,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name2,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             x-inner1 {
@@ -262,7 +260,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          static get styles() {
+          static override get styles() {
             return [
               css`
                 div {
@@ -278,7 +276,7 @@ const extraGlobals = window as LitExtraGlobals;
             ];
           }
 
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {
@@ -309,7 +307,7 @@ const extraGlobals = window as LitExtraGlobals;
         '3px'
       );
       // Verify there is one scoping style under ShadyDOM
-      if (extraGlobals.ShadyDOM?.inUse) {
+      if (window.ShadyDOM?.inUse) {
         assert.equal(
           document.querySelectorAll(`style[scope=${name}`).length,
           1
@@ -322,7 +320,7 @@ const extraGlobals = window as LitExtraGlobals;
     let container: HTMLElement;
 
     setup(function () {
-      if (!extraGlobals.ShadyDOM) {
+      if (!window.ShadyDOM) {
         this.skip();
       } else {
         container = document.createElement('div');
@@ -344,7 +342,7 @@ const extraGlobals = window as LitExtraGlobals;
       customElements.define(
         name,
         class extends LitElement {
-          render() {
+          override render() {
             return htmlWithStyles`
           <style>
             div {

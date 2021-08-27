@@ -10,13 +10,9 @@ export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;
 }
 
-const extraGlobals = window as LitExtraGlobals;
-
 export const wrap =
-  extraGlobals.ShadyDOM &&
-  extraGlobals.ShadyDOM.inUse &&
-  extraGlobals.ShadyDOM.noPatch === true
-    ? extraGlobals.ShadyDOM!.wrap
+  window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
+    ? window.ShadyDOM!.wrap
     : (node: Node) => node;
 
 export const shadowRoot = (element: Node) =>

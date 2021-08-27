@@ -42,20 +42,17 @@ interface PatchableLitElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport'] ??= ({
+globalThis.litElementPlatformSupport ??= ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;
 }) => {
-  const extraGlobals = window as LitExtraGlobals;
-
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
   if (
-    extraGlobals.ShadyCSS === undefined ||
-    (extraGlobals.ShadyCSS.nativeShadow && !extraGlobals.ShadyCSS.ApplyShim)
+    window.ShadyCSS === undefined ||
+    (window.ShadyCSS.nativeShadow && !window.ShadyCSS.ApplyShim)
   ) {
     return;
   }

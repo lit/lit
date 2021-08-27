@@ -15,7 +15,6 @@ import {
   adoptStyles,
   CSSResultGroup,
   CSSResultOrNative,
-  CSSResultFlatArray,
 } from './css-tag.js';
 import type {
   ReactiveController,
@@ -43,9 +42,8 @@ if (DEV_MODE) {
 
   // Issue platform support warning.
   if (
-    (window as LitExtraGlobals).ShadyDOM?.inUse &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['reactiveElementPlatformSupport'] === undefined
+    window.ShadyDOM?.inUse &&
+    globalThis.reactiveElementPlatformSupport === undefined
   ) {
     console.warn(
       `Shadow DOM is being polyfilled via ShadyDOM but ` +
@@ -404,7 +402,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  static elementStyles: CSSResultFlatArray = [];
+  static elementStyles: Array<CSSResultOrNative> = [];
 
   /**
    * Array of styles to apply to the element. The styles should be defined
@@ -450,10 +448,12 @@ export abstract class ReactiveElement
    * `getPropertyDescriptor`. To customize the options for a property,
    * implement `createProperty` like this:
    *
+   * ```ts
    * static createProperty(name, options) {
    *   options = Object.assign(options, {myOption: true});
    *   super.createProperty(name, options);
    * }
+   * ```
    *
    * @nocollapse
    * @category properties
@@ -491,22 +491,24 @@ export abstract class ReactiveElement
    * If no descriptor is returned, the property will not become an accessor.
    * For example,
    *
-   *   class MyElement extends LitElement {
-   *     static getPropertyDescriptor(name, key, options) {
-   *       const defaultDescriptor =
-   *           super.getPropertyDescriptor(name, key, options);
-   *       const setter = defaultDescriptor.set;
-   *       return {
-   *         get: defaultDescriptor.get,
-   *         set(value) {
-   *           setter.call(this, value);
-   *           // custom action.
-   *         },
-   *         configurable: true,
-   *         enumerable: true
-   *       }
+   * ```ts
+   * class MyElement extends LitElement {
+   *   static getPropertyDescriptor(name, key, options) {
+   *     const defaultDescriptor =
+   *         super.getPropertyDescriptor(name, key, options);
+   *     const setter = defaultDescriptor.set;
+   *     return {
+   *       get: defaultDescriptor.get,
+   *       set(value) {
+   *         setter.call(this, value);
+   *         // custom action.
+   *       },
+   *       configurable: true,
+   *       enumerable: true
    *     }
    *   }
+   * }
+   * ```
    *
    * @nocollapse
    * @category properties
@@ -638,11 +640,13 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
+  protected static finalizeStyles(
+    styles?: CSSResultGroup
+  ): Array<CSSResultOrNative> {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
-      // TODO(sorvell): casting to Array<unknown> works around TS error that
+      // Casting to Array<unknown> works around TS error that
       // appears to come from trying to flatten a type CSSResultArray.
       const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
       // Then preserve original order by adding the set items in reverse order.
@@ -684,9 +688,6 @@ export abstract class ReactiveElement
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
-
-  private __pendingConnectionPromise: Promise<void> | undefined = undefined;
-  private __enableConnection: (() => void) | undefined = undefined;
 
   /**
    * @category updates
@@ -832,12 +833,6 @@ export abstract class ReactiveElement
     }
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
-    // If we were disconnected, re-enable updating by resolving the pending
-    // connection promise
-    if (this.__enableConnection) {
-      this.__enableConnection();
-      this.__pendingConnectionPromise = this.__enableConnection = undefined;
-    }
   }
 
   /**
@@ -856,9 +851,6 @@ export abstract class ReactiveElement
    */
   disconnectedCallback() {
     this.__controllers?.forEach((c) => c.hostDisconnected?.());
-    this.__pendingConnectionPromise = new Promise(
-      (r) => (this.__enableConnection = r)
-    );
   }
 
   /**
@@ -1007,10 +999,6 @@ export abstract class ReactiveElement
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
       await this.__updatePromise;
-      // If we were disconnected, wait until re-connected to flush an update
-      while (this.__pendingConnectionPromise) {
-        await this.__pendingConnectionPromise;
-      }
     } catch (e) {
       // Refire any previous errors async so they do not disrupt the update
       // cycle. Errors are refired so developers have a chance to observe
@@ -1018,8 +1006,8 @@ export abstract class ReactiveElement
       // `window.onunhandledrejection`.
       Promise.reject(e);
     }
-    const result = this.performUpdate();
-    // If `performUpdate` returns a Promise, we await it. This is done to
+    const result = this.scheduleUpdate();
+    // If `scheduleUpdate` returns a Promise, we await it. This is done to
     // enable coordinating updates with a scheduler. Note, the result is
     // checked to avoid delaying an additional microtask unless we need to.
     if (result != null) {
@@ -1029,20 +1017,41 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Performs an element update. Note, if an exception is thrown during the
-   * update, `firstUpdated` and `updated` will not be called.
-   *
-   * You can override this method to change the timing of updates. If this
-   * method is overridden, `super.performUpdate()` must be called.
+   * Schedules an element update. You can override this method to change the
+   * timing of updates by returning a Promise. The update will await the
+   * returned Promise, and you should resolve the Promise to allow the update
+   * to proceed. If this method is overridden, `super.scheduleUpdate()`
+   * must be called.
    *
    * For instance, to schedule updates to occur just before the next frame:
    *
-   * ```
-   * protected async performUpdate(): Promise<unknown> {
+   * ```ts
+   * override protected async scheduleUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-   *   super.performUpdate();
+   *   super.scheduleUpdate();
    * }
    * ```
+   * @category updates
+   */
+  protected scheduleUpdate(): void | Promise<unknown> {
+    return this.performUpdate();
+  }
+
+  /**
+   * Performs an element update. Note, if an exception is thrown during the
+   * update, `firstUpdated` and `updated` will not be called.
+   *
+   * Call performUpdate() to immediately process a pending update. This should
+   * generally not be needed, but it can be done in rare cases when you need to
+   * update synchronously.
+   *
+   * Note: To ensure `performUpdate()` synchronously completes a pending update,
+   * it should not be overridden. In LitElement 2.x it was suggested to override
+   * `performUpdate()` to also customizing update scheduling. Instead, you should now
+   * override `scheduleUpdate()`. For backwards compatibility with LitElement 2.x,
+   * scheduling updates via `performUpdate()` continues to work, but will make
+   * also calling `performUpdate()` to synchronously process updates difficult.
+   *
    * @category updates
    */
   protected performUpdate(): void | Promise<unknown> {
@@ -1159,7 +1168,7 @@ export abstract class ReactiveElement
    * before fulfilling this Promise. To do this, first await
    * `super.getUpdateComplete()`, then any subsequent state.
    *
-   * @return A promise of a boolean that indicates if the update resolved
+   * @return A promise of a boolean that resolves to true if the update completed
    *     without triggering another update.
    * @category updates
    */
@@ -1176,12 +1185,18 @@ export abstract class ReactiveElement
    * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
    * This method should be overridden instead. For example:
    *
-   *   class MyElement extends LitElement {
-   *     async getUpdateComplete() {
-   *       await super.getUpdateComplete();
-   *       await this._myChild.updateComplete;
-   *     }
+   * ```ts
+   * class MyElement extends LitElement {
+   *   override async getUpdateComplete() {
+   *     const result = await super.getUpdateComplete();
+   *     await this._myChild.updateComplete;
+   *     return result;
    *   }
+   * }
+   * ```
+   *
+   * @return A promise of a boolean that resolves to true if the update completed
+   *     without triggering another update.
    * @category updates
    */
   protected getUpdateComplete(): Promise<boolean> {
@@ -1247,8 +1262,7 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['reactiveElementPlatformSupport']?.({ReactiveElement});
+globalThis.reactiveElementPlatformSupport?.({ReactiveElement});
 
 // Dev mode warnings...
 if (DEV_MODE) {
@@ -1291,5 +1305,4 @@ declare global {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
 // TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-rc.2');
+(globalThis.reactiveElementVersions ??= []).push('1.0.0-rc.3');
