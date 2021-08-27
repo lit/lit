@@ -803,4 +803,68 @@ test('aliased property decorator import', () => {
   checkTransform(input, expected);
 });
 
+test('static styles property declaration', () => {
+  const input = `
+  import {LitElement, css} from 'lit';
+
+  class MyElement extends LitElement {
+    static styles = css\`p { color: red; }\`;
+  }
+  `;
+
+  const expected = `
+  import {LitElement, css} from 'lit';
+
+  class MyElement extends LitElement {
+    static get styles() {
+      return css\`p { color: red; }\`;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('static styles declaration with aliased ReactiveElement', () => {
+  const input = `
+  import {css} from 'lit';
+  import {ReactiveElement as Potato} from 'lit';
+
+  class MyElement extends Potato {
+    static styles = css\`p { color: red; }\`;
+  }
+  `;
+
+  const expected = `
+  import {css} from 'lit';
+  import {ReactiveElement as Potato} from 'lit';
+
+  class MyElement extends Potato {
+    static get styles() {
+      return css\`p { color: red; }\`;
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('ignore static styles on non-Lit class', () => {
+  const input = `
+  import {css} from 'lit';
+  import {ReactiveElement} from './not-lit.js';
+
+  class MyElement extends ReactiveElement {
+    static styles = css\`p { color: red; }\`;
+  }
+  `;
+
+  const expected = `
+  import {css} from 'lit';
+  import {ReactiveElement} from './not-lit.js';
+
+  class MyElement extends ReactiveElement {}
+  MyElement.styles = css\`p { color: red; }\`;
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();

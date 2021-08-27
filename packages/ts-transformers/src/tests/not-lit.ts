@@ -29,3 +29,8 @@ export const property =
  */
 export const html = (_strings: TemplateStringsArray, ..._values: unknown[]) =>
   '';
+
+/**
+ * Not the official Lit ReactiveElement.
+ */
+export class ReactiveElement extends HTMLElement {}
