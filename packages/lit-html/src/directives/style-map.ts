@@ -61,7 +61,10 @@ class StyleMapDirective extends Directive {
     }, '');
   }
 
-  override update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
+  override update(
+    part: AttributePart,
+    [styleInfo]: DirectiveParameters<this>
+  ): typeof noChange {
     const {style} = part.element as HTMLElement;
 
     // Remove old properties that no longer exist in styleInfo
@@ -95,6 +98,7 @@ class StyleMapDirective extends Directive {
         }
       }
     }
+
     return noChange;
   }
 }
