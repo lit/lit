@@ -211,7 +211,7 @@ test('@query (non-caching)', () => {
 
   class MyElement extends LitElement {
     get div() {
-      return this.renderRoot?.querySelector('#myDiv');
+      return this.renderRoot?.querySelector('#myDiv') ?? null;
     }
   }
   `;
@@ -234,7 +234,7 @@ test('@query (caching)', () => {
 
   class MyElement extends LitElement {
     get span() {
-      return this.__span ??= this.renderRoot?.querySelector('#mySpan');
+      return this.__span ??= this.renderRoot?.querySelector('#mySpan') ?? null;
     }
   }
   `;
@@ -257,7 +257,7 @@ test('@queryAll', () => {
 
   class MyElement extends LitElement {
     get inputs() {
-      return this.renderRoot?.querySelectorAll('.myInput');
+      return this.renderRoot?.querySelectorAll('.myInput') ?? [];
     }
   }
   `;
@@ -306,7 +306,7 @@ test('@queryAssignedNodes (default slot)', () => {
     get listItems() {
       return this.renderRoot
         ?.querySelector('slot:not([name])')
-        ?.assignedNodes();
+        ?.assignedNodes() ?? [];
     }
   }
   `;
@@ -331,7 +331,7 @@ test('@queryAssignedNodes (with slot name)', () => {
     get listItems() {
       return this.renderRoot
         ?.querySelector('slot[name=list]')
-        ?.assignedNodes();
+        ?.assignedNodes() ?? [];
     }
   }
   `;
@@ -356,7 +356,7 @@ test('@queryAssignedNodes (with flatten)', () => {
     get listItems() {
       return this.renderRoot
         ?.querySelector('slot[name=list]')
-        ?.assignedNodes({flatten: true});
+        ?.assignedNodes({flatten: true}) ?? [];
     }
   }
   `;
@@ -385,7 +385,7 @@ test('@queryAssignedNodes (with selector)', () => {
         ?.filter((node) =>
           node.nodeType === Node.ELEMENT_NODE &&
             node.matches('.item')
-        );
+        ) ?? [];
     }
   }
   `;
@@ -664,6 +664,27 @@ test('only remove imports that will be transformed', () => {
 
   const expected = `
   import {LitElement} from 'lit-element';
+
+  class MyElement extends LitElement {
+  }
+  customElements.define('my-element', MyElement);
+  `;
+  checkTransform(input, expected);
+});
+
+test("don't remove existing no-binding import", () => {
+  const input = `
+  import {LitElement, customElement} from 'lit-element';
+  import './my-custom-element.js';
+
+  @customElement('my-element')
+  class MyElement extends LitElement {
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit-element';
+  import './my-custom-element.js';
 
   class MyElement extends LitElement {
   }

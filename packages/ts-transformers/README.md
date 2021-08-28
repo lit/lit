@@ -65,7 +65,7 @@ class MyElement extends LitElement {
   }
 
   get button() {
-    return this.renderRoot?.querySelector('#myButton');
+    return this.renderRoot?.querySelector('#myButton') ?? null;
   }
 
   constructor() {

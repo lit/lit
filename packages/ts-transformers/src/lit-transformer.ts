@@ -211,12 +211,26 @@ export class LitTransformer {
   }
 
   private _visitImportDeclaration(node: ts.ImportDeclaration) {
-    const pruned = ts.visitEachChild(node, this.visit, this._context);
-    return (pruned.importClause?.namedBindings as ts.NamedImports).elements
-      .length > 0
-      ? pruned
-      : // Remove the import altogether if there are no remaining bindings.
-        undefined;
+    const numBindingsBefore =
+      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
+      0;
+    node = ts.visitEachChild(node, this.visit, this._context);
+    const numBindingsAfter =
+      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
+      0;
+    if (
+      numBindingsAfter === 0 &&
+      numBindingsBefore !== numBindingsAfter &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      isLitImport(node.moduleSpecifier.text)
+    ) {
+      // Remove the import altogether if there are no bindings left. But only if
+      // we acutally modified the import, and it's from an official Lit module.
+      // Otherwise we might remove imports that are still needed for their
+      // side-effects.
+      return undefined;
+    }
+    return node;
   }
 
   private _visitClassDeclaration(class_: ts.ClassDeclaration) {
