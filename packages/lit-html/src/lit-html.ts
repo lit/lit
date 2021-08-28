@@ -1085,12 +1085,17 @@ class ChildPart implements Disconnectable {
             if (parentNodeName === 'STYLE') {
               message =
                 `Lit does not support binding inside style nodes. ` +
-                `This is a security risk, as style injection attacks can exfiltrate data and spoof UIs. ` +
-                `Consider instead using css\`...\` literals to compose styles, and accomplishing dynamicism by mutating the DOM rather than styles`;
+                `This is a security risk, as style injection attacks can ` +
+                `exfiltrate data and spoof UIs. ` +
+                `Consider instead using css\`...\` literals ` +
+                `to compose styles, and make do dynamic styling with ` +
+                `css custom properties, ::parts, <slot>s, ` +
+                `and by mutating the DOM rather than stylesheets.`;
             } else {
               message =
                 `Lit does not support binding inside script nodes. ` +
-                `This is a security risk, as it could allow arbitrary code execution.`;
+                `This is a security risk, as it could allow arbitrary ` +
+                `code execution.`;
             }
           }
           throw new Error(message);
