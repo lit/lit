@@ -218,11 +218,16 @@ export class LitTransformer {
     const numBindingsAfter =
       (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
       0;
-    if (numBindingsBefore !== numBindingsAfter && numBindingsAfter === 0) {
-      // Remove the import altogether if we modified the import and there are
-      // none left. Note it's important we include the first part of this check,
-      // since otherwise we might remove no-binding imports from the original
-      // source (e.g. `import './my-custom-element.js'`).
+    if (
+      numBindingsAfter === 0 &&
+      numBindingsBefore !== numBindingsAfter &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      isLitImport(node.moduleSpecifier.text)
+    ) {
+      // Remove the import altogether if there are no bindings left. But only if
+      // we acutally modified the import, and it's from an official Lit module.
+      // Otherwise we might remove imports that are still needed for their
+      // side-effects.
       return undefined;
     }
     return node;
