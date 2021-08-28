@@ -111,6 +111,13 @@ export function getOwningNpmPackageOfFile(path: string): string | undefined {
 }
 
 /**
+ * A cache for extendsReactiveElement because it's a somewhat expensive check
+ * that requires walking class heritage, querying the type checker, and reading
+ * the filesystem.
+ */
+const extendsReactiveElementCache = new WeakMap<ts.ClassDeclaration, boolean>();
+
+/**
  * Return whether this class extends the official Lit ReactiveElement base
  * class.
  */
@@ -118,14 +125,26 @@ export const extendsReactiveElement = (
   class_: ts.ClassDeclaration,
   checker: ts.TypeChecker
 ): boolean => {
-  for (const ancestorClass of getHeritage(class_, checker)) {
+  let result = false;
+  const allClasses = [];
+  for (const c of getHeritage(class_, checker)) {
+    // Note getHeritage includes the class itself.
+    const cached = extendsReactiveElementCache.get(c);
+    if (cached !== undefined) {
+      return cached;
+    }
+    allClasses.push(c);
     if (
-      ancestorClass.name?.getText() === 'ReactiveElement' &&
-      getOwningNpmPackageOfFile(ancestorClass.getSourceFile().fileName) ===
+      c.name?.getText() === 'ReactiveElement' &&
+      getOwningNpmPackageOfFile(c.getSourceFile().fileName) ===
         '@lit/reactive-element'
     ) {
-      return true;
+      result = true;
+      break;
     }
   }
-  return false;
+  for (const c of allClasses) {
+    extendsReactiveElementCache.set(c, result);
+  }
+  return result;
 };

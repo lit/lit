@@ -906,4 +906,77 @@ test('ignore static properties on non-Lit class', () => {
   checkTransform(input, expected);
 });
 
+test('static styles and properties and multiple classes', () => {
+  // This test makes sure we have good coverage for the extendsReactiveElement
+  // caching logic.
+  const input = `
+  import {LitElement, ReactiveElement, css} from 'lit';
+  import {ReactiveElement as NotReactiveElement} from './not-lit.js';
+
+  class C1 extends ReactiveElement {
+    static styles = css\`p { color: red; }\`;
+    static properties = {foo: {type: Number}};
+  }
+
+  class C2 extends NotReactiveElement {
+    static styles = css\`p { color: red; }\`;
+    static properties = {foo: {type: Number}};
+  }
+
+  class C3 extends LitElement {
+    static styles = css\`p { color: red; }\`;
+    static properties = {foo: {type: Number}};
+  }
+
+  class C4 extends LitElement {}
+
+  class C5 extends C4 {
+    static styles = css\`p { color: red; }\`;
+    static properties = {foo: {type: Number}};
+  }
+
+  `;
+
+  const expected = `
+  import {LitElement, ReactiveElement, css} from 'lit';
+  import {ReactiveElement as NotReactiveElement} from './not-lit.js';
+
+  class C1 extends ReactiveElement {
+    static get styles() {
+      return css\`p { color: red; }\`;
+    }
+    static get properties() {
+      return {foo: {type: Number}};
+    }
+  }
+
+  class C2 extends NotReactiveElement {
+  }
+  C2.styles = css\`p { color: red; }\`;
+  C2.properties = {foo: {type: Number}};
+
+  class C3 extends LitElement {
+    static get styles() {
+      return css\`p { color: red; }\`;
+    }
+    static get properties() {
+      return {foo: {type: Number}};
+    }
+  }
+
+  class C4 extends LitElement {
+  }
+
+  class C5 extends C4 {
+    static get styles() {
+      return css\`p { color: red; }\`;
+    }
+    static get properties() {
+      return {foo: {type: Number}};
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
