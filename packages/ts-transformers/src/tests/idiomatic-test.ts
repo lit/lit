@@ -867,4 +867,43 @@ test('ignore static styles on non-Lit class', () => {
   checkTransform(input, expected);
 });
 
+test('static properties declaration', () => {
+  const input = `
+  import {LitElement} from 'lit';
+
+  class MyElement extends LitElement {
+    static properties = {foo: {type: Number}};
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+
+  class MyElement extends LitElement {
+    static get properties() {
+      return {foo: {type: Number}};
+    }
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('ignore static properties on non-Lit class', () => {
+  const input = `
+  import {ReactiveElement} from './not-lit.js';
+
+  class MyElement extends ReactiveElement {
+    static properties = {foo: {type: Number}};
+  }
+  `;
+
+  const expected = `
+  import {ReactiveElement} from './not-lit.js';
+
+  class MyElement extends ReactiveElement {}
+  MyElement.properties = {foo: {type: Number}};
+  `;
+  checkTransform(input, expected);
+});
+
 test.run();
