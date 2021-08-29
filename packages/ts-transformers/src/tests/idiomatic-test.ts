@@ -942,6 +942,64 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     checkTransform(input, expected, options);
   });
 
+  test('@localized', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {localized} from '@lit/localize';
+
+    @localized()
+    class MyElement extends LitElement {
+    }
+    `;
+
+    const expected = `
+    import {LitElement} from 'lit';
+    import {updateWhenLocaleChanges} from '@lit/localize';
+
+    class MyElement extends LitElement {
+      constructor() {
+        super(...arguments);
+        updateWhenLocaleChanges(this);
+      }
+    }
+    `;
+    checkTransform(input, expected, options);
+  });
+
+  test('@localized (with property)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {property} from 'lit/decorators.js';
+    import {localized} from '@lit/localize';
+
+    @localized()
+    class MyElement extends LitElement {
+      @property()
+      foo = 123;
+    }
+    `;
+
+    const expected = `
+    import {LitElement} from 'lit';
+    import {updateWhenLocaleChanges} from '@lit/localize';
+
+    class MyElement extends LitElement {
+      static get properties() {
+        return {
+          foo: {},
+        };
+      }
+
+      constructor() {
+        super(...arguments);
+        updateWhenLocaleChanges(this);
+        this.foo = 123;
+      }
+    }
+    `;
+    checkTransform(input, expected, options);
+  });
+
   test.run();
 };
 
