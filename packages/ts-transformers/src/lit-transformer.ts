@@ -206,17 +206,25 @@ export class LitTransformer {
         // associated with a decorator. If that changed, visitors should
         // probably have a static field to declare which imports they care
         // about.
-      } else if (
+      } else {
         // Only handle the decorators we're configured to transform.
-        this._classDecoratorVisitors.has(realName) ||
-        this._memberDecoratorVisitors.has(realName)
-      ) {
-        this._litFileContext.litImports.set(importSpecifier, realName);
-        // Assume if there's a visitor for a decorator, it's always going to
-        // remove any uses of that decorator, and hence we should remove the
-        // import too.
-        this._litFileContext.nodeReplacements.set(importSpecifier, undefined);
-        traversalNeeded = true;
+        const visitor =
+          this._classDecoratorVisitors.get(realName) ??
+          this._memberDecoratorVisitors.get(realName);
+        if (visitor !== undefined) {
+          this._litFileContext.litImports.set(importSpecifier, realName);
+          // Either remove the binding or replace it with another identifier.
+          const replacement = visitor.importBindingReplacement
+            ? this._context.factory.createIdentifier(
+                visitor.importBindingReplacement
+              )
+            : undefined;
+          this._litFileContext.nodeReplacements.set(
+            importSpecifier,
+            replacement
+          );
+          traversalNeeded = true;
+        }
       }
     }
     return traversalNeeded;
