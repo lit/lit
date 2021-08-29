@@ -43,7 +43,7 @@ function checkTransform(
         preserveBlankLinesTransformer(),
         idiomaticLitDecoratorTransformer(program),
       ],
-      after: [constructorCleanupTransformer()],
+      after: [constructorCleanupTransformer(program)],
     })
   );
 
@@ -134,7 +134,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         }
 
         constructor() {
-          super(...arguments);
+          super();
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
@@ -160,7 +160,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         }
 
         constructor() {
-          super(...arguments);
+          super();
           this.nonReactiveInitialized = 123;
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
@@ -321,7 +321,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
 
       constructor() {
-        super(...arguments);
+        super();
         this.num = 42;
         this.num2 = 24;
       }
@@ -933,7 +933,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
 
       constructor() {
-        super(...arguments);
+        super();
         this.str = "foo";
         this.num = 42;
       }
@@ -958,7 +958,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
     class MyElement extends LitElement {
       constructor() {
-        super(...arguments);
+        super();
         updateWhenLocaleChanges(this);
       }
     }
@@ -991,7 +991,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
 
       constructor() {
-        super(...arguments);
+        super();
         updateWhenLocaleChanges(this);
         this.foo = 123;
       }

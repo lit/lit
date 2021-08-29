@@ -28,9 +28,15 @@ function checkTransform(inputTs: string, expectedJs: string) {
   // Don't automatically load typings from nodes_modules/@types, we're not using
   // them here, so it's a waste of time.
   options.typeRoots = [];
-  const result = compileTsFragment(inputTs, __dirname, options, cache, () => ({
-    after: [constructorCleanupTransformer()],
-  }));
+  const result = compileTsFragment(
+    inputTs,
+    __dirname,
+    options,
+    cache,
+    (program) => ({
+      after: [constructorCleanupTransformer(program)],
+    })
+  );
 
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
   // TypeScript >= 4 will add an empty export statement if there are no imports
@@ -214,6 +220,58 @@ test('fully synthetic constructor stays at top if there are no statics', () => {
       i2() { return 0; }
       i3() { return 0; }
       i4() { return 0; }
+    }
+  `;
+  checkTransform(input, expected);
+});
+
+test('remove unnecessary synthetic super(...arguments) argument', () => {
+  const input = `
+    class C1 {}
+    class C2 extends C1 {}
+    class C3 extends C2 {
+      foo = 0;
+    }
+    `;
+  const expected = `
+    class C1 {}
+    class C2 extends C1 {}
+    class C3 extends C2 {
+      constructor() {
+        super();
+        this.foo = 0;
+      }
+    }
+  `;
+  checkTransform(input, expected);
+});
+
+test('preserve necessary synthetic super(...arguments) argument', () => {
+  const input = `
+    class C1 {
+      constructor(x) {
+        console.log(x);
+      }
+    }
+    class C2 extends C1 {
+    }
+    class C3 extends C2 {
+      foo = 0;
+    }
+    `;
+  const expected = `
+    class C1 {
+      constructor(x) {
+        console.log(x);
+      }
+    }
+    class C2 extends C1 {
+    }
+    class C3 extends C2 {
+      constructor() {
+        super(...arguments);
+        this.foo = 0;
+      }
     }
   `;
   checkTransform(input, expected);
