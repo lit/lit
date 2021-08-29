@@ -467,8 +467,7 @@ const isLitImport = (specifier: string) =>
   specifier.startsWith('lit/') ||
   specifier === 'lit-element' ||
   specifier.startsWith('lit-element/') ||
-  specifier === '@lit/reactive-element' ||
-  specifier.startsWith('@lit/reactive-element/');
+  specifier.startsWith('@lit/');
 
 /**
  * Returns true for:
