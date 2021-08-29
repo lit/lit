@@ -30,11 +30,11 @@ import type {
  */
 export class LitTransformer {
   private readonly _context: ts.TransformationContext;
-  private readonly _classDecoratorVisitors = new MultiMap<
+  private readonly _classDecoratorVisitors = new Map<
     string,
     ClassDecoratorVisitor
   >();
-  private readonly _memberDecoratorVisitors = new MultiMap<
+  private readonly _memberDecoratorVisitors = new Map<
     string,
     MemberDecoratorVisitor
   >();
@@ -56,11 +56,23 @@ export class LitTransformer {
   private _registerVisitor(visitor: Visitor) {
     switch (visitor.kind) {
       case 'classDecorator': {
-        this._classDecoratorVisitors.add(visitor.decoratorName, visitor);
+        if (this._classDecoratorVisitors.has(visitor.decoratorName)) {
+          throw new Error(
+            'Registered more than one transformer for class decorator' +
+              visitor.decoratorName
+          );
+        }
+        this._classDecoratorVisitors.set(visitor.decoratorName, visitor);
         break;
       }
       case 'memberDecorator': {
-        this._memberDecoratorVisitors.add(visitor.decoratorName, visitor);
+        if (this._classDecoratorVisitors.has(visitor.decoratorName)) {
+          throw new Error(
+            'Registered more than one transformer for member decorator ' +
+              visitor.decoratorName
+          );
+        }
+        this._memberDecoratorVisitors.set(visitor.decoratorName, visitor);
         break;
       }
       case 'generic': {
@@ -80,11 +92,11 @@ export class LitTransformer {
   private _unregisterVisitor(visitor: Visitor) {
     switch (visitor.kind) {
       case 'classDecorator': {
-        this._classDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        this._classDecoratorVisitors.delete(visitor.decoratorName);
         break;
       }
       case 'memberDecorator': {
-        this._memberDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        this._memberDecoratorVisitors.delete(visitor.decoratorName);
         break;
       }
       case 'generic': {
@@ -247,10 +259,9 @@ export class LitTransformer {
       if (decoratorName === undefined) {
         continue;
       }
-      const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
-      for (const visitor of visitors) {
-        visitor.visit(litClassContext, decorator);
-      }
+      this._classDecoratorVisitors
+        .get(decoratorName)
+        ?.visit(litClassContext, decorator);
     }
 
     // Class member decorators
@@ -265,10 +276,9 @@ export class LitTransformer {
         if (decoratorName === undefined) {
           continue;
         }
-        const visitors = this._memberDecoratorVisitors.get(decoratorName) ?? [];
-        for (const visitor of visitors) {
-          visitor.visit(litClassContext, member, decorator);
-        }
+        this._memberDecoratorVisitors
+          .get(decoratorName)
+          ?.visit(litClassContext, member, decorator);
       }
     }
 
@@ -440,44 +450,6 @@ export class LitTransformer {
         existingCtor.body,
         newCtorBody
       );
-    }
-  }
-}
-
-/**
- * Maps from a key to a Set of values.
- */
-class MultiMap<K, V> {
-  private readonly _map = new Map<K, Set<V>>();
-
-  get(key: K): Set<V> | undefined {
-    return this._map.get(key);
-  }
-
-  has(key: K): boolean {
-    return this._map.has(key);
-  }
-
-  get size(): number {
-    return this._map.size;
-  }
-
-  add(key: K, val: V) {
-    let set = this._map.get(key);
-    if (set === undefined) {
-      set = new Set();
-      this._map.set(key, set);
-    }
-    set.add(val);
-  }
-
-  delete(key: K, val: V) {
-    const set = this._map.get(key);
-    if (set === undefined) {
-      return;
-    }
-    if (set.delete(val) && set.size === 0) {
-      this._map.delete(key);
     }
   }
 }
