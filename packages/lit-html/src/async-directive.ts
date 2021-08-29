@@ -278,11 +278,11 @@ const installDisconnectAPI = (obj: Disconnectable) => {
 /**
  * An abstract `Directive` base class whose `disconnected` method will be
  * called when the part containing the directive is cleared as a result of
- * re-rendering, or when the user calls `part.setDirectiveConnection(false)` on
+ * re-rendering, or when the user calls `part.setConnected(false)` on
  * a part that was previously rendered containing the directive (as happens
  * when e.g. a LitElement disconnects from the DOM).
  *
- * If `part.setDirectiveConnection(true)` is subsequently called on a
+ * If `part.setConnected(true)` is subsequently called on a
  * containing part, the directive's `reconnected` method will be called prior
  * to its next `update`/`render` callbacks. When implementing `disconnected`,
  * `reconnected` should also be implemented to be compatible with reconnection.
