@@ -18,7 +18,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  * Into:
  *
  *   get inputs() {
- *     return this.renderRoot?.queryAll('.myInput');
+ *     return this.renderRoot?.queryAll('.myInput') ?? [];
  *   }
  */
 export class QueryAllVisitor implements MemberDecoratorVisitor {
@@ -68,18 +68,22 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
       f.createBlock(
         [
           f.createReturnStatement(
-            f.createCallChain(
-              f.createPropertyAccessChain(
-                f.createPropertyAccessExpression(
-                  f.createThis(),
-                  f.createIdentifier('renderRoot')
+            f.createBinaryExpression(
+              f.createCallChain(
+                f.createPropertyAccessChain(
+                  f.createPropertyAccessExpression(
+                    f.createThis(),
+                    f.createIdentifier('renderRoot')
+                  ),
+                  f.createToken(ts.SyntaxKind.QuestionDotToken),
+                  f.createIdentifier('querySelectorAll')
                 ),
-                f.createToken(ts.SyntaxKind.QuestionDotToken),
-                f.createIdentifier('querySelectorAll')
+                undefined,
+                undefined,
+                [f.createStringLiteral(selector)]
               ),
-              undefined,
-              undefined,
-              [f.createStringLiteral(selector)]
+              f.createToken(ts.SyntaxKind.QuestionQuestionToken),
+              f.createArrayLiteralExpression([], false)
             )
           ),
         ],

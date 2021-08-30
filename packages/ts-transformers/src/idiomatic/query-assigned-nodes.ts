@@ -20,7 +20,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *   get listItems() {
  *     return this.renderRoot
  *       ?.querySelector('slot[name=list]')
- *       ?.assignedNodes();
+ *       ?.assignedNodes() ?? [];
  *   }
  */
 export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
@@ -169,7 +169,15 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
 
     // { return <returnExpression> }
     const getterBody = f.createBlock(
-      [f.createReturnStatement(returnExpression)],
+      [
+        f.createReturnStatement(
+          f.createBinaryExpression(
+            returnExpression,
+            f.createToken(ts.SyntaxKind.QuestionQuestionToken),
+            f.createArrayLiteralExpression([], false)
+          )
+        ),
+      ],
       true
     );
 
