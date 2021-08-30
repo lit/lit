@@ -25,6 +25,9 @@ const cache = new CompilerHostCache();
 function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ESNext;
+  // Don't emit standard class fields. They aren't compatible with Lit. Defaults
+  // to true when target = ESNext.
+  options.useDefineForClassFields = false;
   options.module = ts.ModuleKind.ESNext;
   options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
   options.importHelpers = true;
@@ -116,8 +119,12 @@ test('@property', () => {
         num: {type: Number, attribute: false},
       };
     }
-    str = "foo";
-    num = 42;
+
+    constructor() {
+      super(...arguments);
+      this.str = "foo";
+      this.num = 42;
+    }
   }
   `;
   checkTransform(input, expected);
@@ -154,10 +161,10 @@ test('@property (merge with existing static properties)', () => {
         num: {type: Number},
       };
     }
-    num = 42;
 
     constructor() {
       super();
+      this.num = 42;
     }
   }
   `;
@@ -188,8 +195,12 @@ test('@state', () => {
         num2: {hasChanged: () => false, state: true},
       };
     }
-    num = 42;
-    num2 = 24;
+
+    constructor() {
+      super(...arguments);
+      this.num = 42;
+      this.num2 = 24;
+    }
   }
   `;
   checkTransform(input, expected);
@@ -731,9 +742,7 @@ test('ignore non-lit method decorator', () => {
   import {LitElement} from 'lit';
   import {property} from './not-lit.js';
 
-  class MyElement extends LitElement {
-    foo;
-  };
+  class MyElement extends LitElement {};
   __decorate([property()], MyElement.prototype, "foo", void 0);
   `;
   checkTransform(input, expected);
@@ -783,8 +792,12 @@ test('aliased property decorator import', () => {
         num: {type: Number, attribute: false},
       };
     }
-    str = "foo";
-    num = 42;
+
+    constructor() {
+      super(...arguments);
+      this.str = "foo";
+      this.num = 42;
+    }
   }
   `;
   checkTransform(input, expected);
