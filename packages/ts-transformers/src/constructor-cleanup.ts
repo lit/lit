@@ -69,9 +69,10 @@ const cleanupClassConstructor = (
   // regardless of its original source order. Let's move it somewhere more sane.
   let newCtorIdx;
 
-  // When TypeScript synthesizes a constructor from scratch, it gives it the
-  // position of its class.
-  const hasOriginalSourcePosition = ctor.pos !== class_.pos;
+  // When the built-in TypeScript class field transformer synthesizes a
+  // constructor, it gives it the position of its class. Other transformers
+  // might not set a position at all, so it will default to -1.
+  const hasOriginalSourcePosition = ctor.pos !== class_.pos && ctor.pos !== -1;
 
   if (hasOriginalSourcePosition) {
     // The constructor existed in the original source. Move it back.
@@ -93,7 +94,7 @@ const cleanupClassConstructor = (
           (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
         ) !== undefined;
       if (isStatic) {
-        newCtorIdx = i;
+        newCtorIdx = ctorIdx > i ? i + 1 : i;
         break;
       }
     }
