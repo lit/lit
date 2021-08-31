@@ -13,7 +13,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  * Transform:
  *
  *   @property({type: Number})
- *   foo
+ *   foo = 123;
  *
  * Into:
  *
@@ -21,6 +21,11 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *     return {
  *       foo: {type: Number}
  *     }
+ *   }
+ *
+ *   constructor() {
+ *     super(...arguments);
+ *     this.foo = 123;
  *   }
  */
 export class PropertyVisitor implements MemberDecoratorVisitor {
