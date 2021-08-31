@@ -135,16 +135,12 @@ export const hydrate = (
   // templates
   const stack: Array<ChildPartState> = [];
 
-  const walker = (
-    document.createTreeWalker as (
-      root: Node,
-      whatToShow: number,
-      filter: NodeFilter | null,
-      // All 4 parameters are required for IE11, but TypeScript 4.4 removed the
-      // entityReferenceExpansion parameter. This is the previous signature.
-      entityReferenceExpansion?: boolean
-    ) => TreeWalker
-  )(container, NodeFilter.SHOW_COMMENT, null, false);
+  const walker = document.createTreeWalker(
+    container,
+    NodeFilter.SHOW_COMMENT,
+    null,
+    false
+  );
   let marker: Comment | null;
 
   // Walk the DOM looking for part marker comments
