@@ -1,70 +1,139 @@
 {
-  "version": "experimental",
-  "tags": [
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
     {
-      "name": "my-element",
-      "path": "./my-element.js",
-      "description": "An example element.",
-      "attributes": [
+      "kind": "javascript-module",
+      "path": "my-element.js",
+      "declarations": [
         {
-          "name": "name",
-          "description": "The name to say \"Hello\" to.",
-          "type": "string",
-          "default": "\"World\""
-        },
-        {
-          "name": "count",
-          "description": "The number of times the button has been clicked.",
-          "type": "number",
-          "default": "0"
+          "kind": "class",
+          "description": "An example element.",
+          "name": "MyElement",
+          "cssParts": [
+            {
+              "description": "The button",
+              "name": "button"
+            }
+          ],
+          "slots": [
+            {
+              "description": "This element has a slot",
+              "name": ""
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "_onClick"
+            },
+            {
+              "kind": "method",
+              "name": "sayHello",
+              "parameters": [
+                {
+                  "name": "name",
+                  "description": "The name to say \"Hello\" to",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Formats a greeting",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "default": "'World'",
+              "privacy": "public",
+              "description": "The name to say \"Hello\" to.",
+              "attribute": "name"
+            },
+            {
+              "kind": "field",
+              "name": "count",
+              "type": {
+                "text": "number"
+              },
+              "default": "0",
+              "privacy": "public",
+              "description": "The number of times the button has been clicked.",
+              "attribute": "count"
+            }
+          ],
+          "events": [
+            {
+              "name": "count-changed",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Indicates when the count changes"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "name",
+              "description": "The name to say \"Hello\" to.",
+              "type": {
+                "text": "string"
+              },
+              "fieldName": "name"
+            },
+            {
+              "name": "count",
+              "description": "The number of times the button has been clicked.",
+              "type": {
+                "text": "number"
+              },
+              "fieldName": "count"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "my-element",
+          "customElement": true
         }
       ],
-      "properties": [
+      "exports": [
         {
-          "name": "name",
-          "attribute": "name",
-          "description": "The name to say \"Hello\" to.",
-          "type": "string",
-          "default": "\"World\""
+          "kind": "js",
+          "name": "MyElement",
+          "declaration": {
+            "name": "MyElement",
+            "module": "my-element.js"
+          }
         },
         {
-          "name": "count",
-          "attribute": "count",
-          "description": "The number of times the button has been clicked.",
-          "type": "number",
-          "default": "0"
-        },
-        {
-          "name": "renderRoot",
-          "description": "Node or ShadowRoot into which element DOM should be rendered. Defaults\nto an open shadowRoot.",
-          "type": "HTMLElement | ShadowRoot"
-        },
-        {
-          "name": "isUpdatePending",
-          "type": "boolean"
-        },
-        {
-          "name": "hasUpdated",
-          "type": "boolean"
-        },
-        {
-          "name": "updateComplete",
-          "description": "Returns a Promise that resolves when the element has completed updating.\nThe Promise value is a boolean that is `true` if the element completed the\nupdate without triggering another update. The Promise result is `false` if\na property was set inside `updated()`. If the Promise is rejected, an\nexception was thrown during the update.\n\nTo await additional asynchronous work, override the `getUpdateComplete`\nmethod. For example, it is sometimes useful to await a rendered element\nbefore fulfilling this Promise. To do this, first await\n`super.getUpdateComplete()`, then any subsequent state.",
-          "type": "Promise<boolean>"
-        }
-      ],
-      "slots": [
-        {
-          "name": "",
-          "description": "This element has a slot"
-        }
-      ],
-      "cssParts": [
-        {
-          "name": "button",
-          "description": "The button"
+          "kind": "custom-element-definition",
+          "name": "my-element",
+          "declaration": {
+            "name": "MyElement",
+            "module": "my-element.js"
+          }
         }
       ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "test/my-element_test.js",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "docs-src/_data/api.11tydata.js",
+      "declarations": [],
+      "exports": []
     }
   ]
 }
