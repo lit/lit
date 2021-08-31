@@ -46,7 +46,7 @@
     "parse5": "^6.0.0",
     "source-map-support": "^0.5.19",
     "typescript": "^4.3.5",
-    "xmldom": "^0.5.0"
+    "@xmldom/xmldom": "^0.7.0"
   },
   "devDependencies": {
     "@lit/ts-transformers": "^0.0.1",
@@ -58,7 +58,6 @@
     "@types/node": "^14.0.1",
     "@types/parse5": "^6.0.0",
     "@types/prettier": "^2.0.1",
-    "@types/xmldom": "^0.1.29",
     "diff": "^5.0.0",
     "dir-compare": "^3.1.5",
     "prettier": "^2.3.2",

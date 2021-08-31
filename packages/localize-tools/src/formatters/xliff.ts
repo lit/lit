@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as xmldom from 'xmldom';
+import * as xmldom from '@xmldom/xmldom';
 import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import type {Config} from '../types/config.js';

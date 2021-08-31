@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as xmldom from 'xmldom';
+import * as xmldom from '@xmldom/xmldom';
 import glob from 'glob';
 import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
