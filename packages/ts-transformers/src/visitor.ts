@@ -18,6 +18,7 @@ export type Visitor =
 export interface ClassDecoratorVisitor {
   kind: 'classDecorator';
   decoratorName: string;
+  importBindingReplacement?: string;
 
   visit(classContext: LitClassContext, decorator: ts.Decorator): void;
 }
@@ -26,6 +27,7 @@ export interface ClassDecoratorVisitor {
 export interface MemberDecoratorVisitor {
   kind: 'memberDecorator';
   decoratorName: string;
+  importBindingReplacement?: string;
 
   visit(
     classContext: LitClassContext,

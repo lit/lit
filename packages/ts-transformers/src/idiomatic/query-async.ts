@@ -52,7 +52,7 @@ export class QueryAsyncVisitor implements MemberDecoratorVisitor {
       return;
     }
     const selector = arg0.text;
-    litClassContext.litFileContext.nodesToRemove.add(property);
+    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
     litClassContext.classMembers.push(
       this._createQueryAsyncGetter({name, selector})
     );

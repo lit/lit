@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as xmldom from 'xmldom';
+import * as xmldom from '@xmldom/xmldom';
 import glob from 'glob';
 import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
@@ -150,7 +150,7 @@ class XlbFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLB directory: ${parentDir}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
     try {
@@ -159,7 +159,7 @@ class XlbFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLB file: ${filePath}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
   }

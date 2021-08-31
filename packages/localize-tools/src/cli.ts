@@ -62,9 +62,9 @@ export async function runAndLog(argv: string[]): Promise<number> {
       console.error(err.message);
     } else {
       console.error('Unexpected error\n');
-      console.error(err.message);
+      console.error((err as Error).message);
       console.error();
-      console.error(err.stack);
+      console.error((err as Error).stack);
     }
     console.log();
     console.log(`Version: ${await version()}`);

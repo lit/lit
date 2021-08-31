@@ -28,6 +28,12 @@ export class LitClassContext {
   readonly classMembers: ts.ClassElement[] = [];
 
   /**
+   * Additional statements to append to the class constructor body. A new
+   * constructor will be created if one doesn't already exist.
+   */
+  readonly extraConstructorStatements: ts.ExpressionStatement[] = [];
+
+  /**
    * Add a new property to the `static get properties` block of this element.
    */
   readonly reactiveProperties: Array<{
