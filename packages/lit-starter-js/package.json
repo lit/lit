@@ -55,7 +55,7 @@
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "babel-eslint": "^10.1.0",
     "deepmerge": "^4.2.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.32.0",
     "lit-analyzer": "^1.1.10",
     "mocha": "^9.1.1",
     "prettier": "^2.3.2",
