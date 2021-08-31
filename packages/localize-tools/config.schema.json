@@ -156,21 +156,13 @@
         },
         "sourceLocale": {
             "description": "Required locale code that messages in the source code are written in.",
-            "type": [
-                {
-                    "kind": "text",
-                    "text": "string"
-                }
-            ]
+            "type": "string"
         },
         "targetLocales": {
             "description": "Required locale codes that messages will be localized to.",
-            "items": [
-                {
-                    "kind": "text",
-                    "text": ".type string"
-                }
-            ],
+            "items": {
+                "type": "string"
+            },
             "type": "array"
         },
         "tsConfig": {
