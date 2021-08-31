@@ -95,17 +95,28 @@ test('@customElement', () => {
   checkTransform(input, expected);
 });
 
-test('@property', () => {
+test('@property (no existing constructor)', () => {
   const input = `
   import {LitElement} from 'lit';
   import {property} from 'lit/decorators.js';
 
   class MyElement extends LitElement {
     @property()
-    str = "foo";
+    reactiveInitializedStr = "foo";
+
+    nonReactiveInitialized = 123;
+
+    @property({type: Object})
+    reactiveUninitializedObj;
 
     @property({type: Number, attribute: false})
-    num = 42;
+    reactiveInitializedNum = 42;
+
+    nonReactiveUninitialized: string;
+
+    @property({type: Boolean, reflect: true})
+    reactiveInitializedBool = false;
+
   }
   `;
 
@@ -115,15 +126,78 @@ test('@property', () => {
   class MyElement extends LitElement {
     static get properties() {
       return {
-        str: {},
-        num: {type: Number, attribute: false},
+        reactiveInitializedStr: {},
+        reactiveUninitializedObj: {type: Object},
+        reactiveInitializedNum: {type: Number, attribute: false},
+        reactiveInitializedBool: {type: Boolean, reflect: true},
       };
     }
 
     constructor() {
       super(...arguments);
-      this.str = "foo";
-      this.num = 42;
+      this.reactiveInitializedStr = "foo";
+      this.reactiveInitializedNum = 42;
+      this.reactiveInitializedBool = false;
+    }
+
+    nonReactiveInitialized = 123;
+
+    nonReactiveUninitialized;
+  }
+  `;
+  checkTransform(input, expected);
+});
+
+test('@property (existing constructor)', () => {
+  const input = `
+  import {LitElement} from 'lit';
+  import {property} from 'lit/decorators.js';
+
+  class MyElement extends LitElement {
+    @property()
+    reactiveInitializedStr = "foo";
+
+    nonReactiveInitialized = 123;
+
+    @property({type: Object})
+    reactiveUninitializedObj;
+
+    @property({type: Number, attribute: false})
+    reactiveInitializedNum = 42;
+
+    nonReactiveUninitialized: string;
+
+    @property({type: Boolean, reflect: true})
+    reactiveInitializedBool = false;
+
+    constructor() {
+      super();
+    }
+  }
+  `;
+
+  const expected = `
+  import {LitElement} from 'lit';
+
+  class MyElement extends LitElement {
+    static get properties() {
+      return {
+        reactiveInitializedStr: {},
+        reactiveUninitializedObj: {type: Object},
+        reactiveInitializedNum: {type: Number, attribute: false},
+        reactiveInitializedBool: {type: Boolean, reflect: true},
+      };
+    }
+
+    nonReactiveInitialized = 123;
+
+    nonReactiveUninitialized;
+
+    constructor() {
+      super();
+      this.reactiveInitializedStr = "foo";
+      this.reactiveInitializedNum = 42;
+      this.reactiveInitializedBool = false;
     }
   }
   `;
