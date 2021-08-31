@@ -34,7 +34,7 @@
   "devDependencies": {
     "@koa/router": "^8.0.8",
     "@open-wc/testing": "^3.0.0-next.1",
-    "@open-wc/testing-karma": "^3.3.10",
+    "@open-wc/testing-karma": "^4.0.9",
     "@types/chai": "^4.2.11",
     "@types/command-line-args": "^5.0.0",
     "@types/escape-html": "^1.0.0",
