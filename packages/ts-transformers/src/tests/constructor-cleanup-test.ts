@@ -21,8 +21,8 @@ const cache = new CompilerHostCache();
 function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ESNext;
-  // Don't emit standard class fields. They aren't compatible with Lit. Defaults
-  // to true when target = ESNext.
+  // Disable standard class field emit so that we see synthetic constructors
+  // from the built-in legacy class field transform.
   options.useDefineForClassFields = false;
   options.module = ts.ModuleKind.ESNext;
   // Don't automatically load typings from nodes_modules/@types, we're not using

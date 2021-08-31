@@ -126,9 +126,9 @@ export class LitTransformer {
   };
 
   visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
-    if (this._litFileContext.nodesToRemove.has(node)) {
-      // A node that some previous visitor has requested to remove from the AST.
-      return undefined;
+    if (this._litFileContext.nodeReplacements.has(node)) {
+      // A node that some previous visitor has requested to be replaced.
+      return this._litFileContext.nodeReplacements.get(node);
     }
     for (const visitor of this._genericVisitors) {
       node = visitor.visit(this._litFileContext, node);
@@ -203,7 +203,7 @@ export class LitTransformer {
         // Assume if there's a visitor for a decorator, it's always going to
         // remove any uses of that decorator, and hence we should remove the
         // import too.
-        this._litFileContext.nodesToRemove.add(importSpecifier);
+        this._litFileContext.nodeReplacements.set(importSpecifier, undefined);
         traversalNeeded = true;
       }
     }
@@ -275,7 +275,7 @@ export class LitTransformer {
     if (litClassContext.reactiveProperties.length > 0) {
       const existing = this._findExistingStaticProperties(class_);
       if (existing !== undefined) {
-        this._litFileContext.nodesToRemove.add(existing.getter);
+        this._litFileContext.nodeReplacements.set(existing.getter, undefined);
       }
       litClassContext.classMembers.unshift(
         this._createStaticProperties(
@@ -284,6 +284,8 @@ export class LitTransformer {
         )
       );
     }
+
+    this._addExtraConstructorStatements(litClassContext);
 
     for (const visitor of litClassContext.additionalClassVisitors) {
       this._registerVisitor(visitor);
@@ -394,6 +396,51 @@ export class LitTransformer {
       return undefined;
     }
     return {getter, properties: objectLiteral.properties};
+  }
+
+  /**
+   * Create or modify a class constructor to add additional constructor
+   * statements from any of our transforms.
+   */
+  private _addExtraConstructorStatements(context: LitClassContext) {
+    if (context.extraConstructorStatements.length === 0) {
+      return;
+    }
+    const existingCtor = context.class.members.find(
+      ts.isConstructorDeclaration
+    );
+    const f = this._context.factory;
+    if (existingCtor === undefined) {
+      const newCtor = f.createConstructorDeclaration(
+        undefined,
+        undefined,
+        [],
+        f.createBlock(
+          [
+            f.createExpressionStatement(
+              f.createCallExpression(f.createSuper(), undefined, [
+                f.createSpreadElement(f.createIdentifier('arguments')),
+              ])
+            ),
+            ...context.extraConstructorStatements,
+          ],
+          true
+        )
+      );
+      context.classMembers.push(newCtor);
+    } else {
+      if (existingCtor.body === undefined) {
+        throw new Error('Unexpected error: constructor has no body');
+      }
+      const newCtorBody = f.createBlock([
+        ...existingCtor.body.statements,
+        ...context.extraConstructorStatements,
+      ]);
+      context.litFileContext.nodeReplacements.set(
+        existingCtor.body,
+        newCtorBody
+      );
+    }
   }
 }
 
