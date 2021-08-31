@@ -23,7 +23,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.0",
     "@changesets/cli": "^2.16.0",
-    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-virtual": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^4.3.0",

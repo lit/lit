@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@lit/localize-tools": "^0.3.0",
-    "@rollup/plugin-node-resolve": "^11.2.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-typescript": "^8.2.0",
     "@web/dev-server": "^0.1.10",
     "rollup": "^2.41.1",
