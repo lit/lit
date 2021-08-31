@@ -50,7 +50,7 @@
     "@types/mocha": "^7.0.2",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
-    "@web/dev-server": "0.0.29",
+    "@web/dev-server": "0.1.22",
     "@web/dev-server-legacy": "^0.1.4",
     "@web/dev-server-rollup": "^0.2.7",
     "@web/test-runner": "^0.12.15",
