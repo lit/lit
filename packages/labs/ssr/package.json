@@ -45,7 +45,7 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.7.8",
     "@types/node-fetch": "^2.5.7",
-    "@types/parse5": "^5.0.0",
+    "@types/parse5": "^6.0.1",
     "@types/resolve": "^1.14.0",
     "@web/test-runner": "^0.13.16",
     "chai": "^4.2.0",
@@ -67,7 +67,7 @@
     "lit-element": "^3.0.0-rc.1",
     "lit-html": "^2.0.0-rc.4",
     "node-fetch": "^2.6.0",
-    "parse5": "^5.1.0",
+    "parse5": "^6.0.1",
     "resolve": "^1.10.1"
   },
   "engines": {
