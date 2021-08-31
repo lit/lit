@@ -13,14 +13,7 @@
  */
 
 // types only
-import {
-  DefaultTreeNode,
-  DefaultTreeElement,
-  Node,
-  DefaultTreeCommentNode,
-  DefaultTreeDocumentFragment,
-  DefaultTreeParentNode,
-} from 'parse5';
+import {Node, Element, CommentNode, DocumentFragment, ParentNode} from 'parse5';
 import * as parse5lib from 'parse5';
 
 import {createRequire} from 'module';
@@ -42,9 +35,9 @@ export function filter(iter: any, predicate: any, matches: any[] = []) {
 
 export function getAttr(ast: Node, name: string) {
   if (ast.hasOwnProperty('attrs')) {
-    const attr = (<{name: string; value: any}[]>(
-      (<DefaultTreeElement>ast).attrs
-    )).find(({name: attrName}) => attrName === name);
+    const attr = (<{name: string; value: any}[]>(<Element>ast).attrs).find(
+      ({name: attrName}) => attrName === name
+    );
     if (attr) {
       return attr.value;
     }
@@ -116,40 +109,32 @@ export function insertNode(
   }
 }
 
-export function isElement(node: DefaultTreeNode): node is DefaultTreeElement {
-  return (node as DefaultTreeElement).tagName !== undefined;
+export function isElement(node: Node): node is Element {
+  return (node as Element).tagName !== undefined;
 }
 
-export function isCommentNode(
-  node: DefaultTreeNode
-): node is DefaultTreeCommentNode {
+export function isCommentNode(node: Node): node is CommentNode {
   return node.nodeName === '#comment';
 }
 
-export function isDocumentFragment(
-  node: DefaultTreeNode
-): node is DefaultTreeDocumentFragment {
+export function isDocumentFragment(node: Node): node is DocumentFragment {
   return node.nodeName === '#document-fragment';
 }
 
-export function isTextNode(
-  node: DefaultTreeNode
-): node is parse5lib.DefaultTreeTextNode {
+export function isTextNode(node: Node): node is parse5lib.TextNode {
   return node.nodeName === '#text';
 }
 
-export type GetChildNodes = (
-  node: DefaultTreeParentNode
-) => Array<DefaultTreeNode> | undefined;
-export const defaultChildNodes: GetChildNodes = (node: DefaultTreeParentNode) =>
+export type GetChildNodes = (node: ParentNode) => Array<Node> | undefined;
+export const defaultChildNodes: GetChildNodes = (node: ParentNode) =>
   node.childNodes;
 
 export function* depthFirst(
-  node: DefaultTreeNode | DefaultTreeDocumentFragment,
+  node: Node | DocumentFragment,
   getChildNodes: GetChildNodes = defaultChildNodes
-): Iterable<DefaultTreeNode> {
+): Iterable<Node> {
   yield node;
-  const childNodes = getChildNodes(node as DefaultTreeParentNode);
+  const childNodes = getChildNodes(node as ParentNode);
   if (childNodes === undefined) {
     return;
   }
@@ -229,22 +214,12 @@ export function newTextNode(value: any) {
 }
 
 export interface Visitor {
-  pre?: (
-    node: DefaultTreeNode,
-    parent?: DefaultTreeParentNode
-  ) => boolean | void;
-  post?: (
-    node: DefaultTreeNode,
-    parent?: DefaultTreeParentNode
-  ) => boolean | void;
+  pre?: (node: Node, parent?: ParentNode) => boolean | void;
+  post?: (node: Node, parent?: ParentNode) => boolean | void;
   getChildNodes?: GetChildNodes;
 }
 
-export const traverse = (
-  node: DefaultTreeNode,
-  visitor: Visitor,
-  parent?: DefaultTreeParentNode
-) => {
+export const traverse = (node: Node, visitor: Visitor, parent?: ParentNode) => {
   const getChildNodes: GetChildNodes =
     visitor.getChildNodes ?? defaultChildNodes;
   let visitChildren: boolean | void = true;
@@ -254,10 +229,10 @@ export const traverse = (
   }
 
   if (visitChildren !== false) {
-    const childNodes = getChildNodes(node as DefaultTreeParentNode);
+    const childNodes = getChildNodes(node as ParentNode);
     if (childNodes !== undefined) {
       for (const child of childNodes) {
-        traverse(child, visitor, node as DefaultTreeParentNode);
+        traverse(child, visitor, node as ParentNode);
       }
     }
   }
