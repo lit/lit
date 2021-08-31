@@ -285,6 +285,8 @@ export class LitTransformer {
       );
     }
 
+    this._addExtraConstructorStatements(litClassContext);
+
     for (const visitor of litClassContext.additionalClassVisitors) {
       this._registerVisitor(visitor);
     }
@@ -394,6 +396,51 @@ export class LitTransformer {
       return undefined;
     }
     return {getter, properties: objectLiteral.properties};
+  }
+
+  /**
+   * Create or modify a class constructor to add additional constructor
+   * statements from any of our transforms.
+   */
+  private _addExtraConstructorStatements(context: LitClassContext) {
+    if (context.extraConstructorStatements.length === 0) {
+      return;
+    }
+    const existingCtor = context.class.members.find(
+      ts.isConstructorDeclaration
+    );
+    const f = this._context.factory;
+    if (existingCtor === undefined) {
+      const newCtor = f.createConstructorDeclaration(
+        undefined,
+        undefined,
+        [],
+        f.createBlock(
+          [
+            f.createExpressionStatement(
+              f.createCallExpression(f.createSuper(), undefined, [
+                f.createSpreadElement(f.createIdentifier('arguments')),
+              ])
+            ),
+            ...context.extraConstructorStatements,
+          ],
+          true
+        )
+      );
+      context.classMembers.push(newCtor);
+    } else {
+      if (existingCtor.body === undefined) {
+        throw new Error('Unexpected error: constructor has no body');
+      }
+      const newCtorBody = f.createBlock([
+        ...existingCtor.body.statements,
+        ...context.extraConstructorStatements,
+      ]);
+      context.litFileContext.nodeReplacements.set(
+        existingCtor.body,
+        newCtorBody
+      );
+    }
   }
 }
 
