@@ -53,7 +53,7 @@
     "@web/dev-server": "0.0.29",
     "@web/dev-server-legacy": "^0.1.4",
     "@web/dev-server-rollup": "^0.2.7",
-    "@web/test-runner": "^0.12.15",
+    "@web/test-runner": "^0.13.16",
     "@web/test-runner-mocha": "^0.3.5",
     "@web/test-runner-playwright": "^0.8.4",
     "@webcomponents/webcomponentsjs": "^2.6.0",
