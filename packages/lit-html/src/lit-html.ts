@@ -438,12 +438,16 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   }
 }
 
-const walker = d.createTreeWalker(
-  d,
-  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
-  null,
-  false
-);
+const walker = (
+  d.createTreeWalker as (
+    root: Node,
+    whatToShow: number,
+    filter: NodeFilter | null,
+    // All 4 parameters are required for IE11, but TypeScript 4.4 removed the
+    // entityReferenceExpansion parameter. This is the previous signature.
+    entityReferenceExpansion?: boolean
+  ) => TreeWalker
+)(d, 129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */, null, false);
 
 let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 
@@ -1068,7 +1072,10 @@ class ChildPart implements Disconnectable {
   get parentNode(): Node {
     let parentNode: Node = wrap(this._$startNode).parentNode!;
     const parent = this._$parent;
-    if (parent !== undefined && parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */) {
+    if (
+      parent !== undefined &&
+      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+    ) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
       // still in the cloned fragment during initial render; if so, get the real
       // parentNode the part will be committed into by asking the parent.

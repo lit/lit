@@ -23,7 +23,7 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
     str = fs.readFileSync(configPath, 'utf8');
   } catch (e) {
     throw new KnownError(
-      `Could not read config file from ${configPath}:\n${e.message}`
+      `Could not read config file from ${configPath}:\n` + (e as Error).message
     );
   }
 
@@ -32,7 +32,8 @@ export function readConfigFileAndWriteSchema(configPath: string): Config {
     parsed = JSON.parse(str);
   } catch (e) {
     throw new KnownError(
-      `Invalid JSON found in config file ${configPath}:\n${e.message}`
+      `Invalid JSON found in config file ${configPath}:\n` +
+        (e as Error).message
     );
   }
 

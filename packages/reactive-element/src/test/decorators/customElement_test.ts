@@ -25,6 +25,6 @@ suite('@customElement', () => {
       }
     }
     const DefinedC = customElements.get(tagName);
-    assert.strictEqual(DefinedC, C1);
+    assert.strictEqual(DefinedC, C1 as typeof DefinedC);
   });
 });
