@@ -52,8 +52,23 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     }
     const options = this._augmentOptions(arg0);
     const name = property.name.text;
-    litClassContext.litFileContext.nodeReplacements.set(decorator, undefined);
+    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
     litClassContext.reactiveProperties.push({name, options});
+
+    if (property.initializer !== undefined) {
+      const f = this._factory;
+      const initializer = f.createExpressionStatement(
+        f.createBinaryExpression(
+          f.createPropertyAccessExpression(
+            f.createThis(),
+            f.createIdentifier(name)
+          ),
+          f.createToken(ts.SyntaxKind.EqualsToken),
+          property.initializer
+        )
+      );
+      litClassContext.extraConstructorStatements.push(initializer);
+    }
   }
 
   protected _augmentOptions(
