@@ -25,9 +25,12 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  */
 export class PropertyVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
-  readonly decoratorName = 'property';
+  decoratorName = 'property';
+  protected readonly _factory: ts.NodeFactory;
 
-  constructor(_context: ts.TransformationContext) {}
+  constructor({factory}: ts.TransformationContext) {
+    this._factory = factory;
+  }
 
   visit(
     litClassContext: LitClassContext,
@@ -37,18 +40,25 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     if (!ts.isPropertyDeclaration(property)) {
       return;
     }
-    if (!ts.isCallExpression(decorator.expression)) {
-      return;
-    }
-    const [options] = decorator.expression.arguments;
-    if (!(options === undefined || ts.isObjectLiteralExpression(options))) {
-      return;
-    }
     if (!ts.isIdentifier(property.name)) {
       return;
     }
+    if (!ts.isCallExpression(decorator.expression)) {
+      return;
+    }
+    const [arg0] = decorator.expression.arguments;
+    if (!(arg0 === undefined || ts.isObjectLiteralExpression(arg0))) {
+      return;
+    }
+    const options = this._augmentOptions(arg0);
     const name = property.name.text;
     litClassContext.litFileContext.nodeReplacements.set(decorator, undefined);
     litClassContext.reactiveProperties.push({name, options});
+  }
+
+  protected _augmentOptions(
+    options: ts.ObjectLiteralExpression
+  ): ts.ObjectLiteralExpression {
+    return options;
   }
 }

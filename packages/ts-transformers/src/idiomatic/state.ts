@@ -5,9 +5,7 @@
  */
 
 import * as ts from 'typescript';
-
-import type {LitClassContext} from '../lit-class-context.js';
-import type {MemberDecoratorVisitor} from '../visitor.js';
+import {PropertyVisitor} from './property.js';
 
 /**
  * Transform:
@@ -23,42 +21,13 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *     }
  *   }
  */
-export class StateVisitor implements MemberDecoratorVisitor {
+export class StateVisitor extends PropertyVisitor {
   readonly kind = 'memberDecorator';
   readonly decoratorName = 'state';
 
-  private readonly _factory: ts.NodeFactory;
-
-  constructor({factory}: ts.TransformationContext) {
-    this._factory = factory;
-  }
-
-  visit(
-    litClassContext: LitClassContext,
-    property: ts.ClassElement,
-    decorator: ts.Decorator
-  ) {
-    if (!ts.isPropertyDeclaration(property)) {
-      return;
-    }
-    if (!ts.isCallExpression(decorator.expression)) {
-      return;
-    }
-    const [arg0] = decorator.expression.arguments;
-    if (arg0 !== undefined && !ts.isObjectLiteralExpression(arg0)) {
-      return;
-    }
-    if (!ts.isIdentifier(property.name)) {
-      return;
-    }
-
-    const name = property.name.text;
-    const options = this._createOptions(arg0);
-    litClassContext.litFileContext.nodesToRemove.add(decorator);
-    litClassContext.reactiveProperties.push({name, options});
-  }
-
-  private _createOptions(options: ts.ObjectLiteralExpression) {
+  protected _augmentOptions(
+    options: ts.ObjectLiteralExpression
+  ): ts.ObjectLiteralExpression {
     const f = this._factory;
     return f.createObjectLiteralExpression([
       ...(options !== undefined
