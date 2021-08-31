@@ -21,6 +21,9 @@ const cache = new CompilerHostCache();
 function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ESNext;
+  // Don't emit standard class fields. They aren't compatible with Lit. Defaults
+  // to true when target = ESNext.
+  options.useDefineForClassFields = false;
   options.module = ts.ModuleKind.ESNext;
   // Don't automatically load typings from nodes_modules/@types, we're not using
   // them here, so it's a waste of time.
@@ -120,9 +123,9 @@ test('modified existing constructor is restored to original position', () => {
   const expected = `
     /* Class description */
     class MyClass {
-      a = 0;
       foo() { return 0; }
       constructor() {
+        this.a = 0;
         console.log(0);
       }
       static bar() { return 0; }
@@ -147,9 +150,9 @@ test('modified existing constructor was originally at the top', () => {
     /* Class description */
     class MyClass {
       constructor() {
+        this.a = 0;
         console.log(0);
       }
-      a = 0;
       foo() { return 0; }
       static bar() { return 0; }
     }
@@ -176,10 +179,13 @@ test('fully synthetic constructor moves below last static', () => {
     class MyClass {
       i1() { return 0; }
       static s1() { return 0; }
-      a = 0;
       static s2() { return 0; }
       i2() { return 0; }
       static s3() { return 0; }
+      //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
+      constructor() {
+        this.a = 0;
+      }
       i3() { return 0; }
       i4() { return 0; }
     }
@@ -201,8 +207,10 @@ test('fully synthetic constructor stays at top if there are no statics', () => {
   const expected = `
     /* Class description */
     class MyClass {
+      constructor() {
+        this.a = 0;
+      }
       i1() { return 0; }
-      a = 0;
       i2() { return 0; }
       i3() { return 0; }
       i4() { return 0; }
