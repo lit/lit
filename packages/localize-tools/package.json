@@ -38,7 +38,7 @@
   ],
   "dependencies": {
     "@lit/localize": "^0.10.3",
-    "fs-extra": "^9.0.0",
+    "fs-extra": "^10.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.4.0",
     "lit": "^2.0.0-rc.2",
