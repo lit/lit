@@ -1068,7 +1068,10 @@ class ChildPart implements Disconnectable {
   get parentNode(): Node {
     let parentNode: Node = wrap(this._$startNode).parentNode!;
     const parent = this._$parent;
-    if (parent !== undefined && parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */) {
+    if (
+      parent !== undefined &&
+      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+    ) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
       // still in the cloned fragment during initial render; if so, get the real
       // parentNode the part will be committed into by asking the parent.
