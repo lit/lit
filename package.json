@@ -24,7 +24,7 @@
     "@changesets/changelog-github": "^0.4.0",
     "@changesets/cli": "^2.16.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
-    "@rollup/plugin-replace": "^2.3.3",
+    "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-virtual": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
