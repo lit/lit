@@ -236,6 +236,15 @@ const doubleQuoteAttrEndRegex = /"/g;
  */
 const rawTextElement = /^(?:script|style|textarea)$/i;
 
+/**
+ * List of elements that do not support internal parts. This is needed for
+ * issuing dev mode warnings.
+ */
+let unsupportedInternalPartsElement: RegExp;
+if (DEV_MODE) {
+  unsupportedInternalPartsElement = /^(?:textarea|template)$/i;
+}
+
 /** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
@@ -501,6 +510,10 @@ const getTemplateHtml = (
   // regexes
   let regex = textEndRegex;
 
+  // For issuing dev mode warnings for tags that cannot contain internal parts.
+  let warnPartsInsideTag: string | null;
+  let warnPartsInsideEndRegex: RegExp | null;
+
   for (let i = 0; i < l; i++) {
     const s = strings[i];
     // The index of the end of the last attribute name. When this is
@@ -512,10 +525,18 @@ const getTemplateHtml = (
     let attrName: string | undefined;
     let lastIndex = 0;
     let match!: RegExpExecArray | null;
-
     // The conditions in this loop handle the current parse state, and the
     // assignments to the `regex` variable are the state transitions.
     while (lastIndex < s.length) {
+      // If we are moving outside of a tag that should not contains
+      // internal parts, then reset that warning state.
+      if (
+        DEV_MODE &&
+        warnPartsInsideEndRegex! &&
+        s.match(warnPartsInsideEndRegex!)
+      ) {
+        warnPartsInsideTag = warnPartsInsideEndRegex = null;
+      }
       // Make sure we start searching from where we previously left off
       regex.lastIndex = lastIndex;
       match = regex.exec(s);
@@ -535,6 +556,16 @@ const getTemplateHtml = (
             // this regex at the end of the tag.
             rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
           }
+          // If we're staring an element that should not contain internal
+          // parts, capture the tag we're inside.
+          // However, since these elements do allow attribute parts, we don't
+          // turn on the warning until we move into this element's children.
+          if (
+            DEV_MODE &&
+            unsupportedInternalPartsElement!.test(match[TAG_NAME])
+          ) {
+            warnPartsInsideTag = match[TAG_NAME];
+          }
           regex = tagEndRegex;
         } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
           if (DEV_MODE) {
@@ -547,6 +578,15 @@ const getTemplateHtml = (
         }
       } else if (regex === tagEndRegex) {
         if (match[ENTIRE_MATCH] === '>') {
+          // If we're entering a tag which should not contain internal parts,
+          // setup the regex for leaving the tag. Note, the existence of the
+          // regex indicates that the warning should be issued.
+          if (DEV_MODE && warnPartsInsideTag!) {
+            warnPartsInsideEndRegex = new RegExp(
+              `</${warnPartsInsideTag}`,
+              'g'
+            );
+          }
           // End of a tag. If we had started a raw-text element, use that
           // regex
           regex = rawTextEndRegex ?? textEndRegex;
@@ -592,6 +632,15 @@ const getTemplateHtml = (
           regex === doubleQuoteAttrEndRegex,
         'unexpected parse state B'
       );
+
+      // Issue warning if we're currently inside a part which should not
+      // contain internal parts (indicated by existence of the regex that
+      // can move out of this state).
+      if (warnPartsInsideEndRegex!) {
+        throw new Error(
+          `Parts are not supported inside the \`${warnPartsInsideTag!}\` tag.`
+        );
+      }
     }
 
     // We have four cases:
@@ -1068,7 +1117,10 @@ class ChildPart implements Disconnectable {
   get parentNode(): Node {
     let parentNode: Node = wrap(this._$startNode).parentNode!;
     const parent = this._$parent;
-    if (parent !== undefined && parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */) {
+    if (
+      parent !== undefined &&
+      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+    ) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
       // still in the cloned fragment during initial render; if so, get the real
       // parentNode the part will be committed into by asking the parent.

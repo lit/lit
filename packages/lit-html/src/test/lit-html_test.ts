@@ -2015,6 +2015,86 @@ suite('lit-html', () => {
           );
         });
       });
+
+      test('Parts inside template throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(html`<template>${'test'}</template>`, container);
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(html`<div><template>${'test'}</template></div>`, container);
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<template id=${'test'}>
+          <div>Static content is ok</div>
+            </template>`,
+          container
+        );
+      });
+
+      test('Parts inside textarea throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(html`<textarea>${'test'}</textarea>`, container);
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(html`<div><textarea>${'test'}</textarea></div>`, container);
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<textarea>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </textarea>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<textarea>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </textarea>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<textarea id=${'test'}>
+          <div>Static content is ok</div>
+            </textarea>`,
+          container
+        );
+      });
     }
 
     test('directives have access to renderOptions', () => {
