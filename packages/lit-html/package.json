@@ -80,7 +80,7 @@
     "/directives/"
   ],
   "dependencies": {
-    "@types/trusted-types": "^1.0.1"
+    "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
