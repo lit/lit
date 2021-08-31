@@ -25,9 +25,6 @@ const cache = new CompilerHostCache();
 function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ESNext;
-  // Don't emit standard class fields. They aren't compatible with Lit. Defaults
-  // to true when target = ESNext.
-  options.useDefineForClassFields = false;
   options.module = ts.ModuleKind.ESNext;
   options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
   options.importHelpers = true;
@@ -816,7 +813,9 @@ test('ignore non-lit method decorator', () => {
   import {LitElement} from 'lit';
   import {property} from './not-lit.js';
 
-  class MyElement extends LitElement {};
+  class MyElement extends LitElement {
+    foo;
+  };
   __decorate([property()], MyElement.prototype, "foo", void 0);
   `;
   checkTransform(input, expected);
