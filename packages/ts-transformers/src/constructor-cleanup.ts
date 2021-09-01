@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 import {BLANK_LINE_PLACEHOLDER_COMMENT} from './preserve-blank-lines.js';
-import {getHeritage} from './util.js';
+import {getHeritage, isStatic} from './util.js';
 
 /**
  * TypeScript transformer which improves the readability of the default
@@ -98,11 +98,7 @@ const cleanupClassConstructor = (
     // common style.
     newCtorIdx = 0;
     for (let i = class_.members.length - 1; i >= 0; i--) {
-      const isStatic =
-        class_.members[i].modifiers?.find(
-          (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
-        ) !== undefined;
-      if (isStatic) {
+      if (isStatic(class_.members[i])) {
         newCtorIdx = ctorIdx > i ? i + 1 : i;
         break;
       }
