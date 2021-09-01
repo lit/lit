@@ -64,7 +64,7 @@ function checkTransform(
     formattedExpected = expectedJs;
     formattedActual = unformattedActual;
   }
-  assert.is(formattedActual, formattedExpected);
+  assert.is(formattedActual, formattedExpected, formattedActual);
   assert.equal(
     result.diagnostics.map((diagnostic) =>
       ts.formatDiagnostic(diagnostic, result.host)
@@ -79,6 +79,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
     import {customElement} from 'lit/decorators.js';
 
+    /**
+     * My class.
+     */
     @customElement('my-element')
     class MyElement extends LitElement {
     }
@@ -87,6 +90,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     const expected = `
     import {LitElement} from 'lit';
 
+    /**
+     * My class.
+     */
     class MyElement extends LitElement {
     }
     customElements.define('my-element', MyElement);
@@ -100,6 +106,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {property} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      /**
+       * Property description.
+       */
       @property()
       reactiveInitializedStr = "foo";
 
@@ -116,7 +125,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
     }
-  `;
+    `;
 
     let expected;
     if (options.useDefineForClassFields) {
@@ -133,6 +142,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
         constructor() {
           super();
+          /**
+           * Property description.
+           */
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
@@ -150,7 +162,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       class MyElement extends LitElement {
         constructor() {
           super();
+
           this.nonReactiveInitialized = 123;
+          /**
+           * Property description.
+           */
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
@@ -227,6 +243,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       class MyElement extends LitElement {
         constructor() {
           super();
+
           this.nonReactiveInitialized = 123;
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
@@ -250,9 +267,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {property} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
       static properties = {
         str: {},
       };
+
+      unrelated2() {}
 
       @property({type: Number})
       num = 42;
@@ -269,10 +290,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
+        unrelated1() {}
+
         static properties = {
           str: {},
           num: {type: Number},
         };
+
+        unrelated2() {}
 
         constructor() {
           super();
@@ -285,11 +310,16 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
+        unrelated1() {}
+
+        unrelated2() {}
+
         constructor() {
           super();
           this.num = 42;
         }
       }
+
       MyElement.properties = {
         str: {},
         num: {type: Number},
@@ -305,11 +335,15 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {property} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
       static get properties() {
         return {
           str: {},
         };
       }
+
+      unrelated2() {}
 
       @property({type: Number})
       num = 42;
@@ -324,12 +358,16 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
       static get properties() {
         return {
           str: {},
           num: {type: Number},
         };
       }
+
+      unrelated2() {}
 
       constructor() {
         super();
@@ -346,9 +384,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {state} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      /* num comment */
       @state()
       num = 42;
 
+      // num2 comment
       @state({hasChanged: () => false})
       num2 = 24;
     }
@@ -367,7 +407,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
         constructor() {
           super();
+          /* num comment */
           this.num = 42;
+          // num2 comment
           this.num2 = 24;
         }
       }
@@ -379,7 +421,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       class MyElement extends LitElement {
         constructor() {
           super();
+          /* num comment */
           this.num = 42;
+          // num2 comment
           this.num2 = 24;
         }
       }
@@ -398,8 +442,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {query} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // div comment
       @query('#myDiv')
       div?: HTMLDivElement;
+
+      unrelated2() {}
     }
     `;
 
@@ -407,9 +456,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // div comment
       get div() {
         return this.renderRoot?.querySelector('#myDiv') ?? null;
       }
+
+      unrelated2() {}
     }
     `;
     checkTransform(input, expected, options);
@@ -421,6 +475,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {query} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      // span comment
       @query('#mySpan', true)
       span?: HTMLSpanElement;
     }
@@ -430,6 +485,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      // span comment
       get span() {
         return this.__span ??= this.renderRoot?.querySelector('#mySpan') ?? null;
       }
@@ -444,8 +500,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAll} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // inputs comment
       @queryAll('.myInput')
       inputs: NodeListOf<HTMLInputElement>;
+
+      unrelated2() {}
     }
     `;
 
@@ -453,9 +514,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // inputs comment
       get inputs() {
         return this.renderRoot?.querySelectorAll('.myInput') ?? [];
       }
+
+      unrelated2() {}
     }
     `;
     checkTransform(input, expected, options);
@@ -467,8 +533,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAsync} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // button comment
       @queryAsync('#myButton')
       button: Promise<HTMLElement>;
+
+      unrelated2() {}
     }
     `;
 
@@ -476,10 +547,15 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // button comment
       async get button() {
         await this.updateComplete;
         return this.renderRoot?.querySelector('#myButton');
       }
+
+      unrelated2() {}
     }
     `;
     checkTransform(input, expected, options);
@@ -491,8 +567,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAssignedNodes} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // listItems comment
       @queryAssignedNodes()
       listItems: NodeListOf<HTMLElement>;
+
+      unrelated2() {}
     }
     `;
 
@@ -500,11 +581,16 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector('slot:not([name])')
-          ?.assignedNodes() ?? [];
+        ?.querySelector('slot:not([name])')
+        ?.assignedNodes() ?? [];
       }
+
+      unrelated2() {}
     }
     `;
     checkTransform(input, expected, options);
@@ -516,6 +602,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAssignedNodes} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      // listItems comment
       @queryAssignedNodes('list')
       listItems: NodeListOf<HTMLElement>;
     }
@@ -525,6 +612,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      // listItems comment
       get listItems() {
         return this.renderRoot
           ?.querySelector('slot[name=list]')
@@ -541,6 +629,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAssignedNodes} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      // listItems comment
       @queryAssignedNodes('list', true)
       listItems: NodeListOf<HTMLElement>;
     }
@@ -550,6 +639,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      // listItems comment
       get listItems() {
         return this.renderRoot
           ?.querySelector('slot[name=list]')
@@ -566,6 +656,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAssignedNodes} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      // listItems comment
       @queryAssignedNodes('list', false, '.item')
       listItems: NodeListOf<HTMLElement>;
     }
@@ -575,6 +666,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     class MyElement extends LitElement {
+      // listItems comment
       get listItems() {
         return this.renderRoot
           ?.querySelector('slot[name=list]')
@@ -595,14 +687,19 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement, html} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // _onClick comment
       @eventOptions({capture: true, once: false, passive: true})
       private _onClick(event) {
         console.log('click', event.target);
       }
 
+      unrelated2() {}
+
       render() {
         return html\`
-          <button @click=\${this._onClick}></button>
+        <button @click=\${this._onClick}></button>
         \`;
       }
     }
@@ -612,9 +709,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement, html} from 'lit';
 
     class MyElement extends LitElement {
+      unrelated1() {}
+
+      // _onClick comment
       _onClick(event) {
         console.log('click', event.target);
       }
+
+      unrelated2() {}
 
       render() {
         return html\`
@@ -760,6 +862,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {eventOptions} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      // _onClick comment
       @eventOptions({capture: true, once: false, passive: true})
       _onClick(event) {
         console.log('click', event.target);
@@ -777,6 +880,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement, html} from 'lit';
 
     class MyElement extends LitElement {
+      // _onClick comment
       _onClick(event) {
         console.log('click', event.target);
       }
@@ -954,6 +1058,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
     import {customElement as cabbage} from 'lit/decorators.js';
 
+    // class comment
     @cabbage('my-element')
     class MyElement extends LitElement {
     }
@@ -962,6 +1067,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     const expected = `
     import {LitElement} from 'lit';
 
+    // class comment
     class MyElement extends LitElement {
     }
     customElements.define('my-element', MyElement);
@@ -975,9 +1081,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {property as potato} from 'lit/decorators.js';
 
     class MyElement extends LitElement {
+      // str comment
       @potato()
       str = "foo";
 
+      // num comment
       @potato({type: Number, attribute: false})
       num = 42;
     }
@@ -996,7 +1104,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
         constructor() {
           super();
+          // str comment
           this.str = "foo";
+          // num comment
           this.num = 42;
         }
       }
@@ -1008,7 +1118,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       class MyElement extends LitElement {
         constructor() {
           super();
+          // str comment
           this.str = "foo";
+          // num comment
           this.num = 42;
         }
       }
@@ -1053,6 +1165,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
     @localized()
     class MyElement extends LitElement {
+      // foo comment
       @property()
       foo = 123;
     }
@@ -1072,6 +1185,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         constructor() {
           super();
           updateWhenLocaleChanges(this);
+          // foo comment
           this.foo = 123;
         }
       }
@@ -1085,6 +1199,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         constructor() {
           super();
           updateWhenLocaleChanges(this);
+          // foo comment
           this.foo = 123;
         }
       }

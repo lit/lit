@@ -51,8 +51,8 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
     }
     const name = property.name.text;
     const selector = arg0.text;
-    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
-    litClassContext.classMembers.push(
+    litClassContext.litFileContext.replaceAndMoveComments(
+      property,
       this._createQueryAllGetter(name, selector)
     );
   }

@@ -5,6 +5,7 @@
  */
 
 import * as ts from 'typescript';
+import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
@@ -71,6 +72,16 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
           f.createToken(ts.SyntaxKind.EqualsToken),
           property.initializer
         )
+      );
+      ts.setTextRange(initializer, property);
+      // Omit blank lines from the PreserveBlankLines transformer, because they
+      // usually look awkward in the constructor.
+      const nonBlankLineSyntheticComments = ts
+        .getSyntheticLeadingComments(property)
+        ?.filter((comment) => comment.text !== BLANK_LINE_PLACEHOLDER_COMMENT);
+      ts.setSyntheticLeadingComments(
+        initializer,
+        nonBlankLineSyntheticComments
       );
       litClassContext.extraConstructorStatements.push(initializer);
     }

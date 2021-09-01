@@ -48,4 +48,14 @@ export class LitFileContext {
     }
     return this.litImports.get(firstDeclaration);
   }
+
+  /**
+   * Replace one AST node with another, copying over all associated comments.
+   */
+  replaceAndMoveComments(oldNode: ts.Node, newNode: ts.Node): void {
+    this.nodeReplacements.set(oldNode, newNode);
+    // Original source comments.
+    ts.setTextRange(newNode, oldNode);
+    ts.moveSyntheticComments(newNode, oldNode);
+  }
 }

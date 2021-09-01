@@ -59,8 +59,8 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     const name = property.name.text;
     const selector = arg0.text;
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
-    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
-    litClassContext.classMembers.push(
+    litClassContext.litFileContext.replaceAndMoveComments(
+      property,
       this._createQueryGetter(name, selector, cache)
     );
   }
