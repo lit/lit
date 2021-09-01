@@ -18,14 +18,15 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 export const INTERNAL = true;
 
-let issueWarning: (warning: string) => void;
+let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   const issuedWarnings: Set<string | undefined> =
     (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
-  issueWarning = (warning: string) => {
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
     if (!issuedWarnings.has(warning)) {
       console.warn(warning);
       issuedWarnings.add(warning);
@@ -33,9 +34,8 @@ if (DEV_MODE) {
   };
 
   issueWarning(
-    `Lit is in dev mode. Not recommended for production! See ` +
-      `https://lit.dev/docs/tools/development/` +
-      `#development-and-production-builds for more information.`
+    'dev-mode',
+    `Lit is in dev mode. Not recommended for production!`
   );
 }
 
@@ -853,13 +853,18 @@ class TemplateInstance implements Disconnectable {
   _parts: Array<Part | undefined> = [];
 
   /** @internal */
-  _$parent: Disconnectable;
+  _$parent: ChildPart;
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
+  }
+
+  // Called by ChildPart parentNode getter
+  get parentNode() {
+    return this._$parent.parentNode;
   }
 
   // See comment in Disconnectable interface for why this is a getter
@@ -981,7 +986,7 @@ export type {ChildPart};
 class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
-  _$committedValue: unknown;
+  _$committedValue: unknown = nothing;
   /** @internal */
   __directive?: Directive;
   /** @internal */
@@ -1061,7 +1066,18 @@ class ChildPart implements Disconnectable {
    * consists of all child nodes of `.parentNode`.
    */
   get parentNode(): Node {
-    return wrap(this._$startNode).parentNode!;
+    let parentNode: Node = wrap(this._$startNode).parentNode!;
+    const parent = this._$parent;
+    if (
+      parent !== undefined &&
+      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+    ) {
+      // If the parentNode is a DocumentFragment, it may be because the DOM is
+      // still in the cloned fragment during initial render; if so, get the real
+      // parentNode the part will be committed into by asking the parent.
+      parentNode = (parent as ChildPart | TemplateInstance).parentNode;
+    }
+    return parentNode;
   }
 
   /**
@@ -1125,13 +1141,25 @@ class ChildPart implements Disconnectable {
       ) {
         const parentNodeName = this._$startNode.parentNode?.nodeName;
         if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
-          this._insert(
-            new Text(
-              '/* lit-html will not write ' +
-                'TemplateResults to scripts and styles */'
-            )
-          );
-          return;
+          let message = 'Forbidden';
+          if (DEV_MODE) {
+            if (parentNodeName === 'STYLE') {
+              message =
+                `Lit does not support binding inside style nodes. ` +
+                `This is a security risk, as style injection attacks can ` +
+                `exfiltrate data and spoof UIs. ` +
+                `Consider instead using css\`...\` literals ` +
+                `to compose styles, and make do dynamic styling with ` +
+                `css custom properties, ::parts, <slot>s, ` +
+                `and by mutating the DOM rather than stylesheets.`;
+            } else {
+              message =
+                `Lit does not support binding inside script nodes. ` +
+                `This is a security risk, as it could allow arbitrary ` +
+                `code execution.`;
+            }
+          }
+          throw new Error(message);
         }
       }
       this._$committedValue = this._insert(value);
@@ -1139,23 +1167,20 @@ class ChildPart implements Disconnectable {
   }
 
   private _commitText(value: unknown): void {
-    const node = wrap(this._$startNode).nextSibling;
-    // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
+    // If the committed value is a primitive it means we called _commitText on
+    // the previous render, and we know that this._$startNode.nextSibling is a
+    // Text node. We can now just replace the text content (.data) of the node.
     if (
-      node !== null &&
-      node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this._$endNode === null
-        ? wrap(node).nextSibling === null
-        : node === wrap(this._$endNode).previousSibling)
+      this._$committedValue !== nothing &&
+      isPrimitive(this._$committedValue)
     ) {
+      const node = wrap(this._$startNode).nextSibling as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
         }
         value = this._textSanitizer(value);
       }
-      // If we only have a single text node between the markers, we can just
-      // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -1703,8 +1728,8 @@ globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 (globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-      `for more information.`
+    'multiple-versions',
+    `Multiple versions of Lit loaded. ` +
+      `Loading multiple versions is not recommended.`
   );
 }

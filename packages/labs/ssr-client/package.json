@@ -21,9 +21,9 @@
       "development": "./development/index.js",
       "default": "./index.js"
     },
-    "./directives/": {
-      "development": "./development/directives/",
-      "default": "./directives/"
+    "./directives/render-light.js": {
+      "development": "./development/directives/render-light.js",
+      "default": "./directives/render-light.js"
     }
   },
   "files": [

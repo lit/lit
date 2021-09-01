@@ -68,7 +68,7 @@ export const allLocales = [
     throw new KnownError(
       `Error creating locales module directory: ${parentDir}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
   try {
@@ -77,7 +77,7 @@ export const allLocales = [
     throw new KnownError(
       `Error creating locales module file: ${filePath}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
 }

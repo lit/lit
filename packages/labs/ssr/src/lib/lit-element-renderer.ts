@@ -26,7 +26,7 @@ export class LitElementRenderer extends ElementRenderer {
 
   constructor(tagName: string) {
     super(tagName);
-    this.element = new (customElements.get(this.tagName))();
+    this.element = new (customElements.get(this.tagName)!)() as LitElement;
   }
 
   connectedCallback() {

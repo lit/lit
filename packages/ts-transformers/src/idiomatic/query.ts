@@ -25,7 +25,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *   }
  *
  *   get span() {
- *     return this.__span ??= this.renderRoot?.querySelector('#myDiv');
+ *     return this.__span ??= this.renderRoot?.querySelector('#myDiv') ?? null;
  *   }
  */
 export class QueryVisitor implements MemberDecoratorVisitor {
@@ -59,7 +59,7 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     const name = property.name.text;
     const selector = arg0.text;
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
-    litClassContext.litFileContext.nodesToRemove.add(property);
+    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
     litClassContext.classMembers.push(
       this._createQueryGetter(name, selector, cache)
     );
@@ -67,18 +67,22 @@ export class QueryVisitor implements MemberDecoratorVisitor {
 
   private _createQueryGetter(name: string, selector: string, cache: boolean) {
     const f = this._factory;
-    const querySelectorCall = f.createCallChain(
-      f.createPropertyAccessChain(
-        f.createPropertyAccessExpression(
-          f.createThis(),
-          f.createIdentifier('renderRoot')
+    const querySelectorCall = f.createBinaryExpression(
+      f.createCallChain(
+        f.createPropertyAccessChain(
+          f.createPropertyAccessExpression(
+            f.createThis(),
+            f.createIdentifier('renderRoot')
+          ),
+          f.createToken(ts.SyntaxKind.QuestionDotToken),
+          f.createIdentifier('querySelector')
         ),
-        f.createToken(ts.SyntaxKind.QuestionDotToken),
-        f.createIdentifier('querySelector')
+        undefined,
+        undefined,
+        [f.createStringLiteral(selector)]
       ),
-      undefined,
-      undefined,
-      [f.createStringLiteral(selector)]
+      f.createToken(ts.SyntaxKind.QuestionQuestionToken),
+      f.createNull()
     );
     return f.createGetAccessorDeclaration(
       undefined,

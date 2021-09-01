@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as xmldom from 'xmldom';
+import * as xmldom from '@xmldom/xmldom';
 import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import type {Config} from '../types/config.js';
@@ -65,7 +65,7 @@ export class XliffFormatter implements Formatter {
       try {
         xmlStr = fsExtra.readFileSync(path, 'utf8');
       } catch (err) {
-        if (err.code === 'ENOENT') {
+        if ((err as Error & {code: string}).code === 'ENOENT') {
           // It's ok if the file doesn't exist, it's probably just the first
           // time we're running for this locale.
           continue;
@@ -148,7 +148,7 @@ export class XliffFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLIFF directory: ${xliffDir}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
     const writes: Array<Promise<void>> = [];
@@ -164,7 +164,7 @@ export class XliffFormatter implements Formatter {
           throw new KnownError(
             `Error creating XLIFF file: ${path}\n` +
               `Do you have write permission?\n` +
-              e.message
+              (e as Error).message
           );
         })
       );

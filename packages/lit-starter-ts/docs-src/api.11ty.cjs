@@ -11,53 +11,83 @@ module.exports = class Docs {
   }
 
   render(data) {
-    const customElements = data.api['11tydata'].customElements;
-    const tags = customElements.tags;
+    const manifest = data.api['11tydata'].customElements;
+    const elements = manifest.modules.reduce(
+      (els, module) =>
+        els.concat(
+          module.declarations?.filter((dec) => dec.customElement) ?? []
+        ),
+      []
+    );
     return `
-      <h1>API</h1>
-      ${tags
-        .map(
-          (tag) => `
-        <h2>&lt;${tag.name}></h2>
-        <div>
-          ${tag.description}
-        </div>
-        ${renderTable(
-          'Attributes',
-          ['name', 'description', 'type', 'default'],
-          tag.attributes
-        )}
-        ${renderTable(
-          'Properties',
-          ['name', 'attribute', 'description', 'type', 'default'],
-          tag.properties
-        )}  
-        ${
-          /*
-           * Methods are not output by web-component-analyzer yet (a bug), so
-           * this is a placeholder so that at least _something_ will be output
-           * when that is fixed, and element maintainers will hopefully have a
-           * signal to update this file to add the neccessary columns.
-           */
-          renderTable('Methods', ['name', 'description'], tag.methods)
-        }
-        ${renderTable('Events', ['name', 'description'], tag.events)}    
-        ${renderTable('Slots', ['name', 'description'], tag.slots)}  
-        ${renderTable(
-          'CSS Shadow Parts',
-          ['name', 'description'],
-          tag.cssParts
-        )}
-        ${renderTable(
-          'CSS Custom Properties',
-          ['name', 'description'],
-          tag.cssProperties
-        )}
-        `
-        )
-        .join('')}
-    `;
+     <h1>API</h1>
+     ${elements
+       .map(
+         (element) => `
+       <h2>&lt;${element.tagName}></h2>
+       <div>
+         ${element.description}
+       </div>
+       ${renderTable(
+         'Attributes',
+         ['name', 'description', 'type.text', 'default'],
+         element.attributes
+       )}
+       ${renderTable(
+         'Properties',
+         ['name', 'attribute', 'description', 'type.text', 'default'],
+         element.members.filter((m) => m.kind === 'field')
+       )}  
+       ${renderTable(
+         'Methods',
+         ['name', 'parameters', 'description', 'return.type.text'],
+         element.members
+           .filter((m) => m.kind === 'method' && m.privacy !== 'private')
+           .map((m) => ({
+             ...m,
+             parameters: renderTable(
+               '',
+               ['name', 'description', 'type.text'],
+               m.parameters
+             ),
+           }))
+       )}
+       ${renderTable('Events', ['name', 'description'], element.events)}    
+       ${renderTable(
+         'Slots',
+         [['name', '(default)'], 'description'],
+         element.slots
+       )}  
+       ${renderTable(
+         'CSS Shadow Parts',
+         ['name', 'description'],
+         element.cssParts
+       )}
+       ${renderTable(
+         'CSS Custom Properties',
+         ['name', 'description'],
+         element.cssProperties
+       )}
+       `
+       )
+       .join('')}
+   `;
   }
+};
+
+/**
+ * Reads a (possibly deep) path off of an object.
+ */
+const get = (obj, path) => {
+  let fallback = '';
+  if (Array.isArray(path)) {
+    [path, fallback] = path;
+  }
+  const parts = path.split('.');
+  while (obj && parts.length) {
+    obj = obj[parts.shift()];
+  }
+  return obj == null || obj === '' ? fallback : obj;
 };
 
 /**
@@ -65,26 +95,33 @@ module.exports = class Docs {
  * `data`.
  */
 const renderTable = (name, properties, data) => {
-  if (data === undefined) {
+  if (data === undefined || data.length === 0) {
     return '';
   }
   return `
-    <h3>${name}</h3>
-    <table>
-      <tr>
-        ${properties.map((p) => `<th>${capitalize(p)}</th>`).join('')}
-      </tr>
-      ${data
-        .map(
-          (i) => `
-        <tr>
-          ${properties.map((p) => `<td>${i[p]}</td>`).join('')}
-        </tr>
-      `
-        )
-        .join('')}
-    </table>
-  `;
+   ${name ? `<h3>${name}</h3>` : ''}
+   <table>
+     <tr>
+       ${properties
+         .map(
+           (p) =>
+             `<th>${capitalize(
+               (Array.isArray(p) ? p[0] : p).split('.')[0]
+             )}</th>`
+         )
+         .join('')}
+     </tr>
+     ${data
+       .map(
+         (i) => `
+       <tr>
+         ${properties.map((p) => `<td>${get(i, p)}</td>`).join('')}
+       </tr>
+     `
+       )
+       .join('')}
+   </table>
+ `;
 };
 
 const capitalize = (s) => s[0].toUpperCase() + s.substring(1);

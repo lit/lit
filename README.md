@@ -106,11 +106,11 @@ branch on the template repos (`lit-next` branch shown in example):
 
 ```sh
 # Export TS template
-git remote add lit-element-starter-ts git@github.com:PolymerLabs/lit-element-starter-ts.git
+git remote add lit-element-starter-ts git@github.com:lit/lit-element-starter-ts.git
 git subtree push --prefix=packages/lit-starter-ts/ lit-starter-element-ts lit-next
 
 # Export JS template
-git remote add lit-element-starter-js git@github.com:PolymerLabs/lit-starter-js.git
+git remote add lit-element-starter-js git@github.com:lit/lit-element-starter-js.git
 git subtree push --prefix=packages/lit-starter-js/ lit-starter-element-js lit-next
 ```
 
