@@ -30,11 +30,11 @@ import type {
  */
 export class LitTransformer {
   private readonly _context: ts.TransformationContext;
-  private readonly _classDecoratorVisitors = new MultiMap<
+  private readonly _classDecoratorVisitors = new Map<
     string,
     ClassDecoratorVisitor
   >();
-  private readonly _memberDecoratorVisitors = new MultiMap<
+  private readonly _memberDecoratorVisitors = new Map<
     string,
     MemberDecoratorVisitor
   >();
@@ -56,11 +56,23 @@ export class LitTransformer {
   private _registerVisitor(visitor: Visitor) {
     switch (visitor.kind) {
       case 'classDecorator': {
-        this._classDecoratorVisitors.add(visitor.decoratorName, visitor);
+        if (this._classDecoratorVisitors.has(visitor.decoratorName)) {
+          throw new Error(
+            'Registered more than one transformer for class decorator' +
+              visitor.decoratorName
+          );
+        }
+        this._classDecoratorVisitors.set(visitor.decoratorName, visitor);
         break;
       }
       case 'memberDecorator': {
-        this._memberDecoratorVisitors.add(visitor.decoratorName, visitor);
+        if (this._classDecoratorVisitors.has(visitor.decoratorName)) {
+          throw new Error(
+            'Registered more than one transformer for member decorator ' +
+              visitor.decoratorName
+          );
+        }
+        this._memberDecoratorVisitors.set(visitor.decoratorName, visitor);
         break;
       }
       case 'generic': {
@@ -80,11 +92,11 @@ export class LitTransformer {
   private _unregisterVisitor(visitor: Visitor) {
     switch (visitor.kind) {
       case 'classDecorator': {
-        this._classDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        this._classDecoratorVisitors.delete(visitor.decoratorName);
         break;
       }
       case 'memberDecorator': {
-        this._memberDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        this._memberDecoratorVisitors.delete(visitor.decoratorName);
         break;
       }
       case 'generic': {
@@ -126,9 +138,9 @@ export class LitTransformer {
   };
 
   visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
-    if (this._litFileContext.nodesToRemove.has(node)) {
-      // A node that some previous visitor has requested to remove from the AST.
-      return undefined;
+    if (this._litFileContext.nodeReplacements.has(node)) {
+      // A node that some previous visitor has requested to be replaced.
+      return this._litFileContext.nodeReplacements.get(node);
     }
     for (const visitor of this._genericVisitors) {
       node = visitor.visit(this._litFileContext, node);
@@ -194,29 +206,51 @@ export class LitTransformer {
         // associated with a decorator. If that changed, visitors should
         // probably have a static field to declare which imports they care
         // about.
-      } else if (
+      } else {
         // Only handle the decorators we're configured to transform.
-        this._classDecoratorVisitors.has(realName) ||
-        this._memberDecoratorVisitors.has(realName)
-      ) {
-        this._litFileContext.litImports.set(importSpecifier, realName);
-        // Assume if there's a visitor for a decorator, it's always going to
-        // remove any uses of that decorator, and hence we should remove the
-        // import too.
-        this._litFileContext.nodesToRemove.add(importSpecifier);
-        traversalNeeded = true;
+        const visitor =
+          this._classDecoratorVisitors.get(realName) ??
+          this._memberDecoratorVisitors.get(realName);
+        if (visitor !== undefined) {
+          this._litFileContext.litImports.set(importSpecifier, realName);
+          // Either remove the binding or replace it with another identifier.
+          const replacement = visitor.importBindingReplacement
+            ? this._context.factory.createIdentifier(
+                visitor.importBindingReplacement
+              )
+            : undefined;
+          this._litFileContext.nodeReplacements.set(
+            importSpecifier,
+            replacement
+          );
+          traversalNeeded = true;
+        }
       }
     }
     return traversalNeeded;
   }
 
   private _visitImportDeclaration(node: ts.ImportDeclaration) {
-    const pruned = ts.visitEachChild(node, this.visit, this._context);
-    return (pruned.importClause?.namedBindings as ts.NamedImports).elements
-      .length > 0
-      ? pruned
-      : // Remove the import altogether if there are no remaining bindings.
-        undefined;
+    const numBindingsBefore =
+      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
+      0;
+    node = ts.visitEachChild(node, this.visit, this._context);
+    const numBindingsAfter =
+      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
+      0;
+    if (
+      numBindingsAfter === 0 &&
+      numBindingsBefore !== numBindingsAfter &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      isLitImport(node.moduleSpecifier.text)
+    ) {
+      // Remove the import altogether if there are no bindings left. But only if
+      // we acutally modified the import, and it's from an official Lit module.
+      // Otherwise we might remove imports that are still needed for their
+      // side-effects.
+      return undefined;
+    }
+    return node;
   }
 
   private _visitClassDeclaration(class_: ts.ClassDeclaration) {
@@ -233,10 +267,9 @@ export class LitTransformer {
       if (decoratorName === undefined) {
         continue;
       }
-      const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
-      for (const visitor of visitors) {
-        visitor.visit(litClassContext, decorator);
-      }
+      this._classDecoratorVisitors
+        .get(decoratorName)
+        ?.visit(litClassContext, decorator);
     }
 
     // Class member decorators
@@ -251,17 +284,16 @@ export class LitTransformer {
         if (decoratorName === undefined) {
           continue;
         }
-        const visitors = this._memberDecoratorVisitors.get(decoratorName) ?? [];
-        for (const visitor of visitors) {
-          visitor.visit(litClassContext, member, decorator);
-        }
+        this._memberDecoratorVisitors
+          .get(decoratorName)
+          ?.visit(litClassContext, member, decorator);
       }
     }
 
     if (litClassContext.reactiveProperties.length > 0) {
       const existing = this._findExistingStaticProperties(class_);
       if (existing !== undefined) {
-        this._litFileContext.nodesToRemove.add(existing.getter);
+        this._litFileContext.nodeReplacements.set(existing.getter, undefined);
       }
       litClassContext.classMembers.unshift(
         this._createStaticProperties(
@@ -270,6 +302,8 @@ export class LitTransformer {
         )
       );
     }
+
+    this._addExtraConstructorStatements(litClassContext);
 
     for (const visitor of litClassContext.additionalClassVisitors) {
       this._registerVisitor(visitor);
@@ -381,42 +415,49 @@ export class LitTransformer {
     }
     return {getter, properties: objectLiteral.properties};
   }
-}
 
-/**
- * Maps from a key to a Set of values.
- */
-class MultiMap<K, V> {
-  private readonly _map = new Map<K, Set<V>>();
-
-  get(key: K): Set<V> | undefined {
-    return this._map.get(key);
-  }
-
-  has(key: K): boolean {
-    return this._map.has(key);
-  }
-
-  get size(): number {
-    return this._map.size;
-  }
-
-  add(key: K, val: V) {
-    let set = this._map.get(key);
-    if (set === undefined) {
-      set = new Set();
-      this._map.set(key, set);
-    }
-    set.add(val);
-  }
-
-  delete(key: K, val: V) {
-    const set = this._map.get(key);
-    if (set === undefined) {
+  /**
+   * Create or modify a class constructor to add additional constructor
+   * statements from any of our transforms.
+   */
+  private _addExtraConstructorStatements(context: LitClassContext) {
+    if (context.extraConstructorStatements.length === 0) {
       return;
     }
-    if (set.delete(val) && set.size === 0) {
-      this._map.delete(key);
+    const existingCtor = context.class.members.find(
+      ts.isConstructorDeclaration
+    );
+    const f = this._context.factory;
+    if (existingCtor === undefined) {
+      const newCtor = f.createConstructorDeclaration(
+        undefined,
+        undefined,
+        [],
+        f.createBlock(
+          [
+            f.createExpressionStatement(
+              f.createCallExpression(f.createSuper(), undefined, [
+                f.createSpreadElement(f.createIdentifier('arguments')),
+              ])
+            ),
+            ...context.extraConstructorStatements,
+          ],
+          true
+        )
+      );
+      context.classMembers.push(newCtor);
+    } else {
+      if (existingCtor.body === undefined) {
+        throw new Error('Unexpected error: constructor has no body');
+      }
+      const newCtorBody = f.createBlock([
+        ...existingCtor.body.statements,
+        ...context.extraConstructorStatements,
+      ]);
+      context.litFileContext.nodeReplacements.set(
+        existingCtor.body,
+        newCtorBody
+      );
     }
   }
 }
@@ -426,8 +467,7 @@ const isLitImport = (specifier: string) =>
   specifier.startsWith('lit/') ||
   specifier === 'lit-element' ||
   specifier.startsWith('lit-element/') ||
-  specifier === '@lit/reactive-element' ||
-  specifier.startsWith('@lit/reactive-element/');
+  specifier.startsWith('@lit/');
 
 /**
  * Returns true for:

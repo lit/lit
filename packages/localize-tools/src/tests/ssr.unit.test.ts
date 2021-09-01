@@ -7,7 +7,7 @@
 import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import {configureSsrLocalization} from '../ssr.js';
-import {render} from '../../../labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
 import {html} from 'lit';
 import {msg} from '@lit/localize';
 

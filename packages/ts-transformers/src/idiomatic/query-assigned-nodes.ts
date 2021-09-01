@@ -20,7 +20,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *   get listItems() {
  *     return this.renderRoot
  *       ?.querySelector('slot[name=list]')
- *       ?.assignedNodes();
+ *       ?.assignedNodes() ?? [];
  *   }
  */
 export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
@@ -54,7 +54,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
     const flatten = arg1?.kind === ts.SyntaxKind.TrueKeyword;
     const selector =
       arg2 !== undefined && ts.isStringLiteral(arg2) ? arg2.text : '';
-    litClassContext.litFileContext.nodesToRemove.add(property);
+    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
     litClassContext.classMembers.push(
       this._createQueryAssignedNodesGetter(name, slotName, flatten, selector)
     );
@@ -169,7 +169,15 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
 
     // { return <returnExpression> }
     const getterBody = f.createBlock(
-      [f.createReturnStatement(returnExpression)],
+      [
+        f.createReturnStatement(
+          f.createBinaryExpression(
+            returnExpression,
+            f.createToken(ts.SyntaxKind.QuestionQuestionToken),
+            f.createArrayLiteralExpression([], false)
+          )
+        ),
+      ],
       true
     );
 

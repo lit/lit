@@ -527,7 +527,7 @@ suite('runtime localization configuration', () => {
         error = e;
       }
       assert.isDefined(error);
-      assert.equal(error.message, 'Some error');
+      assert.equal((error as Error).message, 'Some error');
 
       assertEventLogEqualsAndFlush([
         {

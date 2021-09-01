@@ -20,7 +20,13 @@ import {
 } from '../lit-html.js';
 import * as litHtmlLib from '../lit-html.js';
 
-import {directive, Directive, PartType, PartInfo} from '../directive.js';
+import {
+  directive,
+  Directive,
+  PartType,
+  PartInfo,
+  DirectiveParameters,
+} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -33,6 +39,7 @@ import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
 import {_$LH} from '../private-ssr-support.js';
+import {until} from '../directives/until.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
@@ -67,6 +74,7 @@ suite('lit-html', () => {
 
   setup(() => {
     container = document.createElement('div');
+    container.id = 'container';
   });
 
   const assertRender = (
@@ -1698,11 +1706,14 @@ suite('lit-html', () => {
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
       class CheckNodePropertiesBehavior extends Directive {
-        render() {
+        render(_parentId?: string) {
           return nothing;
         }
 
-        override update(part: ChildPart) {
+        override update(
+          part: ChildPart,
+          [parentId]: DirectiveParameters<this>
+        ) {
           const {parentNode, startNode, endNode} = part;
 
           if (endNode !== null) {
@@ -1721,19 +1732,21 @@ suite('lit-html', () => {
             assert.equal<Node | null>(startNode.nextSibling, endNode);
           }
 
+          if (parentId !== undefined) {
+            assert.equal((parentNode as HTMLElement).id, parentId);
+          }
+
           return nothing;
         }
       }
-      const checkNodePropertiesBehavior = directive(
-        CheckNodePropertiesBehavior
-      );
+      const checkPart = directive(CheckNodePropertiesBehavior);
 
       test('when the directive is the only child', () => {
         const makeTemplate = (content: unknown) => html`<div>${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is the last child', () => {
@@ -1741,8 +1754,8 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is not the last child', () => {
@@ -1750,8 +1763,44 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content} Later sibling.</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
+      });
+
+      test(`part's parentNode is the logical DOM parent`, async () => {
+        const asyncCheckDiv = Promise.resolve(checkPart('divPromise'));
+        const makeTemplate = () =>
+          html`
+            ${checkPart('container')}
+            <div id="div">
+              ${checkPart('div')}
+              ${html`x ${checkPart('div')} x`}
+              ${html`x ${html`x ${checkPart('div')} x`} x`}
+              ${html`x ${html`x ${[checkPart('div'), checkPart('div')]} x`} x`}
+              ${html`x ${html`x ${[
+                [checkPart('div'), checkPart('div')],
+              ]} x`} x`}
+              ${html`x ${html`x ${[
+                [repeat([checkPart('div'), checkPart('div')], (v) => v)],
+              ]} x`} x`}
+              ${until(asyncCheckDiv)}
+            </div>
+          `;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), container);
+        await asyncCheckDiv;
+        render(makeTemplate(), container);
+      });
+
+      test(`part's parentNode is correct when rendered into a document fragment`, async () => {
+        const fragment = document.createDocumentFragment();
+        (fragment as unknown as {id: string}).id = 'fragment';
+        const makeTemplate = () => html`${checkPart('fragment')}`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), fragment);
+        render(makeTemplate(), fragment);
       });
     });
 
