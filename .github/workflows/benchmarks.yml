@@ -114,6 +114,22 @@ jobs:
           pr-bench-name: this-change
           base-bench-name: tip-of-tree
 
+      # lit-element:class-map
+      - name: Benchmark lit-element/class-map
+        run: |
+          cd packages/benchmarks
+          npx tachometer \
+            --config lit-element/class-map/tachometer.json \
+            --json-file lit-element/class-map/results.json
+
+      - name: Report lit-element-class-map
+        uses: andrewiggins/tachometer-reporter-action@v2
+        with:
+          report-id: lit-element-class-map
+          path: packages/benchmarks/lit-element/class-map/results.json
+          pr-bench-name: this-change
+          base-bench-name: tip-of-tree
+
       # reactive-element:list
       - name: Benchmark reactive-element/list
         run: |
