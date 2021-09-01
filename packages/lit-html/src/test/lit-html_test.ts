@@ -1014,12 +1014,19 @@ suite('lit-html', () => {
       assertContent('<div attribute=""></div>');
     });
 
-    test('renders noChange in attributes', () => {
+    test('renders empty string in attributes', () => {
+      render(html`<div attribute="${''}"></div>`, container);
+      assertContent('<div attribute=""></div>');
+    });
+
+    // In the PR for illustrative purposes. Will remove.
+    test.skip('renders noChange in attributes', () => {
       render(html`<div attribute="${noChange as any}"></div>`, container);
       assertContent('<div attribute=""></div>');
     });
 
-    test('renders noChange in attributes, sets attribute only once', () => {
+    // In the PR for illustrative purposes. Will remove.
+    test.skip('renders noChange in attributes, sets attribute only once', () => {
       const go = (v: any) =>
         render(html`<div attribute="${v}"></div>`, container);
       go(noChange);
