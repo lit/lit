@@ -84,18 +84,18 @@ suite('classMap directive', () => {
   test('can not override static classes', () => {
     renderClassMapStatic({aa: false, bb: true});
     const el = container.firstElementChild!;
-    assert.isTrue(el.classList.contains('aa'), '1');
-    assert.isTrue(el.classList.contains('bb'), '2');
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
 
     // bb is explicitly set to false
     renderClassMapStatic({aa: true, bb: false});
-    assert.isTrue(el.classList.contains('aa'), '3');
-    assert.isTrue(el.classList.contains('bb'), '4');
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
 
     // both are now omitted
     renderClassMapStatic({});
-    assert.isTrue(el.classList.contains('aa'), '5');
-    assert.isTrue(el.classList.contains('bb'), '6');
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
   });
 
   test('changes classes when used with the same object', () => {
@@ -126,9 +126,9 @@ suite('classMap directive', () => {
   test('works if there are no spaces next to directive', () => {
     render(html`<div class="aa${classMap({bb: true})}cc"></div>`, container);
     const el = container.firstElementChild!;
-    assert.isTrue(el.classList.contains('aa'), 'aa');
-    assert.isTrue(el.classList.contains('bb'), 'bb');
-    assert.isTrue(el.classList.contains('cc'), 'cc');
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
   });
 
   test('throws when used on non-class attribute', () => {
