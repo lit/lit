@@ -21,25 +21,57 @@
       "development": "./development/reactive-element.js",
       "default": "./reactive-element.js"
     },
-    "./polyfill-support.js": {
-      "development": "./development/polyfill-support.js",
-      "default": "./polyfill-support.js"
-    },
     "./css-tag.js": {
       "development": "./development/css-tag.js",
       "default": "./css-tag.js"
     },
-    "./reactive-controller.js": {
-      "development": "./development/reactive-controller.js",
-      "default": "./reactive-controller.js"
-    },
-    "./decorators/": {
-      "development": "./development/decorators/",
-      "default": "./decorators/"
-    },
     "./decorators.js": {
       "development": "./development/decorators.js",
       "default": "./decorators.js"
+    },
+    "./decorators/base.js": {
+      "development": "./development/decorators/base.js",
+      "default": "./decorators/base.js"
+    },
+    "./decorators/custom-element.js": {
+      "development": "./development/decorators/custom-element.js",
+      "default": "./decorators/custom-element.js"
+    },
+    "./decorators/event-options.js": {
+      "development": "./development/decorators/event-options.js",
+      "default": "./decorators/event-options.js"
+    },
+    "./decorators/property.js": {
+      "development": "./development/decorators/property.js",
+      "default": "./decorators/property.js"
+    },
+    "./decorators/query-all.js": {
+      "development": "./development/decorators/query-all.js",
+      "default": "./decorators/query-all.js"
+    },
+    "./decorators/query-assigned-nodes.js": {
+      "development": "./development/decorators/query-assigned-nodes.js",
+      "default": "./decorators/query-assigned-nodes.js"
+    },
+    "./decorators/query-async.js": {
+      "development": "./development/decorators/query-async.js",
+      "default": "./decorators/query-async.js"
+    },
+    "./decorators/query.js": {
+      "development": "./development/decorators/query.js",
+      "default": "./decorators/query.js"
+    },
+    "./decorators/state.js": {
+      "development": "./development/decorators/state.js",
+      "default": "./decorators/state.js"
+    },
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
+    },
+    "./reactive-controller.js": {
+      "development": "./development/reactive-controller.js",
+      "default": "./reactive-controller.js"
     }
   },
   "scripts": {

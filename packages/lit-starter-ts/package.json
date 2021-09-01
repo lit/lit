@@ -23,8 +23,12 @@
     "docs:serve": "wds --root-dir=docs --node-resolve --watch",
     "analyze": "wca analyze \"src/**/*.ts\" --outFile custom-elements.json",
     "serve": "wds --watch",
-    "test": "wtr",
-    "test:watch": "npm run test -- --watch",
+    "serve:prod": "MODE=prod npm run serve",
+    "test": "npm run test:dev && npm run test:prod",
+    "test:dev": "wtr",
+    "test:watch": "wtr --watch",
+    "test:prod": "MODE=prod wtr",
+    "test:prod:watch": "MODE=prod wtr --watch",
     "checksize": "rollup -c ; cat my-element.bundled.js | gzip -9 | wc -c ; rm my-element.bundled.js"
   },
   "keywords": [
@@ -36,8 +40,7 @@
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "lit": "^2.0.0-rc.1",
-    "lit-element": "^3.0.0-rc.1"
+    "lit": "^2.0.0-rc.3"
   },
   "devDependencies": {
     "@11ty/eleventy": "^0.12.1",
