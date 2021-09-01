@@ -1565,7 +1565,6 @@ type EventListenerWithOptions = EventListenerOrEventListenerObject &
 export type {EventPart};
 class EventPart extends AttributePart {
   override readonly type = EVENT_PART;
-  // override _$committedValue: unknown | Array<unknown> = nothing;
 
   constructor(
     element: HTMLElement,
