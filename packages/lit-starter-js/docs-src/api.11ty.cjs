@@ -2,24 +2,24 @@
  * This page generates its content from the custom-element.json file as read by
  * the _data/api.11tydata.js script.
  */
- module.exports = class Docs {
-   data() {
-     return {
-       layout: 'page.11ty.cjs',
-       title: '<my-element> ⌲ Docs',
-     };
-   }
+module.exports = class Docs {
+  data() {
+    return {
+      layout: 'page.11ty.cjs',
+      title: '<my-element> ⌲ Docs',
+    };
+  }
 
-   render(data) {
-     const manifest = data.api['11tydata'].customElements;
-     const elements = manifest.modules.reduce(
-       (els, module) =>
-         els.concat(
-           module.declarations?.filter((dec) => dec.customElement) ?? []
-         ),
-       []
-     );
-     return `
+  render(data) {
+    const manifest = data.api['11tydata'].customElements;
+    const elements = manifest.modules.reduce(
+      (els, module) =>
+        els.concat(
+          module.declarations?.filter((dec) => dec.customElement) ?? []
+        ),
+      []
+    );
+    return `
       <h1>API</h1>
       ${elements
         .map(
@@ -77,33 +77,33 @@
         )
         .join('')}
     `;
-   }
- };
+  }
+};
 
- /**
-  * Reads a (possibly deep) path off of an object.
-  */
- const get = (obj, path) => {
-   let fallback = '';
-   if (Array.isArray(path)) {
-     [path, fallback] = path;
-   }
-   const parts = path.split('.');
-   while (obj && parts.length) {
-     obj = obj[parts.shift()];
-   }
-   return obj == null || obj === '' ? fallback : obj;
- };
+/**
+ * Reads a (possibly deep) path off of an object.
+ */
+const get = (obj, path) => {
+  let fallback = '';
+  if (Array.isArray(path)) {
+    [path, fallback] = path;
+  }
+  const parts = path.split('.');
+  while (obj && parts.length) {
+    obj = obj[parts.shift()];
+  }
+  return obj == null || obj === '' ? fallback : obj;
+};
 
- /**
-  * Renders a table of data, plucking the given properties from each item in
-  * `data`.
-  */
- const renderTable = (name, properties, data) => {
-   if (data === undefined || data.length === 0) {
-     return '';
-   }
-   return `
+/**
+ * Renders a table of data, plucking the given properties from each item in
+ * `data`.
+ */
+const renderTable = (name, properties, data) => {
+  if (data === undefined || data.length === 0) {
+    return '';
+  }
+  return `
     ${name ? `<h3>${name}</h3>` : ''}
     <table>
       <tr>
@@ -127,6 +127,6 @@
         .join('')}
     </table>
   `;
- };
+};
 
 const capitalize = (s) => s[0].toUpperCase() + s.substring(1);
