@@ -54,17 +54,6 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 <!-- ### Fixed -->
 <!-- ### Removed -->
 
-## Unreleased
-
-<!-- ### Changed -->
-<!-- ### Added -->
-
-### Fixed
-
-- Binding `noChange` into an attribute expression now no longer removes the attribute on first render.
-
-<!-- ### Removed -->
-
 ## [2.0.0-rc.3] - 2021-05-07
 
 ### Fixed
