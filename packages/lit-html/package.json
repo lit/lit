@@ -17,29 +17,81 @@
       "development": "./development/lit-html.js",
       "default": "./lit-html.js"
     },
-    "./directive.js": {
-      "development": "./development/directive.js",
-      "default": "./directive.js"
+    "./async-directive.js": {
+      "development": "./development/async-directive.js",
+      "default": "./async-directive.js"
     },
     "./directive-helpers.js": {
       "development": "./development/directive-helpers.js",
       "default": "./directive-helpers.js"
     },
-    "./async-directive.js": {
-      "development": "./development/async-directive.js",
-      "default": "./async-directive.js"
+    "./directive.js": {
+      "development": "./development/directive.js",
+      "default": "./directive.js"
     },
-    "./polyfill-support.js": {
-      "development": "./development/polyfill-support.js",
-      "default": "./polyfill-support.js"
+    "./directives/async-append.js": {
+      "development": "./development/directives/async-append.js",
+      "default": "./directives/async-append.js"
     },
-    "./directives/": {
-      "development": "./development/directives/",
-      "default": "./directives/"
+    "./directives/async-replace.js": {
+      "development": "./development/directives/async-replace.js",
+      "default": "./directives/async-replace.js"
+    },
+    "./directives/cache.js": {
+      "development": "./development/directives/cache.js",
+      "default": "./directives/cache.js"
+    },
+    "./directives/class-map.js": {
+      "development": "./development/directives/class-map.js",
+      "default": "./directives/class-map.js"
+    },
+    "./directives/guard.js": {
+      "development": "./development/directives/guard.js",
+      "default": "./directives/guard.js"
+    },
+    "./directives/if-defined.js": {
+      "development": "./development/directives/if-defined.js",
+      "default": "./directives/if-defined.js"
+    },
+    "./directives/live.js": {
+      "development": "./development/directives/live.js",
+      "default": "./directives/live.js"
+    },
+    "./directives/ref.js": {
+      "development": "./development/directives/ref.js",
+      "default": "./directives/ref.js"
+    },
+    "./directives/repeat.js": {
+      "development": "./development/directives/repeat.js",
+      "default": "./directives/repeat.js"
+    },
+    "./directives/style-map.js": {
+      "development": "./development/directives/style-map.js",
+      "default": "./directives/style-map.js"
+    },
+    "./directives/template-content.js": {
+      "development": "./development/directives/template-content.js",
+      "default": "./directives/template-content.js"
+    },
+    "./directives/unsafe-html.js": {
+      "development": "./development/directives/unsafe-html.js",
+      "default": "./directives/unsafe-html.js"
+    },
+    "./directives/unsafe-svg.js": {
+      "development": "./development/directives/unsafe-svg.js",
+      "default": "./directives/unsafe-svg.js"
+    },
+    "./directives/until.js": {
+      "development": "./development/directives/until.js",
+      "default": "./directives/until.js"
     },
     "./experimental-hydrate.js": {
       "development": "./development/experimental-hydrate.js",
       "default": "./experimental-hydrate.js"
+    },
+    "./polyfill-support.js": {
+      "development": "./development/polyfill-support.js",
+      "default": "./polyfill-support.js"
     },
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
