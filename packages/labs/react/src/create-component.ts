@@ -126,7 +126,11 @@ export const createComponent = <I extends HTMLElement, E>(
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<Partial<Omit<I, 'children'>> & Events<E>>
+    React.PropsWithRef<
+      Partial<Omit<I, 'children'>> &
+        Events<E> &
+        React.HTMLAttributes<HTMLElement>
+    >
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
@@ -174,7 +178,7 @@ export const createComponent = <I extends HTMLElement, E>(
         setProperty(
           this._element,
           prop,
-          this.props[prop as keyof ComponentProps],
+          this.props[prop as Exclude<keyof ComponentProps, symbol>],
           oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
           events
         );
