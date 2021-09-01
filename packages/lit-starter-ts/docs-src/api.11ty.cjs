@@ -47,7 +47,7 @@ module.exports = class Docs {
              ...m,
              parameters: renderTable(
                '',
-               ['name', 'description', 'type.text', 'return.type.text'],
+               ['name', 'description', 'type.text'],
                m.parameters
              ),
            }))

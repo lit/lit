@@ -55,7 +55,6 @@ export class MyElement extends LitElement {
   /**
    * Formats a greeting
    * @param name The name to say "Hello" to
-   * @returns A greeting directed at `name`
    */
   sayHello(name: string): string {
     return `Hello, ${name}`;
