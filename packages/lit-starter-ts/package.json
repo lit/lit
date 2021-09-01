@@ -23,6 +23,7 @@
     "docs:serve": "wds --root-dir=docs --node-resolve --watch",
     "analyze": "wca analyze \"src/**/*.ts\" --outFile custom-elements.json",
     "serve": "wds --watch",
+    "serve:prod": "MODE=prod npm run serve",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "wtr",
     "test:watch": "wtr --watch",
