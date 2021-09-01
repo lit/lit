@@ -18,14 +18,15 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 export const INTERNAL = true;
 
-let issueWarning: (warning: string) => void;
+let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   const issuedWarnings: Set<string | undefined> =
     (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
-  issueWarning = (warning: string) => {
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
     if (!issuedWarnings.has(warning)) {
       console.warn(warning);
       issuedWarnings.add(warning);
@@ -33,9 +34,8 @@ if (DEV_MODE) {
   };
 
   issueWarning(
-    `Lit is in dev mode. Not recommended for production! See ` +
-      `https://lit.dev/docs/tools/development/` +
-      `#development-and-production-builds for more information.`
+    'dev-mode',
+    `Lit is in dev mode. Not recommended for production!`
   );
 }
 
@@ -1728,8 +1728,8 @@ globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 (globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-      `for more information.`
+    'multiple-versions',
+    `Multiple versions of Lit loaded. ` +
+      `Loading multiple versions is not recommended.`
   );
 }

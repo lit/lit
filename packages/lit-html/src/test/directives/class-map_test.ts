@@ -16,7 +16,7 @@ suite('classMap directive', () => {
   }
 
   function renderClassMapStatic(cssInfo: ClassInfo) {
-    render(html`<div class="aa ${classMap(cssInfo)}  bb "></div>`, container);
+    render(html`<div class="aa ${classMap(cssInfo)} bb"></div>`, container);
   }
 
   setup(() => {
@@ -86,16 +86,14 @@ suite('classMap directive', () => {
     const el = container.firstElementChild!;
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
-  });
 
-  // TODO (justinfagnani): unskip and resolve https://github.com/lit/lit/issues/1278
-  test.skip('can not override static classes', () => {
-    renderClassMapStatic({aa: false, bb: true});
-    const el = container.firstElementChild!;
+    // bb is explicitly set to false
+    renderClassMapStatic({aa: true, bb: false});
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
 
-    renderClassMapStatic({aa: true, bb: false});
+    // both are now omitted
+    renderClassMapStatic({});
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
   });
@@ -123,6 +121,14 @@ suite('classMap directive', () => {
     assert.isTrue(classes.indexOf('foo') === -1);
     assert.isTrue(classes.indexOf('bar') > -1);
     assert.isTrue(classes.indexOf('zonk') > -1);
+  });
+
+  test('works if there are no spaces next to directive', () => {
+    render(html`<div class="aa${classMap({bb: true})}cc"></div>`, container);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
   });
 
   test('throws when used on non-class attribute', () => {
