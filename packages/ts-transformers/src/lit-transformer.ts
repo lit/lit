@@ -324,18 +324,20 @@ export class LitTransformer {
     // nodes that still need to be deleted via `this._nodesToRemove` (e.g. a
     // property decorator or a property itself), and [2] in theory there could
     // be a nested custom element definition somewhere in this class.
-    const transformedClass = ts.visitEachChild(
-      this._context.factory.updateClassDeclaration(
-        class_,
-        class_.decorators,
-        class_.modifiers,
-        class_.name,
-        class_.typeParameters,
-        class_.heritageClauses,
-        [...litClassContext.classMembers, ...class_.members]
-      ),
-      this.visit,
-      this._context
+    const transformedClass = this._cleanUpDecoratorCruft(
+      ts.visitEachChild(
+        this._context.factory.updateClassDeclaration(
+          class_,
+          class_.decorators,
+          class_.modifiers,
+          class_.name,
+          class_.typeParameters,
+          class_.heritageClauses,
+          [...litClassContext.classMembers, ...class_.members]
+        ),
+        this.visit,
+        this._context
+      )
     );
 
     // These visitors only apply within the scope of the current class.
@@ -476,6 +478,31 @@ export class LitTransformer {
         newCtorBody
       );
     }
+  }
+
+  /**
+   * TypeScript will sometimes emit decorator transform cruft like this ...
+   *
+   *   MyElement = __decorate([], MyElement)
+   *
+   * ... when a class's decorators field is an empty array, as opposed to
+   * undefined, due to conditionals in the decorator transform like `if
+   * (class_.decorators) {...}`. If we've removed all class decorators, reset
+   * the decorators field to undefined so that we get clean output instead.
+   */
+  private _cleanUpDecoratorCruft(class_: ts.ClassDeclaration) {
+    if (class_.decorators?.length === 0) {
+      return this._context.factory.updateClassDeclaration(
+        class_,
+        undefined,
+        class_.modifiers,
+        class_.name,
+        class_.typeParameters,
+        class_.heritageClauses,
+        class_.members
+      );
+    }
+    return class_;
   }
 }
 
