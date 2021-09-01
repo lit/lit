@@ -1027,18 +1027,16 @@ suite('lit-html', () => {
       assertContent('<div attribute=""></div>');
     });
 
-    // In the PR for illustrative purposes. Will remove.
-    test.skip('renders noChange in attributes', () => {
+    test('initial render of noChange in fully-controlled attribute', () => {
       render(html`<div attribute="${noChange as any}"></div>`, container);
-      assertContent('<div attribute=""></div>');
+      assertContent('<div></div>');
     });
 
-    // In the PR for illustrative purposes. Will remove.
-    test.skip('renders noChange in attributes, sets attribute only once', () => {
+    test('renders noChange in attributes, preserves outside attribute value', () => {
       const go = (v: any) =>
         render(html`<div attribute="${v}"></div>`, container);
       go(noChange);
-      assertContent('<div attribute=""></div>');
+      assertContent('<div></div>');
       const div = container.querySelector('div');
       div?.setAttribute('attribute', 'A');
       go(noChange);
@@ -1086,7 +1084,7 @@ suite('lit-html', () => {
       assert.isEmpty(observer.takeRecords());
     });
 
-    test('noChange works on one of multiple expressions', () => {
+    test('noChange renders as empty string when used in interpolated attributes', () => {
       const go = (a: any, b: any) =>
         render(html`<div foo="${a}:${b}"></div>`, container);
 
