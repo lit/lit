@@ -18,10 +18,11 @@
     "noUnusedParameters": true,
 
     "rootDir": "src/",
-    "outDir": "lib/",
+    "outDir": ".",
     "declaration": true,
     "sourceMap": true,
     "inlineSources": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": []
 }

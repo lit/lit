@@ -1,1 +1,5 @@
-/lib/
+/*.js
+/*.js.map
+/*.d.ts
+/internal/
+/tests/
