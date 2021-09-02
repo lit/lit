@@ -300,11 +300,11 @@ export class LitTransformer {
       if (oldProperties !== undefined) {
         this._litFileContext.nodeReplacements.set(oldProperties, newProperties);
       } else {
-        const f = this._context.factory;
-        const staticPropertiesField = f.createPropertyDeclaration(
+        const factory = this._context.factory;
+        const staticPropertiesField = factory.createPropertyDeclaration(
           undefined,
-          [f.createModifier(ts.SyntaxKind.StaticKeyword)],
-          f.createIdentifier('properties'),
+          [factory.createModifier(ts.SyntaxKind.StaticKeyword)],
+          factory.createIdentifier('properties'),
           undefined,
           undefined,
           newProperties
@@ -364,17 +364,17 @@ export class LitTransformer {
       options?: ts.ObjectLiteralExpression;
     }>
   ) {
-    const f = this._context.factory;
+    const factory = this._context.factory;
     const properties = [
       ...(existingProperties?.properties ?? []),
       ...newProperties.map(({name, options}) =>
-        f.createPropertyAssignment(
-          f.createIdentifier(name),
-          options ? options : f.createObjectLiteralExpression([], false)
+        factory.createPropertyAssignment(
+          factory.createIdentifier(name),
+          options ? options : factory.createObjectLiteralExpression([], false)
         )
       ),
     ];
-    return f.createObjectLiteralExpression(properties, true);
+    return factory.createObjectLiteralExpression(properties, true);
   }
 
   private _findExistingStaticPropertiesExpression(
@@ -441,17 +441,19 @@ export class LitTransformer {
     const existingCtor = context.class.members.find(
       ts.isConstructorDeclaration
     );
-    const f = this._context.factory;
+    const factory = this._context.factory;
     if (existingCtor === undefined) {
-      const newCtor = f.createConstructorDeclaration(
+      const newCtor = factory.createConstructorDeclaration(
         undefined,
         undefined,
         [],
-        f.createBlock(
+        factory.createBlock(
           [
-            f.createExpressionStatement(
-              f.createCallExpression(f.createSuper(), undefined, [
-                f.createSpreadElement(f.createIdentifier('arguments')),
+            factory.createExpressionStatement(
+              factory.createCallExpression(factory.createSuper(), undefined, [
+                factory.createSpreadElement(
+                  factory.createIdentifier('arguments')
+                ),
               ])
             ),
             ...context.extraConstructorStatements,
@@ -464,7 +466,7 @@ export class LitTransformer {
       if (existingCtor.body === undefined) {
         throw new Error('Unexpected error: constructor has no body');
       }
-      const newCtorBody = f.createBlock([
+      const newCtorBody = factory.createBlock([
         ...existingCtor.body.statements,
         ...context.extraConstructorStatements,
       ]);

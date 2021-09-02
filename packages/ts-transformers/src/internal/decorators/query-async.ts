@@ -59,36 +59,36 @@ export class QueryAsyncVisitor implements MemberDecoratorVisitor {
   }
 
   private _createQueryAsyncGetter(options: {name: string; selector: string}) {
-    const f = this._factory;
-    return f.createGetAccessorDeclaration(
+    const factory = this._factory;
+    return factory.createGetAccessorDeclaration(
       undefined,
-      [f.createModifier(ts.SyntaxKind.AsyncKeyword)],
-      f.createIdentifier(options.name),
+      [factory.createModifier(ts.SyntaxKind.AsyncKeyword)],
+      factory.createIdentifier(options.name),
       [],
       undefined,
-      f.createBlock(
+      factory.createBlock(
         [
-          f.createExpressionStatement(
-            f.createAwaitExpression(
-              f.createPropertyAccessExpression(
-                f.createThis(),
-                f.createIdentifier('updateComplete')
+          factory.createExpressionStatement(
+            factory.createAwaitExpression(
+              factory.createPropertyAccessExpression(
+                factory.createThis(),
+                factory.createIdentifier('updateComplete')
               )
             )
           ),
-          f.createReturnStatement(
-            f.createCallChain(
-              f.createPropertyAccessChain(
-                f.createPropertyAccessExpression(
-                  f.createThis(),
-                  f.createIdentifier('renderRoot')
+          factory.createReturnStatement(
+            factory.createCallChain(
+              factory.createPropertyAccessChain(
+                factory.createPropertyAccessExpression(
+                  factory.createThis(),
+                  factory.createIdentifier('renderRoot')
                 ),
-                f.createToken(ts.SyntaxKind.QuestionDotToken),
-                f.createIdentifier('querySelector')
+                factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                factory.createIdentifier('querySelector')
               ),
               undefined,
               undefined,
-              [f.createStringLiteral(options.selector)]
+              [factory.createStringLiteral(options.selector)]
             )
           ),
         ],

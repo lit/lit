@@ -42,12 +42,12 @@ export class LocalizedVisitor implements ClassDecoratorVisitor {
   visit(litClassContext: LitClassContext, decorator: ts.Decorator) {
     litClassContext.litFileContext.nodeReplacements.set(decorator, undefined);
 
-    const f = this._factory;
-    const updateCall = f.createExpressionStatement(
-      f.createCallExpression(
-        f.createIdentifier(this.importBindingReplacement),
+    const factory = this._factory;
+    const updateCall = factory.createExpressionStatement(
+      factory.createCallExpression(
+        factory.createIdentifier(this.importBindingReplacement),
         undefined,
-        [f.createThis()]
+        [factory.createThis()]
       )
     );
     litClassContext.extraConstructorStatements.push(updateCall);

@@ -28,8 +28,8 @@ export class StateVisitor extends PropertyVisitor {
   protected _augmentOptions(
     options: ts.ObjectLiteralExpression
   ): ts.ObjectLiteralExpression {
-    const f = this._factory;
-    return f.createObjectLiteralExpression([
+    const factory = this._factory;
+    return factory.createObjectLiteralExpression([
       ...(options !== undefined
         ? options.properties.filter((option) => {
             const name =
@@ -39,7 +39,10 @@ export class StateVisitor extends PropertyVisitor {
             return name !== 'state';
           })
         : []),
-      f.createPropertyAssignment(f.createIdentifier('state'), f.createTrue()),
+      factory.createPropertyAssignment(
+        factory.createIdentifier('state'),
+        factory.createTrue()
+      ),
     ]);
   }
 }
