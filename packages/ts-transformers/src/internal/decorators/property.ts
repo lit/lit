@@ -5,7 +5,7 @@
  */
 
 import * as ts from 'typescript';
-import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../preserve-blank-lines.js';
+import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';

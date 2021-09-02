@@ -6,7 +6,7 @@
 
 import * as ts from 'typescript';
 import {BLANK_LINE_PLACEHOLDER_COMMENT} from './preserve-blank-lines.js';
-import {getHeritage, isStatic} from './util.js';
+import {getHeritage, isStatic} from './internal/util.js';
 
 /**
  * TypeScript transformer which improves the readability of the default
