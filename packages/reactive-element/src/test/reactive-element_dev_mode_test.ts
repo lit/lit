@@ -140,7 +140,7 @@ if (DEV_MODE) {
       try {
         await a.updateComplete;
       } catch (e) {
-        message = e.message;
+        message = (e as Error).message;
       }
       assert.include(message, 'class fields');
       assert.include(message, 'fooProp');
@@ -152,7 +152,7 @@ if (DEV_MODE) {
       try {
         await b.updateComplete;
       } catch (e) {
-        message = e.message;
+        message = (e as Error).message;
       }
       assert.include(message, 'class fields');
       assert.include(message, 'fooProp');
