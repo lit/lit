@@ -21,15 +21,16 @@ export const INTERNAL = true;
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
-  const issuedWarnings: Set<string | undefined> =
-    (globalThis.litIssuedWarnings ??= new Set());
+  globalThis.litIssuedWarnings ??= new Set();
 
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
-    warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    warning += code
+      ? ` See https://lit.dev/msg/${code} for more information.`
+      : '';
+    if (!globalThis.litIssuedWarnings!.has(warning)) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      globalThis.litIssuedWarnings!.add(warning);
     }
   };
 
@@ -671,6 +672,25 @@ class Template {
     // Walk the template to find binding markers and create TemplateParts
     while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
+        if (DEV_MODE) {
+          const tag = (node as Element).localName;
+          // Warn if `textarea` includes an expression and throw if `template`
+          // does since these are not supported. We do this by checking
+          // innerHTML for anything that looks like a marker. This catches
+          // cases like bindings in textarea there markers turn into text nodes.
+          if (
+            /^(?:textarea|template)$/i!.test(tag) &&
+            (node as Element).innerHTML.includes(marker)
+          ) {
+            const m =
+              `Expressions are not supported inside \`${tag}\` ` +
+              `elements. See https://lit.dev/msg/expression-in-${tag} for more ` +
+              `information.`;
+            if (tag === 'template') {
+              throw new Error(m);
+            } else issueWarning('', m);
+          }
+        }
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
