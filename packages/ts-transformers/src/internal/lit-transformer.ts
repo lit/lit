@@ -7,7 +7,6 @@
 import * as ts from 'typescript';
 import {LitClassContext} from './lit-class-context.js';
 import {LitFileContext} from './lit-file-context.js';
-import {cloneNode} from 'ts-clone-node';
 import {isStatic} from './util.js';
 
 import type {
@@ -367,9 +366,7 @@ export class LitTransformer {
   ) {
     const f = this._context.factory;
     const properties = [
-      ...(existingProperties?.properties.map((prop) =>
-        cloneNode(prop, {factory: this._context.factory})
-      ) ?? []),
+      ...(existingProperties?.properties ?? []),
       ...newProperties.map(({name, options}) =>
         f.createPropertyAssignment(
           f.createIdentifier(name),
