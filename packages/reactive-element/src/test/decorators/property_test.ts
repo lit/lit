@@ -177,9 +177,9 @@ suite('@property', () => {
         };
       }
 
-      noAttr: string | undefined;
-      atTr: string | undefined;
-      customAttr: string | undefined;
+      declare noAttr: string | undefined;
+      declare atTr: string | undefined;
+      declare customAttr: string | undefined;
 
       constructor() {
         super();
@@ -294,7 +294,7 @@ suite('@property', () => {
         };
       }
 
-      foo: string;
+      declare foo: string;
 
       constructor() {
         super();

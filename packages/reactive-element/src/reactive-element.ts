@@ -1095,16 +1095,14 @@ export abstract class ReactiveElement
           }
         );
         if (shadowedProperties.length) {
-          issueWarning(
-            'class-field-shadowing',
+          throw new Error(
             `The following properties on element ${this.localName} will not ` +
               `trigger updates as expected because they are set using class ` +
               `fields: ${shadowedProperties.join(', ')}. ` +
               `Native class fields and some compiled output will overwrite ` +
-              `accessors used for detecting changes. To fix this issue, ` +
-              `either initialize properties in the constructor or adjust ` +
-              `your compiler settings; for example, for TypeScript set ` +
-              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.`
+              `accessors used for detecting changes. See ` +
+              `https://lit.dev/msg/class-field-shadowing ` +
+              `for more information.`
           );
         }
       }

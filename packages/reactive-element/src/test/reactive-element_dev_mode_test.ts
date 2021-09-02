@@ -109,8 +109,8 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'requestUpdateInternal');
     });
 
-    test('warns when updating properties are shadowed', async () => {
-      class WarnShadowed extends ReactiveElement {
+    test('throws when updating properties are shadowed class fields', async () => {
+      class ShadowedProps extends ReactiveElement {
         static override properties = {
           fooProp: {},
           barProp: {},
@@ -121,30 +121,42 @@ if (DEV_MODE) {
           // Simulates a class field.
           Object.defineProperty(this, 'fooProp', {
             value: 'foo',
-            writable: false,
-            enumerable: false,
+            writable: true,
+            enumerable: true,
             configurable: true,
           });
           Object.defineProperty(this, 'barProp', {
             value: 'bar',
-            writable: false,
-            enumerable: false,
+            writable: true,
+            enumerable: true,
             configurable: true,
           });
         }
       }
-      customElements.define(generateElementName(), WarnShadowed);
-      const a = new WarnShadowed();
+      customElements.define(generateElementName(), ShadowedProps);
+      const a = new ShadowedProps();
       container.appendChild(a);
-      await a.updateComplete;
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'fooProp, barProp');
-      assert.include(warnings[0], 'class field');
-      // warns once, does not spam.
-      const b = new WarnShadowed();
+      let message = '';
+      try {
+        await a.updateComplete;
+      } catch (e) {
+        message = (e as Error).message;
+      }
+      assert.include(message, 'class fields');
+      assert.include(message, 'fooProp');
+      assert.include(message, 'barProp');
+      // always throws
+      const b = new ShadowedProps();
       container.appendChild(b);
-      await b.updateComplete;
-      assert.equal(warnings.length, 1);
+      message = '';
+      try {
+        await b.updateComplete;
+      } catch (e) {
+        message = (e as Error).message;
+      }
+      assert.include(message, 'class fields');
+      assert.include(message, 'fooProp');
+      assert.include(message, 'barProp');
     });
 
     test('warns when awaiting `requestUpdate`', async () => {
