@@ -104,11 +104,6 @@ class PreserveBlankLinesTransformer {
       // trivia from the first child instead.
       return;
     }
-    if (ts.isPropertyDeclaration(node)) {
-      // Skip property declarations because TypeScript moves them to the
-      // constructor, where preceding blank lines look odd.
-      return;
-    }
 
     // The same trivia range can be associated with multiple AST nodes. For
     // example, `let x=0` is represented as VariableStatement >

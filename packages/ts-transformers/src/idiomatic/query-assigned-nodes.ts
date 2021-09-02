@@ -54,8 +54,8 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
     const flatten = arg1?.kind === ts.SyntaxKind.TrueKeyword;
     const selector =
       arg2 !== undefined && ts.isStringLiteral(arg2) ? arg2.text : '';
-    litClassContext.litFileContext.nodesToRemove.add(property);
-    litClassContext.classMembers.push(
+    litClassContext.litFileContext.replaceAndMoveComments(
+      property,
       this._createQueryAssignedNodesGetter(name, slotName, flatten, selector)
     );
   }

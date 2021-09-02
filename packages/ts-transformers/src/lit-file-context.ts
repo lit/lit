@@ -17,10 +17,10 @@ export class LitFileContext {
   readonly litImports = new Map<ts.ImportSpecifier, string>();
 
   /**
-   * Nodes that are to be removed from the AST if they are encountered in
-   * subsequent traversal.
+   * Nodes that are to be replaced with another node (or removed when undefined)
+   * when they are encountered in subsequent traversal.
    */
-  readonly nodesToRemove = new Set<ts.Node>();
+  readonly nodeReplacements = new Map<ts.Node, ts.Node | undefined>();
 
   private readonly _program: ts.Program;
 
@@ -30,7 +30,7 @@ export class LitFileContext {
 
   clear() {
     this.litImports.clear();
-    this.nodesToRemove.clear();
+    this.nodeReplacements.clear();
   }
 
   /**
@@ -47,5 +47,15 @@ export class LitFileContext {
       return undefined;
     }
     return this.litImports.get(firstDeclaration);
+  }
+
+  /**
+   * Replace one AST node with another, copying over all associated comments.
+   */
+  replaceAndMoveComments(oldNode: ts.Node, newNode: ts.Node): void {
+    this.nodeReplacements.set(oldNode, newNode);
+    // Original source comments.
+    ts.setTextRange(newNode, oldNode);
+    ts.moveSyntheticComments(newNode, oldNode);
   }
 }

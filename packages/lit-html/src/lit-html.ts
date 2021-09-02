@@ -18,13 +18,16 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 export const INTERNAL = true;
 
-let issueWarning: (warning: string) => void;
+let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   globalThis.litIssuedWarnings ??= new Set();
 
   // Issue a warning, if we haven't already.
-  issueWarning = (warning: string) => {
+  issueWarning = (code: string, warning: string) => {
+    warning += code
+      ? ` See https://lit.dev/msg/${code} for more information.`
+      : '';
     if (!globalThis.litIssuedWarnings!.has(warning)) {
       console.warn(warning);
       globalThis.litIssuedWarnings!.add(warning);
@@ -32,9 +35,8 @@ if (DEV_MODE) {
   };
 
   issueWarning(
-    `Lit is in dev mode. Not recommended for production! See ` +
-      `https://lit.dev/docs/tools/development/` +
-      `#development-and-production-builds for more information.`
+    'dev-mode',
+    `Lit is in dev mode. Not recommended for production!`
   );
 }
 
@@ -686,7 +688,7 @@ class Template {
               `information.`;
             if (tag === 'template') {
               throw new Error(m);
-            } else issueWarning(m);
+            } else issueWarning('', m);
           }
         }
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
@@ -1426,7 +1428,7 @@ class AttributePart implements Disconnectable {
     this._$parent = parent;
     this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this._$committedValue = new Array(strings.length - 1).fill(nothing);
+      this._$committedValue = new Array(strings.length - 1).fill(new String());
       this.strings = strings;
     } else {
       this._$committedValue = nothing;
@@ -1746,8 +1748,8 @@ globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 (globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-      `for more information.`
+    'multiple-versions',
+    `Multiple versions of Lit loaded. ` +
+      `Loading multiple versions is not recommended.`
   );
 }

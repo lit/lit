@@ -15,6 +15,7 @@ import {QueryAllVisitor} from './idiomatic/query-all.js';
 import {QueryAsyncVisitor} from './idiomatic/query-async.js';
 import {QueryAssignedNodesVisitor} from './idiomatic/query-assigned-nodes.js';
 import {EventOptionsVisitor} from './idiomatic/event-options.js';
+import {LocalizedVisitor} from './idiomatic/localized.js';
 
 /**
  * TypeScript transformer which transforms all Lit decorators to their idiomatic
@@ -69,6 +70,7 @@ export default function idiomaticLitDecoratorTransformer(
       new QueryAsyncVisitor(context),
       new QueryAssignedNodesVisitor(context),
       new EventOptionsVisitor(context, program),
+      new LocalizedVisitor(context),
     ]);
     return (file) => {
       return ts.visitNode(file, transformer.visitFile);

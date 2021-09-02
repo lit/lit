@@ -127,6 +127,23 @@ suite('until directive', () => {
   test('renders a Promise to an interpolated attribute', async () => {
     const promise = Promise.resolve('foo');
     render(html`<div test="value:${until(promise)}"></div>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div test="value:"></div>'
+    );
+    await promise;
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div test="value:foo"></div>'
+    );
+  });
+
+  test('renders a nothing fallback to an interpolated attribute', async () => {
+    const promise = Promise.resolve('foo');
+    render(
+      html`<div test="value:${until(promise, nothing)}"></div>`,
+      container
+    );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     await promise;
     assert.equal(
@@ -435,7 +452,10 @@ suite('until directive', () => {
       )}"></div>`,
       container
     );
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="other  "></div>'
+    );
 
     await laterTask();
     assert.equal(
@@ -536,7 +556,10 @@ suite('until directive', () => {
       )}"></div>`,
       container
     );
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div data-attr="other  "></div>'
+    );
 
     await laterTask();
     assert.equal(

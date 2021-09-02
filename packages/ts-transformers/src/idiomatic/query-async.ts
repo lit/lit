@@ -52,8 +52,8 @@ export class QueryAsyncVisitor implements MemberDecoratorVisitor {
       return;
     }
     const selector = arg0.text;
-    litClassContext.litFileContext.nodesToRemove.add(property);
-    litClassContext.classMembers.push(
+    litClassContext.litFileContext.replaceAndMoveComments(
+      property,
       this._createQueryAsyncGetter({name, selector})
     );
   }

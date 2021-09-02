@@ -36,7 +36,7 @@ let requestUpdateThenable: (name: string) => {
   ) => void;
 };
 
-let issueWarning: (warning: string) => void;
+let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
@@ -45,7 +45,8 @@ if (DEV_MODE) {
     (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
-  issueWarning = (warning: string) => {
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
     if (!issuedWarnings.has(warning)) {
       console.warn(warning);
       issuedWarnings.add(warning);
@@ -53,9 +54,8 @@ if (DEV_MODE) {
   };
 
   issueWarning(
-    `Lit is in dev mode. Not recommended for production! See ` +
-      `https://lit.dev/docs/tools/development/` +
-      `#development-and-production-builds for more information.`
+    'dev-mode',
+    `Lit is in dev mode. Not recommended for production!`
   );
 
   // Issue platform support warning.
@@ -64,10 +64,9 @@ if (DEV_MODE) {
     globalThis.reactiveElementPlatformSupport === undefined
   ) {
     issueWarning(
+      'polyfill-support-missing',
       `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
-        `the \`polyfill-support\` module has not been loaded. See ` +
-        `https://lit.dev/docs/tools/requirements/#polyfills ` +
-        `for more information.`
+        `the \`polyfill-support\` module has not been loaded.`
     );
   }
 
@@ -77,6 +76,7 @@ if (DEV_MODE) {
       _onrejected?: () => void
     ) => {
       issueWarning(
+        'request-update-promise',
         `The \`requestUpdate\` method should no longer return a Promise but ` +
           `does so on \`${name}\`. Use \`updateComplete\` instead.`
       );
@@ -615,17 +615,19 @@ export abstract class ReactiveElement
     this.elementStyles = this.finalizeStyles(this.styles);
     // DEV mode warnings
     if (DEV_MODE) {
-      [`initialize`, `requestUpdateInternal`, `_getUpdateComplete`].forEach(
-        (name: string) => {
-          if (this.prototype.hasOwnProperty(name)) {
-            issueWarning(
-              `\`${name}\` is implemented on class ${this.name}. It ` +
-                `has been removed from this version of \`ReactiveElement\`.` +
-                ` See the changelog at https://github.com/lit/lit/blob/main/packages/reactive-element/CHANGELOG.md`
-            );
-          }
+      const warnRemovedOrRenamed = (name: string, renamed = false) => {
+        if (this.prototype.hasOwnProperty(name)) {
+          issueWarning(
+            renamed ? 'renamed-api' : 'removed-api',
+            `\`${name}\` is implemented on class ${this.name}. It ` +
+              `has been ${renamed ? 'renamed' : 'removed'} ` +
+              `in this version of LitElement.`
+          );
         }
-      );
+      };
+      warnRemovedOrRenamed('initialize');
+      warnRemovedOrRenamed('requestUpdateInternal');
+      warnRemovedOrRenamed('_getUpdateComplete', true);
     }
     return true;
   }
@@ -902,6 +904,7 @@ export abstract class ReactiveElement
         attrValue === undefined
       ) {
         issueWarning(
+          'undefined-attribute-value',
           `The attribute value for the ${name as string} property is ` +
             `undefined on element ${this.localName}. The attribute will be ` +
             `removed, but in the previous version of \`ReactiveElement\`, ` +
@@ -1092,18 +1095,14 @@ export abstract class ReactiveElement
           }
         );
         if (shadowedProperties.length) {
-          issueWarning(
+          throw new Error(
             `The following properties on element ${this.localName} will not ` +
               `trigger updates as expected because they are set using class ` +
               `fields: ${shadowedProperties.join(', ')}. ` +
               `Native class fields and some compiled output will overwrite ` +
-              `accessors used for detecting changes. To fix this issue, ` +
-              `either initialize properties in the constructor or adjust ` +
-              `your compiler settings; for example, for TypeScript set ` +
-              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.` +
-              `See https://lit.dev/docs/components/properties/#declare and ` +
-              `https://lit.dev/docs/components/decorators/` +
-              `#avoiding-issues-with-class-fields for more information.`
+              `accessors used for detecting changes. See ` +
+              `https://lit.dev/msg/class-field-shadowing ` +
+              `for more information.`
           );
         }
       }
@@ -1163,6 +1162,7 @@ export abstract class ReactiveElement
       ) >= 0
     ) {
       issueWarning(
+        'change-in-update',
         `Element ${this.localName} scheduled an update ` +
           `(generally because a property was set) ` +
           `after an update completed, causing a new update to be scheduled. ` +
@@ -1323,8 +1323,8 @@ if (DEV_MODE) {
 (globalThis.reactiveElementVersions ??= []).push('1.0.0-rc.3');
 if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
   issueWarning!(
+    'multiple-versions',
     `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-      `for more information.`
+      `is not recommended.`
   );
 }

@@ -43,7 +43,7 @@ export class CustomElementVisitor implements ClassDecoratorVisitor {
     }
     const elementName = arg0.text;
     const className = litClassContext.class.name.text;
-    litClassContext.litFileContext.nodesToRemove.add(decorator);
+    litClassContext.litFileContext.nodeReplacements.set(decorator, undefined);
     litClassContext.adjacentStatements.push(
       this._createCustomElementsDefineCall(elementName, className)
     );
