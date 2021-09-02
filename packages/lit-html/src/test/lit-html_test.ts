@@ -2056,6 +2056,52 @@ suite('lit-html', () => {
         );
       });
 
+      test('Parts inside nested templates throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(
+            html`<template><template>${'test'}</template></template>`,
+            container
+          );
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(
+            html`<template><div><template>${'test'}</template></template></div>`,
+            container
+          );
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<template id=${'test'}><template>
+          <div>Static content is ok</div>
+            </template></template>`,
+          container
+        );
+      });
+
       test('Parts inside textarea throw in dev mode', () => {
         // top level
         assert.throws(() => {

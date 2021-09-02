@@ -510,10 +510,6 @@ const getTemplateHtml = (
   // regexes
   let regex = textEndRegex;
 
-  // For issuing dev mode warnings for tags that cannot contain internal parts.
-  let warnPartsInsideTag: string | null;
-  let warnPartsInsideEndRegex: RegExp | null;
-
   for (let i = 0; i < l; i++) {
     const s = strings[i];
     // The index of the end of the last attribute name. When this is
@@ -528,15 +524,6 @@ const getTemplateHtml = (
     // The conditions in this loop handle the current parse state, and the
     // assignments to the `regex` variable are the state transitions.
     while (lastIndex < s.length) {
-      // If we are moving outside of a tag that should not contains
-      // internal parts, then reset that warning state.
-      if (
-        DEV_MODE &&
-        warnPartsInsideEndRegex! &&
-        s.match(warnPartsInsideEndRegex!)
-      ) {
-        warnPartsInsideTag = warnPartsInsideEndRegex = null;
-      }
       // Make sure we start searching from where we previously left off
       regex.lastIndex = lastIndex;
       match = regex.exec(s);
@@ -556,16 +543,6 @@ const getTemplateHtml = (
             // this regex at the end of the tag.
             rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
           }
-          // If we're staring an element that should not contain internal
-          // parts, capture the tag we're inside.
-          // However, since these elements do allow attribute parts, we don't
-          // turn on the warning until we move into this element's children.
-          if (
-            DEV_MODE &&
-            unsupportedInternalPartsElement!.test(match[TAG_NAME])
-          ) {
-            warnPartsInsideTag = match[TAG_NAME];
-          }
           regex = tagEndRegex;
         } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
           if (DEV_MODE) {
@@ -578,15 +555,6 @@ const getTemplateHtml = (
         }
       } else if (regex === tagEndRegex) {
         if (match[ENTIRE_MATCH] === '>') {
-          // If we're entering a tag which should not contain internal parts,
-          // setup the regex for leaving the tag. Note, the existence of the
-          // regex indicates that the warning should be issued.
-          if (DEV_MODE && warnPartsInsideTag!) {
-            warnPartsInsideEndRegex = new RegExp(
-              `</${warnPartsInsideTag}`,
-              'g'
-            );
-          }
           // End of a tag. If we had started a raw-text element, use that
           // regex
           regex = rawTextEndRegex ?? textEndRegex;
@@ -632,15 +600,6 @@ const getTemplateHtml = (
           regex === doubleQuoteAttrEndRegex,
         'unexpected parse state B'
       );
-
-      // Issue warning if we're currently inside a part which should not
-      // contain internal parts (indicated by existence of the regex that
-      // can move out of this state).
-      if (warnPartsInsideEndRegex!) {
-        throw new Error(
-          `Parts are not supported inside the \`${warnPartsInsideTag!}\` tag.`
-        );
-      }
     }
 
     // We have four cases:
@@ -720,6 +679,20 @@ class Template {
     // Walk the template to find binding markers and create TemplateParts
     while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
+        // Throw if elements like textarea and template include bindings. These
+        // are not supported. We do this by checking innerHTML for anything that
+        // looks like a marker. This catches cases like bindings in textarea
+        // where markers turn into text nodes.
+        if (
+          DEV_MODE &&
+          unsupportedInternalPartsElement!.test((node as Element).localName) &&
+          (node as Element).innerHTML.includes(marker)
+        ) {
+          throw new Error(
+            `Parts are not supported inside the \`${(node as Element)
+              .localName!}\` tag.`
+          );
+        }
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
