@@ -2047,6 +2047,16 @@ suite('lit-html', () => {
           );
         });
 
+        // element part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div ${'test'}></div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
         // attr on element a-ok
         render(
           html`<template id=${'test'}>
@@ -2088,6 +2098,16 @@ suite('lit-html', () => {
           render(
             html`<template><template>
             <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div ${'test'}></div></div></div></div>
             </template></template>`,
             container
           );
@@ -3053,6 +3073,15 @@ suite('lit-html', () => {
       render(
         html`<textarea>
         <div><div><div><div class="${'test'}"></div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // element part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div ${'test'}></div></div></div></div>
         </textarea>`,
         container
       );

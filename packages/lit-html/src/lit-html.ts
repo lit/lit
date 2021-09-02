@@ -235,15 +235,6 @@ const doubleQuoteAttrEndRegex = /"/g;
  */
 const rawTextElement = /^(?:script|style|textarea)$/i;
 
-/**
- * List of elements that do not support internal parts. This is needed for
- * issuing dev mode warnings.
- */
-let unsupportedInternalPartsElement: RegExp;
-if (DEV_MODE) {
-  unsupportedInternalPartsElement = /^(?:textarea|template)$/i;
-}
-
 /** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
@@ -686,7 +677,7 @@ class Template {
           // innerHTML for anything that looks like a marker. This catches
           // cases like bindings in textarea there markers turn into text nodes.
           if (
-            unsupportedInternalPartsElement!.test(tag) &&
+            /^(?:textarea|template)$/i!.test(tag) &&
             (node as Element).innerHTML.includes(marker)
           ) {
             const m =
