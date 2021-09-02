@@ -2197,8 +2197,10 @@ suite('lit-html', () => {
 
     test('async directive can call setValue synchronously', () => {
       assertRender(
-        html`<div foo=${syncAsyncDirective('test')}></div>`,
-        '<div foo="test"></div>'
+        html`<div foo=${syncAsyncDirective('test')}>${syncAsyncDirective(
+          'test'
+        )}</div>`,
+        '<div foo="test">test</div>'
       );
     });
 
