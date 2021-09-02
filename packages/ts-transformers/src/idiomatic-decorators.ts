@@ -5,7 +5,6 @@
  */
 
 import * as ts from 'typescript';
-
 import {LitTransformer} from './internal/lit-transformer.js';
 import {CustomElementVisitor} from './internal/decorators/custom-element.js';
 import {PropertyVisitor} from './internal/decorators/property.js';
