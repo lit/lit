@@ -8,6 +8,7 @@ import * as ts from 'typescript';
 import {LitClassContext} from './lit-class-context.js';
 import {LitFileContext} from './lit-file-context.js';
 import {cloneNode} from 'ts-clone-node';
+import {isStatic} from './util.js';
 
 import type {
   Visitor,
@@ -15,7 +16,6 @@ import type {
   MemberDecoratorVisitor,
   GenericVisitor,
 } from './visitor.js';
-import {isStatic} from './util.js';
 
 /**
  * A transformer for Lit code.
