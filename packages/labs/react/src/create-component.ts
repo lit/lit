@@ -178,7 +178,7 @@ export const createComponent = <I extends HTMLElement, E>(
         setProperty(
           this._element,
           prop,
-          this.props[prop as Exclude<keyof ComponentProps, symbol>],
+          this.props[prop as keyof ComponentProps],
           oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
           events
         );
