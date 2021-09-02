@@ -2176,6 +2176,7 @@ suite('lit-html', () => {
     }
     const aDirective = directive(ADirective);
     let aDirectiveInst: ADirective;
+
     const bDirective = directive(
       class extends Directive {
         count = 0;
@@ -2184,6 +2185,22 @@ suite('lit-html', () => {
         }
       }
     );
+
+    const syncAsyncDirective = directive(
+      class extends AsyncDirective {
+        render(x: string) {
+          this.setValue(x);
+          return noChange;
+        }
+      }
+    );
+
+    test('async directive can call setValue synchronously', () => {
+      assertRender(
+        html`<div foo=${syncAsyncDirective('test')}></div>`,
+        '<div foo="test"></div>'
+      );
+    });
 
     test('async directives in ChildPart', async () => {
       const template = (promise: Promise<unknown>) =>
