@@ -900,6 +900,55 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     checkTransform(input, expected, options);
   });
 
+  test('public and private @eventOptions', () => {
+    const input = `
+    import {LitElement, html} from 'lit';
+    import {eventOptions} from 'lit/decorators.js';
+
+    class MyElement extends LitElement {
+      @eventOptions({capture: true})
+      _public(event) {
+        console.log('click', event.target);
+      }
+
+      @eventOptions({passive: true})
+      private _private(event) {
+        console.log('click', event.target);
+      }
+
+      render() {
+        return html\`
+          <button @click=\${this._public}></button>
+          <button @click=\${this._private}></button>
+        \`;
+      }
+    }
+    `;
+
+    const expected = `
+    import {LitElement, html} from 'lit';
+
+    class MyElement extends LitElement {
+      _public(event) {
+        console.log('click', event.target);
+      }
+
+      _private(event) {
+        console.log('click', event.target);
+      }
+
+      render() {
+        return html\`
+        <button @click=\${this._public}></button>
+        <button @click=\${{handleEvent: (e) => this._private(e), passive: true}}></button>
+      \`;
+      }
+    }
+    Object.assign(MyElement.prototype._public, { capture: true });
+    `;
+    checkTransform(input, expected, options);
+  });
+
   for (const specifier of [
     'lit/decorators.js',
     'lit/decorators/custom-element.js',
