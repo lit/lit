@@ -88,8 +88,8 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
   }
 
   protected _augmentOptions(
-    options: ts.ObjectLiteralExpression
-  ): ts.ObjectLiteralExpression {
+    options: ts.ObjectLiteralExpression | undefined
+  ): ts.ObjectLiteralExpression | undefined {
     return options;
   }
 }

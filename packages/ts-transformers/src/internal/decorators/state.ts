@@ -22,10 +22,9 @@ import {PropertyVisitor} from './property.js';
  *   }
  */
 export class StateVisitor extends PropertyVisitor {
-  readonly kind = 'memberDecorator';
-  readonly decoratorName = 'state';
+  override readonly decoratorName = 'state';
 
-  protected _augmentOptions(
+  protected override _augmentOptions(
     options: ts.ObjectLiteralExpression
   ): ts.ObjectLiteralExpression {
     const factory = this._factory;

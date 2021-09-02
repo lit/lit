@@ -50,7 +50,7 @@ export class QueryVisitor implements MemberDecoratorVisitor {
       return;
     }
     const [arg0, arg1] = decorator.expression.arguments;
-    if (!ts.isStringLiteral(arg0)) {
+    if (arg0 === undefined || !ts.isStringLiteral(arg0)) {
       return;
     }
     if (!ts.isIdentifier(property.name)) {

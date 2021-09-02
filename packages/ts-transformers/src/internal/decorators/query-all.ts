@@ -43,7 +43,7 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
       return;
     }
     const [arg0] = decorator.expression.arguments;
-    if (!ts.isStringLiteral(arg0)) {
+    if (arg0 === undefined || !ts.isStringLiteral(arg0)) {
       return;
     }
     if (!ts.isIdentifier(property.name)) {

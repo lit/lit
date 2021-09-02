@@ -38,7 +38,7 @@ export class CustomElementVisitor implements ClassDecoratorVisitor {
       return;
     }
     const [arg0] = decorator.expression.arguments;
-    if (!ts.isStringLiteral(arg0)) {
+    if (arg0 === undefined || !ts.isStringLiteral(arg0)) {
       return;
     }
     const elementName = arg0.text;
