@@ -280,6 +280,17 @@ suite('createComponent', () => {
     assert.equal(fooEvent2, undefined);
   });
 
+  test('can listen to native events', async () => {
+    let clickEvent!: React.MouseEvent;
+    await renderReactComponent({
+      onClick(e: React.MouseEvent) {
+        clickEvent = e;
+      },
+    });
+    el.click();
+    assert.equal(clickEvent?.type, 'click');
+  });
+
   test('can set children', async () => {
     const children = (window.React.createElement(
       'div'
