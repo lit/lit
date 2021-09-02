@@ -54,7 +54,7 @@ const cleanupClassConstructor = (
   let ctor: ts.ConstructorDeclaration | undefined;
   let ctorIdx = -1;
   for (let i = 0; i < class_.members.length; i++) {
-    const member = class_.members[i];
+    const member = class_.members[i]!;
     if (ts.isConstructorDeclaration(member)) {
       ctor = member;
       ctorIdx = i;
@@ -87,7 +87,7 @@ const cleanupClassConstructor = (
     // The constructor existed in the original source. Move it back.
     newCtorIdx = class_.members.length - 1;
     for (let i = 0; i < class_.members.length; i++) {
-      if (ctor.pos < class_.members[i].pos) {
+      if (ctor.pos < class_.members[i]!.pos) {
         newCtorIdx = i - 1;
         break;
       }
@@ -98,7 +98,7 @@ const cleanupClassConstructor = (
     // common style.
     newCtorIdx = 0;
     for (let i = class_.members.length - 1; i >= 0; i--) {
-      if (isStatic(class_.members[i])) {
+      if (isStatic(class_.members[i]!)) {
         newCtorIdx = ctorIdx > i ? i + 1 : i;
         break;
       }
@@ -193,7 +193,7 @@ const findSuperSpreadArgument = (
     ts.isCallExpression(superCall.expression) &&
     superCall.expression.expression.kind === ts.SyntaxKind.SuperKeyword &&
     superCall.expression.arguments?.length === 1 &&
-    ts.isSpreadElement(superCall.expression.arguments[0]) &&
+    ts.isSpreadElement(superCall.expression.arguments[0]!) &&
     ts.isIdentifier(superCall.expression.arguments[0].expression) &&
     superCall.expression.arguments[0].expression.text === 'arguments'
   ) {

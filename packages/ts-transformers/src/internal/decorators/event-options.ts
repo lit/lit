@@ -85,7 +85,10 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
       return;
     }
     const [eventOptionsNode] = decorator.expression.arguments;
-    if (!ts.isObjectLiteralExpression(eventOptionsNode)) {
+    if (
+      eventOptionsNode === undefined ||
+      !ts.isObjectLiteralExpression(eventOptionsNode)
+    ) {
       return;
     }
     if (!ts.isIdentifier(method.name)) {
@@ -221,7 +224,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     const priorText =
       pos === 0
         ? template.head.text
-        : template.templateSpans[pos - 1].literal.text;
+        : template.templateSpans[pos - 1]!.literal.text;
     if (priorText.match(/@[^\s"'>]+\s*=\s*["']*$/) === null) {
       return false;
     }

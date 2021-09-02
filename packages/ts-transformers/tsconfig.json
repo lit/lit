@@ -4,17 +4,22 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": ["es2020", "DOM"],
+    "forceConsistentCasingInFileNames": true,
+
     "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "preserveConstEnums": true,
-    "forceConsistentCasingInFileNames": true,
+
     "rootDir": "src/",
     "outDir": "lib/",
     "declaration": true,
     "sourceMap": true,
-    "inlineSources": true,
-    "allowSyntheticDefaultImports": true
+    "inlineSources": true
   },
   "include": ["src/**/*"]
 }
