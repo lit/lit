@@ -521,6 +521,7 @@ const getTemplateHtml = (
     let attrName: string | undefined;
     let lastIndex = 0;
     let match!: RegExpExecArray | null;
+
     // The conditions in this loop handle the current parse state, and the
     // assignments to the `regex` variable are the state transitions.
     while (lastIndex < s.length) {
