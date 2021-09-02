@@ -26,68 +26,64 @@
       "expand": [
         {
           "name": "this-change"
+        }
+      ]
+    },
+    {
+      "url": "lit-element/class-map/index.html?classVariant=simple",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render",
+          "name": "render-simple"
         },
         {
-          "name": "tip-of-tree",
-          "packageVersions": {
-            "label": "tip-of-tree",
-            "dependencies": {
-              "lit-html": {
-                "kind": "git",
-                "repo": "https://github.com/lit/lit-html.git",
-                "ref": "main",
-                "subdir": "packages/lit-html",
-                "setupCommands": [
-                  "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
-                ]
-              },
-              "lit-element": {
-                "kind": "git",
-                "repo": "https://github.com/lit/lit-html.git",
-                "ref": "main",
-                "subdir": "packages/lit-element",
-                "setupCommands": [
-                  "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
-                ]
-              },
-              "@lit/reactive-element": {
-                "kind": "git",
-                "repo": "https://github.com/lit/lit-html.git",
-                "ref": "main",
-                "subdir": "packages/reactive-element",
-                "setupCommands": [
-                  "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
-                ]
-              }
-            }
-          }
+          "mode": "performance",
+          "entryName": "update",
+          "name": "update-simple"
         },
         {
-          "name": "previous-release",
-          "packageVersions": {
-            "label": "previous-release",
-            "dependencies": {
-              "lit-html": "^1.0.0",
-              "lit-element": "^2.0.0",
-              "@lit/reactive-element": {
-                "kind": "git",
-                "repo": "https://github.com/lit/lit-html.git",
-                "ref": "main",
-                "subdir": "packages/reactive-element",
-                "setupCommands": [
-                  "npm ci",
-                  "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
-                ]
-              }
-            }
-          }
+          "mode": "performance",
+          "entryName": "nop-update",
+          "name": "nop-update-simple"
+        }
+      ],
+      "expand": [
+        {
+          "name": "this-change"
+        }
+      ]
+    },
+    {
+      "url": "lit-element/class-map/index.html?classVariant=class-string-interpolation",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render",
+          "name": "render-string"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update",
+          "name": "update-string"
+        },
+        {
+          "mode": "performance",
+          "entryName": "nop-update",
+          "name": "nop-update-string"
+        }
+      ],
+      "expand": [
+        {
+          "name": "this-change"
         }
       ]
     }
