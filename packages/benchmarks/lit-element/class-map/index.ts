@@ -92,7 +92,7 @@ function generateData(number = 1000): IData[] {
                     dynamicClass: true,
                     danger: item.id === this.selected,
                     normal: item.id !== this.selected,
-                    ["static-class"]: true,
+                    ['static-class']: true,
                     class1: true,
                     class2: true,
                     class3: false,
@@ -115,7 +115,7 @@ function generateData(number = 1000): IData[] {
                     dynamicClass: true,
                     danger: item.id === this.selected,
                     normal: item.id !== this.selected,
-                    ["static-class"]: true,
+                    ['static-class']: true,
                     class1: true,
                     class2: true,
                     class3: false,
@@ -136,10 +136,10 @@ function generateData(number = 1000): IData[] {
                   id="${item.id}"
                   class="static-class class1 class2 ${true
                     ? 'dynamicClass'
-                    : null} ${item.id === this.selected ? 'danger' : null}
-                    ${item.id !== this.selected ? 'normal' : null} ${false
+                    : ''} ${item.id === this.selected ? 'danger' : ''}
+                    ${item.id !== this.selected ? 'normal' : ''} ${false
                     ? 'class3'
-                    : null}"
+                    : ''}"
                 >
                   ${item.label}
                 </li>
@@ -221,6 +221,7 @@ function generateData(number = 1000): IData[] {
       for (let i = 0; i < updateCount; i++) {
         // nop update since state hasn't changed.
         (el as LitElement).requestUpdate();
+        await updateComplete();
       }
       performance.measure(test, start);
       destroy();
