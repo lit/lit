@@ -21,14 +21,13 @@ export const INTERNAL = true;
 let issueWarning: (warning: string) => void;
 
 if (DEV_MODE) {
-  const issuedWarnings: Set<string | undefined> =
-    (globalThis.litIssuedWarnings ??= new Set());
+  globalThis.litIssuedWarnings ??= new Set();
 
   // Issue a warning, if we haven't already.
   issueWarning = (warning: string) => {
-    if (!issuedWarnings.has(warning)) {
+    if (!globalThis.litIssuedWarnings!.has(warning)) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      globalThis.litIssuedWarnings!.add(warning);
     }
   };
 
@@ -680,19 +679,24 @@ class Template {
     // Walk the template to find binding markers and create TemplateParts
     while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
-        // Throw if elements like textarea and template include bindings. These
-        // are not supported. We do this by checking innerHTML for anything that
-        // looks like a marker. This catches cases like bindings in textarea
-        // where markers turn into text nodes.
-        if (
-          DEV_MODE &&
-          unsupportedInternalPartsElement!.test((node as Element).localName) &&
-          (node as Element).innerHTML.includes(marker)
-        ) {
-          throw new Error(
-            `Parts are not supported inside the \`${(node as Element)
-              .localName!}\` tag.`
-          );
+        if (DEV_MODE) {
+          const tag = (node as Element).localName;
+          // Warn if `textarea` includes an expression and throw if `template`
+          // does since these are not supported. We do this by checking
+          // innerHTML for anything that looks like a marker. This catches
+          // cases like bindings in textarea there markers turn into text nodes.
+          if (
+            unsupportedInternalPartsElement!.test(tag) &&
+            (node as Element).innerHTML.includes(marker)
+          ) {
+            const m =
+              `Expressions are not supported inside \`${tag}\` ` +
+              `elements. See https://lit.dev/msg/expression-in-${tag} for more ` +
+              `information.`;
+            if (tag === 'template') {
+              throw new Error(m);
+            } else issueWarning(m);
+          }
         }
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
