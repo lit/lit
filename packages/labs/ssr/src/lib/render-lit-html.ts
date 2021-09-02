@@ -48,8 +48,6 @@ const require = createRequire(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
 
-import type {DefaultTreeDocumentFragment} from 'parse5';
-
 import {
   traverse,
   parseFragment,
@@ -63,7 +61,7 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 import {LitElementRenderer} from './lit-element-renderer.js';
 
 declare module 'parse5' {
-  interface DefaultTreeElement {
+  interface Element {
     isDefinedCustomElement?: boolean;
   }
 }
@@ -294,7 +292,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    */
   const ast = parseFragment(String(html), {
     sourceCodeLocationInfo: true,
-  }) as DefaultTreeDocumentFragment;
+  });
 
   const ops: Array<Op> = [];
 

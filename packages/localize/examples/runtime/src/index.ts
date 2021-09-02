@@ -44,7 +44,7 @@ window.addEventListener(LOCALE_STATUS_EVENT, ({detail}) => {
   } catch (e) {
     // Either the URL locale code was invalid, or there was a problem loading
     // the locale module.
-    console.error(`Error loading locale: ${e.message}`);
+    console.error(`Error loading locale: ${(e as Error).message}`);
   }
   render(html` <x-greeter></x-greeter> `, main);
 })();

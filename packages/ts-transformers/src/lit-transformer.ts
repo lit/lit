@@ -15,6 +15,7 @@ import type {
   MemberDecoratorVisitor,
   GenericVisitor,
 } from './visitor.js';
+import {isStatic} from './util.js';
 
 /**
  * A transformer for Lit code.
@@ -30,11 +31,11 @@ import type {
  */
 export class LitTransformer {
   private readonly _context: ts.TransformationContext;
-  private readonly _classDecoratorVisitors = new MultiMap<
+  private readonly _classDecoratorVisitors = new Map<
     string,
     ClassDecoratorVisitor
   >();
-  private readonly _memberDecoratorVisitors = new MultiMap<
+  private readonly _memberDecoratorVisitors = new Map<
     string,
     MemberDecoratorVisitor
   >();
@@ -56,11 +57,23 @@ export class LitTransformer {
   private _registerVisitor(visitor: Visitor) {
     switch (visitor.kind) {
       case 'classDecorator': {
-        this._classDecoratorVisitors.add(visitor.decoratorName, visitor);
+        if (this._classDecoratorVisitors.has(visitor.decoratorName)) {
+          throw new Error(
+            'Registered more than one transformer for class decorator' +
+              visitor.decoratorName
+          );
+        }
+        this._classDecoratorVisitors.set(visitor.decoratorName, visitor);
         break;
       }
       case 'memberDecorator': {
-        this._memberDecoratorVisitors.add(visitor.decoratorName, visitor);
+        if (this._classDecoratorVisitors.has(visitor.decoratorName)) {
+          throw new Error(
+            'Registered more than one transformer for member decorator ' +
+              visitor.decoratorName
+          );
+        }
+        this._memberDecoratorVisitors.set(visitor.decoratorName, visitor);
         break;
       }
       case 'generic': {
@@ -80,11 +93,11 @@ export class LitTransformer {
   private _unregisterVisitor(visitor: Visitor) {
     switch (visitor.kind) {
       case 'classDecorator': {
-        this._classDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        this._classDecoratorVisitors.delete(visitor.decoratorName);
         break;
       }
       case 'memberDecorator': {
-        this._memberDecoratorVisitors.delete(visitor.decoratorName, visitor);
+        this._memberDecoratorVisitors.delete(visitor.decoratorName);
         break;
       }
       case 'generic': {
@@ -126,9 +139,9 @@ export class LitTransformer {
   };
 
   visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
-    if (this._litFileContext.nodesToRemove.has(node)) {
-      // A node that some previous visitor has requested to remove from the AST.
-      return undefined;
+    if (this._litFileContext.nodeReplacements.has(node)) {
+      // A node that some previous visitor has requested to be replaced.
+      return this._litFileContext.nodeReplacements.get(node);
     }
     for (const visitor of this._genericVisitors) {
       node = visitor.visit(this._litFileContext, node);
@@ -194,17 +207,25 @@ export class LitTransformer {
         // associated with a decorator. If that changed, visitors should
         // probably have a static field to declare which imports they care
         // about.
-      } else if (
+      } else {
         // Only handle the decorators we're configured to transform.
-        this._classDecoratorVisitors.has(realName) ||
-        this._memberDecoratorVisitors.has(realName)
-      ) {
-        this._litFileContext.litImports.set(importSpecifier, realName);
-        // Assume if there's a visitor for a decorator, it's always going to
-        // remove any uses of that decorator, and hence we should remove the
-        // import too.
-        this._litFileContext.nodesToRemove.add(importSpecifier);
-        traversalNeeded = true;
+        const visitor =
+          this._classDecoratorVisitors.get(realName) ??
+          this._memberDecoratorVisitors.get(realName);
+        if (visitor !== undefined) {
+          this._litFileContext.litImports.set(importSpecifier, realName);
+          // Either remove the binding or replace it with another identifier.
+          const replacement = visitor.importBindingReplacement
+            ? this._context.factory.createIdentifier(
+                visitor.importBindingReplacement
+              )
+            : undefined;
+          this._litFileContext.nodeReplacements.set(
+            importSpecifier,
+            replacement
+          );
+          traversalNeeded = true;
+        }
       }
     }
     return traversalNeeded;
@@ -247,10 +268,9 @@ export class LitTransformer {
       if (decoratorName === undefined) {
         continue;
       }
-      const visitors = this._classDecoratorVisitors.get(decoratorName) ?? [];
-      for (const visitor of visitors) {
-        visitor.visit(litClassContext, decorator);
-      }
+      this._classDecoratorVisitors
+        .get(decoratorName)
+        ?.visit(litClassContext, decorator);
     }
 
     // Class member decorators
@@ -265,25 +285,36 @@ export class LitTransformer {
         if (decoratorName === undefined) {
           continue;
         }
-        const visitors = this._memberDecoratorVisitors.get(decoratorName) ?? [];
-        for (const visitor of visitors) {
-          visitor.visit(litClassContext, member, decorator);
-        }
+        this._memberDecoratorVisitors
+          .get(decoratorName)
+          ?.visit(litClassContext, member, decorator);
       }
     }
 
     if (litClassContext.reactiveProperties.length > 0) {
-      const existing = this._findExistingStaticProperties(class_);
-      if (existing !== undefined) {
-        this._litFileContext.nodesToRemove.add(existing.getter);
-      }
-      litClassContext.classMembers.unshift(
-        this._createStaticProperties(
-          existing?.properties,
-          litClassContext.reactiveProperties
-        )
+      const oldProperties =
+        this._findExistingStaticPropertiesExpression(class_);
+      const newProperties = this._createStaticPropertiesExpression(
+        oldProperties,
+        litClassContext.reactiveProperties
       );
+      if (oldProperties !== undefined) {
+        this._litFileContext.nodeReplacements.set(oldProperties, newProperties);
+      } else {
+        const f = this._context.factory;
+        const staticPropertiesField = f.createPropertyDeclaration(
+          undefined,
+          [f.createModifier(ts.SyntaxKind.StaticKeyword)],
+          f.createIdentifier('properties'),
+          undefined,
+          undefined,
+          newProperties
+        );
+        litClassContext.classMembers.unshift(staticPropertiesField);
+      }
     }
+
+    this._addExtraConstructorStatements(litClassContext);
 
     for (const visitor of litClassContext.additionalClassVisitors) {
       this._registerVisitor(visitor);
@@ -293,18 +324,20 @@ export class LitTransformer {
     // nodes that still need to be deleted via `this._nodesToRemove` (e.g. a
     // property decorator or a property itself), and [2] in theory there could
     // be a nested custom element definition somewhere in this class.
-    const transformedClass = ts.visitEachChild(
-      this._context.factory.updateClassDeclaration(
-        class_,
-        class_.decorators,
-        class_.modifiers,
-        class_.name,
-        class_.typeParameters,
-        class_.heritageClauses,
-        [...litClassContext.classMembers, ...class_.members]
-      ),
-      this.visit,
-      this._context
+    const transformedClass = this._cleanUpDecoratorCruft(
+      ts.visitEachChild(
+        this._context.factory.updateClassDeclaration(
+          class_,
+          class_.decorators,
+          class_.modifiers,
+          class_.name,
+          class_.typeParameters,
+          class_.heritageClauses,
+          [...litClassContext.classMembers, ...class_.members]
+        ),
+        this.visit,
+        this._context
+      )
     );
 
     // These visitors only apply within the scope of the current class.
@@ -325,17 +358,18 @@ export class LitTransformer {
    *     }
    *   }
    */
-  private _createStaticProperties(
-    existingProperties: ts.NodeArray<ts.ObjectLiteralElementLike> | undefined,
-    newProperties: Array<{name: string; options?: ts.ObjectLiteralExpression}>
+  private _createStaticPropertiesExpression(
+    existingProperties: ts.ObjectLiteralExpression | undefined,
+    newProperties: Array<{
+      name: string;
+      options?: ts.ObjectLiteralExpression;
+    }>
   ) {
     const f = this._context.factory;
     const properties = [
-      ...(existingProperties
-        ? existingProperties.map((prop) =>
-            cloneNode(prop, {factory: this._context.factory})
-          )
-        : []),
+      ...(existingProperties?.properties.map((prop) =>
+        cloneNode(prop, {factory: this._context.factory})
+      ) ?? []),
       ...newProperties.map(({name, options}) =>
         f.createPropertyAssignment(
           f.createIdentifier(name),
@@ -343,95 +377,130 @@ export class LitTransformer {
         )
       ),
     ];
-    return f.createGetAccessorDeclaration(
-      undefined,
-      [f.createModifier(ts.SyntaxKind.StaticKeyword)],
-      f.createIdentifier('properties'),
-      [],
-      undefined,
-      f.createBlock(
-        [
-          f.createReturnStatement(
-            f.createObjectLiteralExpression(properties, true)
-          ),
-        ],
-        true
-      )
-    );
+    return f.createObjectLiteralExpression(properties, true);
   }
 
-  private _findExistingStaticProperties(class_: ts.ClassDeclaration):
-    | {
-        getter: ts.ClassElement;
-        properties: ts.NodeArray<ts.ObjectLiteralElementLike>;
-      }
-    | undefined {
-    const getter = class_.members.find(
+  private _findExistingStaticPropertiesExpression(
+    class_: ts.ClassDeclaration
+  ): ts.ObjectLiteralExpression | undefined {
+    const staticProperties = class_.members.find(
       (member) =>
-        ts.isGetAccessor(member) &&
+        isStatic(member) &&
+        member.name !== undefined &&
         ts.isIdentifier(member.name) &&
         member.name.text === 'properties'
     );
-    if (
-      getter === undefined ||
-      !ts.isGetAccessorDeclaration(getter) ||
-      getter.body === undefined
-    ) {
+    if (staticProperties === undefined) {
       return undefined;
     }
-    const returnStatement = getter.body.statements[0];
-    if (
-      returnStatement === undefined ||
-      !ts.isReturnStatement(returnStatement)
-    ) {
-      return undefined;
+    // Static class field.
+    if (ts.isPropertyDeclaration(staticProperties)) {
+      if (
+        staticProperties.initializer !== undefined &&
+        ts.isObjectLiteralExpression(staticProperties.initializer)
+      ) {
+        return staticProperties.initializer;
+      } else {
+        throw new Error(
+          'Static properties class field initializer must be an object expression.'
+        );
+      }
     }
-    const objectLiteral = returnStatement.expression;
-    if (
-      objectLiteral === undefined ||
-      !ts.isObjectLiteralExpression(objectLiteral)
-    ) {
-      return undefined;
+    // Static getter.
+    if (ts.isGetAccessorDeclaration(staticProperties)) {
+      const returnStatement = staticProperties.body?.statements[0];
+      if (
+        returnStatement === undefined ||
+        !ts.isReturnStatement(returnStatement)
+      ) {
+        throw new Error(
+          'Static properties getter must contain purely a return statement.'
+        );
+      }
+      const returnExpression = returnStatement.expression;
+      if (
+        returnExpression === undefined ||
+        !ts.isObjectLiteralExpression(returnExpression)
+      ) {
+        throw new Error(
+          'Static properties getter must return an object expression.'
+        );
+      }
+      return returnExpression;
     }
-    return {getter, properties: objectLiteral.properties};
-  }
-}
-
-/**
- * Maps from a key to a Set of values.
- */
-class MultiMap<K, V> {
-  private readonly _map = new Map<K, Set<V>>();
-
-  get(key: K): Set<V> | undefined {
-    return this._map.get(key);
+    throw new Error(
+      'Static properties class member must be a class field or getter.'
+    );
   }
 
-  has(key: K): boolean {
-    return this._map.has(key);
-  }
-
-  get size(): number {
-    return this._map.size;
-  }
-
-  add(key: K, val: V) {
-    let set = this._map.get(key);
-    if (set === undefined) {
-      set = new Set();
-      this._map.set(key, set);
-    }
-    set.add(val);
-  }
-
-  delete(key: K, val: V) {
-    const set = this._map.get(key);
-    if (set === undefined) {
+  /**
+   * Create or modify a class constructor to add additional constructor
+   * statements from any of our transforms.
+   */
+  private _addExtraConstructorStatements(context: LitClassContext) {
+    if (context.extraConstructorStatements.length === 0) {
       return;
     }
-    if (set.delete(val) && set.size === 0) {
-      this._map.delete(key);
+    const existingCtor = context.class.members.find(
+      ts.isConstructorDeclaration
+    );
+    const f = this._context.factory;
+    if (existingCtor === undefined) {
+      const newCtor = f.createConstructorDeclaration(
+        undefined,
+        undefined,
+        [],
+        f.createBlock(
+          [
+            f.createExpressionStatement(
+              f.createCallExpression(f.createSuper(), undefined, [
+                f.createSpreadElement(f.createIdentifier('arguments')),
+              ])
+            ),
+            ...context.extraConstructorStatements,
+          ],
+          true
+        )
+      );
+      context.classMembers.push(newCtor);
+    } else {
+      if (existingCtor.body === undefined) {
+        throw new Error('Unexpected error: constructor has no body');
+      }
+      const newCtorBody = f.createBlock([
+        ...existingCtor.body.statements,
+        ...context.extraConstructorStatements,
+      ]);
+      context.litFileContext.nodeReplacements.set(
+        existingCtor.body,
+        newCtorBody
+      );
     }
+  }
+
+  /**
+   * TypeScript will sometimes emit decorator transform cruft like this ...
+   *
+   *   MyElement = __decorate([], MyElement)
+   *
+   * ... when a class's decorators field is an empty array, as opposed to
+   * undefined, due to conditionals in the decorator transform like `if
+   * (class_.decorators) {...}`. If we've removed all class decorators, reset
+   * the decorators field to undefined so that we get clean output instead.
+   */
+  private _cleanUpDecoratorCruft(class_: ts.ClassDeclaration) {
+    if (class_.decorators?.length === 0) {
+      return this._context.factory.updateClassDeclaration(
+        class_,
+        undefined,
+        class_.modifiers,
+        class_.name,
+        class_.typeParameters,
+        class_.heritageClauses,
+        class_.members
+      );
+    }
+    return class_;
   }
 }
 
@@ -440,8 +509,7 @@ const isLitImport = (specifier: string) =>
   specifier.startsWith('lit/') ||
   specifier === 'lit-element' ||
   specifier.startsWith('lit-element/') ||
-  specifier === '@lit/reactive-element' ||
-  specifier.startsWith('@lit/reactive-element/');
+  specifier.startsWith('@lit/');
 
 /**
  * Returns true for:

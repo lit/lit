@@ -5,7 +5,8 @@
  */
 
 import * as ts from 'typescript';
-import {BLANK_LINE_PLACEHOLDER_COMMENT} from './preserve-blank-lines';
+import {BLANK_LINE_PLACEHOLDER_COMMENT} from './preserve-blank-lines.js';
+import {getHeritage, isStatic} from './util.js';
 
 /**
  * TypeScript transformer which improves the readability of the default
@@ -24,11 +25,17 @@ import {BLANK_LINE_PLACEHOLDER_COMMENT} from './preserve-blank-lines';
  * "before" transformer, it won't have access to synthesized constructors, and
  * will have no efect.
  */
-export default function constructorCleanupTransformer(): ts.TransformerFactory<ts.SourceFile> {
+export default function constructorCleanupTransformer(
+  program: ts.Program
+): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
+    const toDelete = new WeakSet<ts.Node>();
     const visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
+      if (toDelete.has(node)) {
+        return undefined;
+      }
       if (ts.isClassDeclaration(node)) {
-        node = cleanupClassConstructor(node, context);
+        node = cleanupClassConstructor(node, context, program, toDelete);
       }
       return ts.visitEachChild(node, visit, context);
     };
@@ -40,7 +47,9 @@ export default function constructorCleanupTransformer(): ts.TransformerFactory<t
 
 const cleanupClassConstructor = (
   class_: ts.ClassDeclaration,
-  context: ts.TransformationContext
+  context: ts.TransformationContext,
+  program: ts.Program,
+  toDelete: WeakSet<ts.Node>
 ): ts.Node => {
   let ctor: ts.ConstructorDeclaration | undefined;
   let ctorIdx = -1;
@@ -69,9 +78,10 @@ const cleanupClassConstructor = (
   // regardless of its original source order. Let's move it somewhere more sane.
   let newCtorIdx;
 
-  // When TypeScript synthesizes a constructor from scratch, it gives it the
-  // position of its class.
-  const hasOriginalSourcePosition = ctor.pos !== class_.pos;
+  // When the built-in TypeScript class field transformer synthesizes a
+  // constructor, it gives it the position of its class. Other transformers
+  // might not set a position at all, so it will default to -1.
+  const hasOriginalSourcePosition = ctor.pos !== class_.pos && ctor.pos !== -1;
 
   if (hasOriginalSourcePosition) {
     // The constructor existed in the original source. Move it back.
@@ -88,12 +98,8 @@ const cleanupClassConstructor = (
     // common style.
     newCtorIdx = 0;
     for (let i = class_.members.length - 1; i >= 0; i--) {
-      const isStatic =
-        class_.members[i].modifiers?.find(
-          (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
-        ) !== undefined;
-      if (isStatic) {
-        newCtorIdx = i;
+      if (isStatic(class_.members[i])) {
+        newCtorIdx = ctorIdx > i ? i + 1 : i;
         break;
       }
     }
@@ -105,6 +111,23 @@ const cleanupClassConstructor = (
         BLANK_LINE_PLACEHOLDER_COMMENT,
         /* trailing newline */ true
       );
+    }
+    // Since this constructor was fully synthesized, it will always have a
+    // `super(...arguments)` call. Often we don't actually need the
+    // `...arguments` argument. Remove it if none of our ancestor classes have
+    // any constructor parameters. Note this fails in the case that an ancestor
+    // constructor directly uses `arguments` in its body, but that should be
+    // rare.
+    if (
+      !anyAncestorConstructorHasParameters(class_, program.getTypeChecker())
+    ) {
+      const superSpreadArgument = findSuperSpreadArgument(ctor);
+      if (superSpreadArgument !== undefined) {
+        // Note that we can't just empty the call's argument list, since we
+        // can't mutate the AST directly. We're going to visit it anyway since
+        // we walk the whole program, so we'll delete it then.
+        toDelete.add(superSpreadArgument);
+      }
     }
   }
 
@@ -133,4 +156,48 @@ const cleanupClassConstructor = (
   );
 
   return newClass;
+};
+
+/**
+ * Return whether the given class or any of its ancestor classes have a
+ * constructor with one or more parameters.
+ */
+const anyAncestorConstructorHasParameters = (
+  class_: ts.ClassDeclaration,
+  checker: ts.TypeChecker
+) => {
+  for (const c of getHeritage(class_, checker)) {
+    for (const member of c.members) {
+      if (ts.isConstructorDeclaration(member)) {
+        if (member.parameters && member.parameters.length > 0) {
+          return true;
+        }
+        break;
+      }
+    }
+  }
+  return false;
+};
+
+/**
+ * If the given constructor has a `super(...arguments)` call, return the
+ * `...arguments` argument.
+ */
+const findSuperSpreadArgument = (
+  ctor: ts.ConstructorDeclaration
+): ts.Expression | undefined => {
+  const superCall = ctor.body?.statements?.[0];
+  if (
+    superCall &&
+    ts.isExpressionStatement(superCall) &&
+    ts.isCallExpression(superCall.expression) &&
+    superCall.expression.expression.kind === ts.SyntaxKind.SuperKeyword &&
+    superCall.expression.arguments?.length === 1 &&
+    ts.isSpreadElement(superCall.expression.arguments[0]) &&
+    ts.isIdentifier(superCall.expression.arguments[0].expression) &&
+    superCall.expression.arguments[0].expression.text === 'arguments'
+  ) {
+    return superCall.expression.arguments[0];
+  }
+  return undefined;
 };

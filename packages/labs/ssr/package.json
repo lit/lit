@@ -32,9 +32,9 @@
     "directory": "packages/labs/ssr"
   },
   "devDependencies": {
-    "@koa/router": "^8.0.8",
+    "@koa/router": "^10.1.1",
     "@open-wc/testing": "^3.0.0-next.1",
-    "@open-wc/testing-karma": "^3.3.10",
+    "@open-wc/testing-karma": "^4.0.9",
     "@types/chai": "^4.2.11",
     "@types/command-line-args": "^5.0.0",
     "@types/escape-html": "^1.0.0",
@@ -42,17 +42,17 @@
     "@types/koa__router": "^8.0.2",
     "@types/koa-cors": "*",
     "@types/koa-static": "^4.0.1",
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^13.7.4",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.7.8",
     "@types/node-fetch": "^2.5.7",
-    "@types/parse5": "^5.0.0",
+    "@types/parse5": "^6.0.1",
     "@types/resolve": "^1.14.0",
-    "@web/test-runner": "^0.12.19",
+    "@web/test-runner": "^0.13.16",
     "chai": "^4.2.0",
     "command-line-args": "^5.1.1",
     "deepmerge": "^4.2.2",
     "koa-cors": "^0.0.16",
-    "mocha": "^7.1.1",
+    "mocha": "^9.1.1",
     "typescript": "^4.3.5",
     "uvu": "^0.5.1"
   },
@@ -67,7 +67,7 @@
     "lit-element": "^3.0.0-rc.1",
     "lit-html": "^2.0.0-rc.4",
     "node-fetch": "^2.6.0",
-    "parse5": "^5.1.0",
+    "parse5": "^6.0.1",
     "resolve": "^1.10.1"
   },
   "engines": {

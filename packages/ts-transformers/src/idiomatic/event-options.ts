@@ -98,7 +98,7 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
       return;
     }
 
-    litClassContext.litFileContext.nodesToRemove.add(decorator);
+    litClassContext.litFileContext.nodeReplacements.set(decorator, undefined);
 
     // If private, assume no outside access is possible, and transform any
     // references to this function inside template event bindings to

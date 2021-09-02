@@ -57,7 +57,7 @@ export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
-let issueWarning: (warning: string) => void;
+let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
@@ -66,7 +66,8 @@ if (DEV_MODE) {
     (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
-  issueWarning = (warning: string) => {
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
     if (!issuedWarnings.has(warning)) {
       console.warn(warning);
       issuedWarnings.add(warning);
@@ -171,38 +172,32 @@ globalThis.litElementPlatformSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   // Note, for compatibility with closure compilation, this access
   // needs to be as a string property index.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (LitElement as any)['finalize'] = function (this: typeof LitElement) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalized = (ReactiveElement as any).finalize.call(this);
     if (!finalized) {
       return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const warnRemoved = (obj: any, name: string) => {
+    const warnRemovedOrRenamed = (obj: any, name: string, renamed = false) => {
       if (obj.hasOwnProperty(name)) {
         const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
           .name;
         issueWarning(
+          renamed ? 'renamed-api' : 'removed-api',
           `\`${name}\` is implemented on class ${ctorName}. It ` +
-            `has been removed from this version of LitElement. See ` +
-            `https://lit.dev/docs/releases/upgrade/#litelement ` +
-            `for more information.`
+            `has been ${renamed ? 'renamed' : 'removed'} ` +
+            `in this version of LitElement.`
         );
       }
     };
-    [`render`, `getStyles`].forEach((name: string) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      warnRemoved(this as any, name)
-    );
-    [`adoptStyles`].forEach((name: string) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      warnRemoved(this.prototype as any, name)
-    );
+    warnRemovedOrRenamed(this, 'render');
+    warnRemovedOrRenamed(this, 'getStyles', true);
+    warnRemovedOrRenamed(this.prototype, 'adoptStyles');
     return true;
   };
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
 /**
@@ -242,8 +237,8 @@ export const _$LE = {
 (globalThis.litElementVersions ??= []).push('3.0.0-rc.3');
 if (DEV_MODE && globalThis.litElementVersions.length > 1) {
   issueWarning!(
+    'multiple-versions',
     `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended. See https://lit.dev/docs/tools/requirements/ ` +
-      `for more information.`
+      `is not recommended.`
   );
 }
