@@ -6,16 +6,16 @@
 
 import * as ts from 'typescript';
 
-import {LitTransformer} from './lit-transformer.js';
-import {CustomElementVisitor} from './idiomatic/custom-element.js';
-import {PropertyVisitor} from './idiomatic/property.js';
-import {StateVisitor} from './idiomatic/state.js';
-import {QueryVisitor} from './idiomatic/query.js';
-import {QueryAllVisitor} from './idiomatic/query-all.js';
-import {QueryAsyncVisitor} from './idiomatic/query-async.js';
-import {QueryAssignedNodesVisitor} from './idiomatic/query-assigned-nodes.js';
-import {EventOptionsVisitor} from './idiomatic/event-options.js';
-import {LocalizedVisitor} from './idiomatic/localized.js';
+import {LitTransformer} from './internal/lit-transformer.js';
+import {CustomElementVisitor} from './internal/decorators/custom-element.js';
+import {PropertyVisitor} from './internal/decorators/property.js';
+import {StateVisitor} from './internal/decorators/state.js';
+import {QueryVisitor} from './internal/decorators/query.js';
+import {QueryAllVisitor} from './internal/decorators/query-all.js';
+import {QueryAsyncVisitor} from './internal/decorators/query-async.js';
+import {QueryAssignedNodesVisitor} from './internal/decorators/query-assigned-nodes.js';
+import {EventOptionsVisitor} from './internal/decorators/event-options.js';
+import {LocalizedVisitor} from './internal/decorators/localized.js';
 
 /**
  * TypeScript transformer which transforms all Lit decorators to their idiomatic

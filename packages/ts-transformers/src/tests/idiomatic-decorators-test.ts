@@ -9,7 +9,7 @@ import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 import * as ts from 'typescript';
 import * as assert from 'uvu/assert';
 import * as prettier from 'prettier';
-import idiomaticLitDecoratorTransformer from '../idiomatic.js';
+import idiomaticLitDecoratorTransformer from '../idiomatic-decorators.js';
 import preserveBlankLinesTransformer, {
   BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP,
 } from '../preserve-blank-lines.js';
