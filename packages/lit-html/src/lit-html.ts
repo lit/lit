@@ -1408,7 +1408,7 @@ class AttributePart implements Disconnectable {
     this._$parent = parent;
     this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this._$committedValue = new Array(strings.length - 1).fill('');
+      this._$committedValue = new Array(strings.length - 1).fill(new String());
       this.strings = strings;
     } else {
       this._$committedValue = nothing;

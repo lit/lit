@@ -1027,6 +1027,11 @@ suite('lit-html', () => {
       assertContent('<div attribute=""></div>');
     });
 
+    test('renders empty string in interpolated attributes', () => {
+      render(html`<div attribute="foo${''}"></div>`, container);
+      assertContent('<div attribute="foo"></div>');
+    });
+
     test('initial render of noChange in fully-controlled attribute', () => {
       render(html`<div attribute="${noChange as any}"></div>`, container);
       assertContent('<div></div>');
