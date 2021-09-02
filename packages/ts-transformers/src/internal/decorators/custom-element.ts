@@ -53,15 +53,18 @@ export class CustomElementVisitor implements ClassDecoratorVisitor {
     elementName: string,
     className: string
   ) {
-    const f = this._factory;
-    return f.createExpressionStatement(
-      f.createCallExpression(
-        f.createPropertyAccessExpression(
-          f.createIdentifier('customElements'),
-          f.createIdentifier('define')
+    const factory = this._factory;
+    return factory.createExpressionStatement(
+      factory.createCallExpression(
+        factory.createPropertyAccessExpression(
+          factory.createIdentifier('customElements'),
+          factory.createIdentifier('define')
         ),
         undefined,
-        [f.createStringLiteral(elementName), f.createIdentifier(className)]
+        [
+          factory.createStringLiteral(elementName),
+          factory.createIdentifier(className),
+        ]
       )
     );
   }

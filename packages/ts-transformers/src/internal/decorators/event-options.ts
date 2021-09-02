@@ -138,20 +138,20 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
     methodName: string,
     options: ts.ObjectLiteralExpression
   ): ts.Node {
-    const f = this._factory;
-    return f.createCallExpression(
-      f.createPropertyAccessExpression(
-        f.createIdentifier('Object'),
-        f.createIdentifier('assign')
+    const factory = this._factory;
+    return factory.createCallExpression(
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('Object'),
+        factory.createIdentifier('assign')
       ),
       undefined,
       [
-        f.createPropertyAccessExpression(
-          f.createPropertyAccessExpression(
-            f.createIdentifier(className),
-            f.createIdentifier('prototype')
+        factory.createPropertyAccessExpression(
+          factory.createPropertyAccessExpression(
+            factory.createIdentifier(className),
+            factory.createIdentifier('prototype')
           ),
-          f.createIdentifier(methodName)
+          factory.createIdentifier(methodName)
         ),
         options,
       ]
@@ -236,40 +236,40 @@ class EventOptionsBindingVisitor implements GenericVisitor {
   private _createEventHandlerObject(
     eventHandlerReference: ts.PropertyAccessExpression
   ): ts.ObjectLiteralExpression {
-    const f = this._factory;
-    return f.createObjectLiteralExpression(
+    const factory = this._factory;
+    return factory.createObjectLiteralExpression(
       [
-        f.createPropertyAssignment(
-          f.createIdentifier('handleEvent'),
-          f.createArrowFunction(
+        factory.createPropertyAssignment(
+          factory.createIdentifier('handleEvent'),
+          factory.createArrowFunction(
             undefined,
             undefined,
             [
-              f.createParameterDeclaration(
+              factory.createParameterDeclaration(
                 undefined,
                 undefined,
                 undefined,
-                f.createIdentifier('e'),
+                factory.createIdentifier('e'),
                 undefined,
                 undefined,
                 undefined
               ),
             ],
             undefined,
-            f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            f.createCallExpression(
+            factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            factory.createCallExpression(
               // Clone because there could be multiple event bindings and each
               // needs its own copy of the event handler reference.
-              cloneNode(eventHandlerReference, {factory: f}),
+              cloneNode(eventHandlerReference, {factory: factory}),
               undefined,
-              [f.createIdentifier('e')]
+              [factory.createIdentifier('e')]
             )
           )
         ),
         ...this._eventOptionsNode.properties.map((property) =>
           // Clone because there could be multiple event bindings and each needs
           // its own copy of the event options.
-          cloneNode(property, {factory: f})
+          cloneNode(property, {factory: factory})
         ),
       ],
       false

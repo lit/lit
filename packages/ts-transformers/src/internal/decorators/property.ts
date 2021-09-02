@@ -62,14 +62,14 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     litClassContext.reactiveProperties.push({name, options});
 
     if (property.initializer !== undefined) {
-      const f = this._factory;
-      const initializer = f.createExpressionStatement(
-        f.createBinaryExpression(
-          f.createPropertyAccessExpression(
-            f.createThis(),
-            f.createIdentifier(name)
+      const factory = this._factory;
+      const initializer = factory.createExpressionStatement(
+        factory.createBinaryExpression(
+          factory.createPropertyAccessExpression(
+            factory.createThis(),
+            factory.createIdentifier(name)
           ),
-          f.createToken(ts.SyntaxKind.EqualsToken),
+          factory.createToken(ts.SyntaxKind.EqualsToken),
           property.initializer
         )
       );

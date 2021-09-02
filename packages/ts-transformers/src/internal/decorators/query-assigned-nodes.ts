@@ -66,7 +66,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
     flatten: boolean,
     selector: string
   ) {
-    const f = this._factory;
+    const factory = this._factory;
 
     const slotSelector = `slot${
       slotName ? `[name=${slotName}]` : ':not([name])'
@@ -75,11 +75,11 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
     // {flatten: true}
     const assignedNodesOptions = flatten
       ? [
-          f.createObjectLiteralExpression(
+          factory.createObjectLiteralExpression(
             [
-              f.createPropertyAssignment(
-                f.createIdentifier('flatten'),
-                f.createTrue()
+              factory.createPropertyAssignment(
+                factory.createIdentifier('flatten'),
+                factory.createTrue()
               ),
             ],
             false
@@ -88,23 +88,23 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
       : [];
 
     // this.renderRoot?.querySelector(<selector>)?.assignedNodes(<options>)
-    const assignedNodes = f.createCallChain(
-      f.createPropertyAccessChain(
-        f.createCallChain(
-          f.createPropertyAccessChain(
-            f.createPropertyAccessExpression(
-              f.createThis(),
-              f.createIdentifier('renderRoot')
+    const assignedNodes = factory.createCallChain(
+      factory.createPropertyAccessChain(
+        factory.createCallChain(
+          factory.createPropertyAccessChain(
+            factory.createPropertyAccessExpression(
+              factory.createThis(),
+              factory.createIdentifier('renderRoot')
             ),
-            f.createToken(ts.SyntaxKind.QuestionDotToken),
-            f.createIdentifier('querySelector')
+            factory.createToken(ts.SyntaxKind.QuestionDotToken),
+            factory.createIdentifier('querySelector')
           ),
           undefined,
           undefined,
-          [f.createStringLiteral(slotSelector)]
+          [factory.createStringLiteral(slotSelector)]
         ),
-        f.createToken(ts.SyntaxKind.QuestionDotToken),
-        f.createIdentifier('assignedNodes')
+        factory.createToken(ts.SyntaxKind.QuestionDotToken),
+        factory.createIdentifier('assignedNodes')
       ),
       undefined,
       undefined,
@@ -116,51 +116,51 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
       : // <assignedNodes>?.filter((node) =>
         //   node.nodeType === Node.ELEMENT_NODE &&
         //     node.matches(<selector>)
-        f.createCallChain(
-          f.createPropertyAccessChain(
+        factory.createCallChain(
+          factory.createPropertyAccessChain(
             assignedNodes,
-            f.createToken(ts.SyntaxKind.QuestionDotToken),
-            f.createIdentifier('filter')
+            factory.createToken(ts.SyntaxKind.QuestionDotToken),
+            factory.createIdentifier('filter')
           ),
           undefined,
           undefined,
           [
-            f.createArrowFunction(
+            factory.createArrowFunction(
               undefined,
               undefined,
               [
-                f.createParameterDeclaration(
+                factory.createParameterDeclaration(
                   undefined,
                   undefined,
                   undefined,
-                  f.createIdentifier('node'),
+                  factory.createIdentifier('node'),
                   undefined,
                   undefined,
                   undefined
                 ),
               ],
               undefined,
-              f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              f.createBinaryExpression(
-                f.createBinaryExpression(
-                  f.createPropertyAccessExpression(
-                    f.createIdentifier('node'),
-                    f.createIdentifier('nodeType')
+              factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              factory.createBinaryExpression(
+                factory.createBinaryExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('node'),
+                    factory.createIdentifier('nodeType')
                   ),
-                  f.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                  f.createPropertyAccessExpression(
-                    f.createIdentifier('Node'),
-                    f.createIdentifier('ELEMENT_NODE')
+                  factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('Node'),
+                    factory.createIdentifier('ELEMENT_NODE')
                   )
                 ),
-                f.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                f.createCallExpression(
-                  f.createPropertyAccessExpression(
-                    f.createIdentifier('node'),
-                    f.createIdentifier('matches')
+                factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                factory.createCallExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('node'),
+                    factory.createIdentifier('matches')
                   ),
                   undefined,
-                  [f.createStringLiteral(selector)]
+                  [factory.createStringLiteral(selector)]
                 )
               )
             ),
@@ -168,23 +168,23 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
         );
 
     // { return <returnExpression> }
-    const getterBody = f.createBlock(
+    const getterBody = factory.createBlock(
       [
-        f.createReturnStatement(
-          f.createBinaryExpression(
+        factory.createReturnStatement(
+          factory.createBinaryExpression(
             returnExpression,
-            f.createToken(ts.SyntaxKind.QuestionQuestionToken),
-            f.createArrayLiteralExpression([], false)
+            factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
+            factory.createArrayLiteralExpression([], false)
           )
         ),
       ],
       true
     );
 
-    return f.createGetAccessorDeclaration(
+    return factory.createGetAccessorDeclaration(
       undefined,
       undefined,
-      f.createIdentifier(name),
+      factory.createIdentifier(name),
       [],
       undefined,
       getterBody

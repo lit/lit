@@ -66,38 +66,38 @@ export class QueryVisitor implements MemberDecoratorVisitor {
   }
 
   private _createQueryGetter(name: string, selector: string, cache: boolean) {
-    const f = this._factory;
-    const querySelectorCall = f.createBinaryExpression(
-      f.createCallChain(
-        f.createPropertyAccessChain(
-          f.createPropertyAccessExpression(
-            f.createThis(),
-            f.createIdentifier('renderRoot')
+    const factory = this._factory;
+    const querySelectorCall = factory.createBinaryExpression(
+      factory.createCallChain(
+        factory.createPropertyAccessChain(
+          factory.createPropertyAccessExpression(
+            factory.createThis(),
+            factory.createIdentifier('renderRoot')
           ),
-          f.createToken(ts.SyntaxKind.QuestionDotToken),
-          f.createIdentifier('querySelector')
+          factory.createToken(ts.SyntaxKind.QuestionDotToken),
+          factory.createIdentifier('querySelector')
         ),
         undefined,
         undefined,
-        [f.createStringLiteral(selector)]
+        [factory.createStringLiteral(selector)]
       ),
-      f.createToken(ts.SyntaxKind.QuestionQuestionToken),
-      f.createNull()
+      factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
+      factory.createNull()
     );
-    return f.createGetAccessorDeclaration(
+    return factory.createGetAccessorDeclaration(
       undefined,
       undefined,
-      f.createIdentifier(name),
+      factory.createIdentifier(name),
       [],
       undefined,
-      f.createBlock(
+      factory.createBlock(
         [
-          f.createReturnStatement(
+          factory.createReturnStatement(
             cache
-              ? f.createBinaryExpression(
-                  f.createPropertyAccessExpression(
-                    f.createThis(),
-                    f.createIdentifier(`__${name}`)
+              ? factory.createBinaryExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createThis(),
+                    factory.createIdentifier(`__${name}`)
                   ),
                   ts.SyntaxKind.QuestionQuestionEqualsToken,
                   querySelectorCall

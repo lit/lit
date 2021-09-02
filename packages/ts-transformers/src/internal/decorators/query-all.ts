@@ -58,32 +58,32 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
   }
 
   private _createQueryAllGetter(name: string, selector: string) {
-    const f = this._factory;
-    return f.createGetAccessorDeclaration(
+    const factory = this._factory;
+    return factory.createGetAccessorDeclaration(
       undefined,
       undefined,
-      f.createIdentifier(name),
+      factory.createIdentifier(name),
       [],
       undefined,
-      f.createBlock(
+      factory.createBlock(
         [
-          f.createReturnStatement(
-            f.createBinaryExpression(
-              f.createCallChain(
-                f.createPropertyAccessChain(
-                  f.createPropertyAccessExpression(
-                    f.createThis(),
-                    f.createIdentifier('renderRoot')
+          factory.createReturnStatement(
+            factory.createBinaryExpression(
+              factory.createCallChain(
+                factory.createPropertyAccessChain(
+                  factory.createPropertyAccessExpression(
+                    factory.createThis(),
+                    factory.createIdentifier('renderRoot')
                   ),
-                  f.createToken(ts.SyntaxKind.QuestionDotToken),
-                  f.createIdentifier('querySelectorAll')
+                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                  factory.createIdentifier('querySelectorAll')
                 ),
                 undefined,
                 undefined,
-                [f.createStringLiteral(selector)]
+                [factory.createStringLiteral(selector)]
               ),
-              f.createToken(ts.SyntaxKind.QuestionQuestionToken),
-              f.createArrayLiteralExpression([], false)
+              factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
+              factory.createArrayLiteralExpression([], false)
             )
           ),
         ],
