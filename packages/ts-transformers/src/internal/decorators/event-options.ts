@@ -153,7 +153,7 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
           ),
           f.createIdentifier(methodName)
         ),
-        cloneNode(options, {factory: this._factory}),
+        options,
       ]
     );
   }
@@ -234,7 +234,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
   }
 
   private _createEventHandlerObject(
-    node: ts.PropertyAccessExpression
+    eventHandlerReference: ts.PropertyAccessExpression
   ): ts.ObjectLiteralExpression {
     const f = this._factory;
     return f.createObjectLiteralExpression(
@@ -258,14 +258,18 @@ class EventOptionsBindingVisitor implements GenericVisitor {
             undefined,
             f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
             f.createCallExpression(
-              cloneNode(node, {factory: this._factory}),
+              // Clone because there could be multiple event bindings and each
+              // needs its own copy of the event handler reference.
+              cloneNode(eventHandlerReference, {factory: f}),
               undefined,
               [f.createIdentifier('e')]
             )
           )
         ),
         ...this._eventOptionsNode.properties.map((property) =>
-          cloneNode(property, {factory: this._factory})
+          // Clone because there could be multiple event bindings and each needs
+          // its own copy of the event options.
+          cloneNode(property, {factory: f})
         ),
       ],
       false
