@@ -124,14 +124,12 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
-        static get properties() {
-          return {
-            reactiveInitializedStr: {},
-            reactiveUninitializedObj: {type: Object},
-            reactiveInitializedNum: {type: Number, attribute: false},
-            reactiveInitializedBool: {type: Boolean, reflect: true},
-          };
-        }
+        static properties = {
+          reactiveInitializedStr: {},
+          reactiveUninitializedObj: {type: Object},
+          reactiveInitializedNum: {type: Number, attribute: false},
+          reactiveInitializedBool: {type: Boolean, reflect: true},
+        };
 
         constructor() {
           super();
@@ -150,15 +148,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
-        static get properties() {
-          return {
-            reactiveInitializedStr: {},
-            reactiveUninitializedObj: {type: Object},
-            reactiveInitializedNum: {type: Number, attribute: false},
-            reactiveInitializedBool: {type: Boolean, reflect: true},
-          };
-        }
-
         constructor() {
           super();
           this.nonReactiveInitialized = 123;
@@ -167,6 +156,12 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedBool = false;
         }
       }
+      MyElement.properties = {
+        reactiveInitializedStr: {},
+        reactiveUninitializedObj: {type: Object},
+        reactiveInitializedNum: {type: Number, attribute: false},
+        reactiveInitializedBool: {type: Boolean, reflect: true},
+      };
       `;
     }
     checkTransform(input, expected, options);
@@ -206,14 +201,12 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
-        static get properties() {
-          return {
-            reactiveInitializedStr: {},
-            reactiveUninitializedObj: {type: Object},
-            reactiveInitializedNum: {type: Number, attribute: false},
-            reactiveInitializedBool: {type: Boolean, reflect: true},
-          };
-        }
+        static properties = {
+          reactiveInitializedStr: {},
+          reactiveUninitializedObj: {type: Object},
+          reactiveInitializedNum: {type: Number, attribute: false},
+          reactiveInitializedBool: {type: Boolean, reflect: true},
+        };
 
         nonReactiveInitialized = 123;
 
@@ -232,15 +225,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
-        static get properties() {
-          return {
-            reactiveInitializedStr: {},
-            reactiveUninitializedObj: {type: Object},
-            reactiveInitializedNum: {type: Number, attribute: false},
-            reactiveInitializedBool: {type: Boolean, reflect: true},
-          };
-        }
-
         constructor() {
           super();
           this.nonReactiveInitialized = 123;
@@ -249,12 +233,73 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedBool = false;
         }
       }
+      MyElement.properties = {
+        reactiveInitializedStr: {},
+        reactiveUninitializedObj: {type: Object},
+        reactiveInitializedNum: {type: Number, attribute: false},
+        reactiveInitializedBool: {type: Boolean, reflect: true},
+      };
       `;
     }
     checkTransform(input, expected, options);
   });
 
-  test('@property (merge with existing static properties)', () => {
+  test('@property (merge with existing static properties field)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {property} from 'lit/decorators.js';
+
+    class MyElement extends LitElement {
+      static properties = {
+        str: {},
+      };
+
+      @property({type: Number})
+      num = 42;
+
+      constructor() {
+        super();
+      }
+    }
+    `;
+
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        static properties = {
+          str: {},
+          num: {type: Number},
+        };
+
+        constructor() {
+          super();
+          this.num = 42;
+        }
+      }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        constructor() {
+          super();
+          this.num = 42;
+        }
+      }
+      MyElement.properties = {
+        str: {},
+        num: {type: Number},
+      };
+      `;
+    }
+    checkTransform(input, expected, options);
+  });
+
+  test('@property (merge with existing static properties getter)', () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -309,24 +354,41 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     `;
 
-    const expected = `
-    import {LitElement} from 'lit';
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
 
-    class MyElement extends LitElement {
-      static get properties() {
-        return {
+      class MyElement extends LitElement {
+        static properties = {
           num: {state: true},
           num2: {hasChanged: () => false, state: true},
         };
-      }
 
-      constructor() {
-        super();
-        this.num = 42;
-        this.num2 = 24;
+        constructor() {
+          super();
+          this.num = 42;
+          this.num2 = 24;
+        }
       }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        constructor() {
+          super();
+          this.num = 42;
+          this.num2 = 24;
+        }
+      }
+      MyElement.properties = {
+        num: {state: true},
+        num2: {hasChanged: () => false, state: true},
+      };
+      `;
     }
-    `;
     checkTransform(input, expected, options);
   });
 
@@ -921,24 +983,41 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     `;
 
-    const expected = `
-    import {LitElement} from 'lit';
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
 
-    class MyElement extends LitElement {
-      static get properties() {
-        return {
+      class MyElement extends LitElement {
+        static properties = {
           str: {},
           num: {type: Number, attribute: false},
         };
-      }
 
-      constructor() {
-        super();
-        this.str = "foo";
-        this.num = 42;
+        constructor() {
+          super();
+          this.str = "foo";
+          this.num = 42;
+        }
       }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        constructor() {
+          super();
+          this.str = "foo";
+          this.num = 42;
+        }
+      }
+      MyElement.properties = {
+        str: {},
+        num: {type: Number, attribute: false},
+      };
+      `;
     }
-    `;
     checkTransform(input, expected, options);
   });
 
@@ -979,24 +1058,41 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     `;
 
-    const expected = `
-    import {LitElement} from 'lit';
-    import {updateWhenLocaleChanges} from '@lit/localize';
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
+      import {updateWhenLocaleChanges} from '@lit/localize';
 
-    class MyElement extends LitElement {
-      static get properties() {
-        return {
+      class MyElement extends LitElement {
+        static properties = {
           foo: {},
         };
-      }
 
-      constructor() {
-        super();
-        updateWhenLocaleChanges(this);
-        this.foo = 123;
+        constructor() {
+          super();
+          updateWhenLocaleChanges(this);
+          this.foo = 123;
+        }
       }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+      import {updateWhenLocaleChanges} from '@lit/localize';
+
+      class MyElement extends LitElement {
+        constructor() {
+          super();
+          updateWhenLocaleChanges(this);
+          this.foo = 123;
+        }
+      }
+      MyElement.properties = {
+        foo: {},
+      };
+      `;
     }
-    `;
     checkTransform(input, expected, options);
   });
 

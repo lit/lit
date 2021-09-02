@@ -15,6 +15,7 @@ import type {
   MemberDecoratorVisitor,
   GenericVisitor,
 } from './visitor.js';
+import {isStatic} from './util.js';
 
 /**
  * A transformer for Lit code.
@@ -291,16 +292,26 @@ export class LitTransformer {
     }
 
     if (litClassContext.reactiveProperties.length > 0) {
-      const existing = this._findExistingStaticProperties(class_);
-      if (existing !== undefined) {
-        this._litFileContext.nodeReplacements.set(existing.getter, undefined);
-      }
-      litClassContext.classMembers.unshift(
-        this._createStaticProperties(
-          existing?.properties,
-          litClassContext.reactiveProperties
-        )
+      const oldProperties =
+        this._findExistingStaticPropertiesExpression(class_);
+      const newProperties = this._createStaticPropertiesExpression(
+        oldProperties,
+        litClassContext.reactiveProperties
       );
+      if (oldProperties !== undefined) {
+        this._litFileContext.nodeReplacements.set(oldProperties, newProperties);
+      } else {
+        const f = this._context.factory;
+        const staticPropertiesField = f.createPropertyDeclaration(
+          undefined,
+          [f.createModifier(ts.SyntaxKind.StaticKeyword)],
+          f.createIdentifier('properties'),
+          undefined,
+          undefined,
+          newProperties
+        );
+        litClassContext.classMembers.unshift(staticPropertiesField);
+      }
     }
 
     this._addExtraConstructorStatements(litClassContext);
@@ -313,18 +324,20 @@ export class LitTransformer {
     // nodes that still need to be deleted via `this._nodesToRemove` (e.g. a
     // property decorator or a property itself), and [2] in theory there could
     // be a nested custom element definition somewhere in this class.
-    const transformedClass = ts.visitEachChild(
-      this._context.factory.updateClassDeclaration(
-        class_,
-        class_.decorators,
-        class_.modifiers,
-        class_.name,
-        class_.typeParameters,
-        class_.heritageClauses,
-        [...litClassContext.classMembers, ...class_.members]
-      ),
-      this.visit,
-      this._context
+    const transformedClass = this._cleanUpDecoratorCruft(
+      ts.visitEachChild(
+        this._context.factory.updateClassDeclaration(
+          class_,
+          class_.decorators,
+          class_.modifiers,
+          class_.name,
+          class_.typeParameters,
+          class_.heritageClauses,
+          [...litClassContext.classMembers, ...class_.members]
+        ),
+        this.visit,
+        this._context
+      )
     );
 
     // These visitors only apply within the scope of the current class.
@@ -345,17 +358,18 @@ export class LitTransformer {
    *     }
    *   }
    */
-  private _createStaticProperties(
-    existingProperties: ts.NodeArray<ts.ObjectLiteralElementLike> | undefined,
-    newProperties: Array<{name: string; options?: ts.ObjectLiteralExpression}>
+  private _createStaticPropertiesExpression(
+    existingProperties: ts.ObjectLiteralExpression | undefined,
+    newProperties: Array<{
+      name: string;
+      options?: ts.ObjectLiteralExpression;
+    }>
   ) {
     const f = this._context.factory;
     const properties = [
-      ...(existingProperties
-        ? existingProperties.map((prop) =>
-            cloneNode(prop, {factory: this._context.factory})
-          )
-        : []),
+      ...(existingProperties?.properties.map((prop) =>
+        cloneNode(prop, {factory: this._context.factory})
+      ) ?? []),
       ...newProperties.map(({name, options}) =>
         f.createPropertyAssignment(
           f.createIdentifier(name),
@@ -363,57 +377,60 @@ export class LitTransformer {
         )
       ),
     ];
-    return f.createGetAccessorDeclaration(
-      undefined,
-      [f.createModifier(ts.SyntaxKind.StaticKeyword)],
-      f.createIdentifier('properties'),
-      [],
-      undefined,
-      f.createBlock(
-        [
-          f.createReturnStatement(
-            f.createObjectLiteralExpression(properties, true)
-          ),
-        ],
-        true
-      )
-    );
+    return f.createObjectLiteralExpression(properties, true);
   }
 
-  private _findExistingStaticProperties(class_: ts.ClassDeclaration):
-    | {
-        getter: ts.ClassElement;
-        properties: ts.NodeArray<ts.ObjectLiteralElementLike>;
-      }
-    | undefined {
-    const getter = class_.members.find(
+  private _findExistingStaticPropertiesExpression(
+    class_: ts.ClassDeclaration
+  ): ts.ObjectLiteralExpression | undefined {
+    const staticProperties = class_.members.find(
       (member) =>
-        ts.isGetAccessor(member) &&
+        isStatic(member) &&
+        member.name !== undefined &&
         ts.isIdentifier(member.name) &&
         member.name.text === 'properties'
     );
-    if (
-      getter === undefined ||
-      !ts.isGetAccessorDeclaration(getter) ||
-      getter.body === undefined
-    ) {
+    if (staticProperties === undefined) {
       return undefined;
     }
-    const returnStatement = getter.body.statements[0];
-    if (
-      returnStatement === undefined ||
-      !ts.isReturnStatement(returnStatement)
-    ) {
-      return undefined;
+    // Static class field.
+    if (ts.isPropertyDeclaration(staticProperties)) {
+      if (
+        staticProperties.initializer !== undefined &&
+        ts.isObjectLiteralExpression(staticProperties.initializer)
+      ) {
+        return staticProperties.initializer;
+      } else {
+        throw new Error(
+          'Static properties class field initializer must be an object expression.'
+        );
+      }
     }
-    const objectLiteral = returnStatement.expression;
-    if (
-      objectLiteral === undefined ||
-      !ts.isObjectLiteralExpression(objectLiteral)
-    ) {
-      return undefined;
+    // Static getter.
+    if (ts.isGetAccessorDeclaration(staticProperties)) {
+      const returnStatement = staticProperties.body?.statements[0];
+      if (
+        returnStatement === undefined ||
+        !ts.isReturnStatement(returnStatement)
+      ) {
+        throw new Error(
+          'Static properties getter must contain purely a return statement.'
+        );
+      }
+      const returnExpression = returnStatement.expression;
+      if (
+        returnExpression === undefined ||
+        !ts.isObjectLiteralExpression(returnExpression)
+      ) {
+        throw new Error(
+          'Static properties getter must return an object expression.'
+        );
+      }
+      return returnExpression;
     }
-    return {getter, properties: objectLiteral.properties};
+    throw new Error(
+      'Static properties class member must be a class field or getter.'
+    );
   }
 
   /**
@@ -459,6 +476,31 @@ export class LitTransformer {
         newCtorBody
       );
     }
+  }
+
+  /**
+   * TypeScript will sometimes emit decorator transform cruft like this ...
+   *
+   *   MyElement = __decorate([], MyElement)
+   *
+   * ... when a class's decorators field is an empty array, as opposed to
+   * undefined, due to conditionals in the decorator transform like `if
+   * (class_.decorators) {...}`. If we've removed all class decorators, reset
+   * the decorators field to undefined so that we get clean output instead.
+   */
+  private _cleanUpDecoratorCruft(class_: ts.ClassDeclaration) {
+    if (class_.decorators?.length === 0) {
+      return this._context.factory.updateClassDeclaration(
+        class_,
+        undefined,
+        class_.modifiers,
+        class_.name,
+        class_.typeParameters,
+        class_.heritageClauses,
+        class_.members
+      );
+    }
+    return class_;
   }
 }
 

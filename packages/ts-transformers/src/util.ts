@@ -7,6 +7,14 @@
 import * as ts from 'typescript';
 
 /**
+ * Return whether the given node has the static keyword modifier.
+ */
+export const isStatic = (node: ts.Node) =>
+  node.modifiers?.find(
+    (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
+  ) !== undefined;
+
+/**
  * Return each class declaration in the given nodes lineage, including the given
  * node. Use the given type checker for resolving parent class names.
  */
