@@ -367,11 +367,9 @@ export class LitTransformer {
   ) {
     const f = this._context.factory;
     const properties = [
-      ...(existingProperties?.properties
-        ? existingProperties.properties.map((prop) =>
-            cloneNode(prop, {factory: this._context.factory})
-          )
-        : []),
+      ...(existingProperties?.properties.map((prop) =>
+        cloneNode(prop, {factory: this._context.factory})
+      ) ?? []),
       ...newProperties.map(({name, options}) =>
         f.createPropertyAssignment(
           f.createIdentifier(name),
