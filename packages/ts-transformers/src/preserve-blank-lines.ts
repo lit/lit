@@ -58,7 +58,7 @@ export const BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP = new RegExp(
  * the `BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP` regexp, or with any equivalent
  * search-and-replace operation for the comment style shown above.
  */
-export default function preserveBlankLinesTransformer(): ts.TransformerFactory<ts.SourceFile> {
+export function preserveBlankLinesTransformer(): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
     return (file) => {
       const sourceFileText = file.getFullText();

@@ -25,7 +25,7 @@ import {getHeritage, isStatic} from './internal/util.js';
  * "before" transformer, it won't have access to synthesized constructors, and
  * will have no efect.
  */
-export default function constructorCleanupTransformer(
+export function constructorCleanupTransformer(
   program: ts.Program
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {

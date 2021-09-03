@@ -56,7 +56,7 @@ import {LocalizedVisitor} from './internal/decorators/localized.js';
  *   }
  *   customElements.define('simple-greeting', SimpleGreeting);
  */
-export default function idiomaticLitDecoratorTransformer(
+export function idiomaticDecoratorsTransformer(
   program: ts.Program
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {

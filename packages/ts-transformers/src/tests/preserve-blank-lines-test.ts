@@ -9,7 +9,7 @@ import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 import ts from 'typescript';
 import * as assert from 'uvu/assert';
 import prettier from 'prettier';
-import preserveBlankLinesTransformer from '../preserve-blank-lines.js';
+import {preserveBlankLinesTransformer} from '../preserve-blank-lines.js';
 
 const cache = new CompilerHostCache();
 
