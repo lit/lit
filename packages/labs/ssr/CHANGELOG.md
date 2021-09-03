@@ -1,5 +1,20 @@
 # Change Log
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
+
+* [#2120](https://github.com/lit/lit/pull/2120) [`2043eb0f`](https://github.com/lit/lit/commit/2043eb0fc245f90620ec563aa7df90d7e3a2fa41) - Don't assign DOM shim window.global (and hence globalThis.global) to window
+
+  This means that globalThis.global will retain its Node built-ins, whereas
+  before it would lose anything we didn't explicitly set on window.
+
+  Fixes https://github.com/lit/lit/issues/2118
+
+- [#2077](https://github.com/lit/lit/pull/2077) [`88d8608f`](https://github.com/lit/lit/commit/88d8608fedb8817edea6ca106f3cf49ed5b896e1) Thanks [@thescientist13](https://github.com/thescientist13)! - fixed import in README
+
 ## 1.0.0-rc.2
 
 ### Patch Changes

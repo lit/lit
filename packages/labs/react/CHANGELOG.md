@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
+
+* [#2123](https://github.com/lit/lit/pull/2123) [`efe88ba5`](https://github.com/lit/lit/commit/efe88ba5a31bae117f8a4c8ddf111068368cf249) - Adds React.HTMLAttributes to component props, which enables the built-in `onXyz` event handler props.
+
 ## 1.0.0-rc.3
 
 ### Patch Changes
