@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {LitClassContext} from './lit-class-context.js';
 import {LitFileContext} from './lit-file-context.js';
 import {isStatic} from './util.js';
