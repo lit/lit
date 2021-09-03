@@ -9,11 +9,12 @@ import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 import ts from 'typescript';
 import * as assert from 'uvu/assert';
 import prettier from 'prettier';
-import idiomaticLitDecoratorTransformer from '../idiomatic-decorators.js';
-import preserveBlankLinesTransformer, {
+import {idiomaticDecoratorsTransformer} from '../idiomatic-decorators.js';
+import {
+  preserveBlankLinesTransformer,
   BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP,
 } from '../preserve-blank-lines.js';
-import constructorCleanupTransformer from '../constructor-cleanup.js';
+import {constructorCleanupTransformer} from '../constructor-cleanup.js';
 
 import type * as uvu from 'uvu';
 
@@ -41,7 +42,7 @@ function checkTransform(
     (program) => ({
       before: [
         preserveBlankLinesTransformer(),
-        idiomaticLitDecoratorTransformer(program),
+        idiomaticDecoratorsTransformer(program),
       ],
       after: [constructorCleanupTransformer(program)],
     })
