@@ -1,7 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
   "sampleSize": 50,
-  "timeout": 0,
+  "timeout": 5,
+  "horizons": ["0%"],
   "benchmarks": [
     {
       "url": "lit-element/class-map/index.html",
@@ -21,35 +22,10 @@
         {
           "mode": "performance",
           "entryName": "nop-update"
-        }
-      ],
-      "expand": [
-        {
-          "name": "this-change"
-        }
-      ]
-    },
-    {
-      "url": "lit-element/class-map/index.html?classVariant=simple",
-      "browser": {
-        "name": "chrome",
-        "headless": true
-      },
-      "measurement": [
-        {
-          "mode": "performance",
-          "entryName": "render",
-          "name": "render-simple"
         },
         {
           "mode": "performance",
-          "entryName": "update",
-          "name": "update-simple"
-        },
-        {
-          "mode": "performance",
-          "entryName": "nop-update",
-          "name": "nop-update-simple"
+          "entryName": "update-and-nop"
         }
       ],
       "expand": [
@@ -79,6 +55,11 @@
           "mode": "performance",
           "entryName": "nop-update",
           "name": "nop-update-string"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update-and-nop",
+          "name": "update-and-nop-string"
         }
       ],
       "expand": [

@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, LitElement} from 'lit-element';
-import {repeat} from 'lit-html/directives/repeat.js';
-import {classMap} from 'lit-html/directives/class-map.js';
-import {queryParams} from '../../utils/query-params.js';
+import { html, LitElement } from 'lit-element';
+import { repeat } from 'lit-html/directives/repeat.js';
+import { classMap } from 'lit-html/directives/class-map.js';
+import { queryParams } from '../../utils/query-params.js';
 
 /**
  * This benchmark renders templates, updates templates and nop-updates.
@@ -27,23 +27,15 @@ interface IData {
 enum DirectiveVariant {
   // This uses the imported classMap directive.
   CurrentImplementation,
-  // This uses a stripped down classMap directive.
-  SimpleImplementation,
   // No directive, only string concatenation.
   StringConcatenation,
 }
 
-function simpleClassMap(classInfo: Record<string, boolean>) {
-  // Render implementation from classMap directive.
-  return Object.keys(classInfo)
-    .filter((key) => classInfo[key])
-    .join(' ');
-}
 
 function generateData(number = 1000): IData[] {
   const data = [];
   for (let idx = 0; idx < number; idx++) {
-    data.push({id: idx, label: 'test-label'});
+    data.push({ id: idx, label: 'test-label' });
   }
   return data;
 }
@@ -62,10 +54,10 @@ function generateData(number = 1000): IData[] {
       'lit-element/lib/decorators.js'
     ) as unknown as typeof import('lit-element/decorators.js'));
   }
-  const {state} = decorators;
+  const { state } = decorators;
   // Settings
-  const itemCount = 1000;
-  const updateCount = 30;
+  const itemCount = 5000;
+  const updateCount = 6;
 
   const data = generateData(itemCount);
 
@@ -83,68 +75,34 @@ function generateData(number = 1000): IData[] {
         case DirectiveVariant.CurrentImplementation:
           return html`<ul>
             ${repeat(
-              this.rows,
-              (item: IData) => item.id,
-              (item: IData) => html`
+            this.rows,
+            (item: IData) => item.id,
+            (item: IData) => html`
                 <li
                   id="${item.id}"
                   class="${classMap({
-                    dynamicClass: true,
-                    danger: item.id === this.selected,
-                    normal: item.id !== this.selected,
-                    ['static-class']: true,
-                    class1: true,
-                    class2: true,
-                    class3: false,
-                  })}"
+              danger: item.id == this.selected,
+            })}"
                 >
                   ${item.label}
                 </li>
               `
-            )}
-          </ul>`;
-        case DirectiveVariant.SimpleImplementation:
-          return html`<ul>
-            ${repeat(
-              this.rows,
-              (item: IData) => item.id,
-              (item: IData) => html`
-                <li
-                  id="${item.id}"
-                  class="${simpleClassMap({
-                    dynamicClass: true,
-                    danger: item.id === this.selected,
-                    normal: item.id !== this.selected,
-                    ['static-class']: true,
-                    class1: true,
-                    class2: true,
-                    class3: false,
-                  })}"
-                >
-                  ${item.label}
-                </li>
-              `
-            )}
+          )}
           </ul>`;
         case DirectiveVariant.StringConcatenation:
           return html`<ul>
             ${repeat(
-              this.rows,
-              (item: IData) => item.id,
-              (item: IData) => html`
+            this.rows,
+            (item: IData) => item.id,
+            (item: IData) => html`
                 <li
                   id="${item.id}"
-                  class="static-class class1 class2 ${true
-                    ? 'dynamicClass'
-                    : ''} ${item.id === this.selected ? 'danger' : ''}
-                    ${item.id !== this.selected ? 'normal' : ''} ${false
-                    ? 'class3'
-                    : ''}"
+                  class="${item.id == this.selected ? 'danger' : ''}"
                 >
                   ${item.label}
                 </li>
               `
-            )}
+          )}
           </ul>`;
       }
     }
@@ -161,9 +119,6 @@ function generateData(number = 1000): IData[] {
     let variant: DirectiveVariant = DirectiveVariant.CurrentImplementation;
     if (classVariant === 'class-string-interpolation') {
       variant = DirectiveVariant.StringConcatenation;
-    }
-    if (classVariant === 'simple') {
-      variant = DirectiveVariant.SimpleImplementation;
     }
 
     const create = () => {
@@ -227,6 +182,25 @@ function generateData(number = 1000): IData[] {
       destroy();
     };
     await nopupdate();
+
+    const updateAndNopUpdate = async () => {
+      const test = 'update-and-nop';
+      el = create();
+      let selected = Math.floor((Math.random() * itemCount) / 2); // Choose item in first half.
+      const start = getTestStartName(test);
+      performance.mark(start);
+      for (let i = 0; i < updateCount; i++) {
+        // Increment the selected index.
+        el.selected = selected++;
+        await updateComplete();
+        // nop update since state hasn't changed.
+        (el as LitElement).requestUpdate();
+        await updateComplete();
+      }
+      performance.measure(test, start);
+      destroy();
+    };
+    await updateAndNopUpdate();
 
     // Log
     performance
