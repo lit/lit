@@ -57,7 +57,7 @@ function generateData(number = 1000): IData[] {
   const { state } = decorators;
   // Settings
   const itemCount = 5000;
-  const updateCount = 50;
+  const updateCount = 6;
 
   const data = generateData(itemCount);
 
@@ -81,6 +81,15 @@ function generateData(number = 1000): IData[] {
                 <li
                   id="${item.id}"
                   class="${classMap({
+              class1: true,
+              class2: true,
+              class3: true,
+              class4: true,
+              class5: true,
+              class6: true,
+              class7: true,
+              class8: true,
+              class9: true,
               danger: item.id == this.selected,
             })}"
                 >
@@ -97,7 +106,7 @@ function generateData(number = 1000): IData[] {
             (item: IData) => html`
                 <li
                   id="${item.id}"
-                  class="${item.id == this.selected ? 'danger' : ''}"
+                  class="class1 class2 clas3 class4 class5 class6 class7 class8 class9 ${item.id == this.selected ? 'danger' : ''}"
                 >
                   ${item.label}
                 </li>
