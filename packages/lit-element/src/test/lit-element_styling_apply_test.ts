@@ -37,7 +37,7 @@ import {assert} from '@esm-bundle/chai';
       class extends LitElement {
         override render() {
           return htmlWithStyles`
-        <style>
+        <style nonce="abc123">
           div {
             @apply --bag;
           }
@@ -51,7 +51,7 @@ import {assert} from '@esm-bundle/chai';
       inner: LitElement | null = null;
       override render() {
         return htmlWithStyles`
-        <style>
+        <style nonce="abc123">
           x-inner2 {
             --bag: {
               border: 10px solid red;
@@ -91,7 +91,7 @@ import {assert} from '@esm-bundle/chai';
       class extends LitElement {
         override render() {
           return htmlWithStyles`
-        <style>
+        <style nonce="abc123">
           div {
             @apply --bag;
           }
@@ -107,7 +107,7 @@ import {assert} from '@esm-bundle/chai';
 
       override render() {
         return htmlWithStyles`
-        <style>
+        <style nonce="abc123">
           div {
             border: 4px solid blue;
           }
@@ -156,7 +156,7 @@ import {assert} from '@esm-bundle/chai';
     class I extends LitElement {
       override render() {
         return htmlWithStyles`
-        <style>
+        <style nonce="abc123">
           :host {
             display: block;
             width: 100px;
@@ -176,7 +176,7 @@ import {assert} from '@esm-bundle/chai';
 
       override render() {
         return htmlWithStyles`
-        <style>
+        <style nonce="abc123">
           :host {
             --bag: {
               border: 10px solid black;

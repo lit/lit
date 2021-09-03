@@ -94,7 +94,7 @@
               name,
               class extends LitElement {
                 render() {
-                  return html` <style>
+                  return html` <style nonce="abc123">
                       div {
                         border: 2px solid blue;
                       }
@@ -118,7 +118,7 @@
               'x-inner',
               class extends LitElement {
                 render() {
-                  return html` <style>
+                  return html` <style nonce="abc123">
                       div {
                         border: var(--border);
                       }
@@ -137,7 +137,7 @@
               }
 
               render() {
-                return html` <style>
+                return html` <style nonce="abc123">
                     x-inner {
                       --border: 8px solid red;
                     }
