@@ -39,11 +39,9 @@ import {LocalizedVisitor} from './internal/decorators/localized.js';
  *   import {LitElement} from 'lit';
  *
  *   class SimpleGreeting extends LitElement {
- *     static get properties() {
- *       return {
- *         name: {type: String}
- *       };
- *     }
+ *     static properties = {
+ *       name: {type: String}
+ *     };
  *
  *     constructor() {
  *       super();
@@ -51,7 +49,7 @@ import {LocalizedVisitor} from './internal/decorators/localized.js';
  *     }
  *
  *     get button() {
- *       return this.renderRoot?.querySelector('#myButton');
+ *       return this.renderRoot?.querySelector('#myButton') ?? null;
  *     }
  *   }
  *   customElements.define('simple-greeting', SimpleGreeting);
