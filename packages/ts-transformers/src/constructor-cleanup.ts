@@ -21,6 +21,9 @@ import {getHeritage, isStatic} from './internal/util.js';
  *   moved just below the final static member of the class, and a blank line
  *   placeholder comment will be added above.
  *
+ * - Simplify `super(...)` calls to `super()` in class constructors, unless the
+ *   class has any super-classes with constructors that takes parameters.
+ *
  * IMPORTANT: This class MUST run as an "after" transformer. If it is run as a
  * "before" transformer, it won't have access to synthesized constructors, and
  * will have no efect.
