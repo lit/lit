@@ -303,6 +303,35 @@ export abstract class ReactiveElement
   extends HTMLElement
   implements ReactiveControllerHost
 {
+  /**
+   * The name of a global property that stores a CSP nonce to use for any
+   * generated <style> tags.
+   *
+   * Element styles are implemented with <style> tags when the browser doesn't
+   * support adopted StyleSheets. To use <such style> tags with the style-src
+   * CSP directive, the style-src value must either include 'unsafe-inline' or
+   * 'nonce-<base64-value>' with <base64-value> replaced be a server-generated
+   * nonce.
+   *
+   * To provide a nonce to use on generated <style> elements, set nonceProperty
+   * to the name of a global that will contain a server-generated nonce, then
+   * set that property in your page's HTML:
+   *
+   * App code:
+   * ```ts
+   * ReactiveElement.nonceProperty = 'styleNonce';
+   * ```
+   *
+   * HTML file:
+   * ```html
+   * <script>
+   *   // Generated and unique per request:
+   *   window.styleNonce = 'a1b2c3d4';
+   * </script>
+   * ```
+   */
+  static nonceProperty?: string;
+
   // Note: these are patched in only in DEV_MODE.
   /**
    * Read or set all the enabled warning kinds for this class.
@@ -830,7 +859,8 @@ export abstract class ReactiveElement
       );
     adoptStyles(
       renderRoot,
-      (this.constructor as typeof ReactiveElement).elementStyles
+      (this.constructor as typeof ReactiveElement).elementStyles,
+      (this.constructor as typeof ReactiveElement).nonceProperty
     );
     return renderRoot;
   }

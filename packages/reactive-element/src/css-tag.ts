@@ -134,10 +134,14 @@ export const css = (
  * the shadowRoot should be placed *before* any shimmed adopted styles. This
  * will match spec behavior that gives adopted sheets precedence over styles in
  * shadowRoot.
+ *
+ * @param nonceProperty The name of a global property that stores a CSP nonce
+ *   to use for any generated <style> tags.
  */
 export const adoptStyles = (
   renderRoot: ShadowRoot,
-  styles: Array<CSSResultOrNative>
+  styles: Array<CSSResultOrNative>,
+  nonceProperty?: string
 ) => {
   if (supportsAdoptingStyleSheets) {
     (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
@@ -146,6 +150,9 @@ export const adoptStyles = (
   } else {
     styles.forEach((s) => {
       const style = document.createElement('style');
+      if (nonceProperty && (window as any)[nonceProperty]) {
+        style.setAttribute('nonce', (window as any)[nonceProperty]);
+      }
       style.textContent = (s as CSSResult).cssText;
       renderRoot.appendChild(style);
     });

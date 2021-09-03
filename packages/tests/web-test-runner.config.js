@@ -172,6 +172,21 @@ export default {
   concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
   browsers,
+  testRunnerHtml: (testFramework) =>
+    `<html>
+      <body>
+        <script>
+          window.testStyleNonce = 'abc123';
+        </script>
+        <script type="module" src="${testFramework}"></script>
+      </body>
+    </html>`,
+  middleware: [
+    (ctx, next) => {
+      ctx.set('Content-Security-Policy', 'style-src \'nonce-abc123\';');
+      return next();
+    }
+  ],
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
