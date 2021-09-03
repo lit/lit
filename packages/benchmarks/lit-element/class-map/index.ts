@@ -56,8 +56,8 @@ function generateData(number = 1000): IData[] {
   }
   const { state } = decorators;
   // Settings
-  const itemCount = 5000;
-  const updateCount = 100;
+  const itemCount = 1000;
+  const updateCount = 200;
 
   const data = generateData(itemCount);
 
@@ -164,7 +164,7 @@ function generateData(number = 1000): IData[] {
       const test = 'update';
       el = create();
       const start = getTestStartName(test);
-      let selected = Math.floor((Math.random() * itemCount) / 2); // Choose item in first half.
+      let selected = 1
       performance.mark(start);
       for (let i = 0; i < updateCount; i++) {
         // Increment the selected index.
@@ -195,10 +195,11 @@ function generateData(number = 1000): IData[] {
     const updateAndNopUpdate = async () => {
       const test = 'update-and-nop';
       el = create();
-      let selected = Math.floor((Math.random() * itemCount) / 2); // Choose item in first half.
+      let selected = 1;
       const start = getTestStartName(test);
       performance.mark(start);
-      for (let i = 0; i < updateCount; i++) {
+      const halfCount = Math.ceil(updateCount / 2); // This loop is starting to time out.
+      for (let i = 0; i < halfCount; i++) {
         // Increment the selected index.
         el.selected = selected++;
         await updateComplete();
