@@ -150,7 +150,9 @@ export const adoptStyles = (
   } else {
     styles.forEach((s) => {
       const style = document.createElement('style');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (nonceProperty && (window as any)[nonceProperty]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         style.setAttribute('nonce', (window as any)[nonceProperty]);
       }
       style.textContent = (s as CSSResult).cssText;
