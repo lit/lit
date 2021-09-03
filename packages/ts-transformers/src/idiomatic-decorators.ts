@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {LitTransformer} from './internal/lit-transformer.js';
 import {CustomElementVisitor} from './internal/decorators/custom-element.js';
 import {PropertyVisitor} from './internal/decorators/property.js';

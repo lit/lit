@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';

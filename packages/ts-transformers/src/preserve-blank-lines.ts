@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 // **IMPORTANT** Changing the PLACEHOLDER_BLANK_LINE_COMMENT constant below is a
 // breaking change and should probably never happen. This unique comment is
