@@ -551,9 +551,9 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       unrelated1() {}
 
       // button comment
-      async get button() {
-        await this.updateComplete;
-        return this.renderRoot?.querySelector('#myButton');
+      get button() {
+        return this.updateComplete.then(
+          () => this.renderRoot.querySelector('#myButton'));
       }
 
       unrelated2() {}
