@@ -17,9 +17,9 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *
  * Into:
  *
- *   async get button() {
- *     await this.updateComplete;
- *     return this.renderRoot?.querySelector('#myButton');
+ *   get button() {
+ *     return this.updateComplete.then(
+ *       () => this.renderRoot.querySelector('#myButton'));
  *   }
  */
 export class QueryAsyncVisitor implements MemberDecoratorVisitor {
@@ -54,41 +54,50 @@ export class QueryAsyncVisitor implements MemberDecoratorVisitor {
     const selector = arg0.text;
     litClassContext.litFileContext.replaceAndMoveComments(
       property,
-      this._createQueryAsyncGetter({name, selector})
+      this._createQueryAsyncGetter(name, selector)
     );
   }
 
-  private _createQueryAsyncGetter(options: {name: string; selector: string}) {
+  private _createQueryAsyncGetter(name: string, selector: string) {
     const factory = this._factory;
     return factory.createGetAccessorDeclaration(
       undefined,
-      [factory.createModifier(ts.SyntaxKind.AsyncKeyword)],
-      factory.createIdentifier(options.name),
+      undefined,
+      factory.createIdentifier(name),
       [],
       undefined,
       factory.createBlock(
         [
-          factory.createExpressionStatement(
-            factory.createAwaitExpression(
-              factory.createPropertyAccessExpression(
-                factory.createThis(),
-                factory.createIdentifier('updateComplete')
-              )
-            )
-          ),
           factory.createReturnStatement(
-            factory.createCallChain(
-              factory.createPropertyAccessChain(
+            factory.createCallExpression(
+              factory.createPropertyAccessExpression(
                 factory.createPropertyAccessExpression(
                   factory.createThis(),
-                  factory.createIdentifier('renderRoot')
+                  factory.createIdentifier('updateComplete')
                 ),
-                factory.createToken(ts.SyntaxKind.QuestionDotToken),
-                factory.createIdentifier('querySelector')
+                factory.createIdentifier('then')
               ),
               undefined,
-              undefined,
-              [factory.createStringLiteral(options.selector)]
+              [
+                factory.createArrowFunction(
+                  undefined,
+                  undefined,
+                  [],
+                  undefined,
+                  factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                  factory.createCallExpression(
+                    factory.createPropertyAccessExpression(
+                      factory.createPropertyAccessExpression(
+                        factory.createThis(),
+                        factory.createIdentifier('renderRoot')
+                      ),
+                      factory.createIdentifier('querySelector')
+                    ),
+                    undefined,
+                    [factory.createStringLiteral(selector)]
+                  )
+                ),
+              ]
             )
           ),
         ],
