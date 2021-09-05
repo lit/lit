@@ -950,6 +950,67 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     checkTransform(input, expected, options);
   });
 
+  test('@eventOptions and @property', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {property, eventOptions} from 'lit/decorators.js';
+
+    export class MyElement extends LitElement {
+      @property()
+      foo = 123;
+
+      // onClick comment
+      @eventOptions({once: true})
+      private onClick() {
+        console.log('click');
+      }
+    }
+    `;
+
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
+
+      export class MyElement extends LitElement {
+        static properties = {
+          foo: {},
+        };
+
+        constructor() {
+          super();
+          this.foo = 123;
+        }
+
+        // onClick comment
+        onClick() {
+          console.log('click');
+        }
+      }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+
+      export class MyElement extends LitElement {
+        constructor() {
+          super();
+          this.foo = 123;
+        }
+
+        // onClick comment
+        onClick() {
+          console.log('click');
+        }
+      }
+      MyElement.properties = {
+        foo: {},
+      };
+      `;
+    }
+    checkTransform(input, expected, options);
+  });
+
   for (const specifier of [
     'lit/decorators.js',
     'lit/decorators/custom-element.js',

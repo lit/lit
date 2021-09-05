@@ -151,7 +151,9 @@ export class LitTransformer {
     if (ts.isClassDeclaration(node)) {
       return this._visitClassDeclaration(node);
     }
-    return ts.visitEachChild(node, this.visit, this._context);
+    return this._cleanUpDecoratorCruft(
+      ts.visitEachChild(node, this.visit, this._context)
+    );
   };
 
   /**
@@ -478,28 +480,45 @@ export class LitTransformer {
   }
 
   /**
-   * TypeScript will sometimes emit decorator transform cruft like this ...
+   * TypeScript will sometimes emit no-op decorator transform cruft like this ...
    *
    *   MyElement = __decorate([], MyElement)
    *
-   * ... when a class's decorators field is an empty array, as opposed to
-   * undefined, due to conditionals in the decorator transform like `if
-   * (class_.decorators) {...}`. If we've removed all class decorators, reset
+   * ... when a class or method's decorators field is an empty array, as opposed
+   * to undefined, due to conditionals in the decorator transform like `if
+   * (node.decorators) {...}`. If we've removed all decorators for a node, reset
    * the decorators field to undefined so that we get clean output instead.
    */
-  private _cleanUpDecoratorCruft(class_: ts.ClassDeclaration) {
-    if (class_.decorators?.length === 0) {
+  private _cleanUpDecoratorCruft(node: ts.Node) {
+    if (node.decorators === undefined || node.decorators.length > 0) {
+      return node;
+    }
+    if (ts.isClassDeclaration(node)) {
       return this._context.factory.updateClassDeclaration(
-        class_,
-        undefined,
-        class_.modifiers,
-        class_.name,
-        class_.typeParameters,
-        class_.heritageClauses,
-        class_.members
+        node,
+        /* decorators */ undefined,
+        node.modifiers,
+        node.name,
+        node.typeParameters,
+        node.heritageClauses,
+        node.members
       );
     }
-    return class_;
+    if (ts.isMethodDeclaration(node)) {
+      return this._context.factory.updateMethodDeclaration(
+        node,
+        /* decorators */ undefined,
+        node.modifiers,
+        node.asteriskToken,
+        node.name,
+        node.questionToken,
+        node.typeParameters,
+        node.parameters,
+        node.type,
+        node.body
+      );
+    }
+    return node;
   }
 }
 
