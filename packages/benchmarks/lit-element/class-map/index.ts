@@ -56,8 +56,8 @@ function generateData(number = 1000): IData[] {
   }
   const { state } = decorators;
   // Settings
-  const itemCount = 5000;
-  const updateCount = 100;
+  const itemCount = 1000;
+  const updateCount = 200;
 
   const data = generateData(itemCount);
 
