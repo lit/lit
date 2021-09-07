@@ -26,7 +26,7 @@ type AttributesMap = Map<string, string>;
 export const getElementRenderer = (
   {elementRenderers}: RenderInfo,
   tagName: string,
-  ceClass: typeof HTMLElement = customElements.get(tagName),
+  ceClass: typeof HTMLElement | undefined = customElements.get(tagName),
   attributes: AttributesMap = new Map()
 ): ElementRenderer | undefined => {
   if (ceClass === undefined) {

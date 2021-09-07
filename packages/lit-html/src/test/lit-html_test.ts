@@ -20,7 +20,13 @@ import {
 } from '../lit-html.js';
 import * as litHtmlLib from '../lit-html.js';
 
-import {directive, Directive, PartType, PartInfo} from '../directive.js';
+import {
+  directive,
+  Directive,
+  PartType,
+  PartInfo,
+  DirectiveParameters,
+} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -33,6 +39,7 @@ import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
 import {_$LH} from '../private-ssr-support.js';
+import {until} from '../directives/until.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
@@ -47,11 +54,27 @@ const DEV_MODE = render.setSanitizer != null;
  */
 const INTERNAL = litHtmlLib.INTERNAL === true;
 
+class FireEventDirective extends Directive {
+  render() {
+    return nothing;
+  }
+  override update(part: AttributePart) {
+    part.element.dispatchEvent(
+      new CustomEvent('test-event', {
+        bubbles: true,
+      })
+    );
+    return nothing;
+  }
+}
+const fireEvent = directive(FireEventDirective);
+
 suite('lit-html', () => {
   let container: HTMLDivElement;
 
   setup(() => {
     container = document.createElement('div');
+    container.id = 'container';
   });
 
   const assertRender = (
@@ -397,21 +420,31 @@ suite('lit-html', () => {
     });
 
     test('"dynamic" tag name', () => {
-      render(html`<${'A'}></${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      const template = html`<${'A'}></${'A'}>`;
+      if (DEV_MODE) {
+        assert.throws(() => {
+          render(template, container);
+        });
+      } else {
+        render(template, container);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      }
     });
 
     test('malformed "dynamic" tag name', () => {
       // `</ ` starts a comment
-      render(html`<${'A'}></ ${'A'}>`, container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<><!-- --></>'
-      );
-
-      // Currently fails:
-      // render(html`<${'A'}></ ${'A'}>${'B'}`, container);
-      // assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- -->B</>');
+      const template = html`<${'A'}></ ${'A'}>`;
+      if (DEV_MODE) {
+        assert.throws(() => {
+          render(template, container);
+        });
+      } else {
+        render(template, container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<><!-- --></>'
+        );
+      }
     });
 
     test('binding after end tag name', () => {
@@ -971,7 +1004,7 @@ suite('lit-html', () => {
       assertContent('<div>baz</div><div foo="bar"></div>');
     });
 
-    test('renders undefined in attributes', () => {
+    test('renders undefined in interpolated attributes', () => {
       render(html`<div attribute="it's ${undefined}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -987,6 +1020,32 @@ suite('lit-html', () => {
     test('renders null in attributes', () => {
       render(html`<div attribute="${null as any}"></div>`, container);
       assertContent('<div attribute=""></div>');
+    });
+
+    test('renders empty string in attributes', () => {
+      render(html`<div attribute="${''}"></div>`, container);
+      assertContent('<div attribute=""></div>');
+    });
+
+    test('renders empty string in interpolated attributes', () => {
+      render(html`<div attribute="foo${''}"></div>`, container);
+      assertContent('<div attribute="foo"></div>');
+    });
+
+    test('initial render of noChange in fully-controlled attribute', () => {
+      render(html`<div attribute="${noChange as any}"></div>`, container);
+      assertContent('<div></div>');
+    });
+
+    test('renders noChange in attributes, preserves outside attribute value', () => {
+      const go = (v: any) =>
+        render(html`<div attribute="${v}"></div>`, container);
+      go(noChange);
+      assertContent('<div></div>');
+      const div = container.querySelector('div');
+      div?.setAttribute('attribute', 'A');
+      go(noChange);
+      assertContent('<div attribute="A"></div>');
     });
 
     test('nothing sentinel removes an attribute', () => {
@@ -1030,9 +1089,17 @@ suite('lit-html', () => {
       assert.isEmpty(observer.takeRecords());
     });
 
-    test('noChange works on one of multiple expressions', () => {
+    test('noChange renders as empty string when used in interpolated attributes', () => {
       const go = (a: any, b: any) =>
         render(html`<div foo="${a}:${b}"></div>`, container);
+
+      go('A', noChange);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="A:"></div>',
+        'A'
+      );
+
       go('A', 'B');
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -1642,11 +1709,14 @@ suite('lit-html', () => {
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
       class CheckNodePropertiesBehavior extends Directive {
-        render() {
+        render(_parentId?: string) {
           return nothing;
         }
 
-        override update(part: ChildPart) {
+        override update(
+          part: ChildPart,
+          [parentId]: DirectiveParameters<this>
+        ) {
           const {parentNode, startNode, endNode} = part;
 
           if (endNode !== null) {
@@ -1665,19 +1735,21 @@ suite('lit-html', () => {
             assert.equal<Node | null>(startNode.nextSibling, endNode);
           }
 
+          if (parentId !== undefined) {
+            assert.equal((parentNode as HTMLElement).id, parentId);
+          }
+
           return nothing;
         }
       }
-      const checkNodePropertiesBehavior = directive(
-        CheckNodePropertiesBehavior
-      );
+      const checkPart = directive(CheckNodePropertiesBehavior);
 
       test('when the directive is the only child', () => {
         const makeTemplate = (content: unknown) => html`<div>${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is the last child', () => {
@@ -1685,8 +1757,8 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is not the last child', () => {
@@ -1694,8 +1766,44 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content} Later sibling.</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
+      });
+
+      test(`part's parentNode is the logical DOM parent`, async () => {
+        const asyncCheckDiv = Promise.resolve(checkPart('divPromise'));
+        const makeTemplate = () =>
+          html`
+            ${checkPart('container')}
+            <div id="div">
+              ${checkPart('div')}
+              ${html`x ${checkPart('div')} x`}
+              ${html`x ${html`x ${checkPart('div')} x`} x`}
+              ${html`x ${html`x ${[checkPart('div'), checkPart('div')]} x`} x`}
+              ${html`x ${html`x ${[
+                [checkPart('div'), checkPart('div')],
+              ]} x`} x`}
+              ${html`x ${html`x ${[
+                [repeat([checkPart('div'), checkPart('div')], (v) => v)],
+              ]} x`} x`}
+              ${until(asyncCheckDiv)}
+            </div>
+          `;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), container);
+        await asyncCheckDiv;
+        render(makeTemplate(), container);
+      });
+
+      test(`part's parentNode is correct when rendered into a document fragment`, async () => {
+        const fragment = document.createDocumentFragment();
+        (fragment as unknown as {id: string}).id = 'fragment';
+        const makeTemplate = () => html`${checkPart('fragment')}`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), fragment);
+        render(makeTemplate(), fragment);
       });
     });
 
@@ -1849,27 +1957,24 @@ suite('lit-html', () => {
     });
 
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective extends Directive {
-        render() {
-          return nothing;
-        }
-        // TODO (justinfagnani): make this work on SpreadPart
-        override update(part: AttributePart) {
-          part.element.dispatchEvent(
-            new CustomEvent('test-event', {
-              bubbles: true,
-            })
-          );
-          return nothing;
-        }
-      }
-      const fireEvent = directive(FireEventDirective);
       let event = undefined;
       const listener = (e: Event) => {
         event = e;
       };
       render(
         html`<div @test-event=${listener} b=${fireEvent()}></div>`,
+        container
+      );
+      assert.isOk(event);
+    });
+
+    test('event listeners can see events fired in element directives', () => {
+      let event = undefined;
+      const listener = (e: Event) => {
+        event = e;
+      };
+      render(
+        html`<div @test-event=${listener} ${fireEvent()}></div>`,
         container
       );
       assert.isOk(event);
@@ -1943,6 +2048,112 @@ suite('lit-html', () => {
             container
           );
         });
+      });
+
+      test('Expressions inside template throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(html`<template>${'test'}</template>`, container);
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(html`<div><template>${'test'}</template></div>`, container);
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // element part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div ${'test'}></div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<template id=${'test'}>
+          <div>Static content is ok</div>
+            </template>`,
+          container
+        );
+      });
+
+      test('Expressions inside nested templates throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(
+            html`<template><template>${'test'}</template></template>`,
+            container
+          );
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(
+            html`<template><div><template>${'test'}</template></template></div>`,
+            container
+          );
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div ${'test'}></div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<template id=${'test'}><template>
+          <div>Static content is ok</div>
+            </template></template>`,
+          container
+        );
       });
     }
 
@@ -2071,6 +2282,7 @@ suite('lit-html', () => {
     }
     const aDirective = directive(ADirective);
     let aDirectiveInst: ADirective;
+
     const bDirective = directive(
       class extends Directive {
         count = 0;
@@ -2079,6 +2291,24 @@ suite('lit-html', () => {
         }
       }
     );
+
+    const syncAsyncDirective = directive(
+      class extends AsyncDirective {
+        render(x: string) {
+          this.setValue(x);
+          return noChange;
+        }
+      }
+    );
+
+    test('async directive can call setValue synchronously', () => {
+      assertRender(
+        html`<div foo=${syncAsyncDirective('test')}>${syncAsyncDirective(
+          'test'
+        )}</div>`,
+        '<div foo="test">test</div>'
+      );
+    });
 
     test('async directives in ChildPart', async () => {
       const template = (promise: Promise<unknown>) =>
@@ -2835,22 +3065,89 @@ suite('lit-html', () => {
   const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
 
   warningsSuiteFunction('warnings', () => {
-    test('warns on octal escape', () => {
-      const warnings: Array<unknown[]> = [];
-      const originalWarn = console.warn;
+    let originalWarn: (...data: any[]) => void;
+    let warnings: Array<unknown[]>;
+    setup(() => {
+      warnings = [];
+      originalWarn = console.warn;
       console.warn = (...args: unknown[]) => {
         warnings.push(args);
-        return originalWarn.call(console, ...args);
+        return originalWarn!.call(console, ...args);
       };
+    });
+
+    teardown(() => {
+      console.warn = originalWarn!;
+    });
+
+    const assertWarning = (m?: string) => {
+      assert.equal(warnings!.length, 1);
+      if (m) {
+        assert.include(warnings[0][0], m);
+      }
+      warnings = [];
+      // Reset the list of issued warnings. This prevents the de-spamming
+      // and allows us to check for multiple warnings of the same type.
+      globalThis.litIssuedWarnings = new Set();
+    };
+
+    const assertNoWarning = () => {
+      assert.equal(warnings.length, 0);
+    };
+
+    test('warns on octal escape', () => {
       try {
         render(html`\2022`, container);
         assert.fail();
       } catch (e) {
-        assert.equal(warnings.length, 1);
-        assert.include(warnings[0][0], 'escape');
-      } finally {
-        console.warn = originalWarn;
+        assertWarning('escape');
       }
+    });
+
+    test('Expressions inside textarea warn in dev mode', () => {
+      // top level
+      render(html`<textarea>${'test'}</textarea>`, container);
+      assertWarning('textarea');
+
+      // inside template result
+      render(html`<div><textarea>${'test'}</textarea></div>`, container);
+      assertWarning('textarea');
+
+      // child part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div>${'test'}</div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // attr part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div class="${'test'}"></div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // element part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div ${'test'}></div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // attr on element a-ok
+      render(
+        html`<textarea id=${'test'}>
+        <div>Static content is ok</div>
+          </textarea>`,
+        container
+      );
+      assertNoWarning();
     });
   });
 

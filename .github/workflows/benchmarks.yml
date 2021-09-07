@@ -15,36 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
-
-      # Note this is the way to set an environment variable that lives across
-      # all steps
-      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
-      - name: Set environment variables
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
-
-      # Cache all of our node_modules/ directories and playwright browser
-      # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            **/node_modules
-            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          # Bump the number after `lit-node-modules` to force a cache update
-          # Note there are 2 cache actions in `tests.yml` that should all keep keys in sync
-          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: NPM install
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Lerna bootstrap
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
 
       - name: Build

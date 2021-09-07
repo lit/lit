@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
@@ -25,7 +25,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *   }
  *
  *   get span() {
- *     return this.__span ??= this.renderRoot?.querySelector('#myDiv');
+ *     return this.__span ??= this.renderRoot?.querySelector('#myDiv') ?? null;
  *   }
  */
 export class QueryVisitor implements MemberDecoratorVisitor {
@@ -50,7 +50,7 @@ export class QueryVisitor implements MemberDecoratorVisitor {
       return;
     }
     const [arg0, arg1] = decorator.expression.arguments;
-    if (!ts.isStringLiteral(arg0)) {
+    if (arg0 === undefined || !ts.isStringLiteral(arg0)) {
       return;
     }
     if (!ts.isIdentifier(property.name)) {
@@ -59,41 +59,45 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     const name = property.name.text;
     const selector = arg0.text;
     const cache = arg1?.kind === ts.SyntaxKind.TrueKeyword;
-    litClassContext.litFileContext.nodesToRemove.add(property);
-    litClassContext.classMembers.push(
+    litClassContext.litFileContext.replaceAndMoveComments(
+      property,
       this._createQueryGetter(name, selector, cache)
     );
   }
 
   private _createQueryGetter(name: string, selector: string, cache: boolean) {
-    const f = this._factory;
-    const querySelectorCall = f.createCallChain(
-      f.createPropertyAccessChain(
-        f.createPropertyAccessExpression(
-          f.createThis(),
-          f.createIdentifier('renderRoot')
+    const factory = this._factory;
+    const querySelectorCall = factory.createBinaryExpression(
+      factory.createCallChain(
+        factory.createPropertyAccessChain(
+          factory.createPropertyAccessExpression(
+            factory.createThis(),
+            factory.createIdentifier('renderRoot')
+          ),
+          factory.createToken(ts.SyntaxKind.QuestionDotToken),
+          factory.createIdentifier('querySelector')
         ),
-        f.createToken(ts.SyntaxKind.QuestionDotToken),
-        f.createIdentifier('querySelector')
+        undefined,
+        undefined,
+        [factory.createStringLiteral(selector)]
       ),
-      undefined,
-      undefined,
-      [f.createStringLiteral(selector)]
+      factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
+      factory.createNull()
     );
-    return f.createGetAccessorDeclaration(
+    return factory.createGetAccessorDeclaration(
       undefined,
       undefined,
-      f.createIdentifier(name),
+      factory.createIdentifier(name),
       [],
       undefined,
-      f.createBlock(
+      factory.createBlock(
         [
-          f.createReturnStatement(
+          factory.createReturnStatement(
             cache
-              ? f.createBinaryExpression(
-                  f.createPropertyAccessExpression(
-                    f.createThis(),
-                    f.createIdentifier(`__${name}`)
+              ? factory.createBinaryExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createThis(),
+                    factory.createIdentifier(`__${name}`)
                   ),
                   ts.SyntaxKind.QuestionQuestionEqualsToken,
                   querySelectorCall

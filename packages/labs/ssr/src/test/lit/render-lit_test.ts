@@ -272,7 +272,7 @@ test('simple class-map directive', async () => {
   const result = await render(classMapDirective);
   assert.is(
     result,
-    '<!--lit-part PkF/hiJU4II=--><div class="a c"><!--lit-node 0--></div><!--/lit-part-->'
+    '<!--lit-part PkF/hiJU4II=--><div class=" a c "><!--lit-node 0--></div><!--/lit-part-->'
   );
 });
 

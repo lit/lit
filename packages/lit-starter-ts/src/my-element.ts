@@ -10,6 +10,7 @@ import {customElement, property} from 'lit/decorators.js';
 /**
  * An example element.
  *
+ * @fires count-changed - Indicates when the count changes
  * @slot - This element has a slot
  * @csspart button - The button
  */
@@ -38,7 +39,7 @@ export class MyElement extends LitElement {
 
   override render() {
     return html`
-      <h1>Hello, ${this.name}!</h1>
+      <h1>${this.sayHello(this.name)}!</h1>
       <button @click=${this._onClick} part="button">
         Click Count: ${this.count}
       </button>
@@ -48,10 +49,15 @@ export class MyElement extends LitElement {
 
   private _onClick() {
     this.count++;
+    this.dispatchEvent(new CustomEvent('count-changed'));
   }
 
-  foo(): string {
-    return 'foo';
+  /**
+   * Formats a greeting
+   * @param name The name to say "Hello" to
+   */
+  sayHello(name: string): string {
+    return `Hello, ${name}`;
   }
 }
 

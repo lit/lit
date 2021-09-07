@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 // **IMPORTANT** Changing the PLACEHOLDER_BLANK_LINE_COMMENT constant below is a
 // breaking change and should probably never happen. This unique comment is
@@ -58,7 +58,7 @@ export const BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP = new RegExp(
  * the `BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP` regexp, or with any equivalent
  * search-and-replace operation for the comment style shown above.
  */
-export default function preserveBlankLinesTransformer(): ts.TransformerFactory<ts.SourceFile> {
+export function preserveBlankLinesTransformer(): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
     return (file) => {
       const sourceFileText = file.getFullText();
@@ -102,11 +102,6 @@ class PreserveBlankLinesTransformer {
       // possible to remove existing trivia nor add synthetic comments to a
       // source file (it has no effect). Skip it so that we handle leading
       // trivia from the first child instead.
-      return;
-    }
-    if (ts.isPropertyDeclaration(node)) {
-      // Skip property declarations because TypeScript moves them to the
-      // constructor, where preceding blank lines look odd.
       return;
     }
 

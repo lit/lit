@@ -159,4 +159,5 @@ td, th {
   border: solid 1px #aaa;
   padding: 4px;
   text-align: left;
+  vertical-align: top;
 }

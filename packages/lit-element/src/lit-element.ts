@@ -57,10 +57,22 @@ export const UpdatingElement = ReactiveElement;
 
 const DEV_MODE = true;
 
-declare global {
-  interface Window {
-    litElementVersions: string[];
-  }
+let issueWarning: (code: string, warning: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
 }
 
 /**
@@ -117,6 +129,9 @@ export class LitElement extends ReactiveElement {
     // updates are allowed after super.update, it's important to call `render`
     // before that.
     const value = this.render();
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     super.update(changedProperties);
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
@@ -157,36 +172,32 @@ globalThis.litElementPlatformSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   // Note, for compatibility with closure compilation, this access
   // needs to be as a string property index.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (LitElement as any)['finalize'] = function (this: typeof LitElement) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalized = (ReactiveElement as any).finalize.call(this);
     if (!finalized) {
       return false;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const warnRemoved = (obj: any, name: string) => {
-      if (obj[name] !== undefined) {
-        console.warn(
-          `\`${name}\` is implemented. It ` +
-            `has been removed from this version of LitElement. `
-          // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/lit/lit/blob/main/packages/lit-element/CHANGELOG.md`
+    const warnRemovedOrRenamed = (obj: any, name: string, renamed = false) => {
+      if (obj.hasOwnProperty(name)) {
+        const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
+          .name;
+        issueWarning(
+          renamed ? 'renamed-api' : 'removed-api',
+          `\`${name}\` is implemented on class ${ctorName}. It ` +
+            `has been ${renamed ? 'renamed' : 'removed'} ` +
+            `in this version of LitElement.`
         );
       }
     };
-    [`render`, `getStyles`].forEach((name: string) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      warnRemoved(this as any, name)
-    );
-    [`adoptStyles`].forEach((name: string) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      warnRemoved(this.prototype as any, name)
-    );
+    warnRemovedOrRenamed(this, 'render');
+    warnRemovedOrRenamed(this, 'getStyles', true);
+    warnRemovedOrRenamed(this.prototype, 'adoptStyles');
     return true;
   };
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 }
 
 /**
@@ -223,4 +234,11 @@ export const _$LE = {
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
-(globalThis.litElementVersions ??= []).push('3.0.0-rc.3');
+(globalThis.litElementVersions ??= []).push('3.0.0-rc.4');
+if (DEV_MODE && globalThis.litElementVersions.length > 1) {
+  issueWarning!(
+    'multiple-versions',
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended.`
+  );
+}

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-client",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -21,9 +21,9 @@
       "development": "./development/index.js",
       "default": "./index.js"
     },
-    "./directives/": {
-      "development": "./development/directives/",
-      "default": "./directives/"
+    "./directives/render-light.js": {
+      "development": "./development/directives/render-light.js",
+      "default": "./directives/render-light.js"
     }
   },
   "files": [

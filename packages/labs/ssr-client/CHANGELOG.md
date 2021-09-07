@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- [#2103](https://github.com/lit/lit/pull/2103) [`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b) - Updates the `exports` field of `package.json` files to replace the [subpath
+  folder
+  mapping](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#packages_subpath_folder_mappings)
+  syntax with an explicit list of all exported files.
+
+  The `/`-suffixed syntax for subpath folder mapping originally used in these
+  files is deprecated. Rather than update to the new syntax, this change replaces
+  these mappings with individual entries for all exported files so that (a) users
+  must import using extensions and (b) bundlers or other tools that don't resolve
+  subpath folder mapping exactly as Node.js does won't break these packages'
+  expectations around how they're imported.
+
+* [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
+
 ## 1.0.0-rc.2
 
 ### Patch Changes

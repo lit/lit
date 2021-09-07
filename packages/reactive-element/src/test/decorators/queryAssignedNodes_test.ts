@@ -198,15 +198,7 @@ const flush =
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
   });
 
-  test('returns assignedNodes for slot that contains text nodes filtered by selector when Element.matches does not exist', () => {
-    const descriptor = Object.getOwnPropertyDescriptor(
-      Element.prototype,
-      'matches'
-    );
-    Object.defineProperty(Element.prototype, 'matches', {
-      value: undefined,
-      configurable: true,
-    });
+  test('returns assignedNodes for slot that contains text nodes filtered by selector', () => {
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
@@ -222,9 +214,6 @@ const flush =
     el.removeChild(child2);
     flush();
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
-    if (descriptor !== undefined) {
-      Object.defineProperty(Element.prototype, 'matches', descriptor);
-    }
   });
 
   test('always returns an array, even if the slot is not rendered', () => {

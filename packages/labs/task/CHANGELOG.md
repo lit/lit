@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.0-rc.4
+
+### Patch Changes
+
+- [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
+
 ## 1.0.0-rc.3
 
 ### Patch Changes

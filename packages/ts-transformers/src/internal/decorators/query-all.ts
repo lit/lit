@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
@@ -18,7 +18,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  * Into:
  *
  *   get inputs() {
- *     return this.renderRoot?.queryAll('.myInput');
+ *     return this.renderRoot?.queryAll('.myInput') ?? [];
  *   }
  */
 export class QueryAllVisitor implements MemberDecoratorVisitor {
@@ -43,7 +43,7 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
       return;
     }
     const [arg0] = decorator.expression.arguments;
-    if (!ts.isStringLiteral(arg0)) {
+    if (arg0 === undefined || !ts.isStringLiteral(arg0)) {
       return;
     }
     if (!ts.isIdentifier(property.name)) {
@@ -51,35 +51,39 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
     }
     const name = property.name.text;
     const selector = arg0.text;
-    litClassContext.litFileContext.nodesToRemove.add(property);
-    litClassContext.classMembers.push(
+    litClassContext.litFileContext.replaceAndMoveComments(
+      property,
       this._createQueryAllGetter(name, selector)
     );
   }
 
   private _createQueryAllGetter(name: string, selector: string) {
-    const f = this._factory;
-    return f.createGetAccessorDeclaration(
+    const factory = this._factory;
+    return factory.createGetAccessorDeclaration(
       undefined,
       undefined,
-      f.createIdentifier(name),
+      factory.createIdentifier(name),
       [],
       undefined,
-      f.createBlock(
+      factory.createBlock(
         [
-          f.createReturnStatement(
-            f.createCallChain(
-              f.createPropertyAccessChain(
-                f.createPropertyAccessExpression(
-                  f.createThis(),
-                  f.createIdentifier('renderRoot')
+          factory.createReturnStatement(
+            factory.createBinaryExpression(
+              factory.createCallChain(
+                factory.createPropertyAccessChain(
+                  factory.createPropertyAccessExpression(
+                    factory.createThis(),
+                    factory.createIdentifier('renderRoot')
+                  ),
+                  factory.createToken(ts.SyntaxKind.QuestionDotToken),
+                  factory.createIdentifier('querySelectorAll')
                 ),
-                f.createToken(ts.SyntaxKind.QuestionDotToken),
-                f.createIdentifier('querySelectorAll')
+                undefined,
+                undefined,
+                [factory.createStringLiteral(selector)]
               ),
-              undefined,
-              undefined,
-              [f.createStringLiteral(selector)]
+              factory.createToken(ts.SyntaxKind.QuestionQuestionToken),
+              factory.createArrayLiteralExpression([], false)
             )
           ),
         ],

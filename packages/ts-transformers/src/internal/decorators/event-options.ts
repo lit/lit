@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import {cloneNode} from 'ts-clone-node';
 
 import type {LitClassContext} from '../lit-class-context.js';
@@ -85,7 +85,10 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
       return;
     }
     const [eventOptionsNode] = decorator.expression.arguments;
-    if (!ts.isObjectLiteralExpression(eventOptionsNode)) {
+    if (
+      eventOptionsNode === undefined ||
+      !ts.isObjectLiteralExpression(eventOptionsNode)
+    ) {
       return;
     }
     if (!ts.isIdentifier(method.name)) {
@@ -98,7 +101,7 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
       return;
     }
 
-    litClassContext.litFileContext.nodesToRemove.add(decorator);
+    litClassContext.litFileContext.nodeReplacements.set(decorator, undefined);
 
     // If private, assume no outside access is possible, and transform any
     // references to this function inside template event bindings to
@@ -138,22 +141,22 @@ export class EventOptionsVisitor implements MemberDecoratorVisitor {
     methodName: string,
     options: ts.ObjectLiteralExpression
   ): ts.Node {
-    const f = this._factory;
-    return f.createCallExpression(
-      f.createPropertyAccessExpression(
-        f.createIdentifier('Object'),
-        f.createIdentifier('assign')
+    const factory = this._factory;
+    return factory.createCallExpression(
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('Object'),
+        factory.createIdentifier('assign')
       ),
       undefined,
       [
-        f.createPropertyAccessExpression(
-          f.createPropertyAccessExpression(
-            f.createIdentifier(className),
-            f.createIdentifier('prototype')
+        factory.createPropertyAccessExpression(
+          factory.createPropertyAccessExpression(
+            factory.createIdentifier(className),
+            factory.createIdentifier('prototype')
           ),
-          f.createIdentifier(methodName)
+          factory.createIdentifier(methodName)
         ),
-        cloneNode(options, {factory: this._factory}),
+        options,
       ]
     );
   }
@@ -221,7 +224,7 @@ class EventOptionsBindingVisitor implements GenericVisitor {
     const priorText =
       pos === 0
         ? template.head.text
-        : template.templateSpans[pos - 1].literal.text;
+        : template.templateSpans[pos - 1]!.literal.text;
     if (priorText.match(/@[^\s"'>]+\s*=\s*["']*$/) === null) {
       return false;
     }
@@ -234,38 +237,42 @@ class EventOptionsBindingVisitor implements GenericVisitor {
   }
 
   private _createEventHandlerObject(
-    node: ts.PropertyAccessExpression
+    eventHandlerReference: ts.PropertyAccessExpression
   ): ts.ObjectLiteralExpression {
-    const f = this._factory;
-    return f.createObjectLiteralExpression(
+    const factory = this._factory;
+    return factory.createObjectLiteralExpression(
       [
-        f.createPropertyAssignment(
-          f.createIdentifier('handleEvent'),
-          f.createArrowFunction(
+        factory.createPropertyAssignment(
+          factory.createIdentifier('handleEvent'),
+          factory.createArrowFunction(
             undefined,
             undefined,
             [
-              f.createParameterDeclaration(
+              factory.createParameterDeclaration(
                 undefined,
                 undefined,
                 undefined,
-                f.createIdentifier('e'),
+                factory.createIdentifier('e'),
                 undefined,
                 undefined,
                 undefined
               ),
             ],
             undefined,
-            f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-            f.createCallExpression(
-              cloneNode(node, {factory: this._factory}),
+            factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            factory.createCallExpression(
+              // Clone because there could be multiple event bindings and each
+              // needs its own copy of the event handler reference.
+              cloneNode(eventHandlerReference, {factory: factory}),
               undefined,
-              [f.createIdentifier('e')]
+              [factory.createIdentifier('e')]
             )
           )
         ),
         ...this._eventOptionsNode.properties.map((property) =>
-          cloneNode(property, {factory: this._factory})
+          // Clone because there could be multiple event bindings and each needs
+          // its own copy of the event options.
+          cloneNode(property, {factory: factory})
         ),
       ],
       false

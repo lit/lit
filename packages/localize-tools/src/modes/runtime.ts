@@ -75,7 +75,7 @@ async function runtimeOutput(
     throw new KnownError(
       `Error creating TypeScript locales directory: ${outputDir}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
   for (const locale of config.targetLocales) {
@@ -88,11 +88,11 @@ async function runtimeOutput(
     );
     const filename = pathLib.join(outputDir, `${locale}.ts`);
     writes.push(
-      fsExtra.writeFile(filename, ts, 'utf8').catch((e) => {
+      fsExtra.writeFile(filename, ts, 'utf8').catch((e: unknown) => {
         throw new KnownError(
           `Error writing TypeScript file: ${filename}\n` +
             `Do you have write permission?\n` +
-            e.message
+            (e as Error).message
         );
       })
     );

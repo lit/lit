@@ -3,7 +3,6 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-
   changeset:
     runs-on: ubuntu-latest
 
@@ -12,16 +11,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
-      
+          # Note: we do not cache here because we're not running lerna
+          # bootstrap, so the ~/.npm dir won't have all dependencies, and if
+          # this job finishes first then we'll only cache root dependencies.
+
       - run: git checkout main
-
       - run: git checkout ${{ github.sha }}
-
       - run: npm ci
-
       - run: npm run changeset status -- --since=main
 
   lint:
@@ -29,13 +28,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
+          # Note: we do not cache here because we're not running lerna
+          # bootstrap, so the ~/.npm dir won't have all dependencies, and if
+          # this job finishes first then we'll only cache root dependencies.
 
       - run: npm ci
-
       - run: npm run lint
 
   tests-local:
@@ -44,41 +44,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-      # Note this is the way to set an environment variable that lives across
-      # all steps
-      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
-      - name: Set environment variables
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
-
-      # Cache all of our node_modules/ directories and playwright browser
-      # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            **/node_modules
-            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          # Bump the number after `lit-node-modules` to force a cache update
-          # Note there are cache actions in below in `tests-sauce` and in `benchmarks.yml`
-          # that should all keep keys in sync
-          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      # Installs system dependencies needed for playwright. Not sure how to
-      # cache this.
+      # Installs system dependencies needed for playwright.
       - uses: microsoft/playwright-github-action@v1
 
       - name: NPM install
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Lerna bootstrap
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
 
       - name: Build
@@ -104,41 +82,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-      # Note this is the way to set an environment variable that lives across
-      # all steps
-      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
-      - name: Set environment variables
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
-
-      # Cache all of our node_modules/ directories and playwright browser
-      # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            **/node_modules
-            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          # Bump the number after `lit-node-modules` to force a cache update
-          # Note there are cache actions in above in `tests-local` and in `benchmarks.yml`
-          # that should all keep keys in sync
-          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      # Installs system dependencies needed for playwright. Not sure how to
-      # cache this.
+      # Installs system dependencies needed for playwright.
       - uses: microsoft/playwright-github-action@v1
 
       - name: NPM install
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Lerna bootstrap
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
 
       - name: Lint
@@ -173,41 +129,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-      # Note this is the way to set an environment variable that lives across
-      # all steps
-      # (https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable).
-      - name: Set environment variables
-        run: echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.playwright" >> $GITHUB_ENV
-
-      # Cache all of our node_modules/ directories and playwright browser
-      # binaries to save ~30 seconds of install time.
-      - name: Restore node_modules
-        id: cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            node_modules
-            **/node_modules
-            ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          # Bump the number after `lit-node-modules` to force a cache update
-          # Note there are cache actions in above in `tests-local` and in `benchmarks.yml`
-          # that should all keep keys in sync
-          key: lit-node-modules-2-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-
-      # Installs system dependencies needed for playwright. Not sure how to
-      # cache this.
+      # Installs system dependencies needed for playwright.
       - uses: microsoft/playwright-github-action@v1
 
       - name: NPM install
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Lerna bootstrap
-        if: steps.cache.outputs.cache-hit != 'true'
         run: npm run bootstrap
 
       - name: Lint

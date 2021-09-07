@@ -18,8 +18,26 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  */
 export const INTERNAL = true;
 
+let issueWarning: (code: string, warning: string) => void;
+
 if (DEV_MODE) {
-  console.warn('lit-html is in dev mode. Not recommended for production!');
+  globalThis.litIssuedWarnings ??= new Set();
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += code
+      ? ` See https://lit.dev/msg/${code} for more information.`
+      : '';
+    if (!globalThis.litIssuedWarnings!.has(warning)) {
+      console.warn(warning);
+      globalThis.litIssuedWarnings!.add(warning);
+    }
+  };
+
+  issueWarning(
+    'dev-mode',
+    `Lit is in dev mode. Not recommended for production!`
+  );
 }
 
 const wrap =
@@ -321,6 +339,14 @@ export const nothing = Symbol.for('lit-nothing');
  */
 const templateCache = new WeakMap<TemplateStringsArray, Template>();
 
+/**
+ * Object specifying options for controlling lit-html rendering. Note that
+ * while `render` may be called multiple times on the same `container` (and
+ * `renderBefore` reference node) to efficiently update the rendered content,
+ * only the options passed in during the first render are respected during
+ * the lifetime of renders to that unique `container` + `renderBefore`
+ * combination.
+ */
 export interface RenderOptions {
   /**
    * An object to use as the `this` value for event listeners. It's often
@@ -337,6 +363,15 @@ export interface RenderOptions {
    * any inherited context. Defaults to the global `document`.
    */
   creationScope?: {importNode(node: Node, deep?: boolean): Node};
+  /**
+   * The initial connected state for the top-level part being rendered. If no
+   * `isConnected` option is set, `AsyncDirective`s will be connected by
+   * default. Set to `false` if the initial render occurs in a disconnected tree
+   * and `AsyncDirective`s should see `isConnected === false` for their initial
+   * render. The `part.setConnected()` method must be used subsequent to initial
+   * render to change the connected state of the part.
+   */
+  isConnected?: boolean;
 }
 
 /**
@@ -503,7 +538,12 @@ const getTemplateHtml = (
           }
           regex = tagEndRegex;
         } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
-          // dynamic tag name
+          if (DEV_MODE) {
+            throw new Error(
+              'Bindings in tag names are not supported. Please use static templates instead. ' +
+                'See https://lit.dev/docs/templates/expressions/#static-expressions'
+            );
+          }
           regex = tagEndRegex;
         }
       } else if (regex === tagEndRegex) {
@@ -632,6 +672,25 @@ class Template {
     // Walk the template to find binding markers and create TemplateParts
     while ((node = walker.nextNode()) !== null && parts.length < partCount) {
       if (node.nodeType === 1) {
+        if (DEV_MODE) {
+          const tag = (node as Element).localName;
+          // Warn if `textarea` includes an expression and throw if `template`
+          // does since these are not supported. We do this by checking
+          // innerHTML for anything that looks like a marker. This catches
+          // cases like bindings in textarea there markers turn into text nodes.
+          if (
+            /^(?:textarea|template)$/i!.test(tag) &&
+            (node as Element).innerHTML.includes(marker)
+          ) {
+            const m =
+              `Expressions are not supported inside \`${tag}\` ` +
+              `elements. See https://lit.dev/msg/expression-in-${tag} for more ` +
+              `information.`;
+            if (tag === 'template') {
+              throw new Error(m);
+            } else issueWarning('', m);
+          }
+        }
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
@@ -814,13 +873,18 @@ class TemplateInstance implements Disconnectable {
   _parts: Array<Part | undefined> = [];
 
   /** @internal */
-  _$parent: Disconnectable;
+  _$parent: ChildPart;
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
   constructor(template: Template, parent: ChildPart) {
     this._$template = template;
     this._$parent = parent;
+  }
+
+  // Called by ChildPart parentNode getter
+  get parentNode() {
+    return this._$parent.parentNode;
   }
 
   // See comment in Disconnectable interface for why this is a getter
@@ -942,7 +1006,7 @@ export type {ChildPart};
 class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
   readonly options: RenderOptions | undefined;
-  _$committedValue: unknown;
+  _$committedValue: unknown = nothing;
   /** @internal */
   __directive?: Directive;
   /** @internal */
@@ -952,13 +1016,15 @@ class ChildPart implements Disconnectable {
   private _textSanitizer: ValueSanitizer | undefined;
   /** @internal */
   _$parent: Disconnectable | undefined;
-  // TODO(kschaaf): There's currently no way to have the initial render
-  // of a part be `isConnected: false`. We may want to add this via renderOptions
-  // so that if a LitElement ends up performing its initial render while
-  // disconnected, the directives aren't in the wrong state
-  // https://github.com/lit/lit/issues/2051
-  /** @internal */
-  __isConnected = true;
+  /**
+   * Connection state for RootParts only (i.e. ChildPart without _$parent
+   * returned from top-level `render`). This field is unsed otherwise. The
+   * intention would clearer if we made `RootPart` a subclass of `ChildPart`
+   * with this field (and a different _$isConnected getter), but the subclass
+   * caused a perf regression, possibly due to making call sites polymorphic.
+   * @internal
+   */
+  __isConnected: boolean;
 
   // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
@@ -991,6 +1057,10 @@ class ChildPart implements Disconnectable {
     this._$endNode = endNode;
     this._$parent = parent;
     this.options = options;
+    // Note __isConnected is only ever accessed on RootParts (i.e. when there is
+    // no _$parent); the value on a non-root-part is "don't care", but checking
+    // for parent would be more code
+    this.__isConnected = options?.isConnected ?? true;
     if (ENABLE_EXTRA_SECURITY_HOOKS) {
       // Explicitly initialize for consistent class shape.
       this._textSanitizer = undefined;
@@ -1016,7 +1086,18 @@ class ChildPart implements Disconnectable {
    * consists of all child nodes of `.parentNode`.
    */
   get parentNode(): Node {
-    return wrap(this._$startNode).parentNode!;
+    let parentNode: Node = wrap(this._$startNode).parentNode!;
+    const parent = this._$parent;
+    if (
+      parent !== undefined &&
+      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+    ) {
+      // If the parentNode is a DocumentFragment, it may be because the DOM is
+      // still in the cloned fragment during initial render; if so, get the real
+      // parentNode the part will be committed into by asking the parent.
+      parentNode = (parent as ChildPart | TemplateInstance).parentNode;
+    }
+    return parentNode;
   }
 
   /**
@@ -1080,13 +1161,25 @@ class ChildPart implements Disconnectable {
       ) {
         const parentNodeName = this._$startNode.parentNode?.nodeName;
         if (parentNodeName === 'STYLE' || parentNodeName === 'SCRIPT') {
-          this._insert(
-            new Text(
-              '/* lit-html will not write ' +
-                'TemplateResults to scripts and styles */'
-            )
-          );
-          return;
+          let message = 'Forbidden';
+          if (DEV_MODE) {
+            if (parentNodeName === 'STYLE') {
+              message =
+                `Lit does not support binding inside style nodes. ` +
+                `This is a security risk, as style injection attacks can ` +
+                `exfiltrate data and spoof UIs. ` +
+                `Consider instead using css\`...\` literals ` +
+                `to compose styles, and make do dynamic styling with ` +
+                `css custom properties, ::parts, <slot>s, ` +
+                `and by mutating the DOM rather than stylesheets.`;
+            } else {
+              message =
+                `Lit does not support binding inside script nodes. ` +
+                `This is a security risk, as it could allow arbitrary ` +
+                `code execution.`;
+            }
+          }
+          throw new Error(message);
         }
       }
       this._$committedValue = this._insert(value);
@@ -1094,23 +1187,20 @@ class ChildPart implements Disconnectable {
   }
 
   private _commitText(value: unknown): void {
-    const node = wrap(this._$startNode).nextSibling;
-    // TODO(justinfagnani): Can we just check if this._$committedValue is primitive?
+    // If the committed value is a primitive it means we called _commitText on
+    // the previous render, and we know that this._$startNode.nextSibling is a
+    // Text node. We can now just replace the text content (.data) of the node.
     if (
-      node !== null &&
-      node.nodeType === 3 /* Node.TEXT_NODE */ &&
-      (this._$endNode === null
-        ? wrap(node).nextSibling === null
-        : node === wrap(this._$endNode).previousSibling)
+      this._$committedValue !== nothing &&
+      isPrimitive(this._$committedValue)
     ) {
+      const node = wrap(this._$startNode).nextSibling as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
         }
         value = this._textSanitizer(value);
       }
-      // If we only have a single text node between the markers, we can just
-      // set its value, rather than replacing it.
       (node as Text).data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
@@ -1279,7 +1369,7 @@ export interface RootPart extends ChildPart {
    * as such, it is the responsibility of the caller to `render` to ensure that
    * `part.setConnected(false)` is called before the part object is potentially
    * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
-   * any resources being held. If a RootPart that was prevously
+   * any resources being held. If a `RootPart` that was prevously
    * disconnected is subsequently re-connected (and its `AsyncDirective`s should
    * re-connect), `setConnected(true)` should be called.
    *
@@ -1338,7 +1428,7 @@ class AttributePart implements Disconnectable {
     this._$parent = parent;
     this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
-      this._$committedValue = new Array(strings.length - 1).fill(nothing);
+      this._$committedValue = new Array(strings.length - 1).fill(new String());
       this.strings = strings;
     } else {
       this._$committedValue = nothing;
@@ -1655,4 +1745,11 @@ globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.4');
+(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.5');
+if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
+  issueWarning!(
+    'multiple-versions',
+    `Multiple versions of Lit loaded. ` +
+      `Loading multiple versions is not recommended.`
+  );
+}

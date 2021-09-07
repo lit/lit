@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "target": "es2020",
     "module": "esnext",
     "lib": ["es2019", "ES2020.String"],
@@ -22,5 +23,9 @@
   },
   "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
   "exclude": [],
-  "references": [{"path": "../../lit-html"}, {"path": "../../lit-element"}]
+  "references": [
+    {"path": "../ssr-client"},
+    {"path": "../../lit-html"},
+    {"path": "../../lit-element"}
+  ]
 }

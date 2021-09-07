@@ -7,6 +7,11 @@
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 
+const mode = process.env.MODE || 'dev';
+if (!['dev', 'prod'].includes(mode)) {
+  throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
+}
+
 // Uncomment for testing on Sauce Labs
 // Must run `npm i --save-dev @web/test-runner-saucelabs` and set
 // SAUCE_USERNAME and SAUCE_USERNAME environment variables
@@ -87,7 +92,7 @@ try {
 export default {
   rootDir: '.',
   files: ['./test/**/*_test.js'],
-  nodeResolve: true,
+  nodeResolve: {exportConditions: mode === 'dev' ? ['development'] : []},
   preserveSymlinks: true,
   browsers: commandLineBrowsers ?? Object.values(browsers),
   testFramework: {
