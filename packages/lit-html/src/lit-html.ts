@@ -679,7 +679,7 @@ class Template {
           // innerHTML for anything that looks like a marker. This catches
           // cases like bindings in textarea there markers turn into text nodes.
           if (
-            /^(?:textarea|template)$/i!.test(tag) &&
+            /^(?:textarea|template)$/i.test(tag) &&
             (node as Element).innerHTML.includes(marker)
           ) {
             const m =
