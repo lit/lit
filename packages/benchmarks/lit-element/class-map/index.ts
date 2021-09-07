@@ -56,8 +56,8 @@ function generateData(number = 1000): IData[] {
   }
   const { state } = decorators;
   // Settings
-  const itemCount = 1000;
-  const updateCount = 1;
+  const itemCount = 5000;
+  const updateCount = 6;
 
   const data = generateData(itemCount);
 
@@ -170,6 +170,8 @@ function generateData(number = 1000): IData[] {
         // Increment the selected index.
         el.selected = selected++;
         await updateComplete();
+        // Force a style recalc.
+        window.getComputedStyle(el);
       }
       performance.measure(test, start);
       destroy();
@@ -186,6 +188,8 @@ function generateData(number = 1000): IData[] {
         // nop update since state hasn't changed.
         (el as LitElement).requestUpdate();
         await updateComplete();
+        // Force a style recalc.
+        window.getComputedStyle(el);
       }
       performance.measure(test, start);
       destroy();
@@ -206,6 +210,8 @@ function generateData(number = 1000): IData[] {
         // nop update since state hasn't changed.
         (el as LitElement).requestUpdate();
         await updateComplete();
+        // Force a style recalc.
+        window.getComputedStyle(el);
       }
       performance.measure(test, start);
       destroy();
