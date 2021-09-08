@@ -15,7 +15,7 @@ suite('@apply', () => {
     const container = document.createElement('scope-5');
     document.body.appendChild(container);
     const result = htmlWithApply`
-      <style nonce="abc123">
+      <style>
         :host {
           --batch: {
             border: 3px solid orange;
@@ -42,7 +42,7 @@ suite('@apply', () => {
 
   test('styles with css custom properties using @apply render in different contexts', async () => {
     const applyUserContent = htmlWithApply`
-        <style nonce="abc123">
+        <style>
           div {
             border-top: 2px solid black;
             margin-top: 4px;
@@ -76,7 +76,7 @@ suite('@apply', () => {
     // that multiple stampings work.
     const testApplyProducer = () => {
       const producerContent = htmlWithApply`
-      <style nonce="abc123">
+      <style>
         :host {
           --stuff: {
             border-top: 10px solid orange;
@@ -156,7 +156,7 @@ suite('@apply', () => {
     customElements.define('apply-user-ce2', class extends E {});
 
     const producerContent = htmlWithApply`
-          <style nonce="abc123">
+          <style>
             apply-user-ce1 {
               --stuff-ce: {
                 border-top: 10px solid orange;
@@ -208,7 +208,7 @@ suite('@apply', () => {
     const container = document.createElement('empty-style');
     document.body.appendChild(container);
     const result = htmlWithApply`
-      <style nonce="abc123"></style>
+      <style></style>
       <div>Testing...</div>
     `;
     renderShadowRoot(result, container);

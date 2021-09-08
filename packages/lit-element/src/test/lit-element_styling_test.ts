@@ -36,7 +36,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             div {
               border: 2px solid blue;
             }
@@ -56,7 +56,7 @@ import {assert} from '@esm-bundle/chai';
     });
 
     test('shared styling rendered into shadowRoot is styled', async () => {
-      const style = htmlWithStyles`<style nonce="abc123">
+      const style = htmlWithStyles`<style>
         div {
           border: 4px solid blue;
         }
@@ -67,7 +67,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             div {
               border: 2px solid blue;
             }
@@ -94,7 +94,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             :host {
               --border: 8px solid red;
             }
@@ -122,7 +122,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             div {
               border: var(--border);
             }
@@ -137,7 +137,7 @@ import {assert} from '@esm-bundle/chai';
 
         override render() {
           return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             x-inner {
               --border: 8px solid red;
             }
@@ -170,7 +170,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             div {
               border: var(--border);
             }
@@ -187,7 +187,7 @@ import {assert} from '@esm-bundle/chai';
 
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             x-inner1 {
               --border: 2px solid red;
             }
@@ -206,7 +206,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             x-inner1 {
               --border: 8px solid red;
             }
@@ -279,7 +279,7 @@ import {assert} from '@esm-bundle/chai';
 
           override render() {
             return htmlWithStyles`
-          <style nonce="abc123">
+          <style>
             div {
               padding: 4px;
             }
@@ -343,7 +343,7 @@ import {assert} from '@esm-bundle/chai';
         class extends LitElement {
           override render() {
             return staticHtml`
-          <style nonce="abc123">
+          <style>
             div {
               border: ${unsafeStatic(border)};
             }

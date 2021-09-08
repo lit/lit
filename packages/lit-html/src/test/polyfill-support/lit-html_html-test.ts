@@ -28,7 +28,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).appendChild(container);
     (wrap(container) as Element).attachShadow({mode: 'open'});
     const result = html`
-      <style nonce="abc123">
+      <style>
         div {
           border: 2px solid blue;
         }
@@ -48,14 +48,14 @@ suite('polyfill-support rendering', () => {
     const container = document.createElement('scope-2');
     wrap(document.body).appendChild(container);
     const result = html`
-      <style nonce="abc123">
+      <style>
         div {
           border: 4px solid orange;
         }
       </style>
       <div>Testing...</div>
       ${html`
-        <style nonce="abc123">
+        <style>
           span {
             border: 5px solid tomato;
           }
@@ -87,7 +87,7 @@ suite('polyfill-support rendering', () => {
     const container = document.createElement('scope-late');
     wrap(document.body).appendChild(container);
     const getResult = (includeLate = false) => html`
-      <style nonce="abc123">
+      <style>
         div {
           border: 4px solid orange;
         }
@@ -95,7 +95,7 @@ suite('polyfill-support rendering', () => {
       <div>Testing...</div>
       ${
         includeLate
-          ? html`<style nonce="abc123">div { border: 5px solid tomato; }</style>late`
+          ? html`<style>div { border: 5px solid tomato; }</style>late`
           : ''
       }
     `;
@@ -165,7 +165,7 @@ suite('polyfill-support rendering', () => {
     const container = document.createElement('scope-4');
     wrap(document.body).appendChild(container);
     const result = html`
-      <style nonce="abc123">
+      <style>
         :host {
           --border: 2px solid orange;
         }
@@ -189,7 +189,7 @@ suite('polyfill-support rendering', () => {
 
   test('styles with css custom properties flow to nested shadowRoots', async () => {
     const shadowContent = html`
-      <style nonce="abc123">
+      <style>
         :host {
           display: block;
           border: var(--border);
@@ -201,7 +201,7 @@ suite('polyfill-support rendering', () => {
     const container = document.createElement('scope-4a');
     wrap(document.body).appendChild(container);
     const result = html`
-      <style nonce="abc123">
+      <style>
         :host {
           --border: 2px solid orange;
         }
@@ -226,7 +226,7 @@ suite('polyfill-support rendering', () => {
 
   test('styles with css custom properties flow to multiple instances of nested shadowRoots', async () => {
     const nestedContent = html`
-      <style nonce="abc123">
+      <style>
         :host {
           display: block;
           border: var(--border);
@@ -239,7 +239,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).appendChild(container);
     renderShadowRoot(
       html`
-        <style nonce="abc123">
+        <style>
           :host {
             --border: 2px solid orange;
           }
@@ -273,17 +273,17 @@ suite('polyfill-support rendering', () => {
     const container = document.createElement('scope-3a');
     wrap(document.body).appendChild(container);
     const renderTemplate = (a: string, b: string, c: string) => {
-      const result = html`<style nonce="abc123"></style>
+      const result = html`<style></style>
         <div id="a">${a}</div>
-        <style nonce="abc123">
+        <style>
           div {
             border: 1px solid black;
           }
         </style>
         <div id="b">${b}</div>
-        <style nonce="abc123"></style>
+        <style></style>
         <div id="c">${c}</div>
-        <style nonce="abc123"></style> `;
+        <style></style> `;
       renderShadowRoot(result, container);
     };
     renderTemplate('a', 'b', 'c');
@@ -317,17 +317,17 @@ suite('polyfill-support rendering', () => {
       c: string,
       host = container
     ) => {
-      const result = html`<style nonce="abc123"></style>
+      const result = html`<style></style>
         <div id="a">${a}</div>
-        <style nonce="abc123">
+        <style>
           div {
             border: 1px solid black;
           }
         </style>
         <div id="b">${b}</div>
-        <style nonce="abc123"></style>
+        <style></style>
         <div id="c">${c}</div>
-        <style nonce="abc123"></style> `;
+        <style></style> `;
       renderShadowRoot(result, host);
     };
     // create a dummy element first
@@ -360,7 +360,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).appendChild(container1);
     const renderTemplate = (foo: string, container: Element) => {
       const result = html`<div id="a">${foo}</div>
-        <style nonce="abc123"></style>
+        <style></style>
         <div id="b">${foo}</div>`;
       renderShadowRoot(result, container);
     };
@@ -397,7 +397,7 @@ suite('polyfill-support rendering', () => {
     wrap(document.body).appendChild(container);
     const renderTemplate = (border: string) => {
       const result = staticHtml`
-        <style nonce="abc123">
+        <style>
           div {
             border: ${unsafeStatic(border)};
           }
