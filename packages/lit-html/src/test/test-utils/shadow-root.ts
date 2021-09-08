@@ -12,7 +12,7 @@ export interface ShadyRenderOptions extends RenderOptions {
 
 export const wrap =
   window.ShadyDOM && window.ShadyDOM.inUse && window.ShadyDOM.noPatch === true
-    ? window.ShadyDOM!.wrap
+    ? window.ShadyDOM.wrap
     : (node: Node) => node;
 
 export const shadowRoot = (element: Node) =>
