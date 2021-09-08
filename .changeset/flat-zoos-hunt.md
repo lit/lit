@@ -2,4 +2,4 @@
 '@lit/reactive-element': patch
 ---
 
-Add a static nonceProperty field to ReactiveElement and allow setting a nonce to apply to generated <style> tags for CSP compatibility.
+Allow assigning a nonce value to `window.litNonce` in order to apply the nonce to generated <style> tags for CSP compatibility.

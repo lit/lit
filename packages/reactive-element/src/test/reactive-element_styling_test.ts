@@ -20,8 +20,6 @@ import {
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-ReactiveElement.nonceProperty = 'testStyleNonce';
-
 (canTestReactiveElement ? suite : suite.skip)('Styling', () => {
   suite('Static get styles', () => {
     let container: HTMLElement;

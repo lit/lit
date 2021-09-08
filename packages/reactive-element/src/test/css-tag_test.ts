@@ -4,11 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement} from '../reactive-element.js';
 import {css, CSSResult, unsafeCSS} from '../css-tag.js';
 import {assert} from '@esm-bundle/chai';
-
-ReactiveElement.nonceProperty = 'testStyleNonce';
 
 suite('Styling', () => {
   suite('css tag', () => {
