@@ -168,7 +168,9 @@ export class LitElement extends ReactiveElement {
 globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-globalThis.litElementPlatformSupport?.({LitElement});
+globalThis[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.({
+  LitElement,
+});
 
 // DEV mode warnings
 if (DEV_MODE) {

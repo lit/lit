@@ -58,10 +58,11 @@ if (DEV_MODE) {
     `Lit is in dev mode. Not recommended for production!`
   );
 
-  // Issue platform support warning.
+  // Issue polyfill support warning.
   if (
     window.ShadyDOM?.inUse &&
-    globalThis.reactiveElementPlatformSupport === undefined
+    globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ===
+      undefined
   ) {
     issueWarning(
       'polyfill-support-missing',
@@ -1283,7 +1284,9 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-globalThis.reactiveElementPlatformSupport?.({ReactiveElement});
+globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.({
+  ReactiveElement,
+});
 
 // Dev mode warnings...
 if (DEV_MODE) {

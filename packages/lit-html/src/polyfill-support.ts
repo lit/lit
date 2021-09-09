@@ -85,12 +85,17 @@ const scopeCssStore: Map<string, string[]> = new Map();
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+// Note, explicitly use `var` here so that this can be re-defined when
+// bundled.
+// eslint-disable-next-line no-var
+var DEV_MODE = true;
+
 /**
  * lit-html patches. These properties cannot be renamed.
  * * ChildPart.prototype._$getTemplate
  * * ChildPart.prototype._$setValue
  */
-globalThis.litHtmlPlatformSupport ??= (
+globalThis[`litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= (
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
@@ -284,5 +289,7 @@ globalThis.litHtmlPlatformSupport ??= (
 };
 
 if (ENABLE_SHADYDOM_NOPATCH) {
-  globalThis.litHtmlPlatformSupport!.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+  globalThis[
+    `litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`
+  ]!.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
 }
