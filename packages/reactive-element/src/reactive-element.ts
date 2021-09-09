@@ -354,7 +354,9 @@ export abstract class ReactiveElement
 
   /**
    * Adds an initializer function to the class that is called during instance
-   * construction. This is useful for code that runs against a ReactiveElement
+   * construction.
+   *
+   * This is useful for code that runs against a ReactiveElement
    * subclassclass, such as a decorator, that needs to do work for each
    * instance, such as setting up a `ReactiveController`.
    *
@@ -364,6 +366,15 @@ export abstract class ReactiveElement
    *     // This is run during construction of the element
    *     new MyController(instance);
    *   });
+   * }
+   * ```
+   *
+   * Decorating a field will then cause each instance to run an an initializer
+   * that adds a controller:
+   *
+   * ```ts
+   * class MyElement extends LitElement {
+   *   @myDecorator foo;
    * }
    * ```
    *
