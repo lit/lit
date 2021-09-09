@@ -146,6 +146,11 @@ export const adoptStyles = (
   } else {
     styles.forEach((s) => {
       const style = document.createElement('style');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nonce = (window as any)['litNonce'];
+      if (nonce !== undefined) {
+        style.setAttribute('nonce', nonce);
+      }
       style.textContent = (s as CSSResult).cssText;
       renderRoot.appendChild(style);
     });
