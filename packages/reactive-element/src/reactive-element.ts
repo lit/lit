@@ -354,6 +354,36 @@ export abstract class ReactiveElement
   static disableWarning?: (warningKind: WarningKind) => void;
 
   /**
+   * Adds an initializer function to the class that is called during instance
+   * construction.
+   *
+   * This is useful for code that runs against a ReactiveElement
+   * subclassclass, such as a decorator, that needs to do work for each
+   * instance, such as setting up a `ReactiveController`.
+   *
+   * ```ts
+   * const myDecorator = (target: typeof ReactiveElement, key: string) => {
+   *   target.addInitializer((instance: ReactiveElement) => {
+   *     // This is run during construction of the element
+   *     new MyController(instance);
+   *   });
+   * }
+   * ```
+   *
+   * Decorating a field will then cause each instance to run an an initializer
+   * that adds a controller:
+   *
+   * ```ts
+   * class MyElement extends LitElement {
+   *   @myDecorator foo;
+   * }
+   * ```
+   *
+   * Initializers are stored per-constructor. Adding an initializer to a
+   * subclass does not add it to a superclass. Since initializers are run in
+   * constructors, initializers will run in order of the class hierarchy,
+   * starting with superclasses and progressing to the instance's class.
+   *
    * @nocollapse
    */
   static addInitializer(initializer: Initializer) {
@@ -427,7 +457,27 @@ export abstract class ReactiveElement
 
   /**
    * Array of styles to apply to the element. The styles should be defined
-   * using the [[`css`]] tag function or via constructible stylesheets.
+   * using the [[`css`]] tag function, via constructible stylesheets, or
+   * imported from native CSS module scripts.
+   *
+   * Note on Content Security Policy:
+   *
+   * Element styles are implemented with `<style>` tags when the browser doesn't
+   * support adopted StyleSheets. To use such `<style>` tags with the style-src
+   * CSP directive, the style-src value must either include 'unsafe-inline' or
+   * 'nonce-<base64-value>' with <base64-value> replaced be a server-generated
+   * nonce.
+   *
+   * To provide a nonce to use on generated <style> elements, set
+   * `window.litNonce` to a server-generated nonce in your page's HTML, before
+   * loading application code:
+   *
+   * ```html
+   * <script>
+   *   // Generated and unique per request:
+   *   window.litNonce = 'a1b2c3d4';
+   * </script>
+   * ```
    * @nocollapse
    * @category styles
    */
