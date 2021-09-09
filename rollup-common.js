@@ -442,6 +442,10 @@ const litMonoBundleConfig = ({
         'const ENABLE_SHADYDOM_NOPATCH = false',
       'export const INTERNAL = true': 'const INTERNAL = false',
       // For downleveled ES5 build of polyfill-support
+      'var DEV_MODE = true': 'var DEV_MODE = false',
+      'var ENABLE_EXTRA_SECURITY_HOOKS = true':
+        'var ENABLE_EXTRA_SECURITY_HOOKS = false',
+      'var INTERNAL = true': 'var INTERNAL = false',
       'var ENABLE_SHADYDOM_NOPATCH = true':
         'var ENABLE_SHADYDOM_NOPATCH = false',
     }),

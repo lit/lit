@@ -794,7 +794,7 @@ class Template {
     }
   }
 
-  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  // Overridden via `litHtmlPolyfillSupport` to provide platform support.
   /** @nocollapse */
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
     const el = d.createElement('template');
@@ -1249,7 +1249,7 @@ class ChildPart implements Disconnectable {
     }
   }
 
-  // Overridden via `litHtmlPlatformSupport` to provide platform support.
+  // Overridden via `litHtmlPolyfillSupport` to provide platform support.
   /** @internal */
   _$getTemplate(result: TemplateResult) {
     let template = templateCache.get(result.strings);
@@ -1740,7 +1740,10 @@ export const _$LH = {
 };
 
 // Apply polyfills if available
-globalThis.litHtmlPlatformSupport?.(Template, ChildPart);
+globalThis[`litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.(
+  Template,
+  ChildPart
+);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.

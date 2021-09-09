@@ -42,7 +42,12 @@ interface PatchableLitElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-globalThis.litElementPlatformSupport ??= ({
+// Note, explicitly use `var` here so that this can be re-defined when
+// bundled.
+// eslint-disable-next-line no-var
+var DEV_MODE = true;
+
+globalThis[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= ({
   LitElement,
 }: {
   LitElement: PatchableLitElement;

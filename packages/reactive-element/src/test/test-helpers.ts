@@ -20,11 +20,13 @@ export const getComputedStyleValue = (element: Element, property: string) =>
 export const stripExpressionComments = (html: string) =>
   html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
 
+const DEV_MODE = true;
+
 // Only test if ShadowRoot is available and either ShadyDOM is not
 // in use or it is and platform support is available.
 export const canTestReactiveElement =
   (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
-  window.reactiveElementPlatformSupport;
+  window[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`];
 
 export class RenderingElement extends ReactiveElement {
   render(): string | undefined {

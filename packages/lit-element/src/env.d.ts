@@ -9,11 +9,20 @@ declare var litElementHydrateSupport:
   | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | ((options: {LitElement: any}) => void);
+
+// Note, define both DEV_MODE and prod versions of this since this file is not
+// built.
 // eslint-disable-next-line no-var
-declare var litElementPlatformSupport:
+declare var litElementPolyfillSupport:
   | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | ((options: {LitElement: any}) => void);
+// eslint-disable-next-line no-var
+declare var litElementPolyfillSupportDevMode:
+  | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | ((options: {LitElement: any}) => void);
+
 // eslint-disable-next-line no-var
 declare var litElementVersions: undefined | Array<string>;
 // eslint-disable-next-line no-var

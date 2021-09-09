@@ -18,7 +18,8 @@ if (DEV_MODE) {
     let warnings: string[] = [];
 
     const missingPlatformSupport =
-      window.ShadyDOM?.inUse && !globalThis.reactiveElementPlatformSupport;
+      window.ShadyDOM?.inUse &&
+      !globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`];
 
     const consoleWarn = console.warn;
 

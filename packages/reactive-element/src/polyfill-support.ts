@@ -43,7 +43,12 @@ interface PatchableReactiveElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-globalThis.reactiveElementPlatformSupport ??= ({
+// Note, explicitly use `var` here so that this can be re-defined when
+// bundled.
+// eslint-disable-next-line no-var
+var DEV_MODE = true;
+
+globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= ({
   ReactiveElement,
 }: {
   ReactiveElement: PatchableReactiveElement;
