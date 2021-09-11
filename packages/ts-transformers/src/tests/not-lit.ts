@@ -29,3 +29,5 @@ export const property =
  */
 export const html = (_strings: TemplateStringsArray, ..._values: unknown[]) =>
   '';
+
+export default 'notLit';
