@@ -234,12 +234,12 @@ export class LitTransformer {
 
   private _visitImportDeclaration(node: ts.ImportDeclaration) {
     const numBindingsBefore =
-      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
-      0;
+      (node.importClause?.namedBindings as ts.NamedImports | undefined)
+        ?.elements?.length ?? 0;
     node = ts.visitEachChild(node, this.visit, this._context);
     const numBindingsAfter =
-      (node.importClause?.namedBindings as ts.NamedImports).elements?.length ??
-      0;
+      (node.importClause?.namedBindings as ts.NamedImports | undefined)
+        ?.elements?.length ?? 0;
     if (
       numBindingsAfter === 0 &&
       numBindingsBefore !== numBindingsAfter &&
