@@ -38,6 +38,8 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (code: string, warning: string) => void;
 
+let prototypeToReactivePropertyNames: WeakMap<{}, Set<PropertyKey>>;
+
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
@@ -86,6 +88,8 @@ if (DEV_MODE) {
       }
     },
   });
+
+  prototypeToReactivePropertyNames = new WeakMap();
 }
 
 /*
@@ -553,6 +557,15 @@ export abstract class ReactiveElement
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
+        if (DEV_MODE) {
+          const reactivePropertyNames =
+            prototypeToReactivePropertyNames.get(this.prototype) || new Set();
+          reactivePropertyNames.add(name);
+          prototypeToReactivePropertyNames.set(
+            this.prototype,
+            reactivePropertyNames
+          );
+        }
       }
     }
   }
@@ -1140,7 +1153,13 @@ export abstract class ReactiveElement
         const shadowedProperties: string[] = [];
         (this.constructor as typeof ReactiveElement).elementProperties.forEach(
           (_v, p) => {
-            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
+            if (
+              this.hasOwnProperty(p) &&
+              !this.__instanceProperties?.has(p) &&
+              prototypeToReactivePropertyNames
+                .get(this.constructor.prototype)
+                ?.has(p)
+            ) {
               shadowedProperties.push(p as string);
             }
           }
