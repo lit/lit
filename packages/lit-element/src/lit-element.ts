@@ -197,7 +197,7 @@ if (DEV_MODE) {
     };
     warnRemovedOrRenamed(this, 'render');
     warnRemovedOrRenamed(this, 'getStyles', true);
-    warnRemovedOrRenamed(this.prototype as {}, 'adoptStyles');
+    warnRemovedOrRenamed(this.prototype, 'adoptStyles');
     return true;
   };
   /* eslint-enable @typescript-eslint/no-explicit-any */
