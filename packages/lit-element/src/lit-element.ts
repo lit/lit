@@ -168,9 +168,10 @@ export class LitElement extends ReactiveElement {
 globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-globalThis[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.({
-  LitElement,
-});
+const polyfillSupport = DEV_MODE
+  ? globalThis.litElementPolyfillSupportDevMode
+  : globalThis.litElementPolyfillSupport;
+polyfillSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
@@ -196,7 +197,7 @@ if (DEV_MODE) {
     };
     warnRemovedOrRenamed(this, 'render');
     warnRemovedOrRenamed(this, 'getStyles', true);
-    warnRemovedOrRenamed(this.prototype, 'adoptStyles');
+    warnRemovedOrRenamed(this.prototype as {}, 'adoptStyles');
     return true;
   };
   /* eslint-enable @typescript-eslint/no-explicit-any */
