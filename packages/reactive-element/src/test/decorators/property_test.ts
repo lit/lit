@@ -340,7 +340,7 @@ suite('@property', () => {
           name,
           key,
           options
-        );
+        )!;
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {

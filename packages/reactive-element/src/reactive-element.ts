@@ -601,7 +601,7 @@ export abstract class ReactiveElement
     name: PropertyKey,
     key: string | symbol,
     options: PropertyDeclaration
-  ) {
+  ): PropertyDescriptor | undefined {
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get(): any {
