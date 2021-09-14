@@ -3075,4 +3075,95 @@ suite('ReactiveElement', () => {
       assert.equal(el2.attrValue, 'custom');
     });
   });
+
+  if (DEV_MODE) {
+    suite('dev-mode warnings for shadowed properties', () => {
+      test('throws on the first update if a property would be shadowed', async () => {
+        class SomeElement extends ReactiveElement {
+          static override properties = {
+            prop: {},
+          };
+
+          constructor() {
+            super();
+            // Simulate a class field, since this file will be compiled.
+            Object.defineProperty(this, 'prop', {
+              enumerable: true,
+              configurable: true,
+              value: 123,
+            });
+          }
+        }
+        customElements.define(generateElementName(), SomeElement);
+
+        const el = new SomeElement();
+        container.appendChild(el);
+
+        el.requestUpdate();
+
+        let didThrow = false;
+        try {
+          await el.updateComplete;
+        } catch (e) {
+          didThrow = true;
+        }
+
+        assert.isTrue(didThrow);
+      });
+
+      test('does not throw if the property has `noAccessor` set', async () => {
+        class SomeElement extends ReactiveElement {
+          static override properties = {
+            prop: {noAccessor: true},
+          };
+
+          constructor() {
+            super();
+            // Simulate a class field, since this file will be compiled.
+            Object.defineProperty(this, 'prop', {
+              enumerable: true,
+              configurable: true,
+              value: 123,
+            });
+          }
+        }
+        customElements.define(generateElementName(), SomeElement);
+
+        const el = new SomeElement();
+        container.appendChild(el);
+
+        el.requestUpdate();
+        await el.updateComplete;
+      });
+
+      test('does not throw if no descriptor is created for the property', async () => {
+        class SomeElement extends ReactiveElement {
+          static override properties = {
+            prop: {},
+          };
+
+          static override getPropertyDescriptor(..._args: Array<any>) {
+            return undefined;
+          }
+
+          constructor() {
+            super();
+            // Simulate a class field, since this file will be compiled.
+            Object.defineProperty(this, 'prop', {
+              enumerable: true,
+              configurable: true,
+              value: 123,
+            });
+          }
+        }
+        customElements.define(generateElementName(), SomeElement);
+
+        const el = new SomeElement();
+        container.appendChild(el);
+
+        el.requestUpdate();
+        await el.updateComplete;
+      });
+    });
+  }
 });
