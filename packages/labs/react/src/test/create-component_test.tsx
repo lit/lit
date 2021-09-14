@@ -83,10 +83,7 @@ suite('createComponent', () => {
   const renderReactComponent = async (
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
-    window.ReactDOM.render(
-      <BasicElementComponent {...props}/>,
-      container
-    );
+    window.ReactDOM.render(<BasicElementComponent {...props} />, container);
     el = container.querySelector(elementName)! as BasicElement;
     await el.updateComplete;
   };
@@ -100,6 +97,10 @@ suite('createComponent', () => {
     el = container.querySelector(elementName)! as BasicElement;
     await el.updateComplete;
     assert.equal(el.textContent, 'Hello World');
+  });
+
+  test('has valid displayName', () => {
+    assert.equal(BasicElementComponent.displayName, 'BasicElement');
   });
 
   test('wrapper renders custom element that updates', async () => {
@@ -292,12 +293,12 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = (window.React.createElement(
+    const children = window.React.createElement(
       'div'
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
       // `createElement`.
-    ) as unknown) as HTMLCollection;
+    ) as unknown as HTMLCollection;
     await renderReactComponent({children});
     assert.equal(el.childNodes.length, 1);
     assert.equal(el.firstElementChild!.localName, 'div');

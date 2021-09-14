@@ -169,6 +169,8 @@ export const createComponent = <I extends HTMLElement, E>(
     private _userRef?: React.Ref<unknown>;
     private _ref?: React.RefCallback<I>;
 
+    static displayName = elementClass.name;
+
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
         return;
@@ -249,11 +251,17 @@ export const createComponent = <I extends HTMLElement, E>(
     }
   }
 
-  return React.forwardRef((props?: UserProps, ref?: React.Ref<unknown>) =>
-    createElement(
-      ReactComponent,
-      {...props, __forwardedRef: ref} as ComponentProps,
-      props?.children
-    )
+  const ForwardedComponent = React.forwardRef(
+    (props?: UserProps, ref?: React.Ref<unknown>) =>
+      createElement(
+        ReactComponent,
+        {...props, __forwardedRef: ref} as ComponentProps,
+        props?.children
+      )
   );
+
+  // To ease debugging in the React Developer Tools
+  ForwardedComponent.displayName = ReactComponent.displayName;
+
+  return ForwardedComponent;
 };
