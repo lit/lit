@@ -83,7 +83,10 @@ suite('createComponent', () => {
   const renderReactComponent = async (
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
-    window.ReactDOM.render(<BasicElementComponent {...props} />, container);
+    window.ReactDOM.render(
+      <BasicElementComponent {...props}/>,
+      container
+    );
     el = container.querySelector(elementName)! as BasicElement;
     await el.updateComplete;
   };
@@ -293,12 +296,12 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = window.React.createElement(
+    const children = (window.React.createElement(
       'div'
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
       // `createElement`.
-    ) as unknown as HTMLCollection;
+    ) as unknown) as HTMLCollection;
     await renderReactComponent({children});
     assert.equal(el.childNodes.length, 1);
     assert.equal(el.firstElementChild!.localName, 'div');
