@@ -759,11 +759,15 @@ export abstract class ReactiveElement
   private __updatePromise!: Promise<boolean>;
 
   /**
+   * Internal flag marking a pending update.
    * @category updates
    */
   isUpdatePending = false;
 
   /**
+   * Is set to `true` after the first update. Required for compatibility with
+   * server-side rendering as the element code cannot assume that `renderRoot`
+   * exists before the element `hasUpdated`.
    * @category updates
    */
   hasUpdated = false;
@@ -817,6 +821,9 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Install a [[`ReactiveController`]] onto the element's reactive update
+   * cycle. LitElement automatically calls into any installed controllers during
+   * its lifecycle callbacks.
    * @category controllers
    */
   addController(controller: ReactiveController) {
@@ -831,6 +838,7 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Remove a [[`ReactiveController`]] from the element.
    * @category controllers
    */
   removeController(controller: ReactiveController) {
