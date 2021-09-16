@@ -1,23 +1,34 @@
 # Change Log
 
-All notable changes to this project will be documented in this file.
+## 1.0.0-rc.4
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/)
-and this project adheres to [Semantic Versioning](http://semver.org/).
+### Patch Changes
 
-<!--
-   PRs should document their user-visible changes (if any) in the
-   Unreleased section, uncommenting the header as necessary.
--->
+- [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
 
-<!-- ## [x.y.z] - YYYY-MM-DD -->
-<!-- ## Unreleased -->
-<!-- ### Changed -->
-<!-- ### Added -->
-<!-- ### Removed -->
-<!-- ### Fixed -->
+- Updated dependencies [[`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b), [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047), [`0312f3e5`](https://github.com/lit/lit/commit/0312f3e533611eb3f4f9381594485a33ad003b74)]:
+  - lit@2.0.0-rc.4
 
-## Unreleased
+## 1.0.0-rc.3
+
+### Patch Changes
+
+- [#1942](https://github.com/lit/lit/pull/1942) [`c8fe1d4`](https://github.com/lit/lit/commit/c8fe1d4c4a8b1c9acdd5331129ae3641c51d9904) - For minified class fields on classes in lit libraries, added prefix to stable properties to avoid collisions with user properties.
+
+* [#1964](https://github.com/lit/lit/pull/1964) [`f43b811`](https://github.com/lit/lit/commit/f43b811405be32ce6caf82e80d25cb6170eeb7dc) - Don't publish src/ to npm.
+
+* Updated dependencies [[`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705)]:
+  - lit@2.0.0-rc.3
+
+- Included `development` folder in release [#1912](https://github.com/lit/lit/issues/1912).
+
+---
+
+Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) format. All changes above are generated automatically by [Changesets](https://github.com/atlassian/changesets).
+
+---
+
+## [1.0.0-rc.2] - 2021-04-07
 
 ### Fixed
 

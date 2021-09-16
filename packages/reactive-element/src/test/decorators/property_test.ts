@@ -53,7 +53,7 @@ suite('@property', () => {
 
       updateCount = 0;
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
@@ -131,7 +131,7 @@ suite('@property', () => {
         this.requestUpdate('foo', old);
       }
 
-      updated() {
+      override updated() {
         this.updatedContent = this.foo;
       }
     }
@@ -169,7 +169,7 @@ suite('@property', () => {
 
       updateCount = 0;
 
-      static get properties() {
+      static override get properties() {
         return {
           noAttr: {attribute: false},
           atTr: {attribute: true},
@@ -177,9 +177,9 @@ suite('@property', () => {
         };
       }
 
-      noAttr: string | undefined;
-      atTr: string | undefined;
-      customAttr: string | undefined;
+      declare noAttr: string | undefined;
+      declare atTr: string | undefined;
+      declare customAttr: string | undefined;
 
       constructor() {
         super();
@@ -188,7 +188,7 @@ suite('@property', () => {
         this.customAttr = 'customAttr';
       }
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
@@ -252,7 +252,7 @@ suite('@property', () => {
 
   test('property options via decorator do not modify superclass', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {type: Number, reflect: true}};
       }
 
@@ -269,7 +269,7 @@ suite('@property', () => {
     const el1 = new E();
 
     class F extends E {
-      @property({type: Number}) foo = 2;
+      @property({type: Number}) override foo = 2;
     }
 
     customElements.define(generateElementName(), F);
@@ -288,13 +288,13 @@ suite('@property', () => {
 
   test('can mix properties superclass with decorator on subclass', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           foo: {},
         };
       }
 
-      foo: string;
+      declare foo: string;
 
       constructor() {
         super();
@@ -331,7 +331,7 @@ suite('@property', () => {
     const myProperty = (options: MyPropertyDeclaration) => property(options);
 
     class E extends ReactiveElement {
-      static getPropertyDescriptor(
+      static override getPropertyDescriptor(
         name: PropertyKey,
         key: string | symbol,
         options: MyPropertyDeclaration
@@ -344,19 +344,15 @@ suite('@property', () => {
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {
-            const oldValue = ((this as unknown) as {[key: string]: unknown})[
+            const oldValue = (this as unknown as {[key: string]: unknown})[
               name as string
             ];
             if (options.validator) {
               value = options.validator(value);
             }
-            ((this as unknown) as {[key: string]: unknown})[
-              key as string
-            ] = value;
-            ((this as unknown) as ReactiveElement).requestUpdate(
-              name,
-              oldValue
-            );
+            (this as unknown as {[key: string]: unknown})[key as string] =
+              value;
+            (this as unknown as ReactiveElement).requestUpdate(name, oldValue);
           },
 
           configurable: defaultDescriptor.configurable,
@@ -364,13 +360,12 @@ suite('@property', () => {
         };
       }
 
-      updated(changedProperties: PropertyValues) {
+      override updated(changedProperties: PropertyValues) {
         super.updated(changedProperties);
         changedProperties.forEach((value: unknown, key: PropertyKey) => {
-          const options = (this
-            .constructor as typeof ReactiveElement).getPropertyOptions(
-            key
-          ) as MyPropertyDeclaration;
+          const options = (
+            this.constructor as typeof ReactiveElement
+          ).getPropertyOptions(key) as MyPropertyDeclaration;
           const observer = options.observer;
           if (typeof observer === 'function') {
             observer.call(this, value);
@@ -410,7 +405,7 @@ suite('@property', () => {
       }
 
       // custom typed properties
-      static get properties(): MyPropertyDeclarations {
+      static override get properties(): MyPropertyDeclarations {
         return {
           // object cast as type
           zot2: {

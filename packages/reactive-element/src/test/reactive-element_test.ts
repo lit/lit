@@ -40,7 +40,7 @@ suite('ReactiveElement', () => {
   test(`renderRoot exists after connectedCallback`, async () => {
     class E extends ReactiveElement {
       hasRenderRoot = false;
-      connectedCallback() {
+      override connectedCallback() {
         super.connectedCallback();
         this.hasRenderRoot = !!this.renderRoot;
       }
@@ -54,7 +54,7 @@ suite('ReactiveElement', () => {
   test(`createRenderRoot is called only once`, async () => {
     class E extends ReactiveElement {
       renderRootCalls = 0;
-      createRenderRoot() {
+      override createRenderRoot() {
         this.renderRootCalls++;
         return this;
       }
@@ -72,7 +72,7 @@ suite('ReactiveElement', () => {
   test('`updateComplete` waits for `requestUpdate` but does not trigger update, async', async () => {
     class E extends ReactiveElement {
       updateCount = 0;
-      updated() {
+      override updated() {
         this.updateCount++;
       }
     }
@@ -97,20 +97,20 @@ suite('ReactiveElement', () => {
       updateCount = 0;
       updatedCount = 0;
 
-      shouldUpdate() {
+      override shouldUpdate() {
         return this.needsUpdate;
       }
 
-      willUpdate() {
+      override willUpdate() {
         this.willUpdateCount++;
       }
 
-      update(props: PropertyValues) {
+      override update(props: PropertyValues) {
         super.update(props);
         this.updateCount++;
       }
 
-      updated() {
+      override updated() {
         this.updatedCount++;
       }
     }
@@ -146,7 +146,7 @@ suite('ReactiveElement', () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           noAttr: {attribute: false},
           atTr: {attribute: true},
@@ -175,7 +175,7 @@ suite('ReactiveElement', () => {
 
       updateCount = 0;
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
@@ -260,7 +260,7 @@ suite('ReactiveElement', () => {
     };
 
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           num: {type: Number, converter, reflect: true},
           str: {type: String, converter, reflect: true},
@@ -304,7 +304,7 @@ suite('ReactiveElement', () => {
 
   test('property/attribute values when attributes removed', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           bool: {type: Boolean},
           num: {type: Number},
@@ -425,7 +425,7 @@ suite('ReactiveElement', () => {
 
   test("attributes removed when a reflecting property's value becomes null", async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           bool: {type: Boolean, reflect: true},
           num: {type: Number, reflect: true},
@@ -463,7 +463,7 @@ suite('ReactiveElement', () => {
 
   test('if a `reflect: true` returns `undefined`, the attribute is removed', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {reflect: true}, obj: {type: Object, reflect: true}};
       }
 
@@ -499,7 +499,7 @@ suite('ReactiveElement', () => {
 
   test('property reflects when set in response to another propety changing via its attribute being set', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           prop: {type: Boolean, noAccessor: true, reflect: true},
           secondary: {type: Number, reflect: true},
@@ -559,7 +559,7 @@ suite('ReactiveElement', () => {
         : `${value}-attr`;
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           noAttr: {attribute: false},
           atTr: {attribute: true},
@@ -625,7 +625,7 @@ suite('ReactiveElement', () => {
 
   test('deserializing from invalid values does not produce exception', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           obj: {type: Object, reflect: true},
           arr: {type: Array, reflect: true},
@@ -662,14 +662,14 @@ suite('ReactiveElement', () => {
       const zug = Symbol();
 
       class E extends ReactiveElement {
-        static get properties() {
+        static override get properties() {
           return {foo: {}, [zug]: {}};
         }
         updateCount = 0;
         foo = 5;
         [zug] = 6;
 
-        update(changedProperties: PropertyValues) {
+        override update(changedProperties: PropertyValues) {
           this.updateCount++;
           super.update(changedProperties);
         }
@@ -697,7 +697,7 @@ suite('ReactiveElement', () => {
       const zug = Symbol();
 
       class E extends ReactiveElement {
-        static get properties() {
+        static override get properties() {
           return {
             [zug]: {
               attribute: 'zug',
@@ -735,7 +735,7 @@ suite('ReactiveElement', () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends ReactiveElement {
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {
           noAttr: {attribute: false},
           atTr: {attribute: true},
@@ -751,7 +751,7 @@ suite('ReactiveElement', () => {
 
       updateCount = 0;
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
@@ -759,7 +759,7 @@ suite('ReactiveElement', () => {
     customElements.define(generateElementName(), E);
 
     class F extends E {
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {
           customAttr: {attribute: 'custom', reflect: true},
           hasChanged: {hasChanged},
@@ -774,7 +774,7 @@ suite('ReactiveElement', () => {
     }
 
     class G extends F {
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {
           fromAttribute: {converter: fromAttribute},
           toAttribute: {reflect: true, converter: {toAttribute}},
@@ -848,7 +848,7 @@ suite('ReactiveElement', () => {
 
   test('superclass properties not affected by subclass', async () => {
     class E extends ReactiveElement {
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {
           foo: {attribute: 'zug', reflect: true},
           bar: {reflect: true},
@@ -861,12 +861,12 @@ suite('ReactiveElement', () => {
     customElements.define(generateElementName(), E);
 
     class F extends E {
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {foo: {attribute: false}, nug: {}};
       }
 
-      foo = 6;
-      bar = 'subbar';
+      override foo = 6;
+      override bar = 'subbar';
       nug = 5;
     }
     customElements.define(generateElementName(), F);
@@ -896,7 +896,7 @@ suite('ReactiveElement', () => {
   test('Attributes reflect', async () => {
     const suffix = '-reflected';
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           foo: {
             reflect: true,
@@ -919,7 +919,7 @@ suite('ReactiveElement', () => {
 
   test('Attributes reflect with type: Boolean', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {bar: {type: Boolean, reflect: true}};
       }
 
@@ -940,14 +940,14 @@ suite('ReactiveElement', () => {
 
   test('updates when properties change', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
 
       foo = 'one';
       updatedText = '';
 
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}`;
       }
     }
@@ -963,7 +963,7 @@ suite('ReactiveElement', () => {
 
   test('updates when properties and attributes change', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {value: {}, attrValue: {}};
       }
 
@@ -973,7 +973,7 @@ suite('ReactiveElement', () => {
       updateCountValue = '';
       updateCountAttrValue = '';
 
-      update(props: PropertyValues) {
+      override update(props: PropertyValues) {
         super.update(props);
         this.updateCountValue = this.value;
         this.updateCountAttrValue = this.attrValue;
@@ -1006,14 +1006,14 @@ suite('ReactiveElement', () => {
 
   test('updates changes when attributes change', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
 
       foo = 'one';
       updatedText = '';
 
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}`;
       }
     }
@@ -1027,13 +1027,39 @@ suite('ReactiveElement', () => {
     assert.equal(el.updatedText, 'changed');
   });
 
+  test('updates when disconnected', async () => {
+    let updateCount = 0;
+    class E extends ReactiveElement {
+      override updated() {
+        updateCount++;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(updateCount, 1);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 2);
+
+    container.removeChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 3);
+    container.appendChild(el);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(updateCount, 4);
+  });
+
   test('User defined accessor can trigger update', async () => {
     class E extends ReactiveElement {
       __bar?: number;
 
       updatedText = '';
 
-      static get properties() {
+      static override get properties() {
         return {foo: {}, bar: {}};
       }
 
@@ -1049,7 +1075,7 @@ suite('ReactiveElement', () => {
         this.requestUpdate('bar', old);
       }
 
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}${this.bar}`;
       }
     }
@@ -1071,7 +1097,7 @@ suite('ReactiveElement', () => {
       updateCount = 0;
       __bar: any;
 
-      static get properties() {
+      static override get properties() {
         return {
           bar: {
             attribute: 'attr-bar',
@@ -1087,7 +1113,7 @@ suite('ReactiveElement', () => {
         this.bar = 5;
       }
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         super.update(changed);
         this.updateCount++;
       }
@@ -1130,7 +1156,7 @@ suite('ReactiveElement', () => {
     class E extends ReactiveElement {
       __foo?: number;
 
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {bar: {hasChanged: () => false}, foo: {}};
       }
 
@@ -1147,7 +1173,7 @@ suite('ReactiveElement', () => {
     class F extends E {
       __bar?: string;
 
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {bar: {}, foo: {reflect: true}};
       }
 
@@ -1170,7 +1196,7 @@ suite('ReactiveElement', () => {
     };
 
     class G extends F {
-      static get properties(): PropertyDeclarations {
+      static override get properties(): PropertyDeclarations {
         return {bar: {hasChanged, reflect: true}, foo: {hasChanged}};
       }
     }
@@ -1194,19 +1220,19 @@ suite('ReactiveElement', () => {
 
   test('`firstUpdated` called when element first updates', async () => {
     class E extends ReactiveElement {
-      static properties = {foo: {}};
+      static override properties = {foo: {}};
       foo = 1;
 
       wasUpdatedCount = 0;
       wasFirstUpdated = 0;
       changedProperties: PropertyValues | undefined;
 
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this.wasUpdatedCount++;
         super.update(changedProperties);
       }
 
-      firstUpdated(changedProperties: PropertyValues) {
+      override firstUpdated(changedProperties: PropertyValues) {
         this.changedProperties = changedProperties;
         this.wasFirstUpdated++;
       }
@@ -1232,7 +1258,7 @@ suite('ReactiveElement', () => {
 
   test('`firstUpdated` called when element first updates even if first `shouldUpdate` returned false', async () => {
     class E extends ReactiveElement {
-      static properties = {foo: {}};
+      static override properties = {foo: {}};
       foo = 1;
 
       triedToUpdatedCount = 0;
@@ -1240,17 +1266,17 @@ suite('ReactiveElement', () => {
       wasFirstUpdated = 0;
       changedProperties: PropertyValues | undefined;
 
-      shouldUpdate() {
+      override shouldUpdate() {
         this.triedToUpdatedCount++;
         return this.triedToUpdatedCount > 1;
       }
 
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this.wasUpdatedCount++;
         super.update(changedProperties);
       }
 
-      firstUpdated(changedProperties: PropertyValues) {
+      override firstUpdated(changedProperties: PropertyValues) {
         this.changedProperties = changedProperties;
         this.wasFirstUpdated++;
       }
@@ -1279,32 +1305,32 @@ suite('ReactiveElement', () => {
 
   test('update lifecycle order', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {type: Number}};
       }
 
       info: Array<string> = [];
 
-      shouldUpdate() {
+      override shouldUpdate() {
         this.info.push('shouldUpdate');
         return true;
       }
 
-      willUpdate() {
+      override willUpdate() {
         this.info.push('willUpdate');
       }
 
-      update(props: PropertyValues) {
+      override update(props: PropertyValues) {
         this.info.push('before-update');
         super.update(props);
         this.info.push('after-update');
       }
 
-      firstUpdated() {
+      override firstUpdated() {
         this.info.push('firstUpdated');
       }
 
-      updated() {
+      override updated() {
         this.info.push('updated');
       }
     }
@@ -1326,7 +1352,7 @@ suite('ReactiveElement', () => {
 
   test('setting properties in update does not trigger update', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       promiseFulfilled = false;
@@ -1334,13 +1360,13 @@ suite('ReactiveElement', () => {
       updateCount = 0;
       updatedText = '';
 
-      update(props: PropertyValues) {
+      override update(props: PropertyValues) {
         this.updateCount++;
         this.foo++;
         super.update(props);
       }
 
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}`;
       }
     }
@@ -1360,7 +1386,7 @@ suite('ReactiveElement', () => {
 
   test('setting properties in update after calling `super.update` *does* trigger update', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       promiseFulfilled = false;
@@ -1368,7 +1394,7 @@ suite('ReactiveElement', () => {
       updateCount = 0;
       updatedText = '';
 
-      update(props: PropertyValues) {
+      override update(props: PropertyValues) {
         this.updateCount++;
         super.update(props);
         if (this.foo < 1) {
@@ -1376,7 +1402,7 @@ suite('ReactiveElement', () => {
         }
       }
 
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}`;
       }
     }
@@ -1392,13 +1418,13 @@ suite('ReactiveElement', () => {
 
   test('setting properties in update reflects to attribute and is included in `changedProperties`', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}, bar: {}, zot: {reflect: true}};
       }
 
       changedProperties: PropertyValues | undefined = undefined;
 
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         (this as any).zot = (this as any).foo + (this as any).bar;
         super.update(changedProperties);
         this.changedProperties = changedProperties;
@@ -1440,7 +1466,7 @@ suite('ReactiveElement', () => {
   // cannot have default values. These will be overwritten by instance values.
   test('can make properties for native accessors', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {
           id: {reflect: true},
           name: {reflect: true},
@@ -1456,13 +1482,13 @@ suite('ReactiveElement', () => {
 
       changedProperties: PropertyValues | undefined = undefined;
 
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         (this as any).zot = (this as any).foo + (this as any).bar;
         super.update(changedProperties);
         this.changedProperties = changedProperties;
       }
 
-      updated() {
+      override updated() {
         this.updatedText = `${this.id}-${this.title}-${this.foo}`;
       }
     }
@@ -1490,7 +1516,7 @@ suite('ReactiveElement', () => {
       updatedText = '';
       _foo?: string;
       _bar?: string;
-      static get properties() {
+      static override get properties() {
         return {
           foo: {type: String, reflect: true},
           bar: {type: String, reflect: true},
@@ -1517,11 +1543,11 @@ suite('ReactiveElement', () => {
       get bar() {
         return this._bar as string;
       }
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this._updateCount++;
         super.update(changedProperties);
       }
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}-${this.bar}`;
       }
     }
@@ -1564,7 +1590,7 @@ suite('ReactiveElement', () => {
       _oldFoo?: any;
       _foo?: number;
       updatedText = '';
-      static get properties() {
+      static override get properties() {
         return {foo: {type: Number}};
       }
       constructor() {
@@ -1580,11 +1606,11 @@ suite('ReactiveElement', () => {
       get foo(): number {
         return this._foo as number;
       }
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this._oldFoo = changedProperties.get('foo');
         super.update(changedProperties);
       }
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}`;
       }
     }
@@ -1593,14 +1619,14 @@ suite('ReactiveElement', () => {
     // Sub implements an accessor that rounds down in the getter
     class Sub extends Sup {
       _subSetCount?: number;
-      static get properties() {
+      static override get properties() {
         return {foo: {type: Number}};
       }
-      set foo(v: number) {
+      override set foo(v: number) {
         this._subSetCount = (this._subSetCount || 0) + 1;
         super.foo = v;
       }
-      get foo(): number {
+      override get foo(): number {
         const v = super.foo;
         return v ? Math.floor(v) : v;
       }
@@ -1677,7 +1703,7 @@ suite('ReactiveElement', () => {
       _oldFoo?: any;
       _foo?: number;
       updatedText = '';
-      static get properties() {
+      static override get properties() {
         return {foo: {type: Number}};
       }
       constructor() {
@@ -1693,11 +1719,11 @@ suite('ReactiveElement', () => {
       get foo(): number {
         return this._foo as number;
       }
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this._oldFoo = changedProperties.get('foo');
         super.update(changedProperties);
       }
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}`;
       }
     }
@@ -1705,7 +1731,7 @@ suite('ReactiveElement', () => {
 
     // Sub implements an accessor that rounds down in the getter
     class Sub extends Sup {
-      static get properties() {
+      static override get properties() {
         return {foo: {type: Number, reflect: true, noAccessor: true}};
       }
     }
@@ -1755,13 +1781,16 @@ suite('ReactiveElement', () => {
     };
 
     class E extends ReactiveElement {
-      static createProperty(name: PropertyKey, options: PropertyDeclaration) {
+      static override createProperty(
+        name: PropertyKey,
+        options: PropertyDeclaration
+      ) {
         // Always mix into defaults to preserve custom converter.
         options = Object.assign(Object.create(myPropertyDeclaration), options);
         super.createProperty(name, options);
       }
 
-      static properties = {foo: {}, bar: {type: String}};
+      static override properties = {foo: {}, bar: {type: String}};
       foo = 5;
       bar?: string = 'bar';
     }
@@ -1793,7 +1822,7 @@ suite('ReactiveElement', () => {
     }
 
     class E extends ReactiveElement {
-      static getPropertyDescriptor(
+      static override getPropertyDescriptor(
         name: PropertyKey,
         key: string | symbol,
         options: MyPropertyDeclaration
@@ -1806,19 +1835,15 @@ suite('ReactiveElement', () => {
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {
-            const oldValue = ((this as unknown) as {[key: string]: unknown})[
+            const oldValue = (this as unknown as {[key: string]: unknown})[
               name as string
             ];
             if (options.validator) {
               value = options.validator(value);
             }
-            ((this as unknown) as {[key: string]: unknown})[
-              key as string
-            ] = value;
-            ((this as unknown) as ReactiveElement).requestUpdate(
-              name,
-              oldValue
-            );
+            (this as unknown as {[key: string]: unknown})[key as string] =
+              value;
+            (this as unknown as ReactiveElement).requestUpdate(name, oldValue);
           },
 
           configurable: defaultDescriptor.configurable,
@@ -1826,13 +1851,12 @@ suite('ReactiveElement', () => {
         };
       }
 
-      updated(changedProperties: PropertyValues) {
+      override updated(changedProperties: PropertyValues) {
         super.updated(changedProperties);
         changedProperties.forEach((value: unknown, key: PropertyKey) => {
-          const options = (this
-            .constructor as typeof ReactiveElement).getPropertyOptions(
-            key
-          ) as MyPropertyDeclaration;
+          const options = (
+            this.constructor as typeof ReactiveElement
+          ).getPropertyOptions(key) as MyPropertyDeclaration;
           const observer = options.observer;
           if (typeof observer === 'function') {
             observer.call(this, value);
@@ -1851,7 +1875,7 @@ suite('ReactiveElement', () => {
       foo2 = 5;
 
       // custom typed properties
-      static properties: MyPropertyDeclarations = {
+      static override properties: MyPropertyDeclarations = {
         foo: {
           type: Number,
           validator: (value: number) => Math.min(10, Math.max(value, 0)),
@@ -1905,7 +1929,7 @@ suite('ReactiveElement', () => {
     }
 
     class E extends ReactiveElement {
-      static getPropertyDescriptor(
+      static override getPropertyDescriptor(
         name: PropertyKey,
         key: string | symbol,
         options: MyPropertyDeclaration
@@ -1920,7 +1944,7 @@ suite('ReactiveElement', () => {
           set(this: E, value: unknown) {
             setter.call(this, value);
             if (options.sync && this.hasUpdated && !this.isUpdating) {
-              ((this as unknown) as E).performUpdate();
+              (this as unknown as E).performUpdate();
             }
           },
         });
@@ -1930,7 +1954,7 @@ suite('ReactiveElement', () => {
 
       updateCount = 0;
 
-      performUpdate() {
+      override performUpdate() {
         // While it's dubious to have a computed property that's
         // also settable but this just demonstrates it's possible.
         this.isUpdating = true;
@@ -1938,16 +1962,16 @@ suite('ReactiveElement', () => {
         this.isUpdating = false;
       }
 
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this.zug = this.foo + 1;
         super.update(changedProperties);
       }
 
-      updated() {
+      override updated() {
         this.updateCount++;
       }
 
-      static properties = {
+      static override properties = {
         foo: {
           type: Number,
           sync: true,
@@ -1988,7 +2012,7 @@ suite('ReactiveElement', () => {
     class E extends ReactiveElement {
       _updateCount = 0;
       updatedText = '';
-      static get properties() {
+      static override get properties() {
         return {foo: {type: String}, bar: {type: String}};
       }
       set foo(value: string | null) {
@@ -2005,11 +2029,11 @@ suite('ReactiveElement', () => {
       get bar() {
         return this.getAttribute('bar') || 'defaultBar';
       }
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this._updateCount++;
         super.update(changedProperties);
       }
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}-${this.bar}`;
       }
     }
@@ -2047,7 +2071,7 @@ suite('ReactiveElement', () => {
     class E extends ReactiveElement {
       _updateCount = 0;
       updatedText = '';
-      static get properties() {
+      static override get properties() {
         return {foo: {type: String}, bar: {type: String}};
       }
       set foo(value: string | null) {
@@ -2062,15 +2086,19 @@ suite('ReactiveElement', () => {
       get bar() {
         return this.getAttribute('bar') || 'defaultBar';
       }
-      attributeChangedCallback(name: string, old: string, value: string) {
+      override attributeChangedCallback(
+        name: string,
+        old: string,
+        value: string
+      ) {
         super.attributeChangedCallback(name, old, value);
         this.requestUpdate(name, old);
       }
-      update(changedProperties: PropertyValues) {
+      override update(changedProperties: PropertyValues) {
         this._updateCount++;
         super.update(changedProperties);
       }
-      updated() {
+      override updated() {
         this.updatedText = `${this.foo}-${this.bar}`;
       }
     }
@@ -2106,19 +2134,19 @@ suite('ReactiveElement', () => {
 
   test('setting properties in `updated` does trigger update and does not block updateComplete', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       foo = 0;
       updateCount = 0;
       fooMax = 2;
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
 
-      updated() {
+      override updated() {
         if (this.foo < this.fooMax) {
           this.foo++;
         }
@@ -2141,18 +2169,18 @@ suite('ReactiveElement', () => {
 
   test('setting properties in `updated` can await until updateComplete returns true', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       foo = 0;
       updateCount = 0;
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
 
-      updated() {
+      override updated() {
         if (this.foo < 10) {
           this.foo++;
         }
@@ -2168,25 +2196,25 @@ suite('ReactiveElement', () => {
 
   test('`updateComplete` can block properties set in `updated`', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       foo = 1;
       updateCount = 0;
       fooMax = 10;
 
-      update(changed: PropertyValues) {
+      override update(changed: PropertyValues) {
         this.updateCount++;
         super.update(changed);
       }
 
-      updated() {
+      override updated() {
         if (this.foo < this.fooMax) {
           this.foo++;
         }
       }
 
-      get updateComplete(): Promise<any> {
+      override get updateComplete(): Promise<any> {
         return super.updateComplete.then((v) => v || this.updateComplete);
       }
     }
@@ -2201,12 +2229,12 @@ suite('ReactiveElement', () => {
 
   test('can await promise in `updateComplete`', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       promiseFulfilled = false;
 
-      get updateComplete() {
+      override get updateComplete() {
         return (async () => {
           return (
             (await super.updateComplete) &&
@@ -2230,14 +2258,14 @@ suite('ReactiveElement', () => {
 
   test('can await sub-element `updateComplete`', async () => {
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}};
       }
       promiseFulfilled = false;
       foo = 'hi';
       updatedText = '';
 
-      get updateComplete() {
+      override get updateComplete() {
         return super.updateComplete.then(
           () =>
             new Promise<boolean>((resolve) =>
@@ -2249,7 +2277,7 @@ suite('ReactiveElement', () => {
         );
       }
 
-      updated() {
+      override updated() {
         this.updatedText = this.foo;
       }
     }
@@ -2258,12 +2286,12 @@ suite('ReactiveElement', () => {
     class F extends ReactiveElement {
       inner: E | null = null;
 
-      firstUpdated() {
+      override firstUpdated() {
         this.inner = document.createElement('x-1224') as E;
         this.renderRoot!.appendChild(this.inner);
       }
 
-      get updateComplete() {
+      override get updateComplete() {
         return super.updateComplete.then(() => {
           this.inner!.foo = 'yo';
           return this.inner!.updateComplete;
@@ -2288,7 +2316,7 @@ suite('ReactiveElement', () => {
     const objectValue = {};
     (el as any).zug = objectValue;
     class E extends ReactiveElement {
-      static get properties() {
+      static override get properties() {
         return {foo: {}, bar: {}, zug: {}};
       }
 
@@ -2303,20 +2331,20 @@ suite('ReactiveElement', () => {
     assert.equal((el as any).zug, objectValue);
   });
 
-  test('can override performUpdate()', async () => {
+  test('can override scheduleUpdate()', async () => {
     let resolve: ((value?: unknown) => void) | undefined;
 
     class A extends ReactiveElement {
-      performUpdateCalled = false;
+      scheduleUpdateCalled = false;
       updateCalled = false;
 
-      async performUpdate() {
-        this.performUpdateCalled = true;
+      override async scheduleUpdate() {
+        this.scheduleUpdateCalled = true;
         await new Promise((r) => (resolve = r));
-        await super.performUpdate();
+        await super.scheduleUpdate();
       }
 
-      update(changedProperties: Map<PropertyKey, unknown>) {
+      override update(changedProperties: Map<PropertyKey, unknown>) {
         this.updateCalled = true;
         super.update(changedProperties);
       }
@@ -2337,24 +2365,24 @@ suite('ReactiveElement', () => {
     await new Promise((r) => setTimeout(r, 10));
     assert.isFalse(a.updateCalled);
 
-    // update is called after performUpdate allowed to complete
+    // update is called after scheduleUpdate allowed to complete
     resolve!();
     await a.updateComplete;
     assert.isTrue(a.updateCalled);
   });
 
-  test('overriding performUpdate() allows nested invalidations', async () => {
+  test('overriding scheduleUpdate() allows nested invalidations', async () => {
     class A extends ReactiveElement {
-      performUpdateCalledCount = 0;
+      scheduleUpdateCalledCount = 0;
       updatedCalledCount = 0;
 
-      async performUpdate() {
-        this.performUpdateCalledCount++;
+      override async scheduleUpdate() {
+        this.scheduleUpdateCalledCount++;
         await new Promise((r) => setTimeout(r));
-        super.performUpdate();
+        super.scheduleUpdate();
       }
 
-      updated(_changedProperties: Map<PropertyKey, unknown>) {
+      override updated(_changedProperties: Map<PropertyKey, unknown>) {
         this.updatedCalledCount++;
         // trigger a nested invalidation just once
         if (this.updatedCalledCount === 1) {
@@ -2371,24 +2399,24 @@ suite('ReactiveElement', () => {
     const updateComplete1 = a.updateComplete;
     await updateComplete1;
     assert.equal(a.updatedCalledCount, 1);
-    assert.equal(a.performUpdateCalledCount, 1);
+    assert.equal(a.scheduleUpdateCalledCount, 1);
 
     const updateComplete2 = a.updateComplete;
     assert.notStrictEqual(updateComplete1, updateComplete2);
 
     await updateComplete2;
     assert.equal(a.updatedCalledCount, 2);
-    assert.equal(a.performUpdateCalledCount, 2);
+    assert.equal(a.scheduleUpdateCalledCount, 2);
   });
 
   test('update does not occur before element is connected', async () => {
     class A extends ReactiveElement {
       updatedCalledCount = 0;
 
-      static properties = {foo: {}};
+      static override properties = {foo: {}};
       foo = 5;
 
-      updated(_changedProperties: Map<PropertyKey, unknown>) {
+      override updated(_changedProperties: Map<PropertyKey, unknown>) {
         this.updatedCalledCount++;
       }
     }
@@ -2405,7 +2433,7 @@ suite('ReactiveElement', () => {
     class A extends ReactiveElement {
       didUpdate = false;
 
-      updated(_changedProperties: Map<PropertyKey, unknown>) {
+      override updated(_changedProperties: Map<PropertyKey, unknown>) {
         this.didUpdate = true;
       }
     }
@@ -2428,7 +2456,7 @@ suite('ReactiveElement', () => {
       foo?: boolean;
       bar?: string;
 
-      static get properties() {
+      static override get properties() {
         return {
           foo: {type: Boolean, reflect: true},
           bar: {type: String, reflect: true},
@@ -2518,18 +2546,18 @@ suite('ReactiveElement', () => {
     test('exceptions in `update` do not prevent further updates', async () => {
       let shouldThrow = false;
       class A extends ReactiveElement {
-        static properties = {foo: {}};
+        static override properties = {foo: {}};
         foo = 5;
         updatedFoo = 0;
 
-        update(changedProperties: Map<PropertyKey, unknown>) {
+        override update(changedProperties: Map<PropertyKey, unknown>) {
           if (shouldThrow) {
             throw new Error('test error');
           }
           super.update(changedProperties);
         }
 
-        updated(_changedProperties: Map<PropertyKey, unknown>) {
+        override updated(_changedProperties: Map<PropertyKey, unknown>) {
           this.updatedFoo = this.foo;
         }
       }
@@ -2562,18 +2590,18 @@ suite('ReactiveElement', () => {
         firstUpdatedCalled = false;
         updatedCalled = false;
 
-        update(changedProperties: Map<PropertyKey, unknown>) {
+        override update(changedProperties: Map<PropertyKey, unknown>) {
           if (shouldThrow) {
             throw new Error('test error');
           }
           super.update(changedProperties);
         }
 
-        firstUpdated() {
+        override firstUpdated() {
           this.firstUpdatedCalled = true;
         }
 
-        updated(_changedProperties: Map<PropertyKey, unknown>) {
+        override updated(_changedProperties: Map<PropertyKey, unknown>) {
           this.updatedCalled = true;
         }
       }
@@ -2600,18 +2628,18 @@ suite('ReactiveElement', () => {
     test('exceptions in `shouldUpdate` do not prevent further updates', async () => {
       let shouldThrow = false;
       class A extends ReactiveElement {
-        static properties = {foo: {}};
+        static override properties = {foo: {}};
         foo = 5;
         updatedFoo = 0;
 
-        shouldUpdate(changedProperties: Map<PropertyKey, unknown>) {
+        override shouldUpdate(changedProperties: Map<PropertyKey, unknown>) {
           if (shouldThrow) {
             throw new Error('test error');
           }
           return super.shouldUpdate(changedProperties);
         }
 
-        updated(_changedProperties: Map<PropertyKey, unknown>) {
+        override updated(_changedProperties: Map<PropertyKey, unknown>) {
           this.updatedFoo = this.foo;
         }
       }
@@ -2642,13 +2670,13 @@ suite('ReactiveElement', () => {
       let shouldThrow = false;
       let enqueue = false;
       class A extends ReactiveElement {
-        static properties = {foo: {}};
+        static override properties = {foo: {}};
         foo = 5;
         updatedFoo = 0;
 
         changedProps?: PropertyValues;
 
-        updated(_changedProperties: Map<PropertyKey, unknown>) {
+        override updated(_changedProperties: Map<PropertyKey, unknown>) {
           if (enqueue) {
             enqueue = false;
             this.foo++;
@@ -2661,7 +2689,7 @@ suite('ReactiveElement', () => {
           this.updatedFoo = this.foo;
         }
 
-        get updateComplete(): Promise<any> {
+        override get updateComplete(): Promise<any> {
           return super.updateComplete.then((v) => v || this.updateComplete);
         }
       }
@@ -2706,15 +2734,15 @@ suite('ReactiveElement', () => {
     test('exceptions in `performUpdate` do not prevent further updates', async () => {
       let shouldThrow = false;
       class A extends ReactiveElement {
-        static properties = {foo: {}};
+        static override properties = {foo: {}};
         foo = 5;
         updatedFoo = 0;
 
-        updated(_changedProperties: Map<PropertyKey, unknown>) {
+        override updated(_changedProperties: Map<PropertyKey, unknown>) {
           this.updatedFoo = this.foo;
         }
 
-        performUpdate() {
+        override performUpdate() {
           return new Promise<void>((resolve, reject) => {
             super.performUpdate();
             if (shouldThrow) {
@@ -2751,11 +2779,11 @@ suite('ReactiveElement', () => {
     test('exceptions in the update cycle are visible via window event', async () => {
       let shouldThrow = false;
       class A extends ReactiveElement {
-        static properties = {foo: {}};
+        static override properties = {foo: {}};
         foo = 5;
         updateCount = 0;
 
-        updated(_changedProperties: Map<PropertyKey, unknown>) {
+        override updated(_changedProperties: Map<PropertyKey, unknown>) {
           this.updateCount++;
           if (shouldThrow) {
             // This will queue another update that must await this update
@@ -2786,166 +2814,15 @@ suite('ReactiveElement', () => {
     });
   });
 
-  suite('disconnection handling', () => {
-    let el: El;
-    let updated: boolean;
-
-    class El extends ReactiveElement {
-      static properties = {foo: {}};
-      foo = 5;
-
-      update(_changedProperties: Map<PropertyKey, unknown>) {
-        super.update(_changedProperties);
-        updated = true;
-      }
-    }
-    customElements.define(generateElementName(), El);
-
-    setup(() => {
-      updated = false;
-      el = new El();
-    });
-
-    teardown(() => {
-      if (el.isConnected) {
-        container.removeChild(el);
-      }
-    });
-
-    test('disconnect then requestUpdate', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Disconnect, then requestUpdate
-      updated = false;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      el.foo++;
-      await nextFrame();
-      assert.isFalse(updated);
-      // Re-connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('requestUpdate then disconnect', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // requestUpdate, then disconnect
-      updated = false;
-      el.foo++;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isFalse(updated);
-      // Re-connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('requestUpdate, then disconnect and immediately reconnect', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // requestUpdate, then disconnect + reconnect
-      updated = false;
-      el.foo++;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('thrash disconnection', async () => {
-      // Connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // requestUpdate, then disconnect + reconnect + disconnect
-      updated = false;
-      el.foo++;
-      container.removeChild(el);
-      assert.isFalse(updated);
-      container.appendChild(el);
-      assert.isFalse(updated);
-      container.removeChild(el);
-      await nextFrame();
-      // still no update: reconnect + disconnect
-      assert.isFalse(updated);
-      container.appendChild(el);
-      assert.isFalse(updated);
-      container.removeChild(el);
-      await nextFrame();
-      // still no update: reconnect
-      assert.isFalse(updated);
-      container.appendChild(el);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-
-    test('connect and immediately disconnect before first update', async () => {
-      // Connect and disconnect
-      container.appendChild(el);
-      container.removeChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isFalse(updated);
-      // Re-connect
-      container.appendChild(el);
-      assert.isFalse(updated);
-      await nextFrame();
-      assert.isTrue(updated);
-      // Resume normal updates
-      updated = false;
-      el.foo++;
-      await nextFrame();
-      assert.isTrue(updated);
-    });
-  });
-
   suite('customizing observedAttributes', () => {
     test('does not interfere with properties', () => {
       class E extends ReactiveElement {
-        static properties = {
+        static override properties = {
           foo: {},
           bar: {},
         };
 
-        static get observedAttributes() {
+        static override get observedAttributes() {
           // Note, `finalize` must be called when not supering to observedAttributes
           this.finalize();
           return ['custom'];
@@ -2966,7 +2843,7 @@ suite('ReactiveElement', () => {
 
     test('using super on base class', () => {
       class E extends ReactiveElement {
-        static get observedAttributes() {
+        static override get observedAttributes() {
           return ['foo', ...super.observedAttributes];
         }
       }
@@ -2983,13 +2860,13 @@ suite('ReactiveElement', () => {
 
     test('using superclass properties', () => {
       class S extends ReactiveElement {
-        static properties = {
+        static override properties = {
           foo: {},
           bar: {},
         };
       }
       class E extends S {
-        static get observedAttributes() {
+        static override get observedAttributes() {
           return ['custom', ...super.observedAttributes];
         }
       }
@@ -3020,7 +2897,7 @@ suite('ReactiveElement', () => {
         }
       >(superclass: B) {
         class E extends superclass {
-          static get observedAttributes(): string[] {
+          static override get observedAttributes(): string[] {
             return [...(super.observedAttributes ?? []), 'custom'];
           }
 
@@ -3030,16 +2907,15 @@ suite('ReactiveElement', () => {
 
           attrValue = '';
 
-          attributeChangedCallback(
+          override attributeChangedCallback(
             name: string,
             oldVal: string,
             newVal: string
           ): void {
             if (
-              !(super
-                .constructor as typeof ReactiveElement).observedAttributes?.includes?.(
-                name
-              )
+              !(
+                super.constructor as typeof ReactiveElement
+              ).observedAttributes?.includes?.(name)
             ) {
               this.attrValue = name;
             }
@@ -3061,7 +2937,7 @@ suite('ReactiveElement', () => {
       );
 
       class F extends ReactiveElement {
-        static properties: PropertyDeclarations = {
+        static override properties: PropertyDeclarations = {
           foo: {},
           bar: {},
         };
@@ -3089,7 +2965,7 @@ suite('ReactiveElement', () => {
       assert.equal(el2.attrValue, 'custom');
 
       class GE extends FE {
-        static properties: PropertyDeclarations = {
+        static override properties: PropertyDeclarations = {
           zot: {},
           nug: {},
         };
@@ -3135,7 +3011,7 @@ suite('ReactiveElement', () => {
         }
       >(superclass: B) {
         class E extends superclass {
-          static get observedAttributes(): string[] {
+          static override get observedAttributes(): string[] {
             return [...(superclass.observedAttributes ?? []), 'custom'];
           }
 
@@ -3145,7 +3021,7 @@ suite('ReactiveElement', () => {
 
           attrValue = '';
 
-          attributeChangedCallback(
+          override attributeChangedCallback(
             name: string,
             oldVal: string,
             newVal: string
@@ -3171,7 +3047,7 @@ suite('ReactiveElement', () => {
       );
 
       class F extends ReactiveElement {
-        static properties: PropertyDeclarations = {
+        static override properties: PropertyDeclarations = {
           foo: {},
           bar: {},
         };

@@ -49,8 +49,8 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
   - [`@lit-labs/motion`](./packages/labs/motion) - Lit directives for making things move
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
 - Starter kits (not published to npm)
-  - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/PolymerLabs/lit-element-starter-ts/tree/lit-next)) - A starter repo for building reusable components using Lit in TypeScript.
-  - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/PolymerLabs/lit-element-starter-js/tree/lit-next)) - A starter repo for building reusable components using Lit in Javascript.
+  - [`lit-starter-ts`](./packages/lit-starter-ts) ([template repo](https://github.com/lit/lit/tree/main/packages/lit-starter-ts)) - A starter repo for building reusable components using Lit in TypeScript.
+  - [`lit-starter-js`](./packages/lit-starter-js) ([template repo](https://github.com/lit/lit/tree/main/packages/lit-starter-js)) - A starter repo for building reusable components using Lit in Javascript.
 - Internal packages (not published to npm)
   - [`tests`](./packages/tests) - Test infrastructure for the monorepo.
   - [`benchmarks`](./packages/benchmarks) - Benchmarks for testing various libraries in the monorepo.
@@ -106,11 +106,11 @@ branch on the template repos (`lit-next` branch shown in example):
 
 ```sh
 # Export TS template
-git remote add lit-element-starter-ts git@github.com:PolymerLabs/lit-element-starter-ts.git
+git remote add lit-element-starter-ts git@github.com:lit/lit-element-starter-ts.git
 git subtree push --prefix=packages/lit-starter-ts/ lit-starter-element-ts lit-next
 
 # Export JS template
-git remote add lit-element-starter-js git@github.com:PolymerLabs/lit-starter-js.git
+git remote add lit-element-starter-js git@github.com:lit/lit-element-starter-js.git
 git subtree push --prefix=packages/lit-starter-js/ lit-starter-element-js lit-next
 ```
 

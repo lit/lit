@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_Σ, Part, DirectiveParent, TemplateResult} from './lit-html.js';
+import {_$LH, Part, DirectiveParent, TemplateResult} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -13,7 +13,7 @@ import {
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
-const {_ChildPart: ChildPart} = _Σ;
+const {_ChildPart: ChildPart} = _$LH;
 
 type ChildPart = InstanceType<typeof ChildPart>;
 
@@ -39,7 +39,8 @@ export const TemplateResultType = {
   SVG: 2,
 } as const;
 
-export type TemplateResultType = typeof TemplateResultType[keyof typeof TemplateResultType];
+export type TemplateResultType =
+  typeof TemplateResultType[keyof typeof TemplateResultType];
 
 /**
  * Tests if a value is a TemplateResult.
@@ -49,20 +50,23 @@ export const isTemplateResult = (
   type?: TemplateResultType
 ): value is TemplateResult =>
   type === undefined
-    ? (value as TemplateResult)?._$litType$ !== undefined
-    : (value as TemplateResult)?._$litType$ === type;
+    ? // This property needs to remain unminified.
+      (value as TemplateResult)?.['_$litType$'] !== undefined
+    : (value as TemplateResult)?.['_$litType$'] === type;
 
 /**
  * Tests if a value is a DirectiveResult.
  */
 export const isDirectiveResult = (value: unknown): value is DirectiveResult =>
-  (value as DirectiveResult)?._$litDirective$ !== undefined;
+  // This property needs to remain unminified.
+  (value as DirectiveResult)?.['_$litDirective$'] !== undefined;
 
 /**
  * Retrieves the Directive class for a DirectiveResult
  */
 export const getDirectiveClass = (value: unknown): DirectiveClass | undefined =>
-  (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  (value as DirectiveResult)?.['_$litDirective$'];
 
 /**
  * Tests whether a part has only a single-expression with no strings to
@@ -110,7 +114,8 @@ export const insertPart = (
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
-    const parentChanged = part._$parent !== containerPart;
+    const oldParent = part._$parent;
+    const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
@@ -118,6 +123,17 @@ export const insertPart = (
       // method only exists if Disconnectables are present, so we need to
       // unconditionally set it here
       part._$parent = containerPart;
+      // Since the _$isConnected getter is somewhat costly, only
+      // read it once we know the subtree has directives that need
+      // to be notified
+      let newConnectionState;
+      if (
+        part._$notifyConnectionChanged !== undefined &&
+        (newConnectionState = containerPart._$isConnected) !==
+          oldParent!._$isConnected
+      ) {
+        part._$notifyConnectionChanged(newConnectionState);
+      }
     }
     if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
@@ -197,7 +213,7 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
  * @param part The Part to remove
  */
 export const removePart = (part: ChildPart) => {
-  part._$setChildPartConnected?.(false, true);
+  part._$notifyConnectionChanged?.(false, true);
   let start: ChildNode | null = part._$startNode;
   const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
   while (start !== end) {

@@ -19,7 +19,7 @@ import {
 } from '../program-analysis.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
@@ -200,7 +200,7 @@ class Transformer {
       const moduleSymbol = this.typeChecker.getSymbolAtLocation(
         node.moduleSpecifier
       );
-      if (moduleSymbol && this.isLitLocalizeModule(moduleSymbol)) {
+      if (moduleSymbol && this.fileNameAppearsToBeLitLocalize(moduleSymbol)) {
         return undefined;
       }
     }
@@ -289,15 +289,17 @@ class Transformer {
         // but not in the case of `import * as ...`.
         eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
       }
-      for (const decl of eventSymbol.declarations) {
+      for (const decl of eventSymbol.declarations ?? []) {
         let sourceFile: ts.Node = decl;
         while (!ts.isSourceFile(sourceFile)) {
           sourceFile = sourceFile.parent;
         }
-        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
-          sourceFile
-        );
-        if (sourceFileSymbol && this.isLitLocalizeModule(sourceFileSymbol)) {
+        const sourceFileSymbol =
+          this.typeChecker.getSymbolAtLocation(sourceFile);
+        if (
+          sourceFileSymbol &&
+          this.fileNameAppearsToBeLitLocalize(sourceFileSymbol)
+        ) {
           return ts.createStringLiteral('lit-localize-status');
         }
       }
@@ -354,7 +356,7 @@ class Transformer {
         const templateLiteralBody = translation.contents
           .map((content) =>
             typeof content === 'string'
-              ? escapeStringToEmbedInTemplateLiteral(content)
+              ? escapeTextContentToEmbedInTemplateLiteral(content)
               : content.untranslatable
           )
           .join('');
@@ -498,25 +500,18 @@ class Transformer {
 
   /**
    * Return whether the given symbol looks like one of the lit-localize modules
-   * (because it exports one of the special tagged functions).
+   * based on its filename. Note when we call this function, we're already
+   * strongly suspecting a lit-localize call.
    */
-  isLitLocalizeModule(moduleSymbol: ts.Symbol): boolean {
-    if (!moduleSymbol.exports) {
-      return false;
-    }
-    const exports = moduleSymbol.exports.values();
-    for (const xport of exports as typeof exports & {
-      [Symbol.iterator](): Iterator<ts.Symbol>;
-    }) {
-      const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
-      const props = this.typeChecker.getPropertiesOfType(type);
+  fileNameAppearsToBeLitLocalize(moduleSymbol: ts.Symbol): boolean {
+    // TODO(aomarks) Find a better way to implement this. We could probably just
+    // check for any file path matching '/@lit/localize/` -- however that will
+    // fail our tests because we import with a relative path in that case.
+    for (const decl of moduleSymbol.declarations ?? []) {
       if (
-        props.some(
-          (prop) =>
-            prop.escapedName === '_LIT_LOCALIZE_MSG_' ||
-            prop.escapedName === '_LIT_LOCALIZE_CONTROLLER_FN_' ||
-            prop.escapedName === '_LIT_LOCALIZE_DECORATOR_'
-        )
+        ts.isSourceFile(decl) &&
+        (decl.fileName.endsWith('/localize/lit-localize.d.ts') ||
+          decl.fileName.endsWith('/localize/internal/locale-status-event.d.ts'))
       ) {
         return true;
       }

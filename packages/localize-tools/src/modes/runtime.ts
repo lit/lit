@@ -11,7 +11,7 @@ import type {Config} from '../types/config.js';
 import type {RuntimeOutputConfig} from '../types/modes.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
 import fsExtra from 'fs-extra';
@@ -75,7 +75,7 @@ async function runtimeOutput(
     throw new KnownError(
       `Error creating TypeScript locales directory: ${outputDir}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
   for (const locale of config.targetLocales) {
@@ -88,11 +88,11 @@ async function runtimeOutput(
     );
     const filename = pathLib.join(outputDir, `${locale}.ts`);
     writes.push(
-      fsExtra.writeFile(filename, ts, 'utf8').catch((e) => {
+      fsExtra.writeFile(filename, ts, 'utf8').catch((e: unknown) => {
         throw new KnownError(
           `Error writing TypeScript file: ${filename}\n` +
             `Do you have write permission?\n` +
-            e.message
+            (e as Error).message
         );
       })
     );
@@ -195,32 +195,66 @@ function makeMessageString(
   // the source locale value anyway (because of variable scoping).
   //
   // For example, if some placeholders were reordered from [0 1 2] to [2 0 1],
-  // then we'll generate a template like: html`foo ${2} bar ${0} baz ${1}`
-  const placeholderOrder = new Map<string, number>(
-    canon.contents
-      .filter((value) => typeof value !== 'string')
-      .map((placeholder, idx) => [
-        (placeholder as Placeholder).untranslatable,
-        idx,
-      ])
-  );
+  // then we'll generate a template like: html`foo ${2} bar ${0} baz ${1}`.
+  //
+  // This map provides the absolute index within a template for each expression
+  // within the template. We identify each expression with the compound key
+  // [placeholder id, relative expression index].
+  //
+  // Note that any given XLIFF/XLB <ph> placeholder can contain zero, one, or
+  // many ${} expressions, so the index of the _placeholder_ is not the same as
+  // the index of the _expression_:
+  //
+  //   <ph>&lt;a href="http://example.com/"></ph>
+  //   <ph>&lt;a href="${/*0*/ url}"></ph>
+  //   <ph>&lt;a href="${/*1*/ url}/${/*2*/ path}"></ph>
+  const placeholderOrder = new Map<string, number>();
+
+  const placeholderOrderKey = (
+    placeholder: Placeholder,
+    placeholderRelativeExpressionIdx: number
+  ) =>
+    JSON.stringify([
+      // TODO(aomarks) For XLIFF files, we have a unique numeric ID for each
+      // placeholder that would be preferable to use as the key here over the
+      // placeholder text itself. However, we don't currently have that ID for
+      // XLB. To add it to XLB, we need to do some research into the correct XML
+      // representation, and then make a breaking change. See
+      // https://github.com/lit/lit/issues/1897.
+      placeholder.untranslatable,
+      placeholderRelativeExpressionIdx,
+    ]);
+
+  let absIdx = 0;
+  for (const content of canon.contents) {
+    if (typeof content === 'string') {
+      continue;
+    }
+    const template = parseStringAsTemplateLiteral(content.untranslatable);
+    if (ts.isNoSubstitutionTemplateLiteral(template)) {
+      continue;
+    }
+    for (let relIdx = 0; relIdx < template.templateSpans.length; relIdx++) {
+      placeholderOrder.set(placeholderOrderKey(content, relIdx), absIdx++);
+    }
+  }
 
   const fragments = [];
   for (const content of contents) {
     if (typeof content === 'string') {
-      fragments.push(escapeStringToEmbedInTemplateLiteral(content));
+      fragments.push(escapeTextContentToEmbedInTemplateLiteral(content));
     } else {
       const template = parseStringAsTemplateLiteral(content.untranslatable);
       if (ts.isNoSubstitutionTemplateLiteral(template)) {
         fragments.push(template.text);
       } else {
         fragments.push(template.head.text);
-        for (const span of template.templateSpans) {
-          // Substitute the value with the index (see note above).
-          fragments.push(
-            '${' + placeholderOrder.get(content.untranslatable) + '}'
-          );
-          fragments.push(span.literal.text);
+        for (let relIdx = 0; relIdx < template.templateSpans.length; relIdx++) {
+          const absIdx: number = placeholderOrder.get(
+            placeholderOrderKey(content, relIdx)
+          )!;
+          fragments.push('${' + absIdx + '}');
+          fragments.push(template.templateSpans[relIdx].literal.text);
         }
       }
     }

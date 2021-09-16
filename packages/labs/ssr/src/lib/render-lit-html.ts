@@ -15,8 +15,8 @@ import type {
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
-import {isTemplateResult} from 'lit/directive-helpers.js';
-import {_Σ} from 'lit-html/private-ssr-support.js';
+import {isTemplateResult, getDirectiveClass} from 'lit/directive-helpers.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
   getTemplateHtml,
@@ -24,13 +24,15 @@ const {
   markerMatch,
   boundAttributeSuffix,
   overrideDirectiveResolve,
+  setDirectiveClass,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
-} = _Σ;
+  connectedDisconnectable,
+} = _$LH;
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
@@ -46,8 +48,6 @@ const require = createRequire(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const escapeHtml = require('escape-html') as typeof import('escape-html');
 
-import type {DefaultTreeDocumentFragment} from 'parse5';
-
 import {
   traverse,
   parseFragment,
@@ -61,22 +61,21 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 import {LitElementRenderer} from './lit-element-renderer.js';
 
 declare module 'parse5' {
-  interface DefaultTreeElement {
+  interface Element {
     isDefinedCustomElement?: boolean;
   }
 }
 
-const patchedDirectiveCache: WeakMap<
-  DirectiveClass,
-  DirectiveClass
-> = new Map();
+const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
+  new Map();
 
 /**
  * Looks for values of type `DirectiveResult` and replaces its Directive class
  * with a subclass that calls `render` rather than `update`
  */
 const patchIfDirective = (value: unknown) => {
-  const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
@@ -90,7 +89,8 @@ const patchIfDirective = (value: unknown) => {
       );
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
-    (value as DirectiveResult)._$litDirective$ = patchedCtor;
+    // This property needs to remain unminified.
+    setDirectiveClass(value as DirectiveResult, patchedCtor);
   }
   return value;
 };
@@ -279,7 +279,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  const [html, attrNames] = getTemplateHtml(result.strings, result._$litType$);
+  // The property '_$litType$' needs to remain unminified.
+  const [html, attrNames] = getTemplateHtml(
+    result.strings,
+    result['_$litType$']
+  );
 
   /**
    * The html string is parsed into a parse5 AST with source code information
@@ -288,7 +292,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    */
   const ast = parseFragment(String(html), {
     sourceCodeLocationInfo: true,
-  }) as DefaultTreeDocumentFragment;
+  });
 
   const ops: Array<Op> = [];
 
@@ -411,9 +415,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // while parsing the template strings); note that this assumes
               // parse5 attribute ordering matches string ordering
               const name = attrNames[attrIndex++];
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
@@ -450,9 +453,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // into the custom element instance, and then serialize them back
               // out along with any manually-reflected attributes. As such, we
               // skip over static attribute text here.
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               flushTo(attrSourceLocation.startOffset);
               skipTo(attrSourceLocation.endOffset);
             }
@@ -554,7 +556,10 @@ function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
+    value = resolveDirective(
+      connectedDisconnectable({type: PartType.CHILD}) as ChildPart,
+      value
+    );
   }
   if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -622,7 +627,7 @@ function* renderTemplateResult(
           {tagName: op.tagName} as HTMLElement,
           op.name,
           statics,
-          undefined,
+          connectedDisconnectable(),
           {}
         );
         const value =

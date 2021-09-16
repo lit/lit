@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.10.1",
+  "version": "0.10.3",
   "publishConfig": {
     "access": "public"
   },
@@ -22,22 +22,11 @@
     "prepack": "npm run build"
   },
   "files": [
-    "/src/",
-    "!/src/tests/",
-    "/src_client/",
-    "!/src_client/tests/",
-    "/lib/",
-    "!/lib/tests/",
-    "!/lib/.tsbuildinfo",
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",
-    "/id-generation.d.ts",
-    "/id-generation.js",
-    "/id-generation.js.map",
-    "/fnv1a64.d.ts",
-    "/fnv1a64.js",
-    "/fnv1a64.js.map",
+    "/internal/",
+    "/init/",
     "/config.schema.json"
   ],
   "dependencies": {
@@ -47,10 +36,10 @@
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.2.12",
-    "@types/mocha": "^8.0.2",
-    "@web/test-runner": "^0.12.15",
+    "@types/mocha": "^9.0.0",
+    "@web/test-runner": "^0.13.16",
     "@web/test-runner-playwright": "^0.8.4",
     "chai": "^4.2.0",
-    "mocha": "^8.1.1"
+    "mocha": "^9.1.1"
   }
 }

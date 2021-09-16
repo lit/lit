@@ -5,7 +5,7 @@
  */
 
 import {unsafeSVG} from '../../directives/unsafe-svg.js';
-import {render, html} from '../../lit-html.js';
+import {render, html, nothing, noChange} from '../../lit-html.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -31,6 +31,45 @@ suite('unsafeSVG', () => {
     ]);
     const lineElement = container.querySelector('line')!;
     assert.equal(lineElement.namespaceURI, 'http://www.w3.org/2000/svg');
+  });
+
+  test('rendering `nothing` renders empty string to content', () => {
+    render(html`<svg>before${unsafeSVG(nothing)}after</svg>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>beforeafter</svg>'
+    );
+  });
+
+  test('rendering `noChange` does not change the previous content', () => {
+    const template = (v: string | typeof noChange) =>
+      html`<svg>before${unsafeSVG(v)}after</svg>`;
+    render(template('<g>Hi</g>'), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>before<g>Hi</g>after</svg>'
+    );
+    render(template(noChange), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>before<g>Hi</g>after</svg>'
+    );
+  });
+
+  test('rendering `undefined` renders empty string to content', () => {
+    render(html`<svg>before${unsafeSVG(undefined)}after</svg>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>beforeafter</svg>'
+    );
+  });
+
+  test('rendering `null` renders empty string to content', () => {
+    render(html`<svg>before${unsafeSVG(null)}after</svg>`, container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<svg>beforeafter</svg>'
+    );
   });
 
   test('dirty checks primitive values', () => {

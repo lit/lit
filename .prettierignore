@@ -86,14 +86,13 @@ packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
-packages/localize/lib/
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
-packages/localize/fnv1a64.*
-packages/localize/id-generation.*
+packages/localize/internal/
+packages/localize/init/
 
 packages/localize-tools/lib/
 packages/localize-tools/node_modules/
@@ -110,6 +109,11 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 
+packages/ts-transformers/*.js
+packages/ts-transformers/*.js.map
+packages/ts-transformers/*.d.ts
+packages/ts-transformers/internal/
+packages/ts-transformers/tests/
 packages/labs/motion/development/
 packages/labs/motion/node_modules/
 packages/labs/motion/index.*
@@ -149,12 +153,14 @@ packages/lit-starter-js/docs/*
 packages/lit-starter-js/docs-src/*
 packages/lit-starter-js/**/rollup-config.js
 packages/lit-starter-js/**/custom-elements.json
+packages/lit-starter-js/**/web-dev-server.config.js
 
 packages/lit-starter-ts/node_modules/*
 packages/lit-starter-ts/docs/*
 packages/lit-starter-ts/docs-src/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
+packages/lit-starter-ts/**/web-dev-server.config.js
 
 package-lock.json
 packages/localize/examples/

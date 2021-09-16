@@ -34,7 +34,7 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
     static elementDefinitions?: ElementDefinitionsMap;
     static registry?: CustomElementRegistry;
 
-    createRenderRoot() {
+    override createRenderRoot() {
       const constructor = this.constructor as typeof ScopedRegistryMixin &
         typeof LitElement;
 

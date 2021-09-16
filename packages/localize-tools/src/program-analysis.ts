@@ -8,7 +8,10 @@ import ts from 'typescript';
 import * as parse5 from 'parse5';
 import {ProgramMessage, Placeholder, Message} from './messages.js';
 import {createDiagnostic} from './typescript.js';
-import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
+import {
+  generateMsgId,
+  HASH_DELIMITER,
+} from '@lit/localize/internal/id-generation.js';
 
 type ResultOrError<R, E> =
   | {result: R; error?: undefined}
@@ -17,9 +20,10 @@ type ResultOrError<R, E> =
 /**
  * Extract translation messages from all files in a TypeScript program.
  */
-export function extractMessagesFromProgram(
-  program: ts.Program
-): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
+export function extractMessagesFromProgram(program: ts.Program): {
+  messages: ProgramMessage[];
+  errors: ts.Diagnostic[];
+} {
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of program.getSourceFiles()) {
@@ -366,7 +370,9 @@ interface Expression {
  */
 const EXPRESSION_RAND = String(Math.random()).slice(2);
 const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_START_REGEXP = new RegExp(EXPRESSION_START, 'g');
 const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_END_REGEXP = new RegExp(EXPRESSION_END, 'g');
 
 /**
  * Our template is split apart based on template string literal expressions.
@@ -425,8 +431,8 @@ function replaceExpressionsAndHtmlWithPlaceholders(
       // need to fix the syntax.
       contents.push({
         untranslatable: part.untranslatable
-          .replace(EXPRESSION_START, '${')
-          .replace(EXPRESSION_END, '}'),
+          .replace(EXPRESSION_START_REGEXP, '${')
+          .replace(EXPRESSION_END_REGEXP, '}'),
       });
     }
   }
@@ -518,9 +524,10 @@ function replaceHtmlWithPlaceholders(
  *
  *   <b class="red">foo</b> --> {open: '<b class="red">, close: '</b>'}
  */
-function serializeOpenCloseTags(
-  node: parse5.ChildNode
-): {open: string; close: string} {
+function serializeOpenCloseTags(node: parse5.ChildNode): {
+  open: string;
+  close: string;
+} {
   const withoutChildren: parse5.ChildNode = {...node, childNodes: []};
   const fakeParent = {childNodes: [withoutChildren]} as parse5.Node;
   const serialized = parse5.serialize(fakeParent);
@@ -621,9 +628,10 @@ export function isStrTaggedTemplate(
  * same content, de-duplicate them. For those with the same ID and different
  * content, return an error.
  */
-function dedupeMessages(
-  messages: ProgramMessage[]
-): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
+function dedupeMessages(messages: ProgramMessage[]): {
+  messages: ProgramMessage[];
+  errors: ts.Diagnostic[];
+} {
   const errors: ts.Diagnostic[] = [];
   const cache = new Map<string, ProgramMessage>();
   for (const message of messages) {

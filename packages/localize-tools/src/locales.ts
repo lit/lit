@@ -8,7 +8,7 @@ import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
 import type {Locale} from './types/locale.js';
-import {escapeStringToEmbedInTemplateLiteral} from './typescript.js';
+import {escapeTextContentToEmbedInTemplateLiteral} from './typescript.js';
 
 /**
  * Return whether the given string is formatted like a BCP 47 language tag. Note
@@ -19,7 +19,7 @@ export function isLocale(x: string): x is Locale {
 }
 
 const templateLit = (str: string) =>
-  '`' + escapeStringToEmbedInTemplateLiteral(str) + '`';
+  '`' + escapeTextContentToEmbedInTemplateLiteral(str) + '`';
 
 /**
  * Generate a TypeScript module that exports a project's source and target
@@ -68,7 +68,7 @@ export const allLocales = [
     throw new KnownError(
       `Error creating locales module directory: ${parentDir}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
   try {
@@ -77,7 +77,7 @@ export const allLocales = [
     throw new KnownError(
       `Error creating locales module file: ${filePath}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
 }
