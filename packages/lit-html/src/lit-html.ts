@@ -315,49 +315,10 @@ const tag =
  * const header = (title: string) => html`<h1>${title}</h1>`;
  * ```
  *
- * The `html` tag takes the literal strings and embedded expression values for
- * the tagged template literal, and returns a `TemplateResult`. The key features
- * of template tags that Lit utilizes to make updates fast, is that the object
- * holding the literal strings of the template is _exactly_ the same for every
- * call to the tag for a particular template.
- *
- * This means that the strings can be used as a key into a cache so that Lit can
- * do the template preparation just once, the first time it renders a template,
- * and updates skip that work.
- *
- * The first time a particular lit-html template is rendered anywhere in the
- * application, lit-html does one-time setup work to create the HTML template
- * behind the scenes. It joins all the literal parts with a special placeholder,
- * similar to `"{{}}"`, then creates a `<template>` and sets its `innerHTML` to
- * the result.
- *
- * If we start with a template like:
- *
- * ```ts
- * const header = (title) => html`<h1>${title}</h1>`;
- * ```
- *
- * lit-html will generate the following HTML:
- *
- * ```html
- * <h1>{{}}</h1>
- * ```
- *
- * And create a `<template>` from that.
- *
- * Then lit-html walks the template's DOM and extracts the placeholders and
- * records their location. The final template doesn't contain the placeholders:
- *
- * ```html
- * <h1></h1>
- * ```
- *
- * lit-html keeps an auxillary table of expression locations for efficient
- * updates:
- *
- * ```js
- * [{type: 'node', index: 1}]
- * ```
+ * The `html` tag returns a description of the DOM to render as a value. It is
+ * lazy, meaning no work is done until the template is rendered. When rendering,
+ * if a template comes from the same expression as a previously rendered result,
+ * it's efficiently updated instead of replaced.
  */
 export const html = tag(HTML_RESULT);
 
