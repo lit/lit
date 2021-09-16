@@ -759,11 +759,15 @@ export abstract class ReactiveElement
   private __updatePromise!: Promise<boolean>;
 
   /**
+   * True if there is a pending update as a result of calling `requestUpdate()`.
+   * Should only be read.
    * @category updates
    */
   isUpdatePending = false;
 
   /**
+   * Is set to `true` after the first update. The element code cannot assume
+   * that `renderRoot` exists before the element `hasUpdated`.
    * @category updates
    */
   hasUpdated = false;
@@ -817,6 +821,12 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Registers a `ReactiveController` to participate in the element's reactive
+   * update cycle. The element automatically calls into any registered
+   * controllers during its lifecycle callbacks.
+   *
+   * If the element is connected when `addController()` is called, the
+   * controller's `hostConnected()` callback will be immediately called.
    * @category controllers
    */
   addController(controller: ReactiveController) {
@@ -831,6 +841,7 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Removes a `ReactiveController` from the element.
    * @category controllers
    */
   removeController(controller: ReactiveController) {
