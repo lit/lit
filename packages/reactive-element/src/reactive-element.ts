@@ -821,8 +821,8 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Install a `ReactiveController` onto the element's reactive update cycle.
-   * LitElement automatically calls into any installed controllers during its
+   * Registers a `ReactiveController` to participate in the element's reactive update cycle.
+   * The element automatically calls into any registered controllers during its
    * lifecycle callbacks.
    * @category controllers
    */
@@ -838,7 +838,7 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Remove a `ReactiveController` from the element.
+   * Removes a `ReactiveController` from the element.
    * @category controllers
    */
   removeController(controller: ReactiveController) {
