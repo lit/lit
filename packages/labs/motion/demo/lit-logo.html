@@ -31,8 +31,8 @@
     <script type="module">
       import {LitElement, html, svg, css} from 'lit';
       import {classMap} from 'lit/directives/class-map.js';
-      import {flip, none} from '../development/flip.js';
-      import {FlipController} from '../development/flip-controller.js';
+      import {animate, none} from '../development/animate.js';
+      import {AnimateController} from '../development/animate-controller.js';
 
       const a = '50';
       const fly = [
@@ -65,8 +65,8 @@
           ];
           this.delayTime = 50;
           this.duration = this.paths.length * this.delayTime;
-          this.flipController = new FlipController(this, {
-            flipOptions: {
+          this.animateController = new AnimateController(this, {
+            animateOptions: {
               animationOptions: {
                 duration: this.duration,
                 fill: 'backwards',
@@ -81,8 +81,8 @@
         }
 
         clickHandler() {
-          if (this.flipController.isAnimating) {
-            this.flipController.togglePlay();
+          if (this.animateController.isAnimating) {
+            this.animateController.togglePlay();
           } else {
             this.changeLayout();
           }
@@ -121,7 +121,7 @@
 
           const paths = this.paths.map(
             (path, i) => svg`<path
-              ${flip(logoOptions(i))}
+              ${animate(logoOptions(i))}
               fill=${path.fill} d=${path.d} />`
           );
 
@@ -129,7 +129,7 @@
             ? html` <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 160 200"
-                ${flip({
+                ${animate({
                   out: none,
                   animationOptions: {delay: this.duration * 2},
                 })}

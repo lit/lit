@@ -30,8 +30,13 @@
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit';
-      import {flip, flyAbove, flyBelow, fade} from '../development/flip.js';
-      import {FlipController} from '../development/flip-controller.js';
+      import {
+        animate,
+        flyAbove,
+        flyBelow,
+        fade,
+      } from '../development/animate.js';
+      import {AnimateController} from '../development/animate-controller.js';
 
       const lit = ['L', 'I', 'T'];
 
@@ -43,8 +48,8 @@
         constructor() {
           super();
           this.lit = lit;
-          this.flipController = new FlipController(this, {
-            flipOptions: {
+          this.animateController = new AnimateController(this, {
+            animateOptions: {
               animationOptions: {
                 duration: 1000,
                 easing: 'ease-in-out',
@@ -100,7 +105,7 @@
               (l, i) =>
                 html`<span
                   class="l"
-                  ${flip({
+                  ${animate({
                     animationOptions: {
                       delay: i * delayTime,
                     },
@@ -114,8 +119,8 @@
         }
 
         clickHandler() {
-          if (this.flipController.isAnimating) {
-            this.flipController.togglePlay();
+          if (this.animateController.isAnimating) {
+            this.animateController.togglePlay();
           } else {
             this.changeLayout();
           }

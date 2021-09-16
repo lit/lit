@@ -9,14 +9,14 @@ import {customElement, property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {generateElementName, nextFrame} from './test-helpers';
 import {
-  flip,
-  Flip,
-  FlipOptions,
+  animate,
+  Animate,
+  AnimateOptions,
   CSSValues,
   fadeIn,
   flyAbove,
   flyBelow,
-} from '../flip.js';
+} from '../animate.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -29,32 +29,32 @@ if (DEV_MODE) {
 
 /**
  * TODO
- * 1. work out when onStart/onComplete and flips run
+ * 1. work out when onStart/onComplete and animates run
  * 2. disabled: does this call onStart/onComplete: should not.
  * 3. controller tests
  * 4. remove `scaleUp` and maybe `reset` and `commit`.
  */
 
-suite('Flip', () => {
+suite('Animate', () => {
   let el;
   let container: HTMLElement;
 
-  let theFlip: Flip | undefined;
-  let flipProps: CSSValues | undefined;
+  let theAnimate: Animate | undefined;
+  let animateProps: CSSValues | undefined;
   let frames: Keyframe[] | undefined;
-  let flipElement: Element | undefined;
-  const onStart = (flip: Flip) => {
-    theFlip = flip;
-    flipElement = flip.element;
+  let animateElement: Element | undefined;
+  const onStart = (animate: Animate) => {
+    theAnimate = animate;
+    animateElement = animate.element;
   };
 
-  const onComplete = (flip: Flip) => {
-    flipProps = flip.flipProps!;
-    frames = flip.frames!;
+  const onComplete = (animate: Animate) => {
+    animateProps = animate.animateProps!;
+    frames = animate.frames!;
   };
 
-  const generateFlipElement = (
-    options: FlipOptions = {onStart, onComplete},
+  const generateAnimateElement = (
+    options: AnimateOptions = {onStart, onComplete},
     extraCss?: CSSResultGroup,
     childTemplate?: () => TemplateResult
   ) => {
@@ -93,9 +93,9 @@ suite('Flip', () => {
       override render() {
         return html`<div
           class="container ${classMap({shift: this.shift})}"
-          ${flip(options)}
+          ${animate(options)}
         >
-          Flip ${childTemplate?.()}
+          Animate ${childTemplate?.()}
         </div>`;
       }
     }
@@ -103,10 +103,10 @@ suite('Flip', () => {
   };
 
   setup(async () => {
-    theFlip = undefined;
-    flipProps = undefined;
+    theAnimate = undefined;
+    animateProps = undefined;
     frames = undefined;
-    flipElement = undefined;
+    animateElement = undefined;
     container = document.createElement('div');
     document.body.appendChild(container);
   });
@@ -120,25 +120,25 @@ suite('Flip', () => {
   // TODO(sorvell): when should onComplete go?
   test('onStart/onComplete', async () => {
     let completeEl;
-    const onComplete = (flip: Flip) => {
-      completeEl = flip.element;
+    const onComplete = (animate: Animate) => {
+      completeEl = animate.element;
     };
 
-    const El = generateFlipElement({onStart, onComplete});
+    const El = generateAnimateElement({onStart, onComplete});
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    assert.ok(theFlip!);
-    assert.equal(el.div, flipElement);
-    await theFlip!.finished;
+    assert.ok(theAnimate!);
+    assert.equal(el.div, animateElement);
+    await theAnimate!.finished;
     el.shift = true;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.equal(el.div, completeEl);
   });
 
   test('animates layout change', async () => {
-    const El = generateFlipElement();
+    const El = generateAnimateElement();
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
@@ -148,7 +148,7 @@ suite('Flip', () => {
     assert.equal(r1.top - b.top, 0);
     el.shift = true;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames!);
     assert.equal(
       (frames![0].transform as string).trim(),
@@ -159,11 +159,11 @@ suite('Flip', () => {
     assert.equal(r2.left - b.left, 200);
     assert.equal(r2.top - b.top, 200);
 
-    theFlip = undefined;
+    theAnimate = undefined;
     frames = undefined;
     el.shift = false;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     const r3 = el.div.getBoundingClientRect();
     assert.ok(frames!);
     assert.equal(
@@ -172,15 +172,15 @@ suite('Flip', () => {
     );
     assert.equal(r3.left - r2.left, -200);
     assert.equal(r3.top - r2.top, -200);
-    assert.deepEqual(flipProps, {left: 200, top: 200});
+    assert.deepEqual(animateProps, {left: 200, top: 200});
   });
 
-  test('sets flip animationOptions', async () => {
+  test('sets animate animationOptions', async () => {
     const duration = 10;
     const easing = 'linear';
     const fill = 'both';
 
-    const El = generateFlipElement({
+    const El = generateAnimateElement({
       onStart,
       animationOptions: {
         duration,
@@ -194,13 +194,13 @@ suite('Flip', () => {
     el.shift = true;
     await el.updateComplete;
     await nextFrame();
-    const timing = theFlip?.animation?.effect?.getTiming();
+    const timing = theAnimate?.animation?.effect?.getTiming();
     assert.equal(timing?.duration, duration);
     assert.equal(timing?.easing, easing);
     assert.equal(timing?.fill, fill);
   });
 
-  // TODO(sorvell): `theFlip` ideally is not defined here but it's tricky to
+  // TODO(sorvell): `theAnimate` ideally is not defined here but it's tricky to
   // marshal options and not have onStart fire. Perhaps change onStart to
   // onBeforeStart?
   test('disabled', async () => {
@@ -209,31 +209,31 @@ suite('Flip', () => {
       onComplete,
       disabled: true,
     };
-    const El = generateFlipElement(options);
+    const El = generateAnimateElement(options);
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
     el.shift = true;
     await el.updateComplete;
-    await theFlip?.finished;
+    await theAnimate?.finished;
     assert.notOk(frames);
     options.disabled = false;
     el.shift = false;
     await el.updateComplete;
-    await theFlip?.finished;
+    await theAnimate?.finished;
     assert.ok(frames);
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     options.disabled = true;
     el.shift = true;
     await el.updateComplete;
-    await (theFlip as unknown as Flip)?.finished;
+    await (theAnimate as unknown as Animate)?.finished;
     assert.notOk(frames);
   });
 
   test('guard', async () => {
     let guardValue = 0;
     const guard = () => guardValue;
-    const El = generateFlipElement({
+    const El = generateAnimateElement({
       onStart,
       onComplete,
       guard,
@@ -244,40 +244,40 @@ suite('Flip', () => {
     await el.updateComplete;
     el.shift = true;
     await el.updateComplete;
-    await theFlip?.finished;
+    await theAnimate?.finished;
     assert.ok(frames);
     // guardValue not changed, so should not run again.
     el.shift = false;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await (theFlip as unknown as Flip)?.finished;
+    await (theAnimate as unknown as Animate)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = 1;
     el.shift = true;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames);
     // guardValue not changed, so should not run again.
     el.shift = false;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await (theFlip as unknown as Flip)?.finished;
+    await (theAnimate as unknown as Animate)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = 2;
     el.shift = true;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames);
   });
 
   test('guard - array', async () => {
     let guardValue = [1, 2, 3];
     const guard = () => guardValue;
-    const El = generateFlipElement({
+    const El = generateAnimateElement({
       onStart,
       onComplete,
       guard,
@@ -288,38 +288,38 @@ suite('Flip', () => {
     await el.updateComplete;
     el.shift = true;
     await el.updateComplete;
-    await theFlip?.finished;
+    await theAnimate?.finished;
     assert.ok(frames);
     // guardValue not changed, so should not run again.
     el.shift = false;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await (theFlip as unknown as Flip)?.finished;
+    await (theAnimate as unknown as Animate)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = [1, 2, 3, 4];
     el.shift = true;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames);
     // guardValue not changed, so should not run again.
     el.shift = false;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await (theFlip as unknown as Flip)?.finished;
+    await (theAnimate as unknown as Animate)?.finished;
     assert.notOk(frames);
     // guardValue changed, so should run.
     guardValue = [1, 2];
     el.shift = true;
-    theFlip = frames = undefined;
+    theAnimate = frames = undefined;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames);
   });
 
-  test('sets flip properties', async () => {
-    const El = generateFlipElement(
+  test('sets animate properties', async () => {
+    const El = generateAnimateElement(
       {
         onStart,
         onComplete,
@@ -338,9 +338,9 @@ suite('Flip', () => {
     await el.updateComplete;
     el.shift = true;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames!);
-    assert.deepEqual(flipProps, {left: -200});
+    assert.deepEqual(animateProps, {left: -200});
     assert.equal((frames![0].transform as string).trim(), 'translateX(-200px)');
     assert.equal((frames![0].color as string).trim(), 'rgb(0, 0, 0)');
     assert.notOk(frames![0].background);
@@ -350,16 +350,16 @@ suite('Flip', () => {
   test('adjusts for ancestor position', async () => {
     let shiftChild = false;
     let shiftGChild = false;
-    let childFlipProps: CSSValues;
-    let gChildFlip: Flip, gChildFlipProps: CSSValues;
-    const childComplete = (flip: Flip) => {
-      childFlipProps = flip.flipProps!;
+    let childAnimateProps: CSSValues;
+    let gChildAnimate: Animate, gChildAnimateProps: CSSValues;
+    const childComplete = (animate: Animate) => {
+      childAnimateProps = animate.animateProps!;
     };
-    const gChildStart = (flip: Flip) => (gChildFlip = flip);
-    const gChildComplete = (flip: Flip) => {
-      gChildFlipProps = flip.flipProps!;
+    const gChildStart = (animate: Animate) => (gChildAnimate = animate);
+    const gChildComplete = (animate: Animate) => {
+      gChildAnimateProps = animate.animateProps!;
     };
-    const El = generateFlipElement(
+    const El = generateAnimateElement(
       {
         animationOptions: {fill: 'both'},
       },
@@ -390,12 +390,12 @@ suite('Flip', () => {
       `,
       () => html`<div
         class="child ${classMap({shiftChild})}"
-        ${flip({onComplete: childComplete})}
+        ${animate({onComplete: childComplete})}
       >
         Child
         <div
           class="gChild ${classMap({shiftGChild})}"
-          ${flip({onStart: gChildStart, onComplete: gChildComplete})}
+          ${animate({onStart: gChildStart, onComplete: gChildComplete})}
         >
           GChild
         </div>
@@ -404,35 +404,35 @@ suite('Flip', () => {
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await gChildFlip!.finished;
+    await gChildAnimate!.finished;
     el.shift = true;
     shiftChild = true;
     shiftGChild = true;
     await el.updateComplete;
-    await gChildFlip!.finished;
-    assert.deepEqual(childFlipProps!, {
+    await gChildAnimate!.finished;
+    assert.deepEqual(childAnimateProps!, {
       left: 50,
       top: -20,
       width: 0.5,
       height: 0.5,
     });
-    assert.deepEqual(gChildFlipProps!, {left: 50, top: -20});
+    assert.deepEqual(gChildAnimateProps!, {left: 50, top: -20});
     el.shift = false;
     shiftChild = false;
     shiftGChild = false;
     await el.updateComplete;
-    await gChildFlip!.finished;
-    assert.deepEqual(childFlipProps!, {
+    await gChildAnimate!.finished;
+    assert.deepEqual(childAnimateProps!, {
       left: -100,
       top: 40,
       width: 2,
       height: 2,
     });
-    assert.deepEqual(gChildFlipProps!, {left: -50, top: 20});
+    assert.deepEqual(gChildAnimateProps!, {left: -50, top: 20});
   });
 
   test('animates in', async () => {
-    const El = generateFlipElement({
+    const El = generateAnimateElement({
       onStart,
       onComplete,
       in: [{transform: 'translateX(-100px)'}],
@@ -440,23 +440,23 @@ suite('Flip', () => {
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames);
-    // no properties calculated when flipping in.
-    assert.notOk(flipProps);
+    // no properties calculated when animateping in.
+    assert.notOk(animateProps);
     assert.equal((frames![0].transform as string).trim(), 'translateX(-100px)');
   });
 
   test('onFrames', async () => {
     const mod = 'translateX(100px) translateY(100px)';
-    const onFrames = (flip: Flip) => {
-      if (flip.frames === undefined) {
+    const onFrames = (animate: Animate) => {
+      if (animate.frames === undefined) {
         return;
       }
-      flip.frames[0].transform! = mod;
-      return flip.frames!;
+      animate.frames[0].transform! = mod;
+      return animate.frames!;
     };
-    const El = generateFlipElement({
+    const El = generateAnimateElement({
       onStart,
       onComplete,
       onFrames,
@@ -464,16 +464,16 @@ suite('Flip', () => {
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     el.shift = true;
     await el.updateComplete;
-    await theFlip!.finished;
+    await theAnimate!.finished;
     assert.ok(frames);
     assert.deepEqual(frames![0].transform, mod);
   });
 
   test('animates in, skipInitial', async () => {
-    const El = generateFlipElement({
+    const El = generateAnimateElement({
       onStart,
       onComplete,
       in: fadeIn,
@@ -482,28 +482,28 @@ suite('Flip', () => {
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    assert.notOk(theFlip);
+    assert.notOk(theAnimate);
     assert.notOk(frames);
   });
 
   test('animates out', async () => {
     let shouldRender = true;
-    let disconnectFlip: Flip, disconnectFrames: Keyframe[];
-    const onDisconnectStart = (flip: Flip) => {
-      disconnectFlip = flip;
+    let disconnectAnimate: Animate, disconnectFrames: Keyframe[];
+    const onDisconnectStart = (animate: Animate) => {
+      disconnectAnimate = animate;
     };
 
-    const onDisconnectComplete = (flip: Flip) => {
-      disconnectFrames = flip.frames!;
+    const onDisconnectComplete = (animate: Animate) => {
+      disconnectFrames = animate.frames!;
     };
     const outFrames = flyBelow;
-    const El = generateFlipElement(
+    const El = generateAnimateElement(
       undefined,
       undefined,
       () =>
         html`${shouldRender
           ? html`<div
-              ${flip({
+              ${animate({
                 onStart: onDisconnectStart,
                 onComplete: onDisconnectComplete,
                 out: outFrames,
@@ -516,23 +516,23 @@ suite('Flip', () => {
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await disconnectFlip!.finished;
+    await disconnectAnimate!.finished;
     shouldRender = false;
     el.requestUpdate();
     await el.updateComplete;
-    await disconnectFlip!.finished;
+    await disconnectAnimate!.finished;
     assert.equal(disconnectFrames!, outFrames);
   });
 
   test('animates out, stabilizeOut', async () => {
     let shouldRender = true;
-    let disconnectFlip: Flip;
+    let disconnectAnimate: Animate;
     let disconnectElement: HTMLElement;
     let startCalls = 0;
-    const onStart = (flip: Flip) => {
+    const onStart = (animate: Animate) => {
       startCalls++;
-      disconnectFlip = flip;
-      disconnectElement = flip.element;
+      disconnectAnimate = animate;
+      disconnectElement = animate.element;
       const p = disconnectElement!.parentElement!.getBoundingClientRect();
       const r = disconnectElement!.getBoundingClientRect();
       const s =
@@ -550,7 +550,7 @@ suite('Flip', () => {
       stabilizeOut: false,
     };
 
-    const El = generateFlipElement(
+    const El = generateAnimateElement(
       undefined,
       undefined,
       () =>
@@ -559,48 +559,48 @@ suite('Flip', () => {
               ? '0px'
               : '100px'}"
           ></div>
-          ${shouldRender ? html`<div ${flip(options)}>Out</div>` : ''}`
+          ${shouldRender ? html`<div ${animate(options)}>Out</div>` : ''}`
     );
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await disconnectFlip!.finished;
+    await disconnectAnimate!.finished;
     assert.equal(startCalls, 1);
     shouldRender = false;
     el.requestUpdate();
     await el.updateComplete;
-    await disconnectFlip!.finished;
+    await disconnectAnimate!.finished;
     assert.equal(startCalls, 2);
     shouldRender = true;
     el.requestUpdate();
     await el.updateComplete;
-    await disconnectFlip!.finished;
+    await disconnectAnimate!.finished;
     assert.equal(startCalls, 3);
     options.stabilizeOut = true;
     shouldRender = false;
     el.requestUpdate();
     await el.updateComplete;
-    await disconnectFlip!.finished;
+    await disconnectAnimate!.finished;
     assert.equal(startCalls, 4);
   });
 
   test('animates in based on an element that animated out', async () => {
     let shouldRender = true;
-    let oneFlip: Flip | undefined, twoFlip: Flip | undefined;
+    let oneAnimate: Animate | undefined, twoAnimate: Animate | undefined;
     let oneFrames: Keyframe[] | undefined, twoFrames: Keyframe[] | undefined;
-    const onOneStart = (flip: Flip) => {
-      oneFlip = flip;
+    const onOneStart = (animate: Animate) => {
+      oneAnimate = animate;
     };
-    const onOneComplete = (flip: Flip) => {
-      oneFrames = flip.frames;
+    const onOneComplete = (animate: Animate) => {
+      oneFrames = animate.frames;
     };
-    const onTwoStart = (flip: Flip) => {
-      twoFlip = flip;
+    const onTwoStart = (animate: Animate) => {
+      twoAnimate = animate;
     };
-    const onTwoComplete = (flip: Flip) => {
-      twoFrames = flip.frames;
+    const onTwoComplete = (animate: Animate) => {
+      twoFrames = animate.frames;
     };
-    const El = generateFlipElement(
+    const El = generateAnimateElement(
       undefined,
       css`
         .one {
@@ -618,7 +618,7 @@ suite('Flip', () => {
         html`${shouldRender
           ? html`<div
               class="one"
-              ${flip({
+              ${animate({
                 id: '1',
                 inId: '2',
                 onStart: onOneStart,
@@ -632,7 +632,7 @@ suite('Flip', () => {
             </div>`
           : html`<div
               class="two"
-              ${flip({
+              ${animate({
                 id: '2',
                 inId: '1',
                 onStart: onTwoStart,
@@ -647,13 +647,13 @@ suite('Flip', () => {
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    await oneFlip?.finished;
-    await twoFlip?.finished;
+    await oneAnimate?.finished;
+    await twoAnimate?.finished;
     shouldRender = false;
     el.requestUpdate();
     oneFrames = twoFrames = undefined;
     await el.updateComplete;
-    await twoFlip?.finished;
+    await twoAnimate?.finished;
     assert.equal(oneFrames, flyAbove);
     assert.equal(
       (twoFrames![0].transform! as string).trim(),
@@ -663,7 +663,7 @@ suite('Flip', () => {
     shouldRender = true;
     el.requestUpdate();
     await el.updateComplete;
-    await twoFlip?.finished;
+    await twoAnimate?.finished;
     assert.equal(twoFrames, flyBelow);
     assert.equal(
       (oneFrames![0].transform! as string).trim(),

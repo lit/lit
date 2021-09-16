@@ -31,7 +31,7 @@
     <script type="module">
       import {LitElement, html, css} from 'lit';
       import {repeat} from 'lit/directives/repeat.js';
-      import {flip, fadeIn, flyBelow} from '../development/flip.js';
+      import {animate, fadeIn, flyBelow} from '../development/animate.js';
 
       const shuffle = (a) => {
         a = a.slice();
@@ -125,7 +125,7 @@
                 (i) => i,
                 (i, x) =>
                   html`<li
-                    ${flip({
+                    ${animate({
                       in: fadeIn,
                       out: flyBelow,
                       onComplete:

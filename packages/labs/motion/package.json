@@ -26,8 +26,8 @@
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/flip.{d.ts,d.ts.map,js,js.map}",
-    "/flip-controller.{d.ts,d.ts.map,js,js.map}",
+    "/animate.{d.ts,d.ts.map,js,js.map}",
+    "/animate-controller.{d.ts,d.ts.map,js,js.map}",
     "/position.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
@@ -35,7 +35,7 @@
     "build": "npm run clean && tsc --build && rollup -c",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc  --build --watch",
-    "clean": "rm -rf {index,flip,position}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
+    "clean": "rm -rf {index,animate,position}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/motion/development/**/*_test.js'",

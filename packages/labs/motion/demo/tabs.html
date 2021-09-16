@@ -35,7 +35,7 @@
     <script type="module">
       import {LitElement, css} from 'lit';
       import {html, unsafeStatic} from 'lit/static-html.js';
-      import {flip} from '../development/flip.js';
+      import {animate} from '../development/animate.js';
       import {position} from '../development/position.js';
 
       class MyElement extends LitElement {
@@ -96,7 +96,7 @@
               <div
                 class="underline"
                 ${position(() => this._activeTab, ['left', 'width'])}
-                ${flip({...animationOptions, guard: () => this._activeTab})}
+                ${animate({...animationOptions, guard: () => this._activeTab})}
               ></div>
             </ul>
           `;

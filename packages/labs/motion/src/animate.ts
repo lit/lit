@@ -2,8 +2,8 @@ import {LitElement, ReactiveControllerHost} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
-import {flipControllers} from './flip-controller.js';
-export {FlipController} from './flip-controller.js';
+import {animateControllers} from './animate-controller.js';
+export {AnimateController} from './animate-controller.js';
 
 export type CSSValues = {
   [index: string]: string | number;
@@ -17,18 +17,18 @@ let z = 0;
 const disconnectedProps: Map<unknown, CSSValues> = new Map();
 const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
 
-export type FlipOptions = {
-  // Options used for the flip animation
+export type AnimateOptions = {
+  // Options used for the animation
   animationOptions?: KeyframeAnimationOptions;
   // List of css properties to animate
   properties?: CSSPropertiesList;
-  // if `true`, the flip is disabled
+  // if `true`, the `animate` is disabled
   disabled?: boolean;
-  // Callback run to produce a value which is dirty checked to determine if flip should run.
+  // Callback run to produce a value which is dirty checked to determine if animation should run.
   guard?: () => unknown;
-  // Id for this flip; used to link to other flips via e.g. `inId`
+  // Id for this `animate`; used to link to other `animate`s via e.g. `inId`
   id?: unknown;
-  // Set to the flip id to map to when rendering "in"
+  // Set to the `animate` id to map to when rendering "in"
   inId?: unknown;
   // Keyframes to use when animating "in"
   in?: Keyframe[];
@@ -38,12 +38,12 @@ export type FlipOptions = {
   stabilizeOut?: boolean;
   // Skips animation when initially rendering
   skipInitial?: boolean;
-  // Callback run when the flip animation starts
-  onStart?: (flip: Flip) => void;
-  // Callback run when the flip animation is complete
-  onComplete?: (flip: Flip) => void;
-  // Callback run to modify frames used to animate the flip
-  onFrames?: (flip: Flip) => Keyframe[] | undefined;
+  // Callback run when the `animate` animation starts
+  onStart?: (animate: Animate) => void;
+  // Callback run when the animation is complete
+  onComplete?: (animate: Animate) => void;
+  // Callback run to modify frames used to animate
+  onFrames?: (animate: Animate) => Keyframe[] | undefined;
 };
 
 export const animationFrame = () =>
@@ -126,30 +126,30 @@ const isDirty = (value: unknown, previous: unknown) => {
   return true;
 };
 
-// Mapping of node on which the flip directive is used to the flip directive.
-// Used to get the ancestor flip animations (which are used to modify
-// flip transforms), done by ascending the DOM.
-const flipMap: WeakMap<Node, Flip> = new WeakMap();
+// Mapping of node on which the `animate` directive is used to the `animate` directive.
+// Used to get the ancestor `animate` animations (which are used to modify
+// `animate` transforms), done by ascending the DOM.
+const animateMap: WeakMap<Node, Animate> = new WeakMap();
 
 /**
- * `flip` animation directive class. Animates a node's position between renders.
+ * `animate` directive class. Animates a node's position between renders.
  */
-export class Flip extends AsyncDirective {
+export class Animate extends AsyncDirective {
   private _host?: LitElement;
   private _fromValues?: CSSValues;
   private _parentNode: Element | null = null;
   private _nextSibling: Node | null = null;
-  private _shouldFlip = true;
+  private _shouldAnimate = true;
   private _previousValue: unknown;
-  private _flipStyles?: string | undefined | null;
+  private _animateStyles?: string | undefined | null;
   element!: HTMLElement;
 
   shouldLog = false;
-  flipProps?: CSSValues;
+  animateProps?: CSSValues;
   frames?: Keyframe[];
   animation?: Animation;
-  options!: FlipOptions;
-  optionsOrCallback?: (() => FlipOptions) | FlipOptions;
+  options!: AnimateOptions;
+  optionsOrCallback?: (() => AnimateOptions) | AnimateOptions;
 
   finished!: Promise<void>;
   private _resolveFinished?: () => void;
@@ -158,7 +158,7 @@ export class Flip extends AsyncDirective {
     super(part);
     if (part.type === PartType.CHILD) {
       throw new Error(
-        'The `flip` directive must be used in attribute position.'
+        'The `animate` directive must be used in attribute position.'
       );
     }
     this.createFinished();
@@ -176,12 +176,12 @@ export class Flip extends AsyncDirective {
     this._resolveFinished = undefined;
   }
 
-  render(_options?: (() => FlipOptions) | FlipOptions) {
+  render(_options?: (() => AnimateOptions) | AnimateOptions) {
     return nothing;
   }
 
   getController() {
-    return flipControllers.get(this._host!);
+    return animateControllers.get(this._host!);
   }
 
   isDisabled() {
@@ -194,11 +194,11 @@ export class Flip extends AsyncDirective {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);
       this.element = part.element;
-      flipMap.set(this.element, this);
+      animateMap.set(this.element, this);
     }
     this.optionsOrCallback = options;
     if (firstUpdate || typeof options !== 'function') {
-      this._setOptions(options as FlipOptions);
+      this._setOptions(options as AnimateOptions);
     }
     return this.render(options);
   }
@@ -206,17 +206,17 @@ export class Flip extends AsyncDirective {
   // TODO(sorvell): instead of a function/object, just use an object that the
   // user can mutate and create accessors for the data that do lookups as needed.
   // We're doing this every hostUpdate anyway and these lookups are fast.
-  private _setOptions(options?: FlipOptions) {
+  private _setOptions(options?: AnimateOptions) {
     options = options ?? {};
     // Mixin controller options.
-    const flipController = this.getController();
-    if (flipController !== undefined) {
+    const animateController = this.getController();
+    if (animateController !== undefined) {
       options = {
-        ...flipController.flipOptions,
+        ...animateController.animateOptions,
         ...options,
       };
       options.animationOptions = {
-        ...flipController.flipOptions.animationOptions,
+        ...animateController.animateOptions.animationOptions,
         ...options.animationOptions,
       };
     }
@@ -242,26 +242,26 @@ export class Flip extends AsyncDirective {
     return props;
   }
 
-  // Returns true if a flip should be started.
-  private _canStartFlip() {
+  // Returns true if a `animate` should be started.
+  private _canStartAnimate() {
     let dirty = true,
       value = undefined;
     if (this.options.guard) {
       value = this.options.guard();
       dirty = isDirty(value, this._previousValue);
     }
-    this._shouldFlip =
+    this._shouldAnimate =
       this._host!.hasUpdated &&
       !this.isDisabled() &&
       !this.isAnimating() &&
       dirty &&
       this.element.isConnected;
-    if (this._shouldFlip) {
+    if (this._shouldAnimate) {
       // Copy the value if it's an array so that if it's mutated we don't forget
       // what the previous values were.
       this._previousValue = Array.isArray(value) ? Array.from(value) : value;
     }
-    return this._shouldFlip;
+    return this._shouldAnimate;
   }
 
   hostUpdate() {
@@ -270,9 +270,9 @@ export class Flip extends AsyncDirective {
     if (typeof this.optionsOrCallback === 'function') {
       this._setOptions(this.optionsOrCallback());
     }
-    if (this._canStartFlip()) {
+    if (this._canStartAnimate()) {
       this._fromValues = this._measure();
-      // Record parent and nextSibling used to re-attach node when flipping "out"
+      // Record parent and nextSibling used to re-attach node when animating "out"
       this._parentNode =
         this._parentNode ?? (this.element.parentNode as Element);
       this._nextSibling = this.element.nextSibling;
@@ -280,50 +280,50 @@ export class Flip extends AsyncDirective {
   }
 
   hostUpdated() {
-    this.flip();
+    this.apply();
   }
 
   override reconnected() {}
 
   override disconnected() {
-    this.flipDisconnect();
+    this.animateDisconnect();
   }
 
   resetStyles() {
-    if (this._flipStyles !== undefined) {
-      this.element.setAttribute('style', this._flipStyles ?? '');
-      this._flipStyles = undefined;
+    if (this._animateStyles !== undefined) {
+      this.element.setAttribute('style', this._animateStyles ?? '');
+      this._animateStyles = undefined;
     }
   }
 
   commitStyles() {
-    this._flipStyles = this.element.getAttribute('style');
+    this._animateStyles = this.element.getAttribute('style');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.animation as any)?.commitStyles();
     this.animation?.cancel();
   }
 
-  async flip() {
+  async apply() {
     if (
-      !this._shouldFlip ||
+      !this._shouldAnimate ||
       !this.element.isConnected ||
       (this.options.skipInitial && !this.isHostRendered)
     ) {
       return;
     }
-    this.beforeBeginFlip();
+    this.beforeBeginAnimate();
     // Wait for rendering so any sub-elements have a chance to render.
     await animationFrame;
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
-    // child flips within ancestor flips.
+    // child `animate`s within ancestor `animate`s.
     const animationOptions = this._calcAnimationOptions(
       this.options.animationOptions,
       ancestors
     );
     const toValues = this._measure();
-    // Normal flip or inverse scale
+    // Normal or inverse scale
     if (this._fromValues !== undefined) {
       const {from, to} = this._applyAncestorAdjustments(
         this._fromValues,
@@ -332,7 +332,7 @@ export class Flip extends AsyncDirective {
       );
       this.log('measured', [this._fromValues, toValues, from, to]);
       frames = this.calculateFrames(from, to);
-      // "In" flip.
+      // "In" `animate`.
     } else {
       const disconnected = disconnectedProps.get(this.options.inId);
       if (disconnected) {
@@ -359,14 +359,14 @@ export class Flip extends AsyncDirective {
         frames = [...this.options.in, {}];
       }
     }
-    this.beginFlip();
+    this.beginAnimate();
     const animated = await this.animate(frames, animationOptions);
-    this.completeFlip(animated);
+    this.completeAnimate(animated);
   }
 
   // Experimental animate out functionality.
-  async flipDisconnect() {
-    if (!this._shouldFlip) {
+  async animateDisconnect() {
+    if (!this._shouldAnimate) {
       return;
     }
     if (this.options.id !== undefined) {
@@ -375,7 +375,7 @@ export class Flip extends AsyncDirective {
     if (this.options.out === undefined) {
       return;
     }
-    this.beforeBeginFlip();
+    this.beforeBeginAnimate();
     await animationFrame();
     if (this._parentNode?.isConnected) {
       // put element back in DOM
@@ -408,30 +408,30 @@ export class Flip extends AsyncDirective {
       }
     }
     // These inherit from ancestors. This allows easier synchronization of
-    // child flips within ancestor flips.
+    // child `animate`s within ancestor `animate`s.
     const animationOptions = this._calcAnimationOptions(
       this.options.animationOptions
     );
-    this.beginFlip();
+    this.beginAnimate();
     const animated = await this.animate(this.options.out, animationOptions);
-    this.completeFlip(animated);
+    this.completeAnimate(animated);
     this.element.remove();
   }
 
-  beforeBeginFlip() {
+  beforeBeginAnimate() {
     this.createFinished();
   }
 
-  beginFlip() {
+  beginAnimate() {
     this.options.onStart?.(this);
   }
 
-  completeFlip(didAnimate: boolean) {
+  completeAnimate(didAnimate: boolean) {
     if (didAnimate) {
       this.options.onComplete?.(this);
     }
     this._fromValues = undefined;
-    this.flipProps = undefined;
+    this.animateProps = undefined;
     this.frames = undefined;
     this.resolveFinished();
   }
@@ -443,7 +443,7 @@ export class Flip extends AsyncDirective {
       p;
       p = p?.parentNode
     ) {
-      const a = flipMap.get(p!);
+      const a = animateMap.get(p!);
       if (a && !a.isDisabled() && a) {
         ancestors.push(a);
       }
@@ -463,9 +463,9 @@ export class Flip extends AsyncDirective {
 
   private _calcAnimationOptions(
     options: KeyframeAnimationOptions | undefined,
-    ancestors: Flip[] = this._getAncestors()
+    ancestors: Animate[] = this._getAncestors()
   ) {
-    // merges this flip's options over ancestor options over defaults
+    // merges this `animate`'s options over ancestor options over defaults
     const animationOptions = {...defaultAnimationOptions};
     ancestors.forEach((a) =>
       Object.assign(animationOptions, a.options.animationOptions)
@@ -478,12 +478,12 @@ export class Flip extends AsyncDirective {
   private _applyAncestorAdjustments(
     from: CSSValues,
     to: CSSValues,
-    ancestors: Flip[]
+    ancestors: Animate[]
   ) {
     from = {...from};
     to = {...to};
     const ancestorProps = ancestors
-      .map((a) => a.flipProps)
+      .map((a) => a.animateProps)
       .filter((a) => a !== undefined) as CSSValues[];
     let dScaleX = 1;
     let dScaleY = 1;
@@ -538,7 +538,7 @@ export class Flip extends AsyncDirective {
     fromFrame.transformOrigin = toFrame.transformOrigin = center
       ? 'center center'
       : 'top left';
-    this.flipProps = props;
+    this.animateProps = props;
     return hasFrames ? [fromFrame, toFrame] : undefined;
   }
 
@@ -582,7 +582,7 @@ export class Flip extends AsyncDirective {
 }
 
 /**
- * The `flip` animation directive animates a node's layout between renders.
+ * The `animate` directive animates a node's layout between renders.
  * It will perform a "tweening" animation between the two states based on
  * the options given. In addition, elements can animate when they initially
  * render to DOM and when they are removed.
@@ -592,14 +592,14 @@ export class Flip extends AsyncDirective {
  * * properties: list of properties to animate, defaults to
  * ['left', 'top','width', 'height', 'opacity', 'color', 'background']
  * * disabled: disables animation
- * * guard: function producing values that must change for the flip to run
+ * * guard: function producing values that must change for the `animate` to run
  * * in: keyframes to use when animating in
  * * out: keyframes to use when animating out
  * * skipInitial: skip animating in the first time
- * * id: used to link to other flips via `inId`
- * * inId: id of the flip to render from when animating in
- * * onStart: run when the flip starts
- * * onComplete: run when the flip completes
+ * * id: used to link to other `animate`s via `inId`
+ * * inId: id of the `animate` to render from when animating in
+ * * onStart: run when the `animate` starts
+ * * onComplete: run when the `animate` completes
  * * onFrames: run when the frames are produces, use to modify frames
  */
-export const flip = directive(Flip);
+export const animate = directive(Animate);

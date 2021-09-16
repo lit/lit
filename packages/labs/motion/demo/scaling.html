@@ -26,8 +26,8 @@
     <script type="module">
       import {LitElement, html, css} from 'lit';
       import {classMap} from 'lit/directives/class-map.js';
-      import {flip, defaultCssProperties} from '../development/flip.js';
-      import {FlipController} from '../development/flip-controller.js';
+      import {animate, defaultCssProperties} from '../development/animate.js';
+      import {AnimateController} from '../development/animate-controller.js';
 
       class MyElement extends LitElement {
         static properties = {shifted: {}, embiggen: {}};
@@ -91,8 +91,8 @@
 
         constructor() {
           super();
-          this.flipController = new FlipController(this, {
-            flipOptions: {
+          this.animateController = new AnimateController(this, {
+            animateOptions: {
               animationOptions: {
                 duration: 1500,
                 easing: 'ease-in-out',
@@ -120,11 +120,11 @@
             </label>
             <div
               class="container circle ${classMap({shifted: this.shifted})}"
-              ${flip()}
+              ${animate()}
             >
               <span
                 class="circle  ${classMap({embiggen: this.embiggen})}"
-                ${flip()}
+                ${animate()}
               >
                 Embiggen${this.embiggen ? '!' : ' 🤷‍♂️'}
               </span>
@@ -133,21 +133,21 @@
         }
 
         _embiggenChange() {
-          this.flipController.finish();
+          this.animateController.finish();
           this.shifted = false;
           this.embiggen = !this.embiggen;
         }
 
         _clickHandler() {
-          if (this.flipController.isAnimating) {
-            this.flipController.togglePlay();
+          if (this.animateController.isAnimating) {
+            this.animateController.togglePlay();
           } else {
             this.changeLayout();
           }
         }
 
         async changeLayout() {
-          await this.flipController.finished();
+          await this.animateController.finished();
           this.shifted = !this.shifted;
         }
       }
