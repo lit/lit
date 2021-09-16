@@ -117,9 +117,9 @@ packages/ts-transformers/tests/
 packages/labs/motion/development/
 packages/labs/motion/node_modules/
 packages/labs/motion/index.*
-packages/labs/motion/flip.*
+packages/labs/motion/animate.*
 packages/labs/motion/position.*
-packages/labs/motion/flip-controller.*
+packages/labs/motion/animate-controller.*
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
