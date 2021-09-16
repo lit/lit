@@ -337,18 +337,21 @@ export const noChange = Symbol.for('lit-noChange');
 /**
  * A sentinel value that signals a ChildPart to fully clear its content.
  *
- * The values `undefined`, `null`, and the empty string `''` all render an empty
- * text node. To render nothing at all, use `nothing` provided by Lit:
- *
  * ```ts
- * import {html, nothing} from 'lit';
- *
  * const button = html`${
  *  user.isAdmin
  *    ? html`<button>DELETE</button>`
  *    : nothing
  * }`;
  * ```
+ *
+ * Prefer using `nothing` over other falsy values as it provides a consistent
+ * behavior between various expression binding contexts.
+ *
+ * In child expressions, `undefined`, `null`, `''`, and `nothing` all behave the
+ * same and render no nodes. In attribute expressions, `nothing` _removes_ the
+ * attribute, while `undefined` and `null` will render an empty string. In
+ * property expressions `nothing` becomes `undefined`.
  */
 export const nothing = Symbol.for('lit-nothing');
 
