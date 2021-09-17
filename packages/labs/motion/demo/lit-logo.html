@@ -65,9 +65,9 @@
           ];
           this.delayTime = 50;
           this.duration = this.paths.length * this.delayTime;
-          this.animateController = new AnimateController(this, {
-            animateOptions: {
-              animationOptions: {
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
                 duration: this.duration,
                 fill: 'backwards',
               },
@@ -81,8 +81,8 @@
         }
 
         clickHandler() {
-          if (this.animateController.isAnimating) {
-            this.animateController.togglePlay();
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
           } else {
             this.changeLayout();
           }
@@ -112,7 +112,7 @@
 
         render() {
           const logoOptions = (index) => ({
-            animationOptions: {
+            keyframeOptions: {
               delay: index * this.delayTime,
             },
             in: fly[1 + (index % 3)],
@@ -131,7 +131,7 @@
                 viewBox="0 0 160 200"
                 ${animate({
                   out: none,
-                  animationOptions: {delay: this.duration * 2},
+                  keyframeOptions: {delay: this.duration * 2},
                 })}
               >
                 ${paths}

@@ -2,7 +2,7 @@ import {LitElement, ReactiveControllerHost} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
-import {animateControllers} from './animate-controller.js';
+import {controllerMap} from './animate-controller.js';
 export {AnimateController} from './animate-controller.js';
 
 export type CSSValues = {
@@ -17,9 +17,9 @@ let z = 0;
 const disconnectedProps: Map<unknown, CSSValues> = new Map();
 const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
 
-export type AnimateOptions = {
+export type Options = {
   // Options used for the animation
-  animationOptions?: KeyframeAnimationOptions;
+  keyframeOptions?: KeyframeAnimationOptions;
   // List of css properties to animate
   properties?: CSSPropertiesList;
   // if `true`, the `animate` is disabled
@@ -93,7 +93,7 @@ export const transformProps = {
   },
 };
 
-export const defaultAnimationOptions: KeyframeAnimationOptions = {
+export const defaultKeyframeOptions: KeyframeAnimationOptions = {
   duration: 333,
   easing: `ease-in-out`,
 };
@@ -129,7 +129,7 @@ const isDirty = (value: unknown, previous: unknown) => {
 // Mapping of node on which the `animate` directive is used to the `animate` directive.
 // Used to get the ancestor `animate` animations (which are used to modify
 // `animate` transforms), done by ascending the DOM.
-const animateMap: WeakMap<Node, Animate> = new WeakMap();
+const nodeToAnimateMap: WeakMap<Node, Animate> = new WeakMap();
 
 /**
  * `animate` directive class. Animates a node's position between renders.
@@ -141,15 +141,15 @@ export class Animate extends AsyncDirective {
   private _nextSibling: Node | null = null;
   private _shouldAnimate = true;
   private _previousValue: unknown;
-  private _animateStyles?: string | undefined | null;
+  private _styles?: string | undefined | null;
   element!: HTMLElement;
 
   shouldLog = false;
-  animateProps?: CSSValues;
+  animatingProperties?: CSSValues;
   frames?: Keyframe[];
-  animation?: Animation;
-  options!: AnimateOptions;
-  optionsOrCallback?: (() => AnimateOptions) | AnimateOptions;
+  webAnimation?: Animation;
+  options!: Options;
+  optionsOrCallback?: (() => Options) | Options;
 
   finished!: Promise<void>;
   private _resolveFinished?: () => void;
@@ -176,12 +176,12 @@ export class Animate extends AsyncDirective {
     this._resolveFinished = undefined;
   }
 
-  render(_options?: (() => AnimateOptions) | AnimateOptions) {
+  render(_options?: (() => Options) | Options) {
     return nothing;
   }
 
   getController() {
-    return animateControllers.get(this._host!);
+    return controllerMap.get(this._host!);
   }
 
   isDisabled() {
@@ -194,11 +194,11 @@ export class Animate extends AsyncDirective {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);
       this.element = part.element;
-      animateMap.set(this.element, this);
+      nodeToAnimateMap.set(this.element, this);
     }
     this.optionsOrCallback = options;
     if (firstUpdate || typeof options !== 'function') {
-      this._setOptions(options as AnimateOptions);
+      this._setOptions(options as Options);
     }
     return this.render(options);
   }
@@ -206,18 +206,18 @@ export class Animate extends AsyncDirective {
   // TODO(sorvell): instead of a function/object, just use an object that the
   // user can mutate and create accessors for the data that do lookups as needed.
   // We're doing this every hostUpdate anyway and these lookups are fast.
-  private _setOptions(options?: AnimateOptions) {
+  private _setOptions(options?: Options) {
     options = options ?? {};
     // Mixin controller options.
-    const animateController = this.getController();
-    if (animateController !== undefined) {
+    const controller = this.getController();
+    if (controller !== undefined) {
       options = {
-        ...animateController.animateOptions,
+        ...controller.defaultOptions,
         ...options,
       };
-      options.animationOptions = {
-        ...animateController.animateOptions.animationOptions,
-        ...options.animationOptions,
+      options.keyframeOptions = {
+        ...controller.defaultOptions.keyframeOptions,
+        ...options.keyframeOptions,
       };
     }
     // Ensure there are some properties to animation and some animation options.
@@ -243,7 +243,7 @@ export class Animate extends AsyncDirective {
   }
 
   // Returns true if a `animate` should be started.
-  private _canStartAnimate() {
+  private _canStart() {
     let dirty = true,
       value = undefined;
     if (this.options.guard) {
@@ -270,7 +270,7 @@ export class Animate extends AsyncDirective {
     if (typeof this.optionsOrCallback === 'function') {
       this._setOptions(this.optionsOrCallback());
     }
-    if (this._canStartAnimate()) {
+    if (this._canStart()) {
       this._fromValues = this._measure();
       // Record parent and nextSibling used to re-attach node when animating "out"
       this._parentNode =
@@ -279,31 +279,7 @@ export class Animate extends AsyncDirective {
     }
   }
 
-  hostUpdated() {
-    this.apply();
-  }
-
-  override reconnected() {}
-
-  override disconnected() {
-    this.animateDisconnect();
-  }
-
-  resetStyles() {
-    if (this._animateStyles !== undefined) {
-      this.element.setAttribute('style', this._animateStyles ?? '');
-      this._animateStyles = undefined;
-    }
-  }
-
-  commitStyles() {
-    this._animateStyles = this.element.getAttribute('style');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.animation as any)?.commitStyles();
-    this.animation?.cancel();
-  }
-
-  async apply() {
+  async hostUpdated() {
     if (
       !this._shouldAnimate ||
       !this.element.isConnected ||
@@ -311,15 +287,15 @@ export class Animate extends AsyncDirective {
     ) {
       return;
     }
-    this.beforeBeginAnimate();
+    this.prepare();
     // Wait for rendering so any sub-elements have a chance to render.
     await animationFrame;
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
     // child `animate`s within ancestor `animate`s.
-    const animationOptions = this._calcAnimationOptions(
-      this.options.animationOptions,
+    const animationOptions = this._calculateKeyframeOptions(
+      this.options.keyframeOptions,
       ancestors
     );
     const toValues = this._measure();
@@ -331,7 +307,7 @@ export class Animate extends AsyncDirective {
         ancestors
       );
       this.log('measured', [this._fromValues, toValues, from, to]);
-      frames = this.calculateFrames(from, to);
+      frames = this.calculateKeyframes(from, to);
       // "In" `animate`.
     } else {
       const disconnected = disconnectedProps.get(this.options.inId);
@@ -343,7 +319,7 @@ export class Animate extends AsyncDirective {
           toValues,
           ancestors
         );
-        frames = this.calculateFrames(from, to);
+        frames = this.calculateKeyframes(from, to);
         // "merge" with "in" frames
         frames = this.options.in
           ? [
@@ -359,13 +335,27 @@ export class Animate extends AsyncDirective {
         frames = [...this.options.in, {}];
       }
     }
-    this.beginAnimate();
-    const animated = await this.animate(frames, animationOptions);
-    this.completeAnimate(animated);
+    this.animate(frames, animationOptions);
   }
 
+  resetStyles() {
+    if (this._styles !== undefined) {
+      this.element.setAttribute('style', this._styles ?? '');
+      this._styles = undefined;
+    }
+  }
+
+  commitStyles() {
+    this._styles = this.element.getAttribute('style');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.webAnimation as any)?.commitStyles();
+    this.webAnimation?.cancel();
+  }
+
+  override reconnected() {}
+
   // Experimental animate out functionality.
-  async animateDisconnect() {
+  override async disconnected() {
     if (!this._shouldAnimate) {
       return;
     }
@@ -375,7 +365,7 @@ export class Animate extends AsyncDirective {
     if (this.options.out === undefined) {
       return;
     }
-    this.beforeBeginAnimate();
+    this.prepare();
     await animationFrame();
     if (this._parentNode?.isConnected) {
       // put element back in DOM
@@ -409,29 +399,27 @@ export class Animate extends AsyncDirective {
     }
     // These inherit from ancestors. This allows easier synchronization of
     // child `animate`s within ancestor `animate`s.
-    const animationOptions = this._calcAnimationOptions(
-      this.options.animationOptions
+    const keyframeOptions = this._calculateKeyframeOptions(
+      this.options.keyframeOptions
     );
-    this.beginAnimate();
-    const animated = await this.animate(this.options.out, animationOptions);
-    this.completeAnimate(animated);
+    await this.animate(this.options.out, keyframeOptions);
     this.element.remove();
   }
 
-  beforeBeginAnimate() {
+  prepare() {
     this.createFinished();
   }
 
-  beginAnimate() {
+  start() {
     this.options.onStart?.(this);
   }
 
-  completeAnimate(didAnimate: boolean) {
+  didFinish(didAnimate: boolean) {
     if (didAnimate) {
       this.options.onComplete?.(this);
     }
     this._fromValues = undefined;
-    this.animateProps = undefined;
+    this.animatingProperties = undefined;
     this.frames = undefined;
     this.resolveFinished();
   }
@@ -443,7 +431,7 @@ export class Animate extends AsyncDirective {
       p;
       p = p?.parentNode
     ) {
-      const a = animateMap.get(p!);
+      const a = nodeToAnimateMap.get(p!);
       if (a && !a.isDisabled() && a) {
         ancestors.push(a);
       }
@@ -461,17 +449,17 @@ export class Animate extends AsyncDirective {
     return hostRendered;
   }
 
-  private _calcAnimationOptions(
+  private _calculateKeyframeOptions(
     options: KeyframeAnimationOptions | undefined,
     ancestors: Animate[] = this._getAncestors()
   ) {
     // merges this `animate`'s options over ancestor options over defaults
-    const animationOptions = {...defaultAnimationOptions};
+    const keyframeOptions = {...defaultKeyframeOptions};
     ancestors.forEach((a) =>
-      Object.assign(animationOptions, a.options.animationOptions)
+      Object.assign(keyframeOptions, a.options.keyframeOptions)
     );
-    Object.assign(animationOptions, options);
-    return animationOptions;
+    Object.assign(keyframeOptions, options);
+    return keyframeOptions;
   }
 
   // Adjust position based on ancestor scaling.
@@ -483,7 +471,7 @@ export class Animate extends AsyncDirective {
     from = {...from};
     to = {...to};
     const ancestorProps = ancestors
-      .map((a) => a.animateProps)
+      .map((a) => a.animatingProperties)
       .filter((a) => a !== undefined) as CSSValues[];
     let dScaleX = 1;
     let dScaleY = 1;
@@ -510,7 +498,7 @@ export class Animate extends AsyncDirective {
     return {from, to};
   }
 
-  protected calculateFrames(from: CSSValues, to: CSSValues, center = false) {
+  protected calculateKeyframes(from: CSSValues, to: CSSValues, center = false) {
     const fromFrame: Keyframe = {};
     const toFrame: Keyframe = {};
     let hasFrames = false;
@@ -538,40 +526,44 @@ export class Animate extends AsyncDirective {
     fromFrame.transformOrigin = toFrame.transformOrigin = center
       ? 'center center'
       : 'top left';
-    this.animateProps = props;
+    this.animatingProperties = props;
     return hasFrames ? [fromFrame, toFrame] : undefined;
   }
 
   protected async animate(
     frames: Keyframe[] | undefined,
-    options = this.options.animationOptions
+    options = this.options.keyframeOptions
   ) {
+    this.start();
     this.frames = frames;
-    if (this.isAnimating() || this.isDisabled()) {
-      return false;
+    let didAnimate = false;
+    if (!this.isAnimating() && !this.isDisabled()) {
+      if (this.options.onFrames) {
+        this.frames = frames = this.options.onFrames(this);
+        this.log('modified frames', frames);
+      }
+      if (frames !== undefined) {
+        this.log('animate', [frames, options]);
+        didAnimate = true;
+        this.webAnimation = this.element.animate(frames, options);
+        const controller = this.getController();
+        controller?.add(this);
+        try {
+          await this.webAnimation.finished;
+        } catch (e) {
+          // cancelled.
+        }
+        controller?.remove(this);
+      }
     }
-    if (this.options.onFrames) {
-      this.frames = frames = this.options.onFrames(this);
-      this.log('modified frames', frames);
-    }
-    if (frames === undefined) {
-      return false;
-    }
-    this.log('animate', [frames, options]);
-    this.animation = this.element.animate(frames, options);
-    const controller = this.getController();
-    controller?.add(this);
-    try {
-      await this.animation.finished;
-    } catch (e) {
-      // cancelled.
-    }
-    controller?.remove(this);
-    return true;
+    this.didFinish(didAnimate);
+    return didAnimate;
   }
 
   protected isAnimating() {
-    return this.animation?.playState === 'running' || this.animation?.pending;
+    return (
+      this.webAnimation?.playState === 'running' || this.webAnimation?.pending
+    );
   }
 
   log(message: string, data?: unknown) {

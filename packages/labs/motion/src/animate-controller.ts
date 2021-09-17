@@ -1,10 +1,8 @@
 import {ReactiveControllerHost} from 'lit';
-import {Animate, AnimateOptions} from './animate.js';
+import {Animate, Options} from './animate.js';
 
-export const animateControllers: WeakMap<
-  ReactiveControllerHost,
-  AnimateController
-> = new WeakMap();
+export const controllerMap: WeakMap<ReactiveControllerHost, AnimateController> =
+  new WeakMap();
 
 /**
  * AnimateController can be used to provide default configuration options to all
@@ -15,39 +13,39 @@ export const animateControllers: WeakMap<
  */
 export class AnimateController {
   host: ReactiveControllerHost;
-  animateOptions: AnimateOptions;
+  defaultOptions: Options;
   startPaused = false;
   disabled = false;
   onComplete?: () => void;
 
   constructor(
     host: ReactiveControllerHost,
-    info: {
-      animateOptions?: AnimateOptions;
+    options: {
+      defaultOptions?: Options;
       startPaused?: boolean;
       disabled?: boolean;
       onComplete?: () => void;
     }
   ) {
     this.host = host;
-    this.animateOptions = info.animateOptions || {};
-    this.startPaused = !!info.startPaused;
-    this.disabled = !!info.disabled;
-    this.onComplete = info.onComplete;
-    animateControllers.set(this.host, this);
+    this.defaultOptions = options.defaultOptions || {};
+    this.startPaused = !!options.startPaused;
+    this.disabled = !!options.disabled;
+    this.onComplete = options.onComplete;
+    controllerMap.set(this.host, this);
   }
 
   /**
-   * Set of active `animate()` in the host component
+   * Set of active `animate()` directives in the host component
    */
-  animates: Set<Animate> = new Set();
+  clients: Set<Animate> = new Set();
 
   protected pendingComplete = false;
 
   async add(animate: Animate) {
-    this.animates.add(animate);
+    this.clients.add(animate);
     if (this.startPaused) {
-      animate.animation?.pause();
+      animate.webAnimation?.pause();
     }
     this.pendingComplete = true;
     await animate.finished;
@@ -58,31 +56,31 @@ export class AnimateController {
   }
 
   remove(animate: Animate) {
-    this.animates.delete(animate);
+    this.clients.delete(animate);
   }
 
   /**
-   * Pauses all `animate()` animations running in the host component.
+   * Pauses all animations running in the host component.
    */
   pause() {
-    this.animates.forEach((f) => f.animation?.pause());
+    this.clients.forEach((f) => f.webAnimation?.pause());
   }
 
   /**
-   * Plays all active `animate()` animations in the host component.
+   * Plays all active animations in the host component.
    */
   play() {
-    this.animates.forEach((f) => f.animation?.play());
+    this.clients.forEach((f) => f.webAnimation?.play());
   }
 
   cancel() {
-    this.animates.forEach((f) => f.animation?.cancel());
-    this.animates.clear();
+    this.clients.forEach((f) => f.webAnimation?.cancel());
+    this.clients.clear();
   }
 
   finish() {
-    this.animates.forEach((f) => f.animation?.finish());
-    this.animates.clear();
+    this.clients.forEach((f) => f.webAnimation?.finish());
+    this.clients.clear();
   }
 
   /**
@@ -100,19 +98,19 @@ export class AnimateController {
    * Returns true if the host component has any active `animate()` animations.
    */
   get isAnimating() {
-    return this.animates.size > 0;
+    return this.clients.size > 0;
   }
 
   /**
    * Returns true if the host component has any playing `animate()` animations.
    */
   get isPlaying() {
-    return Array.from(this.animates).some(
-      (a) => a.animation?.playState === 'running'
+    return Array.from(this.clients).some(
+      (a) => a.webAnimation?.playState === 'running'
     );
   }
 
   async finished() {
-    await Promise.all(Array.from(this.animates).map((f) => f.finished));
+    await Promise.all(Array.from(this.clients).map((f) => f.finished));
   }
 }

@@ -11,7 +11,7 @@ import {generateElementName, nextFrame} from './test-helpers';
 import {
   animate,
   Animate,
-  AnimateOptions,
+  Options,
   CSSValues,
   fadeIn,
   flyAbove,
@@ -49,12 +49,12 @@ suite('Animate', () => {
   };
 
   const onComplete = (animate: Animate) => {
-    animateProps = animate.animateProps!;
+    animateProps = animate.animatingProperties!;
     frames = animate.frames!;
   };
 
   const generateAnimateElement = (
-    options: AnimateOptions = {onStart, onComplete},
+    options: Options = {onStart, onComplete},
     extraCss?: CSSResultGroup,
     childTemplate?: () => TemplateResult
   ) => {
@@ -182,7 +182,7 @@ suite('Animate', () => {
 
     const El = generateAnimateElement({
       onStart,
-      animationOptions: {
+      keyframeOptions: {
         duration,
         easing,
         fill,
@@ -194,7 +194,7 @@ suite('Animate', () => {
     el.shift = true;
     await el.updateComplete;
     await nextFrame();
-    const timing = theAnimate?.animation?.effect?.getTiming();
+    const timing = theAnimate?.webAnimation?.effect?.getTiming();
     assert.equal(timing?.duration, duration);
     assert.equal(timing?.easing, easing);
     assert.equal(timing?.fill, fill);
@@ -237,7 +237,7 @@ suite('Animate', () => {
       onStart,
       onComplete,
       guard,
-      animationOptions: {duration: 10},
+      keyframeOptions: {duration: 10},
     });
     el = new El();
     container.appendChild(el);
@@ -281,7 +281,7 @@ suite('Animate', () => {
       onStart,
       onComplete,
       guard,
-      animationOptions: {duration: 10},
+      keyframeOptions: {duration: 10},
     });
     el = new El();
     container.appendChild(el);
@@ -353,15 +353,15 @@ suite('Animate', () => {
     let childAnimateProps: CSSValues;
     let gChildAnimate: Animate, gChildAnimateProps: CSSValues;
     const childComplete = (animate: Animate) => {
-      childAnimateProps = animate.animateProps!;
+      childAnimateProps = animate.animatingProperties!;
     };
     const gChildStart = (animate: Animate) => (gChildAnimate = animate);
     const gChildComplete = (animate: Animate) => {
-      gChildAnimateProps = animate.animateProps!;
+      gChildAnimateProps = animate.animatingProperties!;
     };
     const El = generateAnimateElement(
       {
-        animationOptions: {fill: 'both'},
+        keyframeOptions: {fill: 'both'},
       },
       css`
         .shift {

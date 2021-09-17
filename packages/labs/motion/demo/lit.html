@@ -48,9 +48,9 @@
         constructor() {
           super();
           this.lit = lit;
-          this.animateController = new AnimateController(this, {
-            animateOptions: {
-              animationOptions: {
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
                 duration: 1000,
                 easing: 'ease-in-out',
                 fill: 'backwards',
@@ -106,7 +106,7 @@
                 html`<span
                   class="l"
                   ${animate({
-                    animationOptions: {
+                    keyframeOptions: {
                       delay: i * delayTime,
                     },
                     in: fade,
@@ -119,8 +119,8 @@
         }
 
         clickHandler() {
-          if (this.animateController.isAnimating) {
-            this.animateController.togglePlay();
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
           } else {
             this.changeLayout();
           }

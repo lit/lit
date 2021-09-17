@@ -155,12 +155,12 @@
         }
 
         render() {
-          const animationOptions = {
+          const keyframeOptions = {
             duration: 500,
             easing: 'ease-in-out',
             fill: 'both',
           };
-          const d = animationOptions.duration / this.data.length;
+          const d = keyframeOptions.duration / this.data.length;
           const list = (completed) => html`<div
             class="list ${classMap({completed})}"
           >
@@ -173,7 +173,7 @@
                 (item) => item.id,
                 (item) => html`<li
                   ${animate({
-                    animationOptions,
+                    keyframeOptions,
                     in: flyBelow,
                     out: fadeOut,
                     stabilizeOut: true,

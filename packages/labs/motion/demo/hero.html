@@ -46,7 +46,7 @@
         0.994, 0.9925, 0.9925, 0.9935, 0.9949, 0.9964, 0.9978, 0.999, 0.9998,
       ];
 
-      const onFrames = ({animateProps: props, frames}) => {
+      const onFrames = ({animatingProperties: props, frames}) => {
         if (frames === undefined || props === undefined) {
           return frames;
         }
@@ -254,10 +254,10 @@
         constructor() {
           super();
           this.data = data;
-          this._animateController = new AnimateController(this, {
-            animateOptions: {
-              animationOptions: {
-                duration: 1500,
+          this._controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
+                duration: 750,
                 easing: 'ease-in-out',
                 fill: 'both',
               },
@@ -377,8 +377,8 @@
         }
 
         onClick(e, item) {
-          if (this._animateController.isAnimating) {
-            this._animateController.togglePlay();
+          if (this._controller.isAnimating) {
+            this._controller.togglePlay();
           } else {
             this.detail = item;
           }

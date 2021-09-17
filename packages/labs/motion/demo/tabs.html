@@ -82,7 +82,7 @@
         _selectedMarker = `selected`;
 
         render() {
-          const animationOptions = {
+          const keyframeOptions = {
             duration: 1000,
             easing: 'ease-in-out',
             fill: 'both',
@@ -96,7 +96,7 @@
               <div
                 class="underline"
                 ${position(() => this._activeTab, ['left', 'width'])}
-                ${animate({...animationOptions, guard: () => this._activeTab})}
+                ${animate({...keyframeOptions, guard: () => this._activeTab})}
               ></div>
             </ul>
           `;

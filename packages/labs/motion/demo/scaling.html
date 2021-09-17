@@ -91,9 +91,9 @@
 
         constructor() {
           super();
-          this.animateController = new AnimateController(this, {
-            animateOptions: {
-              animationOptions: {
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
                 duration: 1500,
                 easing: 'ease-in-out',
               },
@@ -133,21 +133,21 @@
         }
 
         _embiggenChange() {
-          this.animateController.finish();
+          this.controller.finish();
           this.shifted = false;
           this.embiggen = !this.embiggen;
         }
 
         _clickHandler() {
-          if (this.animateController.isAnimating) {
-            this.animateController.togglePlay();
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
           } else {
             this.changeLayout();
           }
         }
 
         async changeLayout() {
-          await this.animateController.finished();
+          await this.controller.finished();
           this.shifted = !this.shifted;
         }
       }

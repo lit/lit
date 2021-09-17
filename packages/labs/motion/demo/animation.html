@@ -39,9 +39,9 @@
         constructor() {
           super();
           this.layout = 0;
-          this.animateController = new AnimateController(this, {
-            animateOptions: {
-              animationOptions: {
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
                 duration: 1200,
               },
             },
@@ -219,7 +219,7 @@
         }
 
         changeLayout() {
-          if (!this.animateController.isAnimating) {
+          if (!this.controller.isAnimating) {
             this.layout = ++this.layout % 4;
           }
         }
@@ -233,8 +233,8 @@
         }
 
         async clickHandler() {
-          if (this.animateController.isAnimating) {
-            this.animateController.togglePlay();
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
           } else {
             this.changeLayout();
           }
