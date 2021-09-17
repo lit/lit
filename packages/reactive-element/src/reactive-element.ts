@@ -559,7 +559,7 @@ export abstract class ReactiveElement
         Object.defineProperty(this.prototype, name, descriptor);
         if (DEV_MODE) {
           const reactivePropertyNames =
-            prototypeToReactivePropertyNames.get(this.prototype) || new Set();
+            prototypeToReactivePropertyNames.get(this.prototype) ?? new Set();
           reactivePropertyNames.add(name);
           prototypeToReactivePropertyNames.set(
             this.prototype,
@@ -1151,19 +1151,13 @@ export abstract class ReactiveElement
       // Produce warning if any class properties are shadowed by class fields
       if (DEV_MODE) {
         const shadowedProperties: string[] = [];
-        (this.constructor as typeof ReactiveElement).elementProperties.forEach(
-          (_v, p) => {
-            if (
-              this.hasOwnProperty(p) &&
-              !this.__instanceProperties?.has(p) &&
-              prototypeToReactivePropertyNames
-                .get(this.constructor.prototype)
-                ?.has(p)
-            ) {
+        prototypeToReactivePropertyNames
+          .get(this.constructor.prototype)
+          ?.forEach((p) => {
+            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
               shadowedProperties.push(p as string);
             }
-          }
-        );
+          });
         if (shadowedProperties.length) {
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
