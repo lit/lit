@@ -94,11 +94,12 @@
           this.controller = new AnimateController(this, {
             defaultOptions: {
               keyframeOptions: {
-                duration: 1500,
+                duration: 1200,
                 easing: 'ease-in-out',
+                fill: 'both',
               },
             },
-            onComplete: () => this.changeLayout(true),
+            onComplete: () => this.changeLayout(),
           });
           this.addEventListener('click', () => this._clickHandler());
           this.embiggen = true;
@@ -132,9 +133,8 @@
           `;
         }
 
-        _embiggenChange() {
-          this.controller.finish();
-          this.shifted = false;
+        async _embiggenChange() {
+          await this.controller.finished();
           this.embiggen = !this.embiggen;
         }
 
@@ -146,8 +146,7 @@
           }
         }
 
-        async changeLayout() {
-          await this.controller.finished();
+        changeLayout() {
           this.shifted = !this.shifted;
         }
       }
