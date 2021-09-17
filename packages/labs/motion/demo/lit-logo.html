@@ -63,7 +63,7 @@
             {fill: '#324fff', d: 'M 120 120 v 80 l 40 -40 l -40 -40 z'},
             {fill: '#324fff', d: 'M160 80v80l-40-40z'},
           ];
-          this.delayTime = 50;
+          this.delayTime = 32;
           this.duration = this.paths.length * this.delayTime;
           this.controller = new AnimateController(this, {
             defaultOptions: {
@@ -75,7 +75,7 @@
             // disabled: true,
             // startPaused: true,
             onComplete: () =>
-              setTimeout(() => this.changeLayout(), this.duration * 2),
+              setTimeout(() => this.changeLayout(), this.duration),
           });
           this.addEventListener('click', () => this.clickHandler());
         }

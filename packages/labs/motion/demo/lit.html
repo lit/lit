@@ -40,6 +40,8 @@
 
       const lit = ['L', 'I', 'T'];
 
+      const duration = 1000;
+
       class MyElement extends LitElement {
         static properties = {
           lit: {},
@@ -51,13 +53,13 @@
           this.controller = new AnimateController(this, {
             defaultOptions: {
               keyframeOptions: {
-                duration: 1000,
+                duration,
                 easing: 'ease-in-out',
                 fill: 'backwards',
               },
             },
             // startPaused: true,
-            onComplete: () => setTimeout(() => this.changeLayout(), 1000),
+            onComplete: () => setTimeout(() => this.changeLayout(), 0),
           });
           this.addEventListener('click', () => this.clickHandler());
         }
@@ -99,7 +101,7 @@
         ];
 
         render() {
-          const delayTime = 200;
+          const delayTime = duration / (this.lit.length * 2.5);
           return html`
             ${this.lit?.map(
               (l, i) =>
