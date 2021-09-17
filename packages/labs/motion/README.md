@@ -20,20 +20,20 @@ removed.
 
 The directive supports a number of options:
 
-| Option           | Usage                                                                                                          |
-| ---------------- | -------------------------------------------------------------------------------------------------------------- |
-| animationOptions | configure animation via standard KeyframeAnimationOptions                                                      |
-| properties       | list of properties to animate, defaults to ['left', 'top','width', 'height', 'opacity', 'color', 'background'] |
-| disabled         | disables animation                                                                                             |
-| guard            | function producing values that must change for the `animate` to run                                            |
-| in               | keyframes to use when animating in                                                                             |
-| out              | keyframes to use when animating out                                                                            |
-| skipInitial      | skip animating in the first time                                                                               |
-| id               | used to link to other `animate`'s via `inId`                                                                   |
-| inId             | id of the `animate` to render from when animating in                                                           |
-| onStart          | run when the `animate` starts                                                                                  |
-| onComplete       | run when the `animate` completes                                                                               |
-| onFrames         | run when the frames are produces, use to modify frames                                                         |
+| Option          | Usage                                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------------------- |
+| keyframeOptions | configure animation via standard KeyframeAnimationOptions                                                      |
+| properties      | list of properties to animate, defaults to ['left', 'top','width', 'height', 'opacity', 'color', 'background'] |
+| disabled        | disables animation                                                                                             |
+| guard           | function producing values that must change for the `animate` to run                                            |
+| in              | keyframes to use when animating in                                                                             |
+| out             | keyframes to use when animating out                                                                            |
+| skipInitial     | skip animating in the first time                                                                               |
+| id              | used to link to other `animate`'s via `inId`                                                                   |
+| inId            | id of the `animate` to render from when animating in                                                           |
+| onStart         | run when the `animate` starts                                                                                  |
+| onComplete      | run when the `animate` completes                                                                               |
+| onFrames        | run when the frames are produces, use to modify frames                                                         |
 
 ### How it works
 
@@ -89,7 +89,7 @@ class MyElement extends LitElement {
 }
 ```
 
-## Animate Controller
+## AnimateController
 
 The animate controller allows you to coordinate and control `animate` directives within
 a given element.
@@ -98,7 +98,7 @@ The controller constructor takes an options object with the following properties
 
 | Property       | Usage                                                       |
 | -------------- | ----------------------------------------------------------- |
-| animateOptions | default options for all element `animate` directives        |
+| defaultOptions | default options for all element `animate` directives        |
 | startPaused    | all element animations start paused                         |
 | disabled       | disables all element animations                             |
 | onComplete     | run when all element animations complete for a given update |
