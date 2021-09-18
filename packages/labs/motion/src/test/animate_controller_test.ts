@@ -8,7 +8,7 @@ import {LitElement /*css, html, CSSResultGroup, TemplateResult*/} from 'lit';
 // import {customElement, property, query} from 'lit/decorators.js';
 // import {classMap} from 'lit/directives/class-map.js';
 // import {generateElementName, nextFrame} from './test-helpers';
-// import {flip, Flip, FlipOptions, CSSValues} from '../flip.js';
+// import {animate, Animate, AnimateOptions, CSSValues} from '../animate.js';
 // import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -19,26 +19,26 @@ if (DEV_MODE) {
   LitElement.disableWarning?.('change-in-update');
 }
 
-// suite('FlipController', () => {
+// suite('AnimateController', () => {
 //   let el;
 //   let container: HTMLElement;
 
-//   let theFlip: Flip | undefined;
-//   let flipProps: CSSValues | undefined;
+//   let theAnimate: Animate | undefined;
+//   let animateProps: CSSValues | undefined;
 //   let frames: Keyframe[] | undefined;
-//   let flipElement: Element | undefined;
-//   const onStart = (flip: Flip) => {
-//     theFlip = flip;
-//     flipElement = flip.element;
+//   let animateElement: Element | undefined;
+//   const onStart = (animate: Animate) => {
+//     theAnimate = animate;
+//     animateElement = animate.element;
 //   };
 
-//   const onComplete = (flip: Flip) => {
-//     flipProps = flip.flipProps!;
-//     frames = flip.frames!;
+//   const onComplete = (animate: Animate) => {
+//     animateProps = animate.animateProps!;
+//     frames = animate.frames!;
 //   };
 
-//   const generateFlipElement = (
-//     options: FlipOptions = {onStart, onComplete},
+//   const generateAnimateElement = (
+//     options: AnimateOptions = {onStart, onComplete},
 //     extraCss?: CSSResultGroup,
 //     childTemplate?: () => TemplateResult
 //   ) => {
@@ -75,9 +75,9 @@ if (DEV_MODE) {
 //       render() {
 //         return html`<div
 //           class="container ${classMap({shift: this.shift})}"
-//           ${flip(options)}
+//           ${animate(options)}
 //         >
-//           Flip ${childTemplate?.()}
+//           Animate ${childTemplate?.()}
 //         </div>`;
 //       }
 //     }
@@ -85,10 +85,10 @@ if (DEV_MODE) {
 //   };
 
 //   setup(async () => {
-//     theFlip = undefined;
-//     flipProps = undefined;
+//     theAnimate = undefined;
+//     animateProps = undefined;
 //     frames = undefined;
-//     flipElement = undefined;
+//     animateElement = undefined;
 //     container = document.createElement('div');
 //     document.body.appendChild(container);
 //   });
@@ -99,7 +99,7 @@ if (DEV_MODE) {
 //     }
 //   });
 
-//   test('pass options to flips', async () => {
+//   test('pass options to animates', async () => {
 //   });
 
 //   test('startPaused', async () => {
