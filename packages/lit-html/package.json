@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "2.0.0-rc.5",
+  "version": "2.0.0",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": {
