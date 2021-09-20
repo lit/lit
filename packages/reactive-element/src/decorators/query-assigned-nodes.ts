@@ -17,9 +17,11 @@ import {decorateProperty} from './base.js';
 /**
  * A property decorator that converts a class property into a getter that
  * returns the `assignedNodes` of the given named `slot`. Note, the type of
- * this property should be annotated as `NodeListOf<HTMLElement>`.
+ * this property should be annotated as `Node[]` if a _falsy_ _slotName_
+ * is passed or as `HTMLElement[]` if the _slotName_ is not _falsy_.
  *
- * @param slotName A string name of the slot.
+ * @param slotName A string name of the slot or a _falsy_ value to query the
+ *     _default slot_.
  * @param flatten A boolean which when true flattens the assigned nodes,
  *     meaning any assigned nodes that are slot elements are replaced with their
  *     assigned nodes.
