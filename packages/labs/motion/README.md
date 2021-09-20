@@ -13,10 +13,10 @@ $ npm install @lit-labs/motion
 ## Animate directive
 
 The `animate` directive can be used to animate DOM elements from one lit render
-to the next. If the `animate` element between renders, it will perform a "tweening"
-animation between the two states based on the options given. In addition,
-elements can animate when they initially render to DOM and when they are
-removed.
+to the next. If the `animate` element changes state between renders, the directive
+performs a "tweening" animation between the two states based on the options given. 
+In addition, elements can animate when they initially render to DOM and when they 
+are removed.
 
 The directive supports a number of options:
 
@@ -33,17 +33,16 @@ The directive supports a number of options:
 | inId            | id of the `animate` to render from when animating in                                                           |
 | onStart         | run when the `animate` starts                                                                                  |
 | onComplete      | run when the `animate` completes                                                                               |
-| onFrames        | run when the frames are produces, use to modify frames                                                         |
+| onFrames        | run when the frames are produced, use to modify frames                                                         |
 
 ### How it works
 
-The directive name is based on an animation technique of the same
-name derived from First, Last, Invert, Play. This describes how the directive
-works. It measures the styling of the `animate` element before a layout change
-(first) and after a layout change (last). Then it inverts the last layout
-such that it matches the first layout. Finally it plays an animation which
-removes the inverted layout such that the element animates to the "last" layout.
-See the [flip article by Paul Lewis](https://aerotwist.com/blog/flip-your-animations/)
+The directive uses the FLIP animation technique--derived from First, Last, Invert, 
+Play. This describes how the directive works. It measures the styling of the `animate` 
+element before a layout change (first) and after a layout change (last). Then it 
+inverts the last layout such that it matches the first layout. Finally it plays an 
+animation which removes the inverted layout such that the element animates to the 
+"last" layout. See the [FLIP article by Paul Lewis](https://aerotwist.com/blog/flip-your-animations/)
 for more information about the technique.
 
 The directive uses a reactive controller to coordinate measuring the DOM of the
