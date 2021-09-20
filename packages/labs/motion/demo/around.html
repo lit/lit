@@ -13,7 +13,6 @@
     />
     <style>
       body {
-        font-family: 'Open Sans', sans-serif;
         margin: 0;
         height: 100vh;
         width: 100vw;
@@ -22,18 +21,13 @@
         align-items: center;
       }
     </style>
-    <title>Simple Animation</title>
+    <title>Around</title>
   </head>
   <body>
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit';
-      import {classMap} from 'lit/directives/class-map.js';
-      import {
-        animate,
-        flyBelow,
-        defaultCssProperties,
-      } from '../development/animate.js';
+      import {animate} from '../development/animate.js';
 
       class MyElement extends LitElement {
         static properties = {layout: {type: Number}};
@@ -69,8 +63,6 @@
 
           .container > * {
             background: #002171;
-            color: white;
-            text-align: center;
             border-radius: 50%;
             width: 5em;
             height: 5em;
@@ -83,17 +75,13 @@
         }
 
         render() {
-          const options = {
-            keyframeOptions: {duration: 1500},
-          };
           return html`
             <section class="container layout${this.layout}">
-              <div ${animate(options)}></div>
-              <div ${animate(options)}></div>
-              <div ${animate(options)}></div>
-              <div ${animate(options)}></div>
               <div
-                ${animate({...options, onComplete: () => this.changeLayout()})}
+                ${animate({
+                  keyframeOptions: {duration: 1000},
+                  onComplete: () => this.changeLayout(),
+                })}
               ></div>
             </section>
           `;

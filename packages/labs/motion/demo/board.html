@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Open Sans', sans-serif;
+      }
+    </style>
+    <title>Grid</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {animate} from '../development/animate.js';
+
+      class MyElement extends LitElement {
+        static styles = css`
+          .container {
+            display: grid;
+            height: 600px;
+            width: 600px;
+          }
+
+          .message {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+            color: #aaa;
+            font-style: italic;
+            font-weight: bold;
+            font-size: 2em;
+          }
+        `;
+
+        render() {
+          const d = 1000;
+          const s = 6;
+          const r = Math.pow(s, 2);
+          const a = Array(s).fill(null, 0);
+          const b = Array(r)
+            .fill(null, 0)
+            .map((v, i) => i)
+            .sort(() => 0.5 - Math.random());
+          return html` <style>
+              .container {
+                grid-template-areas: ${a
+                  .map(
+                    (x, i) =>
+                      `'${a.map((v, j) => `a${b[i * s + j]}`).join(' ')}'`
+                  )
+                  .join('\n')};
+              }
+            </style>
+            <style>
+              ${b
+                .map((v, i) => {
+                  const p = (i + 1) / b.length;
+                  return ` .container > *:nth-of-type(${i + 1}) {
+                  grid-area: a${i};
+                  background: hsl(
+                    ${Math.trunc(360 * p)},
+                    ${Math.trunc(100 * p)}%,
+                    ${30 + Math.trunc(30 * p)}%);
+                }`;
+                })
+                .join('\n\n')};
+            </style>
+            <section @click=${() => this.requestUpdate()} class="container">
+              ${b.map(
+                (v, i) => html`<div
+                  ${animate({
+                    keyframeOptions: {
+                      delay: (i * d) / (b.length * 2),
+                      duration: d,
+                      fill: 'both',
+                    },
+                  })}
+                ></div>`
+              )}
+            </section>
+            <span class="message">click</span>`;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

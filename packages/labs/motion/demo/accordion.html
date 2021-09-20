@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        font-family: 'Open Sans', sans-serif;
+      }
+    </style>
+    <title>Accordion</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {animate, transformProps} from '../development/animate.js';
+      import {classMap} from 'lit/directives/class-map.js';
+
+      class MyElement extends LitElement {
+        static properties = {selected: {type: Number}};
+        static styles = css`
+          .container {
+            display: flex;
+            flex-direction: column;
+          }
+
+          .item {
+            overflow: hidden;
+          }
+
+          .item > * {
+          }
+
+          .card {
+            background: #e1e2e1;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #002071;
+            margin: 4px;
+          }
+
+          .card > * {
+            overflow: hidden;
+          }
+
+          .header {
+            padding: 8px;
+            background: #002071;
+            color: white;
+          }
+
+          .selected {
+            padding: 8px;
+          }
+
+          .item:not(.selected) {
+            height: 0;
+          }
+        `;
+
+        constructor() {
+          super();
+          this.selected = 0;
+          const content = `
+            Sed ut perspiciatis unde omnis iste natus error sit
+            voluptatem accusantium doloremque laudantium.`;
+          this.data = [
+            {title: 'One', content},
+            {title: 'Two', content},
+            {title: 'Three', content},
+            {title: 'Four', content},
+            {title: 'Five', content},
+            {title: 'Six', content},
+            {title: 'Seven', content},
+            {title: 'Eight', content},
+          ];
+        }
+
+        render() {
+          return html` <section class="container">
+            ${this.data.map(
+              (v, i) => html`<div class="card" ${animate()}>
+                <div
+                  ${animate()}
+                  class="header"
+                  @click=${() => this.selectItem(i)}
+                >
+                  ${v.title}
+                </div>
+                <div
+                  ${animate()}
+                  class="item ${classMap({selected: this.selected === i})}"
+                >
+                  <div>
+                    ${Array(
+                      5 + Math.round(Math.random() * this.data.length)
+                    ).fill(v.content, 0)}
+                  </div>
+                </div>
+              </div>`
+            )}
+          </section>`;
+        }
+
+        selectItem(i) {
+          this.selected = this.selected === i ? -1 : i;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

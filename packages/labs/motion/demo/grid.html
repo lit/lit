@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        font-family: 'Open Sans', sans-serif;
+      }
+    </style>
+    <title>Grid</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {animate} from '../development/animate.js';
+
+      class MyElement extends LitElement {
+        static properties = {layout: {type: Number}};
+        static styles = css`
+          .container {
+            display: grid;
+            height: 100vh;
+            width: 100vw;
+          }
+
+          .container.layout0 {
+            grid-template-areas:
+              'a a a a a a'
+              'b c c c c d'
+              'b c c c c d'
+              'b c c c c d'
+              'b c c c c d'
+              'b c c c c d'
+              'e e e e e e';
+          }
+
+          .container.layout2 {
+            grid-template-areas:
+              'b a a a a d'
+              'b c c c c d'
+              'b c c c c d'
+              'b c c c c d'
+              'b c c c c d'
+              'b c c c c d'
+              'b e e e e d';
+          }
+
+          .container.layout1 {
+            grid-template-areas:
+              'a a c c c c'
+              'a a c c c c'
+              'a a d d d d'
+              'b b d d d d'
+              'b b e e e e'
+              'b b e e e e';
+          }
+
+          .container.layout3 {
+            grid-template-areas:
+              'a a a a c c'
+              'a a a a c c'
+              'a a a a d d'
+              'b b b b d d'
+              'b b b b e e'
+              'b b b b e e';
+          }
+
+          .container > *:nth-of-type(1) {
+            grid-area: a;
+            background: #002171;
+          }
+          .container > *:nth-of-type(2) {
+            grid-area: b;
+            background: #5472d3;
+          }
+          .container > *:nth-of-type(3) {
+            grid-area: c;
+            background: #e1e2e1;
+          }
+          .container > *:nth-of-type(4) {
+            grid-area: d;
+            background: #7f0000;
+          }
+          .container > *:nth-of-type(5) {
+            grid-area: e;
+            background: #560027;
+          }
+
+          .message {
+            position: absolute;
+            top: 1em;
+            left: 1em;
+            color: #aaa;
+            font-style: italic;
+            font-weight: bold;
+            font-size: 2em;
+          }
+        `;
+
+        constructor() {
+          super();
+          this.layout = 0;
+        }
+
+        render() {
+          const d = 1000;
+          const a = Array(5).fill(null, 0);
+          return html` <section
+              @click=${() => (this.layout = (this.layout + 1) % 4)}
+              class="container layout${this.layout}"
+            >
+              ${a.map(
+                (v, i) => html`<div
+                  ${animate({
+                    keyframeOptions: {
+                      delay: (i * d) / (a.length * 2),
+                      duration: d,
+                      fill: 'both',
+                    },
+                  })}
+                ></div>`
+              )}
+            </section>
+            <span class="message">click</span>`;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

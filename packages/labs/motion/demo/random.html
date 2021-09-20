@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+    <title>Random Animation</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {styleMap} from 'lit/directives/style-map.js';
+      import {animate} from '../development/animate.js';
+
+      class MyElement extends LitElement {
+        static styles = css`
+          .container {
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+          }
+
+          .container > * {
+            position: absolute;
+            border-radius: 50%;
+            width: 5em;
+            height: 5em;
+          }
+        `;
+
+        render() {
+          const a = Array(25).fill(null, 0);
+          return html`
+            <section class="container">
+              ${a.map(
+                (v, i) => html`<div
+                  style=${styleMap({
+                    left: `calc(${position()})`,
+                    top: `calc(${position()})`,
+                    background: `rgb(${color()}, ${color()}, ${color()})`,
+                  })}
+                  ${animate({
+                    keyframeOptions: {
+                      duration: 500 + i * 100,
+                    },
+                    onComplete:
+                      i === a.length - 1 ? () => this.requestUpdate() : null,
+                  })}
+                ></div>`
+              )}
+              </div>
+            </section>
+          `;
+        }
+
+        firstUpdated() {
+          // Kick things off...
+          this.requestUpdate();
+        }
+      }
+
+      const position = () => `${Math.random()}*(100% - 5em)`;
+      const color = (s = 0, n = 222) => s + Math.random() * n;
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>
