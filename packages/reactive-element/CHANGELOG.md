@@ -2,71 +2,25 @@
 
 ## 1.0.0
 
-### Patch Changes
+### Major Changes
 
-- [#2002](https://github.com/lit/lit/pull/2002) [`ff0d1556`](https://github.com/lit/lit/commit/ff0d15568fe79019ebfa6b72b88ba86aac4af91b) - Fixes polyfill-support styling issues: styling should be fully applied by firstUpdated/update time; late added styles are now retained (matching Lit1 behavior)
+- `@lit/reactive-element` is a new package that factors out the base class that provides the reactive update lifecycle based on property/attribute changes to `LitElement` (what was previously called `UpdatingElement`) into a separate package. `LitElement` now extends `ReactiveElement` to add `lit-html` rendering via the `render()` callback. See [ReactiveElement API](https://lit.dev/docs/api/ReactiveElement/) for more details.
+- `UpdatingElement` has been renamed to `ReactiveElement`.
+- The `updating-element` package has been renamed to `@lit/reactive-element`.
+- The `@internalProperty` decorator has been renamed to `@state`.
+- For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
+- When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
+- Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledrejection` event handler on window.
+- ReactiveElement's `renderRoot` is now created when the element's `connectedCallback` is initially run.
+- Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.
+- The `initialize` method has been removed. This work is now done in the element constructor.
 
-* [#2103](https://github.com/lit/lit/pull/2103) [`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b) - Updates the `exports` field of `package.json` files to replace the [subpath
-  folder
-  mapping](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#packages_subpath_folder_mappings)
-  syntax with an explicit list of all exported files.
+### Minor Changes
 
-  The `/`-suffixed syntax for subpath folder mapping originally used in these
-  files is deprecated. Rather than update to the new syntax, this change replaces
-  these mappings with individual entries for all exported files so that (a) users
-  must import using extensions and (b) bundlers or other tools that don't resolve
-  subpath folder mapping exactly as Node.js does won't break these packages'
-  expectations around how they're imported.
-
-- [#2097](https://github.com/lit/lit/pull/2097) [`2b8dd1c7`](https://github.com/lit/lit/commit/2b8dd1c7d687a8613bd97eb68a2dfd9197cde4fa) - Adds `scheduleUpdate()` to control update timing. This should be implemented instead of `performUpdate()`; however, existing overrides of `performUpdate()` will continue to work.
-
-* [#2030](https://github.com/lit/lit/pull/2030) [`34280cb0`](https://github.com/lit/lit/commit/34280cb0c6ac1dc14ce5cc900f36b4326b0a1d98) - Remove unnecessary attribute:false assignment in @state decorator
-
-- [#2034](https://github.com/lit/lit/pull/2034) [`5768cc60`](https://github.com/lit/lit/commit/5768cc604dc7fcb2c95165399180179d406bb257) - Reverts the change in Lit 2 to pause ReactiveElement's update cycle while the element is disconnected. The update cycle for elements will now run while disconnected as in Lit 1, however AsyncDirectives must now check the `this.isConnected` flag during `update` to ensure that e.g. subscriptions that could lead to memory leaks are not made when AsyncDirectives update while disconnected.
-
-* [#1980](https://github.com/lit/lit/pull/1980) [`018f6520`](https://github.com/lit/lit/commit/018f65205ba256e15410f17a69f958607c222a38) - fix queryAssignedNodes returning null if slot is not found
-
-- [#1918](https://github.com/lit/lit/pull/1918) [`72877fd`](https://github.com/lit/lit/commit/72877fd1de43ccdd579778d5df407e960cb64b03) - Changed the caching strategy used in CSSResults returned from the css tag to cache the stylesheet rather than individual CSSResults.
-
-* [#2134](https://github.com/lit/lit/pull/2134) [`0470d86a`](https://github.com/lit/lit/commit/0470d86a2075b401184e5d5d514de3fa8f75dd16) - Allow assigning a nonce value to `window.litNonce` in order to apply the nonce to generated <style> tags for CSP compatibility.
-
-- [#1942](https://github.com/lit/lit/pull/1942) [`c8fe1d4`](https://github.com/lit/lit/commit/c8fe1d4c4a8b1c9acdd5331129ae3641c51d9904) - For minified class fields on classes in lit libraries, added prefix to stable properties to avoid collisions with user properties.
-
-* [#2041](https://github.com/lit/lit/pull/2041) [`52a47c7e`](https://github.com/lit/lit/commit/52a47c7e25d71ff802083ca9b0751724efd3a4f4) - Remove some unnecessary internal type declarations.
-
-- [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
-
-* [#1917](https://github.com/lit/lit/pull/1917) [`550a218`](https://github.com/lit/lit/commit/550a2186eaeffef9d2d87025de09bdd2bb9c82ac) - Use a brand property instead of instanceof to identify CSSResults to make the checks compatible with multiple copies of the @lit/reactive-element package.
-
-- [#2161](https://github.com/lit/lit/pull/2161) [`08f60328`](https://github.com/lit/lit/commit/08f60328abf83113fe82c9d8ee43dc71f10a9b77) - Additional documentation on Lit APIs
-
-* [#2072](https://github.com/lit/lit/pull/2072) [`7adfbb0c`](https://github.com/lit/lit/commit/7adfbb0cd32a7eab82551aa6c9d1434e7c4b563e) - Remove unneeded `matches` support in @queryAssignedNodes. Update styling tests to use static bindings where needed. Fix TODOs related to doc links.
-
-- [#1959](https://github.com/lit/lit/pull/1959) [`6938995`](https://github.com/lit/lit/commit/69389958ab41b2ad3074fd86926ed18dc9968302) - Changed prefix used for minifying class field names on lit libraries to stay within ASCII subset, to avoid needing to explicitly set the charset for scripts in some browsers.
-
-* [#2119](https://github.com/lit/lit/pull/2119) [`24feb430`](https://github.com/lit/lit/commit/24feb4306ec3ddf2996c678a266a211b52f6aff2) - Added lit.dev/msg links to dev mode warnings.
-
-- [#2112](https://github.com/lit/lit/pull/2112) [`61fc9452`](https://github.com/lit/lit/commit/61fc9452b40140bbd864317d868a3a663538ebdd) - Throws rather than warns in dev mode when an element has a class field that shadows a reactive property. The element is in a broken state in this case.
-
-* [#1964](https://github.com/lit/lit/pull/1964) [`f43b811`](https://github.com/lit/lit/commit/f43b811405be32ce6caf82e80d25cb6170eeb7dc) - Don't publish src/ to npm.
-
-- [#2145](https://github.com/lit/lit/pull/2145) [`13d137e9`](https://github.com/lit/lit/commit/13d137e96456e8243fa5e3dbfbaf8d8e510016a7) - Adds dev mode specific versions of `polyfill-support`. This allows users to load prod and dev versions of Lit with polyfill support. To enable this, both the prod and dev versions of `polyfill-support` should be loaded.
-
-* [#1943](https://github.com/lit/lit/pull/1943) [`39ad574`](https://github.com/lit/lit/commit/39ad574e2a386627ec30a4be19ae6a003e3a4766) - Add support for private custom element constructors in @customElement().
-
-- [#2016](https://github.com/lit/lit/pull/2016) [`e6dc6a7`](https://github.com/lit/lit/commit/e6dc6a708adacec6a17a884784f821c3250d7532) - Clean up internal TypeScript types
-
-* [#2075](https://github.com/lit/lit/pull/2075) [`724a9aab`](https://github.com/lit/lit/commit/724a9aabe263fb9dafee073e74de50a1aeabbe0f) - Ensures dev mode warnings do not spam by taking care to issue unique warnings only once.
-
-- [#2073](https://github.com/lit/lit/pull/2073) [`0312f3e5`](https://github.com/lit/lit/commit/0312f3e533611eb3f4f9381594485a33ad003b74) - (Cleanup) Removed obsolete TODOs from codebase
-
-* [#2065](https://github.com/lit/lit/pull/2065) [`8b6e2415`](https://github.com/lit/lit/commit/8b6e2415e57df644189a5aac311f58949a1d0971) - Fixes #2062. To match Lit1 behavior, the @query decorator returns null (rather than undefined) if a decorated property is accessed before first update. Likewise, a @queryAll decorated property returns [] rather than undefined.
-
-- [#2043](https://github.com/lit/lit/pull/2043) [`761375ac`](https://github.com/lit/lit/commit/761375ac9ef28dd0ba8a1f9363aaf5f0df725205) - Update some internal types to avoid casting `globalThis` to `any` to retrieve globals where possible.
-
-* [#1972](https://github.com/lit/lit/pull/1972) [`a791514b`](https://github.com/lit/lit/commit/a791514b426b790de2bfa4c78754fb62815e71d4) - Properties that must remain unminified are now compatible with build tools other than rollup/terser.
-
-- [#2050](https://github.com/lit/lit/pull/2050) [`8758e06`](https://github.com/lit/lit/commit/8758e06c7a142332fd4c3334d8806b3b51c7f249) - Fix syntax highlighting in some documentation examples
+- Adds `static addInitializer` for adding a function which is called with the element instance when is created. This can be used, for example, to create decorators which hook into element lifecycle by creating a reactive controller ([#1663](https://github.com/Polymer/lit-html/issues/1663)).
+- Added ability to add a controller to an element. A controller can implement callbacks that tie into element lifecycle, including `connectedCallback`, `disconnectedCallback`, `willUpdate`, `update`, and `updated`. To ensure it has access to the element lifecycle, a controller should be added in the element's constructor. To add a controller to the element, call `addController(controller)`.
+- Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
+- Added `willUpdate(changedProperties)` lifecycle method to UpdatingElement. This is called before the `update` method and can be used to compute derived state needed for updating. This method is intended to be called during server side rendering and should not manipulate element DOM.
 
 ## 1.0.0-rc.4
 
