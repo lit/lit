@@ -289,7 +289,7 @@ export class Animate extends AsyncDirective {
     }
     this.prepare();
     // Wait for rendering so any sub-elements have a chance to render.
-    await animationFrame;
+    await animationFrame();
     let frames: Keyframe[] | undefined;
     const ancestors = this._getAncestors();
     // These inherit from ancestors. This allows easier synchronization of
