@@ -21,7 +21,7 @@
 - Removed build support for TypeScript 3.4.
 - Decorators are no longer exported from the `lit-element` module. Instead, import any decorators you use from `lit/decorators/*`.
 - `lit-html` has been updated to 2.x.
-- Support for running in older browsers has been removed from the default configuration. Import the `platform-support` module to support Shady DOM. Note also that Lit parts inside `<style>` elements are no longer supported. See [Polyfills](https://lit.dev/docs/tools/requirements/#polyfills) for more details.
+- Support for running in older browsers has been removed from the default configuration. Import the `polyfill-support` module to support Shady DOM. Note also that Lit parts inside `<style>` elements are no longer supported. See [Polyfills](https://lit.dev/docs/tools/requirements/#polyfills) for more details.
 - For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
 - Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.
 - [#2103](https://github.com/lit/lit/pull/2103) [`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b) - Updates the `exports` field of `package.json` files to replace the [subpath
