@@ -1773,7 +1773,7 @@ globalThis[`litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.(
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(globalThis.litHtmlVersions ??= []).push('2.0.0-rc.5');
+(globalThis.litHtmlVersions ??= []).push('2.0.0');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
