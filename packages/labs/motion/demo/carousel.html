@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Open Sans', sans-serif;
+      }
+    </style>
+    <title>Carousel</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {animate, transformProps} from '../development/animate.js';
+      import {styleMap} from 'lit/directives/style-map.js';
+
+      class MyElement extends LitElement {
+        static properties = {selected: {type: Number}};
+        static styles = css`
+          .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 480px;
+            gap: 8px;
+            border-radius: 8px;
+            padding: 8px;
+            overflow: hidden;
+            border: 4px solid #002071;
+            background: #e1e2e1;
+          }
+
+          .card {
+            background: #e1e2e1;
+            border-radius: 8px;
+            border: 1px solid #002071;
+            height: 400px;
+            min-width: 400px;
+            padding: 8px;
+            will-change: transform;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20em;
+            cursor: pointer;
+            user-select: none;
+          }
+        `;
+
+        constructor() {
+          super();
+          this.selected = 0;
+          this.data = Array(7).fill(null, 0);
+        }
+
+        render() {
+          return html`
+            <section class="container" selected=${this.selected}>
+              ${this.data.map((v, i) => {
+                const l = this.data.length;
+                const c = Math.trunc(l / 2);
+                const order = (l + c + i - this.selected) % l;
+                const zIndex = order === 0 || order === l - 1 ? -1 : 1;
+                const p = i / this.data.length;
+                return html`<div
+                  @click=${order < c ? this.dec : this.inc}
+                  style=${styleMap({
+                    order,
+                    zIndex,
+                    background: `hsl(
+                    ${Math.trunc(360 * p)},
+                    ${20 + Math.trunc(60 * p)}%,
+                    ${30 + Math.trunc(30 * p)}%)`,
+                  })}
+                  class="card"
+                  ${animate()}
+                >
+                  ${i}
+                </div>`;
+              })}
+            </section>
+          `;
+        }
+
+        shift(i) {
+          const e = this.data.length - 1;
+          return i > e ? 0 : i < 0 ? e : i;
+        }
+
+        dec() {
+          this.selected = this.shift(this.selected - 1);
+        }
+        inc() {
+          this.selected = this.shift(this.selected + 1);
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>
