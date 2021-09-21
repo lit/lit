@@ -17,11 +17,12 @@ export default locales.map(({locale, localeTransformer}) => ({
     resolve(),
     terser(),
     summary({
-      showMinifiedSize: false
+      showMinifiedSize: false,
     }),
   ],
   output: {
     file: `bundled/${locale}/index.js`,
     format: 'es',
+    sourcemap: true,
   },
 }));
