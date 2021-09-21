@@ -1,6 +1,8 @@
-# lit-localize runtime example
+# @lit/localize runtime example for TypeScript
 
-This package demonstrates an application that uses [lit-localize](https://github.com/lit/lit/tree/main/packages/localize) in runtime mode.
+This package demonstrates an application that uses
+[@lit/localize](https://github.com/lit/lit/tree/main/packages/localize) in
+runtime mode with TypeScript.
 
 ## Overview
 
@@ -19,11 +21,10 @@ This package demonstrates an application that uses [lit-localize](https://github
 
 ```bash
 git clone https://github.com/lit/lit.git
-cd lit-html/packages/localize/examples/transform
-npm install
-npx lit-localize build
-npx tsc
-npx web-dev-server --node-resolve
+cd lit/packages/localize/examples/runtime-ts
+npm i
+npm run build
+npm run serve
 ```
 
 Visit the URL that is logged to the console to view the app.
