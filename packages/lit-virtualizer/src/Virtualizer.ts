@@ -272,6 +272,7 @@ export class Virtualizer {
       this._scrollEventListeners.push(ancestor);
       this._hostElementRO!.observe(ancestor);
     });
+    this._children.forEach((child) => this._childrenRO!.observe(child));
     this._scrollEventListeners.forEach(target => target.addEventListener('scroll', this, this._scrollEventListenerOptions));
   }
 
