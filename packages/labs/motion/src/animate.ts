@@ -69,7 +69,7 @@ const diffOp = (a: number, b: number) => {
   return v === 0 ? undefined : v;
 };
 const quotientOp = (a: number, b: number) => {
-  const v = a / b;
+  const v = b === 0 ? undefined : a / b;
   return v === 1 ? undefined : v;
 };
 
@@ -77,19 +77,19 @@ const quotientOp = (a: number, b: number) => {
 export const transformProps = {
   left: (a: number, b: number) => {
     const value = diffOp(a, b);
-    return {value, transform: value && `translateX(${value}px)`};
+    return {value, transform: value ? `translateX(${value}px)` : ''};
   },
   top: (a: number, b: number) => {
     const value = diffOp(a, b);
-    return {value, transform: value && `translateY(${value}px)`};
+    return {value, transform: value ? `translateY(${value}px)` : ''};
   },
   width: (a: number, b: number) => {
     const value = quotientOp(a, b);
-    return {value, transform: value && `scaleX(${value})`};
+    return {value, transform: value ? `scaleX(${value})` : ''};
   },
   height: (a: number, b: number) => {
     const value = quotientOp(a, b);
-    return {value, transform: value && `scaleY(${value})`};
+    return {value, transform: value ? `scaleY(${value})` : ''};
   },
 };
 
@@ -515,7 +515,9 @@ export class Animate extends AsyncDirective {
         if (op.transform !== undefined) {
           props[p] = op.value!;
           hasFrames = true;
-          fromFrame.transform = `${fromFrame.transform ?? ''} ${op.transform}`;
+          fromFrame.transform = `${fromFrame.transform ?? ''} ${
+            op.transform
+          }`.trim();
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
