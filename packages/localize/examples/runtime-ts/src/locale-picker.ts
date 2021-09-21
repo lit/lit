@@ -7,7 +7,7 @@
 import {LitElement, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {getLocale, setLocaleFromUrl} from './localization.js';
-import {allLocales} from './locale-codes.js';
+import {allLocales} from './generated/locale-codes.js';
 import {localized} from '@lit/localize';
 
 const localeNames: {

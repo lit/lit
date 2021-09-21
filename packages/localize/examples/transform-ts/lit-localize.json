@@ -5,7 +5,7 @@
   "tsConfig": "tsconfig.json",
   "output": {
     "mode": "transform",
-    "localeCodesModule": "src/locale-codes.ts"
+    "localeCodesModule": "src/generated/locale-codes.ts"
   },
   "interchange": {
     "format": "xliff",

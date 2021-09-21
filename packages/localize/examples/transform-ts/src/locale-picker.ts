@@ -6,7 +6,7 @@
 
 import {LitElement, html} from 'lit';
 import {getLocale} from './localization.js';
-import {allLocales} from './locale-codes.js';
+import {allLocales} from './generated/locale-codes.js';
 
 const localeNames: {
   [L in typeof allLocales[number]]: string;
