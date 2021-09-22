@@ -12,7 +12,7 @@
 
 <img src="./rgb_lit.png" width="150" height="100" align="right"></img>
 
-###### [Features](#features) | [Overview](#overview) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [@localized decorator](#localized-decorator) | [CLI](#cli) | [Config file](#config-file) | [Rollup](#rollup) | [FAQ](#faq)
+###### [Features](#features) | [Overview](#overview) | [Examples](#examples) | [Modes](#modes) | [Tutorial](#tutorial) | [API](#api) | [Descriptions](#descriptions) | [Status event](#lit-localize-status-event) | [@localized decorator](#localized-decorator) | [CLI](#cli) | [Config file](#config-file) | [Rollup](#rollup) | [FAQ](#faq)
 
 > @lit/localize is a library and command-line tool for localizing web
 > applications that are based on Lit.
@@ -21,7 +21,7 @@
 
 - 🌐 Localize your Lit applications
 - 🔥 Safely embed HTML markup within localized templates
-- 🍦 Write vanilla code that works in development with no new tooling
+- 🍦 Write vanilla JS or TS that works in development with no new tooling
 - 📄 Standard XLIFF interchange format
 - 🆓 Generate a zero-overhead bundle for each locale
 - 🔁 ... or dynamically load locales and automatically re-render
@@ -86,11 +86,22 @@ const {setLocale} = configureLocalization({
 })();
 ```
 
-See
-[`examples/transform-ts`](https://github.com/lit/lit/tree/main/packages/localize/examples/transform-ts)
-and
-[`examples/runtime-ts`](https://github.com/lit/lit/tree/main/packages/localize/examples/runtime-ts)
-for full working examples in TypeScript (JavaScript coming soon).
+## Examples
+
+Checkout the
+[`examples`](https://github.com/lit/lit/tree/main/packages/localize/examples/)
+directory in this repo for working examples of `@lit/localize` in 4 of the most
+common configurations:
+
+#### JavaScript
+
+- Runtime mode: [`examples/runtime-js`](https://github.com/lit/lit/tree/main/packages/localize/examples/runtime-js)
+- Transform mode: [`examples/transform-js`](https://github.com/lit/lit/tree/main/packages/localize/examples/transform-js)
+
+#### TypeScript
+
+- Runtime mode: [`examples/runtime-ts`](https://github.com/lit/lit/tree/main/packages/localize/examples/runtime-ts)
+- Transform mode: [`examples/transform-ts`](https://github.com/lit/lit/tree/main/packages/localize/examples/transform-ts)
 
 ## Modes
 
@@ -114,50 +125,34 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    npm i -D @lit/localize-tools
    ```
 
-2. Set up a TypeScript Lit project if you don't have one already:
+2. Create an `index.js` or `index.ts` file, and declare a localizable template
+   by wrapping a standard Lit `html` tagged string with the `msg` function:
 
-   ```bash
-   npm i lit
-   npm i -D typescript
-   npx tsc --init
-   ```
+   ```typescript
+   import {LitElement, html} from 'lit';
+   import {msg} from '@lit/localize';
 
-   You'll want these TypeScript settings:
-
-   ```json
-   "compilerOptions": {
-     "target": "es2018",
-     "module": "esnext",
-     "moduleResolution": "node"
+   class MyElement extends LitElement {
+     render() {
+       return html`<p>${msg(html`Hello <b>World</b>!`)}</p>`;
+     }
    }
    ```
 
-3. Create an `index.ts`, and declare a localizable template using the `msg`
-   function. The first argument is a unique identifier for this template, and
-   the second is a string or Lit template.
+   > Note this code will directly run just as it would if you were rendering the
+   > Lit template directly, so any existing build process you already have
+   > doesn't need to change until you want to integrate localized templates.
 
-   (Note that this code will directly compile and run, just as it would if you
-   were rendering the Lit template directly, so your build process doesn't need
-   to change until you want to integrate localized templates.)
-
-   ```typescript
-   import {html, render} from 'lit';
-   import {msg} from '@lit/localize';
-
-   render(html`<p>${msg(html`Hello <b>World</b>!`)}</p>`, document.body);
-   ```
-
-4. Make a JSON config file at the root of your project called
+3. Make a JSON config file at the root of your project called
    `lit-localize.json`. In this example we're using _transform_ mode, but you
-   can also use _runtime_ mode. The `$schema` property is optional, and lets
-   editors like VSCode auto-complete and check for errors.
+   can also use _runtime_ mode.
 
    ```json
    {
      "$schema": "https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/config.schema.json",
      "sourceLocale": "en",
      "targetLocales": ["es-419"],
-     "tsConfig": "tsconfig.json",
+     "inputFiles": ["**/*.js"],
      "output": {
        "mode": "transform"
      },
@@ -168,13 +163,16 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    }
    ```
 
-5. Run the `lit-localize` CLI with the `extract` command:
+   > Note the `$schema` property is optional, and lets
+   > editors like VSCode auto-complete and check for errors.
+
+4. Run the `lit-localize` CLI with the `extract` command:
 
    ```bash
    npx lit-localize extract
    ```
 
-6. Take a look at the generated XLIFF file `xliff/es-419.xlf`. Note that we have
+5. Take a look at the generated XLIFF file `xliff/es-419.xlf`. Note that we have
    a `<source>` template extracted from your source code, but we don't have a
    localized version yet. Also note that embedded HTML markup has been encoded
    into `<ph>` tags.
@@ -185,7 +183,7 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    </trans-unit>
    ```
 
-7. Edit `xliff/es-419.xlf` to add a `<target>` tag containing a localized
+6. Edit `xliff/es-419.xlf` to add a `<target>` tag containing a localized
    version of the template. Usually you would use a tool or service to generate
    this tag by feeding it this XLIFF file.
 
@@ -196,13 +194,13 @@ lit-localize supports two output modes: _transform_ and _runtime_.
    </trans-unit>
    ```
 
-8. Run the `lit-localize` CLI with the `build` command:
+7. Run the `lit-localize` CLI with the `build` command:
 
    ```bash
    npx lit-localize build
    ```
 
-9. Now take a look at the generated file `es-419/index.js`:
+8. Now take a look at the generated file `es-419/index.js`:
 
    ```javascript
    import {html, render} from 'lit';
@@ -224,15 +222,14 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 The `@lit/localize` module exports the following functions:
 
-> Note that lit-localize relies on distinctive, annotated TypeScript type
-> signatures to identify calls to `msg` and other APIs during analysis of your
-> code. Casting a lit-localize function to a type that does not include its
-> annotation will prevent lit-localize from being able to extract and transform
-> templates from your application. For example, a cast like
-> `(msg as any)("Hello")` will not be identified. It is safe to re-assign
-> lit-localize functions or pass them as parameters, as long as the distinctive
-> type signature is preserved. If needed, you can reference each function's
-> distinctive type with e.g. `typeof msg`.
+> Note that lit-localize relies on distinctive, annotated type signatures to
+> identify calls to `msg` and other APIs during analysis of your code. Casting a
+> lit-localize function to a type that does not include its annotation will
+> prevent lit-localize from being able to extract and transform templates from
+> your application. For example, a cast like `(msg as any)("Hello")` will not be
+> identified. It is safe to re-assign lit-localize functions or pass them as
+> parameters, as long as the distinctive type signature is preserved. If needed,
+> you can reference each function's distinctive type with e.g. `typeof msg`.
 
 ### `configureLocalization(configuration)`
 
@@ -535,10 +532,10 @@ window.addEventListener(LIT_LOCALIZE_STATUS, (event) => {
 lit-localize command [--flags]
 ```
 
-| Command   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `extract` | Extract templates from `msg()` calls across all source files included by your `tsconfig.json`, and create or update XLIFF (`.xlf`) files containing translation requests.                                                                                                                                                                                                                                                                         |
-| `build`   | Read translations and build the project according to the configured mode.<br><br>In _transform_ mode, compile your TypeScript project for each locale, replacing `msg` calls with localized templates. See also the [Rollup](#rollup) section for performing this transform as part of a Rollup pipeline.<br><br>In _runtime_ mode, generate a `<locale>.ts` file for each locale, which can be dynamically loaded by the `@lit/localize` module. |
+| Command   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `extract` | Extract templates from `msg()` calls across all source files included by your `tsconfig.json`, and create or update XLIFF (`.xlf`) files containing translation requests.                                                                                                                                                                                                                                                                               |
+| `build`   | Read translations and build the project according to the configured mode.<br><br>In _transform_ mode, compile your project for each locale, replacing `msg` calls with localized templates. See also the [Rollup](#rollup) section for performing this transform as part of a Rollup pipeline.<br><br>In _runtime_ mode, generate a `<locale>.js` or `<locale>.ts` file for each locale, which can be dynamically loaded by the `@lit/localize` module. |
 
 | Flag       | Description                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
@@ -547,18 +544,22 @@ lit-localize command [--flags]
 
 ## Config file
 
-| Property                                 | Type                       | Description                                                                                                                                                                                                                  |
-| ---------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sourceLocale`                           | `string`                   | Required locale code that templates in the source code are written in.                                                                                                                                                       |
-| `targetLocales`                          | `string[]`                 | Required locale codes that templates will be localized to.                                                                                                                                                                   |
-| `tsConfig`                               | `string`                   | Path to a `tsconfig.json` file that describes the TypeScript source files from which messages will be extracted.                                                                                                             |
-| `output.mode`                            | `"transform"`, `"runtime"` | What kind of output should be produced. See [modes](#modes).                                                                                                                                                                 |
-| `output.localeCodesModule`               | `string`                   | Optional filepath for a generated TypeScript module that exports `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes from your config file. Use to keep your config file and client config in sync.     |
-| `interchange.format`                     | `"xliff"`, `"xlb"`         | Data format to be consumed by your localization process. Options:<br><br>- `"xliff"`: [XLIFF 1.2](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html) XML format<br>- `"xlb"`: Google-internal XML format              |
+| Property                                 | Type                       | Description                                                                                                                                                                                                                                                                               |
+| ---------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sourceLocale`                           | `string`                   | Required locale code that templates in the source code are written in.                                                                                                                                                                                                                    |
+| `targetLocales`                          | `string[]`                 | Required locale codes that templates will be localized to.                                                                                                                                                                                                                                |
+| `inputFiles`                             | `string[]`                 | Array of filenames or [glob](https://github.com/mrmlnc/fast-glob#pattern-syntax) patterns to extract messages from. Required unless `tsConfig` is specified. If `tsConfig` is also specified, then this field takes precedence.                                                           |
+| `tsConfig`                               | `string`                   | Path to a `tsconfig.json` file that determines the source files from which messages will be extracted, and also the compiler options that will be used when building for transform mode. Required unless `inputFiles` is specified. If both are specified, `inputFiles` takes precedence. |
+| `output.mode`                            | `"transform"`, `"runtime"` | What kind of output should be produced. See [modes](#modes).                                                                                                                                                                                                                              |
+| `output.localeCodesModule`               | `string`                   | Optional filepath for a generated module that exports `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes from your config file. Use to keep your config file and client config in sync.                                                                             |
+| `interchange.format`                     | `"xliff"`, `"xlb"`         | Data format to be consumed by your localization process. Options:<br><br>- `"xliff"`: [XLIFF 1.2](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html) XML format<br>- `"xlb"`: Google-internal XML format                                                                           |
+| <h4 colspan="3">Runtime mode only</h4>   |
+| `output.language`                        | `"ts"`, `"js"`             | Language for emitting generated modules. Defaults to `"ts"`.                                                                                                                                                                                                                              |
+| `output.outputDir`                       | `string`                   | Output directory for generated modules. Into this directory will be generated a `<locale>.js` or `<locale>.ts` file for each `targetLocale`, each a module that exports the translations in that locale keyed by message ID.                                                              |
 | <h4 colspan="3">Transform mode only</h4> |
-| `output.outputDir`                       | `string`                   | Output directory for generated TypeScript modules. Into this directory will be generated a `<locale>.ts` for each `targetLocale`, each a TypeScript module that exports the translations in that locale keyed by message ID. |
+| `output.outputDir`                       | `string`                   | Output directory for transformed projects. A subdirectory will be created for each locale within this directory, each containing a full build of the project for that locale. Required unless `tsConfig` is specified, in which case it defaults to that config's `outDir`.               |
 | <h4 colspan="3">XLIFF only</h4>          |                            |
-| `interchange.xliffDir`                   | `string`                   | Directory on disk to read/write `.xlf` XML files. For each target locale, the file path `"<xliffDir>/<locale>.xlf"` will be used.                                                                                            |
+| `interchange.xliffDir`                   | `string`                   | Directory on disk to read/write `.xlf` XML files. For each target locale, the file path `"<xliffDir>/<locale>.xlf"` will be used.                                                                                                                                                         |
 
 ## Rollup
 
@@ -580,6 +581,8 @@ to generate a separate bundle for each locale.
 
 For example, the following `rollup.config.mjs` generates a minified bundle for
 each of your locales into `./bundled/<locale>/` directories.
+
+### TypeScript example
 
 ```js
 import typescript from '@rollup/plugin-typescript';
@@ -605,6 +608,54 @@ export default locales.map(({locale, localeTransformer}) => ({
   output: {
     file: `bundled/${locale}/index.js`,
     format: 'es',
+  },
+}));
+```
+
+### JavaScript example
+
+> Note: `@lit/localize` uses the TypeScript compiler to parse, analyze, and
+> transform your source code, but it does _not_ require you to write your code
+> using TypeScript. We can use `@rollup/plugin-typescript` to transform `.js`
+> files with the `@lit/localize` transformer too:
+
+```js
+import typescript from '@rollup/plugin-typescript';
+import resolve from '@rollup/plugin-node-resolve';
+import {terser} from 'rollup-plugin-terser';
+import summary from 'rollup-plugin-summary';
+import {localeTransformers} from '@lit/localize-tools/lib/rollup.js';
+
+// Config is read from ./lit-localize.json by default.
+// Pass a path to read config from another location.
+const locales = localeTransformers();
+
+export default locales.map(({locale, localeTransformer}) => ({
+  input: `src/index.js`,
+  plugins: [
+    typescript({
+      transformers: {
+        before: [localeTransformer],
+      },
+      // Specifies the ES version and module format to emit.
+      tsconfig: 'jsconfig.json',
+      // Temporary directory where transformed modules will be emitted before
+      // Rollup bundles them.
+      outDir: 'bundled/temp',
+      // @rollup/plugin-typescript always matches only ".ts" files, regardless
+      // of any settings in our jsconfig.json.
+      include: ['src/**/*.js'],
+    }),
+    resolve(),
+    terser(),
+    summary({
+      showMinifiedSize: false,
+    }),
+  ],
+  output: {
+    file: `bundled/${locale}/index.js`,
+    format: 'es',
+    sourcemap: true,
   },
 }));
 ```
