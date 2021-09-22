@@ -58,6 +58,21 @@ async function runtimeOutput(
   config: Config,
   runtimeConfig: RuntimeOutputConfig
 ) {
+  let fileExtension;
+  const language = runtimeConfig.language ?? 'ts';
+  switch (language) {
+    case 'ts': {
+      fileExtension = 'ts';
+      break;
+    }
+    case 'js': {
+      fileExtension = 'js';
+      break;
+    }
+    default: {
+      language as void;
+    }
+  }
   const writes = [];
   if (runtimeConfig.localeCodesModule) {
     writes.push(
@@ -73,7 +88,7 @@ async function runtimeOutput(
     fsExtra.ensureDirSync(outputDir);
   } catch (e) {
     throw new KnownError(
-      `Error creating TypeScript locales directory: ${outputDir}\n` +
+      `Error creating locales directory: ${outputDir}\n` +
         `Do you have write permission?\n` +
         (e as Error).message
     );
@@ -86,11 +101,11 @@ async function runtimeOutput(
       messages,
       config.patches || {}
     );
-    const filename = pathLib.join(outputDir, `${locale}.ts`);
+    const filename = pathLib.join(outputDir, `${locale}.${fileExtension}`);
     writes.push(
       fsExtra.writeFile(filename, ts, 'utf8').catch((e: unknown) => {
         throw new KnownError(
-          `Error writing TypeScript file: ${filename}\n` +
+          `Error writing file: ${filename}\n` +
             `Do you have write permission?\n` +
             (e as Error).message
         );
@@ -101,7 +116,7 @@ async function runtimeOutput(
 }
 
 /**
- * Generate a "<locale>.ts" TypeScript module from the given bundle of
+ * Generate a <locale>.ts or <locale>.js module from the given bundle of
  * translated messages.
  *
  * TODO(aomarks) Refactor this into the build() method above.
