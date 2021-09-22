@@ -59,13 +59,17 @@
             "description": "Configuration specific to the `transform` output mode.",
             "properties": {
                 "localeCodesModule": {
-                    "description": "Optional filepath for a generated module that exports `sourceLocale`,\n`targetLocales`, and `allLocales` using the locale codes from your config\nfile. Use to keep your config file and client config in sync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".ts\" or \".js\". If it ends with \".ts\" it\nwill be emitted as a TypeScript module. If it ends with \".js\" it will be\nemitted as a JavaScript module.",
+                    "description": "Optional filepath for a generated module module that exports\n`sourceLocale`, `targetLocales`, and `allLocales` using the locale codes\nfrom your config file. Use to keep your config file and client config in\nsync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".ts\" or \".js\". If it ends with \".ts\" it\nwill be emitted as a TypeScript module. If it ends with \".js\" it will be\nemitted as a JavaScript module.",
                     "type": "string"
                 },
                 "mode": {
                     "enum": [
                         "transform"
                     ],
+                    "type": "string"
+                },
+                "outputDir": {
+                    "description": "Output directory for transformed projects. A subdirectory will be created\nfor each locale within this directory, each containing a full build of the\nproject for that locale.\n\nRequired unless `tsConfig` is specified, in which case it defaults to that\nconfig's `outDir`. If both are specified, this field takes precedence.",
                     "type": "string"
                 }
             },

@@ -48,9 +48,20 @@ export interface TransformOutputConfig {
   mode: 'transform';
 
   /**
-   * Optional filepath for a generated module that exports `sourceLocale`,
-   * `targetLocales`, and `allLocales` using the locale codes from your config
-   * file. Use to keep your config file and client config in sync. For example:
+   * Output directory for transformed projects. A subdirectory will be created
+   * for each locale within this directory, each containing a full build of the
+   * project for that locale.
+   *
+   * Required unless `tsConfig` is specified, in which case it defaults to that
+   * config's `outDir`. If both are specified, this field takes precedence.
+   */
+  outputDir?: string;
+
+  /**
+   * Optional filepath for a generated module module that exports
+   * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
+   * from your config file. Use to keep your config file and client config in
+   * sync. For example:
    *
    *   export const sourceLocale = 'en';
    *   export const targetLocales = ['es-419', 'zh_CN'];
