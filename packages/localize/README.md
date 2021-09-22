@@ -87,10 +87,10 @@ const {setLocale} = configureLocalization({
 ```
 
 See
-[`examples/transform`](https://github.com/lit/lit/tree/main/packages/localize/examples/transform)
+[`examples/transform-ts`](https://github.com/lit/lit/tree/main/packages/localize/examples/transform-ts)
 and
-[`examples/runtime`](https://github.com/lit/lit/tree/main/packages/localize/examples/runtime)
-for full working examples.
+[`examples/runtime-ts`](https://github.com/lit/lit/tree/main/packages/localize/examples/runtime-ts)
+for full working examples in TypeScript (JavaScript coming soon).
 
 ## Modes
 
