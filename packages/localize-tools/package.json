@@ -38,6 +38,8 @@
   ],
   "dependencies": {
     "@lit/localize": "^0.10.4",
+    "@xmldom/xmldom": "^0.7.0",
+    "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.6",
     "jsonschema": "^1.4.0",
@@ -45,12 +47,11 @@
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
-    "typescript": "^4.3.5",
-    "@xmldom/xmldom": "^0.7.0"
+    "typescript": "^4.3.5"
   },
   "devDependencies": {
-    "@lit/ts-transformers": "^1.0.2",
     "@lit-labs/ssr": "^1.0.0",
+    "@lit/ts-transformers": "^1.0.2",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
     "@types/glob": "^7.1.1",

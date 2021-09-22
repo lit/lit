@@ -119,6 +119,13 @@
             "description": "See https://json-schema.org/understanding-json-schema/reference/schema.html",
             "type": "string"
         },
+        "inputFiles": {
+            "description": "Array of filenames or glob patterns to extract messages from.\n\nRequired unless `tsConfig` is specified. If `tsConfig` is also specified,\nthen this field takes precedence.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
         "interchange": {
             "anyOf": [
                 {
@@ -166,7 +173,7 @@
             "type": "array"
         },
         "tsConfig": {
-            "description": "Path to a tsconfig.json file that describes the TypeScript source files\nfrom which messages will be extracted.",
+            "description": "Path to a tsconfig.json file that determines the source files from which\nmessages will be extracted, and also the compiler options that will be used\nwhen building for transform mode.\n\nRequired unless `inputFiles` is specified. If `inputFiles` is also\nspecified, then the files specified by this config will be ignored in favor\nof `inputFiles`.",
             "type": "string"
         }
     },
@@ -174,8 +181,7 @@
         "interchange",
         "output",
         "sourceLocale",
-        "targetLocales",
-        "tsConfig"
+        "targetLocales"
     ],
     "type": "object"
 }
