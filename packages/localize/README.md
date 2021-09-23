@@ -28,9 +28,9 @@
 
 ## Overview
 
-Wrap your template with the `msg` function to make it localizable, and decorate
-your component with `@localized` to make it automatically re-render when the
-locale changes:
+Wrap your template with the `msg` function to make it localizable, and
+automatically re-render when the locale changes using either `@localized` or
+`updateWhenLocaleChanges`:
 
 #### TypeScript
 
