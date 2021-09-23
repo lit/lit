@@ -59,7 +59,7 @@ async function runtimeOutput(
   runtimeConfig: RuntimeOutputConfig
 ) {
   let fileExtension;
-  const language = runtimeConfig.language ?? 'ts';
+  const language = runtimeConfig.language ?? (config.tsConfig ? 'ts' : 'js');
   switch (language) {
     case 'ts': {
       fileExtension = 'ts';

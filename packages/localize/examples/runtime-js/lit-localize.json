@@ -7,7 +7,6 @@
   ],
   "output": {
     "mode": "runtime",
-    "language": "js",
     "outputDir": "src/generated/locales",
     "localeCodesModule": "src/generated/locale-codes.js"
   },

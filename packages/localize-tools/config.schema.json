@@ -26,7 +26,7 @@
             "description": "Configuration specific to the `runtime` output mode.",
             "properties": {
                 "language": {
-                    "description": "Language for emitting generated modules. Options:\n\n- \"ts\": Default. Emit TypeScript modules with \".ts\" file extension.\n- \"js\": Emit JavaScript modules with \".js\" file extension.",
+                    "description": "Language for emitting generated modules. Defaults to \"js\" unless a\n`tsConfig` was specified, in which case it defaults to \"ts\".\n\n- \"js\": Emit JavaScript modules with \".js\" file extension.\n- \"ts\": Emit TypeScript modules with \".ts\" file extension.",
                     "enum": [
                         "js",
                         "ts"
@@ -34,7 +34,7 @@
                     "type": "string"
                 },
                 "localeCodesModule": {
-                    "description": "Optional filepath for a generated module that exports `sourceLocale`,\n`targetLocales`, and `allLocales` using the locale codes from your config\nfile. Use to keep your config file and client config in sync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".ts\" or \".js\". If it ends with \".ts\" it\nwill be emitted as a TypeScript module. If it ends with \".js\" it will be\nemitted as a JavaScript module.",
+                    "description": "Optional filepath for a generated module that exports `sourceLocale`,\n`targetLocales`, and `allLocales` using the locale codes from your config\nfile. Use to keep your config file and client config in sync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".js\" or \".ts\". If it ends with \".js\" it\nwill be emitted as a JavaScript module. If it ends with \".ts\" it will be\nemitted as a TypeScript module.",
                     "type": "string"
                 },
                 "mode": {
@@ -59,7 +59,7 @@
             "description": "Configuration specific to the `transform` output mode.",
             "properties": {
                 "localeCodesModule": {
-                    "description": "Optional filepath for a generated module module that exports\n`sourceLocale`, `targetLocales`, and `allLocales` using the locale codes\nfrom your config file. Use to keep your config file and client config in\nsync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".ts\" or \".js\". If it ends with \".ts\" it\nwill be emitted as a TypeScript module. If it ends with \".js\" it will be\nemitted as a JavaScript module.",
+                    "description": "Optional filepath for a generated module module that exports\n`sourceLocale`, `targetLocales`, and `allLocales` using the locale codes\nfrom your config file. Use to keep your config file and client config in\nsync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".js\" or \".ts\". If it ends with \".js\" it\nwill be emitted as a JavaScript module. If it ends with \".ts\" it will be\nemitted as a TypeScript module.",
                     "type": "string"
                 },
                 "mode": {

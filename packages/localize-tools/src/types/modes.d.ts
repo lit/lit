@@ -11,12 +11,13 @@ export interface RuntimeOutputConfig {
   mode: 'runtime';
 
   /**
-   * Language for emitting generated modules. Options:
+   * Language for emitting generated modules. Defaults to "js" unless a
+   * `tsConfig` was specified, in which case it defaults to "ts".
    *
-   * - "ts": Default. Emit TypeScript modules with ".ts" file extension.
    * - "js": Emit JavaScript modules with ".js" file extension.
+   * - "ts": Emit TypeScript modules with ".ts" file extension.
    */
-  language?: 'ts' | 'js';
+  language?: 'js' | 'ts';
 
   /**
    * Output directory for generated modules. Into this directory will be
@@ -34,9 +35,9 @@ export interface RuntimeOutputConfig {
    *   export const targetLocales = ['es-419', 'zh_CN'];
    *   export const allLocales = ['es-419', 'zh_CN', 'en'];
    *
-   * This path should end with either ".ts" or ".js". If it ends with ".ts" it
-   * will be emitted as a TypeScript module. If it ends with ".js" it will be
-   * emitted as a JavaScript module.
+   * This path should end with either ".js" or ".ts". If it ends with ".js" it
+   * will be emitted as a JavaScript module. If it ends with ".ts" it will be
+   * emitted as a TypeScript module.
    */
   localeCodesModule?: string;
 }
@@ -67,9 +68,9 @@ export interface TransformOutputConfig {
    *   export const targetLocales = ['es-419', 'zh_CN'];
    *   export const allLocales = ['es-419', 'zh_CN', 'en'];
    *
-   * This path should end with either ".ts" or ".js". If it ends with ".ts" it
-   * will be emitted as a TypeScript module. If it ends with ".js" it will be
-   * emitted as a JavaScript module.
+   * This path should end with either ".js" or ".ts". If it ends with ".js" it
+   * will be emitted as a JavaScript module. If it ends with ".ts" it will be
+   * emitted as a TypeScript module.
    */
   localeCodesModule?: string;
 }

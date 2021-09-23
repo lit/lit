@@ -5,7 +5,6 @@
   "inputFiles": ["**/*.js"],
   "output": {
     "mode": "runtime",
-    "language": "js",
     "outputDir": "generated/locales",
     "localeCodesModule": "generated/locale-codes.js"
   },
