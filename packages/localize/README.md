@@ -32,8 +32,11 @@ Wrap your template with the `msg` function to make it localizable, and decorate
 your component with `@localized` to make it automatically re-render when the
 locale changes:
 
+#### TypeScript
+
 ```typescript
-import {LitElement, html, customElement} from 'lit';
+import {LitElement, html} from 'lit';
+import {customElement} from 'lit/decorators.js';
 import {msg, localized} from '@lit/localize';
 
 @customElement('my-element')
@@ -43,6 +46,25 @@ class MyElement extends LitElement {
     return msg(html`Hello <b>World</b>!`);
   }
 }
+```
+
+#### JavaScript
+
+```javascript
+import {LitElement, html} from 'lit';
+import {msg, updateWhenLocaleChanges} from '@lit/localize';
+
+class MyElement extends LitElement {
+  constructor() {
+    super();
+    updateWhenLocaleChanges(this);
+  }
+
+  render() {
+    return msg(html`Hello <b>World</b>!`);
+  }
+}
+customElements.define('my-element', MyElement);
 ```
 
 Run `lit-localize` to extract all localizable templates and generate an XLIFF
