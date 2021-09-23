@@ -38,6 +38,10 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (code: string, warning: string) => void;
 
+const polyfillSupport = DEV_MODE
+  ? window.reactiveElementPolyfillSupportDevMode
+  : window.reactiveElementPolyfillSupport;
+
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
@@ -59,11 +63,7 @@ if (DEV_MODE) {
   );
 
   // Issue polyfill support warning.
-  if (
-    window.ShadyDOM?.inUse &&
-    globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ===
-      undefined
-  ) {
+  if (window.ShadyDOM?.inUse && polyfillSupport === undefined) {
     issueWarning(
       'polyfill-support-missing',
       `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
@@ -1345,9 +1345,7 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.({
-  ReactiveElement,
-});
+polyfillSupport?.({ReactiveElement});
 
 // Dev mode warnings...
 if (DEV_MODE) {

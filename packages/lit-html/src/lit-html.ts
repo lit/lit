@@ -1765,10 +1765,10 @@ export const _$LH = {
 };
 
 // Apply polyfills if available
-globalThis[`litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.(
-  Template,
-  ChildPart
-);
+const polyfillSupport = DEV_MODE
+  ? window.litHtmlPolyfillSupportDevMode
+  : window.litHtmlPolyfillSupport;
+polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
