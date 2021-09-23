@@ -5,12 +5,12 @@
  */
 
 import {configureLocalization} from '@lit/localize';
-import {sourceLocale, targetLocales} from './locale-codes.js';
+import {sourceLocale, targetLocales} from './generated/locale-codes.js';
 
 export const {getLocale, setLocale} = configureLocalization({
   sourceLocale,
   targetLocales,
-  loadLocale: (locale: string) => import(`/lib/locales/${locale}.js`),
+  loadLocale: (locale: string) => import(`/lib/generated/locales/${locale}.js`),
 });
 
 export const setLocaleFromUrl = async () => {

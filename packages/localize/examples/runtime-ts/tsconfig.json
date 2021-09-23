@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "es2019",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["es2018", "DOM"],
+    "lib": ["es2020", "DOM"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -12,7 +12,8 @@
     "rootDir": "src/",
     "outDir": "lib/",
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "experimentalDecorators": true
   },
   "include": ["src/**/*"]
 }
