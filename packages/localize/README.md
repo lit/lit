@@ -222,15 +222,6 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
 The `@lit/localize` module exports the following functions:
 
-> Note that lit-localize relies on distinctive, annotated type signatures to
-> identify calls to `msg` and other APIs during analysis of your code. Casting a
-> lit-localize function to a type that does not include its annotation will
-> prevent lit-localize from being able to extract and transform templates from
-> your application. For example, a cast like `(msg as any)("Hello")` will not be
-> identified. It is safe to re-assign lit-localize functions or pass them as
-> parameters, as long as the distinctive type signature is preserved. If needed,
-> you can reference each function's distinctive type with e.g. `typeof msg`.
-
 ### `configureLocalization(configuration)`
 
 Set configuration parameters for lit-localize when in runtime mode. Returns an
@@ -747,4 +738,33 @@ export class LocalePicker extends LitElement {
   }
 }
 customElements.define('locale-picker', LocalePicker);
+```
+
+### How do I safely re-export or re-assign a `@lit/localize` API
+
+Static analysis is used to determine when you are calling the `@lit/localize`
+`msg` function and other APIs, as opposed to a different function with the same
+name.
+
+It is possible to re-export or re-assign the `msg` function and other APIs, and
+most of the time this will just work.
+
+However, certain patterns may be too dynamic for static analysis to understand.
+If a message is failing to be extracted, and you have re-assigned or re-exported
+the `msg` function, this could be the cause.
+
+To force a function to be analyzed as a `@lit/localize` API, you can use a JSDoc
+`@type` comment in JavaScript, or a type cast in TypeScript. For example:
+
+#### JavaScript
+
+```js
+/** @type import('@lit/localize').msg */
+const myMsg = ...;
+```
+
+#### TypeScript
+
+```ts
+const myMsg = ... as typeof import('@lit/localize').msg;
 ```
