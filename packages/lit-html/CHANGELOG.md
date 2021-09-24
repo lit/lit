@@ -1,5 +1,84 @@
 # Change Log
 
+## 2.0.0
+
+### Major Changes
+
+- The `templateFactory` option of `RenderOptions` has been removed.
+- `TemplateProcessor` has been removed.
+- Symbols are not converted to a string before mutating DOM, so passing a Symbol to an attribute or text binding will result in an exception.
+- The `shady-render` module has been removed and is now part of `platform-support`, and Lit's polyfill support now adds the following limitations: (1) Bindings in style elements are no longer supported. Previously these could not change and in the future they may be supported via static bindings. (2) `ShadyCSS.styleElement` is no longer called automatically. This must be called whenever dynamic changes that affect styling are made that involve css custom property shimming (older browsers) or changes to custom properties used via the deprecated `@apply` feature. It was previously called only on first render, and it is now up to the user to decide when this should be called. See [Polyfills](https://lit.dev/docs/tools/requirements/#polyfills) for more details.
+- `render()` no longer clears the container it's rendered to. It now appends to the container by default.
+- Expressions in comments are no longer rendered or updated. See [Valid expression locations](https://lit.dev/docs/templates/expressions/#expression-locations) for more details.
+- Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
+- Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
+- Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. `` html`<div id=${a}-${b}>` ``
+- The directive and part APIs are significantly different. See [Custom Directives](https://lit.dev/docs/templates/custom-directives/) and the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/#update-custom-directive-implementations) for more details.
+- The `Directive` base class and `directive()` factory function are
+  now exported from the `lit-html/directive.js` module.
+- `NodePart` has been renamed to `ChildPart`,
+  along with other methods and variables that use the "Node" naming, like
+  `PartType.Node` which is now `PartType.CHILD`.
+- The part exports (`ChildPart`,
+  `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
+- The `eventContext` render option has been changed to `host`.
+- [#2103](https://github.com/lit/lit/pull/2103) [`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b) - Updates the `exports` field of `package.json` files to replace the [subpath
+  folder
+  mapping](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#packages_subpath_folder_mappings)
+  syntax with an explicit list of all exported files.
+
+  The `/`-suffixed syntax for subpath folder mapping originally used in these
+  files is deprecated. Rather than update to the new syntax, this change replaces
+  these mappings with individual entries for all exported files so that (a) users
+  must import using extensions and (b) bundlers or other tools that don't resolve
+  subpath folder mapping exactly as Node.js does won't break these packages'
+  expectations around how they're imported.
+
+- [#1764](https://github.com/lit/lit/pull/1764) [`0b4d6eda`](https://github.com/lit/lit/commit/0b4d6eda5220aeb53abe250217d70dcb8f45fe43) - Don't allow classMap to remove static classes. This keeps classMap consistent with building a string out of the classnames to be applied.
+
+### Minor Changes
+
+- Added `renderBefore` to render options. If specified, content is rendered before the node given via render options, e.g. `{renderBefore: node}`.
+- Added development mode, which can be enabled by setting the `development` Node exports condition. See [Development and production builds](https://lit.dev/docs/tools/development/#development-and-production-builds) for more details.
+- All usage of `instanceof` has been removed, making rendering more likely to
+  work when multiple instances of the library interact.
+- Template processing is more robust to expressions in places other than text and attribute values.
+- `render` now returns the `ChildPart` that was created/updated by `render`.
+- Added `AsyncDirective`, which is a `Directive` subclass whose
+  `disconnected` callback will be called when the part containing the directive
+  is cleared (or transitively cleared by a Part higher in the tree) or manually
+  disconnected using the `setConnected` API, and whose `reconnected` callback
+  will be called when manually re-connected using `setConnected`. When
+  implementing `disconnected`, the `reconnected` callback should also be
+  implemented to return the directive to a usable state. Note that `LitElement`
+  will disconnect directives upon element disconnection, and re-connect
+  directives upon element re-connection. See [Async directives](https://lit.dev/docs/templates/custom-directives/#async-directives) for more details.
+- Added `setConnected(isConnected: boolean)` to `ChildPart`; when called with
+  `false`, the `disconnected` callback will be run on any directives contained within
+  the part (directly or transitively), but without clearing or causing a
+  re-render to the tree. When called with `true`, any such directives'
+  `reconnected` callback will be called prior to its next `update`/`render`
+  callbacks. Note that `LitElement` will call this method by default on the
+  rendered part in its `connectedCallback` and `disconnetedCallback`.
+- Added the `static-html` module, a static `html` tag function, a `literal` tag function, and `unsafeStatic()`, which allows template authors to add strings to the
+  static structure of the template, before it's parsed as HTML. See [Static expressions](https://lit.dev/docs/templates/expressions/#static-expressions) for more details.
+- Added `lit-html/directive-helpers.js` module with helpers for creating custom directives. See [Custom directives](https://lit.dev/docs/api/custom-directives/#clearPart) for more details.
+- Rendering `null`, `undefined`, or empty string in a `ChildPart` now has the same affect as rendering `nothing`: it does not produce an empty text node. When rendering into an element with Shadow DOM, this makes it harder to inadvertently prevent `<slot>` fallback content from rendering.
+- Nested directives whose parent returns `noChange` are now unchanged. This
+  allows the `guard` directive to guard directive values ([#1519](https://github.com/Polymer/lit-html/issues/1519)).
+- Added optional `creationScope` to `RenderOptions`, which controls the node from which the template is cloned from.
+- Added support for running with [Trusted Types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/trusted-types) enforced.
+
+### Patch Changes
+
+- [#1922](https://github.com/lit/lit/pull/1922) [`8189f094`](https://github.com/lit/lit/commit/8189f09406a5ee2f2c7351884486944fd46e1d5b) - Binding `noChange` into an interpolated attribute expression now no longer removes the attribute on first render - instead it acts like an empty string. This is mostly noticable when using `until()` without a fallback in interpolated attributes.
+
+- [#1964](https://github.com/lit/lit/pull/1964) [`f43b811`](https://github.com/lit/lit/commit/f43b811405be32ce6caf82e80d25cb6170eeb7dc) - Don't publish src/ to npm.
+
+* [#2070](https://github.com/lit/lit/pull/2070) [`a48f39c8`](https://github.com/lit/lit/commit/a48f39c8d5872dbc9a19a9bc72b22692950071f5) - Throw instead of rendering an innocuous value into a style or script when security hooks are enabled.
+
+* [#2044](https://github.com/lit/lit/pull/2044) [`662209c3`](https://github.com/lit/lit/commit/662209c370d2f5f58cb2f24e558125f91baeebd0) - Improves disconnection handling for first-party `AsyncDirective`s (`until`, `asyncAppend`, `asyncReplace`) so that the directive (and any DOM associated with it) can be garbage collected before any promises they are awaiting resolve.
+
 ## 2.0.0-rc.5
 
 ### Patch Changes
@@ -191,43 +270,43 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Changed
 
-- [Breaking] Directives that asynchronously update their part value must now
+- Directives that asynchronously update their part value must now
   extend `DisconnectableDirective` and call `this.setValue()`, a new API exposed
   on the `DisconnectableDirective` class. Directives that render synchronously
   to their `update` lifecycle should simply return the value to be committed to
   their part from `update`/`render`.
 
-- [Breaking] The `Directive` base class and `directive()` factory function are
+- The `Directive` base class and `directive()` factory function are
   now exported from the `lit-html/directive.js` module.
 
-- [Breaking] (since 2.0.0-pre.3) The Part type constants (`NODE_PART`, etc) are
+- (since 2.0.0-pre.3) The Part type constants (`NODE_PART`, etc) are
   removed from the main `lit-html` module and exported as an enum-object named
   `PartType` from `lit-html/directive.js`. Use `PartType.NODE` instead of
   `NODE_TYPE`.
 
-- [Breaking] (since 2.0.0-pre.3)) `lit-html/parts.js` has been renamed to
+- (since 2.0.0-pre.3)) `lit-html/parts.js` has been renamed to
   `lit-html/directive-helpers.js`.
 
-- [Breaking] (since 2.0.0-pre.3)) Originally in `lit-html/parts.js`,
+- (since 2.0.0-pre.3)) Originally in `lit-html/parts.js`,
   `createAndInsertPart()` and `insertPartBefore()` have been combined into a single `insertPart()` function in `lit-html/directive-helpers.js`. `detachNodePart()` and `restoreNodePart()` have been removed in favor of moving parts with `insertPart()`.
 
-- [Breaking] (since 2.0.0-pre.3) `NodePart` has been renamed to `ChildPart`,
+- (since 2.0.0-pre.3) `NodePart` has been renamed to `ChildPart`,
   along with other methods and variables that use the "Node" naming, like
   `PartType.Node` which is now `PartType.CHILD`.
 
-- [Breaking] (since 2.0.0-pre.3) The `DirectiveClass`, `DirectiveParameters`
+- (since 2.0.0-pre.3) The `DirectiveClass`, `DirectiveParameters`
   and `PartInfo` types have been moved from `lit-html` to
   `lit-html/directive.ts`.
 
-- [Breaking] (since 2.0.0-pre.3) The part exports (`ChildPart`,
+- (since 2.0.0-pre.3) The part exports (`ChildPart`,
   `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
 
-- [Breaking] (since 2.0.0-pre.3) The `setPartValue` function in
+- (since 2.0.0-pre.3) The `setPartValue` function in
   `directove-helpers.js` has been renamed to `setChildPartValue` and now only
   supports ChildParts. Directives that require updating their container
   part outside the `render`/`update` lifecycle should extend
   `DisconnectableDirective` and use `this.setValue()`.
-- [Breaking] (since 2.0.0-pre.3) [Breaking] The `eventContext` render option has been changed to `host`.
+- (since 2.0.0-pre.3) The `eventContext` render option has been changed to `host`.
 
   <!-- ### Fixed -->
   <!-- ### Removed -->
@@ -236,13 +315,13 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Changed
 
-- [Breaking] The `shady-render` module has been removed and is now part of `platform-support`. There are also a couple of breaking changes. (1) Bindings in style elements are no longer supported. Previously these could not change and in the future they may be supported via static bindings. (2) `ShadyCSS.styleElement` is no longer called automatically. This must be called whenever dynamic changes that affect styling are made that involve css custom property shimming (older browsers) or changes to custom properties used via the deprecated `@apply` feature. It was previously called only on first render, and it is now up to the user to decide when this should be called.
-- [Breaking] `render()` no longer clears the container it's rendered to. It now appends to the container by default.
-- [Breaking] Expressions in comments are not rendered or updated.
-- [Breaking] Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
-- [Breaking] Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
+- The `shady-render` module has been removed and is now part of `platform-support`. There are also a couple of breaking changes. (1) Bindings in style elements are no longer supported. Previously these could not change and in the future they may be supported via static bindings. (2) `ShadyCSS.styleElement` is no longer called automatically. This must be called whenever dynamic changes that affect styling are made that involve css custom property shimming (older browsers) or changes to custom properties used via the deprecated `@apply` feature. It was previously called only on first render, and it is now up to the user to decide when this should be called.
+- `render()` no longer clears the container it's rendered to. It now appends to the container by default.
+- Expressions in comments are not rendered or updated.
+- Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
+- Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
 - Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. `` html`<div id=${a}-${b}> ``
-- [Breaking] The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
+- The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
 
 ### Added
 
@@ -257,10 +336,10 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Removed
 
-- [Breaking] The `templateFactory` option of `RenderOptions` has been removed.
-- [Breaking] TemplateProcessor has been removed.
-- [Breaking] Symbols are not converted to a string before mutating DOM, so passing a Symbol to an attribute or text binding will result in an exception.
-- [Breaking] The `asyncAppend` and `asyncReplace` directives are not implemented.
+- The `templateFactory` option of `RenderOptions` has been removed.
+- TemplateProcessor has been removed.
+- Symbols are not converted to a string before mutating DOM, so passing a Symbol to an attribute or text binding will result in an exception.
+- The `asyncAppend` and `asyncReplace` directives are not implemented.
 
 ## [1.3.0] - 2020-08-19
 
@@ -365,8 +444,8 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 ### Changed
 
 - `until()` can now take any number of sync or async arguments. ([#555](https://github.com/Polymer/lit-html/pull/555))
-- [Breaking] `guard()` supports multiple dependencies. If the first argument to `guard()` is an array, the array items are checked for equality to previous values. ([#666](https://github.com/Polymer/lit-html/pull/666))
-- [Breaking] Renamed `classMap.js` and `styleMap.js` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
+- `guard()` supports multiple dependencies. If the first argument to `guard()` is an array, the array items are checked for equality to previous values. ([#666](https://github.com/Polymer/lit-html/pull/666))
+- Renamed `classMap.js` and `styleMap.js` files to kebab-case. ([#644](https://github.com/Polymer/lit-html/pull/644))
 
 ### Added
 
@@ -376,7 +455,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Removed
 
-- [Breaking] Removed the `when()` directive. Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
+- Removed the `when()` directive. Users may achieve similar behavior by wrapping a ternary with the `cache()` directive.
 
 ### Fixed
 
@@ -388,7 +467,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Changed
 
-- [Breaking] Directives are now defined by passing the entire directive factory function to `directive()`. ([#562](https://github.com/Polymer/lit-html/pull/562))
+- Directives are now defined by passing the entire directive factory function to `directive()`. ([#562](https://github.com/Polymer/lit-html/pull/562))
 
 ### Fixed
 
@@ -403,7 +482,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - Re-implemented repeat directive for better performance ([#501](https://github.com/Polymer/lit-html/pull/501))
 - Updated TypeScript dependency to 3.1
-- [Breaking] `render()` now takes an options object as the third argument. ([#523](https://github.com/Polymer/lit-html/pull/523))
+- `render()` now takes an options object as the third argument. ([#523](https://github.com/Polymer/lit-html/pull/523))
 
 ### Added
 

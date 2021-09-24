@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.0.0-rc.4",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -138,9 +138,9 @@
     "/directives/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-rc.2",
-    "lit-element": "^3.0.0-rc.2",
-    "lit-html": "^2.0.0-rc.4"
+    "@lit/reactive-element": "^1.0.0",
+    "lit-element": "^3.0.0",
+    "lit-html": "^2.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

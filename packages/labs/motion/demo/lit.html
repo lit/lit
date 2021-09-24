@@ -30,10 +30,17 @@
     <my-element></my-element>
     <script type="module">
       import {LitElement, html, css} from 'lit';
-      import {flip, flyAbove, flyBelow, fade} from '../development/flip.js';
-      import {FlipController} from '../development/flip-controller.js';
+      import {
+        animate,
+        flyAbove,
+        flyBelow,
+        fade,
+      } from '../development/animate.js';
+      import {AnimateController} from '../development/animate-controller.js';
 
       const lit = ['L', 'I', 'T'];
+
+      const duration = 1000;
 
       class MyElement extends LitElement {
         static properties = {
@@ -43,16 +50,16 @@
         constructor() {
           super();
           this.lit = lit;
-          this.flipController = new FlipController(this, {
-            flipOptions: {
-              animationOptions: {
-                duration: 1000,
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
+                duration,
                 easing: 'ease-in-out',
                 fill: 'backwards',
               },
             },
             // startPaused: true,
-            onComplete: () => setTimeout(() => this.changeLayout(), 1000),
+            onComplete: () => setTimeout(() => this.changeLayout(), 0),
           });
           this.addEventListener('click', () => this.clickHandler());
         }
@@ -94,14 +101,14 @@
         ];
 
         render() {
-          const delayTime = 200;
+          const delayTime = duration / (this.lit.length * 2.5);
           return html`
             ${this.lit?.map(
               (l, i) =>
                 html`<span
                   class="l"
-                  ${flip({
-                    animationOptions: {
+                  ${animate({
+                    keyframeOptions: {
                       delay: i * delayTime,
                     },
                     in: fade,
@@ -114,8 +121,8 @@
         }
 
         clickHandler() {
-          if (this.flipController.isAnimating) {
-            this.flipController.togglePlay();
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
           } else {
             this.changeLayout();
           }
