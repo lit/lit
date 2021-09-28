@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.1
+
+### Patch Changes
+
+- [#2186](https://github.com/lit/lit/pull/2186) [`59acf89a`](https://github.com/lit/lit/commit/59acf89ae77612fe1a91577f9ac0361f4e277a17) Thanks [@sorvell](https://github.com/sorvell)! - Ensures `*.d.ts` files are included in production output.
+
 ## 1.0.0
 
 ### Patch Changes
