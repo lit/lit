@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<head>
+  <title>lit-localize transform example</title>
+  <script>
+    const url = new URL(window.location.href);
+    const urlLocale = url.searchParams.get('locale');
+    const validLocales = ['en', 'es-419', 'zh_CN'];
+    const locale = validLocales.includes(urlLocale) ? urlLocale : 'en';
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = `/bundled/${locale}/index.js`;
+    document.head.appendChild(script);
+  </script>
+</head>
+<body>
+  <locale-picker></locale-picker>
+  <x-greeter></x-greeter>
+</body>
