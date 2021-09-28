@@ -192,6 +192,9 @@ export class Animate extends AsyncDirective {
     const firstUpdate = this._host === undefined;
     if (firstUpdate) {
       this._host = part.options?.host as LitElement;
+      if (this._host == null) {
+        throw new Error("animate directive must be used in a LitElement");
+      }
       this._host.addController(this);
       this.element = part.element;
       nodeToAnimateMap.set(this.element, this);
