@@ -14,7 +14,7 @@
     "lit": "^2.0.0"
   },
   "devDependencies": {
-    "@lit/localize-tools": "../../../localize-tools",
+    "@lit/localize-tools": "^0.3.7",
     "@web/dev-server": "^0.1.22"
   }
 }
