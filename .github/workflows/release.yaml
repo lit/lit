@@ -29,6 +29,7 @@ jobs:
         id: changesets
         uses: changesets/action@master
         with:
+          version: npm run version
           publish: npm run release
         env:
           HUSKY: 0

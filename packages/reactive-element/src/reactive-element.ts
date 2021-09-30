@@ -1381,7 +1381,6 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-// TODO(justinfagnani): inject version number at build time
 (globalThis.reactiveElementVersions ??= []).push('1.0.0');
 if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
   issueWarning!(

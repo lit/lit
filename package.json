@@ -18,7 +18,8 @@
     "test": "lerna run test --ignore lit --ignore lit-html --ignore lit-element --ignore @lit/reactive-element --ignore @lit-labs/motion --concurrency 1 --stream",
     "prepare": "husky install",
     "changeset": "changeset",
-    "version": "npm run changeset version",
+    "version": "npm run changeset version && npm run update-version-vars",
+    "update-version-vars": "node scripts/update-version-variables.js",
     "release": "npm run build && npm run changeset publish"
   },
   "devDependencies": {
