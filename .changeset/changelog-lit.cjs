@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2019 Ben Conolly
+ * SPDX-License-Identifier: MIT
+ */
+
 const {
   getInfo,
   getInfoFromPullRequest,
