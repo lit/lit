@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.3.7",
+  "version": "0.4.0",
   "publishConfig": {
     "access": "public"
   },
@@ -37,7 +37,7 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "@lit/localize": "^0.10.4",
+    "@lit/localize": "^0.11.0",
     "@xmldom/xmldom": "^0.7.0",
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",

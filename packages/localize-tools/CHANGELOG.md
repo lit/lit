@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- [#2188](https://github.com/lit/lit/pull/2188) [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b) - Added output.outputDir setting for transform mode. Required if tsConfig is not specified.
+
+* [#2188](https://github.com/lit/lit/pull/2188) [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b) - Add `inputFiles` field, and make `tsConfig` field optional when `inputFiles` is specified. If both are set, `inputFiles` takes precedence over the input files from `tsConfig`. When `tsConfig` is not specified, a default config is used that will include `.js` files.
+
+### Patch Changes
+
+- [#2188](https://github.com/lit/lit/pull/2188) [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b) - Fixed the `$schema` property that is automatically added to @lit/localize-tools
+  config files. It was previously pointing at the incorrect file.
+- Updated dependencies [[`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b), [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b)]:
+  - @lit/localize@0.11.0
+
 ## 0.3.7
 
 ### Patch Changes
@@ -121,11 +136,19 @@ Before:
 class HomePage {
   hello() {
     // msgdesc: Greeting to Earth
-    return msg(html`Hello World`);
+    return msg(
+      html`
+        Hello World
+      `
+    );
   }
   goodbye() {
     // msgdesc: Farewell to Earth
-    return msg(html`Goodbye World`);
+    return msg(
+      html`
+        Goodbye World
+      `
+    );
   }
 }
 ```
@@ -135,14 +158,24 @@ After:
 ```js
 class HomePage {
   hello() {
-    return msg(html`Hello World`, {
-      desc: 'Home page / Greeting to Earth',
-    });
+    return msg(
+      html`
+        Hello World
+      `,
+      {
+        desc: 'Home page / Greeting to Earth'
+      }
+    );
   }
   goodbye() {
-    return msg(html`Goodbye World`, {
-      desc: 'Home page / Farewell to Earth',
-    });
+    return msg(
+      html`
+        Goodbye World
+      `,
+      {
+        desc: 'Home page / Farewell to Earth'
+      }
+    );
   }
 }
 ```
