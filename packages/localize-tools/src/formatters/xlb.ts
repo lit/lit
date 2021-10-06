@@ -5,7 +5,7 @@
  */
 
 import * as xmldom from '@xmldom/xmldom';
-import glob from 'glob';
+import fastGlob from 'fast-glob';
 import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
 import type {Config} from '../types/config.js';
@@ -49,7 +49,7 @@ class XlbFormatter implements Formatter {
    * pattern.
    */
   readTranslations(): Array<Bundle> {
-    const files = glob.sync(this.xlbConfig.translationsGlob, {
+    const files = fastGlob.sync(this.xlbConfig.translationsGlob, {
       cwd: this.config.baseDir,
       absolute: true,
     });

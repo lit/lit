@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <style>
+      body {
+        font-family: 'Open Sans', sans-serif;
+        margin: 0;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+    <title>Simple Animation</title>
+  </head>
+  <body>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {
+        animate,
+        flyBelow,
+        defaultCssProperties,
+      } from '../development/animate.js';
+
+      class MyElement extends LitElement {
+        static properties = {layout: {type: Number}};
+        static styles = css`
+          .container {
+            height: 70vh;
+            width: 50vw;
+            display: flex;
+            justify-content: space-between;
+            background: #e1e2e1;
+            border-radius: 5em;
+            padding: 5em;
+          }
+
+          .container.layout0 {
+            align-items: flex-start;
+          }
+
+          .container.layout1 {
+            flex-direction: column;
+            align-items: flex-end;
+          }
+
+          .container.layout2 {
+            flex-direction: row-reverse;
+            align-items: flex-end;
+          }
+
+          .container.layout3 {
+            flex-direction: column-reverse;
+            align-items: flex-start;
+          }
+
+          .container > * {
+            background: #002171;
+            color: white;
+            text-align: center;
+            border-radius: 50%;
+            width: 5em;
+            height: 5em;
+          }
+        `;
+
+        constructor() {
+          super();
+          this.layout = 0;
+        }
+
+        render() {
+          const options = {
+            keyframeOptions: {duration: 1500},
+          };
+          return html`
+            <section class="container layout${this.layout}">
+              <div ${animate(options)}></div>
+              <div ${animate(options)}></div>
+              <div ${animate(options)}></div>
+              <div ${animate(options)}></div>
+              <div
+                ${animate({...options, onComplete: () => this.changeLayout()})}
+              ></div>
+            </section>
+          `;
+        }
+
+        firstUpdated() {
+          this.changeLayout();
+        }
+
+        changeLayout() {
+          this.layout = (this.layout + 1) % 4;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

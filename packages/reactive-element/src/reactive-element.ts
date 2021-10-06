@@ -38,6 +38,10 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (code: string, warning: string) => void;
 
+const polyfillSupport = DEV_MODE
+  ? window.reactiveElementPolyfillSupportDevMode
+  : window.reactiveElementPolyfillSupport;
+
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
@@ -59,11 +63,7 @@ if (DEV_MODE) {
   );
 
   // Issue polyfill support warning.
-  if (
-    window.ShadyDOM?.inUse &&
-    globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ===
-      undefined
-  ) {
+  if (window.ShadyDOM?.inUse && polyfillSupport === undefined) {
     issueWarning(
       'polyfill-support-missing',
       `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
@@ -105,13 +105,13 @@ const JSCompiler_renameProperty = <P extends PropertyKey>(
  */
 export interface ComplexAttributeConverter<Type = unknown, TypeHint = unknown> {
   /**
-   * Function called to convert an attribute value to a property
+   * Called to convert an attribute value to a property
    * value.
    */
   fromAttribute?(value: string | null, type?: TypeHint): Type;
 
   /**
-   * Function called to convert a property value to an attribute
+   * Called to convert a property value to an attribute
    * value.
    *
    * It returns unknown instead of string, to be compatible with
@@ -288,7 +288,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 const finalized = 'finalized';
 
 /**
- * A string representing one of the supported dev mode warnings classes.
+ * A string representing one of the supported dev mode warning categories.
  */
 export type WarningKind = 'change-in-update' | 'migration';
 
@@ -306,7 +306,7 @@ export abstract class ReactiveElement
 {
   // Note: these are patched in only in DEV_MODE.
   /**
-   * Read or set all the enabled warning kinds for this class.
+   * Read or set all the enabled warning categories for this class.
    *
    * This property is only used in development builds.
    *
@@ -316,16 +316,16 @@ export abstract class ReactiveElement
   static enabledWarnings?: WarningKind[];
 
   /**
-   * Enable the given warning kind for this class.
+   * Enable the given warning category for this class.
    *
    * This method only exists in development builds, so it should be accessed
    * with a guard like:
    *
    * ```ts
-   * // Enable for all ReactiveElement classes
+   * // Enable for all ReactiveElement subclasses
    * ReactiveElement.enableWarning.?('migration');
    *
-   * // Enable for all MyElement only
+   * // Enable for only MyElement and subclasses
    * MyElement.enableWarning.?('migration');
    * ```
    *
@@ -335,16 +335,16 @@ export abstract class ReactiveElement
   static enableWarning?: (warningKind: WarningKind) => void;
 
   /**
-   * Disable the given warning kind for this class.
+   * Disable the given warning category for this class.
    *
    * This method only exists in development builds, so it should be accessed
    * with a guard like:
    *
    * ```ts
-   * // Disable for all ReactiveElement classes
+   * // Disable for all ReactiveElement subclasses
    * ReactiveElement.disableWarning.?('migration');
    *
-   * // Disable for all MyElement only
+   * // Disable for only MyElement and subclasses
    * MyElement.disableWarning.?('migration');
    * ```
    *
@@ -357,8 +357,8 @@ export abstract class ReactiveElement
    * Adds an initializer function to the class that is called during instance
    * construction.
    *
-   * This is useful for code that runs against a ReactiveElement
-   * subclassclass, such as a decorator, that needs to do work for each
+   * This is useful for code that runs against a `ReactiveElement`
+   * subclass, such as a decorator, that needs to do work for each
    * instance, such as setting up a `ReactiveController`.
    *
    * ```ts
@@ -370,7 +370,7 @@ export abstract class ReactiveElement
    * }
    * ```
    *
-   * Decorating a field will then cause each instance to run an an initializer
+   * Decorating a field will then cause each instance to run an initializer
    * that adds a controller:
    *
    * ```ts
@@ -506,7 +506,7 @@ export abstract class ReactiveElement
 
   /**
    * Creates a property accessor on the element prototype if one does not exist
-   * and stores a PropertyDeclaration for the property with the given options.
+   * and stores a `PropertyDeclaration` for the property with the given options.
    * The property setter calls the property's `hasChanged` property option
    * or uses a strict identity check to determine whether or not to request
    * an update.
@@ -612,12 +612,12 @@ export abstract class ReactiveElement
 
   /**
    * Returns the property options associated with the given property.
-   * These options are defined with a PropertyDeclaration via the `properties`
+   * These options are defined with a `PropertyDeclaration` via the `properties`
    * object or the `@property` decorator and are registered in
    * `createProperty(...)`.
    *
    * Note, this method should be considered "final" and not overridden. To
-   * customize the options for a given property, override `createProperty`.
+   * customize the options for a given property, override [[`createProperty`]].
    *
    * @nocollapse
    * @final
@@ -759,11 +759,15 @@ export abstract class ReactiveElement
   private __updatePromise!: Promise<boolean>;
 
   /**
+   * True if there is a pending update as a result of calling `requestUpdate()`.
+   * Should only be read.
    * @category updates
    */
   isUpdatePending = false;
 
   /**
+   * Is set to `true` after the first update. The element code cannot assume
+   * that `renderRoot` exists before the element `hasUpdated`.
    * @category updates
    */
   hasUpdated = false;
@@ -817,6 +821,12 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Registers a `ReactiveController` to participate in the element's reactive
+   * update cycle. The element automatically calls into any registered
+   * controllers during its lifecycle callbacks.
+   *
+   * If the element is connected when `addController()` is called, the
+   * controller's `hostConnected()` callback will be immediately called.
    * @category controllers
    */
   addController(controller: ReactiveController) {
@@ -831,6 +841,7 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Removes a `ReactiveController` from the element.
    * @category controllers
    */
   removeController(controller: ReactiveController) {
@@ -1113,7 +1124,7 @@ export abstract class ReactiveElement
    * Performs an element update. Note, if an exception is thrown during the
    * update, `firstUpdated` and `updated` will not be called.
    *
-   * Call performUpdate() to immediately process a pending update. This should
+   * Call `performUpdate()` to immediately process a pending update. This should
    * generally not be needed, but it can be done in rare cases when you need to
    * update synchronously.
    *
@@ -1276,7 +1287,7 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Controls whether or not `update` should be called when the element requests
+   * Controls whether or not `update()` should be called when the element requests
    * an update. By default, this method always returns `true`, but this can be
    * customized to control when to update.
    *
@@ -1334,9 +1345,7 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.({
-  ReactiveElement,
-});
+polyfillSupport?.({ReactiveElement});
 
 // Dev mode warnings...
 if (DEV_MODE) {
@@ -1372,8 +1381,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-// TODO(justinfagnani): inject version number at build time
-(globalThis.reactiveElementVersions ??= []).push('1.0.0-rc.4');
+(globalThis.reactiveElementVersions ??= []).push('1.0.0');
 if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

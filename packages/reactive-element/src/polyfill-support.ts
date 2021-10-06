@@ -16,6 +16,8 @@
  * @packageDocumentation
  */
 
+export {};
+
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
   scope?: string;
@@ -48,7 +50,7 @@ interface PatchableReactiveElement extends HTMLElement {
 // eslint-disable-next-line no-var
 var DEV_MODE = true;
 
-globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= ({
+const polyfillSupport = ({
   ReactiveElement,
 }: {
   ReactiveElement: PatchableReactiveElement;
@@ -155,3 +157,9 @@ globalThis[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= ({
     didUpdate.call(this, changedProperties);
   };
 };
+
+if (DEV_MODE) {
+  globalThis.reactiveElementPolyfillSupportDevMode ??= polyfillSupport;
+} else {
+  globalThis.reactiveElementPolyfillSupport ??= polyfillSupport;
+}

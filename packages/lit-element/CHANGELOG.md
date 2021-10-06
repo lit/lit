@@ -1,5 +1,55 @@
 # Change Log
 
+## 3.0.0
+
+### Major Changes
+
+- Most users should no longer import directly from `lit-element`, and instead prefer importing `LitElement` from the `lit` packages. The default entry point for `lit-element` remains backward-compatible and includes all decorators. However, it's recommended to use `import {LitElement} from 'lit';` and import decorators from `lit/decorators` as necessary. See the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/#update-packages-and-import-paths) for more details.
+- `UpdatingElement` has been moved from the `lit-element` package to the `@lit/reactive-element` package and renamed to `ReactiveElement`. See the [ReactiveElement API](https://lit.dev/docs/api/ReactiveElement/) documentation for more details. In addition, the source for `css-tag`, and all `decorators` have been moved to `@lit/reactive-element`. However, all symbols are re-exported from both `lit` and `lit-element` packages.
+- The `@internalProperty` decorator has been renamed to `@state`.
+- Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledrejection` event handler on window.
+- The `lib` folder has been removed.
+- Rendering of `renderRoot`/`shadowRoot`) via `createRenderRoot` and support for `static styles` has moved from `LitElement` to `ReactiveElement`.
+- The `createRenderRoot` method is now called just before the first update rather than in the constructor. Element code can not assume the `renderRoot` exists before the element `hasUpdated`. This change was made for compatibility with SSR.
+- `ReactiveElement`'s `initialize` method has been removed. This work is now done in the element constructor.
+- The static `render` has been removed.
+- For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
+- When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
+- The dirty check in `attributeChangedCallback` has been removed. While technically breaking, in practice it should very rarely be ([#699](https://github.com/Polymer/lit-element/issues/699)).
+- LitElement's `adoptStyles` method has been removed. Styling is now adopted in `createRenderRoot`. This method may be overridden to customize this behavior.
+- LitElement's `static getStyles` method has been renamed to `static finalizeStyles` and now takes a list of styles the user provided and returns the styles which should be used in the element. If this method is overridden to integrate into a style management system, typically the `super` implementation should be called.
+- Removed build support for TypeScript 3.4.
+- Decorators are no longer exported from the `lit-element` module. Instead, import any decorators you use from `lit/decorators/*`.
+- `lit-html` has been updated to 2.x.
+- Support for running in older browsers has been removed from the default configuration. Import the `polyfill-support` module to support Shady DOM. Note also that Lit parts inside `<style>` elements are no longer supported. See [Polyfills](https://lit.dev/docs/tools/requirements/#polyfills) for more details.
+- For simplicity, `requestUpdate` no longer returns a Promise. Instead await the `updateComplete` Promise.
+- Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.
+- [#2103](https://github.com/lit/lit/pull/2103) [`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b) - Updates the `exports` field of `package.json` files to replace the [subpath
+  folder
+  mapping](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#packages_subpath_folder_mappings)
+  syntax with an explicit list of all exported files.
+
+  The `/`-suffixed syntax for subpath folder mapping originally used in these
+  files is deprecated. Rather than update to the new syntax, this change replaces
+  these mappings with individual entries for all exported files so that (a) users
+  must import using extensions and (b) bundlers or other tools that don't resolve
+  subpath folder mapping exactly as Node.js does won't break these packages'
+  expectations around how they're imported.
+
+### Minor Changes
+
+- A public `renderOptions` class field now exists on `LitElement` and can be set/overridden to modify the options passed to `lit-html`.
+- Adds `static shadowRootOptions` for customizing shadowRoot options. Rather than implementing `createRenderRoot`, this property can be set. For example, to create a closed shadowRoot using delegates focus: `static shadowRootOptions = {mode: 'closed', delegatesFocus: true}`.
+- Adds development mode, which can be enabled by setting the `development` Node exports condition. See [Development and production builds](https://lit.dev/docs/tools/development/#development-and-production-builds) for more details.
+
+### Patch Changes
+
+- [#1964](https://github.com/lit/lit/pull/1964) [`f43b811`](https://github.com/lit/lit/commit/f43b811405be32ce6caf82e80d25cb6170eeb7dc) - Don't publish src/ to npm.
+- For efficiency, the `css` function now maintains a cache and will use a cached value if available when the same style text is requested.
+- Fixed reflecting a property when it is set in a setter of another property that is called because its attribute changed ([#965](https://github.com/Polymer/lit-element/issues/965)).
+- Fixed exceptions when parsing attributes from JSON ([#722](https://github.com/Polymer/lit-element/issues/722)).
+- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclasss ([#890]https://github.com/Polymer/lit-element/issues/890));
+
 ## 3.0.0-rc.4
 
 ### Patch Changes
@@ -73,7 +123,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - (Since 3.0.0-rc.1) Improves support for customizing `observedAttributes` by
   ensuring that `ReactiveElement.observedAttributes` is callable, allowing
-  mixins to directly reference it ([#1835](https://github.com/Polymer/lit-element/issues/#1835)).
+  mixins to directly reference it ([#1835](https://github.com/lit/lit/issues/1835)).
 
 ## 3.0.0-rc.1 - 2021-04-20
 
