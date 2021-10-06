@@ -111,12 +111,16 @@ type Constructor<T> = {new (): T};
  * custom element. For example, given `{onactivate: 'activate'}` an event
  * function may be passed via the component's `onactivate` prop and will be
  * called when the custom element fires its `activate` event.
+ * @param displayName A React component display name, used in debugging
+ * messages. Default value is inferred from the name of custom element class
+ * registered via `customElements.define`.
  */
 export const createComponent = <I extends HTMLElement, E>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: StringValued<E>
+  events?: StringValued<E>,
+  displayName?: string
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
@@ -169,7 +173,7 @@ export const createComponent = <I extends HTMLElement, E>(
     private _userRef?: React.Ref<unknown>;
     private _ref?: React.RefCallback<I>;
 
-    static displayName = elementClass.name;
+    static displayName = displayName ?? elementClass.name;
 
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
