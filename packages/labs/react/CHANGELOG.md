@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.1
+
+### Patch Changes
+
+- [#2155](https://github.com/lit/lit/pull/2155) [`55cc9df4`](https://github.com/lit/lit/commit/55cc9df43f8702bf2b530fa9d70b2a2951f83de8) - Fix displayName of components created with "createComponent"
+
 ## 1.0.0
 
 ### Patch Changes
