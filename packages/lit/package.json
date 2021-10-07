@@ -74,6 +74,9 @@
     "./directives/if-defined.js": {
       "default": "./directives/if-defined.js"
     },
+    "./directives/keyed.js": {
+      "default": "./directives/keyed.js"
+    },
     "./directives/live.js": {
       "default": "./directives/live.js"
     },
