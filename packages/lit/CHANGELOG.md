@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#2232](https://github.com/lit/lit/pull/2232) [`d808d234`](https://github.com/lit/lit/commit/d808d234a56844509a766c68492f6f588738ca7e) - Add lit logo to NPM package
+
 ## 2.0.0
 
 ### Major Changes
