@@ -4,22 +4,22 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {BaseLayout, BaseLayoutConfig} from './BaseLayout';
-import {ItemBox, Positions, Size} from './Layout';
+import { SizeCache } from './shared/SizeCache.js';
+import { SizeGapPaddingBaseLayout, SizeGapPaddingBaseLayoutConfig, GapSpec } from './shared/SizeGapPaddingBaseLayout.js';
+import {ItemBox, Positions, Size} from './shared/Layout.js';
 
-interface Layout1dFlexConfig extends BaseLayoutConfig {
-  spacing?: number,
-  idealSize?: number
+interface FlexWrapLayoutConfig extends SizeGapPaddingBaseLayoutConfig {
+  gap?: GapSpec,
 }
 
-type Layout1dFlexSpecifier = Layout1dFlexConfig & {
-  type: new(config?: Layout1dFlexConfig) => Layout1dFlex
+type FlexWrapLayoutSpecifier = FlexWrapLayoutConfig & {
+  type: new(config?: FlexWrapLayoutConfig) => FlexWrapLayout
 }
 
-type Layout1dFlexSpecifierFactory = (config?: Layout1dFlexConfig) => Layout1dFlexSpecifier;
+type FlexWrapLayoutSpecifierFactory = (config?: FlexWrapLayoutConfig) => FlexWrapLayoutSpecifier;
 
-export const layout1dFlex: Layout1dFlexSpecifierFactory = (config?: Layout1dFlexConfig) => Object.assign({
-  type: Layout1dFlex
+export const layout1dFlex: FlexWrapLayoutSpecifierFactory = (config?: FlexWrapLayoutConfig) => Object.assign({
+  type: FlexWrapLayout
 }, config);
 
 interface Rolumn {
@@ -52,28 +52,33 @@ interface AspectRatios {
 /**
  * TODO @straversi: document and test this Layout.
  */
-export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
+export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfig> {
   private _itemSizes: Array<Size> = [];
   // private _itemPositions: Array<Positions> = [];
   // private _rolumnStartIdx: Array<number> = [];
   // private _rolumnStartPos: Array<number> = [];
-  private _chunkSize: number | null = null;
+  private _chunkLength: number | null = null;
   private _chunks: Array<Chunk> = [];
+  private _chunkSizeCache = new SizeCache();
+  private _rolumnSizeCache = new SizeCache();
+  private _rolumnLengthCache = new SizeCache({roundAverageSize: false});
+  // private _rolumnStartPositions: Map<number, number> = new Map();
   private _aspectRatios: AspectRatios = {};
   private _numberOfAspectRatiosMeasured: number = 0;
-  protected _idealSize: number | null = null;
-  protected _config: Layout1dFlexConfig = {};
-  protected _defaultConfig: Layout1dFlexConfig = Object.assign({}, super._defaultConfig, {
-    spacing: 0,
-    idealSize: 200
-  });
+  // protected _config: FlexWrapLayoutConfig = {};
 
   listenForChildLoadEvents = true;
+
+  set gap(spec: GapSpec) {
+    this._setGap(spec);
+}
+
+
 
 /**
  * TODO graynorton@ Don't hard-code Flickr - probably need a config option
  */
-  measureChildren: ((e: Element, i: unknown) => (ItemBox)) = function (e, i) {
+  measureChildren: ((e: Element, i: unknown) => ItemBox) = function (e, i) {
     const { naturalWidth, naturalHeight } = e as HTMLImageElement;
     if (naturalWidth !== undefined && naturalHeight != undefined) {
       return { width: naturalWidth, height: naturalHeight };
@@ -83,21 +88,6 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
       return { width: o_width, height: o_height };
     }
     return { width: -1, height: -1 };
-  }
-
-  set idealSize(px) {
-    const _px = Number(px);
-    if (_px <= 0) {
-      throw new Error('idealSize must be greater than zero');
-    }
-    if (_px !== this._idealSize) {
-      this._idealSize = _px;
-      this._triggerReflow();
-    }
-  }
-
-  get idealSize() {
-    return this._idealSize;
   }
 
   updateItemSizes(sizes: {[key: number]: ItemBox}) {
@@ -131,7 +121,7 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
   }
 
   _getChunk(idx: number | string) {
-    return this._chunks[Math.floor(Number(idx) / this._chunkSize!)] || this._newChunk();
+    return this._chunks[Math.floor(Number(idx) / this._chunkLength!)] || this._newChunk();
   }
 
   _recordAspectRatio(dims: ItemBox) {
@@ -160,9 +150,9 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
     return {width: Number(buckets[i]), height: 1};
 }
 
-  _viewDim2Changed() {
-    this._scheduleLayoutUpdate();
-  }
+  // _viewDim2Changed() {
+  //   this._scheduleLayoutUpdate();
+  // }
 
   _getActiveItems() {
     const chunk = this._getChunk(0);
@@ -184,7 +174,7 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
     this._first = chunk._rolumns[idx]._startIdx;
     this._physicalMin = chunk._rolumns[idx]._startPos;
     let rolumnMax;
-    while ((rolumnMax = chunk._rolumns[idx]._startPos + chunk._rolumns[idx]._size + (this._spacing * 2)) < max) {
+    while ((rolumnMax = chunk._rolumns[idx]._startPos + chunk._rolumns[idx]._size + (this._gap! * 2)) < max) {
         idx++;
     }
     this._last = chunk._rolumns[idx]._endIdx;
@@ -210,10 +200,10 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
     return itemDims;
   }
 
-
-  _layOutChunk(startIdx: number) {
+  _layOutChunk(startIdx: number, endIdx: number/*, reverse=false*/) {
     const chunk: Chunk = this._newChunk();
-    let startPos = this._spacing;
+    const gap = this._gap!;
+    let startPos = gap;
     let idx = 0;
     let rolumnSize2 = 0;
     let lastRatio = Infinity;
@@ -221,24 +211,24 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
         const rolumn = {
           _startIdx: startIdx,
           _endIdx: lastIdx,
-          _startPos: startPos - this._spacing,
+          _startPos: startPos - gap,
           _size: 0
         }
         chunk._rolumns.push(rolumn);
-        let itemStartPos = this._spacing;
+        let itemStartPos = this._gap!;
         for (let i = startIdx; i <= lastIdx; i++) {
             const pos = chunk._itemPositions[i];
             pos.width = pos.width! * lastRatio;
             pos.height = pos.height! * lastRatio;
             pos.left = this._positionDim === 'left' ? startPos : itemStartPos;
             pos.top = this._positionDim === 'top' ? startPos : itemStartPos;
-            itemStartPos += pos[this._secondarySizeDim]! + this._spacing;
+            itemStartPos += pos[this._secondarySizeDim]! + gap;
         }
         rolumn._size = chunk._itemPositions[lastIdx][this._sizeDim]!;
     }
-    while (idx < this._chunkSize!) {
+    while (idx <= endIdx) {
       const itemDims = this._getNaturalItemDims(idx);
-      const availableSpace = this._viewDim2 - (this._spacing * (idx - startIdx + 2));
+      const availableSpace = this._viewDim2 - (gap * (idx - startIdx + 2));
       const itemSize = itemDims[this._sizeDim];
       const itemSize2 = itemDims[this._secondarySizeDim];
       const idealScaleFactor = this._idealSize! / itemSize;
@@ -255,8 +245,8 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
           // rolumn is better without adding this item
           finishRolumn(idx - 1);
           startIdx = idx;
-          startPos += (this._idealSize! * lastRatio) + this._spacing;
-          lastRatio = (this._viewDim2 - (2 * this._spacing)) / adjItemSize2;
+          startPos += (this._idealSize! * lastRatio) + gap;
+          lastRatio = (this._viewDim2 - (2 * gap)) / adjItemSize2;
           rolumnSize2 = adjItemSize2;
       }
       else {
@@ -264,7 +254,7 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
           rolumnSize2 += adjItemSize2;
           lastRatio = ratio;
       }
-      if (idx === this._chunkSize! - 1) {
+      if (idx === endIdx) {
           finishRolumn(idx);
       }
       idx++;
@@ -276,19 +266,26 @@ export class Layout1dFlex extends BaseLayout<Layout1dFlexConfig> {
 
   _updateLayout(): void {
     if (/*this._rolumnStartIdx === undefined ||*/ this._viewDim2 === 0) return;
-    this._chunkSize = Math.ceil(2 * (this._viewDim1 * this._viewDim2) / (this._idealSize! * this._idealSize!));
-    console.log('chunkSize', this._chunkSize);
+    this._chunkLength = Math.ceil(2 * (this._viewDim1 * this._viewDim2) / (this._idealSize! * this._idealSize!));
+    console.log('chunkLength', this._chunkLength);
     // TODO: An odd place to do this, need to think through the logistics of getting size info to the layout
     // in all cases
     // this._itemSizes.length = 100;//this._totalItems;
-    this._chunks[0] = this._layOutChunk(0);
+    const chunk = this._layOutChunk(0, this._chunkLength - 1);
+    this._chunks[0] = chunk;
+    this._chunkSizeCache.set(0, chunk._size);
+    chunk._rolumns.forEach((rolumn, idx) => {
+      const id = `0:${idx}`;
+      this._rolumnSizeCache.set(id, rolumn._size);
+      this._rolumnLengthCache.set(id, rolumn._endIdx - rolumn._startIdx + 1);
+    });
 }
 
   _updateScrollSize() {
     const chunk = this._chunks[0];
-    this._scrollSize = !chunk || chunk._rolumns.length === 0 ? 1 : chunk._size + (2 * this._spacing);
+    this._scrollSize = !chunk || chunk._rolumns.length === 0 ? 1 : chunk._size + (2 * this._gap!);
         // chunk._rolumns[chunk._rolumns.length - 1]._startPos +
         // chunk._itemPositions[chunk._rolumns.length - 1][this._sizeDim] +
-        // (this._spacing * 2);
+        // (this._gap * 2);
   }
 }

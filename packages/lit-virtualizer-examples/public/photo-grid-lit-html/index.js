@@ -1,8 +1,8 @@
 import {html, render} from 'lit';
 import {virtualize} from '@lit-labs/virtualizer/virtualize.js';
 import {virtualizerRef} from '@lit-labs/virtualizer/Virtualizer.js';
-import {Layout1dSquareGrid} from '@lit-labs/virtualizer/layouts/Layout1dSquareGrid.js';
-import {Layout1dFlex} from '@lit-labs/virtualizer/layouts/Layout1dFlex.js';
+import {GridLayout} from '@lit-labs/virtualizer/layouts/grid.js';
+import {FlexWrapLayout} from '@lit-labs/virtualizer/layouts/flexWrap.js';
 import {getUrl, getPhotos} from '../../lib/flickr.js';
 
 import '@material/mwc-drawer';
@@ -33,9 +33,9 @@ const state = {
     items: [],
     direction: 'vertical',
     idealSize: 300,
-    spacing: 8,
+    gap: 8,
     query: 'sunset',
-    Layout: Layout1dFlex,
+    Layout: /*GridLayout,*/FlexWrapLayout,
     layout: null,
     first: 0,
     last: 0,
@@ -56,21 +56,14 @@ function setState(changes) {
         render(renderExample(), document.body);    
     }
     // especially hacky
-    if (changes.Layout) {
-        updateItemSizes(state.items);
-    }
+    // if (changes.Layout) {
+    //     updateItemSizes(state.items);
+    // }
     
 }
 
 function renderExample() {
-    let {open, showRange, items, direction, idealSize, spacing, query, Layout, layout, first, last, firstVisible, lastVisible} = state;
-    // if (!(layout instanceof Layout)) {
-    //     layout = (state.layout = new Layout({idealSize, spacing, direction}));
-    //     updateItemSizes(items);
-    // }
-    // else {
-    //     Object.assign(layout, {idealSize, spacing, direction, totalItems: items.length});
-    // }
+    let {open, showRange, items, direction, idealSize, gap, query, Layout, layout, first, last, firstVisible, lastVisible} = state;
     return html`
 <style>
     body {margin: 0; height: 100vh;}
@@ -81,6 +74,7 @@ function renderExample() {
     .controls > * {display: block; margin: 8px;}
     .virtualizer {flex: 1;}
     .virtualizer > * {transition: all 0.25s;}
+    .virtualizer img {object-fit: cover;}
     .open .controls {transform: translateX(0);}
     .open .sheet {width: 256px;}
     .box {background: #DDD;}
@@ -98,7 +92,7 @@ function renderExample() {
         <div class="sheet">
             <div class="controls">
                 <mwc-textfield label="Ideal Size" type="number" min="50" max="500" step="5" .value=${idealSize} @input=${(e) => setState({idealSize: e.target.value})}></mwc-textfield>
-                <mwc-textfield label="Gap" type="number" min="0" max="100" step="1" .value=${spacing} @input=${(e) => setState({spacing: e.target.value})}></mwc-textfield>
+                <mwc-textfield label="Gap" type="number" min="0" max="100" step="1" .value=${gap} @input=${(e) => setState({gap: e.target.value})}></mwc-textfield>
                 <mwc-textfield label="Search Query" .value=${query} @change=${(e) => search(e.target.value)}></mwc-textfield>
                 <fieldset @change=${e => setState({direction: e.target.value})}>
                     <legend>Direction</legend>
@@ -111,11 +105,11 @@ function renderExample() {
                 </fieldset>
                 <fieldset @change=${e => setState({Layout: e.target.value})}>
                     <legend>Layout</legend>
-                    <mwc-formfield label="Square grid">
-                        <mwc-radio name="layout" .value=${Layout1dSquareGrid} ?checked=${Layout === Layout1dSquareGrid}></mwc-radio>
+                    <mwc-formfield label="Fixed aspect grid">
+                        <mwc-radio name="layout" .value=${GridLayout} ?checked=${Layout === GridLayout}></mwc-radio>
                     </mwc-formfield>
                     <mwc-formfield label="Flex wrap">
-                        <mwc-radio name="layout" .value=${Layout1dFlex} ?checked=${Layout === Layout1dFlex}></mwc-radio>
+                        <mwc-radio name="layout" .value=${FlexWrapLayout} ?checked=${Layout === FlexWrapLayout}></mwc-radio>
                     </mwc-formfield>
                 </fieldset>
                 <details ?open=${showRange} @toggle=${e => setState({showRange: e.target.open})}>
@@ -143,8 +137,15 @@ function renderExample() {
         >
             ${virtualize({items, renderItem, scroller: true, layout: {
                 type: Layout,
-                idealSize,
-                spacing,
+                itemSize: { width: `${idealSize}px`, height: `${Math.round(4/4*idealSize)}px`},
+                flex: { preserve: 'aspect-ratio' },
+                justify: 'space-around',
+                padding: '0',
+                gap: Layout === GridLayout && false
+                    ? direction === 'vertical'
+                        ? `auto ${gap}px`
+                        : `${gap}px auto`
+                    : `${gap}px`,
                 direction
             }})}
         </div>

@@ -5,7 +5,7 @@
  */
 
 import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
-import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier } from './layouts/Layout.js';
+import { ItemBox, Margins, Layout, Positions, LayoutConstructor, LayoutSpecifier } from './layouts/shared/Layout.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
@@ -243,7 +243,7 @@ export class Virtualizer {
       this.layout = config.layout;
     }
     else {
-      this.layout = (await import('./layouts/FlowLayout')).FlowLayout;
+      this.layout = (await import('./layouts/flow.js')).FlowLayout;
     }
   }
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import EventTarget from '../polyfillLoaders/EventTarget.js';
+import EventTarget from '../../polyfillLoaders/EventTarget.js';
 import {Layout, Positions, ScrollDirection, Size, dimension, position} from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -40,7 +40,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * Scrolling direction.
    */
-  private _direction: ScrollDirection = 'vertical';
+  private _direction: ScrollDirection | null = null;
 
   /**
    * Dimensions of the viewport.
@@ -101,16 +101,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _last = -1;
 
   /**
-   * The _estimated_ size of a child.
-   */
-  protected _itemSize: Size = {width: 100, height: 100};
-
-  /**
-   * Space in pixels between children.
-   */
-  protected _spacing = 0;
-
-  /**
    * Length in the scrolling direction.
    */
   protected _sizeDim: dimension = 'height';
@@ -162,12 +152,14 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   private _eventTarget: EventTarget | null = null;
 
-  protected _defaultConfig: C = {
-    direction: 'vertical'
-  } as C
+  protected get _defaultConfig() : C {
+    return {
+      direction: 'vertical'
+    } as C
+  }
 
   constructor(config?: C) {
-    // Delay setting config so that subclasses can override values
+    // Delay setting config so that subclasses do setup work first
     Promise.resolve().then(() => this.config = config || this._defaultConfig);
   }
 
@@ -200,7 +192,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Primary scrolling direction.
    */
   get direction(): ScrollDirection {
-    return this._direction;
+    return this._direction!;
   }
   set direction(dir) {
     // Force it to be either horizontal or vertical.
@@ -216,38 +208,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   /**
-   * Estimate of the dimensions of a single child.
-   */
-  get itemSize(): Size {
-    return this._itemSize;
-  }
-  set itemSize(dims) {
-    const {_itemDim1, _itemDim2} = this;
-    Object.assign(this._itemSize, dims);
-    if (_itemDim1 !== this._itemDim1 || _itemDim2 !== this._itemDim2) {
-      if (_itemDim2 !== this._itemDim2) {
-        this._itemDim2Changed();
-      } else {
-        this._scheduleLayoutUpdate();
-      }
-    }
-  }
-
-  /**
-   * Amount of space in between items.
-   */
-  get spacing(): number {
-    return this._spacing;
-  }
-  set spacing(px) {
-    const _px = Number(px);
-    if (_px !== this._spacing) {
-      this._spacing = _px;
-      this._triggerReflow();
-    }
-  }
-
-  /**
    * Height and width of the viewport.
    */
   get viewportSize(): Size {
@@ -257,7 +217,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     const {_viewDim1, _viewDim2} = this;
     Object.assign(this._viewportSize, dims);
     if (_viewDim2 !== this._viewDim2) {
-      this._viewDim2Changed();
+      // this._viewDim2Changed();
+      this._scheduleLayoutUpdate();
     } else if (_viewDim1 !== this._viewDim1) {
       this._checkThresholds();
     }
@@ -283,7 +244,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * Perform a reflow if one has been scheduled.
    */
-  reflowIfNeeded(force: boolean) {
+  reflowIfNeeded(force: boolean = false) {
     if (force || this._pendingReflow) {
       this._pendingReflow = false;
       this._reflow();
@@ -337,53 +298,32 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * Get the top and left positioning of the item at idx.
    */
-  abstract _getItemPosition(idx: number): Positions;
+  protected abstract _getItemPosition(idx: number): Positions;
 
   /**
    * Update _first and _last based on items that should be in the current
    * range.
    */
-  abstract _getActiveItems(): void;
+  protected abstract _getActiveItems(): void
 
-  protected _itemDim2Changed() {
+  protected abstract _getItemSize(_idx: number): Size
+
+    /**
+   * Calculates (precisely or by estimating, if needed) the total length of all items in
+   * the scrolling direction, including spacing, caching the value in the `_scrollSize` field.
+   * 
+   * Should return a minimum value of 1 to ensure at least one item is rendered.
+   * TODO (graynorton): Possibly no longer required, but leaving here until it can be verified.
+   */
+  protected abstract _updateScrollSize(): void
+
+  protected _updateLayout(): void {
     // Override
   }
 
-  protected _viewDim2Changed() {
-    // Override
-  }
-
-  protected _updateLayout() {
-    // Override
-  }
-
-  protected _getItemSize(_idx: number): Size {
-    return {
-      [this._sizeDim]: this._itemDim1,
-      [this._secondarySizeDim]: this._itemDim2,
-    } as unknown as Size;
-  }
-
-  /**
-   * The size of an item in the scrolling direction + space between items.
-   */
-  protected get _delta(): number {
-    return this._itemDim1 + this._spacing;
-  }
-
-  /**
-   * The height or width of an item, whichever corresponds to the scrolling direction.
-   */
-  protected get _itemDim1(): number {
-    return this._itemSize[this._sizeDim];
-  }
-
-  /**
-   * The height or width of an item, whichever does NOT correspond to the scrolling direction.
-   */
-  protected get _itemDim2(): number {
-    return this._itemSize[this._secondarySizeDim];
-  }
+  // protected _viewDim2Changed(): void {
+  //   this._scheduleLayoutUpdate();
+  // }
 
   /**
    * The height or width of the viewport, whichever corresponds to the scrolling direction.
@@ -415,7 +355,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     // TODO graynorton@: reflowIfNeeded() isn't really supposed
     // to be called internally. Address in larger cleanup
     // of virtualizer / layout interaction pattern.
-    this.reflowIfNeeded(true);
+    // this.reflowIfNeeded(true);
+    Promise.resolve().then(() => this.reflowIfNeeded());
   }
 
   protected _reflow() {
@@ -431,15 +372,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     this._emitRange();
     this._emitChildPositions();
     this._emitScrollError();
-  }
-
-  /**
-   * Estimates the total length of all items in the scrolling direction, including spacing.
-   */
-  protected _updateScrollSize() {
-    // Ensure we have at least 1px - this allows getting at least 1 item to be
-    // rendered.
-    this._scrollSize = Math.max(1, this._totalItems * this._delta);
   }
 
   protected _scrollIfNeeded() {

@@ -63,6 +63,7 @@ const copyConfig = {
 };
 
 const samples = [
+  'grid',
   'tab-switch',
   'ancestor-scroll-target',
   'nested',

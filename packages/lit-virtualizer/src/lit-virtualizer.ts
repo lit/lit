@@ -10,7 +10,7 @@ import { property } from 'lit/decorators/property.js';
 import { state } from 'lit/decorators/state.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Virtualizer, VirtualizerHostElement, virtualizerRef, RangeChangedEvent } from './Virtualizer.js';
-import { LayoutSpecifier, Layout, LayoutConstructor } from './layouts/Layout.js';
+import { LayoutSpecifier, Layout, LayoutConstructor } from './layouts/shared/Layout.js';
 
 
 type RenderItemFunction = ((item: any, index: number) => TemplateResult)
