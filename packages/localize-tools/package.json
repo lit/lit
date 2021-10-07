@@ -25,8 +25,7 @@
     "test": "npm run test:unit && npm run test:check-tsc",
     "test:unit": "uvu lib/tests '\\.test\\.js$' --ignore 'ssr\\.unit\\.test\\.js$' && uvu lib/tests '\\ssr\\.unit\\.test\\.js$'",
     "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:unit",
-    "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
-    "prepack": "npm run build"
+    "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project"
   },
   "files": [
     "/src/",
