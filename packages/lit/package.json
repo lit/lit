@@ -135,7 +135,8 @@
     "/polyfill-support.{d.ts.map,d.ts,js.map,js}",
     "/static-html.{d.ts.map,d.ts,js.map,js}",
     "/decorators/",
-    "/directives/"
+    "/directives/",
+    "/logo.svg"
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",
