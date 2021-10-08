@@ -29,7 +29,9 @@ jobs:
         id: changesets
         uses: changesets/action@master
         with:
+          version: npm run version
           publish: npm run release
         env:
+          HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

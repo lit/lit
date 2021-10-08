@@ -98,6 +98,11 @@ async function transformOutput(
   transformConfig: TransformOutputConfig,
   program: ts.Program
 ) {
+  if (transformConfig.outputDir === undefined && !config.tsConfig) {
+    throw new KnownError(
+      `Either output.outputDir or tsConfig must be specified.`
+    );
+  }
   if (transformConfig.localeCodesModule) {
     await writeLocaleCodesModule(
       config.sourceLocale,
@@ -111,8 +116,8 @@ async function transformOutput(
   // transformation into a real project so that the user can still use --watch
   // and other tsc flags. It would also be nice to support the language server,
   // so that diagnostics will show up immediately in the editor.
-  const opts = program.getCompilerOptions();
-  const outRoot = opts.outDir || '.';
+  const compilerOpts = program.getCompilerOptions();
+  const outRoot = transformConfig.outputDir ?? compilerOpts.outDir ?? '.';
   for (const locale of [config.sourceLocale, ...config.targetLocales]) {
     let translations;
     if (locale !== config.sourceLocale) {
@@ -121,7 +126,7 @@ async function transformOutput(
         translations.set(message.name, message);
       }
     }
-    opts.outDir = pathLib.join(outRoot, '/', locale);
+    compilerOpts.outDir = pathLib.join(outRoot, '/', locale);
     program.emit(undefined, undefined, undefined, undefined, {
       before: [litLocalizeTransform(translations, locale, program)],
     });

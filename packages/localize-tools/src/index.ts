@@ -12,9 +12,11 @@ import {
   sortProgramMessages,
   validateLocalizedPlaceholders,
 } from './messages.js';
-import {programFromTsConfig} from './typescript.js';
+import {readTsConfig} from './typescript.js';
 import {extractMessagesFromProgram} from './program-analysis.js';
 import {Formatter, makeFormatter} from './formatters/index.js';
+import fastGlob from 'fast-glob';
+import {KnownError} from './error.js';
 import type {Locale} from './types/locale.js';
 
 interface ExtractMessagesResult {
@@ -46,17 +48,56 @@ export abstract class LitLocalizer {
   private _formatter?: Formatter;
   private _sourceMessages?: ExtractMessagesResult;
   private _translations?: ReadTranslationsResult;
+  private _filesAndCompilerOptions?: {
+    fileNames: string[];
+    options: ts.CompilerOptions;
+  };
 
   /**
    * A TypeScript program for this project.
    */
   protected get program(): ts.Program {
     if (!this._program) {
-      this._program = programFromTsConfig(
-        this.config.resolve(this.config.tsConfig)
-      );
+      const {fileNames, options} = this.filesAndCompilerOptions;
+      this._program = ts.createProgram(fileNames, options);
     }
     return this._program;
+  }
+
+  private get filesAndCompilerOptions() {
+    if (!this._filesAndCompilerOptions) {
+      if (this.config.tsConfig) {
+        this._filesAndCompilerOptions = readTsConfig(
+          this.config.resolve(this.config.tsConfig)
+        );
+      } else if (!this.config.inputFiles) {
+        throw new KnownError(
+          `At least one of inputFiles or tsConfig must be specified.`
+        );
+      } else {
+        this._filesAndCompilerOptions = {
+          fileNames: [],
+          options: {
+            target: ts.ScriptTarget.ESNext,
+            module: ts.ModuleKind.ESNext,
+            moduleResolution: ts.ModuleResolutionKind.NodeJs,
+            experimentalDecorators: true,
+            lib: ['esnext', 'dom'],
+            allowJs: true,
+          },
+        };
+      }
+      if (this.config.inputFiles) {
+        this._filesAndCompilerOptions.fileNames = fastGlob.sync(
+          this.config.inputFiles,
+          {
+            cwd: this.config.baseDir,
+            absolute: true,
+          }
+        );
+      }
+    }
+    return this._filesAndCompilerOptions;
   }
 
   /**

@@ -30,7 +30,7 @@
     "typescript": "^4.3.5"
   },
   "devDependencies": {
-    "@lit/localize": "^0.10.4",
+    "@lit/localize": "^0.11.0",
     "@lit/reactive-element": "^1.0.0",
     "@types/prettier": "^2.2.3",
     "lit": "^2.0.0",

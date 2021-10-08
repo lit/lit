@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "publishConfig": {
     "access": "public"
   },
@@ -8,7 +8,8 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git"
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/lit"
   },
   "author": "Google LLC",
   "homepage": "https://lit.dev/",
@@ -135,7 +136,8 @@
     "/polyfill-support.{d.ts.map,d.ts,js.map,js}",
     "/static-html.{d.ts.map,d.ts,js.map,js}",
     "/decorators/",
-    "/directives/"
+    "/directives/",
+    "/logo.svg"
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",
