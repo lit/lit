@@ -1,24 +1,54 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "es2017",
-    "module": "esNext",
-    "moduleResolution": "node",
-    "lib": ["es2017", "dom"],
+    // "module": "es2015",
+    "module": "es2020",
+    "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
-    // "sourceMap": true,
-    // "inlineSources": true,
-    // "strict": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    // "outDir": "./development/",
+    "outDir": "./",
+    "rootDir": "./src",
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "outDir": "./",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true
   },
-  "include": [
-    "src/**/*.ts",
-  ],
-  "exclude": []
+  "include": ["src/**/*.ts"],
+  "exclude": [],
+  "references": []
 }
+// {
+//   "compilerOptions": {
+//     "target": "es2017",
+//     "module": "esNext",
+//     "moduleResolution": "node",
+//     "lib": ["es2017", "dom"],
+//     "declaration": true,
+//     "declarationMap": true,
+//     // "sourceMap": true,
+//     // "inlineSources": true,
+//     // "strict": true,
+//     "noUnusedLocals": true,
+//     "noUnusedParameters": true,
+//     "noImplicitReturns": true,
+//     "noFallthroughCasesInSwitch": true,
+//     "outDir": "./",
+//     "experimentalDecorators": true,
+//     "importHelpers": true
+//   },
+//   "include": [
+//     "src/**/*.ts",
+//   ],
+//   "exclude": []
+// }

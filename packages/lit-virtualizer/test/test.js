@@ -1,5 +1,13 @@
-import { LitVirtualizer, scroll, Layout1d } from '../lit-virtualizer.js'
-import { html, render } from 'lit-html'
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+import { LitVirtualizer } from '../lit-virtualizer.js';
+import { virtualize } from '../scroll.js'
+import { flow } from '../layouts/FlowLayout.js'
+import { html, render } from 'lit'
 
 describe('<lit-virtualizer>', function () {
   it('registers lit-virtualizer as a custom element', function () {
@@ -8,7 +16,7 @@ describe('<lit-virtualizer>', function () {
   });
 });
 
-describe('scroll', function () {
+describe('virtualize', function () {
   let container;
 
   beforeEach(function() {
@@ -24,10 +32,11 @@ describe('scroll', function () {
 
   it('uses the provided method to render items', async function () {
     const example = html`
-      ${scroll({
+      ${virtualize({
         items: ['foo', 'bar', 'baz'],
         renderItem: (item) => html`<p>${item}</p>`,
-        layout: Layout1d
+        layout: flow(),
+        scrollTarget: window
       })}
     `;
 
@@ -58,7 +67,7 @@ describe('scroll', function () {
   //     `;
 
   //     render(example, container);
-  
+
   //     await (new Promise(resolve => requestAnimationFrame(resolve)));
   //     assert.exists(container.shadowRoot);
 
@@ -75,7 +84,7 @@ describe('scroll', function () {
   //     `;
 
   //     render(example, container);
-  
+
   //     await (new Promise(resolve => requestAnimationFrame(resolve)));
   //     assert.notExists(container.shadowRoot);
 
@@ -85,21 +94,21 @@ describe('scroll', function () {
 
   describe('visible indices', function() {
     it('emits visibilityChanged events with the proper indices', async function() {
-      const directive = scroll({
+      const directive = virtualize({
         items: ['foo', 'bar', 'baz', 'qux'],
         renderItem: (item) => html`<div style='height: 50px'>${item}</div>`,
-        layout: Layout1d
+        layout: flow()
       });
       container.style.height = '100px';
       let firstVisible;
       let lastVisible;
       container.addEventListener('visibilityChanged', e => {
-        firstVisible = e.detail.firstVisible;
-        lastVisible = e.detail.lastVisible;
+        firstVisible = e.first;
+        lastVisible = e.last;
       });
-  
+
       render(directive, container);
-  
+
       await (new Promise(resolve => requestAnimationFrame(resolve)));
       container.scrollTop = 50;
       await (new Promise(resolve => requestAnimationFrame(resolve)));

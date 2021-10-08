@@ -1,5 +1,16 @@
-/lib/
+/layouts/
+/polyfillLoaders/
+/polyfills/
 /lit-virtualizer.js
 /lit-virtualizer.d.ts
 /lit-virtualizer.d.ts.map
+/lit-virtualizer.js.map
+/Virtualizer.js
+/Virtualizer.d.ts
+/Virtualizer.d.ts.map
+/Virtualizer.js.map
+/virtualize.js
+/virtualize.d.ts
+/virtualize.d.ts.map
+/virtualize.js.map
 /test/screenshot/cases/*/actual.*.png
