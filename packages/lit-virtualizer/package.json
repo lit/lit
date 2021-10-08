@@ -2,15 +2,28 @@
     "name": "@lit-labs/virtualizer",
     "version": "0.6.0",
     "description": "Virtual scrolling for Lit",
+    "author": "Google LLC",
     "license": "BSD-3-Clause",
     "main": "lit-virtualizer.js",
-    "files": [
-        "/lit-virtualizer.js",
-        "/lit-virtualizer.d.ts",
-        "/lit-virtualizer.d.ts.map",
-        "/lib/"
-    ],
     "module": "lit-virtualizer.js",
+    "type": "module",
+    "exports": {
+        ".": {
+            "default": "./lit-virtualizer.js"
+        },
+        "./layouts/flexWrap.js": {
+            "default": "./layouts/flexWrap.js"
+        },
+        "./layouts/flow.js": {
+            "default": "./layouts/flow.js"
+        },
+        "./layouts/grid.js": {
+            "default": "./layouts/grid.js"
+        },
+        "./virtualize.js": {
+            "default": "./virtualize.js"
+        }
+    },
     "scripts": {
         "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "bench:debug": "tach --root=../.. test/benchmarks/${BENCH:-basic}.html --measure=fcp",
@@ -25,7 +38,14 @@
         "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
         "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
     },
-    "author": "Google LLC",
+    "files": [
+        "/layouts/*.{d.ts,d.ts.map,js,js.map}",
+        "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
+        "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+        "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
+        "/virtualize.{d.ts,d.ts.map,js,js.map}",
+        "/Virtualizer.{d.ts,d.ts.map,js,js.map}"
+    ],
     "devDependencies": {
         "chai": "^4.2.0",
         "copyfiles": "^2.4.1",
