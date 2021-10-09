@@ -1,6 +1,6 @@
 {
     "name": "@lit-labs/virtualizer",
-    "version": "0.7.0-pre.1",
+    "version": "0.7.0-pre.2",
     "description": "Virtual scrolling for Lit",
     "author": "Google LLC",
     "license": "BSD-3-Clause",
@@ -28,7 +28,7 @@
         "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "bench:debug": "tach --root=../.. test/benchmarks/${BENCH:-basic}.html --measure=fcp",
         "bench:scroll": "tach --force-clean-npm-install --config=test/benchmarks/scrollingBenchmarks.json",
-        "build": "tsc & copyfiles -u 1 src/polyfills/resize-observer-polyfill/ResizeObserver.js .",
+        "build": "tsc --build --force & copyfiles -u 1 src/polyfills/resize-observer-polyfill/ResizeObserver.js .",
         "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
         "clean": "rm -r node_modules/",
         "lint": "tslint --project ./",
@@ -40,6 +40,7 @@
     },
     "files": [
         "/layouts/*.{d.ts,d.ts.map,js,js.map}",
+        "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
         "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
         "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
         "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",

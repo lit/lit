@@ -45,6 +45,6 @@
         "lit": "^2.0.0",
         "systemjs": "^2.0.0-alpha.1",
         "whatwg-fetch": "^3.0.0",
-        "@lit-labs/virtualizer": "^0.7.0-pre.1"
+        "@lit-labs/virtualizer": "^0.7.0-pre.2"
     }
 }
