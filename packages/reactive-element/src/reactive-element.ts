@@ -558,13 +558,8 @@ export abstract class ReactiveElement
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
         if (DEV_MODE) {
-          const reactivePropertyNames =
-            prototypeToReactivePropertyNames.get(this.prototype) ?? new Set();
-          reactivePropertyNames.add(name);
-          prototypeToReactivePropertyNames.set(
-            this.prototype,
-            reactivePropertyNames
-          );
+          // Assume this set has already been initialized in `finalize`.
+          prototypeToReactivePropertyNames.get(this.prototype)!.add(name);
         }
       }
     }
@@ -657,6 +652,17 @@ export abstract class ReactiveElement
     this.elementProperties = new Map(superCtor.elementProperties);
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
+    if (DEV_MODE) {
+      // Initialize the set of reactive property names with those of the parent
+      // class. This must happen (a) after `superCtor.finalize()`, so that any
+      // parent class' set will exist and be complete, and (b) before the
+      // `this.createProperty(...)` calls below, so that this class' set exists
+      // for it to modify.
+      prototypeToReactivePropertyNames.set(
+        this.prototype,
+        new Set(prototypeToReactivePropertyNames.get(superCtor.prototype)!)
+      );
+    }
     // make any properties
     // Note, only process "own" properties since this element will inherit
     // any properties defined on the superClass, and finalization ensures
