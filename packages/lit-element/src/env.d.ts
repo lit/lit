@@ -18,10 +18,7 @@ declare var litElementPolyfillSupport:
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | ((options: {LitElement: any}) => void);
 // eslint-disable-next-line no-var
-declare var litElementPolyfillSupportDevMode:
-  | undefined
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | ((options: {LitElement: any}) => void);
+declare var litElementPolyfillSupportDevMode: typeof litElementPolyfillSupport;
 
 // eslint-disable-next-line no-var
 declare var litElementVersions: undefined | Array<string>;
