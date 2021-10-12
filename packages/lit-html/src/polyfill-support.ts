@@ -97,7 +97,7 @@ var DEV_MODE = true;
  * * ChildPart.prototype._$getTemplate
  * * ChildPart.prototype._$setValue
  */
-const polyfillSupport = (
+const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
