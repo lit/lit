@@ -110,8 +110,8 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'requestUpdateInternal');
     });
 
-    suite('shadowed properties', () => {
-      test('throws when updating properties are shadowed class fields', async () => {
+    suite('shadowed reactive properties', () => {
+      test('throws when reactive properties defined by the current class are shadowed by class fields', async () => {
         class ShadowedProps extends ReactiveElement {
           static override properties = {
             fooProp: {},
@@ -214,7 +214,7 @@ if (DEV_MODE) {
       });
 
       test('does not throw if the property has `noAccessor` set', async () => {
-        class SomeElement extends ReactiveElement {
+        class ShadowedProps extends ReactiveElement {
           static override properties = {
             prop: {noAccessor: true},
           };
@@ -230,9 +230,9 @@ if (DEV_MODE) {
             });
           }
         }
-        customElements.define(generateElementName(), SomeElement);
+        customElements.define(generateElementName(), ShadowedProps);
 
-        const el = new SomeElement();
+        const el = new ShadowedProps();
         container.appendChild(el);
 
         el.requestUpdate();
@@ -246,6 +246,7 @@ if (DEV_MODE) {
           };
 
           static override getPropertyDescriptor(..._args: Array<any>) {
+            // Don't create any reactive properties.
             return undefined;
           }
 
