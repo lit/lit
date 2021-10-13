@@ -206,6 +206,13 @@ test('element with `willUpdate`', async () => {
   );
 });
 
+test('element with `static`', async () => {
+  const {render, elementWithStatic} = await setup();
+  const result = await render(elementWithStatic);
+  // TODO: we'd like to remove the extra space in the start tag
+  console.log(result);
+});
+
 /* Slots and Distribution */
 
 /* Declarative Shadow Root */

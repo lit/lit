@@ -9,6 +9,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
+import {unsafeStatic, html as html2} from 'lit-html/static';
 export {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
 export {render} from '../../lib/render-lit-html.js';
@@ -103,6 +104,9 @@ export class TestWillUpdate extends LitElement {
 
 // prettier-ignore
 export const elementWithWillUpdate = html`<test-will-update .first=${'Foo'} .last=${'Bar'}></test-will-update>`;
+
+const elem = unsafeStatic('p');
+export const elementWithStatic = html2`<${elem}>hello!</${elem}>`;
 
 /* Slots and Distribution */
 // prettier-ignore
