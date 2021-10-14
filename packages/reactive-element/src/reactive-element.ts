@@ -484,6 +484,13 @@ export abstract class ReactiveElement
   static styles?: CSSResultGroup;
 
   /**
+   * The set of properties defined by this class that caused an accessor to be
+   * added during `createProperty`.
+   * @nocollapse
+   */
+  private static __reactivePropertyKeys?: Set<PropertyKey>;
+
+  /**
    * Returns a list of attributes corresponding to the registered properties.
    * @nocollapse
    * @category attributes
@@ -553,6 +560,16 @@ export abstract class ReactiveElement
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
+        if (DEV_MODE) {
+          // If this class doesn't have its own set, create one and initialize
+          // with the values in the set from the nearest ancestor class, if any.
+          if (!this.hasOwnProperty('__reactivePropertyKeys')) {
+            this.__reactivePropertyKeys = new Set(
+              this.__reactivePropertyKeys ?? []
+            );
+          }
+          this.__reactivePropertyKeys!.add(name);
+        }
       }
     }
   }
@@ -588,7 +605,7 @@ export abstract class ReactiveElement
     name: PropertyKey,
     key: string | symbol,
     options: PropertyDeclaration
-  ) {
+  ): PropertyDescriptor | undefined {
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get(): any {
@@ -1149,13 +1166,13 @@ export abstract class ReactiveElement
       // Produce warning if any class properties are shadowed by class fields
       if (DEV_MODE) {
         const shadowedProperties: string[] = [];
-        (this.constructor as typeof ReactiveElement).elementProperties.forEach(
-          (_v, p) => {
-            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-              shadowedProperties.push(p as string);
-            }
+        (
+          this.constructor as typeof ReactiveElement
+        ).__reactivePropertyKeys?.forEach((p) => {
+          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
+            shadowedProperties.push(p as string);
           }
-        );
+        });
         if (shadowedProperties.length) {
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
