@@ -7,10 +7,9 @@
 import type {TemplateResult} from './lit-html.js';
 
 import {noChange, RenderOptions, _$LH} from './lit-html.js';
-import {AttributePartInfo, PartType} from './directive.js';
+import {PartType} from './directive.js';
 import {
   isPrimitive,
-  isSingleExpression,
   isTemplateResult,
 } from './directive-helpers.js';
 
@@ -367,11 +366,7 @@ const createAttributeParts = (
           options
         );
 
-        const value = isSingleExpression(
-          instancePart as unknown as AttributePartInfo
-        )
-          ? state.result.values[state.instancePartIndex]
-          : state.result.values;
+        const values = state.result.values;
 
         // Setting the attribute value primes committed value with the resolved
         // directive value; we only then commit that value for event/property
@@ -382,7 +377,7 @@ const createAttributeParts = (
           instancePart.type === PartType.PROPERTY
         );
         instancePart._$setValue(
-          value,
+          values,
           instancePart,
           state.instancePartIndex,
           noCommit

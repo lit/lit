@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {noChange, nothing, _Σ as litHtmlPrivate} from '../lit-html.js';
+import {noChange, nothing, _$LH as litHtmlPrivate} from '../lit-html.js';
 import {
   directive,
   Directive,
@@ -45,7 +45,7 @@ class SpreadDirective extends Directive {
     throw new Error('Not implemented');
   }
 
-  update(elementPart: ElementPart, [values]: DirectiveParameters<this>) {
+  override update(elementPart: ElementPart, [values]: DirectiveParameters<this>) {
     // Remove old properties that no longer exist in styleInfo
     // We use forEach() instead of for-of so that re don't require down-level
     // iteration.
@@ -54,7 +54,7 @@ class SpreadDirective extends Directive {
       // If the name isn't in values or it's null/undefined
       if (values[name] == null) {
         // Clear the part, which will remove attributes and disconnect directives
-        part._$setValue(nothing);
+        part._$setValue([nothing], undefined, 0);
         // Remove the part
         this._parts!.delete(name);
       }
@@ -86,7 +86,7 @@ class SpreadDirective extends Directive {
             ))
           );
         }
-        part._$setValue(value);
+        part._$setValue([value], undefined, 0);
       }
     }
     return noChange;
