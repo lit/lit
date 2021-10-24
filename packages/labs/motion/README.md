@@ -110,6 +110,45 @@ in the host element: `isPlaying` returns true if any `animate`'s are
 currently playing; `isAnimating` returns true if any `animate`s currently have
 animations (which may be paused).
 
+## Spring and Spring2D controllers
+
+The Spring and Spring2D controllers simulate physical springs with the [Wobble](https://github.com/skevy/wobble) library.
+
+When using a spring controller you'll typically set the `fromPosition` and/or `toPosition` and use `currentPosition` in your render method.
+
+```ts
+@customElement('goo-element')
+export class GooElement extends LitElement {
+  // Both the MouseController and SpringController2D will
+  // trigger a render when the mouse moves or the spring updates
+  _mouse = new MouseController(this);
+  _spring1 = new SpringController2D(this, fast);
+
+  render() {
+    // Set the spring to go to the mouse
+    this._spring1.toPosition = this._mouse.position;
+
+    // Position a div based on the current position of the spring.
+    return html`
+      <div
+        class="b1"
+        style=${positionStyle(this._spring3.currentPosition)}
+      ></div>
+    `;
+  }
+}
+
+const fast = {
+  stiffness: 1200,
+  damping: 400,
+};
+
+const positionStyle = ({x, y}: Position2D) =>
+  styleMap({
+    transform: `translate3d(${x}px,${y}px,0) translate3d(-50%,-50%,0)`,
+  });
+```
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).

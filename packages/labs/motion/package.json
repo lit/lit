@@ -29,7 +29,8 @@
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/animate.{d.ts,d.ts.map,js,js.map}",
     "/animate-controller.{d.ts,d.ts.map,js,js.map}",
-    "/position.{d.ts,d.ts.map,js,js.map}"
+    "/position.{d.ts,d.ts.map,js,js.map}",
+    "/spring.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "start": "wireit",
@@ -157,7 +158,8 @@
     "@lit-internal/scripts": "^1.0.1-pre.0"
   },
   "dependencies": {
-    "lit": "^3.0.0-pre.0"
+    "lit": "^3.0.0-pre.0",
+    "wobble": "^1.5.1"
   },
   "publishConfig": {
     "access": "public"

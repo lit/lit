@@ -250,7 +250,11 @@ packages/labs/motion/node_modules/
 packages/labs/motion/index.*
 packages/labs/motion/animate.*
 packages/labs/motion/position.*
+packages/labs/motion/spring.*
 packages/labs/motion/animate-controller.*
+packages/labs/motion/demo/*.d.ts
+packages/labs/motion/demo/*.d.ts.map
+
 packages/labs/nextjs/index.*
 
 packages/labs/observers/development/
