@@ -1222,7 +1222,7 @@ export abstract class ReactiveElement
   /**
    * @category updates
    */
-  willUpdate(_changedProperties: PropertyValues) {}
+  protected willUpdate(_changedProperties: PropertyValues): void {}
 
   // Note, this is an override point for polyfill-support.
   // @internal
