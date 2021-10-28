@@ -3,11 +3,11 @@
 <file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="h02c268d9b1fcb031">
-  <source>&lt;Hello<x id="0" equiv-text="&lt;b>"/>&lt;World &amp; Friends><x id="1" equiv-text="&lt;/b>"/>!></source>
+  <source>&lt;Hello<ph id="0">&lt;b></ph>&lt;World &amp; Friends><ph id="1">&lt;/b></ph>!></source>
 </trans-unit>
 <trans-unit id="he7b474847636149b">
   <note>Description of Hello $(name)</note>
-  <source>Hello <x id="0" equiv-text="&lt;b>${name}"/>!<x id="1" equiv-text="&lt;/b>"/></source>
+  <source>Hello <ph id="0">&lt;b>${name}</ph>!<ph id="1">&lt;/b></ph></source>
 </trans-unit>
 <trans-unit id="s8c0ec8d1fb9e6e32">
   <note>Description of Hello World</note>
