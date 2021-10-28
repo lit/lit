@@ -1831,7 +1831,7 @@ suite('ReactiveElement', () => {
           name,
           key,
           options
-        );
+        )!;
         return {
           get: defaultDescriptor.get,
           set(this: E, value: unknown) {
@@ -1938,8 +1938,8 @@ suite('ReactiveElement', () => {
           name,
           key,
           options
-        );
-        const setter = defaultDescriptor.set;
+        )!;
+        const setter = defaultDescriptor.set!;
         return Object.assign(defaultDescriptor, {
           set(this: E, value: unknown) {
             setter.call(this, value);

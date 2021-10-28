@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.4.0
+
+### Minor Changes
+
+- [#2188](https://github.com/lit/lit/pull/2188) [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b) - Added output.outputDir setting for transform mode. Required if tsConfig is not specified.
+
+* [#2188](https://github.com/lit/lit/pull/2188) [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b) - Add `inputFiles` field, and make `tsConfig` field optional when `inputFiles` is specified. If both are set, `inputFiles` takes precedence over the input files from `tsConfig`. When `tsConfig` is not specified, a default config is used that will include `.js` files.
+
+### Patch Changes
+
+- [#2188](https://github.com/lit/lit/pull/2188) [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b) - Fixed the `$schema` property that is automatically added to @lit/localize-tools
+  config files. It was previously pointing at the incorrect file.
+- Updated dependencies [[`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b), [`9fc5a039`](https://github.com/lit/lit/commit/9fc5a039dc2b701ac9dbaaea278668172915c80b)]:
+  - @lit/localize@0.11.0
+
+## 0.3.7
+
+### Patch Changes
+
+- [#2113](https://github.com/lit/lit/pull/2113) [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047) - Dependency upgrades including TypeScript 4.4.2
+
+* [#2060](https://github.com/lit/lit/pull/2060) [`dddbe0c7`](https://github.com/lit/lit/commit/dddbe0c7627a7c1f750da69c3200d373155b1d74) - Update TypeScript
+
+* Updated dependencies [[`15a8356d`](https://github.com/lit/lit/commit/15a8356ddd59a1e80880a93acd21fadc9c24e14b), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`5b2f3642`](https://github.com/lit/lit/commit/5b2f3642ff91931b5b01f8bdd2ed98aba24f1047), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`5fabe2b5`](https://github.com/lit/lit/commit/5fabe2b5ae4ab8fba9dc2d23a69105d32e4c0705), [`0312f3e5`](https://github.com/lit/lit/commit/0312f3e533611eb3f4f9381594485a33ad003b74)]:
+  - lit@2.0.0
+  - @lit/localize@0.10.4
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -109,11 +136,19 @@ Before:
 class HomePage {
   hello() {
     // msgdesc: Greeting to Earth
-    return msg(html`Hello World`);
+    return msg(
+      html`
+        Hello World
+      `
+    );
   }
   goodbye() {
     // msgdesc: Farewell to Earth
-    return msg(html`Goodbye World`);
+    return msg(
+      html`
+        Goodbye World
+      `
+    );
   }
 }
 ```
@@ -123,14 +158,24 @@ After:
 ```js
 class HomePage {
   hello() {
-    return msg(html`Hello World`, {
-      desc: 'Home page / Greeting to Earth',
-    });
+    return msg(
+      html`
+        Hello World
+      `,
+      {
+        desc: 'Home page / Greeting to Earth'
+      }
+    );
   }
   goodbye() {
-    return msg(html`Goodbye World`, {
-      desc: 'Home page / Farewell to Earth',
-    });
+    return msg(
+      html`
+        Goodbye World
+      `,
+      {
+        desc: 'Home page / Farewell to Earth'
+      }
+    );
   }
 }
 ```

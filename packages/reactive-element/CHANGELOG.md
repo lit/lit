@@ -1,5 +1,33 @@
 # Change Log
 
+## 1.0.1
+
+### Patch Changes
+
+- [#2152](https://github.com/lit/lit/pull/2152) [`ba5e1391`](https://github.com/lit/lit/commit/ba5e139163049014e6261123ff808700352b86a8) - Replace dynamic name lookups for polyfill support functions with static names.
+
+## 1.0.0
+
+### Major Changes
+
+- `@lit/reactive-element` is a new package that factors out the base class that provides the reactive update lifecycle based on property/attribute changes to `LitElement` (what was previously called `UpdatingElement`) into a separate package. `LitElement` now extends `ReactiveElement` to add `lit-html` rendering via the `render()` callback. See [ReactiveElement API](https://lit.dev/docs/api/ReactiveElement/) for more details.
+- `UpdatingElement` has been renamed to `ReactiveElement`.
+- The `updating-element` package has been renamed to `@lit/reactive-element`.
+- The `@internalProperty` decorator has been renamed to `@state`.
+- For consistency, renamed `_getUpdateComplete` to `getUpdateComplete`.
+- When a property declaration is `reflect: true` and its `toAttribute` function returns `undefined` the attribute is now removed where previously it was left unchanged ([#872](https://github.com/Polymer/lit-element/issues/872)).
+- Errors that occur during the update cycle were previously squelched to allow subsequent updates to proceed normally. Now errors are re-fired asynchronously so they can be detected. Errors can be observed via an `unhandledrejection` event handler on window.
+- ReactiveElement's `renderRoot` is now created when the element's `connectedCallback` is initially run.
+- Removed `requestUpdateInternal`. The `requestUpdate` method is now identical to this method and should be used instead.
+- The `initialize` method has been removed. This work is now done in the element constructor.
+
+### Minor Changes
+
+- Adds `static addInitializer` for adding a function which is called with the element instance when is created. This can be used, for example, to create decorators which hook into element lifecycle by creating a reactive controller ([#1663](https://github.com/Polymer/lit-html/issues/1663)).
+- Added ability to add a controller to an element. A controller can implement callbacks that tie into element lifecycle, including `hostConnected`, `hostDisconnected`, `hostUpdate`, and `hostUpdated`. To ensure it has access to the element lifecycle, a controller should be added in the element's constructor. To add a controller to the element, call `addController(controller)`.
+- Added `removeController(controller)` which can be used to remove a controller from a `ReactiveElement`.
+- Added `willUpdate(changedProperties)` lifecycle method to UpdatingElement. This is called before the `update` method and can be used to compute derived state needed for updating. This method is intended to be called during server side rendering and should not manipulate element DOM.
+
 ## 1.0.0-rc.4
 
 ### Patch Changes

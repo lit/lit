@@ -110,54 +110,165 @@ if (DEV_MODE) {
       assert.include(warnings[0], 'requestUpdateInternal');
     });
 
-    test('throws when updating properties are shadowed class fields', async () => {
-      class ShadowedProps extends ReactiveElement {
-        static override properties = {
-          fooProp: {},
-          barProp: {},
-        };
+    suite('shadowed reactive properties', () => {
+      test('throws when reactive properties defined by the current class are shadowed by class fields', async () => {
+        class ShadowedProps extends ReactiveElement {
+          static override properties = {
+            fooProp: {},
+            barProp: {},
+          };
 
-        constructor() {
-          super();
-          // Simulates a class field.
-          Object.defineProperty(this, 'fooProp', {
-            value: 'foo',
-            writable: true,
-            enumerable: true,
-            configurable: true,
-          });
-          Object.defineProperty(this, 'barProp', {
-            value: 'bar',
-            writable: true,
-            enumerable: true,
-            configurable: true,
-          });
+          constructor() {
+            super();
+            // Simulates a class field.
+            Object.defineProperty(this, 'fooProp', {
+              value: 'foo',
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+            Object.defineProperty(this, 'barProp', {
+              value: 'bar',
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+          }
         }
-      }
-      customElements.define(generateElementName(), ShadowedProps);
-      const a = new ShadowedProps();
-      container.appendChild(a);
-      let message = '';
-      try {
-        await a.updateComplete;
-      } catch (e) {
-        message = (e as Error).message;
-      }
-      assert.include(message, 'class fields');
-      assert.include(message, 'fooProp');
-      assert.include(message, 'barProp');
-      // always throws
-      const b = new ShadowedProps();
-      container.appendChild(b);
-      message = '';
-      try {
-        await b.updateComplete;
-      } catch (e) {
-        message = (e as Error).message;
-      }
-      assert.include(message, 'class fields');
-      assert.include(message, 'fooProp');
-      assert.include(message, 'barProp');
+        customElements.define(generateElementName(), ShadowedProps);
+        const a = new ShadowedProps();
+        container.appendChild(a);
+        let message = '';
+        try {
+          await a.updateComplete;
+        } catch (e) {
+          message = (e as Error).message;
+        }
+        assert.include(message, 'class fields');
+        assert.include(message, 'fooProp');
+        assert.include(message, 'barProp');
+        // always throws
+        const b = new ShadowedProps();
+        container.appendChild(b);
+        message = '';
+        try {
+          await b.updateComplete;
+        } catch (e) {
+          message = (e as Error).message;
+        }
+        assert.include(message, 'class fields');
+        assert.include(message, 'fooProp');
+        assert.include(message, 'barProp');
+      });
+
+      test('throws when reactive properties defined by an ancestor class are shadowed by class fields', async () => {
+        class AncestorWithProps extends ReactiveElement {
+          static override properties = {
+            fooProp: {},
+            barProp: {},
+          };
+        }
+
+        class ShadowedProps extends AncestorWithProps {
+          constructor() {
+            super();
+            // Simulates a class field.
+            Object.defineProperty(this, 'fooProp', {
+              value: 'foo',
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+            Object.defineProperty(this, 'barProp', {
+              value: 'bar',
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+          }
+        }
+        customElements.define(generateElementName(), ShadowedProps);
+        const a = new ShadowedProps();
+        container.appendChild(a);
+        let message = '';
+        try {
+          await a.updateComplete;
+        } catch (e) {
+          message = (e as Error).message;
+        }
+        assert.include(message, 'class fields');
+        assert.include(message, 'fooProp');
+        assert.include(message, 'barProp');
+        // always throws
+        const b = new ShadowedProps();
+        container.appendChild(b);
+        message = '';
+        try {
+          await b.updateComplete;
+        } catch (e) {
+          message = (e as Error).message;
+        }
+        assert.include(message, 'class fields');
+        assert.include(message, 'fooProp');
+        assert.include(message, 'barProp');
+      });
+
+      test('does not throw if the property has `noAccessor` set', async () => {
+        class ShadowedProps extends ReactiveElement {
+          static override properties = {
+            prop: {noAccessor: true},
+          };
+
+          constructor() {
+            super();
+            // Simulates a class field.
+            Object.defineProperty(this, 'prop', {
+              value: 123,
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+          }
+        }
+        customElements.define(generateElementName(), ShadowedProps);
+
+        const el = new ShadowedProps();
+        container.appendChild(el);
+
+        el.requestUpdate();
+        await el.updateComplete;
+      });
+
+      test('does not throw if no descriptor is created for the property', async () => {
+        class SomeElement extends ReactiveElement {
+          static override properties = {
+            prop: {},
+          };
+
+          static override getPropertyDescriptor(..._args: Array<any>) {
+            // Don't create any reactive properties.
+            return undefined;
+          }
+
+          constructor() {
+            super();
+            // Simulates a class field.
+            Object.defineProperty(this, 'prop', {
+              value: 123,
+              writable: true,
+              enumerable: true,
+              configurable: true,
+            });
+          }
+        }
+        customElements.define(generateElementName(), SomeElement);
+
+        const el = new SomeElement();
+        container.appendChild(el);
+
+        el.requestUpdate();
+        await el.updateComplete;
+      });
     });
 
     test('warns when awaiting `requestUpdate`', async () => {

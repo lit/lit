@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -57,15 +57,15 @@
     "uvu": "^0.5.1"
   },
   "dependencies": {
-    "@lit-labs/ssr-client": "^1.0.0-rc.1",
+    "@lit-labs/ssr-client": "^1.0.0",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "escape-html": "^1.0.3",
     "koa": "^2.7.0",
     "koa-node-resolve": "^1.0.0-pre.5",
     "koa-static": "^5.0.0",
-    "lit": "^2.0.0-rc.1",
-    "lit-element": "^3.0.0-rc.1",
-    "lit-html": "^2.0.0-rc.4",
+    "lit": "^2.0.0",
+    "lit-element": "^3.0.0",
+    "lit-html": "^2.0.0",
     "node-fetch": "^2.6.0",
     "parse5": "^6.0.1",
     "resolve": "^1.10.1"

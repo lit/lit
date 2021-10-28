@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="zh_CN" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="he7b474847636149b">
+  <note>Friendly greeting</note>
+  <source>Hello <ph id="0">&lt;b>${name}</ph>!<ph id="1">&lt;/b></ph></source>
+  <target>你好 <ph id="0">&lt;b>${name}</ph>!<ph id="1">&lt;/b></ph></target>
+</trans-unit>
+</body>
+</file>
+</xliff>

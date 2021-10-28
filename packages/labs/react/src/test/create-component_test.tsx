@@ -102,6 +102,20 @@ suite('createComponent', () => {
     assert.equal(el.textContent, 'Hello World');
   });
 
+  test('has valid displayName', () => {
+    assert.equal(BasicElementComponent.displayName, 'BasicElement');
+
+    const NamedComponent = createComponent(
+      window.React,
+      elementName,
+      BasicElement,
+      basicElementEvents,
+      'FooBar'
+    );
+    
+    assert.equal(NamedComponent.displayName, 'FooBar');
+  });
+
   test('wrapper renders custom element that updates', async () => {
     await renderReactComponent();
     assert.isOk(el);

@@ -1,23 +1,17 @@
-# ReactiveElement 1.0 Pre-release
+# ReactiveElement 1.0
 
 [![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/lit-element/next-major)](https://www.npmjs.com/package/lit-html)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
-## 🚨 About this pre-release
-
-This is a major version pre-release of ReactiveElement 1.0. This package
-has been migrated out of LitElement. See issue
-[#1077](https://github.com/Polymer/lit-element/issues/1077) for more info.
-
-This pre-release is not yet feature complete or API stable.
-
-<hr>
-
 # ReactiveElement
 
 A simple low level base class for creating fast, lightweight web components.
+
+## About this release
+
+This is a stable release of `@lit/reactive-element` 1.0.0 (part of the Lit 2.0 release). If upgrading from previous versions of `UpdatingElement`, please see the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/).
 
 ## Documentation
 
@@ -82,72 +76,14 @@ standard currently available in [TypeScript](https://www.typescriptlang.org/) or
 
 ## Installation
 
-From inside your project folder, run:
-
 ```bash
 $ npm install @lit/reactive-element
 ```
 
-To install the web components polyfills needed for older browsers:
+Or use from `lit`:
 
 ```bash
-$ npm i -D @webcomponents/webcomponentsjs
-```
-
-## Development mode
-
-`@lit/reactive-element` includes a development mode which adds additional checks that are
-reported in the console.
-
-To enable development mode, add the `development` exports condition to your node
-resolve configuration.
-
-#### @web/dev-server
-
-```js
-{
-  nodeResolve: {
-    exportConditions: ['development'],
-  }
-}
-```
-
-#### Rollup
-
-```js
-{
-  plugins: [
-    nodeResolve({
-      exportConditions: ['development'],
-    }),
-  ],
-}
-```
-
-#### Webpack
-
-> NOTE: Requires [Webpack v5](https://webpack.js.org/migrate/5/)
-
-```js
-{
-  resolve: {
-    conditionNames: ['development'],
-  }
-}
-```
-
-## Supported Browsers
-
-The last 2 versions of all modern browsers are supported, including
-Chrome, Safari, Opera, Firefox, Edge. In addition, Internet Explorer 11 is also supported.
-
-Edge and Internet Explorer 11 require the web components polyfills and the
-`polyfill-support` module included in this package.
-
-```html
-<script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-<script src="node_modules/@lit/reactive-element/polyfill-support.js"></script>
-<!-- load application code -->
+$ npm install lit
 ```
 
 ## Contributing

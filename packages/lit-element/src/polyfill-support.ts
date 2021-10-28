@@ -47,11 +47,7 @@ interface PatchableLitElement extends HTMLElement {
 // eslint-disable-next-line no-var
 var DEV_MODE = true;
 
-globalThis[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= ({
-  LitElement,
-}: {
-  LitElement: PatchableLitElement;
-}) => {
+const polyfillSupport = ({LitElement}: {LitElement: PatchableLitElement}) => {
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
@@ -84,3 +80,9 @@ globalThis[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= ({
     return createRenderRoot.call(this);
   };
 };
+
+if (DEV_MODE) {
+  globalThis.litElementPolyfillSupportDevMode ??= polyfillSupport;
+} else {
+  globalThis.litElementPolyfillSupport ??= polyfillSupport;
+}

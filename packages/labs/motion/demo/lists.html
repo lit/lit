@@ -39,11 +39,11 @@
       import {repeat} from 'lit/directives/repeat.js';
       import {classMap} from 'lit/directives/class-map.js';
       import {
-        flip,
+        animate,
         fadeOut,
         flyBelow,
         defaultCssProperties,
-      } from '../development/flip.js';
+      } from '../development/animate.js';
       import 'https://unpkg.com/@material/mwc-textfield@0.20.0/mwc-textfield.js?module';
       import 'https://unpkg.com/@material/mwc-checkbox@0.20.0/mwc-checkbox.js?module';
       import 'https://unpkg.com/@material/mwc-formfield@0.20.0/mwc-formfield.js?module';
@@ -75,6 +75,7 @@
 
             mwc-textfield {
               display: block;
+              margin-top: 16px;
               --mdc-shape-small: 12px;
             }
 
@@ -155,12 +156,12 @@
         }
 
         render() {
-          const animationOptions = {
+          const keyframeOptions = {
             duration: 500,
             easing: 'ease-in-out',
             fill: 'both',
           };
-          const d = animationOptions.duration / this.data.length;
+          const d = keyframeOptions.duration / this.data.length;
           const list = (completed) => html`<div
             class="list ${classMap({completed})}"
           >
@@ -172,8 +173,8 @@
                 ),
                 (item) => item.id,
                 (item) => html`<li
-                  ${flip({
-                    animationOptions,
+                  ${animate({
+                    keyframeOptions,
                     in: flyBelow,
                     out: fadeOut,
                     stabilizeOut: true,

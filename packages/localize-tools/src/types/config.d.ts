@@ -27,10 +27,23 @@ export interface ConfigFile {
   targetLocales: Locale[];
 
   /**
-   * Path to a tsconfig.json file that describes the TypeScript source files
-   * from which messages will be extracted.
+   * Array of filenames or glob patterns to extract messages from.
+   *
+   * Required unless `tsConfig` is specified. If `tsConfig` is also specified,
+   * then this field takes precedence.
    */
-  tsConfig: string;
+  inputFiles?: string[];
+
+  /**
+   * Path to a tsconfig.json file that determines the source files from which
+   * messages will be extracted, and also the compiler options that will be used
+   * when building for transform mode.
+   *
+   * Required unless `inputFiles` is specified. If `inputFiles` is also
+   * specified, then the files specified by this config will be ignored in favor
+   * of `inputFiles`.
+   */
+  tsConfig?: string;
 
   /**
    * Localization interchange format and configuration specific to that format.

@@ -25,6 +25,8 @@
  * @packageDocumentation
  */
 
+export {};
+
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
   scope?: string;
@@ -95,7 +97,7 @@ var DEV_MODE = true;
  * * ChildPart.prototype._$getTemplate
  * * ChildPart.prototype._$setValue
  */
-globalThis[`litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= (
+const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
@@ -289,7 +291,11 @@ globalThis[`litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`] ??= (
 };
 
 if (ENABLE_SHADYDOM_NOPATCH) {
-  globalThis[
-    `litHtmlPolyfillSupport${DEV_MODE ? `DevMode` : ``}`
-  ]!.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+  polyfillSupport.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+}
+
+if (DEV_MODE) {
+  globalThis.litHtmlPolyfillSupportDevMode ??= polyfillSupport;
+} else {
+  globalThis.litHtmlPolyfillSupport ??= polyfillSupport;
 }

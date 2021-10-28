@@ -32,13 +32,13 @@
       import {LitElement, html, css} from 'lit';
       import {repeat} from 'lit/directives/repeat.js';
       import {
-        flip,
-        FlipController,
+        animate,
+        AnimateController,
         fadeIn,
         fadeInSlow,
         fadeOut,
         transformProps,
-      } from '../development/flip.js';
+      } from '../development/animate.js';
 
       const springy = [
         0, 0.0701, 0.2329, 0.4308, 0.6245, 0.7906, 0.9184, 1.0065, 1.059,
@@ -46,7 +46,7 @@
         0.994, 0.9925, 0.9925, 0.9935, 0.9949, 0.9964, 0.9978, 0.999, 0.9998,
       ];
 
-      const onFrames = ({flipProps: props, frames}) => {
+      const onFrames = ({animatingProperties: props, frames}) => {
         if (frames === undefined || props === undefined) {
           return frames;
         }
@@ -254,10 +254,10 @@
         constructor() {
           super();
           this.data = data;
-          this._flipController = new FlipController(this, {
-            flipOptions: {
-              animationOptions: {
-                duration: 1500,
+          this._controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
+                duration: 750,
                 easing: 'ease-in-out',
                 fill: 'both',
               },
@@ -275,7 +275,7 @@
                 (i, x) =>
                   html`<li
                     @click=${(e) => this.onClick(e, i)}
-                    ${flip({
+                    ${animate({
                       out: fadeOut,
                       id: `${i.id}:card`,
                       inId: `${i.id}:detail`,
@@ -283,7 +283,7 @@
                   >
                     <div
                       class="card-background fit"
-                      ${flip({
+                      ${animate({
                         in: fadeInSlow,
                         skipInitial: true,
                       })}
@@ -291,7 +291,7 @@
                     <div class="card-content">
                       <div
                         class="icon card-icon"
-                        ${flip({
+                        ${animate({
                           id: `${i.id}:card-icon`,
                           inId: `${i.id}:detail-icon`,
                           skipInitial: true,
@@ -302,14 +302,14 @@
                     </div>
                     <div
                       class="divider"
-                      ${flip({
+                      ${animate({
                         in: fadeInSlow,
                         skipInitial: true,
                       })}
                     ></div>
                     <div class="card-header hero-text">
                       <div
-                        ${flip({
+                        ${animate({
                           id: `${i.id}:card-header`,
                           inId: `${i.id}:detail-header`,
                           skipInitial: true,
@@ -326,7 +326,7 @@
               ? html`<div
                   class="detail fit"
                   @click=${this.onClick}
-                  ${flip({
+                  ${animate({
                     id: `${this.detail.id}:detail`,
                     inId: `${this.detail.id}:card`,
                   })}
@@ -334,7 +334,7 @@
                   <div class="detail-header">
                     <div
                       class="icon detail-header-icon"
-                      ${flip({
+                      ${animate({
                         id: `${this.detail.id}:detail-icon`,
                         inId: `${this.detail.id}:card-icon`,
                       })}
@@ -343,7 +343,7 @@
                     </div>
                     <div
                       class="detail-header-text hero-text"
-                      ${flip({
+                      ${animate({
                         id: `${this.detail.id}:detail-header`,
                         inId: `${this.detail.id}:card-header`,
                       })}
@@ -356,7 +356,7 @@
                   </div>
                   <div
                     class="detail-content divider-top"
-                    ${flip({
+                    ${animate({
                       in: fadeInSlow,
                     })}
                   >
@@ -377,8 +377,8 @@
         }
 
         onClick(e, item) {
-          if (this._flipController.isAnimating) {
-            this._flipController.togglePlay();
+          if (this._controller.isAnimating) {
+            this._controller.togglePlay();
           } else {
             this.detail = item;
           }

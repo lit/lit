@@ -1,6 +1,6 @@
 {
   "name": "@lit/reactive-element",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },

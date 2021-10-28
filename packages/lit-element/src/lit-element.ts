@@ -137,6 +137,23 @@ export class LitElement extends ReactiveElement {
   }
 
   /**
+   * Invoked when the component is added to the document's DOM.
+   *
+   * In `connectedCallback()` you should setup tasks that should only occur when
+   * the element is connected to the document. The most common of these is
+   * adding event listeners to nodes external to the element, like a keydown
+   * event handler added to the window.
+   *
+   * ```ts
+   * connectedCallback() {
+   *   super.connectedCallback();
+   *   addEventListener('keydown', this._handleKeydown);
+   * }
+   * ```
+   *
+   * Typically, anything done in `connectedCallback()` should be undone when the
+   * element is disconnected, in `disconnectedCallback()`.
+   *
    * @category lifecycle
    */
   override connectedCallback() {
@@ -145,6 +162,22 @@ export class LitElement extends ReactiveElement {
   }
 
   /**
+   * Invoked when the component is removed from the document's DOM.
+   *
+   * This callback is the main signal to the element that it may no longer be
+   * used. `disconnectedCallback()` should ensure that nothing is holding a
+   * reference to the element (such as event listeners added to nodes external
+   * to the element), so that it is free to be garbage collected.
+   *
+   * ```ts
+   * disconnectedCallback() {
+   *   super.disconnectedCallback();
+   *   window.removeEventListener('keydown', this._handleKeydown);
+   * }
+   * ```
+   *
+   * An element may be re-connected after being disconnected.
+   *
    * @category lifecycle
    */
   override disconnectedCallback() {
@@ -168,9 +201,10 @@ export class LitElement extends ReactiveElement {
 globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-globalThis[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`]?.({
-  LitElement,
-});
+const polyfillSupport = DEV_MODE
+  ? globalThis.litElementPolyfillSupportDevMode
+  : globalThis.litElementPolyfillSupport;
+polyfillSupport?.({LitElement});
 
 // DEV mode warnings
 if (DEV_MODE) {
@@ -196,7 +230,7 @@ if (DEV_MODE) {
     };
     warnRemovedOrRenamed(this, 'render');
     warnRemovedOrRenamed(this, 'getStyles', true);
-    warnRemovedOrRenamed(this.prototype, 'adoptStyles');
+    warnRemovedOrRenamed((this as typeof LitElement).prototype, 'adoptStyles');
     return true;
   };
   /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -235,8 +269,7 @@ export const _$LE = {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-(globalThis.litElementVersions ??= []).push('3.0.0-rc.4');
+(globalThis.litElementVersions ??= []).push('3.0.1');
 if (DEV_MODE && globalThis.litElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

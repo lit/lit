@@ -48,6 +48,13 @@ function checkTransform(
     })
   );
 
+  assert.equal(
+    result.diagnostics.map((diagnostic) =>
+      ts.formatDiagnostic(diagnostic, result.host)
+    ),
+    []
+  );
+
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
   // TypeScript >= 4 will add an empty export statement if there are no imports
   // or exports to ensure this is a module. We don't care about checking this.
@@ -66,12 +73,6 @@ function checkTransform(
     formattedActual = unformattedActual;
   }
   assert.is(formattedActual, formattedExpected, formattedActual);
-  assert.equal(
-    result.diagnostics.map((diagnostic) =>
-      ts.formatDiagnostic(diagnostic, result.host)
-    ),
-    []
-  );
 }
 
 const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
@@ -1319,6 +1320,52 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
+    checkTransform(input, expected, options);
+  });
+
+  test('unrelated import with no bindings', () => {
+    const input = `
+      import './not-lit.js';
+    `;
+    const expected = `
+      import './not-lit.js';
+    `;
+    checkTransform(input, expected, options);
+  });
+
+  test('unrelated import with default import', () => {
+    const input = `
+      import notLit from './not-lit.js';
+      console.log(notLit);
+    `;
+    const expected = `
+      import notLit from './not-lit.js';
+      console.log(notLit);
+    `;
+    checkTransform(input, expected, options);
+  });
+
+  test('related + unrelated import with no bindings', () => {
+    const input = `
+      import './not-lit.js';
+      import {customElement} from 'lit/decorators.js';
+      `;
+    const expected = `
+      import './not-lit.js';
+      `;
+    checkTransform(input, expected, options);
+  });
+
+  test('related + unrelated import with default import', () => {
+    const input = `
+    import notLit from './not-lit.js';
+    import {customElement} from 'lit/decorators.js';
+    console.log(notLit);
+    `;
+    const expected = `
+    import notLit from './not-lit.js';
+    console.log(notLit);
+    `;
     checkTransform(input, expected, options);
   });
 

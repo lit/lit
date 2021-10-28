@@ -1,5 +1,23 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- [#2234](https://github.com/lit/lit/pull/2234) [`de17a7d4`](https://github.com/lit/lit/commit/de17a7d4e4c5a60410400dbb24ddf2b3c09dd41b) - Fix repository.directory field in lit package.json
+
+## 2.0.1
+
+### Patch Changes
+
+- [#2232](https://github.com/lit/lit/pull/2232) [`d808d234`](https://github.com/lit/lit/commit/d808d234a56844509a766c68492f6f588738ca7e) - Add lit logo to NPM package
+
+## 2.0.0
+
+### Major Changes
+
+- New package serving as the main entry point for all users of Lit (including `LitElement`, `ReactiveElement`, and `lit-html`). See the [Migration Guide](https://lit.dev/docs/releases/upgrade/#update-packages-and-import-paths) for more details.
+
 ## 2.0.0-rc.4
 
 ### Patch Changes

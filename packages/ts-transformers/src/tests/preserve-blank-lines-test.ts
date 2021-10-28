@@ -29,6 +29,13 @@ function checkTransform(inputTs: string, expectedJs: string) {
     before: [preserveBlankLinesTransformer()],
   }));
 
+  assert.equal(
+    result.diagnostics.map((diagnostic) =>
+      ts.formatDiagnostic(diagnostic, result.host)
+    ),
+    []
+  );
+
   let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
   // TypeScript >= 4 will add an empty export statement if there are no imports
   // or exports to ensure this is a module. We don't care about checking this.
@@ -45,12 +52,6 @@ function checkTransform(inputTs: string, expectedJs: string) {
     formattedActual = unformattedActual;
   }
   assert.is(formattedActual, formattedExpected);
-  assert.equal(
-    result.diagnostics.map((diagnostic) =>
-      ts.formatDiagnostic(diagnostic, result.host)
-    ),
-    []
-  );
 }
 
 test('empty file', () => {

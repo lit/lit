@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.0.0-rc.4",
+  "version": "2.0.2",
   "publishConfig": {
     "access": "public"
   },
@@ -8,7 +8,8 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git"
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/lit"
   },
   "author": "Google LLC",
   "homepage": "https://lit.dev/",
@@ -135,12 +136,13 @@
     "/polyfill-support.{d.ts.map,d.ts,js.map,js}",
     "/static-html.{d.ts.map,d.ts,js.map,js}",
     "/decorators/",
-    "/directives/"
+    "/directives/",
+    "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-rc.2",
-    "lit-element": "^3.0.0-rc.2",
-    "lit-html": "^2.0.0-rc.4"
+    "@lit/reactive-element": "^1.0.0",
+    "lit-element": "^3.0.0",
+    "lit-html": "^2.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
