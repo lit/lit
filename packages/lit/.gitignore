@@ -14,5 +14,6 @@
 /index.*
 /static-html.*
 
+/lit.bundle.*
 /lit.min.*
 /polyfill-support.*

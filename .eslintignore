@@ -39,6 +39,7 @@ packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
+packages/lit/lit.bundle.*
 packages/lit/lit.min.*
 packages/lit/polyfill-support.*
 

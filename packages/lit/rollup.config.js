@@ -53,4 +53,10 @@ export default litProdConfig({
       name: 'Lit',
     },
   ],
+  singleFileESM: [
+    {
+      file: 'index',
+      output: 'lit.bundle',
+    },
+  ],
 });

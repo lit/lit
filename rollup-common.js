@@ -247,6 +247,7 @@ export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
+  singleFileESM = [],
   testPropertyPrefix,
   packageName,
   outputDir = './',
@@ -415,6 +416,15 @@ export function litProdConfig({
         terserOptions,
       })
     ),
+    ...singleFileESM.map(({file, output, name}) =>
+      litMonoBundleConfig({
+        file,
+        output,
+        name,
+        terserOptions,
+        format: 'es',
+      })
+    ),
   ];
 }
 
@@ -423,12 +433,13 @@ const litMonoBundleConfig = ({
   output,
   name,
   terserOptions,
+  format = 'umd',
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
   output: {
     file: `${output || file}.js`,
-    format: 'umd',
+    format,
     name,
     sourcemap: !CHECKSIZE,
   },
