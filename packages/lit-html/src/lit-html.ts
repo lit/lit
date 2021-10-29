@@ -1579,6 +1579,14 @@ class PropertyPart extends AttributePart {
   }
 }
 
+// Temporary workaround for https://crbug.com/993268
+// Currently, any attribute starting with "on" is considered to be a
+// TrustedScript source. Such boolean attributes must be set to the equivalent
+// trusted emptyScript value.
+const emptyStringForBooleanAttribute = trustedTypes
+  ? (trustedTypes.emptyScript as unknown as '')
+  : '';
+
 export type {BooleanAttributePart};
 class BooleanAttributePart extends AttributePart {
   override readonly type = BOOLEAN_ATTRIBUTE_PART;
@@ -1586,7 +1594,10 @@ class BooleanAttributePart extends AttributePart {
   /** @internal */
   override _commitValue(value: unknown) {
     if (value && value !== nothing) {
-      (wrap(this.element) as Element).setAttribute(this.name, '');
+      (wrap(this.element) as Element).setAttribute(
+        this.name,
+        emptyStringForBooleanAttribute
+      );
     } else {
       (wrap(this.element) as Element).removeAttribute(this.name);
     }

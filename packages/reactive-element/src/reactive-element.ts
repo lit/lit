@@ -38,6 +38,17 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (code: string, warning: string) => void;
 
+const trustedTypes = (window as unknown as {trustedTypes?: {emptyScript: ''}})
+  .trustedTypes;
+
+// Temporary workaround for https://crbug.com/993268
+// Currently, any attribute starting with "on" is considered to be a
+// TrustedScript source. Such boolean attributes must be set to the equivalent
+// trusted emptyScript value.
+const emptyStringForBooleanAttribute = trustedTypes
+  ? (trustedTypes.emptyScript as unknown as '')
+  : '';
+
 const polyfillSupport = DEV_MODE
   ? window.reactiveElementPolyfillSupportDevMode
   : window.reactiveElementPolyfillSupport;
@@ -220,7 +231,7 @@ export const defaultConverter: ComplexAttributeConverter = {
   toAttribute(value: unknown, type?: unknown): unknown {
     switch (type) {
       case Boolean:
-        value = value ? '' : null;
+        value = value ? emptyStringForBooleanAttribute : null;
         break;
       case Object:
       case Array:
