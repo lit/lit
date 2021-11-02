@@ -449,7 +449,8 @@ article ol li {
 
 .version-banner {
   padding: 0px 20px;
-  border: 1px solid #000;
+  border: 1px solid #f00;
+  background-color: rgba(255, 255, 141, 0.53);
   max-width: 640px;
   display: flex;
   align-items: center;
