@@ -22,7 +22,28 @@ export const loggerContext = createContext<Logger>('logger');
 
 ### Consuming a Context
 
-Now we can define a consumer for this context - some component in our app needs the logger:
+Now we can define a consumer for this context - some component in our app needs the logger.
+
+Here we're using the `@contextRequest` property decorator to make a `ContextConsumer` controller
+and update its value when the context changes:
+
+```ts
+import {contextRequest} from '@lit-labs/context';
+import {LitElement, property} from 'lit';
+import {Logger, loggerContext} from './logger.js';
+
+export class MyElement extends LitElement {
+  @contextRequest({context: loggerContext, subscribe: true})
+  @property({attribute: false})
+  public logger?: Logger;
+
+  private doThing() {
+    this.logger?.log('a thing was done');
+  }
+}
+```
+
+Another way we can use a context in a component is via the `ContextConsumer` controller directly:
 
 ```ts
 import {ContextConsumer, property} from '@lit-labs/context';
@@ -35,15 +56,14 @@ export class MyElement extends LitElement {
 
   public constructor() {
     // add the consumer controller
-    this.addController(
-      new ContextConsumer(
-        this,
-        loggerContext,
-        (value) => {
-          this.logger = value;
-        },
-        true // pass true to get updates if the logger changes
-      )
+    new ContextConsumer(
+      this,
+      loggerContext,
+      // pass a callback to update our property when we receive an update
+      (value) => {
+        this.logger = value;
+      },
+      true // pass true to get updates if the logger changes
     );
   }
 
@@ -53,56 +73,78 @@ export class MyElement extends LitElement {
 }
 ```
 
-Another way we can use a context in a component is via the `contextProvided` decorator:
-
-```ts
-import {ContextConsumer, property} from '@lit-labs/context';
-import {LitElement} from 'lit';
-import {Logger, loggerContext} from './logger.js';
-
-export class MyElement extends LitElement {
-  @contextProvided({context: loggerContext, multiple: true})
-  @property({attribute: false})
-  public logger?: Logger;
-
-  private doThing() {
-    this.logger?.log('a thing was done');
-  }
-}
-```
-
 ### Providing a Context
 
-Finally we want to be able to provide this context from somewhere higher in the DOM:
+Finally we want to be able to provide this context from somewhere higher in the DOM.
+
+Here we're using a `@contextProvider` property decorator to make a `ContextProvider`
+controller and update its value when the property value changes.
 
 ```ts
 import {LitElement} from 'lit';
-import '@lit-labs/context/lib/elements/context-provider-element.js';
+import {contextProvider} from '@lit-labs/context';
 import {loggerContext, Logger} from './my-logger.js';
 
-const loggerContext = createContext('logger', new Logger());
-
 export class MyApp extends LitElement {
-  private logger: Logger = {
+  @contextProvider({context: loggerContext})
+  @property({attribute: false})
+  public logger: Logger = {
     log: (msg) => {
       console.log(`[my-app] ${msg}`);
     },
-  };
+  });
+
   protected render(): TemplateResult {
-    return html`
-      <context-provider .context=${loggerContext} .value=${this.logger}>
-        <my-thing></my-thing>
-      </context-provider>
-    `;
+    return html`<my-thing></my-thing>`;
   }
 }
 ```
 
-We can also use the `ContextProvider` controller to define context without using an extra element:
+We can also use the `ContextProvider` controller directly:
 
 ```ts
+import {LitElement} from 'lit';
+import {ContextProvider} from '@lit-labs/context';
+import {loggerContext, Logger} from './my-logger.js';
 
+export class MyApp extends LitElement {
+  // create a provider controller and a default logger
+  private provider = new ContextProvider(this, loggerContext, {
+    log: (msg) => {
+      console.log(`[my-app] ${msg}`);
+    },
+  });
+
+  protected render(): TemplateResult {
+    return html`<my-thing></my-thing>`;
+  }
+
+  public setLogger(newLogger: Logger) {
+    // update the provider with a new logger value
+    this.provider.setValue(newLogger);
+  }
+}
 ```
+
+## Known Issues
+
+### Late upgraded Context Providers
+
+In some cases you might have a context providing element that is upgraded late. LightDOM content below this provider may end up requesting a contenxt that is currently not provided by any provider.
+
+To solve this case we provide a `ContextRoot` class which can intercept and track unsatisfied `context-request` events and then redispatch these requests when providers are updated.
+
+Example usage:
+
+```ts
+import {ContextRoot} from '@lit-labs/context';
+const root = new ContextRoot();
+root.attach(document.body);
+```
+
+The `ContextRoot` can be attached to any element and it will gather a list of any context requests which are received at the attached element. The `ContextProvider` controllers will emit `context-provider` events when they are connected to the DOM. These events act as triggers for the `ContextRoot` to redispatch these `context-request` events from their sources.
+
+This solution has a small overhead, in that if a provider is not within the DOM hierarchy of the unsatisfied requests we are unnecessarily refiring these requests, but this approach is safest and most correct in that it is very hard to manage stable DOM hierarchies with the semantics of slotting and reparenting that is common in web components implementations.
 
 ## Contributing
 

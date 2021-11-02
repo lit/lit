@@ -41,7 +41,7 @@ export interface ContextRequest<Context extends ContextKey<unknown, unknown>> {
  * satisfy the request, calling the `callback` with the requested value if so.
  *
  * If the requested context event contains a truthy `subscribe` value, then a provider can call the callback
- * multiple times if the value is changed, if this is the case the provider should pass a `unsubscribe`
+ * multiple times if the value is changed, if this is the case the provider should pass an `unsubscribe`
  * method to the callback which consumers can invoke to indicate they no longer wish to receive these updates.
  */
 export class ContextRequestEvent<Context extends ContextKey<unknown, unknown>>

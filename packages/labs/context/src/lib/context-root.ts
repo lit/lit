@@ -22,16 +22,32 @@ type PendingContextRequest = MakeWeak<
   Omit<ContextRequest<UnknownContextKey>, 'context'>
 > & {element: WeakRef<HTMLElement>};
 
+/**
+ * A ContextRoot can be used to gather unsatisfied context requests and redispatch these
+ * requests when new providers which satisfy matching context keys are available.
+ */
 export class ContextRoot {
   private pendingContextRequests = new Map<
     UnknownContextKey,
     Set<PendingContextRequest>
   >();
 
+  /**
+   * Attach the ContextRoot to a given element to intercept `context-request` and
+   * `context-provider` events.
+   *
+   * @param element an element to add event listeners to
+   */
   public attach(element: HTMLElement): void {
     element.addEventListener('context-request', this.onContextRequest);
     element.addEventListener('context-provider', this.onContextProvider);
   }
+
+  /**
+   * Removes the ContextRoot event listeners from a given element.
+   *
+   * @param element an element from which to remove event listeners
+   */
   public detach(element: HTMLElement): void {
     element.removeEventListener('context-request', this.onContextRequest);
     element.removeEventListener('context-provider', this.onContextProvider);
