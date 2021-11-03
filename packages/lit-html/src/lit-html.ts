@@ -448,6 +448,7 @@ export const render = (
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
+      [part],
       options ?? {}
     );
   }
@@ -940,6 +941,7 @@ class TemplateInstance implements Disconnectable {
             node as HTMLElement,
             node.nextSibling,
             this,
+            this._parts,
             options
           );
         } else if (templatePart.type === ATTRIBUTE_PART) {
@@ -948,10 +950,16 @@ class TemplateInstance implements Disconnectable {
             templatePart.name,
             templatePart.strings,
             this,
+            this._parts,
             options
           );
         } else if (templatePart.type === ELEMENT_PART) {
-          part = new ElementPart(node as HTMLElement, this, options);
+          part = new ElementPart(
+            node as HTMLElement,
+            this,
+            this._parts,
+            options
+          );
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -1074,6 +1082,7 @@ class ChildPart implements Disconnectable {
     startNode: ChildNode,
     endNode: ChildNode | null,
     parent: TemplateInstance | ChildPart | undefined,
+    _templateParts: Array<Part | undefined>,
     options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
@@ -1139,13 +1148,17 @@ class ChildPart implements Disconnectable {
     return this._$endNode;
   }
 
-  _$setValue(values: Array<unknown>, directiveParent: DirectiveParent = this, valueIndex: number): void {
+  _$setValue(
+    values: Array<unknown>,
+    directiveParent: DirectiveParent = this,
+    valueIndex: number
+  ): void {
     if (DEV_MODE && this.parentNode === null) {
       throw new Error(
         `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept a value. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`
       );
     }
-    let value = resolveDirective(this, values[valueIndex], directiveParent);
+    const value = resolveDirective(this, values[valueIndex], directiveParent);
     if (isPrimitive(value)) {
       // Non-rendering child values. It's important that these do not render
       // empty text nodes to avoid issues with preventing default <slot>
@@ -1307,14 +1320,16 @@ class ChildPart implements Disconnectable {
     for (const item of value) {
       if (partIndex === itemParts.length) {
         // If no existing part, create a new one
-        // TODO (justinfagnani): test perf impact of always creating two parts
-        // instead of sharing parts between nodes
+        // TODO (justinfagnani): test perf impact of always creating two
+        // markers instead of sharing markers between nodes
         // https://github.com/lit/lit/issues/1266
         itemParts.push(
           (itemPart = new ChildPart(
             this._insert(createMarker()),
             this._insert(createMarker()),
             this,
+            // An item is like a template with one child binding
+            [itemPart],
             this.options
           ))
         );
@@ -1412,6 +1427,7 @@ class AttributePart implements Disconnectable {
   readonly element: HTMLElement | SVGElement;
   readonly name: string;
   readonly options: RenderOptions | undefined;
+  readonly templateParts: Array<Part | undefined>;
 
   /**
    * If this attribute part represents an interpolation, this contains the
@@ -1444,11 +1460,13 @@ class AttributePart implements Disconnectable {
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable,
+    templateParts: Array<Part | undefined>,
     options: RenderOptions | undefined
   ) {
     this.element = element;
     this.name = name;
     this._$parent = parent;
+    this.templateParts = templateParts;
     this.options = options;
     if (strings.length > 2 || strings[0] !== '' || strings[1] !== '') {
       this._$committedValue = new Array(strings.length - 1).fill(new String());
@@ -1497,10 +1515,16 @@ class AttributePart implements Disconnectable {
 
     if (strings === undefined) {
       // Single-value binding case
-      committedValue = resolveDirective(this, values[valueIndex], directiveParent, 0);
+      committedValue = resolveDirective(
+        this,
+        values[valueIndex],
+        directiveParent,
+        0
+      );
       change =
         !isPrimitive(committedValue) ||
-        (committedValue !== this._$committedValue && committedValue !== noChange);
+        (committedValue !== this._$committedValue &&
+          committedValue !== noChange);
       if (change) {
         this._$committedValue = committedValue;
       }
@@ -1614,9 +1638,10 @@ class EventPart extends AttributePart {
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable,
+    templateParts: Array<Part | undefined>,
     options: RenderOptions | undefined
   ) {
-    super(element, name, strings, parent, options);
+    super(element, name, strings, parent, templateParts, options);
 
     if (DEV_MODE && this.strings !== undefined) {
       throw new Error(
@@ -1633,9 +1658,9 @@ class EventPart extends AttributePart {
   override _$setValue(
     values: Array<unknown>,
     directiveParent: DirectiveParent = this,
-    valueIndex: number,
+    valueIndex: number
   ) {
-    let newListener =
+    const newListener =
       resolveDirective(this, values[valueIndex], directiveParent, 0) ?? nothing;
     if (newListener === noChange) {
       return;
@@ -1706,15 +1731,21 @@ class ElementPart implements Disconnectable {
 
   element: HTMLElement | SVGElement;
 
+  templateParts: Array<Part | undefined>;
+
+  values?: Array<unknown>;
+
   options: RenderOptions | undefined;
 
   constructor(
     element: HTMLElement | SVGElement,
     parent: Disconnectable,
+    templateParts: Array<Part | undefined>,
     options: RenderOptions | undefined
   ) {
     this.element = element;
     this._$parent = parent;
+    this.templateParts = templateParts;
     this.options = options;
   }
 
@@ -1726,9 +1757,15 @@ class ElementPart implements Disconnectable {
   _$setValue(
     values: Array<unknown>,
     _directiveParent: DirectiveParent = this,
-    valueIndex: number,
+    valueIndex: number
   ): void {
+    // This is a bit of a hack to get the currently rendered values into
+    // the spread directive. We don't normally hold on to rendered values,
+    // but also don't have a direct way to provoke a part to re-render
+    this.values = values;
     resolveDirective(this, values[valueIndex]);
+    // Don't hold onto value memory
+    this.values = undefined;
   }
 }
 
@@ -1768,6 +1805,8 @@ export const _$LH = {
   _EventPart: EventPart,
   _PropertyPart: PropertyPart,
   _ElementPart: ElementPart,
+  // Used in attr
+  _Template: Template,
 };
 
 // Apply polyfills if available

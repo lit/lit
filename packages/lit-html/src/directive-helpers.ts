@@ -110,6 +110,7 @@ export const insertPart = (
       startNode,
       endNode,
       containerPart,
+      [part],
       containerPart.options
     );
   } else {

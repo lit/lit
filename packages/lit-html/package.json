@@ -17,6 +17,10 @@
       "development": "./development/lit-html.js",
       "default": "./lit-html.js"
     },
+    "./attr.js": {
+      "development": "./development/attr.js",
+      "default": "./attr.js"
+    },
     "./async-directive.js": {
       "development": "./development/async-directive.js",
       "default": "./async-directive.js"
@@ -64,6 +68,10 @@
     "./directives/repeat.js": {
       "development": "./development/directives/repeat.js",
       "default": "./directives/repeat.js"
+    },
+    "./directives/spread.js": {
+      "development": "./development/directives/spread.js",
+      "default": "./directives/spread.js"
     },
     "./directives/style-map.js": {
       "development": "./development/directives/style-map.js",
@@ -114,12 +122,13 @@
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/lit-html_test.js'",
+    "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.js'",
     "test:prod": "MODE=prod npm run test:dev -- '../lit-html/src/test/version-stability_test.js'",
     "test:watch": "npm run test:dev -- --watch"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
+    "/attr.{d.ts,d.ts.map,js,js.map}",
     "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
     "/directive.{d.ts,d.ts.map,js,js.map}",
     "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
