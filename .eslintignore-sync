@@ -6,3 +6,4 @@ packages/{*,labs/*}/{.gitignore,.eslintignore}
 
 [inline]
 packages/localize/testdata/
+packages/localize/examples/
