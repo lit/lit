@@ -11,7 +11,7 @@ import type {Config} from '../types/config.js';
 import type {XliffConfig} from '../types/formatters.js';
 import type {Locale} from '../types/locale.js';
 import {Formatter} from './index.js';
-import {KnownError} from '../error.js';
+import {KnownError, unreachable} from '../error.js';
 import {
   Bundle,
   Message,
@@ -110,6 +110,15 @@ export class XliffFormatter implements Formatter {
           contents.push(child.nodeValue || '');
         } else if (
           child.nodeType === doc.ELEMENT_NODE &&
+          child.nodeName === 'x'
+        ) {
+          const phText = getNonEmptyAttributeOrThrow(
+            child as Element,
+            'equiv-text'
+          );
+          contents.push({untranslatable: phText});
+        } else if (
+          child.nodeType === doc.ELEMENT_NODE &&
           child.nodeName === 'ph'
         ) {
           const phText = child.childNodes[0];
@@ -118,7 +127,9 @@ export class XliffFormatter implements Formatter {
             !phText ||
             phText.nodeType !== doc.TEXT_NODE
           ) {
-            throw new KnownError(`Expected <ph> to have exactly one text node`);
+            throw new KnownError(
+              `Expected <${child.nodeName}> to have exactly one text node`
+            );
           }
           contents.push({untranslatable: phText.nodeValue || ''});
         } else {
@@ -205,8 +216,8 @@ export class XliffFormatter implements Formatter {
     // TODO The spec requires the source filename in the "original" attribute,
     // but we don't currently track filenames.
     file.setAttribute('original', 'lit-localize-inputs');
-    // Plaintext seems right, as opposed to HTML, since our translatable
-    // message text is just text, and all HTML markup is encoded into <ph>
+    // Plaintext seems right, as opposed to HTML, since our translatable message
+    // text is just text, and all HTML markup is encoded into <x> or <ph>
     // elements.
     file.setAttribute('datatype', 'plaintext');
     indent(file);
@@ -271,14 +282,34 @@ export class XliffFormatter implements Formatter {
       if (typeof content === 'string') {
         nodes.push(doc.createTextNode(content));
       } else {
-        const {untranslatable} = content;
-        // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph
-        const ph = doc.createElement('ph');
-        ph.setAttribute('id', String(phIdx++));
-        ph.appendChild(doc.createTextNode(untranslatable));
-        nodes.push(ph);
+        nodes.push(this.createPlaceholder(doc, String(phIdx++), content));
       }
     }
     return nodes;
+  }
+
+  private createPlaceholder(
+    doc: Document,
+    id: string,
+    {untranslatable}: Placeholder
+  ): HTMLElement {
+    const style = this.xliffConfig.placeholderStyle ?? 'x';
+    if (style === 'x') {
+      // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x
+      const el = doc.createElement('x');
+      el.setAttribute('id', id);
+      el.setAttribute('equiv-text', untranslatable);
+      return el;
+    } else if (style === 'ph') {
+      // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph
+      const el = doc.createElement('ph');
+      el.setAttribute('id', id);
+      el.appendChild(doc.createTextNode(untranslatable));
+      return el;
+    } else {
+      throw new Error(
+        `Internal error: unknown xliff placeholderStyle: ${unreachable(style)}`
+      );
+    }
   }
 }

@@ -9,6 +9,7 @@
   },
   "interchange": {
     "format": "xliff",
-    "xliffDir": "data/xliff/"
+    "xliffDir": "data/xliff/",
+    "placeholderStyle": "ph"
   }
 }

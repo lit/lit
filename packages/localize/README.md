@@ -72,9 +72,9 @@ file, a format which is supported by many localization tools and services:
 
 ```xml
 <trans-unit id="h3c44aff2d5f5ef6b">
-  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+  <source>Hello <x id="0" equiv-text="&lt;b&gt;">World<x id="1" equiv-text="&lt;/b&gt;">!</source>
   <!-- target tag added by your localization process -->
-  <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
+  <target>Hola <x id="0" equiv-text="&lt;b&gt;">Mundo<x id="1" equiv-text="&lt;/b&gt;">!</target>
 </trans-unit>
 ```
 
@@ -197,11 +197,11 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 5. Take a look at the generated XLIFF file `xliff/es-419.xlf`. Note that we have
    a `<source>` template extracted from your source code, but we don't have a
    localized version yet. Also note that embedded HTML markup has been encoded
-   into `<ph>` tags.
+   into `<x>` tags.
 
    ```xml
    <trans-unit id="h3c44aff2d5f5ef6b">
-     <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+     <source>Hello <x id="0" equiv-text="&lt;b&gt;">World<x id="1" equiv-text="&lt;/b&gt;">!</source>
    </trans-unit>
    ```
 
@@ -211,8 +211,8 @@ lit-localize supports two output modes: _transform_ and _runtime_.
 
    ```xml
    <trans-unit id="h3c44aff2d5f5ef6b">
-     <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
-     <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
+    <source>Hello <x id="0" equiv-text="&lt;b&gt;">World<x id="1" equiv-text="&lt;/b&gt;">!</source>
+    <target>Hola <x id="0" equiv-text="&lt;b&gt;">Mundo<x id="1" equiv-text="&lt;/b&gt;">!</target>
    </trans-unit>
    ```
 
@@ -416,7 +416,7 @@ Descriptions are represented in XLIFF using `<note>` elements.
 ```xml
 <trans-unit id="h3c44aff2d5f5ef6b">
   <note>Greeting to everybody on homepage</note>
-  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+  <source>Hello <x id="0" equiv-text="&lt;b&gt;">World<x id="1" equiv-text="&lt;/b&gt;">!</source>
 </trans-unit>
 ```
 
@@ -557,22 +557,23 @@ lit-localize command [--flags]
 
 ## Config file
 
-| Property                                 | Type                       | Description                                                                                                                                                                                                                                                                               |
-| ---------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sourceLocale`                           | `string`                   | Required locale code that templates in the source code are written in.                                                                                                                                                                                                                    |
-| `targetLocales`                          | `string[]`                 | Required locale codes that templates will be localized to.                                                                                                                                                                                                                                |
-| `inputFiles`                             | `string[]`                 | Array of filenames or [glob](https://github.com/mrmlnc/fast-glob#pattern-syntax) patterns to extract messages from. Required unless `tsConfig` is specified. If `tsConfig` is also specified, then this field takes precedence.                                                           |
-| `tsConfig`                               | `string`                   | Path to a `tsconfig.json` file that determines the source files from which messages will be extracted, and also the compiler options that will be used when building for transform mode. Required unless `inputFiles` is specified. If both are specified, `inputFiles` takes precedence. |
-| `output.mode`                            | `"transform"`, `"runtime"` | What kind of output should be produced. See [modes](#modes).                                                                                                                                                                                                                              |
-| `output.localeCodesModule`               | `string`                   | Optional filepath for a generated module that exports `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes from your config file. Use to keep your config file and client config in sync.                                                                             |
-| `interchange.format`                     | `"xliff"`, `"xlb"`         | Data format to be consumed by your localization process. Options:<br><br>- `"xliff"`: [XLIFF 1.2](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html) XML format<br>- `"xlb"`: Google-internal XML format                                                                           |
+| Property                                 | Type                       | Description                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sourceLocale`                           | `string`                   | Required locale code that templates in the source code are written in.                                                                                                                                                                                                                                                                                                                                                              |
+| `targetLocales`                          | `string[]`                 | Required locale codes that templates will be localized to.                                                                                                                                                                                                                                                                                                                                                                          |
+| `inputFiles`                             | `string[]`                 | Array of filenames or [glob](https://github.com/mrmlnc/fast-glob#pattern-syntax) patterns to extract messages from. Required unless `tsConfig` is specified. If `tsConfig` is also specified, then this field takes precedence.                                                                                                                                                                                                     |
+| `tsConfig`                               | `string`                   | Path to a `tsconfig.json` file that determines the source files from which messages will be extracted, and also the compiler options that will be used when building for transform mode. Required unless `inputFiles` is specified. If both are specified, `inputFiles` takes precedence.                                                                                                                                           |
+| `output.mode`                            | `"transform"`, `"runtime"` | What kind of output should be produced. See [modes](#modes).                                                                                                                                                                                                                                                                                                                                                                        |
+| `output.localeCodesModule`               | `string`                   | Optional filepath for a generated module that exports `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes from your config file. Use to keep your config file and client config in sync.                                                                                                                                                                                                                       |
+| `interchange.format`                     | `"xliff"`, `"xlb"`         | Data format to be consumed by your localization process. Options:<br><br>- `"xliff"`: [XLIFF 1.2](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html) XML format<br>- `"xlb"`: Google-internal XML format                                                                                                                                                                                                                     |
 | <h4 colspan="3">Runtime mode only</h4>   |
-| `output.language`                        | `"js"`, `"ts"`             | Language for emitting generated modules. Defaults to `"js"` unless a `tsConfig` was specified, in which case it defaults to `"ts"`.                                                                                                                                                       |
-| `output.outputDir`                       | `string`                   | Output directory for generated modules. Into this directory will be generated a `<locale>.js` or `<locale>.ts` file for each `targetLocale`, each a module that exports the translations in that locale keyed by message ID.                                                              |
+| `output.language`                        | `"js"`, `"ts"`             | Language for emitting generated modules. Defaults to `"js"` unless a `tsConfig` was specified, in which case it defaults to `"ts"`.                                                                                                                                                                                                                                                                                                 |
+| `output.outputDir`                       | `string`                   | Output directory for generated modules. Into this directory will be generated a `<locale>.js` or `<locale>.ts` file for each `targetLocale`, each a module that exports the translations in that locale keyed by message ID.                                                                                                                                                                                                        |
 | <h4 colspan="3">Transform mode only</h4> |
-| `output.outputDir`                       | `string`                   | Output directory for transformed projects. A subdirectory will be created for each locale within this directory, each containing a full build of the project for that locale. Required unless `tsConfig` is specified, in which case it defaults to that config's `outDir`.               |
+| `output.outputDir`                       | `string`                   | Output directory for transformed projects. A subdirectory will be created for each locale within this directory, each containing a full build of the project for that locale. Required unless `tsConfig` is specified, in which case it defaults to that config's `outDir`.                                                                                                                                                         |
 | <h4 colspan="3">XLIFF only</h4>          |                            |
-| `interchange.xliffDir`                   | `string`                   | Directory on disk to read/write `.xlf` XML files. For each target locale, the file path `"<xliffDir>/<locale>.xlf"` will be used.                                                                                                                                                         |
+| `interchange.xliffDir`                   | `string`                   | Directory on disk to read/write `.xlf` XML files. For each target locale, the file path `"<xliffDir>/<locale>.xlf"` will be used.                                                                                                                                                                                                                                                                                                   |
+| `interchange.placeholderStyle`           | `"x"`, `"ph"`              | How to represent placeholders containing HTML markup and dynamic expressions. Different localization tools and services have varying support for placeholder syntax. Defaults to `"x"`. Options:<br><br>- `"x"`: Emit placeholders using [`<x>`](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x) tags.<br>- `"ph"`: Emit placeholders using [`<ph>`](http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph) tags. |
 
 ## Rollup
 
