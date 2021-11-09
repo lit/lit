@@ -8,7 +8,7 @@ import Koa from 'koa';
 import Router from '@koa/router';
 import cors from 'koa-cors';
 
-import {importModule} from '../../../lib/import-module.js';
+import {ModuleLoader} from '../../../lib/module-loader.js';
 import {getWindow} from '../../../lib/dom-shim.js';
 import {Readable} from 'stream';
 
@@ -30,13 +30,13 @@ export const startServer = async (port = 9090) => {
       module = await import(`../tests/${testFile}-ssr.js`);
     } else {
       // mode === 'vm'
+      const loader = new ModuleLoader(getWindow({includeJSBuiltIns: true}));
       module = (
-        await importModule(
+        await loader.importModule(
           `../tests/${testFile}-ssr.js`,
-          import.meta.url,
-          getWindow({includeJSBuiltIns: true})
+          import.meta.url
         )
-      ).namespace;
+      ).module.namespace;
       render = module.render;
     }
 

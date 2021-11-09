@@ -5,23 +5,26 @@
  */
 
 import {createRequire} from 'module';
-import {importModule} from '../../lib/import-module.js';
+import {ModuleLoader} from '../../lib/module-loader.js';
 import {getWindow} from '../../lib/dom-shim.js';
 import {test} from 'uvu';
 import * as assert from 'uvu/assert';
+
+const loader = new ModuleLoader(
+  getWindow({
+    includeJSBuiltIns: true,
+    props: {require: createRequire(import.meta.url)},
+  })
+);
 
 /**
  * Promise for importing the "app module". This is a module that implements the
  * templates and elements to be SSRed. In this case it implements our test
  * cases.
  */
-const appModuleImport = importModule(
+const appModuleImport = loader.importModule(
   '../test-files/render-test-module.js',
-  import.meta.url,
-  getWindow({
-    includeJSBuiltIns: true,
-    props: {require: createRequire(import.meta.url)},
-  })
+  import.meta.url
 );
 
 /* Real Tests */
@@ -32,7 +35,7 @@ const appModuleImport = importModule(
  * string.
  */
 const setup = async () => {
-  const appModule = await appModuleImport;
+  const appModule = (await appModuleImport).module;
 
   /** Joins an AsyncIterable into a string */
   const collectResult = async (iterable: AsyncIterable<string>) => {
