@@ -17,9 +17,9 @@ This is the repo for `@lit/localize-tools`, the package that provides the
 apps.
 
 See also
-[`@lit/localize`](https://github.com/lit/lit/tree/main/packages/localize-tools),
-the package that provides the library that runs in the browser and contains
-`msg` and other utilities.
+[`@lit/localize`](https://github.com/lit/lit/tree/main/packages/localize), the
+package that provides the library that runs in the browser and contains `msg`
+and other utilities.
 
 ## Installation
 
