@@ -35,6 +35,13 @@ export interface MsgOptions {
    * Optional description of this message.
    */
   desc?: string;
+
+  /**
+   * Optional string that disambiguates one message from another when they have
+   * the same content. Acts as a salt to automatic id generation. Not displayed
+   * to translators (typically a description should also be specified).
+   */
+  meaning?: string;
 }
 
 declare function msg(template: string, options?: MsgOptions): string;

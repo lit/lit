@@ -101,7 +101,9 @@ function extractMsg(
     return {error: optionsResult.error};
   }
   const options = optionsResult.result;
-  const name = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
+  const name =
+    options.id ??
+    generateMsgIdFromAstNode(template, tag === 'html', options.meaning);
 
   return {
     result: {
@@ -123,7 +125,10 @@ function extractMsg(
 export function extractOptions(
   node: ts.Node | undefined,
   file: ts.SourceFile
-): ResultOrError<{id?: string; desc?: string}, ts.Diagnostic> {
+): ResultOrError<
+  {id?: string; desc?: string; meaning?: string},
+  ts.Diagnostic
+> {
   if (node === undefined) {
     return {result: {}};
   }
@@ -139,6 +144,7 @@ export function extractOptions(
 
   let id: string | undefined;
   let desc: string | undefined;
+  let meaning: string | undefined;
 
   for (const property of node.properties) {
     // {
@@ -205,6 +211,20 @@ export function extractOptions(
         };
       }
       desc = property.initializer.text;
+    } else if (name === 'meaning') {
+      if (
+        !ts.isStringLiteral(property.initializer) &&
+        !ts.isNoSubstitutionTemplateLiteral(property.initializer)
+      ) {
+        return {
+          error: createDiagnostic(
+            file,
+            property.initializer,
+            `msg meaning option must be a string with no expressions`
+          ),
+        };
+      }
+      meaning = property.initializer.text;
     } else {
       return {
         error: createDiagnostic(
@@ -216,7 +236,7 @@ export function extractOptions(
     }
   }
 
-  return {result: {id, desc}};
+  return {result: {id, desc, meaning}};
 }
 
 interface ExtractedTemplate {
@@ -280,7 +300,8 @@ export function extractTemplate(
 
 export function generateMsgIdFromAstNode(
   template: ts.TemplateLiteral | ts.StringLiteral,
-  isHtmlTagged: boolean
+  isHtmlTagged: boolean,
+  meaning: string | undefined
 ): string {
   const strings = [];
   if (
@@ -301,7 +322,7 @@ export function generateMsgIdFromAstNode(
       throw new Error('String cannot contain hash delimiter');
     }
   }
-  return generateMsgId(strings, isHtmlTagged);
+  return generateMsgId(strings, isHtmlTagged, meaning);
 }
 
 /**

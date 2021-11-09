@@ -15,6 +15,14 @@ import {fnv1a64} from './fnv1a64.js';
 export const HASH_DELIMITER = '\x1e';
 
 /**
+ * Delimeter used to mark the beginning of "meaning" salt when hashing a
+ * template string.
+ *
+ * This is the "group separator" ASCII character.
+ */
+const MEANING_DELIMITER = '\x1d';
+
+/**
  * Id prefix on html-tagged templates to distinguish e.g. `<b>x</b>` from
  * html`<b>x</b>`.
  */
@@ -31,14 +39,17 @@ const STRING_PREFIX = 's';
  *
  * Example:
  *   Template: html`Hello <b>${who}</b>!`
- *     Params: ["Hello <b>", "</b>!"], true
+ *     Params: ["Hello <b>", "</b>!"], true, undefined
  *     Output: h82ccc38d4d46eaa9
  *
  * The ID is constructed as:
  *
  *   [0]    Kind of template: [h]tml or [s]tring.
  *   [1,16] 64-bit FNV-1a hash hex digest of the template strings, as UTF-16
- *          code points, delineated by an ASCII "record separator" character.
+ *          code points. Each template string component is separated by an
+ *          ASCII "record separator" character. If the "meaning" parameter is
+ *          specified, a "group separator" character and the meaning string
+ *          are appended before hashing (acting as a salt).
  *
  * We choose FNV-1a because:
  *
@@ -55,12 +66,13 @@ const STRING_PREFIX = 's';
  */
 export function generateMsgId(
   strings: string | string[] | TemplateStringsArray,
-  isHtmlTagged: boolean
+  isHtmlTagged: boolean,
+  meaning?: string
 ): string {
-  return (
-    (isHtmlTagged ? HTML_PREFIX : STRING_PREFIX) +
-    fnv1a64(
-      typeof strings === 'string' ? strings : strings.join(HASH_DELIMITER)
-    )
-  );
+  let str =
+    typeof strings === 'string' ? strings : strings.join(HASH_DELIMITER);
+  if (meaning !== undefined) {
+    str += MEANING_DELIMITER + meaning;
+  }
+  return (isHtmlTagged ? HTML_PREFIX : STRING_PREFIX) + fnv1a64(str);
 }

@@ -174,6 +174,10 @@ suite('runtime localization configuration', () => {
         s00ad08ebae1e0f74: str`Hola ${0}!`,
         h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
         h82ccc38d4d46eaa9: html`Hola <b>${0}</b>!`,
+        s32c59fddf99ff9d9: 'Búfalo',
+        s68afbe96481efea2: 'Búfalos',
+        sf13d354a4e595030: 'Confundir',
+        s85bbd0e523cdbf72: 'Buffalo',
       },
     };
 
@@ -203,6 +207,20 @@ suite('runtime localization configuration', () => {
       const name = 'Friend';
       render(msg(html`Hello <b>${name}</b>!`), container);
       assert.equal(container.textContent, 'Hola Friend!');
+    });
+
+    test('disambiguates otherwise identical messages using meaning', () => {
+      render(msg('Buffalo', {meaning: 'noun-singular'}), container);
+      assert.equal(container.textContent, 'Búfalo');
+
+      render(msg('Buffalo', {meaning: 'noun-plural'}), container);
+      assert.equal(container.textContent, 'Búfalos');
+
+      render(msg('Buffalo', {meaning: 'verb'}), container);
+      assert.equal(container.textContent, 'Confundir');
+
+      render(msg('Buffalo', {meaning: 'city'}), container);
+      assert.equal(container.textContent, 'Buffalo');
     });
   });
 

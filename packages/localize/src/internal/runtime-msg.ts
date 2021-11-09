@@ -12,7 +12,13 @@ import type {TemplateLike, MsgOptions, TemplateMap} from './types.js';
 import type {TemplateResult} from 'lit';
 
 const expressionOrders = new WeakMap<TemplateResult, number[]>();
+
 const hashCache = new Map<TemplateStringsArray | string, string>();
+
+const meaningHashCache = new Map<
+  TemplateStringsArray | string,
+  Map<string, string>
+>();
 
 export function runtimeMsg(
   templates: TemplateMap | undefined,
@@ -20,7 +26,7 @@ export function runtimeMsg(
   options: MsgOptions | undefined
 ): string | TemplateResult {
   if (templates) {
-    const id = options?.id ?? generateId(template);
+    const id = options?.id ?? generateId(template, options?.meaning);
     const localized = templates[id];
     if (localized) {
       if (typeof localized === 'string') {
@@ -65,15 +71,30 @@ export function runtimeMsg(
   return defaultMsg(template);
 }
 
-function generateId(template: TemplateLike): string {
+function generateId(template: TemplateLike, meaning?: string): string {
   const strings = typeof template === 'string' ? template : template.strings;
-  let id = hashCache.get(strings);
-  if (id === undefined) {
-    id = generateMsgId(
-      strings,
-      typeof template !== 'string' && !('strTag' in template)
-    );
-    hashCache.set(strings, id);
+  let id;
+  if (meaning === undefined) {
+    id = hashCache.get(strings);
+    if (id === undefined) {
+      id = generateMsgId(strings, isHtmlTagged(template), meaning);
+      hashCache.set(strings, id);
+    }
+  } else {
+    let meanings = meaningHashCache.get(strings);
+    if (meanings === undefined) {
+      meanings = new Map();
+      meaningHashCache.set(strings, meanings);
+    } else {
+      id = meanings.get(meaning);
+    }
+    if (id === undefined) {
+      id = generateMsgId(strings, isHtmlTagged(template), meaning);
+      meanings.set(meaning, id);
+    }
   }
   return id;
 }
+
+const isHtmlTagged = (template: TemplateLike) =>
+  typeof template !== 'string' && !('strTag' in template);

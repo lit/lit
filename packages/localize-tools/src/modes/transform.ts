@@ -339,7 +339,9 @@ class Transformer {
       throw new Error(stringifyDiagnostics([optionsResult.error]));
     }
     const options = optionsResult.result;
-    const id = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
+    const id =
+      options.id ??
+      generateMsgIdFromAstNode(template, tag === 'html', options.meaning);
 
     const sourceExpressions = new Map<string, ts.Expression>();
     if (ts.isTemplateExpression(template)) {
