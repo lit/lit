@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.1
+
+### Patch Changes
+
+- [#2286](https://github.com/lit/lit/pull/2286) [`52c4f32e`](https://github.com/lit/lit/commit/52c4f32e7aa67120364a9c64a1696909c711ff88) - Update README to point to new full docs at lit.dev
+
 ## 0.11.0
 
 ### Minor Changes

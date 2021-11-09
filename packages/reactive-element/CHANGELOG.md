@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.0.2
+
+### Patch Changes
+
+- [#2146](https://github.com/lit/lit/pull/2146) [`8bb33c88`](https://github.com/lit/lit/commit/8bb33c882bf5a9a215efac9dd9dd8665285a417d) - Work around a Chrome bug with trusted types: https://crbug.com/993268
+
+* [#2236](https://github.com/lit/lit/pull/2236) [`5fc3818a`](https://github.com/lit/lit/commit/5fc3818afa43365b90b921ea0fd8f41e970e767f) - Prevent `polyfillSupport.noPatchSupported` from implicitly being `any`.
+  Deduplicate types for `DevMode`-suffixed polyfill support functions.
+
+- [#2160](https://github.com/lit/lit/pull/2160) [`90a8c123`](https://github.com/lit/lit/commit/90a8c12348a49f51e37964f69abba0ff75f4922d) - Prevents the dev-mode error about shadowed properties from being thrown in
+  certain cases where the property intentionally has no generated descriptor.
+
 ## 1.0.1
 
 ### Patch Changes
