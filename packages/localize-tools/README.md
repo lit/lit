@@ -1,4 +1,4 @@
-# @lit/localize
+# @lit/localize-tools
 
 [npm-img]: https://img.shields.io/npm/v/@lit/localize-tools
 [npm-href]: https://www.npmjs.com/package/@lit/localize-tools
