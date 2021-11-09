@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.5.0
+
+### Minor Changes
+
+- [#2275](https://github.com/lit/lit/pull/2275) [`97f4a3f8`](https://github.com/lit/lit/commit/97f4a3f8f6cd14a8b8ded90ca814335b00ac9a94) - **BREAKING** Placeholders containing HTML markup and dynamic expressions are now
+  represented in XLIFF as `<x>` tags instead of `<ph>` tags.
+
+  To preserve the previous behavior of using `<ph>` tags, update your JSON config
+  file and set `interchange.placeholderStyle` to `"ph"`:
+
+  ```json
+  {
+    "interchange": {
+      "format": "xliff",
+      "placeholderStyle": "ph"
+    }
+  }
+  ```
+
+### Patch Changes
+
+- [#2286](https://github.com/lit/lit/pull/2286) [`52c4f32e`](https://github.com/lit/lit/commit/52c4f32e7aa67120364a9c64a1696909c711ff88) - Update README to point to new full docs at lit.dev
+
 ## 0.4.0
 
 ### Minor Changes
