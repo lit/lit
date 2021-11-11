@@ -144,7 +144,7 @@ export class ModuleLoader {
       evaluated: modulePromise,
     };
     this.cache.set(modulePath, moduleRecord);
-    const module = await modulePromise!;
+    const module = await modulePromise;
     return {
       path: modulePath,
       module,
@@ -179,10 +179,10 @@ export class ModuleLoader {
       // TODO (justinfagnani): these imports should be populated in the linker
       // to record the edges of the module graph
       imports: [],
-      evaluated: modulePromise!,
+      evaluated: modulePromise,
     };
     this.cache.set(specifier, moduleRecord);
-    const module = await modulePromise!;
+    const module = await modulePromise;
     return {
       path: specifier,
       module,
@@ -232,7 +232,7 @@ export class ModuleLoader {
  * (starting in `/`, `./`, `../`) are resolved relative to `referrer`. "Bare"
  * module specifiers are resolved with the 'resolve' package.
  *
- * This replaces some lit-html modules with SSR compatible equivalents. This is
+ * This replaces some Lit modules with SSR compatible equivalents. This is
  * currently hard-coded, but should instead be done with a configuration object.
  */
 export const resolveSpecifier = async (
@@ -268,7 +268,7 @@ export const resolveSpecifier = async (
       // in their package.json to differentiate their ES module version.
       packageFilter: (packageJson: PackageJSON) => {
         packageJson.main =
-          packageJson.module ?? packageJson['jsnext:main'] ?? packageJson.main!;
+          packageJson.module ?? packageJson['jsnext:main'] ?? packageJson.main;
         return packageJson;
       },
     });
