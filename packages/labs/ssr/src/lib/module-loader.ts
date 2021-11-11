@@ -8,7 +8,7 @@ import * as path from 'path';
 import {promises as fs} from 'fs';
 import {URL} from 'url';
 import * as vm from 'vm';
-import resolve from 'resolve';
+import resolveAsync from 'resolve';
 import {builtinModules} from 'module';
 
 type PackageJSON = {main?: string; module?: string; 'jsnext:main'?: string};
@@ -28,6 +28,11 @@ export interface ModuleRecord {
 interface ImportResult {
   path: string;
   module: vm.Module;
+}
+
+export interface Options {
+  global?: object;
+  filesystem?: FileSystem;
 }
 
 /**
@@ -64,8 +69,8 @@ export class ModuleLoader {
 
   // TODO (justinfagnani): Allow passing a filesystem object to allow network
   // sources, in-memory for tests, etc.
-  constructor(contextGlobal: vm.Context) {
-    this._context = vm.createContext(contextGlobal);
+  constructor(options?: Options) {
+    this._context = vm.createContext(options?.global);
   }
 
   /**
@@ -80,6 +85,9 @@ export class ModuleLoader {
     specifier: string,
     referrer: string
   ): Promise<ImportResult> {
+    if (referrer.startsWith('file://')) {
+      referrer = referrer.substring('file://'.length);
+    }
     const result = await this._loadModule(specifier, referrer);
     const {module} = result;
     if (module.status === 'unlinked') {
@@ -110,7 +118,7 @@ export class ModuleLoader {
       return this._loadBuiltInModule(specifier);
     }
 
-    const moduleURL = resolveSpecifier(specifier, referrer);
+    const moduleURL = await resolveSpecifier(specifier, referrer);
     if (moduleURL.protocol !== 'file:') {
       throw new Error(`Unsupported protocol: ${moduleURL.protocol}`);
     }
@@ -140,12 +148,12 @@ export class ModuleLoader {
     moduleRecord = {
       path: modulePath,
       imports: [],
-      evaluated: modulePromise!,
+      evaluated: modulePromise,
     };
-    this.cache.set(modulePath!, moduleRecord);
+    this.cache.set(modulePath, moduleRecord);
     const module = await modulePromise!;
     return {
-      path: modulePath!,
+      path: modulePath,
       module,
     };
   }
@@ -204,19 +212,20 @@ export class ModuleLoader {
     referencingModule: vm.Module
   ): Promise<vm.Module> => {
     const {identifier} = referencingModule;
-    if (identifier.startsWith('file://')) {
-      if (!/:\d+$/.test(identifier)) {
-        throw new Error('Unexpected file:// URL identifier without context ID');
-      }
-      const referrer = identifier.split(/:\d+$/)[0];
-      return (await this._loadModule(specifier, referrer)).module;
-    } else {
-      throw new Error('unknown module source');
+    if (!/:\d+$/.test(identifier)) {
+      throw new Error('Unexpected file:// URL identifier without context ID');
     }
+    const referrer = identifier.split(/:\d+$/)[0];
+    const result = await this._loadModule(specifier, referrer);
+    const referrerModule = this.cache.get(referrer);
+    if (referrerModule !== undefined) {
+      referrerModule.imports.push(result.path);
+    }
+    return result.module;
   };
 
   private _getIdentifier(modulePath: string) {
-    return 'file://' + modulePath + `:${this._vmContextId}`;
+    return modulePath + `:${this._vmContextId}`;
   }
 
   private _getBuiltInIdentifier(specifier: string) {
@@ -233,7 +242,10 @@ export class ModuleLoader {
  * This replaces some lit-html modules with SSR compatible equivalents. This is
  * currently hard-coded, but should instead be done with a configuration object.
  */
-export const resolveSpecifier = (specifier: string, referrer: string): URL => {
+export const resolveSpecifier = async (
+  specifier: string,
+  referrer: string
+): Promise<URL> => {
   try {
     // First see if the specifier is a full URL, and if so, use that.
 
@@ -254,9 +266,8 @@ export const resolveSpecifier = (specifier: string, referrer: string): URL => {
       // a single version of lit-html.
       referrer = import.meta.url;
     }
-    const referencingModulePath = new URL(referrer).pathname;
-    const modulePath = resolve.sync(specifier, {
-      basedir: path.dirname(referencingModulePath),
+    const modulePath = await resolve(specifier, {
+      basedir: path.dirname(referrer),
       moduleDirectory: ['node_modules'],
       extensions: ['.js'],
       // Some packages use a non-standard alternative to the "main" field
@@ -276,4 +287,19 @@ export const resolveSpecifier = (specifier: string, referrer: string): URL => {
  */
 const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
   meta.url = module.identifier;
+};
+
+const resolve = async (
+  id: string,
+  opts: resolveAsync.AsyncOpts
+): Promise<string> => {
+  return new Promise((res, rej) => {
+    resolveAsync(id, opts, (err, resolved) => {
+      if (err != null) {
+        rej(err);
+      } else {
+        res(resolved!);
+      }
+    });
+  });
 };

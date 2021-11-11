@@ -30,7 +30,9 @@ export const startServer = async (port = 9090) => {
       module = await import(`../tests/${testFile}-ssr.js`);
     } else {
       // mode === 'vm'
-      const loader = new ModuleLoader(getWindow({includeJSBuiltIns: true}));
+      const loader = new ModuleLoader({
+        global: getWindow({includeJSBuiltIns: true}),
+      });
       module = (
         await loader.importModule(
           `../tests/${testFile}-ssr.js`,

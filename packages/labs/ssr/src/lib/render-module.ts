@@ -31,7 +31,7 @@ export const renderModule = async (
       require: createRequire(import.meta.url),
     },
   });
-  const loader = new ModuleLoader(window);
+  const loader = new ModuleLoader({global: window});
   const importResult = await loader.importModule(specifier, referrer);
   const {module} = importResult;
   const f = module.namespace[functionName] as Function;

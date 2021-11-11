@@ -10,6 +10,8 @@
     "sourceMap": true,
     "outDir": ".",
     "rootDir": "./src",
+    // For module loader tests:
+    "allowJs": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -21,7 +23,7 @@
     "skipLibCheck": true,
     "noImplicitOverride": true
   },
-  "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
+  "include": ["src/**/*.ts", "src/test/**/*.js", "custom_typings/*.d.ts"],
   "exclude": [],
   "references": [
     {"path": "../ssr-client"},

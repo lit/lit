@@ -10,12 +10,12 @@ import {getWindow} from '../../lib/dom-shim.js';
 import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 
-const loader = new ModuleLoader(
-  getWindow({
+const loader = new ModuleLoader({
+  global: getWindow({
     includeJSBuiltIns: true,
     props: {require: createRequire(import.meta.url)},
-  })
-);
+  }),
+});
 
 /**
  * Promise for importing the "app module". This is a module that implements the
