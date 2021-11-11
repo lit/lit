@@ -52,7 +52,8 @@ export interface Options {
 export class ModuleLoader {
   private static _nextVmContextId = 0;
 
-  // TODO (justinfagnani): document the need for this
+  // This ID is appended to all module identifiers to work around an apparent
+  // v8 bug where duplicate identifiers would cause a crash.
   private readonly _vmContextId = ModuleLoader._nextVmContextId++;
 
   private readonly _context: vm.Context;
@@ -76,10 +77,6 @@ export class ModuleLoader {
   /**
    * Imports a module given by `path` into a new VM context with `contextGlobal` as the
    * global object.
-   *
-   * @param specifier
-   * @param referrer
-   * @param contextGlobal The object that will become the global, via vm.createContext
    */
   async importModule(
     specifier: string,
@@ -110,10 +107,6 @@ export class ModuleLoader {
     specifier: string,
     referrer: string
   ): Promise<ImportResult> {
-    if (/:\d+$/.test(referrer)) {
-      throw new Error('used identifier as referrer');
-    }
-
     if (builtIns.has(specifier)) {
       return this._loadBuiltInModule(specifier);
     }
@@ -136,7 +129,7 @@ export class ModuleLoader {
     const modulePromise = (async () => {
       const source = await fs.readFile(modulePath, 'utf-8');
       // TODO: store and re-use cachedData:
-      // https://nodejs.org/api/vm.html#vm_constructor_new_vm_sourcetextmodule_code_options
+      // https://nodejs.org/api/vm.html#sourcetextmodulecreatecacheddata
       return new vm.SourceTextModule(source, {
         initializeImportMeta,
         importModuleDynamically: this._importModuleDynamically,
@@ -167,7 +160,7 @@ export class ModuleLoader {
       };
     }
     // Provide basic support for built-in modules (needed for node shims of
-    // DOM API's like fetch)
+    // DOM APIs like fetch)
     const modulePromise = (async () => {
       const mod = await import(specifier);
       return new vm.SyntheticModule(
@@ -225,11 +218,11 @@ export class ModuleLoader {
   };
 
   private _getIdentifier(modulePath: string) {
-    return modulePath + `:${this._vmContextId}`;
+    return `${modulePath}:${this._vmContextId}`;
   }
 
   private _getBuiltInIdentifier(specifier: string) {
-    return specifier + `:${this._vmContextId}`;
+    return `${specifier}:${this._vmContextId}`;
   }
 }
 
@@ -260,10 +253,11 @@ export const resolveSpecifier = async (
     if (
       specifierMatches(specifier, 'lit') ||
       specifierMatches(specifier, 'lit-html') ||
-      specifierMatches(specifier, 'lit-element')
+      specifierMatches(specifier, 'lit-element') ||
+      specifierMatches(specifier, '@lit/reactive-element')
     ) {
-      // Override where we resolve lit-html from so that we always resolve to
-      // a single version of lit-html.
+      // Override where we resolve lit packages from so that we always resolve to
+      // a single version.
       referrer = import.meta.url;
     }
     const modulePath = await resolve(specifier, {
