@@ -9,6 +9,9 @@ import {ModuleLoader} from '../../lib/module-loader.js';
 import {getWindow} from '../../lib/dom-shim.js';
 import {test} from 'uvu';
 import * as assert from 'uvu/assert';
+import {RenderInfo} from '../../index.js';
+
+import type * as testModule from '../test-files/render-test-module.js';
 
 const loader = new ModuleLoader({
   global: getWindow({
@@ -47,10 +50,12 @@ const setup = async () => {
   };
 
   return {
-    ...appModule.namespace,
+    ...(appModule.namespace as typeof testModule),
 
     /** Renders the value with declarative shadow roots */
-    render: (r: any) => collectResult(appModule.namespace.render(r)),
+    render(r: any, renderInfo?: Partial<RenderInfo>) {
+      return collectResult(appModule.namespace.render(r, renderInfo));
+    },
 
     /** Renders the value with flattened shadow roots */
     renderFlattened: (r: any) =>
@@ -61,8 +66,14 @@ const setup = async () => {
 test('simple TemplateResult', async () => {
   const {render, simpleTemplateResult, digestForTemplateResult} = await setup();
   const digest = digestForTemplateResult(simpleTemplateResult);
-  const result = await render(simpleTemplateResult);
+  const customElementsRendered: Array<string> = [];
+  const result = await render(simpleTemplateResult, {
+    customElementRendered(tagName: string) {
+      customElementsRendered.push(tagName);
+    },
+  });
   assert.is(result, `<!--lit-part ${digest}--><div></div><!--/lit-part-->`);
+  assert.is(customElementsRendered.length, 0);
 });
 
 /* Text Expressions */
@@ -182,11 +193,19 @@ test('nested template', async () => {
 
 test('simple custom element', async () => {
   const {render, simpleTemplateWithElement} = await setup();
-  const result = await render(simpleTemplateWithElement);
+
+  const customElementsRendered: Array<string> = [];
+  const result = await render(simpleTemplateWithElement, {
+    customElementRendered(tagName: string) {
+      customElementsRendered.push(tagName);
+    },
+  });
   assert.is(
     result,
     `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
   );
+  assert.is(customElementsRendered.length, 1);
+  assert.is(customElementsRendered[0], 'test-simple');
 });
 
 test('element with property', async () => {
@@ -287,5 +306,7 @@ test.skip('class-map directive with other bindings', async () => {
     '<!--lit-part pNgepkKFbd0=--><div class="z hi a c"><!--lit-node 0--></div><!--/lit-part-->'
   );
 });
+
+test('calls customElementRendered', () => {});
 
 test.run();

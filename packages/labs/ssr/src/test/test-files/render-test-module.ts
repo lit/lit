@@ -19,7 +19,7 @@ export const simpleTemplateResult = html`<div></div>`;
 
 /* Text Expressions */
 // prettier-ignore
-export const templateWithTextExpression = (x: string) => html`<div>${x}</div>`;
+export const templateWithTextExpression = (x: string|null|undefined) => html`<div>${x}</div>`;
 
 /* Attribute Expressions */
 // prettier-ignore
