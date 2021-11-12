@@ -502,12 +502,28 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
-  // Element renderers to use
+  /**
+   * Element renderers to use
+   */
   elementRenderers: ElementRendererConstructor[];
-  // Stack of open custom elements (in light dom or shadow dom)
+
+  /**
+   * Stack of open custom elements (in light dom or shadow dom)
+   */
   customElementInstanceStack: Array<ElementRenderer | undefined>;
-  // Stack of open host custom elements (n-1 will be n's host)
+
+  /**
+   * Stack of open host custom elements (n-1 will be n's host)
+   */
   customElementHostStack: Array<ElementRenderer | undefined>;
+
+  /**
+   * An optional callback to notifiy when a custom element has been rendered.
+   *
+   * This allows servers to know what specific tags were rendered for a given
+   * template, even in the case of conditional templates.
+   */
+  customElementRendered?: (tagName: string) => void;
 };
 
 const defaultRenderInfo = {
@@ -536,10 +552,10 @@ declare global {
  */
 export function* render(
   value: unknown,
-  renderInfo?: RenderInfo
+  renderInfo?: Partial<RenderInfo>
 ): IterableIterator<string> {
   renderInfo = {...defaultRenderInfo, ...renderInfo};
-  yield* renderValue(value, renderInfo);
+  yield* renderValue(value, renderInfo as RenderInfo);
 }
 
 function* renderValue(
@@ -682,6 +698,7 @@ function* renderTemplateResult(
           }
         }
         renderInfo.customElementInstanceStack.push(instance);
+        renderInfo.customElementRendered?.(op.tagName);
         break;
       }
       case 'custom-element-attributes': {
