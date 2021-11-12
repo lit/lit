@@ -135,9 +135,13 @@ packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
 packages/labs/ssr/demo/
 packages/labs/ssr/lib/
 packages/labs/ssr/node_modules/
-packages/labs/ssr/test/
+packages/labs/ssr/test/**/*.js
+packages/labs/ssr/test/**/*.js.map
+packages/labs/ssr/test/**/*.d.ts
+packages/labs/ssr/test/**/*.d.ts.map
 packages/labs/ssr/index.*
 !packages/labs/ssr/custom_typings/*.d.ts
+
 packages/labs/ssr-client/development/
 packages/labs/ssr-client/directives/
 packages/labs/ssr-client/controllers/

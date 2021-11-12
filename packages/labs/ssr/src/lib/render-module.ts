@@ -5,7 +5,7 @@
  */
 
 import {getWindow} from '../lib/dom-shim.js';
-import {importModule} from './import-module.js';
+import {ModuleLoader} from './module-loader.js';
 import {createRequire} from 'module';
 
 /**
@@ -31,7 +31,9 @@ export const renderModule = async (
       require: createRequire(import.meta.url),
     },
   });
-  const module = await importModule(specifier, referrer, window);
+  const loader = new ModuleLoader({global: window});
+  const importResult = await loader.importModule(specifier, referrer);
+  const {module} = importResult;
   const f = module.namespace[functionName] as Function;
   // TODO: should we require the result be an AsyncIterable?
   return f(...args);
