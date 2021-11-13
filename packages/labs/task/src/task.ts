@@ -46,6 +46,10 @@ export interface TaskConfig<T extends unknown[], R> {
   autoRun?: boolean;
 }
 
+type GetReturnType<Type> = Type extends (...args: any) => infer V
+  ? V
+  : undefined;
+
 // TODO(sorvell): Some issues:
 // 1. When task is triggered in `updated`, this generates a ReactiveElement
 // warning that the update was triggered in response to an update.
@@ -233,19 +237,16 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     return this._error;
   }
 
-  render(renderer: StatusRenderer<R>) {
+  render<SR extends StatusRenderer<R>>(renderer: SR) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.();
+        return renderer.initial?.() as GetReturnType<SR["initial"]>;
       case TaskStatus.PENDING:
-        return renderer.pending?.();
+        return renderer.pending?.() as GetReturnType<SR["pending"]>;
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value!);
+        return renderer.complete?.(this.value!) as GetReturnType<SR["complete"]>;
       case TaskStatus.ERROR:
-        return renderer.error?.(this.error);
-      default:
-        // exhaustiveness check
-        this.status as void;
+        return renderer.error?.(this.error) as GetReturnType<SR["error"]>;
     }
   }
 
