@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// Add a comment.
+
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
