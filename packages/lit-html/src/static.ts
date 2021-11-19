@@ -105,6 +105,11 @@ export const withStatic =
       const key = staticStrings.join('$$lit$$');
       strings = stringsCache.get(key)!;
       if (strings === undefined) {
+        // Beware: in general this pattern is unsafe, and doing so may bypass
+        // lit's security checks and allow an attacker to execute arbitrary
+        // code and inject arbitrary content.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (staticStrings as any).raw = staticStrings;
         stringsCache.set(
           key,
           (strings = staticStrings as unknown as TemplateStringsArray)
