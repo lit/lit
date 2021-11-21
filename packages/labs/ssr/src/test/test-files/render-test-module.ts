@@ -212,3 +212,40 @@ export const nestedTemplateResult = html`<div></div>`;
 export const trickyNestedDynamicChildren = html`<test-simple-slot
   >${html`${nestedTemplateResult}${nestedTemplateResult}`}</test-simple-slot
 >`;
+
+/* Events */
+
+@customElement('test-event-dispatch')
+export class TestEventDispatch extends LitElement {
+  @property() testProperty!: string;
+
+  override connectedCallback() {
+    super.connectedCallback();
+    const event = new CustomEvent('test-event', {
+      bubbles: true,
+      detail: {testProperty: 'initial'},
+    });
+    this.dispatchEvent(event);
+    this.testProperty = event.detail.testProperty;
+  }
+
+  override render() {
+    return html`<p>${this.testProperty}</p>`;
+  }
+}
+
+@customElement('test-event-listen')
+export class TestEventListen extends LitElement {
+  override connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('test-event', (e: Event) => {
+      (e as CustomEvent<{testProperty: string}>).detail.testProperty = 'set';
+    });
+  }
+
+  override render() {
+    return html`<test-event-dispatch></test-event-dispatch>`;
+  }
+}
+
+export const eventDispatch = html`<test-event-listen></test-event-listen>`;

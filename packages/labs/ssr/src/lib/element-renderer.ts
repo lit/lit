@@ -16,15 +16,18 @@ const escapeHtml = require('escape-html') as typeof import('escape-html');
 
 import {RenderInfo} from './render-lit-html.js';
 
+// TODO (justinfagnani): Now that the ctor takes a RenderInfo, do we
+// need it in the other methods?
 export type ElementRendererConstructor = (new (
-  tagName: string
+  tagName: string,
+  renderInfo: RenderInfo
 ) => ElementRenderer) &
   typeof ElementRenderer;
 
 type AttributesMap = Map<string, string>;
 
 export const getElementRenderer = (
-  {elementRenderers}: RenderInfo,
+  renderInfo: RenderInfo,
   tagName: string,
   ceClass: typeof HTMLElement | undefined = customElements.get(tagName),
   attributes: AttributesMap = new Map()
@@ -33,6 +36,7 @@ export const getElementRenderer = (
     console.warn(`Custom element ${tagName} was not registered.`);
     return;
   }
+  const {elementRenderers} = renderInfo;
   // TODO(kschaaf): Should we implement a caching scheme, e.g. keyed off of
   // ceClass's base class to prevent O(n) lookups for every element (probably
   // not a concern for the small number of element renderers we'd expect)? Doing
@@ -40,7 +44,7 @@ export const getElementRenderer = (
   // custom elements with a `client-only` attribute, so punting for now.
   for (const renderer of elementRenderers) {
     if (renderer.matchesClass(ceClass, tagName, attributes)) {
-      return new renderer(tagName);
+      return new (renderer as any)(tagName, renderInfo);
     }
   }
   return undefined;
@@ -52,6 +56,7 @@ export const getElementRenderer = (
 export abstract class ElementRenderer {
   element?: HTMLElement;
   tagName: string;
+  renderInfo: RenderInfo;
 
   /**
    * Should be implemented to return true when the given custom element class
@@ -70,8 +75,9 @@ export abstract class ElementRenderer {
     return false;
   }
 
-  constructor(tagName: string) {
+  constructor(tagName: string, renderInfo: RenderInfo) {
     this.tagName = tagName;
+    this.renderInfo = renderInfo;
   }
 
   /**

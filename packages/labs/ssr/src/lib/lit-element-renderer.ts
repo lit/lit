@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ElementRenderer} from './element-renderer.js';
+import {
+  ElementRenderer,
+  ElementRendererConstructor,
+} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
@@ -24,12 +27,22 @@ export class LitElementRenderer extends ElementRenderer {
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
 
-  constructor(tagName: string) {
-    super(tagName);
+  constructor(tagName: string, renderInfo: RenderInfo) {
+    super(tagName, renderInfo);
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
+
+    // Set the event target parent so events can bubble
+    // TODO (justinfagnani): make this the correct composed path
+    (this.element as any).__eventTargetParent =
+      renderInfo.customElementInstanceStack.at(-1)?.element;
   }
 
   connectedCallback() {
+    // TODO (justinfagnani): This assumes that connectedCallback() doesn't call
+    // any DOM APIs _except_ addEventListener() - which is obviously a big and
+    // bad assumption. We probably need a new SSR-compatible connected callback.
+    (this.element as any)?.connectedCallback();
+
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,3 +87,5 @@ export class LitElementRenderer extends ElementRenderer {
     }
   }
 }
+
+export const x: ElementRendererConstructor = LitElementRenderer;

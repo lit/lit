@@ -309,4 +309,11 @@ test.skip('class-map directive with other bindings', async () => {
 
 test('calls customElementRendered', () => {});
 
+test('dispatchEvent', async () => {
+  const {render, eventDispatch} = await setup();
+  const result = await render(eventDispatch);
+
+  assert.match(result, '<p><!--lit-part-->set<!--/lit-part--></p>');
+});
+
 test.run();
