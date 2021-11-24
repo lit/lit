@@ -1,4 +1,5 @@
-<img src="./logo.svg" alt="Lit" width="300" height="141">
+<img src="./logo.svg#gh-light-mode-only" alt="Lit" width="300" height="141">
+<img src="./logo-dark.svg#gh-dark-mode-only" alt="Lit" width="300" height="141">
 
 ### Simple. Fast. Web Components.
 
