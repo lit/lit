@@ -347,32 +347,32 @@ suite('shady-render', () => {
         const container = document.createElement('some-element');
         document.body.appendChild(container);
         const shadowRoot = container.attachShadow({mode: 'open'});
-        let error1 = undefined;
+        let error1: Error|undefined = undefined;
         try {
           (shadyRender as any)(
               html`some content`, shadowRoot /*, not provided */);
         } catch (e) {
-          error1 = e;
+          error1 = e as Error;
         }
         assert.notEqual(error1, undefined);
-        assert.equal(error1.message, 'The `scopeName` option is required.');
-        let error2 = undefined;
+        assert.equal(error1?.message, 'The `scopeName` option is required.');
+        let error2: Error|undefined = undefined;
         try {
           (shadyRender as any)(html`some content`, shadowRoot, 'not an object');
         } catch (e) {
-          error2 = e;
+          error2 = e as Error;
         }
         assert.notEqual(error2, undefined);
-        assert.equal(error2.message, 'The `scopeName` option is required.');
-        let error3 = undefined;
+        assert.equal(error2?.message, 'The `scopeName` option is required.');
+        let error3: Error|undefined = undefined;
         try {
           (shadyRender as any)(
               html`some content`, shadowRoot, {'missing scopeName': true});
         } catch (e) {
-          error3 = e;
+          error3 = e as Error;
         }
         assert.notEqual(error3, undefined);
-        assert.equal(error3.message, 'The `scopeName` option is required.');
+        assert.equal(error3!.message, 'The `scopeName` option is required.');
         document.body.removeChild(container);
       });
 
