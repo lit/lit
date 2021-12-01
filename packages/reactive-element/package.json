@@ -49,6 +49,10 @@
       "development": "./development/decorators/query-all.js",
       "default": "./decorators/query-all.js"
     },
+    "./decorators/query-assigned-elements.js": {
+      "development": "./development/decorators/query-assigned-elements.js",
+      "default": "./decorators/query-assigned-elements.js"
+    },
     "./decorators/query-assigned-nodes.js": {
       "development": "./development/decorators/query-assigned-nodes.js",
       "default": "./decorators/query-assigned-nodes.js"
