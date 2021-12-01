@@ -52,8 +52,8 @@ class MyElement extends LitElement {
     return html`
       <div>User Info</div>
       ${this._apiTask.render({
-        pending: html`Loading user info...`;
-        complete(user): html`${user.name}`;
+        pending: () => html`Loading user info...`,
+        complete: (user) => html`${user.name}`
       })}
       <!-- ... -->
     `;
