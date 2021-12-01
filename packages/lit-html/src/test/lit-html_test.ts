@@ -3062,6 +3062,26 @@ suite('lit-html', () => {
     });
   });
 
+  test(`don't render simple spoof template results`, () => {
+    const spoof = {
+      ['_$litType$']: 1,
+      strings: ['<div>spoofed string</div>'],
+      values: [],
+    };
+    const template = html`<div>${spoof}</div>`;
+    let threwError = false;
+    try {
+      render(template, container);
+    } catch {
+      threwError = true;
+    }
+    assert.equal(stripExpressionMarkers(container.innerHTML), '');
+    assert.isTrue(
+      threwError,
+      `Expected an error when rendering a spoofed template result`
+    );
+  });
+
   const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
 
   warningsSuiteFunction('warnings', () => {

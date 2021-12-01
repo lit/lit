@@ -653,6 +653,22 @@ const getTemplateHtml = (
   const htmlResult: string | TrustedHTML =
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
 
+  // A security check to prevent spoofing of Lit template results.
+  // In the future, we may be able to replace this with Array.isTemplateObject,
+  // though we might need to make that check inside of the html and svg
+  // functions, because precompiled templates don't come in as
+  // TemplateStringArray objects.
+  if (!Array.isArray(strings) || !strings.hasOwnProperty('raw')) {
+    let message = 'invalid template strings array';
+    if (DEV_MODE) {
+      message =
+        `Internal Error: expected template strings to be an array ` +
+        `with a 'raw' field. Please file a bug at ` +
+        `https://github.com/lit/lit/issues/new?template=bug_report.md ` +
+        `and include information about your build tooling, if any.`;
+    }
+    throw new Error(message);
+  }
   // Returned as an array for terseness
   return [
     policy !== undefined
