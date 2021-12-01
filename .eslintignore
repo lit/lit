@@ -143,6 +143,12 @@ packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
 
+packages/labs/router/development/
+packages/labs/router/test/
+packages/labs/router/node_modules/
+packages/labs/router/index.*
+packages/labs/router/router.*
+
 packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
 packages/labs/scoped-registry-mixin/node_modules/
