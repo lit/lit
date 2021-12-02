@@ -25,13 +25,18 @@
     "./router.js": {
       "development": "./development/router.js",
       "default": "./router.js"
+    },
+    "./routes.js": {
+      "development": "./development/routes.js",
+      "default": "./routes.js"
     }
   },
   "files": [
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/router.{d.ts,d.ts.map,js,js.map}"
+    "/router.{d.ts,d.ts.map,js,js.map}",
+    "/routes.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts --build && rollup -c",
