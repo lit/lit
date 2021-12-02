@@ -5,6 +5,7 @@
  */
 
 import {queryAssignedElements} from '../../decorators/query-assigned-elements.js';
+import {customElement} from '../../decorators/custom-element.js';
 import {
   canTestReactiveElement,
   generateElementName,
@@ -20,17 +21,18 @@ const flush =
   let container: HTMLElement;
   let el: C;
 
+  @customElement('assigned-elements-el')
   class D extends RenderingElement {
     @queryAssignedElements() defaultAssigned!: Element[];
 
-    @queryAssignedElements({slotName: 'footer', flatten: true})
+    @queryAssignedElements({slot: 'footer', flatten: true})
     footerAssigned!: Element[];
 
-    @queryAssignedElements({slotName: 'footer', flatten: false})
+    @queryAssignedElements({slot: 'footer', flatten: false})
     footerNotFlattenedSlot!: Element[];
 
     @queryAssignedElements({
-      slotName: 'footer',
+      slot: 'footer',
       flatten: true,
       selector: '.item',
     })
@@ -43,12 +45,12 @@ const flush =
       `;
     }
   }
-  customElements.define('assigned-elements-el', D);
 
+  @customElement('assigned-elements-el-2')
   class E extends RenderingElement {
     @queryAssignedElements() defaultAssigned!: Element[];
 
-    @queryAssignedElements({slotName: 'header'}) headerAssigned!: Element[];
+    @queryAssignedElements({slot: 'header'}) headerAssigned!: Element[];
 
     override render() {
       return html`
@@ -57,26 +59,21 @@ const flush =
       `;
     }
   }
-  customElements.define('assigned-elements-el-2', E);
 
   const defaultSymbol = Symbol('default');
-  const headerSymbol = Symbol('header');
+
+  @customElement('assigned-elements-el-symbol')
   class S extends RenderingElement {
     @queryAssignedElements() [defaultSymbol]!: Element[];
 
-    @queryAssignedElements({slotName: 'header'}) [headerSymbol]!: Element[];
-
     override render() {
-      return html`
-        <slot name="header"></slot>
-        <slot></slot>
-      `;
+      return html` <slot></slot> `;
     }
   }
-  customElements.define('assigned-elements-el-symbol', S);
 
   // Note, there are 2 elements here so that the `flatten` option of
   // the decorator can be tested.
+  @customElement(generateElementName())
   class C extends RenderingElement {
     div!: HTMLDivElement;
     div2!: HTMLDivElement;
@@ -114,23 +111,17 @@ const flush =
       ) as S;
     }
   }
-  customElements.define(generateElementName(), C);
 
   setup(async () => {
     container = document.createElement('div');
-    container.id = 'test-container';
-    document.body.appendChild(container);
+    document.body.append(container);
     el = new C();
-    container.appendChild(el);
-    await el.updateComplete;
-    await el.assignedEls.updateComplete;
+    container.append(el);
+    await new Promise((r) => setTimeout(r, 0));
   });
 
   teardown(() => {
-    if (container !== undefined) {
-      container.parentElement!.removeChild(container);
-      (container as any) = undefined;
-    }
+    container?.remove();
   });
 
   test('returns assignedElements for slot', () => {
@@ -139,13 +130,12 @@ const flush =
     assert.deepEqual(el.assignedEls.defaultAssigned, [el.div]);
     const child = document.createElement('div');
     const text1 = document.createTextNode('');
-    el.assignedEls.appendChild(text1);
-    el.assignedEls.appendChild(child);
+    el.assignedEls.append(text1, child);
     const text2 = document.createTextNode('');
-    el.assignedEls.appendChild(text2);
+    el.assignedEls.append(text2);
     flush();
     assert.deepEqual(el.assignedEls.defaultAssigned, [el.div, child]);
-    el.assignedEls.removeChild(child);
+    child.remove();
     flush();
     assert.deepEqual(el.assignedEls.defaultAssigned, [el.div]);
   });
@@ -162,15 +152,14 @@ const flush =
     assert.deepEqual(el.assignedEls.footerAssigned, []);
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
-    el.appendChild(child1);
-    el.appendChild(child2);
+    el.append(child1, child2);
     flush();
     assert.deepEqual(el.assignedEls.footerAssigned, [child1, child2]);
 
     assert.equal(el.assignedEls.footerNotFlattenedSlot.length, 1);
     assert.equal(el.assignedEls.footerNotFlattenedSlot?.[0]?.tagName, 'SLOT');
 
-    el.removeChild(child2);
+    child2.remove();
     flush();
     assert.deepEqual(el.assignedEls.footerAssigned, [child1]);
   });
@@ -184,11 +173,10 @@ const flush =
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
     child2.classList.add('item');
-    el.appendChild(child1);
-    el.appendChild(child2);
+    el.append(child1, child2);
     flush();
     assert.deepEqual(el.assignedEls.footerAssignedFiltered, [child2]);
-    el.removeChild(child2);
+    child2.remove();
     flush();
     assert.deepEqual(el.assignedEls.footerAssignedFiltered, []);
   });

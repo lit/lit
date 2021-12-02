@@ -12,7 +12,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
 /**
  * Transform:
  *
- *   @queryAssignedElements({slotName: 'list', selector: '.item'})
+ *   @queryAssignedElements({slot: 'list', selector: '.item'})
  *   listItems
  *
  * Into:
@@ -59,16 +59,16 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     if (arg0 && arg0.properties.some((p) => !ts.isPropertyAssignment(p))) {
       throw new Error(
         `queryAssignedElements object literal argument can only include ` +
-          `property assignment. For example: '{ slotName: "example" }' is ` +
+          `property assignment. For example: '{ slot: "example" }' is ` +
           `supported, whilst '{ ...otherOpts }' is unsupported.`
       );
     }
-    const {slotName, selector} = this._retrieveSlotAndSelector(arg0);
+    const {slot, selector} = this._retrieveSlotAndSelector(arg0);
     litClassContext.litFileContext.replaceAndMoveComments(
       property,
       this._createQueryAssignedElementsGetter(
         name,
-        slotName,
+        slot,
         selector,
         this._filterAssignedElementsOptions(arg0)
       )
@@ -76,11 +76,11 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
   }
 
   private _retrieveSlotAndSelector(opts?: ts.ObjectLiteralExpression): {
-    slotName: string;
+    slot: string;
     selector: string;
   } {
     if (!opts) {
-      return {slotName: '', selector: ''};
+      return {slot: '', selector: ''};
     }
     const findStringLiteralFor = (key: string): string => {
       const propAssignment = opts.properties.find(
@@ -102,7 +102,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
       );
     };
     return {
-      slotName: findStringLiteralFor('slotName'),
+      slot: findStringLiteralFor('slot'),
       selector: findStringLiteralFor('selector'),
     };
   }
@@ -116,7 +116,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
    * Given:
    *
    * ```ts
-   * { slotName: 'example', flatten: false }
+   * { slot: 'example', flatten: false }
    * ```
    *
    * returns:
@@ -139,7 +139,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
       (p) =>
         p.name &&
         ts.isIdentifier(p.name) &&
-        !['slotName', 'selector'].includes(p.name.text)
+        !['slot', 'selector'].includes(p.name.text)
     );
     if (assignedElementsProperties.length === 0) {
       return;
@@ -152,15 +152,13 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
 
   private _createQueryAssignedElementsGetter(
     name: string,
-    slotName: string,
+    slot: string,
     selector: string,
     assignedElsOptions?: ts.ObjectLiteralExpression
   ) {
     const factory = this._factory;
 
-    const slotSelector = `slot${
-      slotName ? `[name=${slotName}]` : ':not([name])'
-    }`;
+    const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
 
     const assignedElementsOptions = assignedElsOptions
       ? [assignedElsOptions]
