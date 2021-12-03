@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveControllerHost} from 'lit';
-import {Routes, RouteConfig} from './routes.js';
+import {Routes} from './routes.js';
 
 /**
  * A root-level router that installs global event listeners to intercept
@@ -18,20 +17,12 @@ import {Routes, RouteConfig} from './routes.js';
  * routes should be configured with the `Routes` class.
  */
 export class Router extends Routes {
-  constructor(
-    host: ReactiveControllerHost & HTMLElement,
-    routes?: Array<RouteConfig>
-  ) {
-    super(host, routes ?? []);
-    // Kick off routed rendering by going to the current URL
-    // TODO: should this be done in the first update instead?
-    this.goto(window.location.pathname);
-  }
-
   override hostConnected() {
     super.hostConnected();
     window.addEventListener('click', this._onClick);
     window.addEventListener('popstate', this._onPopState);
+    // Kick off routed rendering by going to the current URL
+    this.goto(window.location.pathname);
   }
 
   override hostDisconnected() {
@@ -68,7 +59,7 @@ export class Router extends Routes {
 
     const location = window.location;
     const origin = location.origin || location.protocol + '//' + location.host;
-    if (anchor.origin === origin) {
+    if (anchor.origin !== origin) {
       return;
     }
 

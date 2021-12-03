@@ -38,6 +38,8 @@ export class Routes implements ReactiveController {
    */
   private _childRoutes: Array<Routes> = [];
 
+  protected _parentRoutes: Routes | undefined;
+
   /*
    * State related to the current matching route.
    *
@@ -45,7 +47,7 @@ export class Routes implements ReactiveController {
    * that we can propagate tail matches to child routes if they are added after
    * navigation / matching.
    */
-  protected _currentUrl: string | undefined;
+  protected _currentPathname: string | undefined;
   protected _currentRoute: URLPatternRouteConfig | undefined;
   protected _currentParams: {
     [key: string]: string;
@@ -76,19 +78,33 @@ export class Routes implements ReactiveController {
     }
   }
 
+  /**
+   * Returns a URL string of the current route, including parent routes,
+   * optionally replacing the local path with `pathname`.
+   */
+  link(pathname?: string): string {
+    if (pathname?.startsWith('/')) {
+      return pathname;
+    }
+    if (pathname?.startsWith('.')) {
+      throw new Error('Not implemented');
+    }
+    pathname ??= this._currentPathname;
+    return (this._parentRoutes?.link() ?? '') + pathname;
+  }
+
   goto(pathname: string) {
     // TODO (justinfagnani): generalize this to handle query params and
     // fragments. It currently only handles path names because it's easier to
     // completely disregard the origin for now. The click handler only does
     // an in-page navigation if the origin matches anyway.
-
     let tailGroup: string | undefined;
     if (this._routes.length === 0) {
       // If a routes controller has none of its own routes it acts like it has
       // one route of `/*` so that it passes the whole pathname as a tail
       // match.
-      this._currentUrl = pathname;
       tailGroup = pathname;
+      this._currentPathname = '';
       // Simulate a tail group with the whole pathname
       this._currentParams = {0: tailGroup};
     } else {
@@ -96,6 +112,10 @@ export class Routes implements ReactiveController {
       const r = route?.pattern.exec({pathname});
       this._currentParams = r?.pathname.groups ?? {};
       tailGroup = getTailGroup(this._currentParams);
+      this._currentPathname =
+        tailGroup === undefined
+          ? pathname
+          : pathname.substring(0, pathname.length - tailGroup.length);
     }
 
     // Propagate the tail match to children
@@ -144,6 +164,7 @@ export class Routes implements ReactiveController {
     // outlet rendered a different template, disconnecting will ensure that
     // this controller doesn't receive a tail match meant for another route.
     this._onDisconnect?.();
+    this._parentRoutes = undefined;
   }
 
   private _onRoutesConnected = (e: RoutesConnectedEvent) => {
@@ -155,6 +176,7 @@ export class Routes implements ReactiveController {
 
     const childRoutes = e.routes;
     this._childRoutes.push(childRoutes);
+    childRoutes._parentRoutes = this;
 
     e.stopImmediatePropagation();
     e.onDisconnect = () => {
