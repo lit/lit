@@ -25,18 +25,19 @@ export type RouteConfig = StringRouteConfig | URLPatternRouteConfig;
  * configuration of URL patterns and associated render callbacks.
  */
 export class Routes implements ReactiveController {
-  protected _host: ReactiveControllerHost & HTMLElement;
+  protected readonly _host: ReactiveControllerHost & HTMLElement;
 
   /*
    * The currently installed set of routes in precedence order.
    */
-  private _routes: Array<URLPatternRouteConfig & StringRouteConfig> = [];
+  private readonly _routes: Array<URLPatternRouteConfig & StringRouteConfig> =
+    [];
 
   /*
    * The current set of child Routes controllers. These are connected via
    * the routes-connected event.
    */
-  private _childRoutes: Array<Routes> = [];
+  private readonly _childRoutes: Array<Routes> = [];
 
   protected _parentRoutes: Routes | undefined;
 
@@ -59,6 +60,8 @@ export class Routes implements ReactiveController {
    * It's critical to call this immediately in hostDisconnected so that this
    * controller instance doesn't receive a tail match meant for another route.
    */
+  // TODO (justinfagnani): Do we need this now that we have a direct reference
+  // to the parent? We can call `this._parentRoutes.disconnect(this)`.
   private _onDisconnect: (() => void) | undefined;
 
   constructor(
@@ -67,6 +70,7 @@ export class Routes implements ReactiveController {
   ) {
     (this._host = host).addController(this);
     for (const route of routes) {
+      // TODO (justinfagnani): factor out an `addRoute()` method
       this._routes.push({
         name: route.name,
         render: route.render,
@@ -93,7 +97,16 @@ export class Routes implements ReactiveController {
     return (this._parentRoutes?.link() ?? '') + pathname;
   }
 
+  /**
+   * Navigates to this routes controller to `pathname`.
+   *
+   * This does not navigate parent routes, so it isn't (yet) a general page
+   * navigation API. It does navigate child routes if pathname matches a
+   * pattern with a tail wildcard pattern (`/*`).
+   */
   goto(pathname: string) {
+    // TODO (justinfagnani): handle absolute vs relative paths separately.
+
     // TODO (justinfagnani): generalize this to handle query params and
     // fragments. It currently only handles path names because it's easier to
     // completely disregard the origin for now. The click handler only does
@@ -153,14 +166,13 @@ export class Routes implements ReactiveController {
       RoutesConnectedEvent.eventName,
       this._onRoutesConnected
     );
-    // TODO: connect to parent router
     const event = new RoutesConnectedEvent(this);
     this._host.dispatchEvent(event);
     this._onDisconnect = event.onDisconnect;
   }
 
   hostDisconnected() {
-    // When this child routes constroller is disconnected because a parent
+    // When this child routes controller is disconnected because a parent
     // outlet rendered a different template, disconnecting will ensure that
     // this controller doesn't receive a tail match meant for another route.
     this._onDisconnect?.();
@@ -181,6 +193,7 @@ export class Routes implements ReactiveController {
     e.stopImmediatePropagation();
     e.onDisconnect = () => {
       // Remove route from this._childRoutes:
+      // `>>> 0` converts -1 to 2**32-1
       this._childRoutes?.splice(
         this._childRoutes.indexOf(childRoutes) >>> 0,
         1
@@ -201,7 +214,7 @@ export class Routes implements ReactiveController {
 const getTailGroup = (groups: {[key: string]: string}) => {
   let tailKey: string | undefined;
   for (const key of Object.keys(groups)) {
-    if ((/\d+/.test(key) && tailKey === undefined) || key > tailKey!) {
+    if (/\d+/.test(key) && (tailKey === undefined || key > tailKey!)) {
       tailKey = key;
     }
   }
@@ -213,7 +226,7 @@ const getTailGroup = (groups: {[key: string]: string}) => {
  * announce the child route and potentially connect to a parent routes controller.
  */
 export class RoutesConnectedEvent extends Event {
-  static readonly eventName = 'routes-connected';
+  static readonly eventName = 'lit-routes-connected';
   readonly routes: Routes;
   onDisconnect?: () => void;
 
@@ -229,6 +242,6 @@ export class RoutesConnectedEvent extends Event {
 
 declare global {
   interface HTMLElementEventMap {
-    'routes-connected': RoutesConnectedEvent;
+    'lit-routes-connected': RoutesConnectedEvent;
   }
 }
