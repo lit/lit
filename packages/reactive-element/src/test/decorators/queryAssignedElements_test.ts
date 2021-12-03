@@ -46,9 +46,10 @@ const flush =
     }
   }
 
+  const defaultSymbol = Symbol('default');
   @customElement('assigned-elements-el-2')
   class E extends RenderingElement {
-    @queryAssignedElements() defaultAssigned!: Element[];
+    @queryAssignedElements() [defaultSymbol]!: Element[];
 
     @queryAssignedElements({slot: 'header'}) headerAssigned!: Element[];
 
@@ -57,17 +58,6 @@ const flush =
         <slot name="header"></slot>
         <slot></slot>
       `;
-    }
-  }
-
-  const defaultSymbol = Symbol('default');
-
-  @customElement('assigned-elements-el-symbol')
-  class S extends RenderingElement {
-    @queryAssignedElements() [defaultSymbol]!: Element[];
-
-    override render() {
-      return html` <slot></slot> `;
     }
   }
 
@@ -80,7 +70,6 @@ const flush =
     div3!: HTMLDivElement;
     assignedEls!: D;
     assignedEls2!: E;
-    assignedEls3!: S;
     @queryAssignedElements() missingSlotAssignedElements!: Element[];
 
     override render() {
@@ -90,9 +79,6 @@ const flush =
           <slot slot="footer"></slot
         ></assigned-elements-el>
         <assigned-elements-el-2><div id="div2">B</div></assigned-elements-el-2>
-        <assigned-elements-el-symbol
-          ><div id="div3">B</div></assigned-elements-el-symbol
-        >
       `;
     }
 
@@ -106,9 +92,6 @@ const flush =
       this.assignedEls2 = this.renderRoot.querySelector(
         'assigned-elements-el-2'
       ) as E;
-      this.assignedEls3 = this.renderRoot.querySelector(
-        'assigned-elements-el-symbol'
-      ) as S;
     }
   }
 
@@ -141,11 +124,7 @@ const flush =
   });
 
   test('returns assignedElements for unnamed slot that is not first slot', () => {
-    assert.deepEqual(el.assignedEls2.defaultAssigned, [el.div2]);
-  });
-
-  test('returns assignedElements for unnamed slot via symbol property', () => {
-    assert.deepEqual(el.assignedEls3[defaultSymbol], [el.div3]);
+    assert.deepEqual(el.assignedEls2[defaultSymbol], [el.div2]);
   });
 
   test('returns flattened assignedElements for slot', () => {
