@@ -6,7 +6,7 @@
 
 import {ReactiveController, ReactiveControllerHost} from 'lit';
 
-export interface StringRouteConfig {
+export interface PathRouteConfig {
   name?: string | undefined;
   path: string;
   render: (params: {[key: string]: string}) => unknown;
@@ -18,7 +18,7 @@ export interface URLPatternRouteConfig {
   render: (params: {[key: string]: string}) => unknown;
 }
 
-export type RouteConfig = StringRouteConfig | URLPatternRouteConfig;
+export type RouteConfig = PathRouteConfig | URLPatternRouteConfig;
 
 /**
  * A reactive controller that performs location-based routing using a
@@ -30,8 +30,7 @@ export class Routes implements ReactiveController {
   /*
    * The currently installed set of routes in precedence order.
    */
-  private readonly _routes: Array<URLPatternRouteConfig & StringRouteConfig> =
-    [];
+  private readonly _routes: Array<URLPatternRouteConfig & PathRouteConfig> = [];
 
   /*
    * The current set of child Routes controllers. These are connected via
@@ -74,10 +73,10 @@ export class Routes implements ReactiveController {
       this._routes.push({
         name: route.name,
         render: route.render,
-        path: (route as StringRouteConfig).path,
+        path: (route as PathRouteConfig).path,
         pattern:
           (route as URLPatternRouteConfig).pattern ??
-          new URLPattern({pathname: (route as StringRouteConfig).path}),
+          new URLPattern({pathname: (route as PathRouteConfig).path}),
       });
     }
   }
