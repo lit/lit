@@ -31,14 +31,13 @@ suite('Task', () => {
     constructor(host: ReactiveElement) {
       this.host = host;
       this.host.addController(this);
-      this.task = new Task(
-        this.host,
-        ([id]) =>
+      this.task = new Task(this.host, {
+        task: ([id]) =>
           new Promise((resolve) => {
             this.resolveTask = () => resolve(`result: ${id}`);
           }),
-        () => [this.id]
-      );
+        args: () => [this.id],
+      });
     }
 
     hostUpdated() {
@@ -84,30 +83,46 @@ suite('Task', () => {
     rejectTask!: () => void;
     resolveRenderedStatusTask!: () => void;
     rejectRenderedStatusTask!: () => void;
-    taskValue?: unknown;
-    taskControllerValue?: unknown;
-    task = new Task<[string, string], string>(
-      this,
-      ([foo, bar]) =>
+    resolveNoArgsTask!: () => void;
+    resolveCanRunTask!: () => void;
+    taskValue?: string;
+    taskControllerValue?: string;
+    noArgsTaskValue?: unknown;
+    canRunTaskValue?: unknown;
+    canRunCanRunTask = false;
+    task = new Task<[string, string], string>(this, {
+      task: ([foo, bar]) =>
         new Promise((resolve, reject) => {
           this.rejectTask = () => reject(`error`);
           this.resolveTask = () => resolve(`result: ${foo}, ${bar}`);
         }),
-      () => [this.foo, this.bar]
-    );
-    renderedStatusTask = new Task<[string?], string>(
-      this,
-      ([zot]) =>
+      args: () => [this.foo, this.bar],
+    });
+    renderedStatusTask = new Task<[string?], string>(this, {
+      task: ([zot]) =>
         new Promise((resolve, reject) => {
           this.rejectRenderedStatusTask = () => reject(`error`);
           this.resolveRenderedStatusTask = () => resolve(`result: ${zot}`);
         }),
-      () => [this.zot]
-    );
+      args: () => [this.zot],
+    });
+    noArgsTask = new Task(this, {
+      task: () =>
+        new Promise((resolve) => {
+          this.resolveNoArgsTask = () => resolve(`noArgs` as any);
+        }),
+    });
+    canRunTask = new Task(this, {
+      task: () =>
+        new Promise((resolve) => {
+          this.resolveCanRunTask = () => resolve(`canRun` as any);
+        }),
+      canRun: (canRun) => canRun() && this.canRunCanRunTask,
+    });
 
     override update(changedProperties: PropertyValues) {
       super.update(changedProperties);
-      this.taskValue = this.task.value ?? this.task.error;
+      this.taskValue = this.task.value ?? (this.task.error as string);
       this.taskControllerValue =
         this.taskController.value ?? this.taskController.error;
       el.renderedStatusTask.render({
@@ -116,6 +131,8 @@ suite('Task', () => {
         complete: (value: unknown) => (this.renderedStatus = value as string),
         error: (error: unknown) => (this.renderedStatus = error as string),
       });
+      this.noArgsTaskValue = this.noArgsTask.value;
+      this.canRunTaskValue = this.canRunTask.value;
     }
   }
   customElements.define(generateElementName(), A);
@@ -307,5 +324,42 @@ suite('Task', () => {
     // so we wait a event loop turn:
     await new Promise((r) => setTimeout(r, 0));
     assert.equal(el.task.status, TaskStatus.INITIAL, 'new initial');
+  });
+
+  test('task without args runs when not pending', async () => {
+    assert.equal(el.noArgsTaskValue, undefined);
+    assert.equal(el.noArgsTask.status, TaskStatus.PENDING);
+    el.resolveNoArgsTask();
+    await tasksUpdateComplete();
+    assert.equal(el.noArgsTaskValue, 'noArgs');
+    assert.equal(el.noArgsTask.status, TaskStatus.COMPLETE);
+    el.requestUpdate();
+    await tasksUpdateComplete();
+    assert.equal(el.noArgsTaskValue, undefined);
+    assert.equal(el.noArgsTask.status, TaskStatus.PENDING);
+    el.resolveNoArgsTask();
+    await tasksUpdateComplete();
+    assert.equal(el.noArgsTaskValue, 'noArgs');
+    assert.equal(el.noArgsTask.status, TaskStatus.COMPLETE);
+  });
+
+  test('task with custom `canRun`', async () => {
+    assert.equal(el.canRunTaskValue, undefined);
+    assert.equal(el.canRunTask.status, TaskStatus.INITIAL);
+    await tasksUpdateComplete();
+    el.canRunCanRunTask = true;
+    el.requestUpdate();
+    await tasksUpdateComplete();
+    assert.equal(el.canRunTaskValue, undefined);
+    assert.equal(el.canRunTask.status, TaskStatus.PENDING);
+    el.resolveCanRunTask();
+    await tasksUpdateComplete();
+    assert.equal(el.canRunTaskValue, 'canRun');
+    assert.equal(el.canRunTask.status, TaskStatus.COMPLETE);
+    el.canRunCanRunTask = false;
+    el.requestUpdate();
+    await tasksUpdateComplete();
+    assert.equal(el.canRunTaskValue, 'canRun');
+    assert.equal(el.canRunTask.status, TaskStatus.COMPLETE);
   });
 });

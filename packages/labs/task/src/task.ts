@@ -10,7 +10,13 @@ import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.
 export type TaskFunction<D extends [...unknown[]], R = any> = (
   args: D
 ) => R | typeof initialState | Promise<R | typeof initialState>;
-export type DepsFunction<D extends [...unknown[]]> = () => D;
+export type ArgsFunction<D extends [...unknown[]]> = () => D;
+
+export type CanRunFunction = (
+  canRun: () => boolean,
+  status: TaskStatus,
+  args?: unknown[]
+) => boolean;
 
 /**
  * States for task status
@@ -36,6 +42,12 @@ export type StatusRenderer<R> = {
   complete?: (value: R) => unknown;
   error?: (error: unknown) => unknown;
 };
+
+export interface TaskConfig<T extends unknown[], R> {
+  task: TaskFunction<T, R>;
+  args?: ArgsFunction<T>;
+  canRun?: CanRunFunction;
+}
 
 // TODO(sorvell): Some issues:
 // 1. When task is triggered in `updated`, this generates a ReactiveElement
@@ -65,14 +77,20 @@ export type StatusRenderer<R> = {
  * object with optional corresponding state method to easily render values
  * corresponding to the task state.
  *
+ * The task is run automatically when its arguments change; however, this can
+ * be customized by passing a `canRun` function. It receives arguments of
+ * a default `canRun()` function, the task's status, and the values of the
+ * task's arguments.
+ *
  * class MyElement extends ReactiveElement {
  *   url = 'example.com/api';
  *   id = 0;
  *   task = new Task(
- *     this,
- *     ([url, id]) =>
- *       fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
- *     () => [this.id, this.url]
+ *     this, {
+ *       task: ([url, id]) =>
+ *         fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
+ *       args: () => [this.id, this.url]
+ *     }
  *   );
  *
  *   update(changedProperties) {
@@ -86,13 +104,15 @@ export type StatusRenderer<R> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class Task<T extends [...unknown[]] = any, R = any> {
-  private _previousDeps: T = [] as unknown as T;
+  private _previousArgs: T = [] as unknown as T;
   private _task: TaskFunction<T, R>;
-  private _getDependencies: DepsFunction<T>;
+  private _args: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
   private _value?: R;
   private _error?: unknown;
+  // Internal signal for being fully done processing a task, including host updates.
+  private _isIdle = true;
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
@@ -107,13 +127,21 @@ export class Task<T extends [...unknown[]] = any, R = any> {
 
   constructor(
     host: ReactiveControllerHost,
-    task: TaskFunction<T, R>,
-    getDependencies: DepsFunction<T>
+    task: TaskFunction<T, R> | TaskConfig<T, R>,
+    args?: ArgsFunction<T>
   ) {
     this._host = host;
     this._host.addController(this);
+    if (typeof task === 'object') {
+      const taskConfig = task as TaskConfig<T, R>;
+      args = taskConfig.args;
+      task = taskConfig.task;
+      if (taskConfig.canRun !== undefined) {
+        this._canRun = taskConfig.canRun;
+      }
+    }
     this._task = task;
-    this._getDependencies = getDependencies;
+    this._args = args || (((_x: unknown) => []) as unknown as ArgsFunction<T>);
     this.taskComplete = new Promise((res, rej) => {
       this._resolveTaskComplete = res;
       this._rejectTaskComplete = rej;
@@ -121,12 +149,15 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   }
 
   hostUpdated() {
-    this._completeTask();
+    this.runTask();
   }
 
-  private async _completeTask() {
-    const deps = this._getDependencies();
-    if (this._isDirty(deps)) {
+  protected async runTask() {
+    const args = this._args();
+    const argsDirty = this._argsDirty(args);
+    const canRun = () => this.defaultCanRun(argsDirty, args);
+    if (this._canRun(canRun, this.status, args)) {
+      this._isIdle = false;
       if (
         this.status === TaskStatus.COMPLETE ||
         this.status === TaskStatus.ERROR
@@ -145,7 +176,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       this._host.requestUpdate();
       const key = ++this._callId;
       try {
-        result = await this._task(deps);
+        result = await this._task(args);
       } catch (e) {
         error = e;
       }
@@ -166,6 +197,8 @@ export class Task<T extends [...unknown[]] = any, R = any> {
         }
         // Request an update with the final value.
         this._host.requestUpdate();
+        await this._host.updateComplete;
+        this._isIdle = true;
       }
     }
   }
@@ -194,16 +227,27 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     }
   }
 
-  private _isDirty(deps: T) {
+  private _argsDirty(args: T) {
     let i = 0;
-    const previousDeps = this._previousDeps;
-    this._previousDeps = deps;
-    for (const dep of deps) {
-      if (notEqual(dep, previousDeps[i])) {
+    const previousArgs = this._previousArgs;
+    this._previousArgs = args;
+    for (const arg of args) {
+      if (notEqual(arg, previousArgs[i])) {
         return true;
       }
       i++;
     }
     return false;
+  }
+
+  protected defaultCanRun(argsDirty: boolean, args: T) {
+    return (
+      argsDirty ||
+      (!args.length && this.status !== TaskStatus.PENDING && this._isIdle)
+    );
+  }
+
+  private _canRun(canRun: () => boolean, _status: TaskStatus, _args: T) {
+    return canRun();
   }
 }

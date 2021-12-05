@@ -8,16 +8,20 @@ Often a Lit element needs to request, process, and render remote data, for
 example when querying a REST API for data to be displayed. The `Task`
 controller provides a simple pattern for encapsulating this behavior in an
 easily reusable way. The controller integrates with a host Lit element. The
-user provides a task function and a dependencies function. Whenever the element
-updates, the dependencies are checked and if any have changed, the task is
-initiated. The controller requests an update of the element whenever the task
+user provides a task function and an arguments function. Whenever the element
+updates, the arguments are checked and if any have changed, the task is
+initiated. This behavior can be customized by passing a `canRun` function. It
+receives arguments of a default `canRun()` function, the task's status, and the
+values of the task's arguments.
+
+The controller requests an update of the element whenever the task
 status changes. Task status is provided via the `TaskStatus` object which has
 values for `INITIAL`, `PENDING`, `COMPLETE`, and `ERROR`. The task result is
 available via its `value` property, or via the `error` property when an error
 occurs. The task `render` method may also be used to easily render different
 task states. It accepts an object which optionally can implement methods for
 `initial`, `pending`, `complete(value)`, and `error(error)`. These methods
-typically return a Lit `TemplateResult` to render
+typically return a Lit `TemplateResult` to render.
 
 ## Installation
 
