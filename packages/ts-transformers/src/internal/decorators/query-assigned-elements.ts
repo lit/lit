@@ -56,7 +56,13 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
           `object literal. Instead received: '${arg0.getText()}'`
       );
     }
-    if (arg0 && arg0.properties.some((p) => !ts.isPropertyAssignment(p))) {
+    if (
+      arg0 &&
+      arg0.properties.some(
+        (p) =>
+          !(ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p))
+      )
+    ) {
       throw new Error(
         `queryAssignedElements object literal argument can only include ` +
           `property assignment. For example: '{ slot: "example" }' is ` +
@@ -66,44 +72,44 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     const {slot, selector} = this._retrieveSlotAndSelector(arg0);
     litClassContext.litFileContext.replaceAndMoveComments(
       property,
-      this._createQueryAssignedElementsGetter(
+      this._createQueryAssignedElementsGetter({
         name,
         slot,
         selector,
-        this._filterAssignedElementsOptions(arg0)
-      )
+        assignedElsOptions: this._filterAssignedElementsOptions(arg0),
+      })
     );
   }
 
+  /**
+   * @param opts object literal node passed into the queryAssignedElements decorator
+   * @returns expression nodes for the slot and selector.
+   */
   private _retrieveSlotAndSelector(opts?: ts.ObjectLiteralExpression): {
-    slot: string;
-    selector: string;
+    slot?: ts.Expression;
+    selector?: ts.Expression;
   } {
     if (!opts) {
-      return {slot: '', selector: ''};
+      return {};
     }
-    const findStringLiteralFor = (key: string): string => {
+    const findExpressionFor = (key: string): ts.Expression | undefined => {
       const propAssignment = opts.properties.find(
         (p) => p.name && ts.isIdentifier(p.name) && p.name.text === key
       );
       if (!propAssignment) {
-        return '';
+        return;
       }
-      if (
-        propAssignment &&
-        ts.isPropertyAssignment(propAssignment) &&
-        ts.isStringLiteral(propAssignment.initializer)
-      ) {
-        return propAssignment.initializer.text;
+      if (ts.isPropertyAssignment(propAssignment)) {
+        return propAssignment.initializer;
       }
-      throw new Error(
-        `queryAssignedElements object literal property '${key}' must be a ` +
-          `string literal.`
-      );
+      if (ts.isShorthandPropertyAssignment(propAssignment)) {
+        return propAssignment.name;
+      }
+      return;
     };
     return {
-      slot: findStringLiteralFor('slot'),
-      selector: findStringLiteralFor('selector'),
+      slot: findExpressionFor('slot'),
+      selector: findExpressionFor('selector'),
     };
   }
 
@@ -150,15 +156,22 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     );
   }
 
-  private _createQueryAssignedElementsGetter(
-    name: string,
-    slot: string,
-    selector: string,
-    assignedElsOptions?: ts.ObjectLiteralExpression
-  ) {
+  private _createQueryAssignedElementsGetter({
+    name,
+    slot,
+    selector,
+    assignedElsOptions,
+  }: {
+    name: string;
+    slot?: ts.Expression;
+    selector?: ts.Expression;
+    assignedElsOptions?: ts.ObjectLiteralExpression;
+  }) {
     const factory = this._factory;
 
-    const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
+    const slotSelector = slot
+      ? this.createNamedSlotSelector(slot)
+      : this.createDefaultSlotSelector();
 
     const assignedElementsOptions = assignedElsOptions
       ? [assignedElsOptions]
@@ -178,7 +191,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
           ),
           undefined,
           undefined,
-          [factory.createStringLiteral(slotSelector)]
+          [slotSelector]
         ),
         factory.createToken(ts.SyntaxKind.QuestionDotToken),
         factory.createIdentifier('assignedElements')
@@ -222,7 +235,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
                   factory.createIdentifier('matches')
                 ),
                 undefined,
-                [factory.createStringLiteral(selector)]
+                [selector]
               )
             ),
           ]
@@ -249,6 +262,28 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
       [],
       undefined,
       getterBody
+    );
+  }
+
+  /**
+   * @param slot Expression that evaluates to the slot name.
+   * @returns Template string node representing `slot[name=${slot}]`
+   */
+  private createNamedSlotSelector(slot: ts.Expression): ts.TemplateExpression {
+    const factory = this._factory;
+    return factory.createTemplateExpression(
+      factory.createTemplateHead('slot[name=', 'slot[name='),
+      [factory.createTemplateSpan(slot, factory.createTemplateTail(']', ']'))]
+    );
+  }
+
+  /**
+   * @returns Template string node representing `slot:not([name])`
+   */
+  private createDefaultSlotSelector() {
+    return this._factory.createNoSubstitutionTemplateLiteral(
+      'slot:not([name])',
+      'slot:not([name])'
     );
   }
 }

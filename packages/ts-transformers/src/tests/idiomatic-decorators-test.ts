@@ -588,7 +588,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-        ?.querySelector('slot:not([name])')
+        ?.querySelector(\`slot:not([name])\`)
         ?.assignedElements() ?? [];
       }
 
@@ -617,7 +617,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector('slot[name=list]')
+          ?.querySelector(\`slot[name=\${"list"}]\`)
           ?.assignedElements() ?? [];
       }
     }
@@ -644,7 +644,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector('slot[name=list]')
+          ?.querySelector(\`slot[name=\${"list"}]\`)
           ?.assignedElements({flatten: true}) ?? [];
       }
     }
@@ -671,7 +671,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector('slot[name=list]')
+          ?.querySelector(\`slot[name=\${"list"}]\`)
           ?.assignedElements({ flatten: false })
           ?.filter((node) => node.matches('.item')
           ) ?? [];
@@ -706,9 +706,110 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector('slot[name=list]')
+          ?.querySelector(\`slot[name=\${"list"}]\`)
           ?.assignedElements({ flatten: isFlatten })
-          ?.filter((node) => node.matches('.item')
+          ?.filter((node) => node.matches(".item")
+          ) ?? [];
+      }
+    }
+    `;
+    checkTransform(input, expected, options);
+  });
+
+  test('@queryAssignedElements (with slot and selector identifiers)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {queryAssignedElements} from 'lit/decorators.js';
+
+    const slot = 'list';
+    const selector = '.item';
+
+    class MyElement extends LitElement {
+      // listItems comment
+      @queryAssignedElements({slot: slot, selector: selector})
+      listItems: HTMLElement[];
+    }
+    `;
+
+    const expected = `
+    import {LitElement} from 'lit';
+
+    const slot = 'list';
+    const selector = '.item';
+
+    class MyElement extends LitElement {
+      // listItems comment
+      get listItems() {
+        return this.renderRoot
+          ?.querySelector(\`slot[name=\${slot}]\`)
+          ?.assignedElements()
+          ?.filter((node) => node.matches(selector)
+          ) ?? [];
+      }
+    }
+    `;
+    checkTransform(input, expected, options);
+  });
+
+  test('@queryAssignedElements (shorthand properties)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {queryAssignedElements} from 'lit/decorators.js';
+
+    const slot = 'list';
+    const selector = '.item';
+    const flatten: boolean = false;
+
+    class MyElement extends LitElement {
+      // listItems comment
+      @queryAssignedElements({slot, selector, flatten})
+      listItems: HTMLElement[];
+    }
+    `;
+
+    const expected = `
+    import {LitElement} from 'lit';
+
+    const slot = 'list';
+    const selector = '.item';
+    const flatten = false;
+
+    class MyElement extends LitElement {
+      // listItems comment
+      get listItems() {
+        return this.renderRoot
+          ?.querySelector(\`slot[name=\${slot}]\`)
+          ?.assignedElements({ flatten })
+          ?.filter((node) => node.matches(selector)
+          ) ?? [];
+      }
+    }
+    `;
+    checkTransform(input, expected, options);
+  });
+
+  test('@queryAssignedElements (arbitrary inline expressions)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {queryAssignedElements} from 'lit/decorators.js';
+
+    class MyElement extends LitElement {
+      // listItems comment
+      @queryAssignedElements({slot: "li" + "st", selector: "." + "item", flatten: true || false})
+      listItems: HTMLElement[];
+    }
+    `;
+
+    const expected = `
+    import {LitElement} from 'lit';
+
+    class MyElement extends LitElement {
+      // listItems comment
+      get listItems() {
+        return this.renderRoot
+          ?.querySelector(\`slot[name=\${"li" + "st"}]\`)
+          ?.assignedElements({ flatten: true || false })
+          ?.filter((node) => node.matches("." + "item")
           ) ?? [];
       }
     }
@@ -749,44 +850,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     assert.throws(
       () => checkTransform(input, '', options),
       /argument can only include property assignment/
-    );
-  });
-
-  test('@queryAssignedElements (fails if not property assignment - shorthand)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedElements} from 'lit/decorators.js';
-
-    const slot = "shorthandSyntaxInvalid";
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedElements({slot})
-      listItems: HTMLElement[];
-    }
-    `;
-    assert.throws(
-      () => checkTransform(input, '', options),
-      /argument can only include property assignment/
-    );
-  });
-
-  test('@queryAssignedElements (fail if slot or selector not literal)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedElements} from 'lit/decorators.js';
-
-    const slot = 'list';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedElements({slot: slot})
-      listItems: HTMLElement[];
-    }
-    `;
-    assert.throws(
-      () => checkTransform(input, '', options),
-      /property 'slot' must be a string literal/
     );
   });
 
