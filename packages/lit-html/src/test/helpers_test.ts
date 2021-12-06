@@ -12,10 +12,6 @@ import {join, map, range, when} from '../helpers.js';
 suite('template helpers', () => {
   let container: HTMLDivElement;
 
-  // const assertContent = (html: string, root = container) => {
-  //   return assert.equal(stripExpressionComments(root.innerHTML), html);
-  // };
-
   const assertRender = (value: unknown, expected: string) => {
     render(value, container);
     return assert.equal(stripExpressionComments(container.innerHTML), expected);
