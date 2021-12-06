@@ -266,11 +266,27 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
   }
 
   /**
+   * Returns a template string which resolves the passed in slot name
+   * expression.
+   *
+   * Special handling is included for string literals and no substitution
+   * template literals. In this case we inline the slot name into the selector
+   * to match what is more likely to have been authored.
+   *
    * @param slot Expression that evaluates to the slot name.
-   * @returns Template string node representing `slot[name=${slot}]`
+   * @returns Template string node representing `slot[name=${slot}]` except when
+   *   `slot` is a string literal. Then the literal is inlined. I.e. for a slot
+   *   expression of `"list"`, return `slot[name=list]`.
    */
-  private createNamedSlotSelector(slot: ts.Expression): ts.TemplateExpression {
+  private createNamedSlotSelector(slot: ts.Expression) {
     const factory = this._factory;
+    if (ts.isStringLiteral(slot) || ts.isNoSubstitutionTemplateLiteral(slot)) {
+      const inlinedSlotSelector = `slot[name=${slot.text}]`;
+      return this._factory.createNoSubstitutionTemplateLiteral(
+        inlinedSlotSelector,
+        inlinedSlotSelector
+      );
+    }
     return factory.createTemplateExpression(
       factory.createTemplateHead('slot[name=', 'slot[name='),
       [factory.createTemplateSpan(slot, factory.createTemplateTail(']', ']'))]

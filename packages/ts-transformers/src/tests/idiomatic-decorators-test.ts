@@ -617,7 +617,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector(\`slot[name=\${"list"}]\`)
+          ?.querySelector(\`slot[name=list]\`)
           ?.assignedElements() ?? [];
       }
     }
@@ -632,7 +632,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
     class MyElement extends LitElement {
       // listItems comment
-      @queryAssignedElements({ slot: 'list', flatten: true })
+      @queryAssignedElements({ slot: \`list\`, flatten: true })
       listItems: NodeListOf<HTMLElement>;
     }
     `;
@@ -644,7 +644,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector(\`slot[name=\${"list"}]\`)
+          ?.querySelector(\`slot[name=list]\`)
           ?.assignedElements({flatten: true}) ?? [];
       }
     }
@@ -671,7 +671,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector(\`slot[name=\${"list"}]\`)
+          ?.querySelector(\`slot[name=list]\`)
           ?.assignedElements({ flatten: false })
           ?.filter((node) => node.matches('.item')
           ) ?? [];
@@ -706,7 +706,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-          ?.querySelector(\`slot[name=\${"list"}]\`)
+          ?.querySelector(\`slot[name=list]\`)
           ?.assignedElements({ flatten: isFlatten })
           ?.filter((node) => node.matches(".item")
           ) ?? [];
