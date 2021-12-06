@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -22,12 +22,14 @@ export const when = (
  * value in `items`.
  */
 export function* map<T>(
-  items: Iterable<T>,
+  items: Iterable<T> | undefined,
   f: (value: T, index: number) => unknown
 ) {
-  const i = 0;
-  for (const value of items) {
-    yield f(value, i);
+  if (items !== undefined) {
+    let i = 0;
+    for (const value of items) {
+      yield f(value, i++);
+    }
   }
 }
 
@@ -35,14 +37,25 @@ export function* map<T>(
  * Returns an iterable containing the values in `items` interleaved with the
  * `joiner` value.
  */
-export function* join<T>(items: Iterable<T>, joiner: unknown) {
-  let first = true;
-  for (const value of items) {
-    if (!first) {
-      yield joiner;
-      first = false;
+export function join<I, J>(
+  items: Iterable<I> | undefined,
+  joiner: (index: number) => J
+): Iterable<I | J>;
+export function join<I, J>(
+  items: Iterable<I> | undefined,
+  joiner: J
+): Iterable<I | J>;
+export function* join<I, J>(items: Iterable<I> | undefined, joiner: J) {
+  const isFunction = typeof joiner === 'function';
+  if (items !== undefined) {
+    let i = -1;
+    for (const value of items) {
+      if (i > -1) {
+        yield isFunction ? joiner(i) : joiner;
+      }
+      i++;
+      yield value;
     }
-    yield value;
   }
 }
 
@@ -61,7 +74,7 @@ export function range(
 export function* range(startOrEnd: number, end?: number, step = 1) {
   const start = end === undefined ? 0 : startOrEnd;
   end ??= startOrEnd;
-  for (let i = start; (i += step); i < end) {
+  for (let i = start; step > 0 ? i < end : end < i; i += step) {
     yield i;
   }
 }
