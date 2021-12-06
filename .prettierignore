@@ -122,6 +122,11 @@ packages/labs/motion/index.*
 packages/labs/motion/animate.*
 packages/labs/motion/position.*
 packages/labs/motion/animate-controller.*
+packages/labs/observers/development/
+packages/labs/observers/test/
+packages/labs/observers/node_modules/
+packages/labs/observers/index.*
+packages/labs/observers/mutation_controller.*
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
