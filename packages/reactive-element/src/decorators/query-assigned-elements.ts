@@ -11,19 +11,10 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
 import {decorateProperty} from './base.js';
 
-export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
-  /**
-   * Name of the slot. Leave empty for the default slot.
-   */
-  slot?: string;
-  /**
-   * CSS selector used to filter the elements returned.
-   */
-  selector?: string;
-}
+import type {ReactiveElement} from '../reactive-element.js';
+import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -59,7 +50,7 @@ export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
  * ```
  * @category Decorator
  */
-export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
+export function queryAssignedElements(options?: QueryAssignedNodesOptions) {
   const {slot, selector} = options ?? {};
   return decorateProperty({
     descriptor: (_name: PropertyKey) => ({

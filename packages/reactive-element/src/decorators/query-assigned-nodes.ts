@@ -11,25 +11,44 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
 import {decorateProperty} from './base.js';
+
+import type {ReactiveElement} from '../reactive-element.js';
+
+export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
+  /**
+   * Name of the slot. Leave empty for the default slot.
+   */
+  slot?: string;
+  /**
+   * CSS selector used to filter the elements returned.
+   */
+  selector?: string;
+}
+
+// Note TypeScript requires the return type to be `void|any`.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TSDecoratorReturnType = void | any;
 
 /**
  * A property decorator that converts a class property into a getter that
- * returns the `assignedNodes` of the given named `slot`. Note, the type of
- * this property should be annotated as `NodeListOf<HTMLElement>`.
+ * returns the `assignedNodes` of the given `slot`.
  *
- * @param slotName A string name of the slot.
- * @param flatten A boolean which when true flattens the assigned nodes,
- *     meaning any assigned nodes that are slot elements are replaced with their
- *     assigned nodes.
- * @param selector A string which filters the results to elements that match
- *     the given css selector.
+ * Note the type of this property should be annotated as `Array<Node>` if used
+ * without a `selector` or `Array<HTMLElement> if a selector is provided.
+ *
+ * @param options Object that sets options for nodes to be returned. See
+ *     [MDN parameters section](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes#parameters)
+ *     for available options. Also accepts two more optional properties,
+ *     `slot` and `selector`.
+ * @param options.slot Name of the slot. Undefined or empty string for the
+ *     default slot.
+ * @param options.selector A CSS selector used to filter the elements returned.
  *
  * ```ts
  * class MyElement {
  *   @queryAssignedNodes('list', true, '.item')
- *   listItems;
+ *   listItems?: Array<HTMLElement>;
  *
  *   render() {
  *     return html`
@@ -41,18 +60,65 @@ import {decorateProperty} from './base.js';
  * @category Decorator
  */
 export function queryAssignedNodes(
-  slotName = '',
-  flatten = false,
-  selector = ''
+  options?: QueryAssignedNodesOptions
+): TSDecoratorReturnType;
+
+/**
+ * A property decorator that converts a class property into a getter that
+ * returns the `assignedNodes` of the given named `slot`.
+ *
+ * Note the type of this property should be annotated as `Array<Node>` if used
+ * without a `selector` or `Array<HTMLElement> if a selector is provided.
+ *
+ * ```ts
+ * class MyElement {
+ *   @queryAssignedNodes('list', true, '.item')
+ *   listItems?: Array<HTMLElement>;
+ *
+ *   render() {
+ *     return html`
+ *       <slot name="list"></slot>
+ *     `;
+ *   }
+ * }
+ * ```
+ *
+ * @param slotName A string name of the slot.
+ * @param flatten A boolean which when true flattens the assigned nodes,
+ *     meaning any assigned nodes that are slot elements are replaced with their
+ *     assigned nodes.
+ * @param selector A CSS selector used to filter the elements returned.
+ *
+ * @category Decorator
+ * @deprecated Prefer passing in a single options object, i.e. `{slot: 'list'}`.
+ */
+export function queryAssignedNodes(
+  slotName?: string,
+  flatten?: boolean,
+  selector?: string
+): TSDecoratorReturnType;
+
+export function queryAssignedNodes(
+  arg0?: string | QueryAssignedNodesOptions,
+  arg1?: boolean,
+  arg2?: string
 ) {
+  const {slot = '', selector = ''} =
+    typeof arg0 === 'object' ? arg0 : {slot: arg0 ?? '', selector: arg2 ?? ''};
+  const assignedNodesOpts =
+    typeof arg1 === 'boolean'
+      ? {flatten: arg1}
+      : typeof arg0 === 'object'
+      ? arg0
+      : undefined;
+
   return decorateProperty({
     descriptor: (_name: PropertyKey) => ({
       get(this: ReactiveElement) {
-        const slotSelector = `slot${
-          slotName ? `[name=${slotName}]` : ':not([name])'
-        }`;
-        const slot = this.renderRoot?.querySelector(slotSelector);
-        let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten}) ?? [];
+        const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
+        const slotEl =
+          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+        let nodes = slotEl?.assignedNodes(assignedNodesOpts) ?? [];
         if (selector) {
           nodes = nodes.filter(
             (node) =>
