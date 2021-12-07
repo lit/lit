@@ -17,7 +17,9 @@ class Keyed extends Directive {
 
   override update(part: ChildPart, [k, v]: DirectiveParameters<this>) {
     if (k !== this.key) {
-      // Clear the part before returning a value. This forces a re-render.
+      // Clear the part before returning a value. The one-arg form of
+      // setCommittedValue sets the value to a sentinel which forces a
+      // commit the next render.
       setCommittedValue(part);
       this.key = k;
     }
