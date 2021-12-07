@@ -32,12 +32,12 @@ export function when<T, F = undefined>(
   falseCase?: () => F
 ): F;
 export function when<T, F = undefined>(
-  condition: boolean,
+  condition: unknown,
   trueCase: () => T,
   falseCase?: () => F
 ): T | F;
 export function when(
-  condition: boolean,
+  condition: unknown,
   trueCase: () => unknown,
   falseCase?: () => unknown
 ): unknown {
