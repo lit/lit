@@ -38,6 +38,9 @@
     "./decorators/query-all.js": {
       "default": "./decorators/query-all.js"
     },
+    "./decorators/query-assigned-elements.js": {
+      "default": "./decorators/query-assigned-elements.js"
+    },
     "./decorators/query-assigned-nodes.js": {
       "default": "./decorators/query-assigned-nodes.js"
     },
@@ -74,11 +77,20 @@
     "./directives/if-defined.js": {
       "default": "./directives/if-defined.js"
     },
+    "./directives/join.js": {
+      "default": "./directives/join.js"
+    },
     "./directives/keyed.js": {
       "default": "./directives/keyed.js"
     },
     "./directives/live.js": {
       "default": "./directives/live.js"
+    },
+    "./directives/map.js": {
+      "default": "./directives/map.js"
+    },
+    "./directives/range.js": {
+      "default": "./directives/range.js"
     },
     "./directives/ref.js": {
       "default": "./directives/ref.js"
@@ -100,6 +112,9 @@
     },
     "./directives/until.js": {
       "default": "./directives/until.js"
+    },
+    "./directives/when.js": {
+      "default": "./directives/when.js"
     },
     "./experimental-hydrate-support.js": {
       "default": "./experimental-hydrate-support.js"
