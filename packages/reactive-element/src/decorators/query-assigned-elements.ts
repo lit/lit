@@ -16,12 +16,11 @@ import {decorateProperty} from './base.js';
 
 export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
   /**
-   * A string name of the slot. Leave empty for the default slot.
+   * Name of the slot. Leave empty for the default slot.
    */
   slot?: string;
   /**
-   * A string which filters the results to elements that match the given css
-   * selector.
+   * CSS selector used to filter the elements returned.
    */
   selector?: string;
 }
@@ -32,6 +31,8 @@ export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
  * way to use
  * [`slot.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  *
+ * Note, the type of this property should be annotated as `Array<HTMLElement>`.
+ *
  * @param options Object that sets options for nodes to be returned. See
  *     [MDN parameters section](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements#parameters)
  *     for available options. Also accepts two more optional properties,
@@ -39,14 +40,14 @@ export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
  * @param options.slot Name of the slot. Undefined or empty string for the
  *     default slot.
  * @param options.selector Element results are filtered such that they match the
- *     given css selector.
+ *     given CSS selector.
  *
  * ```ts
  * class MyElement {
  *   @queryAssignedElements({ slot: 'list' })
- *   listItems;
+ *   listItems!: Array<HTMLElement>;
  *   @queryAssignedElements()
- *   unnamedSlotEls;
+ *   unnamedSlotEls?: Array<HTMLElement>;
  *
  *   render() {
  *     return html`
@@ -64,8 +65,9 @@ export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
     descriptor: (_name: PropertyKey) => ({
       get(this: ReactiveElement) {
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-        const slotEl = this.renderRoot?.querySelector(slotSelector);
-        const elements = (slotEl as HTMLSlotElement).assignedElements(options);
+        const slotEl =
+          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+        const elements = slotEl?.assignedElements(options) ?? [];
         if (selector) {
           return elements.filter((node) => node.matches(selector));
         }
