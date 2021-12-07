@@ -17,6 +17,7 @@ export const defaultConfig = (options = {}) =>
       'directives/class-map',
       'directives/guard',
       'directives/if-defined',
+      'directives/keyed',
       'directives/live',
       'directives/ref',
       'directives/repeat',
