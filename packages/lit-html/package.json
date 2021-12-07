@@ -41,6 +41,10 @@
       "development": "./development/directives/cache.js",
       "default": "./directives/cache.js"
     },
+    "./directives/choose.js": {
+      "development": "./development/directives/choose.js",
+      "default": "./directives/choose.js"
+    },
     "./directives/class-map.js": {
       "development": "./development/directives/class-map.js",
       "default": "./directives/class-map.js"
