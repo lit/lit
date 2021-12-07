@@ -74,8 +74,17 @@
     "./directives/if-defined.js": {
       "default": "./directives/if-defined.js"
     },
+    "./directives/join.js": {
+      "default": "./directives/join.js"
+    },
     "./directives/live.js": {
       "default": "./directives/live.js"
+    },
+    "./directives/map.js": {
+      "default": "./directives/map.js"
+    },
+    "./directives/range.js": {
+      "default": "./directives/range.js"
     },
     "./directives/ref.js": {
       "default": "./directives/ref.js"
@@ -97,6 +106,9 @@
     },
     "./directives/until.js": {
       "default": "./directives/until.js"
+    },
+    "./directives/when.js": {
+      "default": "./directives/when.js"
     },
     "./experimental-hydrate-support.js": {
       "default": "./experimental-hydrate-support.js"
