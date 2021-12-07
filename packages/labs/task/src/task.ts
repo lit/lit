@@ -151,12 +151,30 @@ export class Task<T extends [...unknown[]] = any, R = any> {
 
   protected async performTask() {
     const args = this._getArgs?.();
-    const argsDirty = this._argsDirty(args);
-    if (this.autoRun && argsDirty) {
+    if (this.shouldRun(args)) {
       this.run(args);
     }
   }
 
+  /**
+   * Determines if the task should run when it's triggered as part of the
+   * host's reactive lifecycle. Note, this is not checked when `run` is
+   * explicitly called. A task runs automatically when `autoRun` is `true` and
+   * either its arguments change.
+   * @param args The task's arguments
+   * @returns
+   */
+  protected shouldRun(args?: T) {
+    return this.autoRun && this._argsDirty(args);
+  }
+
+  /**
+   * A task runs when its arguments change, as long as the `autoRun` option
+   * has not been set to false. To explicitly run a task outside of these
+   * conditions, call `run`. A custom set of arguments can optionally be passed
+   * and if not given, the configured arguments are used.
+   * @param args optional set of arguments to use for this task run
+   */
   async run(args?: T) {
     args ??= this._getArgs?.();
     if (
@@ -177,8 +195,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     this._host.requestUpdate();
     const key = ++this._callId;
     try {
-      // TODO(sorvell): fix type so args can be optional.
-      result = await this._task(args as unknown as T);
+      result = await this._task(args!);
     } catch (e) {
       error = e;
     }

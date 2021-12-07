@@ -124,6 +124,38 @@ suite('Task', () => {
     assert.equal(el.taskValue, `a,b`);
   });
 
+  test('tasks with empty args array run once', async () => {
+    const el = getTestElement({args: () => []});
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, undefined);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, ``);
+    // Change a property that provokes an update and check that task is not run.
+    el.a = 'a1';
+    assert.isTrue(el.isUpdatePending);
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, ``);
+  });
+
+  test('tasks do not run when args do not change', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a,b`);
+    // Provoke an update and check that task does not run.
+    el.c = 'c';
+    assert.isTrue(el.isUpdatePending);
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a,b`);
+  });
+
   test('tasks with args run when args change', async () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);
@@ -131,18 +163,26 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a,b`);
+
+    // *** Changing task argument runs task
     el.a = 'a1';
+    // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.equal(el.taskValue, undefined);
+    // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a1,b`);
+
+    // *** Changing other task argument runs task
     el.b = 'b1';
+    // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.equal(el.taskValue, undefined);
+    // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
@@ -155,6 +195,7 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.INITIAL);
     assert.equal(el.taskValue, undefined);
+    // Provoke update and check that task is not run.
     el.a = 'a1';
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.INITIAL);
@@ -167,15 +208,20 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.INITIAL);
     assert.equal(el.taskValue, undefined);
+
+    // *** Set `autoRun` to `true` and change a task argument
     el.task.autoRun = true;
     el.a = 'a1';
+    // Check task is pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.equal(el.taskValue, undefined);
     el.resolveTask();
+    // Check task completes.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a1,b`);
+    // *** Set `autoRun` to `false` and check that task does not run.
     el.task.autoRun = false;
     el.b = 'b1';
     await tasksUpdateComplete();
@@ -189,11 +235,15 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.INITIAL);
     assert.equal(el.taskValue, undefined);
+
+    // Task runs when `autoRun` is `false` and `run()` ia called.
     el.task.run();
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a,b`);
+
+    // Task runs when `autoRun` is `true` and `run()` ia called.
     el.task.autoRun = true;
     el.task.run();
     await tasksUpdateComplete();
@@ -211,11 +261,15 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.INITIAL);
     assert.equal(el.taskValue, undefined);
+
+    // Can specify arguments for this call to `run()`.
     el.task.run(['d', 'e']);
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `d,e`);
+
+    // When no arguments specified, configured arguments are used.
     el.task.run();
     el.resolveTask();
     await tasksUpdateComplete();
@@ -227,13 +281,16 @@ suite('Task', () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);
     assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // Task error reported.
     el.rejectTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
     assert.equal(el.task.value, undefined);
     assert.equal(el.taskValue, 'error');
-    // new ok task after initial error
+
+    // After error, task can be run again when arguments change.
     el.a = 'a1';
     el.b = 'b1';
     await tasksUpdateComplete();
@@ -245,7 +302,8 @@ suite('Task', () => {
     let expected = 'a1,b1';
     assert.equal(el.task.value, expected);
     assert.equal(el.taskValue, expected);
-    // new error task after ok task
+
+    // After success, an error can be reported.
     el.a = 'a2';
     el.b = 'b2';
     await tasksUpdateComplete();
@@ -255,7 +313,8 @@ suite('Task', () => {
     assert.equal(el.task.error, 'error');
     assert.equal(el.task.value, undefined);
     assert.equal(el.taskValue, 'error');
-    // new ok task after error task
+
+    // After another error, task can be run again when arguments change.
     el.a = 'a3';
     el.b = 'b3';
     await tasksUpdateComplete();
@@ -268,45 +327,25 @@ suite('Task', () => {
     assert.equal(el.taskValue, expected);
   });
 
-  // test('runs when args change', async () => {
-  //   el.resolveTask();
-  //   el.taskController.resolveTask();
-  //   await tasksUpdateComplete();
-  //   assert.equal(el.task.status, TaskStatus.COMPLETE);
-  //   assert.equal(el.taskController.status, TaskStatus.COMPLETE);
-  //   el.requestUpdate();
-  //   await tasksUpdateComplete();
-  //   assert.equal(el.task.status, TaskStatus.COMPLETE);
-  //   assert.equal(el.taskController.status, TaskStatus.COMPLETE);
-  //   el.foo = 'foo1';
-  //   el.bar = 'bar1';
-  //   el.taskController.id = 1;
-  //   await tasksUpdateComplete();
-  //   assert.equal(el.task.status, TaskStatus.PENDING);
-  //   assert.equal(el.taskController.status, TaskStatus.PENDING);
-  //   el.resolveTask();
-  //   el.taskController.resolveTask();
-  //   await tasksUpdateComplete();
-  //   assert.equal(el.task.status, TaskStatus.COMPLETE);
-  //   assert.equal(el.taskController.status, TaskStatus.COMPLETE);
-  //   assert.equal(el.taskValue, 'result: foo1, bar1');
-  //   assert.equal(el.taskControllerValue, 'result: 1');
-  // });
-
   test('reports only most recent value', async () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);
     const initialFinishTask = el.resolveTask;
     assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // While 1st task is pending, change arguments, provoking a new task run.
     el.a = 'a1';
     el.b = 'b1';
     await tasksUpdateComplete();
+
+    // Complete 2nd task.
     assert.equal(el.task.status, TaskStatus.PENDING);
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, 'a1,b1');
-    // complete previous task
+
+    // Complete 1st task
     initialFinishTask();
     assert.isFalse(el.isUpdatePending);
     await tasksUpdateComplete();
@@ -317,8 +356,11 @@ suite('Task', () => {
   test('task.render renders current status', async () => {
     const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
     await renderElement(el);
+    // Reports initial status When `autoRun` is `false`.
     assert.equal(el.renderedStatus, 'initial');
     el.task.autoRun = true;
+
+    // Reports pending after a task argument changes.
     el.a = 'a1';
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
@@ -328,9 +370,13 @@ suite('Task', () => {
     el.b = 'b1';
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
+
+    // Reports error after task rejects.
     el.rejectTask();
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'error');
+
+    // Reports properly after error.
     el.a = 'a2';
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
