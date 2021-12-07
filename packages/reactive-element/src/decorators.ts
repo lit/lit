@@ -19,4 +19,5 @@ export * from './decorators/event-options.js';
 export * from './decorators/query.js';
 export * from './decorators/query-all.js';
 export * from './decorators/query-async.js';
+export * from './decorators/query-assigned-elements.js';
 export * from './decorators/query-assigned-nodes.js';
