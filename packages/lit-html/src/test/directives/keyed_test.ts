@@ -31,7 +31,7 @@ suite('keyed directive', () => {
     const div2 = container.firstElementChild;
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     assert.equal((div2 as any).foo, 1);
-    assert.strictEqual(div, div2, 'X');
+    assert.strictEqual(div, div2);
 
     // Rerendering with a different key should not reuse the DOM
     go(2);

@@ -28,6 +28,7 @@ export default litProdConfig({
     'directives/guard',
     'directives/if-defined',
     'directives/join',
+    'directives/keyed',
     'directives/live',
     'directives/map',
     'directives/range',
