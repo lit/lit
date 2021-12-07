@@ -27,8 +27,8 @@ class Keyed extends Directive {
 
 /**
  * Associates a renderable value with a unique key. When the key changes, the
- * part is cleared forcing a new render, even if the value - such as a template
- * - is the same.
+ * previous DOM is removed and disposed before rendering the next value, even
+ * if the value - such as a template - is the same.
  *
  * This is useful for forcing re-renders of stateful components, or working
  * with code that expects new data to generate new HTML elements, such as some
