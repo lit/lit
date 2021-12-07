@@ -80,6 +80,9 @@
     "./directives/join.js": {
       "default": "./directives/join.js"
     },
+    "./directives/keyed.js": {
+      "default": "./directives/keyed.js"
+    },
     "./directives/live.js": {
       "default": "./directives/live.js"
     },

@@ -57,21 +57,25 @@
       "development": "./development/directives/join.js",
       "default": "./directives/join.js"
     },
-    "./directives/map.js": {
-      "development": "./development/directives/map.js",
-      "default": "./directives/map.js"
+    "./directives/keyed.js": {
+      "development": "./development/directives/keyed.js",
+      "default": "./directives/keyed.js"
     },
     "./directives/live.js": {
       "development": "./development/directives/live.js",
       "default": "./directives/live.js"
     },
-    "./directives/ref.js": {
-      "development": "./development/directives/ref.js",
-      "default": "./directives/ref.js"
+    "./directives/map.js": {
+      "development": "./development/directives/map.js",
+      "default": "./directives/map.js"
     },
     "./directives/range.js": {
       "development": "./development/directives/range.js",
       "default": "./directives/range.js"
+    },
+    "./directives/ref.js": {
+      "development": "./development/directives/ref.js",
+      "default": "./directives/ref.js"
     },
     "./directives/repeat.js": {
       "development": "./development/directives/repeat.js",
