@@ -33,6 +33,7 @@ suite('MutationController', () => {
     observer: MutationController;
     observerValue: unknown;
     resetObserverValue: () => void;
+    changeDuringUpdate?: () => void;
   }
 
   const defineTestElement = (
@@ -43,6 +44,7 @@ suite('MutationController', () => {
     class A extends ReactiveElement {
       observer: MutationController;
       observerValue: unknown;
+      changeDuringUpdate?: () => void;
       constructor() {
         super();
         const config = getControllerConfig(this);
@@ -51,6 +53,12 @@ suite('MutationController', () => {
 
       override update(props: PropertyValues) {
         super.update(props);
+        if (this.changeDuringUpdate) {
+          this.changeDuringUpdate();
+        }
+      }
+
+      override updated() {
         this.observerValue = this.observer.value;
       }
 
@@ -111,6 +119,18 @@ suite('MutationController', () => {
     await nextFrame();
     assert.isUndefined(el.observerValue);
     el.setAttribute('bye', 'bye');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe changes during update', async () => {
+    const el = await getTestElement((host: ReactiveControllerHost) => ({
+      target: host as unknown as HTMLElement,
+      config: {attributes: true},
+    }));
+    el.resetObserverValue();
+    el.changeDuringUpdate = () => el.setAttribute('hi', 'hi');
+    el.requestUpdate();
     await nextFrame();
     assert.isTrue(el.observerValue);
   });

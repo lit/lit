@@ -38,13 +38,13 @@ export class MutationController {
     }
     this._observer = new MutationObserver((records: MutationRecord[]) => {
       this.handleChanges(records);
+      this._host.requestUpdate();
     });
     this._host.addController(this);
   }
 
   protected handleChanges(records: MutationRecord[]) {
     this.value = this.callback(records);
-    this._host.requestUpdate();
   }
 
   hostConnected() {
@@ -58,12 +58,16 @@ export class MutationController {
   }
 
   async hostUpdated() {
-    if (!this._skipInitial && this._unobservedUpdate) {
-      await this._host.updateComplete;
-      // Handle initial state as a set of 0 changes. This helps setup initial
-      // state and promotes UI = f(state) since ideally the callback does not
-      // rely on changes.
-      this.handleChanges([]);
+    // Eagerly deliver any changes that happened during update.
+    // And handle initial state as a set of 0 changes. This helps setup initial
+    // state and promotes UI = f(state) since ideally the callback does not
+    // rely on changes.
+    const pendingRecords = this._observer.takeRecords();
+    if (
+      pendingRecords.length ||
+      (!this._skipInitial && this._unobservedUpdate)
+    ) {
+      this.handleChanges(pendingRecords);
     }
     this._unobservedUpdate = false;
   }
