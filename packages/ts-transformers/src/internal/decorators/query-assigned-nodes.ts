@@ -6,13 +6,14 @@
 
 import ts from 'typescript';
 
+import {QueryAssignedElementsVisitor} from './query-assigned-elements.js';
+
 import type {LitClassContext} from '../lit-class-context.js';
-import type {MemberDecoratorVisitor} from '../visitor.js';
 
 /**
  * Transform:
  *
- *   @queryAssignedNodes('list')
+ *   @queryAssignedNodes({slot: 'list'})
  *   listItems
  *
  * Into:
@@ -22,33 +23,68 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  *       ?.querySelector('slot[name=list]')
  *       ?.assignedNodes() ?? [];
  *   }
+ *
+ * Falls back on transforming the legacy queryAssignedNodes API.
  */
-export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
-  readonly kind = 'memberDecorator';
-  readonly decoratorName = 'queryAssignedNodes';
+export class QueryAssignedNodesVisitor extends QueryAssignedElementsVisitor {
+  override readonly decoratorName = 'queryAssignedNodes';
+  override slottedQuery = 'assignedNodes';
 
+  private readonly legacyVisitor: QueryAssignedLegacyNodesVisitor;
+
+  constructor(context: ts.TransformationContext) {
+    super(context);
+    this.legacyVisitor = new QueryAssignedLegacyNodesVisitor(context);
+  }
+
+  override visit(
+    litClassContext: LitClassContext,
+    property: ts.ClassElement,
+    decorator: ts.Decorator
+  ) {
+    if (this.legacyVisitor.visit(litClassContext, property, decorator)) {
+      return;
+    }
+    super.visit(litClassContext, property, decorator);
+  }
+
+  override getSelectorFilter(selector: ts.Expression): ts.Expression {
+    return getSelectorFilter(this._factory, selector);
+  }
+}
+
+class QueryAssignedLegacyNodesVisitor {
   private readonly _factory: ts.NodeFactory;
 
   constructor({factory}: ts.TransformationContext) {
     this._factory = factory;
   }
 
+  /**
+   * Modified `visit` to keep support for the deprecated legacy
+   * `queryAssignedNodes` decorator. Returns a boolean to notify if it was
+   * successfully applied.
+   */
   visit(
     litClassContext: LitClassContext,
     property: ts.ClassElement,
     decorator: ts.Decorator
-  ) {
+  ): boolean {
     if (!ts.isPropertyDeclaration(property)) {
-      return;
+      return false;
     }
     if (!ts.isCallExpression(decorator.expression)) {
-      return;
+      return false;
     }
     if (!ts.isIdentifier(property.name)) {
-      return;
+      return false;
     }
     const name = property.name.text;
     const [arg0, arg1, arg2] = decorator.expression.arguments;
+    if (arg0 && !ts.isStringLiteral(arg0)) {
+      // Detection for new queryAssignedNodes API.
+      return false;
+    }
     const slotName =
       arg0 !== undefined && ts.isStringLiteral(arg0) ? arg0.text : '';
     const flatten = arg1?.kind === ts.SyntaxKind.TrueKeyword;
@@ -58,6 +94,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
       property,
       this._createQueryAssignedNodesGetter(name, slotName, flatten, selector)
     );
+    return true;
   }
 
   private _createQueryAssignedNodesGetter(
@@ -141,28 +178,7 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
               ],
               undefined,
               factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              factory.createBinaryExpression(
-                factory.createBinaryExpression(
-                  factory.createPropertyAccessExpression(
-                    factory.createIdentifier('node'),
-                    factory.createIdentifier('nodeType')
-                  ),
-                  factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-                  factory.createPropertyAccessExpression(
-                    factory.createIdentifier('Node'),
-                    factory.createIdentifier('ELEMENT_NODE')
-                  )
-                ),
-                factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-                factory.createCallExpression(
-                  factory.createPropertyAccessExpression(
-                    factory.createIdentifier('node'),
-                    factory.createIdentifier('matches')
-                  ),
-                  undefined,
-                  [factory.createStringLiteral(selector)]
-                )
-              )
+              getSelectorFilter(factory, factory.createStringLiteral(selector))
             ),
           ]
         );
@@ -190,4 +206,36 @@ export class QueryAssignedNodesVisitor implements MemberDecoratorVisitor {
       getterBody
     );
   }
+}
+
+/**
+ * Returns TS representing:
+ *   `node.nodeType === Node.ELEMENT_NODE && node.matches(<selector>)`
+ */
+function getSelectorFilter(
+  factory: ts.NodeFactory,
+  selector: ts.Expression
+): ts.Expression {
+  return factory.createBinaryExpression(
+    factory.createBinaryExpression(
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('node'),
+        factory.createIdentifier('nodeType')
+      ),
+      factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('Node'),
+        factory.createIdentifier('ELEMENT_NODE')
+      )
+    ),
+    factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+    factory.createCallExpression(
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('node'),
+        factory.createIdentifier('matches')
+      ),
+      undefined,
+      [selector]
+    )
+  );
 }
