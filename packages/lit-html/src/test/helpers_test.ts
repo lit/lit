@@ -27,6 +27,11 @@ suite('template helpers', () => {
         when(true, () => html`X`),
         'X'
       );
+
+      assertRender(
+        when(false, () => html`X`),
+        ''
+      );
     });
 
     test('true case, with false case', () => {
@@ -137,6 +142,7 @@ suite('template helpers', () => {
     });
 
     test('end < start', () => {
+      // This case checks that we don't cause an infinite loop
       assert.deepEqual([...range(2, 1)], []);
     });
 
@@ -146,6 +152,8 @@ suite('template helpers', () => {
 
     test('negative step', () => {
       assert.deepEqual([...range(0, -3, -1)], [0, -1, -2]);
+      // This case checks that we don't cause an infinite loop
+      assert.deepEqual([...range(0, 10, -1)], []);
     });
   });
 });

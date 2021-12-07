@@ -21,11 +21,23 @@
  * }
  * ```
  */
-export const when = (
+export function when<T, F>(
+  condition: true,
+  trueCase: () => T,
+  falseCase?: () => F
+): T;
+export function when<T, F = undefined>(
+  condition: false,
+  trueCase: () => T,
+  falseCase?: () => F
+): F;
+export function when(
   condition: boolean,
   trueCase: () => unknown,
   falseCase?: () => unknown
-): unknown => (condition ? trueCase() : falseCase?.());
+): unknown {
+  return condition ? trueCase() : falseCase?.();
+}
 
 /**
  * Returns an iterable containing the result of calling `f(value)` on each
@@ -101,7 +113,7 @@ export function* join<I, J>(items: Iterable<I> | undefined, joiner: J) {
  * ```ts
  * render() {
  *   return html`
- *     ${map(range(8), () => html`<div class="cell"></div>)}
+ *     ${map(range(8), () => html`<div class="cell"></div>`)}
  *   `;
  * }
  * ```
