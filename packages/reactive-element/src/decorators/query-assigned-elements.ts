@@ -22,6 +22,23 @@ import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
  * way to use
  * [`slot.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  *
+ * Example usage:
+ * ```ts
+ * class MyElement {
+ *   @queryAssignedElements({ slot: 'list' })
+ *   listItems!: Array<HTMLElement>;
+ *   @queryAssignedElements()
+ *   unnamedSlotEls!: Array<HTMLElement>;
+ *
+ *   render() {
+ *     return html`
+ *       <slot name="list"></slot>
+ *       <slot></slot>
+ *     `;
+ *   }
+ * }
+ * ```
+ *
  * Note, the type of this property should be annotated as `Array<HTMLElement>`.
  *
  * @param options Object that sets options for nodes to be returned. See
@@ -33,21 +50,6 @@ import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
  * @param options.selector Element results are filtered such that they match the
  *     given CSS selector.
  *
- * ```ts
- * class MyElement {
- *   @queryAssignedElements({ slot: 'list' })
- *   listItems!: Array<HTMLElement>;
- *   @queryAssignedElements()
- *   unnamedSlotEls?: Array<HTMLElement>;
- *
- *   render() {
- *     return html`
- *       <slot name="list"></slot>
- *       <slot></slot>
- *     `;
- *   }
- * }
- * ```
  * @category Decorator
  */
 export function queryAssignedElements(options?: QueryAssignedNodesOptions) {

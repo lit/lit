@@ -26,7 +26,7 @@ export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   selector?: string;
 }
 
-// Note TypeScript requires the return type to be `void|any`.
+// TypeScript requires the decorator return type to be `void|any`.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TSDecoratorReturnType = void | any;
 
@@ -34,8 +34,22 @@ type TSDecoratorReturnType = void | any;
  * A property decorator that converts a class property into a getter that
  * returns the `assignedNodes` of the given `slot`.
  *
+ * Example usage:
+ * ```ts
+ * class MyElement {
+ *   @queryAssignedNodes({slot: 'list', flatten: true, selector: '.item'})
+ *   listItems!: Array<HTMLElement>;
+ *
+ *   render() {
+ *     return html`
+ *       <slot name="list"></slot>
+ *     `;
+ *   }
+ * }
+ * ```
+ *
  * Note the type of this property should be annotated as `Array<Node>` if used
- * without a `selector` or `Array<HTMLElement> if a selector is provided.
+ * without a `selector` or `Array<HTMLElement>` if a selector is provided.
  *
  * @param options Object that sets options for nodes to be returned. See
  *     [MDN parameters section](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes#parameters)
@@ -45,18 +59,6 @@ type TSDecoratorReturnType = void | any;
  *     default slot.
  * @param options.selector A CSS selector used to filter the elements returned.
  *
- * ```ts
- * class MyElement {
- *   @queryAssignedNodes('list', true, '.item')
- *   listItems?: Array<HTMLElement>;
- *
- *   render() {
- *     return html`
- *       <slot name="list"></slot>
- *     `;
- *   }
- * }
- * ```
  * @category Decorator
  */
 export function queryAssignedNodes(
@@ -67,13 +69,11 @@ export function queryAssignedNodes(
  * A property decorator that converts a class property into a getter that
  * returns the `assignedNodes` of the given named `slot`.
  *
- * Note the type of this property should be annotated as `Array<Node>` if used
- * without a `selector` or `Array<HTMLElement> if a selector is provided.
- *
+ * Example usage:
  * ```ts
  * class MyElement {
  *   @queryAssignedNodes('list', true, '.item')
- *   listItems?: Array<HTMLElement>;
+ *   listItems!: Array<HTMLElement>;
  *
  *   render() {
  *     return html`
@@ -82,6 +82,9 @@ export function queryAssignedNodes(
  *   }
  * }
  * ```
+ *
+ * Note the type of this property should be annotated as `Array<Node>` if used
+ * without a `selector` or `Array<HTMLElement>` if a selector is provided.
  *
  * @param slotName A string name of the slot.
  * @param flatten A boolean which when true flattens the assigned nodes,
