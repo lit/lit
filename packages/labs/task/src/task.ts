@@ -12,12 +12,6 @@ export type TaskFunction<D extends [...unknown[]], R = any> = (
 ) => R | typeof initialState | Promise<R | typeof initialState>;
 export type ArgsFunction<D extends [...unknown[]]> = () => D;
 
-export type CanRunFunction = (
-  canRun: () => boolean,
-  status: TaskStatus,
-  args?: unknown[]
-) => boolean;
-
 /**
  * States for task status
  */
@@ -46,7 +40,7 @@ export type StatusRenderer<R> = {
 export interface TaskConfig<T extends unknown[], R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
-  canRun?: CanRunFunction;
+  autoRun?: boolean;
 }
 
 // TODO(sorvell): Some issues:
@@ -78,9 +72,8 @@ export interface TaskConfig<T extends unknown[], R> {
  * corresponding to the task state.
  *
  * The task is run automatically when its arguments change; however, this can
- * be customized by passing a `canRun` function. It receives arguments of
- * a default `canRun()` function, the task's status, and the values of the
- * task's arguments.
+ * be customized by setting `autoRun` to false and calling `run` explicitly
+ * to run the task.
  *
  * class MyElement extends ReactiveElement {
  *   url = 'example.com/api';
@@ -104,15 +97,13 @@ export interface TaskConfig<T extends unknown[], R> {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class Task<T extends [...unknown[]] = any, R = any> {
-  private _previousArgs: T = [] as unknown as T;
+  private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
-  private _args: ArgsFunction<T>;
+  private _getArgs?: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
   private _value?: R;
   private _error?: unknown;
-  // Internal signal for being fully done processing a task, including host updates.
-  private _isIdle = true;
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
@@ -122,6 +113,12 @@ export class Task<T extends [...unknown[]] = any, R = any> {
    * is kept and only resolved when the new run is completed.
    */
   taskComplete!: Promise<R>;
+
+  /**
+   * Controls if they task will run when its arguments change. Defaults to true.
+   */
+  autoRun = true;
+
   private _resolveTaskComplete!: (value: R) => void;
   private _rejectTaskComplete!: (e: unknown) => void;
 
@@ -136,12 +133,12 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       const taskConfig = task as TaskConfig<T, R>;
       args = taskConfig.args;
       task = taskConfig.task;
-      if (taskConfig.canRun !== undefined) {
-        this._canRun = taskConfig.canRun;
+      if (taskConfig.autoRun !== undefined) {
+        this.autoRun = taskConfig.autoRun;
       }
     }
     this._task = task;
-    this._args = args || (((_x: unknown) => []) as unknown as ArgsFunction<T>);
+    this._getArgs = args;
     this.taskComplete = new Promise((res, rej) => {
       this._resolveTaskComplete = res;
       this._rejectTaskComplete = rej;
@@ -149,57 +146,59 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   }
 
   hostUpdated() {
-    this.runTask();
+    this.performTask();
   }
 
-  protected async runTask() {
-    const args = this._args();
+  protected async performTask() {
+    const args = this._getArgs?.();
     const argsDirty = this._argsDirty(args);
-    const canRun = () => this.defaultCanRun(argsDirty, args);
-    if (this._canRun(canRun, this.status, args)) {
-      this._isIdle = false;
-      if (
-        this.status === TaskStatus.COMPLETE ||
-        this.status === TaskStatus.ERROR
-      ) {
-        this.taskComplete = new Promise((res, rej) => {
-          this._resolveTaskComplete = res;
-          this._rejectTaskComplete = rej;
-        });
-      }
-      this.status = TaskStatus.PENDING;
-      this._error = undefined;
-      this._value = undefined;
-      let result!: R | typeof initialState;
-      let error: unknown;
-      // Request an update to report pending state.
-      this._host.requestUpdate();
-      const key = ++this._callId;
-      try {
-        result = await this._task(args);
-      } catch (e) {
-        error = e;
-      }
-      // If this is the most recent task call, process this value.
-      if (this._callId === key) {
-        if (result === initialState) {
-          this.status = TaskStatus.INITIAL;
+    if (this.autoRun && argsDirty) {
+      this.run(args);
+    }
+  }
+
+  async run(args?: T) {
+    args ??= this._getArgs?.();
+    if (
+      this.status === TaskStatus.COMPLETE ||
+      this.status === TaskStatus.ERROR
+    ) {
+      this.taskComplete = new Promise((res, rej) => {
+        this._resolveTaskComplete = res;
+        this._rejectTaskComplete = rej;
+      });
+    }
+    this.status = TaskStatus.PENDING;
+    this._error = undefined;
+    this._value = undefined;
+    let result!: R | typeof initialState;
+    let error: unknown;
+    // Request an update to report pending state.
+    this._host.requestUpdate();
+    const key = ++this._callId;
+    try {
+      // TODO(sorvell): fix type so args can be optional.
+      result = await this._task(args as unknown as T);
+    } catch (e) {
+      error = e;
+    }
+    // If this is the most recent task call, process this value.
+    if (this._callId === key) {
+      if (result === initialState) {
+        this.status = TaskStatus.INITIAL;
+      } else {
+        if (error === undefined) {
+          this.status = TaskStatus.COMPLETE;
+          this._resolveTaskComplete(result as R);
         } else {
-          if (error === undefined) {
-            this.status = TaskStatus.COMPLETE;
-            this._resolveTaskComplete(result as R);
-          } else {
-            this.status = TaskStatus.ERROR;
-            this._rejectTaskComplete(error);
-          }
-          this._value = result as R;
-          this._error = error;
+          this.status = TaskStatus.ERROR;
+          this._rejectTaskComplete(error);
         }
-        // Request an update with the final value.
-        this._host.requestUpdate();
-        await this._host.updateComplete;
-        this._isIdle = true;
+        this._value = result as R;
+        this._error = error;
       }
+      // Request an update with the final value.
+      this._host.requestUpdate();
     }
   }
 
@@ -227,27 +226,11 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     }
   }
 
-  private _argsDirty(args: T) {
-    let i = 0;
-    const previousArgs = this._previousArgs;
+  private _argsDirty(args?: T) {
+    const prev = this._previousArgs;
     this._previousArgs = args;
-    for (const arg of args) {
-      if (notEqual(arg, previousArgs[i])) {
-        return true;
-      }
-      i++;
-    }
-    return false;
-  }
-
-  protected defaultCanRun(argsDirty: boolean, args: T) {
-    return (
-      argsDirty ||
-      (!args.length && this.status !== TaskStatus.PENDING && this._isIdle)
-    );
-  }
-
-  private _canRun(canRun: () => boolean, _status: TaskStatus, _args: T) {
-    return canRun();
+    return Array.isArray(args) && Array.isArray(prev)
+      ? args.length === prev.length && args.some((v, i) => notEqual(v, prev[i]))
+      : args !== prev;
   }
 }
