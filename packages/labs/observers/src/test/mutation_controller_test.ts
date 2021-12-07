@@ -9,8 +9,6 @@ import {
   PropertyValues,
   ReactiveControllerHost,
 } from '@lit/reactive-element';
-// import {ReactiveController} from '@lit/reactive-element/reactive-controller.js';
-// import {property} from '@lit/reactive-element/decorators/property.js';
 import {
   MutationController,
   MutationControllerConfig,
