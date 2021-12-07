@@ -11,30 +11,40 @@ export interface MutationControllerConfig {
   config: MutationObserverInit;
   target?: Element;
   callback?: ValueCallback;
+  skipInitial?: boolean;
 }
 
 export class MutationController {
-  _host: ReactiveControllerHost;
-  _target?: Element | null;
-  _config: MutationObserverInit;
-  _observer: MutationObserver;
+  private _host: ReactiveControllerHost;
+  private _target?: Element | null;
+  private _config: MutationObserverInit;
+  private _observer: MutationObserver;
+  private _skipInitial = false;
+  private _unobservedUpdate = false;
   value?: unknown;
   callback: ValueCallback = () => true;
   constructor(
     host: ReactiveControllerHost,
-    {target, config, callback}: MutationControllerConfig
+    {target, config, callback, skipInitial}: MutationControllerConfig
   ) {
     this._host = host;
     this._target = target;
     this._config = config;
+    if (skipInitial !== undefined) {
+      this._skipInitial = skipInitial;
+    }
     if (callback !== undefined) {
       this.callback = callback;
     }
     this._observer = new MutationObserver((records: MutationRecord[]) => {
-      this.value = this.callback(records);
-      this._host.requestUpdate();
+      this.handleChanges(records);
     });
     this._host.addController(this);
+  }
+
+  protected handleChanges(records: MutationRecord[]) {
+    this.value = this.callback(records);
+    this._host.requestUpdate();
   }
 
   hostConnected() {
@@ -47,11 +57,28 @@ export class MutationController {
     this.disconnect();
   }
 
-  observe(target: Element) {
-    this._observer.observe(target, this._config);
+  async hostUpdated() {
+    if (!this._skipInitial && this._unobservedUpdate) {
+      await this._host.updateComplete;
+      // Handle initial state as a set of 0 changes. This helps setup initial
+      // state and promotes UI = f(state) since ideally the callback does not
+      // rely on changes.
+      this.handleChanges([]);
+    }
+    this._unobservedUpdate = false;
   }
 
-  disconnect() {
+  /**
+   * Observe the target element.
+   * @param target Element to observe
+   */
+  observe(target: Element) {
+    this._observer.observe(target, this._config);
+    this._unobservedUpdate = true;
+    this._host.requestUpdate();
+  }
+
+  protected disconnect() {
     this._observer.disconnect();
   }
 }
