@@ -5,12 +5,14 @@
  */
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
-export type ValueCallback = (records: MutationRecord[]) => unknown;
+export type MutationValueCallback = (
+  ...args: Parameters<MutationCallback>
+) => unknown;
 
 export interface MutationControllerConfig {
   config: MutationObserverInit;
   target?: Element;
-  callback?: ValueCallback;
+  callback?: MutationValueCallback;
   skipInitial?: boolean;
 }
 
@@ -22,7 +24,7 @@ export class MutationController {
   private _skipInitial = false;
   private _unobservedUpdate = false;
   value?: unknown;
-  callback: ValueCallback = () => true;
+  callback: MutationValueCallback = () => true;
   constructor(
     host: ReactiveControllerHost,
     {target, config, callback, skipInitial}: MutationControllerConfig
@@ -44,7 +46,7 @@ export class MutationController {
   }
 
   protected handleChanges(records: MutationRecord[]) {
-    this.value = this.callback(records);
+    this.value = this.callback(records, this._observer);
   }
 
   hostConnected() {
