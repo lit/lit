@@ -24,20 +24,35 @@
     "./mutation_controller.js": {
       "development": "./development/mutation_controller.js",
       "default": "./mutation_controller.js"
+    },
+    "./performance_controller.js": {
+      "development": "./development/performance_controller.js",
+      "default": "./performance_controller.js"
+    },
+    "./resize_controller.js": {
+      "development": "./development/resize_controller.js",
+      "default": "./resize_controller.js"
+    },
+    "./intersection_controller.js": {
+      "development": "./development/intersection_controller.js",
+      "default": "./intersection_controller.js"
     }
   },
   "files": [
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/mutation_controller.{d.ts,d.ts.map,js,js.map}"
+    "/mutation_controller.{d.ts,d.ts.map,js,js.map}",
+    "/performance_controller.{d.ts,d.ts.map,js,js.map}",
+    "/resize_controller.{d.ts,d.ts.map,js,js.map}",
+    "/intersection_controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts --build && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc  --build --watch",
-    "clean": "rm -rf {index,mutation_controller}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
+    "clean": "rm -rf {index,mutation_controller,performance_controller,resize_controller,intersection_controller}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/observers/development/**/*_test.js'",
