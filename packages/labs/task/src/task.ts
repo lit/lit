@@ -12,6 +12,9 @@ export type TaskFunction<D extends [...unknown[]], R = any> = (
 ) => R | typeof initialState | Promise<R | typeof initialState>;
 export type ArgsFunction<D extends [...unknown[]]> = () => D;
 
+// `DepsFunction` is being maintained for BC with its previous name.
+export {ArgsFunction as DepsFunction};
+
 /**
  * States for task status
  */
@@ -129,16 +132,13 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   ) {
     this._host = host;
     this._host.addController(this);
-    if (typeof task === 'object') {
-      const taskConfig = task as TaskConfig<T, R>;
-      args = taskConfig.args;
-      task = taskConfig.task;
-      if (taskConfig.autoRun !== undefined) {
-        this.autoRun = taskConfig.autoRun;
-      }
+    const taskConfig =
+      typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
+    this._task = taskConfig.task;
+    this._getArgs = taskConfig.args;
+    if (taskConfig.autoRun !== undefined) {
+      this.autoRun = taskConfig.autoRun;
     }
-    this._task = task;
-    this._getArgs = args;
     this.taskComplete = new Promise((res, rej) => {
       this._resolveTaskComplete = res;
       this._rejectTaskComplete = rej;
