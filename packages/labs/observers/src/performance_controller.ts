@@ -124,7 +124,6 @@ export class PerformanceController implements ReactiveController {
 
   /**
    * Start observing. This is done automatically when the host connects.
-   * @param target Element to observe
    */
   observe() {
     this._observer.observe(this._config);
