@@ -11,14 +11,13 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
 import {decorateProperty} from './base.js';
 
-export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
-  /**
-   * Name of the slot. Leave empty for the default slot.
-   */
-  slot?: string;
+import type {ReactiveElement} from '../reactive-element.js';
+import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
+
+export interface QueryAssignedElementsOptions
+  extends QueryAssignedNodesOptions {
   /**
    * CSS selector used to filter the elements returned.
    */
@@ -31,6 +30,23 @@ export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
  * way to use
  * [`slot.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  *
+ * Example usage:
+ * ```ts
+ * class MyElement {
+ *   @queryAssignedElements({ slot: 'list' })
+ *   listItems!: Array<HTMLElement>;
+ *   @queryAssignedElements()
+ *   unnamedSlotEls!: Array<HTMLElement>;
+ *
+ *   render() {
+ *     return html`
+ *       <slot name="list"></slot>
+ *       <slot></slot>
+ *     `;
+ *   }
+ * }
+ * ```
+ *
  * Note, the type of this property should be annotated as `Array<HTMLElement>`.
  *
  * @param options Object that sets options for nodes to be returned. See
@@ -42,21 +58,6 @@ export interface QueryAssignedElementsOptions extends AssignedNodesOptions {
  * @param options.selector Element results are filtered such that they match the
  *     given CSS selector.
  *
- * ```ts
- * class MyElement {
- *   @queryAssignedElements({ slot: 'list' })
- *   listItems!: Array<HTMLElement>;
- *   @queryAssignedElements()
- *   unnamedSlotEls?: Array<HTMLElement>;
- *
- *   render() {
- *     return html`
- *       <slot name="list"></slot>
- *       <slot></slot>
- *     `;
- *   }
- * }
- * ```
  * @category Decorator
  */
 export function queryAssignedElements(options?: QueryAssignedElementsOptions) {

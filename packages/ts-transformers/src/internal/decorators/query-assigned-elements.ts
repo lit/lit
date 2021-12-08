@@ -26,9 +26,13 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  */
 export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
   readonly kind = 'memberDecorator';
-  readonly decoratorName = 'queryAssignedElements';
+  decoratorName = 'queryAssignedElements';
 
-  private readonly _factory: ts.NodeFactory;
+  /**
+   * The method used to query the HTMLSlot element.
+   */
+  protected slottedQuery = 'assignedElements';
+  protected readonly _factory: ts.NodeFactory;
 
   constructor({factory}: ts.TransformationContext) {
     this._factory = factory;
@@ -52,7 +56,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     const [arg0] = decorator.expression.arguments;
     if (arg0 && !ts.isObjectLiteralExpression(arg0)) {
       throw new Error(
-        `queryAssignedElements argument is expected to be an inlined ` +
+        `${this.decoratorName} argument is expected to be an inlined ` +
           `object literal. Instead received: '${arg0.getText()}'`
       );
     }
@@ -64,7 +68,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
       )
     ) {
       throw new Error(
-        `queryAssignedElements object literal argument can only include ` +
+        `${this.decoratorName} object literal argument can only include ` +
           `property assignment. For example: '{ slot: "example" }' is ` +
           `supported, whilst '{ ...otherOpts }' is unsupported.`
       );
@@ -72,11 +76,11 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     const {slot, selector} = this._retrieveSlotAndSelector(arg0);
     litClassContext.litFileContext.replaceAndMoveComments(
       property,
-      this._createQueryAssignedElementsGetter({
+      this._createQueryAssignedGetter({
         name,
         slot,
         selector,
-        assignedElsOptions: this._filterAssignedElementsOptions(arg0),
+        assignedElsOptions: this._filterAssignedOptions(arg0),
       })
     );
   }
@@ -135,7 +139,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
    * assignments are left after filtering, such that we don't generate code
    * like `HTMLSlotElement.assignedElements({})`.
    */
-  private _filterAssignedElementsOptions(
+  private _filterAssignedOptions(
     opts?: ts.ObjectLiteralExpression
   ): ts.ObjectLiteralExpression | undefined {
     if (!opts) {
@@ -156,7 +160,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     );
   }
 
-  private _createQueryAssignedElementsGetter({
+  private _createQueryAssignedGetter({
     name,
     slot,
     selector,
@@ -194,7 +198,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
           [slotSelector]
         ),
         factory.createToken(ts.SyntaxKind.QuestionDotToken),
-        factory.createIdentifier('assignedElements')
+        factory.createIdentifier(this.slottedQuery)
       ),
       undefined,
       undefined,
@@ -229,14 +233,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
               ],
               undefined,
               factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              factory.createCallExpression(
-                factory.createPropertyAccessExpression(
-                  factory.createIdentifier('node'),
-                  factory.createIdentifier('matches')
-                ),
-                undefined,
-                [selector]
-              )
+              this.getSelectorFilter(selector)
             ),
           ]
         );
@@ -262,6 +259,22 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
       [],
       undefined,
       getterBody
+    );
+  }
+
+  /**
+   * @param selector User supplied CSS selector.
+   * @returns Expression used to filter the queried Elements.
+   */
+  protected getSelectorFilter(selector: ts.Expression): ts.Expression {
+    const factory = this._factory;
+    return factory.createCallExpression(
+      factory.createPropertyAccessExpression(
+        factory.createIdentifier('node'),
+        factory.createIdentifier('matches')
+      ),
+      undefined,
+      [selector]
     );
   }
 
