@@ -16,6 +16,14 @@ import {decorateProperty} from './base.js';
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
+export interface QueryAssignedElementsOptions
+  extends QueryAssignedNodesOptions {
+  /**
+   * CSS selector used to filter the elements returned.
+   */
+  selector?: string;
+}
+
 /**
  * A property decorator that converts a class property into a getter that
  * returns the `assignedElements` of the given `slot`. Provides a declarative
@@ -52,7 +60,7 @@ import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
  *
  * @category Decorator
  */
-export function queryAssignedElements(options?: QueryAssignedNodesOptions) {
+export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
   const {slot, selector} = options ?? {};
   return decorateProperty({
     descriptor: (_name: PropertyKey) => ({

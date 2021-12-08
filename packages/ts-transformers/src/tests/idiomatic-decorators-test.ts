@@ -907,37 +907,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (with selector)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes({slot: 'list', flatten: false, selector: '.item'})
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector(\`slot[name=list]\`)
-          ?.assignedNodes({ flatten: false })
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches('.item')
-          ) ?? [];
-      }
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
   test('@queryAssignedNodes (with assignedNodes identifier)', () => {
     // It doesn't matter if the HTMLSlotElement.assignedNodes options are
     // using an identifer as we don't need to extract them.
@@ -949,7 +918,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
     class MyElement extends LitElement {
       // listItems comment
-      @queryAssignedNodes({slot: 'list', flatten: isFlatten, selector: '.item'})
+      @queryAssignedNodes({slot: 'list', flatten: isFlatten})
       listItems: HTMLElement[];
     }
     `;
@@ -964,11 +933,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       get listItems() {
         return this.renderRoot
           ?.querySelector(\`slot[name=list]\`)
-          ?.assignedNodes({ flatten: isFlatten })
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches('.item')
-          ) ?? [];
+          ?.assignedNodes({ flatten: isFlatten }) ?? [];
       }
     }
     `;
@@ -981,11 +946,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAssignedNodes} from 'lit/decorators.js';
 
     const slot = 'list';
-    const selector = '.item';
 
     class MyElement extends LitElement {
       // listItems comment
-      @queryAssignedNodes({slot: slot, selector: selector})
+      @queryAssignedNodes({slot: slot})
       listItems: HTMLElement[];
     }
     `;
@@ -994,18 +958,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     const slot = 'list';
-    const selector = '.item';
 
     class MyElement extends LitElement {
       // listItems comment
       get listItems() {
         return this.renderRoot
           ?.querySelector(\`slot[name=\${slot}]\`)
-          ?.assignedNodes()
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches(selector)
-          ) ?? [];
+          ?.assignedNodes() ?? [];
       }
     }
     `;
@@ -1018,12 +977,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {queryAssignedNodes} from 'lit/decorators.js';
 
     const slot = 'list';
-    const selector = '.item';
     const flatten: boolean = false;
 
     class MyElement extends LitElement {
       // listItems comment
-      @queryAssignedNodes({slot, selector, flatten})
+      @queryAssignedNodes({slot, flatten})
       listItems: HTMLElement[];
     }
     `;
@@ -1032,7 +990,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
 
     const slot = 'list';
-    const selector = '.item';
     const flatten = false;
 
     class MyElement extends LitElement {
@@ -1040,11 +997,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       get listItems() {
         return this.renderRoot
           ?.querySelector(\`slot[name=\${slot}]\`)
-          ?.assignedNodes({ flatten })
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches(selector)
-          ) ?? [];
+          ?.assignedNodes({ flatten }) ?? [];
       }
     }
     `;
@@ -1058,7 +1011,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
     class MyElement extends LitElement {
       // listItems comment
-      @queryAssignedNodes({slot: "li" + "st", selector: "." + "item", flatten: true || false})
+      @queryAssignedNodes({slot: "li" + "st", flatten: true || false})
       listItems: HTMLElement[];
     }
     `;
@@ -1071,11 +1024,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       get listItems() {
         return this.renderRoot
           ?.querySelector(\`slot[name=\${"li" + "st"}]\`)
-          ?.assignedNodes({ flatten: true || false })
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches("." + "item")
-          ) ?? [];
+          ?.assignedNodes({ flatten: true || false }) ?? [];
       }
     }
     `;

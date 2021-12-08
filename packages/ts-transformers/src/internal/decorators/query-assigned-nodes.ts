@@ -47,10 +47,6 @@ export class QueryAssignedNodesVisitor extends QueryAssignedElementsVisitor {
     }
     super.visit(litClassContext, property, decorator);
   }
-
-  override getSelectorFilter(selector: ts.Expression): ts.Expression {
-    return getSelectorFilter(this._factory, selector);
-  }
 }
 
 class QueryAssignedLegacyNodesVisitor {
@@ -178,7 +174,28 @@ class QueryAssignedLegacyNodesVisitor {
               ],
               undefined,
               factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-              getSelectorFilter(factory, factory.createStringLiteral(selector))
+              factory.createBinaryExpression(
+                factory.createBinaryExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('node'),
+                    factory.createIdentifier('nodeType')
+                  ),
+                  factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('Node'),
+                    factory.createIdentifier('ELEMENT_NODE')
+                  )
+                ),
+                factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                factory.createCallExpression(
+                  factory.createPropertyAccessExpression(
+                    factory.createIdentifier('node'),
+                    factory.createIdentifier('matches')
+                  ),
+                  undefined,
+                  [factory.createStringLiteral(selector)]
+                )
+              )
             ),
           ]
         );
@@ -206,36 +223,4 @@ class QueryAssignedLegacyNodesVisitor {
       getterBody
     );
   }
-}
-
-/**
- * Returns TS representing:
- *   `node.nodeType === Node.ELEMENT_NODE && node.matches(<selector>)`
- */
-function getSelectorFilter(
-  factory: ts.NodeFactory,
-  selector: ts.Expression
-): ts.Expression {
-  return factory.createBinaryExpression(
-    factory.createBinaryExpression(
-      factory.createPropertyAccessExpression(
-        factory.createIdentifier('node'),
-        factory.createIdentifier('nodeType')
-      ),
-      factory.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
-      factory.createPropertyAccessExpression(
-        factory.createIdentifier('Node'),
-        factory.createIdentifier('ELEMENT_NODE')
-      )
-    ),
-    factory.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
-    factory.createCallExpression(
-      factory.createPropertyAccessExpression(
-        factory.createIdentifier('node'),
-        factory.createIdentifier('matches')
-      ),
-      undefined,
-      [selector]
-    )
-  );
 }

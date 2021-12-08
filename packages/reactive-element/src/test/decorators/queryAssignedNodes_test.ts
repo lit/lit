@@ -5,6 +5,7 @@
  */
 
 import {queryAssignedNodes} from '../../decorators/query-assigned-nodes.js';
+import {queryAssignedElements} from '../../decorators/query-assigned-elements.js';
 import {
   canTestReactiveElement,
   generateElementName,
@@ -31,7 +32,8 @@ const flush =
     // Testing backwards compatible deprecated API.
     @queryAssignedNodes('footer', true, '.item')
     _footerAssignedItems!: HTMLElement[];
-    @queryAssignedNodes({slot: 'footer', flatten: true, selector: '.item'})
+    // Legacy selector can be transformed into queryAssignedElements.
+    @queryAssignedElements({slot: 'footer', flatten: true, selector: '.item'})
     footerAssignedItems!: HTMLElement[];
 
     override render() {
