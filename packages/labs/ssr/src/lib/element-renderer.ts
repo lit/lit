@@ -6,15 +6,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export type Constructor<T> = {new (): T};
-
-import {createRequire} from 'module';
-const require = createRequire(import.meta.url);
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const escapeHtml = require('escape-html') as typeof import('escape-html');
-
+import {escapeHtml} from './util/escape-html.js';
 import {RenderInfo} from './render-lit-html.js';
+
+export type Constructor<T> = {new (): T};
 
 export type ElementRendererConstructor = (new (
   tagName: string
