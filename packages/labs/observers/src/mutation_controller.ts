@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
@@ -29,20 +29,15 @@ export class MutationController {
     host: ReactiveControllerHost,
     {target, config, callback, skipInitial}: MutationControllerConfig
   ) {
-    this._host = host;
+    (this._host = host).addController(this);
     this._target = target;
     this._config = config;
-    if (skipInitial !== undefined) {
-      this._skipInitial = skipInitial;
-    }
-    if (callback !== undefined) {
-      this.callback = callback;
-    }
+    this._skipInitial = skipInitial ?? this._skipInitial;
+    this.callback = callback ?? this.callback;
     this._observer = new MutationObserver((records: MutationRecord[]) => {
       this.handleChanges(records);
       this._host.requestUpdate();
     });
-    this._host.addController(this);
   }
 
   protected handleChanges(records: MutationRecord[]) {

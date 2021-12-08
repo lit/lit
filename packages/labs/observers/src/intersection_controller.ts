@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
@@ -28,14 +28,10 @@ export class IntersectionController {
     host: ReactiveControllerHost,
     {target, config, callback, skipInitial}: IntersectionControllerConfig
   ) {
-    this._host = host;
+    (this._host = host).addController(this);
     this._target = target;
-    if (skipInitial !== undefined) {
-      this._skipInitial = skipInitial;
-    }
-    if (callback !== undefined) {
-      this.callback = callback;
-    }
+    this._skipInitial = skipInitial ?? this._skipInitial;
+    this.callback = callback ?? this.callback;
     this._observer = new IntersectionObserver(
       (entries: IntersectionObserverEntry[]) => {
         const unobservedUpdate = this._unobservedUpdate;
@@ -48,7 +44,6 @@ export class IntersectionController {
       },
       config
     );
-    this._host.addController(this);
   }
 
   protected handleChanges(entries: IntersectionObserverEntry[]) {

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
@@ -29,21 +29,16 @@ export class PerformanceController {
     host: ReactiveControllerHost,
     {config, callback, skipInitial}: PerformanceControllerConfig
   ) {
-    this._host = host;
+    (this._host = host).addController(this);
     this._config = config;
-    if (skipInitial !== undefined) {
-      this._skipInitial = skipInitial;
-    }
-    if (callback !== undefined) {
-      this.callback = callback;
-    }
+    this._skipInitial = skipInitial ?? this._skipInitial;
+    this.callback = callback ?? this.callback;
     this._observer = new PerformanceObserver(
       (entryList: PerformanceObserverEntryList) => {
         this.handleChanges(entryList.getEntries(), entryList);
         this._host.requestUpdate();
       }
     );
-    this._host.addController(this);
   }
 
   protected handleChanges(
@@ -77,8 +72,7 @@ export class PerformanceController {
   }
 
   /**
-   * Observe the target element.
-   * @param target Element to observe
+   * Start observing
    */
   observe() {
     this._observer.observe(this._config);

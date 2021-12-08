@@ -9,6 +9,12 @@ import {createRequire} from 'module';
 
 export default litProdConfig({
   packageName: createRequire(import.meta.url)('./package.json').name,
-  entryPoints: ['index', 'mutation_controller'],
+  entryPoints: [
+    'index',
+    'mutation_controller',
+    'resize_controller',
+    'intersection_controller',
+    'performance_controller',
+  ],
   external: ['@lit/reactive-element'],
 });
