@@ -24,6 +24,7 @@ export default litProdConfig({
     'directives/async-append',
     'directives/async-replace',
     'directives/cache',
+    'directives/choose',
     'directives/class-map',
     'directives/guard',
     'directives/if-defined',
