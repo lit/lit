@@ -78,7 +78,7 @@ suite('IntersectionController', () => {
   const getTestElement = async (
     getControllerConfig: (
       host: ReactiveControllerHost
-    ) => IntersectionControllerConfig
+    ) => IntersectionControllerConfig = () => ({})
   ) => {
     const ctor = defineTestElement(getControllerConfig);
     const el = await renderTestElement(ctor);
@@ -112,9 +112,7 @@ suite('IntersectionController', () => {
   });
 
   test('can observe changes', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
-    }));
+    const el = await getTestElement();
 
     // Reports initial change by default
     assert.isTrue(el.observerValue);
@@ -133,9 +131,7 @@ suite('IntersectionController', () => {
   });
 
   test('can observe changes during update', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
-    }));
+    const el = await getTestElement();
     el.resetObserverValue();
     el.changeDuringUpdate = () => intersectOut(el);
     el.requestUpdate();
@@ -144,8 +140,7 @@ suite('IntersectionController', () => {
   });
 
   test('skips initial changes when `skipInitial` is `true`', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       skipInitial: true,
     }));
 
@@ -169,8 +164,7 @@ suite('IntersectionController', () => {
   });
 
   test('observation managed via connection', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       skipInitial: true,
     }));
     assert.isUndefined(el.observerValue);
@@ -196,7 +190,7 @@ suite('IntersectionController', () => {
   test('can observe external element', async () => {
     const d = document.createElement('div');
     container.appendChild(d);
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
       target: d,
       skipInitial: true,
     }));
@@ -215,8 +209,7 @@ suite('IntersectionController', () => {
   });
 
   test('can manage value via `callback`', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       callback: (entries: IntersectionObserverEntry[]) =>
         entries[0]?.isIntersecting,
     }));
@@ -237,9 +230,7 @@ suite('IntersectionController', () => {
   });
 
   test('can call `observe` to observe element', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
-    }));
+    const el = await getTestElement();
     el.resetObserverValue();
     const d1 = document.createElement('div');
 
@@ -296,8 +287,10 @@ suite('IntersectionController', () => {
     assert.isTrue(el.observerValue);
   });
 
-  test('can avoid specifying target and call `observe` to observe element', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({}));
+  test('can specifying target as `null` and call `observe` to observe element', async () => {
+    const el = await getTestElement(() => ({
+      target: null,
+    }));
     el.resetObserverValue();
     const d1 = document.createElement('div');
 
@@ -335,7 +328,8 @@ suite('IntersectionController', () => {
   });
 
   test('observed target respects `skipInitial`', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
+      target: null,
       skipInitial: true,
     }));
     const d1 = document.createElement('div');
@@ -355,7 +349,8 @@ suite('IntersectionController', () => {
   });
 
   test('observed target not re-observed on connection', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
+      target: null,
       skipInitial: true,
     }));
     const d1 = document.createElement('div');

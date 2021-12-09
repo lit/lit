@@ -88,7 +88,7 @@ suite('ResizeController', () => {
   const getTestElement = async (
     getControllerConfig: (
       host: ReactiveControllerHost
-    ) => ResizeControllerConfig
+    ) => ResizeControllerConfig = () => ({})
   ) => {
     const ctor = defineTestElement(getControllerConfig);
     const el = await renderTestElement(ctor);
@@ -107,9 +107,7 @@ suite('ResizeController', () => {
   });
 
   test('can observe changes', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
-    }));
+    const el = await getTestElement();
 
     // Reports initial change by default
     assert.isTrue(el.observerValue);
@@ -131,8 +129,7 @@ suite('ResizeController', () => {
   });
 
   test('skips initial changes when `skipInitial` is `true`', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       skipInitial: true,
     }));
 
@@ -156,8 +153,7 @@ suite('ResizeController', () => {
   });
 
   test('observation managed via connection', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       skipInitial: true,
     }));
     assert.isUndefined(el.observerValue);
@@ -181,7 +177,7 @@ suite('ResizeController', () => {
   test('can observe external element', async () => {
     const d = document.createElement('div');
     container.appendChild(d);
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
       target: d,
       skipInitial: true,
     }));
@@ -198,8 +194,7 @@ suite('ResizeController', () => {
   });
 
   test('can manage value via `callback`', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       callback: (entries: ResizeObserverEntry[]) =>
         entries[0]?.contentRect.width ?? true,
     }));
@@ -212,8 +207,7 @@ suite('ResizeController', () => {
   });
 
   test('can observe changes during update', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       callback: (entries: ResizeObserverEntry[]) =>
         entries[0]?.contentRect.width ?? true,
     }));
@@ -240,9 +234,7 @@ suite('ResizeController', () => {
   });
 
   test('can call `observe` to observe element', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
-    }));
+    const el = await getTestElement();
     el.resetObserverValue();
     const d1 = document.createElement('div');
 
@@ -291,8 +283,8 @@ suite('ResizeController', () => {
     assert.isTrue(el.observerValue);
   });
 
-  test('can avoid specifying target and call `observe` to observe element', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({}));
+  test('can specifying target as `null` and call `observe` to observe element', async () => {
+    const el = await getTestElement(() => ({target: null}));
     el.resetObserverValue();
     const d1 = document.createElement('div');
 
@@ -330,7 +322,8 @@ suite('ResizeController', () => {
   });
 
   test('observed target respects `skipInitial`', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
+      target: null,
       skipInitial: true,
     }));
     const d1 = document.createElement('div');
@@ -349,7 +342,7 @@ suite('ResizeController', () => {
   });
 
   test('observed target not re-observed on connection', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({}));
+    const el = await getTestElement(() => ({target: null}));
     const d1 = document.createElement('div');
 
     // Reports initial changes when observe called.

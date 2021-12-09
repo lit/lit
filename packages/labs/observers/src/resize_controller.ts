@@ -25,11 +25,12 @@ export interface ResizeControllerConfig {
   config?: ResizeObserverOptions;
   /**
    * The element to observe. In addition to configuring the target here,
-   * the `observe` method can be called to observe additional targets. Only
-   * the target specified via this config will be re-observed if the host
-   * connects again after unobserving via disconnection.
+   * the `observe` method can be called to observe additional targets. When not
+   * specified, the target defaults to the `host`. If set to `null`, no target
+   * is automatically observed. Only the configured target will be re-observed
+   * if the host connects again after unobserving via disconnection.
    */
-  target?: Element;
+  target?: Element | null;
   /**
    * The callback used to process detected changes into a value stored
    * in the controller's `value` property.
@@ -59,7 +60,7 @@ export interface ResizeControllerConfig {
  */
 export class ResizeController implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _target?: Element | null;
+  private _target: Element | null;
   private _config?: ResizeObserverOptions;
   private _observer: ResizeObserver;
   private _skipInitial = false;
@@ -85,7 +86,9 @@ export class ResizeController implements ReactiveController {
     {target, config, callback, skipInitial}: ResizeControllerConfig
   ) {
     (this._host = host).addController(this);
-    this._target = target;
+    // Target defaults to `host` unless explicitly `null`.
+    this._target =
+      target === null ? target : target ?? (this._host as unknown as Element);
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback ?? this.callback;

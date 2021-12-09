@@ -97,8 +97,7 @@ suite('MutationController', () => {
   });
 
   test('can observe changes', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       config: {attributes: true},
     }));
 
@@ -122,8 +121,7 @@ suite('MutationController', () => {
   });
 
   test('can observe changes during update', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       config: {attributes: true},
     }));
     el.resetObserverValue();
@@ -160,8 +158,7 @@ suite('MutationController', () => {
   });
 
   test('observation managed via connection', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       config: {attributes: true},
       skipInitial: true,
     }));
@@ -183,7 +180,7 @@ suite('MutationController', () => {
   });
 
   test('can observe external element', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
       target: document.body,
       config: {childList: true},
       skipInitial: true,
@@ -200,8 +197,7 @@ suite('MutationController', () => {
   });
 
   test('can manage value via `callback`', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       config: {childList: true},
       callback: (records: MutationRecord[]) => {
         return records
@@ -220,8 +216,7 @@ suite('MutationController', () => {
   });
 
   test('can call `observe` to observe element', async () => {
-    const el = await getTestElement((host: ReactiveControllerHost) => ({
-      target: host as unknown as HTMLElement,
+    const el = await getTestElement(() => ({
       config: {attributes: true},
     }));
     el.resetObserverValue();
@@ -272,8 +267,9 @@ suite('MutationController', () => {
     assert.isTrue(el.observerValue);
   });
 
-  test('can avoid specifying target and call `observe` to observe element', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+  test('can specifying target as `null` and call `observe` to observe element', async () => {
+    const el = await getTestElement(() => ({
+      target: null,
       config: {attributes: true},
     }));
     el.resetObserverValue();
@@ -313,7 +309,8 @@ suite('MutationController', () => {
   });
 
   test('observed target respects `skipInitial`', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
+      target: null,
       config: {attributes: true},
       skipInitial: true,
     }));
@@ -332,7 +329,8 @@ suite('MutationController', () => {
   });
 
   test('observed target not re-observed on connection', async () => {
-    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+    const el = await getTestElement(() => ({
+      target: null,
       config: {attributes: true},
     }));
     const d1 = document.createElement('div');
