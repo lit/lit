@@ -13,7 +13,7 @@ objects, including:
 The modern web platform provides a number of observer helpers that can be used
 to detect changes to which web applications may want to react. By managing
 one of these observers with a reactive controller, changes can be easily
-integrated into the Lit reactive lifecycle. The controller can also help
+integrated into the Lit reactive update lifecycle. The controller can also help
 manage observer cleanup and rendering in response to changes.
 
 ## Installation
@@ -29,12 +29,11 @@ $ npm install @lit-labs/observers
 Here's an example:
 
 ```ts
-import {MutationController} from '@lit-labs/observers';
+import {MutationController} from '@lit-labs/observers/mutation_controller.js';
 // ...
 
 class MyElement extends LitElement {
   private _observer = new MutationController(this, {
-    target: this,
     config: {attributes: true},
   });
 
