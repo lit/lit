@@ -63,7 +63,7 @@ export class MutationController implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _target: Element | null;
   private _config: MutationObserverInit;
-  private _observer: MutationObserver;
+  private _observer!: MutationObserver;
   private _skipInitial = false;
   /**
    * Flag used to help manage calling the `callback` when observe is called
@@ -93,6 +93,13 @@ export class MutationController implements ReactiveController {
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback ?? this.callback;
+    // Check browser support.
+    if (!window.MutationObserver) {
+      console.warn(
+        `MutationController error: browser does not support MutationObserver.`
+      );
+      return;
+    }
     this._observer = new MutationObserver((records: MutationRecord[]) => {
       this.handleChanges(records);
       this._host.requestUpdate();

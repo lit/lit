@@ -24,7 +24,7 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
-suite('MutationController', () => {
+(window.MutationObserver ? suite : suite.skip)('MutationController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {

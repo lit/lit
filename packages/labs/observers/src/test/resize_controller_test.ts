@@ -21,7 +21,7 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
-suite('ResizeController', () => {
+(window.ResizeObserver ? suite : suite.skip)('ResizeController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {

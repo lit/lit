@@ -62,7 +62,7 @@ export class ResizeController implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _target: Element | null;
   private _config?: ResizeObserverOptions;
-  private _observer: ResizeObserver;
+  private _observer!: ResizeObserver;
   private _skipInitial = false;
   /**
    * Flag used to help manage calling the `callback` when observe is called
@@ -92,6 +92,13 @@ export class ResizeController implements ReactiveController {
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback ?? this.callback;
+    // Check browser support.
+    if (!window.ResizeObserver) {
+      console.warn(
+        `ResizeController error: browser does not support ResizeObserver.`
+      );
+      return;
+    }
     this._observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
       this.handleChanges(entries);
       this._host.requestUpdate();

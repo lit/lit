@@ -63,7 +63,7 @@ export interface IntersectionControllerConfig {
 export class IntersectionController implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _target: Element | null;
-  private _observer: IntersectionObserver;
+  private _observer!: IntersectionObserver;
   private _skipInitial = false;
   /**
    * Flag used to help manage calling the `callback` when observe is called
@@ -93,6 +93,13 @@ export class IntersectionController implements ReactiveController {
       target === null ? target : target ?? (this._host as unknown as Element);
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback ?? this.callback;
+    // Check browser support.
+    if (!window.IntersectionObserver) {
+      console.warn(
+        `IntersectionController error: browser does not support IntersectionObserver.`
+      );
+      return;
+    }
     this._observer = new IntersectionObserver(
       (entries: IntersectionObserverEntry[]) => {
         const unobservedUpdate = this._unobservedUpdate;

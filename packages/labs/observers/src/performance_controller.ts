@@ -53,7 +53,7 @@ export interface PerformanceControllerConfig {
 export class PerformanceController implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _config: PerformanceObserverInit;
-  private _observer: PerformanceObserver;
+  private _observer!: PerformanceObserver;
   private _skipInitial = false;
   /**
    * Flag used to help manage calling the `callback` when observe is called
@@ -80,6 +80,13 @@ export class PerformanceController implements ReactiveController {
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback ?? this.callback;
+    // Check browser support.
+    if (!window.PerformanceObserver) {
+      console.warn(
+        `PerformanceController error: browser does not support PerformanceObserver.`
+      );
+      return;
+    }
     this._observer = new PerformanceObserver(
       (entryList: PerformanceObserverEntryList) => {
         this.handleChanges(entryList.getEntries(), entryList);
