@@ -50,7 +50,11 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
 
 customElements.define('scoped-component', ScopedComponent);
 
-suite('scoped-registry-mixin', () => {
+// Only test if ShadowRoot is available and either ShadyDOM is not
+// in use or it is and platform support is available.
+const canTest = window.ShadowRoot && (window as any).ShadowRootInit;
+
+(canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
   test(`host element should have a registry`, async () => {
     const container = document.createElement('div');
     container.innerHTML = `<scoped-component></scoped-component>`;
