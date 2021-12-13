@@ -65,7 +65,7 @@ const browsers = {
   // ie11: sauceLabsLauncher({browserName: 'internet explorer', browserVersion: '11.0', platformName: 'Windows 10'}),
   // safari: sauceLabsLauncher({browserName: 'safari', browserVersion: 'latest', platformName: 'macOS 10.15'}),
 
-  // Uncomment example launchers for running on Sauce Labs
+  // Uncomment example launchers for running on BrowserStack
   // ===========
   // chromium: browserstackLauncher({browserName: 'Chrome', os: 'Windows', os_version: '10'}),
   // firefox: browserstackLauncher({browserName: 'Firefox', os: 'Windows', os_version: '10'}),
