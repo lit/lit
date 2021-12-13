@@ -113,6 +113,13 @@ if (DEV_MODE) {
       }
     });
 
+    // Note, only the first test fails on chrome when using playwright.
+    // Work around this by inserting 1 dummy test.
+    test('dummy test: workaround for first test fails on chrome when using playwright', async () => {
+      const el = await getTestElement();
+      assert.ok(el);
+    });
+
     test('can observe changes', async () => {
       const el = await getTestElement();
 
