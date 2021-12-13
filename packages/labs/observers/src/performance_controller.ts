@@ -130,6 +130,17 @@ export class PerformanceController implements ReactiveController {
   }
 
   /**
+   * Flush any pending observer updates.
+   */
+  flush() {
+    const pendingEntries = this._observer.takeRecords();
+    if (pendingEntries.length) {
+      this.handleChanges(pendingEntries);
+      this._host.requestUpdate();
+    }
+  }
+
+  /**
    * Start observing. This is done automatically when the host connects.
    */
   observe() {

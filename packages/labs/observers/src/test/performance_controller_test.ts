@@ -35,7 +35,7 @@ const generateMeasure = async (sync = false) => {
 
 const observerComplete = async (el?: HTMLElement) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (el as any)?.observer?.observer?.takeRecords();
+  (el as any)?.observer.flush();
   await nextFrame();
   await nextFrame();
 };
