@@ -50,8 +50,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Installs system dependencies needed for playwright.
-      - uses: microsoft/playwright-github-action@v1
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
@@ -88,8 +88,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Installs system dependencies needed for playwright.
-      - uses: microsoft/playwright-github-action@v1
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
@@ -135,8 +135,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Installs system dependencies needed for playwright.
-      - uses: microsoft/playwright-github-action@v1
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
