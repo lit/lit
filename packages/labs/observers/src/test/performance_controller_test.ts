@@ -33,15 +33,21 @@ const generateMeasure = async (sync = false) => {
   performance.measure('measure', 'a', 'b');
 };
 
+const observerComplete = async (el?: HTMLElement) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (el as any)?.observer?.observer?.takeRecords();
+  await nextFrame();
+  await nextFrame();
+};
+
 const canTest = async () => {
   let ok = false;
   if (window.PerformanceObserver) {
     const o = new PerformanceObserver(() => (ok = true));
     o.observe({entryTypes: ['measure']});
     await generateMeasure();
-    await nextFrame();
-    await nextFrame();
   }
+  await observerComplete();
   return ok;
 };
 
@@ -92,7 +98,7 @@ suite('PerformanceController', () => {
   const renderTestElement = async (Ctor: typeof HTMLElement) => {
     const el = new Ctor() as TestElement;
     container.appendChild(el);
-    await nextFrame();
+    await observerComplete(el);
     return el;
   };
 
@@ -135,16 +141,16 @@ suite('PerformanceController', () => {
     // Reports attribute change
     el.resetObserverValue();
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.isTrue(el.observerValue);
 
     // Reports another attribute change
     el.resetObserverValue();
     el.requestUpdate();
-    await nextFrame();
+    await observerComplete(el);
     assert.isUndefined(el.observerValue);
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.isTrue(el.observerValue);
   });
 
@@ -155,7 +161,7 @@ suite('PerformanceController', () => {
     el.resetObserverValue();
     el.changeDuringUpdate = () => generateMeasure(true);
     el.requestUpdate();
-    await nextFrame();
+    await observerComplete(el);
     assert.isTrue(el.observerValue);
   });
 
@@ -171,7 +177,7 @@ suite('PerformanceController', () => {
     // Reports subsequent change when `skipInitial` is set
     el.resetObserverValue();
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.isTrue(el.observerValue);
 
     // Reports another change
@@ -180,7 +186,7 @@ suite('PerformanceController', () => {
     await nextFrame();
     assert.isUndefined(el.observerValue);
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.isTrue(el.observerValue);
   });
 
@@ -197,12 +203,12 @@ suite('PerformanceController', () => {
 
     // Reports no change after element re-connected.
     container.appendChild(el);
-    await nextFrame();
+    await observerComplete(el);
     assert.isUndefined(el.observerValue);
 
     // Reports change when element is connected
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.isTrue(el.observerValue);
   });
 
@@ -217,10 +223,10 @@ suite('PerformanceController', () => {
     }));
     assert.equal(el.observerValue, '0:0');
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.match(el.observerValue as string, /1:[\d]/);
     await generateMeasure();
-    await nextFrame();
+    await observerComplete(el);
     assert.match(el.observerValue as string, /2:[\d]/);
   });
 });
