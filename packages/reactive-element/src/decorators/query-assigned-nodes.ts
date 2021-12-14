@@ -15,9 +15,14 @@ import {decorateProperty} from './base.js';
 
 import type {ReactiveElement} from '../reactive-element.js';
 
+/**
+ * Options for the {@link queryAssignedNodes} decorator. Extends from the
+ * options that can be passed into
+ * [HTMLSlotElement.assignedNodes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes).
+ */
 export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   /**
-   * Name of the slot. Leave empty for the default slot.
+   * Name of the slot to query. Leave empty for the default slot.
    */
   slot?: string;
 }
@@ -47,8 +52,7 @@ type TSDecoratorReturnType = void | any;
  * Note the type of this property should be annotated as `Array<Node>`.
  *
  * @param options Object that sets options for nodes to be returned. See
- *     [MDN parameters section](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes#parameters)
- *     for available options.
+ *     {@link QueryAssignedNodesOptions} for all available options.
  * @param options.slot Name of the slot. Undefined or empty string for the
  *     default slot.
  *
