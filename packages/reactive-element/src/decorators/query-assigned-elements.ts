@@ -16,10 +16,16 @@ import {decorateProperty} from './base.js';
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
+/**
+ * Options for the [[`queryAssignedElements`]] decorator. Extends the options
+ * that can be passed into
+ * [HTMLSlotElement.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
+ */
 export interface QueryAssignedElementsOptions
   extends QueryAssignedNodesOptions {
   /**
-   * CSS selector used to filter the elements returned.
+   * CSS selector used to filter the elements returned. For example, a selector
+   * of `".item"` will only include elements with the `item` class.
    */
   selector?: string;
 }
@@ -29,6 +35,8 @@ export interface QueryAssignedElementsOptions
  * returns the `assignedElements` of the given `slot`. Provides a declarative
  * way to use
  * [`slot.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
+ *
+ * Can be passed an optional [[`QueryAssignedElementsOptions`]] object.
  *
  * Example usage:
  * ```ts
@@ -48,15 +56,6 @@ export interface QueryAssignedElementsOptions
  * ```
  *
  * Note, the type of this property should be annotated as `Array<HTMLElement>`.
- *
- * @param options Object that sets options for nodes to be returned. See
- *     [MDN parameters section](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements#parameters)
- *     for available options. Also accepts two more optional properties,
- *     `slot` and `selector`.
- * @param options.slot Name of the slot. Undefined or empty string for the
- *     default slot.
- * @param options.selector Element results are filtered such that they match the
- *     given CSS selector.
  *
  * @category Decorator
  */
