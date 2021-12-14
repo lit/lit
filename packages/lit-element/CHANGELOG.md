@@ -1,5 +1,14 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- [#2240](https://github.com/lit/lit/pull/2240) [`76ed65d7`](https://github.com/lit/lit/commit/76ed65d7e1e157d1f61dd62fe938a2fc1828c497) - Identify a `this` reference for jscompiler.
+
+* [#2236](https://github.com/lit/lit/pull/2236) [`5fc3818a`](https://github.com/lit/lit/commit/5fc3818afa43365b90b921ea0fd8f41e970e767f) - Prevent `polyfillSupport.noPatchSupported` from implicitly being `any`.
+  Deduplicate types for `DevMode`-suffixed polyfill support functions.
+
 ## 3.0.1
 
 ### Patch Changes

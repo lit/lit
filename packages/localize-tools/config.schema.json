@@ -114,6 +114,14 @@
                     ],
                     "type": "string"
                 },
+                "placeholderStyle": {
+                    "description": "How to represent placeholders containing HTML markup and dynamic\nexpressions. Different localization tools and services have varying support\nfor placeholder syntax.\n\nDefaults to \"x\". Options:\n\n- \"x\": Emit placeholders using <x> tags. See\n  http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x\n\n- \"ph\": Emit placeholders using <ph> tags. See\n  http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph",
+                    "enum": [
+                        "ph",
+                        "x"
+                    ],
+                    "type": "string"
+                },
                 "xliffDir": {
                     "description": "Directory on disk to read/write .xlf XML files. For each target locale,\nthe file path \"<xliffDir>/<locale>.xlf\" will be used.",
                     "type": "string"

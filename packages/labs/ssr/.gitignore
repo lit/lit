@@ -1,6 +1,9 @@
 /demo/
 /lib/
 /node_modules/
-/test/
+/test/**/*.js
+/test/**/*.js.map
+/test/**/*.d.ts
+/test/**/*.d.ts.map
 /index.*
 !/custom_typings/*.d.ts

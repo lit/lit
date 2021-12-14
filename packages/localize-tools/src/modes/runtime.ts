@@ -220,9 +220,9 @@ function makeMessageString(
   // many ${} expressions, so the index of the _placeholder_ is not the same as
   // the index of the _expression_:
   //
-  //   <ph>&lt;a href="http://example.com/"></ph>
-  //   <ph>&lt;a href="${/*0*/ url}"></ph>
-  //   <ph>&lt;a href="${/*1*/ url}/${/*2*/ path}"></ph>
+  //   <x equiv-text="&lt;a href='http://example.com/'&gt;"/>
+  //   <x equiv-text="&lt;a href='${/*0*/ url}'&gt;"/>
+  //   <x equiv-text="&lt;a href='${/*1*/ url}/${/*2*/ path}'&gt;"/>
   const placeholderOrder = new Map<string, number>();
 
   const placeholderOrderKey = (

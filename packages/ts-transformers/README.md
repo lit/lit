@@ -71,16 +71,17 @@ customElements.define('simple-greeting', SimpleGreeting);
 
 #### Supported decorators
 
-| Decorator             | Transformer behavior                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------- |
-| `@customElement`      | Adds a `customElements.define` call                                                   |
-| `@property`           | Adds an entry to `static properties`, and moves initializers to the `constructor`     |
-| `@state`              | Same as `@property` with `{state: true}`                                              |
-| `@query`              | Defines a getter that calls `querySelector`                                           |
-| `@querySelectorAll`   | Defines a getter that calls `querySelectorAll`                                        |
-| `@queryAsync`         | Defines an `async` getter that awaits `updateComplete` and then calls `querySelector` |
-| `@queryAssignedNodes` | Defines a getter that calls `querySelector('slot[name=foo]').assignedNodes`           |
-| `@localized`          | Adds an `updateWhenLocaleChanges` call to the constructor                             |
+| Decorator                | Transformer behavior                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `@customElement`         | Adds a `customElements.define` call                                                   |
+| `@property`              | Adds an entry to `static properties`, and moves initializers to the `constructor`     |
+| `@state`                 | Same as `@property` with `{state: true}`                                              |
+| `@query`                 | Defines a getter that calls `querySelector`                                           |
+| `@querySelectorAll`      | Defines a getter that calls `querySelectorAll`                                        |
+| `@queryAsync`            | Defines an `async` getter that awaits `updateComplete` and then calls `querySelector` |
+| `@queryAssignedElements` | Defines a getter that calls `querySelector('slot[name=foo]').assignedElements`        |
+| `@queryAssignedNodes`    | Defines a getter that calls `querySelector('slot[name=foo]').assignedNodes`           |
+| `@localized`             | Adds an `updateWhenLocaleChanges` call to the constructor                             |
 
 ### preserveBlankLinesTransformer
 
