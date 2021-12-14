@@ -57,10 +57,6 @@ export interface QueryAssignedElementsOptions
  *
  * @param options Object that sets options for nodes to be returned. See
  *     {@link QueryAssignedElementsOptions} for all available options.
- * @param options.slot Name of the slot. Undefined or empty string for the
- *     default slot.
- * @param options.selector Element results are filtered such that they match the
- *     given CSS selector.
  *
  * @category Decorator
  */
