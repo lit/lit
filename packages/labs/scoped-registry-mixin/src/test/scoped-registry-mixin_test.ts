@@ -8,7 +8,7 @@ import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-regi
 import {LitElement, html, css} from 'lit';
 import {ScopedRegistryHost} from '../scoped-registry-mixin';
 import {assert} from '@esm-bundle/chai';
-
+import {canTest} from './test-helpers';
 class SimpleGreeting extends LitElement {
   private name: String;
 
@@ -49,10 +49,6 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
 }
 
 customElements.define('scoped-component', ScopedComponent);
-
-// Only test if ShadowRoot is available and either ShadyDOM is not
-// in use or it is and platform support is available.
-const canTest = window.ShadowRoot && (window as any).ShadowRootInit;
 
 (canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
   test(`host element should have a registry`, async () => {
