@@ -40,21 +40,20 @@ const observerComplete = async (el?: HTMLElement) => {
   await nextFrame();
 };
 
-const canTest = async () => {
-  // TODO: disable these tests until can figure out issues with Sauce Safari
-  // version. They do pass on latest Safari locally.
-  return false;
-  let ok = false;
-  if (window.PerformanceObserver) {
-    const o = new PerformanceObserver(() => (ok = true));
-    o.observe({entryTypes: ['measure']});
-    await generateMeasure();
-  }
-  await observerComplete();
-  return ok;
-};
+// const canTest = async () => {
+//   let ok = false;
+//   if (window.PerformanceObserver) {
+//     const o = new PerformanceObserver(() => (ok = true));
+//     o.observe({entryTypes: ['measure']});
+//     await generateMeasure();
+//   }
+//   await observerComplete();
+//   return ok;
+// };
 
-suite('PerformanceController', () => {
+// TODO: disable these tests until can figure out issues with Sauce Safari
+// version. They do pass on latest Safari locally.
+suite.skip('PerformanceController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
@@ -114,13 +113,6 @@ suite('PerformanceController', () => {
     const el = await renderTestElement(ctor);
     return el;
   };
-
-  suiteSetup(async () => {
-    if (!(await canTest())) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (this! as any).skip();
-    }
-  });
 
   setup(() => {
     container = document.createElement('div');
