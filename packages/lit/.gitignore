@@ -14,8 +14,8 @@
 /index.*
 /static-html.*
 
-/lit.max.*
-/lit.max.esm.*
+/lit.all.min.*
+/lit.all.min.esm.*
 /lit.min.*
 /lit.min.esm.*
 /polyfill-support.*

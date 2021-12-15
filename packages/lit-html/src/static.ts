@@ -5,7 +5,7 @@
  */
 
 // Any new exports need to be added to the export statement in
-// `packages/lit/src/index.max.ts`.
+// `packages/lit/src/index.all.ts`.
 
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
 

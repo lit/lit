@@ -40,8 +40,8 @@ packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
-packages/lit/lit.max.*
-packages/lit/lit.max.esm.*
+packages/lit/lit.all.min.*
+packages/lit/lit.all.min.esm.*
 packages/lit/lit.min.*
 packages/lit/lit.min.esm.*
 packages/lit/polyfill-support.*
