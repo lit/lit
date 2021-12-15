@@ -60,7 +60,7 @@ export default litProdConfig({
     },
     {
       file: 'index',
-      output: 'lit.bundle',
+      output: 'lit.min.esm',
       format: 'es',
     },
   ],
