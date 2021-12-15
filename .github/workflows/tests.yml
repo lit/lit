@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           # Note: we do not cache here because we're not running lerna
           # bootstrap, so the ~/.npm dir won't have all dependencies, and if
           # this job finishes first then we'll only cache root dependencies.
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           # Note: we do not cache here because we're not running lerna
           # bootstrap, so the ~/.npm dir won't have all dependencies, and if
           # this job finishes first then we'll only cache root dependencies.
@@ -46,12 +46,12 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Installs system dependencies needed for playwright.
-      - uses: microsoft/playwright-github-action@v1
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
@@ -84,12 +84,12 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Installs system dependencies needed for playwright.
-      - uses: microsoft/playwright-github-action@v1
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
@@ -108,11 +108,6 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce
-          # TODO We should be able to bump this up, but going above 2 currently
-          # causes flakiness where the second test job (dev vs prod) fails to
-          # set up the Sauce tunnel (maybe something to do with browsers still
-          # shutting down on the Sauce VM from the previous run?).
-          CONCURRENT_BROWSERS: 2
         run: npm run test
 
   tests-sauce-ie11:
@@ -131,12 +126,12 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Installs system dependencies needed for playwright.
-      - uses: microsoft/playwright-github-action@v1
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
@@ -155,5 +150,4 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce-ie11
-          CONCURRENT_BROWSERS: 1
         run: npm run test

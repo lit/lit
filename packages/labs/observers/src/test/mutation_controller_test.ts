@@ -24,7 +24,10 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
-(window.MutationObserver ? suite : suite.skip)('MutationController', () => {
+// Run tests if MutationObserver and ShadowRoot is present. ShadowRoot test
+// prevents consistent ie11 failures.
+const canTest = window.MutationObserver && window.ShadowRoot;
+(canTest ? suite : suite.skip)('MutationController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
