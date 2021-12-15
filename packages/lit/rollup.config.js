@@ -63,5 +63,15 @@ export default litProdConfig({
       output: 'lit.min.esm',
       format: 'es',
     },
+    {
+      file: 'index.max',
+      output: 'lit.max',
+      name: 'Lit',
+    },
+    {
+      file: 'index.max',
+      output: 'lit.max.esm',
+      format: 'es',
+    },
   ],
 });
