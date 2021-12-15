@@ -40,3 +40,11 @@ export {
   unsafeStatic,
   withStatic,
 } from './static-html.js';
+
+if (!window.litDisableBundleWarning) {
+  console.warn(
+    'Lit has been loaded from a bundle that combines all core features into ' +
+      'a single file. To reduce transfer size and parsing cost, consider ' +
+      'using the `lit` npm package directly in your project.'
+  );
+}
