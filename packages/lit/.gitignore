@@ -15,7 +15,7 @@
 /static-html.*
 
 /lit.all.min.*
-/lit.all.min.esm.*
+/lit.all.min.umd.*
 /lit.min.*
-/lit.min.esm.*
+/lit.min.umd.*
 /polyfill-support.*
