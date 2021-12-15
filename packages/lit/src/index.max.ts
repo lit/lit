@@ -32,6 +32,7 @@ export * from './directives/unsafe-html.js';
 export * from './directives/unsafe-svg.js';
 export * from './directives/until.js';
 export * from './directives/when.js';
+// Any new exports in `packages/lit-html/src/static.ts` need to be added here.
 export {
   html as staticHtml,
   literal,
