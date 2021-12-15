@@ -58,11 +58,10 @@ export default litProdConfig({
       output: 'lit.min',
       name: 'Lit',
     },
-  ],
-  singleFileESM: [
     {
       file: 'index',
       output: 'lit.bundle',
+      format: 'es',
     },
   ],
 });

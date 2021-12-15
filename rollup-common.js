@@ -249,7 +249,6 @@ export function litProdConfig({
   entryPoints,
   external = [],
   bundled = [],
-  singleFileESM = [],
   testPropertyPrefix,
   packageName,
   outputDir = './',
@@ -410,21 +409,13 @@ export function litProdConfig({
             ]),
       ],
     },
-    ...bundled.map(({file, output, name}) =>
+    ...bundled.map(({file, output, name, format}) =>
       litMonoBundleConfig({
         file,
         output,
         name,
         terserOptions,
-      })
-    ),
-    ...singleFileESM.map(({file, output, name}) =>
-      litMonoBundleConfig({
-        file,
-        output,
-        name,
-        terserOptions,
-        format: 'es',
+        format,
       })
     ),
   ];
