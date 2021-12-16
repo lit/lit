@@ -26,7 +26,11 @@ if (DEV_MODE) {
 
 // Run tests if MutationObserver and ShadowRoot is present. ShadowRoot test
 // prevents consistent ie11 failures.
-const canTest = window.MutationObserver && window.ShadowRoot;
+const canTest =
+  window.MutationObserver &&
+  window.ShadowRoot &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  !(window as any).ShadyDOM?.inUse;
 (canTest ? suite : suite.skip)('MutationController', () => {
   let container: HTMLElement;
 
