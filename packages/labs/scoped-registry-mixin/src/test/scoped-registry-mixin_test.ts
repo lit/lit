@@ -9,6 +9,15 @@ import {LitElement, html, css} from 'lit';
 import {ScopedRegistryHost} from '../scoped-registry-mixin';
 import {assert} from '@esm-bundle/chai';
 
+// Prevent ie11 or other incompatible browsers from running
+// scoped-registry-mixin tests.
+export const canTest =
+  window.ShadowRoot &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  !(window as any).ShadyDOM?.inUse &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).ShadowRootInit;
+
 class SimpleGreeting extends LitElement {
   private name: String;
 
@@ -50,7 +59,7 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
 
 customElements.define('scoped-component', ScopedComponent);
 
-suite('scoped-registry-mixin', () => {
+(canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
   test(`host element should have a registry`, async () => {
     const container = document.createElement('div');
     container.innerHTML = `<scoped-component></scoped-component>`;
