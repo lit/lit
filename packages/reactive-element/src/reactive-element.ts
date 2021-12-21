@@ -6,7 +6,7 @@
 
 /**
  * Use this module if you want to create your own base class extending
- * [[ReactiveElement]].
+ * {@link ReactiveElement}.
  * @packageDocumentation
  */
 
@@ -468,7 +468,7 @@ export abstract class ReactiveElement
 
   /**
    * Array of styles to apply to the element. The styles should be defined
-   * using the [[`css`]] tag function, via constructible stylesheets, or
+   * using the {@linkcode css} tag function, via constructible stylesheets, or
    * imported from native CSS module scripts.
    *
    * Note on Content Security Policy:
@@ -524,10 +524,10 @@ export abstract class ReactiveElement
 
   /**
    * Creates a property accessor on the element prototype if one does not exist
-   * and stores a `PropertyDeclaration` for the property with the given options.
-   * The property setter calls the property's `hasChanged` property option
-   * or uses a strict identity check to determine whether or not to request
-   * an update.
+   * and stores a {@linkcode PropertyDeclaration} for the property with the
+   * given options. The property setter calls the property's `hasChanged`
+   * property option or uses a strict identity check to determine whether or not
+   * to request an update.
    *
    * This method may be overridden to customize properties; however,
    * when doing so, it's important to call `super.createProperty` to ensure
@@ -645,7 +645,8 @@ export abstract class ReactiveElement
    * `createProperty(...)`.
    *
    * Note, this method should be considered "final" and not overridden. To
-   * customize the options for a given property, override [[`createProperty`]].
+   * customize the options for a given property, override
+   * {@linkcode createProperty}.
    *
    * @nocollapse
    * @final

@@ -92,7 +92,7 @@ const textFromCSSResult = (value: CSSResultGroup | number) => {
 };
 
 /**
- * Wrap a value for interpolation in a [[`css`]] tagged template literal.
+ * Wrap a value for interpolation in a {@linkcode css} tagged template literal.
  *
  * This is unsafe because untrusted CSS text can be used to phone home
  * or exfiltrate data to an attacker controlled site. Take care to only use
@@ -106,11 +106,11 @@ export const unsafeCSS = (value: unknown) =>
 
 /**
  * A template literal tag which can be used with LitElement's
- * [[LitElement.styles | `styles`]] property to set element styles.
+ * {@linkcode LitElement.styles} property to set element styles.
  *
  * For security reasons, only literal string values and number may be used in
- * embedded expressions. To incorporate non-literal values [[`unsafeCSS`]] may
- * be used inside an expression.
+ * embedded expressions. To incorporate non-literal values {@linkcode unsafeCSS}
+ * may be used inside an expression.
  */
 export const css = (
   strings: TemplateStringsArray,
