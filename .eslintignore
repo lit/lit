@@ -144,6 +144,13 @@ packages/labs/observers/mutation_controller.*
 packages/labs/observers/performance_controller.*
 packages/labs/observers/resize_controller.*
 packages/labs/observers/intersection_controller.*
+packages/labs/parts/development/
+packages/labs/parts/test/
+packages/labs/parts/node_modules/
+packages/labs/parts/index.*
+packages/labs/parts/parts.*
+packages/labs/parts/mixin.*
+
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
