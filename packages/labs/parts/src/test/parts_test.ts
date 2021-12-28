@@ -30,7 +30,7 @@ suite('Parts', () => {
     static parts = parts;
     static override styles = css`
       ${parts.header.def} {
-        padding: 10px;
+        padding-top: 10px;
       }
     `;
 
@@ -122,7 +122,7 @@ suite('Parts', () => {
 
   test('sets default part styles using `part.def`', () => {
     assert.include(MyElement.styles.toString(), headerSelector);
-    assert.equal(getComputedStyleValue(el.header, 'padding'), '10px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '10px');
   });
 
   test('sets part styles via `part.css`', async () => {
@@ -130,7 +130,7 @@ suite('Parts', () => {
       myEl!: MyElement;
       static override styles = css`
         ${parts.header.css} {
-          padding: 14px;
+          padding-top: 14px;
         }
       `;
       override render() {
@@ -145,27 +145,27 @@ suite('Parts', () => {
     container.appendChild(c);
     await c.updateComplete;
     await c.myEl.partsApplied();
-    assert.equal(getComputedStyleValue(c.myEl.header, 'padding'), '14px');
+    assert.equal(getComputedStyleValue(c.myEl.header, 'padding-top'), '14px');
   });
 
   test('`createStyle` makes part styles', () => {
-    const style = createStyle`${MyElement.parts.header} { padding: 4px}`;
+    const style = createStyle`${MyElement.parts.header} { padding-top: 4px}`;
     assert.equal(style.localName, 'style');
     assert.include(style.textContent, '::part(my-element_header)');
   });
 
   test('sets part properties in containing scope using `createStyle`', () => {
     const shadow = nestShadowEl(container);
-    const style = createStyle`${MyElement.parts.header} { padding: 6px}`;
+    const style = createStyle`${MyElement.parts.header} { padding-top: 6px}`;
     shadow.renderRoot.append(style, el);
-    assert.equal(getComputedStyleValue(el.header, 'padding'), '6px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '6px');
   });
 
   test('sets exportparts on containing scopes', async () => {
     const s1 = nestShadowEl(container);
     const style = createStyle`
-      ${MyElement.parts.header} { padding: 8px; }
-      ${OtherElement.parts.a} {padding: 22px; }`;
+      ${MyElement.parts.header} { padding-top: 8px; }
+      ${OtherElement.parts.a} {padding-top: 22px; }`;
     const s2 = nestShadowEl(s1.renderRoot);
     s1.renderRoot.append(style);
     const s3 = nestShadowEl(s2.renderRoot);
@@ -185,13 +185,13 @@ suite('Parts', () => {
     assert.sameMembers(getExports(s3), exportParts);
     assert.sameMembers(getExports(s2), exportParts);
     assert.isNull(s1.getAttribute('exportparts'));
-    assert.equal(getComputedStyleValue(el.header, 'padding'), '8px');
-    assert.equal(getComputedStyleValue(other.a, 'padding'), '22px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '8px');
+    assert.equal(getComputedStyleValue(other.a, 'padding-top'), '22px');
   });
 
   test('does not set exportparts on elements with closed shadowRoots', async () => {
     const s1 = nestShadowEl(container);
-    const style = createStyle`${MyElement.parts.header} { padding: 8px}`;
+    const style = createStyle`${MyElement.parts.header} { padding-top: 8px}`;
     const s2 = nestShadowEl(s1.renderRoot);
     s1.renderRoot.append(style);
     // closed shadowRoot
@@ -205,16 +205,16 @@ suite('Parts', () => {
     assert.isNull(s3.getAttribute('exportparts'));
     assert.isNull(s2.getAttribute('exportparts'));
     assert.isNull(s1.getAttribute('exportparts'));
-    // default padding is 10px
-    assert.equal(getComputedStyleValue(el.header, 'padding'), '10px');
+    // default padding-top is 10px
+    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '10px');
   });
 
   test('`createStyle` can apply part styling in main document', () => {
     const s = document.head.appendChild(
-      createStyle`${MyElement.parts.header} { padding: 8px}`
+      createStyle`${MyElement.parts.header} { padding-top: 8px}`
     );
     assert.ok(s);
-    assert.equal(getComputedStyleValue(el.header, 'padding'), '8px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '8px');
     s.remove();
   });
 });
