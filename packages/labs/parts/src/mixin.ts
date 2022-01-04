@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {LitElement} from 'lit';
-import {PartInfos} from './parts.js';
+import {CssPartMap, getPartsList} from './parts.js';
 
 // Allow exportparts updating if the host does not have
 // a closed shadowRoot.
@@ -22,21 +22,41 @@ const parseExports = (el: Element) =>
 const managedExports = new Map();
 const pendingEls = new Set();
 
-const nextFrame = () =>
-  new Promise((resolve) => requestAnimationFrame(resolve));
+const nextFrame = () => new Promise(requestAnimationFrame);
 
-// Apply exportparts async at RAF.
+let resolveApplyExports = () => {};
+let applyExportsPromise: undefined | Promise<void>;
+const ensureApplyExportsPending = () => {
+  if (applyExportsPromise === undefined) {
+    applyExportsPromise = new Promise((resolve) => {
+      resolveApplyExports = () => {
+        applyExportsPromise = undefined;
+        resolve();
+      };
+    });
+  }
+};
+
+const exportsApplied = async () => {
+  await applyExportsPromise;
+};
+
+// Apply exportparts async at RAF so they are only applied once.
 const applyExports = async (el: Element) => {
   if (pendingEls.has(el)) {
     return;
   }
   pendingEls.add(el);
+  ensureApplyExportsPending();
   await nextFrame();
   pendingEls.delete(el);
   const managed = managedExports.get(el) ?? [];
   const parsed = parseExports(el);
   const exports = new Set([...parsed, ...managed]);
-  el.setAttribute('exportparts', Array.from(exports).join(','));
+  el.setAttribute('exportparts', Array.from(exports).join());
+  if (!pendingEls.size) {
+    resolveApplyExports();
+  }
 };
 
 const addExports = (el: Element, parts: string[]) => {
@@ -47,17 +67,17 @@ const addExports = (el: Element, parts: string[]) => {
   cleanExports(Array.from(parts)).forEach((p) => managed.add(p));
 };
 
-const updateExports = async (el: Element, parts: string[] = []) => {
+const updateExports = (el: Element, parts: string[] = []) => {
   const host = (el.getRootNode() as ShadowRoot).host!;
   if (!canExport(host)) {
     //console.log(`Cannot set exportparts on ${host.localName}`);
     return;
   }
   addExports(el, parts);
-  await applyExports(el);
+  applyExports(el);
   // Update host as well...
   if (host !== undefined) {
-    await updateExports(host, parts);
+    updateExports(host, parts);
   }
 };
 
@@ -65,7 +85,7 @@ const updateExports = async (el: Element, parts: string[] = []) => {
 type Constructor<T> = new (...args: any[]) => T;
 
 export declare class PartsInterface {
-  static parts?: PartInfos;
+  static parts?: CssPartMap;
   partsApplied(): Promise<void>;
 }
 
@@ -79,7 +99,7 @@ export const PartsMixin = <T extends Constructor<LitElement>>(
   queryParts = false
 ) => {
   class PartsElement extends Base {
-    static parts?: PartInfos;
+    static parts?: CssPartMap;
 
     _partsPromise?: Promise<void>;
 
@@ -101,8 +121,9 @@ export const PartsMixin = <T extends Constructor<LitElement>>(
             .map((e: Element) => e.getAttribute('part')!.split(/\s+/g))
             .filter((p) => p)
             .flat(Infinity) as string[])
-        : Object.values(parts!).map((p) => p.part);
-      await updateExports(this, exports);
+        : getPartsList(parts!);
+      updateExports(this, exports);
+      await exportsApplied();
     }
 
     async partsApplied() {

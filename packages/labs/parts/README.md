@@ -51,24 +51,31 @@ Here's an example:
 
 ```ts
 import {LitElement, html, css} from 'lit';
-import {PartsMixin, define, part} from '@lit-labs/parts';
+import {PartsMixin, defineParts, part} from '@lit-labs/parts';
 // ...
 
-const tag = 'my-element';
-
-/** Provides an object of the form {
- * [name]: PartInfo {
- *   name: "prefix_name",
- *   css: "::part(prefix_name)"
- *   def: "[part=prefix_name]"
- * } }
- */
-const parts = define(['header', 'main', 'footer'], tag);
-
-@customElement(tag)
+@customElement('my-element')
 export class MyElement extends PartsMixin(LitElement) {
-  // Expose parts to external users.
-  static parts = parts;
+  /** Expose parts to external users. Provides an object of the form {
+   * [name]: PartInfo {
+   *   part: "namespace_key",
+   *   css: "::part(part)"
+   *   def: "[part=part]"
+   *   attr: Lit directive
+   * } }
+   */
+  static parts = defineParts(
+    [
+      // Parts available as `MyElement_header`, ...
+      'header',
+      'main',
+      'footer',
+      // Note, targeted parts may also be exported and are
+      // available as `MyElement_okButton_MyButton_button`.
+      ['okButton', MyButton.parts],
+    ],
+    MyElement.name
+  );
 
   // Use the part's `def` property to specify part defaults.
   static styles = css`
@@ -79,19 +86,21 @@ export class MyElement extends PartsMixin(LitElement) {
 
   // Use the `part` directive to specify parts in a Lit template.
   render() {
+    const parts = this.constructor.parts;
     return html`
-      <div ${part(parts.header)}>Header</div>
-      <div ${part(parts.main)}>Main</div>
-      <div ${part(parts.footer)}>Footer</div>
+      <div ${parts.header.attr}>Header</div>
+      <div ${parts.main.attr}>Main</div>
+      <div ${parts.footer.attr}>Footer</div>
+      <my-button ${parts.okButton.attr}></my-button>
     `;
   }
 }
 
 // Styling in the main document:
 import {MyElement} from './my-element.js';
-import {createStyle} from '@lit-labs/parts';
+import {partStyle} from '@lit-labs/parts';
 
-document.head.append(createStyle`
+document.head.append(partStyle`
   ${MyElement.parts.header} {
     color: orange;
     padding: 10px;

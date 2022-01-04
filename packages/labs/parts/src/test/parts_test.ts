@@ -5,10 +5,11 @@
  */
 
 import {LitElement, html, css} from 'lit';
+import {customElement, query} from 'lit/decorators.js';
 import {getComputedStyleValue, generateElementName} from './test-helpers';
 import {assert} from '@esm-bundle/chai';
 import {PartsMixin} from '../mixin.js';
-import {define, part, createStyle} from '../parts.js';
+import {partStyle, defineParts, getPartsList, getPartString} from '../parts.js';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
@@ -21,56 +22,156 @@ if (DEV_MODE) {
 suite('Parts', () => {
   let container: HTMLElement;
 
-  const myElementTag = 'my-element';
-  const parts = define(['header', 'main', 'footer'], myElementTag);
+  const headerPart = getPartString('MyElement_header');
+  const headerSelector = `[part~=${headerPart}]`;
 
-  const headerSelector = `[part=my-element_header]`;
-
+  @customElement('my-element')
   class MyElement extends PartsMixin(LitElement) {
-    static parts = parts;
+    static parts = defineParts(
+      ['header', 'main', 'footer', 'all'],
+      MyElement.name
+    );
     static override styles = css`
-      ${parts.header.def} {
-        padding-top: 10px;
+      :host {
+        display: block;
+        margin: 2px;
+        padding: 2px;
+        border: 1px solid black;
+      }
+
+      ${MyElement.parts.header.def} {
+        padding-left: 10px;
       }
     `;
-
+    @query(MyElement.parts.header.def.toString())
     header!: HTMLDivElement;
 
+    @query(MyElement.parts.footer.def.toString())
+    footer!: HTMLDivElement;
+
     override render() {
+      const parts = MyElement.parts;
       return html`
-        <div ${part(parts.header)}>Header</div>
-        <div ${part(parts.main)}>Main</div>
-        <div ${part(parts.footer)}>Footer</div>
+        <div>${this.localName} <slot></slot></div>
+        <div ${parts.header.attr} ${parts.all.attr}>H</div>
+        <div ${parts.main.attr} ${parts.all.attr}>M</div>
+        <div ${parts.footer.attr} ${parts.all.attr}>F</div>
       `;
     }
-
-    override firstUpdated() {
-      this.header = this.renderRoot.querySelector(headerSelector)!;
-    }
   }
-  customElements.define(myElementTag, MyElement);
 
-  const otherElementTag = 'other-element';
-  const otherParts = define(['a', 'b', 'c'], otherElementTag);
-
+  @customElement('other-element')
   class OtherElement extends PartsMixin(LitElement) {
-    static parts = otherParts;
+    static parts = defineParts(['a', 'b', 'c'], OtherElement.name);
 
+    @query(OtherElement.parts.a.def.toString())
     a!: HTMLDivElement;
 
     override render() {
+      const parts = OtherElement.parts;
       return html`
-        <div ${part(otherParts.a)}>A</div>
-        <div ${part(otherParts.b)}>B</div>
-        <div ${part(otherParts.c)}>C</div>
+        <div ${parts.a.attr}>A</div>
+        <div ${parts.b.attr}>B</div>
+        <div ${parts.c.attr}>C</div>
       `;
     }
+  }
 
-    override firstUpdated() {
-      this.a = this.renderRoot.firstElementChild! as HTMLDivElement;
+  @customElement('export-one')
+  class Export1 extends PartsMixin(LitElement) {
+    static parts = defineParts(
+      [
+        ['first', MyElement.parts],
+        ['second', MyElement.parts],
+      ],
+      Export1.name
+    );
+
+    static override styles = css`
+      :host {
+        display: block;
+        margin: 2px;
+        padding: 2px;
+        border: 1px solid darkgray;
+      }
+    `;
+
+    @query('#f')
+    first!: MyElement;
+
+    @query('#s')
+    second!: MyElement;
+
+    override render() {
+      const parts = Export1.parts;
+      return html`
+        <div>${this.localName} <slot></slot></div>
+        <my-element id="f" ${parts.first.attr}>F</my-element>
+        <my-element id="s" ${parts.second.attr}>S</my-element>
+      `;
     }
   }
-  customElements.define(otherElementTag, OtherElement);
+
+  @customElement('export-two')
+  class Export2 extends PartsMixin(LitElement) {
+    static parts = defineParts(
+      [
+        ['uno', Export1.parts],
+        ['dos', Export1.parts],
+      ],
+      Export2.name
+    );
+
+    static override styles = css`
+      :host {
+        display: block;
+        margin: 2px;
+        padding: 2px;
+        border: 1px solid gray;
+      }
+    `;
+
+    @query('#u')
+    uno!: Export1;
+
+    @query('#d')
+    dos!: Export1;
+
+    override render() {
+      const parts = Export2.parts;
+      return html`
+        <div>${this.localName} <slot></slot></div>
+        <export-one id="u" ${parts.uno.attr}>U</export-one>
+        <export-one id="d" ${parts.dos.attr}>D</export-one>
+      `;
+    }
+  }
+
+  @customElement('export-three')
+  class Export3 extends PartsMixin(LitElement) {
+    static parts = defineParts(
+      [
+        ['un', Export2.parts],
+        ['deux', Export2.parts],
+      ],
+      Export3.name
+    );
+
+    @query('#u')
+    un!: Export2;
+
+    @query('#d')
+    deux!: Export2;
+
+    override render() {
+      const parts = Export3.parts;
+      return html`
+        <div>${this.localName} <slot></slot></div>
+        <export-two id="u" ${parts.un.attr}></export-two>
+        <export-two id="d" ${parts.deux.attr}></export-two>
+      `;
+    }
+  }
 
   class ShadowElement extends HTMLElement {
     renderRoot: ShadowRoot;
@@ -82,8 +183,12 @@ suite('Parts', () => {
   }
   customElements.define('shadow-el', ShadowElement);
 
+  let id = 0;
+
   const nestShadowEl = (n: Element | ShadowRoot, closed = false) => {
-    n.innerHTML = `<shadow-el ${closed ? 'closed' : ''}></shadow-el>`;
+    n.innerHTML = `<shadow-el id="s${++id}" ${
+      closed ? 'closed' : ''
+    }></shadow-el>`;
     return n.firstChild as ShadowElement;
   };
 
@@ -107,30 +212,29 @@ suite('Parts', () => {
 
   test('can define parts', () => {
     assert.ok(MyElement.parts);
-    const headerName = `my-element_header`;
-    const headerCss = `::part(my-element_header)`;
-    const headerDef = `[part=my-element_header]`;
-    assert.equal(String(MyElement.parts.header), headerName);
-    assert.equal(MyElement.parts.header.part, headerName);
+    const headerCss = `::part(${headerPart})`;
+    const headerDef = `[part~=${headerPart}]`;
+    assert.equal(String(MyElement.parts.header), headerPart);
+    assert.equal(MyElement.parts.header.part, headerPart);
     assert.equal(String(MyElement.parts.header.css), headerCss);
     assert.equal(String(MyElement.parts.header.def), headerDef);
   });
 
-  test('sets part attributes using part directive with defined parts', () => {
-    assert.ok(el.shadowRoot?.querySelector('[part=my-element_header]'));
+  test('sets part attributes using part.attr directive with defined parts', () => {
+    assert.ok(el.shadowRoot?.querySelector(`[part~=${headerPart}]`));
   });
 
   test('sets default part styles using `part.def`', () => {
     assert.include(MyElement.styles.toString(), headerSelector);
-    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '10px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-left'), '10px');
   });
 
   test('sets part styles via `part.css`', async () => {
     class E extends LitElement {
       myEl!: MyElement;
       static override styles = css`
-        ${parts.header.css} {
-          padding-top: 14px;
+        ${MyElement.parts.header.css} {
+          padding-left: 14px;
         }
       `;
       override render() {
@@ -145,27 +249,27 @@ suite('Parts', () => {
     container.appendChild(c);
     await c.updateComplete;
     await c.myEl.partsApplied();
-    assert.equal(getComputedStyleValue(c.myEl.header, 'padding-top'), '14px');
+    assert.equal(getComputedStyleValue(c.myEl.header, 'padding-left'), '14px');
   });
 
-  test('`createStyle` makes part styles', () => {
-    const style = createStyle`${MyElement.parts.header} { padding-top: 4px}`;
+  test('`partStyle` makes part styles', () => {
+    const style = partStyle`${MyElement.parts.header} { padding-left: 4px}`;
     assert.equal(style.localName, 'style');
-    assert.include(style.textContent, '::part(my-element_header)');
+    assert.include(style.textContent, `::part(${headerPart})`);
   });
 
-  test('sets part properties in containing scope using `createStyle`', () => {
+  test('sets part properties in containing scope using `partStyle`', () => {
     const shadow = nestShadowEl(container);
-    const style = createStyle`${MyElement.parts.header} { padding-top: 6px}`;
+    const style = partStyle`${MyElement.parts.header} { padding-left: 6px}`;
     shadow.renderRoot.append(style, el);
-    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '6px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-left'), '6px');
   });
 
   test('sets exportparts on containing scopes', async () => {
     const s1 = nestShadowEl(container);
-    const style = createStyle`
-      ${MyElement.parts.header} { padding-top: 8px; }
-      ${OtherElement.parts.a} {padding-top: 22px; }`;
+    const style = partStyle`
+      ${MyElement.parts.header} { padding-left: 8px; }
+      ${OtherElement.parts.a} {padding-left: 22px; }`;
     const s2 = nestShadowEl(s1.renderRoot);
     s1.renderRoot.append(style);
     const s3 = nestShadowEl(s2.renderRoot);
@@ -185,13 +289,13 @@ suite('Parts', () => {
     assert.sameMembers(getExports(s3), exportParts);
     assert.sameMembers(getExports(s2), exportParts);
     assert.isNull(s1.getAttribute('exportparts'));
-    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '8px');
-    assert.equal(getComputedStyleValue(other.a, 'padding-top'), '22px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-left'), '8px');
+    assert.equal(getComputedStyleValue(other.a, 'padding-left'), '22px');
   });
 
   test('does not set exportparts on elements with closed shadowRoots', async () => {
     const s1 = nestShadowEl(container);
-    const style = createStyle`${MyElement.parts.header} { padding-top: 8px}`;
+    const style = partStyle`${MyElement.parts.header} { padding-left: 8px}`;
     const s2 = nestShadowEl(s1.renderRoot);
     s1.renderRoot.append(style);
     // closed shadowRoot
@@ -205,16 +309,116 @@ suite('Parts', () => {
     assert.isNull(s3.getAttribute('exportparts'));
     assert.isNull(s2.getAttribute('exportparts'));
     assert.isNull(s1.getAttribute('exportparts'));
-    // default padding-top is 10px
-    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '10px');
+    // default padding-left is 10px
+    assert.equal(getComputedStyleValue(el.header, 'padding-left'), '10px');
   });
 
-  test('`createStyle` can apply part styling in main document', () => {
+  test('`partStyle` can apply part styling in main document', () => {
     const s = document.head.appendChild(
-      createStyle`${MyElement.parts.header} { padding-top: 8px}`
+      partStyle`${MyElement.parts.header} { padding-left: 8px}`
     );
     assert.ok(s);
-    assert.equal(getComputedStyleValue(el.header, 'padding-top'), '8px');
+    assert.equal(getComputedStyleValue(el.header, 'padding-left'), '8px');
     s.remove();
+  });
+
+  test('can export targeted parts', async () => {
+    const s1 = nestShadowEl(container);
+    const style = partStyle`
+      ${MyElement.parts.header} { padding-left: 18px; }
+      ${Export1.parts.first.$.header} {padding-left: 24px; }
+      ${Export1.parts.second.$.footer} {padding-left: 28px; }`;
+    const s2 = nestShadowEl(s1.renderRoot);
+    s1.renderRoot.append(style);
+    const s3 = nestShadowEl(s2.renderRoot);
+    const s4 = nestShadowEl(s3.renderRoot);
+    const e1 = new Export1();
+    s4.renderRoot.appendChild(e1);
+    await e1.partsApplied();
+    const e1Parts = getPartsList(Export1.parts);
+    const exportParts = e1Parts;
+    assert.includeMembers(getExports(e1), exportParts);
+    assert.includeMembers(getExports(s4), exportParts);
+    assert.includeMembers(getExports(s3), exportParts);
+    assert.includeMembers(getExports(s2), exportParts);
+    assert.isNull(s1.getAttribute('exportparts'));
+    assert.equal(
+      getComputedStyleValue(e1.first.header, 'padding-left'),
+      '24px'
+    );
+    assert.equal(
+      getComputedStyleValue(e1.second.header, 'padding-left'),
+      '18px'
+    );
+    assert.equal(
+      getComputedStyleValue(e1.second.footer, 'padding-left'),
+      '28px'
+    );
+  });
+
+  test('can export nested targeted parts', async () => {
+    const s1 = nestShadowEl(container);
+    const style = partStyle`
+      ${MyElement.parts.header} { padding-left: 18px; }
+      ${Export2.parts.uno.$.first.$.header} {padding-left: 24px; }
+      ${MyElement.parts.footer} {padding-left: 28px; }`;
+    const s2 = nestShadowEl(s1.renderRoot);
+    s1.renderRoot.append(style);
+    const s3 = nestShadowEl(s2.renderRoot);
+    const s4 = nestShadowEl(s3.renderRoot);
+    const e2 = new Export2();
+    s4.renderRoot.appendChild(e2);
+    await e2.partsApplied();
+    const exportParts = getPartsList(Export2.parts);
+    assert.includeMembers(getExports(e2), exportParts);
+    assert.includeMembers(getExports(s4), exportParts);
+    assert.includeMembers(getExports(s3), exportParts);
+    assert.includeMembers(getExports(s2), exportParts);
+    assert.isNull(s1.getAttribute('exportparts'));
+    assert.equal(
+      getComputedStyleValue(e2.uno.first.header, 'padding-left'),
+      '24px'
+    );
+    assert.equal(
+      getComputedStyleValue(e2.uno.second.header, 'padding-left'),
+      '18px'
+    );
+    assert.equal(
+      getComputedStyleValue(e2.dos.second.footer, 'padding-left'),
+      '28px'
+    );
+  });
+
+  test('can export more nested targeted parts', async () => {
+    const s1 = nestShadowEl(container);
+    const style = partStyle`
+      ${MyElement.parts.header} { padding-left: 18px; }
+      ${Export3.parts.un.$.uno.$.first.$.header} {padding-left: 24px; }
+      ${Export3.parts.deux.$.dos.$.second.$.footer} {padding-left: 28px; }`;
+    const s2 = nestShadowEl(s1.renderRoot);
+    s1.renderRoot.append(style);
+    const s3 = nestShadowEl(s2.renderRoot);
+    const s4 = nestShadowEl(s3.renderRoot);
+    const e3 = new Export3();
+    s4.renderRoot.appendChild(e3);
+    await e3.partsApplied();
+    const exportParts = getPartsList(Export3.parts);
+    assert.includeMembers(getExports(e3), exportParts);
+    assert.includeMembers(getExports(s4), exportParts);
+    assert.includeMembers(getExports(s3), exportParts);
+    assert.includeMembers(getExports(s2), exportParts);
+    assert.isNull(s1.getAttribute('exportparts'));
+    assert.equal(
+      getComputedStyleValue(e3.un.uno.first.header, 'padding-left'),
+      '24px'
+    );
+    assert.equal(
+      getComputedStyleValue(e3.un.uno.second.header, 'padding-left'),
+      '18px'
+    );
+    assert.equal(
+      getComputedStyleValue(e3.deux.dos.second.footer, 'padding-left'),
+      '28px'
+    );
   });
 });
