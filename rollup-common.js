@@ -409,12 +409,13 @@ export function litProdConfig({
             ]),
       ],
     },
-    ...bundled.map(({file, output, name}) =>
+    ...bundled.map(({file, output, name, format}) =>
       litMonoBundleConfig({
         file,
         output,
         name,
         terserOptions,
+        format,
       })
     ),
   ];
@@ -425,12 +426,13 @@ const litMonoBundleConfig = ({
   output,
   name,
   terserOptions,
+  format = 'umd',
   // eslint-disable-next-line no-undef
 } = options) => ({
   input: `development/${file}.js`,
   output: {
     file: `${output || file}.js`,
-    format: 'umd',
+    format,
     name,
     sourcemap: !CHECKSIZE,
   },
