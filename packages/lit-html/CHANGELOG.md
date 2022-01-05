@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.1.0
+
+### Minor Changes
+
+- [#2337](https://github.com/lit/lit/pull/2337) [`fcc2b3d0`](https://github.com/lit/lit/commit/fcc2b3d0054e69e6f76588ea9f440117b6d0deed) - Add a `keyed(key, value)` directive that clears a part if the key changes.
+
+* [#2335](https://github.com/lit/lit/pull/2335) [`d319cf5f`](https://github.com/lit/lit/commit/d319cf5fde1c2b70185ee9a6252067ed0edaf2fc) - Add `when`, `map`, `join`, and `range` directives.
+
+- [#2341](https://github.com/lit/lit/pull/2341) [`1d563e83`](https://github.com/lit/lit/commit/1d563e830c02a2d1a22e1e939f1ace971b1d1ae7) - Add choose() directive
+
+### Patch Changes
+
+- [#2307](https://github.com/lit/lit/pull/2307) [`221cb0a9`](https://github.com/lit/lit/commit/221cb0a90787631dcc867959de19febd2ebd3fd0) - Added an additional check to prevent spoofing of internal lit types in data bindings.
+
 ## 2.0.2
 
 ### Patch Changes

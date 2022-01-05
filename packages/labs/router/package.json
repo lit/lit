@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/router",
   "private": "true",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A router for Lit.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -61,6 +61,6 @@
     "internal-scripts": "^1.0.0"
   },
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^2.1.0"
   }
 }

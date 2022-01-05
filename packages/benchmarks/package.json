@@ -1,6 +1,6 @@
 {
   "name": "lit-benchmarks",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Benchmarks for lit",
   "license": "BSD-3-Clause",
@@ -39,9 +39,9 @@
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0-rc.1",
-    "lit-element": "^3.0.0-rc.1",
-    "lit-html": "^2.0.0-rc.1",
+    "@lit/reactive-element": "^1.1.0",
+    "lit-element": "^3.1.0",
+    "lit-html": "^2.1.0",
     "tachometer": "^0.5.9"
   },
   "devDependencies": {

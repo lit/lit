@@ -1,5 +1,18 @@
 # Change Log
 
+## 1.1.0
+
+### Minor Changes
+
+- [#2336](https://github.com/lit/lit/pull/2336) [`48394303`](https://github.com/lit/lit/commit/483943034a62bded13eca0c982ff7c93ac6639b6) - Tasks with no arguments now run by default. When a task runs can be customized by passing a `canRun` function.
+
+* [#2336](https://github.com/lit/lit/pull/2336) [`48394303`](https://github.com/lit/lit/commit/483943034a62bded13eca0c982ff7c93ac6639b6) - Tasks now run whenever their arguments change. Disable this by setting `autoRun` to `false`, either on the task config or on the task itself. Tasks can be explicitly run by calling `run` and optionally passing custom args.
+
+### Patch Changes
+
+- Updated dependencies [[`08e7fc56`](https://github.com/lit/lit/commit/08e7fc566894d1916dc768c0843fce962ca4d6d4), [`eb5c5d2b`](https://github.com/lit/lit/commit/eb5c5d2b2159dcd8b2321fa9a221b8d56d127a11), [`49ecf623`](https://github.com/lit/lit/commit/49ecf6239033e9578184d46116e6b89676d091db), [`26e3fb7b`](https://github.com/lit/lit/commit/26e3fb7ba1d3ef778a9862ff73374802b4b4eb2e)]:
+  - @lit/reactive-element@1.1.0
+
 ## 1.0.0
 
 ### Patch Changes
