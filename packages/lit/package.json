@@ -69,7 +69,7 @@
       "default": "./directives/cache.js"
     },
     "./directives/choose.js": {
-      "default": "./directives/cache.js"
+      "default": "./directives/choose.js"
     },
     "./directives/class-map.js": {
       "default": "./directives/class-map.js"
