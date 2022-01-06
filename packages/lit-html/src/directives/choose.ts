@@ -21,10 +21,10 @@
  * render() {
  *   return html`
  *     ${choose(this.section, [
- *       ['home', () => <h1>Home</h1>]
- *       ['about', () => <h1>About</h1>]
+ *       ['home', () => html`<h1>Home</h1>`],
+ *       ['about', () => html`<h1>About</h1>`]
  *     ],
- *     () => html`<h1>Error</h1>)}
+ *     () => html`<h1>Error</h1>`)}
  *   `;
  * }
  * ```
