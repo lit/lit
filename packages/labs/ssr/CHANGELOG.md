@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [[`39b8db85`](https://github.com/lit/lit/commit/39b8db85ef8d2264a86ff6ff6559ea06b391f08f)]:
+  - @lit/reactive-element@1.1.1
+
 ## 2.0.0
 
 ### Major Changes

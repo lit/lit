@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0",
-    "@lit/reactive-element": "1.1.0",
+    "@lit/reactive-element": "1.1.1",
     "lit-element": "^3.1.0",
     "lit-html": "^2.1.0",
     "lit": "^2.1.0",

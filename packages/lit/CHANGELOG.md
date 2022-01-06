@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.1.1
+
+### Patch Changes
+
+- [#2384](https://github.com/lit/lit/pull/2384) [`39b8db85`](https://github.com/lit/lit/commit/39b8db85ef8d2264a86ff6ff6559ea06b391f08f) - Fix missing decorators/query-assigned-elements.js file
+
+* [#2380](https://github.com/lit/lit/pull/2380) [`00cd8533`](https://github.com/lit/lit/commit/00cd85337e0a4177730e2d0eba60b5e3ea37f6c6) - Fix choose directive default export path.
+
 ## 2.1.0
 
 ### Minor Changes
