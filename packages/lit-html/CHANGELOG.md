@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.1.1
+
+### Patch Changes
+
+- [#2388](https://github.com/lit/lit/pull/2388) [`5860533f`](https://github.com/lit/lit/commit/5860533f25180b6e8b616105cf85037216054d7a) - Fix choose directive jsdoc code example.
+
 ## 2.1.0
 
 ### Minor Changes

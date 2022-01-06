@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#2386](https://github.com/lit/lit/pull/2386) [`734d8890`](https://github.com/lit/lit/commit/734d88909eb285d935cb583c016242d634fa2c75) - Unpin SSR's dependency on reactive-element
+
 ## 2.0.0
 
 ### Major Changes
