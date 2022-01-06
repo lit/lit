@@ -16,6 +16,7 @@ export default litProdConfig({
     'decorators/property',
     'decorators/query',
     'decorators/query-all',
+    'decorators/query-assigned-elements',
     'decorators/query-assigned-nodes',
     'decorators/query-async',
     'decorators/state',
