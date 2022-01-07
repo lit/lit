@@ -12,6 +12,7 @@
  */
 
 import {decorateProperty} from './base.js';
+import {queryAssignedElements} from './query-assigned-elements.js';
 
 import type {ReactiveElement} from '../reactive-element.js';
 
@@ -114,7 +115,16 @@ export function queryAssignedNodes(
   } else {
     assignedNodesOptions = {flatten};
   }
-  selector ??= '';
+
+  // For backwards compatibility, queryAssignedNodes with a selector behaves
+  // exactly like queryAssignedElements with a selector.
+  if (selector) {
+    return queryAssignedElements({
+      slot: slot as string,
+      flatten,
+      selector,
+    });
+  }
 
   return decorateProperty({
     descriptor: (_name: PropertyKey) => ({
@@ -122,15 +132,7 @@ export function queryAssignedNodes(
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        let nodes = slotEl?.assignedNodes(assignedNodesOptions) ?? [];
-        if (selector) {
-          nodes = nodes.filter(
-            (node) =>
-              node.nodeType === Node.ELEMENT_NODE &&
-              (node as Element).matches(selector as string)
-          );
-        }
-        return nodes;
+        return slotEl?.assignedNodes(assignedNodesOptions) ?? [];
       },
       enumerable: true,
       configurable: true,

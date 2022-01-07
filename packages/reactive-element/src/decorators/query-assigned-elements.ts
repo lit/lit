@@ -67,11 +67,18 @@ export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        const elements = slotEl?.assignedElements(options) ?? [];
+        // HTMLSlotElement.assignedElements would be preferred here, however
+        // there isn't a good path forward regarding browser polyfill support.
+        const elements = slotEl?.assignedNodes(options) ?? [];
         if (selector) {
-          return elements.filter((node) => node.matches(selector));
+          return elements.filter(
+            (node) =>
+              node.nodeType === Node.ELEMENT_NODE &&
+              (node as Element).matches(selector)
+          );
+        } else {
+          return elements.filter((node) => node.nodeType === Node.ELEMENT_NODE);
         }
-        return elements;
       },
       enumerable: true,
       configurable: true,
