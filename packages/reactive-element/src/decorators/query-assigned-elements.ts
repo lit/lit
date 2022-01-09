@@ -23,10 +23,10 @@ const slotAssignedElements =
   window.HTMLSlotElement?.prototype.assignedElements ??
   function slotAssignedElementsPolyfill(
     this: HTMLSlotElement,
-    opts: AssignedNodesOptions
+    opts?: AssignedNodesOptions
   ) {
     return this.assignedNodes(opts).filter(
-      (node) => node.nodeType === Node.ELEMENT_NODE
+      (node): node is Element => node.nodeType === Node.ELEMENT_NODE
     );
   };
 
@@ -82,7 +82,7 @@ export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         const elements =
-          slotEl !== null ? slotAssignedElements.call(slotEl, options) : [];
+          slotEl != null ? slotAssignedElements.call(slotEl, options) : [];
         if (selector) {
           return elements.filter((node) => node.matches(selector));
         }
