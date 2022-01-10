@@ -20,15 +20,15 @@ import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
  * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
  */
 const slotAssignedElements =
-  window.HTMLSlotElement?.prototype.assignedElements ??
-  function slotAssignedElementsPolyfill(
-    this: HTMLSlotElement,
-    opts?: AssignedNodesOptions
-  ) {
-    return this.assignedNodes(opts).filter(
-      (node): node is Element => node.nodeType === Node.ELEMENT_NODE
-    );
-  };
+  window.HTMLSlotElement?.prototype.assignedElements != null
+    ? (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
+        slot.assignedElements(opts)
+    : (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
+        slot
+          .assignedNodes(opts)
+          .filter(
+            (node): node is Element => node.nodeType === Node.ELEMENT_NODE
+          );
 
 /**
  * Options for the [[`queryAssignedElements`]] decorator. Extends the options
@@ -82,7 +82,7 @@ export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         const elements =
-          slotEl != null ? slotAssignedElements.call(slotEl, options) : [];
+          slotEl != null ? slotAssignedElements(slotEl, options) : [];
         if (selector) {
           return elements.filter((node) => node.matches(selector));
         }
