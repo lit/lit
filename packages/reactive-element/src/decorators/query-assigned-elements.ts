@@ -17,6 +17,20 @@ import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
 /**
+ * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
+ */
+const slotAssignedElements =
+  window.HTMLSlotElement?.prototype.assignedElements != null
+    ? (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
+        slot.assignedElements(opts)
+    : (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
+        slot
+          .assignedNodes(opts)
+          .filter(
+            (node): node is Element => node.nodeType === Node.ELEMENT_NODE
+          );
+
+/**
  * Options for the [[`queryAssignedElements`]] decorator. Extends the options
  * that can be passed into
  * [HTMLSlotElement.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
@@ -67,7 +81,8 @@ export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        const elements = slotEl?.assignedElements(options) ?? [];
+        const elements =
+          slotEl != null ? slotAssignedElements(slotEl, options) : [];
         if (selector) {
           return elements.filter((node) => node.matches(selector));
         }
