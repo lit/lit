@@ -1,5 +1,5 @@
 ---
-"lit-monorepo": patch
+"lit-html": patch
 ---
 
 [comments]: correct typos
