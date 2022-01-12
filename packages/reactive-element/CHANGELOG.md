@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.2
+
+### Patch Changes
+
+- [#2392](https://github.com/lit/lit/pull/2392) [`dc3301ce`](https://github.com/lit/lit/commit/dc3301ce5f5bb0ffb77f17f638d2ee56bf7aaff5) - Fix `@queryAssignedElements` decorator so it is compatible with legacy browsers.
+  Uses `HTMLSlotElement.assignedElements` if available with a graceful fallback
+  on `HTMLSlotElement.assignedNodes` which is supported by polyfills.
+
 ## 1.1.1
 
 ### Patch Changes
