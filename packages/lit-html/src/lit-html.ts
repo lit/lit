@@ -18,7 +18,7 @@ const ENABLE_SHADYDOM_NOPATCH = true;
  * even on patch releases.
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace Unstable {
+export namespace LitUnstable {
   /**
    * When Lit is running in dev mode and `window.emitLitDebugLogEvents` is true,
    * we will emit 'lit-debug' events to window, with live details about the update and render
@@ -189,12 +189,14 @@ interface DebugLoggingWindow {
  * Compiled out of prod mode builds.
  */
 const debugLogEvent = DEV_MODE
-  ? (event: Unstable.DebugLog.Entry) => {
+  ? (event: LitUnstable.DebugLog.Entry) => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (shouldEmit) {
         window.dispatchEvent(
-          new CustomEvent<Unstable.DebugLog.Entry>('lit-debug', {detail: event})
+          new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
+            detail: event,
+          })
         );
       }
     }
