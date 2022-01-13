@@ -1,12 +1,10 @@
 # @lit-labs/observers
 
 ## 1.0.0
+
 ### Major Changes
 
-
-
 - [#2340](https://github.com/lit/lit/pull/2340) [`e1c88265`](https://github.com/lit/lit/commit/e1c8826533d89b99b6c9e2192428337c496d6dd0) - A set of reactive controllers that facilitate using the platform observer objects, including MutationObserver, ResizeObserver, IntersectionObserver, and PerformanceObserver.
-
 
 ### Patch Changes
 

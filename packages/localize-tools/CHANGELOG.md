@@ -159,19 +159,11 @@ Before:
 class HomePage {
   hello() {
     // msgdesc: Greeting to Earth
-    return msg(
-      html`
-        Hello World
-      `
-    );
+    return msg(html` Hello World `);
   }
   goodbye() {
     // msgdesc: Farewell to Earth
-    return msg(
-      html`
-        Goodbye World
-      `
-    );
+    return msg(html` Goodbye World `);
   }
 }
 ```
@@ -181,24 +173,14 @@ After:
 ```js
 class HomePage {
   hello() {
-    return msg(
-      html`
-        Hello World
-      `,
-      {
-        desc: 'Home page / Greeting to Earth'
-      }
-    );
+    return msg(html` Hello World `, {
+      desc: 'Home page / Greeting to Earth',
+    });
   }
   goodbye() {
-    return msg(
-      html`
-        Goodbye World
-      `,
-      {
-        desc: 'Home page / Farewell to Earth'
-      }
-    );
+    return msg(html` Goodbye World `, {
+      desc: 'Home page / Farewell to Earth',
+    });
   }
 }
 ```
