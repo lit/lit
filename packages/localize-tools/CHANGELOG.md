@@ -178,7 +178,7 @@ class HomePage {
     });
   }
   goodbye() {
-    return msg(html` Goodbye World `, {
+    return msg(html`Goodbye World`, {
       desc: 'Home page / Farewell to Earth',
     });
   }
