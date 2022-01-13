@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.0
+
+### Minor Changes
+
+- [#1963](https://github.com/lit/lit/pull/1963) [`db3845a8`](https://github.com/lit/lit/commit/db3845a8781c4492d3b1dbe3ef5298ec2d13be69) - Make static `getPropertyOptions` method public
+
 ## 1.1.2
 
 ### Patch Changes
