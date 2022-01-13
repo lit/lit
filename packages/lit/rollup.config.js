@@ -5,9 +5,10 @@
  */
 
 import {litProdConfig} from '../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: 'ϖ',
+  packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: [
     'decorators',
     'decorators/custom-element',
@@ -15,6 +16,7 @@ export default litProdConfig({
     'decorators/property',
     'decorators/query',
     'decorators/query-all',
+    'decorators/query-assigned-elements',
     'decorators/query-assigned-nodes',
     'decorators/query-async',
     'decorators/state',
@@ -23,10 +25,15 @@ export default litProdConfig({
     'directives/async-append',
     'directives/async-replace',
     'directives/cache',
+    'directives/choose',
     'directives/class-map',
     'directives/guard',
     'directives/if-defined',
+    'directives/join',
+    'directives/keyed',
     'directives/live',
+    'directives/map',
+    'directives/range',
     'directives/ref',
     'directives/repeat',
     'directives/style-map',
@@ -34,6 +41,7 @@ export default litProdConfig({
     'directives/unsafe-html',
     'directives/unsafe-svg',
     'directives/until',
+    'directives/when',
     'async-directive',
     'html',
     'experimental-hydrate-support',
@@ -48,8 +56,25 @@ export default litProdConfig({
     },
     {
       file: 'index',
-      output: 'lit.min',
+      output: 'lit.min.umd',
+      format: 'umd',
       name: 'Lit',
+    },
+    {
+      file: 'index',
+      output: 'lit.min',
+      format: 'es',
+    },
+    {
+      file: 'index.all',
+      output: 'lit.all.min.umd',
+      format: 'umd',
+      name: 'Lit',
+    },
+    {
+      file: 'index.all',
+      output: 'lit.all.min',
+      format: 'es',
     },
   ],
 });

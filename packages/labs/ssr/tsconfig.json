@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "target": "es2020",
     "module": "esnext",
     "lib": ["es2019", "ES2020.String"],
@@ -9,6 +10,8 @@
     "sourceMap": true,
     "outDir": ".",
     "rootDir": "./src",
+    // For module loader tests:
+    "allowJs": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -17,9 +20,14 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitOverride": true
   },
-  "include": ["src/**/*.ts", "custom_typings/*.d.ts"],
+  "include": ["src/**/*.ts", "src/test/**/*.js", "custom_typings/*.d.ts"],
   "exclude": [],
-  "references": [{"path": "../../lit-html"}, {"path": "../../lit-element"}]
+  "references": [
+    {"path": "../ssr-client"},
+    {"path": "../../lit-html"},
+    {"path": "../../lit-element"}
+  ]
 }

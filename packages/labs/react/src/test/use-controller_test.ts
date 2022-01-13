@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 // import * as ReactModule from 'react';
@@ -119,8 +111,11 @@ suite('useController', () => {
       ReactDOM.render(React.createElement(TestComponent, props), container);
     };
 
+    // Initial render
     render({x: 1});
     assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+
+    // Update 1
     testController.log.length = 0;
     testController.a = 'b';
     testController.host.requestUpdate();
@@ -128,6 +123,16 @@ suite('useController', () => {
     await new Promise((r) => setTimeout(r, 0));
 
     assert.equal(container.innerHTML, `<div class="foo">x:1, a:b</div>`);
+    assert.deepEqual(testController.log, ['update', 'updated']);
+
+    // Update 2
+    testController.log.length = 0;
+    testController.a = 'c';
+    testController.host.requestUpdate();
+
+    await new Promise((r) => setTimeout(r, 0));
+
+    assert.equal(container.innerHTML, `<div class="foo">x:1, a:c</div>`);
     assert.deepEqual(testController.log, ['update', 'updated']);
   });
 

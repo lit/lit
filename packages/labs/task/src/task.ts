@@ -10,7 +10,10 @@ import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.
 export type TaskFunction<D extends [...unknown[]], R = any> = (
   args: D
 ) => R | typeof initialState | Promise<R | typeof initialState>;
-export type DepsFunction<D extends [...unknown[]]> = () => D;
+export type ArgsFunction<D extends [...unknown[]]> = () => D;
+
+// `DepsFunction` is being maintained for BC with its previous name.
+export {ArgsFunction as DepsFunction};
 
 /**
  * States for task status
@@ -36,6 +39,12 @@ export type StatusRenderer<R> = {
   complete?: (value: R) => unknown;
   error?: (error: unknown) => unknown;
 };
+
+export interface TaskConfig<T extends unknown[], R> {
+  task: TaskFunction<T, R>;
+  args?: ArgsFunction<T>;
+  autoRun?: boolean;
+}
 
 // TODO(sorvell): Some issues:
 // 1. When task is triggered in `updated`, this generates a ReactiveElement
@@ -65,14 +74,19 @@ export type StatusRenderer<R> = {
  * object with optional corresponding state method to easily render values
  * corresponding to the task state.
  *
+ * The task is run automatically when its arguments change; however, this can
+ * be customized by setting `autoRun` to false and calling `run` explicitly
+ * to run the task.
+ *
  * class MyElement extends ReactiveElement {
  *   url = 'example.com/api';
  *   id = 0;
  *   task = new Task(
- *     this,
- *     ([url, id]) =>
- *       fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
- *     () => [this.id, this.url]
+ *     this, {
+ *       task: ([url, id]) =>
+ *         fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
+ *       args: () => [this.id, this.url]
+ *     }
  *   );
  *
  *   update(changedProperties) {
@@ -86,9 +100,9 @@ export type StatusRenderer<R> = {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class Task<T extends [...unknown[]] = any, R = any> {
-  private _previousDeps: T = ([] as unknown) as T;
+  private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
-  private _getDependencies: DepsFunction<T>;
+  private _getArgs?: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
   private _value?: R;
@@ -102,18 +116,35 @@ export class Task<T extends [...unknown[]] = any, R = any> {
    * is kept and only resolved when the new run is completed.
    */
   taskComplete!: Promise<R>;
+
+  /**
+   * Controls if they task will run when its arguments change. Defaults to true.
+   */
+  autoRun = true;
+
   private _resolveTaskComplete!: (value: R) => void;
   private _rejectTaskComplete!: (e: unknown) => void;
 
   constructor(
     host: ReactiveControllerHost,
     task: TaskFunction<T, R>,
-    getDependencies: DepsFunction<T>
+    args?: ArgsFunction<T>
+  );
+  constructor(host: ReactiveControllerHost, task: TaskConfig<T, R>);
+  constructor(
+    host: ReactiveControllerHost,
+    task: TaskFunction<T, R> | TaskConfig<T, R>,
+    args?: ArgsFunction<T>
   ) {
     this._host = host;
     this._host.addController(this);
-    this._task = task;
-    this._getDependencies = getDependencies;
+    const taskConfig =
+      typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
+    this._task = taskConfig.task;
+    this._getArgs = taskConfig.args;
+    if (taskConfig.autoRun !== undefined) {
+      this.autoRun = taskConfig.autoRun;
+    }
     this.taskComplete = new Promise((res, rej) => {
       this._resolveTaskComplete = res;
       this._rejectTaskComplete = rej;
@@ -121,52 +152,76 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   }
 
   hostUpdated() {
-    this._completeTask();
+    this.performTask();
   }
 
-  private async _completeTask() {
-    const deps = this._getDependencies();
-    if (this._isDirty(deps)) {
-      if (
-        this.status === TaskStatus.COMPLETE ||
-        this.status === TaskStatus.ERROR
-      ) {
-        this.taskComplete = new Promise((res, rej) => {
-          this._resolveTaskComplete = res;
-          this._rejectTaskComplete = rej;
-        });
-      }
-      this.status = TaskStatus.PENDING;
-      this._error = undefined;
-      this._value = undefined;
-      let result!: R | typeof initialState;
-      let error: unknown;
-      // Request an update to report pending state.
-      this._host.requestUpdate();
-      const key = ++this._callId;
-      try {
-        result = await this._task(deps);
-      } catch (e) {
-        error = e;
-      }
-      // If this is the most recent task call, process this value.
-      if (this._callId === key) {
-        if (result === initialState) {
-          this.status = TaskStatus.INITIAL;
+  protected async performTask() {
+    const args = this._getArgs?.();
+    if (this.shouldRun(args)) {
+      this.run(args);
+    }
+  }
+
+  /**
+   * Determines if the task should run when it's triggered as part of the
+   * host's reactive lifecycle. Note, this is not checked when `run` is
+   * explicitly called. A task runs automatically when `autoRun` is `true` and
+   * either its arguments change.
+   * @param args The task's arguments
+   * @returns
+   */
+  protected shouldRun(args?: T) {
+    return this.autoRun && this._argsDirty(args);
+  }
+
+  /**
+   * A task runs when its arguments change, as long as the `autoRun` option
+   * has not been set to false. To explicitly run a task outside of these
+   * conditions, call `run`. A custom set of arguments can optionally be passed
+   * and if not given, the configured arguments are used.
+   * @param args optional set of arguments to use for this task run
+   */
+  async run(args?: T) {
+    args ??= this._getArgs?.();
+    if (
+      this.status === TaskStatus.COMPLETE ||
+      this.status === TaskStatus.ERROR
+    ) {
+      this.taskComplete = new Promise((res, rej) => {
+        this._resolveTaskComplete = res;
+        this._rejectTaskComplete = rej;
+      });
+    }
+    this.status = TaskStatus.PENDING;
+    this._error = undefined;
+    this._value = undefined;
+    let result!: R | typeof initialState;
+    let error: unknown;
+    // Request an update to report pending state.
+    this._host.requestUpdate();
+    const key = ++this._callId;
+    try {
+      result = await this._task(args!);
+    } catch (e) {
+      error = e;
+    }
+    // If this is the most recent task call, process this value.
+    if (this._callId === key) {
+      if (result === initialState) {
+        this.status = TaskStatus.INITIAL;
+      } else {
+        if (error === undefined) {
+          this.status = TaskStatus.COMPLETE;
+          this._resolveTaskComplete(result as R);
         } else {
-          if (error === undefined) {
-            this.status = TaskStatus.COMPLETE;
-            this._resolveTaskComplete(result as R);
-          } else {
-            this.status = TaskStatus.ERROR;
-            this._rejectTaskComplete(error);
-          }
-          this._value = result as R;
-          this._error = error;
+          this.status = TaskStatus.ERROR;
+          this._rejectTaskComplete(error);
         }
-        // Request an update with the final value.
-        this._host.requestUpdate();
+        this._value = result as R;
+        this._error = error;
       }
+      // Request an update with the final value.
+      this._host.requestUpdate();
     }
   }
 
@@ -194,16 +249,11 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     }
   }
 
-  private _isDirty(deps: T) {
-    let i = 0;
-    const previousDeps = this._previousDeps;
-    this._previousDeps = deps;
-    for (const dep of deps) {
-      if (notEqual(dep, previousDeps[i])) {
-        return true;
-      }
-      i++;
-    }
-    return false;
+  private _argsDirty(args?: T) {
+    const prev = this._previousArgs;
+    this._previousArgs = args;
+    return Array.isArray(args) && Array.isArray(prev)
+      ? args.length === prev.length && args.some((v, i) => notEqual(v, prev[i]))
+      : args !== prev;
   }
 }

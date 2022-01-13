@@ -15,8 +15,8 @@ import type {
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
-import {isTemplateResult} from 'lit/directive-helpers.js';
-import {_Σ} from 'lit-html/private-ssr-support.js';
+import {isTemplateResult, getDirectiveClass} from 'lit/directive-helpers.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
   getTemplateHtml,
@@ -24,13 +24,15 @@ const {
   markerMatch,
   boundAttributeSuffix,
   overrideDirectiveResolve,
+  setDirectiveClass,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
   PropertyPart,
   BooleanAttributePart,
   EventPart,
-} = _Σ;
+  connectedDisconnectable,
+} = _$LH;
 
 import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
 
@@ -40,13 +42,7 @@ import {
   getElementRenderer,
 } from './element-renderer.js';
 
-import {createRequire} from 'module';
-const require = createRequire(import.meta.url);
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const escapeHtml = require('escape-html') as typeof import('escape-html');
-
-import type {DefaultTreeDocumentFragment} from 'parse5';
+import {escapeHtml} from './util/escape-html.js';
 
 import {
   traverse,
@@ -61,22 +57,21 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 import {LitElementRenderer} from './lit-element-renderer.js';
 
 declare module 'parse5' {
-  interface DefaultTreeElement {
+  interface Element {
     isDefinedCustomElement?: boolean;
   }
 }
 
-const patchedDirectiveCache: WeakMap<
-  DirectiveClass,
-  DirectiveClass
-> = new Map();
+const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
+  new Map();
 
 /**
  * Looks for values of type `DirectiveResult` and replaces its Directive class
  * with a subclass that calls `render` rather than `update`
  */
 const patchIfDirective = (value: unknown) => {
-  const directiveCtor = (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
@@ -90,7 +85,8 @@ const patchIfDirective = (value: unknown) => {
       );
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
-    (value as DirectiveResult)._$litDirective$ = patchedCtor;
+    // This property needs to remain unminified.
+    setDirectiveClass(value as DirectiveResult, patchedCtor);
   }
   return value;
 };
@@ -279,16 +275,20 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  const [html, attrNames] = getTemplateHtml(result.strings, result._$litType$);
+  // The property '_$litType$' needs to remain unminified.
+  const [html, attrNames] = getTemplateHtml(
+    result.strings,
+    result['_$litType$']
+  );
 
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    */
-  const ast = parseFragment(html, {
+  const ast = parseFragment(String(html), {
     sourceCodeLocationInfo: true,
-  }) as DefaultTreeDocumentFragment;
+  });
 
   const ops: Array<Op> = [];
 
@@ -343,7 +343,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     }
     const previousLastOffset = lastOffset;
     lastOffset = offset;
-    const value = html.substring(previousLastOffset, offset);
+    const value = String(html).substring(previousLastOffset, offset);
     flush(value);
   };
 
@@ -411,9 +411,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // while parsing the template strings); note that this assumes
               // parse5 attribute ordering matches string ordering
               const name = attrNames[attrIndex++];
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
@@ -450,9 +449,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // into the custom element instance, and then serialize them back
               // out along with any manually-reflected attributes. As such, we
               // skip over static attribute text here.
-              const attrSourceLocation = node.sourceCodeLocation!.attrs[
-                attr.name
-              ];
+              const attrSourceLocation =
+                node.sourceCodeLocation!.attrs[attr.name];
               flushTo(attrSourceLocation.startOffset);
               skipTo(attrSourceLocation.endOffset);
             }
@@ -500,15 +498,29 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 };
 
 export type RenderInfo = {
-  // Element renderers to use
+  /**
+   * Element renderers to use
+   */
   elementRenderers: ElementRendererConstructor[];
-  // Stack of open custom elements (in light dom or shadow dom)
-  customElementInstanceStack: Array<ElementRenderer | undefined>;
-  // Stack of open host custom elements (n-1 will be n's host)
-  customElementHostStack: Array<ElementRenderer | undefined>;
-};
 
-export type RenderOptions = Partial<RenderInfo>;
+  /**
+   * Stack of open custom elements (in light dom or shadow dom)
+   */
+  customElementInstanceStack: Array<ElementRenderer | undefined>;
+
+  /**
+   * Stack of open host custom elements (n-1 will be n's host)
+   */
+  customElementHostStack: Array<ElementRenderer | undefined>;
+
+  /**
+   * An optional callback to notifiy when a custom element has been rendered.
+   *
+   * This allows servers to know what specific tags were rendered for a given
+   * template, even in the case of conditional templates.
+   */
+  customElementRendered?: (tagName: string) => void;
+};
 
 const defaultRenderInfo = {
   elementRenderers: [LitElementRenderer],
@@ -536,10 +548,10 @@ declare global {
  */
 export function* render(
   value: unknown,
-  renderOptions?: RenderOptions
+  renderInfo?: Partial<RenderInfo>
 ): IterableIterator<string> {
-  const renderInfo = {...defaultRenderInfo, ...renderOptions};
-  yield* renderValue(value, renderInfo);
+  renderInfo = {...defaultRenderInfo, ...renderInfo};
+  yield* renderValue(value, renderInfo as RenderInfo);
 }
 
 function* renderValue(
@@ -556,7 +568,10 @@ function* renderValue(
     }
     value = null;
   } else {
-    value = resolveDirective({type: PartType.CHILD} as ChildPart, value);
+    value = resolveDirective(
+      connectedDisconnectable({type: PartType.CHILD}) as ChildPart,
+      value
+    );
   }
   if (value != null && isTemplateResult(value)) {
     yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
@@ -624,7 +639,7 @@ function* renderTemplateResult(
           {tagName: op.tagName} as HTMLElement,
           op.name,
           statics,
-          undefined,
+          connectedDisconnectable(),
           {}
         );
         const value =
@@ -673,31 +688,33 @@ function* renderTemplateResult(
           op.staticAttributes
         );
         // Set static attributes to the element renderer
-        if (instance !== undefined) {
-          for (const [name, value] of op.staticAttributes) {
-            instance?.setAttribute(name, value);
-          }
+        for (const [name, value] of op.staticAttributes) {
+          instance.setAttribute(name, value);
         }
         renderInfo.customElementInstanceStack.push(instance);
+        renderInfo.customElementRendered?.(op.tagName);
         break;
       }
       case 'custom-element-attributes': {
         const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance !== undefined) {
-          // Perform any connect-time work via the renderer (e.g. reflecting any
-          // properties to attributes, for example)
-          if (instance.connectedCallback) {
-            instance.connectedCallback();
-          }
-          // Render out any attributes on the instance (both static and those
-          // that may have been dynamically set by the renderer)
-          yield* instance.renderAttributes();
-          // If this element is nested in another, add the `defer-hydration`
-          // attribute, so that it does not enable before the host element
-          // hydrates
-          if (renderInfo.customElementHostStack.length > 0) {
-            yield ' defer-hydration';
-          }
+        if (instance === undefined) {
+          throw new Error(
+            `Internal error: ${op.type} outside of custom element context`
+          );
+        }
+        // Perform any connect-time work via the renderer (e.g. reflecting any
+        // properties to attributes, for example)
+        if (instance.connectedCallback) {
+          instance.connectedCallback();
+        }
+        // Render out any attributes on the instance (both static and those
+        // that may have been dynamically set by the renderer)
+        yield* instance.renderAttributes();
+        // If this element is nested in another, add the `defer-hydration`
+        // attribute, so that it does not enable before the host element
+        // hydrates
+        if (renderInfo.customElementHostStack.length > 0) {
+          yield ' defer-hydration';
         }
         break;
       }
@@ -716,7 +733,12 @@ function* renderTemplateResult(
       }
       case 'custom-element-shadow': {
         const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance !== undefined && instance.renderShadow !== undefined) {
+        if (instance === undefined) {
+          throw new Error(
+            `Internal error: ${op.type} outside of custom element context`
+          );
+        }
+        if (instance.renderShadow !== undefined) {
           renderInfo.customElementHostStack.push(instance);
           const shadowContents = instance.renderShadow(renderInfo);
           // Only emit a DSR if renderShadow() emitted something (returning
@@ -814,6 +836,6 @@ const iterableToString = (iterable: Iterable<string>) => {
  *   re-entrant calls to `render`, e.g. from a `renderShadow` callback on an
  *   ElementRenderer.
  */
-export const renderSync = (value: unknown, info?: RenderOptions) => {
+export const renderSync = (value: unknown, info?: Partial<RenderInfo>) => {
   return iterableToString(render(value, info));
 };

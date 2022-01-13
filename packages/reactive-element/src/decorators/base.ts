@@ -60,52 +60,54 @@ export const standardPrototypeMethod = (
  * the given property.
  * @returns {ClassElement|void}
  */
-export const decorateProperty = ({
-  finisher,
-  descriptor,
-}: {
-  finisher?:
-    | ((ctor: typeof ReactiveElement, property: PropertyKey) => void)
-    | null;
-  descriptor?: (property: PropertyKey) => PropertyDescriptor;
-}) => (
-  protoOrDescriptor: ReactiveElement | ClassElement,
-  name?: string
-  // Note TypeScript requires the return type to be `void|any`
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): void | any => {
-  // TypeScript / Babel legacy mode
-  if (name !== undefined) {
-    const ctor = (protoOrDescriptor as ReactiveElement)
-      .constructor as typeof ReactiveElement;
-    if (descriptor !== undefined) {
-      Object.defineProperty(protoOrDescriptor, name, descriptor(name));
+export const decorateProperty =
+  ({
+    finisher,
+    descriptor,
+  }: {
+    finisher?:
+      | ((ctor: typeof ReactiveElement, property: PropertyKey) => void)
+      | null;
+    descriptor?: (property: PropertyKey) => PropertyDescriptor;
+  }) =>
+  (
+    protoOrDescriptor: ReactiveElement | ClassElement,
+    name?: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any => {
+    // TypeScript / Babel legacy mode
+    if (name !== undefined) {
+      const ctor = (protoOrDescriptor as ReactiveElement)
+        .constructor as typeof ReactiveElement;
+      if (descriptor !== undefined) {
+        Object.defineProperty(protoOrDescriptor, name, descriptor(name));
+      }
+      finisher?.(ctor, name!);
+      // Babel standard mode
+    } else {
+      // Note, the @property decorator saves `key` as `originalKey`
+      // so try to use it here.
+      const key =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (protoOrDescriptor as any).originalKey ??
+        (protoOrDescriptor as ClassElement).key;
+      const info: ClassElement =
+        descriptor != undefined
+          ? {
+              kind: 'method',
+              placement: 'prototype',
+              key,
+              descriptor: descriptor((protoOrDescriptor as ClassElement).key),
+            }
+          : {...(protoOrDescriptor as ClassElement), key};
+      if (finisher != undefined) {
+        info.finisher = function <ReactiveElement>(
+          ctor: Constructor<ReactiveElement>
+        ) {
+          finisher(ctor as unknown as typeof ReactiveElement, key);
+        };
+      }
+      return info;
     }
-    finisher?.(ctor, name!);
-    // Babel standard mode
-  } else {
-    // Note, the @property decorator saves `key` as `originalKey`
-    // so try to use it here.
-    const key =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (protoOrDescriptor as any).originalKey ??
-      (protoOrDescriptor as ClassElement).key;
-    const info: ClassElement =
-      descriptor != undefined
-        ? {
-            kind: 'method',
-            placement: 'prototype',
-            key,
-            descriptor: descriptor((protoOrDescriptor as ClassElement).key),
-          }
-        : {...(protoOrDescriptor as ClassElement), key};
-    if (finisher != undefined) {
-      info.finisher = function <ReactiveElement>(
-        ctor: Constructor<ReactiveElement>
-      ) {
-        finisher((ctor as unknown) as typeof ReactiveElement, key);
-      };
-    }
-    return info;
-  }
-};
+  };

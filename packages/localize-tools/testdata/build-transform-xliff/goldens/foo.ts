@@ -45,7 +45,7 @@ msg(html`Click <a href=${url}>here</a>!`);
 //
 // TODO(aomarks) The "SALT" text is here because we have a check to make sure
 // that two messages can't have the same ID unless they have identical template
-// contents. After https://github.com/Polymer/lit-html/issues/1621 is
+// contents. After https://github.com/lit/lit/issues/1621 is
 // implemented, add a "meaning" parameter instead.
 msg(html`[SALT] Click <a href="${'https://www.example.com/'}">here</a>!`);
 
@@ -76,3 +76,6 @@ export class MyElement2 extends LitElement {
     return html`<p>${msg(html`Hello <b>World</b>!`)} (${getLocale()})</p>`;
   }
 }
+
+// Escaped markup characters should remain escaped
+msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);

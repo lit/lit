@@ -19,7 +19,7 @@ export const simpleTemplateResult = html`<div></div>`;
 
 /* Text Expressions */
 // prettier-ignore
-export const templateWithTextExpression = (x: string) => html`<div>${x}</div>`;
+export const templateWithTextExpression = (x: string|null|undefined) => html`<div>${x}</div>`;
 
 /* Attribute Expressions */
 // prettier-ignore
@@ -59,7 +59,7 @@ export const nestedTemplate = html`<div>${html`<p>Hi</p>`}</div>`;
 
 @customElement('test-simple')
 export class TestSimple extends LitElement {
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main></main>`;
   }
@@ -72,7 +72,7 @@ export const simpleTemplateWithElement = html`<test-simple></test-simple>`;
 export class TestProperty extends LitElement {
   @property() foo?: string;
 
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main>${this.foo}</main>`;
   }
@@ -80,6 +80,20 @@ export class TestProperty extends LitElement {
 
 // prettier-ignore
 export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
+
+@customElement('test-reflected-properties')
+export class TestReflectedProperties extends LitElement {
+  @property({type: String, reflect: true, attribute: 'reflect-foo'})
+  foo?: string;
+  @property({type: Boolean, reflect: true}) bar = false;
+  @property({type: String, reflect: true}) baz = 'default reflected string';
+}
+
+// prettier-ignore
+export const elementWithReflectedProperties = html`<test-reflected-properties .foo=${'badazzled'} .bar=${true}></test-reflected-properties>`;
+
+// prettier-ignore
+export const elementWithDefaultReflectedProperties = html`<test-reflected-properties></test-reflected-properties>`;
 
 @customElement('test-will-update')
 export class TestWillUpdate extends LitElement {
@@ -89,13 +103,13 @@ export class TestWillUpdate extends LitElement {
   last?: string;
   fullName = '';
 
-  willUpdate(changedProperties: PropertyValues) {
+  override willUpdate(changedProperties: PropertyValues) {
     if (changedProperties.has('first') || changedProperties.has('last')) {
       this.fullName = `${this.first} ${this.last}`;
     }
   }
 
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main>${this.fullName}</main>`;
   }
@@ -110,7 +124,7 @@ export const noSlot = html`<test-simple><p>Hi</p></test-simple>`;
 
 @customElement('test-simple-slot')
 export class TestSlot extends LitElement {
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main><slot></slot></main>`;
   }
@@ -135,7 +149,7 @@ export const slotWithReusedDynamicChild = html`<test-simple-slot>${dynamicChild}
 
 @customElement('test-two-slots')
 export class TestTwoSlots extends LitElement {
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main><slot></slot></main>
       <slot name="a"></slot>`;
@@ -157,7 +171,7 @@ export const twoSlotsWithDynamicChildrenOutOfOrder = html`<test-two-slots>${html
 @customElement('test-dynamic-slot')
 export class TestDynamicSlot extends LitElement {
   @property({type: Boolean}) renderSlot = true;
-  render() {
+  override render() {
     // prettier-ignore
     return html`${this.renderSlot ? html`<slot></slot>` : nothing}`;
   }
@@ -168,7 +182,7 @@ export const dynamicSlot = (renderSlot: boolean) =>
 
 @customElement('test-styles')
 export class TestStyles extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
     }

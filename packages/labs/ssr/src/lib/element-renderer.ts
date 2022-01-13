@@ -6,15 +6,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export type Constructor<T> = {new (): T};
-
-import {createRequire} from 'module';
-const require = createRequire(import.meta.url);
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const escapeHtml = require('escape-html') as typeof import('escape-html');
-
+import {escapeHtml} from './util/escape-html.js';
 import {RenderInfo} from './render-lit-html.js';
+
+export type Constructor<T> = {new (): T};
 
 export type ElementRendererConstructor = (new (
   tagName: string
@@ -26,12 +21,12 @@ type AttributesMap = Map<string, string>;
 export const getElementRenderer = (
   {elementRenderers}: RenderInfo,
   tagName: string,
-  ceClass: typeof HTMLElement = customElements.get(tagName),
+  ceClass: typeof HTMLElement | undefined = customElements.get(tagName),
   attributes: AttributesMap = new Map()
-): ElementRenderer | undefined => {
+): ElementRenderer => {
   if (ceClass === undefined) {
     console.warn(`Custom element ${tagName} was not registered.`);
-    return;
+    return new FallbackRenderer(tagName);
   }
   // TODO(kschaaf): Should we implement a caching scheme, e.g. keyed off of
   // ceClass's base class to prevent O(n) lookups for every element (probably
@@ -43,7 +38,7 @@ export const getElementRenderer = (
       return new renderer(tagName);
     }
   }
-  return undefined;
+  return new FallbackRenderer(tagName);
 };
 
 /**
@@ -154,4 +149,31 @@ export abstract class ElementRenderer {
       }
     }
   }
+}
+
+/**
+ * An ElementRenderer used as a fallback in the case where a custom element is
+ * either unregistered or has no other matching renderer.
+ */
+class FallbackRenderer extends ElementRenderer {
+  private readonly _attributes: {[name: string]: string} = {};
+
+  override setAttribute(name: string, value: string) {
+    this._attributes[name] = value;
+  }
+
+  override *renderAttributes(): IterableIterator<string> {
+    for (const [name, value] of Object.entries(this._attributes)) {
+      if (value === '') {
+        yield ` ${name}`;
+      } else {
+        yield ` ${name}="${escapeHtml(value)}"`;
+      }
+    }
+  }
+
+  connectedCallback() {}
+  attributeChangedCallback() {}
+  *renderLight() {}
+  *renderShadow() {}
 }

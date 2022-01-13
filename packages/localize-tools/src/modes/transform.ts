@@ -19,7 +19,7 @@ import {
 } from '../program-analysis.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
@@ -98,6 +98,11 @@ async function transformOutput(
   transformConfig: TransformOutputConfig,
   program: ts.Program
 ) {
+  if (transformConfig.outputDir === undefined && !config.tsConfig) {
+    throw new KnownError(
+      `Either output.outputDir or tsConfig must be specified.`
+    );
+  }
   if (transformConfig.localeCodesModule) {
     await writeLocaleCodesModule(
       config.sourceLocale,
@@ -111,8 +116,8 @@ async function transformOutput(
   // transformation into a real project so that the user can still use --watch
   // and other tsc flags. It would also be nice to support the language server,
   // so that diagnostics will show up immediately in the editor.
-  const opts = program.getCompilerOptions();
-  const outRoot = opts.outDir || '.';
+  const compilerOpts = program.getCompilerOptions();
+  const outRoot = transformConfig.outputDir ?? compilerOpts.outDir ?? '.';
   for (const locale of [config.sourceLocale, ...config.targetLocales]) {
     let translations;
     if (locale !== config.sourceLocale) {
@@ -121,7 +126,7 @@ async function transformOutput(
         translations.set(message.name, message);
       }
     }
-    opts.outDir = pathLib.join(outRoot, '/', locale);
+    compilerOpts.outDir = pathLib.join(outRoot, '/', locale);
     program.emit(undefined, undefined, undefined, undefined, {
       before: [litLocalizeTransform(translations, locale, program)],
     });
@@ -200,7 +205,7 @@ class Transformer {
       const moduleSymbol = this.typeChecker.getSymbolAtLocation(
         node.moduleSpecifier
       );
-      if (moduleSymbol && this.isLitLocalizeModule(moduleSymbol)) {
+      if (moduleSymbol && this.fileNameAppearsToBeLitLocalize(moduleSymbol)) {
         return undefined;
       }
     }
@@ -289,15 +294,17 @@ class Transformer {
         // but not in the case of `import * as ...`.
         eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
       }
-      for (const decl of eventSymbol.declarations) {
+      for (const decl of eventSymbol.declarations ?? []) {
         let sourceFile: ts.Node = decl;
         while (!ts.isSourceFile(sourceFile)) {
           sourceFile = sourceFile.parent;
         }
-        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
-          sourceFile
-        );
-        if (sourceFileSymbol && this.isLitLocalizeModule(sourceFileSymbol)) {
+        const sourceFileSymbol =
+          this.typeChecker.getSymbolAtLocation(sourceFile);
+        if (
+          sourceFileSymbol &&
+          this.fileNameAppearsToBeLitLocalize(sourceFileSymbol)
+        ) {
           return ts.createStringLiteral('lit-localize-status');
         }
       }
@@ -324,7 +331,7 @@ class Transformer {
     if (templateResult.error) {
       throw new Error(stringifyDiagnostics([templateResult.error]));
     }
-    const {isLitTemplate: isLitTagged} = templateResult.result;
+    const {tag} = templateResult.result;
     let {template} = templateResult.result;
 
     const optionsResult = extractOptions(optionsArg, this.sourceFile);
@@ -332,7 +339,7 @@ class Transformer {
       throw new Error(stringifyDiagnostics([optionsResult.error]));
     }
     const options = optionsResult.result;
-    const id = options.id ?? generateMsgIdFromAstNode(template, isLitTagged);
+    const id = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
 
     const sourceExpressions = new Map<string, ts.Expression>();
     if (ts.isTemplateExpression(template)) {
@@ -354,7 +361,7 @@ class Transformer {
         const templateLiteralBody = translation.contents
           .map((content) =>
             typeof content === 'string'
-              ? escapeStringToEmbedInTemplateLiteral(content)
+              ? escapeTextContentToEmbedInTemplateLiteral(content)
               : content.untranslatable
           )
           .join('');
@@ -387,7 +394,7 @@ class Transformer {
 
     // Nothing more to do with a simple string.
     if (ts.isStringLiteral(template)) {
-      if (isLitTagged) {
+      if (tag === 'html') {
         throw new KnownError(
           'Internal error: string literal cannot be html-tagged'
         );
@@ -401,9 +408,9 @@ class Transformer {
     // Given: html`Hello <b>${"World"}</b>`
     // Generate: html`Hello <b>World</b>`
     template = makeTemplateLiteral(
-      this.recursivelyFlattenTemplate(template, isLitTagged)
+      this.recursivelyFlattenTemplate(template, tag === 'html')
     );
-    return isLitTagged ? tagLit(template) : template;
+    return tag === 'html' ? tagLit(template) : template;
   }
 
   /**
@@ -498,25 +505,18 @@ class Transformer {
 
   /**
    * Return whether the given symbol looks like one of the lit-localize modules
-   * (because it exports one of the special tagged functions).
+   * based on its filename. Note when we call this function, we're already
+   * strongly suspecting a lit-localize call.
    */
-  isLitLocalizeModule(moduleSymbol: ts.Symbol): boolean {
-    if (!moduleSymbol.exports) {
-      return false;
-    }
-    const exports = moduleSymbol.exports.values();
-    for (const xport of exports as typeof exports & {
-      [Symbol.iterator](): Iterator<ts.Symbol>;
-    }) {
-      const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
-      const props = this.typeChecker.getPropertiesOfType(type);
+  fileNameAppearsToBeLitLocalize(moduleSymbol: ts.Symbol): boolean {
+    // TODO(aomarks) Find a better way to implement this. We could probably just
+    // check for any file path matching '/@lit/localize/` -- however that will
+    // fail our tests because we import with a relative path in that case.
+    for (const decl of moduleSymbol.declarations ?? []) {
       if (
-        props.some(
-          (prop) =>
-            prop.escapedName === '_LIT_LOCALIZE_MSG_' ||
-            prop.escapedName === '_LIT_LOCALIZE_CONTROLLER_FN_' ||
-            prop.escapedName === '_LIT_LOCALIZE_DECORATOR_'
-        )
+        ts.isSourceFile(decl) &&
+        (decl.fileName.endsWith('/localize/lit-localize.d.ts') ||
+          decl.fileName.endsWith('/localize/internal/locale-status-event.d.ts'))
       ) {
         return true;
       }

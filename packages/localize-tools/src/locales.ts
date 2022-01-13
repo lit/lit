@@ -8,7 +8,7 @@ import fsExtra from 'fs-extra';
 import * as pathLib from 'path';
 import {KnownError} from './error.js';
 import type {Locale} from './types/locale.js';
-import {escapeStringToEmbedInTemplateLiteral} from './typescript.js';
+import {escapeTextContentToEmbedInTemplateLiteral} from './typescript.js';
 
 /**
  * Return whether the given string is formatted like a BCP 47 language tag. Note
@@ -19,7 +19,7 @@ export function isLocale(x: string): x is Locale {
 }
 
 const templateLit = (str: string) =>
-  '`' + escapeStringToEmbedInTemplateLiteral(str) + '`';
+  '`' + escapeTextContentToEmbedInTemplateLiteral(str) + '`';
 
 /**
  * Generate a TypeScript module that exports a project's source and target
@@ -30,6 +30,7 @@ export async function writeLocaleCodesModule(
   targetLocales: string[],
   filePath: string
 ) {
+  const isTypeScript = filePath.endsWith('.ts');
   const targetLocalesArrayContents = [...targetLocales]
     .sort((a, b) => a.localeCompare(b))
     .map(templateLit)
@@ -38,7 +39,7 @@ export async function writeLocaleCodesModule(
     .sort((a, b) => a.localeCompare(b))
     .map(templateLit)
     .join(',\n  ');
-  const tsSrc = `// Do not modify this file by hand!
+  const src = `// Do not modify this file by hand!
 // Re-generate this file by running lit-localize.
 
 /**
@@ -52,14 +53,14 @@ export const sourceLocale = ${templateLit(sourceLocale)};
  */
 export const targetLocales = [
   ${targetLocalesArrayContents},
-] as const;
+]${isTypeScript ? ' as const' : ''};
 
 /**
  * All valid project locale codes. Sorted lexicographically.
  */
 export const allLocales = [
   ${allLocalesArrayContents},
-] as const;
+]${isTypeScript ? ' as const' : ''};
 `;
   const parentDir = pathLib.dirname(filePath);
   try {
@@ -68,16 +69,16 @@ export const allLocales = [
     throw new KnownError(
       `Error creating locales module directory: ${parentDir}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
   try {
-    await fsExtra.writeFile(filePath, tsSrc, 'utf8');
+    await fsExtra.writeFile(filePath, src, 'utf8');
   } catch (e) {
     throw new KnownError(
       `Error creating locales module file: ${filePath}\n` +
         `Do you have write permission?\n` +
-        e.message
+        (e as Error).message
     );
   }
 }

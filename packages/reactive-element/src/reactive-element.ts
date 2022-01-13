@@ -15,7 +15,6 @@ import {
   adoptStyles,
   CSSResultGroup,
   CSSResultOrNative,
-  CSSResultFlatArray,
 } from './css-tag.js';
 import type {
   ReactiveController,
@@ -30,43 +29,74 @@ export type {
 
 const DEV_MODE = true;
 
-let requestUpdateThenable: {
+let requestUpdateThenable: (name: string) => {
   then: (
     onfulfilled?: (value: boolean) => void,
     _onrejected?: () => void
   ) => void;
 };
 
-if (DEV_MODE) {
-  // TODO(sorvell): Add a link to the docs about using dev v. production mode.
-  console.warn(`Running in dev mode. Do not use in production!`);
+let issueWarning: (code: string, warning: string) => void;
 
-  // Issue platform support warning.
-  if (
-    window.ShadyDOM?.inUse &&
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (globalThis as any)['reactiveElementPlatformSupport'] === undefined
-  ) {
-    console.warn(
-      `Shadow DOM is being polyfilled via ShadyDOM but ` +
+const trustedTypes = (window as unknown as {trustedTypes?: {emptyScript: ''}})
+  .trustedTypes;
+
+// Temporary workaround for https://crbug.com/993268
+// Currently, any attribute starting with "on" is considered to be a
+// TrustedScript source. Such boolean attributes must be set to the equivalent
+// trusted emptyScript value.
+const emptyStringForBooleanAttribute = trustedTypes
+  ? (trustedTypes.emptyScript as unknown as '')
+  : '';
+
+const polyfillSupport = DEV_MODE
+  ? window.reactiveElementPolyfillSupportDevMode
+  : window.reactiveElementPolyfillSupport;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+
+  issueWarning(
+    'dev-mode',
+    `Lit is in dev mode. Not recommended for production!`
+  );
+
+  // Issue polyfill support warning.
+  if (window.ShadyDOM?.inUse && polyfillSupport === undefined) {
+    issueWarning(
+      'polyfill-support-missing',
+      `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
         `the \`polyfill-support\` module has not been loaded.`
     );
   }
 
-  requestUpdateThenable = {
+  requestUpdateThenable = (name) => ({
     then: (
       onfulfilled?: (value: boolean) => void,
       _onrejected?: () => void
     ) => {
-      console.warn(
-        `\`requestUpdate\` no longer returns a Promise.` +
-          `Use \`updateComplete\` instead.`
+      issueWarning(
+        'request-update-promise',
+        `The \`requestUpdate\` method should no longer return a Promise but ` +
+          `does so on \`${name}\`. Use \`updateComplete\` instead.`
       );
       if (onfulfilled !== undefined) {
         onfulfilled(false);
       }
     },
-  };
+  });
 }
 
 /*
@@ -86,13 +116,13 @@ const JSCompiler_renameProperty = <P extends PropertyKey>(
  */
 export interface ComplexAttributeConverter<Type = unknown, TypeHint = unknown> {
   /**
-   * Function called to convert an attribute value to a property
+   * Called to convert an attribute value to a property
    * value.
    */
   fromAttribute?(value: string | null, type?: TypeHint): Type;
 
   /**
-   * Function called to convert a property value to an attribute
+   * Called to convert a property value to an attribute
    * value.
    *
    * It returns unknown instead of string, to be compatible with
@@ -201,7 +231,7 @@ export const defaultConverter: ComplexAttributeConverter = {
   toAttribute(value: unknown, type?: unknown): unknown {
     switch (type) {
       case Boolean:
-        value = value ? '' : null;
+        value = value ? emptyStringForBooleanAttribute : null;
         break;
       case Object:
       case Array:
@@ -268,7 +298,10 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
  */
 const finalized = 'finalized';
 
-export type Warnings = 'change-in-update' | 'migration';
+/**
+ * A string representing one of the supported dev mode warning categories.
+ */
+export type WarningKind = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
 
@@ -280,27 +313,88 @@ export type Initializer = (element: ReactiveElement) => void;
  */
 export abstract class ReactiveElement
   extends HTMLElement
-  implements ReactiveControllerHost {
-  // Note, these are patched in only in DEV_MODE.
+  implements ReactiveControllerHost
+{
+  // Note: these are patched in only in DEV_MODE.
   /**
+   * Read or set all the enabled warning categories for this class.
+   *
+   * This property is only used in development builds.
+   *
    * @nocollapse
    * @category dev-mode
    */
-  static enabledWarnings?: Warnings[];
+  static enabledWarnings?: WarningKind[];
 
   /**
+   * Enable the given warning category for this class.
+   *
+   * This method only exists in development builds, so it should be accessed
+   * with a guard like:
+   *
+   * ```ts
+   * // Enable for all ReactiveElement subclasses
+   * ReactiveElement.enableWarning.?('migration');
+   *
+   * // Enable for only MyElement and subclasses
+   * MyElement.enableWarning.?('migration');
+   * ```
+   *
    * @nocollapse
    * @category dev-mode
    */
-  static enableWarning?: (type: Warnings) => void;
+  static enableWarning?: (warningKind: WarningKind) => void;
 
   /**
+   * Disable the given warning category for this class.
+   *
+   * This method only exists in development builds, so it should be accessed
+   * with a guard like:
+   *
+   * ```ts
+   * // Disable for all ReactiveElement subclasses
+   * ReactiveElement.disableWarning.?('migration');
+   *
+   * // Disable for only MyElement and subclasses
+   * MyElement.disableWarning.?('migration');
+   * ```
+   *
    * @nocollapse
    * @category dev-mode
    */
-  static disableWarning?: (type: Warnings) => void;
+  static disableWarning?: (warningKind: WarningKind) => void;
 
   /**
+   * Adds an initializer function to the class that is called during instance
+   * construction.
+   *
+   * This is useful for code that runs against a `ReactiveElement`
+   * subclass, such as a decorator, that needs to do work for each
+   * instance, such as setting up a `ReactiveController`.
+   *
+   * ```ts
+   * const myDecorator = (target: typeof ReactiveElement, key: string) => {
+   *   target.addInitializer((instance: ReactiveElement) => {
+   *     // This is run during construction of the element
+   *     new MyController(instance);
+   *   });
+   * }
+   * ```
+   *
+   * Decorating a field will then cause each instance to run an initializer
+   * that adds a controller:
+   *
+   * ```ts
+   * class MyElement extends LitElement {
+   *   @myDecorator foo;
+   * }
+   * ```
+   *
+   * Initializers are stored per-constructor. Adding an initializer to a
+   * subclass does not add it to a superclass. Since initializers are run in
+   * constructors, initializers will run in order of the class hierarchy,
+   * starting with superclasses and progressing to the instance's class.
+   *
    * @nocollapse
    */
   static addInitializer(initializer: Initializer) {
@@ -335,7 +429,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  static elementProperties?: PropertyDeclarationMap;
+  static elementProperties: PropertyDeclarationMap = new Map();
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -370,15 +464,42 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  static elementStyles?: CSSResultFlatArray;
+  static elementStyles: Array<CSSResultOrNative> = [];
 
   /**
    * Array of styles to apply to the element. The styles should be defined
-   * using the [[`css`]] tag function or via constructible stylesheets.
+   * using the [[`css`]] tag function, via constructible stylesheets, or
+   * imported from native CSS module scripts.
+   *
+   * Note on Content Security Policy:
+   *
+   * Element styles are implemented with `<style>` tags when the browser doesn't
+   * support adopted StyleSheets. To use such `<style>` tags with the style-src
+   * CSP directive, the style-src value must either include 'unsafe-inline' or
+   * 'nonce-<base64-value>' with <base64-value> replaced be a server-generated
+   * nonce.
+   *
+   * To provide a nonce to use on generated <style> elements, set
+   * `window.litNonce` to a server-generated nonce in your page's HTML, before
+   * loading application code:
+   *
+   * ```html
+   * <script>
+   *   // Generated and unique per request:
+   *   window.litNonce = 'a1b2c3d4';
+   * </script>
+   * ```
    * @nocollapse
    * @category styles
    */
   static styles?: CSSResultGroup;
+
+  /**
+   * The set of properties defined by this class that caused an accessor to be
+   * added during `createProperty`.
+   * @nocollapse
+   */
+  private static __reactivePropertyKeys?: Set<PropertyKey>;
 
   /**
    * Returns a list of attributes corresponding to the registered properties.
@@ -391,7 +512,7 @@ export abstract class ReactiveElement
     const attributes: string[] = [];
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
-    this.elementProperties!.forEach((v, p) => {
+    this.elementProperties.forEach((v, p) => {
       const attr = this.__attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this.__attributeToPropertyMap.set(attr, p);
@@ -403,7 +524,7 @@ export abstract class ReactiveElement
 
   /**
    * Creates a property accessor on the element prototype if one does not exist
-   * and stores a PropertyDeclaration for the property with the given options.
+   * and stores a `PropertyDeclaration` for the property with the given options.
    * The property setter calls the property's `hasChanged` property option
    * or uses a strict identity check to determine whether or not to request
    * an update.
@@ -416,10 +537,12 @@ export abstract class ReactiveElement
    * `getPropertyDescriptor`. To customize the options for a property,
    * implement `createProperty` like this:
    *
+   * ```ts
    * static createProperty(name, options) {
    *   options = Object.assign(options, {myOption: true});
    *   super.createProperty(name, options);
    * }
+   * ```
    *
    * @nocollapse
    * @category properties
@@ -437,7 +560,7 @@ export abstract class ReactiveElement
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
     this.finalize();
-    this.elementProperties!.set(name, options);
+    this.elementProperties.set(name, options);
     // Do not generate an accessor if the prototype already has one, since
     // it would be lost otherwise and that would never be the user's intention;
     // Instead, we expect users to call `requestUpdate` themselves from
@@ -448,6 +571,16 @@ export abstract class ReactiveElement
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
+        if (DEV_MODE) {
+          // If this class doesn't have its own set, create one and initialize
+          // with the values in the set from the nearest ancestor class, if any.
+          if (!this.hasOwnProperty('__reactivePropertyKeys')) {
+            this.__reactivePropertyKeys = new Set(
+              this.__reactivePropertyKeys ?? []
+            );
+          }
+          this.__reactivePropertyKeys!.add(name);
+        }
       }
     }
   }
@@ -457,22 +590,24 @@ export abstract class ReactiveElement
    * If no descriptor is returned, the property will not become an accessor.
    * For example,
    *
-   *   class MyElement extends LitElement {
-   *     static getPropertyDescriptor(name, key, options) {
-   *       const defaultDescriptor =
-   *           super.getPropertyDescriptor(name, key, options);
-   *       const setter = defaultDescriptor.set;
-   *       return {
-   *         get: defaultDescriptor.get,
-   *         set(value) {
-   *           setter.call(this, value);
-   *           // custom action.
-   *         },
-   *         configurable: true,
-   *         enumerable: true
-   *       }
+   * ```ts
+   * class MyElement extends LitElement {
+   *   static getPropertyDescriptor(name, key, options) {
+   *     const defaultDescriptor =
+   *         super.getPropertyDescriptor(name, key, options);
+   *     const setter = defaultDescriptor.set;
+   *     return {
+   *       get: defaultDescriptor.get,
+   *       set(value) {
+   *         setter.call(this, value);
+   *         // custom action.
+   *       },
+   *       configurable: true,
+   *       enumerable: true
    *     }
    *   }
+   * }
+   * ```
    *
    * @nocollapse
    * @category properties
@@ -481,18 +616,18 @@ export abstract class ReactiveElement
     name: PropertyKey,
     key: string | symbol,
     options: PropertyDeclaration
-  ) {
+  ): PropertyDescriptor | undefined {
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get(): any {
         return (this as {[key: string]: unknown})[key as string];
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = ((this as {}) as {[key: string]: unknown})[
+        const oldValue = (this as {} as {[key: string]: unknown})[
           name as string
         ];
-        ((this as {}) as {[key: string]: unknown})[key as string] = value;
-        ((this as unknown) as ReactiveElement).requestUpdate(
+        (this as {} as {[key: string]: unknown})[key as string] = value;
+        (this as unknown as ReactiveElement).requestUpdate(
           name,
           oldValue,
           options
@@ -505,19 +640,19 @@ export abstract class ReactiveElement
 
   /**
    * Returns the property options associated with the given property.
-   * These options are defined with a PropertyDeclaration via the `properties`
+   * These options are defined with a `PropertyDeclaration` via the `properties`
    * object or the `@property` decorator and are registered in
    * `createProperty(...)`.
    *
    * Note, this method should be considered "final" and not overridden. To
-   * customize the options for a given property, override `createProperty`.
+   * customize the options for a given property, override [[`createProperty`]].
    *
    * @nocollapse
    * @final
    * @category properties
    */
   protected static getPropertyOptions(name: PropertyKey) {
-    return this.elementProperties!.get(name) || defaultPropertyDeclaration;
+    return this.elementProperties.get(name) || defaultPropertyDeclaration;
   }
 
   /**
@@ -534,7 +669,7 @@ export abstract class ReactiveElement
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
-    this.elementProperties = new Map(superCtor.elementProperties!);
+    this.elementProperties = new Map(superCtor.elementProperties);
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
     // make any properties
@@ -559,21 +694,19 @@ export abstract class ReactiveElement
     this.elementStyles = this.finalizeStyles(this.styles);
     // DEV mode warnings
     if (DEV_MODE) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const warnRemoved = (obj: any, name: string) => {
-        if (obj[name] !== undefined) {
-          console.warn(
-            `\`${name}\` is implemented. It ` +
-              `has been removed from this version of ReactiveElement.` +
-              ` See the changelog at https://github.com/Polymer/lit-html/blob/main/packages/reactive-element/CHANGELOG.md`
+      const warnRemovedOrRenamed = (name: string, renamed = false) => {
+        if (this.prototype.hasOwnProperty(name)) {
+          issueWarning(
+            renamed ? 'renamed-api' : 'removed-api',
+            `\`${name}\` is implemented on class ${this.name}. It ` +
+              `has been ${renamed ? 'renamed' : 'removed'} ` +
+              `in this version of LitElement.`
           );
         }
       };
-      [`initialize`, `requestUpdateInternal`, `_getUpdateComplete`].forEach(
-        (name: string) =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          warnRemoved(this.prototype as any, name)
-      );
+      warnRemovedOrRenamed('initialize');
+      warnRemovedOrRenamed('requestUpdateInternal');
+      warnRemovedOrRenamed('_getUpdateComplete', true);
     }
     return true;
   }
@@ -604,11 +737,13 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category styles
    */
-  protected static finalizeStyles(styles?: CSSResultGroup): CSSResultFlatArray {
+  protected static finalizeStyles(
+    styles?: CSSResultGroup
+  ): Array<CSSResultOrNative> {
     const elementStyles = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
-      // TODO(sorvell): casting to Array<unknown> works around TS error that
+      // Casting to Array<unknown> works around TS error that
       // appears to come from trying to flatten a type CSSResultArray.
       const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
       // Then preserve original order by adding the set items in reverse order.
@@ -651,15 +786,16 @@ export abstract class ReactiveElement
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
 
-  private __pendingConnectionPromise: Promise<void> | undefined = undefined;
-  private __enableConnection: (() => void) | undefined = undefined;
-
   /**
+   * True if there is a pending update as a result of calling `requestUpdate()`.
+   * Should only be read.
    * @category updates
    */
   isUpdatePending = false;
 
   /**
+   * Is set to `true` after the first update. The element code cannot assume
+   * that `renderRoot` exists before the element `hasUpdated`.
    * @category updates
    */
   hasUpdated = false;
@@ -713,6 +849,12 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Registers a `ReactiveController` to participate in the element's reactive
+   * update cycle. The element automatically calls into any registered
+   * controllers during its lifecycle callbacks.
+   *
+   * If the element is connected when `addController()` is called, the
+   * controller's `hostConnected()` callback will be immediately called.
    * @category controllers
    */
   addController(controller: ReactiveController) {
@@ -727,6 +869,7 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Removes a `ReactiveController` from the element.
    * @category controllers
    */
   removeController(controller: ReactiveController) {
@@ -750,7 +893,7 @@ export abstract class ReactiveElement
   private __saveInstanceProperties() {
     // Use forEach so this works even if for/of loops are compiled to for loops
     // expecting arrays
-    (this.constructor as typeof ReactiveElement).elementProperties!.forEach(
+    (this.constructor as typeof ReactiveElement).elementProperties.forEach(
       (_v, p) => {
         if (this.hasOwnProperty(p)) {
           this.__instanceProperties!.set(p, this[p as keyof this]);
@@ -777,7 +920,7 @@ export abstract class ReactiveElement
       );
     adoptStyles(
       renderRoot,
-      (this.constructor as typeof ReactiveElement).elementStyles!
+      (this.constructor as typeof ReactiveElement).elementStyles
     );
     return renderRoot;
   }
@@ -790,18 +933,14 @@ export abstract class ReactiveElement
   connectedCallback() {
     // create renderRoot before first update.
     if (this.renderRoot === undefined) {
-      (this as {
-        renderRoot: Element | DocumentFragment;
-      }).renderRoot = this.createRenderRoot();
+      (
+        this as {
+          renderRoot: Element | DocumentFragment;
+        }
+      ).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
-    // If we were disconnected, re-enable updating by resolving the pending
-    // connection promise
-    if (this.__enableConnection) {
-      this.__enableConnection();
-      this.__pendingConnectionPromise = this.__enableConnection = undefined;
-    }
   }
 
   /**
@@ -820,9 +959,6 @@ export abstract class ReactiveElement
    */
   disconnectedCallback() {
     this.__controllers?.forEach((c) => c.hostDisconnected?.());
-    this.__pendingConnectionPromise = new Promise(
-      (r) => (this.__enableConnection = r)
-    );
   }
 
   /**
@@ -842,11 +978,9 @@ export abstract class ReactiveElement
     value: unknown,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
-    const attr = (this
-      .constructor as typeof ReactiveElement).__attributeNameForProperty(
-      name,
-      options
-    );
+    const attr = (
+      this.constructor as typeof ReactiveElement
+    ).__attributeNameForProperty(name, options);
     if (attr !== undefined && options.reflect === true) {
       const toAttribute =
         (options.converter as ComplexAttributeConverter)?.toAttribute ??
@@ -859,11 +993,12 @@ export abstract class ReactiveElement
         ) >= 0 &&
         attrValue === undefined
       ) {
-        console.warn(
-          `The attribute value for the ` +
-            `${name as string} property is undefined. The attribute will be ` +
-            `removed, but in the previous version of ReactiveElement, the ` +
-            `attribute would not have changed.`
+        issueWarning(
+          'undefined-attribute-value',
+          `The attribute value for the ${name as string} property is ` +
+            `undefined on element ${this.localName}. The attribute will be ` +
+            `removed, but in the previous version of \`ReactiveElement\`, ` +
+            `the attribute would not have changed.`
         );
       }
       // Track if the property is being reflected to avoid
@@ -961,7 +1096,9 @@ export abstract class ReactiveElement
     }
     // Note, since this no longer returns a promise, in dev mode we return a
     // thenable which warns if it's called.
-    return DEV_MODE ? ((requestUpdateThenable as unknown) as void) : undefined;
+    return DEV_MODE
+      ? (requestUpdateThenable(this.localName) as unknown as void)
+      : undefined;
   }
 
   /**
@@ -973,10 +1110,6 @@ export abstract class ReactiveElement
       // Ensure any previous update has resolved before updating.
       // This `await` also ensures that property changes are batched.
       await this.__updatePromise;
-      // If we were disconnected, wait until re-connected to flush an update
-      while (this.__pendingConnectionPromise) {
-        await this.__pendingConnectionPromise;
-      }
     } catch (e) {
       // Refire any previous errors async so they do not disrupt the update
       // cycle. Errors are refired so developers have a chance to observe
@@ -984,8 +1117,8 @@ export abstract class ReactiveElement
       // `window.onunhandledrejection`.
       Promise.reject(e);
     }
-    const result = this.performUpdate();
-    // If `performUpdate` returns a Promise, we await it. This is done to
+    const result = this.scheduleUpdate();
+    // If `scheduleUpdate` returns a Promise, we await it. This is done to
     // enable coordinating updates with a scheduler. Note, the result is
     // checked to avoid delaying an additional microtask unless we need to.
     if (result != null) {
@@ -995,20 +1128,41 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Performs an element update. Note, if an exception is thrown during the
-   * update, `firstUpdated` and `updated` will not be called.
-   *
-   * You can override this method to change the timing of updates. If this
-   * method is overridden, `super.performUpdate()` must be called.
+   * Schedules an element update. You can override this method to change the
+   * timing of updates by returning a Promise. The update will await the
+   * returned Promise, and you should resolve the Promise to allow the update
+   * to proceed. If this method is overridden, `super.scheduleUpdate()`
+   * must be called.
    *
    * For instance, to schedule updates to occur just before the next frame:
    *
-   * ```
-   * protected async performUpdate(): Promise<unknown> {
+   * ```ts
+   * override protected async scheduleUpdate(): Promise<unknown> {
    *   await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-   *   super.performUpdate();
+   *   super.scheduleUpdate();
    * }
    * ```
+   * @category updates
+   */
+  protected scheduleUpdate(): void | Promise<unknown> {
+    return this.performUpdate();
+  }
+
+  /**
+   * Performs an element update. Note, if an exception is thrown during the
+   * update, `firstUpdated` and `updated` will not be called.
+   *
+   * Call `performUpdate()` to immediately process a pending update. This should
+   * generally not be needed, but it can be done in rare cases when you need to
+   * update synchronously.
+   *
+   * Note: To ensure `performUpdate()` synchronously completes a pending update,
+   * it should not be overridden. In LitElement 2.x it was suggested to override
+   * `performUpdate()` to also customizing update scheduling. Instead, you should now
+   * override `scheduleUpdate()`. For backwards compatibility with LitElement 2.x,
+   * scheduling updates via `performUpdate()` continues to work, but will make
+   * also calling `performUpdate()` to synchronously process updates difficult.
+   *
    * @category updates
    */
   protected performUpdate(): void | Promise<unknown> {
@@ -1023,24 +1177,22 @@ export abstract class ReactiveElement
       // Produce warning if any class properties are shadowed by class fields
       if (DEV_MODE) {
         const shadowedProperties: string[] = [];
-        (this.constructor as typeof ReactiveElement).elementProperties!.forEach(
-          (_v, p) => {
-            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-              shadowedProperties.push(p as string);
-            }
+        (
+          this.constructor as typeof ReactiveElement
+        ).__reactivePropertyKeys?.forEach((p) => {
+          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
+            shadowedProperties.push(p as string);
           }
-        );
+        });
         if (shadowedProperties.length) {
-          // TODO(sorvell): Link to docs explanation of this issue.
-          console.warn(
-            `The following properties will not trigger updates as expected ` +
-              `because they are set using class fields: ` +
-              `${shadowedProperties.join(', ')}. ` +
+          throw new Error(
+            `The following properties on element ${this.localName} will not ` +
+              `trigger updates as expected because they are set using class ` +
+              `fields: ${shadowedProperties.join(', ')}. ` +
               `Native class fields and some compiled output will overwrite ` +
-              `accessors used for detecting changes. To fix this issue, ` +
-              `either initialize properties in the constructor or adjust ` +
-              `your compiler settings; for example, for TypeScript set ` +
-              `\`useDefineForClassFields: false\` in your \`tsconfig.json\`.`
+              `accessors used for detecting changes. See ` +
+              `https://lit.dev/msg/class-field-shadowing ` +
+              `for more information.`
           );
         }
       }
@@ -1081,7 +1233,7 @@ export abstract class ReactiveElement
   /**
    * @category updates
    */
-  willUpdate(_changedProperties: PropertyValues) {}
+  protected willUpdate(_changedProperties: PropertyValues): void {}
 
   // Note, this is an override point for polyfill-support.
   // @internal
@@ -1099,8 +1251,10 @@ export abstract class ReactiveElement
         'change-in-update'
       ) >= 0
     ) {
-      console.warn(
-        `An update was requested (generally because a property was set) ` +
+      issueWarning(
+        'change-in-update',
+        `Element ${this.localName} scheduled an update ` +
+          `(generally because a property was set) ` +
           `after an update completed, causing a new update to be scheduled. ` +
           `This is inefficient and should be avoided unless the next update ` +
           `can only be scheduled as a side effect of the previous update.`
@@ -1125,7 +1279,7 @@ export abstract class ReactiveElement
    * before fulfilling this Promise. To do this, first await
    * `super.getUpdateComplete()`, then any subsequent state.
    *
-   * @return A promise of a boolean that indicates if the update resolved
+   * @return A promise of a boolean that resolves to true if the update completed
    *     without triggering another update.
    * @category updates
    */
@@ -1142,12 +1296,18 @@ export abstract class ReactiveElement
    * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
    * This method should be overridden instead. For example:
    *
-   *   class MyElement extends LitElement {
-   *     async getUpdateComplete() {
-   *       await super.getUpdateComplete();
-   *       await this._myChild.updateComplete;
-   *     }
+   * ```ts
+   * class MyElement extends LitElement {
+   *   override async getUpdateComplete() {
+   *     const result = await super.getUpdateComplete();
+   *     await this._myChild.updateComplete;
+   *     return result;
    *   }
+   * }
+   * ```
+   *
+   * @return A promise of a boolean that resolves to true if the update completed
+   *     without triggering another update.
    * @category updates
    */
   protected getUpdateComplete(): Promise<boolean> {
@@ -1155,7 +1315,7 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Controls whether or not `update` should be called when the element requests
+   * Controls whether or not `update()` should be called when the element requests
    * an update. By default, this method always returns `true`, but this can be
    * customized to control when to update.
    *
@@ -1213,8 +1373,7 @@ export abstract class ReactiveElement
 }
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['reactiveElementPlatformSupport']?.({ReactiveElement});
+polyfillSupport?.({ReactiveElement});
 
 // Dev mode warnings...
 if (DEV_MODE) {
@@ -1229,7 +1388,7 @@ if (DEV_MODE) {
   };
   ReactiveElement.enableWarning = function (
     this: typeof ReactiveElement,
-    warning: Warnings
+    warning: WarningKind
   ) {
     ensureOwnWarnings(this);
     if (this.enabledWarnings!.indexOf(warning) < 0) {
@@ -1238,7 +1397,7 @@ if (DEV_MODE) {
   };
   ReactiveElement.disableWarning = function (
     this: typeof ReactiveElement,
-    warning: Warnings
+    warning: WarningKind
   ) {
     ensureOwnWarnings(this);
     const i = this.enabledWarnings!.indexOf(warning);
@@ -1248,14 +1407,13 @@ if (DEV_MODE) {
   };
 }
 
-declare global {
-  interface Window {
-    reactiveElementVersions: string[];
-  }
-}
-
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-// TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['reactiveElementVersions'] ??= []).push('1.0.0-pre.3');
+(globalThis.reactiveElementVersions ??= []).push('1.1.2');
+if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
+  issueWarning!(
+    'multiple-versions',
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended.`
+  );
+}

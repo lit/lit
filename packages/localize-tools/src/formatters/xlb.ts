@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as xmldom from 'xmldom';
-import glob from 'glob';
+import * as xmldom from '@xmldom/xmldom';
+import fastGlob from 'fast-glob';
 import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
 import type {Config} from '../types/config.js';
@@ -49,7 +49,7 @@ class XlbFormatter implements Formatter {
    * pattern.
    */
   readTranslations(): Array<Bundle> {
-    const files = glob.sync(this.xlbConfig.translationsGlob, {
+    const files = fastGlob.sync(this.xlbConfig.translationsGlob, {
       cwd: this.config.baseDir,
       absolute: true,
     });
@@ -150,7 +150,7 @@ class XlbFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLB directory: ${parentDir}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
     try {
@@ -159,7 +159,7 @@ class XlbFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLB file: ${filePath}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
   }

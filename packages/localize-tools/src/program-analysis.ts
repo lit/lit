@@ -8,7 +8,10 @@ import ts from 'typescript';
 import * as parse5 from 'parse5';
 import {ProgramMessage, Placeholder, Message} from './messages.js';
 import {createDiagnostic} from './typescript.js';
-import {generateMsgId, HASH_DELIMITER} from './id-generation.js';
+import {
+  generateMsgId,
+  HASH_DELIMITER,
+} from '@lit/localize/internal/id-generation.js';
 
 type ResultOrError<R, E> =
   | {result: R; error?: undefined}
@@ -17,9 +20,10 @@ type ResultOrError<R, E> =
 /**
  * Extract translation messages from all files in a TypeScript program.
  */
-export function extractMessagesFromProgram(
-  program: ts.Program
-): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
+export function extractMessagesFromProgram(program: ts.Program): {
+  messages: ProgramMessage[];
+  errors: ts.Diagnostic[];
+} {
   const messages: ProgramMessage[] = [];
   const errors: ts.Diagnostic[] = [];
   for (const sourcefile of program.getSourceFiles()) {
@@ -90,14 +94,14 @@ function extractMsg(
   if (templateResult.error) {
     return {error: templateResult.error};
   }
-  const {contents, template, isLitTemplate} = templateResult.result;
+  const {contents, template, tag} = templateResult.result;
 
   const optionsResult = extractOptions(optionsArg, file);
   if (optionsResult.error) {
     return {error: optionsResult.error};
   }
   const options = optionsResult.result;
-  const name = options.id ?? generateMsgIdFromAstNode(template, isLitTemplate);
+  const name = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
 
   return {
     result: {
@@ -105,7 +109,7 @@ function extractMsg(
       file,
       node,
       contents,
-      isLitTemplate,
+      tag,
       // Note we pass node.parent because node is a CallExpression node, but the
       // JSDoc tag will be attached to the parent Expression node.
       desc: options.desc,
@@ -218,7 +222,7 @@ export function extractOptions(
 interface ExtractedTemplate {
   contents: Array<string | Placeholder>;
   params?: string[];
-  isLitTemplate: boolean;
+  tag: 'html' | 'str' | undefined;
   template: ts.TemplateLiteral | ts.StringLiteral;
 }
 
@@ -236,7 +240,7 @@ export function extractTemplate(
       result: {
         template: templateArg,
         contents: [templateArg.text],
-        isLitTemplate: false,
+        tag: undefined,
       },
     };
   }
@@ -346,7 +350,7 @@ function paramTemplate(
     result: {
       template,
       contents: combined,
-      isLitTemplate: isLit,
+      tag: isLitTemplate(arg) ? 'html' : isStrTemplate(arg) ? 'str' : undefined,
     },
   };
 }
@@ -366,7 +370,9 @@ interface Expression {
  */
 const EXPRESSION_RAND = String(Math.random()).slice(2);
 const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_START_REGEXP = new RegExp(EXPRESSION_START, 'g');
 const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
+const EXPRESSION_END_REGEXP = new RegExp(EXPRESSION_END, 'g');
 
 /**
  * Our template is split apart based on template string literal expressions.
@@ -425,8 +431,8 @@ function replaceExpressionsAndHtmlWithPlaceholders(
       // need to fix the syntax.
       contents.push({
         untranslatable: part.untranslatable
-          .replace(EXPRESSION_START, '${')
-          .replace(EXPRESSION_END, '}'),
+          .replace(EXPRESSION_START_REGEXP, '${')
+          .replace(EXPRESSION_END_REGEXP, '}'),
       });
     }
   }
@@ -518,9 +524,10 @@ function replaceHtmlWithPlaceholders(
  *
  *   <b class="red">foo</b> --> {open: '<b class="red">, close: '</b>'}
  */
-function serializeOpenCloseTags(
-  node: parse5.ChildNode
-): {open: string; close: string} {
+function serializeOpenCloseTags(node: parse5.ChildNode): {
+  open: string;
+  close: string;
+} {
   const withoutChildren: parse5.ChildNode = {...node, childNodes: []};
   const fakeParent = {childNodes: [withoutChildren]} as parse5.Node;
   const serialized = parse5.serialize(fakeParent);
@@ -560,6 +567,19 @@ export function isLitTemplate(
     ts.isTaggedTemplateExpression(node) &&
     ts.isIdentifier(node.tag) &&
     node.tag.escapedText === 'html'
+  );
+}
+
+/**
+ * E.g. str`foo${bar}`
+ */
+export function isStrTemplate(
+  node: ts.Node
+): node is ts.TaggedTemplateExpression {
+  return (
+    ts.isTaggedTemplateExpression(node) &&
+    ts.isIdentifier(node.tag) &&
+    node.tag.escapedText === 'str'
   );
 }
 
@@ -608,9 +628,10 @@ export function isStrTaggedTemplate(
  * same content, de-duplicate them. For those with the same ID and different
  * content, return an error.
  */
-function dedupeMessages(
-  messages: ProgramMessage[]
-): {messages: ProgramMessage[]; errors: ts.Diagnostic[]} {
+function dedupeMessages(messages: ProgramMessage[]): {
+  messages: ProgramMessage[];
+  errors: ts.Diagnostic[];
+} {
   const errors: ts.Diagnostic[] = [];
   const cache = new Map<string, ProgramMessage>();
   for (const message of messages) {

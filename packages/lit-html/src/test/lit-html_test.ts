@@ -18,7 +18,15 @@ import {
   Part,
   CompiledTemplate,
 } from '../lit-html.js';
-import {directive, Directive, PartType, PartInfo} from '../directive.js';
+import * as litHtmlLib from '../lit-html.js';
+
+import {
+  directive,
+  Directive,
+  PartType,
+  PartInfo,
+  DirectiveParameters,
+} from '../directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -30,8 +38,9 @@ import {AsyncDirective} from '../async-directive.js';
 import {createRef, ref} from '../directives/ref.js';
 
 // For compiled template tests
-import {_Σ} from '../private-ssr-support.js';
-const {AttributePart} = _Σ;
+import {_$LH} from '../private-ssr-support.js';
+import {until} from '../directives/until.js';
+const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
 
@@ -40,12 +49,32 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
+/**
+ * litHtmlLib.INTERNAL is not exported in prod mode
+ */
+const INTERNAL = litHtmlLib.INTERNAL === true;
+
+class FireEventDirective extends Directive {
+  render() {
+    return nothing;
+  }
+  override update(part: AttributePart) {
+    part.element.dispatchEvent(
+      new CustomEvent('test-event', {
+        bubbles: true,
+      })
+    );
+    return nothing;
+  }
+}
+const fireEvent = directive(FireEventDirective);
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
 
   setup(() => {
     container = document.createElement('div');
+    container.id = 'container';
   });
 
   const assertRender = (
@@ -391,21 +420,31 @@ suite('lit-html', () => {
     });
 
     test('"dynamic" tag name', () => {
-      render(html`<${'A'}></${'A'}>`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      const template = html`<${'A'}></${'A'}>`;
+      if (DEV_MODE) {
+        assert.throws(() => {
+          render(template, container);
+        });
+      } else {
+        render(template, container);
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<></>');
+      }
     });
 
     test('malformed "dynamic" tag name', () => {
       // `</ ` starts a comment
-      render(html`<${'A'}></ ${'A'}>`, container);
-      assert.equal(
-        stripExpressionMarkers(container.innerHTML),
-        '<><!-- --></>'
-      );
-
-      // Currently fails:
-      // render(html`<${'A'}></ ${'A'}>${'B'}`, container);
-      // assert.equal(stripExpressionMarkers(container.innerHTML), '<><!-- -->B</>');
+      const template = html`<${'A'}></ ${'A'}>`;
+      if (DEV_MODE) {
+        assert.throws(() => {
+          render(template, container);
+        });
+      } else {
+        render(template, container);
+        assert.equal(
+          stripExpressionMarkers(container.innerHTML),
+          '<><!-- --></>'
+        );
+      }
     });
 
     test('binding after end tag name', () => {
@@ -965,7 +1004,7 @@ suite('lit-html', () => {
       assertContent('<div>baz</div><div foo="bar"></div>');
     });
 
-    test('renders undefined in attributes', () => {
+    test('renders undefined in interpolated attributes', () => {
       render(html`<div attribute="it's ${undefined}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -981,6 +1020,32 @@ suite('lit-html', () => {
     test('renders null in attributes', () => {
       render(html`<div attribute="${null as any}"></div>`, container);
       assertContent('<div attribute=""></div>');
+    });
+
+    test('renders empty string in attributes', () => {
+      render(html`<div attribute="${''}"></div>`, container);
+      assertContent('<div attribute=""></div>');
+    });
+
+    test('renders empty string in interpolated attributes', () => {
+      render(html`<div attribute="foo${''}"></div>`, container);
+      assertContent('<div attribute="foo"></div>');
+    });
+
+    test('initial render of noChange in fully-controlled attribute', () => {
+      render(html`<div attribute="${noChange as any}"></div>`, container);
+      assertContent('<div></div>');
+    });
+
+    test('renders noChange in attributes, preserves outside attribute value', () => {
+      const go = (v: any) =>
+        render(html`<div attribute="${v}"></div>`, container);
+      go(noChange);
+      assertContent('<div></div>');
+      const div = container.querySelector('div');
+      div?.setAttribute('attribute', 'A');
+      go(noChange);
+      assertContent('<div attribute="A"></div>');
     });
 
     test('nothing sentinel removes an attribute', () => {
@@ -1024,9 +1089,17 @@ suite('lit-html', () => {
       assert.isEmpty(observer.takeRecords());
     });
 
-    test('noChange works on one of multiple expressions', () => {
+    test('noChange renders as empty string when used in interpolated attributes', () => {
       const go = (a: any, b: any) =>
         render(html`<div foo="${a}:${b}"></div>`, container);
+
+      go('A', noChange);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        '<div foo="A:"></div>',
+        'A'
+      );
+
       go('A', 'B');
       assert.equal(
         stripExpressionComments(container.innerHTML),
@@ -1354,10 +1427,11 @@ suite('lit-html', () => {
       const text = container.querySelector('div')!;
       assert.equal(text.textContent, 'aaa');
 
-      // Set textContent manually. Since lit-html doesn't dirty check against
-      // actual DOM, but again previous part values, this modification should
-      // persist through the next render with the same value.
-      text.textContent = 'bbb';
+      // Set textContent manually (without disturbing the part marker node).
+      // Since lit-html doesn't dirty check against actual DOM, but again
+      // previous part values, this modification should persist through the
+      // next render with the same value.
+      text.lastChild!.textContent = 'bbb';
       assert.equal(text.textContent, 'bbb');
       assertContent('<div>bbb</div>');
 
@@ -1509,15 +1583,22 @@ suite('lit-html', () => {
   });
 
   suite('compiled', () => {
+    const trustedTypes = (globalThis as unknown as Partial<Window>)
+      .trustedTypes;
+    const policy = trustedTypes?.createPolicy('lit-html', {
+      createHTML: (s) => s,
+    }) ?? {createHTML: (s) => s as unknown as TrustedHTML};
+
     test('only text', () => {
       // A compiled template for html`${'A'}`
       const _$lit_template_1: CompiledTemplate = {
-        h: '<!---->',
+        h: policy.createHTML('<!---->'),
         parts: [{type: 2, index: 0}],
       };
       assertRender(
         {
-          _$litType$: _$lit_template_1,
+          // This property needs to remain unminified.
+          ['_$litType$']: _$lit_template_1,
           values: ['A'],
         },
         'A'
@@ -1527,11 +1608,12 @@ suite('lit-html', () => {
     test('text expression', () => {
       // A compiled template for html`<div>${'A'}</div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: `<div><!----></div>`,
+        h: policy.createHTML(`<div><!----></div>`),
         parts: [{type: 2, index: 1}],
       };
       const result = {
-        _$litType$: _$lit_template_1,
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
         values: ['A'],
       };
       assertRender(result, '<div>A</div>');
@@ -1540,7 +1622,7 @@ suite('lit-html', () => {
     test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: '<div></div>',
+        h: policy.createHTML('<div></div>'),
         parts: [
           {
             type: 1,
@@ -1552,7 +1634,8 @@ suite('lit-html', () => {
         ],
       };
       const result = {
-        _$litType$: _$lit_template_1,
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
         values: ['A'],
       };
       assertRender(result, '<div foo="A"></div>');
@@ -1562,11 +1645,12 @@ suite('lit-html', () => {
       const r = createRef();
       // A compiled template for html`<div ${ref(r)}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: '<div></div>',
+        h: policy.createHTML('<div></div>'),
         parts: [{type: 6, index: 0}],
       };
       const result = {
-        _$litType$: _$lit_template_1,
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
         values: [ref(r)],
       };
       assertRender(result, '<div></div>');
@@ -1625,11 +1709,14 @@ suite('lit-html', () => {
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
       class CheckNodePropertiesBehavior extends Directive {
-        render() {
+        render(_parentId?: string) {
           return nothing;
         }
 
-        update(part: ChildPart) {
+        override update(
+          part: ChildPart,
+          [parentId]: DirectiveParameters<this>
+        ) {
           const {parentNode, startNode, endNode} = part;
 
           if (endNode !== null) {
@@ -1648,19 +1735,21 @@ suite('lit-html', () => {
             assert.equal<Node | null>(startNode.nextSibling, endNode);
           }
 
+          if (parentId !== undefined) {
+            assert.equal((parentNode as HTMLElement).id, parentId);
+          }
+
           return nothing;
         }
       }
-      const checkNodePropertiesBehavior = directive(
-        CheckNodePropertiesBehavior
-      );
+      const checkPart = directive(CheckNodePropertiesBehavior);
 
       test('when the directive is the only child', () => {
         const makeTemplate = (content: unknown) => html`<div>${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is the last child', () => {
@@ -1668,8 +1757,8 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content}</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
       });
 
       test('when the directive is not the last child', () => {
@@ -1677,8 +1766,44 @@ suite('lit-html', () => {
           html`<div>Earlier sibling. ${content} Later sibling.</div>`;
 
         // Render twice so that `update` is called.
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
-        render(makeTemplate(checkNodePropertiesBehavior()), container);
+        render(makeTemplate(checkPart()), container);
+        render(makeTemplate(checkPart()), container);
+      });
+
+      test(`part's parentNode is the logical DOM parent`, async () => {
+        const asyncCheckDiv = Promise.resolve(checkPart('divPromise'));
+        const makeTemplate = () =>
+          html`
+            ${checkPart('container')}
+            <div id="div">
+              ${checkPart('div')}
+              ${html`x ${checkPart('div')} x`}
+              ${html`x ${html`x ${checkPart('div')} x`} x`}
+              ${html`x ${html`x ${[checkPart('div'), checkPart('div')]} x`} x`}
+              ${html`x ${html`x ${[
+                [checkPart('div'), checkPart('div')],
+              ]} x`} x`}
+              ${html`x ${html`x ${[
+                [repeat([checkPart('div'), checkPart('div')], (v) => v)],
+              ]} x`} x`}
+              ${until(asyncCheckDiv)}
+            </div>
+          `;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), container);
+        await asyncCheckDiv;
+        render(makeTemplate(), container);
+      });
+
+      test(`part's parentNode is correct when rendered into a document fragment`, async () => {
+        const fragment = document.createDocumentFragment();
+        (fragment as unknown as {id: string}).id = 'fragment';
+        const makeTemplate = () => html`${checkPart('fragment')}`;
+
+        // Render twice so that `update` is called.
+        render(makeTemplate(), fragment);
+        render(makeTemplate(), fragment);
       });
     });
 
@@ -1703,7 +1828,7 @@ suite('lit-html', () => {
           return v;
         }
 
-        update(part: ChildPart, [v]: Parameters<this['render']>) {
+        override update(part: ChildPart, [v]: Parameters<this['render']>) {
           receivedPart = part;
           receivedValue = v;
           return this.render(v);
@@ -1832,27 +1957,24 @@ suite('lit-html', () => {
     });
 
     test('event listeners can see events fired in attribute directives', () => {
-      class FireEventDirective extends Directive {
-        render() {
-          return nothing;
-        }
-        // TODO (justinfagnani): make this work on SpreadPart
-        update(part: AttributePart) {
-          part.element.dispatchEvent(
-            new CustomEvent('test-event', {
-              bubbles: true,
-            })
-          );
-          return nothing;
-        }
-      }
-      const fireEvent = directive(FireEventDirective);
       let event = undefined;
       const listener = (e: Event) => {
         event = e;
       };
       render(
         html`<div @test-event=${listener} b=${fireEvent()}></div>`,
+        container
+      );
+      assert.isOk(event);
+    });
+
+    test('event listeners can see events fired in element directives', () => {
+      let event = undefined;
+      const listener = (e: Event) => {
+        event = e;
+      };
+      render(
+        html`<div @test-event=${listener} ${fireEvent()}></div>`,
         container
       );
       assert.isOk(event);
@@ -1904,6 +2026,137 @@ suite('lit-html', () => {
       assert.deepEqual(log, ['x:2', 'y:2']);
     });
 
+    if (DEV_MODE) {
+      test('EventPart attributes must consist of one value and no extra text', () => {
+        const listener = () => {};
+
+        render(html`<div @click=${listener}></div>`, container);
+        render(html`<div @click="${listener}"></div>`, container);
+
+        assert.throws(() => {
+          render(html`<div @click=EXTRA_TEXT${listener}></div>`, container);
+        });
+        assert.throws(() => {
+          render(html`<div @click=${listener}EXTRA_TEXT></div>`, container);
+        });
+        assert.throws(() => {
+          render(html`<div @click=${listener}${listener}></div>`, container);
+        });
+        assert.throws(() => {
+          render(
+            html`<div @click="${listener}EXTRA_TEXT${listener}"></div>`,
+            container
+          );
+        });
+      });
+
+      test('Expressions inside template throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(html`<template>${'test'}</template>`, container);
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(html`<div><template>${'test'}</template></div>`, container);
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // element part deep inside
+        assert.throws(() => {
+          render(
+            html`<template>
+            <div><div><div><div ${'test'}></div></div></div></div>
+            </template>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<template id=${'test'}>
+          <div>Static content is ok</div>
+            </template>`,
+          container
+        );
+      });
+
+      test('Expressions inside nested templates throw in dev mode', () => {
+        // top level
+        assert.throws(() => {
+          render(
+            html`<template><template>${'test'}</template></template>`,
+            container
+          );
+        });
+
+        // inside template result
+        assert.throws(() => {
+          render(
+            html`<template><div><template>${'test'}</template></template></div>`,
+            container
+          );
+        });
+
+        // child part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div>${'test'}</div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div class="${'test'}"></div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr part deep inside
+        assert.throws(() => {
+          render(
+            html`<template><template>
+            <div><div><div><div ${'test'}></div></div></div></div>
+            </template></template>`,
+            container
+          );
+        });
+
+        // attr on element a-ok
+        render(
+          html`<template id=${'test'}><template>
+          <div>Static content is ok</div>
+            </template></template>`,
+          container
+        );
+      });
+    }
+
     test('directives have access to renderOptions', () => {
       const hostEl = document.createElement('input');
       hostEl.value = 'host';
@@ -1915,7 +2168,7 @@ suite('lit-html', () => {
           return `${(this.host as HTMLInputElement)?.value}:${v}`;
         }
 
-        update(part: Part, props: [v: string]) {
+        override update(part: Part, props: [v: string]) {
           this.host ??= part.options!.host as HTMLInputElement;
           return this.render(...props);
         }
@@ -2009,578 +2262,625 @@ suite('lit-html', () => {
         });
       });
     });
+  });
 
-    suite('async directives', () => {
-      const aDirective = directive(
-        class extends AsyncDirective {
-          value: unknown;
-          promise!: Promise<unknown>;
-          render(_promise: Promise<unknown>) {
-            return 'initial';
-          }
-          update(_part: Part, [promise]: Parameters<this['render']>) {
-            if (promise !== this.promise) {
-              this.promise = promise;
-              promise.then((value) => this.setValue((this.value = value)));
-            }
-            return this.value ?? this.render(promise);
-          }
+  suite('async directives', () => {
+    class ADirective extends AsyncDirective {
+      value: unknown;
+      promise!: Promise<unknown>;
+      render(_promise: Promise<unknown>) {
+        return 'initial';
+      }
+      override update(_part: Part, [promise]: Parameters<this['render']>) {
+        aDirectiveInst = this;
+        if (promise !== this.promise) {
+          this.promise = promise;
+          promise.then((value) => this.setValue((this.value = value)));
         }
-      );
-      const bDirective = directive(
-        class extends Directive {
-          count = 0;
-          render(v: unknown) {
-            return `[B:${this.count++}:${v}]`;
-          }
+        return this.value ?? this.render(promise);
+      }
+    }
+    const aDirective = directive(ADirective);
+    let aDirectiveInst: ADirective;
+
+    const bDirective = directive(
+      class extends Directive {
+        count = 0;
+        render(v: unknown) {
+          return `[B:${this.count++}:${v}]`;
         }
+      }
+    );
+
+    const syncAsyncDirective = directive(
+      class extends AsyncDirective {
+        render(x: string) {
+          this.setValue(x);
+          return noChange;
+        }
+      }
+    );
+
+    test('async directive can call setValue synchronously', () => {
+      assertRender(
+        html`<div foo=${syncAsyncDirective('test')}>${syncAsyncDirective(
+          'test'
+        )}</div>`,
+        '<div foo="test">test</div>'
       );
-
-      test('async directives in ChildPart', async () => {
-        const template = (promise: Promise<unknown>) =>
-          html`<div>${aDirective(promise)}</div>`;
-        let promise = Promise.resolve('resolved1');
-        assertRender(template(promise), `<div>initial</div>`);
-        await promise;
-        assertContent(`<div>resolved1</div>`);
-        promise = Promise.resolve('resolved2');
-        assertRender(template(promise), `<div>resolved1</div>`);
-        await promise;
-        assertContent(`<div>resolved2</div>`);
-      });
-
-      test('async directives while disconnected in ChildPart', async () => {
-        const template = (promise: Promise<unknown>) =>
-          html`<div>${aDirective(promise)}</div>`;
-        const promise = Promise.resolve('resolved1');
-        const part = assertRender(template(promise), `<div>initial</div>`);
-        part.setConnected(false);
-        await promise;
-        assertContent(`<div>initial</div>`);
-        part.setConnected(true);
-        assertContent(`<div>resolved1</div>`);
-      });
-
-      test('async directives while disconnected in ChildPart clears its value', async () => {
-        const log: string[] = [];
-        const template = (promise: Promise<unknown>) =>
-          html`<div>${aDirective(promise)}</div>`;
-        // Async render a TemplateResult containing a AsyncDirective
-        let promise: Promise<unknown> = Promise.resolve(
-          html`${disconnectingDirective(log, 'dd', 'dd')}`
-        );
-        const part = assertRender(template(promise), `<div>initial</div>`);
-        await promise;
-        assertContent(`<div>dd</div>`);
-        // Eneuque an async clear of the TemplateResult+AsyncDirective
-        promise = Promise.resolve(nothing);
-        assertRender(template(promise), `<div>dd</div>`);
-        assert.deepEqual(log, []);
-        // Disconnect the tree before the clear is committed
-        part.setConnected(false);
-        assert.deepEqual(log, ['disconnected-dd']);
-        await promise;
-        assert.deepEqual(log, ['disconnected-dd']);
-        assertContent(`<div>dd</div>`);
-        // Re-connect the tree, which should clear the part but not reconnect
-        // the AsyncDirective that was cleared
-        part.setConnected(true);
-        assertRender(template(promise), `<div></div>`);
-        assert.deepEqual(log, ['disconnected-dd']);
-      });
-
-      test('async nested directives in ChildPart', async () => {
-        const template = (promise: Promise<unknown>) =>
-          html`<div>${aDirective(promise)}</div>`;
-        let promise = Promise.resolve(bDirective('X'));
-        assertRender(template(promise), `<div>initial</div>`);
-        await promise;
-        assertContent(`<div>[B:0:X]</div>`);
-        assertRender(template(promise), `<div>[B:1:X]</div>`);
-        promise = Promise.resolve(bDirective('Y'));
-        assertRender(template(promise), `<div>[B:2:X]</div>`);
-        await promise;
-        assertContent(`<div>[B:3:Y]</div>`);
-      });
-
-      test('async directives in AttributePart', async () => {
-        const template = (promise: Promise<unknown>) =>
-          html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
-        let promise = Promise.resolve('resolved1');
-        assertRender(template(promise), `<div a="**initial##"></div>`);
-        await promise;
-        assertContent(`<div a="**resolved1##"></div>`);
-        promise = Promise.resolve('resolved2');
-        assertRender(template(promise), `<div a="**resolved1##"></div>`);
-        await promise;
-        assertContent(`<div a="**resolved2##"></div>`);
-      });
-
-      test('async directives while disconnected in AttributePart', async () => {
-        const template = (promise: Promise<unknown>) =>
-          html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
-        const promise = Promise.resolve('resolved1');
-        const part = assertRender(
-          template(promise),
-          `<div a="**initial##"></div>`
-        );
-        part.setConnected(false);
-        await promise;
-        assertContent(`<div a="**initial##"></div>`);
-        part.setConnected(true);
-        assertContent(`<div a="**resolved1##"></div>`);
-      });
-
-      test('async nested directives in AttributePart', async () => {
-        const template = (promise: Promise<unknown>) =>
-          html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
-        let promise = Promise.resolve(bDirective('X'));
-        assertRender(template(promise), `<div a="**initial##"></div>`);
-        await promise;
-        assertContent(`<div a="**[B:0:X]##"></div>`);
-        promise = Promise.resolve(bDirective('Y'));
-        assertRender(template(promise), `<div a="**[B:1:X]##"></div>`);
-        await promise;
-        assertContent(`<div a="**[B:2:Y]##"></div>`);
-      });
     });
-  });
 
-  const disconnectingDirective = directive(
-    class extends AsyncDirective {
-      log!: Array<string>;
-      id!: string;
+    test('async directives in ChildPart', async () => {
+      const template = (promise: Promise<unknown>) =>
+        html`<div>${aDirective(promise)}</div>`;
+      let promise = Promise.resolve('resolved1');
+      assertRender(template(promise), `<div>initial</div>`);
+      await promise;
+      assertContent(`<div>resolved1</div>`);
+      promise = Promise.resolve('resolved2');
+      assertRender(template(promise), `<div>resolved1</div>`);
+      await promise;
+      assertContent(`<div>resolved2</div>`);
+    });
 
-      render(log: Array<string>, id = '', value?: unknown, bool = true) {
-        this.log = log;
-        this.id = id;
-        return bool ? value : nothing;
+    test('async directives change to disconnected in ChildPart', async () => {
+      const template = (promise: Promise<unknown>) =>
+        html`<div>${aDirective(promise)}</div>`;
+      const promise = Promise.resolve('resolved1');
+      const part = assertRender(template(promise), `<div>initial</div>`);
+      assert.isTrue(aDirectiveInst.isConnected);
+      part.setConnected(false);
+      assertContent(`<div>initial</div>`);
+      await promise;
+      assert.isFalse(aDirectiveInst.isConnected);
+      assertContent(`<div>resolved1</div>`);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertContent(`<div>resolved1</div>`);
+    });
+
+    test('async directives render while disconnected in ChildPart', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      const promise = Promise.resolve('resolved1');
+      const part = assertRender(template('initial'), `<div>initial</div>`);
+      part.setConnected(false);
+      assertRender(template(aDirective(promise)), `<div>initial</div>`);
+      assert.isFalse(aDirectiveInst.isConnected);
+      await promise;
+      assertContent(`<div>resolved1</div>`);
+      assert.isFalse(aDirectiveInst.isConnected);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertRender(template(aDirective(promise)), `<div>resolved1</div>`);
+    });
+
+    test('async directives while disconnected in ChildPart clears its value', async () => {
+      const log: string[] = [];
+      const template = (promise: Promise<unknown>) =>
+        html`<div>${aDirective(promise)}</div>`;
+      // Async render a TemplateResult containing a AsyncDirective
+      let promise: Promise<unknown> = Promise.resolve(
+        html`${disconnectingDirective(log, 'dd', 'dd')}`
+      );
+      const part = assertRender(template(promise), `<div>initial</div>`);
+      await promise;
+      assertContent(`<div>dd</div>`);
+      // Eneuque an async clear of the TemplateResult+AsyncDirective
+      promise = Promise.resolve(nothing);
+      assertRender(template(promise), `<div>dd</div>`);
+      assert.deepEqual(log, []);
+      // Disconnect the tree before the clear is committed
+      part.setConnected(false);
+      assert.isFalse(aDirectiveInst.isConnected);
+      assert.deepEqual(log, ['disconnected-dd']);
+      await promise;
+      assert.deepEqual(log, ['disconnected-dd']);
+      assertContent(`<div></div>`);
+      // Re-connect the tree, which should clear the part but not reconnect
+      // the AsyncDirective that was cleared
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertRender(template(promise), `<div></div>`);
+      assert.deepEqual(log, ['disconnected-dd']);
+    });
+
+    test('async nested directives in ChildPart', async () => {
+      const template = (promise: Promise<unknown>) =>
+        html`<div>${aDirective(promise)}</div>`;
+      let promise = Promise.resolve(bDirective('X'));
+      assertRender(template(promise), `<div>initial</div>`);
+      await promise;
+      assertContent(`<div>[B:0:X]</div>`);
+      assertRender(template(promise), `<div>[B:1:X]</div>`);
+      promise = Promise.resolve(bDirective('Y'));
+      assertRender(template(promise), `<div>[B:2:X]</div>`);
+      await promise;
+      assertContent(`<div>[B:3:Y]</div>`);
+    });
+
+    test('async directives in AttributePart', async () => {
+      const template = (promise: Promise<unknown>) =>
+        html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
+      let promise = Promise.resolve('resolved1');
+      assertRender(template(promise), `<div a="**initial##"></div>`);
+      await promise;
+      assertContent(`<div a="**resolved1##"></div>`);
+      promise = Promise.resolve('resolved2');
+      assertRender(template(promise), `<div a="**resolved1##"></div>`);
+      await promise;
+      assertContent(`<div a="**resolved2##"></div>`);
+    });
+
+    test('async directives while disconnected in AttributePart', async () => {
+      const template = (promise: Promise<unknown>) =>
+        html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
+      const promise = Promise.resolve('resolved1');
+      const part = assertRender(
+        template(promise),
+        `<div a="**initial##"></div>`
+      );
+      part.setConnected(false);
+      assert.isFalse(aDirectiveInst.isConnected);
+      await promise;
+      assertContent(`<div a="**resolved1##"></div>`);
+      part.setConnected(true);
+      assert.isTrue(aDirectiveInst.isConnected);
+      assertContent(`<div a="**resolved1##"></div>`);
+    });
+
+    test('async nested directives in AttributePart', async () => {
+      const template = (promise: Promise<unknown>) =>
+        html`<div a="${'**'}${aDirective(promise)}${'##'}"></div>`;
+      let promise = Promise.resolve(bDirective('X'));
+      assertRender(template(promise), `<div a="**initial##"></div>`);
+      await promise;
+      assertContent(`<div a="**[B:0:X]##"></div>`);
+      promise = Promise.resolve(bDirective('Y'));
+      assertRender(template(promise), `<div a="**[B:1:X]##"></div>`);
+      await promise;
+      assertContent(`<div a="**[B:2:Y]##"></div>`);
+    });
+
+    const disconnectingDirective = directive(
+      class extends AsyncDirective {
+        log!: Array<string>;
+        id!: string;
+
+        render(log: Array<string>, id = '', value?: unknown, bool = true) {
+          this.log = log;
+          this.id = id;
+          return bool ? value : nothing;
+        }
+
+        override disconnected() {
+          this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+        }
+        override reconnected() {
+          this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
+        }
       }
+    );
 
-      disconnected() {
-        this.log.push('disconnected' + (this.id ? `-${this.id}` : ''));
+    const passthroughDirective = directive(
+      class extends Directive {
+        render(value: unknown, bool = true) {
+          return bool ? value : nothing;
+        }
       }
-      reconnected() {
-        this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
-      }
-    }
-  );
+    );
 
-  const passthroughDirective = directive(
-    class extends Directive {
-      render(value: unknown, bool = true) {
-        return bool ? value : nothing;
-      }
-    }
-  );
+    test('directives can be disconnected from ChildParts', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(html`${x ? disconnectingDirective(log) : nothing}`, container);
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives can be disconnected from ChildParts', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(html`${x ? disconnectingDirective(log) : nothing}`, container);
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives are disconnected when their template is', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(x ? html`${disconnectingDirective(log)}` : nothing, container);
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives are disconnected when their template is', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(x ? html`${disconnectingDirective(log)}` : nothing, container);
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives are disconnected when their nested template is', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(
+          x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
+          container
+        );
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives are disconnected when their nested template is', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(
-        x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
-        container
-      );
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives in different subtrees can be disconnected in separate renders', () => {
+      const log: Array<string> = [];
+      const go = (left: boolean, right: boolean) =>
+        render(
+          html`
+            ${html`${html`${
+              left ? disconnectingDirective(log, 'left') : nothing
+            }`}`}
+            ${html`${html`${
+              right ? disconnectingDirective(log, 'right') : nothing
+            }`}`}
+          `,
+          container
+        );
+      go(true, true);
+      assert.isEmpty(log);
+      go(true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      go(false, false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(true, true);
+      assert.isEmpty(log);
+      go(false, true);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(false, false);
+      assert.deepEqual(log, ['disconnected-right']);
+    });
 
-  test('directives in different subtrees can be disconnected in separate renders', () => {
-    const log: Array<string> = [];
-    const go = (left: boolean, right: boolean) =>
-      render(
-        html`
-          ${html`${html`${
-            left ? disconnectingDirective(log, 'left') : nothing
-          }`}`}
-          ${html`${html`${
-            right ? disconnectingDirective(log, 'right') : nothing
-          }`}`}
-        `,
-        container
-      );
-    go(true, true);
-    assert.isEmpty(log);
-    go(true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    go(false, false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(true, true);
-    assert.isEmpty(log);
-    go(false, true);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(false, false);
-    assert.deepEqual(log, ['disconnected-right']);
-  });
+    test('directives returned from other directives can be disconnected', () => {
+      const log: Array<string> = [];
+      const go = (clearAll: boolean, left: boolean, right: boolean) =>
+        render(
+          clearAll
+            ? nothing
+            : html`
+            ${html`${html`${passthroughDirective(
+              disconnectingDirective(log, 'left'),
+              left
+            )}`}`}
+            ${html`${html`${passthroughDirective(
+              disconnectingDirective(log, 'right'),
+              right
+            )}`}`}
+          `,
+          container
+        );
+      go(false, true, true);
+      assert.isEmpty(log);
+      go(true, true, true);
+      assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+      log.length = 0;
+      go(false, true, true);
+      assert.isEmpty(log);
+      go(false, true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      go(false, false, false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(false, true, true);
+      assert.isEmpty(log);
+      go(false, false, true);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      go(false, false, false);
+      assert.deepEqual(log, ['disconnected-right']);
+    });
 
-  test('directives returned from other directives can be disconnected', () => {
-    const log: Array<string> = [];
-    const go = (clearAll: boolean, left: boolean, right: boolean) =>
-      render(
-        clearAll
-          ? nothing
-          : html`
-          ${html`${html`${passthroughDirective(
-            disconnectingDirective(log, 'left'),
-            left
-          )}`}`}
-          ${html`${html`${passthroughDirective(
-            disconnectingDirective(log, 'right'),
-            right
-          )}`}`}
-        `,
-        container
-      );
-    go(false, true, true);
-    assert.isEmpty(log);
-    go(true, true, true);
-    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
-    log.length = 0;
-    go(false, true, true);
-    assert.isEmpty(log);
-    go(false, true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    go(false, false, false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(false, true, true);
-    assert.isEmpty(log);
-    go(false, false, true);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    go(false, false, false);
-    assert.deepEqual(log, ['disconnected-right']);
-  });
+    test('directives returned from other AsyncDirectives can be disconnected', () => {
+      const log: Array<string> = [];
+      const go = (
+        clearAll: boolean,
+        leftOuter: boolean,
+        leftInner: boolean,
+        rightOuter: boolean,
+        rightInner: boolean
+      ) =>
+        render(
+          clearAll
+            ? nothing
+            : html`
+            ${html`${html`${
+              leftOuter
+                ? disconnectingDirective(
+                    log,
+                    'left-outer',
+                    disconnectingDirective(log, 'left-inner'),
+                    leftInner
+                  )
+                : nothing
+            }`}`}
+            ${html`${html`${
+              rightOuter
+                ? disconnectingDirective(
+                    log,
+                    'right-outer',
+                    disconnectingDirective(log, 'right-inner'),
+                    rightInner
+                  )
+                : nothing
+            }`}`}
+          `,
+          container
+        );
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(true, true, true, true, true);
+      assert.deepEqual(log, [
+        'disconnected-left-outer',
+        'disconnected-left-inner',
+        'disconnected-right-outer',
+        'disconnected-right-inner',
+      ]);
+      log.length = 0;
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(false, false, true, true, true);
+      assert.deepEqual(log, [
+        'disconnected-left-outer',
+        'disconnected-left-inner',
+      ]);
+      log.length = 0;
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(false, true, true, false, true);
+      assert.deepEqual(log, [
+        'disconnected-right-outer',
+        'disconnected-right-inner',
+      ]);
+      log.length = 0;
+      go(false, true, true, true, true);
+      assert.isEmpty(log);
+      go(false, true, false, true, true);
+      assert.deepEqual(log, ['disconnected-left-inner']);
+      log.length = 0;
+      go(false, true, false, true, false);
+      assert.deepEqual(log, ['disconnected-right-inner']);
+    });
 
-  test('directives returned from other AsyncDirectives can be disconnected', () => {
-    const log: Array<string> = [];
-    const go = (
-      clearAll: boolean,
-      leftOuter: boolean,
-      leftInner: boolean,
-      rightOuter: boolean,
-      rightInner: boolean
-    ) =>
-      render(
-        clearAll
-          ? nothing
-          : html`
-          ${html`${html`${
-            leftOuter
-              ? disconnectingDirective(
-                  log,
-                  'left-outer',
-                  disconnectingDirective(log, 'left-inner'),
-                  leftInner
-                )
-              : nothing
-          }`}`}
-          ${html`${html`${
-            rightOuter
-              ? disconnectingDirective(
-                  log,
-                  'right-outer',
-                  disconnectingDirective(log, 'right-inner'),
-                  rightInner
-                )
-              : nothing
-          }`}`}
-        `,
-        container
-      );
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(true, true, true, true, true);
-    assert.deepEqual(log, [
-      'disconnected-left-outer',
-      'disconnected-left-inner',
-      'disconnected-right-outer',
-      'disconnected-right-inner',
-    ]);
-    log.length = 0;
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(false, false, true, true, true);
-    assert.deepEqual(log, [
-      'disconnected-left-outer',
-      'disconnected-left-inner',
-    ]);
-    log.length = 0;
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(false, true, true, false, true);
-    assert.deepEqual(log, [
-      'disconnected-right-outer',
-      'disconnected-right-inner',
-    ]);
-    log.length = 0;
-    go(false, true, true, true, true);
-    assert.isEmpty(log);
-    go(false, true, false, true, true);
-    assert.deepEqual(log, ['disconnected-left-inner']);
-    log.length = 0;
-    go(false, true, false, true, false);
-    assert.deepEqual(log, ['disconnected-right-inner']);
-  });
+    test('directives can be disconnected from AttributeParts', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(
+          x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
+          container
+        );
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('directives can be disconnected from AttributeParts', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(
-        x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
-        container
-      );
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('deeply nested directives can be disconnected from AttributeParts', () => {
+      const log: Array<string> = [];
+      const go = (x: boolean) =>
+        render(
+          x
+            ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
+            : nothing,
+          container
+        );
+      go(true);
+      assert.isEmpty(log);
+      go(false);
+      assert.deepEqual(log, ['disconnected']);
+    });
 
-  test('deeply nested directives can be disconnected from AttributeParts', () => {
-    const log: Array<string> = [];
-    const go = (x: boolean) =>
-      render(
-        x
-          ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
-          : nothing,
-        container
-      );
-    go(true);
-    assert.isEmpty(log);
-    go(false);
-    assert.deepEqual(log, ['disconnected']);
-  });
+    test('directives can be disconnected from iterables', () => {
+      const log: Array<string> = [];
+      const go = (items: string[] | undefined) =>
+        render(
+          items
+            ? items.map(
+                (item) =>
+                  html`<div foo=${disconnectingDirective(log, item)}></div>`
+              )
+            : nothing,
+          container
+        );
+      go(['0', '1', '2', '3']);
+      assert.isEmpty(log);
+      go(['0', '2']);
+      assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
+      log.length = 0;
+      go(undefined);
+      assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+    });
 
-  test('directives can be disconnected from iterables', () => {
-    const log: Array<string> = [];
-    const go = (items: string[] | undefined) =>
-      render(
-        items
-          ? items.map(
-              (item) =>
-                html`<div foo=${disconnectingDirective(log, item)}></div>`
-            )
-          : nothing,
-        container
-      );
-    go(['0', '1', '2', '3']);
-    assert.isEmpty(log);
-    go(['0', '2']);
-    assert.deepEqual(log, ['disconnected-2', 'disconnected-3']);
-    log.length = 0;
-    go(undefined);
-    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
-  });
+    test('directives can be disconnected from repeat', () => {
+      const log: Array<string> = [];
+      const go = (items: string[] | undefined) =>
+        render(
+          items
+            ? repeat(
+                items,
+                (item) => item,
+                (item) =>
+                  html`<div foo=${disconnectingDirective(log, item)}></div>`
+              )
+            : nothing,
+          container
+        );
+      go(['0', '1', '2', '3']);
+      assert.isEmpty(log);
+      go(['0', '2']);
+      assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
+      log.length = 0;
+      go(undefined);
+      assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
+    });
 
-  test('directives can be disconnected from repeat', () => {
-    const log: Array<string> = [];
-    const go = (items: string[] | undefined) =>
-      render(
-        items
-          ? repeat(
-              items,
-              (item) => item,
-              (item) =>
-                html`<div foo=${disconnectingDirective(log, item)}></div>`
-            )
-          : nothing,
-        container
-      );
-    go(['0', '1', '2', '3']);
-    assert.isEmpty(log);
-    go(['0', '2']);
-    assert.deepEqual(log, ['disconnected-1', 'disconnected-3']);
-    log.length = 0;
-    go(undefined);
-    assert.deepEqual(log, ['disconnected-0', 'disconnected-2']);
-  });
+    test('directives in ChildParts can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: boolean, right: boolean) => {
+        return render(
+          html`
+            ${html`${html`${
+              left ? disconnectingDirective(log, 'left') : nothing
+            }`}`}
+            ${html`${html`${
+              right ? disconnectingDirective(log, 'right') : nothing
+            }`}`}
+          `,
+          container
+        );
+      };
+      const part = go(true, true);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+      log.length = 0;
+      go(true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left']);
+    });
 
-  test('directives in ChildParts can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: boolean, right: boolean) => {
-      return render(
-        html`
-          ${html`${html`${
-            left ? disconnectingDirective(log, 'left') : nothing
-          }`}`}
-          ${html`${html`${
-            right ? disconnectingDirective(log, 'right') : nothing
-          }`}`}
-        `,
-        container
-      );
-    };
-    const part = go(true, true);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
-    log.length = 0;
-    go(true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left']);
-  });
+    test('directives in AttributeParts can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: boolean, right: boolean) => {
+        return render(
+          html`
+            ${html`${html`<div a=${
+              left ? disconnectingDirective(log, 'left') : nothing
+            }></div>`}`}
+            ${html`${html`<div a=${
+              right ? disconnectingDirective(log, 'right') : nothing
+            }></div>`}`}
+          `,
+          container
+        );
+      };
+      const part = go(true, true);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
+      log.length = 0;
+      go(true, false);
+      assert.deepEqual(log, ['disconnected-right']);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left']);
+    });
 
-  test('directives in AttributeParts can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: boolean, right: boolean) => {
-      return render(
-        html`
-          ${html`${html`<div a=${
-            left ? disconnectingDirective(log, 'left') : nothing
-          }></div>`}`}
-          ${html`${html`<div a=${
-            right ? disconnectingDirective(log, 'right') : nothing
-          }></div>`}`}
-        `,
-        container
-      );
-    };
-    const part = go(true, true);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left', 'disconnected-right']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left', 'reconnected-right']);
-    log.length = 0;
-    go(true, false);
-    assert.deepEqual(log, ['disconnected-right']);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left']);
-  });
+    test('directives in iterables can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: unknown[], right: unknown[]) => {
+        return render(
+          html`
+            ${html`${html`${left.map(
+              (i) =>
+                html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+            )}`}`}
+            ${html`${html`${right.map(
+              (i) =>
+                html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+            )}`}`}
+          `,
+          container
+        );
+      };
+      const part = go([0, 1], [0, 1]);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, [
+        'disconnected-left-0',
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, [
+        'reconnected-left-0',
+        'reconnected-left-1',
+        'reconnected-right-0',
+        'reconnected-right-1',
+      ]);
+      log.length = 0;
+      go([0], []);
+      assert.deepEqual(log, [
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left-0']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left-0']);
+    });
 
-  test('directives in iterables can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: unknown[], right: unknown[]) => {
-      return render(
-        html`
-          ${html`${html`${left.map(
-            (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
-          )}`}`}
-          ${html`${html`${right.map(
-            (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
-          )}`}`}
-        `,
-        container
-      );
-    };
-    const part = go([0, 1], [0, 1]);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, [
-      'disconnected-left-0',
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, [
-      'reconnected-left-0',
-      'reconnected-left-1',
-      'reconnected-right-0',
-      'reconnected-right-1',
-    ]);
-    log.length = 0;
-    go([0], []);
-    assert.deepEqual(log, [
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left-0']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left-0']);
-  });
-
-  test('directives in repeat can be reconnected', () => {
-    const log: Array<string> = [];
-    const go = (left: unknown[], right: unknown[]) => {
-      return render(
-        html`
-          ${html`${html`${repeat(
-            left,
-            (i) => html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
-          )}`}`}
-          ${html`${html`${repeat(
-            right,
-            (i) => html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
-          )}`}`}
-        `,
-        container
-      );
-    };
-    const part = go([0, 1], [0, 1]);
-    assert.isEmpty(log);
-    part.setConnected(false);
-    assert.deepEqual(log, [
-      'disconnected-left-0',
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, [
-      'reconnected-left-0',
-      'reconnected-left-1',
-      'reconnected-right-0',
-      'reconnected-right-1',
-    ]);
-    log.length = 0;
-    go([0], []);
-    assert.deepEqual(log, [
-      'disconnected-left-1',
-      'disconnected-right-0',
-      'disconnected-right-1',
-    ]);
-    log.length = 0;
-    part.setConnected(false);
-    assert.deepEqual(log, ['disconnected-left-0']);
-    log.length = 0;
-    part.setConnected(true);
-    assert.deepEqual(log, ['reconnected-left-0']);
+    test('directives in repeat can be reconnected', () => {
+      const log: Array<string> = [];
+      const go = (left: unknown[], right: unknown[]) => {
+        return render(
+          html`
+            ${html`${html`${repeat(
+              left,
+              (i) =>
+                html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+            )}`}`}
+            ${html`${html`${repeat(
+              right,
+              (i) =>
+                html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+            )}`}`}
+          `,
+          container
+        );
+      };
+      const part = go([0, 1], [0, 1]);
+      assert.isEmpty(log);
+      part.setConnected(false);
+      assert.deepEqual(log, [
+        'disconnected-left-0',
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, [
+        'reconnected-left-0',
+        'reconnected-left-1',
+        'reconnected-right-0',
+        'reconnected-right-1',
+      ]);
+      log.length = 0;
+      go([0], []);
+      assert.deepEqual(log, [
+        'disconnected-left-1',
+        'disconnected-right-0',
+        'disconnected-right-1',
+      ]);
+      log.length = 0;
+      part.setConnected(false);
+      assert.deepEqual(log, ['disconnected-left-0']);
+      log.length = 0;
+      part.setConnected(true);
+      assert.deepEqual(log, ['reconnected-left-0']);
+    });
   });
 
   // suite('spread', () => {
@@ -2610,12 +2910,8 @@ suite('lit-html', () => {
   //   });
   // });
 
-  let securityHooksSuiteFunction:
-    | Mocha.SuiteFunction
-    | Mocha.PendingSuiteFunction = suite;
-  if (!DEV_MODE) {
-    securityHooksSuiteFunction = suite.skip;
-  }
+  const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
+
   securityHooksSuiteFunction('enahnced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
@@ -2763,6 +3059,133 @@ suite('lit-html', () => {
       assert.deepEqual(sanitizerCalls, [
         {values: ['bad', safe], name: 'foo', type: 'property', nodeName: 'DIV'},
       ]);
+    });
+  });
+
+  test(`don't render simple spoof template results`, () => {
+    const spoof = {
+      ['_$litType$']: 1,
+      strings: ['<div>spoofed string</div>'],
+      values: [],
+    };
+    const template = html`<div>${spoof}</div>`;
+    let threwError = false;
+    try {
+      render(template, container);
+    } catch {
+      threwError = true;
+    }
+    assert.equal(stripExpressionMarkers(container.innerHTML), '');
+    assert.isTrue(
+      threwError,
+      `Expected an error when rendering a spoofed template result`
+    );
+  });
+
+  const warningsSuiteFunction = DEV_MODE ? suite : suite.skip;
+
+  warningsSuiteFunction('warnings', () => {
+    let originalWarn: (...data: any[]) => void;
+    let warnings: Array<unknown[]>;
+    setup(() => {
+      warnings = [];
+      originalWarn = console.warn;
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args);
+        return originalWarn!.call(console, ...args);
+      };
+    });
+
+    teardown(() => {
+      console.warn = originalWarn!;
+    });
+
+    const assertWarning = (m?: string) => {
+      assert.equal(warnings!.length, 1);
+      if (m) {
+        assert.include(warnings[0][0], m);
+      }
+      warnings = [];
+      // Reset the list of issued warnings. This prevents the de-spamming
+      // and allows us to check for multiple warnings of the same type.
+      globalThis.litIssuedWarnings = new Set();
+    };
+
+    const assertNoWarning = () => {
+      assert.equal(warnings.length, 0);
+    };
+
+    test('warns on octal escape', () => {
+      try {
+        render(html`\2022`, container);
+        assert.fail();
+      } catch (e) {
+        assertWarning('escape');
+      }
+    });
+
+    test('Expressions inside textarea warn in dev mode', () => {
+      // top level
+      render(html`<textarea>${'test'}</textarea>`, container);
+      assertWarning('textarea');
+
+      // inside template result
+      render(html`<div><textarea>${'test'}</textarea></div>`, container);
+      assertWarning('textarea');
+
+      // child part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div>${'test'}</div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // attr part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div class="${'test'}"></div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // element part deep inside
+      render(
+        html`<textarea>
+        <div><div><div><div ${'test'}></div></div></div></div>
+        </textarea>`,
+        container
+      );
+      assertWarning('textarea');
+
+      // attr on element a-ok
+      render(
+        html`<textarea id=${'test'}>
+        <div>Static content is ok</div>
+          </textarea>`,
+        container
+      );
+      assertNoWarning();
+    });
+  });
+
+  suite('internal', () => {
+    test('clearContainerForLit2MigrationOnly', () => {
+      const clearedHtml = `<div>TEST 1</div><div>TEST 2</div>`;
+      const remainingHtml = `<div class="renderBefore">REMAIN 1</div><div>REMAIN 2</div>`;
+      container.innerHTML = `${clearedHtml}${remainingHtml}`;
+      render(html`<p>HELLO</p>`, container, {
+        clearContainerForLit2MigrationOnly: true,
+        renderBefore: container.querySelector('.renderBefore'),
+      } as RenderOptions);
+      assert.equal(
+        stripExpressionComments(container.innerHTML),
+        INTERNAL
+          ? `<p>HELLO</p>${remainingHtml}`
+          : `${clearedHtml}<p>HELLO</p>${remainingHtml}`
+      );
     });
   });
 });

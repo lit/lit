@@ -8,6 +8,7 @@ lerna-debug.log
 *.tgz
 *.tsbuildinfo
 .DS_Store
+.vscode/
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -39,7 +40,10 @@ packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
+packages/lit/lit.all.min.*
+packages/lit/lit.all.min.umd.*
 packages/lit/lit.min.*
+packages/lit/lit.min.umd.*
 packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
@@ -86,14 +90,13 @@ packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
 
-packages/localize/lib/
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
-packages/localize/fnv1a64.*
-packages/localize/id-generation.*
+packages/localize/internal/
+packages/localize/init/
 
 packages/localize-tools/lib/
 packages/localize-tools/node_modules/
@@ -110,23 +113,43 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 
+packages/ts-transformers/*.js
+packages/ts-transformers/*.js.map
+packages/ts-transformers/*.d.ts
+packages/ts-transformers/internal/
+packages/ts-transformers/tests/
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/node_modules/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
 packages/labs/eleventy-plugin-lit/index.*
 packages/labs/motion/development/
+packages/labs/motion/test/
 packages/labs/motion/node_modules/
 packages/labs/motion/index.*
-packages/labs/motion/flip.*
+packages/labs/motion/animate.*
 packages/labs/motion/position.*
-packages/labs/motion/flip-controller.*
+packages/labs/motion/animate-controller.*
+packages/labs/observers/development/
+packages/labs/observers/test/
+packages/labs/observers/node_modules/
+packages/labs/observers/index.*
+packages/labs/observers/mutation_controller.*
+packages/labs/observers/performance_controller.*
+packages/labs/observers/resize_controller.*
+packages/labs/observers/intersection_controller.*
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
+
+packages/labs/router/development/
+packages/labs/router/test/
+packages/labs/router/node_modules/
+packages/labs/router/index.*
+packages/labs/router/router.*
 
 packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
@@ -135,9 +158,13 @@ packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
 packages/labs/ssr/demo/
 packages/labs/ssr/lib/
 packages/labs/ssr/node_modules/
-packages/labs/ssr/test/
+packages/labs/ssr/test/**/*.js
+packages/labs/ssr/test/**/*.js.map
+packages/labs/ssr/test/**/*.d.ts
+packages/labs/ssr/test/**/*.d.ts.map
 packages/labs/ssr/index.*
 !packages/labs/ssr/custom_typings/*.d.ts
+
 packages/labs/ssr-client/development/
 packages/labs/ssr-client/directives/
 packages/labs/ssr-client/controllers/
@@ -154,13 +181,16 @@ packages/lit-starter-js/docs/*
 packages/lit-starter-js/docs-src/*
 packages/lit-starter-js/**/rollup-config.js
 packages/lit-starter-js/**/custom-elements.json
+packages/lit-starter-js/**/web-dev-server.config.js
 
 packages/lit-starter-ts/node_modules/*
 packages/lit-starter-ts/docs/*
 packages/lit-starter-ts/docs-src/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
+packages/lit-starter-ts/**/web-dev-server.config.js
 
+package-lock.json
 packages/localize/examples/
 packages/localize-tools/testdata/
 packages/localize-tools/config.schema.json

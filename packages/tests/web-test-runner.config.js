@@ -139,11 +139,17 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  return [
-    playwrightLauncher({
-      product: browser,
-    }),
-  ];
+  const config = {
+    product: browser,
+    ...(browser === 'chromium'
+      ? {
+          launchOptions: {
+            args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'],
+          },
+        }
+      : {}),
+  };
+  return [playwrightLauncher(config)];
 }
 
 const browsers = (process.env.BROWSERS || 'preset:local')
@@ -200,7 +206,10 @@ export default {
   // Only actually log errors and warnings. This helps make test output less spammy.
   filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 60000, // default 30000
-  testsStartTimeout: 60000, // default 10000
+  // For ie11 where tests run more slowly, this timeout needs to be long
+  // enough so that blocked tests have time to wait for all previous test files
+  // to run to completion.
+  testsStartTimeout: 60000 * 10, // default 120000
   testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha

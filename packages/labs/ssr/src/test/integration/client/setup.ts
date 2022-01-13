@@ -4,14 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import '@open-wc/testing';
+import {assert} from '@open-wc/testing';
 
 import {render} from 'lit';
 import {hydrate} from 'lit/experimental-hydrate.js';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot/template-shadowroot.js';
 import {SSRExpectedHTML, SSRTestSuite} from '../tests/ssr-test.js';
-
-const assert = chai.assert;
 
 const assertTemplate = document.createElement('template');
 
@@ -237,7 +235,8 @@ export const setupTest = async (
       const testFn =
         testSetup.skip || skipSSRTests
           ? test.skip
-          : testSetup.only
+          : // eslint-disable-next-line no-only-tests/no-only-tests
+          testSetup.only
           ? // eslint-disable-next-line no-only-tests/no-only-tests
             test.only
           : test;

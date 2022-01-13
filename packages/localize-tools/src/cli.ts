@@ -33,7 +33,7 @@ Options:
   --help      Display this help message.
   --config    Path to JSON configuration file.
               Default: ./lit-localize.json
-              See https://github.com/Polymer/lit-html/tree/main/packages/localize#readme for details.
+              See https://github.com/lit/lit/tree/main/packages/localize#readme for details.
 `;
 
 const commands = ['build', 'extract'] as const;
@@ -62,9 +62,9 @@ export async function runAndLog(argv: string[]): Promise<number> {
       console.error(err.message);
     } else {
       console.error('Unexpected error\n');
-      console.error(err.message);
+      console.error((err as Error).message);
       console.error();
-      console.error(err.stack);
+      console.error((err as Error).stack);
     }
     console.log();
     console.log(`Version: ${await version()}`);

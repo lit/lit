@@ -111,20 +111,30 @@ type Constructor<T> = {new (): T};
  * custom element. For example, given `{onactivate: 'activate'}` an event
  * function may be passed via the component's `onactivate` prop and will be
  * called when the custom element fires its `activate` event.
+ * @param displayName A React component display name, used in debugging
+ * messages. Default value is inferred from the name of custom element class
+ * registered via `customElements.define`.
  */
 export const createComponent = <I extends HTMLElement, E>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: StringValued<E>
+  events?: StringValued<E>,
+  displayName?: string
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
+  // TODO: we might need to omit more properties from HTMLElement than just
+  // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<Partial<I> & Events<E>>
+    React.PropsWithRef<
+      Partial<Omit<I, 'children'>> &
+        Events<E> &
+        React.HTMLAttributes<HTMLElement>
+    >
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
@@ -163,6 +173,8 @@ export const createComponent = <I extends HTMLElement, E>(
     private _userRef?: React.Ref<unknown>;
     private _ref?: React.RefCallback<I>;
 
+    static displayName = displayName ?? elementClass.name;
+
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
         return;
@@ -186,7 +198,7 @@ export const createComponent = <I extends HTMLElement, E>(
      * Updates element properties correctly setting properties
      * on mount.
      */
-    componentDidMount() {
+    override componentDidMount() {
       this._updateElement();
     }
 
@@ -194,7 +206,7 @@ export const createComponent = <I extends HTMLElement, E>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    componentDidUpdate(old: ComponentProps) {
+    override componentDidUpdate(old: ComponentProps) {
       this._updateElement(old);
     }
 
@@ -206,7 +218,7 @@ export const createComponent = <I extends HTMLElement, E>(
      * are updated in componentDidMount/componentDidUpdate.
      *
      */
-    render() {
+    override render() {
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
@@ -243,11 +255,17 @@ export const createComponent = <I extends HTMLElement, E>(
     }
   }
 
-  return React.forwardRef((props?: UserProps, ref?: React.Ref<unknown>) =>
-    createElement(
-      ReactComponent,
-      {...props, __forwardedRef: ref} as ComponentProps,
-      props?.children
-    )
+  const ForwardedComponent = React.forwardRef(
+    (props?: UserProps, ref?: React.Ref<unknown>) =>
+      createElement(
+        ReactComponent,
+        {...props, __forwardedRef: ref} as ComponentProps,
+        props?.children
+      )
   );
+
+  // To ease debugging in the React Developer Tools
+  ForwardedComponent.displayName = ReactComponent.displayName;
+
+  return ForwardedComponent;
 };

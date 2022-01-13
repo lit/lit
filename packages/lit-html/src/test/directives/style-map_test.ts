@@ -36,11 +36,15 @@ suite('styleMap', () => {
   test('render() only properties', () => {
     // Get the StyleMapDirective class indirectly, since it's not exported
     const result = styleMap({});
-    const StyleMapDirective = result._$litDirective$;
+    // This property needs to remain unminified.
+    const StyleMapDirective = result['_$litDirective$'];
 
     // Extend StyleMapDirective so we can test its render() method
     class TestStyleMapDirective extends StyleMapDirective {
-      update(_part: AttributePart, [styleInfo]: Parameters<this['render']>) {
+      override update(
+        _part: AttributePart,
+        [styleInfo]: Parameters<this['render']>
+      ) {
         return this.render(styleInfo);
       }
     }

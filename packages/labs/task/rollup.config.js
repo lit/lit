@@ -5,9 +5,10 @@
  */
 
 import {litProdConfig} from '../../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: '⍶',
+  packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: ['index', 'task'],
   external: ['@lit/reactive-element'],
 });

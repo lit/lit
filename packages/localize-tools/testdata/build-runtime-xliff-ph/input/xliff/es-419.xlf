@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s8c0ec8d1fb9e6e32">
+  <source>Hello World!</source>
+  <target>Hola Mundo!</target>
+</trans-unit>
+<trans-unit id="s00ad08ebae1e0f74">
+  <source>Hello <ph id="0">${user}</ph>!</source>
+  <target>Hola <ph id="0">${user}</ph>!</target>
+</trans-unit>
+<trans-unit id="h3c44aff2d5f5ef6b">
+  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
+  <target>Hola <ph id="0">&lt;b></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
+</trans-unit>
+<trans-unit id="h82ccc38d4d46eaa9">
+  <source>Hello <ph id="0">&lt;b>${user}&lt;/b></ph>!</source>
+  <target>Hola <ph id="0">&lt;b>${user}&lt;/b></ph>!</target>
+</trans-unit>
+<trans-unit id="h99e74f744fda7e25">
+  <source>Click <ph id="0">&lt;a href="${url}"></ph>here<ph id="1">&lt;/a></ph>!</source>
+  <target>Clic <ph id="0">&lt;a href="${url}"></ph>aquí<ph id="1">&lt;/a></ph>!</target>
+</trans-unit>
+<trans-unit id="hc1c6bfa4414cb3e3">
+  <source>[SALT] Click <ph id="0">&lt;a href="${'https://www.example.com/'}"></ph>here<ph id="1">&lt;/a></ph>!</source>
+  <target>[SALT] Clic <ph id="0">&lt;a href="${'https://www.example.com/'}"></ph>aquí<ph id="1">&lt;/a></ph>!</target>
+</trans-unit>
+<trans-unit id="h349c3c4777670217">
+  <source>[SALT] Hello <ph id="0">&lt;b>${msg('World')}&lt;/b></ph>!</source>
+  <target>[SALT] Hola <ph id="0">&lt;b>${msg('World')}&lt;/b></ph>!</target>
+</trans-unit>
+<trans-unit id="s0f19e6c4e521dd53">
+  <source>World</source>
+  <target>Mundo</target>
+</trans-unit>
+<trans-unit id="hbe936ff3da20ffdf">
+  <source>Hello <ph id="0">&lt;b>&lt;!-- comment --></ph>World<ph id="1">&lt;/b></ph>!</source>
+  <target>Hola <ph id="0">&lt;b>&lt;!-- comment --></ph>Mundo<ph id="1">&lt;/b></ph>!</target>
+</trans-unit>
+<trans-unit id="hf979404a36e879cb">
+  <source>a:<ph id="0">${'A'}</ph> b:<ph id="1">${'B'}</ph> c:<ph id="2">${'C'}</ph></source>
+  <target>c:<ph id="2">${'C'}</ph> a:<ph id="0">${'A'}</ph> b:<ph id="1">${'B'}</ph></target>
+</trans-unit>
+<trans-unit id="myId">
+  <source>Hello World</source>
+  <target>Hola Mundo</target>
+</trans-unit>
+<trans-unit id="h8d70dfec810d1eae">
+  <source><ph id="0">&lt;b></ph>Hello<ph id="1">&lt;/b></ph>! Click <ph id="2">&lt;a href="${urlBase}/${urlPath}"></ph>here<ph id="3">&lt;/a></ph>!</source>
+  <target><ph id="0">&lt;b></ph>Hola<ph id="1">&lt;/b></ph>! Clic <ph id="2">&lt;a href="${urlBase}/${urlPath}"></ph>aquí<ph id="3">&lt;/a></ph>!</target>
+</trans-unit>
+<trans-unit id="s03c68d79ad36e8d4">
+  <note>Description of 0</note>
+  <source>described 0</source>
+  <target>described 0</target>
+</trans-unit>
+<trans-unit id="h02c268d9b1fcb031">
+  <source>&lt;Hello<ph id="0">&lt;b></ph>&lt;World &amp; Friends><ph id="1">&lt;/b></ph>!></source>
+  <target>&lt;Hola<ph id="0">&lt;b></ph>&lt;Mundo &amp; Amigos><ph id="1">&lt;/b></ph>!></target>
+</trans-unit>
+</body>
+</file>
+</xliff>

@@ -293,9 +293,8 @@ performance.measure('update', `update-start`);
 performance.measure('total', 'render-start');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).tachometerResult = performance.getEntriesByName(
-  'total'
-)[0].duration;
+(window as any).tachometerResult =
+  performance.getEntriesByName('total')[0].duration;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 document.title = (window as any).tachometerResult.toFixed(2) + 'ms';
 console.table({

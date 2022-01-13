@@ -5,10 +5,11 @@
  */
 
 import {asyncAppend} from '../../directives/async-append.js';
-import {render, html} from '../../lit-html.js';
+import {render, html, nothing} from '../../lit-html.js';
 import {TestAsyncIterable} from './test-async-iterable.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
+import {memorySuite} from '../test-utils/memory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -16,6 +17,9 @@ import {assert} from '@esm-bundle/chai';
 if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
   Object.defineProperty(Symbol, 'Symbol.asyncIterator', {value: Symbol()});
 }
+
+const nextFrame = () =>
+  new Promise<void>((r) => requestAnimationFrame(() => r()));
 
 suite('asyncAppend', () => {
   let container: HTMLDivElement;
@@ -47,7 +51,7 @@ suite('asyncAppend', () => {
     await iterable.push('foo');
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
-    await iterable.push((undefined as unknown) as string);
+    await iterable.push(undefined as unknown as string);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
   });
 
@@ -138,18 +142,144 @@ suite('asyncAppend', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });
 
-  test('does not render while disconnected', async () => {
-    const component = (value: any) => html`<p>${asyncAppend(value)}</p>`;
-    const part = render(component(iterable), container);
-    await iterable.push('1');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
-    part.setConnected(false);
-    await iterable.push('2');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
-    part.setConnected(true);
-    await new Promise<void>((r) => requestAnimationFrame(() => r()));
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>12</p>');
-    await iterable.push('3');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>123</p>');
+  suite('disconnection', () => {
+    test('does not render when iterable resolves while while disconnected', async () => {
+      const component = (value: any) => html`<p>${asyncAppend(value)}</p>`;
+      const part = render(component(iterable), container);
+      await iterable.push('1');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(false);
+      await iterable.push('2');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>12</p>');
+      await iterable.push('3');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>123</p>');
+    });
+
+    test('disconnection thrashing', async () => {
+      const component = (value: any) => html`<p>${asyncAppend(value)}</p>`;
+      const part = render(component(iterable), container);
+      await iterable.push('1');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(false);
+      await iterable.push('2');
+      part.setConnected(true);
+      part.setConnected(false);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>12</p>');
+      await iterable.push('3');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>123</p>');
+    });
+
+    test('does not render when newly rendered while disconnected', async () => {
+      const component = (value: any) => html`<p>${value}</p>`;
+      const part = render(component('static'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>static</p>'
+      );
+      part.setConnected(false);
+      render(component(asyncAppend(iterable)), container);
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>static</p>'
+      );
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      await iterable.push('2');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>12</p>');
+    });
+
+    test('does not render when resolved and changed while disconnected', async () => {
+      const component = (value: any) => html`<p>${value}</p>`;
+      const part = render(component('staticA'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticA</p>'
+      );
+      part.setConnected(false);
+      render(component(asyncAppend(iterable)), container);
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticA</p>'
+      );
+      render(component('staticB'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+    });
+
+    test('the same promise can be rendered into two asyncAppend instances', async () => {
+      const component = (iterable: AsyncIterable<unknown>) =>
+        html`<p>${asyncAppend(iterable)}</p><p>${asyncAppend(iterable)}</p>`;
+      render(component(iterable), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p></p><p></p>'
+      );
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>1</p><p>1</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>12</p><p>12</p>'
+      );
+    });
+  });
+
+  memorySuite('memory leak tests', () => {
+    test('tree with asyncAppend cleared while iterables are pending', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      // Make a big array set on an expando to exaggerate any leaked DOM
+      const big = () => new Array(10000).fill(0);
+      // Hold onto the iterables to prevent them from being gc'ed
+      const iterables: Array<TestAsyncIterable<string>> = [];
+      window.gc();
+      const heap = performance.memory.usedJSHeapSize;
+      for (let i = 0; i < 1000; i++) {
+        // Iterable passed to asyncAppend that will never yield
+        const iterable = new TestAsyncIterable<string>();
+        iterables.push(iterable);
+        // Render the directive into a `<span>` with a 10kb expando, to exaggerate
+        // when DOM is not being gc'ed
+        render(
+          template(html`<span .p=${big()}>${asyncAppend(iterable)}</span>`),
+          container
+        );
+        // Clear the `<span>` + directive
+        render(template(nothing), container);
+      }
+      window.gc();
+      // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
+      // DOM leak will be orders of magnitude larger
+      assert.isAtMost(
+        performance.memory.usedJSHeapSize,
+        heap * 1.5,
+        'memory leak detected'
+      );
+    });
   });
 });

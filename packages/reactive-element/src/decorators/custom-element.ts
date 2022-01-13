@@ -12,11 +12,13 @@
  */
 import {Constructor, ClassDescriptor} from './base.js';
 
-const legacyCustomElement = (
-  tagName: string,
-  clazz: Constructor<HTMLElement>
-) => {
-  window.customElements.define(tagName, clazz);
+/**
+ * Allow for custom element classes with private constructors
+ */
+type CustomElementClass = Omit<typeof HTMLElement, 'new'>;
+
+const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
+  window.customElements.define(tagName, clazz as CustomElementConstructor);
   // Cast as any because TS doesn't recognize the return type as being a
   // subtype of the decorated class when clazz is typed as
   // `Constructor<HTMLElement>` for some reason.
@@ -44,7 +46,7 @@ const standardCustomElement = (
 /**
  * Class decorator factory that defines the decorated class as a custom element.
  *
- * ```
+ * ```js
  * @customElement('my-element')
  * class MyElement extends LitElement {
  *   render() {
@@ -55,9 +57,9 @@ const standardCustomElement = (
  * @category Decorator
  * @param tagName The tag name of the custom element to define.
  */
-export const customElement = (tagName: string) => (
-  classOrDescriptor: Constructor<HTMLElement> | ClassDescriptor
-) =>
-  typeof classOrDescriptor === 'function'
-    ? legacyCustomElement(tagName, classOrDescriptor)
-    : standardCustomElement(tagName, classOrDescriptor);
+export const customElement =
+  (tagName: string) =>
+  (classOrDescriptor: CustomElementClass | ClassDescriptor) =>
+    typeof classOrDescriptor === 'function'
+      ? legacyCustomElement(tagName, classOrDescriptor)
+      : standardCustomElement(tagName, classOrDescriptor as ClassDescriptor);

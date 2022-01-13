@@ -1,0 +1,42 @@
+{
+  "name": "@lit/ts-transformers",
+  "version": "1.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "TypeScript transformers for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/ts-transformers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/ts-transformers"
+  },
+  "type": "commonjs",
+  "files": [
+    "/CHANGELOG.md",
+    "/*.{js,js.map,d.ts}",
+    "/internal/"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "uvu tests/ \"\\-test\\.js$\"",
+    "clean": "rimraf \"*.{js,d.ts}\" internal/ tests/",
+    "prepack": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "ts-clone-node": "^0.3.23",
+    "typescript": "^4.3.5"
+  },
+  "devDependencies": {
+    "@lit/localize": "^0.11.0",
+    "@lit/reactive-element": "^1.1.0",
+    "@types/prettier": "^2.2.3",
+    "lit": "^2.1.0",
+    "lit-element": "^3.1.0",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2",
+    "uvu": "^0.5.1"
+  }
+}

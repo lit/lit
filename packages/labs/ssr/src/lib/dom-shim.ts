@@ -141,14 +141,12 @@ export const getWindow = ({
 
     // Set below
     window: undefined as unknown,
-    global: undefined as unknown,
 
     // User-provided globals, like `require`
     ...props,
   };
 
   window.window = window;
-  window.global = window; // Required for node-fetch
 
   if (includeJSBuiltIns) {
     Object.assign(window, {

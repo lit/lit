@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <!--
   @license
-  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-  Code distributed by Google as part of the polymer project is also
-  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-  -->
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -39,7 +35,7 @@
     <script type="module">
       import {LitElement, css} from 'lit';
       import {html, unsafeStatic} from 'lit/static-html.js';
-      import {flip} from '../development/flip.js';
+      import {animate} from '../development/animate.js';
       import {position} from '../development/position.js';
 
       class MyElement extends LitElement {
@@ -86,7 +82,7 @@
         _selectedMarker = `selected`;
 
         render() {
-          const animationOptions = {
+          const keyframeOptions = {
             duration: 1000,
             easing: 'ease-in-out',
             fill: 'both',
@@ -100,7 +96,7 @@
               <div
                 class="underline"
                 ${position(() => this._activeTab, ['left', 'width'])}
-                ${flip({...animationOptions, guard: () => this._activeTab})}
+                ${animate({...keyframeOptions, guard: () => this._activeTab})}
               ></div>
             </ul>
           `;

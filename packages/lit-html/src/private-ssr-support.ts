@@ -4,8 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Directive, PartInfo} from './directive.js';
-import {_Σ as p, AttributePart, noChange, Part} from './lit-html.js';
+import {
+  Directive,
+  PartInfo,
+  DirectiveClass,
+  DirectiveResult,
+} from './directive.js';
+import {
+  _$LH as p,
+  AttributePart,
+  noChange,
+  Part,
+  Disconnectable,
+} from './lit-html.js';
 export type {Template} from './lit-html.js';
 
 /**
@@ -13,13 +24,13 @@ export type {Template} from './lit-html.js';
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports mangled in the
- * client side code, we export a _Σ object containing those members (or
+ * client side code, we export a _$LH object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
  * @private
  */
-export const _Σ = {
+export const _$LH = {
   boundAttributeSuffix: p._boundAttributeSuffix,
   marker: p._marker,
   markerMatch: p._markerMatch,
@@ -30,10 +41,18 @@ export const _Σ = {
     resolveOverrideFn: (directive: Directive, values: unknown[]) => unknown
   ) =>
     class extends directiveClass {
-      _$resolve(this: Directive, _part: Part, values: unknown[]): unknown {
+      override _$resolve(
+        this: Directive,
+        _part: Part,
+        values: unknown[]
+      ): unknown {
         return resolveOverrideFn(this, values);
       }
     },
+  setDirectiveClass(value: DirectiveResult, directiveClass: DirectiveClass) {
+    // This property needs to remain unminified.
+    value['_$litDirective$'] = directiveClass;
+  },
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
@@ -49,6 +68,10 @@ export const _Σ = {
     part._$setValue(value, part, index);
     return committedValue;
   },
+  connectedDisconnectable: (props?: object): Disconnectable => ({
+    ...props,
+    _$isConnected: true,
+  }),
   resolveDirective: p._resolveDirective,
   AttributePart: p._AttributePart,
   PropertyPart: p._PropertyPart,

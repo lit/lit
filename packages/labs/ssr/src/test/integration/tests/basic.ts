@@ -456,7 +456,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -524,7 +524,7 @@ export const tests: {[name: string]: SSRTest} = {
   'ChildPart accepts nested directives': () => {
     const aDirective = directive(
       class extends Directive {
-        update(_part: Part, [bool, v]: DirectiveParameters<this>) {
+        override update(_part: Part, [bool, v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(bool, v);
         }
@@ -537,7 +537,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -873,8 +873,7 @@ export const tests: {[name: string]: SSRTest} = {
       },
       {
         args: ['<ellipse cx="100" cy="50" rx="100" ry="50" />'],
-        html:
-          '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
+        html: '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
       },
     ],
     stableSelectors: ['div'],
@@ -1080,7 +1079,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -1149,7 +1148,7 @@ export const tests: {[name: string]: SSRTest} = {
   'AttributePart accepts nested directives': () => {
     const aDirective = directive(
       class extends Directive {
-        update(_part: Part, [bool, v]: DirectiveParameters<this>) {
+        override update(_part: Part, [bool, v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(bool, v);
         }
@@ -1162,7 +1161,7 @@ export const tests: {[name: string]: SSRTest} = {
       class extends Directive {
         count = 0;
         lastValue: string | undefined = undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -1268,43 +1267,46 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div'],
   },
 
-  'AttributePart accepts directive: styleMap (custom properties & browser-prefixed)': {
-    // The parsed results of style text with custom properties and browser
-    // prefixes differs across browsers (due to whitespace and re-writing
-    // prefixed names) enough to make a single cross-platform assertion
-    // difficult. For now, just test these on Chrome.
-    skip: Boolean(globalThis.navigator && !navigator.userAgent.match(/Chrome/)),
-    render(map: {}) {
-      return html` <div style=${styleMap(map)}></div> `;
+  'AttributePart accepts directive: styleMap (custom properties & browser-prefixed)':
+    {
+      // The parsed results of style text with custom properties and browser
+      // prefixes differs across browsers (due to whitespace and re-writing
+      // prefixed names) enough to make a single cross-platform assertion
+      // difficult. For now, just test these on Chrome.
+      skip: Boolean(
+        globalThis.navigator && !navigator.userAgent.match(/Chrome/)
+      ),
+      render(map: {}) {
+        return html` <div style=${styleMap(map)}></div> `;
+      },
+      expectations: [
+        {
+          // Note that (at least on chrome, vendor-prefixed properties get
+          // collapsed down to the standard property name when re-parsed on the
+          // browser)
+          args: [
+            {
+              '--my-prop': 'green',
+              webkitAppearance: 'none',
+            },
+          ],
+          html: '<div style="--my-prop:green; appearance: none;"></div>',
+        },
+        {
+          args: [
+            {
+              '--my-prop': 'gray',
+              webkitAppearance: 'inherit',
+            },
+          ],
+          html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
+        },
+      ],
+      // styleMap does not dirty check individual properties before setting,
+      // which causes an attribute mutation even if the text has not changed
+      expectMutationsOnFirstRender: true,
+      stableSelectors: ['div'],
     },
-    expectations: [
-      {
-        // Note that (at least on chrome, vendor-prefixed properties get
-        // collapsed down to the standard property name when re-parsed on the
-        // browser)
-        args: [
-          {
-            '--my-prop': 'green',
-            webkitAppearance: 'none',
-          },
-        ],
-        html: '<div style="--my-prop:green; appearance: none;"></div>',
-      },
-      {
-        args: [
-          {
-            '--my-prop': 'gray',
-            webkitAppearance: 'inherit',
-          },
-        ],
-        html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
-      },
-    ],
-    // styleMap does not dirty check individual properties before setting,
-    // which causes an attribute mutation even if the text has not changed
-    expectMutationsOnFirstRender: true,
-    stableSelectors: ['div'],
-  },
 
   'AttributePart accepts directive: styleMap (with statics)': {
     render(map: {}) {
@@ -2450,45 +2452,49 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'PropertyPart accepts directive: until (promise, primitive) (reflected)': () => {
-    let resolve: (v: string) => void;
-    const promise = new Promise((r) => (resolve = r));
-    return {
-      render(...args) {
-        return html` <div .className="${until(...args)}"></div> `;
-      },
-      expectations: [
-        {
-          args: [promise, 'foo'],
-          html: '<div class="foo"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'foo');
-          },
+  'PropertyPart accepts directive: until (promise, primitive) (reflected)':
+    () => {
+      let resolve: (v: string) => void;
+      const promise = new Promise((r) => (resolve = r));
+      return {
+        render(...args) {
+          return html` <div .className="${until(...args)}"></div> `;
         },
-        {
-          async setup() {
-            resolve('promise');
-            await promise;
+        expectations: [
+          {
+            args: [promise, 'foo'],
+            html: '<div class="foo"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(dom.querySelector('div')!.className, 'foo');
+            },
           },
-          args: [promise, 'foo'],
-          html: '<div class="promise"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise');
+          {
+            async setup() {
+              resolve('promise');
+              await promise;
+            },
+            args: [promise, 'foo'],
+            html: '<div class="promise"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(
+                dom.querySelector('div')!.className,
+                'promise'
+              );
+            },
           },
-        },
-      ],
-      stableSelectors: ['div'],
-      // We set properties during hydration, and natively-reflecting properties
-      // will trigger a "mutation" even when set to the same value that was
-      // rendered to its attribute
-      expectMutationsDuringHydration: true,
-      // until always calls setValue each render, with no dirty-check of previous
-      // value
-      expectMutationsOnFirstRender: true,
-    };
-  },
+        ],
+        stableSelectors: ['div'],
+        // We set properties during hydration, and natively-reflecting properties
+        // will trigger a "mutation" even when set to the same value that was
+        // rendered to its attribute
+        expectMutationsDuringHydration: true,
+        // until always calls setValue each render, with no dirty-check of previous
+        // value
+        expectMutationsOnFirstRender: true,
+      };
+    },
 
   'PropertyPart accepts directive: until (promise, promise)': () => {
     let resolve1: (v: string) => void;
@@ -2540,52 +2546,59 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'PropertyPart accepts directive: until (promise, promise) (reflected)': () => {
-    let resolve1: (v: string) => void;
-    let resolve2: (v: string) => void;
-    const promise1 = new Promise((r) => (resolve1 = r));
-    const promise2 = new Promise((r) => (resolve2 = r));
-    return {
-      render(...args) {
-        return html` <div .className="${until(...args)}"></div> `;
-      },
-      expectations: [
-        {
-          args: [promise2, promise1],
-          html: '<div></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, '');
-          },
+  'PropertyPart accepts directive: until (promise, promise) (reflected)':
+    () => {
+      let resolve1: (v: string) => void;
+      let resolve2: (v: string) => void;
+      const promise1 = new Promise((r) => (resolve1 = r));
+      const promise2 = new Promise((r) => (resolve2 = r));
+      return {
+        render(...args) {
+          return html` <div .className="${until(...args)}"></div> `;
         },
-        {
-          async setup() {
-            resolve1('promise1');
-            await promise1;
+        expectations: [
+          {
+            args: [promise2, promise1],
+            html: '<div></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(dom.querySelector('div')!.className, '');
+            },
           },
-          args: [promise2, promise1],
-          html: '<div class="promise1"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise1');
+          {
+            async setup() {
+              resolve1('promise1');
+              await promise1;
+            },
+            args: [promise2, promise1],
+            html: '<div class="promise1"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(
+                dom.querySelector('div')!.className,
+                'promise1'
+              );
+            },
           },
-        },
-        {
-          async setup() {
-            resolve2('promise2');
-            await promise2;
+          {
+            async setup() {
+              resolve2('promise2');
+              await promise2;
+            },
+            args: [promise2, promise1],
+            html: '<div class="promise2"></div>',
+            check(assert: Chai.Assert, dom: HTMLElement) {
+              // Note className coerces to string
+              assert.strictEqual(
+                dom.querySelector('div')!.className,
+                'promise2'
+              );
+            },
           },
-          args: [promise2, promise1],
-          html: '<div class="promise2"></div>',
-          check(assert: Chai.Assert, dom: HTMLElement) {
-            // Note className coerces to string
-            assert.strictEqual(dom.querySelector('div')!.className, 'promise2');
-          },
-        },
-      ],
-      stableSelectors: ['div'],
-    };
-  },
+        ],
+        stableSelectors: ['div'],
+      };
+    },
 
   'PropertyPart accepts directive: ifDefined (undefined)': {
     render(v) {
@@ -3580,7 +3593,7 @@ export const tests: {[name: string]: SSRTest} = {
         render(_v: string) {
           log.push('render should not be called');
         }
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           log.push(v);
         }
@@ -3629,8 +3642,7 @@ export const tests: {[name: string]: SSRTest} = {
       expectations: [
         {
           args: [true],
-          html:
-            '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
+          html: '<div id="div1"><div id="div2"><div id="div3"></div></div></div>',
           check(assert: Chai.Assert) {
             assert.equal(ref1.value?.id, 'div1');
             assert.equal(ref2.value?.id, 'div2');
@@ -3731,13 +3743,11 @@ export const tests: {[name: string]: SSRTest} = {
     expectations: [
       {
         args: [html` <a attr=${'a'} ${'ignored'}></a> `, 'b', 'c'],
-        html:
-          'text:\n<a attr="a"></a><div><a attr="a"></a></div><span a1="b" a2="b"><a attr="a"></a><p a="b">b</p>c</span>',
+        html: 'text:\n<a attr="a"></a><div><a attr="a"></a></div><span a1="b" a2="b"><a attr="a"></a><p a="b">b</p>c</span>',
       },
       {
         args: ['x', 'y', html` <i ${'ignored'} attr=${'i'}></i> `],
-        html:
-          'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i attr="i"></i></span>',
+        html: 'text:x\n<div>x</div><span a1="y" a2="y">x<p a="y">y</p><i attr="i"></i></span>',
       },
     ],
     stableSelectors: ['div', 'span', 'p'],
@@ -3766,7 +3776,7 @@ export const tests: {[name: string]: SSRTest} = {
     const dir = directive(
       class extends Directive {
         value: string | undefined;
-        update(_part: Part, [v]: DirectiveParameters<this>) {
+        override update(_part: Part, [v]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(v);
         }
@@ -4164,7 +4174,7 @@ export const tests: {[name: string]: SSRTest} = {
           log.push(`render-${this.id}`);
           return id;
         }
-        disconnected() {
+        override disconnected() {
           log.push(`disconnected-${this.id}`);
         }
       }
@@ -4248,7 +4258,7 @@ export const tests: {[name: string]: SSRTest} = {
     const log: number[] = [];
     const nest = directive(
       class extends Directive {
-        update(_part: Part, [n]: DirectiveParameters<this>) {
+        override update(_part: Part, [n]: DirectiveParameters<this>) {
           throwIfRunOnServer();
           return this.render(n);
         }
@@ -4291,6 +4301,55 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
+   * Unknown element/renderer tests
+   ******************************************************/
+
+  'Unregistered custom element: Attributes': () => {
+    return {
+      render() {
+        return html`
+          <x-unregistered
+            attr1
+            attr2="attr2val"
+            attr3=${'attr3val'}
+          ></x-unregistered>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<x-unregistered attr1 attr2="attr2val" attr3="attr3val"></x-unregistered>',
+        },
+      ],
+      stableSelectors: ['x-unregistered'],
+    };
+  },
+
+  'Custom element with no renderer: Attributes': () => {
+    return {
+      registerElements() {
+        customElements.define('x-norenderer', class extends HTMLElement {});
+      },
+      render() {
+        return html`
+          <x-norenderer
+            attr1
+            attr2="attr2val"
+            attr3=${'attr3val'}
+          ></x-norenderer>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<x-norenderer attr1 attr2="attr2val" attr3="attr3val"></x-norenderer>',
+        },
+      ],
+      stableSelectors: ['x-norenderer'],
+    };
+  },
+
+  /******************************************************
    * LitElement tests
    ******************************************************/
 
@@ -4300,7 +4359,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'le-basic',
           class extends LitElement {
-            render() {
+            override render() {
               return html` <div>[le-basic: <slot></slot>]</div> `;
             }
           }
@@ -4328,7 +4387,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'le-nested1',
           class extends LitElement {
-            render() {
+            override render() {
               return html`
                 <div>
                   [le-nested1: <le-nested2><slot></slot></le-nested2>]
@@ -4340,7 +4399,7 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'le-nested2',
           class extends LitElement {
-            render() {
+            override render() {
               return html` <div>[le-nested2: <slot></slot>]</div> `;
             }
           }
@@ -4371,7 +4430,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEPropBinding extends LitElement {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4420,7 +4479,7 @@ export const tests: {[name: string]: SSRTest} = {
           last?: string;
           fullName = '';
 
-          willUpdate(changedProperties: PropertyValues) {
+          override willUpdate(changedProperties: PropertyValues) {
             if (
               changedProperties.has('first') ||
               changedProperties.has('last')
@@ -4429,7 +4488,7 @@ export const tests: {[name: string]: SSRTest} = {
             }
           }
 
-          render() {
+          override render() {
             // prettier-ignore
             return html`<main>${this.fullName}</main>`;
           }
@@ -4477,7 +4536,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEReflectedBinding extends LitElement {
           @property({reflect: true})
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4528,7 +4587,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEAttrBinding extends LitElement {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4573,7 +4632,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEStaticAttr extends LitElement {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[${this.prop}]</div> `;
           }
         }
@@ -4606,7 +4665,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LENodeBinding extends LitElement {
           @property()
           template: unknown = 'default';
-          render() {
+          override render() {
             return html` <div>${this.template}</div> `;
           }
         }
@@ -4653,7 +4712,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LERenderLight extends LitElement implements RenderLightHost {
           @property()
           prop = 'default';
-          render() {
+          override render() {
             return html` <div>[shadow:${this.prop}<slot></slot>]</div> `;
           }
           renderLight() {
@@ -4706,7 +4765,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEOrder3 extends LitElement {
           @property()
           prop = 'from3';
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-order3:${this.prop}`;
           }
@@ -4715,7 +4774,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEOrder2 extends LitElement {
           @property()
           prop = 'from2';
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-order2:${this.prop}<le-order3
                 .prop=${this.prop}
@@ -4726,7 +4785,7 @@ export const tests: {[name: string]: SSRTest} = {
         class LEOrder1 extends LitElement {
           @property()
           prop = 'from1';
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-order1:${this.prop}<le-order2
                 .prop=${this.prop}
@@ -4735,7 +4794,7 @@ export const tests: {[name: string]: SSRTest} = {
         }
         customElements.define('le-order1', LEOrder1);
         class LELight extends LitElement {
-          render() {
+          override render() {
             renderOrder.push(this.localName);
             return html`le-light`;
           }

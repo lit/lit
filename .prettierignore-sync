@@ -7,6 +7,7 @@ packages/{*,labs/*}/{.gitignore,.prettierignore}
 packages/{lit-starter-ts,lit-starter-js}/.eslintignore
 
 [inline]
+package-lock.json
 packages/localize/examples/
 packages/localize-tools/testdata/
 packages/localize-tools/config.schema.json

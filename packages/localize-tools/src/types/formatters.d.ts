@@ -44,4 +44,19 @@ export interface XliffConfig {
    * the file path "<xliffDir>/<locale>.xlf" will be used.
    */
   xliffDir: string;
+
+  /**
+   * How to represent placeholders containing HTML markup and dynamic
+   * expressions. Different localization tools and services have varying support
+   * for placeholder syntax.
+   *
+   * Defaults to "x". Options:
+   *
+   * - "x": Emit placeholders using <x> tags. See
+   *   http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x
+   *
+   * - "ph": Emit placeholders using <ph> tags. See
+   *   http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph
+   */
+  placeholderStyle?: 'x' | 'ph';
 }

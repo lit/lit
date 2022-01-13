@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <!--
   @license
-  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-  Code distributed by Google as part of the polymer project is also
-  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-  -->
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -35,7 +31,7 @@
     <script type="module">
       import {LitElement, html, css} from 'lit';
       import {repeat} from 'lit/directives/repeat.js';
-      import {flip, fadeIn, flyBelow} from '../development/flip.js';
+      import {animate, fadeIn, flyBelow} from '../development/animate.js';
 
       const shuffle = (a) => {
         a = a.slice();
@@ -116,12 +112,12 @@
         }
 
         render() {
-          const animationOptions = {
+          const keyframeOptions = {
             duration: 500,
             easing: 'ease-in-out',
             fill: 'both',
           };
-          const d = animationOptions.duration / this.data.length;
+          const d = keyframeOptions.duration / this.data.length;
           return html`
             <ul class="tabs ${this.row ? 'row' : ''}">
               ${repeat(
@@ -129,14 +125,14 @@
                 (i) => i,
                 (i, x) =>
                   html`<li
-                    ${flip({
+                    ${animate({
                       in: fadeIn,
                       out: flyBelow,
                       onComplete:
                         x === this.data.length - 1
                           ? () => this.advance()
                           : undefined,
-                      animationOptions: {...animationOptions, delay: x * d},
+                      keyframeOptions: {...keyframeOptions, delay: x * d},
                     })}
                   >
                     ${i.value}

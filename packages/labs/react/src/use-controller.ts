@@ -1,15 +1,7 @@
 /**
  * @license
- * Copyright (c) 2021 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import type * as ReactModule from 'react';
@@ -32,7 +24,8 @@ const microtask = Promise.resolve();
  * and `useController()`.
  */
 class ReactControllerHost<C extends ReactiveController>
-  implements ReactiveControllerHost {
+  implements ReactiveControllerHost
+{
   /* @internal */
   _primaryController!: C;
   private _controllers: Array<ReactiveController> = [];
@@ -67,7 +60,7 @@ class ReactControllerHost<C extends ReactiveController>
     if (!this._updatePending) {
       this._updatePending = true;
       // Trigger a React update by updating some state
-      microtask.then(() => this._kick(this._kickCount + 1));
+      microtask.then(() => this._kick(++this._kickCount));
     }
   }
 

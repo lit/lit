@@ -3,7 +3,7 @@
   "dependencies": {
     "lit-html": {
       "kind": "git",
-      "repo": "https://github.com/Polymer/lit-html.git",
+      "repo": "https://github.com/lit/lit-html.git",
       "ref": "main",
       "subdir": "packages/lit-html",
       "setupCommands": [
@@ -14,7 +14,7 @@
     },
     "lit-element": {
       "kind": "git",
-      "repo": "https://github.com/Polymer/lit-html.git",
+      "repo": "https://github.com/lit/lit-html.git",
       "ref": "main",
       "subdir": "packages/lit-element",
       "setupCommands": [

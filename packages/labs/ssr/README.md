@@ -50,7 +50,7 @@ export const renderTemplate = (someData) => {
 ```js
 // Example: server.js:
 
-import {renderModule} from 'lit-ssr/lib/render-module.js';
+import {renderModule} from '@lit-labs/ssr/lib/render-module.js';
 
 // Execute the above `renderTemplate` in a separate VM context with a minimal DOM shim
 const ssrResult = await (renderModule(
@@ -86,7 +86,7 @@ const update = (data) => render(myTemplate(data), document.body);
 
 ### Hydrating LitElements
 
-When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowroot>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browesr feature that is shipping [Chrome](https://developer.chrome.com/blog/new-in-chrome-90/#declarative). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) ponyfill, described below.
+When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowroot>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browser feature that is shipping [Chrome](https://developer.chrome.com/blog/new-in-chrome-90/#declarative). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) ponyfill, described below.
 
 Because the `hydrate` function above does not descend into shadow roots, it only works on one scope of the DOM at a time. To hydrate `LitElement` shadow roots, load the `lit/hydrate-support.js` module, which installs support for `LitElement` automatically hydrating itself when it detects it was server-rendered with declarative shadow DOM. This module should be loaded before the `lit` module is loaded, to ensure hydration support is properly installed.
 
@@ -147,4 +147,4 @@ Please note the following current limitations with the SSR package:
 - **DOM access**: The above point means care should be taken to avoid interacting directly with the DOM in certain lifecycle callbacks. Concretely, you should generally only interact directly with the DOM (like accessing child/parent nodes, querying, imperatively adding event listeners, dispatching events, etc.) in the following lifecycle callbacks, which are not called on the server:
   - `LitElement`'s `update`, `updated`, `firstUpdated`, or event handlers
   - `Directive`'s `update`
-- **Patterns for usage**: As mentioned above under "Status", we intend to flesh out a number of common patterns for using this package, and provide appropriate APIs and documentation for these as the package reaches maturity. Concerns like server/client data management, incremental loading and hydration, etc. are currently beyond the scope of what this package offers, but we believe it should support building these patterns on top of it going forwrad. Please [file issues](https://github.com/Polymer/lit-html/issues/new/choose) for ideas, suggestions, and use cases you may encounter.
+- **Patterns for usage**: As mentioned above under "Status", we intend to flesh out a number of common patterns for using this package, and provide appropriate APIs and documentation for these as the package reaches maturity. Concerns like server/client data management, incremental loading and hydration, etc. are currently beyond the scope of what this package offers, but we believe it should support building these patterns on top of it going forward. Please [file issues](https://github.com/lit/lit/issues/new/choose) for ideas, suggestions, and use cases you may encounter.

@@ -1,5 +1,6 @@
 {
   "name": "tests",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,10 +11,10 @@
   },
   "devDependencies": {
     "@web/dev-server-legacy": "^0.1.7",
-    "@web/dev-server-rollup": "^0.3.2",
-    "@web/test-runner": "^0.12.15",
-    "@web/test-runner-playwright": "^0.8.1",
-    "@web/test-runner-saucelabs": "^0.5.0",
-    "@webcomponents/webcomponentsjs": "^2.5.0"
+    "@web/dev-server-rollup": "^0.3.13",
+    "@web/test-runner": "^0.13.22",
+    "@web/test-runner-playwright": "^0.8.8",
+    "@web/test-runner-saucelabs": "^0.7.2",
+    "@webcomponents/webcomponentsjs": "^2.6.0"
   }
 }

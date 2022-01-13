@@ -5,18 +5,24 @@
  */
 
 import {litProdConfig} from '../../rollup-common.js';
+import {createRequire} from 'module';
 
 export const defaultConfig = (options = {}) =>
   litProdConfig({
-    classPropertyPrefix: 'Σ',
+    packageName: createRequire(import.meta.url)('./package.json').name,
     entryPoints: [
       'directives/async-append',
       'directives/async-replace',
       'directives/cache',
+      'directives/choose',
       'directives/class-map',
       'directives/guard',
       'directives/if-defined',
+      'directives/join',
+      'directives/keyed',
       'directives/live',
+      'directives/map',
+      'directives/range',
       'directives/ref',
       'directives/repeat',
       'directives/style-map',
@@ -24,6 +30,7 @@ export const defaultConfig = (options = {}) =>
       'directives/unsafe-html',
       'directives/unsafe-svg',
       'directives/until',
+      'directives/when',
       'lit-html',
       'directive',
       'directive-helpers',

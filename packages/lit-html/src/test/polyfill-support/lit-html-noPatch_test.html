@@ -27,7 +27,7 @@
 
   <body>
     <script type="module">
-      // TODO(sorvell): node resolution doesn't seem to be working here.
+      // node resolution doesn't seem to be working here.
       import {
         mocha,
         sessionFinished,
@@ -40,10 +40,14 @@
           // setup mocha
           mocha.setup({ui: 'tdd'});
 
-          // Note, only test noPatch if it's explicitly enabled. This is set
-          // on the `litHtmlPlatformSupport` object for this purpose.
+          // Note, only test `noPatch` if it's explicitly enabled. This is set
+          // on the `litHtmlPolyfillSupport` object for this purpose.
           await import('../../polyfill-support.js');
-          if (window['litHtmlPlatformSupport']?.noPatchSupported) {
+          if (
+            // Note, since this file is not built, it doesn't support DEV_MODE
+            // so manually check both globals
+            window['litHtmlPolyfillSupport']?.noPatchSupported ||
+            window['litHtmlPolyfillSupportDevMode']?.noPatchSupported) {
             console.log('Testing `ShadyDOM.noPatch`');
             await import('./lit-html_html-test.js');
           }
