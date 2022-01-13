@@ -1,9 +1,8 @@
 # lit-benchmarks
 
 ## 1.0.1
+
 ### Patch Changes
-
-
 
 - [#2299](https://github.com/lit/lit/pull/2299) [`4d522d82`](https://github.com/lit/lit/commit/4d522d82d393edd6da4edfad9154a57eaa3e708f) - Update chromedriver
 
