@@ -173,7 +173,7 @@ After:
 ```js
 class HomePage {
   hello() {
-    return msg(html` Hello World `, {
+    return msg(html`Hello World`, {
       desc: 'Home page / Greeting to Earth',
     });
   }
