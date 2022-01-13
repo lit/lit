@@ -159,7 +159,7 @@ Before:
 class HomePage {
   hello() {
     // msgdesc: Greeting to Earth
-    return msg(html` Hello World `);
+    return msg(html`Hello World`);
   }
   goodbye() {
     // msgdesc: Farewell to Earth
