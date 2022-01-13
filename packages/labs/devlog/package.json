@@ -1,0 +1,29 @@
+{
+  "name": "@lit-labs/devlog",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/motion"
+  },
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "type": "module",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "start": "wds -c wds.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@lit-labs/motion": "^1.0.1",
+    "lit": "^2.0.2"
+  },
+  "devDependencies": {
+    "@web/dev-server": "^0.1.25",
+    "@web/dev-server-esbuild": "^0.2.14",
+    "@web/dev-server-hmr": "^0.1.9"
+  }
+}
