@@ -163,7 +163,7 @@ class HomePage {
   }
   goodbye() {
     // msgdesc: Farewell to Earth
-    return msg(html` Goodbye World `);
+    return msg(html`Goodbye World`);
   }
 }
 ```
