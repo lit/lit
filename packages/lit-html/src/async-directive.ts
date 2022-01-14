@@ -115,7 +115,7 @@
  * recursively run `setConnected()` over the entire tree, without removing any
  * children from `_$disconnectableChildren`, since this tree is required to
  * re-connect the tree, which does the same operation, simply passing
- * `isConnectd: true` down the tree, signaling which callback to run.
+ * `isConnected: true` down the tree, signaling which callback to run.
  */
 
 import {AttributePart, ChildPart, Disconnectable, Part} from './lit-html.js';
