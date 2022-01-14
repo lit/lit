@@ -20,6 +20,7 @@
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
     "update-version-vars": "node scripts/update-version-variables.js",
+    "extract-published-lit-version": "node scripts/extract-published-lit-version.js",
     "release": "npm run bootstrap && npm run build && npm run changeset publish"
   },
   "devDependencies": {
