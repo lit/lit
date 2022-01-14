@@ -37,3 +37,60 @@ jobs:
           HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Checkout bundles repo
+        uses: actions/checkout@v2
+        if: steps.changesets.outputs.published
+        with:
+          repository: lit/bundles
+          ref: empty
+          path: bundles
+          token: ${{ secrets.LIT_RELEASE_BOT_TOKEN }}
+
+      - name: Push bundles
+        if: steps.changesets.outputs.published
+        run: |
+          # Extract the version of `lit` that was published or the empty string.
+          LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
+            ${{ steps.changesets.outputs.publishedPackages }}
+          EOF
+          )
+
+          # Don't create a bundle commit if `lit` wasn't published.
+          if [[ -z "$LIT_VERSION" ]]; then
+            exit
+          fi
+
+          # Enter the bundle repo directory.
+          pushd bundles
+
+          # Checkout the empty root commit (with tag `empty`).
+          git checkout --detach empty
+
+          # Copy in all of the bundles.
+          cp ../packages/lit/lit.all.min.js .
+          cp ../packages/lit/lit.all.min.js.map .
+          cp ../packages/lit/lit.all.min.umd.js .
+          cp ../packages/lit/lit.all.min.umd.js.map .
+          cp ../packages/lit/lit.min.js .
+          cp ../packages/lit/lit.min.js.map .
+          cp ../packages/lit/lit.min.umd.js .
+          cp ../packages/lit/lit.min.umd.js.map .
+
+          # Stage the bundles, create the commit, tag it, and push.
+          git add lit.all.min.js
+          git add lit.all.min.js.map
+          git add lit.all.min.umd.js
+          git add lit.all.min.umd.js.map
+          git add lit.min.js
+          git add lit.min.js.map
+          git add lit.min.umd.js
+          git add lit.min.umd.js.map
+          git config user.name "Lit Release Bot"
+          git config user.email "lit-release-bot@google.com"
+          git commit -m "Bundles for lit@${LIT_VERSION}"
+          git tag "v${LIT_VERSION}"
+          git push origin "v${LIT_VERSION}"
+
+          # Exit the bundle repo directory.
+          popd
