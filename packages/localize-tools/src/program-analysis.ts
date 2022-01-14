@@ -692,10 +692,8 @@ function contentEqual(
     }
     return a === b;
   }
-  if (typeof a === 'object') {
-    if (typeof b !== 'object') {
-      return false;
-    }
+  if (typeof a === 'object' && typeof b !== 'object') {
+    return false;
   }
   return true;
 }

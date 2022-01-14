@@ -347,6 +347,22 @@ test('error: different message contents', () => {
   );
 });
 
+test('same message contents with different expression is not error', () => {
+  const src = `
+    import {msg, str} from '@lit/localize';
+    const name = "friend";
+    const otherName = "pal";
+    msg(str\`Hello \${name}\`);
+    msg(str\`Hello \${otherName}\`);
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'saed7d3734ce7f09d',
+      contents: ['Hello ', {untranslatable: '${name}'}],
+    },
+  ]);
+});
+
 test('error: same message contents with different desc', () => {
   const src = `
     import {msg} from '@lit/localize';
