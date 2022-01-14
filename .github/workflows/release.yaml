@@ -76,14 +76,7 @@ jobs:
           cp ../packages/lit/lit.min.umd.js.map .
 
           # Stage the bundles, create the commit, tag it, and push.
-          git add lit.all.min.js
-          git add lit.all.min.js.map
-          git add lit.all.min.umd.js
-          git add lit.all.min.umd.js.map
-          git add lit.min.js
-          git add lit.min.js.map
-          git add lit.min.umd.js
-          git add lit.min.umd.js.map
+          git add .
           git config user.name "Lit Release Bot"
           git config user.email "lit-release-bot@google.com"
           git commit -m "Bundles for lit@${LIT_VERSION}"
