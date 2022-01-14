@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 import * as parse5 from 'parse5';
-import {ProgramMessage, Placeholder, Message} from './messages.js';
+import {ProgramMessage, Placeholder} from './messages.js';
 import {createDiagnostic} from './typescript.js';
 import {
   generateMsgId,
@@ -634,32 +634,44 @@ function dedupeMessages(messages: ProgramMessage[]): {
 } {
   const errors: ts.Diagnostic[] = [];
   const cache = new Map<string, ProgramMessage>();
+  const duplicateCache = new Map<string, ProgramMessage[]>();
   for (const message of messages) {
     const cached = cache.get(message.name);
     if (cached === undefined) {
       cache.set(message.name, message);
     } else if (!messageEqual(message, cached)) {
-      errors.push(
-        createDiagnostic(
-          message.file,
-          message.node,
-          `Message ids must have the same default text wherever they are used`,
-          [
-            createDiagnostic(
-              cached.file,
-              cached.node,
-              'This message id was already found here with different text.'
-            ),
-          ]
-        )
-      );
+      if (duplicateCache.get(cached.name) === undefined) {
+        duplicateCache.set(cached.name, [cached]);
+      }
+      duplicateCache.get(cached.name)!.push(message);
     }
+  }
+  for (const [name, [originalMessage, ...rest]] of duplicateCache) {
+    errors.push(
+      createDiagnostic(
+        originalMessage.file,
+        originalMessage.node,
+        `The translation message with ID ${name} was defined in ${
+          rest.length + 1
+        } places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.`,
+        rest.map((message) =>
+          createDiagnostic(
+            message.file,
+            message.node,
+            'This message id was already found here with different text.'
+          )
+        )
+      )
+    );
   }
   return {messages: [...cache.values()], errors};
 }
 
-function messageEqual(a: Message, b: Message): boolean {
+function messageEqual(a: ProgramMessage, b: ProgramMessage): boolean {
   if (a.contents.length !== b.contents.length) {
+    return false;
+  }
+  if (a.desc !== b.desc) {
     return false;
   }
   for (let i = 0; i < a.contents.length; i++) {
@@ -684,7 +696,6 @@ function contentEqual(
     if (typeof b !== 'object') {
       return false;
     }
-    return a.untranslatable === b.untranslatable;
   }
   return true;
 }

@@ -342,7 +342,28 @@ test('error: different message contents', () => {
       },
     ],
     [
-      '__DUMMY__.ts(4,5): error TS2324: Message ids must have the same default text wherever they are used',
+      '__DUMMY__.ts(3,5): error TS2324: The translation message with ID greeting was defined in 2 places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.',
+    ]
+  );
+});
+
+test('error: same message contents with different desc', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg('Hello World', {desc: 'greeting'});
+    msg('Hello World', {desc: 'greeting2'});
+  `;
+  checkAnalysis(
+    src,
+    [
+      {
+        name: 's3d58dee72d4e0c27',
+        contents: ['Hello World'],
+        desc: 'greeting',
+      },
+    ],
+    [
+      '__DUMMY__.ts(3,5): error TS2324: The translation message with ID s3d58dee72d4e0c27 was defined in 2 places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.',
     ]
   );
 });
