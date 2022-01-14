@@ -49,6 +49,7 @@ jobs:
 
       - name: Push bundles
         if: steps.changesets.outputs.published
+        working-directory: bundles
         run: |
           # Extract the version of `lit` that was published or the empty string.
           LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
@@ -60,9 +61,6 @@ jobs:
           if [[ -z "$LIT_VERSION" ]]; then
             exit
           fi
-
-          # Enter the bundle repo directory.
-          pushd bundles
 
           # Checkout the empty root commit (with tag `empty`).
           git checkout --detach empty
@@ -91,6 +89,3 @@ jobs:
           git commit -m "Bundles for lit@${LIT_VERSION}"
           git tag "v${LIT_VERSION}"
           git push origin "v${LIT_VERSION}"
-
-          # Exit the bundle repo directory.
-          popd
