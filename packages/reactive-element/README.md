@@ -88,4 +88,4 @@ $ npm install lit
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).

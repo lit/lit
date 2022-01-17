@@ -19,4 +19,4 @@ Full documentation is available at [lit.dev](https://lit.dev).
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).
