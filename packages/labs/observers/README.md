@@ -45,4 +45,4 @@ class MyElement extends LitElement {
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
