@@ -22,6 +22,7 @@ The bundles will be distributed by committing them to a new repo
   package-prefixed tags, e.g. `lit@2.0.0`), which is necessary for compatibility
   with jsDelivr's scheme for specifying an imprecise version when requesting a
   file from a repo on GitHub. (See https://jsdelivr.com/features for more info.)
-- Avoiding including the bundles in the npm packages makes it clear that they
-  aren't typically intended for npm users, who already have easy access to an
-  unbundled version of the package.
+- Not publishing on npm helps avoid the risk that users might publish a reusable
+  package depending on a bundle rather than Lit source, which could lead to
+  duplication of the Lit library when users install such packages alongside
+  others that do correctly depend on Lit source.
