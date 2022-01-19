@@ -10,6 +10,7 @@ jobs:
       - name: Create project card
         uses: peter-evans/create-or-update-project-card@v1
         with:
+          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           project-location: lit
           project-number: 4
           column-name: No Status
