@@ -1,16 +1,16 @@
 # GitHub action that automatically adds newly filed issues to the Lit project.
-# See https://github.com/peter-evans/create-or-update-project-card for documentation.
+# See https://github.com/leonsteinhaeuser/project-beta-automations for documentation.
 on:
   issues:
     types: [opened]
 jobs:
-  createCard:
+  add-issue-to-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Create project card
-        uses: peter-evans/create-or-update-project-card@v1
+      - name: Add issue to Lit project
+        uses: leonsteinhaeuser/project-beta-automations@v1.1.0
         with:
-          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
-          project-location: lit
-          project-number: 4
-          column-name: No Status
+          gh_token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          organization: lit
+          project_id: 4
+          resource_node_id: ${{ github.event.issue.node_id }}
