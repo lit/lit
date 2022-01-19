@@ -1,0 +1,15 @@
+# GitHub action that automatically adds newly filed issues to the Lit project.
+# See https://github.com/peter-evans/create-or-update-project-card for documentation.
+on:
+  issues:
+    types: [opened]
+jobs:
+  createCard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create project card
+        uses: peter-evans/create-or-update-project-card@v1
+        with:
+          project-location: lit
+          project-number: 4
+          column-name: No Status
