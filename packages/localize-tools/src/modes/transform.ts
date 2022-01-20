@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message, makeMessageIdMap} from '../messages.js';
+import {Message, Placeholder, makeMessageIdMap} from '../messages.js';
 import {writeLocaleCodesModule} from '../locales.js';
 import type {Locale} from '../types/locale.js';
 import type {Config} from '../types/config.js';
@@ -331,8 +331,16 @@ class Transformer {
     if (templateResult.error) {
       throw new Error(stringifyDiagnostics([templateResult.error]));
     }
-    const {tag} = templateResult.result;
+    const {tag, contents} = templateResult.result;
     let {template} = templateResult.result;
+
+    const placeholdersByIndex = new Map<string, Placeholder>();
+    let idx = 0;
+    for (const content of contents) {
+      if (typeof content === 'object') {
+        placeholdersByIndex.set(String(idx++), content);
+      }
+    }
 
     const optionsResult = extractOptions(optionsArg, this.sourceFile);
     if (optionsResult.error) {
@@ -345,10 +353,10 @@ class Transformer {
     if (ts.isTemplateExpression(template)) {
       for (const span of template.templateSpans) {
         // TODO(aomarks) Support less brittle/more readable placeholder keys.
-        const key = this.sourceFile.text.slice(
-          span.expression.pos,
-          span.expression.end
-        );
+        const key = this.sourceFile.text
+          .slice(span.expression.pos, span.expression.end)
+          .replace(/{ /g, '{')
+          .replace(/ }/g, '}');
         sourceExpressions.set(key, span.expression);
       }
     }
@@ -359,11 +367,28 @@ class Transformer {
       const translation = this.translations.get(id);
       if (translation !== undefined) {
         const templateLiteralBody = translation.contents
-          .map((content) =>
-            typeof content === 'string'
-              ? escapeTextContentToEmbedInTemplateLiteral(content)
-              : content.untranslatable
-          )
+          .map((content) => {
+            if (typeof content === 'string') {
+              return escapeTextContentToEmbedInTemplateLiteral(content);
+            }
+            // Swap translation placeholders with source placeholders of matching index
+            if (content.index === undefined) {
+              throw new Error(
+                `Missing index in translation placeholder.` +
+                  `\nLocale: ${this.locale}` +
+                  `\nPlaceholder: ${content.untranslatable}`
+              );
+            }
+            const matchingPlaceholder = placeholdersByIndex.get(content.index);
+            if (matchingPlaceholder === undefined) {
+              throw new Error(
+                `Placeholder from translation does not appear in source.` +
+                  `\nLocale: ${this.locale}` +
+                  `\nPlaceholder: ${content.untranslatable}`
+              );
+            }
+            return matchingPlaceholder.untranslatable;
+          })
           .join('');
 
         template = parseStringAsTemplateLiteral(templateLiteralBody);
@@ -371,10 +396,10 @@ class Transformer {
           const newParts = [];
           newParts.push(template.head.text);
           for (const span of template.templateSpans) {
-            const expressionKey = templateLiteralBody.slice(
-              span.expression.pos - 1,
-              span.expression.end - 1
-            );
+            const expressionKey = templateLiteralBody
+              .slice(span.expression.pos - 1, span.expression.end - 1)
+              .replace(/{ /g, '{')
+              .replace(/ }/g, '}');
             const sourceExpression = sourceExpressions.get(expressionKey);
             if (sourceExpression === undefined) {
               throw new Error(
