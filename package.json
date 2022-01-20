@@ -26,6 +26,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.16.0",
     "@changesets/get-github-info": "^0.5.0",
+    "@microsoft/api-extractor": "^7.19.4",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-virtual": "^2.0.3",

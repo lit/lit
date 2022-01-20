@@ -12,6 +12,7 @@
 /experimental-hydrate-support.*
 /experimental-hydrate.*
 /index.*
+!/*.api-extractor.json
 /static-html.*
 
 /lit.all.min.*
