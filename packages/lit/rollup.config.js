@@ -56,20 +56,8 @@ export default litProdConfig({
     },
     {
       file: 'index',
-      output: 'lit.min.umd',
-      format: 'umd',
-      name: 'Lit',
-    },
-    {
-      file: 'index',
       output: 'lit.min',
       format: 'es',
-    },
-    {
-      file: 'index.all',
-      output: 'lit.all.min.umd',
-      format: 'umd',
-      name: 'Lit',
     },
     {
       file: 'index.all',

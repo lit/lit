@@ -65,12 +65,8 @@ jobs:
           # Copy in all of the bundles.
           cp ../packages/lit/lit.all.min.js .
           cp ../packages/lit/lit.all.min.js.map .
-          cp ../packages/lit/lit.all.min.umd.js .
-          cp ../packages/lit/lit.all.min.umd.js.map .
           cp ../packages/lit/lit.min.js .
           cp ../packages/lit/lit.min.js.map .
-          cp ../packages/lit/lit.min.umd.js .
-          cp ../packages/lit/lit.min.umd.js.map .
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Release Bot"
