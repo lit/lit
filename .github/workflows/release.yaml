@@ -38,18 +38,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Checkout bundles repo
+      - name: Checkout dist repo
         uses: actions/checkout@v2
         if: steps.changesets.outputs.published
         with:
-          repository: lit/bundles
+          repository: lit/dist
           ref: empty
-          path: bundles
-          token: ${{ secrets.LIT_RELEASE_BOT_TOKEN }}
+          path: dist
+          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
-      - name: Push bundles
+      - name: Push bundles to dist repo
         if: steps.changesets.outputs.published
-        working-directory: bundles
+        working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
           LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
@@ -69,8 +69,8 @@ jobs:
           cp ../packages/lit/lit.min.js.map .
           # Stage the bundles, create the commit, tag it, and push.
           git add .
-          git config user.name "Lit Release Bot"
-          git config user.email "lit-release-bot@google.com"
+          git config user.name "Lit Robot"
+          git config user.email "lit-robot@google.com"
           git commit -m "Bundles for lit@${LIT_VERSION}"
           git tag "v${LIT_VERSION}"
           git push origin "v${LIT_VERSION}"
