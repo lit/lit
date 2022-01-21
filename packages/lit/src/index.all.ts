@@ -4,12 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import './polyfill-support.js';
-
 export * from './index.js';
 
 export * from './async-directive.js';
-export * from './decorators.js';
 export * from './directive-helpers.js';
 export * from './directive.js';
 export * from './directives/async-append.js';
