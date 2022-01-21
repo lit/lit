@@ -116,7 +116,9 @@ export class XliffFormatter implements Formatter {
             child as Element,
             'equiv-text'
           );
-          const index = getNonEmptyAttributeOrThrow(child as Element, 'id');
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'id')
+          );
           contents.push({untranslatable: phText, index});
         } else if (
           child.nodeType === doc.ELEMENT_NODE &&
@@ -132,7 +134,9 @@ export class XliffFormatter implements Formatter {
               `Expected <${child.nodeName}> to have exactly one text node`
             );
           }
-          const index = getNonEmptyAttributeOrThrow(child as Element, 'id');
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'id')
+          );
           contents.push({untranslatable: phText.nodeValue || '', index});
         } else {
           throw new KnownError(

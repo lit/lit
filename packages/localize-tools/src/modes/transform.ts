@@ -334,12 +334,12 @@ class Transformer {
     const {tag, contents} = templateResult.result;
     let {template} = templateResult.result;
 
-    const placeholdersByIndex = new Map<string, Placeholder>();
+    const placeholdersByIndex = new Map<number, Placeholder>();
     {
       let idx = 0;
       for (const content of contents) {
         if (typeof content === 'object') {
-          placeholdersByIndex.set(String(idx++), content);
+          placeholdersByIndex.set(idx++, content);
         }
       }
     }

@@ -141,9 +141,9 @@ test('html(msg(html)) translated', () => {
           name: 'foo',
           contents: [
             'Hola ',
-            {untranslatable: '<i>', index: '0'},
+            {untranslatable: '<i>', index: 0},
             'Mundo',
-            {untranslatable: '</i>', index: '1'},
+            {untranslatable: '</i>', index: 1},
           ],
         },
       ],
@@ -166,7 +166,7 @@ test('msg(string(expr)) translated', () => {
       messages: [
         {
           name: 'foo',
-          contents: ['Hola ', {untranslatable: '${name}', index: '0'}, '!'],
+          contents: ['Hola ', {untranslatable: '${name}', index: 0}, '!'],
         },
       ],
     }
@@ -188,7 +188,7 @@ test('msg(string(string)) translated', () => {
       messages: [
         {
           name: 'foo',
-          contents: ['Hola ', {untranslatable: '${"World"}', index: '0'}, '!'],
+          contents: ['Hola ', {untranslatable: '${"World"}', index: 0}, '!'],
         },
       ],
     }
@@ -212,7 +212,7 @@ test('msg(html(expr)) translated', () => {
           name: 'foo',
           contents: [
             'Hola ',
-            {untranslatable: '<b>${name}</b>', index: '0'},
+            {untranslatable: '<b>${name}</b>', index: 0},
             '!',
           ],
         },
@@ -238,7 +238,7 @@ test('msg(html(string)) translated', () => {
           name: 'foo',
           contents: [
             'Hola ',
-            {untranslatable: '<b>${"World"}</b>', index: '0'},
+            {untranslatable: '<b>${"World"}</b>', index: 0},
             '!',
           ],
         },
@@ -265,7 +265,7 @@ test('msg(html(string)) translated', () => {
 //           name: 'foo',
 //           contents: [
 //             'Hola ',
-//             {untranslatable: '<b>${html`<i>World</i>`}</b>', index: '0'},
+//             {untranslatable: '<b>${html`<i>World</i>`}</b>', index: 0},
 //             '!',
 //           ],
 //         },
@@ -291,7 +291,7 @@ test('msg(string(msg(string))) translated', () => {
           name: 'foo',
           contents: [
             'Hola ',
-            {untranslatable: '${msg("World", {id: "bar"})}', index: '0'},
+            {untranslatable: '${msg("World", {id: "bar"})}', index: 0},
             '!',
           ],
         },
@@ -314,7 +314,7 @@ test('msg(string(<b>msg(string)</b>)) translated', () => {
           name: 'foo',
           contents: [
             'Hola <b>',
-            {untranslatable: '${msg("World", {id: "bar"})}', index: '0'},
+            {untranslatable: '${msg("World", {id: "bar"})}', index: 0},
             '</b>!',
           ],
         },
