@@ -247,6 +247,32 @@ test('msg(html(string)) translated', () => {
   );
 });
 
+test('multiple expression-placeholders and order switching', () => {
+  checkTransform(
+    `const x = 'x';
+    const y = 'y';
+    const z = 'z';
+    msg(html\`a \${x}\${y} b \${z}\`, {id: "foo"});`,
+    `const x = 'x';
+    const y = 'y';
+    const z = 'z';
+    html\`B \${z} A \${x}\${y}\`;`,
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: [
+            'B ',
+            {untranslatable: 'N/A-1', index: 1},
+            ' A ',
+            {untranslatable: 'N/A-0', index: 0},
+          ],
+        },
+      ],
+    }
+  );
+});
+
 // TODO(aomarks) Uncomment with fix for #2426
 // test('msg(html(html))', () => {
 //   checkTransform(

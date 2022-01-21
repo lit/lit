@@ -331,18 +331,8 @@ class Transformer {
     if (templateResult.error) {
       throw new Error(stringifyDiagnostics([templateResult.error]));
     }
-    const {tag, contents} = templateResult.result;
-    let {template} = templateResult.result;
-
-    const placeholdersByIndex = new Map<number, Placeholder>();
-    {
-      let idx = 0;
-      for (const content of contents) {
-        if (typeof content === 'object') {
-          placeholdersByIndex.set(idx++, content);
-        }
-      }
-    }
+    const {tag, contents, template} = templateResult.result;
+    let newTemplate = template;
 
     const optionsResult = extractOptions(optionsArg, this.sourceFile);
     if (optionsResult.error) {
@@ -351,33 +341,38 @@ class Transformer {
     const options = optionsResult.result;
     const id = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
 
-    const sourceExpressions = new Map<string, ts.Expression>();
-    if (ts.isTemplateExpression(template)) {
-      for (const span of template.templateSpans) {
-        const printer = ts.createPrinter({
-          newLine: ts.NewLineKind.LineFeed,
-          noEmitHelpers: true,
-        });
-        const key = printer.printNode(
-          ts.EmitHint.Unspecified,
-          span.expression,
-          this.sourceFile
-        );
-        sourceExpressions.set(key, span.expression);
-      }
-    }
-
-    // If translations are available, replace the source template from the
-    // second argument with the corresponding translation.
     if (this.translations !== undefined) {
       const translation = this.translations.get(id);
       if (translation !== undefined) {
+        // If translations are available, replace the source template from the
+        // second argument with the corresponding translation.
+
+        // Maps from <translation absolute expression index> to
+        // <[source placeholder index, placeholder-relative expression index]>.
+        const transExprToSourcePosition = new Map<number, [number, number]>();
+
+        // Maps from <source placeholder index> to <the number of expressions in
+        // that placeholder>.
+        const placeholderExpressionCounts = new Map<number, number>();
+
+        // The absolute position of each expression within the translated
+        // message.
+        let absTransExprIdx = 0;
+
+        // Maps source placeholder to their index.
+        const placeholdersByIndex = new Map<number, Placeholder>();
+        for (let i = 0, phIdx = 0; i < contents.length; i++) {
+          const content = contents[i];
+          if (typeof content === 'object') {
+            placeholdersByIndex.set(phIdx++, content);
+          }
+        }
+
         const templateLiteralBody = translation.contents
           .map((content) => {
             if (typeof content === 'string') {
               return escapeTextContentToEmbedInTemplateLiteral(content);
             }
-            // Swap translation placeholders with source placeholders of matching index
             if (content.index === undefined) {
               throw new Error(
                 `Missing index in translation placeholder.` +
@@ -385,7 +380,9 @@ class Transformer {
                   `\nPlaceholder: ${content.untranslatable}`
               );
             }
-            const matchingPlaceholder = placeholdersByIndex.get(content.index);
+            const sourcePlaceholderIdx = content.index;
+            const matchingPlaceholder =
+              placeholdersByIndex.get(sourcePlaceholderIdx);
             if (matchingPlaceholder === undefined) {
               throw new Error(
                 `Placeholder from translation does not appear in source.` +
@@ -393,44 +390,66 @@ class Transformer {
                   `\nPlaceholder: ${content.untranslatable}`
               );
             }
+            const parsedPlaceholder = parseStringAsTemplateLiteral(
+              matchingPlaceholder.untranslatable
+            );
+            if (ts.isTemplateExpression(parsedPlaceholder)) {
+              placeholderExpressionCounts.set(
+                sourcePlaceholderIdx,
+                parsedPlaceholder.templateSpans.length
+              );
+              for (let i = 0; i < parsedPlaceholder.templateSpans.length; i++) {
+                const placeholderRelativeExprIdx = i;
+                transExprToSourcePosition.set(absTransExprIdx++, [
+                  sourcePlaceholderIdx,
+                  placeholderRelativeExprIdx,
+                ]);
+              }
+            }
+
             return matchingPlaceholder.untranslatable;
           })
           .join('');
 
-        const parseResult = parseStringAsTemplateLiteral(templateLiteralBody);
-        template = parseResult.template;
-        if (ts.isTemplateExpression(template)) {
-          const newParts = [];
-          newParts.push(template.head.text);
-          for (const span of template.templateSpans) {
-            const printer = ts.createPrinter({
-              newLine: ts.NewLineKind.LineFeed,
-              noEmitHelpers: true,
-            });
-            const expressionKey = printer.printNode(
-              ts.EmitHint.Unspecified,
-              span.expression,
-              parseResult.file
-            );
-            const sourceExpression = sourceExpressions.get(expressionKey);
-            if (sourceExpression === undefined) {
+        newTemplate = parseStringAsTemplateLiteral(templateLiteralBody);
+        if (ts.isTemplateExpression(newTemplate)) {
+          const newParts: Array<string | ts.Expression> = [];
+          newParts.push(newTemplate.head.text);
+          for (let i = 0; i < newTemplate.templateSpans.length; i++) {
+            const span = newTemplate.templateSpans[i];
+            const srcPos = transExprToSourcePosition.get(i);
+            if (srcPos === undefined) {
+              const expressionText = templateLiteralBody.slice(
+                span.expression.pos - 1,
+                span.expression.end - 1
+              );
               throw new Error(
                 `Expression in translation does not appear in source.` +
                   `\nLocale: ${this.locale}` +
-                  `\nExpression: ${expressionKey}`
+                  `\nExpression: ${expressionText}`
               );
             }
-            newParts.push(sourceExpression);
+            const [sourcePlaceholderIdx, placeholderRelativeExprIdx] = srcPos;
+            let absSourceExprIdx = placeholderRelativeExprIdx;
+            for (let j = 0; j < sourcePlaceholderIdx; j++) {
+              // Offset by the length of all preceding placeholder indexes.
+              absSourceExprIdx += placeholderExpressionCounts.get(j) ?? 0;
+            }
+            if (!ts.isTemplateExpression(template)) {
+              throw new Error('Internal error');
+            }
+            const sourceExpression = template.templateSpans[absSourceExprIdx];
+            newParts.push(sourceExpression.expression);
             newParts.push(span.literal.text);
           }
-          template = makeTemplateLiteral(newParts);
+          newTemplate = makeTemplateLiteral(newParts);
         }
       }
       // TODO(aomarks) Emit a warning that a translation was missing.
     }
 
     // Nothing more to do with a simple string.
-    if (ts.isStringLiteral(template)) {
+    if (ts.isStringLiteral(newTemplate)) {
       if (tag === 'html') {
         throw new KnownError(
           'Internal error: string literal cannot be html-tagged'
@@ -444,10 +463,10 @@ class Transformer {
     //
     // Given: html`Hello <b>${"World"}</b>`
     // Generate: html`Hello <b>World</b>`
-    template = makeTemplateLiteral(
-      this.recursivelyFlattenTemplate(template, tag === 'html')
+    newTemplate = makeTemplateLiteral(
+      this.recursivelyFlattenTemplate(newTemplate, tag === 'html')
     );
-    return tag === 'html' ? tagLit(template) : template;
+    return tag === 'html' ? tagLit(newTemplate) : newTemplate;
   }
 
   /**

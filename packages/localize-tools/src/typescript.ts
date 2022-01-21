@@ -100,10 +100,9 @@ export function escapeTextContentToEmbedInTemplateLiteral(
  * (backticks should not be included), and return its TypeScript AST node
  * representation.
  */
-export function parseStringAsTemplateLiteral(templateLiteralBody: string): {
-  file: ts.SourceFile;
-  template: ts.TemplateLiteral;
-} {
+export function parseStringAsTemplateLiteral(
+  templateLiteralBody: string
+): ts.TemplateLiteral {
   const file = ts.createSourceFile(
     '__DUMMY__.ts',
     '`' + templateLiteralBody + '`',
@@ -122,5 +121,5 @@ export function parseStringAsTemplateLiteral(templateLiteralBody: string): {
   if (!ts.isTemplateLiteral(expression)) {
     throw new Error('Internal error: expected template literal expression');
   }
-  return {file, template: expression};
+  return expression;
 }
