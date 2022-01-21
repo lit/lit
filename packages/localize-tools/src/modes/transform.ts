@@ -335,10 +335,12 @@ class Transformer {
     let {template} = templateResult.result;
 
     const placeholdersByIndex = new Map<string, Placeholder>();
-    let idx = 0;
-    for (const content of contents) {
-      if (typeof content === 'object') {
-        placeholdersByIndex.set(String(idx++), content);
+    {
+      let idx = 0;
+      for (const content of contents) {
+        if (typeof content === 'object') {
+          placeholdersByIndex.set(String(idx++), content);
+        }
       }
     }
 
@@ -352,11 +354,15 @@ class Transformer {
     const sourceExpressions = new Map<string, ts.Expression>();
     if (ts.isTemplateExpression(template)) {
       for (const span of template.templateSpans) {
-        // TODO(aomarks) Support less brittle/more readable placeholder keys.
-        const key = this.sourceFile.text
-          .slice(span.expression.pos, span.expression.end)
-          .replace(/{ /g, '{')
-          .replace(/ }/g, '}');
+        const printer = ts.createPrinter({
+          newLine: ts.NewLineKind.LineFeed,
+          noEmitHelpers: true,
+        });
+        const key = printer.printNode(
+          ts.EmitHint.Unspecified,
+          span.expression,
+          this.sourceFile
+        );
         sourceExpressions.set(key, span.expression);
       }
     }
@@ -391,15 +397,21 @@ class Transformer {
           })
           .join('');
 
-        template = parseStringAsTemplateLiteral(templateLiteralBody);
+        const parseResult = parseStringAsTemplateLiteral(templateLiteralBody);
+        template = parseResult.template;
         if (ts.isTemplateExpression(template)) {
           const newParts = [];
           newParts.push(template.head.text);
           for (const span of template.templateSpans) {
-            const expressionKey = templateLiteralBody
-              .slice(span.expression.pos - 1, span.expression.end - 1)
-              .replace(/{ /g, '{')
-              .replace(/ }/g, '}');
+            const printer = ts.createPrinter({
+              newLine: ts.NewLineKind.LineFeed,
+              noEmitHelpers: true,
+            });
+            const expressionKey = printer.printNode(
+              ts.EmitHint.Unspecified,
+              span.expression,
+              parseResult.file
+            );
             const sourceExpression = sourceExpressions.get(expressionKey);
             if (sourceExpression === undefined) {
               throw new Error(

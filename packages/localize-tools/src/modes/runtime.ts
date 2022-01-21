@@ -245,7 +245,7 @@ function makeMessageString(
     if (typeof content === 'string') {
       continue;
     }
-    const template = parseStringAsTemplateLiteral(content.untranslatable);
+    const {template} = parseStringAsTemplateLiteral(content.untranslatable);
     if (ts.isNoSubstitutionTemplateLiteral(template)) {
       continue;
     }
@@ -259,7 +259,7 @@ function makeMessageString(
     if (typeof content === 'string') {
       fragments.push(escapeTextContentToEmbedInTemplateLiteral(content));
     } else {
-      const template = parseStringAsTemplateLiteral(content.untranslatable);
+      const {template} = parseStringAsTemplateLiteral(content.untranslatable);
       if (ts.isNoSubstitutionTemplateLiteral(template)) {
         fragments.push(template.text);
       } else {
