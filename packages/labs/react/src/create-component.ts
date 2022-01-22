@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
+import React, * as ReactModule from 'react';
 
 const reservedReactProperties = new Set([
   'children',
@@ -55,6 +55,8 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
+
+// 5 we set a property here. The tepyes get odd, this is generic but assignable
 const setProperty = <E extends Element, T>(
   node: E,
   name: string,
@@ -62,10 +64,14 @@ const setProperty = <E extends Element, T>(
   old: unknown,
   events?: StringValued<T>
 ) => {
+  // 
   const event = events?.[name as keyof T];
   if (event !== undefined) {
     // Dirty check event value.
+    //
+    // the node could change at any time, this should be updated regardless
     if (value !== old) {
+      // remove event listener
       addOrUpdateEventListener(node, event, value as (e?: Event) => void);
     }
   } else {
@@ -85,7 +91,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
 };
 
 type Events<S> = {
-  [P in keyof S]?: (e: Event) => unknown;
+  [P in keyof S]?: ReactModule.EventHandler<React.SyntheticEvent>;
 };
 
 type StringValued<T> = {
@@ -147,6 +153,8 @@ export const createComponent = <I extends HTMLElement, E>(
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
+
+  // 1) we create a map of property names
   const elementClassProps = new Set(Object.keys(events ?? {}));
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
@@ -167,6 +175,7 @@ export const createComponent = <I extends HTMLElement, E>(
     }
   }
 
+  // 2 we create a React class
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
@@ -175,6 +184,7 @@ export const createComponent = <I extends HTMLElement, E>(
 
     static displayName = displayName ?? elementClass.name;
 
+    // 4 update element starts the property process
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
         return;
@@ -186,12 +196,16 @@ export const createComponent = <I extends HTMLElement, E>(
           prop,
           this.props[prop as keyof ComponentProps],
           oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
+          // 3) event names from args
           events
         );
       }
       // Note, the spirit of React might be to "unset" any old values that
       // are no longer included; however, there's no reasonable value to set
       // them to so we just leave the previous state as is.
+      //
+      // the spirit is state is not considered correct outsid of the rendering path
+      // this would be considered leaky and could cause race conditions
     }
 
     /**

@@ -238,16 +238,16 @@ suite('createComponent', () => {
   });
 
   test('can listen to events', async () => {
-    let fooEvent: Event | undefined,
-      fooEvent2: Event | undefined,
-      barEvent: Event | undefined;
-    const onFoo = (e: Event) => {
+    let fooEvent: ReactModule.SyntheticEvent | undefined,
+      fooEvent2: ReactModule.SyntheticEvent | undefined,
+      barEvent: ReactModule.SyntheticEvent | undefined;
+    const onFoo: ReactModule.EventHandler<ReactModule.SyntheticEvent> = (e) => {
       fooEvent = e;
     };
-    const onFoo2 = (e: Event) => {
+    const onFoo2: ReactModule.EventHandler<ReactModule.SyntheticEvent> = (e) => {
       fooEvent2 = e;
     };
-    const onBar = (e: Event) => {
+    const onBar: ReactModule.EventHandler<ReactModule.SyntheticEvent> = (e) => {
       barEvent = e;
     };
     await renderReactComponent({
@@ -255,9 +255,9 @@ suite('createComponent', () => {
       onBar,
     });
     el.fire('foo');
-    assert.equal(fooEvent!.type, 'foo');
+    assert.equal(fooEvent!.nativeEvent.type, 'foo');
     el.fire('bar');
-    assert.equal(barEvent!.type, 'bar');
+    assert.equal(barEvent!.nativeEvent.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
     await renderReactComponent({
@@ -266,16 +266,16 @@ suite('createComponent', () => {
     el.fire('foo');
     assert.equal(fooEvent, undefined);
     el.fire('bar');
-    assert.equal(barEvent!.type, 'bar');
+    assert.equal(barEvent!.nativeEvent.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
     await renderReactComponent({
       onFoo,
     });
     el.fire('foo');
-    assert.equal(fooEvent!.type, 'foo');
+    assert.equal(fooEvent!.nativeEvent.type, 'foo');
     el.fire('bar');
-    assert.equal(barEvent!.type, 'bar');
+    assert.equal(barEvent!.nativeEvent.type, 'bar');
     await renderReactComponent({
       onFoo: onFoo2,
     });
@@ -283,14 +283,14 @@ suite('createComponent', () => {
     fooEvent2 = undefined;
     el.fire('foo');
     assert.equal(fooEvent, undefined);
-    assert.equal(fooEvent2!.type, 'foo');
+    assert.equal(fooEvent2!.nativeEvent.type, 'foo');
     await renderReactComponent({
       onFoo,
     });
     fooEvent = undefined;
     fooEvent2 = undefined;
     el.fire('foo');
-    assert.equal(fooEvent!.type, 'foo');
+    assert.equal(fooEvent!.nativeEvent.type, 'foo');
     assert.equal(fooEvent2, undefined);
   });
 
