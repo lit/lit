@@ -90,7 +90,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
-type Events<S> = {
+type SyntheticEvents<S> = {
   [P in keyof S]?: ReactModule.EventHandler<React.SyntheticEvent>;
 };
 
@@ -138,7 +138,7 @@ export const createComponent = <I extends HTMLElement, E>(
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
-        Events<E> &
+        SyntheticEvents<E> &
         React.HTMLAttributes<HTMLElement>
     >
   >;

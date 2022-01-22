@@ -255,9 +255,9 @@ suite('createComponent', () => {
       onBar,
     });
     el.fire('foo');
-    assert.equal(fooEvent!.nativeEvent.type, 'foo');
+    assert.equal(fooEvent!.type, 'foo');
     el.fire('bar');
-    assert.equal(barEvent!.nativeEvent.type, 'bar');
+    assert.equal(barEvent!.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
     await renderReactComponent({
@@ -266,16 +266,16 @@ suite('createComponent', () => {
     el.fire('foo');
     assert.equal(fooEvent, undefined);
     el.fire('bar');
-    assert.equal(barEvent!.nativeEvent.type, 'bar');
+    assert.equal(barEvent!.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
     await renderReactComponent({
       onFoo,
     });
     el.fire('foo');
-    assert.equal(fooEvent!.nativeEvent.type, 'foo');
+    assert.equal(fooEvent!.type, 'foo');
     el.fire('bar');
-    assert.equal(barEvent!.nativeEvent.type, 'bar');
+    assert.equal(barEvent!.type, 'bar');
     await renderReactComponent({
       onFoo: onFoo2,
     });
@@ -283,14 +283,14 @@ suite('createComponent', () => {
     fooEvent2 = undefined;
     el.fire('foo');
     assert.equal(fooEvent, undefined);
-    assert.equal(fooEvent2!.nativeEvent.type, 'foo');
+    assert.equal(fooEvent2!.type, 'foo');
     await renderReactComponent({
       onFoo,
     });
     fooEvent = undefined;
     fooEvent2 = undefined;
     el.fire('foo');
-    assert.equal(fooEvent!.nativeEvent.type, 'foo');
+    assert.equal(fooEvent!.type, 'foo');
     assert.equal(fooEvent2, undefined);
   });
 
