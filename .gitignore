@@ -4,3 +4,7 @@ lerna-debug.log
 *.tsbuildinfo
 .DS_Store
 .vscode/
+
+# `/dist` is used during the release step as the checkout location for the dist
+# repo. (https://github.com/lit/dist)
+/dist

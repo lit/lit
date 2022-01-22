@@ -10,6 +10,10 @@ lerna-debug.log
 .DS_Store
 .vscode/
 
+# `/dist` is used during the release step as the checkout location for the dist
+# repo. (https://github.com/lit/dist)
+/dist
+
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
 packages/benchmarks/generator/generated/
@@ -40,6 +44,7 @@ packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
+packages/lit/lit.all.min.*
 packages/lit/lit.min.*
 packages/lit/polyfill-support.*
 
@@ -136,6 +141,14 @@ packages/labs/motion/index.*
 packages/labs/motion/animate.*
 packages/labs/motion/position.*
 packages/labs/motion/animate-controller.*
+packages/labs/observers/development/
+packages/labs/observers/test/
+packages/labs/observers/node_modules/
+packages/labs/observers/index.*
+packages/labs/observers/mutation_controller.*
+packages/labs/observers/performance_controller.*
+packages/labs/observers/resize_controller.*
+packages/labs/observers/intersection_controller.*
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/

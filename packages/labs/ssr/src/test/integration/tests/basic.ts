@@ -4301,6 +4301,55 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
+   * Unknown element/renderer tests
+   ******************************************************/
+
+  'Unregistered custom element: Attributes': () => {
+    return {
+      render() {
+        return html`
+          <x-unregistered
+            attr1
+            attr2="attr2val"
+            attr3=${'attr3val'}
+          ></x-unregistered>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<x-unregistered attr1 attr2="attr2val" attr3="attr3val"></x-unregistered>',
+        },
+      ],
+      stableSelectors: ['x-unregistered'],
+    };
+  },
+
+  'Custom element with no renderer: Attributes': () => {
+    return {
+      registerElements() {
+        customElements.define('x-norenderer', class extends HTMLElement {});
+      },
+      render() {
+        return html`
+          <x-norenderer
+            attr1
+            attr2="attr2val"
+            attr3=${'attr3val'}
+          ></x-norenderer>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<x-norenderer attr1 attr2="attr2val" attr3="attr3val"></x-norenderer>',
+        },
+      ],
+      stableSelectors: ['x-norenderer'],
+    };
+  },
+
+  /******************************************************
    * LitElement tests
    ******************************************************/
 

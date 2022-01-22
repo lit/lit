@@ -218,6 +218,25 @@ test('element with property', async () => {
   );
 });
 
+test('element with reflected properties', async () => {
+  const {render, elementWithReflectedProperties} = await setup();
+  const result = await render(elementWithReflectedProperties);
+  // TODO: we'd like to remove the extra space in the start tag
+  assert.is(
+    result,
+    `<!--lit-part 7z41MJchKXM=--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><!--lit-node 0--><template shadowroot="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+  );
+});
+
+test('element with default reflected properties', async () => {
+  const {render, elementWithDefaultReflectedProperties} = await setup();
+  const result = await render(elementWithDefaultReflectedProperties);
+  assert.is(
+    result,
+    `<!--lit-part tktTsdmfB74=--><test-reflected-properties baz="default reflected string"><template shadowroot="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+  );
+});
+
 test('element with `willUpdate`', async () => {
   const {render, elementWithWillUpdate} = await setup();
   const result = await render(elementWithWillUpdate);

@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.0.2",
+  "version": "3.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -41,6 +41,10 @@
     "./decorators/query-all.js": {
       "development": "./development/decorators/query-all.js",
       "default": "./decorators/query-all.js"
+    },
+    "./decorators/query-assigned-elements.js": {
+      "development": "./development/decorators/query-assigned-elements.js",
+      "default": "./decorators/query-assigned-elements.js"
     },
     "./decorators/query-assigned-nodes.js": {
       "development": "./development/decorators/query-assigned-nodes.js",
@@ -107,8 +111,8 @@
     "!/development/test/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0",
-    "lit-html": "^2.0.0"
+    "@lit/reactive-element": "^1.1.0",
+    "lit-html": "^2.1.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

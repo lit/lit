@@ -63,4 +63,4 @@ Once you've defined your component, you can use it anywhere you use HTML:
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).

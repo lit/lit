@@ -1,5 +1,38 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#2386](https://github.com/lit/lit/pull/2386) [`734d8890`](https://github.com/lit/lit/commit/734d88909eb285d935cb583c016242d634fa2c75) - Unpin SSR's dependency on reactive-element
+
+## 2.0.0
+
+### Major Changes
+
+- [#2288](https://github.com/lit/lit/pull/2288) [`b42f6f0f`](https://github.com/lit/lit/commit/b42f6f0f8b18e7efade96ce32a045374fe10530c) - Refactor the import-module into a class-based ModuleLoader API. Adds a module cache that tracks dependencies between modules.
+
+### Minor Changes
+
+- [#2294](https://github.com/lit/lit/pull/2294) [`dcab56b0`](https://github.com/lit/lit/commit/dcab56b0eeef6e05969c3682d3275a30ddf18d97) - Add customElementRendered callback to RenderInfo so that callers can know what elements were rendered.
+
+### Patch Changes
+
+- [#2346](https://github.com/lit/lit/pull/2346) [`53e64286`](https://github.com/lit/lit/commit/53e642868d2f06429dfd9bb33e89e2baa3b45b64) - Remove dependency on escape-html (which is not an ES module)
+
+* [#2344](https://github.com/lit/lit/pull/2344) [`bc46ddd6`](https://github.com/lit/lit/commit/bc46ddd669047e2ce592a680c14f09b7681132e3) - Fix bug where static attributes did not render for unknown elements
+
+- [#2345](https://github.com/lit/lit/pull/2345) [`4edf4f3b`](https://github.com/lit/lit/commit/4edf4f3b93d41c24a79814c303abc7281449d44b) - Remove unnecessary dependencies: `koa`, `koa-node-resolve`, `koa-static`,
+  `@webcomponents/template-shadowroot`
+
+* [#2334](https://github.com/lit/lit/pull/2334) [`93d8751a`](https://github.com/lit/lit/commit/93d8751a28237521380ddd6b2a3c1294962ba84e) - add tests for reflected properties
+
+* Updated dependencies [[`08e7fc56`](https://github.com/lit/lit/commit/08e7fc566894d1916dc768c0843fce962ca4d6d4), [`fcc2b3d0`](https://github.com/lit/lit/commit/fcc2b3d0054e69e6f76588ea9f440117b6d0deed), [`eb5c5d2b`](https://github.com/lit/lit/commit/eb5c5d2b2159dcd8b2321fa9a221b8d56d127a11), [`49ecf623`](https://github.com/lit/lit/commit/49ecf6239033e9578184d46116e6b89676d091db), [`26e3fb7b`](https://github.com/lit/lit/commit/26e3fb7ba1d3ef778a9862ff73374802b4b4eb2e), [`d319cf5f`](https://github.com/lit/lit/commit/d319cf5fde1c2b70185ee9a6252067ed0edaf2fc), [`1d563e83`](https://github.com/lit/lit/commit/1d563e830c02a2d1a22e1e939f1ace971b1d1ae7), [`221cb0a9`](https://github.com/lit/lit/commit/221cb0a90787631dcc867959de19febd2ebd3fd0)]:
+  - @lit/reactive-element@1.1.0
+  - lit@2.1.0
+  - lit-html@2.1.0
+  - lit-element@3.1.0
+
 ## 1.0.0
 
 ### Patch Changes

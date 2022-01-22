@@ -1,5 +1,30 @@
 # Change Log
 
+## 2.1.1
+
+### Patch Changes
+
+- [#2384](https://github.com/lit/lit/pull/2384) [`39b8db85`](https://github.com/lit/lit/commit/39b8db85ef8d2264a86ff6ff6559ea06b391f08f) - Fix missing decorators/query-assigned-elements.js file
+
+* [#2380](https://github.com/lit/lit/pull/2380) [`00cd8533`](https://github.com/lit/lit/commit/00cd85337e0a4177730e2d0eba60b5e3ea37f6c6) - Fix choose directive default export path.
+
+## 2.1.0
+
+### Minor Changes
+
+- [#2337](https://github.com/lit/lit/pull/2337) [`fcc2b3d0`](https://github.com/lit/lit/commit/fcc2b3d0054e69e6f76588ea9f440117b6d0deed) - Add a `keyed(key, value)` directive that clears a part if the key changes.
+
+* [#2327](https://github.com/lit/lit/pull/2327) [`49ecf623`](https://github.com/lit/lit/commit/49ecf6239033e9578184d46116e6b89676d091db) - Add `queryAssignedElements` decorator for a declarative API that calls `HTMLSlotElement.assignedElements()` on a specified slot. `selector` option allows filtering returned elements with a CSS selector.
+
+- [#2341](https://github.com/lit/lit/pull/2341) [`1d563e83`](https://github.com/lit/lit/commit/1d563e830c02a2d1a22e1e939f1ace971b1d1ae7) - Add choose() directive
+
+### Patch Changes
+
+- Updated dependencies [[`08e7fc56`](https://github.com/lit/lit/commit/08e7fc566894d1916dc768c0843fce962ca4d6d4), [`fcc2b3d0`](https://github.com/lit/lit/commit/fcc2b3d0054e69e6f76588ea9f440117b6d0deed), [`eb5c5d2b`](https://github.com/lit/lit/commit/eb5c5d2b2159dcd8b2321fa9a221b8d56d127a11), [`49ecf623`](https://github.com/lit/lit/commit/49ecf6239033e9578184d46116e6b89676d091db), [`26e3fb7b`](https://github.com/lit/lit/commit/26e3fb7ba1d3ef778a9862ff73374802b4b4eb2e), [`d319cf5f`](https://github.com/lit/lit/commit/d319cf5fde1c2b70185ee9a6252067ed0edaf2fc), [`1d563e83`](https://github.com/lit/lit/commit/1d563e830c02a2d1a22e1e939f1ace971b1d1ae7), [`221cb0a9`](https://github.com/lit/lit/commit/221cb0a90787631dcc867959de19febd2ebd3fd0)]:
+  - @lit/reactive-element@1.1.0
+  - lit-html@2.1.0
+  - lit-element@3.1.0
+
 ## 2.0.2
 
 ### Patch Changes

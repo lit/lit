@@ -42,11 +42,7 @@ import {
   getElementRenderer,
 } from './element-renderer.js';
 
-import {createRequire} from 'module';
-const require = createRequire(import.meta.url);
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const escapeHtml = require('escape-html') as typeof import('escape-html');
+import {escapeHtml} from './util/escape-html.js';
 
 import {
   traverse,
@@ -692,10 +688,8 @@ function* renderTemplateResult(
           op.staticAttributes
         );
         // Set static attributes to the element renderer
-        if (instance !== undefined) {
-          for (const [name, value] of op.staticAttributes) {
-            instance?.setAttribute(name, value);
-          }
+        for (const [name, value] of op.staticAttributes) {
+          instance.setAttribute(name, value);
         }
         renderInfo.customElementInstanceStack.push(instance);
         renderInfo.customElementRendered?.(op.tagName);
@@ -703,21 +697,24 @@ function* renderTemplateResult(
       }
       case 'custom-element-attributes': {
         const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance !== undefined) {
-          // Perform any connect-time work via the renderer (e.g. reflecting any
-          // properties to attributes, for example)
-          if (instance.connectedCallback) {
-            instance.connectedCallback();
-          }
-          // Render out any attributes on the instance (both static and those
-          // that may have been dynamically set by the renderer)
-          yield* instance.renderAttributes();
-          // If this element is nested in another, add the `defer-hydration`
-          // attribute, so that it does not enable before the host element
-          // hydrates
-          if (renderInfo.customElementHostStack.length > 0) {
-            yield ' defer-hydration';
-          }
+        if (instance === undefined) {
+          throw new Error(
+            `Internal error: ${op.type} outside of custom element context`
+          );
+        }
+        // Perform any connect-time work via the renderer (e.g. reflecting any
+        // properties to attributes, for example)
+        if (instance.connectedCallback) {
+          instance.connectedCallback();
+        }
+        // Render out any attributes on the instance (both static and those
+        // that may have been dynamically set by the renderer)
+        yield* instance.renderAttributes();
+        // If this element is nested in another, add the `defer-hydration`
+        // attribute, so that it does not enable before the host element
+        // hydrates
+        if (renderInfo.customElementHostStack.length > 0) {
+          yield ' defer-hydration';
         }
         break;
       }
@@ -736,7 +733,12 @@ function* renderTemplateResult(
       }
       case 'custom-element-shadow': {
         const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance !== undefined && instance.renderShadow !== undefined) {
+        if (instance === undefined) {
+          throw new Error(
+            `Internal error: ${op.type} outside of custom element context`
+          );
+        }
+        if (instance.renderShadow !== undefined) {
           renderInfo.customElementHostStack.push(instance);
           const shadowContents = instance.renderShadow(renderInfo);
           // Only emit a DSR if renderShadow() emitted something (returning

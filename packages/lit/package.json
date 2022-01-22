@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.0.2",
+  "version": "2.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -38,6 +38,9 @@
     "./decorators/query-all.js": {
       "default": "./decorators/query-all.js"
     },
+    "./decorators/query-assigned-elements.js": {
+      "default": "./decorators/query-assigned-elements.js"
+    },
     "./decorators/query-assigned-nodes.js": {
       "default": "./decorators/query-assigned-nodes.js"
     },
@@ -65,6 +68,9 @@
     "./directives/cache.js": {
       "default": "./directives/cache.js"
     },
+    "./directives/choose.js": {
+      "default": "./directives/choose.js"
+    },
     "./directives/class-map.js": {
       "default": "./directives/class-map.js"
     },
@@ -74,8 +80,20 @@
     "./directives/if-defined.js": {
       "default": "./directives/if-defined.js"
     },
+    "./directives/join.js": {
+      "default": "./directives/join.js"
+    },
+    "./directives/keyed.js": {
+      "default": "./directives/keyed.js"
+    },
     "./directives/live.js": {
       "default": "./directives/live.js"
+    },
+    "./directives/map.js": {
+      "default": "./directives/map.js"
+    },
+    "./directives/range.js": {
+      "default": "./directives/range.js"
     },
     "./directives/ref.js": {
       "default": "./directives/ref.js"
@@ -97,6 +115,9 @@
     },
     "./directives/until.js": {
       "default": "./directives/until.js"
+    },
+    "./directives/when.js": {
+      "default": "./directives/when.js"
     },
     "./experimental-hydrate-support.js": {
       "default": "./experimental-hydrate-support.js"
@@ -140,9 +161,9 @@
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0",
-    "lit-element": "^3.0.0",
-    "lit-html": "^2.0.0"
+    "@lit/reactive-element": "^1.1.0",
+    "lit-element": "^3.1.0",
+    "lit-html": "^2.1.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

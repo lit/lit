@@ -1,5 +1,42 @@
 # Change Log
 
+## 1.2.0
+
+### Minor Changes
+
+- [#1963](https://github.com/lit/lit/pull/1963) [`db3845a8`](https://github.com/lit/lit/commit/db3845a8781c4492d3b1dbe3ef5298ec2d13be69) - Make static `getPropertyOptions` method public
+
+## 1.1.2
+
+### Patch Changes
+
+- [#2392](https://github.com/lit/lit/pull/2392) [`dc3301ce`](https://github.com/lit/lit/commit/dc3301ce5f5bb0ffb77f17f638d2ee56bf7aaff5) - Fix `@queryAssignedElements` decorator so it is compatible with legacy browsers.
+  Uses `HTMLSlotElement.assignedElements` if available with a graceful fallback
+  on `HTMLSlotElement.assignedNodes` which is supported by polyfills.
+
+## 1.1.1
+
+### Patch Changes
+
+- [#2384](https://github.com/lit/lit/pull/2384) [`39b8db85`](https://github.com/lit/lit/commit/39b8db85ef8d2264a86ff6ff6559ea06b391f08f) - Fix missing decorators/query-assigned-elements.js file
+
+## 1.1.0
+
+### Minor Changes
+
+- [#2327](https://github.com/lit/lit/pull/2327) [`49ecf623`](https://github.com/lit/lit/commit/49ecf6239033e9578184d46116e6b89676d091db) - Add `queryAssignedElements` decorator for a declarative API that calls `HTMLSlotElement.assignedElements()` on a specified slot. `selector` option allows filtering returned elements with a CSS selector.
+
+### Patch Changes
+
+- [#2360](https://github.com/lit/lit/pull/2360) [`08e7fc56`](https://github.com/lit/lit/commit/08e7fc566894d1916dc768c0843fce962ca4d6d4) - Update `@queryAssignedNodes` and `@queryAssignedElements` documentation for better lit.dev API generation.
+
+* [#2267](https://github.com/lit/lit/pull/2267) [`eb5c5d2b`](https://github.com/lit/lit/commit/eb5c5d2b2159dcd8b2321fa9a221b8d56d127a11) - Make `willUpdate` lifecycle hook protected
+
+- [#2338](https://github.com/lit/lit/pull/2338) [`26e3fb7b`](https://github.com/lit/lit/commit/26e3fb7ba1d3ef778a9862ff73374802b4b4eb2e) - Deprecate `@queryAssignedNodes` API in preference for the new options object API which
+  mirrors the `@queryAssignedElements` API. Update the documentation for both
+  `@queryAssignedNodes` and `@queryAssignedElements` to better document the expected
+  return type annotation.
+
 ## 1.0.2
 
 ### Patch Changes

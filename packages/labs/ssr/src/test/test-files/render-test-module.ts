@@ -81,6 +81,20 @@ export class TestProperty extends LitElement {
 // prettier-ignore
 export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
 
+@customElement('test-reflected-properties')
+export class TestReflectedProperties extends LitElement {
+  @property({type: String, reflect: true, attribute: 'reflect-foo'})
+  foo?: string;
+  @property({type: Boolean, reflect: true}) bar = false;
+  @property({type: String, reflect: true}) baz = 'default reflected string';
+}
+
+// prettier-ignore
+export const elementWithReflectedProperties = html`<test-reflected-properties .foo=${'badazzled'} .bar=${true}></test-reflected-properties>`;
+
+// prettier-ignore
+export const elementWithDefaultReflectedProperties = html`<test-reflected-properties></test-reflected-properties>`;
+
 @customElement('test-will-update')
 export class TestWillUpdate extends LitElement {
   @property()

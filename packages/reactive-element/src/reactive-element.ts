@@ -651,7 +651,7 @@ export abstract class ReactiveElement
    * @final
    * @category properties
    */
-  protected static getPropertyOptions(name: PropertyKey) {
+  static getPropertyOptions(name: PropertyKey) {
     return this.elementProperties.get(name) || defaultPropertyDeclaration;
   }
 
@@ -1409,7 +1409,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(globalThis.reactiveElementVersions ??= []).push('1.0.2');
+(globalThis.reactiveElementVersions ??= []).push('1.2.0');
 if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
