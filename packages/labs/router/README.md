@@ -2,6 +2,10 @@
 
 A router for Lit.
 
+## Status
+
+`@lit-labs/router` is not yet published to npm.
+
 ## Overview
 
 `@lit-labs/router` is a component-oriented router API vended as reactive controllers. Routes are configured as part of component definitions, and integrated into the component lifecycle and rendering.
@@ -32,7 +36,7 @@ The general shape of the API includes:
 
 - A `Router` controller that's used as a top-level singleton to set up event listeners
 - A `Routes` controller for declaring routes inside components
-- Declaration of routes with `URLPatterns` and render callbacks
+- Declaration of routes with [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) and render callbacks
 - Extraction of URL pattern parameters into data objects passed to render callbacks
 - A `routes.outlet` that renders the current route's render callback
 - A `routes.link()` method to generate URLs to use in `<a>` tags, etc.
@@ -75,7 +79,7 @@ class MyElement extends LitElement {
   private routes = new Routes(this, [
     {path: '/', render: () => html`<h1>Home</h1>`},
     {path: '/projects', render: () => html`<h1>Projects</h1>`},
-    {path: '/about', render: () => html`<h1>About</h3>`},
+    {path: '/about', render: () => html`<h1>About</h1>`},
   ]);
 }
 ```
@@ -86,7 +90,7 @@ The second argument is the route configuration: an array of `RouteConfig` object
 
 A RouteConfig contains at the minimum the pattern to match URLs against and a template to render. Names can be provided to reference routes for link generation.
 
-There are two types of RoutConfig: `PathRouteConfig` and `URLPatternRouteConfig`:
+There are two types of `RouteConfig`s: `PathRouteConfig` and `URLPatternRouteConfig`:
 
 `PathRouteConfig` lets you specify the URL pattern as a path string:
 
@@ -134,14 +138,14 @@ Example with named parameter:
 An outlet is where a routes object renders the currently selected route's template. It can be used anywhere in the host element's template:
 
 ```ts
-html`${this.routes.outlet}`;
+html`<main>${this.routes.outlet}</main>`;
 ```
 
 #### `goto()`
 
-`goto(url: string)` is a programmatic navigation API. It should be able to take full URLs for top-level navigation and relative URLs for navigation within a nested route space.
+`goto(url: string)` is a programmatic navigation API. It takes full URLs for top-level navigation and relative URLs for navigation within a nested route space.
 
-`goto(name: string, params: object)` _(not implemented)_ allows navigation via named routes. The name and params are scoped to the Routes object it's called on, though nested routes can be triggered by a "tail" parameter - the match of a trailing /\*parameter (See tail groups).
+`goto(name: string, params: object)` _(not implemented)_ allows navigation via named routes. The name and params are scoped to the Routes object it's called on, though nested routes can be triggered by a "tail" parameter - the match of a trailing `/*` parameter (See tail groups).
 
 #### `link()`
 
@@ -153,7 +157,7 @@ Relative links are relative to the parent route and its current state, and can b
 
 Examples
 
-- `this._routes.link(user.id)` - within a `<x-user>` component that has a route pattern like ':id', this would link to another user profile.
+- `this._routes.link(user.id)` - within a `<x-user>` component that has a route pattern like `':id'`, this would link to another user profile.
 - `this._routes.link('profile', {id: user.id})` - the same URL generated with a named route
 
 These links work regardless of where the component is mounted in the URL space.

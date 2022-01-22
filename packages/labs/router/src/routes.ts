@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveController, ReactiveControllerHost} from 'lit';
+import type {ReactiveController, ReactiveControllerHost} from 'lit';
 
 export interface PathRouteConfig {
   name?: string | undefined;
@@ -97,7 +97,7 @@ export class Routes implements ReactiveController {
   }
 
   /**
-   * Navigates to this routes controller to `pathname`.
+   * Navigates this routes controller to `pathname`.
    *
    * This does not navigate parent routes, so it isn't (yet) a general page
    * navigation API. It does navigate child routes if pathname matches a

@@ -6,6 +6,9 @@
 
 import {Routes} from './routes.js';
 
+// We cache the origin since it can't change
+const origin = location.origin || location.protocol + '//' + location.host;
+
 /**
  * A root-level router that installs global event listeners to intercept
  * navigation.
@@ -58,7 +61,6 @@ export class Router extends Routes {
     }
 
     const location = window.location;
-    const origin = location.origin || location.protocol + '//' + location.host;
     if (anchor.origin !== origin) {
       return;
     }
