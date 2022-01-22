@@ -64,7 +64,7 @@ const setProperty = <E extends Element, T>(
   old: unknown,
   events?: StringValued<T>
 ) => {
-  // 
+  //
   const event = events?.[name as keyof T];
   if (event !== undefined) {
     // Dirty check event value.
