@@ -5,6 +5,10 @@
  */
 
 import type {ReactiveController, ReactiveControllerHost} from 'lit';
+import type {URLPattern as URLPatternType} from 'urlpattern-polyfill';
+
+declare const URLPattern: typeof URLPatternType;
+type URLPattern = URLPatternType;
 
 export interface PathRouteConfig {
   name?: string | undefined;
