@@ -10,19 +10,55 @@ import type {URLPattern as URLPatternType} from 'urlpattern-polyfill';
 declare const URLPattern: typeof URLPatternType;
 type URLPattern = URLPatternType;
 
+/**
+ * A RouteConfig that matches against a `path` string. `path` must be a
+ * [`URLPattern` compatible pathname pattern](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern/pathname).
+ */
 export interface PathRouteConfig {
   name?: string | undefined;
   path: string;
   render: (params: {[key: string]: string}) => unknown;
 }
 
+/**
+ * A RouteConfig that matches against a given [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern)
+ *
+ * While `URLPattern` can match against protocols, hostnames, and ports,
+ * routes will only be checked for matches if they're part of the current
+ * origin. This means that the pattern is limited to checking `pathname` and
+ * `search`.
+ */
 export interface URLPatternRouteConfig {
   name?: string | undefined;
   pattern: URLPattern;
   render: (params: {[key: string]: string}) => unknown;
 }
 
+/**
+ * A description of a route, which path or pattern to match against, and a
+ * render() callback used to render a match to the outlet.
+ */
 export type RouteConfig = PathRouteConfig | URLPatternRouteConfig;
+
+// A cache of URLPatterns created for PathRouteConfig.
+// Rather than converting all given RoutConfigs to URLPatternRouteConfig, this
+// lets us make `routes` mutable so users can add new PathRouteConfigs
+// dynamically.
+const patternCache = new WeakMap<PathRouteConfig, URLPattern>();
+
+const isPatternConfig = (route: RouteConfig): route is URLPatternRouteConfig =>
+  (route as URLPatternRouteConfig).pattern !== undefined;
+
+const getPattern = (route: RouteConfig) => {
+  if (isPatternConfig(route)) {
+    return route.pattern;
+  }
+  let pattern = patternCache.get(route);
+  if (pattern === undefined) {
+    patternCache.set(route, (pattern = new URLPattern({pathname: route.path})));
+  }
+  return pattern;
+};
 
 /**
  * A reactive controller that performs location-based routing using a
@@ -33,8 +69,21 @@ export class Routes implements ReactiveController {
 
   /*
    * The currently installed set of routes in precedence order.
+   *
+   * This array is mutable. To dynamically add a new route you can write:
+   *
+   * ```ts
+   * this._routes.routes.push({
+   *   path: '/foo',
+   *   render: () => html`<p>Foo</p>`,
+   * });
+   * ```
+   *
+   * Mutating this property does not trigger any route transitions. If the
+   * changes may result is a different route matching for the current path, you
+   * must instigate a route update with `goto()`.
    */
-  private readonly _routes: Array<URLPatternRouteConfig & PathRouteConfig> = [];
+  routes: Array<RouteConfig> = [];
 
   /*
    * The current set of child Routes controllers. These are connected via
@@ -52,7 +101,7 @@ export class Routes implements ReactiveController {
    * navigation / matching.
    */
   protected _currentPathname: string | undefined;
-  protected _currentRoute: URLPatternRouteConfig | undefined;
+  protected _currentRoute: RouteConfig | undefined;
   protected _currentParams: {
     [key: string]: string;
   } = {};
@@ -72,17 +121,7 @@ export class Routes implements ReactiveController {
     routes: Array<RouteConfig>
   ) {
     (this._host = host).addController(this);
-    for (const route of routes) {
-      // TODO (justinfagnani): factor out an `addRoute()` method
-      this._routes.push({
-        name: route.name,
-        render: route.render,
-        path: (route as PathRouteConfig).path,
-        pattern:
-          (route as URLPatternRouteConfig).pattern ??
-          new URLPattern({pathname: (route as PathRouteConfig).path}),
-      });
-    }
+    this.routes = [...routes];
   }
 
   /**
@@ -115,7 +154,7 @@ export class Routes implements ReactiveController {
     // completely disregard the origin for now. The click handler only does
     // an in-page navigation if the origin matches anyway.
     let tailGroup: string | undefined;
-    if (this._routes.length === 0) {
+    if (this.routes.length === 0) {
       // If a routes controller has none of its own routes it acts like it has
       // one route of `/*` so that it passes the whole pathname as a tail
       // match.
@@ -125,7 +164,11 @@ export class Routes implements ReactiveController {
       this._currentParams = {0: tailGroup};
     } else {
       const route = (this._currentRoute = this._getRoute(pathname));
-      const r = route?.pattern.exec({pathname});
+      if (route === undefined) {
+        throw new Error(`No route found for ${pathname}`);
+      }
+      const pattern = getPattern(route);
+      const r = pattern.exec({pathname});
       this._currentParams = r?.pathname.groups ?? {};
       tailGroup = getTailGroup(this._currentParams);
       this._currentPathname =
@@ -161,7 +204,7 @@ export class Routes implements ReactiveController {
    * Matches `url` against the installed routes and returns the first match.
    */
   private _getRoute(pathname: string) {
-    return this._routes.find((r) => r.pattern.test({pathname: pathname}));
+    return this.routes.find((r) => getPattern(r).test({pathname: pathname}));
   }
 
   hostConnected() {

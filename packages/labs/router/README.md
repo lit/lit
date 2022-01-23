@@ -6,6 +6,8 @@ A router for Lit.
 
 `@lit-labs/router` is not yet published to npm.
 
+This package requires either a native [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) implementation (which is currently only implemented in Chrome, Edge, and other Chromium browsers) or a URLPattern polyfill, like [`urlpattern-polyfill`](https://github.com/kenchris/urlpattern-polyfill).
+
 ## Overview
 
 `@lit-labs/router` is a component-oriented router API vended as reactive controllers. Routes are configured as part of component definitions, and integrated into the component lifecycle and rendering.
@@ -198,3 +200,14 @@ class XChild extends LitElement {
 ```
 
 In this example, the page can handle URLs `/foo`, `/child/foo` and `/child/bar`.
+
+## TODO
+
+### Server router integration
+
+This client-side router is intended to be able to integrate with server-side routing, both configuration-based routers and convention-based routers like file-based routers.
+
+Current ideas for integration include a fallback route handler (instaled by the app) that delegates to a server API call that returns additional route configuration dynamically. The minimal API needed in the client router are:
+
+1. The ability to dynamically add routes
+2. Fallback route handlers.
