@@ -56,8 +56,6 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-
-// 5 we set a property here. The tepyes get odd, this is generic but assignable
 const setProperty = <E extends Element, T>(
   node: E,
   name: string,
@@ -65,11 +63,9 @@ const setProperty = <E extends Element, T>(
   old: unknown,
   events?: StringValued<T>
 ) => {
-  //
   const event = events?.[name as keyof T];
   if (event !== undefined) {
     // Dirty check event value.
-    //
     // the node could change at any time, this should be updated regardless
     if (value !== old) {
       // remove event listener
@@ -196,12 +192,6 @@ export const createComponent = <I extends HTMLElement, E>(
           events
         );
       }
-      // Note, the spirit of React might be to "unset" any old values that
-      // are no longer included; however, there's no reasonable value to set
-      // them to so we just leave the previous state as is.
-      //
-      // the spirit is state is not considered correct outsid of the rendering path
-      // this would be considered leaky and could cause race conditions
     }
 
     /**
