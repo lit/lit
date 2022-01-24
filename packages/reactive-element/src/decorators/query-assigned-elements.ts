@@ -31,8 +31,8 @@ const slotAssignedElements =
           );
 
 /**
- * Options for the [[`queryAssignedElements`]] decorator. Extends the options
- * that can be passed into
+ * Options for the {@linkcode queryAssignedElements} decorator. Extends the
+ * options that can be passed into
  * [HTMLSlotElement.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  */
 export interface QueryAssignedElementsOptions
@@ -50,7 +50,7 @@ export interface QueryAssignedElementsOptions
  * way to use
  * [`slot.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  *
- * Can be passed an optional [[`QueryAssignedElementsOptions`]] object.
+ * Can be passed an optional {@linkcode QueryAssignedElementsOptions} object.
  *
  * Example usage:
  * ```ts
