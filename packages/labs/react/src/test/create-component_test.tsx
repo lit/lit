@@ -296,9 +296,9 @@ suite('createComponent', () => {
   });
 
   test('can listen to native events', async () => {
-    let clickEvent!: React.MouseEvent;
+    let clickEvent!: ReactTypes.MouseEvent;
     await renderReactComponent({
-      onClick(e: React.MouseEvent) {
+      onClick(e: ReactTypes.MouseEvent) {
         clickEvent = e;
       },
     });

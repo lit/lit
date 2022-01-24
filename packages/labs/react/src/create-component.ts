@@ -83,7 +83,7 @@ const setProperty = <E extends Element, T>(
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
 // React API to set a ref.
-const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
+const setRef = (ref: ReactTypes.Ref<unknown>, value: Element | null) => {
   if (typeof ref === 'function') {
     (ref as (e: Element | null) => void)(value);
   } else {
@@ -136,7 +136,7 @@ export const createComponent = <I extends HTMLElement, E>(
   // ref, as well as special event and element properties.
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
-  type UserProps = React.PropsWithChildren<
+  type UserProps = ReactTypes.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
         SyntheticEvents<E> &
@@ -149,7 +149,7 @@ export const createComponent = <I extends HTMLElement, E>(
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
   type ComponentProps = UserProps & {
-    __forwardedRef?: React.Ref<unknown>;
+    __forwardedRef?: ReactTypes.Ref<unknown>;
   };
 
   // Set of properties/events which should be specially handled by the wrapper
@@ -180,8 +180,8 @@ export const createComponent = <I extends HTMLElement, E>(
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
-    private _userRef?: React.Ref<unknown>;
-    private _ref?: React.RefCallback<I>;
+    private _userRef?: ReactTypes.Ref<unknown>;
+    private _ref?: ReactTypes.RefCallback<I>;
 
     static displayName = displayName ?? elementClass.name;
 
@@ -237,7 +237,7 @@ export const createComponent = <I extends HTMLElement, E>(
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.Ref<unknown>;
+      const userRef = this.props.__forwardedRef as ReactTypes.Ref<unknown>;
       if (this._ref === undefined || this._userRef !== userRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
@@ -271,7 +271,7 @@ export const createComponent = <I extends HTMLElement, E>(
   }
 
   const ForwardedComponent = React.forwardRef(
-    (props?: UserProps, ref?: React.Ref<unknown>) =>
+    (props?: UserProps, ref?: ReactTypes.Ref<unknown>) =>
       createElement(
         ReactComponent,
         {...props, __forwardedRef: ref} as ComponentProps,
