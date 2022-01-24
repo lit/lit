@@ -5,6 +5,6 @@ lerna-debug.log
 .DS_Store
 .vscode/
 
-# `/bundles` is used during the release step as the checkout location for the
-# bundles repo. (https://github.com/lit/bundles)
-/bundles
+# `/dist` is used during the release step as the checkout location for the dist
+# repo. (https://github.com/lit/dist)
+/dist
