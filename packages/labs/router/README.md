@@ -143,11 +143,50 @@ An outlet is where a routes object renders the currently selected route's templa
 html`<main>${this.routes.outlet}</main>`;
 ```
 
+#### enter() callbacks
+
+A route can define an `enter()` callback that lets it do work before rendering and optionally reject that route as a match.
+
+`enter()` can be used to load and wait for neccessary component definitions:
+
+```ts
+{
+  path: '/*',
+  render: (params) => html`<x-foo></x-foo>`,
+  enter: async (params) => {
+    await import('./x-foo.js');
+  },
+}
+```
+
+or dynamically install new routes:
+
+```ts
+{
+  path: '/*',
+  render: (params) => html`<h1>Not found: params[0]</h1>`,
+  enter: async (params) => {
+    const path = params[0];
+    const dynamicRoute = getDynamicRoute(path);
+    if (dynamicRoute) {
+      const {routes} = this._router;
+      routes.splice(routes.langth - 1, 0, dynamicRoute);
+      // Trigger the router again
+      await this._router.goto('/' + path);
+      // Reject this route so the dynamic one is matched
+      return false;
+    }
+  }
+}
+```
+
 #### `goto()`
 
 `goto(url: string)` is a programmatic navigation API. It takes full URLs for top-level navigation and relative URLs for navigation within a nested route space.
 
 `goto(name: string, params: object)` _(not implemented)_ allows navigation via named routes. The name and params are scoped to the Routes object it's called on, though nested routes can be triggered by a "tail" parameter - the match of a trailing `/*` parameter (See tail groups).
+
+`goto()` returns a Promise that resolves when any triggered async `enter()` callbacks have completed.
 
 #### `link()`
 
@@ -200,6 +239,10 @@ class XChild extends LitElement {
 ```
 
 In this example, the page can handle URLs `/foo`, `/child/foo` and `/child/bar`.
+
+### `routes` Array
+
+`Routes` (and `Router`) have a property named `routes` that is an array of the route configurations. This array is mutable, so code an dynamically add and remove routes. Routes match in order of the array, so the array defines the route precedence.
 
 ## TODO
 

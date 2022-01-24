@@ -10,14 +10,18 @@ import type {URLPattern as URLPatternType} from 'urlpattern-polyfill';
 declare const URLPattern: typeof URLPatternType;
 type URLPattern = URLPatternType;
 
+export interface BaseRouteConfig {
+  name?: string | undefined;
+  render?: (params: {[key: string]: string}) => unknown;
+  enter?: (params: {[key: string]: string}) => Promise<boolean> | boolean;
+}
+
 /**
  * A RouteConfig that matches against a `path` string. `path` must be a
  * [`URLPattern` compatible pathname pattern](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern/pathname).
  */
-export interface PathRouteConfig {
-  name?: string | undefined;
+export interface PathRouteConfig extends BaseRouteConfig {
   path: string;
-  render: (params: {[key: string]: string}) => unknown;
 }
 
 /**
@@ -28,10 +32,8 @@ export interface PathRouteConfig {
  * origin. This means that the pattern is limited to checking `pathname` and
  * `search`.
  */
-export interface URLPatternRouteConfig {
-  name?: string | undefined;
+export interface URLPatternRouteConfig extends BaseRouteConfig {
   pattern: URLPattern;
-  render: (params: {[key: string]: string}) => unknown;
 }
 
 /**
@@ -146,8 +148,10 @@ export class Routes implements ReactiveController {
    * navigation API. It does navigate child routes if pathname matches a
    * pattern with a tail wildcard pattern (`/*`).
    */
-  goto(pathname: string) {
+  async goto(pathname: string) {
     // TODO (justinfagnani): handle absolute vs relative paths separately.
+    // TODO (justinfagnani): do we need to detect when goto() is called while
+    // a previous goto() call is still pending?
 
     // TODO (justinfagnani): generalize this to handle query params and
     // fragments. It currently only handles path names because it's easier to
@@ -163,14 +167,24 @@ export class Routes implements ReactiveController {
       // Simulate a tail group with the whole pathname
       this._currentParams = {0: tailGroup};
     } else {
-      const route = (this._currentRoute = this._getRoute(pathname));
+      const route = this._getRoute(pathname);
       if (route === undefined) {
         throw new Error(`No route found for ${pathname}`);
       }
       const pattern = getPattern(route);
-      const r = pattern.exec({pathname});
-      this._currentParams = r?.pathname.groups ?? {};
-      tailGroup = getTailGroup(this._currentParams);
+      const result = pattern.exec({pathname});
+      const params = result?.pathname.groups ?? {};
+      tailGroup = getTailGroup(params);
+      if (typeof route.enter === 'function') {
+        const success = await route.enter(params);
+        // If enter() returns false, cancel this navigation
+        if (success === false) {
+          return;
+        }
+      }
+      // Only update route state if the enter handler completes successfully
+      this._currentRoute = route;
+      this._currentParams = params;
       this._currentPathname =
         tailGroup === undefined
           ? pathname
@@ -190,7 +204,7 @@ export class Routes implements ReactiveController {
    * The result of calling the current route's render() callback.
    */
   get outlet() {
-    return this._currentRoute?.render(this._currentParams);
+    return this._currentRoute?.render?.(this._currentParams);
   }
 
   /**

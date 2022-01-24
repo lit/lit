@@ -136,6 +136,40 @@ suite('Router', () => {
       '<h3>Child 2: xyz</h3>'
     );
   });
+
+  test('Fallback and dynamic routes', async () => {
+    // This tests that we can install routes asynchronously from within a
+    // fallback route handler. This is the kind of flow we might need in
+    // order to do client-side transitions based on server-side conventional
+    // routing - such as file-based routing.
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    //
+    // Initial location
+    //
+
+    // Set the iframe URL to / before appending the element
+    contentWindow!.history.pushState({}, '', '/');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+
+    //
+    // Fallback
+    //
+
+    // '/server-route' is not pre-configured, is dynamically installed
+    await el._router.goto('/server-route');
+
+    await el.updateComplete;
+    assert.include(
+      stripExpressionComments(el.shadowRoot!.innerHTML),
+      '<h2>Server</h2>'
+    );
+  });
 });
 
 export const stripExpressionComments = (html: string) =>
