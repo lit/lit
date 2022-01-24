@@ -76,7 +76,6 @@ class XlbFormatter implements Formatter {
       const contents: Array<string | Placeholder> = [];
       for (let j = 0; j < msg.childNodes.length; j++) {
         const child = msg.childNodes[j];
-        let phIdx = 0;
         if (child.nodeType === doc.TEXT_NODE) {
           contents.push(child.nodeValue || '');
         } else if (
@@ -91,8 +90,9 @@ class XlbFormatter implements Formatter {
           ) {
             throw new KnownError(`Expected <ph> to have exactly one text node`);
           }
-          const index =
-            Number((child as Element).getAttribute('name')) || phIdx++;
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'name')
+          );
           contents.push({untranslatable: phText.nodeValue || '', index});
         } else {
           throw new KnownError(
