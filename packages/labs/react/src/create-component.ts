@@ -154,8 +154,6 @@ export const createComponent = <I extends HTMLElement, E>(
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
-
-  // 1) we create a map of property names
   const elementClassProps = new Set(Object.keys(events ?? {}));
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
@@ -176,7 +174,6 @@ export const createComponent = <I extends HTMLElement, E>(
     }
   }
 
-  // 2 we create a React class
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
@@ -185,7 +182,6 @@ export const createComponent = <I extends HTMLElement, E>(
 
     static displayName = displayName ?? elementClass.name;
 
-    // 4 update element starts the property process
     private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
         return;
@@ -197,7 +193,6 @@ export const createComponent = <I extends HTMLElement, E>(
           prop,
           this.props[prop as keyof ComponentProps],
           oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
-          // 3) event names from args
           events
         );
       }
