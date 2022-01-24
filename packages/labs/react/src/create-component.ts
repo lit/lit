@@ -28,7 +28,7 @@ const listenedEvents: WeakMap<
 const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  listener: EventListener,
+  listener: EventListener
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
@@ -36,7 +36,7 @@ const addOrUpdateEventListener = (
   }
 
   // Remove listener if one exists
-  let handler = events.get(event);
+  const handler = events.get(event);
   if (handler !== undefined) {
     events.delete(event);
     node.removeEventListener(event, handler);
