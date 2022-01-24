@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import React, * as ReactModule from 'react';
+import type * as ReactTypes from 'react';
+import * as ReactModule from 'react';
 
 const reservedReactProperties = new Set([
   'children',
@@ -91,7 +92,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
 };
 
 type SyntheticEvents<S> = {
-  [P in keyof S]?: ReactModule.EventHandler<React.SyntheticEvent>;
+  [P in keyof S]?: ReactTypes.EventHandler<ReactTypes.SyntheticEvent>;
 };
 
 type StringValued<T> = {

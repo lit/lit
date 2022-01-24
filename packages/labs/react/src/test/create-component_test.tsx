@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type * as ReactTypes from 'react';
+
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-import type * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '../create-component.js';
@@ -81,7 +82,7 @@ suite('createComponent', () => {
   let el: BasicElement;
 
   const renderReactComponent = async (
-    props?: ReactModule.ComponentProps<typeof BasicElementComponent>
+    props?: ReactTypes.ComponentProps<typeof BasicElementComponent>
   ) => {
     window.ReactDOM.render(
       <BasicElementComponent {...props}/>,
@@ -238,16 +239,16 @@ suite('createComponent', () => {
   });
 
   test('can listen to events', async () => {
-    let fooEvent: ReactModule.SyntheticEvent | undefined,
-      fooEvent2: ReactModule.SyntheticEvent | undefined,
-      barEvent: ReactModule.SyntheticEvent | undefined;
-    const onFoo: ReactModule.EventHandler<ReactModule.SyntheticEvent> = (e) => {
+    let fooEvent: ReactTypes.SyntheticEvent | undefined,
+      fooEvent2: ReactTypes.SyntheticEvent | undefined,
+      barEvent: ReactTypes.SyntheticEvent | undefined;
+    const onFoo: ReactTypes.EventHandler<ReactTypes.SyntheticEvent> = (e) => {
       fooEvent = e;
     };
-    const onFoo2: ReactModule.EventHandler<ReactModule.SyntheticEvent> = (e) => {
+    const onFoo2: ReactTypes.EventHandler<ReactTypes.SyntheticEvent> = (e) => {
       fooEvent2 = e;
     };
-    const onBar: ReactModule.EventHandler<ReactModule.SyntheticEvent> = (e) => {
+    const onBar: ReactTypes.EventHandler<ReactTypes.SyntheticEvent> = (e) => {
       barEvent = e;
     };
     await renderReactComponent({
