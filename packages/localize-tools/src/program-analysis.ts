@@ -399,7 +399,7 @@ const EXPRESSION_END_REGEXP = new RegExp(EXPRESSION_END, 'g');
  */
 function replaceExpressionsAndHtmlWithPlaceholders(
   parts: Array<string | Expression>
-): Array<string | Placeholder> {
+): Array<string | Omit<Placeholder, 'index'>> {
   const concatenatedHtml = parts
     .map((part) =>
       typeof part === 'string'
@@ -407,7 +407,7 @@ function replaceExpressionsAndHtmlWithPlaceholders(
         : EXPRESSION_START + part.identifier + EXPRESSION_END
     )
     .join('');
-  const contents: Array<string | Placeholder> = [];
+  const contents: Array<string | Omit<Placeholder, 'index'>> = [];
   for (const part of replaceHtmlWithPlaceholders(concatenatedHtml)) {
     if (typeof part === 'string') {
       const startSplit = part.split(EXPRESSION_START);
@@ -456,10 +456,11 @@ function replaceExpressionsAndHtmlWithPlaceholders(
  *   [ {ph: '<b>${foo}</b>'} ]
  */
 function combineAdjacentPlaceholders(
-  original: Array<string | Placeholder>
+  original: Array<string | Omit<Placeholder, 'index'>>
 ): Array<string | Placeholder> {
-  const combined = [];
-  const phBuffer = [];
+  const combined: Array<string | Placeholder> = [];
+  const phBuffer: Array<string> = [];
+  let phIdx = 0;
   for (let i = 0; i < original.length; i++) {
     const item = original[i];
     if (typeof item !== 'string') {
@@ -471,7 +472,10 @@ function combineAdjacentPlaceholders(
     } else {
       if (phBuffer.length > 0) {
         // Flush the placeholder buffer.
-        combined.push({untranslatable: phBuffer.splice(0).join('')});
+        combined.push({
+          untranslatable: phBuffer.splice(0).join(''),
+          index: phIdx++,
+        });
       }
       // Some translatable text.
       combined.push(item);
@@ -479,15 +483,15 @@ function combineAdjacentPlaceholders(
   }
   if (phBuffer.length > 0) {
     // The final item was a placeholder, don't forget it.
-    combined.push({untranslatable: phBuffer.join('')});
+    combined.push({untranslatable: phBuffer.join(''), index: phIdx++});
   }
   return combined;
 }
 
 function replaceHtmlWithPlaceholders(
   html: string
-): Array<string | Placeholder> {
-  const components: Array<string | Placeholder> = [];
+): Array<string | Omit<Placeholder, 'index'>> {
+  const components: Array<string | Omit<Placeholder, 'index'>> = [];
 
   const traverse = (node: parse5.ChildNode): void => {
     if (node.nodeName === '#text') {

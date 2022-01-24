@@ -373,13 +373,6 @@ class Transformer {
             if (typeof content === 'string') {
               return escapeTextContentToEmbedInTemplateLiteral(content);
             }
-            if (content.index === undefined) {
-              throw new Error(
-                `Missing index in translation placeholder.` +
-                  `\nLocale: ${this.locale}` +
-                  `\nPlaceholder: ${content.untranslatable}`
-              );
-            }
             const sourcePlaceholderIdx = content.index;
             const matchingPlaceholder =
               placeholdersByIndex.get(sourcePlaceholderIdx);

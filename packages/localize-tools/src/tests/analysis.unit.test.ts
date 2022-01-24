@@ -116,9 +116,9 @@ test('HTML message', () => {
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
@@ -133,9 +133,9 @@ test('HTML message (auto ID)', () => {
     {
       name: 'hc468c061c2d171f4',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
@@ -150,9 +150,9 @@ test('HTML message with comment', () => {
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b><!-- greeting -->'},
+        {untranslatable: '<b><!-- greeting -->', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
@@ -167,7 +167,7 @@ test('parameterized string message', () => {
   checkAnalysis(src, [
     {
       name: 'greeting',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
@@ -181,7 +181,7 @@ test('parameterized string message (auto ID)', () => {
   checkAnalysis(src, [
     {
       name: 'saed7d3734ce7f09d',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
@@ -196,9 +196,9 @@ test('parameterized HTML message', () => {
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello ',
-        {untranslatable: '${friend}</b>'},
+        {untranslatable: '${friend}</b>', index: 1},
       ],
     },
   ]);
@@ -358,7 +358,7 @@ test('same message contents with different expression is not error', () => {
   checkAnalysis(src, [
     {
       name: 'saed7d3734ce7f09d',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
