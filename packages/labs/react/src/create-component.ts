@@ -16,7 +16,7 @@ const reservedReactProperties = new Set([
 
 const listenedEvents: WeakMap<
   Element,
-  Map<string, EventListenerObject>
+  Map<string, EventListener>
 > = new WeakMap();
 
 /**
@@ -28,26 +28,25 @@ const listenedEvents: WeakMap<
 const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  listener: (event?: Event) => void
+  listener: EventListener,
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
     listenedEvents.set(node, (events = new Map()));
   }
+
+  // Remove listener if one exists
   let handler = events.get(event);
-  if (listener !== undefined) {
-    // If necessary, add listener and track handler
-    if (handler === undefined) {
-      events.set(event, (handler = {handleEvent: listener}));
-      node.addEventListener(event, handler);
-      // Otherwise just update the listener with new value
-    } else {
-      handler.handleEvent = listener;
-    }
-    // Remove listener if one exists and value is undefined
-  } else if (handler !== undefined) {
+  if (handler !== undefined) {
     events.delete(event);
     node.removeEventListener(event, handler);
+  }
+
+  // If necessary, add listener and track handler
+  // Update the listener with new value
+  if (listener !== undefined) {
+    events.set(event, listener);
+    node.addEventListener(event, listener);
   }
 };
 
@@ -66,7 +65,7 @@ const setProperty = <E extends Element, T>(
   if (event !== undefined) {
     // Dirty check event value.
     if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+      addOrUpdateEventListener(node, event, value as EventListener);
     }
   } else {
     // But don't dirty check properties; elements are assumed to do this.
@@ -85,7 +84,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
 };
 
 type Events<S> = {
-  [P in keyof S]?: (e: Event) => unknown;
+  [P in keyof S]?: EventListener;
 };
 
 type StringValued<T> = {
