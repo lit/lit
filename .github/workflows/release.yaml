@@ -27,6 +27,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # Changeset uses prettier@1 which creates unstable formatting issues
+      # Deleting this forces fallback to our version of prettier
+      # https://github.com/changesets/changesets/issues/616
+      - name: Remove old version of prettier from changesets
+        run: rm -rf node_modules/@changesets/write/node_modules/prettier
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@master
