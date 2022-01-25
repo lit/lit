@@ -67,7 +67,7 @@ const setProperty = <E extends Element, T>(
     addOrUpdateEventListener(node, event, value as EventListener);
     return;
   }
-  
+
   // But don't dirty check properties; elements are assumed to do this.
   node[name as keyof E] = value as E[keyof E];
 };
