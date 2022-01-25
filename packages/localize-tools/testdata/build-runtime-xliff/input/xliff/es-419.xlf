@@ -40,7 +40,7 @@
 </trans-unit>
 <trans-unit id="hf979404a36e879cb">
   <source>a:<x id="0" equiv-text="${'A'}"/> b:<x id="1" equiv-text="${'B'}"/> c:<x id="2" equiv-text="${'C'}"/></source>
-  <target>c:<x id="0" equiv-text="${'C'}"/> a:<x id="1" equiv-text="${'A'}"/> b:<x id="2" equiv-text="${'B'}"/></target>
+  <target>c:<x id="2" equiv-text="${'C'}"/> a:<x id="0" equiv-text="${'A'}"/> b:<x id="1" equiv-text="${'B'}"/></target>
 </trans-unit>
 <trans-unit id="myId">
   <source>Hello World</source>
