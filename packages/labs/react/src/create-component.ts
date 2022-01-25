@@ -83,8 +83,10 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
+type CustomEventListener = (e: CustomEvent) => void;
+
 type Events<S> = {
-  [P in keyof S]?: EventListener;
+  [P in keyof S]?: EventListener | CustomEventListener;
 };
 
 type StringValued<T> = {

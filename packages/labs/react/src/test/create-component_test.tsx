@@ -44,6 +44,10 @@ class BasicElement extends ReactiveElement {
   fire(name: string) {
     this.dispatchEvent(new Event(name));
   }
+
+  ice(name: string) {
+    this.dispatchEvent(new CustomEvent(name, { detail: "hello!"}));
+  }
 }
 
 declare global {
@@ -241,6 +245,10 @@ suite('createComponent', () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
+    
+    let customBarEvent: CustomEvent<string> | undefined;
+    let customDetails: string | undefined;
+
     const onFoo = (e: Event) => {
       fooEvent = e;
     };
@@ -250,6 +258,26 @@ suite('createComponent', () => {
     const onBar = (e: Event) => {
       barEvent = e;
     };
+
+    const onCustomBar = (e: CustomEvent<string>) => {
+      customBarEvent = e;
+      customDetails = e.detail;
+    };
+
+    await renderReactComponent({
+      onFoo,
+      onBar: onCustomBar,
+    });
+
+    el.fire('foo');
+    assert.equal(fooEvent!.type, 'foo');
+    el.ice('bar');
+    assert.equal(customBarEvent!.type, 'bar');
+    assert.equal(customDetails, 'hello!');
+
+    fooEvent = undefined;
+    customBarEvent = undefined;
+
     await renderReactComponent({
       onFoo,
       onBar,
