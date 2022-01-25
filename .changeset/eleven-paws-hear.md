@@ -1,5 +1,6 @@
 ---
-"lit-html": patch
+'lit': patch
+'lit-html': patch
 ---
 
-[comments]: correct typos
+Correct typo in `async-directive` module comment
