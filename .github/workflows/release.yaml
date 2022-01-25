@@ -31,7 +31,7 @@ jobs:
       # Deleting this forces fallback to our version of prettier
       # https://github.com/changesets/changesets/issues/616
       - name: Remove old version of prettier from changesets
-        run: rm -rf node_modules/@changesets/write/node_modules/prettier
+        run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
