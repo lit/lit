@@ -62,15 +62,14 @@ const setProperty = <E extends Element, T>(
   events?: StringValued<T>
 ) => {
   const event = events?.[name as keyof T];
-  if (event !== undefined) {
+  if (value !== old && event !== undefined) {
     // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as EventListener);
-    }
-  } else {
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as EventListener);
+    return;
   }
+  
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
@@ -78,9 +77,10 @@ const setProperty = <E extends Element, T>(
 const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   if (typeof ref === 'function') {
     (ref as (e: Element | null) => void)(value);
-  } else {
-    (ref as {current: Element | null}).current = value;
+    return;
   }
+
+  (ref as {current: Element | null}).current = value;
 };
 
 type CustomEventListener = (e: CustomEvent) => void;
@@ -170,7 +170,7 @@ export const createComponent = <I extends HTMLElement, E>(
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
-    private _elementProps!: {[index: string]: unknown};
+    private _elementProps!: Record<string, unknown>;
     private _userRef?: React.Ref<unknown>;
     private _ref?: React.RefCallback<I>;
 
@@ -246,11 +246,11 @@ export const createComponent = <I extends HTMLElement, E>(
       for (const [k, v] of Object.entries(this.props)) {
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
-        } else {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+        // React does *not* handle `className` for custom elements so
+        // coerce it to `class` so it's handled correctly.
+        props[k === 'className' ? 'class' : k] = v;
       }
       return createElement(tagName, props);
     }
