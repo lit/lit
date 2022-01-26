@@ -4,12 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-declare global {
-  interface ImportMeta {
-    url: string;
-  }
-}
-
 declare module 'vm' {
   class Module {
     dependencySpecifiers: ReadonlyArray<string>;
