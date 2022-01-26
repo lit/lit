@@ -17,7 +17,7 @@ import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
 /**
- * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
+ * A tiny module scoped polyfill for HTMLSlotElement.prototype.assignedElements.
  */
 const slotAssignedElements =
   window.HTMLSlotElement?.prototype.assignedElements != null
@@ -33,7 +33,7 @@ const slotAssignedElements =
 /**
  * Options for the {@linkcode queryAssignedElements} decorator. Extends the
  * options that can be passed into
- * [HTMLSlotElement.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
+ * [slot.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  */
 export interface QueryAssignedElementsOptions
   extends QueryAssignedNodesOptions {

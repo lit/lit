@@ -18,7 +18,7 @@ import type {ReactiveElement} from '../reactive-element.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
- * that can be passed into [HTMLSlotElement.assignedNodes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes).
+ * that can be passed into [slot.assignedNodes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes).
  */
 export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   /**
@@ -79,7 +79,8 @@ export function queryAssignedNodes(
  *
  * Note the type of this property should be annotated as `Array<Node>` if used
  * without a `selector` or `Array<HTMLElement>` if a selector is provided.
- * Please use `@queryAssignedElements` if using a CSS selector is desired.
+ * Please use {@linkcode queryAssignedElements @queryAssignedElements} if using
+ * a CSS selector is desired.
  *
  * @param slotName A string name of the slot.
  * @param flatten A boolean which when true flattens the assigned nodes,
