@@ -4,6 +4,8 @@ A router for Lit.
 
 ## Status
 
+🚧 `@lit-labs/router` is part of the Lit Labs set of packages - it is published in order to get feedback on the design and not ready for production. Breaking changes are likely to happen frequently. 🚧
+
 `@lit-labs/router` is not yet published to npm.
 
 This package requires either a native [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) implementation (which is currently only implemented in Chrome, Edge, and other Chromium browsers) or a URLPattern polyfill, like [`urlpattern-polyfill`](https://github.com/kenchris/urlpattern-polyfill).
