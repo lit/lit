@@ -2,6 +2,12 @@
 
 A plugin for [Eleventy](www.11ty.dev) for pre-rendering pages that include Lit web components. The components can then be (optionally) hydrated on the client for interactivity.
 
+## Status
+
+🚧 `@lit-labs/eleventy-plugin-lit` is part of the Lit Labs set of packages - it
+is published in order to get feedback on the design and not ready for
+production. Breaking changes are likely to happen frequently. 🚧
+
 ## Usage
 
 Call `addPlugin` in your `.eleventy.js` config file to add `eleventy-lit-plugin`.
@@ -27,7 +33,7 @@ module.exports = function (eleventyConfig) {
 For hydrating interactive components on the client, you should include
 `lit/experimental-hydrate-support.js` along with the component definitions used
 (it may be included in the same bundle passed to the eleventy plugin if serving
-bundled sources on the client) _at the bottom of the page_. When server-rendering components, you should load definitions after components have been parsed.
+bundled sources to the client) _at the bottom of the page_. When server-rendering components, you should load definitions after components have been parsed.
 
 Most browsers (excluding Chrome 90+) will also need to load and invoke the `@webcomponents/template-shadowroot` ponyfill prior to registering component definitions:
 

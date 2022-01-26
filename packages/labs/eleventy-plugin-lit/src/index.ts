@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -20,7 +20,6 @@ module.exports = {
     eleventyConfig.addTransform(
       'render-lit',
       async (content: string, outputPath: string) => {
-        console.log(this);
         if (outputPath.endsWith('.html')) {
           const render = (
             await import('@lit-labs/ssr/lib/render-with-global-dom-shim.js')
