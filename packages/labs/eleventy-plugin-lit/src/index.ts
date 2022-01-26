@@ -23,7 +23,7 @@ module.exports = {
         console.log(this);
         if (outputPath.endsWith('.html')) {
           const renderSync = (
-            await import('@lit-labs/ssr/lib/render-global.js')
+            await import('@lit-labs/ssr/lib/render-with-global-dom-shim.js')
           ).renderSync;
           const html = (await import('lit')).html;
           const unsafeHTML = (await import('lit/directives/unsafe-html.js'))
