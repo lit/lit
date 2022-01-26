@@ -90,7 +90,10 @@ class XlbFormatter implements Formatter {
           ) {
             throw new KnownError(`Expected <ph> to have exactly one text node`);
           }
-          contents.push({untranslatable: phText.nodeValue || ''});
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'name')
+          );
+          contents.push({untranslatable: phText.nodeValue || '', index});
         } else {
           throw new KnownError(
             `Unexpected node in <msg>: ${child.nodeType} ${child.nodeName}`
@@ -127,12 +130,14 @@ class XlbFormatter implements Formatter {
       }
       indent(messagesNode, 2);
       messagesNode.appendChild(messageNode);
+      let phIdx = 0;
       for (const content of contents) {
         if (typeof content === 'string') {
           messageNode.appendChild(doc.createTextNode(content));
         } else {
           const {untranslatable} = content;
           const ph = doc.createElement('ph');
+          ph.setAttribute('name', String(phIdx++));
           ph.appendChild(doc.createTextNode(untranslatable));
           messageNode.appendChild(ph);
         }

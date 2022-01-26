@@ -116,9 +116,9 @@ test('HTML message', () => {
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
@@ -133,9 +133,9 @@ test('HTML message (auto ID)', () => {
     {
       name: 'hc468c061c2d171f4',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
@@ -150,9 +150,9 @@ test('HTML message with comment', () => {
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b><!-- greeting -->'},
+        {untranslatable: '<b><!-- greeting -->', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
@@ -167,7 +167,7 @@ test('parameterized string message', () => {
   checkAnalysis(src, [
     {
       name: 'greeting',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
@@ -181,7 +181,7 @@ test('parameterized string message (auto ID)', () => {
   checkAnalysis(src, [
     {
       name: 'saed7d3734ce7f09d',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
@@ -196,9 +196,9 @@ test('parameterized HTML message', () => {
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello ',
-        {untranslatable: '${friend}</b>'},
+        {untranslatable: '${friend}</b>', index: 1},
       ],
     },
   ]);
@@ -342,7 +342,44 @@ test('error: different message contents', () => {
       },
     ],
     [
-      '__DUMMY__.ts(4,5): error TS2324: Message ids must have the same default text wherever they are used',
+      '__DUMMY__.ts(3,5): error TS2324: The translation message with ID greeting was defined in 2 places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.',
+    ]
+  );
+});
+
+test('same message contents with different expression is not error', () => {
+  const src = `
+    import {msg, str} from '@lit/localize';
+    const name = "friend";
+    const otherName = "pal";
+    msg(str\`Hello \${name}\`);
+    msg(str\`Hello \${otherName}\`);
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'saed7d3734ce7f09d',
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
+    },
+  ]);
+});
+
+test('error: same message contents with different desc', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg('Hello World', {desc: 'greeting'});
+    msg('Hello World', {desc: 'greeting2'});
+  `;
+  checkAnalysis(
+    src,
+    [
+      {
+        name: 's3d58dee72d4e0c27',
+        contents: ['Hello World'],
+        desc: 'greeting',
+      },
+    ],
+    [
+      '__DUMMY__.ts(3,5): error TS2324: The translation message with ID s3d58dee72d4e0c27 was defined in 2 places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.',
     ]
   );
 });
