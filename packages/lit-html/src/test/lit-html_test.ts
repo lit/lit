@@ -207,6 +207,16 @@ suite('lit-html', () => {
       assertRender(html`<a>${'foo'}</a>${'bar'}`, '<a>foo</a>bar');
     });
 
+    test('text in raw text elements', () => {
+      assertRender(
+        html`<script type="foo">${'A'}</script>`,
+        '<script type="foo">A</script>'
+      );
+      assertRender(html`<style>${'A'}</style>`, '<style>A</style>');
+      assertRender(html`<title>${'A'}</title>`, '<title>A</title>');
+      assertRender(html`<textarea>${'A'}</textarea>`, '<textarea>A</textarea>');
+    });
+
     test('text in raw text element after <', () => {
       // It doesn't matter much what marker we use in <script>, <style> and
       // <textarea> since comments aren't parsed and we have to search the text
