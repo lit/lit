@@ -27,6 +27,10 @@ const specifierMatches = (specifier: string, match: string) =>
  * A subset of the Node vm.Module API.
  */
 export interface VmModule {
+  /**
+   * The namespace object of the module that provides access to its exports.
+   * See https://nodejs.org/api/vm.html#modulenamespace
+   */
   namespace: {[name: string]: unknown};
 }
 
