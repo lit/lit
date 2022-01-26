@@ -812,30 +812,3 @@ function* renderAttributePart(
 }
 
 const getLast = <T>(a: Array<T>) => a[a.length - 1];
-
-// Assuming this is faster than Array.from(iter).join();
-// TODO: perf test
-const iterableToString = (iterable: Iterable<string>) => {
-  let s = '';
-  for (const i of iterable) {
-    s += i;
-  }
-  return s;
-};
-
-/**
- * Renders a lit-html template (or any renderable lit-html value) to a string
- * synchronously. Any custom elements encountered will be rendered if a matching
- * ElementRenderer is found.
- *
- * This method will block on rendering the entire contents of the template, and
- * should not be used when streaming can be employed.
- *
- * @param value Value to render
- * @param renderInfo Optional render context object that should be passed to any
- *   re-entrant calls to `render`, e.g. from a `renderShadow` callback on an
- *   ElementRenderer.
- */
-export const renderSync = (value: unknown, info?: Partial<RenderInfo>) => {
-  return iterableToString(render(value, info));
-};

@@ -22,9 +22,9 @@ module.exports = {
       async (content: string, outputPath: string) => {
         console.log(this);
         if (outputPath.endsWith('.html')) {
-          const renderSync = (
+          const render = (
             await import('@lit-labs/ssr/lib/render-with-global-dom-shim.js')
-          ).renderSync;
+          ).render;
           const html = (await import('lit')).html;
           const unsafeHTML = (await import('lit/directives/unsafe-html.js'))
             .unsafeHTML;
@@ -40,10 +40,22 @@ module.exports = {
             body = `<body>${content}</body>`;
             tail = `</html>`;
           }
-          return head + renderSync(html`${unsafeHTML(body)}`) + tail;
+          return (
+            head + iterableToString(render(html`${unsafeHTML(body)}`)) + tail
+          );
         }
         return content;
       }
     );
   },
+};
+
+// Assuming this is faster than Array.from(iter).join();
+// TODO: perf test
+const iterableToString = (iterable: Iterable<string>) => {
+  let s = '';
+  for (const i of iterable) {
+    s += i;
+  }
+  return s;
 };
