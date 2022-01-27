@@ -141,7 +141,9 @@ export const createComponent = <
   // ref, as well as special event and element properties.
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type ElementProps = Partial<Omit<I, ReservedReactProperties>> & Events<E>;
-  type UserProps = React.PropsWithRef<ElementProps & React.HTMLAttributes<ElementProps>>;
+  type UserProps = React.PropsWithRef<
+    ElementProps & React.HTMLAttributes<ElementProps>
+  >;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
