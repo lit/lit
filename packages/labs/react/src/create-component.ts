@@ -7,10 +7,6 @@
 import * as ReactModule from 'react';
 
 type Constructor<T> = {new (): T};
-type StringValued<T> = {
-  [P in keyof T]: string;
-};
-
 type CustomEventListener = (e: CustomEvent) => void;
 type EventListeners = EventListener | CustomEventListener;
 type Events<T> = {
@@ -72,15 +68,15 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends HTMLElement, T>(
+const setProperty = <E extends HTMLElement>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
-  events?: StringValued<T>
+  events?: Record<string, string>
 ) => {
-  const event = events?.[name as keyof T];
-  if (value !== old && event !== undefined) {
+  const event = events?.[name];
+  if (event !== undefined && value !== old) {
     // Dirty check event value.
     addOrUpdateEventListener(node, event, value as EventListener);
     return;
@@ -126,12 +122,12 @@ const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: I | null) => {
  */
 export const createComponent = <
   I extends HTMLElement,
-  E extends Events<unknown>
+  S extends Record<string, string>
 >(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: StringValued<E>,
+  events?: S,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -140,10 +136,9 @@ export const createComponent = <
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
   // 'children', but 'children' is special to JSX, so we must at least do that.
-  type ElementProps = Partial<Omit<I, ReservedReactProperties>> & Events<E>;
-  type UserProps = React.PropsWithRef<
-    ElementProps & React.HTMLAttributes<ElementProps>
-  >;
+  type ElementProps = Partial<Omit<I, ReservedReactProperties>> & Events<S>;
+
+  type UserProps = React.PropsWithRef<ElementProps & React.HTMLAttributes<ElementProps>>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -188,6 +183,8 @@ export const createComponent = <
         return;
       }
       // Set element properties to the values in `this.props`
+
+      // types so what if we iterated over props,
       for (const prop in this._elementProps) {
         setProperty(
           this._element,
