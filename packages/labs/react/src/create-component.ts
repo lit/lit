@@ -6,11 +6,11 @@
 
 import * as ReactModule from 'react';
 
-type Constructor<T> = {new (): T};
+type Constructor<I> = {new (): I};
 type CustomEventListener = (e: CustomEvent) => void;
 type EventListeners = EventListener | CustomEventListener;
-type Events<T> = {
-  [P in keyof T]?: EventListeners;
+type Events<R> = {
+  [K in keyof R]?: EventListeners;
 };
 
 type ReservedReactProperties =
@@ -122,12 +122,12 @@ const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: I | null) => {
  */
 export const createComponent = <
   I extends HTMLElement,
-  S extends Record<string, string>
+  R extends Record<string, string>
 >(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: S,
+  eventNames?: R,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -136,9 +136,10 @@ export const createComponent = <
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
   // 'children', but 'children' is special to JSX, so we must at least do that.
-  type ElementProps = Partial<Omit<I, ReservedReactProperties>> & Events<S>;
-
-  type UserProps = React.PropsWithRef<ElementProps & React.HTMLAttributes<ElementProps>>;
+  type ElementProps = Partial<Omit<I, ReservedReactProperties>> & Events<R>;
+  type UserProps = React.PropsWithRef<
+    ElementProps & React.HTMLAttributes<ElementProps>
+  >;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -150,7 +151,7 @@ export const createComponent = <
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
-  const elementClassProps = new Set(Object.keys(events ?? {}));
+  const elementClassProps = new Set(Object.keys(eventNames ?? {}));
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
       if (reservedReactProperties.has(p)) {
@@ -191,7 +192,7 @@ export const createComponent = <
           prop,
           this.props[prop as keyof ComponentProps],
           oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
-          events
+          eventNames
         );
       }
       // Note, the spirit of React might be to "unset" any old values that
