@@ -6,9 +6,8 @@
 
 import * as ReactModule from 'react';
 
-
 type CustomEventListener = (e: CustomEvent) => void;
-type EventListeners = EventListener | CustomEventListener
+type EventListeners = EventListener | CustomEventListener;
 
 type Events<S> = {
   [P in keyof S]?: EventListeners;
@@ -99,7 +98,6 @@ const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: I | null) => {
   }
 };
 
-
 /**
  * Creates a React component for a custom element. Properties are distinguished
  * from attributes automatically, and events can be configured so they are
@@ -153,7 +151,6 @@ export const createComponent = <
   type ComponentProps = UserProps & {
     __forwardedRef?: React.ForwardedRef<I>;
   };
-  
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
