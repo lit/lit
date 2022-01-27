@@ -17,11 +17,12 @@ type Events<T> = {
   [P in keyof T]?: EventListeners;
 };
 
-type ReservedReactProperties = 'children'
-| 'localName'
-| 'ref'
-| 'style'
-| 'className';
+type ReservedReactProperties =
+  | 'children'
+  | 'localName'
+  | 'ref'
+  | 'style'
+  | 'className';
 
 const reservedReactProperties = new Set([
   'children',
@@ -98,7 +99,7 @@ const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: I | null) => {
   }
 
   if (ref !== null) {
-    (ref as {current: I | null}).current = value;
+    (ref as React.MutableRefObject<I | null>).current = value;
   }
 };
 
@@ -140,11 +141,15 @@ export const createComponent = <
   // ref, as well as special event and element properties.
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
+
+  type ElementProps =
+    Partial<Omit<I, ReservedReactProperties>> &
+    Events<E> &
+    React.HTMLAttributes<HTMLElement>;
+
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
-      Partial<Omit<I, ReservedReactProperties>> &
-        Events<E> &
-        React.HTMLAttributes<HTMLElement>
+      ElementProps
     >
   >;
 
@@ -191,6 +196,8 @@ export const createComponent = <
         return;
       }
       // Set element properties to the values in `this.props`
+
+      // types so what if we iterated over props,
       for (const prop in this._elementProps) {
         setProperty(
           this._element,
