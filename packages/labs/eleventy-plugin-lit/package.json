@@ -30,7 +30,7 @@
     "build:ts:watch": "tsc --build --watch",
     "build:demo": "cd demo && eleventy",
     "build:demo:watch": "cd demo && eleventy --watch",
-    "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" test/ demo/_site .tsbuildinfo",
+    "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" \"test/**/*.{js,js.map,d.ts,d.ts.map}\" demo/_site .tsbuildinfo",
     "serve:demo": "wds --watch --node-resolve --open demo/_site/test",
     "test": "uvu test/ \".*-test.js$\""
   },
