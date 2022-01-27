@@ -6,6 +6,20 @@
 
 import * as ReactModule from 'react';
 
+
+type CustomEventListener = (e: CustomEvent) => void;
+type EventListeners = EventListener | CustomEventListener
+
+type Events<S> = {
+  [P in keyof S]?: EventListeners;
+};
+
+type StringValued<T> = {
+  [P in keyof T]: string;
+};
+
+type Constructor<T> = {new (): T};
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -54,7 +68,7 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element, T>(
+const setProperty = <E extends HTMLElement, T>(
   node: E,
   name: string,
   value: unknown,
@@ -74,10 +88,7 @@ const setProperty = <E extends Element, T>(
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
 // React API to set a ref.
-const setRef = <I extends HTMLElement>(
-  ref: React.Ref<I>,
-  value: I | null
-) => {
+const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: I | null) => {
   if (typeof ref === 'function') {
     ref(value);
     return;
@@ -88,17 +99,6 @@ const setRef = <I extends HTMLElement>(
   }
 };
 
-type CustomEventListener = (e: CustomEvent) => void;
-
-type Events<S> = {
-  [P in keyof S]?: EventListener | CustomEventListener;
-};
-
-type StringValued<T> = {
-  [P in keyof T]: string;
-};
-
-type Constructor<T> = {new (): T};
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -153,6 +153,7 @@ export const createComponent = <
   type ComponentProps = UserProps & {
     __forwardedRef?: React.ForwardedRef<I>;
   };
+  
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
@@ -265,7 +266,7 @@ export const createComponent = <
   }
 
   const ForwardedComponent = React.forwardRef<I, UserProps>((props, ref) =>
-    createElement(
+    createElement<ComponentProps>(
       ReactComponent,
       {...props, __forwardedRef: ref},
       props?.children
