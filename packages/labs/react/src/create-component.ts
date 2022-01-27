@@ -6,18 +6,22 @@
 
 import * as ReactModule from 'react';
 
-type CustomEventListener = (e: CustomEvent) => void;
-type EventListeners = EventListener | CustomEventListener;
-
-type Events<S> = {
-  [P in keyof S]?: EventListeners;
-};
-
+type Constructor<T> = {new (): T};
 type StringValued<T> = {
   [P in keyof T]: string;
 };
 
-type Constructor<T> = {new (): T};
+type CustomEventListener = (e: CustomEvent) => void;
+type EventListeners = EventListener | CustomEventListener;
+type Events<T> = {
+  [P in keyof T]?: EventListeners;
+};
+
+type ReservedReactProperties = 'children'
+| 'localName'
+| 'ref'
+| 'style'
+| 'className';
 
 const reservedReactProperties = new Set([
   'children',
@@ -138,7 +142,7 @@ export const createComponent = <
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
+      Partial<Omit<I, ReservedReactProperties>> &
         Events<E> &
         React.HTMLAttributes<HTMLElement>
     >
