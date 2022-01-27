@@ -6,8 +6,9 @@
 
 import * as ReactModule from 'react';
 
+
 type CustomEventListener = (e: CustomEvent) => void;
-type EventListeners = EventListener | CustomEventListener;
+type EventListeners = EventListener | CustomEventListener
 
 type Events<S> = {
   [P in keyof S]?: EventListeners;
@@ -97,6 +98,7 @@ const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: I | null) => {
     (ref as {current: I | null}).current = value;
   }
 };
+
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -229,7 +231,7 @@ export const createComponent = <
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.ForwardedRef<I>;
+      const userRef = this.props.__forwardedRef as React.Ref<I>;
       if (this._ref === undefined || this._userRef !== userRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
@@ -244,8 +246,7 @@ export const createComponent = <
       // Filters class properties out and passes the remaining
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = {ref: this._ref};
+      const props: Record<string, unknown> = {ref: this._ref};
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
