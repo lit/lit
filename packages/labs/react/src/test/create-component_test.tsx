@@ -46,7 +46,7 @@ class BasicElement extends ReactiveElement {
   }
 
   ice(name: string) {
-    this.dispatchEvent(new CustomEvent(name, { detail: "hello!"}));
+    this.dispatchEvent(new CustomEvent(name, {detail: 'hello!'}));
   }
 }
 
@@ -87,10 +87,7 @@ suite('createComponent', () => {
   const renderReactComponent = async (
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
-    window.ReactDOM.render(
-      <BasicElementComponent {...props}/>,
-      container
-    );
+    window.ReactDOM.render(<BasicElementComponent {...props} />, container);
     el = container.querySelector(elementName)! as BasicElement;
     await el.updateComplete;
   };
@@ -116,7 +113,7 @@ suite('createComponent', () => {
       basicElementEvents,
       'FooBar'
     );
-    
+
     assert.equal(NamedComponent.displayName, 'FooBar');
   });
 
@@ -127,10 +124,10 @@ suite('createComponent', () => {
   });
 
   test('can get ref to element', async () => {
-    const elementRef1 = window.React.createRef();
+    const elementRef1 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef1});
     assert.equal(elementRef1.current, el);
-    const elementRef2 = window.React.createRef();
+    const elementRef2 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef2});
     assert.equal(elementRef1.current, null);
     assert.equal(elementRef2.current, el);
@@ -245,7 +242,7 @@ suite('createComponent', () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
-    
+
     let customBarEvent: CustomEvent<string> | undefined;
     let customDetails: string | undefined;
 
@@ -334,12 +331,12 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = (window.React.createElement(
+    const children = window.React.createElement(
       'div'
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
       // `createElement`.
-    ) as unknown) as HTMLCollection;
+    ) as unknown as HTMLCollection;
     await renderReactComponent({children});
     assert.equal(el.childNodes.length, 1);
     assert.equal(el.firstElementChild!.localName, 'div');
