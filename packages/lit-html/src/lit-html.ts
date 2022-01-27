@@ -235,7 +235,7 @@ const doubleQuoteAttrEndRegex = /"/g;
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
-const rawTextElement = /^(?:script|style|textarea)$/i;
+const rawTextElement = /^(?:script|style|textarea|title)$/i;
 
 /** TemplateResult types */
 const HTML_RESULT = 1;
