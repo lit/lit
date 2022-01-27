@@ -38,7 +38,7 @@ export const startServer = async (port = 9090) => {
           `../tests/${testFile}-ssr.js`,
           import.meta.url
         )
-      ).module.namespace;
+      ).module.namespace as typeof testModule;
       render = module.render;
     }
 
