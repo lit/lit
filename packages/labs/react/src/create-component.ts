@@ -74,7 +74,10 @@ const setProperty = <E extends Element, T>(
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
 // React API to set a ref.
-const setRef = <I extends HTMLElement>(ref: React.Ref<I>, value: Element | null) => {
+const setRef = <I extends HTMLElement>(
+  ref: React.Ref<I>,
+  value: Element | null
+) => {
   if (typeof ref === 'function') {
     (ref as (e: Element | null) => void)(value);
     return;
@@ -116,7 +119,7 @@ type Constructor<T> = { new(): T };
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E>(
+export const createComponent = <I extends HTMLElement, E extends Events<unknown>>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
@@ -256,11 +259,11 @@ export const createComponent = <I extends HTMLElement, E>(
     }
   }
 
-  const ForwardedComponent = React.forwardRef(
-    (props?: UserProps, ref?: React.Ref<I>) =>
+  const ForwardedComponent = React.forwardRef<I, UserProps>(
+    (props, ref) =>
       createElement(
         ReactComponent,
-        { ...props, __forwardedRef: ref } as ComponentProps,
+        { ...props, __forwardedRef: ref },
         props?.children
       )
   );
