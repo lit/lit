@@ -139,19 +139,9 @@ export const createComponent = <
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
-  // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
-
-  type ElementProps =
-    Partial<Omit<I, ReservedReactProperties>> &
-    Events<E> &
-    React.HTMLAttributes<HTMLElement>;
-
-  type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<
-      ElementProps
-    >
-  >;
+  type ElementProps = Partial<Omit<I, ReservedReactProperties>> & Events<E>;
+  type UserProps = React.PropsWithRef<ElementProps & React.HTMLAttributes<ElementProps>>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -196,8 +186,6 @@ export const createComponent = <
         return;
       }
       // Set element properties to the values in `this.props`
-
-      // types so what if we iterated over props,
       for (const prop in this._elementProps) {
         setProperty(
           this._element,
