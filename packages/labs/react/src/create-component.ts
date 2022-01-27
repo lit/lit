@@ -76,14 +76,16 @@ const setProperty = <E extends Element, T>(
 // React API to set a ref.
 const setRef = <I extends HTMLElement>(
   ref: React.Ref<I>,
-  value: Element | null
+  value: I | null
 ) => {
   if (typeof ref === 'function') {
-    (ref as (e: Element | null) => void)(value);
+    ref(value);
     return;
   }
 
-  (ref as { current: Element | null }).current = value;
+  if (ref !== null) {
+    (ref as {current: I | null}).current = value;
+  }
 };
 
 type CustomEventListener = (e: CustomEvent) => void;
@@ -96,7 +98,7 @@ type StringValued<T> = {
   [P in keyof T]: string;
 };
 
-type Constructor<T> = { new(): T };
+type Constructor<T> = {new (): T};
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -119,7 +121,10 @@ type Constructor<T> = { new(): T };
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events<unknown>>(
+export const createComponent = <
+  I extends HTMLElement,
+  E extends Events<unknown>
+>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
@@ -136,8 +141,8 @@ export const createComponent = <I extends HTMLElement, E extends Events<unknown>
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
-      Events<E> &
-      React.HTMLAttributes<HTMLElement>
+        Events<E> &
+        React.HTMLAttributes<HTMLElement>
     >
   >;
 
@@ -146,7 +151,7 @@ export const createComponent = <I extends HTMLElement, E extends Events<unknown>
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
   type ComponentProps = UserProps & {
-    __forwardedRef?: React.Ref<I>;
+    __forwardedRef?: React.ForwardedRef<I>;
   };
 
   // Set of properties/events which should be specially handled by the wrapper
@@ -162,8 +167,8 @@ export const createComponent = <I extends HTMLElement, E extends Events<unknown>
         // rare.
         console.warn(
           `${tagName} contains property ${p} which is a React ` +
-          `reserved property. It will be used by React and not set on ` +
-          `the element.`
+            `reserved property. It will be used by React and not set on ` +
+            `the element.`
         );
       } else {
         elementClassProps.add(p);
@@ -226,7 +231,7 @@ export const createComponent = <I extends HTMLElement, E extends Events<unknown>
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.Ref<I>;
+      const userRef = this.props.__forwardedRef as React.ForwardedRef<I>;
       if (this._ref === undefined || this._userRef !== userRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
@@ -242,7 +247,7 @@ export const createComponent = <I extends HTMLElement, E extends Events<unknown>
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = { ref: this._ref };
+      const props: any = {ref: this._ref};
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
@@ -259,13 +264,12 @@ export const createComponent = <I extends HTMLElement, E extends Events<unknown>
     }
   }
 
-  const ForwardedComponent = React.forwardRef<I, UserProps>(
-    (props, ref) =>
-      createElement(
-        ReactComponent,
-        { ...props, __forwardedRef: ref },
-        props?.children
-      )
+  const ForwardedComponent = React.forwardRef<I, UserProps>((props, ref) =>
+    createElement(
+      ReactComponent,
+      {...props, __forwardedRef: ref},
+      props?.children
+    )
   );
 
   // To ease debugging in the React Developer Tools
