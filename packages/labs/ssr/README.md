@@ -73,7 +73,7 @@ context.body = Readable.from(ssrResult);
 
 ```js
 import {myTemplate} from './my-template.js';
-import {render} from `lit-html`;
+import {render} from `lit`;
 import {hydrate} from `lit/experimental-hydrate.js`;
 // Initial hydration required before render:
 // (must be same data used to render on the server)
