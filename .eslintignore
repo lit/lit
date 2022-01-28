@@ -135,10 +135,10 @@ packages/ts-transformers/*.d.ts
 packages/ts-transformers/internal/
 packages/ts-transformers/tests/
 packages/labs/eleventy-plugin-lit/development/
-packages/labs/eleventy-plugin-lit/node_modules/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
 packages/labs/eleventy-plugin-lit/index.*
+
 packages/labs/motion/development/
 packages/labs/motion/test/
 packages/labs/motion/node_modules/
