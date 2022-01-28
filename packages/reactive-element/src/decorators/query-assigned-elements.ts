@@ -17,7 +17,7 @@ import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
 /**
- * A tiny module scoped polyfill for HTMLSlotElement.prototype.assignedElements.
+ * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
  */
 const slotAssignedElements =
   window.HTMLSlotElement?.prototype.assignedElements != null
