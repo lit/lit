@@ -27,9 +27,14 @@ module.exports = {
           const html = (await import('lit')).html;
           const unsafeHTML = (await import('lit/directives/unsafe-html.js'))
             .unsafeHTML;
-          for (const module of options.componentModules ?? []) {
-            require(path.join(process.cwd(), module));
-          }
+          // TODO(aomarks) This doesn't work in Eleventy --watch mode, because
+          // the ES module cache never gets cleared. Switch to isolated VM
+          // modules so that we can control this.
+          await Promise.all(
+            (options.componentModules ?? []).map(
+              (module) => import(path.join(process.cwd(), module))
+            )
+          );
           let head, body, tail;
           const page = content.match(/(.*)(<body.*<\/body>)(.*)/);
           if (page) {
