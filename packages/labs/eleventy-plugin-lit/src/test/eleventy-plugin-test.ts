@@ -33,6 +33,8 @@ class TestRig {
     await fs.mkdir(pathlib.join(this._tempDir, 'node_modules', '@lit-labs'), {
       recursive: true,
     });
+    // The root of the @lit-labs/eleventy-plugin package is 5 levels up from our
+    // temp directory.
     await fs.symlink(
       '../../../../..',
       pathlib.join(

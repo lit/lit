@@ -32,7 +32,7 @@ module.exports = {
           // modules so that we can control this.
           await Promise.all(
             (options.componentModules ?? []).map(
-              (module) => import(path.join(process.cwd(), module))
+              (module) => import(path.resolve(process.cwd(), module))
             )
           );
           let head, body, tail;
