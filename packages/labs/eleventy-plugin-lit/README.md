@@ -14,9 +14,7 @@ Call `addPlugin` in your `.eleventy.js` config file to add `eleventy-lit-plugin`
 
 You will need to tell the plugin where to find the component definitions for the
 components you'll render in your templates by passing a list of one or more
-scripts to load via the `componentModules` option. Because Eleventy does not
-support ESM configuration files, your components will need to be built as
-`commonjs`/`umd`.
+scripts to load via the `componentModules` option.
 
 ```js
 const litPlugin = require('../index.js');

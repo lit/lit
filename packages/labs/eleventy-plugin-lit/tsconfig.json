@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
     "target": "es2019",
     "module": "es2020",
     "esModuleInterop": true,
