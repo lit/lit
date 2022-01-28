@@ -203,7 +203,7 @@ export class Routes implements ReactiveController {
   /**
    * The result of calling the current route's render() callback.
    */
-  get outlet() {
+  outlet() {
     return this._currentRoute?.render?.(this._currentParams);
   }
 

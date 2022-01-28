@@ -60,7 +60,7 @@ export class Test1 extends LitElement {
       <a id="test1" href="/test1/abc">Test 1</a>
       <a id="child1" href="/child1/abc">Child 1</a>
       <a id="child2" href="/child2/xyz">Child 2</a>
-      ${this._router.outlet}
+      ${this._router.outlet()}
     `;
   }
 }
@@ -74,7 +74,7 @@ export class Child1 extends LitElement {
   override render() {
     return html`
       <a id="abc" href="${this._routes.link('abc')}">ABC</a>
-      ${this._routes.outlet}
+      ${this._routes.outlet()}
     `;
   }
 }
@@ -86,6 +86,6 @@ export class Child2 extends LitElement {
   ]);
 
   override render() {
-    return this._routes.outlet;
+    return this._routes.outlet();
   }
 }

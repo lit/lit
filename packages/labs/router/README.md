@@ -27,7 +27,7 @@ class MyElement extends LitElement {
   render() {
     return html`
       <header>...</header>
-      <main>${this._routes.outlet}</main>
+      <main>${this._routes.outlet()}</main>
       <footer>...</footer>
     `;
   }
@@ -42,7 +42,7 @@ The general shape of the API includes:
 - A `Routes` controller for declaring routes inside components
 - Declaration of routes with [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) and render callbacks
 - Extraction of URL pattern parameters into data objects passed to render callbacks
-- A `routes.outlet` that renders the current route's render callback
+- A `routes.outlet()` method that renders the current route's render callback
 - A `routes.link()` method to generate URLs to use in `<a>` tags, etc.
 - A `routes.goto()` method for performing a navigation
 
@@ -126,7 +126,7 @@ export interface URLPatternRouteConfig {
 
 #### Render callbacks
 
-The render callback is called when the outlet property of the Routes object is accessed. It is passed an object with the parameters extracted from the matching URL.
+The render callback is called when the outlet method of the Routes object is called. It is passed an object with the parameters extracted from the matching URL.
 
 Example with named parameter:
 
@@ -142,7 +142,7 @@ Example with named parameter:
 An outlet is where a routes object renders the currently selected route's template. It can be used anywhere in the host element's template:
 
 ```ts
-html`<main>${this.routes.outlet}</main>`;
+html`<main>${this.routes.outlet()}</main>`;
 ```
 
 #### enter() callbacks
@@ -225,7 +225,7 @@ class XParent extends LitElement {
     {path: '/child/*', render: () => html`<x-child></x-child>`},
   ]);
   render() {
-    return html`${this._routes.outlet}`;
+    return html`${this._routes.outlet()}`;
   }
 }
 
@@ -235,7 +235,7 @@ class XChild extends LitElement {
     {path: 'bar', render: () => html`<x-bar></x-bar>`},
   ]);
   render() {
-    return html`${this._routes.outlet}`;
+    return html`${this._routes.outlet()}`;
   }
 }
 ```
