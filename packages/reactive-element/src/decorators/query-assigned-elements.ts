@@ -33,7 +33,7 @@ const slotAssignedElements =
 /**
  * Options for the {@linkcode queryAssignedElements} decorator. Extends the
  * options that can be passed into
- * [slot.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
+ * [HTMLSlotElement.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  */
 export interface QueryAssignedElementsOptions
   extends QueryAssignedNodesOptions {
@@ -48,7 +48,7 @@ export interface QueryAssignedElementsOptions
  * A property decorator that converts a class property into a getter that
  * returns the `assignedElements` of the given `slot`. Provides a declarative
  * way to use
- * [`slot.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
+ * [`HTMLSlotElement.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  *
  * Can be passed an optional {@linkcode QueryAssignedElementsOptions} object.
  *

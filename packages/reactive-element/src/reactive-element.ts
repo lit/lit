@@ -966,7 +966,12 @@ export abstract class ReactiveElement
    * Synchronizes property values when attributes change.
    *
    * Specifically, when an attribute is set, the corresponding property is set.
-   * You should rarely need to implement this callback.
+   * You should rarely need to implement this callback. If this method is
+   * overridden, `super.attributeChangedCallback(name, _old, value)` must be
+   * called.
+   *
+   * See [using the lifecycle callbacks](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks)
+   * on MDN for more information about the `attributeChangedCallback`.
    * @category attributes
    */
   attributeChangedCallback(

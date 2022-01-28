@@ -18,7 +18,7 @@ import type {ReactiveElement} from '../reactive-element.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
- * that can be passed into [slot.assignedNodes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes).
+ * that can be passed into [HTMLSlotElement.assignedNodes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes).
  */
 export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   /**
