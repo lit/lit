@@ -79,8 +79,8 @@ export function queryAssignedNodes(
  *
  * Note the type of this property should be annotated as `Array<Node>` if used
  * without a `selector` or `Array<HTMLElement>` if a selector is provided.
- * Please use {@linkcode queryAssignedElements @queryAssignedElements} if using
- * a CSS selector is desired.
+ * Use {@linkcode queryAssignedElements @queryAssignedElements} to
+ * list only elements, and optionally filter the element list using a CSS selector. 
  *
  * @param slotName A string name of the slot.
  * @param flatten A boolean which when true flattens the assigned nodes,
