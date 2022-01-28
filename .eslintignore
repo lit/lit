@@ -138,6 +138,9 @@ packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
 packages/labs/eleventy-plugin-lit/index.*
+packages/labs/eleventy-plugin-lit/test/
+# Switches Node into module mode for tests
+!packages/labs/eleventy-plugin-lit/test/package.json
 
 packages/labs/motion/development/
 packages/labs/motion/test/
