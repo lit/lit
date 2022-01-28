@@ -41,7 +41,7 @@ type TSDecoratorReturnType = void | any;
  * ```ts
  * class MyElement {
  *   @queryAssignedNodes({slot: 'list', flatten: true})
- *   listItems!: Array<HTMLElement>;
+ *   listItems!: Array<Node>;
  *
  *   render() {
  *     return html`
