@@ -39,7 +39,7 @@
     "lit": "^2.0.2"
   },
   "devDependencies": {
-    "@11ty/eleventy": "^0.12.1",
+    "@11ty/eleventy": "^1.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
     "@web/dev-server": "^0.1.11",
     "@webcomponents/template-shadowroot": "^0.1.0",
