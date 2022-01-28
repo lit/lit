@@ -29,9 +29,8 @@
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
     "build:demo": "cd demo && eleventy",
-    "build:demo:bundle": "cd demo && rollup -c",
     "build:demo:watch": "cd demo && eleventy --watch",
-    "clean": "rm -rf {index}.{js,js.map,d.ts} test/ demo/_site demo/_js/*.bundle.js *.tsbuildinfo",
+    "clean": "rm -rf {index}.{js,js.map,d.ts} test/ demo/_site *.tsbuildinfo",
     "serve:demo": "wds --watch --node-resolve --open demo/_site/test"
   },
   "dependencies": {
@@ -40,10 +39,8 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.0",
-    "@rollup/plugin-node-resolve": "^11.2.1",
     "@web/dev-server": "^0.1.11",
     "@webcomponents/template-shadowroot": "^0.1.0",
-    "rollup": "^2.45.2",
     "typescript": "^4.1.3"
   }
 }
