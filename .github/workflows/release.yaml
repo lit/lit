@@ -41,7 +41,7 @@ jobs:
           publish: npm run release
         env:
           HUSKY: 0
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Checkout dist repo
