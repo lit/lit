@@ -70,11 +70,11 @@ jobs:
           git checkout --detach empty
           # Copy in all of the bundles.
           mkdir all
-          cp ../packages/lit/lit.all.min.js all
-          cp ../packages/lit/lit.all.min.js.map all
+          cp ../packages/lit/lit.all.min.js all/lit-all.min.js
+          cp ../packages/lit/lit.all.min.js.map all/lit-all.min.js
           mkdir core
-          cp ../packages/lit/lit.min.js core
-          cp ../packages/lit/lit.min.js.map core
+          cp ../packages/lit/lit.min.js core/lit-core.min.js
+          cp ../packages/lit/lit.min.js.map core/lit-core.min.js
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Robot"
