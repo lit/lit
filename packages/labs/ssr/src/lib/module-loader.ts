@@ -18,16 +18,32 @@ const builtIns = new Set(builtinModules);
 const specifierMatches = (specifier: string, match: string) =>
   specifier === match || specifier.startsWith(match + '/');
 
+// IMPORTANT: We should always use our own VmModule interface for public APIs
+// instead of vm.Module, because vm.Module typings are not provided by
+// @types/node, and we do not augment them in a way that affects consumers (the
+// types in custom_typings are only available during our own build).
+
+/**
+ * A subset of the Node vm.Module API.
+ */
+export interface VmModule {
+  /**
+   * The namespace object of the module that provides access to its exports.
+   * See https://nodejs.org/api/vm.html#modulenamespace
+   */
+  namespace: {[name: string]: unknown};
+}
+
 export interface ModuleRecord {
   path: string;
-  module?: vm.Module;
+  module?: VmModule;
   imports: Array<string>;
-  evaluated: Promise<vm.Module>;
+  evaluated: Promise<VmModule>;
 }
 
 interface ImportResult {
   path: string;
-  module: vm.Module;
+  module: VmModule;
 }
 
 export interface Options {
@@ -86,12 +102,12 @@ export class ModuleLoader {
       referrer = referrer.substring('file://'.length);
     }
     const result = await this._loadModule(specifier, referrer);
-    const {module} = result;
+    const module = result.module as vm.Module;
     if (module.status === 'unlinked') {
-      await result.module.link(this._linker);
+      await module.link(this._linker);
     }
     if (module.status !== 'evaluated') {
-      await result.module.evaluate();
+      await module.evaluate();
     }
     return result;
   }
@@ -151,7 +167,7 @@ export class ModuleLoader {
     };
   }
 
-  private async _loadBuiltInModule(specifier: string) {
+  private async _loadBuiltInModule(specifier: string): Promise<ImportResult> {
     let moduleRecord = this.cache.get(specifier);
     if (moduleRecord !== undefined) {
       return {
@@ -192,12 +208,12 @@ export class ModuleLoader {
   private _importModuleDynamically = async (
     specifier: string,
     referencingModule: vm.Module
-  ) => {
+  ): Promise<vm.Module> => {
     const result = await this.importModule(
       specifier,
       referencingModule.identifier
     );
-    return result.module;
+    return result.module as vm.Module;
   };
 
   private _linker = async (
@@ -214,7 +230,7 @@ export class ModuleLoader {
     if (referrerModule !== undefined) {
       referrerModule.imports.push(result.path);
     }
-    return result.module;
+    return result.module as vm.Module;
   };
 
   private _getIdentifier(modulePath: string) {

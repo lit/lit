@@ -235,7 +235,7 @@ const doubleQuoteAttrEndRegex = /"/g;
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
-const rawTextElement = /^(?:script|style|textarea)$/i;
+const rawTextElement = /^(?:script|style|textarea|title)$/i;
 
 /** TemplateResult types */
 const HTML_RESULT = 1;
@@ -1799,7 +1799,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.1.1');
+(globalThis.litHtmlVersions ??= []).push('2.1.2');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

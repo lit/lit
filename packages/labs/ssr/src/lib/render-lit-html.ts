@@ -412,7 +412,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // parse5 attribute ordering matches string ordering
               const name = attrNames[attrIndex++];
               const attrSourceLocation =
-                node.sourceCodeLocation!.attrs[attr.name];
+                node.sourceCodeLocation!.attrs![attr.name]!;
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
               flushTo(attrNameStartOffset);
@@ -450,7 +450,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // out along with any manually-reflected attributes. As such, we
               // skip over static attribute text here.
               const attrSourceLocation =
-                node.sourceCodeLocation!.attrs[attr.name];
+                node.sourceCodeLocation!.attrs![attr.name]!;
               flushTo(attrSourceLocation.startOffset);
               skipTo(attrSourceLocation.endOffset);
             }

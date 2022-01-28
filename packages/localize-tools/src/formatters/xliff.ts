@@ -116,7 +116,10 @@ export class XliffFormatter implements Formatter {
             child as Element,
             'equiv-text'
           );
-          contents.push({untranslatable: phText});
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'id')
+          );
+          contents.push({untranslatable: phText, index});
         } else if (
           child.nodeType === doc.ELEMENT_NODE &&
           child.nodeName === 'ph'
@@ -131,7 +134,10 @@ export class XliffFormatter implements Formatter {
               `Expected <${child.nodeName}> to have exactly one text node`
             );
           }
-          contents.push({untranslatable: phText.nodeValue || ''});
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'id')
+          );
+          contents.push({untranslatable: phText.nodeValue || '', index});
         } else {
           throw new KnownError(
             `Unexpected node in <trans-unit>: ${child.nodeType} ${child.nodeName}`

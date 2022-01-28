@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- [#2405](https://github.com/lit/lit/pull/2405) [`4a4afa7b`](https://github.com/lit/lit/commit/4a4afa7bd394938102d8604ec6aff2e9eaf17c88) - **BREAKING** Update analysis to consider messages with same id **and** description to be identical (but no longer checks for expressions to be same) and improve error message on finding incompatible duplicates.
+
+  `lit-localize extract` will now error if multiple messages had the same text but different `desc` option. Be sure to add the same `desc` option for these messages to be considered the same translatable message or add different `id` options to differentiate them.
+
+- [#2405](https://github.com/lit/lit/pull/2405) [`4a4afa7b`](https://github.com/lit/lit/commit/4a4afa7bd394938102d8604ec6aff2e9eaf17c88) - **BREAKING** (XLB format only) Add index to `name` attribute for `<ph>` tags for tracking placeholder locations.
+
+  XLB format users should run `lit-localize extract` to regenerate the `.xlb` file for the source locale and make sure the `<ph>` tags in other locale files have matching `name` attribute values to that of the newly generated source file.
+
+### Patch Changes
+
+- [#2402](https://github.com/lit/lit/pull/2402) [`a638841d`](https://github.com/lit/lit/commit/a638841d8ba76e43cf83a2516e2cfc7a9c2ce27e) - Trivial: reformat markdown files
+
 ## 0.5.0
 
 ### Minor Changes

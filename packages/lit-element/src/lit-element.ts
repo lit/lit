@@ -5,15 +5,15 @@
  */
 
 /**
- * The main LitElement module, which defines the [[`LitElement`]] base class and
- * related APIs.
+ * The main LitElement module, which defines the {@linkcode LitElement} base
+ * class and related APIs.
  *
  *  LitElement components can define a template and a set of observed
  * properties. Changing an observed property triggers a re-render of the
  * element.
  *
- *  Import [[`LitElement`]] and [[`html`]] from this module to create a
- * component:
+ *  Import {@linkcode LitElement} and {@linkcode html} from this module to
+ * create a component:
  *
  *  ```js
  * import {LitElement, html} from 'lit-element';
@@ -40,9 +40,9 @@
  * customElements.define('my-element', MyElement);
  * ```
  *
- * `LitElement` extends [[`ReactiveElement`]] and adds lit-html templating.
- * The `ReactiveElement` class is provided for users that want to build
- * their own custom element base classes that don't use lit-html.
+ * `LitElement` extends {@linkcode ReactiveElement} and adds lit-html
+ * templating. The `ReactiveElement` class is provided for users that want to
+ * build their own custom element base classes that don't use lit-html.
  *
  * @packageDocumentation
  */
@@ -81,7 +81,8 @@ if (DEV_MODE) {
  *
  * To define a component, subclass `LitElement` and implement a
  * `render` method to provide the component's template. Define properties
- * using the [[`properties`]] property or the [[`property`]] decorator.
+ * using the {@linkcode LitElement.properties properties} property or the
+ * {@linkcode property} decorator.
  */
 export class LitElement extends ReactiveElement {
   /**
@@ -269,7 +270,7 @@ export const _$LE = {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
-(globalThis.litElementVersions ??= []).push('3.1.1');
+(globalThis.litElementVersions ??= []).push('3.1.2');
 if (DEV_MODE && globalThis.litElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

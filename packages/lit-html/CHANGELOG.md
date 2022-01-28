@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.1.2
+
+### Patch Changes
+
+- [#2399](https://github.com/lit/lit/pull/2399) [`5ac025bf`](https://github.com/lit/lit/commit/5ac025bf9610adb7069ef8d88ed6bd96ff730f2f) - Correct typo in `async-directive` module comment
+
+- [#2410](https://github.com/lit/lit/pull/2410) [`b9a6962b`](https://github.com/lit/lit/commit/b9a6962b84c841eaabd5c4cbf8687ff34dbfe511) - Correct the link path of CONTRIBUTING.md in README.md files
+
 ## 2.1.1
 
 ### Patch Changes

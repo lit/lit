@@ -38,28 +38,28 @@ const appModuleImport = loader.importModule(
  * string.
  */
 const setup = async () => {
-  const appModule = (await appModuleImport).module;
+  const namespace = (await appModuleImport).module
+    .namespace as typeof testModule;
 
-  /** Joins an AsyncIterable into a string */
-  const collectResult = async (iterable: AsyncIterable<string>) => {
+  /** Joins an iterable into a string */
+  const collectResult = (iterable: Iterable<string>) => {
     let result = '';
-    for await (const chunk of iterable) {
+    for (const chunk of iterable) {
       result += chunk;
     }
     return result;
   };
 
   return {
-    ...(appModule.namespace as typeof testModule),
+    ...namespace,
 
     /** Renders the value with declarative shadow roots */
     render(r: any, renderInfo?: Partial<RenderInfo>) {
-      return collectResult(appModule.namespace.render(r, renderInfo));
+      return collectResult(namespace.render(r, renderInfo));
     },
 
     /** Renders the value with flattened shadow roots */
-    renderFlattened: (r: any) =>
-      collectResult(appModule.namespace.render(r, undefined, true)),
+    renderFlattened: (r: any) => collectResult(namespace.render(r, undefined)),
   };
 };
 

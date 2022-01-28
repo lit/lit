@@ -27,6 +27,12 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      # Changeset uses prettier@1 which creates unstable formatting issues
+      # Deleting this forces fallback to our version of prettier
+      # https://github.com/changesets/changesets/issues/616
+      - name: Remove old version of prettier from changesets
+        run: rm -rf node_modules/@changesets/*/node_modules/prettier
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@master
@@ -63,10 +69,12 @@ jobs:
           # Checkout the empty root commit (with tag `empty`).
           git checkout --detach empty
           # Copy in all of the bundles.
-          cp ../packages/lit/lit.all.min.js .
-          cp ../packages/lit/lit.all.min.js.map .
-          cp ../packages/lit/lit.min.js .
-          cp ../packages/lit/lit.min.js.map .
+          mkdir all
+          cp ../packages/lit/lit.all.min.js all
+          cp ../packages/lit/lit.all.min.js.map all
+          mkdir core
+          cp ../packages/lit/lit.min.js core
+          cp ../packages/lit/lit.min.js.map core
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Robot"

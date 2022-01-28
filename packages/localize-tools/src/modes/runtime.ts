@@ -228,17 +228,7 @@ function makeMessageString(
   const placeholderOrderKey = (
     placeholder: Placeholder,
     placeholderRelativeExpressionIdx: number
-  ) =>
-    JSON.stringify([
-      // TODO(aomarks) For XLIFF files, we have a unique numeric ID for each
-      // placeholder that would be preferable to use as the key here over the
-      // placeholder text itself. However, we don't currently have that ID for
-      // XLB. To add it to XLB, we need to do some research into the correct XML
-      // representation, and then make a breaking change. See
-      // https://github.com/lit/lit/issues/1897.
-      placeholder.untranslatable,
-      placeholderRelativeExpressionIdx,
-    ]);
+  ) => JSON.stringify([placeholder.index, placeholderRelativeExpressionIdx]);
 
   let absIdx = 0;
   for (const content of canon.contents) {
