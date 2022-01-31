@@ -7,7 +7,12 @@
 import {assert} from '@esm-bundle/chai';
 import type {Test1, Child1, Child2} from './router_test_code.js';
 
-suite('Router', () => {
+const canTest =
+  window.ShadowRoot &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  !(window as any).ShadyDOM?.inUse;
+
+(canTest ? suite : suite.skip)('Router', () => {
   let container: HTMLIFrameElement;
 
   setup(async () => {
