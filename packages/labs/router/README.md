@@ -172,7 +172,7 @@ or dynamically install new routes:
     const dynamicRoute = getDynamicRoute(path);
     if (dynamicRoute) {
       const {routes} = this._router;
-      routes.splice(routes.langth - 1, 0, dynamicRoute);
+      routes.splice(routes.length - 1, 0, dynamicRoute);
       // Trigger the router again
       await this._router.goto('/' + path);
       // Reject this route so the dynamic one is matched
