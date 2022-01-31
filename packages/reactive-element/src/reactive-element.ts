@@ -334,10 +334,10 @@ export abstract class ReactiveElement
    *
    * ```ts
    * // Enable for all ReactiveElement subclasses
-   * ReactiveElement.enableWarning.?('migration');
+   * ReactiveElement.enableWarning?.('migration');
    *
    * // Enable for only MyElement and subclasses
-   * MyElement.enableWarning.?('migration');
+   * MyElement.enableWarning?.('migration');
    * ```
    *
    * @nocollapse
@@ -353,10 +353,10 @@ export abstract class ReactiveElement
    *
    * ```ts
    * // Disable for all ReactiveElement subclasses
-   * ReactiveElement.disableWarning.?('migration');
+   * ReactiveElement.disableWarning?.('migration');
    *
    * // Disable for only MyElement and subclasses
-   * MyElement.disableWarning.?('migration');
+   * MyElement.disableWarning?.('migration');
    * ```
    *
    * @nocollapse
@@ -964,6 +964,14 @@ export abstract class ReactiveElement
 
   /**
    * Synchronizes property values when attributes change.
+   *
+   * Specifically, when an attribute is set, the corresponding property is set.
+   * You should rarely need to implement this callback. If this method is
+   * overridden, `super.attributeChangedCallback(name, _old, value)` must be
+   * called.
+   *
+   * See [using the lifecycle callbacks](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks)
+   * on MDN for more information about the `attributeChangedCallback`.
    * @category attributes
    */
   attributeChangedCallback(
@@ -1232,6 +1240,24 @@ export abstract class ReactiveElement
   }
 
   /**
+   * Invoked before `update()` to compute values needed during the update.
+   *
+   * Implement `willUpdate` to compute property values that depend on other
+   * properties and are used in the rest of the update process.
+   *
+   * ```ts
+   * willUpdate(changedProperties) {
+   *   // only need to check changed properties for an expensive computation.
+   *   if (changedProperties.has('firstName') || changedProperties.has('lastName')) {
+   *     this.sha = computeSHA(`${this.firstName} ${this.lastName}`);
+   *   }
+   * }
+   *
+   * render() {
+   *   return html`SHA: ${this.sha}`;
+   * }
+   * ```
+   *
    * @category updates
    */
   protected willUpdate(_changedProperties: PropertyValues): void {}
@@ -1363,6 +1389,12 @@ export abstract class ReactiveElement
   /**
    * Invoked when the element is first updated. Implement to perform one time
    * work on the element after update.
+   *
+   * ```ts
+   * firstUpdated() {
+   *   this.renderRoot.getElementById('my-text-area').focus();
+   * }
+   * ```
    *
    * Setting properties inside this method will trigger the element to update
    * again after this update cycle completes.
