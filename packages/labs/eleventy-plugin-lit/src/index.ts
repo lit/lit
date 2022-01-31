@@ -4,8 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// Note this file must be CommonJS for compatibility with Eleventy, but we can't
+// rely on TypeScript's CommonJS output mode, because that will also convert
+// dynamic import() calls to require() calls. That would be bad, because we need
+// to import ES modules from @lit-labs/ssr, which requires preserved import()
+// calls.
+//
+// So instead we use TypeScript's ESM output mode, but explicitly write
+// require() calls for the CommonJS modules we import.
+//
+// See https://github.com/microsoft/TypeScript/issues/43329 for more details.
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const path = require('path');
+const path = require('path') as typeof import('path');
 
 type LitPluginOptions = {
   componentModules?: string[];
