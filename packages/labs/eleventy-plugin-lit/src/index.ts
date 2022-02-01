@@ -34,6 +34,7 @@ module.exports = {
         if (!outputPath.endsWith('.html')) {
           return content;
         }
+
         const render = (
           await import('@lit-labs/ssr/lib/render-with-global-dom-shim.js')
         ).render;
@@ -48,18 +49,18 @@ module.exports = {
             (module) => import(path.resolve(process.cwd(), module))
           )
         );
-        let head, body, tail;
-        const page = content.match(/(.*)(<body.*<\/body>)(.*)/);
-        if (page) {
-          [head, body, tail] = page;
-        } else {
-          head = `<html><head></head>`;
-          body = `<body>${content}</body>`;
-          tail = `</html>`;
-        }
-        return (
-          head + iterableToString(render(html`${unsafeHTML(body)}`)) + tail
-        );
+
+        const rendered = iterableToString(render(html`${unsafeHTML(content)}`));
+        // Lit SSR includes special comment markers around templates to identify
+        // them during hydration. However, it's not possible for the top-level
+        // template that we've just rendered to ever be hydrated, because it was
+        // only defined ephemerally right now. So the comments serve no purpose
+        // in this case and can be removed. This also avoids the issue of
+        // comments appearing before <!doctype> declarations.
+        const outerMarkersTrimmed = rendered
+          .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
+          .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+        return outerMarkersTrimmed;
       }
     );
   },
