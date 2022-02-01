@@ -6,7 +6,7 @@
 
 import * as ReactModule from 'react';
 
-type Constructor<I> = { new(): I };
+type Constructor<I> = {new (): I};
 type CustomEventListener = (e: CustomEvent) => void;
 type EventListeners = EventListener | CustomEventListener;
 type Events<R> = {
@@ -138,9 +138,9 @@ export const createComponent = <
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type ElementPropsWithoutHTML = Partial<
     Omit<I, keyof HTMLElement | ReservedReactProperties> & Events<R>
-  >
-  type UserProps = ElementPropsWithoutHTML
-    & React.PropsWithRef<React.HTMLAttributes<I>>;
+  >;
+  type UserProps = ElementPropsWithoutHTML &
+    React.PropsWithRef<React.HTMLAttributes<I>>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -163,8 +163,8 @@ export const createComponent = <
         // rare.
         console.warn(
           `${tagName} contains property ${p} which is a React ` +
-          `reserved property. It will be used by React and not set on ` +
-          `the element.`
+            `reserved property. It will be used by React and not set on ` +
+            `the element.`
         );
       } else {
         elementClassProps.add(p);
@@ -174,7 +174,7 @@ export const createComponent = <
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
-    private _elementProps!: Record<string, unknown>;
+    private _elementProps!: Partial<ComponentProps>;
     private _userRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
@@ -192,7 +192,7 @@ export const createComponent = <
           this._element,
           prop,
           this.props[prop] as unknown,
-          oldProps ? oldProps[prop] as unknown : undefined,
+          oldProps ? (oldProps[prop] as unknown) : undefined,
           eventNames
         );
       }
@@ -244,13 +244,13 @@ export const createComponent = <
       // Filters class properties out and passes the remaining
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
-      const props: Record<string, unknown> = { ref: this._ref };
+      const props: Record<string, unknown> = {ref: this._ref};
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
       for (const [k, v] of Object.entries(this.props)) {
         if (elementClassProps.has(k)) {
-          this._elementProps[k] = v;
+          this._elementProps[k as keyof ComponentProps] = v;
           continue;
         }
         // React does *not* handle `className` for custom elements so
@@ -264,7 +264,7 @@ export const createComponent = <
   const ForwardedComponent = React.forwardRef<I, UserProps>((props, ref) =>
     createElement<ComponentProps>(
       ReactComponent,
-      { ...props, __forwardedRef: ref },
+      {...props, __forwardedRef: ref},
       props?.children
     )
   );
