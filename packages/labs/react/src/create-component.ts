@@ -35,7 +35,7 @@ const listenedEvents: WeakMap<
 
 /**
  * Adds an event listener for the specified event to a given node.
- * 
+ *
  * React expects one event listener per event. To mirror this behavior,
  * the most recent event listeners are cached in listenedEvents.
  * When an event listener updates, the previously cached event listener
@@ -243,7 +243,7 @@ export const createComponent = <
           this._userRef = userRef;
         };
       }
-      
+
       // Filters class properties out and passes the remaining
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
