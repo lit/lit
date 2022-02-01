@@ -34,10 +34,12 @@ const listenedEvents: WeakMap<
 > = new WeakMap();
 
 /**
- * Adds an event listener for the specified event to the given node. In the
- * React setup, there should only ever be one event listener. Thus, for
- * efficiency only one listener is added and the handler for that listener is
- * updated to point to the given listener function.
+ * Adds an event listener for the specified event to a given node.
+ * 
+ * React expects one event listener per event. To mirror this behavior,
+ * the most recent event listeners are cached in listenedEvents.
+ * When an event listener updates, the previously cached event listener
+ * is removed before adding the updated event listener.
  */
 const addOrUpdateEventListener = (
   node: Element,
@@ -241,6 +243,7 @@ export const createComponent = <
           this._userRef = userRef;
         };
       }
+      
       // Filters class properties out and passes the remaining
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
@@ -255,7 +258,8 @@ export const createComponent = <
           continue;
         }
         // React does *not* handle `className` for custom elements so
-        // coerce it to `class` so it's handled correctly.
+        // coerce it to `class` and props is typecasted
+        // as Record<string, unknown> so it's handled correctly.
         props[k === 'className' ? 'class' : k] = v;
       }
       return createElement(tagName, props);
