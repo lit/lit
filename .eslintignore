@@ -75,7 +75,6 @@ packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
 packages/lit-html/async-directive.*
 packages/lit-html/polyfill-support.*
-packages/lit-html/polyfill-support-lite.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
@@ -139,6 +138,9 @@ packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
 packages/labs/eleventy-plugin-lit/index.*
+packages/labs/eleventy-plugin-lit/test/
+# Switches Node into module mode for tests
+!packages/labs/eleventy-plugin-lit/test/package.json
 
 packages/labs/motion/development/
 packages/labs/motion/test/
@@ -165,8 +167,10 @@ packages/labs/react/use-controller.*
 packages/labs/router/development/
 packages/labs/router/test/
 packages/labs/router/node_modules/
+packages/labs/router/lib/
 packages/labs/router/index.*
 packages/labs/router/router.*
+packages/labs/router/routes.*
 
 packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
