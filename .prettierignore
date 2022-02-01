@@ -75,6 +75,7 @@ packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
 packages/lit-html/async-directive.*
 packages/lit-html/polyfill-support.*
+packages/lit-html/polyfill-support-lite.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
