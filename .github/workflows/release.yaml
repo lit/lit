@@ -41,7 +41,7 @@ jobs:
           publish: npm run release
         env:
           HUSKY: 0
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Checkout dist repo
@@ -69,10 +69,12 @@ jobs:
           # Checkout the empty root commit (with tag `empty`).
           git checkout --detach empty
           # Copy in all of the bundles.
-          cp ../packages/lit/lit.all.min.js .
-          cp ../packages/lit/lit.all.min.js.map .
-          cp ../packages/lit/lit.min.js .
-          cp ../packages/lit/lit.min.js.map .
+          mkdir all
+          cp ../packages/lit/lit.all.min.js all/lit-all.min.js
+          cp ../packages/lit/lit.all.min.js.map all/lit-all.min.js
+          mkdir core
+          cp ../packages/lit/lit.min.js core/lit-core.min.js
+          cp ../packages/lit/lit.min.js.map core/lit-core.min.js
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Robot"

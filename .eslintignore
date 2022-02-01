@@ -134,6 +134,14 @@ packages/ts-transformers/*.js.map
 packages/ts-transformers/*.d.ts
 packages/ts-transformers/internal/
 packages/ts-transformers/tests/
+packages/labs/eleventy-plugin-lit/development/
+packages/labs/eleventy-plugin-lit/demo/_site/
+packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
+packages/labs/eleventy-plugin-lit/index.*
+packages/labs/eleventy-plugin-lit/test/
+# Switches Node into module mode for tests
+!packages/labs/eleventy-plugin-lit/test/package.json
+
 packages/labs/motion/development/
 packages/labs/motion/test/
 packages/labs/motion/node_modules/
@@ -159,8 +167,10 @@ packages/labs/react/use-controller.*
 packages/labs/router/development/
 packages/labs/router/test/
 packages/labs/router/node_modules/
+packages/labs/router/lib/
 packages/labs/router/index.*
 packages/labs/router/router.*
+packages/labs/router/routes.*
 
 packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/

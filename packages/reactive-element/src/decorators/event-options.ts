@@ -30,7 +30,7 @@ import {decorateProperty} from './base.js';
  *
  *   render() {
  *     return html`
- *       <div @click=${this._onClick}`>
+ *       <div @click=${this._onClick}>
  *         <button></button>
  *       </div>
  *     `;
