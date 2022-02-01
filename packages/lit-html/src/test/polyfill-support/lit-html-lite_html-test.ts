@@ -154,6 +154,20 @@ suite('polyfill-support-lite', () => {
   });
 
   suite('lit shadow', () => {
+    const assertSlottedChildren = (
+      container: Element,
+      count?: number,
+      slotName = ''
+    ) => {
+      const nodes = Array.from(container.children);
+      if (count !== undefined) {
+        assert.equal(nodes.length, count);
+      }
+      nodes.forEach((n) => {
+        assert.equal(n.getAttribute('slot') ?? '', slotName);
+      });
+    };
+
     test('renders litShadow', () => {
       renderLitShadow(html`<div>shadow</div>`, container);
       render(html`<div>light</div>`, container);
@@ -190,78 +204,93 @@ suite('polyfill-support-lite', () => {
       assert.equal(host.children.length, 1);
       renderLight();
       assert.equal(host.children.length, 7);
-      // renderShadow();
-      // flush();
+      // can wait a beat to assert
       await nextFrame();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 6);
+      assertSlottedChildren(slotContainer, 6);
       renderLight(5);
       await nextFrame();
-      // flush();
-      // renderShadow();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 15);
+      assertSlottedChildren(slotContainer, 15);
       renderLight(0);
       await nextFrame();
-      // flush();
-      // renderShadow();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 0);
+      assertSlottedChildren(slotContainer, 0);
       renderLight(10);
-      flush();
-      // renderShadow();
       await nextFrame();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 30);
+      assertSlottedChildren(slotContainer, 30);
       renderLight(4);
-      // flush();
-      // renderShadow();
       await nextFrame();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 12);
+      assertSlottedChildren(slotContainer, 12);
       // distributes when shadow renders
       renderLight(2);
       renderShadow();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 6);
+      assertSlottedChildren(slotContainer, 6);
       // distributes when flushed
-      // distributes when shadow renders
       renderLight(6);
       flush();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 18);
+      assertSlottedChildren(slotContainer, 18);
     });
 
     test('renders litSlot into named slot', async () => {
       const host = container;
-      const slotName = 'special';
+      const specialSlot = 'special';
       const renderLight = (count = 2) => {
         render(
           html`${map(
             range(count),
-            (i) => html`<div slot=${i % 2 ? slotName : ''} id=${i}>${i}</div>`
+            (i) => html`
+              <div slot=${i % 2 ? specialSlot : ''} id="${i}.1">${i}.1</div>
+              <div slot=${i % 2 ? '' : specialSlot} id="${i}.2">${i}.2</div>`
           )}`,
           host
         );
       };
-      const renderShadow = () => {
-        renderLitShadow(html`<div>${litSlot(slotName)}</div>`, host);
+      const renderShadow = (omitSpecial = false) => {
+        renderLitShadow(
+          html`
+          <div>${litSlot()}</div>
+          ${omitSpecial ? '' : html`<div>${litSlot(specialSlot)}</div>`}
+          `,
+          host
+        );
       };
       renderShadow();
       const slotContainer = host.firstElementChild!;
-      assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 0);
+      let specialSlotContainer = host.lastElementChild!;
+      assert.equal(host.children.length, 2);
+      assertSlottedChildren(slotContainer, 0);
+      assertSlottedChildren(specialSlotContainer, 0, specialSlot);
       renderLight();
       await nextFrame();
-      assert.equal(slotContainer.children.length, 1);
+      assertSlottedChildren(slotContainer, 2);
+      assertSlottedChildren(specialSlotContainer, 2, specialSlot);
       renderLight(6);
       await nextFrame();
-      assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 3);
+      assert.equal(host.children.length, 2);
+      assertSlottedChildren(slotContainer, 6);
+      assertSlottedChildren(specialSlotContainer, 6, specialSlot);
       renderLight(0);
       await nextFrame();
+      assert.equal(host.children.length, 2);
+      assertSlottedChildren(slotContainer, 0);
+      assertSlottedChildren(specialSlotContainer, 0, specialSlot);
+      renderLight();
+      await nextFrame();
+      // conditionally render "special" slot
+      renderShadow(true);
+      assertSlottedChildren(slotContainer, 2);
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 0);
+      await nextFrame();
+      renderShadow();
+      specialSlotContainer = host.lastElementChild!;
+      assertSlottedChildren(slotContainer, 2);
+      assertSlottedChildren(specialSlotContainer, 2, specialSlot);
+      assert.equal(host.children.length, 2);
     });
   });
 });
