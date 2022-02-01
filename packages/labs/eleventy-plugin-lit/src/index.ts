@@ -13,7 +13,8 @@
 // So instead we use TypeScript's ESM output mode, but explicitly write
 // require() calls for the CommonJS modules we import.
 //
-// See https://github.com/microsoft/TypeScript/issues/43329 for more details.
+// See https://github.com/microsoft/TypeScript/issues/43329 and
+// https://github.com/microsoft/TypeScript#22321 for more details.
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path') as typeof import('path');
