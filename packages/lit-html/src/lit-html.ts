@@ -1079,6 +1079,10 @@ export type Part =
   | ElementPart
   | EventPart;
 
+interface ChildNodeWithPart extends ChildNode {
+  _$litChildPart$?: ChildPart;
+}
+
 export type {ChildPart};
 class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
@@ -1087,7 +1091,7 @@ class ChildPart implements Disconnectable {
   /** @internal */
   __directive?: Directive;
   /** @internal */
-  _$startNode: ChildNode;
+  _$startNode: ChildNodeWithPart;
   /** @internal */
   _$endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
@@ -1125,7 +1129,7 @@ class ChildPart implements Disconnectable {
   _$reparentDisconnectables?(parent: Disconnectable): void;
 
   constructor(
-    startNode: ChildNode,
+    startNode: ChildNodeWithPart,
     endNode: ChildNode | null,
     parent: TemplateInstance | ChildPart | undefined,
     options: RenderOptions | undefined
@@ -1133,8 +1137,7 @@ class ChildPart implements Disconnectable {
     this._$startNode = startNode;
     // Reference from mode marker back to the part itself. Useful for finding
     // a part associated with a marker.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this._$startNode as any)['_$litChildPart$'] = this;
+    this._$startNode['_$litChildPart$'] = this;
     this._$endNode = endNode;
     this._$parent = parent;
     this.options = options;
@@ -1243,21 +1246,56 @@ class ChildPart implements Disconnectable {
    * @returns inserted node
    */
   _$insert<T extends Node>(node: T, ref = this._$endNode) {
-    const insertedNodes =
+    this._trackInsertedNodes(
       node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-        ? wrap(node).childNodes
-        : [node];
-    if (ref !== this._$endNode && ref) {
-      const i = this._$insertedNodes.indexOf(ref);
-      if (i > -1) {
-        this._$insertedNodes.splice(i, 0, ...insertedNodes);
-      } else {
-        console.warn('Ref node not in insertedNodes');
-      }
-    } else {
-      this._$insertedNodes.push(...insertedNodes);
-    }
+        ? Array.from(wrap(node).childNodes)
+        : [node],
+      ref
+    );
     return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
+  }
+
+  private _trackInsertedNodes(nodes: Node[], ref: Node | null) {
+    // Note, for node tracking, we want to record the minimum info possible
+    // so if a node is added that is a part marker, do not record its
+    // insertedNodes.
+    let skipTo: Node | undefined = undefined;
+    const toInsert = nodes.filter((n) => {
+      if (skipTo !== undefined) {
+        if (n === skipTo) {
+          skipTo = undefined;
+        }
+        return false;
+      }
+      skipTo = this._$partForNode(n)?._$getLastInsertedNode();
+      return true;
+    });
+    const i =
+      ref === this._$endNode ? Infinity : this._$insertedNodes.indexOf(ref!);
+    this._$insertedNodes.splice(i < 0 ? Infinity : i, 0, ...toInsert);
+  }
+
+  // TODO: `.at(-1)` is nice for this but it's very recent.
+  /**
+   * Returns the last inserted node.
+   * @internal
+   *
+   * @returns Node|undefined
+   */
+  _$getLastInsertedNode() {
+    return this._$insertedNodes[this._$insertedNodes.length - 1];
+  }
+
+  /**
+   * Returns the ChildPart associated with the node. This will return the part
+   * if the node is its start marker.
+   * @internal
+   *
+   * @param node
+   * @returns ChildPart|undefined
+   */
+  _$partForNode(node: Node) {
+    return (node as ChildNodeWithPart)['_$litChildPart$'];
   }
 
   private _commitNode(value: Node): void {
@@ -1416,14 +1454,12 @@ class ChildPart implements Disconnectable {
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
       this._$clear(
+        // TODO: is it problematic to use nextSibling here v. the next
+        // insertedNode; maybe not since if it's relevant, it'll be a marker
+        // which is in insertedNodes?
         itemPart && wrap(itemPart._$endNode!).nextSibling,
         partIndex
       );
-      // if (itemPart) {
-      //   const i = this._$insertedNodes.indexOf(itemPart._$endNode!);
-      //   const clearFromNode = i > -1 ? this._$insertedNodes[i + 1] : null;
-      //   this._$clear((clearFromNode as ChildNode) ?? null, partIndex);
-      // }
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1445,85 +1481,25 @@ class ChildPart implements Disconnectable {
     from?: number
   ) {
     this._$notifyConnectionChanged?.(false, true, from);
-    let shouldClear = false;
-    let clearIndex = 0;
-    // TODO: seems like we need to remove these nodes from our parent part??!!??
-    const nodesToClear = this._$insertedNodes.filter((n, i) => {
-      if (n === start) {
-        clearIndex = i;
-        shouldClear = true;
-      }
-      return shouldClear;
-    });
-    this._removeNodesFromParent(nodesToClear);
-    nodesToClear.forEach((n) => {
-      if (n.nodeType === Node.COMMENT_NODE) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const part = (n as any)['_$litChildPart$'];
-        if (part !== undefined) {
-          part._$clear();
-        }
-      }
-      (wrap(n!) as Element).remove();
-    });
-    this._$insertedNodes.splice(clearIndex);
-    // while (start && start !== this._$endNode) {
-    //   const n = wrap(start!).nextSibling;
-    //   (wrap(start!) as Element).remove();
-    //   start = n;
-    // }
-  }
-
-  _getParentPart(): ChildPart | undefined {
-    let p = this._$parent;
-    while (p !== undefined) {
-      if ((p as ChildPart)._$insertedNodes !== undefined) {
-        return p as ChildPart;
-      }
-      p = p._$parent;
+    const i = this._$insertedNodes.indexOf(start!);
+    if (i >= 0) {
+      // Retain before index and clear deleted items.
+      this._$insertedNodes.splice(i).forEach((n) => {
+        this._$partForNode(n)?._$clear();
+        (wrap(n!) as Element).remove();
+      });
     }
-    return undefined;
-  }
-
-  _removeNodesFromParent(nodes: Node[]) {
-    const parent = this._getParentPart();
-    if (!parent) {
-      return;
-    }
-    parent._removeNodesFromParent(nodes);
-    // TODO: this is n x m
-    parent._$insertedNodes = parent._$insertedNodes.filter(
-      (n) => !nodes.includes(n)
-    );
   }
 
   _$getInsertedNodes(deep = false): Node[] {
     return deep
       ? this._$insertedNodes.flatMap((n) => [
           n,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ...((n as any)['_$litChildPart$']?._$getInsertedNodes(true) ?? []),
+          ...(this._$partForNode(n)?._$getInsertedNodes(deep) ?? []),
         ])
       : this._$insertedNodes;
   }
-  // _$clear(
-  //   start: ChildNode | null = wrap(this._$startNode).nextSibling,
-  //   from?: number
-  // ) {
-  //   // const startIndex = Math.max(this._$insertedNodes.indexOf(start as Node), 0);
-  //   // const n = this._$insertedNodes[startIndex] ?? this._$endNode;
-  //   // if (start !== n) {
-  //   //   //debugger;
-  //   //   console.warn('clear mismatch', start, n);
-  //   // }
-  //   this._$notifyConnectionChanged?.(false, true, from);
-  //   while (start && start !== this._$endNode) {
-  //     const n = wrap(start!).nextSibling;
-  //     (wrap(start!) as Element).remove();
-  //     start = n;
-  //   }
-  //   // this._$insertedNodes.splice(startIndex);
-  // }
+
   /**
    * Implementation of RootPart's `isConnected`. Note that this metod
    * should only be called on `RootPart`s (the `ChildPart` returned from a

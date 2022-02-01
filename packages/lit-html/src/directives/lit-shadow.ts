@@ -98,30 +98,30 @@ export const getLightChildNodes = (host: HTMLElement, validate = false) => {
     }
     if (validate) {
       childNodes.length = 0;
+      let skipTo: Node | undefined = undefined;
+      let lightPart: ChildPart | undefined;
       // Record nodes starting after the shadow end node minus lit part marker.
       // This allows parts to continue to function in the same location.
       // For part markers add the nodes inserted in the part, which may not
       // physically be there if they've been distributed to a `litSlot`.
       for (let n = shadowPart.endNode!.nextSibling; n; n = n.nextSibling) {
+        if (skipTo !== undefined) {
+          if (n === skipTo) {
+            skipTo = undefined;
+          }
+          continue;
+        }
         if (n.nodeType !== Node.COMMENT_NODE) {
           childNodes.push(n);
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const part = (n as any)['_$litChildPart$'] as ChildPart;
-          if (part !== undefined) {
-            const partNodes = part._$getInsertedNodes();
-            childNodes.push(
-              ...partNodes.filter((n) => n.nodeType !== Node.COMMENT_NODE)
-            );
-          }
+        } else if ((lightPart = shadowPart._$partForNode(n)) !== undefined) {
+          childNodes.push(
+            ...(lightPart
+              ._$getInsertedNodes(true)
+              .filter((x) => x.nodeType !== Node.COMMENT_NODE) ?? [])
+          );
+          skipTo = lightPart._$getLastInsertedNode();
         }
       }
-      // TODO: ug bad for perf...
-      // unique-ify inserted nodes, can be duplicated between parts
-      const uniqueNodes = Array.from(new Set(childNodes));
-      childNodes.length = 0;
-      childNodes.push(...uniqueNodes);
-      console.log(childNodes);
     }
   }
   return childNodes ?? [];

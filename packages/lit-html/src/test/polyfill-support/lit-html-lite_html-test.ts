@@ -170,7 +170,14 @@ suite('polyfill-support-lite', () => {
       const host = container;
       const renderLight = (count = 2) => {
         render(
-          html`${map(range(count), (i) => html`<div id=${i}>${i}</div>`)}`,
+          html`${map(
+            range(count),
+            (i) =>
+              html`
+                <div id="${i}.1">${i}.1</div>
+                <div id="${i}.2">${i}.2</div>
+                <div id="${i}.3">${i}.3</div>`
+          )}`,
           host
         );
       };
@@ -182,18 +189,18 @@ suite('polyfill-support-lite', () => {
       assert.equal(slotContainer.children.length, 0);
       assert.equal(host.children.length, 1);
       renderLight();
-      assert.equal(host.children.length, 3);
+      assert.equal(host.children.length, 7);
       // renderShadow();
       // flush();
       await nextFrame();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 2);
+      assert.equal(slotContainer.children.length, 6);
       renderLight(5);
       await nextFrame();
       // flush();
       // renderShadow();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 5);
+      assert.equal(slotContainer.children.length, 15);
       renderLight(0);
       await nextFrame();
       // flush();
@@ -205,24 +212,24 @@ suite('polyfill-support-lite', () => {
       // renderShadow();
       await nextFrame();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 10);
+      assert.equal(slotContainer.children.length, 30);
       renderLight(4);
       // flush();
       // renderShadow();
       await nextFrame();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 4);
+      assert.equal(slotContainer.children.length, 12);
       // distributes when shadow renders
       renderLight(2);
       renderShadow();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 2);
+      assert.equal(slotContainer.children.length, 6);
       // distributes when flushed
       // distributes when shadow renders
       renderLight(6);
       flush();
       assert.equal(host.children.length, 1);
-      assert.equal(slotContainer.children.length, 6);
+      assert.equal(slotContainer.children.length, 18);
     });
 
     test('renders litSlot into named slot', async () => {
