@@ -192,7 +192,7 @@ export const createComponent = <
           this._element,
           prop,
           this.props[prop],
-          oldProps ? (oldProps[prop]) : undefined,
+          oldProps ? oldProps[prop] : undefined,
           eventNames
         );
       }
@@ -248,7 +248,8 @@ export const createComponent = <
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
-      for (const [k, v] of Object.entries(this.props)) {
+      for (const k in this.props) {
+        const v = this.props[k];
         if (elementClassProps.has(k)) {
           this._elementProps[k as keyof ComponentProps] = v;
           continue;
