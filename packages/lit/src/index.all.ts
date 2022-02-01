@@ -33,7 +33,7 @@ export * from './directives/when.js';
 export {
   html as staticHtml,
   literal,
-  svg as staticSVG,
+  svg as staticSvg,
   unsafeStatic,
   withStatic,
 } from './static-html.js';
