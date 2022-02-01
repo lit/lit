@@ -117,6 +117,10 @@
       "development": "./development/polyfill-support.js",
       "default": "./polyfill-support.js"
     },
+    "./polyfill-support-lite.js": {
+      "development": "./development/polyfill-support-lite.js",
+      "default": "./polyfill-support-lite.js"
+    },
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"
@@ -134,13 +138,13 @@
     "build:version-stability-test": "rollup -c rollup-version-stability-test.config.js",
     "check-version": "node scripts/check-version-tracker.js",
     "checksize": "rollup -c --environment=CHECKSIZE",
-    "clean": "rm -rf {async-directive,directive-helpers,directive,experimental-hydrate,lit-html,polyfill-support,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ version-stability-test/ *.tsbuildinfo",
+    "clean": "rm -rf {async-directive,directive-helpers,directive,experimental-hydrate,lit-html,polyfill-support,polyfill-support-lite,private-ssr-support,static}.{js,js.map,d.ts} test/ directives/ development/ version-stability-test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "prepublishOnly": "npm run check-version",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../tests && npx wtr '../lit-html/development/**/*_test.(js|html)'",
     "test:prod": "MODE=prod npm run test:dev -- '../lit-html/src/test/version-stability_test.js'",
-    "test:watch": "npm run test:dev -- --watch"
+    "test:watch": "BROWSERS=chromium npm run test:dev -- --watch"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
@@ -149,6 +153,7 @@
     "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
     "/lit-html.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support-lite.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
     "/static.{d.ts,d.ts.map,js,js.map}",
     "/development/",

@@ -275,7 +275,8 @@ export interface CompiledTemplateResult {
   values: unknown[];
 }
 
-export interface CompiledTemplate extends Omit<Template, 'el'> {
+export interface CompiledTemplate
+  extends Omit<Template, 'el' | 'elementPartCallback' | 'getTemplateInfo'> {
   // el is overridden to be optional. We initialize it on first render
   el?: HTMLTemplateElement;
 
@@ -694,12 +695,14 @@ class Template {
     let node: Node | null;
     let nodeIndex = 0;
     let attrNameIndex = 0;
-    const partCount = strings.length - 1;
     const parts = this.parts;
-
-    // Create template element
-    const [html, attrNames] = getTemplateHtml(strings, type);
-    this.el = Template.createElement(html, options);
+    // Get config info for template
+    const [el, attrNames, partCount] = this.getTemplateInfo(
+      strings,
+      type,
+      options
+    );
+    this.el = el;
     walker.currentNode = this.el.content;
 
     // Reparent SVG nodes into template root
@@ -816,6 +819,14 @@ class Template {
             (node as Element).append(strings[lastIndex], createMarker());
           }
         }
+        // Note, this must be coordinated with `partCount`
+        const elementParts = this.elementPartCallback(
+          node as Element,
+          nodeIndex
+        );
+        if (elementParts !== undefined) {
+          parts.push(...elementParts);
+        }
       } else if (node.nodeType === 8) {
         const data = (node as Comment).data;
         if (data === markerMatch) {
@@ -833,6 +844,24 @@ class Template {
       }
       nodeIndex++;
     }
+  }
+
+  getTemplateInfo(
+    strings: TemplateStringsArray,
+    type: ResultType,
+    options?: RenderOptions
+  ): [HTMLTemplateElement, Array<string | undefined>, number] {
+    const [html, attrNames] = getTemplateHtml(strings, type);
+    const el = Template.createElement(html, options);
+    const partCount = strings.length - 1;
+    return [el, attrNames, partCount];
+  }
+
+  elementPartCallback(
+    _element: Element,
+    _index: number
+  ): TemplatePart[] | undefined {
+    return undefined;
   }
 
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
@@ -968,6 +997,7 @@ class TemplateInstance implements Disconnectable {
           );
         } else if (templatePart.type === ELEMENT_PART) {
           part = new ElementPart(node as HTMLElement, this, options);
+          part.__staticValue = templatePart.value;
         }
         this._parts.push(part);
         templatePart = parts[++partIndex];
@@ -991,7 +1021,12 @@ class TemplateInstance implements Disconnectable {
           // later in the loop, so increment it by part.strings.length - 2 here
           i += (part as AttributePart).strings!.length - 2;
         } else {
-          part._$setValue(values[i]);
+          if ((part as ElementPart).__staticValue !== undefined) {
+            part._$setValue((part as ElementPart).__staticValue);
+            i--;
+          } else {
+            part._$setValue(values[i]);
+          }
         }
       }
       i++;
@@ -1018,6 +1053,7 @@ type NodeTemplatePart = {
 type ElementTemplatePart = {
   readonly type: typeof ELEMENT_PART;
   readonly index: number;
+  value?: DirectiveResult;
 };
 type CommentTemplatePart = {
   readonly type: typeof COMMENT_PART;
@@ -1095,6 +1131,10 @@ class ChildPart implements Disconnectable {
     options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
+    // Reference from mode marker back to the part itself. Useful for finding
+    // a part associated with a marker.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this._$startNode as any)['_$litChildPart$'] = this;
     this._$endNode = endNode;
     this._$parent = parent;
     this.options = options;
@@ -1189,7 +1229,34 @@ class ChildPart implements Disconnectable {
     }
   }
 
-  private _insert<T extends Node>(node: T, ref = this._$endNode) {
+  /**
+   * List of nodes inserted into the part.
+   * @internal
+   */
+  _$insertedNodes: Node[] = [];
+
+  /**
+   * Inserts a node into the part.
+   *
+   * @param node
+   * @param ref
+   * @returns inserted node
+   */
+  _$insert<T extends Node>(node: T, ref = this._$endNode) {
+    const insertedNodes =
+      node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+        ? wrap(node).childNodes
+        : [node];
+    if (ref !== this._$endNode && ref) {
+      const i = this._$insertedNodes.indexOf(ref);
+      if (i > -1) {
+        this._$insertedNodes.splice(i, 0, ...insertedNodes);
+      } else {
+        console.warn('Ref node not in insertedNodes');
+      }
+    } else {
+      this._$insertedNodes.push(...insertedNodes);
+    }
     return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
   }
 
@@ -1223,7 +1290,7 @@ class ChildPart implements Disconnectable {
           throw new Error(message);
         }
       }
-      this._$committedValue = this._insert(value);
+      this._$committedValue = this._$insert(value);
     }
   }
 
@@ -1235,7 +1302,8 @@ class ChildPart implements Disconnectable {
       this._$committedValue !== nothing &&
       isPrimitive(this._$committedValue)
     ) {
-      const node = wrap(this._$startNode).nextSibling as Text;
+      //const node = wrap(this._$startNode).nextSibling as Text;
+      const node = this._$insertedNodes[0] as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
@@ -1243,6 +1311,7 @@ class ChildPart implements Disconnectable {
         value = this._textSanitizer(value);
       }
       (node as Text).data = value as string;
+      this._$insertedNodes = [node];
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         const textNode = document.createTextNode('');
@@ -1330,8 +1399,8 @@ class ChildPart implements Disconnectable {
         // https://github.com/lit/lit/issues/1266
         itemParts.push(
           (itemPart = new ChildPart(
-            this._insert(createMarker()),
-            this._insert(createMarker()),
+            this._$insert(createMarker()),
+            this._$insert(createMarker()),
             this,
             this.options
           ))
@@ -1350,6 +1419,11 @@ class ChildPart implements Disconnectable {
         itemPart && wrap(itemPart._$endNode!).nextSibling,
         partIndex
       );
+      // if (itemPart) {
+      //   const i = this._$insertedNodes.indexOf(itemPart._$endNode!);
+      //   const clearFromNode = i > -1 ? this._$insertedNodes[i + 1] : null;
+      //   this._$clear((clearFromNode as ChildNode) ?? null, partIndex);
+      // }
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1367,16 +1441,89 @@ class ChildPart implements Disconnectable {
    * @internal
    */
   _$clear(
-    start: ChildNode | null = wrap(this._$startNode).nextSibling,
+    start: ChildNode | null = (this._$insertedNodes[0] as ChildNode) ?? null,
     from?: number
   ) {
     this._$notifyConnectionChanged?.(false, true, from);
-    while (start && start !== this._$endNode) {
-      const n = wrap(start!).nextSibling;
-      (wrap(start!) as Element).remove();
-      start = n;
-    }
+    let shouldClear = false;
+    let clearIndex = 0;
+    // TODO: seems like we need to remove these nodes from our parent part??!!??
+    const nodesToClear = this._$insertedNodes.filter((n, i) => {
+      if (n === start) {
+        clearIndex = i;
+        shouldClear = true;
+      }
+      return shouldClear;
+    });
+    this._removeNodesFromParent(nodesToClear);
+    nodesToClear.forEach((n) => {
+      if (n.nodeType === Node.COMMENT_NODE) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const part = (n as any)['_$litChildPart$'];
+        if (part !== undefined) {
+          part._$clear();
+        }
+      }
+      (wrap(n!) as Element).remove();
+    });
+    this._$insertedNodes.splice(clearIndex);
+    // while (start && start !== this._$endNode) {
+    //   const n = wrap(start!).nextSibling;
+    //   (wrap(start!) as Element).remove();
+    //   start = n;
+    // }
   }
+
+  _getParentPart(): ChildPart | undefined {
+    let p = this._$parent;
+    while (p !== undefined) {
+      if ((p as ChildPart)._$insertedNodes !== undefined) {
+        return p as ChildPart;
+      }
+      p = p._$parent;
+    }
+    return undefined;
+  }
+
+  _removeNodesFromParent(nodes: Node[]) {
+    const parent = this._getParentPart();
+    if (!parent) {
+      return;
+    }
+    parent._removeNodesFromParent(nodes);
+    // TODO: this is n x m
+    parent._$insertedNodes = parent._$insertedNodes.filter(
+      (n) => !nodes.includes(n)
+    );
+  }
+
+  _$getInsertedNodes(deep = false): Node[] {
+    return deep
+      ? this._$insertedNodes.flatMap((n) => [
+          n,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...((n as any)['_$litChildPart$']?._$getInsertedNodes(true) ?? []),
+        ])
+      : this._$insertedNodes;
+  }
+  // _$clear(
+  //   start: ChildNode | null = wrap(this._$startNode).nextSibling,
+  //   from?: number
+  // ) {
+  //   // const startIndex = Math.max(this._$insertedNodes.indexOf(start as Node), 0);
+  //   // const n = this._$insertedNodes[startIndex] ?? this._$endNode;
+  //   // if (start !== n) {
+  //   //   //debugger;
+  //   //   console.warn('clear mismatch', start, n);
+  //   // }
+  //   this._$notifyConnectionChanged?.(false, true, from);
+  //   while (start && start !== this._$endNode) {
+  //     const n = wrap(start!).nextSibling;
+  //     (wrap(start!) as Element).remove();
+  //     start = n;
+  //   }
+  //   // this._$insertedNodes.splice(startIndex);
+  // }
   /**
    * Implementation of RootPart's `isConnected`. Note that this metod
    * should only be called on `RootPart`s (the `ChildPart` returned from a
@@ -1719,6 +1866,9 @@ class EventPart extends AttributePart {
 export type {ElementPart};
 class ElementPart implements Disconnectable {
   readonly type = ELEMENT_PART;
+
+  /** @internal */
+  __staticValue?: DirectiveResult;
 
   /** @internal */
   __directive?: Directive;

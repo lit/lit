@@ -9,5 +9,6 @@
 /directive-helpers.*
 /async-directive.*
 /polyfill-support.*
+/polyfill-support-lite.*
 /private-ssr-support.*
 /static.*
