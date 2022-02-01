@@ -191,8 +191,8 @@ export const createComponent = <
         setProperty(
           this._element,
           prop,
-          this.props[prop] as unknown,
-          oldProps ? (oldProps[prop] as unknown) : undefined,
+          this.props[prop],
+          oldProps ? (oldProps[prop]) : undefined,
           eventNames
         );
       }
