@@ -65,6 +65,9 @@ function makeSauceLauncherOnce() {
     sauceLauncher = createSauceLabsLauncher({
       user,
       key,
+      sauceConnectOptions: {
+        tunnelIdentifier: 'does-this-work'
+      }
     });
   }
   return sauceLauncher;
