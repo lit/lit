@@ -110,12 +110,104 @@ test('without plugin', async ({rig}) => {
   );
 });
 
-test('basic component', async ({rig}) => {
+const myElementDefinitionAndConfig = {
+  // component definition
+  'js/my-element.js': `
+    import { html, LitElement } from 'lit';
+    class MyElement extends LitElement {
+      render() {
+        return html\`<b>shadow content</b>\`;
+      }
+    }
+    customElements.define('my-element', MyElement);
+  `,
+
+  // eleventy config
+  '.eleventy.cjs': `
+    const litPlugin = require('@lit-labs/eleventy-plugin');
+    module.exports = function (eleventyConfig) {
+      eleventyConfig.addPlugin(litPlugin, {
+        componentModules: ['./js/my-element.js'],
+      });
+    };
+  `,
+};
+
+test('basic component in markdown file', async ({rig}) => {
   await rig.write({
-    // md
+    ...myElementDefinitionAndConfig,
     'index.md': `
       # Heading
       <my-element></my-element>
+    `,
+  });
+  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.read('_site/index.html'),
+    normalize(`
+      <h1>Heading</h1>
+      <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
+    `)
+  );
+});
+
+test('basic component in HTML file', async ({rig}) => {
+  await rig.write({
+    ...myElementDefinitionAndConfig,
+    'index.html': `
+      <h1>Heading</h1>
+      <my-element></my-element>
+    `,
+  });
+  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.read('_site/index.html'),
+    normalize(`
+      <h1>Heading</h1>
+      <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
+    `)
+  );
+});
+
+test('basic component in HTML file with doctype, html, body', async ({rig}) => {
+  await rig.write({
+    ...myElementDefinitionAndConfig,
+    'index.html': `
+      <!doctype html>
+      <html>
+        <body>
+          <h1>Heading</h1>
+          <my-element></my-element>
+        </body>
+      </html>
+    `,
+  });
+  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.read('_site/index.html'),
+    normalize(`
+      <!doctype html>
+      <html>
+        <body>
+          <h1>Heading</h1>
+          <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
+        </body>
+      </html>
+    `)
+  );
+});
+
+test('2 containers, 1 slotted child', async ({rig}) => {
+  await rig.write({
+    // md
+    'index.md': `
+      # Heading 1
+      <my-container>
+        <my-content></my-content>
+      </my-container>
+
+      # Heading 2
+      <my-container></my-container>
     `,
 
     // config
@@ -131,23 +223,32 @@ test('basic component', async ({rig}) => {
     // js
     'js/my-element.js': `
       import { html, LitElement } from 'lit';
-      class MyElement extends LitElement {
+
+      class MyContainer extends LitElement {
+        render() {
+          return html\`<slot></slot>\`;
+        }
+      }
+      customElements.define('my-container', MyContainer);
+
+      class MyContent extends LitElement {
         render() {
           return html\`<b>shadow content</b>\`;
         }
       }
-      customElements.define('my-element', MyElement);
+      customElements.define('my-content', MyContent);
     `,
   });
   assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
   assert.equal(
     await rig.read('_site/index.html'),
-    // TODO(aomarks) The way we inject <head> and <body> doesn't seem quite
-    // right. Investigate.
     normalize(`
-      <html><head></head><!--lit-part BRUAAAUVAAA=--><!--lit-part 7fcMKuWrg1g=--><body><h1>Heading</h1>
-      <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
-      </body><!--/lit-part--><?><!--/lit-part--></html>
+      <h1>Heading 1</h1>
+      <my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template>
+        <my-content><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-content>
+      </my-container>
+      <h1>Heading 2</h1>
+      <p><my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template></my-container></p>
     `)
   );
 });
@@ -175,9 +276,8 @@ test('missing component definition', async ({rig}) => {
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
-      <html><head></head><!--lit-part BRUAAAUVAAA=--><!--lit-part 7fcMKuWrg1g=--><body><h1>Heading</h1>
+      <h1>Heading</h1>
       <p><my-element></my-element></p>
-      </body><!--/lit-part--><?><!--/lit-part--></html>
     `)
   );
 });
