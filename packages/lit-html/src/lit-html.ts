@@ -323,8 +323,26 @@ const tag =
 export const html = tag(HTML_RESULT);
 
 /**
- * Interprets a template literal as an SVG template that can efficiently
+ * Interprets a template literal as an SVG fragment that can efficiently
  * render to and update a container.
+ *
+ * ```ts
+ * const rect = svg`<rect width="10" height="10"></rect>`;
+ *
+ * const myImage = html`
+ *   <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+ *     ${rect}
+ *   </svg>`;
+ * ```
+ *
+ * The `svg` tagged template literal (TTL) should only be used for SVG
+ * fragments, or elements that would be contained within an `<svg>` html tag. A
+ * common error is wrapping `<svg>` with the svg TTL. The `<svg>` element is an
+ * html element and should be used within a {@linkcode html} TTL.
+ *
+ * In LitElement usage, it's rare to return an svg fragment from the `render()`
+ * method, as the svg fragment will be contained within the element's shadow
+ * root and thus cannot be used within an `<svg>` html tag.
  */
 export const svg = tag(SVG_RESULT);
 
