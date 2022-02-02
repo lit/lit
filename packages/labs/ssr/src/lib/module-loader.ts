@@ -6,7 +6,7 @@
 
 import * as path from 'path';
 import {promises as fs} from 'fs';
-import {URL} from 'url';
+import {URL, fileURLToPath, pathToFileURL} from 'url';
 import * as vm from 'vm';
 import resolveAsync from 'resolve';
 import {builtinModules} from 'module';
@@ -98,10 +98,10 @@ export class ModuleLoader {
     specifier: string,
     referrerPathOrFileUrl: string
   ): Promise<ImportResult> {
-    if (referrerPathOrFileUrl.startsWith('file://')) {
-      referrerPathOrFileUrl = referrerPathOrFileUrl.substring('file://'.length);
-    }
-    const result = await this._loadModule(specifier, referrerPathOrFileUrl);
+    const referrerPath = referrerPathOrFileUrl.startsWith('file://')
+      ? fileURLToPath(referrerPathOrFileUrl)
+      : referrerPathOrFileUrl;
+    const result = await this._loadModule(specifier, referrerPath);
     const module = result.module as vm.Module;
     if (module.status === 'unlinked') {
       await module.link(this._linker);
@@ -289,7 +289,7 @@ export const resolveSpecifier = async (
         return packageJson;
       },
     });
-    return new URL(`file:${modulePath}`);
+    return pathToFileURL(modulePath);
   }
 };
 
