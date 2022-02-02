@@ -223,13 +223,14 @@ type AttributeMap = Map<string, PropertyKey>;
  * interface corresponding to the declared element properties.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface PropertyValues<T = any> extends Map<keyof T, unknown> {
+export interface PropertyValues<T = any> extends Map<keyof T, T[keyof T]> {
   get<K extends keyof T>(k: K): T[K];
+  set<K extends keyof T>(key: K, value: T[K]): this;
   forEach(
     callbackfn: <K extends keyof T>(
       value: T[K],
       key: K,
-      map: Map<K, unknown>
+      map: Map<K, T[keyof T]>
     ) => void,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     thisArg?: any
