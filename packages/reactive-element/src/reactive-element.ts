@@ -232,8 +232,7 @@ export interface PropertyValues<T = any> extends Map<keyof T, T[keyof T]> {
       key: K,
       map: Map<K, T[keyof T]>
     ) => void,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    thisArg?: any
+    thisArg?: unknown
   ): void;
 }
 
