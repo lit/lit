@@ -274,8 +274,7 @@ export const resolveSpecifier = async (
     ) {
       // Override where we resolve lit packages from so that we always resolve to
       // a single version.
-      // TODO(aomarks) This needs to be a path.
-      referrerPath = import.meta.url;
+      referrerPath = fileURLToPath(import.meta.url);
     }
     const modulePath = await resolve(specifier, {
       basedir: path.dirname(referrerPath),
