@@ -3074,5 +3074,46 @@ suite('ReactiveElement', () => {
       el2.setAttribute('foo', 'foo');
       assert.equal(el2.attrValue, 'custom');
     });
+
+    test('PropertyValues<this> type-checks', () => {
+      // This test only checks compile-type behavior. There are no runtime
+      // checks.
+      class E extends ReactiveElement {
+        declare foo: number;
+
+        override update(changedProperties: PropertyValues<this>) {
+          // @ts-expect-error 'bar' is not a keyof this
+          changedProperties.get('bar');
+
+          // This should type-check without a cast:
+          const x: number = changedProperties.get('foo');
+
+          // This should type-check without a cast:
+          const propNames: Array<keyof this> = ['foo'];
+          const y = changedProperties.get(propNames[0]);
+
+          changedProperties.forEach((v, k) => {
+            if (k === 'foo') {
+              // This assignment ideally _shouldn't_ fail. tsc should se that
+              // k === 'foo' implies v is typeof this['foo'] (because v is
+              // this[typeof k]).
+              // @ts-expect-error tsc should be better
+              const z: number = v;
+              return z;
+            } else {
+              // @ts-expect-error Type 'this[K]' is not assignable to type
+              // 'number'.
+              const z: number = v;
+              return z;
+            }
+          });
+          // Suppress no-unused-vars warnings on x and y
+          return {x, y};
+        }
+      }
+      if (E) {
+        // Suppress no-unused-vars warning on E
+      }
+    });
   });
 });
