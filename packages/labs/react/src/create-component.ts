@@ -267,7 +267,7 @@ export const createComponent = <
   }
 
   const ForwardedComponent = React.forwardRef<I, UserProps>((props, ref) =>
-    createElement<ComponentProps>(
+    createElement(
       ReactComponent,
       {...props, __forwardedRef: ref},
       props?.children
