@@ -9,7 +9,7 @@ import * as assert from 'uvu/assert';
 import * as pathlib from 'path';
 import * as fs from 'fs/promises';
 import {fileURLToPath} from 'url';
-import {spawn} from 'child_process';
+import {spawn, ChildProcess} from 'child_process';
 import stripIndent from 'strip-indent';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +26,7 @@ const normalize = (s: string) => stripIndent(s).trim() + '\n';
  */
 class TestRig {
   private readonly _tempDir = pathlib.join(tempRoot, String(Math.random()));
+  private readonly _activeChildProcesses = new Set<ChildProcess>();
 
   async setup() {
     // Simulate installing @lit-labs/eleventy-plugin with a symlink to the root
@@ -48,6 +49,9 @@ class TestRig {
 
   async cleanup() {
     await fs.rm(this._tempDir, {recursive: true});
+    for (const process of this._activeChildProcesses) {
+      process.kill(9);
+    }
   }
 
   async write(files: {[path: string]: string}) {
@@ -65,20 +69,27 @@ class TestRig {
     return normalize(await fs.readFile(absolute, 'utf8'));
   }
 
-  exec(command: string): Promise<{code: number}> {
+  exec(command: string): {
+    kill: (signal: number) => void;
+    code: Promise<number>;
+  } {
     const cwd = pathlib.resolve(this._tempDir);
     const child = spawn(command, [], {
       cwd,
       shell: true,
       stdio: 'inherit',
     });
-    return new Promise((resolve) => {
+    this._activeChildProcesses.add(child);
+    const kill = (code: number) => child.kill(code);
+    const code = new Promise<number>((resolve) => {
       child.on('exit', (code) => {
+        this._activeChildProcesses.delete(child);
         // Code will be null when the process was killed via a signal. 130 is
         // the conventional return code used to represent this case.
-        resolve({code: code ?? 130});
+        resolve(code ?? 130);
       });
     });
+    return {code, kill};
   }
 }
 
@@ -100,7 +111,7 @@ test('without plugin', async ({rig}) => {
       <my-element></my-element>
     `,
   });
-  assert.equal((await rig.exec('eleventy')).code, 0);
+  assert.equal(await rig.exec('eleventy').code, 0);
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
@@ -141,7 +152,12 @@ test('basic component in markdown file', async ({rig}) => {
       <my-element></my-element>
     `,
   });
-  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.exec(
+      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    ).code,
+    0
+  );
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
@@ -159,7 +175,12 @@ test('basic component in HTML file', async ({rig}) => {
       <my-element></my-element>
     `,
   });
-  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.exec(
+      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    ).code,
+    0
+  );
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
@@ -182,7 +203,12 @@ test('basic component in HTML file with doctype, html, body', async ({rig}) => {
       </html>
     `,
   });
-  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.exec(
+      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    ).code,
+    0
+  );
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
@@ -239,7 +265,12 @@ test('2 containers, 1 slotted child', async ({rig}) => {
       customElements.define('my-content', MyContent);
     `,
   });
-  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.exec(
+      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    ).code,
+    0
+  );
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
@@ -271,7 +302,12 @@ test('missing component definition', async ({rig}) => {
       };
     `,
   });
-  assert.equal((await rig.exec('eleventy --config .eleventy.cjs')).code, 0);
+  assert.equal(
+    await rig.exec(
+      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    ).code,
+    0
+  );
   // TODO(aomarks) There should be an error message about missing components.
   assert.equal(
     await rig.read('_site/index.html'),
