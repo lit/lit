@@ -365,4 +365,83 @@ test('missing component definition', async ({rig}) => {
   );
 });
 
+test('watch mode', async ({rig}) => {
+  await rig.write({
+    // eleventy config
+    '.eleventy.cjs': `
+      const litPlugin = require('@lit-labs/eleventy-plugin');
+      module.exports = function (eleventyConfig) {
+        eleventyConfig.addPlugin(litPlugin, {
+          componentModules: ['./js/my-element.js'],
+        });
+        eleventyConfig.addWatchTarget('js/my-element.js');
+      };
+    `,
+
+    // markdown
+    'index.md': `
+      # Heading
+      <my-element></my-element>
+    `,
+
+    // initial component definition
+    'js/my-element.js': `
+      import { html, LitElement } from 'lit';
+      class MyElement extends LitElement {
+        render() {
+          return html\`INITIAL\`;
+        }
+      }
+      customElements.define('my-element', MyElement);
+    `,
+  });
+
+  const {kill, code} = rig.exec(
+    'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs --watch'
+  );
+
+  // It will take Eleventy some unknown amount of time to notice the change and
+  // write new output. Just poll until we find the expected output.
+  await retryUntilTimeElapses(10000, 100, async () => {
+    assert.equal(
+      await rig.read('_site/index.html'),
+      normalize(`
+        <h1>Heading</h1>
+        <p><my-element><template shadowroot="open"><!--lit-part QMmCfL7Whws=-->INITIAL<!--/lit-part--></template></my-element></p>
+      `)
+    );
+  });
+
+  // Eleventy occasionally doesn't notice when a file has changed (maybe 5% of
+  // the time). Maybe there is a race condition in Eleventy's watch logic?
+  // Re-write the file a few times to deflake this.
+  await retryTimes(3, async () => {
+    await rig.write({
+      // updated component definition
+      'js/my-element.js': `
+        import { html, LitElement } from 'lit';
+        class MyElement extends LitElement {
+          render() {
+            return html\`UPDATED\`;
+          }
+        }
+        customElements.define('my-element', MyElement);
+      `,
+    });
+
+    await retryUntilTimeElapses(1000, 100, async () => {
+      assert.equal(
+        await rig.read('_site/index.html'),
+        normalize(`
+          <h1>Heading</h1>
+          <p><my-element><template shadowroot="open"><!--lit-part JDaFfBEPiAs=-->UPDATED<!--/lit-part--></template></my-element></p>
+        `)
+      );
+    });
+  });
+
+  kill(/* SIGINT */ 2);
+  assert.equal(await code, 0);
+});
+
 test.run();
