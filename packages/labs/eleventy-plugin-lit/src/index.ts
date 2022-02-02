@@ -61,6 +61,9 @@ module.exports = {
           renderModulePath
         )
       ).module.namespace.render as typeof contextifiedRender;
+      // TOOD(aomarks) We could also directly synthesize an html TemplateResult
+      // instead of doing so via the the unsafeHTML directive. The directive is
+      // performing some extra validation that doesn't really apply to us.
       contextifiedUnsafeHTML = (
         await loader.importModule(
           'lit/directives/unsafe-html.js',
@@ -75,11 +78,17 @@ module.exports = {
         if (!outputPath.endsWith('.html')) {
           return content;
         }
+        // TODO(aomarks) Maybe we should provide a `renderUnsafeHtml` function
+        // directly from SSR which does this.
         const iterator = contextifiedRender(contextifiedUnsafeHTML(content));
         const concatenated = iterableToString(iterator);
         // Lit SSR includes comment markers to track the outer template from
         // the template we've generated here, but it's not possible for this
         // outer template to be hydrated, so they serve no purpose.
+
+        // TODO(aomarks) Maybe we should provide an option to SSR option to skip
+        // outer markers (though note there are 2 layers of markers due to the
+        // use of the unsafeHTML directive).
         const outerMarkersTrimmed = concatenated
           .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
           .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
