@@ -104,6 +104,53 @@ test.after.each(async ({rig}) => {
   await rig.cleanup();
 });
 
+/**
+ * Retry the given function until it returns a promise that resolves, or until
+ * the given timeout expires.
+ */
+const retryUntilTimeElapses = <T>(
+  timeout: number,
+  pollInterval: number,
+  fn: () => Promise<T>
+): Promise<T> => {
+  const start = performance.now();
+  let lastError: unknown;
+  return new Promise<T>((resolve, reject) => {
+    const check = async () => {
+      if (performance.now() - start > timeout) {
+        reject(lastError ?? new Error('Timed out immediately'));
+      } else {
+        try {
+          resolve(await fn());
+        } catch (err) {
+          lastError = err;
+          setTimeout(check, pollInterval);
+        }
+      }
+    };
+    check();
+  });
+};
+
+/**
+ * Retry the given function until it returns a promise that resolves, up to the
+ * given number of times.
+ */
+const retryTimes = async <T>(
+  numTries: number,
+  fn: () => Promise<T>
+): Promise<T> => {
+  let lastErr: unknown;
+  for (let i = 0; i < numTries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr ?? new Error('Never tried');
+};
+
 test('without plugin', async ({rig}) => {
   await rig.write({
     'index.md': `
