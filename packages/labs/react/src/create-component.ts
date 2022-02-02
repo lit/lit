@@ -233,12 +233,12 @@ export const createComponent = <
       // having a value to null.
       const userRef = this.props.__forwardedRef;
       if (this._ref === undefined || this._userRef !== userRef) {
-        this._ref = (value: I | null) => {
+        this._ref = (value) => {
           if (this._element === null) {
             this._element = value;
           }
           if (userRef !== null && userRef !== undefined) {
-            setRef<I>(userRef, value);
+            setRef(userRef, value);
           }
           this._userRef = userRef;
         };
