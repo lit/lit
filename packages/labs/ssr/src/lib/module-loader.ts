@@ -96,12 +96,12 @@ export class ModuleLoader {
    */
   async importModule(
     specifier: string,
-    referrer: string
+    referrerPathOrFileUrl: string
   ): Promise<ImportResult> {
-    if (referrer.startsWith('file://')) {
-      referrer = referrer.substring('file://'.length);
+    if (referrerPathOrFileUrl.startsWith('file://')) {
+      referrerPathOrFileUrl = referrerPathOrFileUrl.substring('file://'.length);
     }
-    const result = await this._loadModule(specifier, referrer);
+    const result = await this._loadModule(specifier, referrerPathOrFileUrl);
     const module = result.module as vm.Module;
     if (module.status === 'unlinked') {
       await module.link(this._linker);
@@ -121,13 +121,13 @@ export class ModuleLoader {
    */
   private async _loadModule(
     specifier: string,
-    referrer: string
+    referrerPath: string
   ): Promise<ImportResult> {
     if (builtIns.has(specifier)) {
       return this._loadBuiltInModule(specifier);
     }
 
-    const moduleURL = await resolveSpecifier(specifier, referrer);
+    const moduleURL = await resolveSpecifier(specifier, referrerPath);
     if (moduleURL.protocol !== 'file:') {
       throw new Error(`Unsupported protocol: ${moduleURL.protocol}`);
     }
@@ -224,9 +224,9 @@ export class ModuleLoader {
     if (!/:\d+$/.test(identifier)) {
       throw new Error('Unexpected file:// URL identifier without context ID');
     }
-    const referrer = identifier.split(/:\d+$/)[0];
-    const result = await this._loadModule(specifier, referrer);
-    const referrerModule = this.cache.get(referrer);
+    const referrerPath = identifier.split(/:\d+$/)[0];
+    const result = await this._loadModule(specifier, referrerPath);
+    const referrerModule = this.cache.get(referrerPath);
     if (referrerModule !== undefined) {
       referrerModule.imports.push(result.path);
     }
@@ -243,17 +243,17 @@ export class ModuleLoader {
 }
 
 /**
- * Resolves specifiers using web-ish Node module resolution. Web-compatible
- * full URLs are passed through unmodified. Relative and absolute URLs
- * (starting in `/`, `./`, `../`) are resolved relative to `referrer`. "Bare"
- * module specifiers are resolved with the 'resolve' package.
+ * Resolves specifiers using web-ish Node module resolution. Web-compatible full
+ * URLs are passed through unmodified. Relative and absolute URLs (starting in
+ * `/`, `./`, `../`) are resolved relative to `referrerPath`. "Bare" module
+ * specifiers are resolved with the 'resolve' package.
  *
  * This replaces some Lit modules with SSR compatible equivalents. This is
  * currently hard-coded, but should instead be done with a configuration object.
  */
 export const resolveSpecifier = async (
   specifier: string,
-  referrer: string
+  referrerPath: string
 ): Promise<URL> => {
   try {
     // First see if the specifier is a full URL, and if so, use that.
@@ -263,8 +263,8 @@ export const resolveSpecifier = async (
     // those will be absolute to the file system.
     return new URL(specifier);
   } catch (e) {
-    if (referrer === undefined) {
-      throw new Error('referrer is undefined');
+    if (referrerPath === undefined) {
+      throw new Error('referrerPath is undefined');
     }
     if (
       specifierMatches(specifier, 'lit') ||
@@ -274,10 +274,11 @@ export const resolveSpecifier = async (
     ) {
       // Override where we resolve lit packages from so that we always resolve to
       // a single version.
-      referrer = import.meta.url;
+      // TODO(aomarks) This needs to be a path.
+      referrerPath = import.meta.url;
     }
     const modulePath = await resolve(specifier, {
-      basedir: path.dirname(referrer),
+      basedir: path.dirname(referrerPath),
       moduleDirectory: ['node_modules'],
       extensions: ['.js'],
       // Some packages use a non-standard alternative to the "main" field
