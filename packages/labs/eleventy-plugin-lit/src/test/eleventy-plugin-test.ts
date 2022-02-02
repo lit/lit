@@ -71,25 +71,34 @@ class TestRig {
 
   exec(command: string): {
     kill: (signal: number) => void;
-    code: Promise<number>;
+    done: Promise<{code: number; stdout: string; stderr: string}>;
   } {
     const cwd = pathlib.resolve(this._tempDir);
     const child = spawn(command, [], {
       cwd,
       shell: true,
-      stdio: 'inherit',
     });
     this._activeChildProcesses.add(child);
     const kill = (code: number) => child.kill(code);
-    const code = new Promise<number>((resolve) => {
-      child.on('exit', (code) => {
-        this._activeChildProcesses.delete(child);
-        // Code will be null when the process was killed via a signal. 130 is
-        // the conventional return code used to represent this case.
-        resolve(code ?? 130);
-      });
-    });
-    return {code, kill};
+    let stdout = '';
+    let stderr = '';
+    const done = new Promise<{code: number; stdout: string; stderr: string}>(
+      (resolve) => {
+        child.stdout.on('data', (chunk) => {
+          stdout += chunk;
+        });
+        child.stderr.on('data', (chunk) => {
+          stderr += chunk;
+        });
+        child.on('exit', (code) => {
+          this._activeChildProcesses.delete(child);
+          // Code will be null when the process was killed via a signal. 130 is
+          // the conventional return code used to represent this case.
+          resolve({code: code ?? 130, stdout, stderr});
+        });
+      }
+    );
+    return {done, kill};
   }
 }
 
@@ -158,7 +167,7 @@ test('without plugin', async ({rig}) => {
       <my-element></my-element>
     `,
   });
-  assert.equal(await rig.exec('eleventy').code, 0);
+  assert.equal((await rig.exec('eleventy').done).code, 0);
   assert.equal(
     await rig.read('_site/index.html'),
     normalize(`
@@ -200,8 +209,10 @@ test('basic component in markdown file', async ({rig}) => {
     `,
   });
   assert.equal(
-    await rig.exec(
-      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    (
+      await rig.exec(
+        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+      ).done
     ).code,
     0
   );
@@ -223,8 +234,10 @@ test('basic component in HTML file', async ({rig}) => {
     `,
   });
   assert.equal(
-    await rig.exec(
-      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    (
+      await rig.exec(
+        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+      ).done
     ).code,
     0
   );
@@ -251,8 +264,10 @@ test('basic component in HTML file with doctype, html, body', async ({rig}) => {
     `,
   });
   assert.equal(
-    await rig.exec(
-      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    (
+      await rig.exec(
+        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+      ).done
     ).code,
     0
   );
@@ -313,8 +328,10 @@ test('2 containers, 1 slotted child', async ({rig}) => {
     `,
   });
   assert.equal(
-    await rig.exec(
-      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    (
+      await rig.exec(
+        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+      ).done
     ).code,
     0
   );
@@ -350,8 +367,10 @@ test('missing component definition', async ({rig}) => {
     `,
   });
   assert.equal(
-    await rig.exec(
-      'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+    (
+      await rig.exec(
+        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
+      ).done
     ).code,
     0
   );
@@ -396,7 +415,7 @@ test('watch mode', async ({rig}) => {
     `,
   });
 
-  const {kill, code} = rig.exec(
+  const {kill, done} = rig.exec(
     'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs --watch'
   );
 
@@ -441,7 +460,25 @@ test('watch mode', async ({rig}) => {
   });
 
   kill(/* SIGINT */ 2);
-  assert.equal(await code, 0);
+  assert.equal((await done).code, 0);
+});
+
+test('fails when --experimental-vm-modules flag is not enabled', async ({
+  rig,
+}) => {
+  await rig.write({
+    '.eleventy.cjs': `
+      const litPlugin = require('@lit-labs/eleventy-plugin');
+      module.exports = function (eleventyConfig) {
+        eleventyConfig.addPlugin(litPlugin, {
+          componentModules: [],
+        });
+      };
+    `,
+  });
+  const {code, stderr} = await rig.exec('eleventy --config .eleventy.cjs').done;
+  assert.equal(code, 1);
+  assert.match(stderr, '--experimental-vm-modules');
 });
 
 test.run();

@@ -16,7 +16,8 @@
 // See https://github.com/microsoft/TypeScript/issues/43329 and
 // https://github.com/microsoft/TypeScript#22321 for more details.
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 const path = require('path') as typeof import('path');
 
 type LitPluginOptions = {
@@ -29,6 +30,33 @@ module.exports = {
     eleventyConfig: any,
     {componentModules}: LitPluginOptions = {}
   ) {
+    if (require('vm').Module === undefined) {
+      // Show a more friendly error message if the --experimental-vm-modules
+      // flag is missing.
+      // TODO(aomarks) Rendering in a worker would remove the need for this flag.
+      const red = '\u001b[31m';
+      const yellow = '\u001b[33m';
+      const reset = '\u001b[0m';
+      console.error(
+        `${yellow}
+┌─────────────────────${red} ERROR ${yellow}─────────────────────┐
+│${reset}                                                 ${yellow}│
+│${reset} @lit-labs/eleventy-plugin-lit requires Node     ${yellow}│
+│${reset} version 12.16.0 or higher, and that eleventy is ${yellow}│
+│${reset} launched with a special environment variable    ${yellow}│
+│${reset} to enable an experimental feature:              ${yellow}│
+│${reset}                                                 ${yellow}│
+│${reset} NODE_OPTIONS=--experimental-vm-modules eleventy ${yellow}│
+│${reset}                                                 ${yellow}│
+└─────────────────────────────────────────────────┘
+${reset}`
+      );
+      throw new Error(
+        '@lit-labs/eleventy-plugin-lit requires that eleventy be launched ' +
+          'with NODE_OPTIONS=--experimental-vm-modules'
+      );
+    }
+
     if (componentModules === undefined || componentModules.length === 0) {
       // If there are no component modules, we could never have anything to
       // render.
