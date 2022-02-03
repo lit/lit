@@ -40,6 +40,9 @@ if (DEV_MODE) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isLitShadowHost = (n: any) => Boolean(n?.['_$litShadowPart$']);
+
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
   window.ShadyDOM?.inUse &&
@@ -1174,6 +1177,7 @@ class ChildPart implements Disconnectable {
     const parent = this._$parent;
     if (
       parent !== undefined &&
+      parentNode !== null &&
       parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
     ) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
@@ -1246,12 +1250,14 @@ class ChildPart implements Disconnectable {
    * @returns inserted node
    */
   _$insert<T extends Node>(node: T, ref = this._$endNode) {
-    this._trackInsertedNodes(
-      node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-        ? Array.from(wrap(node).childNodes)
-        : [node],
-      ref
-    );
+    if (isLitShadowHost(this.parentNode)) {
+      this._trackInsertedNodes(
+        node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+          ? Array.from(wrap(node).childNodes)
+          : [node],
+        ref
+      );
+    }
     return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
   }
 
@@ -1340,8 +1346,8 @@ class ChildPart implements Disconnectable {
       this._$committedValue !== nothing &&
       isPrimitive(this._$committedValue)
     ) {
-      //const node = wrap(this._$startNode).nextSibling as Text;
-      const node = this._$insertedNodes[0] as Text;
+      const node = wrap(this._$startNode).nextSibling as Text;
+      // const node = this._$insertedNodes[0] as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
@@ -1476,18 +1482,27 @@ class ChildPart implements Disconnectable {
    *
    * @internal
    */
-  _$clear(
-    start: ChildNode | null = (this._$insertedNodes[0] as ChildNode) ?? null,
-    from?: number
-  ) {
+  _$clear(start: ChildNode | null = null, from?: number) {
     this._$notifyConnectionChanged?.(false, true, from);
-    const i = this._$insertedNodes.indexOf(start!);
-    if (i >= 0) {
-      // Retain before index and clear deleted items.
-      this._$insertedNodes.splice(i).forEach((n) => {
-        this._$partForNode(n)?._$clear();
-        (wrap(n!) as Element).remove();
-      });
+    // TODO this breaks things, why?
+    // const insertedStart = start ?? (this._$insertedNodes[0] as ChildNode);
+    start ??= wrap(this._$startNode).nextSibling;
+    if (isLitShadowHost(this.parentNode)) {
+      const insertedStart = start;
+      const i = this._$insertedNodes.indexOf(insertedStart!);
+      if (i >= 0) {
+        // Retain before index and clear deleted items.
+        this._$insertedNodes.splice(i).forEach((n) => {
+          this._$partForNode(n)?._$clear();
+          // (wrap(n!) as Element).remove();
+        });
+      }
+    }
+    // only remove nodes from the physical DOM
+    while (start && start !== this._$endNode) {
+      const n = wrap(start!).nextSibling;
+      (wrap(start!) as Element).remove();
+      start = n;
     }
   }
 
@@ -1501,7 +1516,7 @@ class ChildPart implements Disconnectable {
   }
 
   /**
-   * Implementation of RootPart's `isConnected`. Note that this metod
+   * Implementation of RootPart's `isConnected`. Note that this method
    * should only be called on `RootPart`s (the `ChildPart` returned from a
    * top-level `render()` call). It has no effect on non-root ChildParts.
    * @param isConnected Whether to set

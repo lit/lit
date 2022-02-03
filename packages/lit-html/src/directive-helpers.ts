@@ -119,7 +119,7 @@ export const insertPart = (
     const oldParent = part._$parent;
     const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
-      removePartMarkers(part);
+      // removePartMarkers(part);
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
       // `_$parent` reference after unlinking from its current parent, that
@@ -139,20 +139,21 @@ export const insertPart = (
       }
     }
     if (endNode !== refNode || parentChanged) {
-      const nodesToInsert = [
-        part._$startNode,
-        ...part._$insertedNodes,
-        part._$endNode,
-      ].filter((x) => x);
-      nodesToInsert.forEach((n) => {
-        containerPart._$insert(n as Node, refNode);
-      });
-      // let start: Node | null = part._$startNode;
-      // while (start !== endNode) {
-      //   const n: Node | null = wrap(start!).nextSibling;
-      //   wrap(container).insertBefore(start!, refNode);
-      //   start = n;
-      // }
+      // const nodesToInsert = [
+      //   part._$startNode,
+      //   ...part._$insertedNodes,
+      //   part._$endNode,
+      // ].filter((x) => x);
+      // nodesToInsert.forEach((n) => {
+      //   containerPart._$insert(n as Node, refNode);
+      // });
+      let start: Node | null = part._$startNode;
+      while (start !== endNode) {
+        const n: Node | null = wrap(start!).nextSibling;
+        //wrap(container).insertBefore(start!, refNode);
+        containerPart._$insert(start!, refNode);
+        start = n;
+      }
     }
   }
 
@@ -225,46 +226,40 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
  */
 export const removePart = (part: ChildPart) => {
   part._$notifyConnectionChanged?.(false, true);
-  // const start: ChildNode | null = part._$startNode;
-  // const end: ChildNode | null = part._$endNode;
-  // if (start !== null) {
-  //   part._$clear();
-  //   (wrap(start) as ChildNode).remove();
-  // }
-  // if (end != null) {
-  //   (wrap(end) as ChildNode).remove();
-  // }
-  removePartMarkers(part);
+  //removePartMarkers(part);
+  //clearPart(part);
+  let start: ChildNode | null = part._$startNode;
+  const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
+  while (start !== end) {
+    const n: ChildNode | null = wrap(start!).nextSibling;
+    (wrap(start!) as ChildNode).remove();
+    start = n;
+  }
+
   clearPart(part);
-  // while (start !== end) {
-  //   const n: ChildNode | null = wrap(start!).nextSibling;
-  //   (wrap(start!) as ChildNode).remove();
-  //   start = n;
-  // }
-  // clearPart(part);
 };
 
-const removePartNode = (part: ChildPart, node: Node) => {
-  if (part._$parent && (part._$parent as ChildPart)._$insertedNodes) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    removePartNode(part._$parent as ChildPart, node);
-  } else {
-    (wrap(node) as ChildNode).remove();
-  }
-  const i = part._$insertedNodes.indexOf(node);
-  if (i > -1) {
-    part._$insertedNodes.splice(i, 1);
-  }
-};
+// const removePartNode = (part: ChildPart, node: Node) => {
+//   if (part._$parent && (part._$parent as ChildPart)._$insertedNodes) {
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     removePartNode(part._$parent as ChildPart, node);
+//   } else {
+//     (wrap(node) as ChildNode).remove();
+//   }
+//   const i = part._$insertedNodes.indexOf(node);
+//   if (i > -1) {
+//     part._$insertedNodes.splice(i, 1);
+//   }
+// };
 
-const removePartMarkers = (part: ChildPart) => {
-  const start = part._$startNode;
-  const end = part._$endNode;
-  removePartNode(part, start);
-  if (end !== null) {
-    removePartNode(part, end);
-  }
-};
+// const removePartMarkers = (part: ChildPart) => {
+//   const start = part._$startNode;
+//   const end = part._$endNode;
+//   removePartNode(part, start);
+//   if (end !== null) {
+//     removePartNode(part, end);
+//   }
+// };
 
 export const clearPart = (part: ChildPart) => {
   part._$clear();
