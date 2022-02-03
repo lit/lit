@@ -45,6 +45,10 @@ module.exports = {
 
     // Create a fresh context before each build, so that our module cache resets
     // on every --watch mode build.
+
+    // TODO(aomarks) For better performance, we could re-use contexts between
+    // build, but selectively invalidate its cache so that only the user's
+    // modules are reloaded.
     eleventyConfig.on('eleventy.before', async () => {
       const {getWindow} = await import('@lit-labs/ssr/lib/dom-shim.js');
       const {ModuleLoader} = await import('@lit-labs/ssr/lib/module-loader.js');
