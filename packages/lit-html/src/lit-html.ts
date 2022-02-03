@@ -340,9 +340,9 @@ export const html = tag(HTML_RESULT);
  * common error is wrapping `<svg>` with the svg TTL. The `<svg>` element is an
  * html element and should be used within a {@linkcode html} TTL.
  *
- * In LitElement usage, it's rare to return an svg fragment from the `render()`
- * method, as the svg fragment will be contained within the element's shadow
- * root and thus cannot be used within an `<svg>` html tag.
+ * In LitElement usage, it's rare to return an SVG fragment from the `render()`
+ * method, as the SVG fragment will be contained within the element's shadow
+ * root and thus cannot be used within an `<svg>` HTML element.
  */
 export const svg = tag(SVG_RESULT);
 
