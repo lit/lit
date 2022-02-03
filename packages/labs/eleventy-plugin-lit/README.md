@@ -320,6 +320,10 @@ The file `_includes/default.html` would then contain the following:
 
         // Load component definitions. As each component definition loads, your
         // pre-rendered components will come to life and become interactive.
+        //
+        // You may also prefer to bundle your components into fewer JS modules.
+        // See https://lit.dev/docs/tools/production/#building-with-rollup for
+        // more details.
         import('/_js/component1.js');
         import('/_js/component2.js');
       })();
@@ -338,17 +342,24 @@ for more details.
   matter](https://www.11ty.dev/docs/data-frontmatter/) instead of the
   [`componentModules`](#configure-component-modules) setting.
 
-- [[#2484](https://github.com/lit/lit/issues/2484)] Use [worker threads](https://nodejs.org/api/worker_threads.html) instead of
-  [isolated VM modules](https://nodejs.org/api/vm.html#class-vmmodule) so that
-  the `--experimental-vm-modules` flag is no longer required.
+- [[#2484](https://github.com/lit/lit/issues/2484)] Use [worker
+  threads](https://nodejs.org/api/worker_threads.html) instead of [isolated VM
+  modules](https://nodejs.org/api/vm.html#class-vmmodule) so that the
+  `--experimental-vm-modules` flag is no longer required.
 
-- [[#2485](https://github.com/lit/lit/issues/2485)] Provide a mechanism for passing [Eleventy
-  data](https://www.11ty.dev/docs/data/) to components as _properties_, instead of
-  attributes.
-- [[#2486](https://github.com/lit/lit/issues/2486)] Patterns and documentation for supporting IE11.
+- [[#2485](https://github.com/lit/lit/issues/2485)] Provide a mechanism for
+  passing [Eleventy data](https://www.11ty.dev/docs/data/) to components as
+  _properties_, instead of attributes.
+- [[#2486](https://github.com/lit/lit/issues/2486)] Patterns and documentation
+  for supporting IE11.
 
-- [[#2487](https://github.com/lit/lit/issues/2487)] Provide a mechanism for automatically generating and inserting an appropriate
-  [hydration](#hydration) configuration.
+- [[#2487](https://github.com/lit/lit/issues/2487)] Provide a mechanism for
+  automatically generating and inserting an appropriate [hydration](#hydration)
+  configuration.
+
+- [[#2490](https://github.com/lit/lit/issues/2490)] Prevent flash of unstyled
+  content (FOUC) in browsers that don't support declarative shadow DOM and
+  investigate the performance of the options.
 
 ## Contributing
 
