@@ -335,10 +335,11 @@ export const html = tag(HTML_RESULT);
  *   </svg>`;
  * ```
  *
- * The `svg` tagged template literal (TTL) should only be used for SVG
- * fragments, or elements that would be contained **inside** an `<svg>` HTML element. A
- * common error is placing an `<svg>` *element* in a template tagged with the `svg` *tag function*. The `<svg>` element is an
- * HTML element and should be used within a template tagged with the {@linkcode html} tag function.
+ * The `svg` *tag function* should only be used for SVG fragments, or elements
+ * that would be contained **inside** an `<svg>` HTML element. A common error is
+ * placing an `<svg>` *element* in a template tagged with the `svg` tag
+ * function. The `<svg>` element is an HTML element and should be used within a
+ * template tagged with the {@linkcode html} tag function.
  *
  * In LitElement usage, it's rare to return an SVG fragment from the `render()`
  * method, as the SVG fragment will be contained within the element's shadow
