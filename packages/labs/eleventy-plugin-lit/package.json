@@ -24,6 +24,9 @@
   "files": [
     "/index.{d.ts,d.ts.map,js,js.map}"
   ],
+  "engines": {
+    "node": ">=12.16.0"
+  },
   "scripts": {
     "build": "npm run clean && npm run build:ts",
     "build:ts": "tsc --build",
