@@ -338,7 +338,7 @@ export const html = tag(HTML_RESULT);
  * The `svg` tagged template literal (TTL) should only be used for SVG
  * fragments, or elements that would be contained within an `<svg>` html tag. A
  * common error is wrapping `<svg>` with the svg TTL. The `<svg>` element is an
- * html element and should be used within a {@linkcode html} TTL.
+ * HTML element and should be used within a template tagged with the {@linkcode html} tag function.
  *
  * In LitElement usage, it's rare to return an SVG fragment from the `render()`
  * method, as the SVG fragment will be contained within the element's shadow
