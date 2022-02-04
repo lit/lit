@@ -44,6 +44,8 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
   - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
+  - [`@lit-labs/eleventy-plugin-lit`](./packages/labs/eleventy-plugin-lit) - A plugin for Eleventy that pre-renders
+    Lit components using `@lit-labs/ssr` with optional hydration.
   - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
   - [`@lit-labs/router`](./packages/labs/router) - A router for Lit.
   - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
