@@ -13,6 +13,11 @@ jobs:
     environment: Changesets
     runs-on: ubuntu-latest
     steps:
+      - name: Set Lit Robot's name and email in git
+        run: |
+          git config --global user.name "Lit Robot"
+          git config --global user.email "lit-robot@google.com"
+
       - name: Setup Node.js 14.x
         uses: actions/setup-node@v2
         with:
@@ -82,8 +87,6 @@ jobs:
           cp ../lit/packages/lit/lit.min.js.map core/lit-core.min.js
           # Stage the bundles, create the commit, tag it, and push.
           git add .
-          git config user.name "Lit Robot"
-          git config user.email "lit-robot@google.com"
           git commit -m "Bundles for lit@${LIT_VERSION}"
           git tag "v${LIT_VERSION}"
           git push origin "v${LIT_VERSION}"
@@ -112,8 +115,6 @@ jobs:
           git diff --quiet --exit-code && exit
           # Stage the changes, commit, and push.
           git add .
-          git config user.name "Lit Robot"
-          git config user.email "lit-robot@google.com"
           git commit -m "Import upstream changes (${IMPORT_REF})"
           git push origin main
 
@@ -141,7 +142,5 @@ jobs:
           git diff --quiet --exit-code && exit
           # Stage the changes, commit, and push.
           git add .
-          git config user.name "Lit Robot"
-          git config user.email "lit-robot@google.com"
           git commit -m "Import upstream changes (${IMPORT_REF})"
           git push origin main
