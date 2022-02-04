@@ -43,6 +43,7 @@
     "@web/dev-server": "^0.1.11",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "rimraf": "^3.0.2",
+    "strip-indent": "^4.0.0",
     "typescript": "^4.1.3",
     "uvu": "^0.5.3"
   }
