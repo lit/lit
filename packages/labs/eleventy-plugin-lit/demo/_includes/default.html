@@ -5,7 +5,7 @@
         that we know for sure we'll eventually need. It's important we don't
         execute them yet, though. -->
     <link rel="modulepreload" href="./_js/components.js" />
-    
+
     <!-- On browsers that don't yet support native declarative shadow DOM, a
          paint can occur after some or all pre-rendered HTML has been parsed,
          but before the declarative shadow DOM ponyfill has taken effect. This
@@ -28,7 +28,7 @@
         document.body.removeAttribute('dsd-pending');
       }
     </script>
-    
+
     <!-- Pre-rendered Lit components will be generated here. -->
     {{ content }}
 
