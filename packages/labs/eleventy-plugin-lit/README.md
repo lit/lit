@@ -10,7 +10,7 @@ production. Breaking changes are likely to happen frequently. 🚧
 
 ## Usage
 
-Call `addPlugin` in your `.eleventy.js` config file to add `eleventy-lit-plugin`.
+Call `addPlugin` in your `.eleventy.js` config file to add `eleventy-plugin-lit`.
 
 You will need to tell the plugin where to find the component definitions for the
 components you'll render in your templates by passing a list of one or more
@@ -24,6 +24,14 @@ module.exports = function (eleventyConfig) {
     componentModules: ['./_js/components.bundle.js'],
   });
 };
+```
+
+`eleventy-plugin-lit` _must_ be run with the `--experimental-vm-modules` flag. To
+run Eleventy with this flag enabled, use the `NODE_OPTIONS` environment
+variable:
+
+```bash
+NODE_OPTIONS=--experimental-vm-modules eleventy
 ```
 
 ## Client-side hydration

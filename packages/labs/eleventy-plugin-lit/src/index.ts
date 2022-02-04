@@ -27,38 +27,73 @@ module.exports = {
   configFunction: function (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eleventyConfig: any,
-    options: LitPluginOptions = {}
+    {componentModules}: LitPluginOptions = {}
   ) {
+    if (componentModules === undefined || componentModules.length === 0) {
+      // If there are no component modules, we could never have anything to
+      // render.
+      return;
+    }
+
+    const renderModulePath = path.join(process.cwd(), 'arbitrary.js');
+    const resolvedComponentModules = componentModules.map((module) =>
+      path.resolve(process.cwd(), module)
+    );
+
+    let contextifiedRender: (value: unknown) => IterableIterator<string>;
+    let contextifiedUnsafeHTML: (value: string) => unknown;
+
+    // Create a fresh context before each build, so that our module cache resets
+    // on every --watch mode build.
+
+    // TODO(aomarks) For better performance, we could re-use contexts between
+    // build, but selectively invalidate its cache so that only the user's
+    // modules are reloaded.
+    eleventyConfig.on('eleventy.before', async () => {
+      const {getWindow} = await import('@lit-labs/ssr/lib/dom-shim.js');
+      const {ModuleLoader} = await import('@lit-labs/ssr/lib/module-loader.js');
+      const window = getWindow({includeJSBuiltIns: true});
+      const loader = new ModuleLoader({global: window});
+      await Promise.all(
+        resolvedComponentModules.map((module) =>
+          loader.importModule(module, renderModulePath)
+        )
+      );
+      contextifiedRender = (
+        await loader.importModule(
+          '@lit-labs/ssr/lib/render-lit-html.js',
+          renderModulePath
+        )
+      ).module.namespace.render as typeof contextifiedRender;
+      // TOOD(aomarks) We could also directly synthesize an html TemplateResult
+      // instead of doing so via the the unsafeHTML directive. The directive is
+      // performing some extra validation that doesn't really apply to us.
+      contextifiedUnsafeHTML = (
+        await loader.importModule(
+          'lit/directives/unsafe-html.js',
+          renderModulePath
+        )
+      ).module.namespace.unsafeHTML as typeof contextifiedUnsafeHTML;
+    });
+
     eleventyConfig.addTransform(
       'render-lit',
       async (content: string, outputPath: string) => {
         if (!outputPath.endsWith('.html')) {
           return content;
         }
+        // TODO(aomarks) Maybe we should provide a `renderUnsafeHtml` function
+        // directly from SSR which does this.
+        const iterator = contextifiedRender(contextifiedUnsafeHTML(content));
+        const concatenated = iterableToString(iterator);
+        // Lit SSR includes comment markers to track the outer template from
+        // the template we've generated here, but it's not possible for this
+        // outer template to be hydrated, so they serve no purpose.
 
-        const render = (
-          await import('@lit-labs/ssr/lib/render-with-global-dom-shim.js')
-        ).render;
-        const html = (await import('lit')).html;
-        const unsafeHTML = (await import('lit/directives/unsafe-html.js'))
-          .unsafeHTML;
-        // TODO(aomarks) This doesn't work in Eleventy --watch mode, because
-        // the ES module cache never gets cleared. Switch to isolated VM
-        // modules so that we can control this.
-        await Promise.all(
-          (options.componentModules ?? []).map(
-            (module) => import(path.resolve(process.cwd(), module))
-          )
-        );
-
-        const rendered = iterableToString(render(html`${unsafeHTML(content)}`));
-        // Lit SSR includes special comment markers around templates to identify
-        // them during hydration. However, it's not possible for the top-level
-        // template that we've just rendered to ever be hydrated, because it was
-        // only defined ephemerally right now. So the comments serve no purpose
-        // in this case and can be removed. This also avoids the issue of
-        // comments appearing before <!doctype> declarations.
-        const outerMarkersTrimmed = rendered
+        // TODO(aomarks) Maybe we should provide an option to SSR option to skip
+        // outer markers (though note there are 2 layers of markers due to the
+        // use of the unsafeHTML directive).
+        const outerMarkersTrimmed = concatenated
           .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
           .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
         return outerMarkersTrimmed;
