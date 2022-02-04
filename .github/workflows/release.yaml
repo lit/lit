@@ -102,7 +102,7 @@ jobs:
           # Add the local Lit repo as a remote and fetch the currently checked
           # out commit.
           git remote add lit ../lit
-          git fetch lit HEAD:lit-head
+          git fetch --no-tags lit HEAD:lit-head
           IMPORT_REF=$(git rev-parse lit-head)
           # Read the contents of the TS starter kit directory from the imported
           # commit into the index root, ignoring any conflicts (`--reset`) and
@@ -131,7 +131,7 @@ jobs:
           # Add the local Lit repo as a remote and fetch the currently checked
           # out commit.
           git remote add lit ../lit
-          git fetch lit HEAD:lit-head
+          git fetch --no-tags lit HEAD:lit-head
           IMPORT_REF=$(git rev-parse lit-head)
           # Read the contents of the JS starter kit directory from the imported
           # commit into the index root, ignoring any conflicts (`--reset`) and
