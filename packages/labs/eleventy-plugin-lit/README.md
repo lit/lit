@@ -158,6 +158,10 @@ Then the Eleventy will produce `greeting/index.html`:
 ```
 <!-- prettier-ignore-end -->
 
+The `<template shadowroot="open">` element above is an HTML standard called
+declarative shadow DOM. See the [Declarative Shadow
+DOM](#declarative-shadow-dom) section below for more details.
+
 ### Component compatibility
 
 > 🚧 Note: Expanding this section with full details on component compatibility
@@ -169,6 +173,10 @@ There are currently a number of restrictions that determine whether a component
 will be compatible with Lit pre-rendering, because not all of the component
 lifecycle methods are currently invoked, and the DOM APIs that can be used in
 certain lifecycle methods are restricted.
+
+The Lit team is working on finalizing and documenting the SSR lifecycle and
+restrictions, follow [#2494](https://github.com/lit/lit/issues/2494) for more
+details.
 
 ### Passing data to components
 
@@ -267,6 +275,10 @@ parse    load       install lit
 The following demonstrates an example strategy for booting up a page that
 contains pre-rendered Lit components with Eleventy.
 
+The Lit team is investigating ways to simplify this bootup strategy and help you
+generate it. Follow [#2487](https://github.com/lit/lit/issues/2487) and
+[#2490](https://github.com/lit/lit/issues/2490) for progress.
+
 Typically in Eleventy your content is written in Markdown files which delegate
 the outer HTML shell to a `layout`. For example `hello.md` could delegate to the
 `default.html` layout like this:
@@ -296,9 +308,30 @@ The file `_includes/default.html` would then contain the following:
     />
     <link rel="modulepreload" href="/_js/component1.js" />
     <link rel="modulepreload" href="/_js/component2.js" />
+
+    <!-- On browsers that don't yet support native declarative shadow DOM, a
+         paint can occur after some or all pre-rendered HTML has been parsed,
+         but before the declarative shadow DOM ponyfill has taken effect. This
+         paint is undesirable because it won't include any component shadow DOM.
+         To prevent layout shifts that can result from this render, we use a
+         "dsd-pending" attribute to ensure we only display any after we know
+         declarative shadow DOM is active. -->
+    <style>
+      body[dsd-pending] {
+        display: none;
+      }
+    </style>
   </head>
 
-  <body>
+  <body dsd-pending>
+    <script>
+      if (HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
+        // This browser has native declarative shadow DOM support, so we can
+        // allow painting immediately.
+        document.body.removeAttribute('dsd-pending');
+      }
+    </script>
+
     <!-- Pre-rendered Lit components will be generated here. -->
     {{ content }}
 
@@ -330,8 +363,9 @@ The file `_includes/default.html` would then contain the following:
           // it happens after all HTML has been parsed.
           hydrateShadowRoots(document.body);
 
-          // At this point, browsers without native Declarative Shadow DOM support
-          // will be able to paint the initial state of your components!
+          // At this point, browsers without native declarative shadow DOM
+          // support can paint the initial state of your components!
+          document.body.removeAttribute('dsd-pending');
         }
 
         // The Lit hydration support module must be installed before we can
@@ -382,9 +416,8 @@ have any thoughts or questions.
   automatically generating and inserting an appropriate [hydration](#hydration)
   configuration.
 
-- [[#2490](https://github.com/lit/lit/issues/2490)] Prevent flash of unstyled
-  content (FOUC) in browsers that don't support declarative shadow DOM and
-  investigate the performance of the options.
+- [[#2490](https://github.com/lit/lit/issues/2490)] Simplify and optimize the
+  ponyfill + hydration bootup strategy.
 
 ## Issues and comments
 

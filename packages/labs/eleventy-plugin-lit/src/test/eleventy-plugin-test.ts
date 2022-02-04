@@ -117,28 +117,22 @@ test.after.each(async ({rig}) => {
  * Retry the given function until it returns a promise that resolves, or until
  * the given timeout expires.
  */
-const retryUntilTimeElapses = <T>(
+const retryUntilTimeElapses = async <T>(
   timeout: number,
   pollInterval: number,
   fn: () => Promise<T>
 ): Promise<T> => {
   const start = performance.now();
   let lastError: unknown;
-  return new Promise<T>((resolve, reject) => {
-    const check = async () => {
-      if (performance.now() - start > timeout) {
-        reject(lastError ?? new Error('Timed out immediately'));
-      } else {
-        try {
-          resolve(await fn());
-        } catch (err) {
-          lastError = err;
-          setTimeout(check, pollInterval);
-        }
-      }
-    };
-    check();
-  });
+  while (performance.now() - start < timeout) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      await new Promise((r) => setTimeout(r, pollInterval));
+    }
+  }
+  throw lastError ?? new Error('Timed out immediately');
 };
 
 /**
