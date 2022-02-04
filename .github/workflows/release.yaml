@@ -13,27 +13,32 @@ jobs:
     environment: Changesets
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-        with:
-          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
-          fetch-depth: 0
-
       - name: Setup Node.js 14.x
         uses: actions/setup-node@v2
         with:
           node-version: 14.x
 
+      - name: Checkout Lit Repo
+        uses: actions/checkout@v2
+        with:
+          path: lit
+          # This makes Actions fetch all Git history so that Changesets can
+          # generate changelogs with the correct commits
+          fetch-depth: 0
+
       - name: Install Dependencies
+        working-directory: lit
         run: npm ci
 
       # Changeset uses prettier@1 which creates unstable formatting issues
       # Deleting this forces fallback to our version of prettier
       # https://github.com/changesets/changesets/issues/616
       - name: Remove old version of prettier from changesets
+        working-directory: lit
         run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
+        working-directory: lit
         id: changesets
         uses: changesets/action@master
         with:
@@ -70,11 +75,11 @@ jobs:
           git checkout --detach empty
           # Copy in all of the bundles.
           mkdir all
-          cp ../packages/lit/lit.all.min.js all/lit-all.min.js
-          cp ../packages/lit/lit.all.min.js.map all/lit-all.min.js
+          cp ../lit/packages/lit/lit.all.min.js all/lit-all.min.js
+          cp ../lit/packages/lit/lit.all.min.js.map all/lit-all.min.js
           mkdir core
-          cp ../packages/lit/lit.min.js core/lit-core.min.js
-          cp ../packages/lit/lit.min.js.map core/lit-core.min.js
+          cp ../lit/packages/lit/lit.min.js core/lit-core.min.js
+          cp ../lit/packages/lit/lit.min.js.map core/lit-core.min.js
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Robot"

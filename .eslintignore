@@ -10,10 +10,6 @@ lerna-debug.log
 .DS_Store
 .vscode/
 
-# `/dist` is used during the release step as the checkout location for the dist
-# repo. (https://github.com/lit/dist)
-/dist
-
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
 packages/benchmarks/generator/generated/
