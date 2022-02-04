@@ -396,7 +396,7 @@ test('watch mode', async ({rig}) => {
 
   // It will take Eleventy some unknown amount of time to notice the change and
   // write new output. Just poll until we find the expected output.
-  await retryUntilTimeElapses(10000, 100, async () => {
+  await retryUntilTimeElapses(20000, 100, async () => {
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`
@@ -423,7 +423,7 @@ test('watch mode', async ({rig}) => {
       `,
     });
 
-    await retryUntilTimeElapses(1000, 100, async () => {
+    await retryUntilTimeElapses(20000, 100, async () => {
       assert.equal(
         await rig.read('_site/index.html'),
         normalize(`
