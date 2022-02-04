@@ -87,3 +87,32 @@ jobs:
           git commit -m "Bundles for lit@${LIT_VERSION}"
           git tag "v${LIT_VERSION}"
           git push origin "v${LIT_VERSION}"
+
+      - name: Checkout lit-element-starter-ts repo
+        uses: actions/checkout@v2
+        with:
+          repository: lit/lit-element-starter-ts
+          ref: main
+          path: lit-element-starter-ts
+          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+
+      - name: Push changes to lit-element-starter-ts repo
+        working-directory: lit-element-starter-ts
+        run: |
+          # Add the local Lit repo as a remote and fetch the currently checked
+          # out commit.
+          git remote add lit ../lit
+          git fetch lit HEAD:lit-head
+          IMPORT_REF=$(git rev-parse lit-head)
+          # Read the contents of the TS starter kit directory from the imported
+          # commit into the index root, ignoring any conflicts (`--reset`) and
+          # updating the work tree too (`-u`).
+          git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-ts
+          # If there are no changes, skip the rest of this step.
+          git diff --quiet --exit-code && exit
+          # Stage the changes, commit, and push.
+          git add .
+          git config user.name "Lit Robot"
+          git config user.email "lit-robot@google.com"
+          git commit -m "Import upstream changes (${IMPORT_REF})"
+          git push origin main
