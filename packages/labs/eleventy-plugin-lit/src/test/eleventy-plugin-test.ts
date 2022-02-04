@@ -384,7 +384,7 @@ test('missing component definition', async ({rig}) => {
   );
 });
 
-test('watch mode', async ({rig}) => {
+test.skip('watch mode', async ({rig}) => {
   await rig.write({
     // eleventy config
     '.eleventy.cjs': `
