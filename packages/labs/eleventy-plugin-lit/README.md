@@ -185,8 +185,7 @@ details.
 > discussion. 🚧
 
 Data can be passed to your components by setting attributes (see the `name`
-attribute in the [example](#usage) above), or by passing children into an
-element with a [`<slot>`](https://lit.dev/docs/components/shadow-dom/#slots).
+attribute in the [example](#usage) above), or passing child elements.
 
 ## Declarative Shadow DOM
 
