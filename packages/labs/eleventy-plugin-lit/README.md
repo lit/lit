@@ -18,6 +18,7 @@ A plugin for [Eleventy](https://www.11ty.dev) that pre-renders
   - [Enable experimental VM modules](#enable-experimental-vm-modules)
   - [Watch mode](#watch-mode)
 - [Usage](#usage)
+  - [Component compatibility](#component-compatibility)
   - [Passing data to components](#passing-data-to-components)
 - [Declarative Shadow DOM](#declarative-shadow-dom)
   - [Ponyfill](#ponyfill)
@@ -25,6 +26,7 @@ A plugin for [Eleventy](https://www.11ty.dev) that pre-renders
 - [Bootup](#bootup)
   - [Example bootup strategy](#example-bootup-strategy)
 - [Roadmap](#roadmap)
+- [Issues and comments](#issues-and-comments)
 - [Contributing](#contributing)
 
 ## Status
@@ -64,7 +66,8 @@ module.exports = function (eleventyConfig) {
 ### Configure component modules
 
 > 🚧 Note: Support for specifying component modules in Eleventy front matter is
-> on the [roadmap](#roadmap). 🚧
+> on the [roadmap](#roadmap). Follow
+> [#2494](https://github.com/lit/lit/issues/2483) for progress and discussion. 🚧
 
 Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
@@ -78,7 +81,9 @@ bare module specifier and defines a component with `customElements.define`.
 
 ### Enable experimental VM modules
 
-> 🚧 Note: Removing this requirement is on the [roadmap](#roadmap). 🚧
+> 🚧 Note: Removing this requirement is on the [roadmap](#roadmap). Follow
+> [#2494](https://github.com/lit/lit/issues/2484) for progress and discussion.
+> 🚧
 
 Eleventy _must_ be executed with the
 [`--experimental-vm-modules`](https://nodejs.org/api/vm.html#class-vmmodule)
@@ -153,10 +158,23 @@ Then the Eleventy will produce `greeting/index.html`:
 ```
 <!-- prettier-ignore-end -->
 
+### Component compatibility
+
+> 🚧 Note: Expanding this section with full details on component compatibility
+> is on the [roadmap](#roadmap). Follow
+> [#2494](https://github.com/lit/lit/issues/2494) for progress and discussion.
+> 🚧
+
+There are currently a number of restrictions that determine whether a component
+will be compatible with Lit pre-rendering, because not all of the component
+lifecycle methods are currently invoked, and the DOM APIs that can be used in
+certain lifecycle methods are restricted.
+
 ### Passing data to components
 
 > 🚧 Note: Support for passing data as properties is on the [roadmap](#roadmap).
-> 🚧
+> Follow [#2494](https://github.com/lit/lit/issues/2485) for progress and
+> discussion. 🚧
 
 Data can be passed to your components by setting attributes (see the `name`
 attribute in the [example](#usage) above).
@@ -242,7 +260,9 @@ parse    load       install lit
 > 🚧 Note: The pattern described here will only work in modern browsers such as
 > Firefox, Chrome, Edge, and Safari. IE11 is also supported, but will require a
 > different pattern that is not yet documented here. Documenting this pattern is
-> on the [roadmap](#roadmap). 🚧
+> on the [roadmap](#roadmap). Follow
+> [#2494](https://github.com/lit/lit/issues/2486) for progress and discussion.
+> 🚧
 
 The following demonstrates an example strategy for booting up a page that
 contains pre-rendered Lit components with Eleventy.
@@ -334,8 +354,12 @@ The file `_includes/default.html` would then contain the following:
 
 ## Roadmap
 
-The following features are on the roadmap for this plugin. See the linked issues
-for more details.
+The following features and fixes are on the roadmap for this plugin. See the
+linked issues for more details, and feel free to comment on the issues if you
+have any thoughts or questions.
+
+- [[#2494](https://github.com/lit/lit/issues/2494)] Document restrictions on SSR
+  compatible components.
 
 - [[#2483](https://github.com/lit/lit/issues/2483)] Allow specifying component
   definition modules in [front
@@ -350,6 +374,7 @@ for more details.
 - [[#2485](https://github.com/lit/lit/issues/2485)] Provide a mechanism for
   passing [Eleventy data](https://www.11ty.dev/docs/data/) to components as
   _properties_, instead of attributes.
+
 - [[#2486](https://github.com/lit/lit/issues/2486)] Patterns and documentation
   for supporting IE11.
 
@@ -360,6 +385,12 @@ for more details.
 - [[#2490](https://github.com/lit/lit/issues/2490)] Prevent flash of unstyled
   content (FOUC) in browsers that don't support declarative shadow DOM and
   investigate the performance of the options.
+
+## Issues and comments
+
+If you find any bugs in this package, please file an
+[issue](https://github.com/lit/lit/issues). If you have any questions or
+comments, start a [discussion](https://github.com/lit/lit/discussions).
 
 ## Contributing
 
