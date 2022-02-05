@@ -16,8 +16,13 @@ import {nothing, RootPart, _$LH} from '../lit-html.js';
 import {directive, AsyncDirective} from '../async-directive.js';
 import {DirectiveParameters} from '../directive.js';
 import {insertPart} from '../directive-helpers.js';
-
-const litShadowKey = '_$litShadowPart$';
+import {
+  ElementPartProcessors,
+  litShadowKey,
+  litChildPartKey,
+  getPartNodes,
+  ShadowChildPart,
+} from '../polyfill-support-lite.js';
 
 const {_ChildPart: ChildPart} = _$LH;
 type ChildPart = InstanceType<typeof ChildPart>;
@@ -170,7 +175,8 @@ export const getLogicalNodes = (
         if (slotName === undefined || nodeMatchesSlot(n, slotName)) {
           childNodes.push(n);
         }
-      } else if ((lightPart = shadowPart._$partForNode(n)) !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } else if ((lightPart = (n as any)[litChildPartKey]) !== undefined) {
         // Filter by slot name if it's set.
         let litSlot: LitSlotDirective | undefined;
         if (
@@ -182,17 +188,17 @@ export const getLogicalNodes = (
           }
           skipTo = lightPart._$endNode!;
         } else {
-          childNodes.push(
-            ...(lightPart
-              ._$getInsertedNodes(true)
-              .filter(
-                (x) =>
-                  (slotName === undefined &&
-                    x.nodeType !== Node.COMMENT_NODE) ||
-                  nodeMatchesSlot(x, slotName)
-              ) ?? [])
+          const partNodes = getPartNodes(
+            lightPart as unknown as ShadowChildPart
           );
-          skipTo = lightPart._$getLastInsertedNode();
+          childNodes.push(
+            ...(partNodes.filter(
+              (x) =>
+                (slotName === undefined && x.nodeType !== Node.COMMENT_NODE) ||
+                nodeMatchesSlot(x, slotName)
+            ) ?? [])
+          );
+          skipTo = partNodes[partNodes.length - 1];
         }
       }
     }
@@ -307,6 +313,6 @@ const getPhysicalNodes = (part: ChildPart) => {
  */
 export const litSlot = directive(LitSlotDirective);
 
-// ElementPartProcessors.add((el: Element) =>
-//   el.localName === 'slot' ? litSlot() : undefined
-// );
+ElementPartProcessors.add((el: Element) =>
+  el.localName === 'slot' ? litSlot() : undefined
+);

@@ -40,9 +40,6 @@ if (DEV_MODE) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isLitShadowHost = (n: any) => Boolean(n?.['_$litShadowPart$']);
-
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
   window.ShadyDOM?.inUse &&
@@ -1237,12 +1234,6 @@ class ChildPart implements Disconnectable {
   }
 
   /**
-   * List of nodes inserted into the part.
-   * @internal
-   */
-  _$insertedNodes: Node[] = [];
-
-  /**
    * Inserts a node into the part.
    *
    * @param node
@@ -1250,58 +1241,7 @@ class ChildPart implements Disconnectable {
    * @returns inserted node
    */
   _$insert<T extends Node>(node: T, ref = this._$endNode) {
-    if (isLitShadowHost(this.parentNode)) {
-      this._trackInsertedNodes(
-        node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-          ? Array.from(wrap(node).childNodes)
-          : [node],
-        ref
-      );
-    }
     return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
-  }
-
-  private _trackInsertedNodes(nodes: Node[], ref: Node | null) {
-    // Note, for node tracking, we want to record the minimum info possible
-    // so if a node is added that is a part marker, do not record its
-    // insertedNodes.
-    let skipTo: Node | undefined = undefined;
-    const toInsert = nodes.filter((n) => {
-      if (skipTo !== undefined) {
-        if (n === skipTo) {
-          skipTo = undefined;
-        }
-        return false;
-      }
-      skipTo = this._$partForNode(n)?._$getLastInsertedNode();
-      return true;
-    });
-    const i =
-      ref === this._$endNode ? Infinity : this._$insertedNodes.indexOf(ref!);
-    this._$insertedNodes.splice(i < 0 ? Infinity : i, 0, ...toInsert);
-  }
-
-  // TODO: `.at(-1)` is nice for this but it's very recent.
-  /**
-   * Returns the last inserted node.
-   * @internal
-   *
-   * @returns Node|undefined
-   */
-  _$getLastInsertedNode() {
-    return this._$insertedNodes[this._$insertedNodes.length - 1];
-  }
-
-  /**
-   * Returns the ChildPart associated with the node. This will return the part
-   * if the node is its start marker.
-   * @internal
-   *
-   * @param node
-   * @returns ChildPart|undefined
-   */
-  _$partForNode(node: Node) {
-    return (node as ChildNodeWithPart)['_$litChildPart$'];
   }
 
   private _commitNode(value: Node): void {
@@ -1347,7 +1287,6 @@ class ChildPart implements Disconnectable {
       isPrimitive(this._$committedValue)
     ) {
       const node = wrap(this._$startNode).nextSibling as Text;
-      // const node = this._$insertedNodes[0] as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
@@ -1355,7 +1294,6 @@ class ChildPart implements Disconnectable {
         value = this._textSanitizer(value);
       }
       (node as Text).data = value as string;
-      this._$insertedNodes = [node];
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         const textNode = document.createTextNode('');
@@ -1460,9 +1398,6 @@ class ChildPart implements Disconnectable {
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
       this._$clear(
-        // TODO: is it problematic to use nextSibling here v. the next
-        // insertedNode; maybe not since if it's relevant, it'll be a marker
-        // which is in insertedNodes?
         itemPart && wrap(itemPart._$endNode!).nextSibling,
         partIndex
       );
@@ -1484,35 +1419,12 @@ class ChildPart implements Disconnectable {
    */
   _$clear(start: ChildNode | null = null, from?: number) {
     this._$notifyConnectionChanged?.(false, true, from);
-    // TODO this breaks things, why?
-    // const insertedStart = start ?? (this._$insertedNodes[0] as ChildNode);
     start ??= wrap(this._$startNode).nextSibling;
-    if (isLitShadowHost(this.parentNode)) {
-      const insertedStart = start;
-      const i = this._$insertedNodes.indexOf(insertedStart!);
-      if (i >= 0) {
-        // Retain before index and clear deleted items.
-        this._$insertedNodes.splice(i).forEach((n) => {
-          this._$partForNode(n)?._$clear();
-          // (wrap(n!) as Element).remove();
-        });
-      }
-    }
-    // only remove nodes from the physical DOM
     while (start && start !== this._$endNode) {
       const n = wrap(start!).nextSibling;
       (wrap(start!) as Element).remove();
       start = n;
     }
-  }
-
-  _$getInsertedNodes(deep = false): Node[] {
-    return deep
-      ? this._$insertedNodes.flatMap((n) => [
-          n,
-          ...(this._$partForNode(n)?._$getInsertedNodes(deep) ?? []),
-        ])
-      : this._$insertedNodes;
   }
 
   /**
