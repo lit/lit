@@ -115,10 +115,13 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
     childPartSetValue.call(this, value, directiveParent);
   };
 
-  const parentIsShadowHost = (part: ShadowChildPart) => {
+  const shouldTrackNodes = (part: ShadowChildPart) => {
     // const parent = part._$startNode.parentNode as NodeWithShadow | null;
     const parent = part.parentNode;
-    return parent !== null && parent[litShadowKey] !== undefined;
+    return (
+      (parent !== null && parent[litShadowKey] !== undefined) ||
+      (parent as Element).localName === 'slot'
+    );
   };
 
   const childPartClear = ChildPart.prototype._$clear;
@@ -127,7 +130,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
     from?: number
   ) {
     start ??= this._$startNode.nextSibling;
-    if (parentIsShadowHost(this)) {
+    if (shouldTrackNodes(this)) {
       removeNodes(this, start);
     }
     childPartClear.call(this, start, from);
@@ -138,7 +141,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
     node: NodeWithPart,
     ref: NodeWithPart | null
   ) {
-    if (parentIsShadowHost(this)) {
+    if (shouldTrackNodes(this)) {
       addNode(this, node, ref);
     }
     const v = childPartInsert.call(this, node, ref);
@@ -226,8 +229,10 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
       options
     );
     // TODO: add these parts for reals?
-    const ceCount = Array.from(el.content.querySelectorAll('*')).filter((n) =>
-      (n as Element).localName.includes('-')
+    const ceCount = Array.from(el.content.querySelectorAll('*')).filter(
+      (n) =>
+        (n as Element).localName.includes('-') ||
+        (n as Element).localName == 'slot'
     ).length;
     return [el, attrNames, partCount + ceCount];
   };

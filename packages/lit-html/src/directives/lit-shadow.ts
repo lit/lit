@@ -14,7 +14,7 @@
 
 import {nothing, RootPart, _$LH} from '../lit-html.js';
 import {directive, AsyncDirective} from '../async-directive.js';
-import {DirectiveParameters} from '../directive.js';
+import {DirectiveParameters, PartType} from '../directive.js';
 import {insertPart} from '../directive-helpers.js';
 import {
   ElementPartProcessors,
@@ -24,8 +24,9 @@ import {
   ShadowChildPart,
 } from '../polyfill-support-lite.js';
 
-const {_ChildPart: ChildPart} = _$LH;
+const {_ChildPart: ChildPart, _TemplateInstance: TemplateInstance} = _$LH;
 type ChildPart = InstanceType<typeof ChildPart>;
+type TemplateInstance = InstanceType<typeof TemplateInstance>;
 
 /**
  * TODOs and Issues
@@ -132,8 +133,6 @@ const distribute = (host: HTMLElement) => {
   finishDistribution(host);
 };
 
-const childNodesMap = new WeakMap<ChildPart, Node[]>();
-
 // Note, we do not distribute comment nodes.
 const nodeMatchesSlot = (n: Node, name = '') =>
   (n.nodeType === Node.ELEMENT_NODE
@@ -142,79 +141,69 @@ const nodeMatchesSlot = (n: Node, name = '') =>
 
 export const getLogicalNodes = (
   host: HTMLElement,
-  slotName?: string | undefined,
-  useCache = false
+  slotName?: string | undefined
 ) => {
-  let childNodes: Node[] | undefined;
-  // This property needs to remain un-minified.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const shadowPart: ChildPart = (host as any)[litShadowKey];
-  if (shadowPart !== undefined) {
-    childNodes = childNodesMap.get(shadowPart);
-    if (childNodes === undefined) {
-      childNodesMap.set(shadowPart, (childNodes = []));
-    }
-    if (useCache) {
-      return childNodes;
-    }
-    childNodes.length = 0;
-    let skipTo: Node | undefined = undefined;
-    let lightPart: ChildPart | undefined;
-    // Record nodes starting after the shadow end node minus lit part marker.
-    // This allows parts to continue to function in the same location.
-    // For part markers add the nodes inserted in the part, which may not
-    // physically be there if they've been distributed to a `litSlot`.
-    for (let n = shadowPart.endNode!.nextSibling; n; n = n.nextSibling) {
-      if (skipTo !== undefined) {
-        if (n === skipTo) {
-          skipTo = undefined;
-        }
-        continue;
+  const childNodes: Node[] = [];
+  const start =
+    // This property needs to remain un-minified.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (host as any)[litShadowKey]?.endNode!.nextSibling ??
+    (host.localName === 'slot' ? host.firstChild : null);
+  if (start === null) {
+    return childNodes;
+  }
+  let skipTo: Node | undefined = undefined;
+  let lightPart: ChildPart | undefined;
+  // Record nodes starting after the shadow end node minus lit part marker.
+  // This allows parts to continue to function in the same location.
+  // For part markers add the nodes inserted in the part, which may not
+  // physically be there if they've been distributed to a `litSlot`.
+  for (let n: ChildNode | null = start; n; n = n.nextSibling) {
+    if (skipTo !== undefined) {
+      if (n === skipTo) {
+        skipTo = undefined;
       }
-      if (n.nodeType !== Node.COMMENT_NODE) {
-        if (slotName === undefined || nodeMatchesSlot(n, slotName)) {
-          childNodes.push(n);
+      continue;
+    }
+    if (n.nodeType !== Node.COMMENT_NODE) {
+      if (slotName === undefined || nodeMatchesSlot(n, slotName)) {
+        childNodes.push(n);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } else if ((lightPart = (n as any)[litChildPartKey]) !== undefined) {
+      // Filter by slot name if it's set.
+      let litSlot: LitSlotDirective | undefined;
+      if (
+        slotName !== undefined &&
+        (litSlot = getPartSlotDirective(lightPart)) !== undefined
+      ) {
+        if (slotName === litSlot.slot) {
+          childNodes.push(...litSlot.assignedNodes());
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } else if ((lightPart = (n as any)[litChildPartKey]) !== undefined) {
-        // Filter by slot name if it's set.
-        let litSlot: LitSlotDirective | undefined;
-        if (
-          slotName !== undefined &&
-          (litSlot = getPartSlotDirective(lightPart)) !== undefined
-        ) {
-          if (slotName === litSlot.slot) {
-            childNodes.push(...litSlot.assignedNodes());
-          }
-          skipTo = lightPart._$endNode!;
-        } else {
-          const partNodes = getPartNodes(
-            lightPart as unknown as ShadowChildPart
-          );
-          childNodes.push(
-            ...(partNodes.filter(
-              (x) =>
-                (slotName === undefined && x.nodeType !== Node.COMMENT_NODE) ||
-                nodeMatchesSlot(x, slotName)
-            ) ?? [])
-          );
-          skipTo = partNodes[partNodes.length - 1];
-        }
+        skipTo = lightPart._$endNode!;
+      } else {
+        const partNodes = getPartNodes(lightPart as unknown as ShadowChildPart);
+        childNodes.push(
+          ...(partNodes.filter(
+            (x) =>
+              (slotName === undefined && x.nodeType !== Node.COMMENT_NODE) ||
+              nodeMatchesSlot(x, slotName)
+          ) ?? [])
+        );
+        skipTo = partNodes[partNodes.length - 1];
       }
     }
   }
-  // console.log('getLogicalNodes', childNodes);
-  return childNodes ?? [];
+  return childNodes;
 };
 
-// TODO: this is private
-const getPartSlotDirective = ({__directive: directive}: ChildPart) =>
-  directive !== undefined && directive instanceof LitSlotDirective
-    ? directive
-    : undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getPartSlotDirective = ({_$litSlotDirective: slot}: any) =>
+  slot !== undefined && slot instanceof LitSlotDirective ? slot : undefined;
 
 const slotMap = new WeakMap<HTMLElement, Set<LitSlotDirective>>();
-// TODO: exported for testing only.
+
+// exported for testing only.
 export const getHostSlots = (host: HTMLElement) => {
   let slots = slotMap.get(host);
   if (slots === undefined) {
@@ -225,6 +214,8 @@ export const getHostSlots = (host: HTMLElement) => {
 
 export class LitSlotDirective extends AsyncDirective {
   host?: HTMLElement;
+
+  slotEl?: HTMLSlotElement;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   slotPart: any;
 
@@ -251,11 +242,29 @@ export class LitSlotDirective extends AsyncDirective {
     this.host ??= part.options?.host as HTMLElement;
     if (this.host !== undefined) {
       if (this.slotPart === undefined) {
-        this.slotPart = insertPart(part, undefined);
+        if (part.type === PartType.CHILD) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (part as any)._$litSlotDirective = this;
+          this.slotPart = insertPart(part, undefined);
+        } else if (part.element.localName === 'slot') {
+          this.slotEl = part.element;
+          const start = createMarker();
+          const end = createMarker();
+          this.slotEl!.parentNode!.replaceChild(end, this.slotEl!);
+          end.parentNode!.insertBefore(start, end);
+          this.slotPart = new ChildPart(
+            start,
+            end,
+            this._$parent as TemplateInstance,
+            part.options
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (this.slotPart as any)._$litSlotDirective = this;
+        }
         getHostSlots(this.host).add(this);
       }
-      this.slot = slot || '';
-      this.name = name || '';
+      this.slot = slot || this.slotEl?.getAttribute('slot') || '';
+      this.name = name || this.slotEl?.getAttribute('name') || '';
       this.fallback = fallback;
       this.distribute();
     }
@@ -278,7 +287,9 @@ export class LitSlotDirective extends AsyncDirective {
     const slotted = getLogicalNodes(this.host!, this.name).slice();
     const hasSlottedNodes = slotted.length > 0;
     // console.log(this.name, 'in host', this.host, 'slotted', slotted);
-    this.slotPart._$setValue(hasSlottedNodes ? slotted : this.fallback);
+    const fallback =
+      this.fallback ?? (this.slotEl ? getLogicalNodes(this.slotEl) : undefined);
+    this.slotPart._$setValue(hasSlottedNodes ? slotted : fallback);
     // Note, with re-distribution physical nodes might not be correct.
     this._assignedNodes = hasSlottedNodes
       ? slotted
