@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'lit/experimental-hydrate-support.js';
 import {LitElement, html, css} from 'lit';
 
 export class CalcWC extends LitElement {
