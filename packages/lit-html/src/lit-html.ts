@@ -1417,16 +1417,17 @@ class ChildPart implements Disconnectable {
    *
    * @internal
    */
-  _$clear(start: ChildNode | null = null, from?: number) {
+  _$clear(
+    start: ChildNode | null = wrap(this._$startNode).nextSibling,
+    from?: number
+  ) {
     this._$notifyConnectionChanged?.(false, true, from);
-    start ??= wrap(this._$startNode).nextSibling;
     while (start && start !== this._$endNode) {
       const n = wrap(start!).nextSibling;
       (wrap(start!) as Element).remove();
       start = n;
     }
   }
-
   /**
    * Implementation of RootPart's `isConnected`. Note that this method
    * should only be called on `RootPart`s (the `ChildPart` returned from a

@@ -60,7 +60,6 @@ class CacheDirective extends Directive {
       // Move into cache
       setCommittedValue(cachedContainerPart, [childPart]);
       insertPart(cachedContainerPart, undefined, childPart);
-      // clearPart(containerPart);
     }
     // If the new value is a TemplateResult and the previous value is not,
     // or is a different Template as the previous value, restore the child

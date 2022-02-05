@@ -98,16 +98,12 @@ export const insertPart = (
   refPart?: ChildPart,
   part?: ChildPart
 ): ChildPart => {
-  // const container = wrap(containerPart._$startNode).parentNode!;
-
   const refNode =
     refPart === undefined ? containerPart._$endNode : refPart._$startNode;
 
   if (part === undefined) {
     const startNode = containerPart._$insert(createMarker(), refNode);
     const endNode = containerPart._$insert(createMarker(), refNode);
-    // const startNode = wrap(container).insertBefore(createMarker(), refNode);
-    // const endNode = wrap(container).insertBefore(createMarker(), refNode);
     part = new ChildPart(
       startNode,
       endNode,
@@ -119,7 +115,6 @@ export const insertPart = (
     const oldParent = part._$parent;
     const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
-      // removePartMarkers(part);
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
       // `_$parent` reference after unlinking from its current parent, that
@@ -139,18 +134,9 @@ export const insertPart = (
       }
     }
     if (endNode !== refNode || parentChanged) {
-      // const nodesToInsert = [
-      //   part._$startNode,
-      //   ...part._$insertedNodes,
-      //   part._$endNode,
-      // ].filter((x) => x);
-      // nodesToInsert.forEach((n) => {
-      //   containerPart._$insert(n as Node, refNode);
-      // });
       let start: Node | null = part._$startNode;
       while (start !== endNode) {
         const n: Node | null = wrap(start!).nextSibling;
-        //wrap(container).insertBefore(start!, refNode);
         containerPart._$insert(start!, refNode);
         start = n;
       }
@@ -225,41 +211,12 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
  * @param part The Part to remove
  */
 export const removePart = (part: ChildPart) => {
-  part._$notifyConnectionChanged?.(false, true);
-  //removePartMarkers(part);
-  //clearPart(part);
-  let start: ChildNode | null = part._$startNode;
-  const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
-  while (start !== end) {
-    const n: ChildNode | null = wrap(start!).nextSibling;
-    (wrap(start!) as ChildNode).remove();
-    start = n;
-  }
-
   clearPart(part);
+  const start: ChildNode = part._$startNode!;
+  const end: ChildNode = part._$endNode!;
+  (wrap(start!) as ChildNode).remove();
+  (wrap(end!) as ChildNode).remove();
 };
-
-// const removePartNode = (part: ChildPart, node: Node) => {
-//   if (part._$parent && (part._$parent as ChildPart)._$insertedNodes) {
-//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//     removePartNode(part._$parent as ChildPart, node);
-//   } else {
-//     (wrap(node) as ChildNode).remove();
-//   }
-//   const i = part._$insertedNodes.indexOf(node);
-//   if (i > -1) {
-//     part._$insertedNodes.splice(i, 1);
-//   }
-// };
-
-// const removePartMarkers = (part: ChildPart) => {
-//   const start = part._$startNode;
-//   const end = part._$endNode;
-//   removePartNode(part, start);
-//   if (end !== null) {
-//     removePartNode(part, end);
-//   }
-// };
 
 export const clearPart = (part: ChildPart) => {
   part._$clear();
