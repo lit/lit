@@ -1098,10 +1098,6 @@ export type Part =
   | ElementPart
   | EventPart;
 
-interface ChildNodeWithPart extends ChildNode {
-  _$litChildPart$?: ChildPart;
-}
-
 export type {ChildPart};
 class ChildPart implements Disconnectable {
   readonly type = CHILD_PART;
@@ -1110,7 +1106,7 @@ class ChildPart implements Disconnectable {
   /** @internal */
   __directive?: Directive;
   /** @internal */
-  _$startNode: ChildNodeWithPart;
+  _$startNode: ChildNode;
   /** @internal */
   _$endNode: ChildNode | null;
   private _textSanitizer: ValueSanitizer | undefined;
@@ -1148,15 +1144,12 @@ class ChildPart implements Disconnectable {
   _$reparentDisconnectables?(parent: Disconnectable): void;
 
   constructor(
-    startNode: ChildNodeWithPart,
+    startNode: ChildNode,
     endNode: ChildNode | null,
     parent: TemplateInstance | ChildPart | undefined,
     options: RenderOptions | undefined
   ) {
     this._$startNode = startNode;
-    // Reference from mode marker back to the part itself. Useful for finding
-    // a part associated with a marker.
-    this._$startNode['_$litChildPart$'] = this;
     this._$endNode = endNode;
     this._$parent = parent;
     this.options = options;

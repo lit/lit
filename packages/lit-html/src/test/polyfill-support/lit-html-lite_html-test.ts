@@ -5,10 +5,7 @@
  */
 import '../../polyfill-support-lite.js';
 import {html, render, TemplateResult} from '../../lit-html.js';
-import {
-  litCustomElements,
-  LitHTMLElement,
-} from '../../directives/lit-custom-element.js';
+import {litCustomElements} from '../../directives/lit-custom-element.js';
 import {
   litSlot,
   renderLitShadow,
@@ -42,9 +39,17 @@ suite('polyfill-support-lite', () => {
     host.remove();
   });
 
+  suiteSetup(() => {
+    litCustomElements.activate();
+  });
+
+  suiteTeardown(() => {
+    litCustomElements.deactivate();
+  });
+
   suite('lit custom element', () => {
     test('upgrades when rendered', () => {
-      class MyElement extends LitHTMLElement {
+      class MyElement extends HTMLElement {
         upgraded = false;
         constructor() {
           super();
@@ -55,7 +60,7 @@ suite('polyfill-support-lite', () => {
           return v;
         }
       }
-      litCustomElements.define('my-element', MyElement);
+      customElements.define('my-element', MyElement);
       //
       render(html`<my-element>Hi</my-element>`, host);
       const el = host.firstElementChild as MyElement;
@@ -70,14 +75,14 @@ suite('polyfill-support-lite', () => {
       // not upgraded on initial render
       const el = host.firstElementChild;
       assert.notOk((el as MyElement).upgraded);
-      class MyElement extends LitHTMLElement {
+      class MyElement extends HTMLElement {
         upgraded = false;
         constructor() {
           super();
           this.upgraded = true;
         }
       }
-      litCustomElements.define('my-element2', MyElement);
+      customElements.define('my-element2', MyElement);
       // TODO: not upgraded on define, should it be?
       assert.notOk((el as MyElement).upgraded);
       // upgraded on re-render/update
@@ -86,8 +91,8 @@ suite('polyfill-support-lite', () => {
     });
 
     test('attributeChangedCallback/observedAttributes', () => {
-      class MyElementOA extends LitHTMLElement {
-        static override observedAttributes = ['foo'];
+      class MyElementOA extends HTMLElement {
+        static observedAttributes = ['foo'];
         attrChanges: Array<{
           name: string;
           old: null | string;
@@ -101,7 +106,7 @@ suite('polyfill-support-lite', () => {
           this.attrChanges.push({name, old, value});
         }
       }
-      litCustomElements.define('my-element-oa', MyElementOA);
+      customElements.define('my-element-oa', MyElementOA);
       //
       render(html`<my-element-oa>Hi</my-element-oa>`, host);
       const el = host.firstElementChild as MyElementOA;
@@ -124,7 +129,7 @@ suite('polyfill-support-lite', () => {
     });
 
     test('connected/disconnected', () => {
-      class MyElementCD extends LitHTMLElement {
+      class MyElementCD extends HTMLElement {
         litConnected?: boolean;
         connectedCallback() {
           this.litConnected = true;
@@ -134,7 +139,7 @@ suite('polyfill-support-lite', () => {
           this.litConnected = false;
         }
       }
-      litCustomElements.define('my-element-cd', MyElementCD);
+      customElements.define('my-element-cd', MyElementCD);
       //
       const part = render(html`<my-element-cd>Hi</my-element-cd>`, host);
       let el = host.firstElementChild as MyElementCD;
@@ -1238,6 +1243,49 @@ suite('polyfill-support-lite', () => {
         assert.equal(innerInnerOtherSlot.assignedNodes().length, 0);
         assert.equal(innerInnerDefaultSlotContainer.children.length, 0);
         assert.equal(innerInnerOtherSlotContainer.children.length, 0);
+      });
+
+      test('lit custom element can render shadowRoot with slot', () => {
+        class ShadowElement extends HTMLElement {
+          constructor() {
+            super();
+            this.attachShadow({mode: 'open'});
+          }
+
+          update() {
+            render(this.render(), this.shadowRoot!, {host: this});
+          }
+
+          __count = 0;
+
+          get count() {
+            return this.__count;
+          }
+
+          set count(v) {
+            this.__count = v;
+            this.update();
+          }
+
+          render() {
+            return html`shadowRoot:${this.count} [<slot></slot>]`;
+          }
+
+          connectedCallback() {
+            this.update();
+          }
+        }
+        customElements.define('shadow-element', ShadowElement);
+        //
+        render(
+          html`<shadow-element><span>light content</span></shadow-element>`,
+          host
+        );
+        const el = host.firstElementChild as ShadowElement;
+        assert.equal(el.textContent, `shadowRoot:0 [light content]`);
+        el.count++;
+        // TODO make this work
+        //assert.equal(el.textContent, `shadowRoot:1 [light content]`);
       });
     });
   });

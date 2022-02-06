@@ -24,16 +24,14 @@ import type {DirectiveResult} from './directive.js';
 // eslint-disable-next-line no-var
 var DEV_MODE = true;
 
-export const litShadowKey = '_$litShadowPart$';
-export const litChildPartKey = '_$litChildPart$';
+export const litSlotKey = '_$litSlotDirective$';
+const litChildPartKey = '_$litChildPart$';
+const litShadowRootKey = '_$litShadowRoot$';
+const litPartKey = '_$litPart$';
 const ELEMENT_PART = 6;
 
 interface NodeWithPart extends ChildNode {
   [litChildPartKey]?: ShadowChildPart;
-}
-
-interface NodeWithShadow extends ParentNode {
-  [litShadowKey]?: ShadowChildPart;
 }
 
 type ElementTemplatePart = {
@@ -62,17 +60,33 @@ interface DirectiveParent {
   __directives?: Array<Directive | undefined>;
 }
 
+interface SlotDirective extends Directive {
+  slot: string;
+  assignedNodes: () => Node[];
+  distribute: () => void;
+}
+
 export interface ShadowChildPart {
-  __directive?: Directive;
   _$committedValue: unknown;
   _$startNode: NodeWithPart;
   _$endNode: ChildNode | null;
-  parentNode: NodeWithShadow;
+  parentNode: ParentNode;
   options: RenderOptions;
   _$setValue(value: unknown, directiveParent: DirectiveParent): void;
   _$insert<Node>(node: Node, ref: Node | null): Node;
   _$clear(start?: ChildNode | null, from?: number): void;
   _$nodes: NodeWithPart[];
+  [litSlotKey]?: SlotDirective;
+  _$shadowHost?: ShadowHost;
+}
+
+interface ShadowHost extends HTMLElement {
+  shadowRoot: LitShadowRoot | null;
+}
+
+interface LitShadowRoot extends ShadowRoot {
+  [litShadowRootKey]?: boolean;
+  [litPartKey]?: ShadowChildPart;
 }
 
 interface PatchableTemplateConstructor {
@@ -85,6 +99,76 @@ interface ShadowChildPartConstructor {
   new (...args: any[]): ShadowChildPart;
 }
 
+// TODO: exported implementation; ideally goes inside polyfill function so
+// it runs conditionally.
+
+export const attachShadow = (host: HTMLElement, _config?: ShadowRootInit) => {
+  if (host.shadowRoot === null) {
+    // TODO This could just be an object, but we do render the marker nodes
+    // into it before moving them to the host.
+    const shadowRoot =
+      document.createDocumentFragment() as unknown as ShadowRoot;
+    Object.assign(shadowRoot, {host, [litShadowRootKey]: true});
+    Object.defineProperty(host, 'shadowRoot', {
+      value: shadowRoot,
+      enumerable: true,
+      configurable: true,
+    });
+  }
+  return host.shadowRoot!;
+};
+
+const observerMap = new Map<HTMLElement, MutationObserver>();
+const createDistributionObserver = (host: HTMLElement) => {
+  const observer = new MutationObserver(() => {
+    distribute(host);
+  });
+  observer.observe(host, {childList: true});
+  observerMap.set(host, observer);
+};
+
+const finishDistribution = (host: HTMLElement) => {
+  // remove undistributed nodes
+  const nodes = getLogicalNodes(host);
+  // console.log('finishDistribution', nodes);
+  nodes.forEach((n) => {
+    if (n.parentNode === host) {
+      host.removeChild(n);
+    }
+  });
+  // We've dealt with everything so discard any pending mutations.
+  observerMap.get(host)?.takeRecords();
+};
+
+export const flush = () => {
+  for (const [host, observer] of observerMap) {
+    // clear pending changes.
+    // Note, it would be nice to distribute only if there are mutation records;
+    // however, distributed nodes may not be in this physical location.
+    observer.takeRecords();
+    distribute(host);
+  }
+};
+
+const distribute = (host: HTMLElement) => {
+  const slots = getHostSlots(host);
+  for (const s of slots) {
+    s.distribute();
+  }
+  finishDistribution(host);
+};
+
+const slotMap = new WeakMap<HTMLElement, Set<SlotDirective>>();
+
+// exported for testing only.
+export const getHostSlots = (host: HTMLElement) => {
+  let slots = slotMap.get(host);
+  if (slots === undefined) {
+    slotMap.set(host, (slots = new Set()));
+  }
+  return slots;
+};
+
 export const getPartNodes = (part: ShadowChildPart): NodeWithPart[] =>
   part._$nodes
     ? part._$nodes.flatMap((n) => [
@@ -93,6 +177,71 @@ export const getPartNodes = (part: ShadowChildPart): NodeWithPart[] =>
         ...(n._$litChildPart$ ? getPartNodes(n._$litChildPart$) : []),
       ])
     : [];
+
+// Note, we do not distribute comment nodes.
+const nodeMatchesSlot = (n: Node, name = '') =>
+  (n.nodeType === Node.ELEMENT_NODE
+    ? (n as Element).getAttribute('slot') ?? ''
+    : n.nodeType !== Node.COMMENT_NODE && '') === name;
+
+// TODO need to track static nodes
+export const getLogicalNodes = (
+  host: ShadowHost,
+  slotName?: string | undefined
+) => {
+  const childNodes: Node[] = [];
+  const start =
+    // This property needs to remain un-minified.
+    host.shadowRoot?.[litPartKey]?._$endNode!.nextSibling ??
+    (host.localName === 'slot' ? host.firstChild : null);
+  if (start === null) {
+    return childNodes;
+  }
+  let skipTo: Node | undefined = undefined;
+  let lightPart: ShadowChildPart | undefined;
+  // Record nodes starting after the shadow end node minus lit part marker.
+  // This allows parts to continue to function in the same location.
+  // For part markers add the nodes inserted in the part, which may not
+  // physically be there if they've been distributed to a `litSlot`.
+  for (let n: ChildNode | null = start; n; n = n.nextSibling) {
+    if (skipTo !== undefined) {
+      if (n === skipTo) {
+        skipTo = undefined;
+      }
+      continue;
+    }
+    if (n.nodeType !== Node.COMMENT_NODE) {
+      if (slotName === undefined || nodeMatchesSlot(n, slotName)) {
+        childNodes.push(n);
+      }
+    } else if (
+      (lightPart = (n as NodeWithPart)[litChildPartKey]) !== undefined
+    ) {
+      // Filter by slot name if it's set.
+      let litSlot: SlotDirective | undefined;
+      if (
+        slotName !== undefined &&
+        (litSlot = lightPart[litSlotKey]) !== undefined
+      ) {
+        if (slotName === litSlot.slot) {
+          childNodes.push(...litSlot.assignedNodes());
+        }
+        skipTo = lightPart._$endNode!;
+      } else {
+        const partNodes = getPartNodes(lightPart as unknown as ShadowChildPart);
+        childNodes.push(
+          ...(partNodes.filter(
+            (x) =>
+              (slotName === undefined && x.nodeType !== Node.COMMENT_NODE) ||
+              nodeMatchesSlot(x, slotName)
+          ) ?? [])
+        );
+        skipTo = partNodes[partNodes.length - 1];
+      }
+    }
+  }
+  return childNodes;
+};
 
 export const ElementPartProcessors = new Set<
   (el: Element) => DirectiveResult | void
@@ -112,14 +261,34 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
     directiveParent: DirectiveParent
   ) {
     this._$startNode._$litChildPart$ ??= this;
+    const parent = this._$startNode.parentNode;
+    // Note, this will be true once because we move the part markers into
+    // the host.
+    const parentIsShadowRoot = parent?.[litShadowRootKey];
+    if (parentIsShadowRoot) {
+      this._$shadowHost = setupShadowRoot(parent, this);
+    }
     childPartSetValue.call(this, value, directiveParent);
+    if (this._$shadowHost) {
+      finishDistribution(this._$shadowHost);
+    }
+  };
+
+  const setupShadowRoot = ({host}: ShadowRoot, part: ShadowChildPart) => {
+    // TODO: name the markers for easier debugging
+    part._$startNode.textContent = 'lit-shadow-[';
+    part._$endNode = document.createComment('lit-shadow-]');
+    // Most the shadowRoot part into the start of the host
+    host.prepend(part._$startNode, part._$endNode);
+    createDistributionObserver(host as HTMLElement);
+    return host;
   };
 
   const shouldTrackNodes = (part: ShadowChildPart) => {
-    // const parent = part._$startNode.parentNode as NodeWithShadow | null;
-    const parent = part.parentNode;
+    const parent = part.parentNode ?? part._$endNode?.parentNode;
     return (
-      (parent !== null && parent[litShadowKey] !== undefined) ||
+      (parent != null &&
+        (parent as ShadowHost).shadowRoot?.[litShadowRootKey]) ||
       (parent as Element).localName === 'slot'
     );
   };

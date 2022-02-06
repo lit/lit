@@ -14,7 +14,7 @@
 
 import {nothing, ElementPart} from '../lit-html.js';
 import {directive, AsyncDirective} from '../async-directive.js';
-import {ElementPartProcessors} from '../polyfill-support-lite.js';
+import {ElementPartProcessors, attachShadow} from '../polyfill-support-lite.js';
 
 let elementToUpgrade: HTMLElement;
 const upgradeElement = (element: HTMLElement, ctor: typeof LitHTMLElement) => {
@@ -63,6 +63,10 @@ LitHTMLElement.prototype.removeAttribute = function (name: string) {
   }
 };
 
+LitHTMLElement.prototype.attachShadow = function (config: ShadowRootInit) {
+  return attachShadow(this, config);
+};
+
 interface LitCustomElementDefinition {
   ctor: typeof LitHTMLElement;
   observedAttributes?: Set<string>;
@@ -76,6 +80,11 @@ interface LitCustomElementDefinition {
     namespace?: string | null
   ): void;
 }
+
+type Descriptors = {
+  customElements?: PropertyDescriptor;
+  HTMLElement?: PropertyDescriptor;
+};
 
 /**
  * Registry for defining `LiteCustomElements`, shimmed custom elements that
@@ -103,6 +112,40 @@ export const litCustomElements = {
       disconnectedCallback,
       attributeChangedCallback,
     } as LitCustomElementDefinition);
+  },
+  getLitDescriptors() {
+    return {
+      customElements: {
+        value: litCustomElements,
+        enumerable: true,
+        configurable: true,
+      },
+      HTMLElement: {
+        value: LitHTMLElement,
+        enumerable: true,
+        configurable: true,
+      },
+    };
+  },
+  nativeDescriptors: null as Descriptors | null,
+  isActive: false,
+  activate() {
+    if (this.isActive) {
+      return;
+    }
+    this.isActive = true;
+    this.nativeDescriptors = {
+      customElements: Object.getOwnPropertyDescriptor(window, 'customElements'),
+      HTMLElement: Object.getOwnPropertyDescriptor(window, 'HTMLElement'),
+    };
+    Object.defineProperties(window, this.getLitDescriptors());
+  },
+  deactivate() {
+    if (!this.isActive) {
+      return;
+    }
+    this.isActive = false;
+    Object.defineProperties(window, this.nativeDescriptors!);
   },
 };
 
