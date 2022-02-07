@@ -1,6 +1,5 @@
 {
   "name": "@lit-labs/eleventy-plugin-lit",
-  "private": true,
   "version": "0.0.0",
   "description": "Eleventy plugin for rendering Lit components.",
   "author": "Google LLC",
