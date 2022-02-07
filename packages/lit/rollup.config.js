@@ -77,7 +77,7 @@ export default litProdConfig({
     },
     {
       file: 'index',
-      output: 'lit.min',
+      output: 'lit-core.min',
       format: 'es',
       sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
         // Convert the paths of the sources to appear as descendants of a
@@ -87,19 +87,19 @@ export default litProdConfig({
         // This causes the developer tools to display the original sources at
         // seemingly unrelated locations.)
         return path.join(
-          'lit.min.js',
+          'lit-core.min.js',
           makeRelativeToPackagesDir(relativeSourcePath, sourcemapPath)
         );
       },
     },
     {
       file: 'index.all',
-      output: 'lit.all.min',
+      output: 'lit-all.min',
       format: 'es',
       sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
         // See the comment in the core bundle above.
         return path.join(
-          'lit.all.min.js',
+          'lit-all.min.js',
           makeRelativeToPackagesDir(relativeSourcePath, sourcemapPath)
         );
       },
