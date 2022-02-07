@@ -1,5 +1,17 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- [#2488](https://github.com/lit/lit/pull/2488) [`28d856e3`](https://github.com/lit/lit/commit/28d856e3d737bf0a9f7930d2349671efdd1c0bbb) - Fix typo in README import statements.
+
+- [#2456](https://github.com/lit/lit/pull/2456) [`0b774e0e`](https://github.com/lit/lit/commit/0b774e0e9e8b42bf28ea6107ebd7062d3c0a36ab) - Fix TypeScript typing issues when using @lit-labs/ssr. Adds a dependency on @types/node for URL, which is part of the public ModuleLoader API. Adds a new VmModule interface for the ModuleLoader API, whose return type was previously completely missing.
+
+- [#2480](https://github.com/lit/lit/pull/2480) [`c9022d53`](https://github.com/lit/lit/commit/c9022d53c62a372af5447f58cafbb2a7866b6d70) - Fix bug which could cause errors resolving lit modules with isolated vm modules.
+
+- [#2406](https://github.com/lit/lit/pull/2406) [`5d77f893`](https://github.com/lit/lit/commit/5d77f893c6debb3fb09f2fb81b99ac2aadefe09c) - [@lit-labs/ssr] Fix typo in ssr readme. Fixes #2381
+
 ## 2.0.1
 
 ### Patch Changes

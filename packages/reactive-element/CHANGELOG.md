@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.2.2
+
+### Patch Changes
+
+- [#2482](https://github.com/lit/lit/pull/2482) [`6ea3d6c4`](https://github.com/lit/lit/commit/6ea3d6c4b85664be96cdb5f5bd62c6e6263aeb28) - Update the definition of the PropertyValues type to give better types to `.get(k)`. `.get(k)` is now defined to return the correct type when using `PropertyValues<this>` and a parameter that's a key of the element class.
+
+- [#2464](https://github.com/lit/lit/pull/2464) [`df4e1a46`](https://github.com/lit/lit/commit/df4e1a46751ec6f6f75ae378aff4b693ba4d3a9d) - Fix type signature in queryAssignedNodes JSDoc code example.
+
+- [#2457](https://github.com/lit/lit/pull/2457) [`48d69184`](https://github.com/lit/lit/commit/48d69184e6b975f2c707214d7cf5934e5dcc2cf0) - Add JSDoc to the `willUpdate` lifecycle callback. Expand the docs for `firstUpdated`, and `attributeChangedCallback`. Minor code sample fixes.
+
 ## 1.2.1
 
 ### Patch Changes
