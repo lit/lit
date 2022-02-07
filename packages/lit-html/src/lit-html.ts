@@ -341,9 +341,9 @@ export const html = tag(HTML_RESULT);
  * function. The `<svg>` element is an HTML element and should be used within a
  * template tagged with the {@linkcode html} tag function.
  *
- * In LitElement usage, it's rare to return an SVG fragment from the `render()`
- * method, as the SVG fragment will be contained within the element's shadow
- * root and thus cannot be used within an `<svg>` HTML element.
+ * In LitElement usage, it's invalid to return an SVG fragment from the
+ * `render()` method, as the SVG fragment will be contained within the element's
+ * shadow root and thus cannot be used within an `<svg>` HTML element.
  */
 export const svg = tag(SVG_RESULT);
 
