@@ -46,7 +46,7 @@ jobs:
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
-        if: steps.changesets.outputs.published
+        if: steps.changesets.outputs.published && steps.changesets.outputs.published != 'false'
         with:
           repository: lit/dist
           ref: empty
@@ -54,7 +54,7 @@ jobs:
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
       - name: Push bundles to dist repo
-        if: steps.changesets.outputs.published
+        if: steps.changesets.outputs.published && steps.changesets.outputs.published != 'false'
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
