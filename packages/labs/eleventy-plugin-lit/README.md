@@ -21,7 +21,7 @@ A plugin for [Eleventy](https://www.11ty.dev) that pre-renders
   - [Component compatibility](#component-compatibility)
   - [Passing data to components](#passing-data-to-components)
 - [Declarative Shadow DOM](#declarative-shadow-dom)
-  - [Ponyfill](#ponyfill)
+  - [Polyfill](#polyfill)
 - [Hydration](#hydration)
 - [Bootup](#bootup)
   - [Example bootup strategy](#example-bootup-strategy)
@@ -194,32 +194,32 @@ DOM](https://web.dev/declarative-shadow-dom/)_, a browser feature that allows
 Shadow DOM to be created and attached directly from HTML, without the use of
 JavaScript.
 
-### Ponyfill
+### Polyfill
 
 As of February 2022, Chrome and Edge have native support for Declarative Shadow
 DOM, but Firefox and Safari don't yet.
 
 Therefore, unless you are developing for a very constrained environment, you
 must use the [Declarative Shadow DOM
-Ponyfill](https://github.com/webcomponents/template-shadowroot) to emulate this
+Polyfill](https://github.com/webcomponents/template-shadowroot) to emulate this
 feature in browsers that don't yet support it.
 
-Install the ponyfill from NPM:
+Install the polyfill from NPM:
 
 ```sh
 npm i @webcomponents/template-shadowroot
 ```
 
 For usage, see the [example bootup strategy](#example-bootup-strategy) which
-demonstrates a recommended method for efficiently loading the ponyfill alongside
+demonstrates a recommended method for efficiently loading the polyfill alongside
 Lit hydration support.
 
-> ⏱️ The Declarative Shadow DOM ponyfill **must be applied after all
+> ⏱️ The Declarative Shadow DOM polyfill **must be applied after all
 > pre-rendered HTML has been parsed**, because it is a one-shot operation. You
-> can guarantee this timing by importing the ponyfill from a `type=module`
+> can guarantee this timing by importing the polyfill from a `type=module`
 > script, or by placing it at the end of your `<body>` tag.
 
-Note that even if you do not require hydration, you will still need to ponyfill
+Note that even if you do not require hydration, you will still need to polyfill
 Declarative Shadow DOM, otherwise your pre-rendered components will never be
 displayed in some browsers.
 
@@ -242,21 +242,21 @@ support_ module has been installed by importing
 It is important to preserve some constraints when designing a boot-up strategy
 for pages that use pre-rendered Lit components. In particular:
 
-- The Declarative Shadow DOM ponyfill must wait until all HTML has been parsed.
+- The Declarative Shadow DOM polyfill must wait until all HTML has been parsed.
 - Lit and Lit component definition modules must wait until the experimental Lit
   hydration support module has loaded.
 - Lit component definition modules must wait until the Declarative Shadow DOM
-  ponyfill to have been invoked (if it was needed for the browser).
+  polyfill to have been invoked (if it was needed for the browser).
 
 In the following diagram, each `->` edge represents a timing sequence
 constraint:
 
 ```
 parse    load       install lit
- HTML  ponyfill   hydration support
+ HTML  polyfill   hydration support
   |       |        |
   v       v        v
- run ponyfill    load lit
+ run polyfill    load lit
           |        |
           v        v
         load component
@@ -311,7 +311,7 @@ The file `_includes/default.html` would then contain the following:
 
     <!-- On browsers that don't yet support native declarative shadow DOM, a
          paint can occur after some or all pre-rendered HTML has been parsed,
-         but before the declarative shadow DOM ponyfill has taken effect. This
+         but before the declarative shadow DOM polyfill has taken effect. This
          paint is undesirable because it won't include any component shadow DOM.
          To prevent layout shifts that can result from this render, we use a
          "dsd-pending" attribute to ensure we only display any after we know
@@ -350,16 +350,16 @@ The file `_includes/default.html` would then contain the following:
           '/node_modules/lit/experimental-hydrate-support.js'
         );
 
-        // Check if we require the declarative shadow DOM ponyfill. As of
+        // Check if we require the declarative shadow DOM polyfill. As of
         // February 2022, Chrome and Edge have native support, but Firefox
         // and Safari don't yet.
         if (!HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
-          // Fetch the declarative shadow DOM ponyfill.
+          // Fetch the declarative shadow DOM polyfill.
           const {hydrateShadowRoots} = await import(
             '/node_modules/@webcomponents/template-shadowroot/template-shadowroot.js'
           );
 
-          // Apply the ponyfill. This is a one-shot operation, so it is important
+          // Apply the polyfill. This is a one-shot operation, so it is important
           // it happens after all HTML has been parsed.
           hydrateShadowRoots(document.body);
 
@@ -417,7 +417,7 @@ have any thoughts or questions.
   configuration.
 
 - [[#2490](https://github.com/lit/lit/issues/2490)] Simplify and optimize the
-  ponyfill + hydration bootup strategy.
+  polyfill + hydration bootup strategy.
 
 ## Issues and comments
 
