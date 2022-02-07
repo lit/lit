@@ -20,11 +20,16 @@ import {
   ElementPartProcessors,
   getHostSlots as baseGetHostSlots,
   litSlotKey,
+  litAssignedSlotKey,
   attachShadow,
   getLogicalNodes,
 } from '../polyfill-support-lite.js';
 
-export {flush} from '../polyfill-support-lite.js';
+export {
+  flush,
+  getChildNodes,
+  getLogicalNodes,
+} from '../polyfill-support-lite.js';
 
 const {_ChildPart: ChildPart, _TemplateInstance: TemplateInstance} = _$LH;
 type ChildPart = InstanceType<typeof ChildPart>;
@@ -53,6 +58,8 @@ export class LitSlotDirective extends AsyncDirective {
   name = '';
 
   slot = '';
+
+  [litAssignedSlotKey]: string | null = null;
 
   fallback?: unknown;
 
@@ -114,16 +121,35 @@ export class LitSlotDirective extends AsyncDirective {
   }
 
   distribute() {
-    const slotted = getLogicalNodes(this.host!, this.name).slice();
-    const hasSlottedNodes = slotted.length > 0;
-    // console.log(this.name, 'in host', this.host, 'slotted', slotted);
+    // Note, for re-projection, include matching slot directives
+    // so we can set assignedSlot.
+    const matchingNodesAndSlots = getLogicalNodes(this.host!, this.name, false);
+    let assignedNodes = matchingNodesAndSlots.flatMap((n) => {
+      this.setAssignedSlot(n);
+      return (n as LitSlotDirective).assignedNodes?.() ?? n;
+    });
+    if (assignedNodes.length > 0) {
+      this.slotPart._$setValue(assignedNodes);
+    } else {
+      assignedNodes = this.distributeFallback();
+    }
+    this._assignedNodes = assignedNodes;
+  }
+
+  distributeFallback() {
     const fallback =
       this.fallback ?? (this.slotEl ? getLogicalNodes(this.slotEl) : undefined);
-    this.slotPart._$setValue(hasSlottedNodes ? slotted : fallback);
+    this.slotPart._$setValue(fallback);
     // Note, with re-distribution physical nodes might not be correct.
-    this._assignedNodes = hasSlottedNodes
-      ? slotted
-      : getPhysicalNodes(this.slotPart);
+    const assignedNodes = getPhysicalNodes(this.slotPart);
+    assignedNodes.forEach((n) => this.setAssignedSlot(n));
+    return assignedNodes;
+  }
+
+  // SlotDirective | LitChildNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setAssignedSlot(n: any) {
+    n[litAssignedSlotKey] = this;
   }
 
   assignedNodes() {

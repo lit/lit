@@ -11,6 +11,7 @@ import {
   renderLitShadow,
   flush,
   getHostSlots,
+  getChildNodes,
 } from '../../directives/lit-shadow.js';
 import {range} from '../../directives/range.js';
 import {map} from '../../directives/map.js';
@@ -275,22 +276,25 @@ suite('polyfill-support-lite', () => {
       child2.setAttribute('slot', 'foo');
       host.append(child1, text, child2);
       await nextFrame();
+      assert.sameMembers(getChildNodes(host), [child1, text, child2]);
       assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
         child1,
         text,
       ]);
+
       child1.setAttribute('slot', 'foo');
       child2.setAttribute('slot', '');
-      host.append(child1, text, child2);
-      await nextFrame();
+      // must force re-rendering
+      flush();
       assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
         text,
         child2,
       ]);
-      // Exposes limitation: re-rendering without explicitly setting
-      // children, removes distributed nodes.
       renderShadow();
-      assert.sameMembers(getChildNodesWithoutComments(slotContainer), []);
+      assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
+        text,
+        child2,
+      ]);
     });
 
     test('`litSlot` renders named slots', async () => {
@@ -794,22 +798,40 @@ suite('polyfill-support-lite', () => {
         child2.setAttribute('slot', 'foo');
         host.append(child1, text, child2);
         await nextFrame();
+        assert.sameMembers(getChildNodes(host), [child1, text, child2]);
         assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
           child1,
           text,
         ]);
         child1.setAttribute('slot', 'foo');
         child2.setAttribute('slot', '');
-        host.append(child1, text, child2);
-        await nextFrame();
+        flush();
         assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
           text,
           child2,
         ]);
-        // Exposes limitation: re-rendering without explicitly setting
-        // children, removes distributed nodes.
         renderShadow();
-        assert.sameMembers(getChildNodesWithoutComments(slotContainer), []);
+        assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
+          text,
+          child2,
+        ]);
+        // can add to lit managed childNodes.
+        const child3 = document.createElement('div');
+        const childNodes = getChildNodes(host);
+        childNodes.push(child3);
+        renderShadow();
+        assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
+          text,
+          child2,
+          child3,
+        ]);
+        childNodes.unshift(childNodes.pop()!);
+        renderShadow();
+        assert.sameMembers(getChildNodesWithoutComments(slotContainer), [
+          child3,
+          text,
+          child2,
+        ]);
       });
 
       test('`litSlot` renders named slots', async () => {
@@ -1284,8 +1306,9 @@ suite('polyfill-support-lite', () => {
         const el = host.firstElementChild as ShadowElement;
         assert.equal(el.textContent, `shadowRoot:0 [light content]`);
         el.count++;
-        // TODO make this work
-        //assert.equal(el.textContent, `shadowRoot:1 [light content]`);
+        assert.equal(el.textContent, `shadowRoot:1 [light content]`);
+        el.count--;
+        assert.equal(el.textContent, `shadowRoot:0 [light content]`);
       });
     });
   });

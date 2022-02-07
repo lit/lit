@@ -25,13 +25,15 @@ import type {DirectiveResult} from './directive.js';
 var DEV_MODE = true;
 
 export const litSlotKey = '_$litSlotDirective$';
+export const litAssignedSlotKey = '_$litAssignedSlot';
 const litChildPartKey = '_$litChildPart$';
 const litShadowRootKey = '_$litShadowRoot$';
 const litPartKey = '_$litPart$';
 const ELEMENT_PART = 6;
 
-interface NodeWithPart extends ChildNode {
+export interface LitChildNode extends ChildNode {
   [litChildPartKey]?: ShadowChildPart;
+  [litAssignedSlotKey]?: SlotDirective;
 }
 
 type ElementTemplatePart = {
@@ -61,27 +63,30 @@ interface DirectiveParent {
 }
 
 interface SlotDirective extends Directive {
+  host: ShadowHost;
   slot: string;
+  name: string;
   assignedNodes: () => Node[];
   distribute: () => void;
 }
 
 export interface ShadowChildPart {
   _$committedValue: unknown;
-  _$startNode: NodeWithPart;
+  _$startNode: LitChildNode;
   _$endNode: ChildNode | null;
   parentNode: ParentNode;
   options: RenderOptions;
   _$setValue(value: unknown, directiveParent: DirectiveParent): void;
   _$insert<Node>(node: Node, ref: Node | null): Node;
   _$clear(start?: ChildNode | null, from?: number): void;
-  _$nodes: NodeWithPart[];
+  _$nodes: LitChildNode[];
   [litSlotKey]?: SlotDirective;
   _$shadowHost?: ShadowHost;
 }
 
 interface ShadowHost extends HTMLElement {
   shadowRoot: LitShadowRoot | null;
+  _$nodes?: LitChildNode[];
 }
 
 interface LitShadowRoot extends ShadowRoot {
@@ -129,11 +134,15 @@ const createDistributionObserver = (host: HTMLElement) => {
 
 const finishDistribution = (host: HTMLElement) => {
   // remove undistributed nodes
-  const nodes = getLogicalNodes(host);
-  // console.log('finishDistribution', nodes);
+  const nodes = getLogicalNodes(host) as LitChildNode[];
   nodes.forEach((n) => {
     if (n.parentNode === host) {
-      host.removeChild(n);
+      const slot = n[litAssignedSlotKey];
+      // TODO: Unclear if this check is correct or should we use the
+      // slot's assignedSlot?
+      if (slot === undefined || slot.host !== host) {
+        host.removeChild(n);
+      }
     }
   });
   // We've dealt with everything so discard any pending mutations.
@@ -169,7 +178,7 @@ export const getHostSlots = (host: HTMLElement) => {
   return slots;
 };
 
-export const getPartNodes = (part: ShadowChildPart): NodeWithPart[] =>
+export const getPartNodes = (part: ShadowChildPart): LitChildNode[] =>
   part._$nodes
     ? part._$nodes.flatMap((n) => [
         n,
@@ -184,25 +193,19 @@ const nodeMatchesSlot = (n: Node, name = '') =>
     ? (n as Element).getAttribute('slot') ?? ''
     : n.nodeType !== Node.COMMENT_NODE && '') === name;
 
-// TODO need to track static nodes
-export const getLogicalNodes = (
-  host: ShadowHost,
-  slotName?: string | undefined
-) => {
-  const childNodes: Node[] = [];
+export const getChildNodes = (host: ShadowHost) => host._$nodes ?? [];
+
+const getStaticNodes = (host: ShadowHost) => {
+  if (host._$nodes !== undefined && host._$nodes.length > 0) {
+    return host._$nodes;
+  }
+  host._$nodes ??= [];
   const start =
     // This property needs to remain un-minified.
     host.shadowRoot?.[litPartKey]?._$endNode!.nextSibling ??
     (host.localName === 'slot' ? host.firstChild : null);
-  if (start === null) {
-    return childNodes;
-  }
   let skipTo: Node | undefined = undefined;
-  let lightPart: ShadowChildPart | undefined;
-  // Record nodes starting after the shadow end node minus lit part marker.
-  // This allows parts to continue to function in the same location.
-  // For part markers add the nodes inserted in the part, which may not
-  // physically be there if they've been distributed to a `litSlot`.
+  let part: ShadowChildPart | undefined;
   for (let n: ChildNode | null = start; n; n = n.nextSibling) {
     if (skipTo !== undefined) {
       if (n === skipTo) {
@@ -210,25 +213,47 @@ export const getLogicalNodes = (
       }
       continue;
     }
+    host._$nodes.push(n);
+    if ((part = (n as LitChildNode)[litChildPartKey]) !== undefined) {
+      skipTo = part._$endNode!;
+    }
+  }
+  return host._$nodes;
+};
+
+export const getLogicalNodes = (
+  host: ShadowHost,
+  slotName?: string | undefined,
+  flatten = true
+) => {
+  const nodes = getStaticNodes(host);
+  const childNodes = [] as Array<LitChildNode | SlotDirective>;
+  let part: ShadowChildPart | undefined;
+  // Record nodes starting after the shadow end node minus lit part marker.
+  // This allows parts to continue to function in the same location.
+  // For part markers add the nodes inserted in the part, which may not
+  // physically be there if they've been distributed to a `litSlot`.
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
     if (n.nodeType !== Node.COMMENT_NODE) {
       if (slotName === undefined || nodeMatchesSlot(n, slotName)) {
         childNodes.push(n);
       }
-    } else if (
-      (lightPart = (n as NodeWithPart)[litChildPartKey]) !== undefined
-    ) {
+    } else if ((part = (n as LitChildNode)[litChildPartKey]) !== undefined) {
       // Filter by slot name if it's set.
       let litSlot: SlotDirective | undefined;
       if (
-        slotName !== undefined &&
-        (litSlot = lightPart[litSlotKey]) !== undefined
+        /*slotName !== undefined &&*/
+        (litSlot = part[litSlotKey]) !== undefined
       ) {
-        if (slotName === litSlot.slot) {
-          childNodes.push(...litSlot.assignedNodes());
+        if (slotName === undefined || slotName === litSlot.slot) {
+          const slottedNodes = flatten
+            ? (litSlot.assignedNodes() as LitChildNode[])
+            : [litSlot];
+          childNodes.push(...slottedNodes);
         }
-        skipTo = lightPart._$endNode!;
       } else {
-        const partNodes = getPartNodes(lightPart as unknown as ShadowChildPart);
+        const partNodes = getPartNodes(part as unknown as ShadowChildPart);
         childNodes.push(
           ...(partNodes.filter(
             (x) =>
@@ -236,7 +261,6 @@ export const getLogicalNodes = (
               nodeMatchesSlot(x, slotName)
           ) ?? [])
         );
-        skipTo = partNodes[partNodes.length - 1];
       }
     }
   }
@@ -295,7 +319,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
 
   const childPartClear = ChildPart.prototype._$clear;
   ChildPart.prototype._$clear = function (
-    start: NodeWithPart | null = null,
+    start: LitChildNode | null = null,
     from?: number
   ) {
     start ??= this._$startNode.nextSibling;
@@ -307,8 +331,8 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
 
   const childPartInsert = ChildPart.prototype._$insert;
   ChildPart.prototype._$insert = function (
-    node: NodeWithPart,
-    ref: NodeWithPart | null
+    node: LitChildNode,
+    ref: LitChildNode | null
   ) {
     if (shouldTrackNodes(this)) {
       addNode(this, node, ref);
@@ -332,8 +356,8 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
   // nodes.
   const addNode = (
     part: ShadowChildPart,
-    node: NodeWithPart,
-    ref: NodeWithPart | null
+    node: LitChildNode,
+    ref: LitChildNode | null
   ) => {
     part._$nodes ??= [];
     const nodes =
@@ -341,7 +365,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
         ? Array.from(node.childNodes)
         : [node];
     let skipTo: Node | undefined = undefined;
-    const nodesToAdd = nodes.filter((n: NodeWithPart) => {
+    const nodesToAdd = nodes.filter((n: LitChildNode) => {
       if (skipTo !== undefined) {
         if (n === skipTo) {
           skipTo = undefined;
@@ -356,7 +380,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
     part._$nodes.splice(i < 0 ? Infinity : i, 0, ...nodesToAdd);
   };
 
-  const removeNodes = (part: ShadowChildPart, start: NodeWithPart | null) => {
+  const removeNodes = (part: ShadowChildPart, start: LitChildNode | null) => {
     part._$nodes ??= [];
     const i = Math.max(start ? part._$nodes.indexOf(start!) : 0, 0);
     // Retain before index and clear deleted items.
