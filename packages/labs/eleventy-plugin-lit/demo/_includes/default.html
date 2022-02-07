@@ -8,11 +8,11 @@
 
     <!-- On browsers that don't yet support native declarative shadow DOM, a
          paint can occur after some or all pre-rendered HTML has been parsed,
-         but before the declarative shadow DOM ponyfill has taken effect. This
+         but before the declarative shadow DOM polyfill has taken effect. This
          paint is undesirable because it won't include any component shadow DOM.
          To prevent layout shifts that can result from this render, we use a
-         "dsd-pending" attribute to ensure we only display any after we know
-         declarative shadow DOM is active. -->
+         "dsd-pending" attribute to ensure we only paint after we know
+         shadow DOM is active. -->
     <style>
       body[dsd-pending] {
         display: none;
@@ -47,16 +47,16 @@
           'lit/experimental-hydrate-support.js'
         );
 
-        // Check if we require the declarative shadow DOM ponyfill. As of
+        // Check if we require the declarative shadow DOM polyfill. As of
         // February 2022, Chrome and Edge have native support, but Firefox
         // and Safari don't yet.
         if (!HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
-          // Fetch the declarative shadow DOM ponyfill.
+          // Fetch the declarative shadow DOM polyfill.
           const {hydrateShadowRoots} = await import(
             '@webcomponents/template-shadowroot/template-shadowroot.js'
           );
 
-          // Apply the ponyfill. This is a one-shot operation, so it is important
+          // Apply the polyfill. This is a one-shot operation, so it is important
           // it happens after all HTML has been parsed.
           hydrateShadowRoots(document.body);
 
