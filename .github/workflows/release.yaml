@@ -46,6 +46,8 @@ jobs:
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
         if: steps.changesets.outputs.published && steps.changesets.outputs.published != 'false'
         with:
           repository: lit/dist
@@ -54,6 +56,8 @@ jobs:
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
       - name: Push bundles to dist repo
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
         if: steps.changesets.outputs.published && steps.changesets.outputs.published != 'false'
         working-directory: dist
         run: |
