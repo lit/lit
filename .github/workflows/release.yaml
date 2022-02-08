@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v2
         # GitHub Actions outputs are strings and the string 'false' converts to
         # `true` because it isn't the empty string.
-        if: steps.changesets.outputs.published && steps.changesets.outputs.published != 'false'
+        if: steps.changesets.outputs.published == 'true'
         with:
           repository: lit/dist
           ref: empty
@@ -58,7 +58,7 @@ jobs:
       - name: Push bundles to dist repo
         # GitHub Actions outputs are strings and the string 'false' converts to
         # `true` because it isn't the empty string.
-        if: steps.changesets.outputs.published && steps.changesets.outputs.published != 'false'
+        if: steps.changesets.outputs.published == 'true'
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
