@@ -11,15 +11,10 @@ import {createRequire} from 'module';
 /**
  * Imports a module into a web-like rendering VM content and calls the function
  * exported as `functionName`.
- *
- * @param specifier
- * @param referrer
- * @param functionName
- * @param args
  */
 export const renderModule = async (
   specifier: string,
-  referrer: string,
+  referrerPathOrFileUrl: string,
   functionName: string,
   args: unknown[]
 ) => {
@@ -32,7 +27,10 @@ export const renderModule = async (
     },
   });
   const loader = new ModuleLoader({global: window});
-  const importResult = await loader.importModule(specifier, referrer);
+  const importResult = await loader.importModule(
+    specifier,
+    referrerPathOrFileUrl
+  );
   const {module} = importResult;
   const f = module.namespace[functionName] as Function;
   // TODO: should we require the result be an AsyncIterable?

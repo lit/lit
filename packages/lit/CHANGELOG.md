@@ -1,5 +1,21 @@
 # Change Log
 
+## 2.1.3
+
+### Patch Changes
+
+- [#2498](https://github.com/lit/lit/pull/2498) [`2a1dc7a1`](https://github.com/lit/lit/commit/2a1dc7a1fd8faf501af3c4c401d822de3fbf2f9e) - Replace 'rare' with 'invalid' in svg tag function JSDocs.
+
+- [#2459](https://github.com/lit/lit/pull/2459) [`23df9d45`](https://github.com/lit/lit/commit/23df9d4557d8c70820d76aec5c0fd3bce9106e3f) - Fix bindings inside of <title> elements
+
+- [#2482](https://github.com/lit/lit/pull/2482) [`6ea3d6c4`](https://github.com/lit/lit/commit/6ea3d6c4b85664be96cdb5f5bd62c6e6263aeb28) - Update the definition of the PropertyValues type to give better types to `.get(k)`. `.get(k)` is now defined to return the correct type when using `PropertyValues<this>` and a parameter that's a key of the element class.
+
+- [#2464](https://github.com/lit/lit/pull/2464) [`df4e1a46`](https://github.com/lit/lit/commit/df4e1a46751ec6f6f75ae378aff4b693ba4d3a9d) - Fix type signature in queryAssignedNodes JSDoc code example.
+
+- [#2479](https://github.com/lit/lit/pull/2479) [`89560520`](https://github.com/lit/lit/commit/89560520f08079dc1b0e91f1096934d9ccabed59) - Expand JSDocs for the `svg` tagged template literal (TTL). The new documentation makes it more clear that the `svg` tag function should only be used for SVG fragments, and not for the `<svg>` HTML element.
+
+- [#2457](https://github.com/lit/lit/pull/2457) [`48d69184`](https://github.com/lit/lit/commit/48d69184e6b975f2c707214d7cf5934e5dcc2cf0) - Add JSDoc to the `willUpdate` lifecycle callback. Expand the docs for `firstUpdated`, and `attributeChangedCallback`. Minor code sample fixes.
+
 ## 2.1.2
 
 ### Patch Changes

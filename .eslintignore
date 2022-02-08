@@ -40,8 +40,8 @@ packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
-packages/lit/lit.all.min.*
-packages/lit/lit.min.*
+packages/lit/lit-all.min.*
+packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
