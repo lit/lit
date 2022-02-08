@@ -34,7 +34,11 @@ jobs:
         run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
-        id: changesets
+        # The id of this step must not be "changesets", or else the step will be invisible
+        # in the list of steps from the GitHub UI when the action runs (though it will still
+        # run, and its output will appear in the raw logs). Unknown why this is the case,
+        # see https://github.com/changesets/action/issues/149 for discussion.
+        id: cs
         uses: changesets/action@v1
         with:
           version: npm run version
@@ -46,7 +50,7 @@ jobs:
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
-        if: steps.changesets.outputs.published
+        if: steps.cs.outputs.published
         with:
           repository: lit/dist
           ref: empty
@@ -54,12 +58,12 @@ jobs:
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
       - name: Push bundles to dist repo
-        if: steps.changesets.outputs.published
+        if: steps.cs.outputs.published
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
           LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
-            ${{ steps.changesets.outputs.publishedPackages }}
+            ${{ steps.cs.outputs.publishedPackages }}
           EOF
           )
           # Don't create a bundle commit if `lit` wasn't published.
