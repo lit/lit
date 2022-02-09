@@ -3074,5 +3074,60 @@ suite('ReactiveElement', () => {
       el2.setAttribute('foo', 'foo');
       assert.equal(el2.attrValue, 'custom');
     });
+
+    test('PropertyValues<this> type-checks', () => {
+      // This test only checks compile-type behavior. There are no runtime
+      // checks.
+      class E extends ReactiveElement {
+        declare foo: number;
+
+        override update(changedProperties: PropertyValues<this>) {
+          // @ts-expect-error 'bar' is not a keyof this
+          changedProperties.get('bar');
+          // @ts-expect-error 'bar' is not a keyof this
+          changedProperties.set('bar', 1);
+          // @ts-expect-error 'bar' is not a keyof this
+          changedProperties.has('bar');
+          // @ts-expect-error 'bar' is not a keyof this
+          changedProperties.delete('bar');
+          // @ts-expect-error number is not assignable to string
+          const w: string = changedProperties.get('foo');
+          // @ts-expect-error string is not assignable to number
+          changedProperties.set('foo', 'hi');
+
+          // This should type-check without a cast:
+          const x: number = changedProperties.get('foo');
+          changedProperties.set('foo', 2);
+
+          // This should type-check without a cast:
+          const propNames: Array<keyof this> = ['foo'];
+          const y = changedProperties.get(propNames[0]);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          changedProperties.set(propNames[0], 1 as any);
+
+          changedProperties.forEach((v, k) => {
+            if (k === 'foo') {
+              // This assignment ideally _shouldn't_ fail. tsc should see that
+              // `k === 'foo'` implies `v is typeof this['foo']` (because v is
+              // `this[typeof k]`).
+              // @ts-expect-error tsc should be better
+              const z: number = v;
+              return z;
+            } else {
+              // @ts-expect-error Type 'this[K]' is not assignable to type
+              // 'number'.
+              const z: number = v;
+              return z;
+            }
+          });
+
+          // Suppress no-unused-vars warnings on x and y
+          return {x, y};
+        }
+      }
+      if (E) {
+        // Suppress no-unused-vars warning on E
+      }
+    });
   });
 });

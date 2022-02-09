@@ -19,10 +19,10 @@ jobs:
           # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
           fetch-depth: 0
 
-      - name: Setup Node.js 14.x
+      - name: Setup Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: 14.x
+          node-version: 16
 
       - name: Install Dependencies
         run: npm ci
@@ -34,8 +34,12 @@ jobs:
         run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@master
+        # The id of this step must not be "changesets", or else the step will be invisible
+        # in the list of steps from the GitHub UI when the action runs (though it will still
+        # run, and its output will appear in the raw logs). Unknown why this is the case,
+        # see https://github.com/changesets/action/issues/149 for discussion.
+        id: cs
+        uses: changesets/action@v1
         with:
           version: npm run version
           publish: npm run release
@@ -46,7 +50,7 @@ jobs:
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
-        if: steps.changesets.outputs.published
+        if: steps.cs.outputs.published
         with:
           repository: lit/dist
           ref: empty
@@ -54,12 +58,12 @@ jobs:
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
       - name: Push bundles to dist repo
-        if: steps.changesets.outputs.published
+        if: steps.cs.outputs.published
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
           LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
-            ${{ steps.changesets.outputs.publishedPackages }}
+            ${{ steps.cs.outputs.publishedPackages }}
           EOF
           )
           # Don't create a bundle commit if `lit` wasn't published.
@@ -70,11 +74,11 @@ jobs:
           git checkout --detach empty
           # Copy in all of the bundles.
           mkdir all
-          cp ../packages/lit/lit.all.min.js all/lit-all.min.js
-          cp ../packages/lit/lit.all.min.js.map all/lit-all.min.js
+          cp ../packages/lit/lit-all.min.js all
+          cp ../packages/lit/lit-all.min.js.map all
           mkdir core
-          cp ../packages/lit/lit.min.js core/lit-core.min.js
-          cp ../packages/lit/lit.min.js.map core/lit-core.min.js
+          cp ../packages/lit/lit-core.min.js core
+          cp ../packages/lit/lit-core.min.js.map core
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Robot"

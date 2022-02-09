@@ -187,19 +187,10 @@ export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
   // Avoid installing the DOM shim if one already exists
   if (globalThis.window === undefined) {
     const window = getWindow({props});
-    // Setup window to proxy all globals added to window to the node global
-    window.window = new Proxy(window, {
-      set(
-        _target: {[key: string]: unknown},
-        p: PropertyKey,
-        value: unknown
-      ): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any)[p] = (globalThis as any)[p] = value;
-        return true;
-      },
-    });
     // Copy initial window globals to node global
     Object.assign(globalThis, window);
+    // Set up global reference to window so all globals added to window are
+    // added to the node global
+    globalThis.window = globalThis as typeof globalThis & Window;
   }
 };

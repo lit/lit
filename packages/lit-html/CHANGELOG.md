@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.1.3
+
+### Patch Changes
+
+- [#2498](https://github.com/lit/lit/pull/2498) [`2a1dc7a1`](https://github.com/lit/lit/commit/2a1dc7a1fd8faf501af3c4c401d822de3fbf2f9e) - Replace 'rare' with 'invalid' in svg tag function JSDocs.
+
+- [#2459](https://github.com/lit/lit/pull/2459) [`23df9d45`](https://github.com/lit/lit/commit/23df9d4557d8c70820d76aec5c0fd3bce9106e3f) - Fix bindings inside of <title> elements
+
+- [#2479](https://github.com/lit/lit/pull/2479) [`89560520`](https://github.com/lit/lit/commit/89560520f08079dc1b0e91f1096934d9ccabed59) - Expand JSDocs for the `svg` tagged template literal (TTL). The new documentation makes it more clear that the `svg` tag function should only be used for SVG fragments, and not for the `<svg>` HTML element.
+
 ## 2.1.2
 
 ### Patch Changes
