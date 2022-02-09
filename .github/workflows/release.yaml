@@ -34,7 +34,11 @@ jobs:
         run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
-        id: changesets
+        # The id of this step must not be "changesets", or else the step will be invisible
+        # in the list of steps from the GitHub UI when the action runs (though it will still
+        # run, and its output will appear in the raw logs). Unknown why this is the case,
+        # see https://github.com/changesets/action/issues/149 for discussion.
+        id: cs
         uses: changesets/action@v1
         with:
           version: npm run version
@@ -48,7 +52,7 @@ jobs:
         uses: actions/checkout@v2
         # GitHub Actions outputs are strings and the string 'false' converts to
         # `true` because it isn't the empty string.
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.cs.outputs.published == 'true'
         with:
           repository: lit/dist
           ref: empty
@@ -58,12 +62,12 @@ jobs:
       - name: Push bundles to dist repo
         # GitHub Actions outputs are strings and the string 'false' converts to
         # `true` because it isn't the empty string.
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.cs.outputs.published == 'true'
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
           LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
-            ${{ steps.changesets.outputs.publishedPackages }}
+            ${{ steps.cs.outputs.publishedPackages }}
           EOF
           )
           # Don't create a bundle commit if `lit` wasn't published.
