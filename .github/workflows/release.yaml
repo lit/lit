@@ -55,7 +55,9 @@ jobs:
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
-        if: steps.cs.outputs.published
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
+        if: steps.cs.outputs.published == 'true'
         with:
           repository: lit/dist
           ref: empty
@@ -63,7 +65,9 @@ jobs:
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
       - name: Push bundles to dist repo
-        if: steps.cs.outputs.published
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
+        if: steps.cs.outputs.published == 'true'
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
