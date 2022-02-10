@@ -13,27 +13,32 @@ jobs:
     environment: Changesets
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-        with:
-          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
-          fetch-depth: 0
-
       - name: Setup Node.js 16
         uses: actions/setup-node@v2
         with:
           node-version: 16
 
+      - name: Checkout Lit Repo
+        uses: actions/checkout@v2
+        with:
+          path: lit
+          # This makes Actions fetch all Git history so that Changesets can
+          # generate changelogs with the correct commits
+          fetch-depth: 0
+
       - name: Install Dependencies
+        working-directory: lit
         run: npm ci
 
       # Changeset uses prettier@1 which creates unstable formatting issues
       # Deleting this forces fallback to our version of prettier
       # https://github.com/changesets/changesets/issues/616
       - name: Remove old version of prettier from changesets
+        working-directory: lit
         run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
+        working-directory: lit
         # The id of this step must not be "changesets", or else the step will be invisible
         # in the list of steps from the GitHub UI when the action runs (though it will still
         # run, and its output will appear in the raw logs). Unknown why this is the case,
@@ -50,7 +55,9 @@ jobs:
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
-        if: steps.cs.outputs.published
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
+        if: steps.cs.outputs.published == 'true'
         with:
           repository: lit/dist
           ref: empty
@@ -58,7 +65,9 @@ jobs:
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
       - name: Push bundles to dist repo
-        if: steps.cs.outputs.published
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
+        if: steps.cs.outputs.published == 'true'
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
@@ -74,11 +83,11 @@ jobs:
           git checkout --detach empty
           # Copy in all of the bundles.
           mkdir all
-          cp ../packages/lit/lit-all.min.js all
-          cp ../packages/lit/lit-all.min.js.map all
+          cp ../lit/packages/lit/lit-all.min.js all
+          cp ../lit/packages/lit/lit-all.min.js.map all
           mkdir core
-          cp ../packages/lit/lit-core.min.js core
-          cp ../packages/lit/lit-core.min.js.map core
+          cp ../lit/packages/lit/lit-core.min.js core
+          cp ../lit/packages/lit/lit-core.min.js.map core
           # Stage the bundles, create the commit, tag it, and push.
           git add .
           git config user.name "Lit Robot"
