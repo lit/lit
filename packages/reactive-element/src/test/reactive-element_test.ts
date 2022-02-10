@@ -3151,4 +3151,26 @@ suite('ReactiveElement', () => {
       // Suppress no-unused-vars warnings
     }
   });
+
+  test('PropertyValues<T> works with subtyping', () => {
+    // This test only checks compile-type behavior. There are no runtime
+    // checks.
+    class A extends ReactiveElement {
+      foo!: number;
+      override update(changedProperties: PropertyValues<A>) {
+        const n: number = changedProperties.get('foo');
+        console.log(n);
+      }
+    }
+    class B extends A {
+      bar!: string;
+      override update(changedProperties: PropertyValues<B>) {
+        const s: string = changedProperties.get('bar');
+        console.log(s);
+      }
+    }
+    if (A || B) {
+      // Suppress no-unused-vars warnings
+    }
+  });
 });

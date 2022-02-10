@@ -244,17 +244,11 @@ export type PropertyValues<T = any> = T extends object
  * interface corresponding to the declared element properties.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface PropertyValueMap<T = any> extends Map<keyof T, unknown> {
+export interface PropertyValueMap<T = any> extends Map<PropertyKey, unknown> {
   get<K extends keyof T>(k: K): T[K];
   set<K extends keyof T>(key: K, value: T[K]): this;
-  forEach(
-    callbackfn: <K extends keyof T>(
-      value: T[K],
-      key: K,
-      map: Map<K, T[keyof T]>
-    ) => void,
-    thisArg?: unknown
-  ): void;
+  has<K extends keyof T>(k: K): boolean;
+  delete<K extends keyof T>(k: K): boolean;
 }
 
 export const defaultConverter: ComplexAttributeConverter = {
