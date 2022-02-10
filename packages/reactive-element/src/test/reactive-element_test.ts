@@ -3100,7 +3100,7 @@ suite('ReactiveElement', () => {
           changedProperties.set('foo', 2);
 
           // This should type-check without a cast:
-          const propNames: Array<keyof this> = ['foo'];
+          const propNames: Array<keyof E> = ['foo'];
           const y = changedProperties.get(propNames[0]);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           changedProperties.set(propNames[0], 1 as any);
@@ -3129,5 +3129,52 @@ suite('ReactiveElement', () => {
         // Suppress no-unused-vars warning on E
       }
     });
+  });
+
+  test('Maps can be used for changedProperties', () => {
+    // This test only checks compile-type behavior. There are no runtime
+    // checks.
+    class A extends ReactiveElement {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      override update(_changedProperties: Map<string, any>) {}
+    }
+    class B extends ReactiveElement {
+      override update(_changedProperties: Map<string, unknown>) {}
+    }
+    class C extends ReactiveElement {
+      override update(_changedProperties: Map<string | number, unknown>) {}
+    }
+    class D extends ReactiveElement {
+      override update(_changedProperties: Map<string, string>) {}
+    }
+    if (A || B || C || D) {
+      // Suppress no-unused-vars warnings
+    }
+  });
+
+  test('PropertyValues<T> works with subtyping', () => {
+    // This test only checks compile-type behavior. There are no runtime
+    // checks.
+    class A extends ReactiveElement {
+      foo!: number;
+      override update(changedProperties: PropertyValues<A>) {
+        const n: number = changedProperties.get('foo');
+        if (n) {
+          //Suppress no-unused-vars warnings
+        }
+      }
+    }
+    class B extends A {
+      bar!: string;
+      override update(changedProperties: PropertyValues<B>) {
+        const s: string = changedProperties.get('bar');
+        if (s) {
+          //Suppress no-unused-vars warnings
+        }
+      }
+    }
+    if (A || B) {
+      // Suppress no-unused-vars warnings
+    }
   });
 });
