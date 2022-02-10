@@ -3159,14 +3159,18 @@ suite('ReactiveElement', () => {
       foo!: number;
       override update(changedProperties: PropertyValues<A>) {
         const n: number = changedProperties.get('foo');
-        console.log(n);
+        if (n) {
+          //Suppress no-unused-vars warnings
+        }
       }
     }
     class B extends A {
       bar!: string;
       override update(changedProperties: PropertyValues<B>) {
         const s: string = changedProperties.get('bar');
-        console.log(s);
+        if (s) {
+          //Suppress no-unused-vars warnings
+        }
       }
     }
     if (A || B) {
