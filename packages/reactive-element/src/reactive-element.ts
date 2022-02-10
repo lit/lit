@@ -218,33 +218,29 @@ type PropertyDeclarationMap = Map<PropertyKey, PropertyDeclaration>;
 
 type AttributeMap = Map<string, PropertyKey>;
 
-// This condition is here so that if the type parameter T is not specified, or
-// is `any`, the type will include `Map<PropertyKey, unknown>`. Since T is not
-// given in the uses of PropertyValues in this file, all uses here fallback to
-// meaning `Map<PropertyKey, unknown>`, but if a developer uses
-// `PropertyValues<this>` (or any other value for T) they will get a
-// strongly-typed Map type.
 /**
- * A Map of property keys to values. If the type parameter T is specified as
- * a non-any, non-unknown type, the Map will be a strongly-typed
- * PropertyValueMap that associates the map keys with their corresponding
- * property type on T.
+ * A Map of property keys to values.
+ *
+ * Takes an optional type parameter T, which when specified as a non-any,
+ * non-unknown type, will make the Map more strongly-typed, associating the map
+ * keys with their corresponding value type on T.
  *
  * Use `PropertyValues<this>` when overriding ReactiveElement.update() and
  * other lifecycle methods in order to get stronger type-checking on keys
  * and values.
  */
+// This type is conditional so that if the parameter T is not specified, or
+// is `any`, the type will include `Map<PropertyKey, unknown>`. Since T is not
+// given in the uses of PropertyValues in this file, all uses here fallback to
+// meaning `Map<PropertyKey, unknown>`, but if a developer uses
+// `PropertyValues<this>` (or any other value for T) they will get a
+// strongly-typed Map type.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PropertyValues<T = any> = T extends object
   ? PropertyValueMap<T>
   : Map<PropertyKey, unknown>;
 
-/**
- * Map of changed properties with old values. Takes an optional generic
- * interface corresponding to the declared element properties.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface PropertyValueMap<T = any> extends Map<PropertyKey, unknown> {
+interface PropertyValueMap<T> extends Map<PropertyKey, unknown> {
   get<K extends keyof T>(k: K): T[K];
   set<K extends keyof T>(key: K, value: T[K]): this;
   has<K extends keyof T>(k: K): boolean;
