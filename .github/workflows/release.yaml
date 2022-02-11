@@ -38,7 +38,6 @@ jobs:
         run: rm -rf node_modules/@changesets/*/node_modules/prettier
 
       - name: Create Release Pull Request or Publish to npm
-        working-directory: lit
         # The id of this step must not be "changesets", or else the step will be invisible
         # in the list of steps from the GitHub UI when the action runs (though it will still
         # run, and its output will appear in the raw logs). Unknown why this is the case,
@@ -46,6 +45,7 @@ jobs:
         id: cs
         uses: changesets/action@v1
         with:
+          cwd: lit
           version: npm run version
           publish: npm run release
         env:
