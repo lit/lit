@@ -4,12 +4,11 @@ on: [pull_request]
 
 jobs:
   benchmarks:
-    name: benchmarks
+    # Don't run on forks. Benchmarks can't run on forks becuase secrets aren't
+    # available, which are needed for posting result comments.
+    if: github.repository == 'lit/lit'
 
-    # We can't currently run benchmarks on PRs from forked repos, because the
-    # tachometer action reports results by posting a comment, and we can't post
-    # comments without a github token.
-    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+    name: benchmarks
 
     runs-on: ubuntu-latest
     steps:

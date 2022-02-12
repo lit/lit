@@ -7,6 +7,10 @@ on:
     types: [opened]
 jobs:
   add-issue-to-project:
+    # Don't run on forks. Issues on forks aren't relevant, and secrets aren't
+    # available anyway.
+    if: github.repository == 'lit/lit'
+
     runs-on: ubuntu-latest
     steps:
       # Finds the global entity ID for the project and adds it to an environment variable
@@ -25,9 +29,9 @@ jobs:
                 }
               }
             }' -f organization=$ORGANIZATION -F project_number=$PROJECT_NUMBER > project_data.json
-            
+
           echo 'PROJECT_ID='$(jq '.data.organization.projectNext.id' project_data.json) >> $GITHUB_ENV
-          
+
       - name: Add issue to project
         env:
           GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
