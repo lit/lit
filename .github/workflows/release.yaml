@@ -45,6 +45,8 @@ jobs:
         id: cs
         uses: changesets/action@v1
         with:
+          # The `working-directory` option is only available for steps that use
+          # `run`. This `cwd` option is the same, but specific to this action.
           cwd: lit
           version: npm run version
           publish: npm run release
