@@ -14,10 +14,21 @@ jobs:
     environment: Changesets
     runs-on: ubuntu-latest
     steps:
+      - name: Use Lit Robot's name and email for all git actions
+        run: |
+          git config --global user.name "Lit Robot"
+          git config --global user.email "lit-robot@google.com"
+
       - name: Setup Node.js 16
         uses: actions/setup-node@v2
         with:
           node-version: 16
+
+      # changesets/action@v1 currently has a bug where it attempts to set the
+      # local git user info before changing directories for `cwd`, which means
+      # it will fail if the root directory is not a git repo.
+      - name: Initialize empty root repo
+        run: git init
 
       - name: Checkout Lit Repo
         uses: actions/checkout@v2
@@ -93,8 +104,6 @@ jobs:
           cp ../lit/packages/lit/lit-core.min.js.map core
           # Stage the bundles, create the commit, tag it, and push.
           git add .
-          git config user.name "Lit Robot"
-          git config user.email "lit-robot@google.com"
           git commit -m "Bundles for lit@${LIT_VERSION}"
           git tag "v${LIT_VERSION}"
           git push origin "v${LIT_VERSION}"
