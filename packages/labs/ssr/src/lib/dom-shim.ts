@@ -89,6 +89,10 @@ export const getWindow = ({
     createElement() {
       return {};
     }
+
+    querySelector() {
+      return {getAttribute: () => {}};
+    }
   }
 
   class CSSStyleSheet {
