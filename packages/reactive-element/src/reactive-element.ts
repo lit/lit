@@ -1467,7 +1467,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(globalThis.reactiveElementVersions ??= []).push('1.2.2');
+(globalThis.reactiveElementVersions ??= []).push('1.2.3');
 if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

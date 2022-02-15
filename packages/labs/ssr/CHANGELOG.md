@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.3
+
+### Patch Changes
+
+- [#2510](https://github.com/lit/lit/pull/2510) [`937388e2`](https://github.com/lit/lit/commit/937388e247a26ee201f58be1c4fa536635b2fc5c) - Replace window proxy with reference to globalThis in global DOM shim
+
 ## 2.0.2
 
 ### Patch Changes
