@@ -110,6 +110,7 @@ export const insertPart = (
       startNode,
       endNode,
       containerPart,
+      [part],
       containerPart.options
     );
   } else {
@@ -169,7 +170,7 @@ export const setChildPartValue = <T extends ChildPart>(
   value: unknown,
   directiveParent: DirectiveParent = part
 ): T => {
-  part._$setValue(value, directiveParent);
+  part._$setValue([value], directiveParent, 0);
   return part;
 };
 

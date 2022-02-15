@@ -142,7 +142,7 @@ export class Animate extends AsyncDirective {
   private _shouldAnimate = true;
   private _previousValue: unknown;
   private _styles?: string | undefined | null;
-  element!: HTMLElement;
+  element!: HTMLElement | SVGElement;
 
   shouldLog = false;
   animatingProperties?: CSSValues;

@@ -56,7 +56,7 @@ export const _$LH = {
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
-    index: number | undefined
+    index: number
   ) => {
     // Use the part setter to resolve directives/concatenate multiple parts
     // into a final value (captured by passing in a commitValue override)
@@ -65,7 +65,7 @@ export const _$LH = {
     // method is only run on `AttributePart`s created by lit-ssr using the same
     // version of the library as this file
     part._commitValue = (value: unknown) => (committedValue = value);
-    part._$setValue(value, part, index);
+    part._$setValue(value as any, part, index);
     return committedValue;
   },
   connectedDisconnectable: (props?: object): Disconnectable => ({

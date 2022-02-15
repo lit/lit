@@ -363,7 +363,7 @@ export abstract class AsyncDirective extends Directive {
    */
   setValue(value: unknown) {
     if (isSingleExpression(this.__part as unknown as PartInfo)) {
-      this.__part._$setValue(value, this);
+      this.__part._$setValue([value], this, 0);
     } else {
       // this.__attributeIndex will be defined in this case, but
       // assert it in dev mode

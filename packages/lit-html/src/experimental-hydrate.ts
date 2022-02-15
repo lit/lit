@@ -7,12 +7,8 @@
 import type {TemplateResult} from './lit-html.js';
 
 import {noChange, RenderOptions, _$LH} from './lit-html.js';
-import {AttributePartInfo, PartType} from './directive.js';
-import {
-  isPrimitive,
-  isSingleExpression,
-  isTemplateResult,
-} from './directive-helpers.js';
+import {PartType} from './directive.js';
+import {isPrimitive, isTemplateResult} from './directive-helpers.js';
 
 const {
   _TemplateInstance: TemplateInstance,
@@ -191,17 +187,17 @@ const openChildPart = (
   // TODO(kschaaf): Current constructor takes both nodes
   let part;
   if (stack.length === 0) {
-    part = new ChildPart(marker, null, undefined, options);
+    part = new ChildPart(marker, null, undefined, [], options);
     value = rootValue;
   } else {
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
-      part = new ChildPart(marker, null, state.instance, options);
+      part = new ChildPart(marker, null, state.instance, [], options);
       state.instance._parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
-      part = new ChildPart(marker, null, state.part, options);
+      part = new ChildPart(marker, null, state.part, [], options);
       const result = state.iterator.next();
       if (result.done) {
         value = undefined;
@@ -222,7 +218,7 @@ const openChildPart = (
       // https://github.com/lit/lit/issues/1434
       // throw new Error('Hydration value mismatch: Found a TemplateInstance' +
       //  'where a leaf value was expected');
-      part = new ChildPart(marker, null, state.part, options);
+      part = new ChildPart(marker, null, state.part, [], options);
     }
   }
 
@@ -364,14 +360,11 @@ const createAttributeParts = (
           templatePart.name,
           templatePart.strings,
           state.instance,
+          [],
           options
         );
 
-        const value = isSingleExpression(
-          instancePart as unknown as AttributePartInfo
-        )
-          ? state.result.values[state.instancePartIndex]
-          : state.result.values;
+        const values = state.result.values;
 
         // Setting the attribute value primes committed value with the resolved
         // directive value; we only then commit that value for event/property
@@ -382,7 +375,7 @@ const createAttributeParts = (
           instancePart.type === PartType.PROPERTY
         );
         instancePart._$setValue(
-          value,
+          values,
           instancePart,
           state.instancePartIndex,
           noCommit
@@ -394,6 +387,7 @@ const createAttributeParts = (
         const instancePart = new ElementPart(
           node as HTMLElement,
           state.instance,
+          [],
           options
         );
         resolveDirective(
