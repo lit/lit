@@ -129,7 +129,9 @@ jobs:
           # updating the work tree too (`-u`).
           git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-ts
           # If there are no changes, skip the rest of this step.
-          git diff --quiet --exit-code && exit
+          if git diff --quiet --exit-code; then
+            exit 0
+          fi
           # Stage the changes, commit, and push.
           git add .
           git commit -m "Import upstream changes (${IMPORT_REF})"
@@ -156,7 +158,9 @@ jobs:
           # updating the work tree too (`-u`).
           git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-js
           # If there are no changes, skip the rest of this step.
-          git diff --quiet --exit-code && exit
+          if git diff --quiet --exit-code; then
+            exit 0
+          fi
           # Stage the changes, commit, and push.
           git add .
           git commit -m "Import upstream changes (${IMPORT_REF})"
