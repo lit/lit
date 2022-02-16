@@ -85,13 +85,13 @@ jobs:
         working-directory: dist
         run: |
           # Extract the version of `lit` that was published or the empty string.
-          LIT_VERSION=$(npm run --silent extract-published-lit-version <<EOF
+          LIT_VERSION=$(node ../lit/scripts/extract-published-lit-version.js <<EOF
             ${{ steps.cs.outputs.publishedPackages }}
           EOF
           )
           # Don't create a bundle commit if `lit` wasn't published.
           if [[ -z "$LIT_VERSION" ]]; then
-            exit
+            exit 0
           fi
           # Checkout the empty root commit (with tag `empty`).
           git checkout --detach empty
