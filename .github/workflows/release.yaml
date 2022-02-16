@@ -132,8 +132,6 @@ jobs:
           git diff --quiet --exit-code && exit
           # Stage the changes, commit, and push.
           git add .
-          git config user.name "Lit Robot"
-          git config user.email "lit-robot@google.com"
           git commit -m "Import upstream changes (${IMPORT_REF})"
           git push origin release-automation-test-main
 
@@ -161,7 +159,5 @@ jobs:
           git diff --quiet --exit-code && exit
           # Stage the changes, commit, and push.
           git add .
-          git config user.name "Lit Robot"
-          git config user.email "lit-robot@google.com"
           git commit -m "Import upstream changes (${IMPORT_REF})"
           git push origin release-automation-test-main
