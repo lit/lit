@@ -1,5 +1,11 @@
 # @lit/lit-starter-js
 
+## 1.0.2
+
+### Patch Changes
+
+- [#2535](https://github.com/lit/lit/pull/2535) [`d1359856`](https://github.com/lit/lit/commit/d1359856698d1af381b335fb757f9282574690b0) - Update the README to indicate that issues and PRs should be filed on the main Lit repo.
+
 ## 1.0.1
 
 ### Patch Changes
