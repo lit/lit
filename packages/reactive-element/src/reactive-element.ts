@@ -99,6 +99,58 @@ if (DEV_MODE) {
   });
 }
 
+/**
+ * Contains types that are part of the unstable debug API.
+ *
+ * Everything in this API is not stable and may change or be removed in the future,
+ * even on patch releases.
+ */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace ReactiveUnstable {
+  /**
+   * When Lit is running in dev mode and `window.emitLitDebugLogEvents` is true,
+   * we will emit 'lit-debug' events to window, with live details about the update and render
+   * lifecycle. These can be useful for writing debug tooling and visualizations.
+   *
+   * Please be aware that running with window.emitLitDebugLogEvents has performance overhead,
+   * making certain operations that are normally very cheap (like a no-op render) much slower,
+   * because we must copy data and dispatch events.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace DebugLog {
+    export type Entry = Update;
+    export interface Update {
+      kind: 'update';
+    }
+  }
+}
+
+interface DebugLoggingWindow {
+  // Even in dev mode, we generally don't want to emit these events, as that's
+  // another level of cost, so only emit them when DEV_MODE is true _and_ when
+  // window.emitLitDebugEvents is true.
+  emitLitDebugLogEvents?: boolean;
+}
+
+/**
+ * Useful for visualizing and logging insights into what the Lit template system is doing.
+ *
+ * Compiled out of prod mode builds.
+ */
+const debugLogEvent = DEV_MODE
+  ? (event: ReactiveUnstable.DebugLog.Entry) => {
+      const shouldEmit = (window as unknown as DebugLoggingWindow)
+        .emitLitDebugLogEvents;
+      if (shouldEmit) {
+        window.dispatchEvent(
+          new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
+            detail: event,
+          })
+        );
+      }
+    }
+  : undefined;
+
 /*
  * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
  * replaced at compile time by the munged name for object[property]. We cannot
@@ -1206,6 +1258,7 @@ export abstract class ReactiveElement
     if (!this.isUpdatePending) {
       return;
     }
+    debugLogEvent?.({kind: 'update'});
     // create renderRoot before first update.
     if (!this.hasUpdated) {
       // Produce warning if any class properties are shadowed by class fields
