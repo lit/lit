@@ -1,4 +1,5 @@
 ---
+'lit': minor
 'lit-element': minor
 'lit-html': minor
 '@lit/reactive-element': minor
