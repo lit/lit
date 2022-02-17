@@ -1,0 +1,74 @@
+name: Sync Package
+
+on:
+  workflow_call:
+    inputs:
+      source-repo-path:
+        required: true
+        type: string
+        description: >-
+          The path to the source repo, relative to $GITHUB_WORKSPACE. The source
+          repo should already exist and have the desired ref to sync from
+          checked out.
+      source-package-path:
+        required: true
+        type: string
+        description: >-
+          The path to the source directory to sync from, relative to the source
+          repo root.
+      destination-repo:
+        required: true
+        type: string
+        description: >-
+          The name of the destination repo.
+      destination-checkout-path:
+        required: true
+        type: string
+        description: >-
+          The path where the destination repo should be checked out, relative to
+          $GITHUB_WORKSPACE.
+      destination-branch:
+        required: true
+        type: string
+        description: >-
+          The branch in the destination repo that changes should be pushed to.
+    secrets:
+      destination-token:
+        required: true
+        type: string
+        description: >-
+          The access token used to checkout and push to the destination repo.
+
+jobs:
+  sync-package:
+    name: Sync ${{ inputs.destination-repo }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ inputs.destination-repo }}
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.destination-repo }}
+          ref: ${{ inputs.destination-branch }}
+          path: ${{ inputs.destination-checkout-path }}
+          token: ${{ secrets.destination-token }}
+
+      - name: Push to ${{ inputs.destination-repo }}
+        working-directory: ${{ inputs.destination-checkout-path }}
+        run: |
+          # Add the local Lit repo as a remote and fetch the currently checked
+          # out commit.
+          git remote add source-repo "${GITHUB_WORKSPACE}/${{ inputs.source-repo-path }}"
+          git fetch --no-tags source-repo HEAD
+          IMPORT_REF=$(git rev-parse FETCH_HEAD)
+          # Read the contents of the TS starter kit directory from the imported
+          # commit into the index root, ignoring any conflicts (`--reset`) and
+          # updating the work tree too (`-u`).
+          git read-tree --reset -u "${IMPORT_REF}:${{ inputs.source-package-path }}"
+          # If there are no changes, skip the rest of this step.
+          if git diff --quiet --exit-code; then
+            exit 0
+          fi
+          # Stage the changes, commit, and push.
+          git add .
+          git commit -m "Sync upstream changes (${IMPORT_REF})"
+          git push origin ${{ inputs.destination-branch }}
