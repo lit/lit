@@ -201,7 +201,10 @@ const debugLogEvent = DEV_MODE
       }
     }
   : undefined;
-let debugLogId = 0;
+// Used for connecting beginRender and endRender events when there are nested
+// renders when errors are thrown preventing an endRender event from being
+// called.
+let debugLogRenderId = 0;
 
 /**
  * `true` if we're building for google3 with temporary back-compat helpers.
@@ -614,7 +617,7 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ): RootPart => {
-  const renderId = DEV_MODE ? debugLogId++ : 0;
+  const renderId = DEV_MODE ? debugLogRenderId++ : 0;
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
