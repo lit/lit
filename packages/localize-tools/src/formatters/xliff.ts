@@ -240,14 +240,6 @@ export class XliffFormatter implements Formatter {
       indent(transUnit, 1);
       transUnit.setAttribute('id', name);
 
-      if (desc) {
-        // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
-        const note = doc.createElement('note');
-        note.appendChild(doc.createTextNode(desc));
-        transUnit.appendChild(note);
-        indent(transUnit, 1);
-      }
-
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#source
       const source = doc.createElement('source');
       for (const child of this.encodeContents(doc, sourceContents)) {
@@ -265,6 +257,15 @@ export class XliffFormatter implements Formatter {
         indent(transUnit, 1);
         transUnit.appendChild(target);
       }
+
+      if (desc) {
+        // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
+        const note = doc.createElement('note');
+        note.appendChild(doc.createTextNode(desc));
+        indent(transUnit, 1);
+        transUnit.appendChild(note);
+      }
+
       indent(transUnit);
       indent(body);
     }
