@@ -15,12 +15,7 @@
 // types only
 import {Node, Element, CommentNode, DocumentFragment, ParentNode} from 'parse5';
 import * as parse5lib from 'parse5';
-
-import {createRequire} from 'module';
-const require = createRequire(import.meta.url);
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const parse5 = require('parse5') as typeof parse5lib;
+import parse5 from 'parse5';
 
 export const parseFragment = parse5.parseFragment;
 
