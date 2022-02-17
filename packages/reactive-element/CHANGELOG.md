@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.0
+
+### Minor Changes
+
+- [#2401](https://github.com/lit/lit/pull/2401) [`2c9d0008`](https://github.com/lit/lit/commit/2c9d00082a416457ee02107013dd4925bf589628) - Added a devlog events system that may be used for debugging and visualizing Lit's internals.
+
 ## 1.2.3
 
 ### Patch Changes
