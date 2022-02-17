@@ -29,7 +29,7 @@
       (async () => {
         try {
           // setup mocha
-          mocha.setup({ui: 'tdd'});
+          mocha.setup({ui: 'tdd', timeout: 60000});
 
           // or import your test file
           await import('./lit-html-apply_html-test.js');
