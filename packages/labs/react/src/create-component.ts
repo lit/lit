@@ -21,12 +21,13 @@ const reservedReactPropertyNames = [
   'className',
 ] as const;
 
-type ElementType<T extends ReadonlyArray<unknown>> =
-  T extends ReadonlyArray<infer ElementType>
-    ? ElementType
-    : never;
+type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<
+  infer ElementType
+>
+  ? ElementType
+  : never;
 
-type ReservedReactProperties = ElementType<typeof reservedReactPropertyNames>
+type ReservedReactProperties = ElementType<typeof reservedReactPropertyNames>;
 
 const reservedReactProperties = new Set(reservedReactPropertyNames);
 
@@ -156,8 +157,8 @@ export const createComponent = <
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
   type ComponentProps = UserProps & {
-      __forwardedRef: React.ForwardedRef<E>;
-    };
+    __forwardedRef: React.ForwardedRef<E>;
+  };
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
