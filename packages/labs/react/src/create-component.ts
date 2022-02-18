@@ -13,20 +13,22 @@ type Events<R = Record<string, string>> = {
   [K in keyof R]?: EventListeners;
 };
 
-type ReactReservedProperties = 
-'children' |
-'localName' |
-'ref' |
-'style' |
-'className';
-
-const reservedReactProperties = new Set([
+const reservedReactPropertyNames = [
   'children',
   'localName',
   'ref',
   'style',
   'className',
-]);
+] as const;
+
+type ElementType<T extends ReadonlyArray<unknown>> =
+  T extends ReadonlyArray<infer ElementType>
+    ? ElementType
+    : never;
+
+type ReservedReactProperties = ElementType<typeof reservedReactPropertyNames>
+
+const reservedReactProperties = new Set(reservedReactPropertyNames);
 
 const listenedEvents: WeakMap<
   Element,
@@ -138,28 +140,31 @@ export const createComponent = <
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
   // 'children', but 'children' is special to JSX, so we must at least do that.
-  type ElementWithoutHTML = Omit<E, keyof HTMLElement | ReactReservedProperties>;
+  type ElementWithoutHTML = Omit<
+    E,
+    keyof HTMLElement | ReservedReactProperties
+  >;
 
   // These are the props availble to the client. We want to include:
   // - properties specfic to the custom element
-  // - element properties required by react
   // - events specific to the custom element
-  type UserProps = ElementWithoutHTML & Events<R>;
+  // - element properties required by react
+  type UserProps = ElementWithoutHTML & Events<R> & React.HTMLAttributes<E>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
-  type ComponentProps = UserProps & React.HTMLAttributes<UserProps> & {
-    __forwardedRef: React.ForwardedRef<E>;
-  };
+  type ComponentProps = UserProps & {
+      __forwardedRef: React.ForwardedRef<E>;
+    };
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
   const elementClassProps = new Set(Object.keys(eventNames ?? {}));
   for (const p in elementClass.prototype) {
     if (!(p in HTMLElement.prototype)) {
-      if (reservedReactProperties.has(p)) {
+      if (reservedReactProperties.has(p as ReservedReactProperties)) {
         // Note, this effectively warns only for `ref` since the other
         // reserved props are on HTMLElement.prototype. To address this
         // would require crawling down the prototype, which doesn't feel worth
@@ -178,7 +183,7 @@ export const createComponent = <
 
   class ReactComponent extends Component<Partial<ComponentProps>> {
     private _element: E | null = null;
-    private _elementProps!: Partial<ComponentProps>;
+    private _elementProps!: Partial<UserProps>;
     private _userRef?: React.Ref<E>;
     private _ref?: React.RefCallback<E>;
 
@@ -256,7 +261,7 @@ export const createComponent = <
       for (const k in this.props) {
         const v = this.props[k];
         if (elementClassProps.has(k)) {
-          this._elementProps[k as keyof ComponentProps] = v;
+          this._elementProps[k as keyof UserProps] = v;
           continue;
         }
         // React does *not* handle `className` for custom elements so
@@ -268,7 +273,7 @@ export const createComponent = <
     }
   }
 
-  const ForwardedComponent = React.forwardRef<E, Partial<ComponentProps>>(
+  const ForwardedComponent = React.forwardRef<E, Partial<UserProps>>(
     (props, ref) =>
       createElement(
         ReactComponent,
