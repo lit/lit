@@ -44,6 +44,9 @@ export interface TaskConfig<T extends unknown[], R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
+  initialStatus?: TaskStatus;
+  initialValue?: R;
+  initialError?: unknown;
 }
 
 // TODO(sorvell): Some issues:
@@ -107,7 +110,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   private _host: ReactiveControllerHost;
   private _value?: R;
   private _error?: unknown;
-  status: TaskStatus = TaskStatus.INITIAL;
+  status: TaskStatus;
 
   /**
    * A Promise that resolve when the current task run is complete.
@@ -142,6 +145,9 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
+    this.status = taskConfig.initialStatus ?? TaskStatus.INITIAL;
+    this._value = taskConfig.initialValue;
+    this._error = taskConfig.initialError;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
     }
