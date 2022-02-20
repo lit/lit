@@ -295,7 +295,7 @@ suite('createComponent', () => {
     fooEvent2 = undefined;
     el.fire('foo');
     assert.equal(fooEvent, undefined);
-    // assert.equal(fooEvent2!.type, 'foo');
+    assert.equal(fooEvent2!.type, 'foo');
     await renderReactComponent({
       onFoo,
     });
