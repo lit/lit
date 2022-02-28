@@ -1,12 +1,7 @@
 name: Sauce
 
 on:
-  push:
-    branches-ingore:
-    - main
   pull_request:
-    branches:
-    - main
 
 jobs:
   tests-sauce:
