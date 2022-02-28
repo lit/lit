@@ -45,9 +45,5 @@ jobs:
       - name: Test
         env:
           BROWSERS: preset:sauce
-        run: npm run test
-
-      - name: Test IE
-        env:
-          BROWSERS: preset:sauce-ie11
+          CONCURRENT_BROWSERS: 4
         run: npm run test
