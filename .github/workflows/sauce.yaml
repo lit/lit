@@ -38,12 +38,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      # - name: Test
-      #   env:
-      #     SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-      #     SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      #     BROWSERS: preset:sauce
-      #   run: npm run test
+      - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:sauce
+        run: npm run test
 
       # - name: Test IE
       #   needs: Test
