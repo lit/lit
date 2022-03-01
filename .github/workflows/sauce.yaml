@@ -17,6 +17,7 @@ jobs:
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      CONCURRENT_BROWSERS: 4
 
     steps:
       - uses: actions/checkout@v2
@@ -45,5 +46,4 @@ jobs:
       - name: Test
         env:
           BROWSERS: preset:sauce
-          CONCURRENT_BROWSERS: 4
         run: npm run test
