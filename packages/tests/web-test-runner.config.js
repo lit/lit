@@ -53,7 +53,7 @@ const browserPresets = {
 /*
   Create SauceLabs Launcher
 */
-let sauceLauncher
+let sauceLauncher;
 
 const user = (process.env.SAUCE_USERNAME || '').trim();
 const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
@@ -66,7 +66,7 @@ if (!user || !key) {
   sauceLauncher = createSauceLabsLauncher({
     user,
     key,
-  });  
+  });
 }
 
 /**
