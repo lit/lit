@@ -22,25 +22,25 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install playwright deps
-        run: npx playwright install-deps
+      # - name: Install playwright deps
+      #   run: npx playwright install-deps
 
-      - name: NPM install
-        run: npm ci
+      # - name: NPM install
+      #   run: npm ci
 
-      - name: Lerna bootstrap
-        run: npm run bootstrap
+      # - name: Lerna bootstrap
+      #   run: npm run bootstrap
 
-      - name: Lint
-        run: npm run lint
+      # - name: Lint
+      #   run: npm run lint
 
-      - name: Build
-        run: npm run build
+      # - name: Build
+      #   run: npm run build
 
-      - name: Test
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce-ie11
-        # Retry once automatically.
-        run: npm run test || npm run test
+      # - name: Test
+      #   env:
+      #     SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      #     SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      #     BROWSERS: preset:sauce-ie11
+      #   # Retry once automatically.
+      #   run: npm run test || npm run test
