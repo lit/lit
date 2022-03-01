@@ -45,30 +45,23 @@ const browserPresets = {
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
     'sauce:macOS 10.15/Safari@latest',
+    'sauce:Windows 7/Internet Explorer@11',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
-  'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 
-let sauceLauncher;
-
-function makeSauceLauncherOnce() {
-  if (!sauceLauncher) {
-    const user = (process.env.SAUCE_USERNAME || '').trim();
-    const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-    if (!user || !key) {
-      throw new Error(
-        'To test on Sauce, set the SAUCE_USERNAME' +
-          ' and SAUCE_ACCESS_KEY environment variables.'
-      );
-    }
-    sauceLauncher = createSauceLabsLauncher({
-      user,
-      key,
-    });
-  }
-  return sauceLauncher;
+const user = (process.env.SAUCE_USERNAME || '').trim();
+const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
+if (!user || !key) {
+  throw new Error(
+    'To test on Sauce, set the SAUCE_USERNAME' +
+      ' and SAUCE_ACCESS_KEY environment variables.'
+  );
 }
+let sauceLauncher = createSauceLabsLauncher({
+  user,
+  key,
+});
 
 /**
  * Recognized formats:
@@ -125,7 +118,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     }
     const [, platformName, browserName, browserVersion] = match;
     return [
-      makeSauceLauncherOnce()({
+      sauceLauncher({
         browserName,
         browserVersion,
         platformName,
@@ -209,7 +202,7 @@ export default {
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 60000 * 10, // default 120000
+  testsStartTimeout: 600000, // default 120000
   testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha

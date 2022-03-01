@@ -46,8 +46,3 @@ jobs:
 
       - name: Test
         run: npm run test
-      
-      - name: Test IE
-        env:
-          BROWSERS: preset:sauce-ie11
-        run: npm run test
