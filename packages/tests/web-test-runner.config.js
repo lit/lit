@@ -45,23 +45,29 @@ const browserPresets = {
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
     'sauce:macOS 10.15/Safari@latest',
-    'sauce:Windows 7/Internet Explorer@11',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
+  'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
+
+/*
+  Create SauceLabs Launcher
+*/
+let sauceLauncher
 
 const user = (process.env.SAUCE_USERNAME || '').trim();
 const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
 if (!user || !key) {
-  throw new Error(
+  console.warn(
     'To test on Sauce, set the SAUCE_USERNAME' +
       ' and SAUCE_ACCESS_KEY environment variables.'
   );
+} else {
+  sauceLauncher = createSauceLabsLauncher({
+    user,
+    key,
+  });  
 }
-let sauceLauncher = createSauceLabsLauncher({
-  user,
-  key,
-});
 
 /**
  * Recognized formats:
@@ -96,7 +102,7 @@ function parseBrowser(browser) {
     return entries.map(parseBrowser).flat();
   }
 
-  if (browser.startsWith('sauce:')) {
+  if (sauceLauncher && browser.startsWith('sauce:')) {
     // Note this is the syntax used by WCT. Might as well use the same one.
     const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
     if (!match) {
