@@ -2,6 +2,10 @@ name: Tests
 
 on: [push, pull_request]
 
+env:
+  BROWSERS: preset:sauce
+  CONCURRENT_BROWSERS: 3
+
 jobs:
   changeset:
     runs-on: ubuntu-latest
@@ -38,7 +42,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-  tests-local-ubuntu:
+  tests-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
@@ -63,12 +67,9 @@ jobs:
         run: npm run build
 
       - name: Test
-        env:
-          BROWSERS: preset:local
-          CONCURRENT_BROWSERS: 3
         run: npm run test
 
-  tests-local-windows:
+  tests-windows:
     runs-on: windows-latest
 
     steps:
@@ -93,7 +94,31 @@ jobs:
         run: npm run build
 
       - name: Test
-        env:
-          BROWSERS: preset:local
-          CONCURRENT_BROWSERS: 3
+        run: npm run test
+
+  tests-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install playwright deps
+        run: npx playwright install-deps
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Lerna bootstrap
+        run: npm run bootstrap
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
         run: npm run test
