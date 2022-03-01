@@ -40,6 +40,9 @@ jobs:
 
   tests-local:
     runs-on: ubuntu-latest
+      env:
+        BROWSERS: preset:local
+        CONCURRENT_BROWSERS: 3
 
     steps:
       - uses: actions/checkout@v2
@@ -63,7 +66,4 @@ jobs:
         run: npm run build
 
       - name: Test
-        env:
-          BROWSERS: preset:local
-          CONCURRENT_BROWSERS: 3
         run: npm run test

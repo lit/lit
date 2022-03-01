@@ -17,7 +17,8 @@ jobs:
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      CONCURRENT_BROWSERS: 4
+      CONCURRENT_BROWSERS: 3
+      BROWSERS: preset:sauce
 
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +45,9 @@ jobs:
         run: npm run build
 
       - name: Test
+        run: npm run test
+      
+      - name: Test IE
         env:
-          BROWSERS: preset:sauce
+          BROWSERS: preset:sauce-ie11
         run: npm run test
