@@ -14,23 +14,26 @@
 // require() calls for the CommonJS modules we import.
 //
 // See https://github.com/microsoft/TypeScript/issues/43329 and
-// https://github.com/microsoft/TypeScript#22321 for more details.
+// https://github.com/microsoft/TypeScript/issues/22321 for more details.
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 const path = require('path') as typeof import('path');
+const {Worker: NodeWorker} =
+  require('worker_threads') as typeof import('worker_threads');
 
 type LitPluginOptions = {
   componentModules?: string[];
+  mode?: 'vm' | 'worker';
 };
 
 module.exports = {
   configFunction: function (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eleventyConfig: any,
-    {componentModules}: LitPluginOptions = {}
+    {componentModules, mode = 'vm'}: LitPluginOptions = {}
   ) {
-    if (require('vm').Module === undefined) {
+    if (mode === 'vm' && require('vm').Module === undefined) {
       // Show a more friendly error message if the --experimental-vm-modules
       // flag is missing.
       // TODO(aomarks) Rendering in a worker would remove the need for this flag.
@@ -39,17 +42,17 @@ module.exports = {
       const reset = '\u001b[0m';
       console.error(
         `${yellow}
-┌─────────────────────${red} ERROR ${yellow}─────────────────────┐
-│${reset}                                                 ${yellow}│
-│${reset} @lit-labs/eleventy-plugin-lit requires Node     ${yellow}│
-│${reset} version 12.16.0 or higher, and that eleventy is ${yellow}│
-│${reset} launched with a special environment variable    ${yellow}│
-│${reset} to enable an experimental feature:              ${yellow}│
-│${reset}                                                 ${yellow}│
-│${reset} NODE_OPTIONS=--experimental-vm-modules eleventy ${yellow}│
-│${reset}                                                 ${yellow}│
-└─────────────────────────────────────────────────┘
-${reset}`
+  ┌─────────────────────${red} ERROR ${yellow}─────────────────────┐
+  │${reset}                                                 ${yellow}│
+  │${reset} @lit-labs/eleventy-plugin-lit requires Node     ${yellow}│
+  │${reset} version 12.16.0 or higher, and that eleventy is ${yellow}│
+  │${reset} launched with a special environment variable    ${yellow}│
+  │${reset} to enable an experimental feature:              ${yellow}│
+  │${reset}                                                 ${yellow}│
+  │${reset} NODE_OPTIONS=--experimental-vm-modules eleventy ${yellow}│
+  │${reset}                                                 ${yellow}│
+  └─────────────────────────────────────────────────┘
+  ${reset}`
       );
       throw new Error(
         '@lit-labs/eleventy-plugin-lit requires that eleventy be launched ' +
@@ -68,65 +71,122 @@ ${reset}`
       path.resolve(process.cwd(), module)
     );
 
-    let contextifiedRender: (value: unknown) => IterableIterator<string>;
-    let contextifiedUnsafeHTML: (value: string) => unknown;
+    if (mode === 'vm') {
+      let contextifiedRender: (value: unknown) => IterableIterator<string>;
+      let contextifiedUnsafeHTML: (value: string) => unknown;
 
-    // Create a fresh context before each build, so that our module cache resets
-    // on every --watch mode build.
+      // Create a fresh context before each build, so that our module cache resets
+      // on every --watch mode build.
 
-    // TODO(aomarks) For better performance, we could re-use contexts between
-    // build, but selectively invalidate its cache so that only the user's
-    // modules are reloaded.
-    eleventyConfig.on('eleventy.before', async () => {
-      const {getWindow} = await import('@lit-labs/ssr/lib/dom-shim.js');
-      const {ModuleLoader} = await import('@lit-labs/ssr/lib/module-loader.js');
-      const window = getWindow({includeJSBuiltIns: true});
-      const loader = new ModuleLoader({global: window});
-      // TODO(aomarks) Replace with concurrent Promise.all version once
-      // https://github.com/lit/lit/issues/2549 has been addressed.
-      for (const module of resolvedComponentModules) {
-        await loader.importModule(module, renderModulePath);
-      }
-      contextifiedRender = (
-        await loader.importModule(
-          '@lit-labs/ssr/lib/render-lit-html.js',
-          renderModulePath
-        )
-      ).module.namespace.render as typeof contextifiedRender;
-      // TOOD(aomarks) We could also directly synthesize an html TemplateResult
-      // instead of doing so via the the unsafeHTML directive. The directive is
-      // performing some extra validation that doesn't really apply to us.
-      contextifiedUnsafeHTML = (
-        await loader.importModule(
-          'lit/directives/unsafe-html.js',
-          renderModulePath
-        )
-      ).module.namespace.unsafeHTML as typeof contextifiedUnsafeHTML;
-    });
-
-    eleventyConfig.addTransform(
-      'render-lit',
-      async (content: string, outputPath: string) => {
-        if (!outputPath.endsWith('.html')) {
-          return content;
+      // TODO(aomarks) For better performance, we could re-use contexts between
+      // build, but selectively invalidate its cache so that only the user's
+      // modules are reloaded.
+      eleventyConfig.on('eleventy.before', async () => {
+        const {getWindow} = await import('@lit-labs/ssr/lib/dom-shim.js');
+        const {ModuleLoader} = await import(
+          '@lit-labs/ssr/lib/module-loader.js'
+        );
+        const window = getWindow({includeJSBuiltIns: true});
+        const loader = new ModuleLoader({global: window});
+        // TODO(aomarks) Replace with concurrent Promise.all version once
+        // https://github.com/lit/lit/issues/2549 has been addressed.
+        for (const module of resolvedComponentModules) {
+          await loader.importModule(module, renderModulePath);
         }
-        // TODO(aomarks) Maybe we should provide a `renderUnsafeHtml` function
-        // directly from SSR which does this.
-        const iterator = contextifiedRender(contextifiedUnsafeHTML(content));
-        const concatenated = iterableToString(iterator);
-        // Lit SSR includes comment markers to track the outer template from
-        // the template we've generated here, but it's not possible for this
-        // outer template to be hydrated, so they serve no purpose.
+        contextifiedRender = (
+          await loader.importModule(
+            '@lit-labs/ssr/lib/render-lit-html.js',
+            renderModulePath
+          )
+        ).module.namespace.render as typeof contextifiedRender;
+        // TOOD(aomarks) We could also directly synthesize an html TemplateResult
+        // instead of doing so via the the unsafeHTML directive. The directive is
+        // performing some extra validation that doesn't really apply to us.
+        contextifiedUnsafeHTML = (
+          await loader.importModule(
+            'lit/directives/unsafe-html.js',
+            renderModulePath
+          )
+        ).module.namespace.unsafeHTML as typeof contextifiedUnsafeHTML;
+      });
 
-        // TODO(aomarks) Maybe we should provide an option to SSR option to skip
-        // outer markers (though note there are 2 layers of markers due to the
-        // use of the unsafeHTML directive).
-        const outerMarkersTrimmed = concatenated
-          .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
-          .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
-        return outerMarkersTrimmed;
-      }
-    );
+      eleventyConfig.addTransform(
+        'render-lit',
+        async (content: string, outputPath: string) => {
+          if (!outputPath.endsWith('.html')) {
+            return content;
+          }
+
+          // TODO(aomarks) Maybe we should provide a `renderUnsafeHtml` function
+          // directly from SSR which does this.
+          const iterator = contextifiedRender(contextifiedUnsafeHTML(content));
+          const concatenated = iterableToString(iterator);
+          // Lit SSR includes comment markers to track the outer template from
+          // the template we've generated here, but it's not possible for this
+          // outer template to be hydrated, so they serve no purpose.
+
+          // TODO(aomarks) Maybe we should provide an option to SSR option to skip
+          // outer markers (though note there are 2 layers of markers due to the
+          // use of the unsafeHTML directive).
+          const outerMarkersTrimmed = concatenated
+            .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
+            .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+          return outerMarkersTrimmed;
+        }
+      );
+    } else if (mode === 'worker') {
+      let worker: InstanceType<typeof NodeWorker>;
+
+      // Create a fresh context before each build, so that our module cache resets
+      // on every --watch mode build.
+      eleventyConfig.on('eleventy.before', async () => {
+        worker = new NodeWorker(
+          path.resolve(__dirname, './util/render-in-worker-thread.js'),
+          {
+            workerData: resolvedComponentModules,
+          }
+        );
+        worker.on('error', (err) => {
+          console.error(
+            'Unexpected error while rendering lit component in worker thread',
+            err
+          );
+          throw err;
+        });
+      });
+
+      eleventyConfig.on('eleventy.after', async () => {
+        await worker.terminate();
+      });
+
+      eleventyConfig.addTransform(
+        'render-lit',
+        async (content: string, outputPath: string) => {
+          if (!outputPath.endsWith('.html')) {
+            return content;
+          }
+
+          const renderedContent: string = await new Promise((resolve) => {
+            worker.once('message', (data: string) => {
+              resolve(data);
+            });
+            worker.postMessage(content);
+          });
+
+          // Lit SSR includes comment markers to track the outer template from
+          // the template we've generated here, but it's not possible for this
+          // outer template to be hydrated, so they serve no purpose.
+
+          // TODO(aomarks) Maybe we should provide an option to SSR option to skip
+          // outer markers (though note there are 2 layers of markers due to the
+          // use of the unsafeHTML directive).
+          const outerMarkersTrimmed = renderedContent
+            .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
+            .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+          return outerMarkersTrimmed;
+        }
+      );
+    }
   },
 };
 
