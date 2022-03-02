@@ -99,6 +99,7 @@ export default {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
+      timeout: '60000',
     },
   },
   plugins: [
