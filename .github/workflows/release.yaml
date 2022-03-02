@@ -65,7 +65,7 @@ jobs:
         env:
           HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.LIT_ROBOT_NPM_PUBLISH_ACCESS_TOKEN }}
 
       - name: Checkout dist repo
         uses: actions/checkout@v2
