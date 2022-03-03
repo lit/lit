@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   changeset:
     runs-on: ubuntu-latest
+    # When lit-robot creates a release PR, skip this check as it will always
+    # fail.
+    if: ${{ github.actor != 'lit-robot' }}
 
     steps:
       - uses: actions/checkout@v2
@@ -21,6 +24,8 @@ jobs:
       - run: git checkout main
       - run: git checkout ${{ github.sha }}
       - run: npm ci
+      # Enforce that all PR's that change packages need changesets. Changes
+      # without changesets result in this job failing.
       - run: npm run changeset status -- --since=main
 
   lint:
