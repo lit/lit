@@ -47,8 +47,7 @@ jobs:
           if git diff --cached --quiet --exit-code; then
             exit 0
           fi
-          # Stage the changes, commit, and push.
-          git add .
+          # Commit and push.
           git commit -m "Import upstream changes (${IMPORT_REF})"
           git push origin release-automation-test-main
 
@@ -76,7 +75,6 @@ jobs:
           if git diff --cached --quiet --exit-code; then
             exit 0
           fi
-          # Stage the changes, commit, and push.
-          git add .
+          # Commit and push.
           git commit -m "Import upstream changes (${IMPORT_REF})"
           git push origin release-automation-test-main
