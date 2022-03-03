@@ -24,7 +24,7 @@ jobs:
       - run: git checkout main
       - run: git checkout ${{ github.sha }}
       - run: npm ci
-      # Enforce that all PR's that change packages need changesets. Changes
+      # Enforce that all PRs that change packages need changesets. Changes
       # without changesets result in this job failing.
       - run: npm run changeset status -- --since=main
 
