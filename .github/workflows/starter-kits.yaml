@@ -44,7 +44,7 @@ jobs:
           # updating the work tree too (`-u`).
           git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-ts
           # If there are no changes, skip the rest of this step.
-          if git diff --quiet --exit-code; then
+          if git diff --cached --quiet --exit-code; then
             exit 0
           fi
           # Stage the changes, commit, and push.
@@ -73,7 +73,7 @@ jobs:
           # updating the work tree too (`-u`).
           git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-js
           # If there are no changes, skip the rest of this step.
-          if git diff --quiet --exit-code; then
+          if git diff --cached --quiet --exit-code; then
             exit 0
           fi
           # Stage the changes, commit, and push.
