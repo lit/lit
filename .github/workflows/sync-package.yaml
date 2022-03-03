@@ -68,13 +68,12 @@ jobs:
           echo "Reading source directory ${{ inputs.source-package-path }} into ${{ inputs.destination-repo }} ..."
           git read-tree --reset -u "${IMPORT_REF}:${{ inputs.source-package-path }}"
           # If there are no changes, skip the rest of this step.
-          if git diff --quiet --exit-code; then
+          if git diff --cached --quiet --exit-code; then
             echo "There are no changes."
             exit 0
           fi
           # Stage the changes, commit, and push.
           echo "Committing changes..."
-          git add .
           git commit -m "Sync upstream changes (${IMPORT_REF})"
           echo "Pushing to ${{ inputs.destination-branch }} ..."
           git push origin ${{ inputs.destination-branch }}
