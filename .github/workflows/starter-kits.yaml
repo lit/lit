@@ -30,6 +30,7 @@ jobs:
           ref: release-automation-test-main
           path: lit-element-starter-ts
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          # Fetch all history, otherwise we can't push to this repo.
           depth: 0
 
       - name: Push changes to lit-element-starter-ts repo
@@ -64,6 +65,7 @@ jobs:
           ref: release-automation-test-main
           path: lit-element-starter-js
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          # Fetch all history, otherwise we can't push to this repo.
           depth: 0
 
       - name: Push changes to lit-element-starter-js repo
