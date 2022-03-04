@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: lit/lit-element-starter-ts
-          ref: release-automation-test-main
+          ref: main
           path: lit-element-starter-ts
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           # Fetch all history, otherwise we can't push to this repo.
@@ -57,14 +57,14 @@ jobs:
           # Commit and push.
           echo "Pushing changes..."
           git commit -m "Import upstream changes (${IMPORT_REF})"
-          git push origin release-automation-test-main
+          git push origin main
           echo "Done."
 
       - name: Checkout lit-element-starter-js repo
         uses: actions/checkout@v2
         with:
           repository: lit/lit-element-starter-js
-          ref: release-automation-test-main
+          ref: main
           path: lit-element-starter-js
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           # Fetch all history, otherwise we can't push to this repo.
@@ -92,5 +92,5 @@ jobs:
           # Commit and push.
           echo "Pushing changes..."
           git commit -m "Import upstream changes (${IMPORT_REF})"
-          git push origin release-automation-test-main
+          git push origin main
           echo "Done."
