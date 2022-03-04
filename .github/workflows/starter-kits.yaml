@@ -25,72 +25,22 @@ jobs:
           # Fetch all history, otherwise we can't fetch from this repo.
           fetch-depth: 0
 
-      - name: Checkout lit-element-starter-ts repo
-        uses: actions/checkout@v2
+      - name: Sync lit-element-starter-ts repo
+        uses: ./.github/workflows/sync-package.yaml
         with:
-          repository: lit/lit-element-starter-ts
-          ref: release-automation-test-main
-          path: lit-element-starter-ts
-          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
-          # Fetch all history, otherwise we can't push to this repo.
-          fetch-depth: 0
+          source-repo-path: lit
+          source-package-path: packages/lit-starter-ts
+          destination-checkout-path: lit-element-starter-ts
+          destination-repo: lit/lit-element-starter-ts
+          destination-branch: release-automation-test-main
+          destination-token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
 
-      - name: Push changes to lit-element-starter-ts repo
-        working-directory: lit-element-starter-ts
-        run: |
-          # Add the local Lit repo as a remote and fetch the currently checked
-          # out commit.
-          echo "Fetching from local Lit repo..."
-          git remote add lit ../lit
-          git fetch --no-tags lit HEAD:lit-head
-          IMPORT_REF=$(git rev-parse lit-head)
-          # Read the contents of the TS starter kit directory from the imported
-          # commit into the index root, ignoring any conflicts (`--reset`) and
-          # updating the work tree too (`-u`).
-          echo "Staging changes..."
-          git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-ts
-          # If there are no changes, skip the rest of this step.
-          if git diff --cached --quiet --exit-code; then
-            echo "There are no changes."
-            exit 0
-          fi
-          # Commit and push.
-          echo "Pushing changes..."
-          git commit -m "Import upstream changes (${IMPORT_REF})"
-          git push origin release-automation-test-main
-          echo "Done."
-
-      - name: Checkout lit-element-starter-js repo
-        uses: actions/checkout@v2
+      - name: Sync lit-element-starter-js repo
+        uses: ./.github/workflows/sync-package.yaml
         with:
-          repository: lit/lit-element-starter-js
-          ref: release-automation-test-main
-          path: lit-element-starter-js
-          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
-          # Fetch all history, otherwise we can't push to this repo.
-          fetch-depth: 0
-
-      - name: Push changes to lit-element-starter-js repo
-        working-directory: lit-element-starter-js
-        run: |
-          # Add the local Lit repo as a remote and fetch the currently checked
-          # out commit.
-          echo "Fetching from local Lit repo..."
-          git remote add lit ../lit
-          git fetch --no-tags lit HEAD:lit-head
-          IMPORT_REF=$(git rev-parse lit-head)
-          # Read the contents of the JS starter kit directory from the imported
-          # commit into the index root, ignoring any conflicts (`--reset`) and
-          # updating the work tree too (`-u`).
-          echo "Staging changes..."
-          git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-js
-          # If there are no changes, skip the rest of this step.
-          if git diff --cached --quiet --exit-code; then
-            echo "There are no changes."
-            exit 0
-          fi
-          # Commit and push.
-          echo "Pushing changes..."
-          git commit -m "Import upstream changes (${IMPORT_REF})"
-          git push origin release-automation-test-main
-          echo "Done."
+          source-repo-path: lit
+          source-package-path: packages/lit-starter-js
+          destination-checkout-path: lit-element-starter-js
+          destination-repo: lit/lit-element-starter-js
+          destination-branch: release-automation-test-main
+          destination-token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
