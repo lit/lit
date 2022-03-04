@@ -30,6 +30,7 @@ jobs:
           ref: release-automation-test-main
           path: lit-element-starter-ts
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          depth: 0
 
       - name: Push changes to lit-element-starter-ts repo
         working-directory: lit-element-starter-ts
@@ -58,6 +59,7 @@ jobs:
           ref: release-automation-test-main
           path: lit-element-starter-js
           token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          depth: 0
 
       - name: Push changes to lit-element-starter-js repo
         working-directory: lit-element-starter-js
