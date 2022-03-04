@@ -22,6 +22,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: lit
+          # Fetch all history, otherwise we can't fetch from this repo.
+          fetch-depth: 0
 
       - name: Sync lit-element-starter-ts repo
         uses: ./.github/workflows/sync-package.yaml
