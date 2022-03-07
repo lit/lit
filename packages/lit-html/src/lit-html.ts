@@ -11,6 +11,10 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 
+const g = globalThis;
+const document = g.document;
+const window = g.window;
+
 /**
  * Contains types that are part of the unstable debug API.
  *
@@ -347,10 +351,8 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = document;
-
 // Creates a dynamic marker. We never have to search for these in the DOM.
-const createMarker = (v = '') => d.createComment(v);
+const createMarker = (v = '') => document.createComment(v);
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
@@ -695,8 +697,8 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   }
 }
 
-const walker = d.createTreeWalker(
-  d,
+const walker = document?.createTreeWalker(
+  document,
   129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
   null,
   false
@@ -1076,7 +1078,7 @@ class Template {
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
   /** @nocollapse */
   static createElement(html: TrustedHTML, _options?: RenderOptions) {
-    const el = d.createElement('template');
+    const el = document.createElement('template');
     el.innerHTML = html as unknown as string;
     return el;
   }
@@ -1178,7 +1180,10 @@ class TemplateInstance implements Disconnectable {
       el: {content},
       parts: parts,
     } = this._$template;
-    const fragment = (options?.creationScope ?? d).importNode(content, true);
+    const fragment = (options?.creationScope ?? document).importNode(
+      content,
+      true
+    );
     walker.currentNode = fragment;
 
     let node = walker.nextNode()!;
@@ -1529,7 +1534,7 @@ class ChildPart implements Disconnectable {
         });
         textNode.data = value as string;
       } else {
-        this._commitNode(d.createTextNode(value as string));
+        this._commitNode(document.createTextNode(value as string));
         debugLogEvent?.({
           kind: 'commit text',
           node: wrap(this._$startNode).nextSibling as Text,
@@ -2134,8 +2139,8 @@ export const _$LH = {
 
 // Apply polyfills if available
 const polyfillSupport = DEV_MODE
-  ? window.litHtmlPolyfillSupportDevMode
-  : window.litHtmlPolyfillSupport;
+  ? window?.litHtmlPolyfillSupportDevMode
+  : window?.litHtmlPolyfillSupport;
 polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.

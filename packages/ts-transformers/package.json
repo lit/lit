@@ -21,11 +21,13 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:watch": "tsc --watch",
     "test": "uvu tests/ \"\\-test\\.js$\"",
     "clean": "rimraf \"*.{js,d.ts}\" internal/ tests/",
     "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
+    "@lit-labs/ssr": "^2.0.3",
     "ts-clone-node": "^0.3.23",
     "typescript": "^4.3.5"
   },

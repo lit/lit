@@ -6,6 +6,9 @@
 
 import {Disconnectable, Part} from './lit-html';
 
+import {PartType} from './part-types.js';
+export {PartType};
+
 export {
   AttributePart,
   BooleanAttributePart,
@@ -38,17 +41,6 @@ export interface DirectiveResult<C extends DirectiveClass = DirectiveClass> {
   /** @internal */
   values: DirectiveParameters<InstanceType<C>>;
 }
-
-export const PartType = {
-  ATTRIBUTE: 1,
-  CHILD: 2,
-  PROPERTY: 3,
-  BOOLEAN_ATTRIBUTE: 4,
-  EVENT: 5,
-  ELEMENT: 6,
-} as const;
-
-export type PartType = typeof PartType[keyof typeof PartType];
 
 export interface ChildPartInfo {
   readonly type: typeof PartType.CHILD;
