@@ -80,6 +80,8 @@ export class TestProperty extends LitElement {
 
 // prettier-ignore
 export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
+export const elementWithAttribute = (x: string | undefined | null) =>
+  html`<test-property foo=${x}></test-property>`;
 
 @customElement('test-reflected-properties')
 export class TestReflectedProperties extends LitElement {

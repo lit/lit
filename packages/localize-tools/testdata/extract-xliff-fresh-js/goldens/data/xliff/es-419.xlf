@@ -3,8 +3,8 @@
 <file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="he7b474847636149b">
-  <note>Friendly greeting</note>
   <source>Hello <ph id="0">&lt;b>${name}</ph>!<ph id="1">&lt;/b></ph></source>
+  <note>Friendly greeting</note>
 </trans-unit>
 </body>
 </file>

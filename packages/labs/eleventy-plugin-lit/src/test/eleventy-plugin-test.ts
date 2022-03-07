@@ -475,4 +475,66 @@ test('fails when --experimental-vm-modules flag is not enabled', async ({
   assert.match(stderr, '--experimental-vm-modules');
 });
 
+test('multiple component modules in HTML file', async ({rig}) => {
+  await rig.write({
+    // eleventy config
+    '.eleventy.cjs': `
+      const litPlugin = require('@lit-labs/eleventy-plugin');
+      module.exports = function (eleventyConfig) {
+        eleventyConfig.addPlugin(litPlugin, {
+          componentModules: [
+            './js/my-element-1.js',
+            './js/my-element-2.js',
+          ],
+        });
+      };
+    `,
+
+    // component definition 1
+    'js/my-element-1.js': `
+      import { html, LitElement } from 'lit';
+      class MyElement1 extends LitElement {
+        render() {
+          return html\`<b>shadow content 1</b>\`;
+        }
+      }
+      customElements.define('my-element-1', MyElement1);
+    `,
+
+    // component definition 2
+    'js/my-element-2.js': `
+      import { html, LitElement } from 'lit';
+      class MyElement2 extends LitElement {
+        render() {
+          return html\`<b>shadow content 2</b>\`;
+        }
+      }
+      customElements.define('my-element-2', MyElement2);
+    `,
+
+    // HTML
+    'index.html': `
+      <h1>Heading</h1>
+      <my-element-1></my-element-1>
+      <my-element-2></my-element-2>
+    `,
+  });
+  assert.equal(
+    (
+      await rig.exec(
+        'NODE_OPTIONS="--experimental-vm-modules" eleventy --config .eleventy.cjs'
+      ).done
+    ).code,
+    0
+  );
+  assert.equal(
+    await rig.read('_site/index.html'),
+    normalize(`
+      <h1>Heading</h1>
+      <my-element-1><template shadowroot="open"><!--lit-part wBkDjDE4LIw=--><b>shadow content 1</b><!--/lit-part--></template></my-element-1>
+      <my-element-2><template shadowroot="open"><!--lit-part gxUDjDE4LIw=--><b>shadow content 2</b><!--/lit-part--></template></my-element-2>
+    `)
+  );
+});
+
 test.run();

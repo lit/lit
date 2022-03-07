@@ -6,12 +6,12 @@
   <source>&lt;Hello<ph id="0">&lt;b></ph>&lt;World &amp; Friends><ph id="1">&lt;/b></ph>!></source>
 </trans-unit>
 <trans-unit id="he7b474847636149b">
-  <note>Description of Hello $(name)</note>
   <source>Hello <ph id="0">&lt;b>${name}</ph>!<ph id="1">&lt;/b></ph></source>
+  <note>Description of Hello $(name)</note>
 </trans-unit>
 <trans-unit id="s8c0ec8d1fb9e6e32">
-  <note>Description of Hello World</note>
   <source>Hello World!</source>
+  <note>Description of Hello World</note>
 </trans-unit>
 </body>
 </file>

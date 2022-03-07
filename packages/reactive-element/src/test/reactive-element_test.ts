@@ -3091,6 +3091,7 @@ suite('ReactiveElement', () => {
           // @ts-expect-error 'bar' is not a keyof this
           changedProperties.delete('bar');
           // @ts-expect-error number is not assignable to string
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const w: string = changedProperties.get('foo');
           // @ts-expect-error string is not assignable to number
           changedProperties.set('foo', 'hi');
