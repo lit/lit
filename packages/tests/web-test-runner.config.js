@@ -30,6 +30,8 @@ const browserPresets = {
   local: [
     'chromium', // keep browsers on separate lines
     'firefox', // to make it easier to comment out
+  ],
+  macos: [
     'webkit', // individual browsers
   ],
 

@@ -71,8 +71,8 @@ jobs:
   tests-macos:
     runs-on: macos-latest
     env:
-      BROWSERS: preset:local
-      CONCURRENT_BROWSERS: 3
+      BROWSERS: preset:macos
+      CONCURRENT_BROWSERS: 1
 
     steps:
       - uses: actions/checkout@v2
