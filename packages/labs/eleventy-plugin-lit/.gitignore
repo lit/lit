@@ -3,6 +3,7 @@
 /demo/_js/*.bundle.js
 /index.*
 /util/render-in-worker-thread.*
+/util/types.*
 /test/
 # Switches Node into module mode for tests
 !/test/package.json

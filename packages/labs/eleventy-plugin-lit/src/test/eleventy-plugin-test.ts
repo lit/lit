@@ -461,13 +461,32 @@ test('fails when --experimental-vm-modules flag is not enabled', async ({
   rig,
 }) => {
   await rig.write({
+    // eleventy config
     '.eleventy.cjs': `
       const litPlugin = require('@lit-labs/eleventy-plugin');
       module.exports = function (eleventyConfig) {
         eleventyConfig.addPlugin(litPlugin, {
-          componentModules: [],
+          mode: 'vm',
+          componentModules: ['js/my-element.js'],
         });
       };
+    `,
+
+    // markdown
+    'index.md': `
+      # Heading
+      <my-element></my-element>
+    `,
+
+    // initial component definition
+    'js/my-element.js': `
+      import { html, LitElement } from 'lit';
+      class MyElement extends LitElement {
+        render() {
+          return html\`INITIAL\`;
+        }
+      }
+      customElements.define('my-element', MyElement);
     `,
   });
   const {code, stderr} = await rig.exec('eleventy --config .eleventy.cjs').done;
