@@ -27,7 +27,7 @@
     "node": ">=12.16.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
+    "build": "npm run build:ts",
     "build:ts": "tsc --build",
     "build:ts:watch": "tsc --build --watch",
     "build:demo": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy",

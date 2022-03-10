@@ -15,7 +15,7 @@
     "treemirror": "bin/treemirror.js"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
+    "build": "npm run build:ts",
     "build:ts": "tsc --build",
     "clean": "rm -rf lib/"
   },

@@ -30,7 +30,7 @@
     "/use-controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
-    "build": "npm run clean && npm run build:ts --build && rollup -c",
+    "build": "npm run build:ts --build && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",

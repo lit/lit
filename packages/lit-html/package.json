@@ -127,7 +127,7 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts && npm run build:version-stability-test && rollup -c",
+    "build": "npm run build:ts && npm run build:version-stability-test && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",

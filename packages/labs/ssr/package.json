@@ -8,7 +8,7 @@
   "description": "SSR for Lit",
   "main": "index.js",
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
+    "build": "npm run build:ts",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "clean": "rm -rf index.js demo/ test/ lib/ *.tsbuildinfo",

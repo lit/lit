@@ -17,7 +17,7 @@
   "type": "module",
   "scripts": {
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
-    "build": "npm run clean && tsc",
+    "build": "tsc",
     "test": "web-test-runner",
     "prepack": "npm run build"
   },

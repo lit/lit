@@ -32,7 +32,7 @@
   ],
   "scripts": {
     "start": "web-dev-server -- --node-resolve --watch --preserve-sym-links --open demo/index.html",
-    "build": "npm run clean && npm run build:ts --build && rollup -c",
+    "build": "npm run build:ts --build && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc  --build --watch",
