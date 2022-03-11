@@ -46,7 +46,7 @@ npm i @lit-labs/eleventy-plugin-lit
 
 ### Register plugin
 
-Edit your `.eleventy.js` config file to register the Lit plugin:
+Edit your `.eleventy.cjs` config file to register the Lit plugin:
 
 <!-- prettier-ignore-start -->
 ```js
@@ -54,6 +54,7 @@ const litPlugin = require('@lit-labs/eleventy-plugin-lit');
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(litPlugin, {
+    mode: 'worker',
     componentModules: [
       'js/demo-greeter.js',
       'js/other-component.js',
@@ -62,6 +63,25 @@ module.exports = function (eleventyConfig) {
 };
 ```
 <!-- prettier-ignore-end -->
+
+### Configure mode
+
+Use the `mode` setting to tell the plugin which mode to user for rendering.
+The plugin currently supports either `'worker'` or `'vm'`.
+
+`'worker'` mode (default) utilizes
+[worker threads](https://nodejs.org/api/worker_threads.html#worker-threads)
+to render allowing the lit plugin to render components without modifying any
+global state, and enables compatibility with Eleventy's `--watch` mode.
+
+`'vm'` mode utilizes [`vm.Module`](https://nodejs.org/api/vm.html#class-vmmodule)
+for context isolation and therefore eleventy _must_ be executed with the
+`--experimental-vm-modules` Node flag enabled. This flag is available in
+Node versions `12.16.0` and above.
+
+```sh
+NODE_OPTIONS=--experimental-vm-modules eleventy
+```
 
 ### Configure component modules
 
@@ -72,28 +92,25 @@ module.exports = function (eleventyConfig) {
 Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
 
-Pass an array of paths to `.js` files containing Lit component definitions.
+Pass an array of paths to `.js` or `.mjs` files containing Lit component definitions.
 Paths are interpreted relative to to the directory from which the `eleventy`
 command is executed.
 
-Each `.js` file should be a JavaScript module (ESM) that imports `lit` with a
+Each `.js` or `.mjs` file should be a JavaScript module (ESM) that imports `lit` with a
 bare module specifier and defines a component with `customElements.define`.
 
-### Enable experimental VM modules
+Note that in `'worker'` mode, Node determines the module system
+[accordingly](https://nodejs.org/api/packages.html#determining-module-system),
+and as such care must be taken to ensure Node reads them as ESM files
+while still reading the eleventy config file as CommonJS.
 
-> 🚧 Note: Removing this requirement is on the [roadmap](#roadmap). Follow
-> [#2494](https://github.com/lit/lit/issues/2484) for progress and discussion.
-> 🚧
+Some options are:
 
-Eleventy _must_ be executed with the
-[`--experimental-vm-modules`](https://nodejs.org/api/vm.html#class-vmmodule)
-Node flag enabled. This flag is available in Node versions `12.16.0` and above.
-This flag allows the lit plugin to render components without modifying any
-global state, and enables compatibility with Eleventy's `--watch` mode.
-
-```sh
-NODE_OPTIONS=--experimental-vm-modules eleventy
-```
+1. Add `{"type": "module"}` to your base `package.json` and make sure the
+   eleventy config file end with the `.cjs` extension.
+1. Make all component files end with the `.mjs` extensions.
+1. Put all component `.js` files in a subdirectory with a nested `package.json` with
+   `{"type": "module"}`.
 
 ### Watch mode
 
@@ -399,11 +416,6 @@ have any thoughts or questions.
   definition modules in [front
   matter](https://www.11ty.dev/docs/data-frontmatter/) instead of the
   [`componentModules`](#configure-component-modules) setting.
-
-- [[#2484](https://github.com/lit/lit/issues/2484)] Use [worker
-  threads](https://nodejs.org/api/worker_threads.html) instead of [isolated VM
-  modules](https://nodejs.org/api/vm.html#class-vmmodule) so that the
-  `--experimental-vm-modules` flag is no longer required.
 
 - [[#2485](https://github.com/lit/lit/issues/2485)] Provide a mechanism for
   passing [Eleventy data](https://www.11ty.dev/docs/data/) to components as
