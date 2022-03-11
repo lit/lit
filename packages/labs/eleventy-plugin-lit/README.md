@@ -428,3 +428,7 @@ comments, start a [discussion](https://github.com/lit/lit/discussions).
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
+
+### Testing environment variables:
+
+- `SHOW_TEST_OUTPUT`: Set to show all `stdout` and `stderr` from spawned eleventy invocations in test cases.
