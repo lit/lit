@@ -6,6 +6,6 @@
     "rootDir": ".",
     "composite": true
   },
-  "include": ["index.ts", "util/types.d.ts"],
+  "include": ["index.ts", "worker/types.d.ts"],
   "exclude": []
 }

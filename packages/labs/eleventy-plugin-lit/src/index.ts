@@ -6,7 +6,7 @@
 
 import * as path from 'path';
 import {Worker} from 'worker_threads';
-import type {Message} from './util/types';
+import type {Message} from './worker/types.js';
 
 type LitPluginOptions = {
   componentModules?: string[];
@@ -24,9 +24,7 @@ function configureWorker(
   let requestId = 0;
 
   eleventyConfig.on('eleventy.before', async () => {
-    worker = new Worker(
-      path.resolve(__dirname, './util/render-in-worker-thread.js')
-    );
+    worker = new Worker(path.resolve(__dirname, './worker/worker.js'));
 
     worker.on('error', (err) => {
       console.error(
@@ -36,7 +34,7 @@ function configureWorker(
       throw err;
     });
 
-    let requestResolve: Function;
+    let requestResolve: (value?: unknown) => void;
     const requestPromise = new Promise((resolve) => {
       requestResolve = resolve;
     });
@@ -57,6 +55,7 @@ function configureWorker(
             );
           }
           resolve(rendered);
+          requestIdResolveMap.delete(id);
           break;
         }
       }
@@ -92,16 +91,7 @@ function configureWorker(
         worker.postMessage(message);
       });
 
-      // Lit SSR includes comment markers to track the outer template from
-      // the template we've generated here, but it's not possible for this
-      // outer template to be hydrated, so they serve no purpose.
-
-      // TODO(aomarks) Maybe we should provide an option to SSR option to skip
-      // outer markers (though note there are 2 layers of markers due to the
-      // use of the unsafeHTML directive).
-      const outerMarkersTrimmed = renderedContent
-        .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
-        .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+      const outerMarkersTrimmed = trimOuterMarkers(renderedContent);
       return outerMarkersTrimmed;
     }
   );
@@ -116,7 +106,6 @@ function configureVm(
   if (require('vm').Module === undefined) {
     // Show a more friendly error message if the --experimental-vm-modules
     // flag is missing.
-    // TODO(aomarks) Rendering in a worker would remove the need for this flag.
     const red = '\u001b[31m';
     const yellow = '\u001b[33m';
     const reset = '\u001b[0m';
@@ -200,16 +189,8 @@ ${reset}`
       // directly from SSR which does this.
       const iterator = contextifiedRender(contextifiedUnsafeHTML(content));
       const concatenated = iterableToString(iterator);
-      // Lit SSR includes comment markers to track the outer template from
-      // the template we've generated here, but it's not possible for this
-      // outer template to be hydrated, so they serve no purpose.
 
-      // TODO(aomarks) Maybe we should provide an option to SSR option to skip
-      // outer markers (though note there are 2 layers of markers due to the
-      // use of the unsafeHTML directive).
-      const outerMarkersTrimmed = concatenated
-        .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
-        .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+      const outerMarkersTrimmed = trimOuterMarkers(concatenated);
       return outerMarkersTrimmed;
     }
   );
@@ -233,10 +214,12 @@ module.exports = {
 
     switch (mode) {
       case 'worker': {
-        return configureWorker(eleventyConfig, resolvedComponentModules);
+        configureWorker(eleventyConfig, resolvedComponentModules);
+        break;
       }
       case 'vm': {
-        return configureVm(eleventyConfig, resolvedComponentModules);
+        configureVm(eleventyConfig, resolvedComponentModules);
+        break;
       }
       default: {
         throw new Error(
@@ -246,6 +229,19 @@ module.exports = {
     }
   },
 };
+
+// Lit SSR includes comment markers to track the outer template from
+// the template we've generated here, but it's not possible for this
+// outer template to be hydrated, so they serve no purpose.
+
+// TODO(aomarks) Maybe we should provide an option to SSR option to skip
+// outer markers (though note there are 2 layers of markers due to the
+// use of the unsafeHTML directive).
+function trimOuterMarkers(renderedContent: string): string {
+  return renderedContent
+    .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
+    .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+}
 
 // Assuming this is faster than Array.from(iter).join();
 // TODO: perf test

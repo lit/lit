@@ -46,7 +46,7 @@ npm i @lit-labs/eleventy-plugin-lit
 
 ### Register plugin
 
-Edit your `.eleventy.cjs` config file to register the Lit plugin:
+Edit your `.eleventy.js` config file to register the Lit plugin:
 
 <!-- prettier-ignore-start -->
 ```js
@@ -66,13 +66,12 @@ module.exports = function (eleventyConfig) {
 
 ### Configure mode
 
-Use the `mode` setting to tell the plugin which mode to user for rendering.
+Use the `mode` setting to tell the plugin which mode to use for rendering.
 The plugin currently supports either `'worker'` or `'vm'`.
 
 `'worker'` mode (default) utilizes
 [worker threads](https://nodejs.org/api/worker_threads.html#worker-threads)
-to render allowing the lit plugin to render components without modifying any
-global state, and enables compatibility with Eleventy's `--watch` mode.
+to render components in isolation.
 
 `'vm'` mode utilizes [`vm.Module`](https://nodejs.org/api/vm.html#class-vmmodule)
 for context isolation and therefore eleventy _must_ be executed with the
@@ -92,11 +91,11 @@ NODE_OPTIONS=--experimental-vm-modules eleventy
 Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
 
-Pass an array of paths to `.js` or `.mjs` files containing Lit component definitions.
+Pass an array of paths to `.js` files containing Lit component definitions.
 Paths are interpreted relative to to the directory from which the `eleventy`
 command is executed.
 
-Each `.js` or `.mjs` file should be a JavaScript module (ESM) that imports `lit` with a
+Each `.js` file should be a JavaScript module (ESM) that imports `lit` with a
 bare module specifier and defines a component with `customElements.define`.
 
 Note that in `'worker'` mode, Node determines the module system
@@ -108,7 +107,6 @@ Some options are:
 
 1. Add `{"type": "module"}` to your base `package.json` and make sure the
    eleventy config file end with the `.cjs` extension.
-1. Make all component files end with the `.mjs` extensions.
 1. Put all component `.js` files in a subdirectory with a nested `package.json` with
    `{"type": "module"}`.
 

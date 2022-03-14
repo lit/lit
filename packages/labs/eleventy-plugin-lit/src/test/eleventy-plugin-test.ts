@@ -180,8 +180,8 @@ test('without plugin', async ({rig}) => {
 
 const modes = ['worker', 'vm'] as const;
 
-const getMyElementDefinitionAndConfigByMode = (mode: typeof modes[number]) => {
-  return {
+modes.forEach((mode) => {
+  const myElementDefinitionAndConfig = {
     // component definition
     'js/my-element.js': `
       import { html, LitElement } from 'lit';
@@ -204,25 +204,20 @@ const getMyElementDefinitionAndConfigByMode = (mode: typeof modes[number]) => {
       };
     `,
   };
-};
 
-const getBaseCommandToExec = (mode: typeof modes[number]) => {
-  return (
+  const baseCommandToExec =
     (mode === 'vm' ? 'NODE_OPTIONS=--experimental-vm-modules ' : '') +
-    'eleventy --config .eleventy.cjs'
-  );
-};
+    'eleventy --config .eleventy.cjs';
 
-modes.forEach((mode) => {
   test('basic component in markdown file', async ({rig}) => {
     await rig.write({
-      ...getMyElementDefinitionAndConfigByMode(mode),
+      ...myElementDefinitionAndConfig,
       'index.md': `
         # Heading
         <my-element></my-element>
       `,
     });
-    assert.equal((await rig.exec(getBaseCommandToExec(mode)).done).code, 0);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`
@@ -237,7 +232,7 @@ modes.forEach((mode) => {
       rig,
     }) => {
       await rig.write({
-        ...getMyElementDefinitionAndConfigByMode(mode),
+        ...myElementDefinitionAndConfig,
         'index.md': `
           # Heading
           <my-element></my-element>
@@ -252,13 +247,13 @@ modes.forEach((mode) => {
 
   test('basic component in HTML file', async ({rig}) => {
     await rig.write({
-      ...getMyElementDefinitionAndConfigByMode(mode),
+      ...myElementDefinitionAndConfig,
       'index.html': `
         <h1>Heading</h1>
         <my-element></my-element>
       `,
     });
-    assert.equal((await rig.exec(getBaseCommandToExec(mode)).done).code, 0);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`
@@ -272,7 +267,7 @@ modes.forEach((mode) => {
     rig,
   }) => {
     await rig.write({
-      ...getMyElementDefinitionAndConfigByMode(mode),
+      ...myElementDefinitionAndConfig,
       'index.html': `
         <!doctype html>
         <html>
@@ -283,7 +278,7 @@ modes.forEach((mode) => {
         </html>
       `,
     });
-    assert.equal((await rig.exec(getBaseCommandToExec(mode)).done).code, 0);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`
@@ -341,7 +336,7 @@ modes.forEach((mode) => {
         customElements.define('my-content', MyContent);
       `,
     });
-    assert.equal((await rig.exec(getBaseCommandToExec(mode)).done).code, 0);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`
@@ -374,7 +369,7 @@ modes.forEach((mode) => {
         };
       `,
     });
-    assert.equal((await rig.exec(getBaseCommandToExec(mode)).done).code, 0);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     // TODO(aomarks) There should be an error message about missing components.
     assert.equal(
       await rig.read('_site/index.html'),
@@ -417,7 +412,7 @@ modes.forEach((mode) => {
       `,
     });
 
-    const {kill, done} = rig.exec(getBaseCommandToExec(mode) + ' --watch');
+    const {kill, done} = rig.exec(baseCommandToExec + ' --watch');
 
     // It will take Eleventy some unknown amount of time to notice the change and
     // write new output. Just poll until we find the expected output.
@@ -507,7 +502,7 @@ modes.forEach((mode) => {
         <my-element-2></my-element-2>
       `,
     });
-    assert.equal((await rig.exec(getBaseCommandToExec(mode)).done).code, 0);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`

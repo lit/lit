@@ -22,7 +22,7 @@
   },
   "files": [
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/util/render-in-worker-thread.{d.ts,d.ts.map,js,js.map}"
+    "/worker/worker.{d.ts,d.ts.map,js,js.map}"
   ],
   "engines": {
     "node": ">=12.16.0"
@@ -33,7 +33,7 @@
     "build:ts:watch": "tsc --build --watch",
     "build:demo": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy",
     "build:demo:watch": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy --watch",
-    "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" \"test/**/*.{js,js.map,d.ts,d.ts.map}\" \"util/**/*.{js,js.map,d.ts,d.ts.map}\" demo/_site *.tsbuildinfo",
+    "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" \"test/**/*.{js,js.map,d.ts,d.ts.map}\" \"worker/**/*.{js,js.map,d.ts,d.ts.map}\" demo/_site *.tsbuildinfo",
     "serve:demo": "wds --watch --node-resolve --open demo/_site/test",
     "test": "uvu test/ \".*-test.js$\""
   },
