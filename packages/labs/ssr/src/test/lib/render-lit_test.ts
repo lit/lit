@@ -218,6 +218,46 @@ test('element with property', async () => {
   );
 });
 
+test('element with attribute', async () => {
+  const {render, elementWithAttribute} = await setup();
+  const result = await render(elementWithAttribute('bar'));
+  // TODO: we'd like to remove the extra space in the start tag
+  assert.is(
+    result,
+    `<!--lit-part ZI1U/5CYP1o=--><test-property  foo="bar"><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+  );
+});
+
+test('element with an empty string attribute', async () => {
+  const {render, elementWithAttribute} = await setup();
+  const result = await render(elementWithAttribute(''));
+  // TODO: we'd like to remove the extra space in the start tag
+  assert.is(
+    result,
+    `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+  );
+});
+
+test('element with an undefined attribute', async () => {
+  const {render, elementWithAttribute} = await setup();
+  const result = await render(elementWithAttribute(undefined));
+  // TODO: we'd like to remove the extra space in the start tag
+  assert.is(
+    result,
+    `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+  );
+});
+
+test('element with a null attribute', async () => {
+  const {render, elementWithAttribute} = await setup();
+  const result = await render(elementWithAttribute(null));
+  // TODO: we'd like to remove the extra space in the start tag
+  assert.is(
+    result,
+    `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+  );
+});
+
 test('element with reflected properties', async () => {
   const {render, elementWithReflectedProperties} = await setup();
   const result = await render(elementWithReflectedProperties);
