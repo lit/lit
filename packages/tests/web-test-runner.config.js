@@ -203,7 +203,7 @@ export default {
     }),
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  // filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 1200000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
