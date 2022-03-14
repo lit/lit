@@ -1,0 +1,42 @@
+name: Sauce IE11
+
+on:
+  pull_request:
+
+jobs:
+  tests-sauce-ie11:
+    # Don't run on forks. Sauce tests need access to secrets.
+    if: github.repository == 'lit/lit'
+
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+
+      - name: Install playwright deps
+        run: npx playwright install-deps
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Lerna bootstrap
+        run: npm run bootstrap
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:sauce-ie11
+        run: npm run test
