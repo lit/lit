@@ -212,7 +212,7 @@ export default {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
-      timeout: '12000', // default 2000
+      timeout: '18000', // default 2000
     },
   },
 };
