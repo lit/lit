@@ -138,16 +138,19 @@ interface DebugLoggingWindow {
  * Compiled out of prod mode builds.
  */
 const debugLogEvent = DEV_MODE
-  ? (event: ReactiveUnstable.DebugLog.Entry) => {
+  ? () => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
-      if (shouldEmit) {
+      if (!shouldEmit) {
+        return undefined;
+      }
+      return (event: ReactiveUnstable.DebugLog.Entry) => {
         window.dispatchEvent(
           new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
             detail: event,
           })
         );
-      }
+      };
     }
   : undefined;
 
@@ -1258,7 +1261,7 @@ export abstract class ReactiveElement
     if (!this.isUpdatePending) {
       return;
     }
-    debugLogEvent?.({kind: 'update'});
+    debugLogEvent?.()?.({kind: 'update'});
     // create renderRoot before first update.
     if (!this.hasUpdated) {
       // Produce warning if any class properties are shadowed by class fields
