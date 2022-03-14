@@ -12,6 +12,7 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
+    
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -21,7 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
-
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+      
       - name: Install playwright deps
         run: npx playwright install-deps
 
