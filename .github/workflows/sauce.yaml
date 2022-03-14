@@ -1,7 +1,6 @@
 name: Sauce
 
-on:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   tests-sauce:
@@ -13,7 +12,6 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
-    
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}

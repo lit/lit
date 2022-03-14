@@ -1,7 +1,6 @@
 name: Sauce IE11
 
-on:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   tests-sauce-ie11:
@@ -13,10 +12,14 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
-
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      BROWSERS: preset:sauce-ie11
+      CONCURRENT_BROWSERS: 1
+    
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/setup-node@v2
 
       - name: Install playwright deps
@@ -35,8 +38,4 @@ jobs:
         run: npm run build
 
       - name: Test
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce-ie11
         run: npm run test
