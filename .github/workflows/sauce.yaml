@@ -46,13 +46,3 @@ jobs:
       
       - name: Test Production
         run: npm run test:prod
-
-      - name: Test Development (IE only)
-        env:
-          BROWSERS: preset:sauce-ie11
-        run: npm run test:dev
-      
-      - name: Test Production (IE only)
-        env:
-          BROWSERS: preset:sauce-ie11
-        run: npm run test:prod
