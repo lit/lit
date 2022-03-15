@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.2.1
+
+### Patch Changes
+
+- [#2635](https://github.com/lit/lit/pull/2635) [`ae358703`](https://github.com/lit/lit/commit/ae3587038873ffcc4934fd008a0b45db4711561e) - Make the event debug logger lazier, doing even less work (with no side effects) even in dev mode unless the page has opted in.
+
 ## 2.2.0
 
 ### Minor Changes
