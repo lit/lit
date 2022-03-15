@@ -82,13 +82,20 @@ class TestRig {
     const kill = (code: number) => child.kill(code);
     let stdout = '';
     let stderr = '';
+    const showOutput = process.env.SHOW_TEST_OUTPUT;
     const done = new Promise<{code: number; stdout: string; stderr: string}>(
       (resolve) => {
         child.stdout.on('data', (chunk) => {
           stdout += chunk;
+          if (showOutput) {
+            process.stdout.write(chunk);
+          }
         });
         child.stderr.on('data', (chunk) => {
           stderr += chunk;
+          if (showOutput) {
+            process.stderr.write(chunk);
+          }
         });
         child.on('exit', (code) => {
           this._activeChildProcesses.delete(child);
@@ -171,370 +178,361 @@ test('without plugin', async ({rig}) => {
   );
 });
 
-const myElementDefinitionAndConfig = {
-  // component definition
-  'js/my-element.js': `
-    import { html, LitElement } from 'lit';
-    class MyElement extends LitElement {
-      render() {
-        return html\`<b>shadow content</b>\`;
-      }
-    }
-    customElements.define('my-element', MyElement);
-  `,
+const modes = ['worker', 'vm'] as const;
 
-  // eleventy config
-  '.eleventy.cjs': `
-    const litPlugin = require('@lit-labs/eleventy-plugin');
-    module.exports = function (eleventyConfig) {
-      eleventyConfig.addPlugin(litPlugin, {
-        componentModules: ['./js/my-element.js'],
-      });
-    };
-  `,
-};
-
-test('basic component in markdown file', async ({rig}) => {
-  await rig.write({
-    ...myElementDefinitionAndConfig,
-    'index.md': `
-      # Heading
-      <my-element></my-element>
-    `,
-  });
-  assert.equal(
-    (
-      await rig.exec(
-        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
-      ).done
-    ).code,
-    0
-  );
-  assert.equal(
-    await rig.read('_site/index.html'),
-    normalize(`
-      <h1>Heading</h1>
-      <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
-    `)
-  );
-});
-
-test('basic component in HTML file', async ({rig}) => {
-  await rig.write({
-    ...myElementDefinitionAndConfig,
-    'index.html': `
-      <h1>Heading</h1>
-      <my-element></my-element>
-    `,
-  });
-  assert.equal(
-    (
-      await rig.exec(
-        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
-      ).done
-    ).code,
-    0
-  );
-  assert.equal(
-    await rig.read('_site/index.html'),
-    normalize(`
-      <h1>Heading</h1>
-      <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
-    `)
-  );
-});
-
-test('basic component in HTML file with doctype, html, body', async ({rig}) => {
-  await rig.write({
-    ...myElementDefinitionAndConfig,
-    'index.html': `
-      <!doctype html>
-      <html>
-        <body>
-          <h1>Heading</h1>
-          <my-element></my-element>
-        </body>
-      </html>
-    `,
-  });
-  assert.equal(
-    (
-      await rig.exec(
-        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
-      ).done
-    ).code,
-    0
-  );
-  assert.equal(
-    await rig.read('_site/index.html'),
-    normalize(`
-      <!doctype html>
-      <html>
-        <body>
-          <h1>Heading</h1>
-          <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
-        </body>
-      </html>
-    `)
-  );
-});
-
-test('2 containers, 1 slotted child', async ({rig}) => {
-  await rig.write({
-    // md
-    'index.md': `
-      # Heading 1
-      <my-container>
-        <my-content></my-content>
-      </my-container>
-
-      # Heading 2
-      <my-container></my-container>
-    `,
-
-    // config
-    '.eleventy.cjs': `
-      const litPlugin = require('@lit-labs/eleventy-plugin');
-      module.exports = function (eleventyConfig) {
-        eleventyConfig.addPlugin(litPlugin, {
-          componentModules: ['./js/my-element.js'],
-        });
-      };
-    `,
-
-    // js
+modes.forEach((mode) => {
+  const myElementDefinitionAndConfig = {
+    // component definition
     'js/my-element.js': `
       import { html, LitElement } from 'lit';
-
-      class MyContainer extends LitElement {
-        render() {
-          return html\`<slot></slot>\`;
-        }
-      }
-      customElements.define('my-container', MyContainer);
-
-      class MyContent extends LitElement {
+      class MyElement extends LitElement {
         render() {
           return html\`<b>shadow content</b>\`;
         }
       }
-      customElements.define('my-content', MyContent);
-    `,
-  });
-  assert.equal(
-    (
-      await rig.exec(
-        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
-      ).done
-    ).code,
-    0
-  );
-  assert.equal(
-    await rig.read('_site/index.html'),
-    normalize(`
-      <h1>Heading 1</h1>
-      <my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template>
-        <my-content><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-content>
-      </my-container>
-      <h1>Heading 2</h1>
-      <p><my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template></my-container></p>
-    `)
-  );
-});
-
-test('missing component definition', async ({rig}) => {
-  await rig.write({
-    // md
-    'index.md': `
-      # Heading
-      <my-element></my-element>
+      customElements.define('my-element', MyElement);
     `,
 
-    // config
-    '.eleventy.cjs': `
-      const litPlugin = require('@lit-labs/eleventy-plugin');
-      module.exports = function (eleventyConfig) {
-        eleventyConfig.addPlugin(litPlugin, {
-          componentModules: [],
-        });
-      };
-    `,
-  });
-  assert.equal(
-    (
-      await rig.exec(
-        'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs'
-      ).done
-    ).code,
-    0
-  );
-  // TODO(aomarks) There should be an error message about missing components.
-  assert.equal(
-    await rig.read('_site/index.html'),
-    normalize(`
-      <h1>Heading</h1>
-      <p><my-element></my-element></p>
-    `)
-  );
-});
-
-test.skip('watch mode', async ({rig}) => {
-  await rig.write({
     // eleventy config
     '.eleventy.cjs': `
       const litPlugin = require('@lit-labs/eleventy-plugin');
       module.exports = function (eleventyConfig) {
         eleventyConfig.addPlugin(litPlugin, {
           componentModules: ['./js/my-element.js'],
+          mode: '${mode}'
         });
-        eleventyConfig.addWatchTarget('js/my-element.js');
       };
     `,
+  };
 
-    // markdown
-    'index.md': `
-      # Heading
-      <my-element></my-element>
-    `,
+  const baseCommandToExec =
+    (mode === 'vm' ? 'NODE_OPTIONS=--experimental-vm-modules ' : '') +
+    'eleventy --config .eleventy.cjs';
 
-    // initial component definition
-    'js/my-element.js': `
-      import { html, LitElement } from 'lit';
-      class MyElement extends LitElement {
-        render() {
-          return html\`INITIAL\`;
-        }
-      }
-      customElements.define('my-element', MyElement);
-    `,
-  });
-
-  const {kill, done} = rig.exec(
-    'NODE_OPTIONS=--experimental-vm-modules eleventy --config .eleventy.cjs --watch'
-  );
-
-  // It will take Eleventy some unknown amount of time to notice the change and
-  // write new output. Just poll until we find the expected output.
-  await retryUntilTimeElapses(10000, 100, async () => {
+  test('basic component in markdown file', async ({rig}) => {
+    await rig.write({
+      ...myElementDefinitionAndConfig,
+      'index.md': `
+        # Heading
+        <my-element></my-element>
+      `,
+    });
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
     assert.equal(
       await rig.read('_site/index.html'),
       normalize(`
         <h1>Heading</h1>
-        <p><my-element><template shadowroot="open"><!--lit-part QMmCfL7Whws=-->INITIAL<!--/lit-part--></template></my-element></p>
+        <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
       `)
     );
   });
 
-  // Eleventy occasionally doesn't notice when a file has changed (maybe 5% of
-  // the time). Maybe there is a race condition in Eleventy's watch logic?
-  // Re-write the file a few times to deflake this.
-  await retryTimes(3, async () => {
+  if (mode === 'vm') {
+    test('fails when --experimental-vm-modules flag is not enabled', async ({
+      rig,
+    }) => {
+      await rig.write({
+        ...myElementDefinitionAndConfig,
+        'index.md': `
+          # Heading
+          <my-element></my-element>
+        `,
+      });
+      const {code, stderr} = await rig.exec('eleventy --config .eleventy.cjs')
+        .done;
+      assert.equal(code, 1);
+      assert.match(stderr, '--experimental-vm-modules');
+    });
+  }
+
+  test('basic component in HTML file', async ({rig}) => {
     await rig.write({
-      // updated component definition
+      ...myElementDefinitionAndConfig,
+      'index.html': `
+        <h1>Heading</h1>
+        <my-element></my-element>
+      `,
+    });
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    assert.equal(
+      await rig.read('_site/index.html'),
+      normalize(`
+        <h1>Heading</h1>
+        <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
+      `)
+    );
+  });
+
+  test('basic component in HTML file with doctype, html, body', async ({
+    rig,
+  }) => {
+    await rig.write({
+      ...myElementDefinitionAndConfig,
+      'index.html': `
+        <!doctype html>
+        <html>
+          <body>
+            <h1>Heading</h1>
+            <my-element></my-element>
+          </body>
+        </html>
+      `,
+    });
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    assert.equal(
+      await rig.read('_site/index.html'),
+      normalize(`
+        <!doctype html>
+        <html>
+          <body>
+            <h1>Heading</h1>
+            <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
+          </body>
+        </html>
+      `)
+    );
+  });
+
+  test('2 containers, 1 slotted child', async ({rig}) => {
+    await rig.write({
+      // md
+      'index.md': `
+        # Heading 1
+        <my-container>
+          <my-content></my-content>
+        </my-container>
+  
+        # Heading 2
+        <my-container></my-container>
+      `,
+
+      // config
+      '.eleventy.cjs': `
+        const litPlugin = require('@lit-labs/eleventy-plugin');
+        module.exports = function (eleventyConfig) {
+          eleventyConfig.addPlugin(litPlugin, {
+            componentModules: ['./js/my-element.js'],
+            mode: '${mode}',
+          });
+        };
+      `,
+
+      // js
+      'js/my-element.js': `
+        import { html, LitElement } from 'lit';
+  
+        class MyContainer extends LitElement {
+          render() {
+            return html\`<slot></slot>\`;
+          }
+        }
+        customElements.define('my-container', MyContainer);
+  
+        class MyContent extends LitElement {
+          render() {
+            return html\`<b>shadow content</b>\`;
+          }
+        }
+        customElements.define('my-content', MyContent);
+      `,
+    });
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    assert.equal(
+      await rig.read('_site/index.html'),
+      normalize(`
+        <h1>Heading 1</h1>
+        <my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template>
+          <my-content><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-content>
+        </my-container>
+        <h1>Heading 2</h1>
+        <p><my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template></my-container></p>
+      `)
+    );
+  });
+
+  test('missing component definition', async ({rig}) => {
+    await rig.write({
+      // md
+      'index.md': `
+        # Heading
+        <my-element></my-element>
+      `,
+
+      // config
+      '.eleventy.cjs': `
+        const litPlugin = require('@lit-labs/eleventy-plugin');
+        module.exports = function (eleventyConfig) {
+          eleventyConfig.addPlugin(litPlugin, {
+            componentModules: [],
+            mode: '${mode}',
+          });
+        };
+      `,
+    });
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    // TODO(aomarks) There should be an error message about missing components.
+    assert.equal(
+      await rig.read('_site/index.html'),
+      normalize(`
+        <h1>Heading</h1>
+        <p><my-element></my-element></p>
+      `)
+    );
+  });
+
+  test.skip('watch mode', async ({rig}) => {
+    await rig.write({
+      // eleventy config
+      '.eleventy.cjs': `
+        const litPlugin = require('@lit-labs/eleventy-plugin');
+        module.exports = function (eleventyConfig) {
+          eleventyConfig.addPlugin(litPlugin, {
+            componentModules: ['./js/my-element.js'],
+            mode: '${mode}',
+          });
+          eleventyConfig.addWatchTarget('js/my-element.js');
+        };
+      `,
+
+      // markdown
+      'index.md': `
+        # Heading
+        <my-element></my-element>
+      `,
+
+      // initial component definition
       'js/my-element.js': `
         import { html, LitElement } from 'lit';
         class MyElement extends LitElement {
           render() {
-            return html\`UPDATED\`;
+            return html\`INITIAL\`;
           }
         }
         customElements.define('my-element', MyElement);
       `,
     });
 
-    await retryUntilTimeElapses(1000, 100, async () => {
+    const {kill, done} = rig.exec(baseCommandToExec + ' --watch');
+
+    // It will take Eleventy some unknown amount of time to notice the change and
+    // write new output. Just poll until we find the expected output.
+    await retryUntilTimeElapses(10000, 100, async () => {
       assert.equal(
         await rig.read('_site/index.html'),
         normalize(`
           <h1>Heading</h1>
-          <p><my-element><template shadowroot="open"><!--lit-part JDaFfBEPiAs=-->UPDATED<!--/lit-part--></template></my-element></p>
+          <p><my-element><template shadowroot="open"><!--lit-part QMmCfL7Whws=-->INITIAL<!--/lit-part--></template></my-element></p>
         `)
       );
     });
+
+    // Eleventy occasionally doesn't notice when a file has changed (maybe 5% of
+    // the time). Maybe there is a race condition in Eleventy's watch logic?
+    // Re-write the file a few times to deflake this.
+    await retryTimes(3, async () => {
+      await rig.write({
+        // updated component definition
+        'js/my-element.js': `
+          import { html, LitElement } from 'lit';
+          class MyElement extends LitElement {
+            render() {
+              return html\`UPDATED\`;
+            }
+          }
+          customElements.define('my-element', MyElement);
+        `,
+      });
+
+      await retryUntilTimeElapses(1000, 100, async () => {
+        assert.equal(
+          await rig.read('_site/index.html'),
+          normalize(`
+            <h1>Heading</h1>
+            <p><my-element><template shadowroot="open"><!--lit-part JDaFfBEPiAs=-->UPDATED<!--/lit-part--></template></my-element></p>
+          `)
+        );
+      });
+    });
+
+    kill(/* SIGINT */ 2);
+    assert.equal((await done).code, 0);
   });
 
-  kill(/* SIGINT */ 2);
-  assert.equal((await done).code, 0);
-});
+  test('multiple component modules in HTML file', async ({rig}) => {
+    await rig.write({
+      // eleventy config
+      '.eleventy.cjs': `
+        const litPlugin = require('@lit-labs/eleventy-plugin');
+        module.exports = function (eleventyConfig) {
+          eleventyConfig.addPlugin(litPlugin, {
+            componentModules: [
+              './js/my-element-1.js',
+              './js/my-element-2.js',
+            ],
+          });
+        };
+      `,
 
-test('fails when --experimental-vm-modules flag is not enabled', async ({
-  rig,
-}) => {
-  await rig.write({
-    '.eleventy.cjs': `
-      const litPlugin = require('@lit-labs/eleventy-plugin');
-      module.exports = function (eleventyConfig) {
-        eleventyConfig.addPlugin(litPlugin, {
-          componentModules: [],
-        });
-      };
-    `,
-  });
-  const {code, stderr} = await rig.exec('eleventy --config .eleventy.cjs').done;
-  assert.equal(code, 1);
-  assert.match(stderr, '--experimental-vm-modules');
-});
-
-test('multiple component modules in HTML file', async ({rig}) => {
-  await rig.write({
-    // eleventy config
-    '.eleventy.cjs': `
-      const litPlugin = require('@lit-labs/eleventy-plugin');
-      module.exports = function (eleventyConfig) {
-        eleventyConfig.addPlugin(litPlugin, {
-          componentModules: [
-            './js/my-element-1.js',
-            './js/my-element-2.js',
-          ],
-        });
-      };
-    `,
-
-    // component definition 1
-    'js/my-element-1.js': `
-      import { html, LitElement } from 'lit';
-      class MyElement1 extends LitElement {
-        render() {
-          return html\`<b>shadow content 1</b>\`;
+      // component definition 1
+      'js/my-element-1.js': `
+        import { html, LitElement } from 'lit';
+        class MyElement1 extends LitElement {
+          render() {
+            return html\`<b>shadow content 1</b>\`;
+          }
         }
-      }
-      customElements.define('my-element-1', MyElement1);
-    `,
+        customElements.define('my-element-1', MyElement1);
+      `,
 
-    // component definition 2
-    'js/my-element-2.js': `
-      import { html, LitElement } from 'lit';
-      class MyElement2 extends LitElement {
-        render() {
-          return html\`<b>shadow content 2</b>\`;
+      // component definition 2
+      'js/my-element-2.js': `
+        import { html, LitElement } from 'lit';
+        class MyElement2 extends LitElement {
+          render() {
+            return html\`<b>shadow content 2</b>\`;
+          }
         }
-      }
-      customElements.define('my-element-2', MyElement2);
-    `,
+        customElements.define('my-element-2', MyElement2);
+      `,
 
-    // HTML
-    'index.html': `
-      <h1>Heading</h1>
-      <my-element-1></my-element-1>
-      <my-element-2></my-element-2>
-    `,
+      // HTML
+      'index.html': `
+        <h1>Heading</h1>
+        <my-element-1></my-element-1>
+        <my-element-2></my-element-2>
+      `,
+    });
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    assert.equal(
+      await rig.read('_site/index.html'),
+      normalize(`
+        <h1>Heading</h1>
+        <my-element-1><template shadowroot="open"><!--lit-part wBkDjDE4LIw=--><b>shadow content 1</b><!--/lit-part--></template></my-element-1>
+        <my-element-2><template shadowroot="open"><!--lit-part gxUDjDE4LIw=--><b>shadow content 2</b><!--/lit-part--></template></my-element-2>
+      `)
+    );
   });
-  assert.equal(
-    (
-      await rig.exec(
-        'NODE_OPTIONS="--experimental-vm-modules" eleventy --config .eleventy.cjs'
-      ).done
-    ).code,
-    0
-  );
-  assert.equal(
-    await rig.read('_site/index.html'),
-    normalize(`
-      <h1>Heading</h1>
-      <my-element-1><template shadowroot="open"><!--lit-part wBkDjDE4LIw=--><b>shadow content 1</b><!--/lit-part--></template></my-element-1>
-      <my-element-2><template shadowroot="open"><!--lit-part gxUDjDE4LIw=--><b>shadow content 2</b><!--/lit-part--></template></my-element-2>
-    `)
-  );
+
+  test('multiple pages', async ({rig}) => {
+    const files: {[path: string]: string} = {...myElementDefinitionAndConfig};
+    for (let i = 1; i <= 25; i++) {
+      files[`page${i}.md`] = `
+        # Page ${i}
+        <my-element></my-element>
+      `;
+    }
+    await rig.write(files);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    for (let i = 1; i <= 25; i++) {
+      assert.equal(
+        await rig.read(`_site/page${i}/index.html`),
+        normalize(`
+          <h1>Page ${i}</h1>
+          <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
+        `)
+      );
+    }
+  });
 });
 
 test.run();

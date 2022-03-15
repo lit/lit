@@ -54,6 +54,7 @@ const litPlugin = require('@lit-labs/eleventy-plugin-lit');
 
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(litPlugin, {
+    mode: 'worker',
     componentModules: [
       'js/demo-greeter.js',
       'js/other-component.js',
@@ -62,6 +63,24 @@ module.exports = function (eleventyConfig) {
 };
 ```
 <!-- prettier-ignore-end -->
+
+### Configure mode
+
+Use the `mode` setting to tell the plugin which mode to use for rendering.
+The plugin currently supports either `'worker'` or `'vm'`.
+
+`'worker'` mode (default) utilizes
+[worker threads](https://nodejs.org/api/worker_threads.html#worker-threads)
+to render components in isolation.
+
+`'vm'` mode utilizes [`vm.Module`](https://nodejs.org/api/vm.html#class-vmmodule)
+for context isolation and therefore eleventy _must_ be executed with the
+`--experimental-vm-modules` Node flag enabled. This flag is available in
+Node versions `12.16.0` and above.
+
+```sh
+NODE_OPTIONS=--experimental-vm-modules eleventy
+```
 
 ### Configure component modules
 
@@ -79,21 +98,17 @@ command is executed.
 Each `.js` file should be a JavaScript module (ESM) that imports `lit` with a
 bare module specifier and defines a component with `customElements.define`.
 
-### Enable experimental VM modules
+Note that in `'worker'` mode, Node determines the module system
+[accordingly](https://nodejs.org/api/packages.html#determining-module-system),
+and as such care must be taken to ensure Node reads them as ESM files
+while still reading the eleventy config file as CommonJS.
 
-> 🚧 Note: Removing this requirement is on the [roadmap](#roadmap). Follow
-> [#2494](https://github.com/lit/lit/issues/2484) for progress and discussion.
-> 🚧
+Some options are:
 
-Eleventy _must_ be executed with the
-[`--experimental-vm-modules`](https://nodejs.org/api/vm.html#class-vmmodule)
-Node flag enabled. This flag is available in Node versions `12.16.0` and above.
-This flag allows the lit plugin to render components without modifying any
-global state, and enables compatibility with Eleventy's `--watch` mode.
-
-```sh
-NODE_OPTIONS=--experimental-vm-modules eleventy
-```
+1. Add `{"type": "module"}` to your base `package.json` and make sure the
+   eleventy config file end with the `.cjs` extension.
+1. Put all component `.js` files in a subdirectory with a nested `package.json` with
+   `{"type": "module"}`.
 
 ### Watch mode
 
@@ -400,11 +415,6 @@ have any thoughts or questions.
   matter](https://www.11ty.dev/docs/data-frontmatter/) instead of the
   [`componentModules`](#configure-component-modules) setting.
 
-- [[#2484](https://github.com/lit/lit/issues/2484)] Use [worker
-  threads](https://nodejs.org/api/worker_threads.html) instead of [isolated VM
-  modules](https://nodejs.org/api/vm.html#class-vmmodule) so that the
-  `--experimental-vm-modules` flag is no longer required.
-
 - [[#2485](https://github.com/lit/lit/issues/2485)] Provide a mechanism for
   passing [Eleventy data](https://www.11ty.dev/docs/data/) to components as
   _properties_, instead of attributes.
@@ -428,3 +438,7 @@ comments, start a [discussion](https://github.com/lit/lit/discussions).
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
+
+### Testing environment variables:
+
+- `SHOW_TEST_OUTPUT`: Set to show all `stdout` and `stderr` from spawned eleventy invocations in test cases.

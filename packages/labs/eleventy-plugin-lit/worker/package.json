@@ -1,0 +1,4 @@
+{
+  "__note__": "Switches Node into module mode for worker files",
+  "type": "module"
+}
