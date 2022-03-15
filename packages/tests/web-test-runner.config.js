@@ -206,7 +206,7 @@ export default {
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 1200000, // default 120000
+  testsStartTimeout: 1800000, // default 120000
   testsFinishTimeout: 1800000, // 30 min vs default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
