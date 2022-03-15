@@ -24,12 +24,6 @@ jobs:
         with:
           node-version: 16
 
-      # changesets/action@v1 currently has a bug where it attempts to set the
-      # local git user info before changing directories for `cwd`, which means
-      # it will fail if the root directory is not a git repo.
-      - name: Initialize empty root repo
-        run: git init
-
       - name: Checkout Lit Repo
         uses: actions/checkout@v2
         with:
