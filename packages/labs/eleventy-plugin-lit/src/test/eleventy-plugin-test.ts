@@ -512,6 +512,27 @@ modes.forEach((mode) => {
       `)
     );
   });
+
+  test('multiple pages', async ({rig}) => {
+    const files: {[path: string]: string} = {...myElementDefinitionAndConfig};
+    for (let i = 1; i <= 25; i++) {
+      files[`page${i}.md`] = `
+        # Page ${i}
+        <my-element></my-element>
+      `;
+    }
+    await rig.write(files);
+    assert.equal((await rig.exec(baseCommandToExec).done).code, 0);
+    for (let i = 1; i <= 25; i++) {
+      assert.equal(
+        await rig.read(`_site/page${i}/index.html`),
+        normalize(`
+          <h1>Page ${i}</h1>
+          <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
+        `)
+      );
+    }
+  });
 });
 
 test.run();
