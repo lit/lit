@@ -39,8 +39,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # - name: Test Development
-      #   run: npm run test:dev
+      - name: Test Development
+        run: npm run test:dev
       
       - name: Test Production
         run: npm run test:prod
