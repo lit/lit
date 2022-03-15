@@ -1,45 +1,45 @@
-# name: Sauce IE11
+name: Sauce IE11
 
-# on: [push, pull_request]
+on: [push, pull_request]
 
-# jobs:
-#   tests-sauce-ie11:
-#     # Don't run on forks. Sauce tests need access to secrets.
-#     if: github.repository == 'lit/lit'
+jobs:
+  tests-sauce-ie11:
+    # Don't run on forks. Sauce tests need access to secrets.
+    if: github.repository == 'lit/lit'
 
-#     # Sauce tests are still unreliable. Run them, but don't mark a commit as
-#     # failing if it fails.
-#     continue-on-error: true
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
 
-#     runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     
-#     env:
-#       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-#       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-#       BROWSERS: preset:sauce-ie11
-#       CONCURRENT_BROWSERS: 1
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      BROWSERS: preset:sauce-ie11
+      CONCURRENT_BROWSERS: 1
     
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: actions/setup-node@v2
-#         with:
-#           node-version: 16
-#           cache: 'npm'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
       
-#       - name: Install playwright deps
-#         run: npx playwright install-deps
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
-#       - name: NPM install
-#         run: npm ci
+      - name: NPM install
+        run: npm ci
 
-#       - name: Lerna bootstrap
-#         run: npm run bootstrap
+      - name: Lerna bootstrap
+        run: npm run bootstrap
 
-#       - name: Lint
-#         run: npm run lint
+      - name: Lint
+        run: npm run lint
 
-#       - name: Build
-#         run: npm run build
+      - name: Build
+        run: npm run build
 
-#       - name: Test
-#         run: npm run test
+      - name: Test
+        run: npm run test
