@@ -42,8 +42,8 @@ jobs:
       - name: Build
         run: npm run build
       
-      - name: Test Development
-        run: npm run test:dev
+      # - name: Test Development
+      #   run: npm run test:dev
       
       - name: Test Production
         run: npm run test:prod
