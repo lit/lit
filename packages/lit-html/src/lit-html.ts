@@ -189,19 +189,17 @@ interface DebugLoggingWindow {
  * Compiled out of prod mode builds.
  */
 const debugLogEvent = DEV_MODE
-  ? () => {
+  ? (event: LitUnstable.DebugLog.Entry) => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (!shouldEmit) {
-        return undefined;
+        return;
       }
-      return (event: LitUnstable.DebugLog.Entry) => {
-        window.dispatchEvent(
-          new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
-            detail: event,
-          })
-        );
-      };
+      window.dispatchEvent(
+        new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
+          detail: event,
+        })
+      );
     }
   : undefined;
 // Used for connecting beginRender and endRender events when there are nested
@@ -644,7 +642,7 @@ export const render = (
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
-  debugLogEvent?.()?.({
+  debugLogEvent?.({
     kind: 'begin render',
     id: renderId,
     value,
@@ -678,7 +676,7 @@ export const render = (
     );
   }
   part._$setValue(value);
-  debugLogEvent?.()?.({
+  debugLogEvent?.({
     kind: 'end render',
     id: renderId,
     value,
@@ -1067,7 +1065,7 @@ class Template {
       }
       nodeIndex++;
     }
-    debugLogEvent?.()?.({
+    debugLogEvent?.({
       kind: 'template prep',
       template: this,
       clonableTemplate: this.el,
@@ -1225,7 +1223,7 @@ class TemplateInstance implements Disconnectable {
     let i = 0;
     for (const part of this._parts) {
       if (part !== undefined) {
-        debugLogEvent?.()?.({
+        debugLogEvent?.({
           kind: 'set part',
           part,
           value: values[i],
@@ -1419,7 +1417,7 @@ class ChildPart implements Disconnectable {
       // fallback content.
       if (value === nothing || value == null || value === '') {
         if (this._$committedValue !== nothing) {
-          debugLogEvent?.()?.({
+          debugLogEvent?.({
             kind: 'commit nothing to child',
             start: this._$startNode,
             end: this._$endNode,
@@ -1479,11 +1477,11 @@ class ChildPart implements Disconnectable {
           throw new Error(message);
         }
       }
-      debugLogEvent?.()?.({
+      debugLogEvent?.({
         kind: 'commit node',
         start: this._$startNode,
         parent: this._$parent,
-        value: value.cloneNode(true),
+        value: value,
         options: this.options,
       });
       this._$committedValue = this._insert(value);
@@ -1505,7 +1503,7 @@ class ChildPart implements Disconnectable {
         }
         value = this._textSanitizer(value);
       }
-      debugLogEvent?.()?.({
+      debugLogEvent?.({
         kind: 'commit text',
         node,
         value,
@@ -1524,7 +1522,7 @@ class ChildPart implements Disconnectable {
           this._textSanitizer = createSanitizer(textNode, 'data', 'property');
         }
         value = this._textSanitizer(value);
-        debugLogEvent?.()?.({
+        debugLogEvent?.({
           kind: 'commit text',
           node: textNode,
           value,
@@ -1533,7 +1531,7 @@ class ChildPart implements Disconnectable {
         textNode.data = value as string;
       } else {
         this._commitNode(d.createTextNode(value as string));
-        debugLogEvent?.()?.({
+        debugLogEvent?.({
           kind: 'commit text',
           node: wrap(this._$startNode).nextSibling as Text,
           value,
@@ -1561,7 +1559,7 @@ class ChildPart implements Disconnectable {
           type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
-      debugLogEvent?.()?.({
+      debugLogEvent?.({
         kind: 'template updating',
         template,
         instance: this._$committedValue as TemplateInstance,
@@ -1573,7 +1571,7 @@ class ChildPart implements Disconnectable {
     } else {
       const instance = new TemplateInstance(template as Template, this);
       const fragment = instance._clone(this.options);
-      debugLogEvent?.()?.({
+      debugLogEvent?.({
         kind: 'template instantiated',
         template,
         instance,
@@ -1583,7 +1581,7 @@ class ChildPart implements Disconnectable {
         values,
       });
       instance._update(values);
-      debugLogEvent?.()?.({
+      debugLogEvent?.({
         kind: 'template instantiated and updated',
         template,
         instance,
@@ -1873,7 +1871,7 @@ class AttributePart implements Disconnectable {
         }
         value = this._sanitizer(value ?? '');
       }
-      debugLogEvent?.()?.({
+      debugLogEvent?.({
         kind: 'commit attribute',
         element: this.element,
         name: this.name,
@@ -1904,7 +1902,7 @@ class PropertyPart extends AttributePart {
       }
       value = this._sanitizer(value);
     }
-    debugLogEvent?.()?.({
+    debugLogEvent?.({
       kind: 'commit property',
       element: this.element,
       name: this.name,
@@ -1930,7 +1928,7 @@ class BooleanAttributePart extends AttributePart {
 
   /** @internal */
   override _commitValue(value: unknown) {
-    debugLogEvent?.()?.({
+    debugLogEvent?.({
       kind: 'commit boolean attribute',
       element: this.element,
       name: this.name,
@@ -2015,7 +2013,7 @@ class EventPart extends AttributePart {
       newListener !== nothing &&
       (oldListener === nothing || shouldRemoveListener);
 
-    debugLogEvent?.()?.({
+    debugLogEvent?.({
       kind: 'commit event listener',
       element: this.element,
       name: this.name,
@@ -2087,7 +2085,7 @@ class ElementPart implements Disconnectable {
   }
 
   _$setValue(value: unknown): void {
-    debugLogEvent?.()?.({
+    debugLogEvent?.({
       kind: 'commit to element binding',
       element: this.element,
       value,
