@@ -207,12 +207,12 @@ export default {
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
   testsStartTimeout: 1800000, // default 120000
-  testsFinishTimeout: 1800000, // default 20000
+  testsFinishTimeout: 60000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
-      timeout: '180000', // default 2000
+      timeout: '60000', // default 2000
     },
   },
 };
