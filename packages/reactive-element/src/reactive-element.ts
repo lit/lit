@@ -141,13 +141,14 @@ const debugLogEvent = DEV_MODE
   ? (event: ReactiveUnstable.DebugLog.Entry) => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
-      if (shouldEmit) {
-        window.dispatchEvent(
-          new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
-            detail: event,
-          })
-        );
+      if (!shouldEmit) {
+        return;
       }
+      window.dispatchEvent(
+        new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
+          detail: event,
+        })
+      );
     }
   : undefined;
 
