@@ -192,7 +192,7 @@ const debugLogEvent = DEV_MODE
   ? () => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
-      if (shouldEmit) {
+      if (!shouldEmit) {
         return undefined;
       }
       return (event: LitUnstable.DebugLog.Entry) => {
