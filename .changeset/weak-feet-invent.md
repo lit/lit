@@ -1,4 +1,5 @@
 ---
+'lit': patch
 'lit-html': patch
 '@lit/reactive-element': patch
 ---
