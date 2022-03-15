@@ -45,7 +45,7 @@ const browserPresets = {
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
     'sauce:macOS 10.15/Safari@latest',
-    'sauce:Windows 7/Internet Explorer@11',
+    // 'sauce:Windows 7/Internet Explorer@11',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   // 'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
@@ -203,17 +203,17 @@ export default {
       },
     }),
   ],
-  browserStartTimeout: 1200000, // default 30000
+  browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 1800000, // default 120000
-  testsFinishTimeout: 1800000, // 30 min vs default 20000
+  testsStartTimeout: 600000, // default 120000
+  testsFinishTimeout: 120000, // 20 min vs default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
-      timeout: '1800000', // default 2000
+      timeout: '60000', // default 2000
     },
   },
 };
