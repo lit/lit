@@ -105,8 +105,14 @@ while still reading the eleventy config file as CommonJS.
 
 Some options are:
 
-1. Add `{"type": "module"}` to your base `package.json` and make sure the
-   eleventy config file end with the `.cjs` extension.
+1. Add `{"type": "module"}` to your base `package.json`, make sure the
+   eleventy config file ends with the `.cjs` extension, and supply it as
+   a command line argument to `eleventy`.
+
+   ```sh
+   eleventy --config=.eleventy.cjs
+   ```
+
 1. Put all component `.js` files in a subdirectory with a nested `package.json` with
    `{"type": "module"}`.
 
