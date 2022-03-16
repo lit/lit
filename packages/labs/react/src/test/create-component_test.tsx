@@ -75,7 +75,10 @@ suite('createComponent', () => {
     window.React,
     elementName,
     BasicElement,
-    basicElementEvents
+    {
+      onFire: 'fire',
+      onBar: 'fire',
+    }
   );
 
   let el: BasicElement;
@@ -106,7 +109,10 @@ suite('createComponent', () => {
       window.React,
       elementName,
       BasicElement,
-      basicElementEvents,
+      {
+        onFire: 'fire',
+        onBar: 'fire',
+      },
       'FooBar'
     );
 
