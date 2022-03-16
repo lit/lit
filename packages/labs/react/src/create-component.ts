@@ -18,7 +18,10 @@ type Constructor<E> = {new (): E};
 // React event names as { reactName: elementEventName }
 // or { onMyEvent: myEvent }
 type ReactEventNameRecord<E> = Record<string, keyof E>;
-type EventPropsRecord<E, R extends ReactEventNameRecord<E>> = Record<keyof R, E[R[keyof R]] | undefined>
+type EventPropsRecord<E, R extends ReactEventNameRecord<E>> = Record<
+  keyof R,
+  E[R[keyof R]] | undefined
+>;
 
 // type EventRecord<E> = Record<keyof R, E[keyof R]>;
 // type EventTypesRecord<E extends {}, R extends {}> = Record<keyof R, E[keyof R]>
@@ -88,12 +91,12 @@ const setProperty = <E extends HTMLElement>(
   name: string,
   value: unknown,
   old: unknown,
-  events?: Record<string, string>
+  events?: ReactEventNameRecord<E>
 ) => {
   const event = events?.[name];
   if (event !== undefined && value !== old) {
     // Dirty check event value.
-    addOrUpdateEventListener(node, event, value as EventListener);
+    addOrUpdateEventListener(node, event as string, value as EventListener);
     return;
   }
 
@@ -117,25 +120,25 @@ const setRef = (ref: React.Ref<HTMLElement>, value: HTMLElement | null) => {
 /*
  * need a way to reflect webcomponent types onto react component
  * ie: a MouseEventListener should project a MouseEvent type
- * 
+ *
  * also need to reflect types in react
- * 
+ *
  * this is about providing correct types to the user, not neccessarily being
  * correct in a category theory way. "Correct" is defined as being
  * what the user expects to type.
- * 
+ *
  * When a user defines <MyComponent onInput /> is there a way to
  * override what react types are expected from problematic properties
  * like onChange onInput onSubmit
- * 
+ *
  * Most likely, there might not be a way to override react types as
  * they're the atmostphere of a JSX React app.
- * 
+ *
  * However the goal should be to give the user as much control as possible
- * 
+ *
  */
 
-/* 
+/*
  * Leaning towards three solutions:
  * 1) infering types from the webcomponent
  * 2) a map of event names to handler types
@@ -143,8 +146,8 @@ const setRef = (ref: React.Ref<HTMLElement>, value: HTMLElement | null) => {
  *      string & {
  *        __event_brandable_index
  *      }
- * 
-*/
+ *
+ */
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -169,7 +172,7 @@ const setRef = (ref: React.Ref<HTMLElement>, value: HTMLElement | null) => {
  */
 export const createComponent = <
   E extends HTMLElement,
-  R extends ReactEventNameRecord<E>,
+  R extends ReactEventNameRecord<E>
 >(
   React: typeof ReactModule,
   tagName: string,
@@ -192,7 +195,9 @@ export const createComponent = <
   // - properties specfic to the custom element
   // - events specific to the custom element
   // - element properties required by react
-  type UserProps = ElementWithoutHTML & EventPropsRecord<E, R> & React.HTMLAttributes<E>;
+  type UserProps = ElementWithoutHTML &
+    EventPropsRecord<E, R> &
+    React.HTMLAttributes<E>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -245,7 +250,7 @@ export const createComponent = <
           prop,
           this.props[prop],
           oldProps ? oldProps[prop] : undefined,
-          eventNames as Record<string, string>
+          eventNames,
         );
       }
       // Note, the spirit of React might be to "unset" any old values that

@@ -44,6 +44,14 @@ class BasicElement extends ReactiveElement {
   fire(name: string) {
     this.dispatchEvent(new Event(name));
   }
+
+  foo(e: Event) {
+    console.log(e);
+  }
+
+  bar(e: CustomEvent<string>) {
+    console.log(e);
+  }
 }
 
 declare global {
@@ -66,18 +74,13 @@ suite('createComponent', () => {
     }
   });
 
-  const basicElementEvents = {
-    onFoo: 'foo',
-    onBar: 'bar',
-  };
-
   const BasicElementComponent = createComponent(
     window.React,
     elementName,
     BasicElement,
     {
-      onFire: 'fire',
-      onBar: 'fire',
+      onFoo: 'foo',
+      onBar: 'bar',
     }
   );
 
@@ -251,7 +254,7 @@ suite('createComponent', () => {
     const onFoo2 = (e: Event) => {
       fooEvent2 = e;
     };
-    const onBar = (e: Event) => {
+    const onBar = (e: CustomEvent<string>) => {
       barEvent = e;
     };
 
