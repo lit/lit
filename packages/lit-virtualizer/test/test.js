@@ -5,8 +5,8 @@
  */
 
 import { LitVirtualizer } from '../lit-virtualizer.js';
-import { virtualize } from '../scroll.js'
-import { flow } from '../layouts/FlowLayout.js'
+import { virtualize } from '../virtualize.js'
+import { flow } from '../layouts/flow.js'
 import { html, render } from 'lit'
 
 describe('<lit-virtualizer>', function () {
