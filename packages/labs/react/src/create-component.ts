@@ -34,7 +34,7 @@ type ReactEventNameRecord<E> = Record<string, keyof E>;
 type ReactPropsAsElementKeys<E, R extends ReactEventNameRecord<E>> = {
   [K in keyof R]: E[R[K]];
 };
-type AdjustedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
+type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
 /**
  * Adds an event listener for the specified event to a given node.
@@ -152,7 +152,7 @@ export const createComponent = <
   // - element properties required by react
   type UserProps = ElementWithoutHTML &
     ReactPropsAsElementKeys<E, R> &
-    AdjustedReactProps<E, R>;
+    ReducedReactProps<E, R>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
