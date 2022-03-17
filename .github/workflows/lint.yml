@@ -1,0 +1,19 @@
+# name: Lint
+
+# on: [push, pull_request]
+
+# jobs:
+#   lint:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v2
+#       - uses: actions/setup-node@v2
+#         with:
+#           node-version: 16
+#           # Note: we do not cache here because we're not running lerna
+#           # bootstrap, so the ~/.npm dir won't have all dependencies, and if
+#           # this job finishes first then we'll only cache root dependencies.
+
+#       - run: npm ci
+#       - run: npm run lint

@@ -4621,6 +4621,30 @@ export const tests: {[name: string]: SSRTest} = {
             'le-attr-binding': `<div>\n  [boundProp2]\n</div>`,
           },
         },
+        {
+          args: [undefined],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-attr-binding')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).prop, '');
+          },
+          html: {
+            root: `<le-attr-binding prop="" static></le-attr-binding>`,
+            'le-attr-binding': `<div>\n  []\n</div>`,
+          },
+        },
+        {
+          args: [null],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-attr-binding')! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).prop, '');
+          },
+          html: {
+            root: `<le-attr-binding prop="" static></le-attr-binding>`,
+            'le-attr-binding': `<div>\n  []\n</div>`,
+          },
+        },
       ],
       stableSelectors: ['le-attr-binding'],
     };

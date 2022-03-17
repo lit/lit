@@ -7,6 +7,7 @@
 import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';
+import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
@@ -30,14 +31,44 @@ const browserPresets = {
   local: [
     'chromium', // keep browsers on separate lines
     'firefox', // to make it easier to comment out
-  ],
-  macos: [
     'webkit', // individual browsers
   ],
 
-  // as a reminder to find IE solution
-  // 'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
+  // Browsers to test during automated continuous integration.
+  //
+  // https://saucelabs.com/platform/supported-browsers-devices
+  // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator
+  //
+  // Many browser configurations don't yet work with @web/test-runner-saucelabs.
+  // See https://github.com/modernweb-dev/web/issues/472.
+  sauce: [
+    'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
+    'sauce:Windows 10/Chrome@latest-3',
+    'sauce:macOS 10.15/Safari@latest',
+    // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
+  ],
+  'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
+
+let sauceLauncher;
+
+function makeSauceLauncherOnce() {
+  if (!sauceLauncher) {
+    const user = (process.env.SAUCE_USERNAME || '').trim();
+    const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
+    if (!user || !key) {
+      throw new Error(
+        'To test on Sauce, set the SAUCE_USERNAME' +
+          ' and SAUCE_ACCESS_KEY environment variables.'
+      );
+    }
+    sauceLauncher = createSauceLabsLauncher({
+      user,
+      key,
+    });
+  }
+  return sauceLauncher;
+}
 
 /**
  * Recognized formats:
@@ -72,6 +103,42 @@ function parseBrowser(browser) {
     return entries.map(parseBrowser).flat();
   }
 
+  if (browser.startsWith('sauce:')) {
+    // Note this is the syntax used by WCT. Might as well use the same one.
+    const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
+    if (!match) {
+      throw new Error(`
+
+Invalid Sauce browser string.
+Expected format "sauce:os/browser@version".
+Provided string was "${browser}".
+
+Valid examples:
+
+  sauce:macOS 10.15/safari@13
+  sauce:Windows 10/MicrosoftEdge@18
+  sauce:Windows 7/internet explorer@11
+  sauce:Linux/chrome@latest-3
+  sauce:Linux/firefox@78
+
+See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
+    }
+    const [, platformName, browserName, browserVersion] = match;
+    return [
+      makeSauceLauncherOnce()({
+        browserName,
+        browserVersion,
+        platformName,
+        'sauce:options': {
+          name: `lit tests [${mode}]`,
+          build: `${process.env.GITHUB_REF ?? 'local'} build ${
+            process.env.GITHUB_RUN_NUMBER ?? ''
+          }`,
+        },
+      }),
+    ];
+  }
+
   const config = {
     product: browser,
     ...(browser === 'chromium'
@@ -82,7 +149,6 @@ function parseBrowser(browser) {
         }
       : {}),
   };
-
   return [playwrightLauncher(config)];
 }
 
@@ -143,13 +209,13 @@ export default {
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 60000, // default 120000
+  testsStartTimeout: 60000 * 10, // default 120000
   testsFinishTimeout: 120000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
-      timeout: '120000', // default 2000
+      timeout: '60000', // default 2000
     },
   },
 };

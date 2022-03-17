@@ -3,94 +3,8 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  # changeset:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 0
-
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         node-version: 16
-  #         # Note: we do not cache here because we're not running lerna
-  #         # bootstrap, so the ~/.npm dir won't have all dependencies, and if
-  #         # this job finishes first then we'll only cache root dependencies.
-
-  #     - run: git checkout main
-  #     - run: git checkout ${{ github.sha }}
-  #     - run: npm ci
-  #     - run: npm run changeset status -- --since=main
-
-  # lint:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         node-version: 16
-  #         # Note: we do not cache here because we're not running lerna
-  #         # bootstrap, so the ~/.npm dir won't have all dependencies, and if
-  #         # this job finishes first then we'll only cache root dependencies.
-
-  #     - run: npm ci
-  #     - run: npm run lint
-
-  # tests-ubuntu:
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     BROWSERS: preset:local
-  #     CONCURRENT_BROWSERS: 3
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-
-  #     - name: Install playwright deps
-  #       run: npx playwright install-deps
-
-  #     - name: NPM install
-  #       run: npm ci
-
-  #     - name: Lerna bootstrap
-  #       run: npm run bootstrap
-
-  #     - name: Build
-  #       run: npm run build
-
-  #     - name: Test
-  #       run: npm run test
-
-  # tests-macos:
-  #   runs-on: macos-latest
-  #   env:
-  #     BROWSERS: preset:macos
-  #     CONCURRENT_BROWSERS: 3
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-
-  #     - name: Install playwright deps
-  #       run: npx playwright install-deps
-
-  #     - name: NPM install
-  #       run: npm ci
-
-  #     - name: Lerna bootstrap
-  #       run: npm run bootstrap
-
-  #     - name: Build
-  #       run: npm run build
-
-  #     - name: Test
-  #       run: npm run test
-
-
-  tests-windows:
-    runs-on: windows-latest
+  tests-ubuntu:
+    runs-on: ubuntu-latest
     env:
       BROWSERS: preset:local
       CONCURRENT_BROWSERS: 3
@@ -99,20 +13,17 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
 
-      - name: Install WSL
-        run: wsl --install
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
-      # - name: Install playwright deps
-      #   run: npx playwright install-deps
+      - name: NPM install
+        run: npm ci
 
-      # - name: NPM install
-      #   run: npm ci
+      - name: Lerna bootstrap
+        run: npm run bootstrap
 
-      # - name: Lerna bootstrap
-      #   run: npm run bootstrap
+      - name: Build
+        run: npm run build
 
-      # - name: Build
-      #   run: npm run build
-
-      # - name: Test
-      #   run: npm run test
+      - name: Test
+        run: npm run test

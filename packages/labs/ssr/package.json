@@ -1,14 +1,14 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "publishConfig": {
     "access": "public"
   },
   "description": "SSR for Lit",
   "main": "index.js",
   "scripts": {
-    "build": "npm run build:ts",
+    "build": "npm run clean && npm run build:ts",
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "clean": "rm -rf index.js demo/ test/ lib/ *.tsbuildinfo",

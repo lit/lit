@@ -23,7 +23,7 @@
     "build": "tsc",
     "test": "uvu tests/ \"\\-test\\.js$\"",
     "clean": "rimraf \"*.{js,d.ts}\" internal/ tests/",
-    "prepack": "npm run build"
+    "prepack": "npm run clean && npm run build"
   },
   "dependencies": {
     "ts-clone-node": "^0.3.23",

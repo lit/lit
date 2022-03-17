@@ -80,7 +80,7 @@
     }
   },
   "scripts": {
-    "build": "npm run build:ts && rollup -c",
+    "build": "npm run clean && npm run build:ts && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:bundle": "npm run clean:bundle && tsc --build && rollup -c rollup.bundle.config.js",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
