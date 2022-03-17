@@ -1,4 +1,4 @@
-name: Tests
+name: Tests (Production)
 
 on: [push, pull_request]
 
@@ -24,6 +24,6 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Test
-        run: npm run test
+      
+      - name: Test Production
+        run: npm run test:prod
