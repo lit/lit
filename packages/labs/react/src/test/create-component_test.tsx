@@ -45,7 +45,7 @@ class BasicElement extends ReactiveElement {
     this.dispatchEvent(new Event(name));
   }
 
-  foo(e: Event) {
+  foo(e: KeyboardEvent) {
     console.log(e);
   }
 
@@ -73,15 +73,17 @@ suite('createComponent', () => {
       container.parentNode.removeChild(container);
     }
   });
+  
+  const propsMap = {
+    onFoo: 'foo',
+    onBar: 'bar',
+  } as const;
 
-  const BasicElementComponent = createComponent(
+  const BasicElementComponent = createComponent<BasicElement, typeof propsMap>(
     window.React,
     elementName,
     BasicElement,
-    {
-      onFoo: 'foo',
-      onBar: 'bar',
-    }
+    propsMap,
   );
 
   let el: BasicElement;
@@ -112,10 +114,7 @@ suite('createComponent', () => {
       window.React,
       elementName,
       BasicElement,
-      {
-        onFire: 'fire',
-        onBar: 'fire',
-      },
+      propsMap,
       'FooBar'
     );
 
@@ -248,7 +247,7 @@ suite('createComponent', () => {
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
 
-    const onFoo = (e: Event) => {
+    const onFoo = (e: MouseEvent) => {
       fooEvent = e;
     };
     const onFoo2 = (e: Event) => {
