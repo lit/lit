@@ -192,13 +192,14 @@ const debugLogEvent = DEV_MODE
   ? (event: LitUnstable.DebugLog.Entry) => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
-      if (shouldEmit) {
-        window.dispatchEvent(
-          new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
-            detail: event,
-          })
-        );
+      if (!shouldEmit) {
+        return;
       }
+      window.dispatchEvent(
+        new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
+          detail: event,
+        })
+      );
     }
   : undefined;
 // Used for connecting beginRender and endRender events when there are nested
@@ -1480,7 +1481,7 @@ class ChildPart implements Disconnectable {
         kind: 'commit node',
         start: this._$startNode,
         parent: this._$parent,
-        value: value.cloneNode(true),
+        value: value,
         options: this.options,
       });
       this._$committedValue = this._insert(value);
@@ -2140,7 +2141,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.0');
+(globalThis.litHtmlVersions ??= []).push('2.2.1');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
