@@ -31,9 +31,10 @@ const listenedEvents: WeakMap<
 
 type Constructor<E> = {new (): E};
 type ReactEventNameRecord<E> = Record<string, keyof E>;
-type ReactPropsAsElementKeys<E, R extends Record<string, keyof E>> = {
+type ReactPropsAsElementKeys<E, R extends ReactEventNameRecord<E>> = {
   [K in keyof R]: E[R[K]];
 };
+type AdjustedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>
 
 /**
  * Adds an event listener for the specified event to a given node.
@@ -126,7 +127,7 @@ const setRef = (ref: React.Ref<HTMLElement>, value: HTMLElement | null) => {
  */
 export const createComponent = <
   E extends HTMLElement,
-  R extends ReactEventNameRecord<E>
+  R extends Record<string, keyof E>
 >(
   React: typeof ReactModule,
   tagName: string,
@@ -151,7 +152,7 @@ export const createComponent = <
   // - element properties required by react
   type UserProps = ElementWithoutHTML &
     ReactPropsAsElementKeys<E, R> &
-    React.HTMLAttributes<E>;
+    AdjustedReactProps<E, R>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -185,7 +186,7 @@ export const createComponent = <
 
   class ReactComponent extends Component<Partial<ComponentProps>> {
     private _element: E | null = null;
-    private _elementProps!: Partial<UserProps>;
+    private _elementProps!: Record<string, unknown>;
     private _userRef?: React.Ref<E>;
     private _ref?: React.RefCallback<E>;
 
@@ -263,7 +264,7 @@ export const createComponent = <
       for (const k in this.props) {
         const v = this.props[k];
         if (elementClassProps.has(k)) {
-          this._elementProps[k as keyof UserProps] = v;
+          this._elementProps[k] = v;
           continue;
         }
         // React does *not* handle `className` for custom elements so
@@ -279,7 +280,7 @@ export const createComponent = <
     (props, ref) =>
       createElement(
         ReactComponent,
-        {...props, __forwardedRef: ref},
+        {...props, __forwardedRef: ref} as ComponentProps,
         props?.children
       )
   );
