@@ -81,7 +81,7 @@ suite('createComponent', () => {
     onBar: 'bar',
   } as const;
 
-  const BasicElementComponent = createComponent<BasicElement, typeof propsMap>(
+  const BasicElementComponent = createComponent(
     window.React,
     elementName,
     BasicElement,

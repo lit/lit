@@ -34,7 +34,7 @@ type ReactEventNameRecord<E> = Record<string, keyof E>;
 type ReactPropsAsElementKeys<E, R extends ReactEventNameRecord<E>> = {
   [K in keyof R]: E[R[K]];
 };
-type AdjustedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>
+type AdjustedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
 /**
  * Adds an event listener for the specified event to a given node.
