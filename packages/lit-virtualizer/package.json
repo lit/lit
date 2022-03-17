@@ -1,6 +1,6 @@
 {
     "name": "@lit-labs/virtualizer",
-    "version": "0.7.0-pre.2",
+    "version": "0.7.0-pre.3",
     "description": "Virtual scrolling for Lit",
     "author": "Google LLC",
     "license": "BSD-3-Clause",
@@ -45,7 +45,8 @@
         "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
         "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
         "/virtualize.{d.ts,d.ts.map,js,js.map}",
-        "/Virtualizer.{d.ts,d.ts.map,js,js.map}"
+        "/Virtualizer.{d.ts,d.ts.map,js,js.map}",
+        "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}"
     ],
     "devDependencies": {
         "chai": "^4.2.0",
