@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type * as ReactModule from 'react';
+
+import 'react/umd/react.development.js';
+import 'react-dom/umd/react-dom.development.js';
+
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-import type * as ReactModule from 'react';
-import 'react/umd/react.development.js';
-import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '../create-component.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -247,7 +249,7 @@ suite('createComponent', () => {
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
 
-    const onFoo = (e: MouseEvent) => {
+    const onFoo = (e: KeyboardEvent) => {
       fooEvent = e;
     };
     const onFoo2 = (e: Event) => {

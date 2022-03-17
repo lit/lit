@@ -31,9 +31,9 @@ const listenedEvents: WeakMap<
 
 type Constructor<E> = {new (): E};
 type ReactEventNameRecord<E> = Record<string, keyof E>;
-type ReactPropsAsElementAttributes<E, R extends Record<string, keyof E>> = {
+type ReactPropsAsElementKeys<E, R extends Record<string, keyof E>> = {
   [K in keyof R]: E[R[K]];
-}
+};
 
 /**
  * Adds an event listener for the specified event to a given node.
@@ -150,7 +150,7 @@ export const createComponent = <
   // - events specific to the custom element
   // - element properties required by react
   type UserProps = ElementWithoutHTML &
-    ReactPropsAsElementAttributes<E, R> &
+    ReactPropsAsElementKeys<E, R> &
     React.HTMLAttributes<E>;
 
   // Props used by this component wrapper. This is the UserProps and the
@@ -204,7 +204,7 @@ export const createComponent = <
           prop,
           this.props[prop],
           oldProps ? oldProps[prop] : undefined,
-          eventNames,
+          eventNames
         );
       }
       // Note, the spirit of React might be to "unset" any old values that
