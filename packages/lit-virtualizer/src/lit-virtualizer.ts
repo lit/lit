@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { LitVirtualizer } from "./LitVirtualizer.js";
+import { LitVirtualizer } from './LitVirtualizer.js';
 export { LitVirtualizer };
 
 /**
  * Import this module to declare the lit-virtualizer custom element.
  */
-customElements.define("lit-virtualizer", LitVirtualizer);
+customElements.define('lit-virtualizer', LitVirtualizer);
 
 declare global {
-  interface HTMLElementTagNameMap {
-    "lit-virtualizer": LitVirtualizer;
-  }
+    interface HTMLElementTagNameMap {
+        'lit-virtualizer': LitVirtualizer;
+    }
 }
