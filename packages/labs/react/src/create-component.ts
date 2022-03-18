@@ -36,6 +36,29 @@ type ReactPropsAsElementKeys<E, R extends ReactEventNameRecord<E>> = {
 };
 type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
+type EventTranslations<R extends {}> = {
+  [K in keyof R]: R[K];
+};
+
+const propsMap = {
+  onFoo: 'foo',
+  onBar: 'bar',
+};
+
+type ReactEventRecord<E> = Record<keyof E, string>
+
+interface MyEventTypes {
+  onFoo: (e: MouseEvent) => void;
+  onBar: (e: CustomEvent) => void;
+  onBlue: 'hello';
+}
+
+type MyEventys = EventTranslations<MyEventTypes>
+
+
+// const hello: StringAsEvent<MouseEvent> = <MouseEvent>'mouse';
+
+
 /**
  * Adds an event listener for the specified event to a given node.
  *
@@ -78,7 +101,7 @@ const setProperty = <E extends HTMLElement>(
   name: string,
   value: unknown,
   old: unknown,
-  events?: ReactEventNameRecord<E>
+  events?: Record<string, string>
 ) => {
   const event = events?.[name];
   if (event !== undefined && value !== old) {
@@ -127,12 +150,12 @@ const setRef = (ref: React.Ref<HTMLElement>, value: HTMLElement | null) => {
  */
 export const createComponent = <
   E extends HTMLElement,
-  R extends Record<string, keyof E>
+  R extends {},
 >(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<E>,
-  eventNames?: R,
+  eventNames?: Record<keyof R, string>,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -151,8 +174,8 @@ export const createComponent = <
   // - events specific to the custom element
   // - element properties required by react
   type UserProps = ElementWithoutHTML &
-    ReactPropsAsElementKeys<E, R> &
-    ReducedReactProps<E, R>;
+    ReducedReactProps<E, R> &
+    R;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
@@ -203,8 +226,8 @@ export const createComponent = <
         setProperty(
           this._element,
           prop,
-          this.props[prop],
-          oldProps ? oldProps[prop] : undefined,
+          this.props[prop as keyof ComponentProps],
+          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
           eventNames
         );
       }
@@ -262,7 +285,7 @@ export const createComponent = <
       // iterate again when setting properties.
       this._elementProps = {};
       for (const k in this.props) {
-        const v = this.props[k];
+        const v = this.props[k as keyof ComponentProps];
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
           continue;

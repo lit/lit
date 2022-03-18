@@ -46,14 +46,6 @@ class BasicElement extends ReactiveElement {
   fire(name: string) {
     this.dispatchEvent(new Event(name));
   }
-
-  foo(e: KeyboardEvent) {
-    console.log(e);
-  }
-
-  bar(e: CustomEvent<string>) {
-    console.log(e);
-  }
 }
 
 declare global {
@@ -76,12 +68,22 @@ suite('createComponent', () => {
     }
   });
   
+  // this typing feels assumptive ;_;
+  // user declares what event types react names corresponds too
+  // might as well have them type out a map and be explicit.
+  //
+  //
+  interface MyEventTypes {
+    onFoo: (e: KeyboardEvent) => void;
+    onBar: (e: CustomEvent) => void;
+  }
+
   const propsMap = {
     onFoo: 'foo',
     onBar: 'bar',
-  } as const;
+  };
 
-  const BasicElementComponent = createComponent(
+  const BasicElementComponent = createComponent<BasicElement, MyEventTypes>(
     window.React,
     elementName,
     BasicElement,
