@@ -22,41 +22,16 @@ type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<
 
 type ReservedReactProperties = ElementType<typeof reservedReactPropertyNames>;
 
+type Constructor<E> = {new (): E};
+type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
+
+
 const reservedReactProperties = new Set(reservedReactPropertyNames);
 
 const listenedEvents: WeakMap<
   Element,
   Map<string, EventListener>
 > = new WeakMap();
-
-type Constructor<E> = {new (): E};
-type ReactEventNameRecord<E> = Record<string, keyof E>;
-type ReactPropsAsElementKeys<E, R extends ReactEventNameRecord<E>> = {
-  [K in keyof R]: E[R[K]];
-};
-type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
-
-type EventTranslations<R extends {}> = {
-  [K in keyof R]: R[K];
-};
-
-const propsMap = {
-  onFoo: 'foo',
-  onBar: 'bar',
-};
-
-type ReactEventRecord<E> = Record<keyof E, string>
-
-interface MyEventTypes {
-  onFoo: (e: MouseEvent) => void;
-  onBar: (e: CustomEvent) => void;
-  onBlue: 'hello';
-}
-
-type MyEventys = EventTranslations<MyEventTypes>
-
-
-// const hello: StringAsEvent<MouseEvent> = <MouseEvent>'mouse';
 
 
 /**
@@ -148,10 +123,7 @@ const setRef = (ref: React.Ref<HTMLElement>, value: HTMLElement | null) => {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <
-  E extends HTMLElement,
-  R extends {},
->(
+export const createComponent = <E extends HTMLElement, R extends {}>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<E>,
@@ -173,9 +145,7 @@ export const createComponent = <
   // - properties specfic to the custom element
   // - events specific to the custom element
   // - element properties required by react
-  type UserProps = ElementWithoutHTML &
-    ReducedReactProps<E, R> &
-    R;
+  type UserProps = ElementWithoutHTML & ReducedReactProps<E, R> & R;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because

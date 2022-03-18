@@ -68,11 +68,6 @@ suite('createComponent', () => {
     }
   });
   
-  // this typing feels assumptive ;_;
-  // user declares what event types react names corresponds too
-  // might as well have them type out a map and be explicit.
-  //
-  //
   interface MyEventTypes {
     onFoo: (e: KeyboardEvent) => void;
     onBar: (e: CustomEvent) => void;
