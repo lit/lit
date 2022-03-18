@@ -25,6 +25,9 @@ type ReservedReactProperties = ElementType<typeof reservedReactPropertyNames>;
 type Constructor<E> = {new (): E};
 type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
+type OnlyEvents<R> = {
+  [K in keyof R]: R[K] extends Event ? (e: R[K]) => void : never;
+}
 
 const reservedReactProperties = new Set(reservedReactPropertyNames);
 
@@ -32,7 +35,6 @@ const listenedEvents: WeakMap<
   Element,
   Map<string, EventListener>
 > = new WeakMap();
-
 
 /**
  * Adds an event listener for the specified event to a given node.
@@ -270,12 +272,14 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
   }
 
   const ForwardedComponent = React.forwardRef<E, Partial<UserProps>>(
-    (props, ref) =>
-      createElement(
+    (props, ref) => {
+      const prop2 = props as UserProps;
+      return createElement(
         ReactComponent,
-        {...props, __forwardedRef: ref} as ComponentProps,
+        {...prop2, __forwardedRef: ref} as ComponentProps,
         props?.children
       )
+    }
   );
 
   // To ease debugging in the React Developer Tools

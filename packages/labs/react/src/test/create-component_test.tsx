@@ -69,8 +69,8 @@ suite('createComponent', () => {
   });
   
   interface MyEventTypes {
-    onFoo: (e: KeyboardEvent) => void;
-    onBar: (e: CustomEvent) => void;
+    onFoo: KeyboardEvent;
+    onBar: CustomEvent<string>;
   }
 
   const propsMap = {
