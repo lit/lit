@@ -1,3 +1,7 @@
+## [0.7.0-pre.3] - 2022-03-16
+### Changed
+- Extracted LitVirtualizer class to be imported without side-effects
+
 ## [0.6.0] - 2021-05-01
 - This is a stopgap release to unblock migrations to Lit 2.0
 - In the near future:

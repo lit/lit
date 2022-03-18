@@ -13,4 +13,8 @@
 /virtualize.d.ts
 /virtualize.d.ts.map
 /virtualize.js.map
+/LitVirtualizer.js
+/LitVirtualizer.d.ts
+/LitVirtualizer.d.ts.map
+/LitVirtualizer.js.map
 /test/screenshot/cases/*/actual.*.png
