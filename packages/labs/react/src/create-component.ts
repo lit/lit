@@ -39,7 +39,7 @@ type Constructor<E> = {new (): E};
 */
 type OnlyEvents<R> = {
   [K in keyof R]: R[K] extends Event ? (e: R[K]) => void : (e: Event) => void;
-}
+};
 
 type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
@@ -161,15 +161,18 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
   // - properties specfic to the custom element
   // - events specific to the custom element
   // - element properties required by react
-  type UserProps =  Partial<OnlyEvents<R> & ElementWithoutHTML & ReducedReactProps<E, R>>;
+  type UserProps = Partial<
+    OnlyEvents<R> & ElementWithoutHTML & ReducedReactProps<E, R>
+  >;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
-  type ComponentProps = UserProps & Partial<{
-    __forwardedRef: React.ForwardedRef<E>;
-  }>;
+  type ComponentProps = UserProps &
+    Partial<{
+      __forwardedRef: React.ForwardedRef<E>;
+    }>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
@@ -285,8 +288,8 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
     }
   }
 
-  const ForwardedComponent = React.forwardRef<E, UserProps>(
-    (props, ref) => createElement(
+  const ForwardedComponent = React.forwardRef<E, UserProps>((props, ref) =>
+    createElement(
       ReactComponent,
       {...props, __forwardedRef: ref},
       props?.children
