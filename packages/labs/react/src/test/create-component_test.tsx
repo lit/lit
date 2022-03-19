@@ -66,12 +66,17 @@ suite('createComponent', () => {
     }
   });
 
+  interface BasicElementEvents {
+    onFoo: KeyboardEvent;
+    onBar: CustomEvent<string>;
+  }
+
   const basicElementEvents = {
     onFoo: 'foo',
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createComponent(
+  const BasicElementComponent = createComponent<BasicElement, BasicElementEvents>(
     window.React,
     elementName,
     BasicElement,
@@ -241,13 +246,13 @@ suite('createComponent', () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
-    const onFoo = (e: Event) => {
+    const onFoo = (e: KeyboardEvent) => {
       fooEvent = e;
     };
     const onFoo2 = (e: Event) => {
       fooEvent2 = e;
     };
-    const onBar = (e: Event) => {
+    const onBar = (e: CustomEvent<string>) => {
       barEvent = e;
     };
     await renderReactComponent({

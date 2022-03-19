@@ -84,8 +84,8 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
-type Events<S> = {
-  [P in keyof S]?: (e: Event) => unknown;
+type EventsAsListeners<R> = {
+  [K in keyof R]: R[K] extends Event ? (e: R[K]) => void : (e: Event) => void;
 };
 
 type StringValued<T> = {
@@ -119,7 +119,7 @@ export const createComponent = <I extends HTMLElement, E>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: StringValued<E>,
+  events?: Record<keyof E, string>,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -132,8 +132,8 @@ export const createComponent = <I extends HTMLElement, E>(
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
-        Events<E> &
-        React.HTMLAttributes<HTMLElement>
+        Partial<EventsAsListeners<E>> &
+        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
     >
   >;
 
