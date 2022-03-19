@@ -23,11 +23,25 @@ type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<
 type ReservedReactProperties = ElementType<typeof reservedReactPropertyNames>;
 
 type Constructor<E> = {new (): E};
-type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
+/*
+  R is an interface provided by the user correlating a kind of Event to a
+  react property.
+  ie: {onClick: MouseEvent}
+  
+  OnlyEvents expresses R as an interface of react properties and expected
+  event listeners.
+  ie: OnlyEvents<{onClick: MouseEvent}>
+      will express `{onClick: (e: MouseEvent) => void}`
+  
+  If a value other than an Event is provided by the user, it is ignored
+  and `(e: Event) => void` will be expected
+*/
 type OnlyEvents<R> = {
-  [K in keyof R]: R[K] extends Event ? (e: R[K]) => void : never;
+  [K in keyof R]: R[K] extends Event ? (e: R[K]) => void : (e: Event) => void;
 }
+
+type ReducedReactProps<E, R> = Omit<React.HTMLAttributes<E>, keyof R>;
 
 const reservedReactProperties = new Set(reservedReactPropertyNames);
 
@@ -147,15 +161,15 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
   // - properties specfic to the custom element
   // - events specific to the custom element
   // - element properties required by react
-  type UserProps = ElementWithoutHTML & ReducedReactProps<E, R> & R;
+  type UserProps =  Partial<OnlyEvents<R> & ElementWithoutHTML & ReducedReactProps<E, R>>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
-  type ComponentProps = UserProps & {
+  type ComponentProps = UserProps & Partial<{
     __forwardedRef: React.ForwardedRef<E>;
-  };
+  }>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
@@ -179,7 +193,7 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
     }
   }
 
-  class ReactComponent extends Component<Partial<ComponentProps>> {
+  class ReactComponent extends Component<ComponentProps> {
     private _element: E | null = null;
     private _elementProps!: Record<string, unknown>;
     private _userRef?: React.Ref<E>;
@@ -262,8 +276,8 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
           this._elementProps[k] = v;
           continue;
         }
-        // React does *not* handle `className` for custom elements so
-        // coerce it to `class` and props is typecasted
+        // React does *not* handle `className` for custom elements.
+        // Here it is coerced to `class` and props is typecasted
         // as Record<string, unknown> so it's handled correctly.
         props[k === 'className' ? 'class' : k] = v;
       }
@@ -271,15 +285,12 @@ export const createComponent = <E extends HTMLElement, R extends {}>(
     }
   }
 
-  const ForwardedComponent = React.forwardRef<E, Partial<UserProps>>(
-    (props, ref) => {
-      const prop2 = props as UserProps;
-      return createElement(
-        ReactComponent,
-        {...prop2, __forwardedRef: ref} as ComponentProps,
-        props?.children
-      )
-    }
+  const ForwardedComponent = React.forwardRef<E, UserProps>(
+    (props, ref) => createElement(
+      ReactComponent,
+      {...props, __forwardedRef: ref},
+      props?.children
+    )
   );
 
   // To ease debugging in the React Developer Tools
