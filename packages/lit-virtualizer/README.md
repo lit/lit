@@ -24,7 +24,7 @@ For more information and specific guidance, see the [Tools and Workflows docs](h
 
 A virtualizer is an element that renders its own children, applying the provided `renderItem` template function to each item in the provided `items` array.
 
-Instead of immediately rendering a child element for every item in the array, however, it renders only enough elements to fill the viewport. As the viewport scrolls or resizes, the virtualizer automatically removes elements that are no longer visible and adds elements that have come into view.
+Instead of immediately rendering a child element for every item in the array, a virtualizer renders only enough elements to fill the viewport. As the viewport scrolls or resizes, the virtualizer automatically removes elements that are no longer visible and adds elements that have come into view.
 
 **By default, a virtualizer is not itself a scroller**. Rather, it is a block-level element that sizes itself to take up enough space for all of its children, including those that aren't currently present in the DOM. It adds and removes child elements as needed whenever the window (or some other scrollable ancestor of the virtualizer) is scrolled or resized. It is possible, however, to [make a virtualizer into a scroller](#making-a-virtualizer-a-scroller).
 
@@ -35,6 +35,7 @@ The most common way to make a virtualizer is to use the `<lit-virtualizer>` elem
 ```js
 render() {
   return html`
+    <h2>My Contacts</h2>
     <lit-virtualizer
       .items=${this.contacts}
       .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
@@ -104,7 +105,7 @@ Child element size is determined "naturally"—that is, the size of each child e
 
 To control the spacing of child elements, use standard CSS techniques to set margins on the elements.
 
-Note that the `flow` layout offers limited support for [margin-collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing): margins set explicitly on child elements will be collapsed, but any margins on elements contained __within__ child elements are not considered.
+Note that the `flow` layout offers limited support for [margin-collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing): margins set explicitly on child elements will be collapsed, but any margins on elements contained _within_ child elements are not considered.
 
 #### Specifying layout direction
 
@@ -186,7 +187,7 @@ where position is: `'start'|'center'|'end'|'nearest'`
 
 Scroll to the item at the given index. Place the item at the given position within the viewport. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the viewport. Position defaults to `start`.
 
-__Note: Details of the `scrollToIndex` API are likely to change before the 1.0 release, but changes required to your existing code should be minimal and mechanical in nature.__
+_Note: Details of the `scrollToIndex` API are likely to change before the 1.0 release, but changes required to your existing code should be minimal and mechanical in nature._
 
 Example usage:
 
