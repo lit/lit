@@ -121,7 +121,7 @@ class StyleMapDirective extends Directive {
  *
  * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
  * '0'})` sets the `background-color`, `border-top` and `--size` properties.
- * 
+ *
  * @param styleInfo
  * @see {@link https://lit.dev/docs/templates/directives/#stylemap styleMap code samples on Lit.dev}
  */
