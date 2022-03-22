@@ -78,7 +78,7 @@ interface StaticValue {
 
   /**
    * A value that can't be decoded from ordinary JSON, make it harder for
-   * a attacker-controlled data that goes through JSON.parse to produce a valid
+   * attacker-controlled data that goes through JSON.parse to produce a valid
    * StaticValue.
    */
   r: RegExp;
