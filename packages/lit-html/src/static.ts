@@ -7,7 +7,44 @@
 // Any new exports need to be added to the export statement in
 // `packages/lit/src/index.all.ts`.
 
-import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
+import { html as coreHtml, svg as coreSvg, TemplateResult } from './lit-html.js';
+
+interface StaticValue {
+  /** The value to interpolate as-is into the template. */
+  _$litStatic$: string;
+
+  /**
+   * A value that can't be decoded from ordinary JSON, make it harder for
+   * a attacker-controlled data that goes through JSON.parse to produce a valid
+   * StaticValue.
+   */
+  r: typeof brand;
+}
+
+/**
+ * Prevents JSON injection attacks.
+ *
+ * The goals of this brand:
+ *   1) fast to check
+ *   2) code is small on the wire
+ *   3) multiple versions of Lit in a single page will all produce mutually
+ *      interoperable StaticValues
+ *   4) normal JSON.parse (without an unusual reviver) can not produce a
+ *      StaticValue
+ *
+ * Symbols satisfy (1), (2), and (4). We use Symbol.for to satisfy (3), but
+ * we don't care about the key, so we break ties via (2) and use the empty
+ * string.
+ */
+const brand = Symbol.for('');
+
+/** Safely extracts the string part of a StaticValue. */
+const unwrapStaticValue = (value: unknown): string | undefined => {
+  if ((value as Partial<StaticValue>)?.r !== brand) {
+    return undefined;
+  }
+  return (value as Partial<StaticValue>)?.['_$litStatic$'];
+};
 
 /**
  * Wraps a string so that it behaves like part of the static template
@@ -25,7 +62,7 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  */
 export const unsafeStatic = (value: string): StaticValue => ({
   ['_$litStatic$']: value,
-  r: /_/,
+  r: brand,
 });
 
 const textFromStatic = (value: StaticValue) => {
@@ -61,28 +98,8 @@ export const literal = (
     (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
     strings[0]
   ) as string,
-  r: /_/,
+  r: brand,
 });
-
-/** Safely extracts the string part of a StaticValue. */
-const unwrapStaticValue = (value: unknown): string | undefined => {
-  if (!((value as Partial<StaticValue>)?.r instanceof RegExp)) {
-    return undefined;
-  }
-  return (value as Partial<StaticValue>)?.['_$litStatic$'];
-};
-
-interface StaticValue {
-  /** The value to interpolate as-is into the template. */
-  _$litStatic$: string;
-
-  /**
-   * A value that can't be decoded from ordinary JSON, make it harder for
-   * attacker-controlled data that goes through JSON.parse to produce a valid
-   * StaticValue.
-   */
-  r: RegExp;
-}
 
 const stringsCache = new Map<string, TemplateStringsArray>();
 
@@ -91,57 +108,57 @@ const stringsCache = new Map<string, TemplateStringsArray>();
  */
 export const withStatic =
   (coreTag: typeof coreHtml | typeof coreSvg) =>
-  (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => {
-    const l = values.length;
-    let staticValue: string | undefined;
-    let dynamicValue: unknown;
-    const staticStrings: Array<string> = [];
-    const dynamicValues: Array<unknown> = [];
-    let i = 0;
-    let hasStatics = false;
-    let s: string;
+    (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => {
+      const l = values.length;
+      let staticValue: string | undefined;
+      let dynamicValue: unknown;
+      const staticStrings: Array<string> = [];
+      const dynamicValues: Array<unknown> = [];
+      let i = 0;
+      let hasStatics = false;
+      let s: string;
 
-    while (i < l) {
-      s = strings[i];
-      // Collect any unsafeStatic values, and their following template strings
-      // so that we treat a run of template strings and unsafe static values as
-      // a single template string.
-      while (
-        i < l &&
-        ((dynamicValue = values[i]),
-        (staticValue = unwrapStaticValue(dynamicValue))) !== undefined
-      ) {
-        s += staticValue + strings[++i];
-        hasStatics = true;
+      while (i < l) {
+        s = strings[i];
+        // Collect any unsafeStatic values, and their following template strings
+        // so that we treat a run of template strings and unsafe static values as
+        // a single template string.
+        while (
+          i < l &&
+          ((dynamicValue = values[i]),
+            (staticValue = unwrapStaticValue(dynamicValue))) !== undefined
+        ) {
+          s += staticValue + strings[++i];
+          hasStatics = true;
+        }
+        dynamicValues.push(dynamicValue);
+        staticStrings.push(s);
+        i++;
       }
-      dynamicValues.push(dynamicValue);
-      staticStrings.push(s);
-      i++;
-    }
-    // If the last value isn't static (which would have consumed the last
-    // string), then we need to add the last string.
-    if (i === l) {
-      staticStrings.push(strings[l]);
-    }
+      // If the last value isn't static (which would have consumed the last
+      // string), then we need to add the last string.
+      if (i === l) {
+        staticStrings.push(strings[l]);
+      }
 
-    if (hasStatics) {
-      const key = staticStrings.join('$$lit$$');
-      strings = stringsCache.get(key)!;
-      if (strings === undefined) {
-        // Beware: in general this pattern is unsafe, and doing so may bypass
-        // lit's security checks and allow an attacker to execute arbitrary
-        // code and inject arbitrary content.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (staticStrings as any).raw = staticStrings;
-        stringsCache.set(
-          key,
-          (strings = staticStrings as unknown as TemplateStringsArray)
-        );
+      if (hasStatics) {
+        const key = staticStrings.join('$$lit$$');
+        strings = stringsCache.get(key)!;
+        if (strings === undefined) {
+          // Beware: in general this pattern is unsafe, and doing so may bypass
+          // lit's security checks and allow an attacker to execute arbitrary
+          // code and inject arbitrary content.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (staticStrings as any).raw = staticStrings;
+          stringsCache.set(
+            key,
+            (strings = staticStrings as unknown as TemplateStringsArray)
+          );
+        }
+        values = dynamicValues;
       }
-      values = dynamicValues;
-    }
-    return coreTag(strings, ...values);
-  };
+      return coreTag(strings, ...values);
+    };
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
