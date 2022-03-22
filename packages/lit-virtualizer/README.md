@@ -1,16 +1,8 @@
 # @lit-labs/virtualizer
 
-`@lit-labs/virtualizer` provides virtual scrolling for [Lit](https://lit.dev).
+`@lit-labs/virtualizer` provides viewport-based virtualization (including virtual scrolling) for [Lit](https://lit.dev).
 
-This package provides two main exports:
-
-* `<lit-virtualizer>`: a Lit element that takes an array of data items and an item template and renders items on the fly as the user scrolls, keeping only enough items in the DOM to fill the viewport.
-
-* `scroll`: a Lit directive that turns its parent element into a virtually scrolling container. This is useful primarily if you're using Lit templates but not the `LitElement` base class and want to keep your imports to a minimum.
-
-You can find [documentation](#documentation) below, or view live [examples](https://polymerlabs.github.io/uni-virtualizer/).
-
-⚠️ `@lit-labs/virtualizer` is in prerelease. All changes may be breaking until 1.0.
+⚠️ `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain quite stable going forward, but you should expect (increasingly minor) changes before 1.0. Some of these changes may be technically breaking, but we anticipate that they will be mechanical and straightforward to make.
 
 ## Getting Started
 
@@ -20,281 +12,197 @@ Get this package:
 npm i @lit-labs/virtualizer
 ```
 
-The package is shipped using [ES modules](https://developers.google.com/web/fundamentals/primers/modules). It also uses [bare specifiers](https://github.com/WICG/import-maps#bare-specifiers) to refer to other node modules such as lit-html. Shipping the package this way affords you control as a developer over your bundle delivery. For example, you could do code splitting. You will, however, have to *resolve* these module names when bundling your code.
+Like Lit itself, the `@lit-labs/virtualizer` package is published as ES2019, using [ES modules](https://developers.google.com/web/fundamentals/primers/modules). The Lit packages use [bare specifiers](https://github.com/WICG/import-maps#bare-specifiers) to refer to their dependencies.
 
-As an example, here's how you can do module resolution with [rollup](https://rollupjs.org).
+Shipping packages this way lets you control how whether and how they (along with your own source code) are bundled and transpiled for delivery to your users. However, it does require that you use a development server (or alternative tool chain) capable of *resolving* bare specifiers on the fly, since browsers don't natively support them.
 
-*index.html*
-```html
-...
-<script type="module" src="build/main.js">
-...
-```
-
-*src/main.js*
-```js
-import { LitVirtualizer } from '@lit-labs/virtualizer';
-
-// use <lit-virtualizer> element or LitVirtualizer class
-```
-
-Install rollup and the rollup-plugin-node-resolve plugin.
-```
-npm i rollup rollup-plugin-node-resolve
-```
-
-*rollup.config.js*
-```js
-import resolve from 'rollup-plugin-node-resolve';
-
-export default [
-  {
-    input: 'src/main.js',
-    output: {
-      dir: 'build',
-      format: 'esm'
-    },
-    plugins: [
-      resolve(),
-    ]        
-  }
-];
-```
-
-Roll it up.
-```
-npx rollup --config
-```
-
-Rollup will output build/main.js, with properly resolved module names.
-
-Other small chunks will also be present. `@lit-labs/virtualizer` utilizes [dynamic imports](https://developers.google.com/web/updates/2017/11/dynamic-import) in a few places to avoid loading code unnecessarily. This allows rollup to split the code and emit several chunks.
+For more information and specific guidance, see the [Tools and Workflows docs](https://lit.dev/docs/tools/overview/) on [lit.dev](https://lit.dev).
 
 ## Documentation
 
-### `scroll` directive
+### What is a virtualizer?
 
-`scroll` is a Lit directive that turns its parent element into a virtual scrolling area. It requires a `renderItem` function for rendering virtual children, and an array of items to render.
+A virtualizer is an element that renders its own children, applying the provided `renderItem` template function to each item in the provided `items` array.
 
-Say we are building an index page for a blog, and need a list of link to all blog posts. The blog has thousands of posts, so we want the list to have virtual scrolling. Here's our index.html...
-```html
-<body>
-  <h1>All posts</h1>
-  <div id="post-list"></div>
+Instead of immediately rendering a child element for every item in the array, a virtualizer renders only enough elements to fill the viewport. As the viewport scrolls or resizes, the virtualizer automatically removes elements that are no longer visible and adds elements that have come into view.
 
-  <script type="module" src="index.js"></script>
-</body>
-```
-
-...and here's how we can use the `scroll` directive to render the list of post links.
-```js
-import scroll from '@lit-labs/virtualizer';
-import { html, render } from 'lit';
-
-// Post metadata that we want to virtually scroll.
-const posts = [
-  {title: "10 essential products", link: "./post-1", date: "June 20 2019"},
-  {title: "How to tie a tie", link: "./post-2", date: "June 21 2019"},
-  ...
-];
-
-// Building our post link template.
-// renderPostLink is a function that takes an item (our metadata)
-// and uses the `html` tag to build DOM structure with it.
-const renderPostLink = post => html`
-  <div>
-    <h2><a href="${post.link}">${post.title}</a></h2>
-    <p>${post.date}</p>
-  </div>
-`;
-
-// Pass the post metadata and the render to the scroll directive...
-const templateResult = html`${
-  scroll({
-    items: posts,
-    renderItem: renderPostLink
-  })
-}`
-
-// ... and render it into our container!
-render(templateResult, document.querySelector("#post-list"));
-```
-
-In this example, just `items` and `renderItem` were configured. You can also specify the scroll target and whether or not to use shadow DOM.
-
-
-
-### `scroll` config options
-
-#### `items`
-
-Type: `Array<T>`
-
-A list of items to display via the renderItem function. The type of the items should match the first argument of the renderItem function.
-
-#### `renderItem`
-
-Type: `(item: T, index?: number) => TemplateResult`
-
-A function that returns a Lit `TemplateResult`. It will be used to generate the DOM for each item in the virtual list.
-
-#### `scrollTarget`
-
-Type: `Element | Window`
-
-Optional. An element that receives scroll events for the virtual scroller. If not specified, the directive's parent element will be the target.
-
-#### `totalItems`
-
-Type: `number`
-
-Optional. Limit for the number of items to display. Defaults to the length of the items array.
-
-#### `scrollToIndex`
-
-Type: `{index: number, position?: string}`
-
-where position is: `'start'|'center'|'end'|'nearest'`
-
-Optional. Scroll to the item at the give index. Place the item at the given position within the scroll view. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the scroll view. Position defaults to `start`.
-
-Note: Rendering with `scrollToIndex` will cause the scroll view to fix at the given position until the user manually scrolls. If a lit-html template using the `scroll` directive is re-rendered, note that the view will be re-scrolled to respect the given `scrollToIndex` option. Take care to set or unset the `scrollToIndex` option upon subsequent re-renders for the desired behavior.
-
-### Events
-
-#### `visibilityChanged` event
-
-This event is an instance of `RangeChangeEvent`, which has the following properties regarding the currently rendered range of items:
-
-* `first`: the index of the first item currently rendered. This may not be the first visible item.
-* `last`: the index of the last item currently rendered. This may not be the first visible item.
-* `firstVisible`: the index of the first item visible. That is, the first item to intersect the scroll view.
-* `lastVisible`: the index of the last item visible. That is, the last item to intersect the scroll view.
-
-This event is fired when any of these values change, e.g. because the user scrolled. To listen for this event, attach a listener to the host of the `scroll` directive. You can do this inline with lit-html.
-
-Example usage:
-
-```ts
-const handleEvent = (e) => {
-  console.log("The first visible index is", e.firstVisible);
-  console.log("The last visible index is", e.lastVisible);
-}
-
-const example = (contacts) => html`
-  <section @visibilityChanged=${handleEvent}>
-    ${scroll({
-      items: contacts,
-      renderItem: ({ mediumText }) => html`<p>${mediumText}</p>`,
-    })}
-  </section>
-`;
-```
-
----
+**By default, a virtualizer is not itself a scroller**. Rather, it is a block-level element that sizes itself to take up enough space for all of its children, including those that aren't currently present in the DOM. It adds and removes child elements as needed whenever the window (or some other scrollable ancestor of the virtualizer) is scrolled or resized. It is possible, however, to [make a virtualizer into a scroller](#making-a-virtualizer-a-scroller).
 
 ### `<lit-virtualizer>` element
 
-`<lit-virtualizer>` provides the same functionality as the `scroll` directive in element form, which you may find more ergonomic.
-
-Here's how to redo the blog post example, using `<lit-virtualizer>` instead. Construction of the final `templateResult` is the only difference:
+The most common way to make a virtualizer is to use the `<lit-virtualizer>` element. Here's how you would use `<lit-virtualizer>` inside a Lit element's `render` method:
 
 ```js
-const templateResult = html`
-  <lit-virtualizer
-    .items=${posts}
-    .renderItem=${renderPostLink}
-  ></lit-virtualizer>
-`
-render(templateResult, document.querySelector("#post-list"));
+render() {
+  return html`
+    <h2>My Contacts</h2>
+    <lit-virtualizer
+      .items=${this.contacts}
+      .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
+    ></lit-virtualizer>
+  `;
+}
 ```
 
-With `<lit-virtualizer>`, you pass configuration as properties to the HTML Element.
+Note: The examples throughout this documentation focus on the `<lit-virtualizer>` element, but the [`virtualize` directive](#virtualize-directive) provides an alternative that may be useful in certain cases.
 
-### `<lit-virtualizer>` API
+### Making a virtualizer a scroller
 
-#### `items` property
+If you want to make a virtualizer that is itself a scroller, just add the `scroller` attribute to the `<lit-virtualizer>` element, or add `scroller: true` to the options object for the [`virtualize` directive](#virtualize-directive):
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      scroller
+      .items=${this.contacts}
+      .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. (By default, it has a `min-height` of 150 pixels to prevent it from collapsing to a zero-height block, but this default will rarely be what you want in practice.)
+
+### Layout
+
+`@lit-labs/virtualizer` currently supports two basic layouts, [`flow`](#flow-layout) (the default) and [`grid`](#grid-layout), which together cover a wide range of common use cases.
+
+If you just want a vertical flow layout, then there's no need to do anything; that's what a virtualizer does out of the box. But if you want to select the `grid` layout instead, or if you want to set an option on the `flow` layout, then you'll use the virtualizer's `layout` property to do so. Here's an example:
+
+```js
+// First, import the layout you want to use. The reference returned
+// is a function that takes an optional configuration object.
+import { grid } from '@lit-labs/virtualizer/layouts/grid.js';
+```
+
+```js
+// Inside your element's `render` function, use the imported function
+// to set the virtualizer's `layout` property. In this case, we omit
+// the configuration object so we'll get `grid`'s default options.
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid()}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. It is likely that official support of custom layouts will be a post-1.0 feature.
+
+### Flow layout
+
+By default, a virtualizer lays out its children using the `flow` layout, a simplified form of the browser's own default layout.
+
+The `flow` layout's primary (and significant) simplification is that it expects all child elements to be styled as block-level elements and lays them out accordingly. Child elements will never be laid out "next to each other" inline, even if there were enough space to do so.
+
+Child element size is determined "naturally"—that is, the size of each child element will depend on the data you provide in the `items` array, the nature of your `renderItem` template, and any CSS rules that apply to the child.
+
+#### Spacing child elements
+
+To control the spacing of child elements, use standard CSS techniques to set margins on the elements.
+
+Note that the `flow` layout offers limited support for [margin-collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing): margins set explicitly on child elements will be collapsed, but any margins on elements contained _within_ child elements are not considered.
+
+#### Specifying layout direction
+
+The `flow` layout works vertically by default. However, it also supports laying out child elements horizontally, via its `direction` property:
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${flow({
+          direction: 'horizontal'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+
+```
+
+### Grid layout
+
+TODO
+
+### Scrolling to a specific item or position
+
+TODO
+
+### `virtualize` directive
+
+An alternative way to use `@lit-labs/virtualizer` is via the `virtualize` directive; this directive turns its parent element into a virtualizer.
+
+The `virtualize` directive is useful primarily if your project utilizes Lit templates but not the `LitElement` base class and you want to keep your imports to a minimum.
+
+It can also be useful in cases like the one below, where we want to virtualize an unordered list (`<ul>`) element and don't want or need a separate container for its `<li>` children:
+
+```js
+render() {
+  return html`
+    <ul>
+      ${virtualize({
+        items: this.contacts,
+        renderItem: contact => html`<li>${contact.name}</li>`
+      })}
+    </ul>
+  `;
+}
+```
+
+The capabilities of the `virtualizer` directive are the same as those of the `<lit-virtualizer>` element. The APIs are the same as well, except that features expressed as properties and attributes on the `<lit-virtualizer>` element are instead expressed as properties in an options object passed as the single argument to the `virtualize` directive.
+
+## API Referrence
+
+### `items` property
 
 Type: `Array<T>`
 
-A list of items to display via the renderItem function. The type of the items should match the first argument of the renderItem function.
+An array of items (JavaScript values, typically objects) representing the child elements of the virtualizer.
 
-#### `renderItem` property
+The types of values you use to represent your items are entirely up to you, as long as your `renderItem` function can transform each value into a child element.
+
+### `renderItem` property
 
 Type: `(item: T, index?: number) => TemplateResult`
 
-A function that returns a Lit `TemplateResult`. It will be used to generate the DOM for each item in the virtual list.
+A function that returns a Lit `TemplateResult`. It will be used to generate a child element for each item in the `items` array.
 
-#### `scrollTarget` property
+### `scroller` attribute / property
 
-Type: `Element | Window`
+Type: `Boolean`
 
-Optional. An element that receives scroll events for the virtual scroller. If not specified, the `<lit-virtualizer>` element itself will be the scroll target.
+Optional. If this attribute is present (or, in the case of the `virtualize` directive, if this property has a truthy value), then the virtualizer itself will be a scroller. Otherwise, the virtualizer will not scroll but will size itself to take up enough space for all of its children, including those that aren't currently present in the DOM.
 
-#### `scrollToIndex` method
+### `scrollToIndex` method
 
 Type: `(index: number, position?: string) => void`
 
 where position is: `'start'|'center'|'end'|'nearest'`
 
-Scroll to the item at the give index. Place the item at the given position within the scroll view. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the scroll view. Position defaults to `start`.
+Scroll to the item at the given index. Place the item at the given position within the viewport. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the viewport. Position defaults to `start`.
+
+_Note: Details of the `scrollToIndex` API are likely to change before the 1.0 release, but changes required to your existing code should be minimal and mechanical in nature._
 
 Example usage:
 
-```ts
-const virtualizer = document.createElement('lit-virtualizer');
-virtualizer.items = contacts;
-virtualizer.renderItem = renderContactItem;
-// Scroll to the 100th item and put it in the center of the scroll view.
-virtualizer.scrollToIndex(100, 'center');
+```js
+// Where `myVirtualizer` is a reference to a <lit-virtualizer> instance, this
+// will scroll to the 100th item and put it in the center of the viewport.
+myVirtualizer.scrollToIndex(100, 'center');
 ```
 
-## Complete example
+### `visibilityChanged` event
 
-*index.html*
-```html
-<html>
-  <script type="module" src="build/index.js"></script>
-  <contact-list></contact-list>
-</html>
-```
+Fired whenever a change to the viewport (due to scrolling or resizing) affects the set of virtualizer child elements that are currently visible. The `first` property represents the index of the first visible element; the `last` property represents the index of the last visible element.
 
-*src/index.js* (uncompiled)
-```javascript
-import '@lit-labs/virtualizer';
-import { LitElement, html } from 'lit';
+### `rangeChanged` event
 
-class ContactList extends LitElement {
-    static get properties() {
-      return {
-        data: {type: Array}
-      };
-    }
+Fired whenever a virtualizer adds child elements to the DOM, or removes child elements from the DOM. The `first` property represents the index of the first element currently present in the DOM; the `last` property represents the index of the last element currently present in the DOM.
 
-    constructor() {
-      super();
-      this.data = [];
-    }
-
-    async firstUpdated() {
-      this.data = [
-        {name: 'Name 1', phone: '123 456-7890'},
-        {name: 'Name 2', phone: '555 555-5555'}
-      ]
-    }
-
-    render() {
-        return html`
-            <lit-virtualizer
-              .scrollTarget=${window}
-              .items=${this.data}
-              .renderItem=${(contact) => html`
-                <div><b>${contact.name}</b>: ${contact.phone}</div>
-              `}>
-            </lit-virtualizer>
-        `;
-    }
-}
-
-customElements.define('contact-list', ContactList);
-```
+Note that a virtualizer maintains a "buffer" of elements that are in the DOM but just outside the viewport, so the set of elements in the DOM will be somewhat larger than the set of visible elements.
