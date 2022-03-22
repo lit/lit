@@ -63,8 +63,15 @@ class VirtualizeDirective extends AsyncDirective {
             this._setFunctions(config);
         }
         const itemsToRender = [];
+        // TODO (graynorton): Is this the best / only place to ensure
+        // that _last isn't outside the current bounds of the items array?
+        // Not sure we should ever arrive here with it out of bounds.
+        // Also: would like a solid repro case for the issue this was
+        // intended to fix (see https://github.com/PolymerLabs/uni-virtualizer/pull/120)
+        const lastItem = Math.min(this.items.length, this.last + 1);
+
         if (this.first >= 0 && this.last >= this.first) {
-            for (let i = this.first; i < this.last + 1; i++) {
+            for (let i = this.first; i < lastItem; i++) {
                 itemsToRender.push(this.items[i]);
             }
         }
