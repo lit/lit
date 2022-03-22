@@ -192,13 +192,14 @@ const debugLogEvent = DEV_MODE
   ? (event: LitUnstable.DebugLog.Entry) => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
-      if (shouldEmit) {
-        window.dispatchEvent(
-          new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
-            detail: event,
-          })
-        );
+      if (!shouldEmit) {
+        return;
       }
+      window.dispatchEvent(
+        new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
+          detail: event,
+        })
+      );
     }
   : undefined;
 // Used for connecting beginRender and endRender events when there are nested
@@ -892,11 +893,20 @@ const getTemplateHtml = (
   if (!Array.isArray(strings) || !strings.hasOwnProperty('raw')) {
     let message = 'invalid template strings array';
     if (DEV_MODE) {
-      message =
-        `Internal Error: expected template strings to be an array ` +
-        `with a 'raw' field. Please file a bug at ` +
-        `https://github.com/lit/lit/issues/new?template=bug_report.md ` +
-        `and include information about your build tooling, if any.`;
+      message = `
+          Internal Error: expected template strings to be an array
+          with a 'raw' field. Faking a template strings array by
+          calling html or svg like an ordinary function is effectively
+          the same as calling unsafeHtml and can lead to major security
+          issues, e.g. opening your code up to XSS attacks.
+
+          If you're using the html or svg tagged template functions normally
+          and and still seeing this error, please file a bug at
+          https://github.com/lit/lit/issues/new?template=bug_report.md
+          and include information about your build tooling, if any.
+        `
+        .trim()
+        .replace(/\n */g, '\n');
     }
     throw new Error(message);
   }
@@ -1480,7 +1490,7 @@ class ChildPart implements Disconnectable {
         kind: 'commit node',
         start: this._$startNode,
         parent: this._$parent,
-        value: value.cloneNode(true),
+        value: value,
         options: this.options,
       });
       this._$committedValue = this._insert(value);
@@ -2140,7 +2150,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.0');
+(globalThis.litHtmlVersions ??= []).push('2.2.1');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
