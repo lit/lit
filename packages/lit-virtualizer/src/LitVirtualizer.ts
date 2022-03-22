@@ -113,11 +113,14 @@ export class LitVirtualizer extends LitElement {
     render(): TemplateResult {
         const { items, _renderItem, keyFunction } = this;
         const itemsToRender = [];
+        const lastItem = Math.min(items.length, this._last + 1);
+
         if (this._first >= 0 && this._last >= this._first) {
-            for (let i = this._first; i < this._last + 1; i++) {
+            for (let i = this._first; i < lastItem; i++) {
                 itemsToRender.push(items[i]);
-            }    
+            }
         }
+
         return repeat(itemsToRender, keyFunction || defaultKeyFunction, _renderItem) as TemplateResult;
-    }
+    }    
 }
