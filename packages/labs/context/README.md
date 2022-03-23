@@ -16,6 +16,8 @@ There are several different usages of the Context API.
 
 First lets define a context key we can use elsewhere in our examples:
 
+#### **`logger.ts`**:
+
 ```ts
 import {createContext} from '@lit-labs/context';
 
@@ -32,6 +34,8 @@ Now we can define a consumer for this context - some component in our app needs 
 
 Here we're using the `@contextRequest` property decorator to make a `ContextConsumer` controller
 and update its value when the context changes:
+
+#### **`my-element.ts`**:
 
 ```ts
 import {contextRequest} from '@lit-labs/context';
@@ -50,6 +54,8 @@ export class MyElement extends LitElement {
 ```
 
 Another way we can use a context in a component is via the `ContextConsumer` controller directly:
+
+#### **`my-element.ts`**:
 
 ```ts
 import {ContextConsumer, property} from '@lit-labs/context';
@@ -86,6 +92,8 @@ Finally we want to be able to provide this context from somewhere higher in the 
 Here we're using a `@contextProvider` property decorator to make a `ContextProvider`
 controller and update its value when the property value changes.
 
+#### **`my-app.ts`**:
+
 ```ts
 import {LitElement} from 'lit';
 import {contextProvider} from '@lit-labs/context';
@@ -107,6 +115,8 @@ export class MyApp extends LitElement {
 ```
 
 We can also use the `ContextProvider` controller directly:
+
+#### **`my-app.ts`**:
 
 ```ts
 import {LitElement} from 'lit';
@@ -141,6 +151,8 @@ In some cases you might have a context providing element that is upgraded late. 
 To solve this case we provide a `ContextRoot` class which can intercept and track unsatisfied `context-request` events and then redispatch these requests when providers are updated.
 
 Example usage:
+
+#### **`index.ts`**:
 
 ```ts
 import {ContextRoot} from '@lit-labs/context';
