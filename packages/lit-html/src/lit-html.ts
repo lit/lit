@@ -637,6 +637,13 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ): RootPart => {
+  if (DEV_MODE && container == null) {
+    // Give a clearer error message than
+    //     Uncaught TypeError: Cannot read properties of null (reading
+    //     '_$litPart$')
+    // which reads like an internal Lit error.
+    throw new TypeError(`The container to render into may not be ${container}`);
+  }
   const renderId = DEV_MODE ? debugLogRenderId++ : 0;
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
