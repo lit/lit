@@ -64,7 +64,7 @@ property names from an event property map.
 Uncasted EventHandlers will fallback to `(e: Event) => void`.
 
 ```ts
-import type { EventHandler } from '@lit-labs/react';
+import type {EventHandler} from '@lit-labs/react';
 
 import * as React from 'react';
 import {createComponent} from '@lit-labs/react';
