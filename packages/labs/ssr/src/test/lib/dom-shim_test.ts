@@ -21,6 +21,7 @@ test('elements defined with an open shadow root should expose it\'s shadow root 
   const element = new OpenShadowRoot();
   const shadow = element.attachShadow({mode: 'open'});
   assert.is(shadow, element.shadowRoot);
+  assert.is(shadow.host, element);
 });
 test('elements defined with a closed shadow root should expose a null value from the "shadowRoot" property', () => {
   class ClosedShadowRoot extends HTMLElement {}
