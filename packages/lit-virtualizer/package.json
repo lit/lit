@@ -1,7 +1,7 @@
 {
     "name": "@lit-labs/virtualizer",
     "version": "0.7.0-pre.3",
-    "description": "Virtual scrolling for Lit",
+    "description": "Viewport-based virtualization (virtual scrolling) for Lit",
     "author": "Google LLC",
     "license": "BSD-3-Clause",
     "main": "lit-virtualizer.js",
@@ -19,6 +19,9 @@
         },
         "./layouts/grid.js": {
             "default": "./layouts/grid.js"
+        },
+        "./LitVirtualizer.js": {
+            "default": "./LitVirtualizer.js"
         },
         "./virtualize.js": {
             "default": "./virtualize.js"
