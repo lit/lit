@@ -2,6 +2,9 @@
 ### Changed
 - Extracted LitVirtualizer class to be imported without side-effects
 
+### Fixed
+- Runtime error when rendering after the number of items is reduced ([#111](https://github.com/PolymerLabs/uni-virtualizer/issues/111))
+
 ## [0.7.0-pre.2] - 2021-10-08
 ### Changed
 - The `scroll` directive has been renamed to `virtualize`. Note that the `<lit-virtualizer>` element remains the recommended way to use virtualizer in most cases; the directive exists primarily for developers who are using Lit's `lit-html` templating system standalone and don't need the `LitElement` base class elsewhere in their project.
