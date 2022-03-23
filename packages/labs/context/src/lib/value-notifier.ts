@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ContextCallback} from '../context-request-event.js';
+import {ContextCallback} from './context-request-event.js';
 
 /**
  * A disposer function
@@ -24,7 +24,7 @@ type CallbackRecord<T> = [ContextCallback<T>, Disposer];
  * behavior like this. But this is a pretty minimal approach that will likely work
  * for a number of use cases.
  */
-export class ContextContainer<T> {
+export class ValueNotifier<T> {
   private callbacks: Set<CallbackRecord<T>> = new Set();
 
   private _value!: T;
@@ -37,12 +37,12 @@ export class ContextContainer<T> {
 
   public setValue(v: T, force = false) {
     let changed = false;
-    if (v !== this._value) {
+    if (!Object.is(v, this._value)) {
       changed = true;
     }
     this._value = v;
     if (changed || force) {
-      this.updateContext();
+      this.updateObservers();
     }
   }
 
@@ -52,7 +52,7 @@ export class ContextContainer<T> {
     }
   }
 
-  updateContext = (): void => {
+  updateObservers = (): void => {
     this.callbacks.forEach(([callback, disposer]) =>
       callback(this._value, disposer)
     );

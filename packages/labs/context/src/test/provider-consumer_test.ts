@@ -7,7 +7,7 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextProvider, ContextKey} from '../context';
+import {ContextProvider, ContextKey} from '../index.js';
 import {assert} from '@esm-bundle/chai';
 import {ContextConsumer} from '../lib/controllers/context-consumer.js';
 

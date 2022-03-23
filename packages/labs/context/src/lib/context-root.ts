@@ -92,6 +92,9 @@ export class ContextRoot {
       pendingContextRequests = new Set();
       this.pendingContextRequests.set(ev.context, pendingContextRequests);
     }
+    // NOTE: if the element is connected multiple times it will add itself
+    // to this set multiple times since the set identify of the request
+    // object will be unique each time.
     pendingContextRequests.add(request);
   };
 }

@@ -6,7 +6,7 @@
 
 import {ContextRequestEvent} from '../context-request-event.js';
 import {ContextKey, ContextType} from '../context-key.js';
-import {ContextContainer} from './context-container.js';
+import {ValueNotifier} from '../value-notifier.js';
 import {ReactiveController, ReactiveElement} from 'lit';
 
 declare global {
@@ -40,7 +40,7 @@ export class ContextProviderEvent<
  * against its observable Context implementation.
  */
 export class ContextProvider<T extends ContextKey<unknown, unknown>>
-  extends ContextContainer<ContextType<T>>
+  extends ValueNotifier<ContextType<T>>
   implements ReactiveController
 {
   constructor(
@@ -65,12 +65,12 @@ export class ContextProvider<T extends ContextKey<unknown, unknown>>
 
   private attachListeners() {
     this.host.addEventListener('context-request', this.onContextRequest);
-    // emit an event to signal a provider is available for this context
-    this.host.dispatchEvent(new ContextProviderEvent(this.context));
   }
 
   hostConnected(): void {
     this.attachListeners();
+    // emit an event to signal a provider is available for this context
+    this.host.dispatchEvent(new ContextProviderEvent(this.context));
   }
   hostDisconnected(): void {
     this.host.removeEventListener('context-request', this.onContextRequest);

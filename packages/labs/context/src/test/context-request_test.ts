@@ -7,7 +7,7 @@
 import {LitElement} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextProvider, createContext} from '../context.js';
+import {ContextProvider, createContext} from '../index.js';
 import {assert} from '@esm-bundle/chai';
 import {contextRequest} from '../lib/decorators/context-request.js';
 

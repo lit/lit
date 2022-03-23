@@ -2,6 +2,12 @@
 
 ## Overview
 
+This module defines an implementation of controllers and decorators for using the [Context Protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md) as defined by the Web Components Community Group.
+
+This protocol facilitates the communication between components lower in the DOM hierarchy with their ancestors, allowing data to be passed down the tree without having to be passed via 'prop drilling' where each element in the path passes on the data.
+
+For further explanation of the Context Protocol please see the [community protocol documentation](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
+
 ## Usage
 
 There are several different usages of the Context API.
@@ -130,7 +136,7 @@ export class MyApp extends LitElement {
 
 ### Late upgraded Context Providers
 
-In some cases you might have a context providing element that is upgraded late. LightDOM content below this provider may end up requesting a contenxt that is currently not provided by any provider.
+In some cases you might have a context providing element that is upgraded late. LightDOM content below this provider may end up requesting a context that is currently not provided by any provider.
 
 To solve this case we provide a `ContextRoot` class which can intercept and track unsatisfied `context-request` events and then redispatch these requests when providers are updated.
 

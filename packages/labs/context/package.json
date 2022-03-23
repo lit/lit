@@ -20,10 +20,6 @@
     ".": {
       "development": "./development/index.js",
       "default": "./index.js"
-    },
-    "./context.js": {
-      "development": "./development/context.js",
-      "default": "./context.js"
     }
   },
   "files": [
@@ -31,14 +27,14 @@
     "!/src/test/",
     "/development/",
     "!/development/test/",
-    "/context.{d.ts,d.ts.map,js,js.map}"
+    "/index.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:ts --build && rollup -c",
     "build:watch": "rollup -c --watch",
     "build:ts": "tsc --build && treemirror development . '**/*.d.ts{,.map}'",
     "build:ts:watch": "tsc --build --watch",
-    "clean": "rm -rf {context}.{js,js.map,d.ts} development/ test/ *.tsbuildinfo",
+    "clean": "rm -rf index.* lib/ development/ test/ *.tsbuildinfo",
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/context/development/**/*_test.js'",
