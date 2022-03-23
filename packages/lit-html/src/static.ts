@@ -9,6 +9,43 @@
 
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
 
+interface StaticValue {
+  /** The value to interpolate as-is into the template. */
+  _$litStatic$: string;
+
+  /**
+   * A value that can't be decoded from ordinary JSON, make it harder for
+   * a attacker-controlled data that goes through JSON.parse to produce a valid
+   * StaticValue.
+   */
+  r: typeof brand;
+}
+
+/**
+ * Prevents JSON injection attacks.
+ *
+ * The goals of this brand:
+ *   1) fast to check
+ *   2) code is small on the wire
+ *   3) multiple versions of Lit in a single page will all produce mutually
+ *      interoperable StaticValues
+ *   4) normal JSON.parse (without an unusual reviver) can not produce a
+ *      StaticValue
+ *
+ * Symbols satisfy (1), (2), and (4). We use Symbol.for to satisfy (3), but
+ * we don't care about the key, so we break ties via (2) and use the empty
+ * string.
+ */
+const brand = Symbol.for('');
+
+/** Safely extracts the string part of a StaticValue. */
+const unwrapStaticValue = (value: unknown): string | undefined => {
+  if ((value as Partial<StaticValue>)?.r !== brand) {
+    return undefined;
+  }
+  return (value as Partial<StaticValue>)?.['_$litStatic$'];
+};
+
 /**
  * Wraps a string so that it behaves like part of the static template
  * strings instead of a dynamic value.
@@ -23,8 +60,9 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  * Static values can be changed, but they will cause a complete re-render
  * since they effectively create a new template.
  */
-export const unsafeStatic = (value: string) => ({
+export const unsafeStatic = (value: string): StaticValue => ({
   ['_$litStatic$']: value,
+  r: brand,
 });
 
 const textFromStatic = (value: StaticValue) => {
@@ -55,14 +93,13 @@ const textFromStatic = (value: StaticValue) => {
 export const literal = (
   strings: TemplateStringsArray,
   ...values: unknown[]
-) => ({
+): StaticValue => ({
   ['_$litStatic$']: values.reduce(
     (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
     strings[0]
-  ),
+  ) as string,
+  r: brand,
 });
-
-type StaticValue = ReturnType<typeof unsafeStatic>;
 
 const stringsCache = new Map<string, TemplateStringsArray>();
 
@@ -89,8 +126,7 @@ export const withStatic =
       while (
         i < l &&
         ((dynamicValue = values[i]),
-        (staticValue = (dynamicValue as StaticValue)?.['_$litStatic$'])) !==
-          undefined
+        (staticValue = unwrapStaticValue(dynamicValue))) !== undefined
       ) {
         s += staticValue + strings[++i];
         hasStatics = true;
