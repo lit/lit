@@ -57,9 +57,8 @@ React component.
 
 #### Typescript
 
-Event callbacks can be typecasted using the `EventHandler` type included in
-this package. The cast helps `createComponent` correlate callback types to
-property names from an event property map.
+Event callbacks can be typed using the included `EventHandler` type. By using a
+typecast, `createComponent` correlates callback types to property names from an event property map.
 
 Uncasted EventHandlers will fallback to `(e: Event) => void`.
 
@@ -81,7 +80,7 @@ export const MyElementComponent = createComponent(
 );
 ```
 
-EventHandlers in a component's props will match their typecast. A
+Event callbacks will match their type cast. In the example below, a
 `PointerEvent` is expected in the `onClick` callback in the example below.
 
 ```tsx
@@ -95,9 +94,9 @@ EventHandlers in a component's props will match their typecast. A
 />
 ```
 
-NOTE: This type cast is not associated to any actual component property. Be
+NOTE: This type casting is not associated to any component property. Be
 careful to use the corresponding type dispatched from the webcomponent.
-Incorrect type casts might result in events without expected properties.
+Incorrect type casts might result in events with missing properties.
 
 ## `useController`
 
