@@ -64,7 +64,7 @@ export const getWindow = ({
     hasAttribute(name: string) {
       return attributesForElement(this).has(name);
     }
-    attachShadow(init?: ShadowRootInit) {
+    attachShadow(init: ShadowRootInit) {
       const shadowRoot = {host: this};
       if (init && init.mode === 'open') {
         this._shadowRoot = shadowRoot;
