@@ -55,6 +55,46 @@ React component.
 />
 ```
 
+#### Typescript
+
+EventHandlers can be typecasted using the `EventHandler` type included in
+this package. The cast helps `createComponent` correlate callback types to
+property names from an event prop name map.
+
+Uncasted EventHandlers will fallback to `(e: Event) => void`.
+
+```ts
+import type { EventHandler } from '@lit-labs/react';
+
+import * as React from 'react';
+import {createComponent} from '@lit-labs/react';
+import {MyElement} from './my-element.js';
+
+export const MyElementComponent = createComponent(
+  React,
+  'my-element',
+  MyElement,
+  {
+    onClick: 'pointerdown' as EventHandler<PointerEvent>
+    onChange: 'input',
+  }
+);
+```
+
+EventHandlers in a component's props will match their typecast. A
+`PointerEvent` is expected in the `onClick` callback in the example below.
+
+```tsx
+<MyElementComponent
+  onClick={(e: PointerEvent) => { console.log('DOM PointerEvent called!')}}
+  onChange={(e: Event) => { console.log(e)}}
+/>
+```
+ 
+NOTE: This type cast is not associated to any actual component property. Be
+careful to use the corresponding type dispatched from the webcomponent.
+Incorrect type casts might result in events without expected properties.
+
 ## `useController`
 
 Reactive Controllers allow developers to hook a component's lifecycle to bundle

@@ -90,19 +90,25 @@ type StringValued<T> = {
 
 type Constructor<T> = {new (): T};
 
-type EventHandlerString<T = unknown> = string & {
-  __event_handler: T;
+type EventString<T = unknown> = string & {
+  __event_type: T;
 };
 
+/***
+ * Typecast that curries an Event type through an EventString. The React
+ * equivelant to an event listeners is an `EventHandler`. The goal of the type
+ * name is to hint that corresponding EventHandler callback in their props will
+ * be of a certain type.
+ */
 export type EventHandler<T = unknown> = T extends Event
-  ? EventHandlerString<T>
+  ? EventString<T>
   : never;
 
-type EventHandlerRecord = Record<string, EventHandlerString | string>;
+type EventHandlerRecord = Record<string, EventString | string>;
 
 type EventHandlerMap<R extends EventHandlerRecord> = {
-  [K in keyof R]: R[K] extends EventHandlerString
-    ? (e: R[K]['__event_handler']) => void
+  [K in keyof R]: R[K] extends EventString
+    ? (e: R[K]['__event_type']) => void
     : (e: Event) => void;
 };
 
