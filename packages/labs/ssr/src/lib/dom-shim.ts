@@ -46,6 +46,10 @@ export const getWindow = ({
         value,
       }));
     }
+    #shadowRoot: null | ShadowRoot = null;
+    get shadowRoot() {
+      return this.#shadowRoot;
+    }
     abstract attributeChangedCallback?(
       name: string,
       old: string | null,
@@ -60,8 +64,12 @@ export const getWindow = ({
     hasAttribute(name: string) {
       return attributesForElement(this).has(name);
     }
-    attachShadow() {
-      return {host: this};
+    attachShadow(init?: ShadowRootInit) {
+      const shadowRoot = {host: this};
+      if (init && init.mode === 'open') {
+        this.#shadowRoot = shadowRoot;
+      }
+      return shadowRoot;
     }
     getAttribute(name: string) {
       const value = attributesForElement(this).get(name);
