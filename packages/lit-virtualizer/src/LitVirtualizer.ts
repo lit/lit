@@ -113,6 +113,10 @@ export class LitVirtualizer extends LitElement {
     render(): TemplateResult {
         const { items, _renderItem, keyFunction } = this;
         const itemsToRender = [];
+        // TODO (graynorton): Is this the best / only place to ensure
+        // that _last isn't outside the current bounds of the items array?
+        // Not sure we should ever arrive here with it out of bounds.
+        // Repro case for original issue: https://tinyurl.com/yes8b2e6
         const lastItem = Math.min(items.length, this._last + 1);
 
         if (this._first >= 0 && this._last >= this._first) {

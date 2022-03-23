@@ -63,8 +63,14 @@ class VirtualizeDirective extends AsyncDirective {
             this._setFunctions(config);
         }
         const itemsToRender = [];
+        // TODO (graynorton): Is this the best / only place to ensure
+        // that _last isn't outside the current bounds of the items array?
+        // Not sure we should ever arrive here with it out of bounds.
+        // Repro case for original issue: https://tinyurl.com/yes8b2e6
+        const lastItem = Math.min(this.items.length, this.last + 1);
+
         if (this.first >= 0 && this.last >= this.first) {
-            for (let i = this.first; i < this.last + 1; i++) {
+            for (let i = this.first; i < lastItem; i++) {
                 itemsToRender.push(this.items[i]);
             }
         }
