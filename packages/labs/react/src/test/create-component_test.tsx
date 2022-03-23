@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {EventHandler} from "../create-component.js";
+
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
@@ -66,17 +68,12 @@ suite('createComponent', () => {
     }
   });
 
-  interface BasicElementEvents {
-    onFoo: KeyboardEvent;
-    onBar: CustomEvent<string>;
-  }
-
   const basicElementEvents = {
-    onFoo: 'foo',
+    onFoo: 'foo' as EventHandler<MouseEvent>,
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createComponent<BasicElement, BasicElementEvents>(
+  const BasicElementComponent = createComponent(
     window.React,
     elementName,
     BasicElement,
@@ -246,13 +243,13 @@ suite('createComponent', () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
-    const onFoo = (e: KeyboardEvent) => {
+    const onFoo = (e: MouseEvent) => {
       fooEvent = e;
     };
     const onFoo2 = (e: Event) => {
       fooEvent2 = e;
     };
-    const onBar = (e: CustomEvent<string>) => {
+    const onBar = (e: Event) => {
       barEvent = e;
     };
     await renderReactComponent({

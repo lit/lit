@@ -38,7 +38,7 @@ const addOrUpdateEventListener = (
   if (listener !== undefined) {
     // If necessary, add listener and track handler
     if (handler === undefined) {
-      events.set(event, (handler = {handleEvent: listener}));
+      events.set(event, (handler = { handleEvent: listener }));
       node.addEventListener(event, handler);
       // Otherwise just update the listener with new value
     } else {
@@ -80,19 +80,27 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   if (typeof ref === 'function') {
     (ref as (e: Element | null) => void)(value);
   } else {
-    (ref as {current: Element | null}).current = value;
+    (ref as { current: Element | null }).current = value;
   }
-};
-
-type EventsAsListeners<R> = {
-  [K in keyof R]: R[K] extends Event ? (e: R[K]) => void : (e: Event) => void;
 };
 
 type StringValued<T> = {
   [P in keyof T]: string;
 };
 
-type Constructor<T> = {new (): T};
+type Constructor<T> = { new(): T };
+
+type EventHandlerString<T = unknown> = string & {
+  __event_handler: T;
+}
+
+export type EventHandler<T = unknown> = T extends Event ? EventHandlerString<T> : never;
+
+type EventHandlerRecord = Record<string, EventHandlerString | string>;
+
+type EventHandlerMap<R extends EventHandlerRecord> = {
+  [K in keyof R]: R[K] extends EventHandlerString ? (e: R[K]["__event_handler"]) => void : (e: Event) => void;
+};
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -115,11 +123,11 @@ type Constructor<T> = {new (): T};
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E>(
+export const createComponent = <I extends HTMLElement, E extends EventHandlerRecord>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: Record<keyof E, string>,
+  events?: E,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -132,8 +140,8 @@ export const createComponent = <I extends HTMLElement, E>(
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
-        Partial<EventsAsListeners<E>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
+      Partial<EventHandlerMap<E>> &
+      Omit<React.HTMLAttributes<HTMLElement>, keyof E>
     >
   >;
 
@@ -158,8 +166,8 @@ export const createComponent = <I extends HTMLElement, E>(
         // rare.
         console.warn(
           `${tagName} contains property ${p} which is a React ` +
-            `reserved property. It will be used by React and not set on ` +
-            `the element.`
+          `reserved property. It will be used by React and not set on ` +
+          `the element.`
         );
       } else {
         elementClassProps.add(p);
@@ -169,7 +177,7 @@ export const createComponent = <I extends HTMLElement, E>(
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
-    private _elementProps!: {[index: string]: unknown};
+    private _elementProps!: { [index: string]: unknown };
     private _userRef?: React.Ref<unknown>;
     private _ref?: React.RefCallback<I>;
 
@@ -238,7 +246,7 @@ export const createComponent = <I extends HTMLElement, E>(
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = {ref: this._ref};
+      const props: any = { ref: this._ref };
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
@@ -259,7 +267,7 @@ export const createComponent = <I extends HTMLElement, E>(
     (props?: UserProps, ref?: React.Ref<unknown>) =>
       createElement(
         ReactComponent,
-        {...props, __forwardedRef: ref} as ComponentProps,
+        { ...props, __forwardedRef: ref } as ComponentProps,
         props?.children
       )
   );
