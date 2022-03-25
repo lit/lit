@@ -43,8 +43,8 @@ const browserPresets = {
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
-    // 'sauce:Windows 10/Chrome@latest-3',
-    // 'sauce:macOS 10.15/Safari@latest',
+    'sauce:Windows 10/Chrome@latest-3',
+    'sauce:macOS 10.15/Safari@latest',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
@@ -57,7 +57,10 @@ let sauceLauncher;
 
 const user = (process.env.SAUCE_USERNAME || '').trim();
 const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-if (!user || !key) {
+const build = (process.env.SAUCE_BUILD_ID || '').trim();
+const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
+
+if (!user || !key || !build || !tunnelIdentifier) {
   console.warn(
     'To test on Sauce, set the SAUCE_USERNAME' +
       ' and SAUCE_ACCESS_KEY environment variables.'
@@ -66,6 +69,10 @@ if (!user || !key) {
   sauceLauncher = createSauceLabsLauncher({
     user,
     key,
+  }, {
+    build,
+  }, {
+    tunnelIdentifier,
   });
 }
 
