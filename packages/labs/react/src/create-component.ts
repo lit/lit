@@ -100,9 +100,7 @@ type EventString<T extends Event = Event> = string & {
  * name is to hint that corresponding EventName callback in their props will
  * be of a certain type.
  */
-export type EventName<T> = T extends Event
-  ? EventString<T>
-  : never;
+export type EventName<T> = T extends Event ? EventString<T> : never;
 
 type Events = Record<string, EventString | string>;
 
@@ -133,10 +131,7 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <
-  I extends HTMLElement,
-  E extends Events
->(
+export const createComponent = <I extends HTMLElement, E extends Events>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
