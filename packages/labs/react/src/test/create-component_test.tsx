@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventHandler} from "../create-component.js";
+import type {EventName} from "../create-component.js";
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -69,7 +69,7 @@ suite('createComponent', () => {
   });
 
   const basicElementEvents = {
-    onFoo: 'foo' as EventHandler<MouseEvent>,
+    onFoo: 'foo' as EventName<MouseEvent>,
     onBar: 'bar',
   };
 

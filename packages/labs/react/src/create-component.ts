@@ -90,23 +90,23 @@ type StringValued<T> = {
 
 type Constructor<T> = {new (): T};
 
-type EventString<T = unknown> = string & {
+type EventString<T extends Event = Event> = string & {
   __event_type: T;
 };
 
 /***
  * Typecast that curries an Event type through an EventString. The React
- * equivelant to an event listeners is an `EventHandler`. The goal of the type
- * name is to hint that corresponding EventHandler callback in their props will
+ * equivelant to an event listeners is an `EventName`. The goal of the type
+ * name is to hint that corresponding EventName callback in their props will
  * be of a certain type.
  */
-export type EventHandler<T = unknown> = T extends Event
+export type EventName<T> = T extends Event
   ? EventString<T>
   : never;
 
-type EventHandlerRecord = Record<string, EventString | string>;
+type Events = Record<string, EventString | string>;
 
-type EventHandlerMap<R extends EventHandlerRecord> = {
+type EventProps<R extends Events> = {
   [K in keyof R]: R[K] extends EventString
     ? (e: R[K]['__event_type']) => void
     : (e: Event) => void;
@@ -135,7 +135,7 @@ type EventHandlerMap<R extends EventHandlerRecord> = {
  */
 export const createComponent = <
   I extends HTMLElement,
-  E extends EventHandlerRecord
+  E extends Events
 >(
   React: typeof ReactModule,
   tagName: string,
@@ -153,7 +153,7 @@ export const createComponent = <
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
-        Partial<EventHandlerMap<E>> &
+        Partial<EventProps<E>> &
         Omit<React.HTMLAttributes<HTMLElement>, keyof E>
     >
   >;

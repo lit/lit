@@ -57,14 +57,14 @@ React component.
 
 #### Typescript
 
-Event callback types can be refined by type casting with `EventHandler`. The
+Event callback types can be refined by type casting with `EventName`. The
 type cast helps `createComponent` correlate typed callbacks to property names in
 the event property map.
 
-Uncasted EventHandlers will fallback to `(e: Event) => void`.
+Non-casted event names will fallback to an event type of `Event`.
 
 ```ts
-import type {EventHandler} from '@lit-labs/react';
+import type {EventName} from '@lit-labs/react';
 
 import * as React from 'react';
 import {createComponent} from '@lit-labs/react';
@@ -75,7 +75,7 @@ export const MyElementComponent = createComponent(
   'my-element',
   MyElement,
   {
-    onClick: 'pointerdown' as EventHandler<PointerEvent>,
+    onClick: 'pointerdown' as EventName<PointerEvent>,
     onChange: 'input',
   }
 );
@@ -96,9 +96,9 @@ Event callbacks will match their type cast. In the example below, a
 ```
 
 NOTE: This type casting is not associated to any component property. Be
-careful to use the corresponding type dispatched or bubbling from the
-webcomponent. Incorrect type casts might result in events with missing
-properties.
+careful to use the corresponding type dispatched or bubbled from the
+webcomponent. Incorrect types might result in additional properties, missing
+properties, or properties of the wrong type.
 
 ## `useController`
 
