@@ -12,4 +12,5 @@
 /lit-element.*
 /lit.min.*
 /polyfill-support.*
+/polyfill-support-compiled.*
 /private-ssr-support.*

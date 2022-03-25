@@ -105,6 +105,10 @@
       "development": "./development/directives/until.js",
       "default": "./directives/until.js"
     },
+    "./directives/upgrade.js": {
+      "development": "./development/directives/upgrade.js",
+      "default": "./directives/upgrade.js"
+    },
     "./directives/when.js": {
       "development": "./development/directives/when.js",
       "default": "./directives/when.js"

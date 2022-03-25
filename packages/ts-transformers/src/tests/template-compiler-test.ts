@@ -14,9 +14,7 @@ import {templateCompilerTransformer} from '../template-compiler.js';
 const cache = new CompilerHostCache();
 
 /**
- * Compile the given fragment of TypeScript source code using the idiomatic
- * decorator transform. Check that there are no errors and that the output
- * matches (prettier-formatted).
+ * Compile the given fragment of TypeScript source code.
  */
 function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();

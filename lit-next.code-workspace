@@ -47,6 +47,9 @@
 		{
 			"name": "lit",
 			"path": "."
+		},
+		{
+			"path": "packages/ts-transformers"
 		}
 	],
 	"settings": {

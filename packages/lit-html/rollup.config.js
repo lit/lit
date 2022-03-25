@@ -30,6 +30,7 @@ export const defaultConfig = (options = {}) =>
       'directives/unsafe-html',
       'directives/unsafe-svg',
       'directives/until',
+      'directives/upgrade',
       'directives/when',
       'lit-html',
       'directive',

@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
-    "module": "es2015",
+    "target": "es5",
+    "module": "es2020",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
@@ -18,19 +18,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "noImplicitOverride": true
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/polyfill-support.ts", "src/polyfill-support-compiled.ts"],
-  "references": [
-    {
-      "path": "./tsconfig.polyfill-support.json"
-    },
-    {
-      "path": "./tsconfig.polyfill-support-compiled.json"
-    }
-  ]
+  "include": ["src/env.d.ts", "src/polyfill-support-compiled.ts"]
 }

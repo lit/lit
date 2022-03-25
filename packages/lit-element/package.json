@@ -74,6 +74,10 @@
       "development": "./development/polyfill-support.js",
       "default": "./polyfill-support.js"
     },
+    "./polyfill-support-compiled.js": {
+      "development": "./development/polyfill-support-compiled.js",
+      "default": "./polyfill-support-compiled.js"
+    },
     "./private-ssr-support.js": {
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"

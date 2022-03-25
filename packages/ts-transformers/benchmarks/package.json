@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "prepare": "ts-patch install -s",
+    "build:uncompiled": "tsc -p tsconfig.json",
+    "build:uncompiled:watch": "tsc -p tsconfig.json --watch",
+    "build:compiled": "tsc -p tsconfig-compiled.json",
+    "build:compiled:watch": "tsc -p tsconfig-compiled.json --watch",
+    "serve": "wds --node-resolve --watch"
+  },
+  "devDependencies": {
+    "ts-patch": "^2.0.1",
+    "typescript": "^4.7.0-dev.20220224"
+  }
+}

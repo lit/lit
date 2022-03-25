@@ -133,13 +133,15 @@ export const parseTemplateResult = (
                 prefix: undefined,
                 name: undefined,
                 type: PartType.ELEMENT,
-                strings: attr.value.split(marker),
-                valueIndex: valueIndex++,
+                strings: ['', ''],
+                valueIndex,
               };
+              valueIndex++;
             } else if (attr.name.endsWith(boundAttributeSuffix)) {
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 attrNames[attrIndex++]!
               )!;
+              const strings = attr.value.split(marker);
               attr.litPart = {
                 prefix,
                 name: caseSensitiveName,
@@ -151,9 +153,10 @@ export const parseTemplateResult = (
                     : prefix === '@'
                     ? PartType.EVENT
                     : PartType.ATTRIBUTE,
-                strings: attr.value.split(marker),
-                valueIndex: valueIndex++,
+                strings,
+                valueIndex,
               };
+              valueIndex += strings.length - 1;
             }
           }
         }

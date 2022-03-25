@@ -36,6 +36,10 @@ interface PluginConfig {
   compileSlotted?: boolean;
 }
 
+interface TransformerContext {
+  needsUpgradeImport?: boolean;
+}
+
 export function templateCompilerTransformer(
   config: PluginConfig = {
     compileSlots: true,
@@ -44,38 +48,79 @@ export function templateCompilerTransformer(
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
     return (file) => {
-      const transformer = new TemplateCompilerTransformer(
-        context.factory,
-        config
-      );
-      const visit = (node: ts.Node): ts.Node => {
-        node = transformer.visit(node);
-        return ts.visitEachChild(node, visit, context);
-      };
-      return ts.visitNode(file, visit);
+      const transformers: typeof BaseTransformer[] = [
+        ScopingClassTransformer,
+        SlottedNodesTransformer,
+        SlotTransformer,
+        UpgradeTransformer,
+        UpgradeImportTransformer,
+      ];
+      const transformContext = {};
+      for (const Transformer of transformers) {
+        const transformer = new Transformer(
+          context.factory,
+          config,
+          transformContext
+        );
+        const visit = (node: ts.Node): ts.Node => {
+          node = transformer.visit(node);
+          node = ts.visitEachChild(node, visit, context);
+          node = transformer.visitEnd(node);
+          return node;
+        };
+        file = ts.visitNode(file, visit);
+      }
+      return file;
     };
   };
 }
 
-/**
- * We create one of these per file.
- */
-class TemplateCompilerTransformer {
-  private _factory: ts.NodeFactory;
-  private _config: PluginConfig;
+class BaseTransformer {
+  protected _factory: ts.NodeFactory;
+  protected _config: PluginConfig;
+  protected _context: TransformerContext;
 
-  constructor(factory: ts.NodeFactory, config: PluginConfig) {
+  constructor(
+    factory: ts.NodeFactory,
+    config: PluginConfig,
+    context: TransformerContext
+  ) {
     this._factory = factory;
     this._config = config;
+    this._context = context;
   }
 
   visit(node: ts.Node): ts.Node {
     switch (node.kind) {
+      case ts.SyntaxKind.SourceFile:
+        return this.visitSourceFile(node as ts.SourceFile);
       case ts.SyntaxKind.TaggedTemplateExpression:
         return this.visitTaggedTemplateExpression(
           node as ts.TaggedTemplateExpression
         );
+      case ts.SyntaxKind.ClassDeclaration:
+        return this.visitClassDeclaration(node as ts.ClassDeclaration);
     }
+    return node;
+  }
+
+  visitEnd(node: ts.Node): ts.Node {
+    switch (node.kind) {
+      case ts.SyntaxKind.ClassDeclaration:
+        return this.visitClassDeclarationEnd(node as ts.ClassDeclaration);
+    }
+    return node;
+  }
+
+  visitSourceFile(node: ts.SourceFile): ts.Node {
+    return node;
+  }
+
+  visitClassDeclaration(node: ts.ClassDeclaration) {
+    return node;
+  }
+
+  visitClassDeclarationEnd(node: ts.ClassDeclaration) {
     return node;
   }
 
@@ -85,13 +130,217 @@ class TemplateCompilerTransformer {
     if (type !== undefined) {
       const result = templateResultFromTaggedTemplateExpression(type, node);
       const {ast} = parseTemplateResult(result, withValues(result.values));
-      if (this._config.compileSlotted) {
-        traverse(ast, slottedNodesToRenderProps(factory));
-      }
-      if (this._config.compileSlots) {
-        traverse(ast, slotsToRenderProps(factory));
-      }
+      this.visitHtmlStart(ast);
+      traverse(ast, {
+        pre: (node: Node, parent?: ParentNode) =>
+          this.visitHtmlNodeOpen(node, parent),
+        post: (node: Node, parent?: ParentNode) => {
+          this.visitHtmlNodeClose(node, parent);
+          if (parent === undefined) {
+            this.visitHtmlEnd(node);
+          }
+        },
+      });
       return createTaggedTemplateExpressionFromAst(type, ast, factory);
+    }
+    return node;
+  }
+
+  visitHtmlNodeOpen(_node: Node, _parent?: ParentNode) {}
+
+  visitHtmlNodeClose(_node: Node, _parent?: ParentNode) {}
+
+  visitHtmlStart(_ast: Node) {}
+
+  visitHtmlEnd(_ast: Node) {}
+}
+
+class SlotTransformer extends BaseTransformer {
+  slots: Map<string, ChildNode>[] = [];
+
+  override visitHtmlStart() {
+    this.slots.unshift(new Map());
+  }
+
+  override visitHtmlNodeOpen(node: Node) {
+    if (isElement(node) && node.tagName === 'slot') {
+      this.slots[0]!.set(getAttr(node, 'name') ?? 'default', node);
+    }
+  }
+
+  override visitHtmlEnd(ast: Node) {
+    for (const [name, node] of this.slots[0]!) {
+      const renderProp = this._factory.createPropertyAccessChain(
+        /* expression */ this._factory.createPropertyAccessExpression(
+          /* expression */ this._factory.createThis(),
+          /* name */ this._factory.createIdentifier('__renderSlots')
+        ),
+        /* questionDotToken */ this._factory.createToken(
+          ts.SyntaxKind.QuestionDotToken
+        ),
+        name
+      );
+      addChildPart(node.parentNode ?? ast, node, renderProp);
+      removeNode(node);
+    }
+    this.slots.shift();
+  }
+}
+
+class SlottedNodesTransformer extends BaseTransformer {
+  customElements: Element[][] = [];
+
+  override visitHtmlStart() {
+    this.customElements.unshift([]);
+  }
+
+  override visitHtmlNodeOpen(node: Node) {
+    if (
+      isElement(node) &&
+      node.tagName.includes('-') &&
+      node.childNodes.length > 0
+    ) {
+      this.customElements[0]!.push(node);
+    }
+  }
+
+  override visitHtmlEnd() {
+    for (const node of this.customElements[0]!) {
+      const slots: {[index: string]: DocumentFragment} = {};
+      for (const child of [...node.childNodes]) {
+        removeNode(child);
+        const slotName =
+          (isElement(child) && getAttr(child, 'slot')) || 'default';
+        const slotFragment = (slots[slotName] ??= createDocumentFragment());
+        insertNode(child, slotFragment);
+      }
+      const value = this._factory.createObjectLiteralExpression(
+        /* properties */ Object.entries(slots).map(([slotName, ast]) =>
+          this._factory.createPropertyAssignment(
+            /* name */ slotName,
+            /* initializer */ createTaggedTemplateExpressionFromAst(
+              0,
+              ast,
+              this._factory
+            )
+          )
+        )
+      );
+      addPropertyPart(node, '__renderSlots', value);
+    }
+    this.customElements.shift();
+  }
+}
+
+const getTagNameForClass = (node: ts.ClassDeclaration) => {
+  for (const {expression: fn} of node.decorators ?? []) {
+    if (
+      ts.isCallExpression(fn) &&
+      ts.isIdentifier(fn.expression) &&
+      fn.expression.text === 'customElement' &&
+      fn.arguments[0] &&
+      ts.isStringLiteral(fn.arguments[0])
+    ) {
+      return fn.arguments[0].text;
+    }
+  }
+  return undefined;
+};
+
+class ScopingClassTransformer extends BaseTransformer {
+  customElementScope: string[] = [];
+
+  get currentScope() {
+    return this.customElementScope[this.customElementScope.length - 1];
+  }
+
+  override visitClassDeclaration(node: ts.ClassDeclaration) {
+    const scope = getTagNameForClass(node);
+    if (scope) {
+      this.customElementScope.push(scope);
+    }
+    return node;
+  }
+
+  override visitClassDeclarationEnd(node: ts.ClassDeclaration) {
+    const scope = getTagNameForClass(node);
+    if (scope) {
+      this.customElementScope.pop();
+    }
+    return node;
+  }
+
+  override visitHtmlNodeOpen(node: Node) {
+    if (this.currentScope && isElement(node)) {
+      const scopingClasses = `style-scope ${this.currentScope}`;
+      let attr;
+      if ((attr = node.attrs.find((attr) => attr.name === 'class'))) {
+        attr.value += ' ' + scopingClasses;
+      } else if (
+        (attr = node.attrs.find((attr) => attr.litPart?.name === 'class'))
+      ) {
+        attr.litPart!.strings[attr.litPart!.strings.length - 1] +=
+          ' ' + scopingClasses;
+      } else {
+        node.attrs.push({
+          name: 'class',
+          value: scopingClasses,
+        });
+      }
+    }
+  }
+}
+
+class UpgradeTransformer extends BaseTransformer {
+  override visitHtmlNodeOpen(node: Node) {
+    if (isElement(node) && node.nodeName.includes('-')) {
+      this._context.needsUpgradeImport = true;
+      addElementPart(
+        node,
+        this._factory.createCallExpression(
+          /* expression */ this._factory.createIdentifier('upgrade'),
+          /* typeArguments */ undefined,
+          /* argumentsArray */ []
+        )
+      );
+    }
+  }
+}
+
+class UpgradeImportTransformer extends BaseTransformer {
+  override visitSourceFile(node: ts.SourceFile) {
+    if (this._context.needsUpgradeImport) {
+      return this._factory.updateSourceFile(
+        /* node */ node,
+        /* statements */ [
+          this._factory.createImportDeclaration(
+            /* decorators */ undefined,
+            /* modifiers */ undefined,
+            /* importClauses */ this._factory.createImportClause(
+              /* isTypeOnly */ false,
+              /* name */ undefined,
+              /* namedBindings */ this._factory.createNamedImports(
+                /* elements */ [
+                  this._factory.createImportSpecifier(
+                    /* isTypeOnly */ false,
+                    /* propertyName */ undefined,
+                    /* name */ this._factory.createIdentifier('upgrade')
+                  ),
+                ]
+              )
+            ),
+            /* moduleSpecifier */ this._factory.createStringLiteral(
+              'lit/directives/upgrade.js'
+            )
+          ),
+          ...node.statements,
+        ],
+        /* isDeclarationFile */ node.isDeclarationFile,
+        /* referencedFiles */ node.referencedFiles,
+        /* typeReferences */ node.typeReferenceDirectives,
+        /* hasNoDefaultLib */ node.hasNoDefaultLib,
+        /* libReferences */ node.libReferenceDirectives
+      );
     }
     return node;
   }
@@ -136,77 +385,6 @@ function getAttr(node: Element, name: string) {
   return node.attrs.find((attr) => attr.name === name)?.value ?? null;
 }
 
-function slotsToRenderProps(factory: ts.NodeFactory) {
-  const slots: Map<string, ChildNode> = new Map();
-  return {
-    pre(node: Node) {
-      if (isElement(node) && node.tagName === 'slot') {
-        slots.set(getAttr(node, 'name') ?? 'default', node);
-      }
-    },
-    post(_node: Node, parent: ParentNode | undefined) {
-      if (parent === undefined) {
-        for (const [name, node] of slots) {
-          const renderProp = factory.createPropertyAccessChain(
-            /* expression */ factory.createPropertyAccessExpression(
-              /* expression */ factory.createThis(),
-              /* name */ factory.createIdentifier('__renderProps')
-            ),
-            /* questionDotToken */ factory.createToken(
-              ts.SyntaxKind.QuestionDotToken
-            ),
-            name
-          );
-          addChildPart(node.parentNode, node, renderProp);
-          removeNode(node);
-        }
-      }
-    },
-  };
-}
-
-function slottedNodesToRenderProps(factory: ts.NodeFactory) {
-  const customElements: Element[] = [];
-  return {
-    pre(node: Node) {
-      if (
-        isElement(node) &&
-        node.tagName.includes('-') &&
-        node.childNodes.length > 0
-      ) {
-        customElements.push(node);
-      }
-    },
-    post(_node: Node, parent: ParentNode | undefined) {
-      if (parent === undefined) {
-        for (const node of customElements) {
-          const slots: {[index: string]: DocumentFragment} = {};
-          for (const child of [...node.childNodes]) {
-            removeNode(child);
-            const slotName =
-              (isElement(child) && getAttr(child, 'slot')) || 'default';
-            const slotFragment = (slots[slotName] ??= createDocumentFragment());
-            insertNode(child, slotFragment);
-          }
-          const value = factory.createObjectLiteralExpression(
-            /* properties */ Object.entries(slots).map(([slotName, ast]) =>
-              factory.createPropertyAssignment(
-                /* name */ slotName,
-                /* initializer */ createTaggedTemplateExpressionFromAst(
-                  0,
-                  ast,
-                  factory
-                )
-              )
-            )
-          );
-          addPropertyPart(node, '__renderSlots', value);
-        }
-      }
-    },
-  };
-}
-
 function addPropertyPart(node: Element, name: string, value: ts.Expression) {
   const attr: Attribute = {
     name,
@@ -235,6 +413,22 @@ function addChildPart(
     values: [value],
   };
   insertNode(comment, parentNode, refNode);
+}
+
+function addElementPart(node: Element, value: ts.Expression) {
+  const attr: Attribute = {
+    name: undefined as unknown as string,
+    value: '',
+  };
+  node.attrs.push(attr);
+  attr.litPart = {
+    name: undefined,
+    prefix: undefined,
+    type: 6, // PartType.ELEMENT
+    strings: ['', ''],
+    values: [value],
+    valueIndex: -1,
+  };
 }
 
 function removeNode(node: ChildNode) {
@@ -320,14 +514,19 @@ function serializer(strings: string[], values: ts.Expression[]) {
         for (const attr of node.attrs) {
           if (hasAttributePart(attr)) {
             const {litPart} = attr;
-            addString(
-              ` ${litPart.prefix}${litPart.name}="${litPart.strings[0]}`
-            );
-            litPart.values.forEach((v, i) => {
-              addPart(v);
-              addString(litPart.strings[i + 1]!);
-            });
-            addString(`"`);
+            if (litPart.name) {
+              addString(
+                ` ${litPart.prefix ?? ''}${litPart.name}="${litPart.strings[0]}`
+              );
+              litPart.values.forEach((v, i) => {
+                addPart(v);
+                addString(litPart.strings[i + 1]!);
+              });
+              addString(`"`);
+            } else {
+              addString(' ');
+              addPart(litPart.values[0]!);
+            }
           } else {
             addString(` ${attr.name}="${attr.value}"`);
           }

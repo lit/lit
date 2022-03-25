@@ -28,10 +28,15 @@
     "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
     "src/**/*.ts"
   ],
-  "exclude": ["src/polyfill-support.ts"],
+  "exclude": ["src/polyfill-support.ts", "src/polyfill-support-compiled.ts"],
   "references": [
     {"path": "../lit-html"},
     {"path": "../reactive-element"},
-    {"path": "./tsconfig.polyfill-support.json"}
+    {
+      "path": "./tsconfig.polyfill-support.json"
+    },
+    {
+      "path": "./tsconfig.polyfill-support-compiled.json"
+    }
   ]
 }

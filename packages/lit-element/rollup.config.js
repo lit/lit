@@ -30,5 +30,8 @@ export default litProdConfig({
     {
       file: 'polyfill-support',
     },
+    {
+      file: 'polyfill-support-compiled',
+    },
   ],
 });

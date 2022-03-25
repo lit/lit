@@ -62,6 +62,7 @@ export default litProdConfig({
     'directives/unsafe-html',
     'directives/unsafe-svg',
     'directives/until',
+    'directives/upgrade',
     'directives/when',
     'async-directive',
     'html',
@@ -74,6 +75,9 @@ export default litProdConfig({
   bundled: [
     {
       file: 'polyfill-support',
+    },
+    {
+      file: 'polyfill-support-compiled',
     },
     {
       file: 'index',
