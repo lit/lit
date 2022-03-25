@@ -66,7 +66,7 @@ if (!user || !key || !build || !tunnelIdentifier) {
       ' and SAUCE_ACCESS_KEY environment variables.'
   );
 } else {
-  console.log("CRETE SAUCE LAUNCHER")
+  console.log('CRETE SAUCE LAUNCHER');
   sauceLauncher = createSauceLabsLauncher(
     {
       user,

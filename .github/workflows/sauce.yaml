@@ -25,11 +25,6 @@ jobs:
           node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-
-      - name: Declare Saucelabs Tunnel
-        run: |
-          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
-          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
       
       - name: Install playwright deps
         run: npx playwright install-deps

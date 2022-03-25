@@ -26,9 +26,7 @@ jobs:
           node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      
-      - name: Declare Saucelabs Tunnel
-      
+            
       - name: Install playwright deps
         run: npx playwright install-deps
 
