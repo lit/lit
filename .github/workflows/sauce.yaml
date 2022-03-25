@@ -47,7 +47,13 @@ jobs:
         run: npm run build
 
       - name: Test Development
-        run: npm run test:dev
+        run: |
+          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
+          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
+          npm run test:dev
       
       - name: Test Production
-        run: npm run test:prod
+        run: |
+          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
+          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
+          npm run test:prod

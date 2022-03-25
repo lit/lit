@@ -66,14 +66,19 @@ if (!user || !key || !build || !tunnelIdentifier) {
       ' and SAUCE_ACCESS_KEY environment variables.'
   );
 } else {
-  sauceLauncher = createSauceLabsLauncher({
-    user,
-    key,
-  }, {
-    build,
-  }, {
-    tunnelIdentifier,
-  });
+  console.log("CRETE SAUCE LAUNCHER")
+  sauceLauncher = createSauceLabsLauncher(
+    {
+      user,
+      key,
+    },
+    {
+      build,
+    },
+    {
+      tunnelIdentifier,
+    }
+  );
 }
 
 /**
@@ -135,12 +140,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserName,
         browserVersion,
         platformName,
-        'sauce:options': {
-          name: `lit tests [${mode}]`,
-          build: `${process.env.GITHUB_REF ?? 'local'} build ${
-            process.env.GITHUB_RUN_NUMBER ?? ''
-          }`,
-        },
       }),
     ];
   }
