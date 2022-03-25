@@ -68,14 +68,18 @@ function makeSauceLauncherOnce() {
         `
       );
     }
-    sauceLauncher = createSauceLabsLauncher({
-      user,
-      key,
-    },{
-      build,
-    }, {
-      tunnelIdentifier,
-    });
+    sauceLauncher = createSauceLabsLauncher(
+      {
+        user,
+        key,
+      },
+      {
+        build,
+      },
+      {
+        tunnelIdentifier,
+      }
+    );
   }
   return sauceLauncher;
 }
