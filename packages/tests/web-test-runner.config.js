@@ -56,15 +56,25 @@ function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
     const user = (process.env.SAUCE_USERNAME || '').trim();
     const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-    if (!user || !key) {
+    const build = (process.env.SAUCE_BUILD_ID || '').trim();
+    const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
+    if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(
-        'To test on Sauce, set the SAUCE_USERNAME' +
-          ' and SAUCE_ACCESS_KEY environment variables.'
+        `To test on Sauce, set the following environment variables:
+          - SAUCE_USERNAME
+          - SAUCE_ACCESS_KEY
+          - SAUCE_BUILD_ID
+          - SAUCE_TUNNEL_ID
+        `
       );
     }
     sauceLauncher = createSauceLabsLauncher({
       user,
       key,
+    },{
+      build,
+    }, {
+      tunnelIdentifier,
     });
   }
   return sauceLauncher;
@@ -203,8 +213,6 @@ export default {
       },
     }),
   ],
-  // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
