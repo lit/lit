@@ -23,11 +23,6 @@
     "analyze:watch": "cem analyze --litelement --globs \"**/*.js\" --exclude docs --watch",
     "serve": "wds --watch",
     "serve:prod": "MODE=prod npm run serve",
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "wtr",
-    "test:watch": "wtr --watch",
-    "test:prod": "MODE=prod wtr",
-    "test:prod:watch": "MODE=prod wtr --watch",
     "checksize": "rollup -c ; cat my-element.bundled.js | gzip -9 | wc -c ; rm my-element.bundled.js"
   },
   "keywords": [
