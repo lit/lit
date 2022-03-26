@@ -12,7 +12,10 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
-
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+    
     steps:
       - uses: actions/checkout@v2
 
@@ -47,7 +50,4 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce-ie11
-        run: |
-          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
-          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
-          npm run test
+        run: npm run test || npm run test
