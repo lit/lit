@@ -143,12 +143,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserName,
         browserVersion,
         platformName,
-        'sauce:options': {
-          name: `lit tests [${mode}]`,
-          build: `${process.env.GITHUB_REF ?? 'local'} build ${
-            process.env.GITHUB_RUN_NUMBER ?? ''
-          }`,
-        },
       }),
     ];
   }
@@ -217,17 +211,17 @@ export default {
       },
     }),
   ],
-  browserStartTimeout: 600000, // default 30000
+  browserStartTimeout: 120000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 120000 * 10, // default 120000
+  testsStartTimeout: 180000, // default 120000
   testsFinishTimeout: 180000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
-      timeout: '120000', // default 2000
+      timeout: '60000', // default 2000
     },
   },
 };
