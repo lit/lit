@@ -12,6 +12,9 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -37,11 +40,21 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce
+      - name: Test Firefox
+          BROWSERS: preset:sauce-firefox
+        run: |
+          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
+          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
+          npm run test
+
+      - name: Test Safari
+          BROWSERS: preset:sauce-safari
+        run: |
+          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
+          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
+          npm run test
+      - name: Test Chrome
+          BROWSERS: preset:sauce-chrome
         run: |
           export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
           export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
