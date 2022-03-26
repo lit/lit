@@ -24,6 +24,11 @@ jobs:
           node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+      
+      - name: Set Sauce Tunnel And Build
+        run: |
+          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel" >> $GITHUB_ENV
 
       - name: Install playwright deps
         run: npx playwright install-deps
@@ -44,22 +49,16 @@ jobs:
         env:
           BROWSERS: preset:sauce-firefox
         run: |
-          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
-          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
           npm run test
 
       - name: Test Safari
         env:
           BROWSERS: preset:sauce-safari
         run: |
-          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
-          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
           npm run test
   
       - name: Test Chrome
         env:
           BROWSERS: preset:sauce-chrome
         run: |
-          export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
-          export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
           npm run test

@@ -22,6 +22,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
+      - name: Set Sauce Tunnel And Build
+        run: |
+          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel" >> $GITHUB_ENV
+
       - name: Install playwright deps
         run: npx playwright install-deps
 
