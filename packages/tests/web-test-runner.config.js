@@ -41,11 +41,11 @@ const browserPresets = {
   //
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
-  'sauce-firefox': [
+  'sauce': [
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
+    'sauce:macOS 10.15/Safari@latest',
+    'sauce:Windows 10/Chrome@latest-3',
   ],
-  'sauce-safari': ['sauce:macOS 10.15/Safari@latest'],
-  'sauce-chrome': ['sauce:Windows 10/Chrome@latest-3'],
   'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 
@@ -67,6 +67,7 @@ function makeSauceLauncherOnce() {
         `
       );
     }
+    console.log("***** BUILD:", build);
     sauceLauncher = createSauceLabsLauncher(
       {
         user,
@@ -176,7 +177,7 @@ export default {
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
-  concurrency: 1, // default cores1
+  concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores
   concurrentBrowsers: 1, // default 2
   browsers,
   plugins: [

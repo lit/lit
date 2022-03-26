@@ -15,10 +15,10 @@ jobs:
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      BROWSERS: preset:sauce
 
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
@@ -45,20 +45,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test Firefox
-        env:
-          BROWSERS: preset:sauce-firefox
-        run: |
-          npm run test
-
-      - name: Test Safari
-        env:
-          BROWSERS: preset:sauce-safari
-        run: |
-          npm run test
-  
-      - name: Test Chrome
-        env:
-          BROWSERS: preset:sauce-chrome
+      - name: Test
         run: |
           npm run test
