@@ -176,7 +176,7 @@ export default {
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
-  concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores
+  concurrency: 1, // default cores1
   concurrentBrowsers: 1, // default 2
   browsers,
   plugins: [
