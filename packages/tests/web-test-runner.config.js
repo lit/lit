@@ -44,12 +44,8 @@ const browserPresets = {
   'sauce-firefox': [
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
   ],
-  'sauce-safari': [
-    'sauce:macOS 10.15/Safari@latest',
-  ],
-  'sauce-chrome': [
-    'sauce:Windows 10/Chrome@latest-3',
-  ],
+  'sauce-safari': ['sauce:macOS 10.15/Safari@latest'],
+  'sauce-chrome': ['sauce:Windows 10/Chrome@latest-3'],
   'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 

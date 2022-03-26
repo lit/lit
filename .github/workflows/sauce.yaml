@@ -41,6 +41,7 @@ jobs:
         run: npm run build
 
       - name: Test Firefox
+        env:
           BROWSERS: preset:sauce-firefox
         run: |
           export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
@@ -48,12 +49,15 @@ jobs:
           npm run test
 
       - name: Test Safari
+        env:
           BROWSERS: preset:sauce-safari
         run: |
           export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
           export SAUCE_TUNNEL_ID=${SAUCE_BUILD_ID}__tunnel
           npm run test
+  
       - name: Test Chrome
+        env:
           BROWSERS: preset:sauce-chrome
         run: |
           export SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}:${GITHUB_ACTION}__${GITHUB_SHA}
