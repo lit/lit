@@ -177,8 +177,8 @@ export default {
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
-  concurrency: Number(1), // default cores / 2
-  concurrentBrowsers: Number(1), // default 2
+  concurrency: 1, // default cores / 2
+  concurrentBrowsers: 1, // default 2
   browsers,
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
