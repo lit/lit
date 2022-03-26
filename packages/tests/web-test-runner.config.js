@@ -46,7 +46,7 @@ const browserPresets = {
     'sauce:macOS 10.15/Safari@latest',
     'sauce:Windows 10/Chrome@latest-3',
   ],
-  'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
+  'sauce-ie11': ['sauce:Windows 8.1/Internet Explorer@11'],
 };
 
 let sauceLauncher;
@@ -131,7 +131,7 @@ Valid examples:
 
   sauce:macOS 10.15/safari@13
   sauce:Windows 10/MicrosoftEdge@18
-  sauce:Windows 7/internet explorer@11
+  sauce:Windows 8.1/internet explorer@11
   sauce:Linux/chrome@latest-3
   sauce:Linux/firefox@78
 
