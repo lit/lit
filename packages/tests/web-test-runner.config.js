@@ -41,7 +41,7 @@ const browserPresets = {
   //
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
-  'sauce': [
+  sauce: [
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:macOS 10.15/Safari@latest',
     'sauce:Windows 10/Chrome@latest-3',
@@ -67,7 +67,7 @@ function makeSauceLauncherOnce() {
         `
       );
     }
-    console.log("***** BUILD:", build);
+    console.log('***** BUILD:', build);
     sauceLauncher = createSauceLabsLauncher(
       {
         user,
