@@ -90,22 +90,18 @@ type StringValued<T> = {
 
 type Constructor<T> = {new (): T};
 
-type EventString<T extends Event = Event> = string & {
+/***
+ * Typecast that curries an Event type through a string. The goal of the type
+ * cast is to match a prop name to a typed event callback.
+ */
+export type EventName<T extends Event = Event> = string & {
   __event_type: T;
 };
 
-/***
- * Typecast that curries an Event type through an EventString. The React
- * equivelant to an event listeners is an `EventName`. The goal of the type
- * name is to hint that corresponding EventName callback in their props will
- * be of a certain type.
- */
-export type EventName<T> = T extends Event ? EventString<T> : never;
-
-type Events = Record<string, EventString | string>;
+type Events = Record<string, EventName | string>;
 
 type EventProps<R extends Events> = {
-  [K in keyof R]: R[K] extends EventString
+  [K in keyof R]: R[K] extends EventName
     ? (e: R[K]['__event_type']) => void
     : (e: Event) => void;
 };
