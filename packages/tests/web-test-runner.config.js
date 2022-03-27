@@ -46,7 +46,7 @@ const browserPresets = {
     'sauce:macOS 10.15/Safari@latest',
     'sauce:Windows 10/Chrome@latest-3',
   ],
-  'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
+  'sauce-ie11': ['sauce:Windows 8.1/Internet Explorer@11'],
 };
 
 let sauceLauncher;
@@ -57,7 +57,6 @@ function makeSauceLauncherOnce() {
     const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
     const build = (process.env.SAUCE_BUILD_ID || '').trim();
     const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
-    const sharedTunnel = true;
 
     if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(
@@ -79,7 +78,6 @@ function makeSauceLauncherOnce() {
       },
       {
         tunnelIdentifier,
-        sharedTunnel,
       }
     );
   }
