@@ -46,7 +46,7 @@ const browserPresets = {
     'sauce:macOS 10.15/Safari@latest',
     'sauce:Windows 10/Chrome@latest-3',
   ],
-  'sauce-ie11': ['sauce:Windows 8.1/Internet Explorer@11'],
+  'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
 };
 
 let sauceLauncher;
@@ -178,7 +178,7 @@ export default {
   ],
   nodeResolve: true,
   concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores
-  concurrentBrowsers: 1, // default 2
+  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
   browsers,
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
