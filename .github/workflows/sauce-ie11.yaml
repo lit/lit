@@ -47,4 +47,4 @@ jobs:
           echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_ACTION}__${GITHUB_SHA}__tunnel" >> $GITHUB_ENV
 
       - name: Test
-        run: npm run test
+        run: npm run test || npm run test
