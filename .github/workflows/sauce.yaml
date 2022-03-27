@@ -36,8 +36,8 @@ jobs:
 
       - name: Set Sauce Tunnel And Build
         run: |
-          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_SHA}" >> $GITHUB_ENV
-          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_SHA}__tunnel" >> $GITHUB_ENV
+          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_SHA}__tunnel" >> $GITHUB_ENV
 
       - name: Test
         run: npm run test
