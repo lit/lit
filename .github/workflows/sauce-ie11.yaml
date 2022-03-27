@@ -16,7 +16,8 @@ jobs:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       BROWSERS: preset:sauce-ie11
-    
+      CONCURRENT_BROWSERS: 1
+
     steps:
       - uses: actions/checkout@v2
 
@@ -43,8 +44,8 @@ jobs:
 
       - name: Set Sauce Tunnel And Build
         run: |
-          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_ACTION}__${GITHUB_SHA}" >> $GITHUB_ENV
-          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_ACTION}__${GITHUB_SHA}__tunnel" >> $GITHUB_ENV
+          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_EVENT_NAME}${GITHUB_ACTION}__${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_EVENT_NAME}${GITHUB_ACTION}__${GITHUB_SHA}__tunnel" >> $GITHUB_ENV
 
       - name: Test
         run: npm run test || npm run test
