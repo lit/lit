@@ -78,6 +78,7 @@ function makeSauceLauncherOnce() {
       },
       {
         tunnelIdentifier,
+        // sharedTunnel: true,
       }
     );
   }
