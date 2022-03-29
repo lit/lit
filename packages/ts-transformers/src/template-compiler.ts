@@ -34,26 +34,34 @@ declare module '@lit-labs/ssr/lib/template-parser' {
 interface PluginConfig {
   compileSlots?: boolean;
   compileSlotted?: boolean;
+  addUpgrade?: boolean;
+  addScopingClasses?: boolean;
 }
 
 interface TransformerContext {
   needsUpgradeImport?: boolean;
 }
 
+const defaultConfig = {
+  compileSlots: true,
+  compileSlotted: true,
+  addUpgrade: true,
+  addScopingClasses: true,
+};
+
 export function templateCompilerTransformer(
-  config: PluginConfig = {
-    compileSlots: true,
-    compileSlotted: true,
-  }
+  config: PluginConfig = {}
 ): ts.TransformerFactory<ts.SourceFile> {
+  config = {...defaultConfig, ...config};
   return (context) => {
     return (file) => {
       const transformers: typeof BaseTransformer[] = [
-        ScopingClassTransformer,
-        SlottedNodesTransformer,
-        SlotTransformer,
-        UpgradeTransformer,
-        UpgradeImportTransformer,
+        ...(config.addScopingClasses ? [ScopingClassTransformer] : []),
+        ...(config.compileSlotted ? [SlottedNodesTransformer] : []),
+        ...(config.compileSlots ? [SlotTransformer] : []),
+        ...(config.addUpgrade
+          ? [UpgradeTransformer, UpgradeImportTransformer]
+          : []),
       ];
       const transformContext = {};
       for (const Transformer of transformers) {
@@ -420,7 +428,7 @@ function addElementPart(node: Element, value: ts.Expression) {
     name: undefined as unknown as string,
     value: '',
   };
-  node.attrs.push(attr);
+  node.attrs.unshift(attr);
   attr.litPart = {
     name: undefined,
     prefix: undefined,

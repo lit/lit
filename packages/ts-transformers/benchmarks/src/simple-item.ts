@@ -1,0 +1,20 @@
+export type SimpleItem = {
+  value0: string;
+  value1: string;
+  value2: string;
+  value3: string;
+  value4: string;
+  value5: string;
+  value6: string;
+  value7: string;
+  value8: string;
+  value9: string;
+  value10: string;
+  value11: string;
+  value12: string;
+  value13: string;
+  value14: string;
+  value15: string;
+  value16: string;
+  value17: string;
+};

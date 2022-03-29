@@ -1,0 +1,11 @@
+<script>
+  window.ShadyDOM = {
+    force: true,
+  };
+  window.customElements = window.customElements || {};
+  window.customElements.forcePolyfill = true;
+</script>
+<script src="./polyfill-support.js"></script>
+<script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
+<link rel="stylesheet" href="./global-styles.css" />
+<script type="module" src="./uncompiled/index-lit.js"></script>

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 50,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        }
+      ],
+      "expand": [
+        {
+          "name": "preact",
+          "url": "http://localhost:8123/index-preact.html"
+        },
+        {
+          "name": "lit-native",
+          "url": "http://localhost:8123/index-uncompiled.html"
+        },
+        {
+          "name": "lit-compiled-sd",
+          "url": "http://localhost:8123/index-compiled-sd.html"
+        },
+        {
+          "name": "lit-compiled-sd-ce",
+          "url": "http://localhost:8123/index-compiled-sd-ce.html"
+        },
+        {
+          "name": "lit-polyfill-sd",
+          "url": "http://localhost:8123/index-polyfill-sd.html"
+        },
+        {
+          "name": "lit-polyfill-sd-ce",
+          "url": "http://localhost:8123/index-polyfill-sd-ce.html"
+        }
+      ]
+    }
+  ]
+}

@@ -137,6 +137,7 @@ export const parseTemplateResult = (
                 valueIndex,
               };
               valueIndex++;
+              attrIndex++;
             } else if (attr.name.endsWith(boundAttributeSuffix)) {
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 attrNames[attrIndex++]!

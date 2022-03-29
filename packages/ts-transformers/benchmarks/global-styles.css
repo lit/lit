@@ -1,0 +1,30 @@
+.style-scope.x-thing.container {
+  box-sizing: border-box;
+  height: 200px;
+  padding: 4px;
+  padding-left: 77px;
+  line-height: 167%;
+  cursor: default;
+  background-color: white;
+  position: relative;
+  color: black;
+  background-repeat: no-repeat;
+  background-position: 10px 10px;
+  background-size: 60px;
+  border-bottom: 1px solid #ddd;
+}
+
+.style-scope.x-thing.from {
+  display: inline;
+  font-weight: bold;
+}
+
+.style-scope.x-thing.time {
+  margin-left: 10px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.style-scope.x-item.item {
+  display: flex;
+}

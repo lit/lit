@@ -12,6 +12,7 @@
     "build:ts": "tsc",
     "build:ts:watch": "tsc --watch",
     "build:parser": "rollup -c",
+    "build:parser:watch": "rollup -c --watch",
     "clean": "rm -rf index.js demo/ test/ lib/ *.tsbuildinfo",
     "demo:vm-modules": "node --experimental-vm-modules ./demo/vm-modules/server.js",
     "demo:global": "node ./demo/global/server.js",

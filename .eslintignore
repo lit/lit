@@ -43,6 +43,7 @@ packages/lit/static-html.*
 packages/lit/lit-all.min.*
 packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
+packages/lit/polyfill-support-compiled.*
 
 packages/lit-element/decorators/
 packages/lit-element/demo/**/*.d.ts
@@ -58,6 +59,7 @@ packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/polyfill-support.*
+packages/lit-element/polyfill-support-compiled.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
@@ -131,6 +133,10 @@ packages/ts-transformers/*.js.map
 packages/ts-transformers/*.d.ts
 packages/ts-transformers/internal/
 packages/ts-transformers/tests/
+packages/ts-transformers/benchmarks/uncompiled/
+packages/ts-transformers/benchmarks/compiled/
+packages/ts-transformers/benchmarks/compiled-sd/
+packages/ts-transformers/benchmarks/polyfill-support.js
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js

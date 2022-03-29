@@ -3,3 +3,7 @@
 /*.d.ts
 /internal/
 /tests/
+/benchmarks/uncompiled/
+/benchmarks/compiled/
+/benchmarks/compiled-sd/
+/benchmarks/polyfill-support.js

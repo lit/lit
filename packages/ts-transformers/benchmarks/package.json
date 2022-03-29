@@ -1,13 +1,24 @@
 {
   "scripts": {
-    "prepare": "ts-patch install -s",
+    "prepare": "ts-patch install -s && ln -s ../../lit/polyfill-support.js ./polyfill-support.js",
+    "build": "npm run build:uncompiled && npm run build:compiled && npm run build:compiled-sd",
     "build:uncompiled": "tsc -p tsconfig.json",
     "build:uncompiled:watch": "tsc -p tsconfig.json --watch",
     "build:compiled": "tsc -p tsconfig-compiled.json",
     "build:compiled:watch": "tsc -p tsconfig-compiled.json --watch",
-    "serve": "wds --node-resolve --watch"
+    "build:compiled-sd": "tsc -p tsconfig-compiled-sd.json",
+    "build:compiled-sd:watch": "tsc -p tsconfig-compiled-sd.json --watch",
+    "serve": "wds --node-resolve --watch",
+    "benchmark": "npm run serve & tachometer --config tachometer.json",
+    "benchmark:render": "npm run serve & tachometer --config tachometer-render.json",
+    "benchmark:update": "npm run serve & tachometer --config tachometer-update.json"
   },
   "devDependencies": {
+    "@types/react": "^17.0.43",
+    "@web/dev-server": "^0.1.30",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "preact": "^10.6.6",
+    "tachometer": "^0.5.10",
     "ts-patch": "^2.0.1",
     "typescript": "^4.7.0-dev.20220224"
   }
