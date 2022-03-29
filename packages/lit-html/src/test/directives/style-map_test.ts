@@ -134,7 +134,7 @@ suite('styleMap', () => {
   });
 
   test('works when used with the same object', () => {
-    const styleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
+    const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
     renderStyleMap(styleInfo);
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
@@ -144,6 +144,20 @@ suite('styleMap', () => {
     renderStyleMap(styleInfo);
     assert.equal(el.style.marginTop, '6px');
     assert.equal(el.style.paddingBottom, '8px');
+  });
+
+  test('works when same object adds and removes properties', () => {
+    const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
+    renderStyleMap(styleInfo);
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.marginTop, '2px');
+    assert.equal(el.style.paddingBottom, '4px');
+    assert.equal(el.style.color, '');
+    delete styleInfo['marginTop'];
+    styleInfo.color = 'green';
+    renderStyleMap(styleInfo);
+    assert.equal(el.style.marginTop, '');
+    assert.equal(el.style.color, 'green');
   });
 
   test('throws when used on non-style attribute', () => {

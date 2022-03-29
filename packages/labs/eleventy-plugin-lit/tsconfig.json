@@ -2,9 +2,8 @@
   "compilerOptions": {
     "composite": true,
     "incremental": true,
-    "tsBuildInfoFile": ".tsbuildinfo",
     "target": "es2019",
-    "module": "es2020",
+    "module": "commonjs",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["es2020", "DOM", "DOM.Iterable"],
@@ -24,6 +23,8 @@
     "moduleResolution": "node",
     "experimentalDecorators": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": []
+  "references": [
+    {"path": "src/tsconfig-cjs.json"},
+    {"path": "src/tsconfig-module.json"}
+  ]
 }

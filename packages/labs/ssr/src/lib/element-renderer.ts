@@ -141,7 +141,7 @@ export abstract class ElementRenderer {
         i < attributes.length && ({name, value} = attributes[i]);
         i++
       ) {
-        if (value === '') {
+        if (value === '' || value === undefined || value === null) {
           yield ` ${name}`;
         } else {
           yield ` ${name}="${escapeHtml(value)}"`;
@@ -164,7 +164,7 @@ class FallbackRenderer extends ElementRenderer {
 
   override *renderAttributes(): IterableIterator<string> {
     for (const [name, value] of Object.entries(this._attributes)) {
-      if (value === '') {
+      if (value === '' || value === undefined || value === null) {
         yield ` ${name}`;
       } else {
         yield ` ${name}="${escapeHtml(value)}"`;

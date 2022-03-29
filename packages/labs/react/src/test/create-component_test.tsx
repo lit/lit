@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {EventName} from "../create-component.js";
+
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
@@ -67,7 +69,7 @@ suite('createComponent', () => {
   });
 
   const basicElementEvents = {
-    onFoo: 'foo',
+    onFoo: 'foo' as EventName<MouseEvent>,
     onBar: 'bar',
   };
 
@@ -241,7 +243,7 @@ suite('createComponent', () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
-    const onFoo = (e: Event) => {
+    const onFoo = (e: MouseEvent) => {
       fooEvent = e;
     };
     const onFoo2 = (e: Event) => {

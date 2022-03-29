@@ -141,13 +141,14 @@ const debugLogEvent = DEV_MODE
   ? (event: ReactiveUnstable.DebugLog.Entry) => {
       const shouldEmit = (window as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
-      if (shouldEmit) {
-        window.dispatchEvent(
-          new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
-            detail: event,
-          })
-        );
+      if (!shouldEmit) {
+        return;
       }
+      window.dispatchEvent(
+        new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
+          detail: event,
+        })
+      );
     }
   : undefined;
 
@@ -1520,7 +1521,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(globalThis.reactiveElementVersions ??= []).push('1.3.0');
+(globalThis.reactiveElementVersions ??= []).push('1.3.1');
 if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
