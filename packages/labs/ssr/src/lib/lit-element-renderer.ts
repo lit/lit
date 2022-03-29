@@ -17,8 +17,9 @@ const {attributeToProperty, changedProperties} = _Φ;
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
-  constructor(public element: LitElement) {
-    super(element);
+
+  static register() {
+    ElementRenderer.registerRenderer(LitElement, this);
   }
 
   connectedCallback() {

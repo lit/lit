@@ -21,8 +21,10 @@ import fetch from 'node-fetch';
  * @param props Additional properties to add to the window global
  */
 export const getWindow = (
-  props: {[key: string]: unknown} = {}
+  props: {[key: string]: unknown} = {},
+  domOnly = false
 ): {[key: string]: unknown} => {
+
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
     let attrs = attributes.get(element);
@@ -35,6 +37,14 @@ export const getWindow = (
   class Element {}
 
   abstract class HTMLElement extends Element {
+    constructor() {
+      super();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const superHTMLElement = (this.constructor as any).__superHTMLElement;
+      if (superHTMLElement) {
+        superHTMLElement.call(this);
+      }
+    }
     get attributes() {
       return Array.from(attributesForElement(this)).map(([name, value]) => ({
         name,
@@ -64,11 +74,6 @@ export const getWindow = (
     }
   }
 
-  interface CustomHTMLElement {
-    new (): HTMLElement;
-    observedAttributes?: string[];
-  }
-
   class ShadowRoot {}
 
   class Document {
@@ -78,10 +83,19 @@ export const getWindow = (
     createTreeWalker() {
       return {};
     }
+    // for polymer
+    createTextNode() {
+      return {};
+    }
   }
 
   class CSSStyleSheet {
     replace() {}
+  }
+
+  interface CustomHTMLElement {
+    new (): HTMLElement;
+    observedAttributes?: string[];
   }
 
   type CustomElementRegistration = {
@@ -113,41 +127,18 @@ export const getWindow = (
     document: new Document(),
     CSSStyleSheet,
     ShadowRoot,
+    CustomElementRegistry,
     customElements: new CustomElementRegistry(),
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    console: {
-      log(...args: unknown[]) {
-        console.log(...args);
-      },
-      info(...args: unknown[]) {
-        console.info(...args);
-      },
-      warn(...args: unknown[]) {
-        console.warn(...args);
-      },
-      debug(...args: unknown[]) {
-        console.debug(...args);
-      },
-      error(...args: unknown[]) {
-        console.error(...args);
-      },
-      assert(bool: unknown, msg: string) {
-        if (!bool) {
-          throw new Error(msg);
-        }
-      },
-    },
     fetch: (url: URL, init: {}) => fetch(url, init),
 
-    // No-op any async tasks
-    requestAnimationFrame() {},
-    setTimeout() {},
-    clearTimeout() {},
-
-    // Required for node-fetch
-    Buffer,
+    // TODO: stuff to try and make Polymer load:
+    location: new URL('http://localhost'),
+    MutationObserver: class {
+      observe() {}
+    },
 
     // Set below
     window: undefined as unknown,
@@ -159,6 +150,39 @@ export const getWindow = (
 
   window.window = window;
   window.global = window; // Required for node-fetch
+
+  if (!domOnly) {
+    Object.assign(window, {
+      // No-op any async tasks
+      requestAnimationFrame() {},
+      setTimeout() {},
+      clearTimeout() {},
+      // Required for node-fetch
+      Buffer,
+      console: {
+        log(...args: unknown[]) {
+          console.log(...args);
+        },
+        info(...args: unknown[]) {
+          console.info(...args);
+        },
+        warn(...args: unknown[]) {
+          console.warn(...args);
+        },
+        debug(...args: unknown[]) {
+          console.debug(...args);
+        },
+        error(...args: unknown[]) {
+          console.error(...args);
+        },
+        assert(bool: unknown, msg: string) {
+          if (!bool) {
+            throw new Error(msg);
+          }
+        },
+      },
+    });
+  }
 
   return window;
 };

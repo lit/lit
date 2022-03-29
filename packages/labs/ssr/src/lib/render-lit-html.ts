@@ -49,9 +49,10 @@ import {
 } from './util/parse5-utils.js';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
-import {LitElement} from 'lit';
 import {LitElementRenderer} from './lit-element-renderer.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+
+LitElementRenderer.register();
 
 declare module 'parse5' {
   interface DefaultTreeElement {
@@ -611,22 +612,8 @@ export function* renderTemplateResult(
         break;
       }
       case 'custom-element-open': {
-        const ctor = op.ctor;
         // Instantiate the element and its renderer
-        let instance = undefined;
-        try {
-          const element = new ctor();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (element as any).tagName = op.tagName;
-          // TODO: Move renderer instantiation into a plugin system
-          if (element instanceof LitElement) {
-            instance = new LitElementRenderer(element);
-          } else {
-            console.error(`No renderer for custom element: ${op.tagName}`);
-          }
-        } catch (e) {
-          console.error('Exception in custom element constructor', e);
-        }
+        const instance = ElementRenderer.for(op.tagName, op.ctor);
         // Set static attributes to the element renderer
         if (instance !== undefined) {
           for (const [name, value] of op.staticAttributes) {
@@ -719,3 +706,74 @@ function* renderAttributePart(
 }
 
 const getLast = <T>(a: Array<T>) => a[a.length - 1];
+
+export const renderElement = (
+  tagName: string,
+  {attributes, properties, propertiesOrAttributes}: {
+    attributes?: {[index: string]: string},
+    properties?: {[index: string]: unknown},
+    propertiesOrAttributes?: {[index: string]: unknown},
+  } = {}) => {
+  const renderer = ElementRenderer.for(tagName);
+  if (renderer !== undefined) {
+    if (attributes !== undefined) {
+      for (const [k, v] of Object.entries(attributes)) {
+        renderer.setAttribute(k, v);
+      }
+    }
+    if (properties !== undefined) {
+      for (const [k, v] of Object.entries(properties)) {
+        renderer.setProperty(k, v);
+      }
+    }
+    if (propertiesOrAttributes !== undefined) {
+      for (const [k, v] of Object.entries(propertiesOrAttributes)) {
+        if (k in renderer.element) {
+          renderer.setProperty(k, v);
+        } else {
+          renderer.setAttribute(k, String(v));
+        }
+      }
+    }
+    renderer.connectedCallback();
+    return {
+      shadowRoot: renderer?.renderShadow({customElementInstanceStack: [renderer]}),
+      attributes: renderer.element.attributes,
+    }
+  } else {
+    return undefined;
+  }
+};
+
+// Assuming this is faster than Array.from(iter).join();
+// TODO: perf test
+const iterableToString = (iterable: Iterable<string>) => {
+  let s = '';
+  for (const i of iterable) {
+    s += i;
+  }
+  return s;
+}
+
+export const renderSync = (value: unknown) => {
+  return iterableToString(render(value));
+}
+
+export const renderElementSync = (
+  tagName: string,
+  options: {
+    attributes?: {[index: string]: string},
+    properties?: {[index: string]: unknown},
+    propertiesOrAttributes?: {[index: string]: unknown},
+  } = {}
+) => {
+  const value = renderElement(tagName, options);
+  if (value) {
+    return {
+      ...value,
+      shadowRoot: iterableToString(value.shadowRoot)
+    }
+  } else {
+    return undefined;
+  }
+}

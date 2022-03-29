@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "esnext",
+    "target": "es2019",
+    "module": "commonjs",
     "lib": ["es2019", "ES2020.String"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": ".",
+    "outDir": "./commonjs",
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
@@ -18,6 +18,13 @@
     "experimentalDecorators": true,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*.ts", "./custom_typings/*.d.ts"],
-  "exclude": []
+  "include": [
+    "src/**/*.ts",
+    "custom_typings/*.d.ts"
+  ],
+  "exclude": [
+    "src/lib/module/",
+    "src/demo/",
+    "src/test/"
+  ]
 }

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {getWindow} from '../lib/dom-shim.js';
+import {getWindow} from './dom-shim.js';
 import {importModule} from './import-module.js';
 import {createRequire} from 'module';
 
