@@ -143,12 +143,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserName,
         browserVersion,
         platformName,
-        'sauce:options': {
-          name: `lit tests [${mode}]`,
-          build: `${process.env.GITHUB_REF ?? 'local'} build ${
-            process.env.GITHUB_RUN_NUMBER ?? ''
-          }`,
-        },
       }),
     ];
   }
