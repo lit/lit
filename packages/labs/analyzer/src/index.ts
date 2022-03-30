@@ -1,5 +1,7 @@
-import {Analyzer} from './lib/analyzer.js';
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-console.log('analyzer');
-const analyzer = new Analyzer(process.cwd());
-analyzer.analyzePackage();
+export {Analyzer} from './lib/analyzer.js';

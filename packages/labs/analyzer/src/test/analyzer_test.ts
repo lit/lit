@@ -8,14 +8,14 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import ts from 'typescript';
 import * as path from 'path';
+import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../lib/analyzer.js';
 
 test('Basic elements - isLitElement', () => {
-  const basicElementsPackagePath = new URL(
-    '../test-files/basic-elements',
-    import.meta.url
-  ).pathname;
+  const basicElementsPackagePath = fileURLToPath(
+    new URL('../test-files/basic-elements', import.meta.url).href
+  );
   const analyzer = new Analyzer(basicElementsPackagePath);
   const rootFileNames = analyzer.program.getRootFileNames();
   assert.equal(rootFileNames.length, 2);
