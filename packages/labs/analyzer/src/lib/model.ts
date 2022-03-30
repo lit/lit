@@ -7,7 +7,7 @@
 import ts from 'typescript';
 
 export class Package {
-  modules: ReadonlyArray<Module>;
+  readonly modules: ReadonlyArray<Module>;
 
   constructor(modules: ReadonlyArray<Module>) {
     this.modules = modules;
@@ -15,7 +15,7 @@ export class Package {
 }
 
 export class Module {
-  sourceFile: ts.SourceFile;
+  readonly sourceFile: ts.SourceFile;
 
   constructor(sourceFile: ts.SourceFile) {
     this.sourceFile = sourceFile;
