@@ -7,7 +7,8 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   },
   "include": ["src/**/*.ts"],
   "exclude": []

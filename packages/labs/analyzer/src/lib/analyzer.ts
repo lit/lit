@@ -7,14 +7,19 @@
 import ts from 'typescript';
 import {Package, Module} from './model.js';
 
+/**
+ * An analyzer for Lit npm packages
+ */
 export class Analyzer {
-  packageRoot: string;
-  commandLine: ts.ParsedCommandLine;
-  program: ts.Program;
-  checker: ts.TypeChecker;
+  readonly packageRoot: string;
+  readonly commandLine: ts.ParsedCommandLine;
+  readonly program: ts.Program;
+  readonly checker: ts.TypeChecker;
 
-  private _litElementClassDeclaration: ts.ClassDeclaration;
-
+  /**
+   * @param packageRoot The root directory of the package to analyze. Currently
+   * this directory must have a tsconfig.json file.
+   */
   constructor(packageRoot: string) {
     this.packageRoot = packageRoot;
 
@@ -24,6 +29,7 @@ export class Analyzer {
       'tsconfig.json'
     );
     if (configFileName === undefined) {
+      // TODO: use a hard-coded tsconfig for JS projects.
       throw new Error('tsconfig not found');
     }
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
@@ -37,7 +43,6 @@ export class Analyzer {
       this.commandLine.options
     );
     this.checker = this.program.getTypeChecker();
-    this._litElementClassDeclaration = this.getLitElementClassDeclaration();
   }
 
   analyzePackage() {
@@ -62,40 +67,34 @@ export class Analyzer {
     return new Module(sourceFile);
   }
 
-  getLitElementClassDeclaration = () => {
-    const litElementModule = this.getLitElementModule();
-    for (const c of litElementModule.statements) {
-      if (ts.isClassDeclaration(c) && c.name?.getText() === 'LitElement') {
-        return c;
-      }
+  private _isLitElementClassDeclaration = (t: ts.BaseType) => {
+    const declarations = t.getSymbol()?.getDeclarations();
+    if (declarations?.length !== 1) {
+      return false;
     }
-    throw new Error('LitElement not found');
+    const node = declarations[0];
+    return (
+      this._isLitElementModule(node.getSourceFile()) &&
+      ts.isClassDeclaration(node) &&
+      node.name?.getText() === 'LitElement'
+    );
   };
 
-  getLitElementModule = () => {
-    const files = this.program.getSourceFiles();
-    for (const file of files) {
-      if (
-        file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts')
-      ) {
-        // hopefully there's only one of these...
-        return file;
-      }
-    }
-    throw new Error('lit-element.d.ts not found');
+  private _isLitElementModule = (file: ts.SourceFile) => {
+    return (
+      file.fileName.startsWith(this.packageRoot) &&
+      file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts')
+    );
   };
 
   isLitElement = (node: ts.Node): node is ts.ClassDeclaration => {
     if (!ts.isClassLike(node)) {
       return false;
     }
-    const litElementType = this.checker.getTypeAtLocation(
-      this._litElementClassDeclaration
-    );
     const type = this.checker.getTypeAtLocation(node) as ts.InterfaceType;
     const baseTypes = this.checker.getBaseTypes(type);
     for (const t of baseTypes) {
-      if (t === litElementType) {
+      if (this._isLitElementClassDeclaration(t)) {
         return true;
       }
     }
