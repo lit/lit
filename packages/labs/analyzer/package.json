@@ -17,8 +17,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build",
-    "install-test-deps": "cd test-files/basic-elements && npm ci",
-    "test": "npm run install-test-deps && uvu test '\\_test\\.js$'"
+    "test": "uvu test '\\_test\\.js$'"
   },
   "files": [
     "/src/",
@@ -31,6 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.7.8",
-    "uvu": "^0.5.1"
+    "uvu": "^0.5.1",
+    "lit-analyzer-test-files": "./test-files/basic-elements/"
   }
 }

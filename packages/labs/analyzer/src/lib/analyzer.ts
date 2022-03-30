@@ -81,10 +81,7 @@ export class Analyzer {
   };
 
   private _isLitElementModule = (file: ts.SourceFile) => {
-    return (
-      file.fileName.startsWith(this.packageRoot) &&
-      file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts')
-    );
+    return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
   };
 
   isLitElement = (node: ts.Node): node is ts.ClassDeclaration => {
