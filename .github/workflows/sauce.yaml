@@ -44,6 +44,6 @@ jobs:
           BROWSERS: preset:sauce
         run: |
           export SAUCE_BUILD=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_SHA}
-          export SAUCE_TUNNEL_ID=${SAUCE_BUILD}_tunnel
+          export SAUCE_TUNNEL=${SAUCE_BUILD}_tunnel
           npm run test
 

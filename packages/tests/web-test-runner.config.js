@@ -56,26 +56,30 @@ function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
     const user = (process.env.SAUCE_USERNAME || '').trim();
     const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-    const build = (process.env.SAUCE_BUILD_ID || '').trim();
-    const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
+    const build = (process.env.SAUCE_BUILD || '').trim();
+    const tunnelIdentifier = (process.env.SAUCE_TUNNEL || '').trim();
 
     if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(`
         To test on Sauce, set the environment variables:
           - SAUCE_USERNAME
           - SUACE_ACCESS_KEY
-          - SAUCE_BUILD_ID
-          - SAUCE_TUNNEL_ID
+          - SAUCE_BUILD
+          - SAUCE_TUNNEL
       `);
     }
-    sauceLauncher = createSauceLabsLauncher({
-      user,
-      key,
-    }, {
-      build,
-    }, {
-      tunnelIdentifier,
-    });
+    sauceLauncher = createSauceLabsLauncher(
+      {
+        user,
+        key,
+      },
+      {
+        build,
+      },
+      {
+        tunnelIdentifier,
+      }
+    );
   }
   return sauceLauncher;
 }
