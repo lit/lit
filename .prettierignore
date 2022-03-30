@@ -116,6 +116,14 @@ packages/ts-transformers/*.js.map
 packages/ts-transformers/*.d.ts
 packages/ts-transformers/internal/
 packages/ts-transformers/tests/
+packages/labs/analyzer/lib/
+packages/labs/analyzer/test/
+
+packages/labs/analyzer/**/index.js
+packages/labs/analyzer/**/index.js.map
+packages/labs/analyzer/**/index.d.ts
+packages/labs/analyzer/**/index.d.ts.map
+
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
