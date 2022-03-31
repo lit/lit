@@ -28,9 +28,6 @@ jobs:
             tunnelIdentifier: lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}__tunnel
             sharedTunnel: true
 
-      - name: Install playwright deps
-        run: npx playwright install-deps
-
       - name: NPM install
         run: npm ci
 
