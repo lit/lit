@@ -10,7 +10,7 @@ import {fromRollup} from '@web/dev-server-rollup';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
-import {sauceConnectLauncher} from 'sauce-connect-launcher';
+import SauceConnectLauncher from 'sauce-connect-launcher';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -68,7 +68,7 @@ To test on Sauce, set the environment variables:
   - SAUCE_TUNNEL
       `);
     }
-    sauceLauncher = sauceConnectLauncher({
+    sauceLauncher = SauceConnectLauncher({
       tunnelIdentifier,
       verbose: true,
     });
