@@ -59,6 +59,8 @@ function makeSauceLauncherOnce() {
     const build = (process.env.SAUCE_BUILD || '').trim();
     const tunnelIdentifier = (process.env.SAUCE_TUNNEL || '').trim();
 
+    console.log('*** build:', build);
+    console.log('*** tunnelIdentifier:', tunnelIdentifier);
     if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(`
         To test on Sauce, set the environment variables:
@@ -212,7 +214,7 @@ export default {
     }),
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  // filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
