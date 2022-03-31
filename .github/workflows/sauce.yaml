@@ -15,12 +15,18 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+
+      - uses: saucelabs/sauce-connect-action@v2
+        with:
+            username: ${{ secrets.SAUCE_USERNAME }}
+            accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+            tunnelIdentifier: lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}__tunnel
+            sharedTunnel: true
 
       - name: Install playwright deps
         run: npx playwright install-deps
@@ -36,11 +42,7 @@ jobs:
 
       - name: Test
         env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce
-          CONCURRENT_BROWSERS: 3
-          CONCURRENT_FRAMES: 1
         run: |
           export SAUCE_BUILD=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
           export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel

@@ -7,10 +7,10 @@
 import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';
-import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
+import {sauceConnectLauncher} from 'sauce-connect-launcher';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -61,27 +61,17 @@ function makeSauceLauncherOnce() {
 
     if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(`
-        To test on Sauce, set the environment variables:
-          - SAUCE_USERNAME
-          - SUACE_ACCESS_KEY
-          - SAUCE_BUILD
-          - SAUCE_TUNNEL
+To test on Sauce, set the environment variables:
+  - SAUCE_USERNAME
+  - SUACE_ACCESS_KEY
+  - SAUCE_BUILD
+  - SAUCE_TUNNEL
       `);
     }
-    sauceLauncher = createSauceLabsLauncher(
-      {
-        user,
-        key,
-      },
-      {
-        name: build,
-        build,
-      },
-      {
-        tunnelIdentifier,
-        sharedTunnel: true,
-      }
-    );
+    sauceLauncher = sauceConnectLauncher({
+      tunnelIdentifier,
+      verbose: true,
+    });
   }
   return sauceLauncher;
 }
@@ -124,7 +114,6 @@ function parseBrowser(browser) {
     const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
     if (!match) {
       throw new Error(`
-
 Invalid Sauce browser string.
 Expected format "sauce:os/browser@version".
 Provided string was "${browser}".
