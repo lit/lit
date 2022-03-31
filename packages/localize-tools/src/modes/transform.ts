@@ -448,7 +448,7 @@ class Transformer {
           'Internal error: string literal cannot be html-tagged'
         );
       }
-      return template;
+      return newTemplate;
     }
 
     // We may have ended up with template expressions that can be represented
@@ -534,7 +534,22 @@ class Transformer {
       return true;
     };
 
-    for (const span of template.templateSpans) {
+    for (let i = 0; i < template.templateSpans.length; i++) {
+      const span = template.templateSpans[i];
+      // A span preceded by `=` can be an attribute so skip subsume and
+      // keep it as an expression to produce valid lit-html template
+      // TODO(augustinekim) Consider optimizing to regular quoted string for
+      // regular html attributes
+      if (
+        (i === 0
+          ? template.head.text
+          : template.templateSpans[i - 1].literal.text
+        ).endsWith('=')
+      ) {
+        fragments.push(ts.visitNode(span.expression, this.boundVisitNode));
+        fragments.push(span.literal.text);
+        continue;
+      }
       let expression = span.expression;
       // Can we directly subsume this span?
       if (!subsume(expression)) {

@@ -353,6 +353,28 @@ test('msg(string(<b>msg(string)</b>)) translated', () => {
   );
 });
 
+test('html(msg(string)) with msg as attr value', () => {
+  checkTransform(
+    'html`Hello <b bar=${msg("world", {id: "bar"})}>${"World"}</b>!`;',
+    'html`Hello <b bar=${"world"}>World</b>!`;'
+  );
+});
+
+test('html(msg(string)) with msg as attr value translated', () => {
+  checkTransform(
+    'html`Hello <b bar=${msg("world", {id: "bar"})}>${"World"}</b>!`;',
+    'html`Hello <b bar=${`mundo`}>World</b>!`;',
+    {
+      messages: [
+        {
+          name: 'bar',
+          contents: ['mundo'],
+        },
+      ],
+    }
+  );
+});
+
 test('import * as litLocalize', () => {
   checkTransform(
     `
