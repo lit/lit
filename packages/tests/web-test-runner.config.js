@@ -59,29 +59,17 @@ function makeSauceLauncherOnce() {
     const build = (process.env.SAUCE_BUILD || '').trim();
     const tunnelIdentifier = (process.env.SAUCE_TUNNEL || '').trim();
 
-    if (!user || !key || !build || !tunnelIdentifier) {
+    if (!user || !key) {
       throw new Error(`
 To test on Sauce, set the environment variables:
   - SAUCE_USERNAME
   - SUACE_ACCESS_KEY
-  - SAUCE_BUILD
-  - SAUCE_TUNNEL
       `);
     }
-    sauceLauncher = createSauceLabsLauncher(
-      {
-        user,
-        key,
-      },
-      {
-        name: build,
-        build,
-      },
-      {
-        tunnelIdentifier,
-        sharedTunnel: true,
-      }
-    );
+    sauceLauncher = createSauceLabsLauncher({
+      user,
+      key,
+    });
   }
   return sauceLauncher;
 }

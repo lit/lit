@@ -26,7 +26,9 @@ jobs:
             username: ${{ secrets.SAUCE_USERNAME }}
             accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
             tunnelIdentifier: lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}__tunnel
-            sharedTunnel: true
+
+      - name: Install playwright deps
+        run: npx playwright install-deps
 
       - name: NPM install
         run: npm ci
@@ -45,6 +47,4 @@ jobs:
           CONCURRENT_BROWSERS: 1
           CONCURRENT_FRAMES: 1
         run: |
-          export SAUCE_BUILD=lit-tests__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
-          export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
           npm run test
