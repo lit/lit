@@ -42,6 +42,6 @@ jobs:
           CONCURRENT_BROWSERS: 1
           CONCURRENT_FRAMES: 1
         run: |
-          export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_SHA}
+          export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
           export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
           npm run test

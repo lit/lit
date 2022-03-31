@@ -45,9 +45,10 @@ const browserPresets = {
     'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-3',
     'sauce:macOS 10.15/Safari@latest',
+    'sauce:Windows 10/Internet Explorer@11',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
-  'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
+  // 'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
 };
 
 let sauceLauncher;
@@ -59,8 +60,6 @@ function makeSauceLauncherOnce() {
     const build = (process.env.SAUCE_BUILD || '').trim();
     const tunnelIdentifier = (process.env.SAUCE_TUNNEL || '').trim();
 
-    console.log('*** build:', build);
-    console.log('*** tunnelIdentifier:', tunnelIdentifier);
     if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(`
         To test on Sauce, set the environment variables:
