@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "publishConfig": {
     "access": "public"
   },
@@ -31,7 +31,7 @@
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",
-    "lit": "^2.0.0"
+    "lit": "^3.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

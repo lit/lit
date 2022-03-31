@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-client",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -49,8 +49,8 @@
     "internal-scripts": "^1.0.0"
   },
   "dependencies": {
-    "lit": "^2.0.0",
-    "lit-html": "^2.0.0",
+    "lit": "^3.0.0",
+    "lit-html": "^3.0.0",
     "@lit/reactive-element": "^1.0.0"
   },
   "publishConfig": {

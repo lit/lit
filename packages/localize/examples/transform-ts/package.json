@@ -1,7 +1,7 @@
 {
   "name": "lit-localize-examples-transform-ts",
   "description": "Example of using lit-localize in transform mode with TypeScript",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@lit/localize": "^0.11.0",
-    "lit": "^2.0.0"
+    "lit": "^3.0.0"
   },
   "devDependencies": {
     "@lit/localize-tools": "^0.6.0",

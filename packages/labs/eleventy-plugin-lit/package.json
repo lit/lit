@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/eleventy-plugin-lit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Eleventy plugin for rendering Lit components.",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
@@ -38,8 +38,8 @@
     "test": "uvu test/ \".*-test.js$\""
   },
   "dependencies": {
-    "@lit-labs/ssr": "^2.0.1",
-    "lit": "^2.0.2"
+    "@lit-labs/ssr": "^2.1.0",
+    "lit": "^3.0.0"
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.0",

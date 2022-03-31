@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/motion",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Lit directives for making things move.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -61,7 +61,7 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
