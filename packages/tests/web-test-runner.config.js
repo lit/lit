@@ -7,10 +7,10 @@
 import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';
+import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
-import SauceConnectLauncher from 'sauce-connect-launcher';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -54,20 +54,34 @@ let sauceLauncher;
 
 function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
+    const user = (process.env.SAUCE_USERNAME || '').trim();
+    const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
     const build = (process.env.SAUCE_BUILD || '').trim();
     const tunnelIdentifier = (process.env.SAUCE_TUNNEL || '').trim();
 
-    if (!build || !tunnelIdentifier) {
+    if (!user || !key || !build || !tunnelIdentifier) {
       throw new Error(`
 To test on Sauce, set the environment variables:
+  - SAUCE_USERNAME
+  - SUACE_ACCESS_KEY
   - SAUCE_BUILD
   - SAUCE_TUNNEL
       `);
     }
-    sauceLauncher = SauceConnectLauncher({
-      tunnelIdentifier,
-      verbose: true,
-    });
+    sauceLauncher = createSauceLabsLauncher(
+      {
+        user,
+        key,
+      },
+      {
+        name: build,
+        build,
+      },
+      {
+        tunnelIdentifier,
+        sharedTunnel: true,
+      }
+    );
   }
   return sauceLauncher;
 }
