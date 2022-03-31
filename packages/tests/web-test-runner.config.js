@@ -74,6 +74,7 @@ function makeSauceLauncherOnce() {
         key,
       },
       {
+        name: build,
         build,
       },
       {
@@ -212,12 +213,12 @@ export default {
     }),
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
-  // filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 900000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 900000, // default 120000
+  testsStartTimeout: 600000, // default 120000
   testsFinishTimeout: 900000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
