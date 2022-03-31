@@ -43,4 +43,4 @@ jobs:
         run: |
           export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_SHA}
           export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
-          npm run test || npm run test
+          npm run test
