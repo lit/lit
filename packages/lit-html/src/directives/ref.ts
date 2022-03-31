@@ -31,11 +31,11 @@ interface RefInternal {
 // When callbacks are used for refs, this map tracks the last value the callback
 // was called with, for ensuring a directive doesn't clear the ref if the ref
 // has already been rendered to a new spot. It is double-keyed on both the
-// callback and the context (options.host), since we auto-bind class methods to
-// options.host.
+// context (`options.host`) and the callback, since we auto-bind class methods
+// to `options.host`.
 const lastElementForCallback: WeakMap<
-  Function,
-  WeakMap<object, Element | undefined>
+  object,
+  WeakMap<Function, Element | undefined>
 > = new WeakMap();
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);
@@ -74,19 +74,19 @@ class RefDirective extends AsyncDirective {
       // which case it would otherwise be called with the new value before the
       // previous one unsets it) and down in the tree (where it would be unset
       // before being set). Note that element lookup is keyed by
-      // both the callback and the context, since we allow passing unbound
+      // both the context and the callback, since we allow passing unbound
       // functions that are called on options.host, and we want to treat
       // these as unique "instances" of a function.
-      let lastElementForContext = lastElementForCallback.get(this._ref);
+      const context = this._context ?? globalThis;
+      let lastElementForContext = lastElementForCallback.get(context);
       if (lastElementForContext === undefined) {
         lastElementForContext = new WeakMap();
-        lastElementForCallback.set(this._ref, lastElementForContext);
+        lastElementForCallback.set(context, lastElementForContext);
       }
-      const context = this._context ?? globalThis;
-      if (lastElementForContext.get(context) !== undefined) {
+      if (lastElementForContext.get(this._ref) !== undefined) {
         this._ref.call(this._context, undefined);
       }
-      lastElementForContext.set(context, element);
+      lastElementForContext.set(this._ref, element);
       // Call the ref with the new element value
       if (element !== undefined) {
         this._ref.call(this._context, element);
@@ -98,7 +98,7 @@ class RefDirective extends AsyncDirective {
 
   private get _lastElementForRef() {
     return typeof this._ref === 'function'
-      ? lastElementForCallback.get(this._ref)?.get(this._context ?? globalThis)
+      ? lastElementForCallback.get(this._context ?? globalThis)?.get(this._ref)
       : this._ref?.value;
   }
 
