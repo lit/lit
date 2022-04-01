@@ -50,6 +50,6 @@ jobs:
           CONCURRENT_BROWSERS: 3
           CONCURRENT_FRAMES: 1
         run: |
-          export SAUCE_BUILD=lit-tests--${GITHUB_SHA}
-          export SAUCE_TUNNEL=${SAUCE_BUILD}--tunnel
+          export SAUCE_BUILD=lit-tests--${GITHUB_EVENT_NAME}--${GITHUB_SHA}--$(date +%s)
+          export SAUCE_TUNNEL=lit-tests--${GITHUB_SHA}--tunnel
           npm run test:remote:prod
