@@ -57,3 +57,6 @@ html`&lt;Hola<b>&lt;Mundo &amp; Amigos&gt;</b>!&gt;`;
 // Expressions as attribute values should stay as expressions
 html`Hello <b foo=${'World'}>World</b>`;
 html`Hello <b foo=${`Mundo`}>World</b>`;
+html`<b foo=${'Hello'}>Hello</b><b bar=${`Mundo`}>World</b>`;
+html`Hello <b .foo=${'World'}>World</b>`;
+html`Hello <b .foo=${`Mundo`}>World</b>`;
