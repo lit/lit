@@ -79,3 +79,10 @@ export class MyElement2 extends LitElement {
 
 // Escaped markup characters should remain escaped
 msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);
+
+// Expressions as attribute values should stay as expressions
+html`Hello <b foo=${'World'}>World</b>`;
+html`Hello <b foo=${msg('World')}>World</b>`;
+html`<b foo=${msg('Hello')}>Hello</b><b bar=${msg('World')}>World</b>`;
+html`Hello <b .foo=${'World'}>World</b>`;
+html`Hello <b .foo=${msg('World')}>World</b>`;
