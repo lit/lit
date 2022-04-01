@@ -43,4 +43,5 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce
           CONCURRENT_FRAMES: 1
+          CONCURRENT_BROWSERS: 3
         run: npm run test:remote
