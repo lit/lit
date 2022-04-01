@@ -74,13 +74,11 @@ To test on Sauce, set the environment variables:
         key,
       },
       {
-        name: build,
         build,
       },
       {
         tunnelIdentifier,
         noRemoveCollidingTunnels: true,
-        sharedTunnel: true,
       }
     );
   }
