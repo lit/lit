@@ -42,4 +42,5 @@ jobs:
         run: |
           export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
           export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
-          npm run test:remote || npm run test:remote
+          npm run test:remote:dev || npm run test:remote:dev
+          npm run test:remote:prod || npm run test:remote:prod
