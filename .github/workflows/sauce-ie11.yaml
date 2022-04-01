@@ -38,6 +38,6 @@ jobs:
           CONCURRENT_BROWSERS: 1
           CONCURRENT_FRAMES: 1
         run: |
-          export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
-          export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
+          export SAUCE_BUILD=lit-tests-ie--${GITHUB_SHA}
+          export SAUCE_TUNNEL=${SAUCE_BUILD}--tunnel
           npm run test:remote
