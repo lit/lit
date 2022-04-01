@@ -79,6 +79,7 @@ To test on Sauce, set the environment variables:
       },
       {
         tunnelIdentifier,
+        sharedTunnel: true,
       }
     );
   }
