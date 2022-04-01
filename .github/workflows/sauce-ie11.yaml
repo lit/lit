@@ -30,7 +30,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
+      - name: Test Dev
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -38,6 +38,19 @@ jobs:
           CONCURRENT_BROWSERS: 1
           CONCURRENT_FRAMES: 1
         run: |
-          export SAUCE_BUILD=lit-tests-ie--${GITHUB_SHA}
+          export SAUCE_BUILD=lit-tests--${GITHUB_SHA}
           export SAUCE_TUNNEL=${SAUCE_BUILD}--tunnel
-          npm run test:remote
+          npm run test:remote:dev
+
+
+      - name: Test Prod
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:sauce-ie11
+          CONCURRENT_BROWSERS: 1
+          CONCURRENT_FRAMES: 1
+        run: |
+          export SAUCE_BUILD=lit-tests--${GITHUB_SHA}
+          export SAUCE_TUNNEL=${SAUCE_BUILD}--tunnel
+          npm run test:remote:prod
