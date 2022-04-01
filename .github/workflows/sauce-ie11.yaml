@@ -1,45 +1,43 @@
-# name: Sauce IE11
+name: Sauce IE11
 
-# on: [push, pull_request]
+on: [push, pull_request]
 
-# jobs:
-#   tests-sauce-ie11:
-#     # Don't run on forks. Sauce tests need access to secrets.
-#     if: github.repository == 'lit/lit'
+jobs:
+  tests-sauce-ie11:
+    # Don't run on forks. Sauce tests need access to secrets.
+    if: github.repository == 'lit/lit'
 
-#     # Sauce tests are still unreliable. Run them, but don't mark a commit as
-#     # failing if it fails.
-#     continue-on-error: true
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
 
-#     runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - uses: actions/checkout@v2
-#       - uses: actions/setup-node@v2
-#         with:
-#           node-version: 16
-#           cache: 'npm'
-#           cache-dependency-path: '**/package-lock.json'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
-#       - name: Install playwright deps
-#         run: npx playwright install-deps
+      - name: NPM install
+        run: npm ci
 
-#       - name: NPM install
-#         run: npm ci
-
-#       - name: Lerna bootstrap
-#         run: npm run bootstrap
+      - name: Lerna bootstrap
+        run: npm run bootstrap
         
-#       - name: Build
-#         run: npm run build
+      - name: Build
+        run: npm run build
 
-#       - name: Test
-#         env:
-#           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-#           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-#           BROWSERS: preset:sauce-ie11
-#           CONCURRENT_FRAMES: 1
-#         run: |
-#           export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
-#           export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
-#           npm run test:remote
+      - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: preset:sauce-ie11
+          CONCURRENT_BROWSERS: 1
+          CONCURRENT_FRAMES: 1
+        run: |
+          export SAUCE_BUILD=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_RUN_NUMBER}__${GITHUB_SHA}
+          export SAUCE_TUNNEL=${SAUCE_BUILD}__tunnel
+          npm run test:remote
