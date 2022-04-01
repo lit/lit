@@ -163,9 +163,18 @@ const require = createRequire(import.meta.url);
 export default {
   rootDir: '../',
   // Note this file list can be overridden by wtr command-line arguments.
+  // Tests run by lerna should override command-line arguments.
+  // Sauce tests are sent in one go to reduce proxy attempts.
   files: [
     '../lit-html/development/**/*_test.(js|html)',
+    '../labs/observers/development/**/*_test.(js|html)',
+    '../labs/react/development/**/*_test.(js|html)',
+    '../labs/router/development/**/*_test.js',
+    '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
+    '../labs/ssr/development/**/*_test.(js|html)',
+    '../labs/task/development/**/*_test.(js|html)',
     '../lit-element/development/**/*_test.(js|html)',
+    '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
