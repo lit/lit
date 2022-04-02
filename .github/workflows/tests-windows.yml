@@ -16,7 +16,7 @@ jobs:
       #     cache-dependency-path: '**/package-lock.json'
 
       - name: Install WSL Ubuntu
-        run: wsl --install
+        run: wsl --install -d Ubuntu
 
       - name: Setup NPM
         run: |
