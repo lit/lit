@@ -44,4 +44,4 @@ jobs:
           BROWSERS: preset:sauce-ie11
           CONCURRENT_FRAMES: 1
         # Retry once automatically.
-        run: npm run test:remote || npm run test:remote
+        run: npm run test || npm run test

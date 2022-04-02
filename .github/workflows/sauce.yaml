@@ -44,4 +44,4 @@ jobs:
           BROWSERS: preset:sauce
           CONCURRENT_FRAMES: 1
           CONCURRENT_BROWSERS: 3
-        run: npm run test:remote
+        run: npm run test
