@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.3
+
+### Patch Changes
+
+- [#2648](https://github.com/lit/lit/pull/2648) [`7cb492a3`](https://github.com/lit/lit/commit/7cb492a37352ea2402f783bf83fa0bef7ed29036) - Event callbacks can be typed by casting with EventHandler
+
 ## 1.0.2
 
 ### Patch Changes
