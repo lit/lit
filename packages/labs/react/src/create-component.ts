@@ -255,6 +255,8 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
       // iterate again when setting properties.
       this._elementProps = {};
       for (const [k, v] of Object.entries(this.props)) {
+        if (k === '__forwardedRef') continue;
+
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
         } else {
