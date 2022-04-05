@@ -174,7 +174,6 @@ export default {
     '../labs/task/development/**/*_test.(js|html)',
     '../lit-element/development/**/*_test.(js|html)',
     '../lit-html/development/**/*_test.(js|html)',
-    '../lit-html/src/test/version-stability_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
