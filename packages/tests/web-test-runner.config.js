@@ -108,7 +108,6 @@ function parseBrowser(browser) {
     const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
     if (!match) {
       throw new Error(`
-
 Invalid Sauce browser string.
 Expected format "sauce:os/browser@version".
 Provided string was "${browser}".
@@ -121,7 +120,8 @@ Valid examples:
   sauce:Linux/chrome@latest-3
   sauce:Linux/firefox@78
 
-See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
+See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.
+  `);
     }
     const [, platformName, browserName, browserVersion] = match;
     return [

@@ -6,12 +6,18 @@ jobs:
   tests-sauce:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
-
+    
     # Sauce tests are still unreliable. Run them, but don't mark a commit as
     # failing if it fails.
     continue-on-error: true
 
     runs-on: ubuntu-latest
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      BROWSERS: preset:sauce
+      CONCURRENT_BROWSERS: 3
+      CONCURRENT_FRAMES: 6
 
     steps:
       - uses: actions/checkout@v2
@@ -37,11 +43,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce
-          CONCURRENT_FRAMES: 1
-          CONCURRENT_BROWSERS: 3
-        run: npm run test
+      - name: Test Dev
+        run: cd packages/tests && npm run test:dev
+
+      - name: Test Prod
+        run: cd packages/tests && npm run test:prod

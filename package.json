@@ -15,7 +15,7 @@
     "lint": "eslint \"**/*.{js,ts}\"",
     "nuke": "rm -rf node_modules && npm install && lerna exec 'rm -rf node_modules' && lerna bootstrap && npm run clean",
     "upgrade": "rm -rf node_modules package-lock.json && npm install && lerna exec 'rm -rf node_modules package-lock.json' && lerna bootstrap && npm run clean",
-    "test": "lerna run test --ignore lit --ignore tests --ignore @lit-labs/motion --concurrency 1 --stream",
+    "test": "lerna run test --ignore lit --ignore tests --ignore lit-html --ignore lit-element --ignore @lit/reactive-element --ignore @lit-labs/motion --concurrency 1 --stream",
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
