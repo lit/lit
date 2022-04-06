@@ -42,7 +42,7 @@ jobs:
         run: npm run build
 
       - name: Create tunnel name
-        run: echo "TUNNEL_IDENTIFIER=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV"
+        run: echo "TUNNEL_IDENTIFIER=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Test Dev
         run: |
