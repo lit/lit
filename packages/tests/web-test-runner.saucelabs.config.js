@@ -10,9 +10,11 @@ import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 /***
  * Below is a list of tests that will run externally in Saucelabs.
  * When a package requires remote testing, add it to the list below.
+ *
+ * Not all tests have production requirements.
  */
 
-const files = [
+const devFiles = [
   '../labs/observers/development/**/*_test.(js|html)',
   '../labs/react/development/**/*_test.(js|html)',
   '../labs/router/development/**/*_test.js',
@@ -24,6 +26,37 @@ const files = [
   '../reactive-element/development/**/*_test.(js|html)',
 ];
 
+const prodFiles = [
+  '../labs/ssr/development/**/*_test.(js|html)',
+  '../lit-element/development/**/*_test.(js|html)',
+  '../lit-html/development/**/*_test.(js|html)',
+  '../reactive-element/development/**/*_test.(js|html)',
+];
+
+const browserSettings = {
+  chromium: {
+    browserName: 'chrome',
+    browserVersion: 'latest-3',
+    platformName: 'Windows 10',
+  },
+  firefox: {
+    browserName: 'Firefox',
+    browserVersion: '78',
+    platformName: 'Windows 10',
+  },
+  safari: {
+    browserName: 'Safari',
+    browserVersion: 'latest',
+    platformName: 'macOS 10.15',
+  },
+  IE: {
+    browserName: 'Internet Explorer',
+    browserVersion: '11',
+    platformName: 'Windows 10',
+  },
+};
+
+const mode = (process.env.MODE || '').trim();
 const user = (process.env.SAUCE_USERNAME || '').trim();
 const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
 const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
@@ -69,35 +102,25 @@ const sauceLauncher = createSauceLabsLauncher(
   }
 );
 
-let browsers = [];
+let browsers;
+// example: BROWSERS=chromium npm run tests
+if (browserSettings[process.env.BROWSERS] !== undefined) {
+  browsers = [sauceLauncher(browserSettings[process.env.BROWSERS])];
+}
+// example: BROWSERS=sauce npm run tests
 if (process.env.BROWSERS === 'sauce') {
   browsers = [
-    sauceLauncher({
-      browserName: 'chrome',
-      browserVersion: 'latest-3',
-      platformName: 'Windows 10',
-    }),
-    sauceLauncher({
-      browserName: 'Firefox',
-      browserVersion: '78',
-      platformName: 'Windows 10',
-    }),
-    sauceLauncher({
-      browserName: 'Safari',
-      browserVersion: 'latest',
-      platformName: 'macOS 10.15',
-    }),
+    sauceLauncher(browserSettings.chromium),
+    sauceLauncher(browserSettings.firefox),
+    sauceLauncher(browserSettings.safari),
   ];
 }
+// example: BROWSERS=sauce-ie11 npm run tests
 if (process.env.BROWSERS === 'sauce-ie11') {
-  browsers = [
-    sauceLauncher({
-      browserName: 'Internet Explorer',
-      browserVersion: '11',
-      platformName: 'Windows 10',
-    }),
-  ];
+  browsers = [sauceLauncher(browserSettings.IE)];
 }
+
+const files = mode === 'prod' ? prodFiles : devFiles;
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {

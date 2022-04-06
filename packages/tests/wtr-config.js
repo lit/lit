@@ -82,8 +82,8 @@ const wtrConfig = {
   // Note `{files: []}` can be overridden by wtr command-line arguments.
   files: [],
   nodeResolve: true,
-  concurrency: Number(process.env.CONCURRENT_FRAMES || 6),
-  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 3),
+  concurrency: Number(process.env.CONCURRENT_FRAMES || 1),
+  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 1),
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
