@@ -5,7 +5,7 @@
     <meta name="manual-polyfills" />
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
     <script src="../polyfill-support.js"></script>
-    <script src="../lit.min.js"></script>
+    <script src="../lit-all.min.js"></script>
   </head>
 
   <body>
@@ -22,12 +22,13 @@
         generateElementName,
         nextFrame,
       } from '../node_modules/lit-element/development/test/test-helpers.js';
+      import Lit from '../lit-all.min.js';
 
       try {
         // setup mocha
         mocha.setup({ui: 'tdd', timeout: 60000});
 
-        const {LitElement, html} = window.Lit;
+        const {LitElement, html} = Lit;
 
         suite('LitElement Bundle', () => {
           let container;

@@ -6,7 +6,6 @@
 
 import {wtrConfig} from './wtr-config.js';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
-import {process} from 'node';
 
 /***
  * Below is a list of tests that will run externally in Saucelabs.

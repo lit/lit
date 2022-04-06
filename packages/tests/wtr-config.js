@@ -10,7 +10,6 @@ import {fromRollup} from '@web/dev-server-rollup';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {createRequire} from 'module';
-import {process} from 'node';
 
 const packagesDir = pathLib.resolve(
   pathLib.dirname(fileURLToPath(import.meta.url)),
