@@ -17,7 +17,6 @@ jobs:
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       BROWSERS: preset:sauce
       CONCURRENT_BROWSERS: 3
-      CONCURRENT_FRAMES: 1
 
     steps:
       - uses: actions/checkout@v2
@@ -42,6 +41,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Create tunnel name
+        run: echo "TUNNEL_IDENTIFIER=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV"
 
       - name: Test Dev
         run: cd packages/tests && npm run test:dev

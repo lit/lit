@@ -56,16 +56,30 @@ function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
     const user = (process.env.SAUCE_USERNAME || '').trim();
     const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-    if (!user || !key) {
-      throw new Error(
-        'To test on Sauce, set the SAUCE_USERNAME' +
-          ' and SAUCE_ACCESS_KEY environment variables.'
-      );
+    const tunnelIdentifier = (process.env.TUNNEL_IDENTIFIER || '').trim();
+
+    if (!user || !key || !tunnelIdentifier) {
+      throw new Error(`
+To test on Sauce, set the following env variables
+- SAUCE_USERNAME
+- SAUCE_ACCESS_KEY
+- TUNNEL_IDENTIFIER
+    `);
     }
-    sauceLauncher = createSauceLabsLauncher({
-      user,
-      key,
-    });
+    sauceLauncher = createSauceLabsLauncher(
+      {
+        user,
+        key,
+      },
+      {
+        build: tunnelIdentifier,
+      },
+      {
+        tunnelIdentifier,
+        sharedTunnel: true,
+        noRemoveCollidingTunnels: true,
+      }
+    );
   }
   return sauceLauncher;
 }
@@ -129,12 +143,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         browserName,
         browserVersion,
         platformName,
-        'sauce:options': {
-          name: `lit tests [${mode}]`,
-          build: `${process.env.GITHUB_REF ?? 'local'} build ${
-            process.env.GITHUB_RUN_NUMBER ?? ''
-          }`,
-        },
       }),
     ];
   }
@@ -177,8 +185,8 @@ export default {
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
-  concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
-  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
+  concurrency: Number(process.env.CONCURRENT_FRAMES || 1), // default cores
+  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 1), // default browsers
   browsers,
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
