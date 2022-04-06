@@ -1,0 +1,36 @@
+{
+  "name": "@lit-labs/analyzer",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A static analyzer for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/analyzer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/analyzer"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "uvu test '\\_test\\.js$'"
+  },
+  "files": [
+    "/src/",
+    "!/src/test/",
+    "/lib/",
+    "!/lib/.tsbuildinfo"
+  ],
+  "dependencies": {
+    "typescript": "~4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.7.8",
+    "uvu": "^0.5.1",
+    "lit-analyzer-test-files": "./test-files/basic-elements/"
+  }
+}
