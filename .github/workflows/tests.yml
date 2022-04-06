@@ -70,4 +70,5 @@ jobs:
       - name: Test
         env:
           CONCURRENT_BROWSERS: 3
+          CONCURRENT_FRAMES: 6
         run: npm run test
