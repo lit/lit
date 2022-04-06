@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.2
+
+### Patch Changes
+
+- [#2692](https://github.com/lit/lit/pull/2692) [`c41a92c9`](https://github.com/lit/lit/commit/c41a92c96eeb8c2db4875c94c2eabcd512e044c4) - Fix issue with placing expressions as html attribute values in transform mode
+
 ## 0.6.1
 
 ### Patch Changes

@@ -30,16 +30,20 @@ interface RefInternal {
 
 // When callbacks are used for refs, this map tracks the last value the callback
 // was called with, for ensuring a directive doesn't clear the ref if the ref
-// has already been rendered to a new spot
-const lastElementForCallback: WeakMap<Function, Element | undefined> =
-  new WeakMap();
+// has already been rendered to a new spot. It is double-keyed on both the
+// context (`options.host`) and the callback, since we auto-bind class methods
+// to `options.host`.
+const lastElementForContextAndCallback: WeakMap<
+  object,
+  WeakMap<Function, Element | undefined>
+> = new WeakMap();
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);
 
 class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
-  private _context: unknown;
+  private _context?: object;
 
   render(_ref: RefOrCallback) {
     return nothing;
@@ -69,7 +73,17 @@ class RefDirective extends AsyncDirective {
       // way regardless of whether a ref might be moving up in the tree (in
       // which case it would otherwise be called with the new value before the
       // previous one unsets it) and down in the tree (where it would be unset
-      // before being set)
+      // before being set). Note that element lookup is keyed by
+      // both the context and the callback, since we allow passing unbound
+      // functions that are called on options.host, and we want to treat
+      // these as unique "instances" of a function.
+      const context = this._context ?? globalThis;
+      let lastElementForCallback =
+        lastElementForContextAndCallback.get(context);
+      if (lastElementForCallback === undefined) {
+        lastElementForCallback = new WeakMap();
+        lastElementForContextAndCallback.set(context, lastElementForCallback);
+      }
       if (lastElementForCallback.get(this._ref) !== undefined) {
         this._ref.call(this._context, undefined);
       }
@@ -85,7 +99,9 @@ class RefDirective extends AsyncDirective {
 
   private get _lastElementForRef() {
     return typeof this._ref === 'function'
-      ? lastElementForCallback.get(this._ref)
+      ? lastElementForContextAndCallback
+          .get(this._context ?? globalThis)
+          ?.get(this._ref)
       : this._ref?.value;
   }
 

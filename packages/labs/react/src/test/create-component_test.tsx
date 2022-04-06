@@ -137,6 +137,20 @@ suite('createComponent', () => {
     assert.equal(elementRef2.current, null);
   });
 
+  test('ref does not create new attribute on element', async () => {
+    await renderReactComponent({ref: undefined});
+    const el = container.querySelector(elementName);
+    const outerHTML = el?.outerHTML;
+
+    const elementRef1 = window.React.createRef();
+    await renderReactComponent({ref: elementRef1});
+
+    const elAfterRef = container.querySelector(elementName);
+    const outerHTMLAfterRef = elAfterRef?.outerHTML;
+
+    assert.equal(outerHTML, outerHTMLAfterRef);
+  });
+
   test('can get ref to element via callbacks', async () => {
     const ref1Calls: Array<string | undefined> = [];
     const refCb1 = (e: Element | null) => ref1Calls.push(e?.localName);

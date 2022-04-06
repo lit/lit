@@ -140,41 +140,76 @@ suite('ref', () => {
   });
 
   test('calls callback bound to options.host', () => {
-    let queriedEl: Element | null;
-    const host = {
-      calls: [] as Array<string | undefined>,
+    class Host {
+      bool = false;
+      calls: Array<string | undefined> = [];
+      root = document.createElement('div');
       elCallback(e: Element | undefined) {
         this.calls.push(e?.tagName);
-      },
+      }
+      render() {
+        return render(
+          this.bool
+            ? html`<div ${ref(this.elCallback)}></div>`
+            : html`<span ${ref(this.elCallback)}></span>`,
+          this.root,
+          {host: this}
+        );
+      }
+    }
+
+    const testRef = (
+      host: Host,
+      initialCalls: Array<string | undefined> = []
+    ) => {
+      let queriedEl: Element | null;
+      host.bool = true;
+      host.render();
+      queriedEl = host.root.firstElementChild;
+      assert.equal(queriedEl?.tagName, 'DIV');
+      assert.deepEqual(host.calls, [...initialCalls, 'DIV']);
+
+      host.bool = true;
+      host.render();
+      queriedEl = host.root.firstElementChild;
+      assert.equal(queriedEl?.tagName, 'DIV');
+      assert.deepEqual(host.calls, [...initialCalls, 'DIV']);
+
+      host.bool = false;
+      host.render();
+      queriedEl = host.root.firstElementChild;
+      assert.equal(queriedEl?.tagName, 'SPAN');
+      assert.deepEqual(host.calls, [...initialCalls, 'DIV', undefined, 'SPAN']);
+
+      host.bool = true;
+      host.render();
+      queriedEl = host.root.firstElementChild;
+      assert.equal(queriedEl?.tagName, 'DIV');
+      assert.deepEqual(host.calls, [
+        ...initialCalls,
+        'DIV',
+        undefined,
+        'SPAN',
+        undefined,
+        'DIV',
+      ]);
     };
-    const go = (x: boolean) =>
-      render(
-        x
-          ? html`<div ${ref(host.elCallback)}></div>`
-          : html`<span ${ref(host.elCallback)}></span>`,
-        container,
-        {host}
-      );
 
-    go(true);
-    queriedEl = container.firstElementChild;
-    assert.equal(queriedEl?.tagName, 'DIV');
-    assert.deepEqual(host.calls, ['DIV']);
+    // Test first instance
+    const host1 = new Host();
+    testRef(host1);
 
-    go(true);
-    queriedEl = container.firstElementChild;
-    assert.equal(queriedEl?.tagName, 'DIV');
-    assert.deepEqual(host.calls, ['DIV']);
+    // Test second instance
+    const host2 = new Host();
+    testRef(host2);
 
-    go(false);
-    queriedEl = container.firstElementChild;
-    assert.equal(queriedEl?.tagName, 'SPAN');
-    assert.deepEqual(host.calls, ['DIV', undefined, 'SPAN']);
-
-    go(true);
-    queriedEl = container.firstElementChild;
-    assert.equal(queriedEl?.tagName, 'DIV');
-    assert.deepEqual(host.calls, ['DIV', undefined, 'SPAN', undefined, 'DIV']);
+    // Test on first instance again
+    // (reset boolean to render SPAN, so we see an initial change
+    // back to DIV)
+    host1.bool = false;
+    host1.render();
+    // Add in an undefined call for the initial switch from SPAN back to DIV
+    testRef(host1, [...host1.calls, undefined]);
   });
 
   test('two refs', () => {
