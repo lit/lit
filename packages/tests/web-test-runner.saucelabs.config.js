@@ -13,7 +13,6 @@ import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
  *
  * Not all tests have production requirements.
  */
-
 const devFiles = [
   '../labs/observers/development/**/*_test.(js|html)',
   '../labs/react/development/**/*_test.(js|html)',
