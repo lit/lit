@@ -1,7 +1,6 @@
-/lib/
-/test/
+/development
+/index.*
+/lib
+/node_modules
+/test
 
-index.js
-index.js.map
-index.d.ts
-index.d.ts.map
