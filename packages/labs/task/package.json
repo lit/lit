@@ -41,7 +41,7 @@
     "dev": "scripts/dev.sh",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "cd ../../tests && npx wtr '../labs/task/development/**/*_test.js'",
-    "test:prod": "TEST_PROD_BUILD=true npm run test:dev",
+    "test:prod": "echo '@labs/task: prod tests are identical to dev tests'",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"

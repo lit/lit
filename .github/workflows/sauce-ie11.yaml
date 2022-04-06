@@ -15,7 +15,7 @@ jobs:
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      BROWSERS: preset:sauce-ie11
+      BROWSERS: sauce-ie11
 
     steps:
       - uses: actions/checkout@v2
@@ -42,14 +42,16 @@ jobs:
         run: npm run build
 
       - name: Create tunnel name
-        run: echo "TUNNEL_IDENTIFIER=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV
+        run: echo "TUNNEL_IDENTIFIER=lit-tests-IE__${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Test Dev
+        # Retry once automatically.
         run: |
           cd packages/tests
           npm run test:dev || npm run test:dev
 
       - name: Test Prod
+        # Retry once automatically.
         run: |
           cd packages/tests
           npm run test:prod || npm run test:prod

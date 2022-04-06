@@ -69,6 +69,5 @@ jobs:
 
       - name: Test
         env:
-          BROWSERS: preset:local
           CONCURRENT_BROWSERS: 3
         run: npm run test

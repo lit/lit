@@ -15,7 +15,7 @@ jobs:
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      BROWSERS: preset:sauce
+      BROWSERS: sauce
       CONCURRENT_BROWSERS: 3
 
     steps:

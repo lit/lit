@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "npx wtr",
-    "test:prod": "TEST_PROD_BUILD=true MODE=prod npm run test:dev",
+    "test:dev": "npx wtr --config web-test-runner.saucelabs.config.js",
+    "test:prod": "MODE=prod npm run test:dev",
     "test:watch": "npm run test:dev -- --watch"
   },
   "devDependencies": {
