@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.4
+
+### Patch Changes
+
+- [#2678](https://github.com/lit/lit/pull/2678) [`80e701e2`](https://github.com/lit/lit/commit/80e701e25cfac71d220acb646c6f4964c829de84) - Skip the \_\_forwardedRef when passing component props to element.
+
 ## 1.0.3
 
 ### Patch Changes
