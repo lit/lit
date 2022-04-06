@@ -23,38 +23,16 @@ const files = [
   '../reactive-element/development/**/*_test.(js|html)',
 ];
 
-/**
- * Recognized formats:
- *      sauce:os/browser@version
- *      E.g. "sauce:macOS 10.15/safari@latest"
- */
-const browserPresets = {
-  // Browsers to test during automated continuous integration.
-  //
-  // https://saucelabs.com/platform/supported-browsers-devices
-  // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator
-  //
-  // Many browser configurations don't yet work with @web/test-runner-saucelabs.
-  // See https://github.com/modernweb-dev/web/issues/472.
-  sauce: [
-    'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
-    'sauce:Windows 10/Chrome@latest-3',
-    'sauce:macOS 10.15/Safari@latest',
-    // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
-  ],
-  'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
-};
-
 const user = (process.env.SAUCE_USERNAME || '').trim();
 const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-const tunnelIdentifier = (process.env.SAUCE_TUNNEL || '').trim();
+const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
 
 if (!user || !key || !tunnelIdentifier) {
   throw new Error(`
 To test on Sauce, set the following env variables
 - SAUCE_USERNAME
 - SAUCE_ACCESS_KEY
-- TUNNEL_IDENTIFIER
+- SAUCE_TUNNEL_ID
   `);
 }
 
@@ -73,35 +51,34 @@ const sauceLauncher = createSauceLabsLauncher(
   }
 );
 
-const browserList = browserPresets[process.env.BROWSERS ?? 'sauce'];
-const browsers = [];
-for (const browser of browserList) {
-  const match = browser.match(/^sauce:(.+)\/(.+)@(.+)$/);
-  if (!match) {
-    throw new Error(`
-Invalid Sauce browser string.
-Expected format "sauce:os/browser@version".
-Provided string was "${browser}".
-
-Valid examples:
-
-sauce:macOS 10.15/safari@13
-sauce:Windows 10/MicrosoftEdge@18
-sauce:Windows 10/internet explorer@11
-sauce:Linux/chrome@latest-3
-sauce:Linux/firefox@78
-
-See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.
-        `);
-  }
-  const [, platformName, browserName, browserVersion] = match;
-  browsers.push(
+let browsers = [];
+if (process.env.BROWSERS === 'sauce-ie11') {
+  browsers = [
     sauceLauncher({
-      browserName,
-      browserVersion,
-      platformName,
-    })
-  );
+      browserName: 'Internet Explorer',
+      browserVersion: '11',
+      platformName: 'Windows 10',
+    }),
+  ];
+}
+if (process.env.BROWSERS === 'sauce') {
+  browsers = [
+    sauceLauncher({
+      browserName: 'chrome',
+      browserVersion: 'latest-3',
+      platformName: 'Windows 10',
+    }),
+    sauceLauncher({
+      browserName: 'Firefox',
+      browserVersion: '78',
+      platformName: 'Windows 10',
+    }),
+    sauceLauncher({
+      browserName: 'Safari',
+      browserVersion: 'latest',
+      platformName: 'Windows 10',
+    }),
+  ];
 }
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/

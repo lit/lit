@@ -80,12 +80,10 @@ const require = createRequire(import.meta.url);
 const wtrConfig = {
   rootDir: '../',
   // Note this file list can be overridden by wtr command-line arguments.
-  // Tests run by lerna should override command-line arguments.
-  // Sauce tests are sent in one go to reduce proxy attempts.
   files: [],
   nodeResolve: true,
-  concurrency: Number(process.env.CONCURRENT_FRAMES || 1), // default cores
-  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 1), // default browsers
+  concurrency: Number(process.env.CONCURRENT_FRAMES || 1),
+  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 1),
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
@@ -123,7 +121,7 @@ const wtrConfig = {
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 60000 * 10, // default 120000
+  testsStartTimeout: 120000 * 10, // default 120000
   testsFinishTimeout: 180000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
