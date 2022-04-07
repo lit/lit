@@ -13,12 +13,13 @@ const browserPresets = {
   webkit: {}, // individual browsers
 };
 
-const mode = process.env.MODE || 'dev';
+const mode = process.env.MODE?.trim() ?? 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
 }
 
-const requestedBrowsers = process.env.BROWSERS.trim() || 'local';
+const requestedBrowsers = process.env.BROWSERS?.trim() ?? 'local';
+
 const browsers = [];
 if (browserPresets[requestedBrowsers] !== undefined) {
   const launchOptions = browserPresets[process.env.BROWSERS];
@@ -29,13 +30,12 @@ if (browserPresets[requestedBrowsers] !== undefined) {
     })
   );
 }
-if (process.env.BROWSERS === 'local') {
-  for (const product of browserPresets) {
-    const launchOptions = browserPresets[product];
+if (requestedBrowsers === 'local') {
+  for (const product in browserPresets) {
     browsers.push(
       playwrightLauncher({
         product,
-        ...launchOptions,
+        ...browserPresets[product],
       })
     );
   }
