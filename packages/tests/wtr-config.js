@@ -60,7 +60,7 @@ const devResolveRemapConfig = {
   ],
 };
 
-const mode = process.env.MODE || 'dev';
+const mode = process.env?.MODE?.trim() ?? 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
 }
@@ -121,7 +121,7 @@ const wtrConfig = {
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 180000 * 10, // default 120000
+  testsStartTimeout: 12000 * 10, // default 120000
   testsFinishTimeout: 180000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
