@@ -8,10 +8,9 @@ import {wtrConfig} from './wtr-config.js';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 
 /***
- * Below is a list of tests that will run externally in Saucelabs.
+ * Some package tests should be run externally in Saucelabs.
  * When a package requires remote testing, add it to the list below.
  *
- * Not all tests have production requirements.
  */
 const devFiles = [
   '../labs/observers/development/**/*_test.(js|html)',
@@ -24,7 +23,12 @@ const devFiles = [
   '../lit-html/development/**/*_test.(js|html)',
   '../reactive-element/development/**/*_test.(js|html)',
 ];
-
+/***
+ * Not all external tests have production requirements.
+ * If a package should be tested in production,
+ * add its tests to the list below.
+ *
+ */
 const prodFiles = [
   '../labs/ssr/development/**/*_test.(js|html)',
   '../lit-element/development/**/*_test.(js|html)',
