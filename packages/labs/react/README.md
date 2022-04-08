@@ -55,6 +55,51 @@ React component.
 />
 ```
 
+#### Typescript
+
+Event callback types can be refined by type casting with `EventName`. The
+type cast helps `createComponent` correlate typed callbacks to property names in
+the event property map.
+
+Non-casted event names will fallback to an event type of `Event`.
+
+```ts
+import type {EventName} from '@lit-labs/react';
+
+import * as React from 'react';
+import {createComponent} from '@lit-labs/react';
+import {MyElement} from './my-element.js';
+
+export const MyElementComponent = createComponent(
+  React,
+  'my-element',
+  MyElement,
+  {
+    onClick: 'pointerdown' as EventName<PointerEvent>,
+    onChange: 'input',
+  }
+);
+```
+
+Event callbacks will match their type cast. In the example below, a
+`PointerEvent` is expected in the `onClick` callback.
+
+```tsx
+<MyElementComponent
+  onClick={(e: PointerEvent) => {
+    console.log('DOM PointerEvent called!');
+  }}
+  onChange={(e: Event) => {
+    console.log(e);
+  }}
+/>
+```
+
+NOTE: This type casting is not associated to any component property. Be
+careful to use the corresponding type dispatched or bubbled from the
+webcomponent. Incorrect types might result in additional properties, missing
+properties, or properties of the wrong type.
+
 ## `useController`
 
 Reactive Controllers allow developers to hook a component's lifecycle to bundle

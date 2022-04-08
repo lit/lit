@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {EventName} from "../create-component.js";
+
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
@@ -67,7 +69,7 @@ suite('createComponent', () => {
   });
 
   const basicElementEvents = {
-    onFoo: 'foo',
+    onFoo: 'foo' as EventName<MouseEvent>,
     onBar: 'bar',
   };
 
@@ -133,6 +135,20 @@ suite('createComponent', () => {
     renderReactComponent({ref: elementRef1});
     assert.equal(elementRef1.current, el);
     assert.equal(elementRef2.current, null);
+  });
+
+  test('ref does not create new attribute on element', async () => {
+    await renderReactComponent({ref: undefined});
+    const el = container.querySelector(elementName);
+    const outerHTML = el?.outerHTML;
+
+    const elementRef1 = window.React.createRef();
+    await renderReactComponent({ref: elementRef1});
+
+    const elAfterRef = container.querySelector(elementName);
+    const outerHTMLAfterRef = elAfterRef?.outerHTML;
+
+    assert.equal(outerHTML, outerHTMLAfterRef);
   });
 
   test('can get ref to element via callbacks', async () => {
@@ -241,7 +257,7 @@ suite('createComponent', () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
       barEvent: Event | undefined;
-    const onFoo = (e: Event) => {
+    const onFoo = (e: MouseEvent) => {
       fooEvent = e;
     };
     const onFoo2 = (e: Event) => {

@@ -84,15 +84,27 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
-type Events<S> = {
-  [P in keyof S]?: (e: Event) => unknown;
-};
-
 type StringValued<T> = {
   [P in keyof T]: string;
 };
 
 type Constructor<T> = {new (): T};
+
+/***
+ * Typecast that curries an Event type through a string. The goal of the type
+ * cast is to match a prop name to a typed event callback.
+ */
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+type Events = Record<string, EventName | string>;
+
+type EventProps<R extends Events> = {
+  [K in keyof R]: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -115,11 +127,11 @@ type Constructor<T> = {new (): T};
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E>(
+export const createComponent = <I extends HTMLElement, E extends Events>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: StringValued<E>,
+  events?: E,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -132,8 +144,8 @@ export const createComponent = <I extends HTMLElement, E>(
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
-        Events<E> &
-        React.HTMLAttributes<HTMLElement>
+        Partial<EventProps<E>> &
+        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
     >
   >;
 
@@ -243,6 +255,8 @@ export const createComponent = <I extends HTMLElement, E>(
       // iterate again when setting properties.
       this._elementProps = {};
       for (const [k, v] of Object.entries(this.props)) {
+        if (k === '__forwardedRef') continue;
+
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
         } else {

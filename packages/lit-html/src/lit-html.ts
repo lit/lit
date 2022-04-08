@@ -637,6 +637,13 @@ export const render = (
   container: HTMLElement | DocumentFragment,
   options?: RenderOptions
 ): RootPart => {
+  if (DEV_MODE && container == null) {
+    // Give a clearer error message than
+    //     Uncaught TypeError: Cannot read properties of null (reading
+    //     '_$litPart$')
+    // which reads like an internal Lit error.
+    throw new TypeError(`The container to render into may not be ${container}`);
+  }
   const renderId = DEV_MODE ? debugLogRenderId++ : 0;
   const partOwnerNode = options?.renderBefore ?? container;
   // This property needs to remain unminified.
@@ -893,11 +900,20 @@ const getTemplateHtml = (
   if (!Array.isArray(strings) || !strings.hasOwnProperty('raw')) {
     let message = 'invalid template strings array';
     if (DEV_MODE) {
-      message =
-        `Internal Error: expected template strings to be an array ` +
-        `with a 'raw' field. Please file a bug at ` +
-        `https://github.com/lit/lit/issues/new?template=bug_report.md ` +
-        `and include information about your build tooling, if any.`;
+      message = `
+          Internal Error: expected template strings to be an array
+          with a 'raw' field. Faking a template strings array by
+          calling html or svg like an ordinary function is effectively
+          the same as calling unsafeHtml and can lead to major security
+          issues, e.g. opening your code up to XSS attacks.
+
+          If you're using the html or svg tagged template functions normally
+          and and still seeing this error, please file a bug at
+          https://github.com/lit/lit/issues/new?template=bug_report.md
+          and include information about your build tooling, if any.
+        `
+        .trim()
+        .replace(/\n */g, '\n');
     }
     throw new Error(message);
   }
@@ -2141,7 +2157,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.0');
+(globalThis.litHtmlVersions ??= []).push('2.2.2');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
