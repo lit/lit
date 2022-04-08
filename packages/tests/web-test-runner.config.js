@@ -22,11 +22,10 @@ const requestedBrowsers = process.env.BROWSERS?.trim() ?? 'local';
 
 const browsers = [];
 if (browserPresets[requestedBrowsers] !== undefined) {
-  const launchOptions = browserPresets[process.env.BROWSERS];
   browsers.push(
     playwrightLauncher({
       product: requestedBrowsers,
-      ...launchOptions,
+      ...browserPresets[process.env.BROWSERS],
     })
   );
 }

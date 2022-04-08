@@ -24,9 +24,8 @@ const devFiles = [
   '../reactive-element/development/**/*_test.(js|html)',
 ];
 /***
- * Not all external tests have production requirements.
- * If a package should be tested in production,
- * add its tests to the list below.
+ * Not all packages have production requirements. If a package should be
+ * tested in production, add its tests to the list below.
  *
  */
 const prodFiles = [

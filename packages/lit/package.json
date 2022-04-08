@@ -143,7 +143,7 @@
     "clean": "rm -rf {async-directive,decorators,directive-helpers,directive,html,experimental-hydrate-support,experimental-hydrate,index,polyfill-support,static-html}.{d.ts.map,d.ts,js.map,js} test/ decorators/ directives/ development/ *.tsbuildinfo",
     "publish-dev": "VERSION=${npm_package_version%-*}-dev.`git rev-parse --short HEAD` && npm version --no-git-tag-version $VERSION && npm publish --tag dev",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install",
-    "test": "MODE=prod cd ../tests && npx wtr '../lit/test/**/*_test.html'"
+    "test": "MODE=prod cd ../tests && npx wtr '../lit/test/**/*_test.(html|js)'"
   },
   "files": [
     "/async-directive.{d.ts.map,d.ts,js.map,js}",
