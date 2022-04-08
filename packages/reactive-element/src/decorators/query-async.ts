@@ -34,7 +34,7 @@ import {decorateProperty} from './base.js';
  * ```ts
  * class MyElement {
  *   @queryAsync('#first')
- *   first;
+ *   first: Promise<HTMLDivElement>;
  *
  *   render() {
  *     return html`

@@ -26,7 +26,7 @@ import {decorateProperty} from './base.js';
  * ```ts
  * class MyElement {
  *   @queryAll('div')
- *   divs;
+ *   divs: NodeListOf<HTMLDivElement>;
  *
  *   render() {
  *     return html`
