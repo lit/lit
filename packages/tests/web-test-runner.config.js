@@ -7,18 +7,19 @@
 import {wtrConfig} from './wtr-config.js';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 
+const LOCAL = 'local';
+
+const requestedBrowsers = process.env.BROWSERS?.trim() || LOCAL;
+
+/***
+ * Keep browsers on separate lines to make it easier to comment out
+ * individual browsers.
+ */
 const browserPresets = {
-  chromium: {args: ['--js-flags=--expose-gc', '--enable-precise-memory-info']}, // keep browsers on separate lines
-  firefox: {}, // to make it easier to comment out
-  webkit: {}, // individual browsers
+  chromium: {args: ['--js-flags=--expose-gc', '--enable-precise-memory-info']}, //
+  firefox: {},
+  webkit: {},
 };
-
-const mode = process.env.MODE?.trim() ?? 'dev';
-if (!['dev', 'prod'].includes(mode)) {
-  throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
-}
-
-const requestedBrowsers = process.env.BROWSERS?.trim() ?? 'local';
 
 const browsers = [];
 if (browserPresets[requestedBrowsers] !== undefined) {
@@ -29,7 +30,7 @@ if (browserPresets[requestedBrowsers] !== undefined) {
     })
   );
 }
-if (requestedBrowsers === 'local') {
+if (requestedBrowsers === LOCAL) {
   for (const product in browserPresets) {
     browsers.push(
       playwrightLauncher({

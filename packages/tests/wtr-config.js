@@ -11,6 +11,9 @@ import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {createRequire} from 'module';
 
+const DEV = 'dev';
+const PROD = 'prod';
+
 const packagesDir = pathLib.resolve(
   pathLib.dirname(fileURLToPath(import.meta.url)),
   '..'
@@ -60,13 +63,13 @@ const devResolveRemapConfig = {
   ],
 };
 
-const mode = process.env?.MODE?.trim() ?? 'dev';
-if (!['dev', 'prod'].includes(mode)) {
+const mode = process.env.MODE?.trim() || DEV;
+if (![DEV, PROD].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
 }
 
 let resolveRemapConfig;
-if (mode === 'prod') {
+if (mode === PROD) {
   console.log('Using production builds');
   resolveRemapConfig = prodResolveRemapConfig;
 } else {
@@ -132,4 +135,4 @@ const wtrConfig = {
   },
 };
 
-export {wtrConfig};
+export {DEV, mode, PROD, wtrConfig};

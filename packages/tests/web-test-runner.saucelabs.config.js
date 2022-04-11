@@ -4,8 +4,27 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {wtrConfig} from './wtr-config.js';
+import {wtrConfig, mode, PROD} from './wtr-config.js';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
+
+const SAUCE = 'sauce';
+const SAUCE_IE11 = 'sauce-ie11';
+
+/***
+ * Environment variables required to run saucelabs tests
+ */
+const user = process.env.SAUCE_USERNAME?.trim() || '';
+const key = process.env.SAUCE_ACCESS_KEY?.trim() || '';
+const tunnelIdentifier = process.env.SAUCE_TUNNEL_ID?.trim() || '';
+
+if (!user || !key || !tunnelIdentifier) {
+  throw new Error(`
+To test on Sauce, set the following env variables
+- SAUCE_USERNAME
+- SAUCE_ACCESS_KEY
+- SAUCE_TUNNEL_ID
+  `);
+}
 
 /***
  * Some package tests should be run externally in Saucelabs.
@@ -58,20 +77,6 @@ const browserSettings = {
   },
 };
 
-const mode = (process.env.MODE || '').trim();
-const user = (process.env.SAUCE_USERNAME || '').trim();
-const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
-
-if (!user || !key || !tunnelIdentifier) {
-  throw new Error(`
-To test on Sauce, set the following env variables
-- SAUCE_USERNAME
-- SAUCE_ACCESS_KEY
-- SAUCE_TUNNEL_ID
-  `);
-}
-
 /***
  * Shared tunnels are 'high availablity' tunnels at Saucelabs
  *
@@ -109,20 +114,20 @@ let browsers;
 if (browserSettings[process.env.BROWSERS] !== undefined) {
   browsers = [sauceLauncher(browserSettings[process.env.BROWSERS])];
 }
+// example: BROWSERS=sauce-ie11 npm run tests
+if (process.env.BROWSERS === SAUCE_IE11) {
+  browsers = [sauceLauncher(browserSettings.IE)];
+}
 // example: BROWSERS=sauce npm run tests
-if (process.env.BROWSERS === 'sauce') {
+if (process.env.BROWSERS === SAUCE) {
   browsers = [
     sauceLauncher(browserSettings.chromium),
     sauceLauncher(browserSettings.firefox),
     sauceLauncher(browserSettings.safari),
   ];
 }
-// example: BROWSERS=sauce-ie11 npm run tests
-if (process.env.BROWSERS === 'sauce-ie11') {
-  browsers = [sauceLauncher(browserSettings.IE)];
-}
 
-const files = mode === 'prod' ? prodFiles : devFiles;
+const files = mode === PROD ? prodFiles : devFiles;
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
