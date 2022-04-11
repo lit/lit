@@ -41,6 +41,7 @@ if (requestedBrowsers === LOCAL) {
   }
 }
 
+// https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
   ...wtrConfig,
   browsers,

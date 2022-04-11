@@ -29,7 +29,6 @@ To test on Sauce, set the following env variables
 /***
  * Some package tests should be run externally in Saucelabs.
  * When a package requires remote testing, add it to the list below.
- *
  */
 const devFiles = [
   '../labs/observers/development/**/*_test.(js|html)',
@@ -42,10 +41,10 @@ const devFiles = [
   '../lit-html/development/**/*_test.(js|html)',
   '../reactive-element/development/**/*_test.(js|html)',
 ];
+
 /***
  * Not all packages have production requirements. If a package should be
  * tested in production, add its tests to the list below.
- *
  */
 const prodFiles = [
   '../labs/ssr/development/**/*_test.(js|html)',
