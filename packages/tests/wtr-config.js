@@ -120,9 +120,6 @@ const wtrConfig = {
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
   filterBrowserLogs: (type) => type === 'warn' || type === 'error',
-  // browserStartTimeout: 60000, // default 30000
-  // testsStartTimeout: 12000, // default 120000
-  // testsFinishTimeout: 6000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
