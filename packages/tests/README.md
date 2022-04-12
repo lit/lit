@@ -6,20 +6,19 @@ This package conducts tests in the Lit monorepo.
 
 Lit uses [mocha](https://mochajs.org/) to compose tests and [web test runner](https://modern-web.dev/docs/test-runner/) to run them.
 
-Tests are dispatched with [Playwright](https://playwright.dev/) locally
-and [Saucelabs](https://saucelabs.com/) remotely.
+Tests are dispatched locally with [Playwright](https://playwright.dev/)
+and remotely with [Saucelabs](https://saucelabs.com/).
 
 ## Configurations
 
 The local and remote configurations share a baseline set
-of [web test runner](https://modern-web.dev/docs/test-runner/) properties found in `wtr-config.js`.
+of web test runner properties found in `wtr-config.js`.
 
 Properties specific to local and remote environments inherit and override the baseline
 configuration.
 
-Local tests run with [playwright](https://playwright.dev/) use the `web-test-runner.config.js` configuration.
-
-Remote tests with [saucelabs](https://saucelabs.com/) use the `web-test-runner.saucelabs.config.js` configuration.
+Local tests use the `web-test-runner.config.js` configuration. Remote tests use
+the `web-test-runner.saucelabs.config.js` configuration.
 
 ## Usage
 
@@ -31,11 +30,10 @@ CONCURRENT_BROWSERS=<number-browsers-running-at-same-time>
 CONCURRENT_FRAMES=<num-of-tests-run-in-iframes>
 ```
 
-Declare the properties above to control concurrency and browser types during
-a test run.
+Declare the variables above to control concurrency and browser types.
 
 For example, the following env variables will run 3 tests in two browsers at the
-same time.
+same time, totalling in a maximum of 6 concurrent tests.
 
 ```
 BROWSERS=local
@@ -62,7 +60,7 @@ Available browser options for local tests include:
 
 #### Run tests locally in multiple browsers
 
-By default, executing `npm run test` run tests in chromium, firefox, and safari
+By default, executing `npm run test` runs tests in chromium, firefox, and safari
 via Playwright.
 
 ```bash
@@ -82,8 +80,10 @@ CONCURRENT_FRAMES=6
 
 ### Local tests
 
-Add tests for `DEV` modes in the new package's `package.json` file. These
-two commands will be executed via [lerna](https://lerna.js.org/).
+Add tests for `DEV` and `PROD` modes in the new package's `package.json` file.
+
+Not all packages require `PROD` tests. If a package does not require production
+tests, use the following syntax:
 
 ```JSON
 "scripts": {
@@ -107,10 +107,10 @@ If the new package requires tests in `Prod` mode, use the following syntax:
 
 #### Dev mode
 
-All packages should be tested in `DEV` mode remotely.
+All packages should be tested remotely in `DEV` mode.
 
-Inside `web-test-runner.saucelabs.config.js` is a list called `devFiles` that provide
-[web test runner](https://modern-web.dev/docs/test-runner/) test files for [saucelabs](https://saucelabs.com/).
+Inside `web-test-runner.saucelabs.config.js` is a list called `devFiles` that provides
+web test runner test files for saucelabs.
 
 ```TS
 const devFiles = [
@@ -123,11 +123,11 @@ const devFiles = [
 
 Not all packages run in production mode remotely.
 
-For example, packages found
-in [labs]('../labs/README.md') are inherently not meant for production and have no
-need to be tested in `PROD`.
+For example, packages found in [labs]('../labs/README.md') are inherently
+not meant for production and have no obligation to be tested in `PROD` mode.
 
-Add tests to the `prodFiles` list to test a package in `PROD` remotely.
+Add tests to the `prodFiles` list in `web-test-runner.saucelabs.config.js`
+to test a package in `PROD` remotely.
 
 ```TS
 const prodFiles = [
@@ -138,7 +138,7 @@ const prodFiles = [
 
 ### How to Run tests remotely via saucelabs
 
-Follow the instructions below to run tests from your local machine
+The instructions below describe a safe way to run tests from your local machine
 on saucelabs.
 
 ### Prepare environment variables
@@ -157,9 +157,8 @@ Create a helper script outside of your copy of the repo.
 
 This has the benefit of not polluting repo-specific variables in a
 `.bashrc` file while providing a quick way to change env variables.
-
 It also has the added benefit of being easily deleted
-and not creating side effects in system environments.
+while not creating side effects in system environments.
 
 ```bash
 pwd # home/<user>/lit/
@@ -167,7 +166,7 @@ cd ../
 touch run-sauce-tests.sh
 ```
 
-Then copy and paste the following into `run-sauce-tests.sh`:
+Next, copy and paste the following into `run-sauce-tests.sh`:
 
 ```bash
 export SAUCE_USERNAME=<organization>
@@ -186,7 +185,7 @@ Afterwards, replace `<organization>` with a saucelabs username and
 
 #### Run tests in individual browsers
 
-Tests can be run in individual browsers by changing the `BROWSERS`
+Tests can deploy to individual browsers by changing the `BROWSERS`
 variable in the `run-sauce-tests.sh` script.
 
 Valid `BROWSERS` variables for individual browsers can be:
@@ -204,13 +203,10 @@ BROWSERS=firefox
 
 #### Run tests in multiple browers
 
-This package can run tests in groups of browsers.
+This package can deploy tests for groups of browsers.
 
 To run tests in multiple browsers, change the `BROWSERS` variable in
-`run-sauce-tests.sh` to:
-
-- sauce (chromium, fireforx, safari)
-- sauce-ie11
+`run-sauce-tests.sh` to `sauce` or `sauce-ie11`
 
 For example, replace `<browser-type>` with `sauce` to run tests firefox, chromium, and safari:
 
