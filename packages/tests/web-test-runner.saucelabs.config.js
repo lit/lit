@@ -69,7 +69,7 @@ const browserSettings = {
     browserVersion: 'latest',
     platformName: 'macOS 10.15',
   },
-  IE: {
+  ie: {
     browserName: 'Internet Explorer',
     browserVersion: '11',
     platformName: 'Windows 10',
@@ -115,7 +115,7 @@ if (browserSettings[process.env.BROWSERS] !== undefined) {
 }
 // example: BROWSERS=sauce-ie11 npm run tests
 if (process.env.BROWSERS === SAUCE_IE11) {
-  browsers = [sauceLauncher(browserSettings.IE)];
+  browsers = [sauceLauncher(browserSettings.ie)];
 }
 // example: BROWSERS=sauce npm run tests
 if (process.env.BROWSERS === SAUCE) {
@@ -133,4 +133,10 @@ export default {
   ...wtrConfig,
   browsers,
   files,
+  browserStartTimeout: 120000, // default 30000
+  // For ie11 where tests run more slowly, this timeout needs to be long
+  // enough so that blocked tests have time to wait for all previous test files
+  // to run to completion.
+  testsStartTimeout: 24000 * 10, // default 120000
+  testsFinishTimeout: 240000, // default 20000
 };
