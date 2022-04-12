@@ -78,6 +78,8 @@ CONCURRENT_FRAMES=6
 
 ## Maintainers
 
+The following section describes testing requirements for maintainers.
+
 ### Local tests
 
 Add tests for `DEV` and `PROD` modes in the new package's `package.json` file.
@@ -89,7 +91,7 @@ tests, use the following syntax:
 "scripts": {
     "test": "MODE=prod npm run test:dev",
     "test:dev": "cd ../tests && npx wtr '../<package_name>/test/**/*_test.(js|html)'",
-    "test:prod": "echo '<package_name>: prod tests are identical to dev tests"
+    "test:prod": "echo '<package_name>: prod tests are identical to dev tests'"
 }
 ```
 
@@ -111,6 +113,8 @@ All packages should be tested remotely in `DEV` mode.
 
 Inside `web-test-runner.saucelabs.config.js` is a list called `devFiles` that provides
 web test runner test files for saucelabs.
+
+Add new package tests to this list to include them in a remote test run.
 
 ```TS
 const devFiles = [
@@ -138,8 +142,7 @@ const prodFiles = [
 
 ### How to Run tests remotely via saucelabs
 
-The instructions below describe a safe way to run tests from your local machine
-on saucelabs.
+The instructions how to run remote tests from your local machine safely.
 
 ### Prepare environment variables
 
@@ -149,15 +152,18 @@ Remote tests require the following environment variables:
 - SAUCE_ACCESS_KEY
 - SAUCE_TUNNEL_ID
 
-Gather your saucelabs credentials. Do not upload them to github.
+Gather your saucelabs credentials. DO NOT UPLOAD THEM TO GITHUB.
+
+If saucelabs credentials are uploaded to github, contact your tech lead.
+They will update the access key.
 
 #### Create a helper script
 
-Create a helper script outside of your copy of the repo.
+Create a helper script outside of the copy of the repo.
 
 This has the benefit of not polluting repo-specific variables in a
 `.bashrc` file while providing a quick way to change env variables.
-It also has the added benefit of being easily deleted
+It has the added benefit of being easily deleted
 while not creating side effects in system environments.
 
 ```bash
@@ -188,7 +194,7 @@ Afterwards, replace `<organization>` with a saucelabs username and
 Tests can deploy to individual browsers by changing the `BROWSERS`
 variable in the `run-sauce-tests.sh` script.
 
-Valid `BROWSERS` variables for individual browsers can be:
+Valid `BROWSERS` variables for individual browsers include:
 
 - chromium
 - firefox
