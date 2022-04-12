@@ -82,13 +82,24 @@ CONCURRENT_FRAMES=6
 
 ### Local tests
 
-Add tests for `PROD` and `DEV` modes in the new package's `package.json` file. These
+Add tests for `DEV` modes in the new package's `package.json` file. These
 two commands will be executed via [lerna](https://lerna.js.org/).
 
 ```JSON
 "scripts": {
     "test": "MODE=prod npm run test:dev",
-    "test:dev": "cd ../tests && npx wtr '../<package_name>/test/**/*_test.(js|html)'"
+    "test:dev": "cd ../tests && npx wtr '../<package_name>/test/**/*_test.(js|html)'",
+    "test:prod": "echo '<package_name>: prod tests are identical to dev tests"
+}
+```
+
+If the new package requires tests in `Prod` mode, use the following syntax:
+
+```JSON
+"scripts": {
+    "test": "MODE=prod npm run test:dev",
+    "test:dev": "cd ../tests && npx wtr '../<package_name>/test/**/*_test.(js|html)'",
+    "test:prod": "MODE=prod npm run test:dev"
 }
 ```
 
