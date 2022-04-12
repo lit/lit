@@ -16,7 +16,7 @@ jobs:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       BROWSERS: sauce
-      CONCURRENT_BROWSERS: 3
+      CONCURRENT_FRAMES: 1
 
     steps:
       - uses: actions/checkout@v2
