@@ -145,11 +145,6 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _stable = true;
 
-  /**
-   * Whether to remeasure children during the next reflow.
-   */
-  _needsRemeasure = false;
-
   private _measureChildren = true;
 
   _estimate = true;
@@ -460,9 +455,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._emitRange();
     if (this._first === -1 && this._last === -1) {
       this._resetReflowState();
-    } else if (
-        this._first !== _first || this._last !== _last ||
-        this._needsRemeasure) {
+    } else if (this._first !== _first || this._last !== _last) {
       this._emitChildPositions();
       this._emitScrollError();
     } else {
@@ -514,14 +507,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _viewDim2Changed() {
-    this._needsRemeasure = true;
     this._scheduleReflow();
   }
 
   _emitRange() {
-    const remeasure = this._needsRemeasure;
     const stable = this._stable;
-    this._needsRemeasure = false;
-    super._emitRange({remeasure, stable});
+    super._emitRange({stable});
   }
 }

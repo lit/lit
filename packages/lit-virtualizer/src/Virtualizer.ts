@@ -14,7 +14,6 @@ interface InternalRange {
   first: number;
   last: number;
   num: number;
-  remeasure: boolean;
   stable: boolean;
   firstVisible: number;
   lastVisible: number;
@@ -710,7 +709,6 @@ export class Virtualizer {
   // a first-class feature?
 
   private _childLoaded() {
-    // this.requestRemeasure();
   }
 
   // This is the callback for the ResizeObserver that watches the
