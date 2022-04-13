@@ -11,8 +11,8 @@ export class StackTest extends LitElement {
     static get properties() {
         return {
             data1: { state: true },
-            data1: { state: true },
-            data1: { state: true }
+            data2: { state: true },
+            data3: { state: true }
         }
     }
 
@@ -49,7 +49,9 @@ export class StackTest extends LitElement {
 
     constructor() {
         super();
-        this.data = [];
+        this.data1 = [];
+        this.data2 = [];
+        this.data3 = [];
         this.renderItem = this.renderItem.bind(this);
     }
 
