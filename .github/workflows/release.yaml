@@ -54,6 +54,7 @@ jobs:
           # The `working-directory` option is only available for steps that use
           # `run`. This `cwd` option is the same, but specific to this action.
           cwd: lit
+          setupGitUser: false
           version: npm run version
           publish: npm run release
         env:
