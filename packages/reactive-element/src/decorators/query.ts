@@ -27,7 +27,7 @@ import {decorateProperty} from './base.js';
  * ```ts
  * class MyElement {
  *   @query('#first')
- *   first;
+ *   first: HTMLDivElement;
  *
  *   render() {
  *     return html`
