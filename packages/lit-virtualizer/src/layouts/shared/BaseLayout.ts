@@ -399,7 +399,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
           first: this._first,
           last: this._last,
           num: this._num,
-          stable: true,
           firstVisible: this._firstVisible,
           lastVisible: this._lastVisible,
         },

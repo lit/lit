@@ -14,7 +14,6 @@ interface InternalRange {
   first: number;
   last: number;
   num: number;
-  stable: boolean;
   firstVisible: number;
   lastVisible: number;
 }

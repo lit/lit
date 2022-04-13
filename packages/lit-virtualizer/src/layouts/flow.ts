@@ -509,9 +509,4 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   _viewDim2Changed() {
     this._scheduleReflow();
   }
-
-  _emitRange() {
-    const stable = this._stable;
-    super._emitRange({stable});
-  }
 }
