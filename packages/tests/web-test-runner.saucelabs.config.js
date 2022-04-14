@@ -123,6 +123,6 @@ export default {
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 12000 * 10, // default 120000
-  testsFinishTimeout: 180000, // default 20000
+  testsStartTimeout: 180000, // default 120000
+  testsFinishTimeout: 240000, // default 20000
 };
