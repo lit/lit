@@ -60,9 +60,10 @@ export interface VirtualizerHostElement extends HTMLElement {
   [virtualizerRef]?: Virtualizer
 }
 
-type VerticalScrollSize = {height: number};
-type HorizontalScrollSize = {width: number};
-type ScrollSize = VerticalScrollSize | HorizontalScrollSize;
+type ScrollSize = {
+  height: number | null,
+  width: number | null
+}
 
 type ChildMeasurements = {[key: number]: ItemBox};
 
@@ -604,8 +605,8 @@ export class Virtualizer {
     // a certain size, so we clamp it here (this value based on ad hoc
     // testing in Chrome / Safari / Firefox Mac)
     const max = 8200000;
-    const h = size && (size as HorizontalScrollSize).width ? Math.min(max, (size as HorizontalScrollSize).width) : 0;
-    const v = size && (size as VerticalScrollSize).height ? Math.min(max, (size as VerticalScrollSize).height) : 0;
+    const h = size && size.width !== null ? Math.min(max, size.width) : 0;
+    const v = size && size.height !== null ? Math.min(max, size.height) : 0;
 
     if (this._isScroller) {
       this._getSizer().style.transform = `translate(${h}px, ${v}px)`;

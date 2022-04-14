@@ -409,6 +409,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _emitScrollSize() {
     const detail = {
       [this._sizeDim]: this._scrollSize,
+      [this._secondarySizeDim]: null
     };
     this.dispatchEvent(new CustomEvent('scrollsizechange', {detail}));
   }
