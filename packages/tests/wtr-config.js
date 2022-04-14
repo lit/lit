@@ -129,4 +129,4 @@ const wtrConfig = {
   },
 };
 
-export {DEV, mode, PROD, wtrConfig};
+export {wtrConfig};
