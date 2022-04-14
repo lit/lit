@@ -36,7 +36,7 @@ jobs:
         run: npm run build
 
       - name: Create tunnel name
-        run: echo "SAUCE_TUNNEL_ID=lit-tests-ie__${GITHUB_EVENT_NAME}__${GITHUB_SHA}" >> $GITHUB_ENV
+        run: echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Test Dev
         # Retry once automatically.
