@@ -83,19 +83,7 @@ The following section describes testing requirements for maintainers.
 ### Local tests
 
 Add tests for `DEV` and `PROD` modes in the new package's `package.json` file.
-
-Not all packages require `PROD` tests. If a package does not require production
-tests, use the following syntax:
-
-```JSON
-"scripts": {
-    "test": "MODE=prod npm run test:dev",
-    "test:dev": "cd ../tests && npx wtr '../<package_name>/test/**/*_test.(js|html)'",
-    "test:prod": "echo '<package_name>: prod tests are identical to dev tests'"
-}
-```
-
-If the new package requires tests in `Prod` mode, use the following syntax:
+Use the following syntax:
 
 ```JSON
 "scripts": {
@@ -107,40 +95,23 @@ If the new package requires tests in `Prod` mode, use the following syntax:
 
 ### Remote tests
 
-#### Dev mode
+All packages should be tested remotely.
 
-All packages should be tested remotely in `DEV` mode.
+### Prepare tests
 
-Inside `web-test-runner.saucelabs.config.js` is a list called `devFiles` that provides
+Inside `web-test-runner.saucelabs.config.js` is a list called `files` that provides
 web test runner test files for saucelabs.
 
 Add new package tests to this list to include them in a remote test run.
 
 ```TS
-const devFiles = [
+const files = [
     ...
     '../<package_name>/test/**/*_test.(js|html)',
 ];
 ```
 
-#### Prod mode
-
-Not all packages run in production mode remotely.
-
-For example, packages found in [labs]('../labs/README.md') are inherently
-not meant for production and have no obligation to be tested in `PROD` mode.
-
-Add tests to the `prodFiles` list in `web-test-runner.saucelabs.config.js`
-to test a package in `PROD` remotely.
-
-```TS
-const prodFiles = [
-    ...
-    '../<package_name>/test/**/*_test.(js|html)',
-];
-```
-
-### How to Run tests remotely via saucelabs
+### Run tests remotely via saucelabs
 
 The instructions how to run remote tests from your local machine safely.
 
@@ -177,7 +148,7 @@ Next, copy and paste the following into `run-sauce-tests.sh`:
 ```bash
 export SAUCE_USERNAME=<organization>
 export SAUCE_ACCESS_KEY=<access_key>
-export SAUCE_TUNNEL_ID=local-dev--$(date +%s)
+export SAUCE_TUNNEL_ID=local_dev__$(date +%s)
 export BROWSERS=<browser-type>
 export CONCURRENT_BROWSERS=3
 export CONCURRENT_FRAMES=6
