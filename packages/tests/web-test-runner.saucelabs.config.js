@@ -19,7 +19,7 @@ const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [SAUCE];
 
 if (!user || !key || !tunnelIdentifier) {
   throw new Error(`
-To test on Sauce, set the following env variables
+To test on Saucelabs, set the following env variables:
 - SAUCE_USERNAME
 - SAUCE_ACCESS_KEY
 - SAUCE_TUNNEL_ID
