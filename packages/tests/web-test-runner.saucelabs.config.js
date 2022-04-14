@@ -7,8 +7,7 @@
 import {wtrConfig} from './wtr-config.js';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 
-const SAUCE = 'sauce';
-const SAUCE_IE11 = 'sauce-ie11';
+const SAUCE = 'preset:sauce';
 
 /***
  * Environment variables required to run saucelabs tests
@@ -16,6 +15,7 @@ const SAUCE_IE11 = 'sauce-ie11';
 const user = process.env.SAUCE_USERNAME?.trim() || '';
 const key = process.env.SAUCE_ACCESS_KEY?.trim() || '';
 const tunnelIdentifier = process.env.SAUCE_TUNNEL_ID?.trim() || '';
+const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [SAUCE];
 
 if (!user || !key || !tunnelIdentifier) {
   throw new Error(`
@@ -44,7 +44,7 @@ const files = [
 
 const browserSettings = {
   chromium: {
-    browserName: 'chrome',
+    browserName: 'Chrome',
     browserVersion: 'latest-3',
     platformName: 'Windows 10',
   },
@@ -97,22 +97,21 @@ const sauceLauncher = createSauceLabsLauncher(
   }
 );
 
-let browsers;
-// example: BROWSERS=chromium npm run tests
-if (browserSettings[process.env.BROWSERS] !== undefined) {
-  browsers = [sauceLauncher(browserSettings[process.env.BROWSERS])];
-}
-// example: BROWSERS=sauce-ie11 npm run tests
-if (process.env.BROWSERS === SAUCE_IE11) {
-  browsers = [sauceLauncher(browserSettings.ie)];
-}
-// example: BROWSERS=sauce npm run tests
-if (process.env.BROWSERS === SAUCE) {
-  browsers = [
-    sauceLauncher(browserSettings.chromium),
-    sauceLauncher(browserSettings.firefox),
-    sauceLauncher(browserSettings.safari),
-  ];
+/**
+ * Build browser launchers
+ */
+const browsers = [];
+for (const requestedBrowser of requestedBrowsers) {
+  // example: BROWSERS=chromium,firefox npm run tests
+  if (browserSettings[requestedBrowser] !== undefined) {
+    browsers.push(sauceLauncher(browserSettings[requestedBrowser]));
+  }
+  // example: BROWSERS=preset:sauce npm run tests
+  if (requestedBrowser === SAUCE) {
+    browsers.push(sauceLauncher(browserSettings.chromium));
+    browsers.push(sauceLauncher(browserSettings.firefox));
+    browsers.push(sauceLauncher(browserSettings.safari));
+  }
 }
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/

@@ -15,7 +15,7 @@ jobs:
     env:
       SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
       SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-      BROWSERS: sauce-ie11
+      BROWSERS: ie
       CONCURRENT_BROWSERS: 1
       CONCURRENT_FRAMES: 1
 

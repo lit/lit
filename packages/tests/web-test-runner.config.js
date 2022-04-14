@@ -7,9 +7,12 @@
 import {wtrConfig} from './wtr-config.js';
 import {playwrightLauncher} from '@web/test-runner-playwright';
 
-const LOCAL = 'local';
+const LOCAL = 'preset:local';
 
-const requestedBrowsers = process.env.BROWSERS?.trim() || LOCAL;
+/***
+ * Environment variables required to run local tests
+ */
+const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [LOCAL];
 
 /***
  * Keep browsers on separate lines to make it easier to comment out
@@ -21,23 +24,30 @@ const browserPresets = {
   webkit: {},
 };
 
+/**
+ * Build browser launchers
+ */
 const browsers = [];
-if (browserPresets[requestedBrowsers] !== undefined) {
-  browsers.push(
-    playwrightLauncher({
-      product: requestedBrowsers,
-      ...browserPresets[process.env.BROWSERS],
-    })
-  );
-}
-if (requestedBrowsers === LOCAL) {
-  for (const product in browserPresets) {
+for (const requestedBrowser of requestedBrowsers) {
+  // example: BROWSERS=chromium,firefox npm run test
+  if (browserPresets[requestedBrowser] !== undefined) {
     browsers.push(
       playwrightLauncher({
-        product,
-        ...browserPresets[product],
+        product: requestedBrowser,
+        ...browserPresets[process.env.BROWSERS],
       })
     );
+  }
+  // example: BROWSERS=preset:local npm run test
+  if (requestedBrowser === LOCAL) {
+    for (const product in browserPresets) {
+      browsers.push(
+        playwrightLauncher({
+          product,
+          ...browserPresets[product],
+        })
+      );
+    }
   }
 }
 
