@@ -15,14 +15,16 @@ const SAUCE = 'preset:sauce';
 const user = process.env.SAUCE_USERNAME?.trim() || '';
 const key = process.env.SAUCE_ACCESS_KEY?.trim() || '';
 const tunnelIdentifier = process.env.SAUCE_TUNNEL_ID?.trim() || '';
+const build = process.env.SAUCE_BUILD_ID?.trim() || '';
 const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [SAUCE];
 
-if (!user || !key || !tunnelIdentifier) {
+if (!user || !key || !tunnelIdentifier || !build) {
   throw new Error(`
 To test on Saucelabs, set the following env variables:
 - SAUCE_USERNAME
 - SAUCE_ACCESS_KEY
 - SAUCE_TUNNEL_ID
+- SAUCE_BUILD_ID
   `);
 }
 
@@ -88,7 +90,7 @@ const sauceLauncher = createSauceLabsLauncher(
     key,
   },
   {
-    build: tunnelIdentifier,
+    build,
   },
   {
     noRemoveCollidingTunnels: true,

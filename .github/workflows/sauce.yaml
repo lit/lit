@@ -6,12 +6,16 @@ jobs:
   tests-sauce:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
-
+    
     # Sauce tests are still unreliable. Run them, but don't mark a commit as
     # failing if it fails.
     continue-on-error: true
 
     runs-on: ubuntu-latest
+    env:
+      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+      BROWSERS: preset:sauce
 
     steps:
       - uses: actions/checkout@v2
@@ -22,24 +26,22 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install playwright deps
-        run: npx playwright install-deps
-
       - name: NPM install
         run: npm ci
 
       - name: Lerna bootstrap
         run: npm run bootstrap
 
-      - name: Lint
-        run: npm run lint
-
       - name: Build
         run: npm run build
 
-      - name: Test
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce
-        run: npm run test
+      - name: Create tunnel name
+        run: |
+          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}"
+
+      - name: Test Dev
+        run: cd packages/tests && npm run test:dev
+
+      - name: Test Prod
+        run: cd packages/tests && npm run test:prod
