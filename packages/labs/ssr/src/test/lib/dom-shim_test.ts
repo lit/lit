@@ -6,6 +6,7 @@
 
 import {getWindow} from '../../lib/dom-shim.js';
 import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 
 const window = getWindow({}) as unknown as Window;

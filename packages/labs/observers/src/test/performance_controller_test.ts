@@ -12,8 +12,8 @@ import {
 import {
   PerformanceController,
   PerformanceControllerConfig,
-} from '../performance_controller';
-import {generateElementName, nextFrame} from './test-helpers';
+} from '../performance_controller.js';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE

@@ -8,6 +8,7 @@ import {createRequire} from 'module';
 import {ModuleLoader} from '../../lib/module-loader.js';
 import {getWindow} from '../../lib/dom-shim.js';
 import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import * as path from 'path';
 
