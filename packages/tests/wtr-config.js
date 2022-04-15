@@ -6,13 +6,6 @@
 
 import * as pathLib from 'path';
 import {fileURLToPath} from 'url';
-import {fromRollup} from '@web/dev-server-rollup';
-import {legacyPlugin} from '@web/dev-server-legacy';
-import {resolveRemap} from './rollup-resolve-remap.js';
-import {createRequire} from 'module';
-
-const DEV = 'dev';
-const PROD = 'prod';
 
 const packagesDir = pathLib.resolve(
   pathLib.dirname(fileURLToPath(import.meta.url)),
@@ -24,7 +17,7 @@ const packagesDir = pathLib.resolve(
  * to their minified production versions (works for both bare and path module
  * specifiers).
  */
-const prodResolveRemapConfig = {
+export const prodResolveRemapConfig = {
   root: packagesDir,
   remap: [
     // The development/test/ directories are special, there are no production
@@ -44,7 +37,7 @@ const prodResolveRemapConfig = {
  * rollup-resolve-remap config that remaps any lit-html or lit-element imports
  * to the un-minified development versions.
  */
-const devResolveRemapConfig = {
+export const devResolveRemapConfig = {
   root: packagesDir,
   remap: [
     // Don't remap external dependencies.
@@ -62,71 +55,3 @@ const devResolveRemapConfig = {
     {from: 'reactive-element/', to: 'reactive-element/development/'},
   ],
 };
-
-const mode = process.env.MODE?.trim() || DEV;
-if (![DEV, PROD].includes(mode)) {
-  throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
-}
-
-let resolveRemapConfig;
-if (mode === PROD) {
-  console.log('Using production builds');
-  resolveRemapConfig = prodResolveRemapConfig;
-} else {
-  console.log('Using development builds');
-  resolveRemapConfig = devResolveRemapConfig;
-}
-
-const require = createRequire(import.meta.url);
-
-// https://modern-web.dev/docs/test-runner/cli-and-configuration/
-const wtrConfig = {
-  rootDir: '../',
-  // Note `{files: []}` can be overridden by wtr command-line arguments.
-  files: [],
-  nodeResolve: true,
-  concurrency: Number(process.env.CONCURRENT_FRAMES || 6),
-  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 3),
-  plugins: [
-    fromRollup(resolveRemap)(resolveRemapConfig),
-    // Detect browsers without modules (e.g. IE11) and transform to SystemJS
-    // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
-    legacyPlugin({
-      polyfills: {
-        // Rather than use the webcomponents polyfill version bundled with the
-        // legacyPlugin, we inject a custom version of the polyfill; this both
-        // gives us more control over the version, but also allows a mechanism
-        // for tests to opt out of automatic injection, so that they can control
-        // the timing when the polyfill loads (i.e. for setting polyfill flags
-        // in an inline script before polyfills are manually loaded). Note that
-        // .html-based tests can add a `<meta name="manual-polyfills">` tag in
-        // the head to opt out of automatic polyfill injection and load them
-        // manually using a `<script>` tag in the page.
-        webcomponents: false,
-        custom: [
-          {
-            name: 'webcomponents-2.5.0',
-            path: require.resolve(
-              '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
-            ),
-            // Don't load if the page is tagged with a special meta indicating
-            // the polyfills will be loaded manually
-            test: '!document.querySelector("meta[name=manual-polyfills]")',
-            module: false,
-          },
-        ],
-      },
-    }),
-  ],
-  // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
-  testFramework: {
-    // https://mochajs.org/api/mocha
-    config: {
-      ui: 'tdd',
-      timeout: '60000', // default 2000
-    },
-  },
-};
-
-export {wtrConfig};
