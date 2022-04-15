@@ -18,7 +18,7 @@
     "browser": true
   },
   "rules": {
-    "import/extensions": ["error", "always", {"mjs": "never"}],
+    "import/extensions": ["error", "always"],
     "no-prototype-builtins": "off",
     "no-only-tests/no-only-tests": "error",
     "@typescript-eslint/ban-types": "off",

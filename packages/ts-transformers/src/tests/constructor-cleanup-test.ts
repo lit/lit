@@ -7,6 +7,7 @@
 import {test} from 'uvu';
 import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 import ts from 'typescript';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import prettier from 'prettier';
 import {constructorCleanupTransformer} from '../constructor-cleanup.js';

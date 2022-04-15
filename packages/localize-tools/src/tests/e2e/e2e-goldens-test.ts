@@ -7,6 +7,7 @@
 import * as path from 'path';
 import {execFileSync} from 'child_process';
 import {suite} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {runAndLog} from '../../cli.js';
 import fsExtra from 'fs-extra';
