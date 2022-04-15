@@ -21,7 +21,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "uvu tests/ \"\\-test\\.js$\"",
+    "test": "npm run test:dev && npm run test:prod",
+    "test:dev": "uvu tests/ \"\\-test\\.js$\"",
+    "test:prod": "echo 'ts-transformers: prod tests are identical to dev tests'",
     "clean": "rimraf \"*.{js,d.ts}\" internal/ tests/",
     "prepack": "npm run clean && npm run build"
   },

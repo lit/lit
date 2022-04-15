@@ -67,8 +67,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
+      - name: Test dev
         env:
           BROWSERS: preset:local
           CONCURRENT_BROWSERS: 3
-        run: npm run test
+        run: npm run test:dev
+
+      - name: Test prod
+        env:
+          BROWSERS: preset:local
+          CONCURRENT_BROWSERS: 3
+        run: npm run test:prod
