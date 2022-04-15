@@ -56,7 +56,7 @@ class MyElement extends LitElement {
       this,
       ([userId]) =>
         fetch(`//example.com/api/userInfo?${userId}`)
-          .then(response => response.json())
+          .then(response => response.json()),
       () => [this.userId]
     );
 
