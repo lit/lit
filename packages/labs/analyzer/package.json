@@ -17,9 +17,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build",
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "uvu test '\\_test\\.js$'",
-    "test:prod": "echo 'analyzer: prod tests are identical to dev tests'"
+    "test": "npm run test:dev",
+    "test:dev": "uvu test '\\_test\\.js$'"
   },
   "files": [
     "/src/",

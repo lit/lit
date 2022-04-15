@@ -22,9 +22,8 @@
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && npm run generate-json-schema && tsc --build",
     "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=src/types/config.d.ts --required --noExtraProps > config.schema.json",
-    "test": "npm run test:dev && npm run test:prod",
+    "test": "npm run test:dev",
     "test:dev": "npm run test:unit && npm run test:check-tsc",
-    "test:prod": "echo 'localize-tools: prod tests are identical to dev tests'",
     "test:unit": "uvu lib/tests '\\.test\\.js$' --ignore 'ssr\\.unit\\.test\\.js$' && uvu lib/tests '\\ssr\\.unit\\.test\\.js$'",
     "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:unit",
     "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project"

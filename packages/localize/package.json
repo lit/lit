@@ -18,9 +18,8 @@
   "scripts": {
     "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
     "build": "npm run clean && tsc",
-    "test": "npm run test:dev && npm run test:prod",
+    "test": "npm run test:dev",
     "test:dev": "web-test-runner",
-    "test:prod": "echo 'localize: prod tests are identical to dev tests'",
     "prepack": "npm run build"
   },
   "files": [
