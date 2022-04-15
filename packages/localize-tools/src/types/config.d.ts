@@ -6,7 +6,7 @@
 
 import {FormatConfig} from './formatters.js';
 import {RuntimeOutputConfig, TransformOutputConfig} from './modes.js';
-import {Locale} from './locale';
+import {Locale} from './locale.js';
 
 export interface ConfigFile {
   /**

@@ -7,7 +7,7 @@
 import {LitElement, css, html, CSSResultGroup, TemplateResult} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {generateElementName, nextFrame} from './test-helpers';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {
   animate,
   Animate,

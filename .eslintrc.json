@@ -9,11 +9,16 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["eslint-plugin-no-only-tests", "@typescript-eslint"],
+  "plugins": [
+    "eslint-plugin-import",
+    "eslint-plugin-no-only-tests",
+    "@typescript-eslint"
+  ],
   "env": {
     "browser": true
   },
   "rules": {
+    "import/extensions": ["error", "always", {"mjs": "never"}],
     "no-prototype-builtins": "off",
     "no-only-tests/no-only-tests": "error",
     "@typescript-eslint/ban-types": "off",

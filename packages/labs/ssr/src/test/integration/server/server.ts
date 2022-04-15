@@ -13,7 +13,7 @@ import {getWindow} from '../../../lib/dom-shim.js';
 import {Readable} from 'stream';
 
 import * as testModule from '../tests/basic-ssr.js';
-import {SSRTest} from '../tests/ssr-test';
+import {SSRTest} from '../tests/ssr-test.js';
 
 export const startServer = async (port = 9090) => {
   const app = new Koa();
