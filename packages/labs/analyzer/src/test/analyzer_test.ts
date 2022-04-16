@@ -5,6 +5,7 @@
  */
 
 import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import ts from 'typescript';
 import * as path from 'path';

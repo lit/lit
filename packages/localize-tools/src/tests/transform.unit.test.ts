@@ -8,6 +8,7 @@ import {litLocalizeTransform} from '../modes/transform.js';
 import ts from 'typescript';
 import {Message, makeMessageIdMap} from '../messages.js';
 import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import prettier from 'prettier';
 import {

@@ -204,3 +204,4 @@ packages/labs/task/index.*
 packages/labs/task/task.*
 
 packages/localize/testdata/
+packages/localize/examples/

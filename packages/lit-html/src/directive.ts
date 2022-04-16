@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Disconnectable, Part} from './lit-html';
+import {Disconnectable, Part} from './lit-html.js';
 
 export {
   AttributePart,
@@ -14,7 +14,7 @@ export {
   EventPart,
   Part,
   PropertyPart,
-} from './lit-html';
+} from './lit-html.js';
 
 export interface DirectiveClass {
   new (part: PartInfo): Directive;

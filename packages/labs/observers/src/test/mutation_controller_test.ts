@@ -12,8 +12,8 @@ import {
 import {
   MutationController,
   MutationControllerConfig,
-} from '../mutation_controller';
-import {generateElementName, nextFrame} from './test-helpers';
+} from '../mutation_controller.js';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
