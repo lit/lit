@@ -41,7 +41,11 @@ jobs:
           echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}" >> $GITHUB_ENV
 
       - name: Test Dev
-        run: cd packages/tests && npm run test:dev
+        run: |
+          cd packages/tests
+          npm run test:dev
 
       - name: Test Prod
-        run: cd packages/tests && npm run test:prod
+        run: |
+          cd packages/tests
+          npm run test:prod
