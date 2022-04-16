@@ -36,7 +36,7 @@ For example, the following env variables will run 3 tests in two browsers at the
 same time, totalling in a maximum of 6 concurrent tests.
 
 ```
-BROWSERS=local
+BROWSERS=preset:local
 CONCURRENT_BROWSERS=2
 CONCURRENT_FRAMES=3
 ```
@@ -71,7 +71,7 @@ npm run test
 The command above defaults to the following env variables:
 
 ```
-BROWSERS=local
+BROWSERS=preset:local
 CONCURRENT_BROWSERS=3
 CONCURRENT_FRAMES=6
 ```
@@ -148,7 +148,7 @@ Next, copy and paste the following into `run-sauce-tests.sh`:
 ```bash
 export SAUCE_USERNAME=<organization>
 export SAUCE_ACCESS_KEY=<access_key>
-export SAUCE_TUNNEL_ID=local_dev__$(date +%s)
+export SAUCE_TUNNEL_ID=preset:local_dev__$(date +%s)
 export BROWSERS=<browser-type>
 export CONCURRENT_BROWSERS=3
 export CONCURRENT_FRAMES=6

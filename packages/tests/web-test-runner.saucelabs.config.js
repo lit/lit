@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {wtrConfig} from './wtr-config.js';
+import {wtrConfig, mode} from './wtr-config.js';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 
 const SAUCE = 'preset:sauce';
@@ -90,7 +90,7 @@ const sauceLauncher = createSauceLabsLauncher(
     key,
   },
   {
-    build,
+    build: `${build}__${mode}`,
   },
   {
     noRemoveCollidingTunnels: true,
