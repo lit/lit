@@ -35,7 +35,8 @@
     "build:demo:watch": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy --watch",
     "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" \"test/**/*.{js,js.map,d.ts,d.ts.map}\" \"worker/**/*.{js,js.map,d.ts,d.ts.map}\" demo/_site *.tsbuildinfo",
     "serve:demo": "wds --watch --node-resolve --open demo/_site/test",
-    "test": "uvu test/ \".*-test.js$\""
+    "test": "npm run test:dev ",
+    "test:dev": "uvu test/ \".*-test.js$\""
   },
   "dependencies": {
     "@lit-labs/ssr": "^2.0.1",

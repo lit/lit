@@ -15,6 +15,8 @@
     "demo:vm-modules": "node --experimental-vm-modules ./demo/vm-modules/server.js",
     "demo:global": "node ./demo/global/server.js",
     "test": "npm run test:unit && npm run test:integration",
+    "test:dev": "npm run test:unit && npm run test:integration:dev",
+    "test:prod": "npm run test:integration:prod",
     "test:integration": "npm run test:integration:dev && npm run test:integration:prod",
     "test:integration:dev": "MODE=dev NODE_OPTIONS=--experimental-vm-modules wtr",
     "test:integration:prod": "MODE=prod NODE_OPTIONS=--experimental-vm-modules wtr",
