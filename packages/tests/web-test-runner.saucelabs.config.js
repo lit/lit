@@ -15,10 +15,10 @@ const SAUCE = 'preset:sauce';
 const user = process.env.SAUCE_USERNAME?.trim() || '';
 const key = process.env.SAUCE_ACCESS_KEY?.trim() || '';
 const tunnelIdentifier = process.env.SAUCE_TUNNEL_ID?.trim() || '';
-const build = process.env.SAUCE_BUILD_ID?.trim() || '';
+const buildId = process.env.SAUCE_BUILD_ID?.trim() || '';
 const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [SAUCE];
 
-if (!user || !key || !tunnelIdentifier || !build) {
+if (!user || !key || !tunnelIdentifier || !buildId) {
   throw new Error(`
 To test on Saucelabs, set the following env variables:
 - SAUCE_USERNAME
@@ -84,13 +84,15 @@ const browserSettings = {
  * https://docs.saucelabs.com/secure-connections/sauce-connect/setup-configuration/high-availability/
  *
  */
+const build = `${buildId}__${mode}`;
+
 const sauceLauncher = createSauceLabsLauncher(
   {
     user,
     key,
   },
   {
-    build: `${build}__${mode}`,
+    build,
   },
   {
     noRemoveCollidingTunnels: true,
