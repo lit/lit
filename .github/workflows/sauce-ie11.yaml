@@ -13,9 +13,8 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-      SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
       BROWSERS: ie
+      CONCURRENT_FRAMES: 1
 
     steps:
       - uses: actions/checkout@v2
@@ -41,12 +40,18 @@ jobs:
           echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}" >> $GITHUB_ENV
       
       - name: Test Dev
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         # Retry once automatically.
         run: |
           cd packages/tests
           npm run test:dev || npm run test:dev
 
       - name: Test Prod
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         # Retry once automatically.
         run: |
           cd packages/tests
