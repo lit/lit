@@ -45,8 +45,8 @@ const devFiles = [
 ];
 
 const prodFiles = [
-  '../labs/observers/development/**/*_test.(js|html)',
-  '../labs/react/development/**/*_test.(js|html)',
+  // '../labs/observers/development/**/*_test.(js|html)',
+  // '../labs/react/development/**/*_test.(js|html)',
   '../labs/router/development/**/*_test.js',
   '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
   '../labs/ssr/development/**/*_test.(js|html)',
