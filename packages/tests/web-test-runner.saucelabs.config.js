@@ -84,7 +84,7 @@ const browserSettings = {
  * https://docs.saucelabs.com/secure-connections/sauce-connect/setup-configuration/high-availability/
  *
  */
-const build = `${buildId}__${mode}`;
+const build = `${buildId}__${mode}__${requestedBrowsers.join('_')}`;
 
 const sauceLauncher = createSauceLabsLauncher(
   {
