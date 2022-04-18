@@ -39,24 +39,10 @@ const files = [
   '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
   '../labs/ssr/development/**/*_test.(js|html)',
   '../labs/task/development/**/*_test.(js|html)',
-  '../lit-element/development/**/*_test.(js|html)',
+  // '../lit-element/development/**/*_test.(js|html)',
   '../lit-html/development/**/*_test.(js|html)',
   '../reactive-element/development/**/*_test.(js|html)',
 ];
-
-// const ieFiles = [
-//   '../labs/observers/development/**/*_test.(js|html)',
-//   '../labs/react/development/**/*_test.(js|html)',
-//   '../labs/router/development/**/*_test.js',
-//   '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
-//   '../labs/ssr/development/**/*_test.(js|html)',
-//   '../labs/task/development/**/*_test.(js|html)',
-//   '../lit-element/development/**/*_test.(js|html)',
-//   '../lit-html/development/**/*_test.(js|html)',
-//   '../reactive-element/development/**/*_test.(js|html)',
-// ];
-
-// const files = requestedBrowsers.includes('ie') ? ieFiles : trinityFiles;
 
 const browserSettings = {
   chromium: {
