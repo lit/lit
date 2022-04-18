@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      BROWSERS: preset:sauce
+      BROWSERS: firefox,chromium,safari,ie
 
     steps:
       - uses: actions/checkout@v2
