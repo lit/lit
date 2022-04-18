@@ -41,7 +41,7 @@ const trinityFiles = [
   '../labs/task/development/**/*_test.(js|html)',
   // '../lit-element/development/**/*_test.(js|html)',
   // '../lit-html/development/**/*_test.(js|html)',
-  '../reactive-element/development/**/*_test.(js|html)',
+  // '../reactive-element/development/**/*_test.(js|html)',
 ];
 
 const ieFiles = [

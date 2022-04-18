@@ -124,7 +124,7 @@ const wtrConfig = {
     // https://mochajs.org/api/mocha
     config: {
       ui: 'tdd',
-      timeout: '60000', // default 2000
+      timeout: '120000', // default 2000
     },
   },
 };
