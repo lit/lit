@@ -32,7 +32,7 @@ To test on Saucelabs, set the following env variables:
  * Some package tests should be run externally in Saucelabs.
  * When a package requires remote testing, add it to the list below.
  */
-const trinityFiles = [
+const devFiles = [
   '../labs/observers/development/**/*_test.(js|html)',
   '../labs/react/development/**/*_test.(js|html)',
   '../labs/router/development/**/*_test.js',
@@ -44,19 +44,19 @@ const trinityFiles = [
   '../reactive-element/development/**/*_test.(js|html)',
 ];
 
-const ieFiles = [
+const prodFiles = [
   '../labs/observers/development/**/*_test.(js|html)',
   '../labs/react/development/**/*_test.(js|html)',
   '../labs/router/development/**/*_test.js',
   '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
   '../labs/ssr/development/**/*_test.(js|html)',
   '../labs/task/development/**/*_test.(js|html)',
-  '../lit-element/development/**/*_test.(js|html)',
-  '../lit-html/development/**/*_test.(js|html)',
+  // '../lit-element/development/**/*_test.(js|html)',
+  // '../lit-html/development/**/*_test.(js|html)',
   '../reactive-element/development/**/*_test.(js|html)',
 ];
 
-const files = requestedBrowsers.includes('ie') ? ieFiles : trinityFiles;
+const files = mode === 'prod' ? prodFiles : devFiles;
 // console.log(requestedBrowsers);
 // console.log(requestedBrowsers.includes('ie'));
 // console.log(files);

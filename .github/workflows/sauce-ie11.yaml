@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BROWSERS: ie
-      CONCURRENT_FRAMES: 1
 
     steps:
       - uses: actions/checkout@v2
