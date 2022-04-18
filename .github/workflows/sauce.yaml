@@ -35,7 +35,7 @@ jobs:
 
       - name: Create tunnel name
         run: |
-          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}" >> $GITHUB_ENV
           echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}" >> $GITHUB_ENV
 
       - name: Test Dev

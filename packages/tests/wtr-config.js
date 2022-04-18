@@ -119,7 +119,7 @@ const wtrConfig = {
     }),
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  // filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {

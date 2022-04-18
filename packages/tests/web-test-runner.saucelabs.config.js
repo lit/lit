@@ -32,7 +32,7 @@ To test on Saucelabs, set the following env variables:
  * Some package tests should be run externally in Saucelabs.
  * When a package requires remote testing, add it to the list below.
  */
-const trinityFiles = [
+const files = [
   '../labs/observers/development/**/*_test.(js|html)',
   '../labs/react/development/**/*_test.(js|html)',
   '../labs/router/development/**/*_test.js',
@@ -44,22 +44,19 @@ const trinityFiles = [
   '../reactive-element/development/**/*_test.(js|html)',
 ];
 
-const ieFiles = [
-  // '../labs/observers/development/**/*_test.(js|html)',
-  // '../labs/react/development/**/*_test.(js|html)',
-  // '../labs/router/development/**/*_test.js',
-  // '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
-  // '../labs/ssr/development/**/*_test.(js|html)',
-  // '../labs/task/development/**/*_test.(js|html)',
-  // '../lit-element/development/**/*_test.(js|html)',
-  // '../lit-html/development/**/*_test.(js|html)',
-  '../reactive-element/development/**/*_test.(js|html)',
-];
+// const ieFiles = [
+//   '../labs/observers/development/**/*_test.(js|html)',
+//   '../labs/react/development/**/*_test.(js|html)',
+//   '../labs/router/development/**/*_test.js',
+//   '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
+//   '../labs/ssr/development/**/*_test.(js|html)',
+//   '../labs/task/development/**/*_test.(js|html)',
+//   '../lit-element/development/**/*_test.(js|html)',
+//   '../lit-html/development/**/*_test.(js|html)',
+//   '../reactive-element/development/**/*_test.(js|html)',
+// ];
 
-const files = requestedBrowsers.includes('ie') ? ieFiles : trinityFiles;
-// console.log(requestedBrowsers);
-// console.log(requestedBrowsers.includes('ie'));
-// console.log(files);
+// const files = requestedBrowsers.includes('ie') ? ieFiles : trinityFiles;
 
 const browserSettings = {
   chromium: {
@@ -140,10 +137,10 @@ export default {
   ...wtrConfig,
   browsers,
   files,
-  browserStartTimeout: 240000, // default 30000
+  browserStartTimeout: 180000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 240000, // default 120000
-  testsFinishTimeout: 240000, // default 20000
+  testsStartTimeout: 180000, // default 120000
+  testsFinishTimeout: 180000, // default 20000
 };
