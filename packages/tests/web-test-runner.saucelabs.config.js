@@ -33,15 +33,15 @@ To test on Saucelabs, set the following env variables:
  * When a package requires remote testing, add it to the list below.
  */
 const files = [
-  '../labs/observers/development/**/*_test.(js|html)',
-  '../labs/react/development/**/*_test.(js|html)',
-  '../labs/router/development/**/*_test.js',
-  '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
-  '../labs/ssr/development/**/*_test.(js|html)',
-  '../labs/task/development/**/*_test.(js|html)',
+  // '../labs/observers/development/**/*_test.(js|html)',
+  // '../labs/react/development/**/*_test.(js|html)',
+  // '../labs/router/development/**/*_test.js',
+  // '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
+  // '../labs/ssr/development/**/*_test.(js|html)',
+  // '../labs/task/development/**/*_test.(js|html)',
   // '../lit-element/development/**/*_test.(js|html)',
   '../lit-html/development/**/*_test.(js|html)',
-  '../reactive-element/development/**/*_test.(js|html)',
+  // '../reactive-element/development/**/*_test.(js|html)',
 ];
 
 const browserSettings = {
@@ -123,10 +123,10 @@ export default {
   ...wtrConfig,
   browsers,
   files,
-  browserStartTimeout: 180000, // default 30000
+  browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 180000, // default 120000
-  testsFinishTimeout: 180000, // default 20000
+  testsStartTimeout: 60000 * 10, // default 120000
+  testsFinishTimeout: 120000, // default 20000
 };
