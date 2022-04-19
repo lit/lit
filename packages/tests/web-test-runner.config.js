@@ -164,8 +164,13 @@ export default {
   rootDir: '../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
-    '../lit-html/development/**/*_test.(js|html)',
+    '../labs/observers/development/**/*_test.(js|html)',
+    '../labs/react/development/**/*_test.(js|html)',
+    '../labs/router/development/**/*_test.js',
+    '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
+    '../labs/task/development/**/*_test.(js|html)',
     '../lit-element/development/**/*_test.(js|html)',
+    '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],
   nodeResolve: true,
