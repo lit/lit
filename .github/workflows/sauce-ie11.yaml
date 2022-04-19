@@ -22,17 +22,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install playwright deps
-        run: npx playwright install-deps
-
       - name: NPM install
         run: npm ci
 
       - name: Lerna bootstrap
         run: npm run bootstrap
-
-      - name: Lint
-        run: npm run lint
 
       - name: Build
         run: npm run build
