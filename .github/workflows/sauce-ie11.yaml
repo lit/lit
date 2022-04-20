@@ -45,13 +45,4 @@ jobs:
         # Retry once automatically.
         run: |
           cd packages/tests
-          npm run test:dev || npm run test:dev
-
-      - name: Test Prod
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        # Retry once automatically.
-        run: |
-          cd packages/tests
-          npm run test:prod || npm run test:prod
+          npm run test || npm run test
