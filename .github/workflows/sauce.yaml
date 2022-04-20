@@ -38,18 +38,58 @@ jobs:
           echo "SAUCE_TUNNEL_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}" >> $GITHUB_ENV
           echo "SAUCE_BUILD_ID=lit-tests__${GITHUB_SHA}__${GITHUB_EVENT_NAME}" >> $GITHUB_ENV
 
-      - name: Test Dev
+      - name: Test Chromium Dev
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: chromium
         run: |
           cd packages/tests
           npm run test:dev
 
-      - name: Test Prod
+      - name: Test Firefox Dev
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: firefox
+        run: |
+          cd packages/tests
+          npm run test:dev
+
+      - name: Test Safari Dev
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: safari
+          CONCURRENT_FRAMES: 1
+        run: |
+          cd packages/tests
+          npm run test:dev
+      
+      - name: Test Chromium Prod
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: chromium
+        run: |
+          cd packages/tests
+          npm run test:prod
+
+      - name: Test Firefox Prod
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: firefox
+        run: |
+          cd packages/tests
+          npm run test:prod
+
+      - name: Test Safari Prod
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: safari
+          CONCURRENT_FRAMES: 1
         run: |
           cd packages/tests
           npm run test:prod
