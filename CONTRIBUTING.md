@@ -68,7 +68,7 @@ shared between different versions of the libraries on the same page.
 When submitting code, please take care to follow the conventions below:
 
 1. **`_` prefix for private properties** - Most`private`-annotated fields should
-   be prefixed prefixed with a single underscore, and will be minified
+   be prefixed with a single underscore, and will be minified
    ("mangled" by Terser) to a randomly-assigned short property name. See the
    following two cases for exceptions.
 2. **`_$` prefix for private properties on objects shared between versions** - Any
