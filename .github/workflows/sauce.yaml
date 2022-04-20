@@ -61,7 +61,6 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: safari
-          CONCURRENT_FRAMES: 1
         run: |
           cd packages/tests
           npm run test
