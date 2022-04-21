@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "publishConfig": {
     "access": "public"
   },
@@ -48,7 +48,7 @@
     "typescript": "^4.3.5"
   },
   "devDependencies": {
-    "@lit-labs/ssr": "^2.0.0",
+    "@lit-labs/ssr": "^2.1.0",
     "@lit/ts-transformers": "^1.1.0",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",

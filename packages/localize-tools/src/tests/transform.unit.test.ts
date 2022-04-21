@@ -8,6 +8,7 @@ import {litLocalizeTransform} from '../modes/transform.js';
 import ts from 'typescript';
 import {Message, makeMessageIdMap} from '../messages.js';
 import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import prettier from 'prettier';
 import {
@@ -344,6 +345,78 @@ test('msg(string(<b>msg(string)</b>)) translated', () => {
             '</b>!',
           ],
         },
+        {
+          name: 'bar',
+          contents: ['Mundo'],
+        },
+      ],
+    }
+  );
+});
+
+test('html(msg(string)) with msg as attr value', () => {
+  checkTransform(
+    'html`Hello <b bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
+    'html`Hello <b bar=${"World"}>World</b>!`;'
+  );
+});
+
+test('html(msg(string)) with msg as attr value translated', () => {
+  checkTransform(
+    'html`Hello <b bar=${msg("world", {id: "bar"})}>${"World"}</b>!`;',
+    'html`Hello <b bar=${`Mundo`}>World</b>!`;',
+    {
+      messages: [
+        {
+          name: 'bar',
+          contents: ['Mundo'],
+        },
+      ],
+    }
+  );
+});
+
+test('html(msg(string)) with multiple msg as attr value', () => {
+  checkTransform(
+    'html`<b foo=${msg("Hello", {id: "foo"})}>${"Hello"}</b>' +
+      '<b bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
+    'html`<b foo=${"Hello"}>Hello</b><b bar=${"World"}>World</b>!`;'
+  );
+});
+
+test('html(msg(string)) with multiple msg as attr value translated', () => {
+  checkTransform(
+    'html`<b foo=${msg("Hello", {id: "foo"})}>${"Hello"}</b>' +
+      '<b bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
+    'html`<b foo=${`Hola`}>Hello</b><b bar=${`Mundo`}>World</b>!`;',
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: ['Hola'],
+        },
+        {
+          name: 'bar',
+          contents: ['Mundo'],
+        },
+      ],
+    }
+  );
+});
+
+test('html(msg(string)) with msg as property attr value', () => {
+  checkTransform(
+    'html`Hello <b .bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
+    'html`Hello <b .bar=${"World"}>World</b>!`;'
+  );
+});
+
+test('html(msg(string)) with msg as property attr value translated', () => {
+  checkTransform(
+    'html`Hello <b .bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
+    'html`Hello <b .bar=${`Mundo`}>World</b>!`;',
+    {
+      messages: [
         {
           name: 'bar',
           contents: ['Mundo'],

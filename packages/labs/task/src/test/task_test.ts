@@ -7,7 +7,7 @@
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {initialState, Task, TaskStatus, TaskConfig} from '../task.js';
-import {generateElementName, nextFrame} from './test-helpers';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE

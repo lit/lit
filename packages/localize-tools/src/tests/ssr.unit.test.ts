@@ -5,6 +5,7 @@
  */
 
 import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {configureSsrLocalization} from '../ssr.js';
 import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';

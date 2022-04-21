@@ -130,12 +130,22 @@ packages/ts-transformers/*.js.map
 packages/ts-transformers/*.d.ts
 packages/ts-transformers/internal/
 packages/ts-transformers/tests/
+
+packages/labs/analyzer/lib/
+packages/labs/analyzer/test/
+
 packages/labs/context/development/
 packages/labs/context/test/
 packages/labs/context/node_modules/
 packages/labs/context/lib/
 packages/labs/context/index.*
 packages/labs/context/context.*
+
+packages/labs/analyzer/**/index.js
+packages/labs/analyzer/**/index.js.map
+packages/labs/analyzer/**/index.d.ts
+packages/labs/analyzer/**/index.d.ts.map
+
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
@@ -202,3 +212,4 @@ packages/labs/task/index.*
 packages/labs/task/task.*
 
 packages/localize/testdata/
+packages/localize/examples/
