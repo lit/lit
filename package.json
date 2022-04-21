@@ -23,6 +23,7 @@
     "release": "npm run bootstrap && npm run build && npm run changeset publish"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.17.0",
     "@changesets/cli": "^2.16.0",
     "@changesets/get-github-info": "^0.5.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
@@ -31,7 +32,6 @@
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
     "as-table": "^1.0.55",
-    "babel-eslint": "^10.1.0",
     "chalk": "^4.1.0",
     "eslint": "^8.13.0",
     "eslint-plugin-import": "^2.26.0",
