@@ -12,6 +12,8 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
+    env:
+      BROWSERS: preset:sauce
 
     steps:
       - uses: actions/checkout@v2
@@ -41,5 +43,14 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce
-        run: npm run test
+        run: |
+          cd packages/tests
+          npm run test
+
+      - name: Test SSR
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
