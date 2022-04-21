@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "composite": true,
     "target": "es2020",
-    "module": "esnext",
+    "module": "es2022",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "lib": ["es2020"],
@@ -12,12 +11,18 @@
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
     "rootDir": "src/",
-    "outDir": "lib/",
+    "outDir": "./",
     "declaration": true,
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "lib/.tsbuildinfo"
+    "tsBuildInfoFile": "./lib/.tsbuildinfo",
+    "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
-  "references": [{"path": "../labs/ssr"}]
+  "include": ["src/**/*"],
+  "exclude": [],
+  "references": [
+    {
+      "path": "../../localize-tools"
+    }
+  ]
 }

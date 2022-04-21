@@ -138,6 +138,13 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/cli/lib/
+packages/labs/cli/bin/
+packages/labs/cli/index.js
+packages/labs/cli/index.js.map
+packages/labs/cli/index.d.ts
+packages/labs/cli/index.d.ts.map
+
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js

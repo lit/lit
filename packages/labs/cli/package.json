@@ -1,0 +1,50 @@
+{
+  "name": "@lit-labs/cli",
+  "description": "Tooling for Lit development",
+  "version": "0.0.0",
+  "author": "Google LLC",
+  "bin": {
+    "lit": "./bin/lit.js"
+  },
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "lib/index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "uvu test '.*_test\\.js$'"
+  },
+  "dependencies": {
+    "@lit/localize-tools": "^0.6.1",
+    "command-line-args": "^5.2.1",
+    "command-line-commands": "^3.0.2",
+    "command-line-usage": "^6.1.1",
+    "tslib": "^1.14.1"
+  },
+  "devDependencies": {
+    "@types/command-line-args": "^5.2.0",
+    "@types/command-line-commands": "^2.0.1",
+    "@types/command-line-usage": "^5.0.2",
+    "chai": "^4.3.4",
+    "eslint": "^5.16.0",
+    "globby": "^10.0.2",
+    "stdout-stderr": "^0.1.13",
+    "typescript": "~4.6.2",
+    "uvu": "^0.5.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/npm-shrinkwrap.json"
+  ],
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit"
+  ],
+  "license": "BSD-3-Clause",
+  "types": "lib/index.d.ts"
+}
