@@ -1239,6 +1239,7 @@ suite('lit-html', () => {
       let event: Event | undefined = undefined;
       const listener = function (this: any, e: any) {
         event = e;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         thisValue = this;
       };
       const host = {} as EventTarget;
@@ -1263,6 +1264,7 @@ suite('lit-html', () => {
       let thisValue;
       const listener = {
         handleEvent(_e: Event) {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           thisValue = this;
         },
       };
@@ -2282,6 +2284,7 @@ suite('lit-html', () => {
         return 'initial';
       }
       override update(_part: Part, [promise]: Parameters<this['render']>) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         aDirectiveInst = this;
         if (promise !== this.promise) {
           this.promise = promise;
