@@ -42,4 +42,6 @@ jobs:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: preset:sauce
-        run: npm run test
+        run: |
+          cd packages/tests
+          npm run test
