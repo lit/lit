@@ -12,11 +12,6 @@ import {ContextCallback} from './context-request-event.js';
 type Disposer = () => void;
 
 /**
- * A tuple of context callback, and its disposer
- */
-type CallbackRecord<T> = [ContextCallback<T>, Disposer];
-
-/**
  * A simple class which stores a value, and triggers registered callbacks when the
  * value is changed via its setter.
  *
@@ -25,7 +20,7 @@ type CallbackRecord<T> = [ContextCallback<T>, Disposer];
  * for a number of use cases.
  */
 export class ValueNotifier<T> {
-  private callbacks: Set<CallbackRecord<T>> = new Set();
+  private callbacks: Map<ContextCallback<T>, Disposer> = new Map();
 
   private _value!: T;
   public get value(): T {
@@ -53,20 +48,18 @@ export class ValueNotifier<T> {
   }
 
   updateObservers = (): void => {
-    this.callbacks.forEach(([callback, disposer]) =>
-      callback(this._value, disposer)
-    );
+    for (const [callback, disposer] of this.callbacks) {
+      callback(this._value, disposer);
+    }
   };
 
   addCallback(callback: ContextCallback<T>, subscribe?: boolean): void {
     if (subscribe) {
-      const record: CallbackRecord<T> = [
-        callback,
-        () => {
-          this.callbacks.delete(record);
-        },
-      ];
-      this.callbacks.add(record);
+      if (!this.callbacks.has(callback)) {
+        this.callbacks.set(callback, () => {
+          this.callbacks.delete(callback);
+        });
+      }
     }
     callback(this.value);
   }

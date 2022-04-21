@@ -16,4 +16,4 @@ export {ContextProvider} from './lib/controllers/context-provider.js';
 export {ContextRoot} from './lib/context-root.js';
 
 export {contextProvider} from './lib/decorators/context-provider.js';
-export {contextRequest} from './lib/decorators/context-request.js';
+export {contextProvided} from './lib/decorators/context-provided.js';

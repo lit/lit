@@ -6,10 +6,7 @@
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
-import {
-  ContextConsumer,
-  DispatchOptions,
-} from '../controllers/context-consumer';
+import {ContextConsumer} from '../controllers/context-consumer.js';
 import {ContextKey} from '../context-key.js';
 
 /*
@@ -35,7 +32,7 @@ import {ContextKey} from '../context-key.js';
  * import {loggerContext, Logger} from 'community-protocols/logger';
  *
  * class MyElement {
- *   @contextRequest({context: loggerContext})
+ *   @contextProvided({context: loggerContext})
  *   logger?: Logger;
  *
  *   doThing() {
@@ -45,13 +42,11 @@ import {ContextKey} from '../context-key.js';
  * ```
  * @category Decorator
  */
-export function contextRequest<ValueType>({
+export function contextProvided<ValueType>({
   context: context,
-  dispatchOn,
   subscribe,
 }: {
   context: ContextKey<unknown, ValueType>;
-  dispatchOn?: DispatchOptions;
   subscribe?: boolean;
 }): <K extends PropertyKey>(
   protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
@@ -69,7 +64,6 @@ export function contextRequest<ValueType>({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- have to force the property on the type
             (element as any)[name] = value;
           },
-          dispatchOn,
           subscribe
         );
       });

@@ -33,7 +33,6 @@ class MultipleContextConsumer extends LitElement {
       (value) => {
         this.value = value;
       },
-      'connected',
       true // allow multiple values
     );
   }

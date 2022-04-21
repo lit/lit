@@ -63,24 +63,15 @@ import {LitElement} from 'lit';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
-  @property({attribute: false})
-  public logger?: Logger;
-
-  public constructor() {
-    // add the consumer controller
-    new ContextConsumer(
-      this,
-      loggerContext,
-      // pass a callback to update our property when we receive an update
-      (value) => {
-        this.logger = value;
-      },
-      true // pass true to get updates if the logger changes
-    );
-  }
+  public logger = new ContextConsumer(
+    this,
+    loggerContext,
+    undefined, // don't need to pass a callback
+    true // pass true to get updates if the logger changes
+  );
 
   private doThing() {
-    this.logger?.log('a thing was done');
+    this.logger.value?.log('a thing was done');
   }
 }
 ```

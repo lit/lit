@@ -8,14 +8,14 @@ import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
 import {ContextKey} from '../index.js';
-import {contextRequest} from '../lib/decorators/context-request.js';
+import {contextProvided} from '../lib/decorators/context-provided.js';
 import {contextProvider} from '../lib/decorators/context-provider.js';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
 
 class ContextConsumerElement extends LitElement {
-  @contextRequest({context: simpleContext, subscribe: true})
+  @contextProvided({context: simpleContext, subscribe: true})
   @property({type: Number})
   public value = 0;
 

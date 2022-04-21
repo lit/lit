@@ -68,12 +68,7 @@ export class ContextProvider<T extends ContextKey<unknown, unknown>>
   }
 
   hostConnected(): void {
-    this.attachListeners();
     // emit an event to signal a provider is available for this context
     this.host.dispatchEvent(new ContextProviderEvent(this.context));
-  }
-  hostDisconnected(): void {
-    this.host.removeEventListener('context-request', this.onContextRequest);
-    this.clearCallbacks();
   }
 }

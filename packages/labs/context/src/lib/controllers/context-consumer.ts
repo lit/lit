@@ -8,8 +8,6 @@ import {ContextRequestEvent} from '../context-request-event.js';
 import {ContextKey, ContextType} from '../context-key.js';
 import {ReactiveController, ReactiveElement} from 'lit';
 
-export type DispatchOptions = 'connected' | 'updated' | 'raf' | 'microtask';
-
 /**
  * ContextConsumer is a ReactiveController which binds a custom-element's
  * lifecycle to the Context API. When an element is connected to the DOM it
@@ -25,14 +23,15 @@ export class ContextConsumer<
 {
   private provided = false;
 
+  public value?: ContextType<Context> = undefined;
+
   constructor(
     protected host: HostElement,
     private context: Context,
-    private callback: (
+    private callback?: (
       value: ContextType<Context>,
       dispose?: () => void
     ) => void,
-    private dispatchOn: DispatchOptions = 'connected',
     private subscribe: boolean = false
   ) {
     this.host.addController(this);
@@ -41,27 +40,12 @@ export class ContextConsumer<
   private unsubscribe?: () => void;
 
   hostConnected(): void {
-    this.scheduleRequest(this.dispatchOn === 'connected');
+    this.dispatchRequest();
   }
   hostDisconnected(): void {
     if (this.unsubscribe) {
       this.unsubscribe();
       this.unsubscribe = undefined;
-    }
-  }
-  hostUpdated(): void {
-    if (!this.provided && this.dispatchOn === 'updated') {
-      this.scheduleRequest(true);
-    }
-  }
-
-  private scheduleRequest(immediate: boolean) {
-    if (immediate) {
-      this.dispatchRequest();
-    } else if (this.dispatchOn === 'raf') {
-      requestAnimationFrame(() => this.dispatchRequest());
-    } else if (this.dispatchOn === 'microtask') {
-      queueMicrotask(() => this.dispatchRequest());
     }
   }
 
@@ -84,11 +68,18 @@ export class ContextConsumer<
             }
           }
 
+          // store the value so that it can be retrieved from the controller
+          this.value = value;
+          // schedule an update in case this value is used in a template
+          this.host.requestUpdate();
+
           // only invoke callback if we are either expecting updates or have not yet
           // been provided a value
           if (!this.provided || this.subscribe) {
             this.provided = true;
-            this.callback(value, unsubscribe);
+            if (this.callback) {
+              this.callback(value, unsubscribe);
+            }
           }
 
           this.unsubscribe = unsubscribe;
