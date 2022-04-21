@@ -37,7 +37,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-no-only-tests": "^2.4.0",
     "husky": "^7.0.2",
-    "ignore-sync": "^4.0.0",
+    "ignore-sync": "^5.0.1",
     "lerna": "^4.0.0",
     "lint-staged": "^11.1.2",
     "prettier": "^2.4.1",
