@@ -13,27 +13,27 @@ export const globalOptions: OptionDefinition[] = [
     description: 'turn on debugging output',
     type: Boolean,
     alias: 'v',
-    group: 'global',
+    // group: 'global',
   },
   {
     name: 'help',
     description: 'print out helpful usage information',
     type: Boolean,
     alias: 'h',
-    group: 'global',
+    // group: 'global',
   },
   {
     name: 'quiet',
     description: 'silence output',
     type: Boolean,
     alias: 'q',
-    group: 'global',
+    // group: 'global',
   },
   {
     name: 'version',
     description: 'Print version info.',
     type: Boolean,
-    group: 'global',
+    // group: 'global',
   },
 ];
 

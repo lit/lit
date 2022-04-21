@@ -9,6 +9,7 @@ import commandLineUsage from 'command-line-usage';
 
 import {globalOptions} from '../options.js';
 import {Command, CommandOptions} from '../command.js';
+import {LitCli} from '../lit-cli.js';
 
 const CLI_TITLE = chalk.bold.underline('Lit CLI');
 // const CLI_DESCRIPTION = '...';
@@ -18,7 +19,7 @@ const HELP_HEADER = `${CLI_TITLE}
 
 ${CLI_USAGE}`;
 
-export const makeHelpCommand = (commands: Map<String, Command>): Command => {
+export const makeHelpCommand = (cli: LitCli): Command => {
   const generateGeneralUsage = () => {
     return commandLineUsage([
       {
@@ -27,7 +28,7 @@ export const makeHelpCommand = (commands: Map<String, Command>): Command => {
       },
       {
         header: 'Available Commands',
-        content: [...commands.values()].map((command) => {
+        content: [...cli.commands.values()].map((command) => {
           return {name: command.name, summary: command.description};
         }),
       },
@@ -39,22 +40,39 @@ export const makeHelpCommand = (commands: Map<String, Command>): Command => {
     ]);
   };
 
-  const generateCommandUsage = async (command: Command) => {
-    const extraUsageGroups = (await command.getUsageSections?.()) ?? [];
+  const generateCommandUsage = (
+    command: Command,
+    commandNames: Array<string>
+  ) => {
     const usageGroups: commandLineUsage.Section[] = [
       {
-        header: `lit ${command.name}`,
+        header: `lit ${commandNames.join(' ')}`,
         content: command.description,
       },
-      {header: 'Command Options', optionList: command.options},
-      {header: 'Global Options', optionList: globalOptions},
     ];
-
     if (command.aliases !== undefined && command.aliases.length > 0) {
-      usageGroups.splice(1, 0, {header: 'Alias(es)', content: command.aliases});
+      usageGroups.push({header: 'Alias(es)', content: command.aliases});
     }
-
-    return commandLineUsage(usageGroups.concat(extraUsageGroups));
+    if (command.getUsageSections !== undefined) {
+      usageGroups.push(...command.getUsageSections());
+    }
+    if (command.subcommands !== undefined) {
+      usageGroups.push({
+        header: 'Sub-Commands',
+        content: command.subcommands.map((s) => ({
+          name: s.name,
+          summary: s.description,
+        })),
+      });
+    }
+    if (command.options !== undefined) {
+      usageGroups.push({
+        header: 'Command Options',
+        optionList: command.options,
+      });
+    }
+    usageGroups.push({header: 'Global Options', optionList: globalOptions});
+    return commandLineUsage(usageGroups);
   };
 
   return {
@@ -64,27 +82,31 @@ export const makeHelpCommand = (commands: Map<String, Command>): Command => {
       {
         name: 'command',
         description: 'The command to display help for',
+        type: String,
+        multiple: true,
         defaultOption: true,
       },
     ],
 
     async run(options: CommandOptions, console: Console) {
-      const commandName = options['command'] as string | null;
-      if (commandName === null) {
+      const commandNames = options['command'] as Array<string> | null;
+
+      if (commandNames == null) {
         console.debug('no command given, printing general help...', {options});
         console.log(generateGeneralUsage());
         return;
       }
 
-      const command = commands.get(commandName);
-      if (command === undefined) {
-        console.error(`'${commandName}' is not an available command.`);
+      const result = cli.getCommand(cli.commands, commandNames);
+      if ('invalidCommand' in result) {
+        console.error(
+          `'${commandNames.join(' ')}' is not an available command.`
+        );
         console.log(generateGeneralUsage());
         return;
       }
-
-      console.debug(`printing help for command '${commandName}'...`);
-      console.log(await generateCommandUsage(command));
+      console.debug(`printing help for command '${commandNames}'...`);
+      console.log(generateCommandUsage(result.command, commandNames));
     },
   };
 };

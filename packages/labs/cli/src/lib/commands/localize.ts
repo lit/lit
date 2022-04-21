@@ -13,7 +13,13 @@ export const localize: Command = {
     {
       name: 'extract',
       description: 'Extracts lit-localize messages',
-      options: [{name: 'config', defaultValue: './lit-localize.json'}],
+      options: [
+        {
+          name: 'config',
+          description: 'The path to the localize config file',
+          defaultValue: './lit-localize.json',
+        },
+      ],
       async run({config}: {config: string}, console: Console) {
         const extract = await import('../localize/extract.js');
         await extract.run(config, console);
@@ -22,7 +28,13 @@ export const localize: Command = {
     {
       name: 'build',
       description: 'Build lit-localize projects',
-      options: [{name: 'config', defaultValue: './lit-localize.json'}],
+      options: [
+        {
+          name: 'config',
+          description: 'The path to the localize config file',
+          defaultValue: './lit-localize.json',
+        },
+      ],
       async run({config}: {config: string}, console: Console) {
         const build = await import('../localize/build.js');
         await build.run(config, console);

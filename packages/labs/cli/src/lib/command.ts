@@ -45,7 +45,7 @@ export interface Command {
   /**
    * Documentation to append onto the output of `lit help commandName`.
    */
-  getUsageSections?(): Promise<Section[]>;
+  getUsageSections?(): Section[];
 }
 
 /**

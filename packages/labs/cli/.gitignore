@@ -1,5 +1,6 @@
 /lib/
 /bin/
+/test/
 /index.js
 /index.js.map
 /index.d.ts

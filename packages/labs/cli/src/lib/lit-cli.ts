@@ -14,30 +14,39 @@ import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
 import {createRequire} from 'module';
 
+export interface Options {
+  console?: LitConsole;
+}
+
 export class LitCli {
   commands: Map<string, Command> = new Map();
   args: string[];
-  console = new LitConsole(process.stdout, process.stderr);
+  console: LitConsole;
 
-  constructor(args: string[]) {
+  constructor(args: string[], options?: Options) {
+    this.console =
+      options?.console ?? new LitConsole(process.stdout, process.stderr);
+    this.console.logLevel = 'info';
+
     // If the "--quiet"/"-q" flag is ever present, set our global logging
     // to quiet mode. Also set the level on the logger we've already created.
     if (args.indexOf('--quiet') > -1 || args.indexOf('-q') > -1) {
-      this.console.setQuiet();
+      this.console.logLevel = 'error';
     }
 
     // If the "--verbose"/"-v" flag is ever present, set our global logging
     // to verbose mode. Also set the level on the logger we've already created.
     if (args.indexOf('--verbose') > -1 || args.indexOf('-v') > -1) {
-      this.console.setVerbose();
+      this.console.logLevel = 'debug';
     }
 
     this.args = args;
+
     this.console.debug('got args:', {args: args});
 
     this.addCommand(localize);
     // This must be the last command added
-    this.addCommand(makeHelpCommand(this.commands));
+    this.addCommand(makeHelpCommand(this));
   }
 
   addCommand(command: Command) {
@@ -63,7 +72,7 @@ export class LitCli {
       return;
     }
 
-    const result = this._getCommand(this.commands);
+    const result = this.getCommand(this.commands, this.args);
     if ('invalidCommand' in result) {
       return helpCommand.run({command: result.invalidCommand}, this.console);
     } else {
@@ -80,6 +89,7 @@ export class LitCli {
         command.options ?? [],
         globalOptions,
       ]);
+
       const commandOptions = commandLineArgs(commandDefinitions, {
         argv: commandArgs,
       });
@@ -100,24 +110,28 @@ export class LitCli {
     }
   }
 
-  private _getCommand(
+  getCommand(
     commands: Map<string, Command>,
-    parentName = ''
+    args: ReadonlyArray<string>,
+    parentCommandNames: Array<string> = []
   ):
     | {commandName: string; command: Command; argv: string[]}
     | {invalidCommand: string} {
     try {
-      const parsedArgs = commandLineCommands([...commands.keys()], this.args);
+      const parsedArgs = commandLineCommands([...commands.keys()], [...args]);
       const commandName = parsedArgs.command!;
       const command = commands.get(commandName)!;
-      if (command.subcommands !== undefined) {
+      if (command.subcommands !== undefined && parsedArgs.argv.length > 0) {
         const subcommands = new Map<string, Command>(
           command.subcommands.map((c) => [c.name, c])
         );
-        return this._getCommand(subcommands, parentName + ' ' + commandName);
+        return this.getCommand(subcommands, parsedArgs.argv, [
+          ...parentCommandNames,
+          commandName,
+        ]);
       }
       return {
-        commandName: parentName + ' ' + commandName,
+        commandName: [...parentCommandNames, commandName].join(' '),
         command,
         argv: parsedArgs.argv,
       };
@@ -126,7 +140,9 @@ export class LitCli {
       // We need a valid command name to do anything. If the given
       // command is invalid, run the generalized help command.
       if (error.name === 'INVALID_COMMAND') {
-        return {invalidCommand: parentName + ' ' + error.command};
+        return {
+          invalidCommand: [...parentCommandNames, error.command].join(' '),
+        };
       }
       // If an unexpected error occurred, propagate it
       throw error;
