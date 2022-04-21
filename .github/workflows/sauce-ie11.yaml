@@ -12,7 +12,9 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
-
+    env:
+      BROWSERS: preset:sauce-ie11
+  
     steps:
       - uses: actions/checkout@v2
 
@@ -35,6 +37,16 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: preset:sauce-ie11
         # Retry once automatically.
-        run: npm run test || npm run test
+        run: |
+          cd packages/tests
+          npm run test || npm run test
+
+      - name: Test SSR
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        # Retry once automatically.
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration || npm run test:integration
