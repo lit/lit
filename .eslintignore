@@ -139,7 +139,6 @@ packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
 packages/labs/cli/lib/
-packages/labs/cli/bin/
 packages/labs/cli/test/
 packages/labs/cli/index.js
 packages/labs/cli/index.js.map

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Command} from '../command.js';
+import {Command, CommandOptions} from '../command.js';
 
 export const localize: Command = {
   name: 'localize',
@@ -41,7 +41,13 @@ export const localize: Command = {
       },
     },
   ],
-  async run() {
-    throw new Error('must use extract or build');
+  async run(_options: CommandOptions, console: Console) {
+    console.error(
+      'Use one of the localize subcommands, like `lit localize build` or ' +
+        '`lit localize extract`. Run `lit help localize` for more help.'
+    );
+    return {
+      exitCode: 1,
+    };
   },
 };

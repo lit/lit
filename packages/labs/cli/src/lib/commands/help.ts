@@ -11,13 +11,8 @@ import {globalOptions} from '../options.js';
 import {Command, CommandOptions} from '../command.js';
 import {LitCli} from '../lit-cli.js';
 
-const CLI_TITLE = chalk.bold.underline('Lit CLI');
-// const CLI_DESCRIPTION = '...';
-const CLI_USAGE = 'Usage: `lit <command> [options ...]`';
-
-const HELP_HEADER = `${CLI_TITLE}
-
-${CLI_USAGE}`;
+const HELP_HEADER = `${chalk.bold.underline('Lit CLI')}
+Usage: lit <command> [options ...]`;
 
 export const makeHelpCommand = (cli: LitCli): Command => {
   const generateGeneralUsage = () => {

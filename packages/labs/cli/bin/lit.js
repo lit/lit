@@ -1,4 +1,4 @@
-#!node
+#!/usr/bin/env node
 
 /**
  * @license
@@ -8,22 +8,19 @@
 
 import {LitCli} from '../lib/lit-cli.js';
 
-process.on('uncaughtException', (error: null | undefined | Partial<Error>) => {
-  console.error(`Uncaught exception: ${error}`);
-  if (error?.stack !== undefined) {
-    console.error(error.stack);
-  }
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (error: null | undefined | Partial<Error>) => {
+// eslint-disable-next-line no-undef
+process.on('unhandledRejection', (error) => {
   console.error(`Promise rejection: ${error}`);
   if (error?.stack !== undefined) {
     console.error(error.stack);
   }
+  // eslint-disable-next-line no-undef
   process.exit(1);
 });
 
+// eslint-disable-next-line no-undef
 const args = process.argv.slice(2);
 const cli = new LitCli(args);
-await cli.run();
+const result = await cli.run();
+// eslint-disable-next-line no-undef
+process.exit(result?.exitCode ?? 0);

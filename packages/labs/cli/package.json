@@ -3,17 +3,20 @@
   "description": "Tooling for Lit development",
   "version": "0.0.0",
   "author": "Google LLC",
+  "license": "BSD-3-Clause",
   "bin": {
     "lit": "./bin/lit.js"
   },
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "repository": "lit/lit",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "uvu test '.*_test\\.js$'"
+    "test": "uvu test '.*_test\\.js$'",
+    "prepublishOnly": "npm run shrinkwrap"
   },
   "dependencies": {
     "@lit/localize-tools": "^0.6.1",
@@ -34,17 +37,19 @@
     "uvu": "^0.5.3"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=14.8.0"
   },
   "files": [
-    "/bin",
-    "/lib",
-    "/npm-shrinkwrap.json"
+    "bin",
+    "lib",
+    "npm-shrinkwrap.json"
   ],
+  "exports": "./index.js",
   "homepage": "https://github.com/lit/lit",
   "keywords": [
-    "lit"
-  ],
-  "license": "BSD-3-Clause",
-  "types": "lib/index.d.ts"
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement"
+  ]
 }

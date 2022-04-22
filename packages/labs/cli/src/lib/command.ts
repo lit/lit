@@ -30,7 +30,7 @@ export interface Command {
   name: string;
 
   /**
-   * Any aliases, such as shortnads, for the command.
+   * Any aliases, such as shorthands, for the command.
    */
   aliases?: string[];
 
