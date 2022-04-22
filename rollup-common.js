@@ -30,6 +30,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/task': '_$J',
   '@lit-labs/router': '_$K',
   '@lit-labs/observers': '_$L',
+  '@lit-labs/parts': '_$M',
 };
 
 // Validate prefix uniqueness
