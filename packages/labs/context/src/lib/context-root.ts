@@ -76,6 +76,10 @@ export class ContextRoot {
   private onContextRequest = (
     ev: ContextRequestEvent<ContextKey<unknown, unknown>>
   ) => {
+    // events that are not subscribing should not be captured
+    if (!ev.subscribe) {
+      return;
+    }
     // store a weakref to this element under the context key
     const request: PendingContextRequest = {
       element: ev.target as HTMLElement,
