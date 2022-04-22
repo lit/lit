@@ -11,16 +11,12 @@ import {ContextProviderEvent} from './controllers/context-provider.js';
 type UnknownContextKey = ContextKey<unknown, unknown>;
 
 /**
- * Makes all object properties in a type into WeakRefs
- */
-type MakeWeak<T> = {[P in keyof T]: T[P] extends object ? WeakRef<T[P]> : T[P]};
-
-/**
  * A context request, with associated source element, with all objects as weak references.
  */
-type PendingContextRequest = MakeWeak<
-  Omit<ContextRequest<UnknownContextKey>, 'context'>
-> & {element: WeakRef<HTMLElement>};
+type PendingContextRequest = Omit<
+  ContextRequest<UnknownContextKey>,
+  'context' | 'subscribe'
+> & {element: HTMLElement};
 
 /**
  * A ContextRoot can be used to gather unsatisfied context requests and redispatch these
@@ -66,13 +62,12 @@ export class ContextRoot {
 
     // loop over all pending requests and re-dispatch them from their source
     pendingRequests.forEach((request) => {
-      const element = request.element.deref();
-      const callback = request.callback.deref();
-      const subscribe = request.subscribe;
+      const element = request.element;
+      const callback = request.callback;
       // redispatch if we still have all the parts of the request
-      if (element && callback) {
+      if (element) {
         element.dispatchEvent(
-          new ContextRequestEvent(ev.context, callback, subscribe)
+          new ContextRequestEvent(ev.context, callback, true)
         );
       }
     });
@@ -83,9 +78,8 @@ export class ContextRoot {
   ) => {
     // store a weakref to this element under the context key
     const request: PendingContextRequest = {
-      element: new WeakRef(ev.target as HTMLElement),
-      callback: new WeakRef(ev.callback),
-      subscribe: ev.subscribe,
+      element: ev.target as HTMLElement,
+      callback: ev.callback,
     };
     let pendingContextRequests = this.pendingContextRequests.get(ev.context);
     if (!pendingContextRequests) {
