@@ -145,6 +145,12 @@ packages/labs/cli/index.js.map
 packages/labs/cli/index.d.ts
 packages/labs/cli/index.d.ts.map
 
+packages/labs/context/development/
+packages/labs/context/test/
+packages/labs/context/node_modules/
+packages/labs/context/lib/
+packages/labs/context/index.*
+packages/labs/context/context.*
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js
