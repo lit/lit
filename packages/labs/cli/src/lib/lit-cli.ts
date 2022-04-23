@@ -74,7 +74,7 @@ export class LitCli {
 
     const result = this.getCommand(this.commands, this.args);
     if ('invalidCommand' in result) {
-      return helpCommand.run({command: result.invalidCommand}, this.console);
+      return helpCommand.run({command: [result.invalidCommand]}, this.console);
     } else {
       const commandName = result.commandName;
       const command = result.command;
@@ -136,12 +136,15 @@ export class LitCli {
         argv: parsedArgs.argv,
       };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       // We need a valid command name to do anything. If the given
       // command is invalid, run the generalized help command.
-      if (error.name === 'INVALID_COMMAND') {
+      if (error instanceof Error && error.name === 'INVALID_COMMAND') {
         return {
-          invalidCommand: [...parentCommandNames, error.command].join(' '),
+          invalidCommand: [
+            ...parentCommandNames,
+            (error as unknown as {command: string}).command,
+          ].join(' '),
         };
       }
       // If an unexpected error occurred, propagate it
