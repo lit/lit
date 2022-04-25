@@ -49,4 +49,4 @@ jobs:
         # Retry once automatically.
         run: |
           cd packages/labs/ssr
-          DESTINATION=remote npm run test:integration:remote || DESTINATION=remote npm run test:integration:remote
+          DESTINATION=remote npm run test:integration || DESTINATION=remote npm run test:integration
