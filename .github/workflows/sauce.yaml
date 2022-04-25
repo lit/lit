@@ -55,10 +55,10 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           BROWSERS: sauce:macOS 10.15/safari@latest
         run: |
-          cd packages/labs/ssr
-          npm run test:integration
+          cd packages/tests
+          npm run test
 
-      - name: Test SSR chromium
+      - name: Test chromium SSR
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -67,7 +67,7 @@ jobs:
           cd packages/labs/ssr
           npm run test:integration
 
-      - name: Test SSR firefox
+      - name: Test firefox SSR
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
@@ -76,7 +76,7 @@ jobs:
           cd packages/labs/ssr
           npm run test:integration
 
-      - name: Test SSR safari
+      - name: Test safari SSR
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
