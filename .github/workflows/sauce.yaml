@@ -47,4 +47,4 @@ jobs:
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           cd packages/labs/ssr
-          npm run test:integration:remote
+          DESTINATION=remote npm run test:integration
