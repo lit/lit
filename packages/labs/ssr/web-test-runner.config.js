@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import baseConfig from '../../tests/web-test-runner.config.js';
-import baseSaucelabsConfig from '../../tests/web-test-runner.saucelabs.config.js';
+import localConfig from '../../tests/web-test-runner.config.js';
+import remoteConfig from '../../tests/web-test-runner.remote.config.js';
 
 import {startServer} from './test/integration/server/server.js';
 
 const config =
-  process.env.DESTINATION === 'remote' ? baseSaucelabsConfig : baseConfig;
+  process.env.DESTINATION === 'remote' ? remoteConfig : localConfig;
 const ssrServer = startServer();
 export default {
   ...config,
