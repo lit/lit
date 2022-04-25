@@ -138,6 +138,13 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/cli/lib/
+packages/labs/cli/test/
+packages/labs/cli/index.js
+packages/labs/cli/index.js.map
+packages/labs/cli/index.d.ts
+packages/labs/cli/index.d.ts.map
+
 packages/labs/context/development/
 packages/labs/context/test/
 packages/labs/context/node_modules/
