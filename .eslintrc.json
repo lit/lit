@@ -39,7 +39,9 @@
         "check-version-tracker.js",
         "rollup-common.js",
         "rollup.config.js",
-        "web-test-runner.config.js"
+        "web-test-runner.config.js",
+        "web-test-runner.saucelabs.config.js",
+        "wtr-config.js"
       ],
       "env": {
         "node": true
