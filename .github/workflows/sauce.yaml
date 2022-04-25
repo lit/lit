@@ -12,8 +12,6 @@ jobs:
     continue-on-error: true
 
     runs-on: ubuntu-latest
-    env:
-      BROWSERS: preset:sauce
 
     steps:
       - uses: actions/checkout@v2
@@ -33,18 +31,56 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
+      - name: Test chrome
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: sauce:Windows 10/Chrome@latest-3
         run: |
           cd packages/tests
           npm run test
 
-      - name: Test SSR
+      - name: Test firefox
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: sauce:Windows 10/Firefox@78
+        run: |
+          cd packages/tests
+          npm run test
+
+      - name: Test safari
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: sauce:macOS 10.15/safari@latest
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
+
+      - name: Test SSR chromium
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: sauce:Windows 10/Chrome@latest-3
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
+
+      - name: Test SSR firefox
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: sauce:Windows 10/Firefox@78
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
+
+      - name: Test SSR safari
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: sauce:macOS 10.15/safari@latest
         run: |
           cd packages/labs/ssr
           npm run test:integration
