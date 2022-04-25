@@ -40,7 +40,7 @@
         "rollup-common.js",
         "rollup.config.js",
         "web-test-runner.config.js",
-        "web-test-runner.saucelabs.config.js",
+        "web-test-runner.remote.config.js",
         "wtr-config.js"
       ],
       "env": {

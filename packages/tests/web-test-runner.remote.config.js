@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {wtrConfig, mode} from './wtr-config.js';
+import {wtrConfig} from './wtr-config.js';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 
 const SAUCE = 'preset:sauce';
@@ -14,7 +14,6 @@ const SAUCE = 'preset:sauce';
  */
 const user = process.env.SAUCE_USERNAME?.trim() || '';
 const key = process.env.SAUCE_ACCESS_KEY?.trim() || '';
-const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [SAUCE];
 
 if (!user || !key) {
   throw new Error(`
@@ -57,6 +56,7 @@ const sauceLauncher = createSauceLabsLauncher({
 /**
  * Build browser launchers
  */
+const requestedBrowsers = process.env.BROWSERS?.trim().split(',') || [SAUCE];
 const browsers = [];
 for (const requestedBrowser of requestedBrowsers) {
   // example: BROWSERS=chromium,firefox npm run tests

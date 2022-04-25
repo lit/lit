@@ -5,12 +5,15 @@
  */
 
 import baseConfig from '../../tests/web-test-runner.config.js';
+import baseSaucelabsConfig from '../../tests/web-test-runner.saucelabs.config.js';
 
 import {startServer} from './test/integration/server/server.js';
 
+const config =
+  process.env.DESTINATION === 'remote' ? baseSaucelabsConfig : baseConfig;
 const ssrServer = startServer();
 export default {
-  ...baseConfig,
+  ...config,
   files: ['test/integration/client/**/*_test.js'],
   nodeResolve: {
     exportConditions: process.env.MODE === 'dev' ? ['development'] : [],

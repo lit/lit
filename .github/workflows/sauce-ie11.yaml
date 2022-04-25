@@ -49,4 +49,4 @@ jobs:
         # Retry once automatically.
         run: |
           cd packages/labs/ssr
-          npm run test:integration || npm run test:integration
+          npm run test:integration:remote || npm run test:integration:remote
