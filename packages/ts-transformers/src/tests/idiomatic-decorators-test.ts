@@ -127,6 +127,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
+
+      @property({type: Boolean})
+      get reactiveGetter() {
+        return false;
+      }
     }
     `;
 
@@ -141,6 +146,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           reactiveUninitializedObj: {type: Object},
           reactiveInitializedNum: {type: Number, attribute: false},
           reactiveInitializedBool: {type: Boolean, reflect: true},
+          reactiveGetter: {type: Boolean},
         };
 
         constructor() {
@@ -151,11 +157,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
-        }
+      }
 
         nonReactiveInitialized = 123;
 
         nonReactiveUninitialized;
+        get reactiveGetter() {
+          return false;
+        }
       }
       `;
     } else {
@@ -174,12 +183,16 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
         }
+        get reactiveGetter() {
+          return false;
+        }
       }
       MyElement.properties = {
         reactiveInitializedStr: {},
         reactiveUninitializedObj: {type: Object},
         reactiveInitializedNum: {type: Number, attribute: false},
         reactiveInitializedBool: {type: Boolean, reflect: true},
+        reactiveGetter: {type: Boolean},
       };
       `;
     }
@@ -208,6 +221,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
 
+      @property({type: Boolean})
+      get reactiveGetter() {
+        return false;
+      }
+
       constructor() {
         super();
       }
@@ -225,11 +243,15 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           reactiveUninitializedObj: {type: Object},
           reactiveInitializedNum: {type: Number, attribute: false},
           reactiveInitializedBool: {type: Boolean, reflect: true},
+          reactiveGetter: {type: Boolean},
         };
 
         nonReactiveInitialized = 123;
 
         nonReactiveUninitialized;
+        get reactiveGetter() {
+          return false;
+        }
 
         constructor() {
           super();
@@ -244,6 +266,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
+        get reactiveGetter() {
+          return false;
+        }
+
         constructor() {
           super();
 
@@ -258,6 +284,51 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         reactiveUninitializedObj: {type: Object},
         reactiveInitializedNum: {type: Number, attribute: false},
         reactiveInitializedBool: {type: Boolean, reflect: true},
+        reactiveGetter: {type: Boolean},
+      };
+      `;
+    }
+    checkTransform(input, expected, options);
+  });
+
+  test('@property (do not create constructor if just getter)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {property} from 'lit/decorators.js';
+
+    class MyElement extends LitElement {
+      @property({type: Boolean})
+      get reactiveGetter() {
+        return false;
+      }
+    }
+    `;
+
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        static properties = {
+          reactiveGetter: {type: Boolean},
+        };
+        get reactiveGetter() {
+          return false;
+        }
+      }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        get reactiveGetter() {
+          return false;
+        }
+      }
+      MyElement.properties = {
+        reactiveGetter: {type: Boolean},
       };
       `;
     }

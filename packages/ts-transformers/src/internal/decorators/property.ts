@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import ts, {factory} from 'typescript';
 import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';
@@ -43,7 +43,8 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     property: ts.ClassElement,
     decorator: ts.Decorator
   ) {
-    if (!ts.isPropertyDeclaration(property)) {
+    const isGetter = ts.isGetAccessor(property);
+    if (!ts.isPropertyDeclaration(property) && !isGetter) {
       return;
     }
     if (!ts.isIdentifier(property.name)) {
@@ -58,10 +59,40 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     }
     const options = this._augmentOptions(arg0);
     const name = property.name.text;
-    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
+
+    if (isGetter && property.decorators) {
+      // Filter out the current decorator
+      let decorators: ts.Decorator[] | undefined = property.decorators.filter(
+        (dec) => dec !== decorator
+      );
+
+      // If there are no decorators prevent the tslib package from being
+      // imported by unassigning the decorators array.
+      if (decorators.length === 0) {
+        decorators = undefined;
+      }
+
+      // Decorators is readonly so clone the property.
+      const getterWithoutDecorators = factory.createGetAccessorDeclaration(
+        decorators,
+        property.modifiers,
+        property.name,
+        property.parameters,
+        property.type,
+        property.body
+      );
+
+      litClassContext.litFileContext.nodeReplacements.set(
+        property,
+        getterWithoutDecorators
+      );
+    } else if (!isGetter) {
+      // Delete the member property
+      litClassContext.litFileContext.nodeReplacements.set(property, undefined);
+    }
     litClassContext.reactiveProperties.push({name, options});
 
-    if (property.initializer !== undefined) {
+    if (!isGetter && property.initializer !== undefined) {
       const factory = this._factory;
       const initializer = factory.createExpressionStatement(
         factory.createBinaryExpression(
