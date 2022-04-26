@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
+import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import ts from 'typescript';
@@ -13,13 +13,21 @@ import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../lib/analyzer.js';
 
-test('Basic elements - isLitElement', () => {
-  const basicElementsPackagePath = fileURLToPath(
-    new URL('../test-files/basic-elements', import.meta.url).href
-  );
-  const analyzer = new Analyzer(basicElementsPackagePath);
+const basicTest = suite('Basic');
+
+const basicElementsPackagePath = fileURLToPath(
+  new URL('../test-files/basic-elements', import.meta.url).href
+);
+
+let analyzer: Analyzer;
+
+basicTest.before(() => {
+  analyzer = new Analyzer(basicElementsPackagePath);
+});
+
+basicTest('Reads project files', () => {
   const rootFileNames = analyzer.program.getRootFileNames();
-  assert.equal(rootFileNames.length, 2);
+  assert.equal(rootFileNames.length, 3);
 
   const elementAPath = path.resolve(
     basicElementsPackagePath,
@@ -27,13 +35,29 @@ test('Basic elements - isLitElement', () => {
   );
   const sourceFile = analyzer.program.getSourceFile(elementAPath);
   assert.ok(sourceFile);
+});
 
+basicTest('isLitElement returns true for a direct import', () => {
+  const elementAPath = path.resolve(
+    basicElementsPackagePath,
+    'src/element-a.ts'
+  );
+  const sourceFile = analyzer.program.getSourceFile(elementAPath)!;
   const elementADeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.getText() === 'ElementA'
   );
   assert.ok(elementADeclaration);
-
   assert.equal(analyzer.isLitElement(elementADeclaration), true);
 });
 
-test.run();
+basicTest('isLitElement returns false for non-LitElement', () => {
+  const notLitPath = path.resolve(basicElementsPackagePath, 'src/not-lit.ts');
+  const sourceFile = analyzer.program.getSourceFile(notLitPath)!;
+  const notLitDeclaration = sourceFile.statements.find(
+    (s) => ts.isClassDeclaration(s) && s.name?.getText() === 'NotLit'
+  );
+  assert.ok(notLitDeclaration);
+  assert.equal(analyzer.isLitElement(notLitDeclaration), false);
+});
+
+basicTest.run();
