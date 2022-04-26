@@ -5,12 +5,13 @@
  */
 
 import localConfig from '../../tests/web-test-runner.config.js';
-import remoteConfig from '../../tests/web-test-runner.remote.config.js';
-
 import {startServer} from './test/integration/server/server.js';
 
-const config =
-  process.env.DESTINATION === 'remote' ? remoteConfig : localConfig;
+let config = localConfig;
+if (process.env.DESTINATION === 'remote') {
+  config = await import('../../tests/web-test-runner.remote.config.js');
+}
+
 const ssrServer = startServer();
 export default {
   ...config,
