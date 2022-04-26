@@ -128,8 +128,16 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
 
+      /**
+       * Reactive getter description.
+       */
       @property({type: Boolean})
       get reactiveGetter() {
+        return false;
+      }
+
+      @property({type: Boolean})
+      get reactiveGetterNoComment() {
         return false;
       }
     }
@@ -147,6 +155,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           reactiveInitializedNum: {type: Number, attribute: false},
           reactiveInitializedBool: {type: Boolean, reflect: true},
           reactiveGetter: {type: Boolean},
+          reactiveGetterNoComment: {type: Boolean},
         };
 
         constructor() {
@@ -162,7 +171,15 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         nonReactiveInitialized = 123;
 
         nonReactiveUninitialized;
+
+        /**
+         * Reactive getter description.
+         */
         get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
           return false;
         }
       }
@@ -183,7 +200,15 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
         }
+
+        /**
+         * Reactive getter description.
+         */
         get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
           return false;
         }
       }
@@ -193,6 +218,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         reactiveInitializedNum: {type: Number, attribute: false},
         reactiveInitializedBool: {type: Boolean, reflect: true},
         reactiveGetter: {type: Boolean},
+        reactiveGetterNoComment: {type: Boolean},
       };
       `;
     }
@@ -221,8 +247,16 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
 
+      /**
+       * Reactive getter description.
+       */
       @property({type: Boolean})
       get reactiveGetter() {
+        return false;
+      }
+
+      @property({type: Boolean})
+      get reactiveGetterNoComment() {
         return false;
       }
 
@@ -244,12 +278,21 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           reactiveInitializedNum: {type: Number, attribute: false},
           reactiveInitializedBool: {type: Boolean, reflect: true},
           reactiveGetter: {type: Boolean},
+          reactiveGetterNoComment: {type: Boolean},
         };
 
         nonReactiveInitialized = 123;
 
         nonReactiveUninitialized;
+
+        /**
+         * Reactive getter description.
+         */
         get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
           return false;
         }
 
@@ -266,7 +309,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
+        /**
+         * Reactive getter description.
+         */
         get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
           return false;
         }
 
@@ -285,6 +335,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         reactiveInitializedNum: {type: Number, attribute: false},
         reactiveInitializedBool: {type: Boolean, reflect: true},
         reactiveGetter: {type: Boolean},
+        reactiveGetterNoComment: {type: Boolean},
       };
       `;
     }
