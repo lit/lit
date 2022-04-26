@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts, {factory} from 'typescript';
+import ts from 'typescript';
 import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';
@@ -59,6 +59,7 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     }
     const options = this._augmentOptions(arg0);
     const name = property.name.text;
+    const factory = this._factory;
 
     if (isGetter && property.decorators) {
       // Filter out the current decorator
@@ -93,7 +94,6 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     litClassContext.reactiveProperties.push({name, options});
 
     if (!isGetter && property.initializer !== undefined) {
-      const factory = this._factory;
       const initializer = factory.createExpressionStatement(
         factory.createBinaryExpression(
           factory.createPropertyAccessExpression(
