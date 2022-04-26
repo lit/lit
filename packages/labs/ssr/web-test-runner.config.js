@@ -9,12 +9,15 @@ import {startServer} from './test/integration/server/server.js';
 
 let config = localConfig;
 if (process.env.DESTINATION === 'remote') {
-  config = await import('../../tests/web-test-runner.remote.config.js');
+  config = (await import('../../tests/web-test-runner.remote.config.js'))
+    .default;
 }
 
 const ssrServer = startServer();
+
 export default {
   ...config,
+  rootDir: '../',
   files: ['test/integration/client/**/*_test.js'],
   nodeResolve: {
     exportConditions: process.env.MODE === 'dev' ? ['development'] : [],

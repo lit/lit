@@ -12,17 +12,15 @@ const SAUCE = 'preset:sauce';
 /***
  * Environment variables required to run saucelabs tests
  */
-const user = process.env.SAUCE_USERNAME?.trim() || '';
-const key = process.env.SAUCE_ACCESS_KEY?.trim() || '';
+const user = process.env.SAUCE_USERNAME?.trim();
+const key = process.env.SAUCE_ACCESS_KEY?.trim();
 
 if (!user || !key) {
   throw new Error(`
  To test on Saucelabs, set the following env variables:
  - SAUCE_USERNAME
  - SAUCE_ACCESS_KEY
- - SAUCE_TUNNEL_ID
- - SAUCE_BUILD_ID
-   `);
+`);
 }
 
 const browserSettings = {
