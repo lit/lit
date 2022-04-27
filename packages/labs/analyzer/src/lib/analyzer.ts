@@ -12,6 +12,7 @@ import {
   LitElementDeclaration,
 } from './model.js';
 import {AbsolutePath, absoluteToPackage} from './paths.js';
+import {isLitElement, getTagName} from './lit-element.js';
 
 /**
  * An analyzer for Lit npm packages
@@ -64,7 +65,6 @@ export class Analyzer {
     for (const fileName of rootFileNames) {
       modules.push(this.analyzeFile(fileName as AbsolutePath));
     }
-    // TODO: return a package object...
     return new Package(modules);
   }
 
@@ -78,7 +78,7 @@ export class Analyzer {
 
     for (const statement of sourceFile.statements) {
       if (ts.isClassDeclaration(statement)) {
-        if (this.isLitElement(statement)) {
+        if (isLitElement(statement, this.checker)) {
           module.declarations.push(
             new LitElementDeclaration({
               tagname: getTagName(statement),
@@ -96,69 +96,6 @@ export class Analyzer {
         }
       }
     }
-
     return module;
   }
-
-  private _isLitElementClassDeclaration = (t: ts.BaseType) => {
-    const declarations = t.getSymbol()?.getDeclarations();
-    if (declarations?.length !== 1) {
-      return false;
-    }
-    const node = declarations[0];
-    return (
-      this._isLitElementModule(node.getSourceFile()) &&
-      ts.isClassDeclaration(node) &&
-      node.name?.getText() === 'LitElement'
-    );
-  };
-
-  private _isLitElementModule = (file: ts.SourceFile) => {
-    return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
-  };
-
-  isLitElement = (node: ts.Node): boolean => {
-    if (!ts.isClassLike(node)) {
-      return false;
-    }
-    const type = this.checker.getTypeAtLocation(node) as ts.InterfaceType;
-    const baseTypes = this.checker.getBaseTypes(type);
-    for (const t of baseTypes) {
-      if (this._isLitElementClassDeclaration(t)) {
-        return true;
-      }
-    }
-    return false;
-  };
-}
-
-const getTagName = (declaration: ts.ClassDeclaration) => {
-  // TODO (justinfagnani): support customElements.define()
-  let tagname: string | undefined = undefined;
-  const customElementDecorator = declaration.decorators?.find(
-    isCustomElementDecorator
-  );
-  if (
-    customElementDecorator !== undefined &&
-    customElementDecorator.expression.arguments.length === 1 &&
-    ts.isStringLiteral(customElementDecorator.expression.arguments[0])
-  ) {
-    tagname = customElementDecorator.expression.arguments[0].text;
-  }
-  return tagname;
-};
-
-const isCustomElementDecorator = (
-  decorator: ts.Decorator
-): decorator is CustomElementDecorator =>
-  ts.isCallExpression(decorator.expression) &&
-  ts.isIdentifier(decorator.expression.expression) &&
-  decorator.expression.expression.getText() === 'customElement';
-
-/**
- * A narrower type for ts.Decorator that represents the shape of an analyzable
- * `@customElement('x')` callsite.
- */
-interface CustomElementDecorator extends ts.Decorator {
-  readonly expression: ts.CallExpression;
 }
