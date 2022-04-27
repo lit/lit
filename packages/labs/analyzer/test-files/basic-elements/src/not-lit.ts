@@ -1,3 +1,3 @@
 class LitElement {}
 
-class NotLit extends LitElement {}
+export class NotLit extends LitElement {}

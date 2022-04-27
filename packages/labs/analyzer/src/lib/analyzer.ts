@@ -54,7 +54,7 @@ export class Analyzer {
       throw new Error('Compiler errors');
     }
     const rootFileNames = this.program.getRootFileNames();
-    console.log('rootFileNames', rootFileNames);
+
     const modules = [];
     for (const fileName of rootFileNames) {
       modules.push(this.analyzeFile(fileName as AbsolutePath));

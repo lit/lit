@@ -39,8 +39,8 @@ export interface ClassDeclarationInit {
 }
 
 export class ClassDeclaration {
-  name: string | undefined;
-  node: ts.ClassDeclaration;
+  readonly name: string | undefined;
+  readonly node: ts.ClassDeclaration;
 
   constructor(init: ClassDeclarationInit) {
     this.name = init.name;
