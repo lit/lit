@@ -5,6 +5,7 @@
  */
 
 import ts from 'typescript';
+import {PackagePath} from './paths.js';
 
 export class Package {
   readonly modules: ReadonlyArray<Module>;
@@ -14,10 +15,35 @@ export class Package {
   }
 }
 
+export interface ModuleInit {
+  sourceFile: ts.SourceFile;
+  path: PackagePath;
+}
+
 export class Module {
   readonly sourceFile: ts.SourceFile;
+  readonly path: PackagePath;
+  readonly declarations: Array<Declaration> = [];
 
-  constructor(sourceFile: ts.SourceFile) {
-    this.sourceFile = sourceFile;
+  constructor(init: ModuleInit) {
+    this.sourceFile = init.sourceFile;
+    this.path = init.path;
+  }
+}
+
+export type Declaration = ClassDeclaration;
+
+export interface ClassDeclarationInit {
+  name: string | undefined;
+  node: ts.ClassDeclaration;
+}
+
+export class ClassDeclaration {
+  readonly name: string | undefined;
+  readonly node: ts.ClassDeclaration;
+
+  constructor(init: ClassDeclarationInit) {
+    this.name = init.name;
+    this.node = init.node;
   }
 }
