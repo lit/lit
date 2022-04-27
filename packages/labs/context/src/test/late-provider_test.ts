@@ -20,6 +20,10 @@ class ContextConsumerElement extends LitElement {
   @property({type: Number})
   public value = 0;
 
+  @contextProvided({context: simpleContext})
+  @property({type: Number})
+  public onceValue = 0;
+
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
   }
@@ -77,6 +81,7 @@ suite('late context provider', () => {
   test(`handles late upgrade properly`, async () => {
     // initially consumer has initial value
     assert.strictEqual(consumer.value, 0);
+    assert.strictEqual(consumer.onceValue, 0);
     // do upgrade
     customElements.define('late-context-provider', LateContextProviderElement);
     // await update of provider component
@@ -85,9 +90,13 @@ suite('late context provider', () => {
     await consumer.updateComplete;
     // should now have provided context
     assert.strictEqual(consumer.value, 1000);
+    // but only to the subscribed value
+    assert.strictEqual(consumer.onceValue, 0);
     // confirm subscription is established
     provider.value = 500;
     await consumer.updateComplete;
     assert.strictEqual(consumer.value, 500);
+    // and once was not updated
+    assert.strictEqual(consumer.onceValue, 0);
   });
 });
