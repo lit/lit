@@ -22,7 +22,8 @@
   },
   "files": [
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/worker/worker.{d.ts,d.ts.map,js,js.map}"
+    "/worker/worker.{d.ts,d.ts.map,js,js.map}",
+    "/worker/package.json"
   ],
   "engines": {
     "node": ">=12.16.0"
