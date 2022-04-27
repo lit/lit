@@ -1,3 +1,4 @@
+<div align="center">
 <img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
 
 ### Simple. Fast. Web Components.
@@ -6,6 +7,8 @@
 [![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
 [![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://lit.dev/slack-invite/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+</div>
 
 Lit is a simple library for building fast, lightweight web components.
 
