@@ -12,12 +12,13 @@ import * as path from 'path';
 import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../lib/analyzer.js';
+import {AbsolutePath} from '../lib/paths.js';
 
 const basicTest = suite('Basic');
 
 const basicElementsPackagePath = fileURLToPath(
   new URL('../test-files/basic-elements', import.meta.url).href
-);
+) as AbsolutePath;
 
 let analyzer: Analyzer;
 
@@ -58,6 +59,16 @@ basicTest('isLitElement returns false for non-LitElement', () => {
   );
   assert.ok(notLitDeclaration);
   assert.equal(analyzer.isLitElement(notLitDeclaration), false);
+});
+
+basicTest('analyzePackage() finds class declarations', () => {
+  const result = analyzer.analyzePackage();
+  assert.equal(result.modules.length, 3);
+  const elementAModule = result.modules.find(
+    (m) => m.path === 'src/element-a.ts'
+  );
+  assert.equal(elementAModule?.declarations.length, 1);
+  assert.equal(elementAModule?.declarations[0].name, 'ElementA');
 });
 
 basicTest.run();

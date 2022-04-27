@@ -5,13 +5,14 @@
  */
 
 import ts from 'typescript';
-import {Package, Module} from './model.js';
+import {Package, Module, ClassDeclaration} from './model.js';
+import {AbsolutePath, absoluteToPackage} from './paths.js';
 
 /**
  * An analyzer for Lit npm packages
  */
 export class Analyzer {
-  readonly packageRoot: string;
+  readonly packageRoot: AbsolutePath;
   readonly commandLine: ts.ParsedCommandLine;
   readonly program: ts.Program;
   readonly checker: ts.TypeChecker;
@@ -20,7 +21,7 @@ export class Analyzer {
    * @param packageRoot The root directory of the package to analyze. Currently
    * this directory must have a tsconfig.json file.
    */
-  constructor(packageRoot: string) {
+  constructor(packageRoot: AbsolutePath) {
     this.packageRoot = packageRoot;
 
     const configFileName = ts.findConfigFile(
@@ -50,21 +51,38 @@ export class Analyzer {
     if (diagnostics.length > 0) {
       console.error('Please fix errors first');
       console.error(diagnostics);
-      throw new Error('Copmiler errors');
+      throw new Error('Compiler errors');
     }
     const rootFileNames = this.program.getRootFileNames();
+    console.log('rootFileNames', rootFileNames);
     const modules = [];
     for (const fileName of rootFileNames) {
-      modules.push(this.analyzeFile(fileName));
+      modules.push(this.analyzeFile(fileName as AbsolutePath));
     }
     // TODO: return a package object...
     return new Package(modules);
   }
 
-  analyzeFile(fileName: string) {
+  analyzeFile(fileName: AbsolutePath) {
     const sourceFile = this.program.getSourceFile(fileName)!;
 
-    return new Module(sourceFile);
+    const module = new Module({
+      path: absoluteToPackage(fileName, this.packageRoot),
+      sourceFile,
+    });
+
+    for (const statement of sourceFile.statements) {
+      if (ts.isClassDeclaration(statement)) {
+        module.declarations.push(
+          new ClassDeclaration({
+            name: statement.name?.getText(),
+            node: statement,
+          })
+        );
+      }
+    }
+
+    return module;
   }
 
   private _isLitElementClassDeclaration = (t: ts.BaseType) => {
