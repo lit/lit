@@ -15,6 +15,7 @@ jobs:
     env:
       BROWSERS: preset:sauce
       CONCURRENT_BROWSERS: 11
+      CONCURRENT_FRAMES: 1
 
     steps:
       - uses: actions/checkout@v2
