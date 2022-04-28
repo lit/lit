@@ -11,10 +11,10 @@ import ts from 'typescript';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {Analyzer} from '../../lib/analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
-import {LitElementDeclaration} from '../../lib/model.js';
-import {isLitElement} from '../../lib/lit-element/lit-element.js';
+import {Analyzer} from '../lib/analyzer.js';
+import {AbsolutePath} from '../lib/paths.js';
+import {LitElementDeclaration} from '../lib/model.js';
+import {isLitElement} from '../lib/lit-element.js';
 
 const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'LitElement tests'
@@ -22,7 +22,7 @@ const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
 
 test.before((ctx) => {
   const packagePath = (ctx.packagePath = fileURLToPath(
-    new URL('../../test-files/basic-elements', import.meta.url).href
+    new URL('../test-files/basic-elements', import.meta.url).href
   ) as AbsolutePath);
   ctx.analyzer = new Analyzer(packagePath);
 });
@@ -53,47 +53,32 @@ test('isLitElement returns false for non-LitElement', ({
   assert.equal(isLitElement(notLitDeclaration, analyzer.checker), false);
 });
 
-test('Analyzer finds LitElement declarations', ({analyzer}) => {
+test('Analyzer finds named LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
     (m) => m.path === 'src/element-a.ts'
   );
-  assert.equal(elementAModule?.declarations.length, 1);
-  const decl = elementAModule!.declarations[0];
-  assert.equal(decl.name, 'ElementA');
-  assert.instance(decl, LitElementDeclaration);
-  assert.equal((decl as LitElementDeclaration).isLitElement, true);
+  assert.ok(elementAModule);
+  assert.equal(elementAModule.declarations.length, 1);
+  const elementA = elementAModule.declarations[0];
+  assert.equal(elementA.name, 'ElementA');
+  assert.instance(elementA, LitElementDeclaration);
+  assert.equal((elementA as LitElementDeclaration).isLitElement, true);
 
   // TODO (justinfagnani): test for customElements.define()
-  assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
+  assert.equal((elementA as LitElementDeclaration).tagname, 'element-a');
 });
 
-test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
+test('Analyzer finds unnamed LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
-  const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+  const defaultElementModule = result.modules.find(
+    (m) => m.path === 'src/default-element.ts'
   );
-  const decl = elementAModule!.declarations[0] as LitElementDeclaration;
-
-  // ElementA has `a` and `b` properties
-  assert.equal(decl.reactiveProperties.size, 2);
-
-  const aProp = decl.reactiveProperties.get('a');
-  assert.ok(aProp);
-  assert.equal(aProp.name, 'a', 'property name');
-  assert.equal(aProp.attribute, 'a', 'attribute name');
-  assert.equal(aProp.typeString, 'string');
-  // TODO (justinfagnani) better assertion
-  assert.ok(aProp.type);
-  assert.equal(aProp.reflect, false);
-
-  const bProp = decl.reactiveProperties.get('b');
-  assert.ok(bProp);
-  assert.equal(bProp.name, 'b');
-  assert.equal(bProp.attribute, 'bbb');
-  // This is inferred
-  assert.equal(bProp.typeString, 'number');
-  assert.equal(bProp.typeOption, 'Number');
+  assert.ok(defaultElementModule);
+  assert.equal(defaultElementModule.declarations.length, 1);
+  const defaultElement = defaultElementModule.declarations[0];
+  assert.equal(defaultElement.name, undefined);
+  assert.equal((defaultElement as LitElementDeclaration).tagname, undefined);
 });
 
 test.run();

@@ -83,7 +83,7 @@ export class Analyzer {
         } else {
           module.declarations.push(
             new ClassDeclaration({
-              name: statement.name?.getText(),
+              name: statement.name?.text,
               node: statement,
             })
           );

@@ -11,60 +11,6 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration, ReactiveProperty} from '../model.js';
-import {
-  getPropertyDecorator,
-  getPropertyOptions,
-  isCustomElementDecorator,
-} from './decorators.js';
-import {
-  getPropertyAttribute,
-  getPropertyType,
-  getPropertyReflect,
-  getPropertyConverter,
-} from './properties.js';
-
-/**
- * Gets an analyzer LitElementDeclaration object from a ts.ClassDeclaration
- * (branded as LitClassDeclaration).
- */
-export const getLitElementDeclaration = (
-  node: LitClassDeclaration,
-  checker: ts.TypeChecker
-): LitElementDeclaration => {
-  const reactiveProperties = new Map<string, ReactiveProperty>();
-
-  const propertyDeclarations = node.members.filter((m) =>
-    ts.isPropertyDeclaration(m)
-  ) as unknown as ts.NodeArray<ts.PropertyDeclaration>;
-  for (const prop of propertyDeclarations) {
-    const name = prop.name.getText();
-    const type = checker.getTypeAtLocation(prop);
-
-    const propertyDecorator = getPropertyDecorator(prop);
-    if (propertyDecorator !== undefined) {
-      const options = getPropertyOptions(propertyDecorator);
-      // console.log('propertOptions', name, options !== undefined);
-      reactiveProperties.set(name, {
-        name,
-        type,
-        typeString: checker.typeToString(type),
-        node: prop,
-        attribute: getPropertyAttribute(options, name),
-        typeOption: getPropertyType(options),
-        reflect: getPropertyReflect(options),
-        converter: getPropertyConverter(options),
-      });
-    }
-  }
-
-  return new LitElementDeclaration({
-    tagname: getTagName(node),
-    name: node.name?.text,
-    node,
-    reactiveProperties,
-  });
-};
 
 /**
  * Returns true if this type represents the actual LitElement class.
@@ -94,7 +40,7 @@ const _isLitElementModule = (file: ts.SourceFile) => {
  * not its argument is a LitElement such that when it returns false TypeScript
  * doesn't infer that the argument is not a ClassDeclaration.
  */
-export type LitClassDeclaration = ts.ClassDeclaration & {
+export type LitClassDeclaration = ts.ClassLikeDeclaration & {
   __litBrand: never;
 };
 
@@ -130,11 +76,25 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     isCustomElementDecorator
   );
   if (
-    customElementDecorator !== undefined &&
-    customElementDecorator.expression.arguments.length === 1 &&
+    customElementDecorator?.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
     tagname = customElementDecorator.expression.arguments[0].text;
   }
   return tagname;
 };
+
+const isCustomElementDecorator = (
+  decorator: ts.Decorator
+): decorator is CustomElementDecorator =>
+  ts.isCallExpression(decorator.expression) &&
+  ts.isIdentifier(decorator.expression.expression) &&
+  decorator.expression.expression.text === 'customElement';
+
+/**
+ * A narrower type for ts.Decorator that represents the shape of an analyzable
+ * `@customElement('x')` callsite.
+ */
+interface CustomElementDecorator extends ts.Decorator {
+  readonly expression: ts.CallExpression;
+}

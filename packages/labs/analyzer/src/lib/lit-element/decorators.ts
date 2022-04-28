@@ -24,7 +24,7 @@ const isNamedDecoratorFactory = (
 ): decorator is CustomElementDecorator =>
   ts.isCallExpression(decorator.expression) &&
   ts.isIdentifier(decorator.expression.expression) &&
-  decorator.expression.expression.getText() === name;
+  decorator.expression.expression.text === name;
 
 export const isCustomElementDecorator = (
   decorator: ts.Decorator

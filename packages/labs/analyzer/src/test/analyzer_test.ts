@@ -26,7 +26,7 @@ test.before((ctx) => {
 
 test('Reads project files', ({analyzer, packagePath}) => {
   const rootFileNames = analyzer.program.getRootFileNames();
-  assert.equal(rootFileNames.length, 4);
+  assert.equal(rootFileNames.length, 5);
 
   const elementAPath = path.resolve(packagePath, 'src/element-a.ts');
   const sourceFile = analyzer.program.getSourceFile(elementAPath);
