@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BROWSERS: preset:sauce-ie11
-  
+      CONCURRENT_BROWSERS: 1
+
     steps:
       - uses: actions/checkout@v2
 
