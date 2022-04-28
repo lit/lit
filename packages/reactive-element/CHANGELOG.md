@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.2
+
+### Patch Changes
+
+- [#2688](https://github.com/lit/lit/pull/2688) [`ef178ef6`](https://github.com/lit/lit/commit/ef178ef620c1deffecae391433e94bd64c72ac44) - Add explicit types to the jsdoc code samples for `query`, `queryAll`, and `queryAsync`.
+
 ## 1.3.1
 
 ### Patch Changes

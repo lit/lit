@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.2.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
+- [#2688](https://github.com/lit/lit/pull/2688) [`ef178ef6`](https://github.com/lit/lit/commit/ef178ef620c1deffecae391433e94bd64c72ac44) - Add explicit types to the jsdoc code samples for `query`, `queryAll`, and `queryAsync`.
+
 ## 2.2.2
 
 ### Patch Changes
