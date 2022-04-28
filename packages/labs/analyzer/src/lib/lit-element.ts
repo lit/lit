@@ -25,7 +25,7 @@ const _isLitElementClassDeclaration = (t: ts.BaseType) => {
   return (
     _isLitElementModule(node.getSourceFile()) &&
     ts.isClassDeclaration(node) &&
-    node.name?.getText() === 'LitElement'
+    node.name?.text === 'LitElement'
   );
 };
 
@@ -76,8 +76,7 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     isCustomElementDecorator
   );
   if (
-    customElementDecorator !== undefined &&
-    customElementDecorator.expression.arguments.length === 1 &&
+    customElementDecorator?.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
     tagname = customElementDecorator.expression.arguments[0].text;
@@ -90,7 +89,7 @@ const isCustomElementDecorator = (
 ): decorator is CustomElementDecorator =>
   ts.isCallExpression(decorator.expression) &&
   ts.isIdentifier(decorator.expression.expression) &&
-  decorator.expression.expression.getText() === 'customElement';
+  decorator.expression.expression.text === 'customElement';
 
 /**
  * A narrower type for ts.Decorator that represents the shape of an analyzable

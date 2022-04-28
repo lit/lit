@@ -78,18 +78,19 @@ export class Analyzer {
 
     for (const statement of sourceFile.statements) {
       if (ts.isClassDeclaration(statement)) {
+        const name = statement.name?.text;
         if (isLitElement(statement, this.checker)) {
           module.declarations.push(
             new LitElementDeclaration({
               tagname: getTagName(statement),
-              name: statement.name?.getText(),
+              name,
               node: statement,
             })
           );
         } else {
           module.declarations.push(
             new ClassDeclaration({
-              name: statement.name?.getText(),
+              name,
               node: statement,
             })
           );
