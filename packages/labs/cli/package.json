@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
   "version": "0.0.0",
