@@ -78,18 +78,19 @@ export class Analyzer {
 
     for (const statement of sourceFile.statements) {
       if (ts.isClassDeclaration(statement)) {
+        const name = statement.name?.text;
         if (this.isLitElement(statement)) {
           module.declarations.push(
             new LitElementDeclaration({
               tagname: getTagName(statement),
-              name: statement.name?.getText(),
+              name,
               node: statement,
             })
           );
         } else {
           module.declarations.push(
             new ClassDeclaration({
-              name: statement.name?.getText(),
+              name,
               node: statement,
             })
           );
@@ -109,7 +110,7 @@ export class Analyzer {
     return (
       this._isLitElementModule(node.getSourceFile()) &&
       ts.isClassDeclaration(node) &&
-      node.name?.getText() === 'LitElement'
+      node.name?.text === 'LitElement'
     );
   };
 
@@ -139,8 +140,7 @@ const getTagName = (declaration: ts.ClassDeclaration) => {
     isCustomElementDecorator
   );
   if (
-    customElementDecorator !== undefined &&
-    customElementDecorator.expression.arguments.length === 1 &&
+    customElementDecorator?.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
     tagname = customElementDecorator.expression.arguments[0].text;
@@ -153,7 +153,7 @@ const isCustomElementDecorator = (
 ): decorator is CustomElementDecorator =>
   ts.isCallExpression(decorator.expression) &&
   ts.isIdentifier(decorator.expression.expression) &&
-  decorator.expression.expression.getText() === 'customElement';
+  decorator.expression.expression.text === 'customElement';
 
 /**
  * A narrower type for ts.Decorator that represents the shape of an analyzable

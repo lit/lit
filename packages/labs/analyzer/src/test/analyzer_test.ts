@@ -28,7 +28,7 @@ test.before((ctx) => {
 
 test('Reads project files', ({analyzer, packagePath}) => {
   const rootFileNames = analyzer.program.getRootFileNames();
-  assert.equal(rootFileNames.length, 4);
+  assert.equal(rootFileNames.length, 5);
 
   const elementAPath = path.resolve(packagePath, 'src/element-a.ts');
   const sourceFile = analyzer.program.getSourceFile(elementAPath);
@@ -70,19 +70,32 @@ test('Analyzer finds class declarations', ({analyzer}) => {
   assert.equal(elementAModule?.declarations[0].name, 'ClassA');
 });
 
-test('Analyzer finds LitElement declarations', ({analyzer}) => {
+test('Analyzer finds named LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
     (m) => m.path === 'src/element-a.ts'
   );
-  assert.equal(elementAModule?.declarations.length, 1);
-  const decl = elementAModule!.declarations[0];
-  assert.equal(decl.name, 'ElementA');
-  assert.instance(decl, LitElementDeclaration);
-  assert.equal((decl as LitElementDeclaration).isLitElement, true);
+  assert.ok(elementAModule);
+  assert.equal(elementAModule.declarations.length, 1);
+  const elementA = elementAModule.declarations[0];
+  assert.equal(elementA.name, 'ElementA');
+  assert.instance(elementA, LitElementDeclaration);
+  assert.equal((elementA as LitElementDeclaration).isLitElement, true);
 
   // TODO (justinfagnani): test for customElements.define()
-  assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
+  assert.equal((elementA as LitElementDeclaration).tagname, 'element-a');
+});
+
+test('Analyzer finds unnamed LitElement declarations', ({analyzer}) => {
+  const result = analyzer.analyzePackage();
+  const defaultElementModule = result.modules.find(
+    (m) => m.path === 'src/default-element.ts'
+  );
+  assert.ok(defaultElementModule);
+  assert.equal(defaultElementModule.declarations.length, 1);
+  const defaultElement = defaultElementModule.declarations[0];
+  assert.equal(defaultElement.name, undefined);
+  assert.equal((defaultElement as LitElementDeclaration).tagname, undefined);
 });
 
 test.run();
