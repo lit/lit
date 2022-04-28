@@ -17,6 +17,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build",
+    "build:watch": "tsc --build --watch",
     "test": "uvu test '\\_test\\.js$'"
   },
   "files": [
