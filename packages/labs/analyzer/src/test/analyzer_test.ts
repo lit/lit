@@ -13,6 +13,7 @@ import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../lib/analyzer.js';
 import {AbsolutePath} from '../lib/paths.js';
+import {LitElementDeclaration} from '../lib/model.js';
 
 const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'Basic Analyzer tests'
@@ -27,7 +28,7 @@ test.before((ctx) => {
 
 test('Reads project files', ({analyzer, packagePath}) => {
   const rootFileNames = analyzer.program.getRootFileNames();
-  assert.equal(rootFileNames.length, 3);
+  assert.equal(rootFileNames.length, 5);
 
   const elementAPath = path.resolve(packagePath, 'src/element-a.ts');
   const sourceFile = analyzer.program.getSourceFile(elementAPath);
@@ -60,14 +61,41 @@ test('isLitElement returns false for non-LitElement', ({
   assert.equal(analyzer.isLitElement(notLitDeclaration), false);
 });
 
-test('analyzePackage() finds class declarations', ({analyzer}) => {
+test('Analyzer finds class declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
-  assert.equal(result.modules.length, 3);
+  const elementAModule = result.modules.find(
+    (m) => m.path === 'src/class-a.ts'
+  );
+  assert.equal(elementAModule?.declarations.length, 1);
+  assert.equal(elementAModule?.declarations[0].name, 'ClassA');
+});
+
+test('Analyzer finds named LitElement declarations', ({analyzer}) => {
+  const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
     (m) => m.path === 'src/element-a.ts'
   );
-  assert.equal(elementAModule?.declarations.length, 1);
-  assert.equal(elementAModule?.declarations[0].name, 'ElementA');
+  assert.ok(elementAModule);
+  assert.equal(elementAModule.declarations.length, 1);
+  const elementA = elementAModule.declarations[0];
+  assert.equal(elementA.name, 'ElementA');
+  assert.instance(elementA, LitElementDeclaration);
+  assert.equal((elementA as LitElementDeclaration).isLitElement, true);
+
+  // TODO (justinfagnani): test for customElements.define()
+  assert.equal((elementA as LitElementDeclaration).tagname, 'element-a');
+});
+
+test('Analyzer finds unnamed LitElement declarations', ({analyzer}) => {
+  const result = analyzer.analyzePackage();
+  const defaultElementModule = result.modules.find(
+    (m) => m.path === 'src/default-element.ts'
+  );
+  assert.ok(defaultElementModule);
+  assert.equal(defaultElementModule.declarations.length, 1);
+  const defaultElement = defaultElementModule.declarations[0];
+  assert.equal(defaultElement.name, undefined);
+  assert.equal((defaultElement as LitElementDeclaration).tagname, undefined);
 });
 
 test.run();

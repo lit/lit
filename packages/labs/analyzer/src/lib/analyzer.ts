@@ -5,7 +5,12 @@
  */
 
 import ts from 'typescript';
-import {Package, Module, ClassDeclaration} from './model.js';
+import {
+  Package,
+  Module,
+  ClassDeclaration,
+  LitElementDeclaration,
+} from './model.js';
 import {AbsolutePath, absoluteToPackage} from './paths.js';
 
 /**
@@ -73,12 +78,23 @@ export class Analyzer {
 
     for (const statement of sourceFile.statements) {
       if (ts.isClassDeclaration(statement)) {
-        module.declarations.push(
-          new ClassDeclaration({
-            name: statement.name?.getText(),
-            node: statement,
-          })
-        );
+        const name = statement.name?.text;
+        if (this.isLitElement(statement)) {
+          module.declarations.push(
+            new LitElementDeclaration({
+              tagname: getTagName(statement),
+              name,
+              node: statement,
+            })
+          );
+        } else {
+          module.declarations.push(
+            new ClassDeclaration({
+              name,
+              node: statement,
+            })
+          );
+        }
       }
     }
 
@@ -94,7 +110,7 @@ export class Analyzer {
     return (
       this._isLitElementModule(node.getSourceFile()) &&
       ts.isClassDeclaration(node) &&
-      node.name?.getText() === 'LitElement'
+      node.name?.text === 'LitElement'
     );
   };
 
@@ -102,7 +118,7 @@ export class Analyzer {
     return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
   };
 
-  isLitElement = (node: ts.Node): node is ts.ClassDeclaration => {
+  isLitElement = (node: ts.Node): boolean => {
     if (!ts.isClassLike(node)) {
       return false;
     }
@@ -115,4 +131,34 @@ export class Analyzer {
     }
     return false;
   };
+}
+
+const getTagName = (declaration: ts.ClassDeclaration) => {
+  // TODO (justinfagnani): support customElements.define()
+  let tagname: string | undefined = undefined;
+  const customElementDecorator = declaration.decorators?.find(
+    isCustomElementDecorator
+  );
+  if (
+    customElementDecorator?.expression.arguments.length === 1 &&
+    ts.isStringLiteral(customElementDecorator.expression.arguments[0])
+  ) {
+    tagname = customElementDecorator.expression.arguments[0].text;
+  }
+  return tagname;
+};
+
+const isCustomElementDecorator = (
+  decorator: ts.Decorator
+): decorator is CustomElementDecorator =>
+  ts.isCallExpression(decorator.expression) &&
+  ts.isIdentifier(decorator.expression.expression) &&
+  decorator.expression.expression.text === 'customElement';
+
+/**
+ * A narrower type for ts.Decorator that represents the shape of an analyzable
+ * `@customElement('x')` callsite.
+ */
+interface CustomElementDecorator extends ts.Decorator {
+  readonly expression: ts.CallExpression;
 }

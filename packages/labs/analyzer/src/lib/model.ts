@@ -47,3 +47,27 @@ export class ClassDeclaration {
     this.node = init.node;
   }
 }
+
+interface LitElementDeclarationInit extends ClassDeclarationInit {
+  tagname: string | undefined;
+}
+
+export class LitElementDeclaration extends ClassDeclaration {
+  readonly isLitElement = true;
+
+  /**
+   * The element's tag name, if one is associated with this class declaration,
+   * such as with a `@customElement()` decorator or `customElements.define()`
+   * call int he same module.
+   *
+   * This is undefined if the element has no associated custom element
+   * registration in the same module. This class might be intended for use as a
+   * base class or with scoped custom element registries.
+   */
+  readonly tagname: string | undefined;
+
+  constructor(init: LitElementDeclarationInit) {
+    super(init);
+    this.tagname = init.tagname;
+  }
+}
