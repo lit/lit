@@ -38,13 +38,16 @@ export const getLitElementDeclaration = (
     ts.isPropertyDeclaration(m)
   ) as unknown as ts.NodeArray<ts.PropertyDeclaration>;
   for (const prop of propertyDeclarations) {
-    const name = prop.name.getText();
+    if (!ts.isIdentifier(prop.name)) {
+      // TODO(justinfagnani): emit error instead
+      throw new Error('unsupported property name');
+    }
+    const name = prop.name.text;
     const type = checker.getTypeAtLocation(prop);
 
     const propertyDecorator = getPropertyDecorator(prop);
     if (propertyDecorator !== undefined) {
       const options = getPropertyOptions(propertyDecorator);
-      // console.log('propertOptions', name, options !== undefined);
       reactiveProperties.set(name, {
         name,
         type,

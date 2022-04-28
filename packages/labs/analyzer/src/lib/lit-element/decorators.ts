@@ -62,7 +62,6 @@ interface PropertyDecorator extends ts.Decorator {
  */
 export const getPropertyOptions = (decorator: PropertyDecorator) => {
   const options = decorator.expression.arguments[0];
-  // console.log('getPropertyOptions', decorator.expression.arguments[0]?.getText());
   if (options !== undefined && ts.isObjectLiteralExpression(options)) {
     return options;
   }
