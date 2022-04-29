@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/context",
-  "version": "1.0.0-pre.1",
+  "version": "0.1.0",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -25,6 +25,7 @@
   "files": [
     "/src/",
     "!/src/test/",
+    "/lib/",
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}"

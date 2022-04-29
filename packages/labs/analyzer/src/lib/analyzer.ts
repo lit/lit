@@ -7,6 +7,10 @@
 import ts from 'typescript';
 import {Package, Module, ClassDeclaration} from './model.js';
 import {AbsolutePath, absoluteToPackage} from './paths.js';
+import {
+  isLitElement,
+  getLitElementDeclaration,
+} from './lit-element/lit-element.js';
 
 /**
  * An analyzer for Lit npm packages
@@ -59,7 +63,6 @@ export class Analyzer {
     for (const fileName of rootFileNames) {
       modules.push(this.analyzeFile(fileName as AbsolutePath));
     }
-    // TODO: return a package object...
     return new Package(modules);
   }
 
@@ -73,46 +76,20 @@ export class Analyzer {
 
     for (const statement of sourceFile.statements) {
       if (ts.isClassDeclaration(statement)) {
-        module.declarations.push(
-          new ClassDeclaration({
-            name: statement.name?.getText(),
-            node: statement,
-          })
-        );
+        if (isLitElement(statement, this.checker)) {
+          module.declarations.push(
+            getLitElementDeclaration(statement, this.checker)
+          );
+        } else {
+          module.declarations.push(
+            new ClassDeclaration({
+              name: statement.name?.text,
+              node: statement,
+            })
+          );
+        }
       }
     }
-
     return module;
   }
-
-  private _isLitElementClassDeclaration = (t: ts.BaseType) => {
-    const declarations = t.getSymbol()?.getDeclarations();
-    if (declarations?.length !== 1) {
-      return false;
-    }
-    const node = declarations[0];
-    return (
-      this._isLitElementModule(node.getSourceFile()) &&
-      ts.isClassDeclaration(node) &&
-      node.name?.getText() === 'LitElement'
-    );
-  };
-
-  private _isLitElementModule = (file: ts.SourceFile) => {
-    return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
-  };
-
-  isLitElement = (node: ts.Node): node is ts.ClassDeclaration => {
-    if (!ts.isClassLike(node)) {
-      return false;
-    }
-    const type = this.checker.getTypeAtLocation(node) as ts.InterfaceType;
-    const baseTypes = this.checker.getBaseTypes(type);
-    for (const t of baseTypes) {
-      if (this._isLitElementClassDeclaration(t)) {
-        return true;
-      }
-    }
-    return false;
-  };
 }
