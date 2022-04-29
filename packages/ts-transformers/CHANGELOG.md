@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+### Patch Changes
+
+- [#2780](https://github.com/lit/lit/pull/2780) [`0f3a87b8`](https://github.com/lit/lit/commit/0f3a87b83ccf32a997208ca8328a8a3fbbafe955) - Fix reactive prop support for getters
+
 ## 1.1.0
 
 ### Minor Changes

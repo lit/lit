@@ -1,5 +1,11 @@
 # @lit/lit-starter-ts
 
+## 1.0.3
+
+### Patch Changes
+
+- [#2757](https://github.com/lit/lit/pull/2757) [`55841c14`](https://github.com/lit/lit/commit/55841c14f52891357dd93680d3bc5b1da6c89c8a) - Update Rollup and Rollup plugins
+
 ## 1.0.2
 
 ### Patch Changes

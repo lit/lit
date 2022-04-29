@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.2
+
+### Patch Changes
+
+- [#2582](https://github.com/lit/lit/pull/2582) [`24cb1568`](https://github.com/lit/lit/commit/24cb156832fe14b0f96d7041c73a35afa893718d) - Fix example code syntax in lit-labs/task README
+
 ## 1.1.1
 
 ### Patch Changes
