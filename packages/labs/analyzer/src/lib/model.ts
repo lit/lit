@@ -116,5 +116,5 @@ export interface Event {
   name: string;
   description: string | undefined;
   typeString: string | undefined;
-  // TODO(justinfagnani): stare a type reference too
+  // TODO(justinfagnani): store a type reference too
 }
