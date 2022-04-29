@@ -51,6 +51,7 @@ export class ClassDeclaration {
 interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   reactiveProperties: Map<string, ReactiveProperty>;
+  readonly events: Map<string, Event>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -69,10 +70,13 @@ export class LitElementDeclaration extends ClassDeclaration {
 
   readonly reactiveProperties: Map<string, ReactiveProperty>;
 
+  readonly events: Map<string, Event>;
+
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
     this.reactiveProperties = init.reactiveProperties;
+    this.events = init.events;
   }
 }
 
@@ -80,13 +84,13 @@ export interface ReactiveProperty {
   name: string;
   node: ts.PropertyDeclaration;
 
-  // TODO: where do we convert this to a type string and CEM type references?
+  // TODO(justinfagnani): where do we convert this to a type string and CEM type references?
   type: ts.Type;
   typeString: string;
 
   reflect: boolean;
 
-  // TODO: should we convert into attribute name?
+  // TODO(justinfagnani): should we convert into attribute name?
   attribute: boolean | string | undefined;
 
   /**
@@ -105,5 +109,12 @@ export interface ReactiveProperty {
    */
   converter: ts.Node | undefined;
 
-  // TODO: hasChanged?
+  // TODO(justinfagnani): hasChanged?
+}
+
+export interface Event {
+  name: string;
+  description: string | undefined;
+  typeString: string | undefined;
+  // TODO(justinfagnani): store a type reference too
 }

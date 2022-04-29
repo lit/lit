@@ -11,18 +11,10 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration, ReactiveProperty} from '../model.js';
-import {
-  getPropertyDecorator,
-  getPropertyOptions,
-  isCustomElementDecorator,
-} from './decorators.js';
-import {
-  getPropertyAttribute,
-  getPropertyType,
-  getPropertyReflect,
-  getPropertyConverter,
-} from './properties.js';
+import {LitElementDeclaration} from '../model.js';
+import {isCustomElementDecorator} from './decorators.js';
+import {getEvents} from './events.js';
+import {getProperties} from './properties.js';
 
 /**
  * Gets an analyzer LitElementDeclaration object from a ts.ClassDeclaration
@@ -32,40 +24,12 @@ export const getLitElementDeclaration = (
   node: LitClassDeclaration,
   checker: ts.TypeChecker
 ): LitElementDeclaration => {
-  const reactiveProperties = new Map<string, ReactiveProperty>();
-
-  const propertyDeclarations = node.members.filter((m) =>
-    ts.isPropertyDeclaration(m)
-  ) as unknown as ts.NodeArray<ts.PropertyDeclaration>;
-  for (const prop of propertyDeclarations) {
-    if (!ts.isIdentifier(prop.name)) {
-      // TODO(justinfagnani): emit error instead
-      throw new Error('unsupported property name');
-    }
-    const name = prop.name.text;
-    const type = checker.getTypeAtLocation(prop);
-
-    const propertyDecorator = getPropertyDecorator(prop);
-    if (propertyDecorator !== undefined) {
-      const options = getPropertyOptions(propertyDecorator);
-      reactiveProperties.set(name, {
-        name,
-        type,
-        typeString: checker.typeToString(type),
-        node: prop,
-        attribute: getPropertyAttribute(options, name),
-        typeOption: getPropertyType(options),
-        reflect: getPropertyReflect(options),
-        converter: getPropertyConverter(options),
-      });
-    }
-  }
-
   return new LitElementDeclaration({
     tagname: getTagName(node),
     name: node.name?.text,
     node,
-    reactiveProperties,
+    reactiveProperties: getProperties(node, checker),
+    events: getEvents(node),
   });
 };
 
