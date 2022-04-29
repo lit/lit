@@ -25,6 +25,7 @@
   "files": [
     "/src/",
     "!/src/test/",
+    "/lib/",
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}"
