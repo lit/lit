@@ -64,9 +64,10 @@ const parseFiresTagComment = (comment: string) => {
   if (match === null) {
     return undefined;
   }
+  const {name, type, description} = match.groups!;
   return {
-    name: match[1],
-    type: match[2],
-    description: match[3],
+    name,
+    type,
+    description,
   };
 };
