@@ -5,14 +5,12 @@
  */
 
 import ts from 'typescript';
-import {
-  Package,
-  Module,
-  ClassDeclaration,
-  LitElementDeclaration,
-} from './model.js';
+import {Package, Module, ClassDeclaration} from './model.js';
 import {AbsolutePath, absoluteToPackage} from './paths.js';
-import {isLitElement, getTagName} from './lit-element.js';
+import {
+  isLitElement,
+  getLitElementDeclaration,
+} from './lit-element/lit-element.js';
 
 /**
  * An analyzer for Lit npm packages
@@ -78,19 +76,14 @@ export class Analyzer {
 
     for (const statement of sourceFile.statements) {
       if (ts.isClassDeclaration(statement)) {
-        const name = statement.name?.text;
         if (isLitElement(statement, this.checker)) {
           module.declarations.push(
-            new LitElementDeclaration({
-              tagname: getTagName(statement),
-              name,
-              node: statement,
-            })
+            getLitElementDeclaration(statement, this.checker)
           );
         } else {
           module.declarations.push(
             new ClassDeclaration({
-              name,
+              name: statement.name?.text,
               node: statement,
             })
           );

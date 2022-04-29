@@ -50,6 +50,7 @@ export class ClassDeclaration {
 
 interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
+  reactiveProperties: Map<string, ReactiveProperty>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -66,8 +67,43 @@ export class LitElementDeclaration extends ClassDeclaration {
    */
   readonly tagname: string | undefined;
 
+  readonly reactiveProperties: Map<string, ReactiveProperty>;
+
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
+    this.reactiveProperties = init.reactiveProperties;
   }
+}
+
+export interface ReactiveProperty {
+  name: string;
+  node: ts.PropertyDeclaration;
+
+  // TODO: where do we convert this to a type string and CEM type references?
+  type: ts.Type;
+  typeString: string;
+
+  reflect: boolean;
+
+  // TODO: should we convert into attribute name?
+  attribute: boolean | string | undefined;
+
+  /**
+   * The test of the `type` property option.
+   *
+   * This is really only useful if the type is one of the well known types:
+   * String, Number, or Boolean.
+   */
+  typeOption: string | undefined;
+
+  /**
+   * The Node for the `converter` option if present.
+   *
+   * This is mostly useful to know whether the `type` option can be interpreted
+   * with the default semantics or not.
+   */
+  converter: ts.Node | undefined;
+
+  // TODO: hasChanged?
 }
