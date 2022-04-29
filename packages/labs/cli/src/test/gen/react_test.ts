@@ -25,9 +25,12 @@ test.before(() => {
 });
 
 test('stub test', async () => {
-  const cli = new LitCli(['gen', 'react', '--packageRoot', 'test-project'], {
-    console: cliConsole,
-  });
+  const cli = new LitCli(
+    ['labs', 'gen', '--frameworks', 'react', '--packageRoot', 'test-project'],
+    {
+      console: cliConsole,
+    }
+  );
   await cli.run();
 
   const output = outputStream.text;

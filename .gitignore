@@ -3,4 +3,3 @@ lerna-debug.log
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/

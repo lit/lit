@@ -4,12 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Analyzer} from '@lit-labs/analyzer';
-import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
+import {Package} from '@lit-labs/analyzer/lib/model.js';
 
-export const run = async (packageRoot: AbsolutePath, console: Console) => {
-  const analyzer = new Analyzer(packageRoot);
-  const analysis = analyzer.analyzePackage();
+export const run = async (analysis: Package, console: Console) => {
   await Promise.all(
     analysis.modules.map(async (module) => {
       // For now, log files containing declarations
