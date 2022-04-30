@@ -264,6 +264,7 @@
       "command": "cd ../tests && MODE=prod npx wtr \"../lit-html/development/**/*_test.(js|html)\" \"../lit-html/src/test/version-stability_test.js\"",
       "dependencies": [
         "build:rollup",
+        "build:ts",
         "build:version-stability-test"
       ],
       "files": [
