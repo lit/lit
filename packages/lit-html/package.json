@@ -161,6 +161,7 @@
       ]
     },
     "build:ts": {
+      "#comment": "Note this also builds polyfill-support via a TypeScript project reference.",
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": [
@@ -233,9 +234,6 @@
     },
     "check-version": {
       "command": "node scripts/check-version-tracker.js",
-      "dependencies": [
-        "build:ts"
-      ],
       "files": [
         "scripts/check-version-tracker.js",
         "package.json",
@@ -254,9 +252,11 @@
       "dependencies": [
         "build:ts"
       ],
+      "#comment": "TODO(aomarks) Factor out a file-only target in tests/ to DRY these config files into a single place",
       "files": [
         "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js"
+        "../tests/wtr-config.js",
+        "../tests/rollup-resolve-remap.js"
       ],
       "output": []
     },
@@ -268,7 +268,8 @@
       ],
       "files": [
         "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js"
+        "../tests/wtr-config.js",
+        "../tests/rollup-resolve-remap.js"
       ],
       "output": []
     }
