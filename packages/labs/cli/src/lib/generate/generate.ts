@@ -14,23 +14,24 @@ const frameworkGenerators = {
 type FrameworkName = keyof typeof frameworkGenerators;
 
 export const run = async (
-  {packageRoot, frameworks}: {packageRoot: string; frameworks: string[]},
+  {packages, frameworks}: {packages: string[]; frameworks: string[]},
   console: Console
 ) => {
-  const analyzer = new Analyzer(packageRoot as AbsolutePath);
-  const analysis = analyzer.analyzePackage();
-  await Promise.all(
-    (frameworks as FrameworkName[])
-      .map((framework) => {
-        const importer = frameworkGenerators[framework];
-        if (importer === undefined) {
-          throw new Error(`No generator exists for framework '${framework}'`);
-        }
-        return importer;
-      })
-      .map(async (importer) => {
+  for (const pkg of packages) {
+    const analyzer = new Analyzer(pkg as AbsolutePath);
+    const analysis = analyzer.analyzePackage();
+    const importers = (frameworks as FrameworkName[]).map((framework) => {
+      const importer = frameworkGenerators[framework];
+      if (importer === undefined) {
+        throw new Error(`No generator exists for framework '${framework}'`);
+      }
+      return importer;
+    });
+    await Promise.allSettled(
+      importers.map(async (importer) => {
         const generator = await importer();
         await generator.run(analysis, console);
       })
-  );
+    );
+  }
 };

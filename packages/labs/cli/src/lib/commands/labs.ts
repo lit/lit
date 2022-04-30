@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {Command} from '../command.js';
 
 export const labs: Command = {
@@ -15,21 +14,31 @@ export const labs: Command = {
       name: 'gen',
       description: 'Generate framework wrappers',
       options: [
-        {name: 'packageRoot', defaultValue: './'},
-        {name: 'frameworks', multiple: true, defaultValue: ['react']},
+        {
+          name: 'package',
+          multiple: true,
+          defaultValue: './',
+          description: 'Folder containing a package to generate wrappers for.',
+        },
+        {
+          name: 'framework',
+          multiple: true,
+          description:
+            'Framework to generate wrappers for. Supported frameworks: react.',
+        },
       ],
       async run(
         {
-          packageRoot,
-          frameworks,
+          package: packages,
+          framework: frameworks,
         }: {
-          packageRoot: AbsolutePath;
-          frameworks: string[];
+          package: string[];
+          framework: string[];
         },
         console: Console
       ) {
         const gen = await import('../generate/generate.js');
-        await gen.run({packageRoot, frameworks}, console);
+        await gen.run({packages, frameworks}, console);
       },
     },
   ],

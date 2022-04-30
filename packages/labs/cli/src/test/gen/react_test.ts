@@ -26,7 +26,7 @@ test.before(() => {
 
 test('stub test', async () => {
   const cli = new LitCli(
-    ['labs', 'gen', '--frameworks', 'react', '--packageRoot', 'test-project'],
+    ['labs', 'gen', '--framework', 'react', '--package', 'test-project'],
     {
       console: cliConsole,
     }
