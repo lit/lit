@@ -1,5 +1,5 @@
 import {LitElement, html, css} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 
 /**
  * @fires my-event {MyEvent} My special event
@@ -10,9 +10,22 @@ export class ElementA extends LitElement {
     :host {
       display: block;
     }
+    main {
+      border: solid 1px red;
+      border-radius: 5px;
+      padding: 8px;
+    }
   `;
 
+  @property({type: Number})
+  foo = 42;
+
   render() {
-    return html`<h2>This is a Lit element</h2>`
+    return html`
+      <h2>This is a Lit element</h2>
+      <code>foo is ${this.foo}</code>
+      <h3>These are children</h3>
+      <main><slot></slot></main>
+    `;
   }
 }
