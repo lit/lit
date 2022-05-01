@@ -1,12 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import '@lit-test/manually-wrapped';
 
 @Component({
-  selector: 'lib-element-a',
-  template: `
-    <p>
-      element-a works!
-    </p>
-  `,
+  selector: 'element-a',
+  template: `<ng-content></ng-content>`,
   styles: [
   ]
 })
@@ -15,6 +12,7 @@ export class ElementAComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    console.log('ElementAComponent onInit');
   }
 
 }

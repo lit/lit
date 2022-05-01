@@ -96,3 +96,15 @@ These instructions create an Angular "library" project, which contains just the 
     1. Preview the app:
 
         If you left the browser tab open with the app, it should automatically update to show the message "element-a works!".
+
+1. Update the component to wrap our web component
+
+    1. Change the component selector to `element-a`
+    1. Change app component HTML to use `<element-a>`
+    1. Change the template to `<ng-content><ng-content>`
+    1. Add a dependency on `@lit-test/manually-wrapped`
+    1. Import `@lit-test/manually-wrapped` into the component
+    1. Add `"allowedNonPeerDependencies": ["@lit-test/manually-wrapped"],` to `ng-package.json`
+    1. Add `angular-workspace/projects/*` to `lerna.json`
+    1. Run `lerna bootstrap`
+    1. Run `ng serve --open` again and you should see the Lit element output.

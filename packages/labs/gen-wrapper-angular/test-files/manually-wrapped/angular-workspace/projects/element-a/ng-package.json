@@ -1,6 +1,7 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../../dist/element-a",
+  "allowedNonPeerDependencies": ["@lit-test/manually-wrapped"],
   "lib": {
     "entryFile": "src/public-api.ts"
   }
