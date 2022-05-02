@@ -12,6 +12,7 @@ import {LitConsole} from './console.js';
 import {globalOptions, mergeOptions} from './options.js';
 import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
+import {labs} from './commands/labs.js';
 import {createRequire} from 'module';
 
 export interface Options {
@@ -45,6 +46,7 @@ export class LitCli {
     this.console.debug('got args:', {args: args});
 
     this.addCommand(localize);
+    this.addCommand(labs);
     // This must be the last command added
     this.addCommand(makeHelpCommand(this));
   }

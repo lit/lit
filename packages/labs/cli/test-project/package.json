@@ -1,0 +1,6 @@
+{
+  "name": "test-project",
+  "dependencies": {
+    "lit": "^2.0.0"
+  }
+}

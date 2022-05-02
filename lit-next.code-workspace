@@ -45,7 +45,15 @@
       "path": "packages/benchmarks"
     },
     {
-      "name": "lit",
+      "name": "analyzer",
+      "path": "packages/labs/analyzer"
+    },
+    {
+      "name": "cli",
+      "path": "packages/labs/cli"
+    },
+    {
+      "name": "lit-monorepo",
       "path": "."
     }
   ],

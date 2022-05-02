@@ -26,6 +26,7 @@
     "tslib": "^1.14.1"
   },
   "devDependencies": {
+    "@lit-labs/analyzer": "^0.1.0",
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2",
