@@ -33,11 +33,11 @@ export const initialState = Symbol();
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
-export type StatusRenderer<R, E> = {
+export type StatusRenderer<R> = {
   initial?: () => unknown;
   pending?: () => unknown;
   complete?: (value: R) => unknown;
-  error?: (error?: E) => unknown;
+  error?: (error?: unknown) => unknown;
 };
 
 export interface TaskConfig<T extends unknown[], R> {
@@ -99,14 +99,14 @@ export interface TaskConfig<T extends unknown[], R> {
  * }
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class Task<T extends [...unknown[]] = any, R = any, E = unknown> {
+export class Task<T extends [...unknown[]] = any, R = any> {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
   private _getArgs?: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
   private _value?: R;
-  private _error?: E;
+  private _error?: unknown;
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
@@ -218,7 +218,7 @@ export class Task<T extends [...unknown[]] = any, R = any, E = unknown> {
           this._rejectTaskComplete(error);
         }
         this._value = result as R;
-        this._error = error as E;
+        this._error = error;
       }
       // Request an update with the final value.
       this._host.requestUpdate();
@@ -233,7 +233,7 @@ export class Task<T extends [...unknown[]] = any, R = any, E = unknown> {
     return this._error;
   }
 
-  render<SR extends StatusRenderer<R, E>>(renderer: SR) {
+  render<SR extends StatusRenderer<R>>(renderer: SR) {
     switch (this.status) {
       case TaskStatus.INITIAL:
         return renderer.initial?.();

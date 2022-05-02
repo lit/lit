@@ -36,7 +36,6 @@ suite('Task', () => {
     config?: Partial<TaskConfig<unknown[], string>>
   ) => {
     class A extends ReactiveElement {
-      // task with args, return type of string, and an error type of string
       task: Task;
 
       @property()
