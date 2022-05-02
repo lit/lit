@@ -2,7 +2,7 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 /**
- * @fires my-event {MyEvent} My special event
+ * @fires thing {Event} My special event
  */
 @customElement('element-a')
 export class ElementA extends LitElement {
@@ -23,9 +23,29 @@ export class ElementA extends LitElement {
   render() {
     return html`
       <h2>This is a Lit element</h2>
-      <code>foo is ${this.foo}</code>
+      <p><code>this.foo: ${this.foo}</code></p>
+      <p></code><code>this.id: ${this.id}</code></p>
       <h3>These are children</h3>
       <main><slot></slot></main>
+      <button @click=${this._onClick}>Do Foo</button>
     `;
+  }
+
+  private _onClick = () => {
+    this.dispatchEvent(new FooEvent(this.foo));
+  };
+}
+
+export class FooEvent extends Event {
+  value: number;
+  constructor(value: number) {
+    super('foo');
+    this.value = value;
+  }
+}
+
+declare global {
+  interface HTMLElementEventMap {
+    foo: FooEvent;
   }
 }

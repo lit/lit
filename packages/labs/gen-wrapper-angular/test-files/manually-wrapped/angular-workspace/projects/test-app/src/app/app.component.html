@@ -1,5 +1,7 @@
 <h1>Angular Test App</h1>
 
-<element-a [foo]="21">
+<element-a [foo]="21" id="the-thing" (fooEvent)="setFoo($event)">
   <p>I'm a child from Angular</p>
 </element-a>
+
+<p>Parent foo = {{ foo }}</p>

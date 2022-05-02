@@ -1,5 +1,13 @@
-import {Component, ElementRef, Input, NgZone, OnInit} from '@angular/core';
-import type {ElementA} from '@lit-test/manually-wrapped';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnInit,
+  Output,
+} from '@angular/core';
+import type {ElementA, FooEvent} from '@lit-test/manually-wrapped';
 import '@lit-test/manually-wrapped';
 
 @Component({
@@ -13,6 +21,9 @@ export class ElementAComponent implements OnInit {
   constructor(e: ElementRef, ngZone: NgZone) {
     this._el = e.nativeElement;
     this._ngZone = ngZone;
+    this._el.addEventListener('foo', (e: FooEvent) => {
+      this.fooEvent.emit(e.value);
+    });
   }
 
   ngOnInit(): void {
@@ -27,4 +38,7 @@ export class ElementAComponent implements OnInit {
   get foo() {
     return this._el.foo;
   }
+
+  @Output()
+  fooEvent = new EventEmitter<number>();
 }
