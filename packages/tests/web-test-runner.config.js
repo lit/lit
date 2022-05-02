@@ -56,17 +56,33 @@ function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
     const user = (process.env.SAUCE_USERNAME || '').trim();
     const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
-    if (!user || !key) {
-      throw new Error(
-        'To test on Sauce, set the SAUCE_USERNAME' +
-          ' and SAUCE_ACCESS_KEY environment variables.'
-      );
+    const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
+    const build = (process.env.SAUCE_BUILD_ID || '').trim();
+
+    if (!user || !key || !tunnelIdentifier || !build) {
+      throw new Error(`
+To test on Sauce, set the following variables:
+- SAUCE_USERNAME
+- SAUCE_ACCESSKEY
+- SAUCE_TUNNEL_ID
+- SAUCE_BUILD_ID
+`);
     }
-    sauceLauncher = createSauceLabsLauncher({
-      user,
-      key,
-    });
+
+    sauceLauncher = createSauceLabsLauncher(
+      {
+        user,
+        key,
+      },
+      {},
+      {
+        tunnelIdentifier,
+        sharedTunnel: true,
+        noRemoveCollidingTunnels: true,
+      }
+    );
   }
+
   return sauceLauncher;
 }
 
