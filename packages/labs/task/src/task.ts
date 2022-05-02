@@ -33,12 +33,16 @@ export const initialState = Symbol();
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
-export type StatusRenderer<R, E, D> = {
-  initial?: () => D;
-  pending?: () => D;
-  complete?: (value: R) => D;
-  error?: (error: E) => D;
+export type StatusRenderer<R> = {
+  initial?: () => unknown;
+  pending?: () => unknown;
+  complete?: (value: R) => unknown;
+  error?: (error: unknown) => unknown;
 };
+
+// type StatesRendererMap<SR extends StatusRenderer<R>> = {
+//   [K in keyof SR]: ReturnType<SR[K]>;
+// }
 
 export interface TaskConfig<T extends unknown[], R> {
   task: TaskFunction<T, R>;
@@ -233,7 +237,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     return this._error;
   }
 
-  render<D, E = unknown>(renderer: StatusRenderer<R, E, D>): D | void {
+  render<SR extends StatusRenderer<R>>(renderer: SR) {
     switch (this.status) {
       case TaskStatus.INITIAL:
         return renderer.initial?.();
@@ -242,7 +246,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       case TaskStatus.COMPLETE:
         return renderer.complete?.(this.value!);
       case TaskStatus.ERROR:
-        return renderer.error?.(this.error as E);
+        return renderer.error?.(this.error);
       default:
         // exhaustiveness check
         this.status as void;
