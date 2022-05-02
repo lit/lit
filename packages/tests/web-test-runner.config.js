@@ -57,9 +57,8 @@ function makeSauceLauncherOnce() {
     const user = (process.env.SAUCE_USERNAME || '').trim();
     const key = (process.env.SAUCE_ACCESS_KEY || '').trim();
     const tunnelIdentifier = (process.env.SAUCE_TUNNEL_ID || '').trim();
-    const build = (process.env.SAUCE_BUILD_ID || '').trim();
 
-    if (!user || !key || !tunnelIdentifier || !build) {
+    if (!user || !key || !tunnelIdentifier) {
       throw new Error(`
 To test on Sauce, set the following variables:
 - SAUCE_USERNAME

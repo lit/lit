@@ -16,6 +16,7 @@ jobs:
       BROWSERS: preset:sauce-ie11
       CONCURRENT_BROWSERS: 3
       CONCURRENT_FRAMES: 1
+      SAUCELABS_TUNNEL_ID: lit-tests
   
     steps:
       - uses: actions/checkout@v2
