@@ -37,7 +37,7 @@ export type StatusRenderer<R> = {
   initial?: () => unknown;
   pending?: () => unknown;
   complete?: (value: R) => unknown;
-  error?: (error?: unknown) => unknown;
+  error?: (error: unknown) => unknown;
 };
 
 export interface TaskConfig<T extends unknown[], R> {
