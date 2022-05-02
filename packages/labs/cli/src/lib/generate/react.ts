@@ -103,26 +103,29 @@ const wrapperFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
   return wrapperFiles;
 };
 
-const packageJsonTemplate = (
-  pkgConfig: PackageJson,
-  litModules: LitModule[]
-) => {
-  const {name} = pkgConfig;
-  // TODO(kschaaf): spread in/adapt relevant fields from source package.json
-  // (description, license, keywords, etc.)
+const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
+  // TODO(kschaaf): spread in/adapt other relevant fields from source
+  // package.json (description, license, keywords, etc.)
   return JSON.stringify(
     {
-      name: packageNameToReactPackageName(name!),
+      name: packageNameToReactPackageName(pkgJson.name!),
       type: 'module',
       scripts: {
         build: 'tsc',
         'build:watch': 'tsc --watch',
       },
+      // TODO(kschaaf): Version in lock-step with source?
+      version: pkgJson.version,
+      dependencies: {
+        // TODO(kschaaf): make version range configurable?
+        [pkgJson.name!]: '^' + pkgJson.version!,
+      },
       peerDependencies: {
+        // TODO(kschaaf): make configurable?
         react: '^17.0.1',
-        // TODO(kschaaf): add dep on source package
       },
       devDependencies: {
+        // TODO(kschaaf): make configurable?
         typescript: '^4.3.5',
       },
       files: [...litModules.map((m) => m.moduleJsPath)],

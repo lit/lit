@@ -1,6 +1,7 @@
 {
   "private": true,
   "name": "test-project",
+  "version": "1.0.0",
   "dependencies": {
     "lit": "^2.0.0"
   }
