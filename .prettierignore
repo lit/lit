@@ -8,6 +8,8 @@ lerna-debug.log
 *.tgz
 *.tsbuildinfo
 .DS_Store
+.vscode/
+.wireit
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/

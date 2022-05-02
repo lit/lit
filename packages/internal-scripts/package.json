@@ -15,9 +15,26 @@
     "treemirror": "bin/treemirror.js"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
-    "build:ts": "tsc --build",
-    "clean": "rm -rf lib/"
+    "build": "wireit",
+    "build:ts": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib"
+      ]
+    }
   },
   "dependencies": {
     "@types/node": "^16.7.8",
