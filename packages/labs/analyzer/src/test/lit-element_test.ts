@@ -14,7 +14,7 @@ import {fileURLToPath} from 'url';
 import {Analyzer} from '../lib/analyzer.js';
 import {AbsolutePath} from '../lib/paths.js';
 import {LitElementDeclaration} from '../lib/model.js';
-import {isLitElement} from '../lib/lit-element.js';
+import {isLitElement} from '../lib/lit-element/lit-element.js';
 
 const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'LitElement tests'

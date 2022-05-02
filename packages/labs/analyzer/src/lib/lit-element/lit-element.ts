@@ -51,7 +51,11 @@ const _isLitElementClassDeclaration = (t: ts.BaseType) => {
 };
 
 const _isLitElementModule = (file: ts.SourceFile) => {
-  return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
+  return (
+    file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts') ||
+    // Handle case of running analyzer in symlinked monorepo
+    file.fileName.endsWith('/packages/lit-element/lit-element.d.ts')
+  );
 };
 
 /**
