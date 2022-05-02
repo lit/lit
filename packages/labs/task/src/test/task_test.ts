@@ -53,7 +53,7 @@ suite('Task', () => {
 
       constructor() {
         super();
-        const taskConfig: TaskConfig<unknown[], string> = {
+        const taskConfig = {
           task: (...args: unknown[]) =>
             new Promise((resolve, reject) => {
               this.rejectTask = () => reject(`error`);
