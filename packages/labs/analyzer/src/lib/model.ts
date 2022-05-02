@@ -7,11 +7,24 @@
 import ts from 'typescript';
 import {PackagePath} from './paths.js';
 
+import {IPackageJson as PackageJson} from 'package-json-type';
+export {PackageJson};
+
+export interface PackageInit {
+  packageJson: PackageJson;
+  tsConfig: ts.ParsedCommandLine;
+  modules: ReadonlyArray<Module>;
+}
+
 export class Package {
   readonly modules: ReadonlyArray<Module>;
+  readonly tsConfig: ts.ParsedCommandLine;
+  readonly packageJson: PackageJson;
 
-  constructor(modules: ReadonlyArray<Module>) {
-    this.modules = modules;
+  constructor(init: PackageInit) {
+    this.packageJson = init.packageJson;
+    this.tsConfig = init.tsConfig;
+    this.modules = init.modules;
   }
 }
 

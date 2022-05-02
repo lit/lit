@@ -5,12 +5,15 @@
  */
 
 import ts from 'typescript';
-import {Package, Module, ClassDeclaration} from './model.js';
+import {Package, Module, ClassDeclaration, PackageJson} from './model.js';
 import {AbsolutePath, absoluteToPackage} from './paths.js';
 import {
   isLitElement,
   getLitElementDeclaration,
 } from './lit-element/lit-element.js';
+import * as fs from 'fs';
+import * as path from 'path';
+export {PackageJson};
 
 /**
  * An analyzer for Lit npm packages
@@ -20,13 +23,22 @@ export class Analyzer {
   readonly commandLine: ts.ParsedCommandLine;
   readonly program: ts.Program;
   readonly checker: ts.TypeChecker;
+  readonly packageJson: PackageJson;
 
   /**
    * @param packageRoot The root directory of the package to analyze. Currently
-   * this directory must have a tsconfig.json file.
+   * this directory must have a tsconfig.json and package.json.
    */
   constructor(packageRoot: AbsolutePath) {
     this.packageRoot = packageRoot;
+
+    try {
+      this.packageJson = JSON.parse(
+        fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
+      );
+    } catch (e) {
+      throw new Error('package.json not found');
+    }
 
     const configFileName = ts.findConfigFile(
       packageRoot,
@@ -35,7 +47,7 @@ export class Analyzer {
     );
     if (configFileName === undefined) {
       // TODO: use a hard-coded tsconfig for JS projects.
-      throw new Error('tsconfig not found');
+      throw new Error('tsconfig.json not found');
     }
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
     this.commandLine = ts.parseJsonConfigFileContent(
@@ -63,7 +75,11 @@ export class Analyzer {
     for (const fileName of rootFileNames) {
       modules.push(this.analyzeFile(fileName as AbsolutePath));
     }
-    return new Package(modules);
+    return new Package({
+      modules,
+      tsConfig: this.commandLine,
+      packageJson: this.packageJson,
+    });
   }
 
   analyzeFile(fileName: AbsolutePath) {

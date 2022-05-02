@@ -7,6 +7,10 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
+/**
+ * My awesome element
+ * @fires a-changed - An awesome event to fire
+ */
 @customElement('element-a')
 export class ElementA extends LitElement {
   static styles = css`
