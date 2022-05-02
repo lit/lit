@@ -33,7 +33,7 @@ export const initialState = Symbol();
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
-export type StatusRenderer<R, E = unknown> = {
+export type StatusRenderer<R, E> = {
   initial?: () => unknown;
   pending?: () => unknown;
   complete?: (value: R) => unknown;

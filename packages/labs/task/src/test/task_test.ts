@@ -37,7 +37,7 @@ suite('Task', () => {
   ) => {
     class A extends ReactiveElement {
       // task with args, return type of string, and an error type of string
-      task: Task<unknown[], string, string>;
+      task: Task;
 
       @property()
       a = 'a';
@@ -72,7 +72,7 @@ suite('Task', () => {
           initial: () => (this.renderedStatus = 'initial'),
           pending: () => (this.renderedStatus = 'pending'),
           complete: (value) => (this.renderedStatus = value),
-          error: (error) => (this.renderedStatus = error),
+          error: (error) => (this.renderedStatus = error as string),
         });
       }
     }
