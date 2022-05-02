@@ -67,11 +67,11 @@ suite('Task', () => {
       override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
         this.taskValue = this.task.value ?? this.task.error;
-        this.task.render({
+        this.task.render<string, string>({
           initial: () => (this.renderedStatus = 'initial'),
           pending: () => (this.renderedStatus = 'pending'),
-          complete: (value: unknown) => (this.renderedStatus = value as string),
-          error: (error: unknown) => (this.renderedStatus = error as string),
+          complete: (value: string) => (this.renderedStatus = value),
+          error: (error: string) => (this.renderedStatus = error),
         });
       }
     }
