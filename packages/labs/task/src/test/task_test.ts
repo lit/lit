@@ -36,7 +36,8 @@ suite('Task', () => {
     config?: Partial<TaskConfig<unknown[], string>>
   ) => {
     class A extends ReactiveElement {
-      task: Task;
+      // task with args, return type of string, and an error type of string
+      task: Task<unknown[], string, string>;
 
       @property()
       a = 'a';
@@ -53,7 +54,7 @@ suite('Task', () => {
 
       constructor() {
         super();
-        const taskConfig = {
+        const taskConfig: TaskConfig<unknown[], string> = {
           task: (...args: unknown[]) =>
             new Promise((resolve, reject) => {
               this.rejectTask = () => reject(`error`);
@@ -71,7 +72,7 @@ suite('Task', () => {
           initial: () => (this.renderedStatus = 'initial'),
           pending: () => (this.renderedStatus = 'pending'),
           complete: (value) => (this.renderedStatus = value),
-          error: (error) => (this.renderedStatus = error as string),
+          error: (error) => (this.renderedStatus = error),
         });
       }
     }
