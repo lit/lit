@@ -62,9 +62,8 @@ function makeSauceLauncherOnce() {
       throw new Error(`
 To test on Sauce, set the following variables:
 - SAUCE_USERNAME
-- SAUCE_ACCESSKEY
+- SAUCE_ACCESS_KEY
 - SAUCE_TUNNEL_ID
-- SAUCE_BUILD_ID
 `);
     }
 
