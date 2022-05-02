@@ -60,7 +60,7 @@ export class LitElementDeclaration extends ClassDeclaration {
   /**
    * The element's tag name, if one is associated with this class declaration,
    * such as with a `@customElement()` decorator or `customElements.define()`
-   * call int he same module.
+   * call in the same module.
    *
    * This is undefined if the element has no associated custom element
    * registration in the same module. This class might be intended for use as a

@@ -1,0 +1,12 @@
+{
+  "name": "element-a",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^13.3.0",
+    "@angular/core": "^13.3.0"
+  },
+  "dependencies": {
+    "@lit-test/manually-wrapped": "^0.0.0",
+    "tslib": "^2.3.0"
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "element-a": {
+      "projectType": "library",
+      "root": "projects/element-a",
+      "sourceRoot": "projects/element-a/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/element-a/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/element-a/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/element-a/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/element-a/src/test.ts",
+            "tsConfig": "projects/element-a/tsconfig.spec.json",
+            "karmaConfig": "projects/element-a/karma.conf.js"
+          }
+        }
+      }
+    },
+    "test-app": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:application": {
+          "strict": true
+        }
+      },
+      "root": "projects/test-app",
+      "sourceRoot": "projects/test-app/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/test-app",
+            "index": "projects/test-app/src/index.html",
+            "main": "projects/test-app/src/main.ts",
+            "polyfills": "projects/test-app/src/polyfills.ts",
+            "tsConfig": "projects/test-app/tsconfig.app.json",
+            "assets": [
+              "projects/test-app/src/favicon.ico",
+              "projects/test-app/src/assets"
+            ],
+            "styles": [
+              "projects/test-app/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "projects/test-app/src/environments/environment.ts",
+                  "with": "projects/test-app/src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "test-app:build:production"
+            },
+            "development": {
+              "browserTarget": "test-app:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "test-app:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/test-app/src/test.ts",
+            "polyfills": "projects/test-app/src/polyfills.ts",
+            "tsConfig": "projects/test-app/tsconfig.spec.json",
+            "karmaConfig": "projects/test-app/karma.conf.js",
+            "assets": [
+              "projects/test-app/src/favicon.ico",
+              "projects/test-app/src/assets"
+            ],
+            "styles": [
+              "projects/test-app/src/styles.css"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
+  },
+  "defaultProject": "element-a"
+}

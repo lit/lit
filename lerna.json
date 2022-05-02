@@ -1,4 +1,10 @@
 {
-  "packages": ["packages/*", "packages/labs/*", "packages/localize/examples/*"],
+  "packages": [
+    "packages/*",
+    "packages/labs/*",
+    "packages/localize/examples/*",
+    "packages/labs/gen-wrapper-angular/test-files/*",
+    "packages/labs/gen-wrapper-angular/test-files/manually-wrapped/angular-workspace/projects/*"
+  ],
   "version": "independent"
 }
