@@ -156,6 +156,7 @@
     "build": {
       "dependencies": [
         "build:rollup",
+        "build:ts",
         "build:ts:types",
         "build:version-stability-test"
       ]
