@@ -13,7 +13,7 @@ export class BufferedWritable extends Writable {
 
   constructor() {
     super({
-      write: (chunk, encoding, callback) => {
+      write: (chunk: unknown, encoding, callback) => {
         if (encoding === 'utf-8') {
           this.buffer.push(chunk as string);
         } else if ((encoding as 'buffer') === 'buffer') {

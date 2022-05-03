@@ -7,10 +7,12 @@
 import {Command} from '../command.js';
 
 export const labs: Command = {
+  kind: 'resolved',
   name: 'labs',
   description: 'Experimental commands',
   subcommands: [
     {
+      kind: 'resolved',
       name: 'gen',
       description: 'Generate framework wrappers',
       options: [

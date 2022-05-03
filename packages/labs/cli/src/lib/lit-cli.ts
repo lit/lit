@@ -7,24 +7,38 @@
 import commandLineCommands from 'command-line-commands';
 import commandLineArgs from 'command-line-args';
 
-import {Command} from './command.js';
+import {
+  Command,
+  isCommand,
+  MaybeCommandModule,
+  ReferenceToCommand,
+  ResolvedCommand,
+} from './command.js';
 import {LitConsole} from './console.js';
 import {globalOptions, mergeOptions} from './options.js';
 import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
 import {labs} from './commands/labs.js';
 import {createRequire} from 'module';
+import * as childProcess from 'child_process';
 
 export interface Options {
   console?: LitConsole;
+  cwd?: string;
+  stdin?: NodeJS.ReadableStream;
 }
 
 export class LitCli {
-  commands: Map<string, Command> = new Map();
-  args: string[];
-  console: LitConsole;
+  readonly commands: Map<string, Command> = new Map();
+  readonly args: readonly string[];
+  readonly console: LitConsole;
+  /** The current working directory. */
+  private readonly cwd: string;
+  private readonly stdin: NodeJS.ReadableStream;
 
   constructor(args: string[], options?: Options) {
+    this.stdin = options?.stdin ?? process.stdin;
+    this.cwd = options?.cwd ?? process.cwd();
     this.console =
       options?.console ?? new LitConsole(process.stdout, process.stderr);
     this.console.logLevel = 'info';
@@ -47,7 +61,6 @@ export class LitCli {
 
     this.addCommand(localize);
     this.addCommand(labs);
-    // This must be the last command added
     this.addCommand(makeHelpCommand(this));
   }
 
@@ -62,21 +75,27 @@ export class LitCli {
   }
 
   async run() {
-    const helpCommand = this.commands.get('help')!;
+    const helpCommand = this.commands.get('help');
+    if (helpCommand?.kind !== 'resolved') {
+      throw new Error(`Internal error: help command not found`);
+    }
     this.console.debug('running...');
 
     // If the "--version" flag is ever present, just print
     // the current version. Useful for globally installed CLIs.
-    if (this.args.indexOf('--version') > -1) {
+    if (this.args.includes('--version')) {
       const require = createRequire(import.meta.url);
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       console.log(require('../package.json').version);
       return;
     }
 
-    const result = this.getCommand(this.commands, this.args);
+    const result = await this.getCommand(this.commands, this.args);
     if ('invalidCommand' in result) {
       return helpCommand.run({command: [result.invalidCommand]}, this.console);
+    } else if ('commandNotInstalled' in result) {
+      this.console.error(`Command not installed.`);
+      return {exitCode: 1};
     } else {
       const commandName = result.commandName;
       const command = result.command;
@@ -112,17 +131,31 @@ export class LitCli {
     }
   }
 
-  getCommand(
+  async getCommand(
     commands: Map<string, Command>,
     args: ReadonlyArray<string>,
     parentCommandNames: Array<string> = []
-  ):
-    | {commandName: string; command: Command; argv: string[]}
-    | {invalidCommand: string} {
+  ): Promise<
+    | {commandName: string; command: ResolvedCommand; argv: string[]}
+    | {invalidCommand: string}
+    | {commandNotInstalled: boolean}
+  > {
     try {
       const parsedArgs = commandLineCommands([...commands.keys()], [...args]);
-      const commandName = parsedArgs.command!;
-      const command = commands.get(commandName)!;
+      const commandName = parsedArgs.command;
+      let command = commandName && commands.get(commandName);
+      if (!commandName || command == null || command == '') {
+        return {invalidCommand: commandName ?? 'unknown comand'};
+      }
+      if (command.kind === 'reference') {
+        const maybeCommand =
+          await this.#resolveCommandAndMaybeInstallNeededDeps(command);
+        if (maybeCommand === undefined) {
+          return {commandNotInstalled: true};
+        }
+        command = maybeCommand;
+      }
+
       if (command.subcommands !== undefined && parsedArgs.argv.length > 0) {
         const subcommands = new Map<string, Command>(
           command.subcommands.map((c) => [c.name, c])
@@ -152,5 +185,142 @@ export class LitCli {
       // If an unexpected error occurred, propagate it
       throw error;
     }
+  }
+
+  #getImportPath(reference: ReferenceToCommand): string | undefined {
+    try {
+      return createRequire(this.cwd).resolve(reference.importSpecifier, {
+        paths: [this.cwd],
+      });
+    } catch (e: unknown) {
+      if ((e as undefined | {code?: string})?.code === 'MODULE_NOT_FOUND') {
+        return undefined;
+      }
+      throw e;
+    }
+  }
+  async #loadCommandFromPath(
+    reference: ReferenceToCommand,
+    path: string
+  ): Promise<Command> {
+    const mod = (await import(path)) as MaybeCommandModule;
+    if (mod.getCommand == null) {
+      throw new Error(
+        `Expected file at ${path} to export a function named 'getCommand'`
+      );
+    }
+    const maybeCommand = await mod.getCommand({requestedCommand: reference});
+    if (!isCommand(maybeCommand)) {
+      throw new Error(
+        `Expected getCommand function at ${path} to return an object that looks like a Command.`
+      );
+    }
+    return maybeCommand;
+  }
+
+  async resolveCommandAsMuchAsPossible(
+    reference: ReferenceToCommand
+  ): Promise<Command> {
+    const resolvedPackageLocation = this.#getImportPath(reference);
+    if (resolvedPackageLocation === undefined) {
+      return reference;
+    }
+    const command = await this.#loadCommandFromPath(
+      reference,
+      resolvedPackageLocation
+    );
+    if (command.kind === 'reference') {
+      return this.resolveCommandAsMuchAsPossible(command);
+    }
+    return command;
+  }
+
+  async #resolveCommandAndMaybeInstallNeededDeps(
+    reference: ReferenceToCommand
+  ): Promise<ResolvedCommand | undefined> {
+    let resolvedPackageLocation = this.#getImportPath(reference);
+    if (resolvedPackageLocation === undefined) {
+      const installed = await this.#installDepWithPermission(reference);
+      if (!installed) {
+        return undefined;
+      }
+      resolvedPackageLocation = this.#getImportPath(reference);
+      if (resolvedPackageLocation === undefined) {
+        throw new Error(
+          `Internal error: could not resolve command after what looked like a successful installation.`
+        );
+      }
+    }
+    const command = await this.#loadCommandFromPath(
+      reference,
+      resolvedPackageLocation
+    );
+    if (command.kind === 'reference') {
+      return this.#resolveCommandAndMaybeInstallNeededDeps(command);
+    }
+    return command;
+  }
+
+  async #installDepWithPermission(
+    reference: ReferenceToCommand
+  ): Promise<boolean> {
+    const havePermission = await this.#getPermissionToInstall(reference);
+    if (!havePermission) {
+      return false;
+    }
+    const installFrom = reference.installFrom ?? reference.importSpecifier;
+    const child = childProcess.spawn(
+      'npm',
+      ['install', '--save-dev', installFrom],
+      {
+        cwd: this.cwd,
+        stdio: [process.stdin, 'pipe', 'pipe'],
+      }
+    );
+    (async () => {
+      for await (const line of child.stdout) {
+        this.console.log(line.toString());
+      }
+    })();
+    (async () => {
+      for await (const line of child.stderr) {
+        this.console.error(line.toString());
+      }
+    })();
+    const succeeded = await new Promise<boolean>((resolve) => {
+      child.on('exit', (code) => {
+        resolve(code === 0);
+      });
+      child.on('error', () => {
+        this.console.error('Error installing dependency');
+        resolve(false);
+      });
+    });
+    return succeeded;
+  }
+
+  async #getPermissionToInstall(
+    reference: ReferenceToCommand
+  ): Promise<boolean> {
+    this.console.log(`The command ${reference.name} is not installed.
+Run 'npm install --save-dev ${
+      reference.installFrom ?? reference.importSpecifier
+    }'? [Y/n]`);
+    // read a line from this.stdin
+    const line = await new Promise<string>((resolve) => {
+      const closeHandler = (data: unknown) => {
+        if (data) {
+          resolve(String(data));
+        } else {
+          resolve('');
+        }
+      };
+      this.stdin.once('close', closeHandler);
+      this.stdin.once('data', (data: unknown) => {
+        resolve(String(data));
+        this.stdin.removeListener('close', closeHandler);
+      });
+    });
+    return line === '\n' || line.trim().toLowerCase() === 'y';
   }
 }

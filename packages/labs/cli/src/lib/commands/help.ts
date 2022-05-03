@@ -8,14 +8,14 @@ import chalk from 'chalk';
 import commandLineUsage from 'command-line-usage';
 
 import {globalOptions} from '../options.js';
-import {Command, CommandOptions} from '../command.js';
+import {CommandOptions, ResolvedCommand} from '../command.js';
 import {LitCli} from '../lit-cli.js';
 
 const HELP_HEADER = `${chalk.bold.underline('Lit CLI')}
 Usage: lit <command> [options ...]`;
 
-export const makeHelpCommand = (cli: LitCli): Command => {
-  const generateGeneralUsage = () => {
+export const makeHelpCommand = (cli: LitCli): ResolvedCommand => {
+  const generateGeneralUsage = async () => {
     return commandLineUsage([
       {
         content: HELP_HEADER,
@@ -23,9 +23,14 @@ export const makeHelpCommand = (cli: LitCli): Command => {
       },
       {
         header: 'Available Commands',
-        content: [...cli.commands.values()].map((command) => {
-          return {name: command.name, summary: command.description};
-        }),
+        content: await Promise.all(
+          [...cli.commands.values()].map(async (command) => {
+            if (command.kind === 'reference') {
+              command = await cli.resolveCommandAsMuchAsPossible(command);
+            }
+            return {name: command.name, summary: command.description};
+          })
+        ),
       },
       {header: 'Global Options', optionList: globalOptions},
       {
@@ -36,7 +41,7 @@ export const makeHelpCommand = (cli: LitCli): Command => {
   };
 
   const generateCommandUsage = (
-    command: Command,
+    command: ResolvedCommand,
     commandNames: Array<string>
   ) => {
     const usageGroups: commandLineUsage.Section[] = [
@@ -71,6 +76,7 @@ export const makeHelpCommand = (cli: LitCli): Command => {
   };
 
   return {
+    kind: 'resolved',
     name: 'help',
     description: 'Shows this help message, or help for a specific command',
     options: [
@@ -88,16 +94,19 @@ export const makeHelpCommand = (cli: LitCli): Command => {
 
       if (commandNames == null) {
         console.debug('no command given, printing general help...', {options});
-        console.log(generateGeneralUsage());
+        console.log(await generateGeneralUsage());
         return;
       }
 
-      const result = cli.getCommand(cli.commands, commandNames);
+      const result = await cli.getCommand(cli.commands, commandNames);
       if ('invalidCommand' in result) {
         console.error(
           `'${commandNames.join(' ')}' is not an available command.`
         );
-        console.log(generateGeneralUsage());
+        console.log(await generateGeneralUsage());
+        return;
+      } else if ('commandNotInstalled' in result) {
+        console.error(`'${commandNames.join(' ')}' wasn't installed.`);
         return;
       }
       console.debug(`printing help for command '${commandNames}'...`);
