@@ -3,7 +3,7 @@ name: Sauce
 on: [push, pull_request]
 
 jobs:
-  tests-sauce:
+  tests-sauce-firefox:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
@@ -15,6 +15,8 @@ jobs:
     env:
       CONCURRENT_BROWSERS: 1
       CONCURRENT_FRAMES: 1
+      BROWSERS: 'sauce:Windows 10/Firefox@78'
+      SAUCE_TUNNEL_ID: lit-tests__firefox
 
     steps:
       - uses: actions/checkout@v2
@@ -38,8 +40,7 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-          BROWSERS: 'sauce:Windows 10/Firefox@78'
-          SAUCE_TUNNEL_ID: lit-tests__firefox
+
         run: |
           cd packages/tests
           npm run test

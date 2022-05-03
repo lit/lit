@@ -3,7 +3,7 @@ name: Sauce
 on: [push, pull_request]
 
 jobs:
-  tests-sauce:
+  tests-sauce-safari:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
