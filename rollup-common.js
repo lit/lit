@@ -445,7 +445,7 @@ const litMonoBundleConfig = ({
       // We want to resolve to development, because the default is production,
       // which is already rolled-up sources. That creates an unnecessary
       // dependency between rollup build steps, and causes double-minification.
-      exportConditions: 'development',
+      exportConditions: ['development'],
     }),
     replace({
       'const DEV_MODE = true': 'const DEV_MODE = false',
