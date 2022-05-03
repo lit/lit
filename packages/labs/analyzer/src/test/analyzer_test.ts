@@ -38,6 +38,7 @@ test('Analyzer finds class declarations', ({analyzer}) => {
   const elementAModule = result.modules.find(
     (m) => m.sourcePath === 'src/class-a.ts'
   );
+  assert.equal(elementAModule?.jsPath, 'out/class-a.js');
   assert.equal(elementAModule?.declarations.length, 1);
   assert.equal(elementAModule?.declarations[0].name, 'ClassA');
 });

@@ -5,7 +5,11 @@
  */
 
 import * as path from 'path';
+import ts from 'typescript';
 
+/**
+ * An absolute path
+ */
 export type AbsolutePath = string & {
   __absolutePathBrand: never;
 };
@@ -17,6 +21,9 @@ export type PackagePath = string & {
   __packagePathBrand: never;
 };
 
+/**
+ * Convert an absolute path to a package-relative path
+ */
 export const absoluteToPackage = (
   path: AbsolutePath,
   packageRoot: AbsolutePath
@@ -35,23 +42,29 @@ export const absoluteToPackage = (
   return packagePath as PackagePath;
 };
 
+/**
+ * Convert a typescript source path to its built path
+ */
 export const sourceToJs = (
   sourcePath: PackagePath,
-  sourceRootDir = '',
-  packageRoot: AbsolutePath
+  packageRoot: AbsolutePath,
+  tsConfig: ts.ParsedCommandLine
 ): PackagePath => {
-  const relativeSourceRoot = path.relative(packageRoot, sourceRootDir);
-  // TODO(kschaaf): if not provided, rootDir defaults to "The longest
-  // common path of all non-declaration input files." Not sure if we
-  // should calculate the fallback ourselves based on the input globs.
-  if (!sourcePath.startsWith(relativeSourceRoot)) {
+  // TODO(kschaaf): if not provided, rootDir defaults to "The longest common
+  // path of all non-declaration input files." Not sure if we need to calculate
+  // the fallback ourselves based on the input globs or if ts does that for us.
+  const {rootDir = '', outDir = rootDir} = tsConfig.options;
+  const pkgRootDir = path.relative(packageRoot, rootDir);
+  const pkgOutDir = path.relative(packageRoot, outDir);
+  if (!sourcePath.startsWith(pkgRootDir)) {
     throw new Error(
       `Expected Lit module typescript sources to exist in the ` +
-        `tsconfig.json 'rootDir' folder ('${relativeSourceRoot}')`
+        `tsconfig.json 'rootDir' folder ('${pkgRootDir}')`
     );
   }
-  // Remove src/ root, change ts -> js
-  return path
-    .relative(relativeSourceRoot, sourcePath)
-    .replace(/\.ts$/, '.js') as PackagePath;
+  // Remove source folder, add output folder, change ts -> js
+  return path.join(
+    pkgOutDir,
+    path.relative(pkgRootDir, sourcePath.replace(/\.ts$/, '.js'))
+  ) as PackagePath;
 };

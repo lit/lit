@@ -85,11 +85,7 @@ export class Analyzer {
   analyzeFile(fileName: AbsolutePath) {
     const sourceFile = this.program.getSourceFile(fileName)!;
     const sourcePath = absoluteToPackage(fileName, this.packageRoot);
-    const jsPath = sourceToJs(
-      sourcePath,
-      this.commandLine.options.rootDir,
-      this.packageRoot
-    );
+    const jsPath = sourceToJs(sourcePath, this.packageRoot, this.commandLine);
 
     const module = new Module({
       sourcePath,
