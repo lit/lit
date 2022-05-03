@@ -30,17 +30,20 @@ export class Package {
 
 export interface ModuleInit {
   sourceFile: ts.SourceFile;
-  path: PackagePath;
+  sourcePath: PackagePath;
+  jsPath: PackagePath;
 }
 
 export class Module {
   readonly sourceFile: ts.SourceFile;
-  readonly path: PackagePath;
+  readonly sourcePath: PackagePath;
+  readonly jsPath: PackagePath;
   readonly declarations: Array<Declaration> = [];
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
-    this.path = init.path;
+    this.sourcePath = init.sourcePath;
+    this.jsPath = init.jsPath;
   }
 }
 

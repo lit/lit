@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 import {Package, Module, ClassDeclaration, PackageJson} from './model.js';
-import {AbsolutePath, absoluteToPackage} from './paths.js';
+import {AbsolutePath, absoluteToPackage, sourceToJs} from './paths.js';
 import {
   isLitElement,
   getLitElementDeclaration,
@@ -84,9 +84,16 @@ export class Analyzer {
 
   analyzeFile(fileName: AbsolutePath) {
     const sourceFile = this.program.getSourceFile(fileName)!;
+    const sourcePath = absoluteToPackage(fileName, this.packageRoot);
+    const jsPath = sourceToJs(
+      sourcePath,
+      this.commandLine.options.rootDir,
+      this.packageRoot
+    );
 
     const module = new Module({
-      path: absoluteToPackage(fileName, this.packageRoot),
+      sourcePath,
+      jsPath,
       sourceFile,
     });
 

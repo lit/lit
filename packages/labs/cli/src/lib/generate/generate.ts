@@ -40,7 +40,7 @@ export const run = async (
     await Promise.allSettled(
       importers.map(async (importer) => {
         const generator = await importer();
-        const files = await generator.run(packageRoot, analysis, console);
+        const files = await generator.run(analysis, console);
         await writeFileTree(outDir, files);
       })
     );

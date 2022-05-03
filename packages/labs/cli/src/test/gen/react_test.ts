@@ -21,7 +21,9 @@ let cliConsole: LitConsole;
 const outputFolder = 'test-gen';
 
 test.before(() => {
-  fs.rmSync(outputFolder, {recursive: true});
+  if (fs.existsSync(outputFolder)) {
+    fs.rmSync(outputFolder, {recursive: true});
+  }
   outputStream = new BufferedWritable();
   errorStream = new BufferedWritable();
   cliConsole = new LitConsole({
@@ -30,7 +32,7 @@ test.before(() => {
   });
 });
 
-test('stub test', async () => {
+test('basic wrapper generation', async () => {
   const inputPackage = 'test-project';
   const outputPackage = path.join(outputFolder, inputPackage + '-react');
 

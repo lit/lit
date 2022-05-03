@@ -7,11 +7,11 @@
 import {
   ClassDeclaration,
   LitElementDeclaration,
+  Module,
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, FileTree} from './utils.js';
-import * as path from 'path';
 
 const isLitElementDeclaration = (
   dec: ClassDeclaration
@@ -20,59 +20,29 @@ const isLitElementDeclaration = (
 };
 
 interface LitModule {
-  moduleSrcPath: string;
-  moduleJsPath: string;
+  module: Module;
   elements: LitElementDeclaration[];
 }
 
-const getLitModules = (packageRoot: string, analysis: Package) => {
-  return analysis.modules
-    .map((module) => {
-      const elements = module.declarations.filter(isLitElementDeclaration);
-      if (elements.length) {
-        const moduleSrcPath = path.relative(
-          packageRoot,
-          module.sourceFile.fileName
-        );
-        const srcRootDir = path.relative(
-          packageRoot,
-          // TODO(kschaaf): if not provided, rootDir defaults to "The longest
-          // common path of all non-declaration input files." Not sure if we
-          // should calculate the fallback ourselves based on the input globs.
-          analysis.tsConfig.options.rootDir ?? ''
-        );
-        if (!moduleSrcPath.startsWith(srcRootDir)) {
-          throw new Error(
-            `Expected Lit module typescript sources to exist in the ` +
-              `tsconfig.json 'rootDir' folder ('${srcRootDir}')`
-          );
-        }
-        if (!moduleSrcPath.endsWith('.ts')) {
-          throw new Error(
-            'Expected Lit module typescript source to exist in a `.ts` file'
-          );
-        }
-        const moduleJsPath = path
-          .relative(srcRootDir, moduleSrcPath)
-          .replace(/\.ts/, '.js');
-        return {
-          moduleSrcPath,
-          moduleJsPath,
-          elements,
-        };
-      } else {
-        return undefined;
-      }
-    })
-    .filter((mod) => mod !== undefined) as LitModule[];
+const getLitModules = (analysis: Package) => {
+  const modules: LitModule[] = [];
+  for (const module of analysis.modules) {
+    const elements = module.declarations.filter(isLitElementDeclaration);
+    if (elements.length > 0) {
+      modules.push({
+        module,
+        elements,
+      });
+    }
+  }
+  return modules;
 };
 
 export const run = async (
-  packageRoot: string,
   analysis: Package,
   _console: Console
 ): Promise<FileTree> => {
-  const litModules: LitModule[] = getLitModules(packageRoot, analysis);
+  const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
     const reactPkgName = packageNameToReactPackageName(
       analysis.packageJson.name!
@@ -93,10 +63,13 @@ export const run = async (
 
 const wrapperFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
   const wrapperFiles: FileTree = {};
-  for (const {moduleSrcPath, moduleJsPath, elements} of litModules) {
-    wrapperFiles[moduleSrcPath] = wrapperModuleTemplate(
+  for (const {
+    module: {sourcePath, jsPath},
+    elements,
+  } of litModules) {
+    wrapperFiles[sourcePath] = wrapperModuleTemplate(
       packageJson,
-      moduleJsPath,
+      jsPath,
       elements
     );
   }
@@ -131,7 +104,7 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
         // TODO(kschaaf): make configurable?
         typescript: '^4.3.5',
       },
-      files: [...litModules.map((m) => m.moduleJsPath)],
+      files: [...litModules.map(({module}) => module.jsPath)],
     },
     null,
     2
@@ -139,7 +112,7 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
 };
 
 const gitIgnoreTemplate = (litModules: LitModule[]) => {
-  return litModules.map((m) => m.moduleJsPath).join('\n');
+  return litModules.map(({module}) => module.jsPath).join('\n');
 };
 
 const tsconfigTemplate = () => {
