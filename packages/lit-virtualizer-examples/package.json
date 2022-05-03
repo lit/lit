@@ -20,7 +20,7 @@
         "@babel/preset-env": "^7.9.6",
         "@rollup/plugin-commonjs": "^11.1.0",
         "@rollup/plugin-node-resolve": "^7.1.3",
-        "http-server": "^0.11.1",
+        "http-server": "^14.1.0",
         "rollup": "^1.11.2",
         "rollup-plugin-babel": "^4.4.0",
         "rollup-plugin-commonjs": "^10.1.0",
@@ -32,6 +32,7 @@
     },
     "dependencies": {
         "@babel/runtime": "^7.9.6",
+        "@lit-labs/virtualizer": "^0.7.0",
         "@material/mwc-drawer": "^0.21.0",
         "@material/mwc-formfield": "^0.21.0",
         "@material/mwc-icon-button": "^0.21.0",
@@ -44,7 +45,6 @@
         "core-js": "^3.6.5",
         "lit": "^2.0.0",
         "systemjs": "^2.0.0-alpha.1",
-        "whatwg-fetch": "^3.0.0",
-        "@lit-labs/virtualizer": "^0.7.0-pre.2"
+        "whatwg-fetch": "^3.0.0"
     }
 }

@@ -8,7 +8,7 @@
   "author": "The Polymer Project Authors",
   "devDependencies": {
     "http-server": "latest",
-    "lerna": "^3.13.4"
+    "lerna": "^4.0.0"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
