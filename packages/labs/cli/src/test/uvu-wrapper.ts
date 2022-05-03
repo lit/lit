@@ -1,5 +1,9 @@
 import * as uvu from 'uvu';
 
+const IN_CI = process.env['CI'];
+// CI machines are sometimes super slow, so give them plenty of time.
+const TIMEOUT = IN_CI ? 60_000 : 1_000;
+
 /**
  * A safer wrapper around uvu.suite.
  *
@@ -8,10 +12,11 @@ import * as uvu from 'uvu';
  *
  * Automatically calls `run` as well.
  */
-export function suite<T>(): uvu.Test<T> {
+export function suite<T>(opts?: {timeout?: number}): uvu.Test<T> {
+  const timeoutMs = opts?.timeout ?? TIMEOUT;
   const testBase = uvu.suite<T>();
   const wrapped: uvu.Test<T> = ((name: string, impl: uvu.Callback<T>) => {
-    return testBase(name, timeout(name, 1_000, impl));
+    return testBase(name, timeout(name, timeoutMs, impl));
   }) as unknown as uvu.Test<T>;
   for (const [key, value] of Object.entries(testBase)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
