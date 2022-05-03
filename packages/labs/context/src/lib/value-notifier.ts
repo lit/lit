@@ -31,12 +31,9 @@ export class ValueNotifier<T> {
   }
 
   public setValue(v: T, force = false) {
-    let changed = false;
-    if (!Object.is(v, this._value)) {
-      changed = true;
-    }
     this._value = v;
-    if (changed || force) {
+
+    if(force || !Object.is(v, this._value)) {
       this.updateObservers();
     }
   }
