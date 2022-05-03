@@ -1,9 +1,9 @@
-name: Sauce IE11
+name: Sauce
 
 on: [push, pull_request]
 
 jobs:
-  tests-sauce-ie11:
+  tests-sauce:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
@@ -13,11 +13,9 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      BROWSERS: preset:sauce-ie11
-      CONCURRENT_BROWSERS: 3
+      CONCURRENT_BROWSERS: 1
       CONCURRENT_FRAMES: 1
-      SAUCE_TUNNEL_ID: lit-tests__ie
-  
+
     steps:
       - uses: actions/checkout@v2
 
@@ -40,16 +38,18 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        # Retry once automatically.
+          BROWSERS: 'sauce:Windows 10/Firefox@78'
+          SAUCE_TUNNEL_ID: lit-tests__firefox
         run: |
           cd packages/tests
-          npm run test || npm run test
+          npm run test
 
       - name: Test SSR
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        # Retry once automatically.
+          BROWSERS: 'sauce:Windows 10/Firefox@78'
+          SAUCE_TUNNEL_ID: lit-tests__firefox
         run: |
           cd packages/labs/ssr
-          npm run test:integration || npm run test:integration
+          npm run test:integration

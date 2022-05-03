@@ -13,10 +13,8 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      BROWSERS: preset:sauce
-      CONCURRENT_BROWSERS: 3
+      CONCURRENT_BROWSERS: 1
       CONCURRENT_FRAMES: 1
-      SAUCE_TUNNEL_ID: lit-tests
 
     steps:
       - uses: actions/checkout@v2
@@ -40,6 +38,8 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: 'sauce:Windows 10/Chrome@latest-3'
+          SAUCE_TUNNEL_ID: lit-tests__chrome
         run: |
           cd packages/tests
           npm run test
@@ -48,6 +48,8 @@ jobs:
         env:
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
           SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+          BROWSERS: 'sauce:Windows 10/Chrome@latest-3'
+          SAUCE_TUNNEL_ID: lit-tests__chrome
         run: |
           cd packages/labs/ssr
           npm run test:integration
