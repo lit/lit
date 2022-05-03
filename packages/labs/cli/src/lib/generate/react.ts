@@ -117,12 +117,15 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
       // TODO(kschaaf): Version in lock-step with source?
       version: pkgJson.version,
       dependencies: {
-        // TODO(kschaaf): make version range configurable?
+        // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
+        // TODO(kschaaf): make @lit-labs/react version configurable?
+        '@lit-labs/react': '^1.0.4',
       },
       peerDependencies: {
-        // TODO(kschaaf): make configurable?
-        react: '^17.0.1',
+        // TODO(kschaaf): make react version(s) configurable?
+        react: '^17.0.2',
+        '@types/react': '^17.0.19',
       },
       devDependencies: {
         // TODO(kschaaf): make configurable?
@@ -144,7 +147,7 @@ const tsconfigTemplate = () => {
     {
       compilerOptions: {
         target: 'es2019',
-        module: 'es2020',
+        module: 'es2015',
         lib: ['es2020', 'DOM', 'DOM.Iterable'],
         declaration: true,
         declarationMap: true,
@@ -153,12 +156,19 @@ const tsconfigTemplate = () => {
         outDir: './',
         rootDir: './src',
         strict: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noImplicitReturns: true,
+        noFallthroughCasesInSwitch: true,
+        noImplicitAny: true,
+        noImplicitThis: true,
         moduleResolution: 'node',
         allowSyntheticDefaultImports: true,
-        stripInternal: true,
+        experimentalDecorators: true,
         noImplicitOverride: true,
       },
       include: ['src/**/*.ts'],
+      exclude: [],
     },
     null,
     2
