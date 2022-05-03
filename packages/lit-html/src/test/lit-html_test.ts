@@ -49,10 +49,6 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
-/**
- * litHtmlLib.INTERNAL is not exported in prod mode
- */
-const INTERNAL = litHtmlLib.INTERNAL === true;
 
 class FireEventDirective extends Directive {
   render() {
@@ -3195,9 +3191,7 @@ suite('lit-html', () => {
       } as RenderOptions);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        INTERNAL
-          ? `<p>HELLO</p>${remainingHtml}`
-          : `${clearedHtml}<p>HELLO</p>${remainingHtml}`
+        `${clearedHtml}<p>HELLO</p>${remainingHtml}`
       );
     });
   });
