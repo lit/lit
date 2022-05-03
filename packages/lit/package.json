@@ -189,8 +189,7 @@
     "build:rollup": {
       "command": "rollup -c",
       "dependencies": [
-        "build:ts",
-        "../lit-element:build:rollup"
+        "build:ts"
       ],
       "files": [
         "rollup.config.js",

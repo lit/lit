@@ -193,8 +193,6 @@
     "test:prod": {
       "command": "cd ../tests && MODE=prod npx wtr \"../lit-element/development/**/*_test.(js|html)\"",
       "dependencies": [
-        "../lit-html:build:rollup",
-        "../reactive-element:build:rollup",
         "build:ts",
         "build:rollup"
       ],
