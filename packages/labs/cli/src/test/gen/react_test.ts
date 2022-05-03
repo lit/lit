@@ -4,32 +4,34 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {suite} from 'uvu';
+import * as fs from 'fs';
+import * as path from 'path';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../../lib/lit-cli.js';
+import {suite} from '../uvu-wrapper.js';
 import {TestConsole} from '../cli-test-utils.js';
-import * as path from 'path';
 import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 
 interface TestContext {
-  tempFs: FilesystemTestRig;
+  rig: FilesystemTestRig;
   console: TestConsole;
 }
 
 const test = suite<TestContext>();
 
 test.before(async (ctx) => {
-  ctx.tempFs = new FilesystemTestRig();
-  await ctx.tempFs.setup();
+  const rig = new FilesystemTestRig();
+  await rig.setup();
+  ctx.rig = rig;
   ctx.console = new TestConsole();
 });
 
-test.after(async ({tempFs}) => {
-  await tempFs.cleanup();
+test.after(async ({rig}) => {
+  await rig.cleanup();
 });
 
-test('basic wrapper generation', async ({tempFs, console}) => {
+test('basic wrapper generation', async ({rig, console}) => {
   const packageName = 'test-element-a';
   const inputDir = path.join('../test-projects/', packageName);
   const outputPackage = packageName + '-react';
@@ -43,7 +45,7 @@ test('basic wrapper generation', async ({tempFs, console}) => {
       '--package',
       inputDir,
       '--out',
-      tempFs.rootDir,
+      rig.rootDir,
     ],
     {
       console,
@@ -56,7 +58,7 @@ test('basic wrapper generation', async ({tempFs, console}) => {
   // Note, this is only a very basic test that wrapper generation succeeds when
   // executed via the CLI. For detailed tests, see tests in
   // @lit-labs/gen-wrapper-react.
-  const wrapperSourceFile = await tempFs.read(
+  const wrapperSourceFile = await rig.read(
     outputPackage,
     'src/element-a.ts'
   );

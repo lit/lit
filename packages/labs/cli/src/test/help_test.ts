@@ -5,7 +5,6 @@
  */
 
 import 'source-map-support/register.js';
-import {suite, uvu} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../lib/lit-cli.js';
@@ -16,6 +15,7 @@ import {FilesystemTestRig} from './temp-filesystem-rig.js';
 import {ConsoleConstructorOptions} from 'console';
 import * as stream from 'stream';
 import * as pathlib from 'path';
+import {suite} from './uvu-wrapper.js';
 
 interface TestContext {
   console: TestConsole;
@@ -24,11 +24,7 @@ interface TestContext {
   fs: FilesystemTestRig;
 }
 
-const testBase = suite<TestContext>();
-
-function test(name: string, testImpl: uvu.Callback<TestContext>) {
-  testBase(name, timeout(name, 1_000, testImpl));
-}
+const test = suite<TestContext>();
 
 class TestConsole extends LitConsole {
   readonly outputStream;
@@ -42,34 +38,7 @@ class TestConsole extends LitConsole {
   }
 }
 
-/**
- * We don't actually care that much about timing out, this just works around
- * https://github.com/lukeed/uvu/issues/206
- */
-function timeout<T>(
-  name: string,
-  ms: number,
-  test: uvu.Callback<T>
-): uvu.Callback<T> {
-  return async (ctx) => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const result = Promise.race([
-      test(ctx),
-      new Promise<void>((_, reject) => {
-        timeoutId = setTimeout(
-          () => reject(new Error(`Test timed out: ${JSON.stringify(name)}`)),
-          ms
-        );
-      }),
-    ]);
-    result.finally(() => {
-      clearTimeout(timeoutId);
-    });
-    return result;
-  };
-}
-
-testBase.before.each(async (ctx) => {
+test.before.each(async (ctx) => {
   ctx.console = new TestConsole();
   ctx.fs = new FilesystemTestRig();
   ctx.stdinLines = [];
@@ -77,7 +46,7 @@ testBase.before.each(async (ctx) => {
   await ctx.fs.setup();
 });
 
-testBase.after.each(async (ctx) => {
+test.after.each(async (ctx) => {
   await ctx.fs.cleanup();
 });
 
@@ -284,5 +253,3 @@ test('we install a referenced command with permission', async ({
     'this is the resolved foo command from the node_modules directory'
   );
 });
-
-testBase.run();
