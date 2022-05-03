@@ -18,7 +18,6 @@ import {
   Part,
   CompiledTemplate,
 } from '../lit-html.js';
-import * as litHtmlLib from '../lit-html.js';
 
 import {
   directive,
