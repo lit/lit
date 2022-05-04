@@ -441,7 +441,12 @@ const litMonoBundleConfig = ({
     sourcemapPathTransform,
   },
   plugins: [
-    nodeResolve(),
+    nodeResolve({
+      // We want to resolve to development, because the default is production,
+      // which is already rolled-up sources. That creates an unnecessary
+      // dependency between rollup build steps, and causes double-minification.
+      exportConditions: ['development'],
+    }),
     replace({
       'const DEV_MODE = true': 'const DEV_MODE = false',
       'const ENABLE_EXTRA_SECURITY_HOOKS = true':

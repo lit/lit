@@ -167,7 +167,8 @@
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
-        "tsconfig.json"
+        "tsconfig.json",
+        "tsconfig.polyfill-support.json"
       ],
       "output": [
         "development",
@@ -245,7 +246,8 @@
     "test": {
       "dependencies": [
         "test:dev",
-        "test:prod"
+        "test:prod",
+        "check-version"
       ]
     },
     "test:dev": {
