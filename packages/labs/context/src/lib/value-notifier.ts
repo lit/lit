@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ContextCallback} from './context-request-event.js';
+import { ContextCallback } from './context-request-event.js';
 
 /**
  * A disposer function
@@ -31,9 +31,9 @@ export class ValueNotifier<T> {
   }
 
   public setValue(v: T, force = false) {
+    const update = force || !Object.is(v, this._value);
     this._value = v;
-
-    if(force || !Object.is(v, this._value)) {
+    if (update) {
       this.updateObservers();
     }
   }
