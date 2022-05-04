@@ -116,26 +116,6 @@ test('help includes unresolved external command descriptions', async ({
   );
 });
 
-test('help includes unresolved external command descriptions', async ({
-  console,
-  fs,
-  stdin,
-}) => {
-  const cli = new LitCli(['help'], {
-    console,
-    cwd: fs.temp,
-    stdin,
-  });
-  cli.addCommand(fooCommandReference);
-  await cli.run();
-  const output = console.outputStream.text;
-  assert.equal(console.errorStream.buffer.length, 0);
-  assert.match(
-    output,
-    /\s+foo\s+This is the description in the `foo` reference./
-  );
-});
-
 test(`help fails when getting details of unresolved external command`, async ({
   console,
   fs,
