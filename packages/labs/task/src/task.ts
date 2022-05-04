@@ -19,10 +19,10 @@ export {ArgsFunction as DepsFunction};
  * States for task status
  */
 export const TaskStatus = {
-  INITIAL: 0,
-  PENDING: 1,
-  COMPLETE: 2,
-  ERROR: 3,
+  INITIAL: 'initial',
+  PENDING: 'pending',
+  COMPLETE: 'complete',
+  ERROR: 'error',
 } as const;
 
 /**
@@ -33,11 +33,12 @@ export const initialState = Symbol();
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
-export type StatusRenderer<R> = {
-  initial?: () => unknown;
-  pending?: () => unknown;
-  complete?: (value: R) => unknown;
-  error?: (error: unknown) => unknown;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type StatusRenderer<R, E, I = any, P = any, C = any, ER = any> = {
+  initial: () => I;
+  pending: () => P;
+  complete: (value: R) => C;
+  error: (error?: E) => ER;
 };
 
 export interface TaskConfig<T extends unknown[], R> {
@@ -99,14 +100,14 @@ export interface TaskConfig<T extends unknown[], R> {
  * }
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class Task<T extends [...unknown[]] = any, R = any> {
+export class Task<R = any, E = any, T extends [...unknown[]] = any> {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
   private _getArgs?: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
   private _value?: R;
-  private _error?: unknown;
+  private _error?: E;
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
@@ -123,7 +124,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   autoRun = true;
 
   private _resolveTaskComplete!: (value: R) => void;
-  private _rejectTaskComplete!: (e: unknown) => void;
+  private _rejectTaskComplete!: (e: E) => void;
 
   constructor(
     host: ReactiveControllerHost,
@@ -215,10 +216,10 @@ export class Task<T extends [...unknown[]] = any, R = any> {
           this._resolveTaskComplete(result as R);
         } else {
           this.status = TaskStatus.ERROR;
-          this._rejectTaskComplete(error);
+          this._rejectTaskComplete(error as E);
         }
         this._value = result as R;
-        this._error = error;
+        this._error = error as E;
       }
       // Request an update with the final value.
       this._host.requestUpdate();
@@ -233,7 +234,9 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     return this._error;
   }
 
-  render<SR extends StatusRenderer<R>>(renderer: SR) {
+  render<SR extends StatusRenderer<R, E>>(
+    renderer: Partial<SR>
+  ): ReturnType<SR[this['status']]> | undefined {
     switch (this.status) {
       case TaskStatus.INITIAL:
         return renderer.initial?.();
@@ -246,6 +249,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       default:
         // exhaustiveness check
         this.status as void;
+        return;
     }
   }
 
