@@ -147,14 +147,13 @@ export class LitCli {
       if (!commandName || command == null || command == '') {
         return {invalidCommand: commandName ?? 'unknown comand'};
       }
-      if (command.kind === 'reference') {
-        const maybeCommand =
-          await this.#resolveCommandAndMaybeInstallNeededDeps(command);
-        if (maybeCommand === undefined) {
-          return {commandNotInstalled: true};
-        }
-        command = maybeCommand;
+      const maybeCommand = await this.#resolveCommandAndMaybeInstallNeededDeps(
+        command
+      );
+      if (maybeCommand === undefined) {
+        return {commandNotInstalled: true};
       }
+      command = maybeCommand;
 
       if (command.subcommands !== undefined && parsedArgs.argv.length > 0) {
         const subcommands = new Map<string, Command>(
@@ -209,7 +208,9 @@ export class LitCli {
         `Expected file at ${path} to export a function named 'getCommand'`
       );
     }
-    const maybeCommand = await mod.getCommand({requestedCommand: reference});
+    const maybeCommand = await mod.getCommand({
+      requestedCommand: reference.name,
+    });
     if (!isCommand(maybeCommand)) {
       throw new Error(
         `Expected getCommand function at ${path} to return an object that looks like a Command.`
@@ -218,9 +219,10 @@ export class LitCli {
     return maybeCommand;
   }
 
-  async resolveCommandAsMuchAsPossible(
-    reference: ReferenceToCommand
-  ): Promise<Command> {
+  async resolveCommandAsMuchAsPossible(reference: Command): Promise<Command> {
+    if (reference.kind === 'resolved') {
+      return reference;
+    }
     const resolvedPackageLocation = this.#getImportPath(reference);
     if (resolvedPackageLocation === undefined) {
       return reference;
@@ -236,8 +238,12 @@ export class LitCli {
   }
 
   async #resolveCommandAndMaybeInstallNeededDeps(
-    reference: ReferenceToCommand
+    maybeReference: Command
   ): Promise<ResolvedCommand | undefined> {
+    if (maybeReference.kind === 'resolved') {
+      return maybeReference;
+    }
+    const reference = maybeReference;
     let resolvedPackageLocation = this.#getImportPath(reference);
     if (resolvedPackageLocation === undefined) {
       const installed = await this.#installDepWithPermission(reference);

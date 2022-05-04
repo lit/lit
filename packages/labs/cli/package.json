@@ -48,11 +48,11 @@
       ]
     },
     "test:compile": {
+      "command": "tsc --pretty --noEmit",
       "files": [
         "tsconfig.json",
         "src/**/*"
-      ],
-      "command": "tsc --pretty --noEmit"
+      ]
     },
     "test:actual": {
       "command": "uvu test '.*_test\\.js$'",

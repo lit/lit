@@ -25,9 +25,7 @@ export const makeHelpCommand = (cli: LitCli): ResolvedCommand => {
         header: 'Available Commands',
         content: await Promise.all(
           [...cli.commands.values()].map(async (command) => {
-            if (command.kind === 'reference') {
-              command = await cli.resolveCommandAsMuchAsPossible(command);
-            }
+            command = await cli.resolveCommandAsMuchAsPossible(command);
             return {name: command.name, summary: command.description};
           })
         ),

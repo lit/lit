@@ -74,12 +74,21 @@ export interface ReferenceToCommand {
   /**
    * The import specifier that resolves to an ES module whose exports match
    * the CommandModule interface.
+   *
+   * This will be resolved with require.resolve relative to the user's current
+   * working directory, and imported if found, or potentially installed if
+   * not.
    */
   importSpecifier: string;
+
   /**
-   * The location to install from, if different than the npm package name.
+   * The location to `npm install` from, if different from importSpecifier.
    *
-   * e.g. this could be a github repo, a relative directory (e.g. for testing, * or it could be an npm package name with a version.
+   * e.g. this could be a github repo, a relative directory (e.g. for testing, * or it could be an npm package name with a version. Or if the import
+   * specifier is 'foo/command.js' then this might be 'foo'.
+   *
+   * If this is 'foo' then, if this command isn't installed in the user's
+   * workspace, we will suggest running `npm install foo`.
    */
   installFrom?: string;
 }
@@ -94,12 +103,21 @@ export interface CommandResult {
 /**
  * This is the type that an ES module that a ReferenceToCommand refers to should
  * obey.
+ *
+ * Note that we try to resolve references to commands to power the `lit help`
+ * overview, so to keep that fast it's best for your command to
+ * dynamically import its actual implementation in its `run()` method.
  */
 export interface CommandModule {
   /**
    * Note that this can return a ReferenceToCommand, which the CLI will
-   * further resolve. This is generally preferable to attempting to do
-   * reference resolution yourself.
+   * further resolve.
+   *
+   * If your module is deferring to another in a different npm package, it's
+   * generally preferable to return a ReferenceToCommand rather than doing the
+   * dynamic import yourself. That way we use a consistent module resolution
+   * strategy, the CLI can offer to install the referenced command if
+   * necessary, and we can reuse the error handling code in the CLI core.
    */
   getCommand(opts: GetCommandsOptions): Promise<Command>;
 }
@@ -110,7 +128,10 @@ export interface CommandModule {
  * should not be removed, otherwise it's a breaking change to the interface.
  */
 export interface GetCommandsOptions {
-  requestedCommand: ReferenceToCommand;
+  /**
+   * The name (not the alias) of the requested command.
+   */
+  requestedCommand?: string;
 }
 
 /**
