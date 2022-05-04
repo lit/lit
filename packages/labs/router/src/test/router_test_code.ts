@@ -18,10 +18,10 @@ export class Test1 extends LitElement {
     {path: '/child2/*', render: () => html`<child-2></child-2>`},
     {
       path: '/*',
-      render: (params: {[key: string]: string}) =>
+      render: (params: {[key: string]: string | undefined}) =>
         html`<h2>Not Found</h2>
           ${params[0]}`,
-      enter: async (params: {[key: string]: string}) => {
+      enter: async (params: {[key: string]: string | undefined}) => {
         // This fallback route will asynchronously install a /server-route
         // route when the path is /server-route. This simulates checking a
         // server for a route with an API call then installing it on the client

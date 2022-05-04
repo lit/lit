@@ -5,15 +5,13 @@
  */
 
 import type {ReactiveController, ReactiveControllerHost} from 'lit';
-import type {URLPattern as URLPatternType} from 'urlpattern-polyfill';
-
-declare const URLPattern: typeof URLPatternType;
-type URLPattern = URLPatternType;
 
 export interface BaseRouteConfig {
   name?: string | undefined;
-  render?: (params: {[key: string]: string}) => unknown;
-  enter?: (params: {[key: string]: string}) => Promise<boolean> | boolean;
+  render?: (params: {[key: string]: string | undefined}) => unknown;
+  enter?: (params: {
+    [key: string]: string | undefined;
+  }) => Promise<boolean> | boolean;
 }
 
 /**
@@ -105,7 +103,7 @@ export class Routes implements ReactiveController {
   protected _currentPathname: string | undefined;
   protected _currentRoute: RouteConfig | undefined;
   protected _currentParams: {
-    [key: string]: string;
+    [key: string]: string | undefined;
   } = {};
 
   /**
@@ -271,7 +269,7 @@ export class Routes implements ReactiveController {
  * Returns the tail of a pathname groups object. This is the match from a
  * wildcard at the end of a pathname pattern, like `/foo/*`
  */
-const getTailGroup = (groups: {[key: string]: string}) => {
+const getTailGroup = (groups: {[key: string]: string | undefined}) => {
   let tailKey: string | undefined;
   for (const key of Object.keys(groups)) {
     if (/\d+/.test(key) && (tailKey === undefined || key > tailKey!)) {
