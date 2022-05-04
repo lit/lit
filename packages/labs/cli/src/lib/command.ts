@@ -119,7 +119,7 @@ export interface CommandModule {
    * strategy, the CLI can offer to install the referenced command if
    * necessary, and we can reuse the error handling code in the CLI core.
    */
-  getCommand(opts: GetCommandsOptions): Promise<Command>;
+  getCommand(opts: GetCommandsOptions): Command | Promise<Command>;
 }
 
 /**
@@ -141,5 +141,7 @@ export interface GetCommandsOptions {
  * This is the type we should use internally when loading a module.
  */
 export interface MaybeCommandModule {
-  getCommand?(opts: GetCommandsOptions): Promise<Partial<Command> | undefined>;
+  getCommand?(
+    opts: GetCommandsOptions
+  ): undefined | Command | Promise<Partial<Command> | undefined>;
 }
