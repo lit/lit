@@ -44,6 +44,7 @@ export interface TaskConfig<T extends unknown[], R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
+  initialValue?: R;
 }
 
 // TODO(sorvell): Some issues:
@@ -142,6 +143,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
+    this._value = taskConfig.initialValue;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
     }
