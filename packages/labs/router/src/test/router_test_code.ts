@@ -20,7 +20,6 @@ export class Test1 extends LitElement {
       {path: '/child2/*', render: () => html`<child-2></child-2>`},
     ],
     {
-      path: '/*',
       render: (params: {[key: string]: string | undefined}) =>
         html`<h2>Not Found</h2>
           ${params[0]}`,

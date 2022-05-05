@@ -86,9 +86,10 @@ export class Routes implements ReactiveController {
   routes: Array<RouteConfig> = [];
 
   /**
-   * A fallback route that is always matched after {@link routes}.
+   * A default fallback route which will always be matched if none of the
+   * {@link routes} match. Implicitly matches to the path "/*".
    */
-  private readonly fallbackRoute?: RouteConfig;
+  fallback?: BaseRouteConfig;
 
   /*
    * The current set of child Routes controllers. These are connected via
@@ -124,11 +125,11 @@ export class Routes implements ReactiveController {
   constructor(
     host: ReactiveControllerHost & HTMLElement,
     routes: Array<RouteConfig>,
-    fallbackRoute?: RouteConfig
+    fallback?: BaseRouteConfig
   ) {
     (this._host = host).addController(this);
     this.routes = [...routes];
-    this.fallbackRoute = fallbackRoute;
+    this.fallback = fallback;
   }
 
   /**
@@ -164,7 +165,7 @@ export class Routes implements ReactiveController {
     // an in-page navigation if the origin matches anyway.
     let tailGroup: string | undefined;
 
-    if (this.routes.length === 0 && this.fallbackRoute === undefined) {
+    if (this.routes.length === 0 && this.fallback === undefined) {
       // If a routes controller has none of its own routes it acts like it has
       // one route of `/*` so that it passes the whole pathname as a tail
       // match.
@@ -227,11 +228,13 @@ export class Routes implements ReactiveController {
     const matchedRoute = this.routes.find((r) =>
       getPattern(r).test({pathname: pathname})
     );
-    if (matchedRoute || this.fallbackRoute === undefined) {
+    if (matchedRoute || this.fallback === undefined) {
       return matchedRoute;
     }
-    if (getPattern(this.fallbackRoute).test({pathname: pathname})) {
-      return this.fallbackRoute;
+    if (this.fallback) {
+      // The fallback route behaves like it has a "/*" path. This is hidden from
+      // the public API but is added here to return a valid RouteConfig.
+      return {...this.fallback, path: '/*'};
     }
     return undefined;
   }
