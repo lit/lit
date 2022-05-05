@@ -63,10 +63,6 @@ test('basic wrapper generation', async () => {
   await installPackage(outputPackage, {
     'test-project': inputPackage,
     '@lit-labs/react': '../react',
-    // TODO(kschaaf): If we don't use the exact version of @types/react that
-    // @lit-labs/react does, we get a _fantastic_ amount of type errors from
-    // passing an ever-so-slightly-differently typed React into createComponent
-    '@types/react': '../react/node_modules/@types/react',
   });
 
   await buildPackage(outputPackage);

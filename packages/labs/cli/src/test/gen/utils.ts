@@ -13,41 +13,51 @@ import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
 const exec = promisify(execCb);
 
 /**
- * Map npm package name to folder to npm link
+ * Map npm package name to folder in monorepo to use instead
  */
-export interface LinkedPackages {
+export interface MonorepoPackages {
   [index: string]: string;
 }
 
 /**
- * npm installs the package in the given packageRoot, optionally linking the
- * specified packages to the folders given.
+ * npm installs the package in the given packageRoot, optionally using monorepo
+ * packages in place of installing from the registry.
+ *
+ * Note that rather than using an `npm link` / symlink approach for substituting
+ * monorepo packages, we use `npm pack` and point package.json to the tarball
+ * for that package. This more closely matches how a given test package will be
+ * installed  from the registry, and avoids issues when a monorepo has
+ * peerDependencies (since a monorepo package will have its own copy of its
+ * peerDependencies installed, which is not what will happen when installed
+ * as a dependency itself).
  *
  * @param packageRoot
  * @param linkedPackages
  */
 export const installPackage = async (
   packageRoot: string,
-  linkedPackages?: LinkedPackages
+  monorepoPackages?: MonorepoPackages
 ) => {
   // Read package.json
   const packageFile = path.join(packageRoot, 'package.json');
   const packageText = await fs.readFile(packageFile, 'utf8');
   const packageJson = JSON.parse(packageText) as PackageJson;
-  if (linkedPackages !== undefined) {
-    for (const [pkg, folder] of Object.entries(linkedPackages)) {
-      const linkedFolder = `file:${path.relative(packageRoot, folder)}`;
+  if (monorepoPackages !== undefined) {
+    let deps;
+    for (const [pkg, folder] of Object.entries(monorepoPackages)) {
+      // Figure out what kind of dep the linked dep is
       if (packageJson.dependencies?.[pkg] !== undefined) {
-        packageJson.dependencies[pkg] = linkedFolder;
+        deps = packageJson.dependencies;
       } else if (packageJson.devDependencies?.[pkg] !== undefined) {
-        packageJson.devDependencies[pkg] = linkedFolder;
+        deps = packageJson.devDependencies;
       } else if (packageJson.peerDependencies?.[pkg] !== undefined) {
-        packageJson.peerDependencies[pkg] = linkedFolder;
+        deps = packageJson.peerDependencies;
       } else {
         throw new Error(
           `Linked package '${pkg}' was not a dependency of '${packageFile}'.`
         );
       }
+      // Make sure the folder for the package to link exists
       try {
         await fs.access(folder);
       } catch {
@@ -55,7 +65,20 @@ export const installPackage = async (
           `Folder ${folder} for linked package '${pkg}' did not exist.`
         );
       }
+      // npm pack the linked package into a tarball
+      try {
+        const {stdout: tarballFile} = await exec('npm pack', {cwd: folder});
+        const tarballPath = `file:${path.relative(
+          packageRoot,
+          path.join(folder, tarballFile.trim())
+        )}`;
+        // Update the package.json dep with a file path to the tarball
+        deps[pkg] = tarballPath;
+      } catch (e) {
+        throw new Error(`Error generating tarball for '${pkg}': ${e}`);
+      }
     }
+    // Write out the updated package.json
     await fs.writeFile(
       packageFile,
       JSON.stringify(packageJson, null, 2),
