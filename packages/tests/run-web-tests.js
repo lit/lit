@@ -21,9 +21,11 @@ process.on('uncaughtException', (error) => {
       console.error(
         `No available ports. Ports tried: ${JSON.stringify(SAUCE_PORTS)}`
       );
+      // eslint-disable-next-line no-undef
       process.exit(1);
     }
     // Try again
+    currentRunner?.stop();
     startWithNextAvailablePort();
   } else {
     console.error(`uncaughtException: ${error}`);
@@ -37,6 +39,7 @@ process.on('uncaughtException', (error) => {
 
 const stopNicely = () => {
   if (currentRunner === undefined) {
+    // eslint-disable-next-line no-undef
     process.exit(1);
   } else {
     // This will trigger the `currentRunner.on('stop')` below which will call
@@ -45,7 +48,9 @@ const stopNicely = () => {
   }
 };
 
+// eslint-disable-next-line no-undef
 process.on('SIGINT', stopNicely);
+// eslint-disable-next-line no-undef
 process.on('exit', stopNicely);
 
 // Sauce Labs compatible ports taken from
@@ -86,6 +91,7 @@ async function startWithNextAvailablePort() {
     autoExitProcess: false,
   });
   currentRunner.on('stopped', (passed) => {
+    // eslint-disable-next-line no-undef
     process.exit(passed ? 0 : 1);
   });
 }
