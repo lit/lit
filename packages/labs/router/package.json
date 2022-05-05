@@ -118,6 +118,7 @@
       ],
       "output": [
         "development/**",
+        "!development/test/router_test.html",
         "tsconfig.tsbuildinfo"
       ],
       "dependencies": [
