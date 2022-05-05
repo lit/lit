@@ -8,6 +8,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
+    "incremental": true,
     "outDir": "./development/",
     "rootDir": "./src",
     "strict": true,
