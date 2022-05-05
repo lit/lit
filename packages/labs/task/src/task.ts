@@ -34,9 +34,9 @@ export const initialState = Symbol();
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
 export type StatusRenderer<R> = {
-  initial?: () => unknown;
-  pending?: () => unknown;
-  complete?: (value: R) => unknown;
+  initial?: (value?: R) => unknown;
+  pending?: (value?: R) => unknown;
+  complete?: (value?: R) => unknown;
   error?: (error: unknown) => unknown;
 };
 
@@ -106,6 +106,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   private _getArgs?: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
+  private _initialValue?: R;
   private _value?: R;
   private _error?: unknown;
   status: TaskStatus = TaskStatus.INITIAL;
@@ -143,6 +144,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
+    this._initialValue = taskConfig.initialValue;
     this._value = taskConfig.initialValue;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
@@ -196,7 +198,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
     }
     this.status = TaskStatus.PENDING;
     this._error = undefined;
-    this._value = undefined;
+    this._value = this._initialValue;
     let result!: R | typeof initialState;
     let error: unknown;
     // Request an update to report pending state.
@@ -238,11 +240,11 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   render(renderer: StatusRenderer<R>) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.();
+        return renderer.initial?.(this.value);
       case TaskStatus.PENDING:
-        return renderer.pending?.();
+        return renderer.pending?.(this.value);
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value!);
+        return renderer.complete?.(this.value);
       case TaskStatus.ERROR:
         return renderer.error?.(this.error);
       default:

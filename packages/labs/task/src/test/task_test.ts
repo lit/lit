@@ -70,8 +70,8 @@ suite('Task', () => {
         this.task.render({
           initial: () => (this.renderedStatus = 'initial'),
           pending: () => (this.renderedStatus = 'pending'),
-          complete: (value: unknown) => (this.renderedStatus = value as string),
-          error: (error: unknown) => (this.renderedStatus = error as string),
+          complete: (value?) => (this.renderedStatus = value),
+          error: (error?: unknown) => (this.renderedStatus = error as string),
         });
       }
     }
