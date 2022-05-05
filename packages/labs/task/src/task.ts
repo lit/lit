@@ -106,6 +106,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   private _getArgs?: ArgsFunction<T>;
   private _callId = 0;
   private _host: ReactiveControllerHost;
+  private _intialValue?: R;
   private _value?: R;
   private _error?: unknown;
   status: TaskStatus = TaskStatus.INITIAL;
@@ -143,6 +144,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
+    this._intialValue = taskConfig.initialValue;
     this._value = taskConfig.initialValue;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
@@ -195,6 +197,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       });
     }
     this.status = TaskStatus.PENDING;
+    this._value = this._intialValue;
     this._error = undefined;
     let result!: R | typeof initialState;
     let error: unknown;
