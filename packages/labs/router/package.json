@@ -66,7 +66,7 @@
     "mocha": "^9.1.1",
     "rollup": "^2.70.2",
     "typescript": "^4.3.5",
-    "urlpattern-polyfill": "^1.0.0-rc5"
+    "urlpattern-polyfill": "^4.0.3"
   },
   "dependencies": {
     "lit": "^2.1.0"

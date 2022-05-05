@@ -20,7 +20,8 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["urlpattern-polyfill", "chai", "mocha", "trusted-types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": [],
