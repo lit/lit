@@ -127,12 +127,6 @@ export class Task<T extends [...unknown[]] = any, R = any> {
 
   constructor(
     host: ReactiveControllerHost,
-    task: TaskFunction<T, R>,
-    args?: ArgsFunction<T>
-  );
-  constructor(host: ReactiveControllerHost, task: TaskConfig<T, R>);
-  constructor(
-    host: ReactiveControllerHost,
     task: TaskFunction<T, R> | TaskConfig<T, R>,
     args?: ArgsFunction<T>
   ) {
