@@ -25,6 +25,5 @@
     "types": ["urlpattern-polyfill", "chai", "mocha", "trusted-types"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [{"path": "../../lit"}]
+  "exclude": []
 }
