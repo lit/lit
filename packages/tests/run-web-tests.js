@@ -11,19 +11,11 @@
  */
 
 import {startTestRunner} from '@web/test-runner';
-import config from './web-test-runner.config.js';
 
 // eslint-disable-next-line no-undef
 process.on('uncaughtException', (error) => {
   console.log('error.code', error.code);
   if (error.code === 'EADDRINUSE') {
-    if (currentPortIndex === SAUCE_PORTS.length) {
-      console.error(
-        `No available ports. Ports tried: ${JSON.stringify(SAUCE_PORTS)}`
-      );
-      // eslint-disable-next-line no-undef
-      process.exit(1);
-    }
     // Try again
     currentRunner?.stop();
     startWithNextAvailablePort();
@@ -80,12 +72,13 @@ async function startWithNextAvailablePort() {
       `No available ports. Ports tried: ${JSON.stringify(SAUCE_PORTS)}`
     );
   }
-  const port = SAUCE_PORTS[currentPortIndex++];
+  const port = SAUCE_PORTS[currentPortIndex];
+  currentPortIndex++;
   // Note: startTestRunner() will *not* reject if a port is in use.
   // Instead it'll trigger an uncaughtException
   currentRunner = await startTestRunner({
+    // This is extra WTR config in addition to the local config file
     config: {
-      ...config,
       port,
     },
     autoExitProcess: false,
