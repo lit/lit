@@ -11,11 +11,14 @@ import {Routes} from '../routes.js';
 
 @customElement('router-test-1')
 export class Test1 extends LitElement {
-  _router = new Router(this, [
-    {path: '/', render: () => html`<h2>Root</h2>`},
-    {path: '/test1/:x', render: ({x}) => html`<h2>Test 1: ${x}</h2>`},
-    {path: '/child1/*', render: () => html`<child-1></child-1>`},
-    {path: '/child2/*', render: () => html`<child-2></child-2>`},
+  _router = new Router(
+    this,
+    [
+      {path: '/', render: () => html`<h2>Root</h2>`},
+      {path: '/test1/:x', render: ({x}) => html`<h2>Test 1: ${x}</h2>`},
+      {path: '/child1/*', render: () => html`<child-1></child-1>`},
+      {path: '/child2/*', render: () => html`<child-2></child-2>`},
+    ],
     {
       path: '/*',
       render: (params: {[key: string]: string | undefined}) =>
@@ -36,9 +39,8 @@ export class Test1 extends LitElement {
         await 0;
         const {routes} = this._router;
 
-        // Insert a new route before the last, which is this fallback route
-        // We install before the fallback to give it precedence.
-        routes.splice(routes.length - 1, 0, {
+        // Dynamically insert a new route.
+        routes.push({
           path: '/server-route',
           render: () => html`<h2>Server</h2>`,
         });
@@ -51,8 +53,8 @@ export class Test1 extends LitElement {
         // to goto() and do this automatically.
         return false;
       },
-    },
-  ]);
+    }
+  );
 
   override render() {
     return html`

@@ -85,6 +85,11 @@ export class Routes implements ReactiveController {
    */
   routes: Array<RouteConfig> = [];
 
+  /**
+   * A fallback route that is always matched after {@link routes}.
+   */
+  readonly fallbackRoute?: RouteConfig;
+
   /*
    * The current set of child Routes controllers. These are connected via
    * the routes-connected event.
@@ -118,10 +123,12 @@ export class Routes implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
-    routes: Array<RouteConfig>
+    routes: Array<RouteConfig>,
+    fallbackRoute?: RouteConfig
   ) {
     (this._host = host).addController(this);
     this.routes = [...routes];
+    this.fallbackRoute = fallbackRoute;
   }
 
   /**
@@ -156,7 +163,8 @@ export class Routes implements ReactiveController {
     // completely disregard the origin for now. The click handler only does
     // an in-page navigation if the origin matches anyway.
     let tailGroup: string | undefined;
-    if (this.routes.length === 0) {
+
+    if (this.routes.length === 0 && this.fallbackRoute === undefined) {
       // If a routes controller has none of its own routes it acts like it has
       // one route of `/*` so that it passes the whole pathname as a tail
       // match.
@@ -215,8 +223,17 @@ export class Routes implements ReactiveController {
   /**
    * Matches `url` against the installed routes and returns the first match.
    */
-  private _getRoute(pathname: string) {
-    return this.routes.find((r) => getPattern(r).test({pathname: pathname}));
+  private _getRoute(pathname: string): RouteConfig | undefined {
+    const matchedRoute = this.routes.find((r) =>
+      getPattern(r).test({pathname: pathname})
+    );
+    if (matchedRoute || this.fallbackRoute === undefined) {
+      return matchedRoute;
+    }
+    if (getPattern(this.fallbackRoute).test({pathname: pathname})) {
+      return this.fallbackRoute;
+    }
+    return undefined;
   }
 
   hostConnected() {
@@ -300,6 +317,6 @@ export class RoutesConnectedEvent extends Event {
 
 declare global {
   interface HTMLElementEventMap {
-    'lit-routes-connected': RoutesConnectedEvent;
+    [RoutesConnectedEvent.eventName]: RoutesConnectedEvent;
   }
 }
