@@ -60,12 +60,12 @@
     },
     "test:dev": {
       "command": "cd ../../tests && npx wtr '../labs/router/development/**/*_test.js'",
+      "#comment": "build:rollup is needed to move the test html file to development/test.",
       "dependencies": [
-        "build:ts"
+        "build:ts",
+        "build:rollup"
       ],
-      "#comment": "TODO(aomarks) Factor out a file-only target in tests/ to DRY these config files into a single place",
       "files": [
-        "src/test/router_test.html",
         "../../tests/web-test-runner.config.js",
         "../../tests/wtr-config.js",
         "../../tests/rollup-resolve-remap.js"
@@ -79,7 +79,6 @@
         "build:rollup"
       ],
       "files": [
-        "src/test/router_test.html",
         "../../tests/web-test-runner.config.js",
         "../../tests/wtr-config.js",
         "../../tests/rollup-resolve-remap.js"
@@ -99,13 +98,15 @@
         "build:ts"
       ],
       "files": [
+        "src/test/router_test.html",
         "rollup.config.js",
         "../../../rollup-common.js"
       ],
       "output": [
         "index.js{,.map}",
         "router.js{,.map}",
-        "routes.js{,.map}"
+        "routes.js{,.map}",
+        "development/test/router_test.html"
       ]
     },
     "build:ts": {
