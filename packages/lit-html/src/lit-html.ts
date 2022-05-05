@@ -207,13 +207,6 @@ const debugLogEvent = DEV_MODE
 // called.
 let debugLogRenderId = 0;
 
-/**
- * `true` if we're building for google3 with temporary back-compat helpers.
- * This export is not present in prod builds.
- * @internal
- */
-export const INTERNAL = true;
-
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
@@ -615,18 +608,6 @@ export interface RenderOptions {
 }
 
 /**
- * Internally we can export this interface and change the type of
- * render()'s options.
- */
-interface InternalRenderOptions extends RenderOptions {
-  /**
-   * An internal-only migration flag
-   * @internal
-   */
-  clearContainerForLit2MigrationOnly?: boolean;
-}
-
-/**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  * @param value
  * @param container
@@ -659,20 +640,6 @@ export const render = (
   });
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
-    // Internal modification: don't clear container to match lit-html 2.0
-    if (
-      INTERNAL &&
-      (options as InternalRenderOptions)?.clearContainerForLit2MigrationOnly ===
-        true
-    ) {
-      let n = container.firstChild;
-      // Clear only up to the `endNode` aka `renderBefore` node.
-      while (n && n !== endNode) {
-        const next = n.nextSibling;
-        n.remove();
-        n = next;
-      }
-    }
     // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
