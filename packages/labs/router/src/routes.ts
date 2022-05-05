@@ -88,7 +88,7 @@ export class Routes implements ReactiveController {
   /**
    * A fallback route that is always matched after {@link routes}.
    */
-  readonly fallbackRoute?: RouteConfig;
+  private readonly fallbackRoute?: RouteConfig;
 
   /*
    * The current set of child Routes controllers. These are connected via
