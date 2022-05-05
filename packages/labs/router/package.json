@@ -65,6 +65,7 @@
       ],
       "#comment": "TODO(aomarks) Factor out a file-only target in tests/ to DRY these config files into a single place",
       "files": [
+        "src/test/router_test.html",
         "../../tests/web-test-runner.config.js",
         "../../tests/wtr-config.js",
         "../../tests/rollup-resolve-remap.js"
@@ -78,6 +79,7 @@
         "build:rollup"
       ],
       "files": [
+        "src/test/router_test.html",
         "../../tests/web-test-runner.config.js",
         "../../tests/wtr-config.js",
         "../../tests/rollup-resolve-remap.js"
