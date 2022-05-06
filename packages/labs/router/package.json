@@ -47,8 +47,8 @@
     "build:ts:watch": "tsc  --build --watch",
     "clean": "rm -rf {index,router,routes}.{js,js.map,d.ts,d.ts.map} development/ test/*.{js,js.map,d.ts,d.ts.map} *.tsbuildinfo",
     "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
-    "test:prod": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
+    "test:dev": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+    "test:prod": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
     "test:watch": "npm run test:dev -- --watch",
     "checksize": "rollup -c --environment=CHECKSIZE",
     "regen-package-lock": "rm -rf node_modules package-lock.json; npm install"
