@@ -374,11 +374,14 @@ export function litProdConfig({
         // way or another, so it's difficult to define a default in the source code
         // itself.
         replace({
-          'const DEV_MODE = true': 'const DEV_MODE = false',
-          'const ENABLE_EXTRA_SECURITY_HOOKS = true':
-            'const ENABLE_EXTRA_SECURITY_HOOKS = false',
-          'const ENABLE_SHADYDOM_NOPATCH = true':
-            'const ENABLE_SHADYDOM_NOPATCH = false',
+          preventAssignment: true,
+          values: {
+            'const DEV_MODE = true': 'const DEV_MODE = false',
+            'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+              'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+            'const ENABLE_SHADYDOM_NOPATCH = true':
+              'const ENABLE_SHADYDOM_NOPATCH = false',
+          },
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -447,17 +450,20 @@ const litMonoBundleConfig = ({
       exportConditions: ['development'],
     }),
     replace({
-      'const DEV_MODE = true': 'const DEV_MODE = false',
-      'const ENABLE_EXTRA_SECURITY_HOOKS = true':
-        'const ENABLE_EXTRA_SECURITY_HOOKS = false',
-      'const ENABLE_SHADYDOM_NOPATCH = true':
-        'const ENABLE_SHADYDOM_NOPATCH = false',
-      // For downleveled ES5 build of polyfill-support
-      'var DEV_MODE = true': 'var DEV_MODE = false',
-      'var ENABLE_EXTRA_SECURITY_HOOKS = true':
-        'var ENABLE_EXTRA_SECURITY_HOOKS = false',
-      'var ENABLE_SHADYDOM_NOPATCH = true':
-        'var ENABLE_SHADYDOM_NOPATCH = false',
+      preventAssignment: true,
+      values: {
+        'const DEV_MODE = true': 'const DEV_MODE = false',
+        'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+          'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+        'const ENABLE_SHADYDOM_NOPATCH = true':
+          'const ENABLE_SHADYDOM_NOPATCH = false',
+        // For downleveled ES5 build of polyfill-support
+        'var DEV_MODE = true': 'var DEV_MODE = false',
+        'var ENABLE_EXTRA_SECURITY_HOOKS = true':
+          'var ENABLE_EXTRA_SECURITY_HOOKS = false',
+        'var ENABLE_SHADYDOM_NOPATCH = true':
+          'var ENABLE_SHADYDOM_NOPATCH = false',
+      },
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.
