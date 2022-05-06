@@ -20,37 +20,39 @@ export class Test1 extends LitElement {
       {path: '/child2/*', render: () => html`<child-2></child-2>`},
     ],
     {
-      render: (params: {[key: string]: string | undefined}) =>
-        html`<h2>Not Found</h2>
-          ${params[0]}`,
-      enter: async (params: {[key: string]: string | undefined}) => {
-        // This fallback route will asynchronously install a /server-route
-        // route when the path is /server-route. This simulates checking a
-        // server for a route with an API call then installing it on the client
-        // if it exists.
+      fallback: {
+        render: (params: {[key: string]: string | undefined}) =>
+          html`<h2>Not Found</h2>
+            ${params[0]}`,
+        enter: async (params: {[key: string]: string | undefined}) => {
+          // This fallback route will asynchronously install a /server-route
+          // route when the path is /server-route. This simulates checking a
+          // server for a route with an API call then installing it on the client
+          // if it exists.
 
-        const path = params[0];
-        if (path !== 'server-route') {
-          return true;
-        }
+          const path = params[0];
+          if (path !== 'server-route') {
+            return true;
+          }
 
-        // force the function to take a microtask
-        await 0;
-        const {routes} = this._router;
+          // force the function to take a microtask
+          await 0;
+          const {routes} = this._router;
 
-        // Dynamically insert a new route.
-        routes.push({
-          path: '/server-route',
-          render: () => html`<h2>Server</h2>`,
-        });
+          // Dynamically insert a new route.
+          routes.push({
+            path: '/server-route',
+            render: () => html`<h2>Server</h2>`,
+          });
 
-        // Make the router go again to use the newly installed route
-        await this._router.goto('/' + path);
+          // Make the router go again to use the newly installed route
+          await this._router.goto('/' + path);
 
-        // Tell the router to cancel the original navigation to make it
-        // re-entrant safe. It'll be better if we can detect re-entrant calls
-        // to goto() and do this automatically.
-        return false;
+          // Tell the router to cancel the original navigation to make it
+          // re-entrant safe. It'll be better if we can detect re-entrant calls
+          // to goto() and do this automatically.
+          return false;
+        },
       },
     }
   );

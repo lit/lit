@@ -125,11 +125,11 @@ export class Routes implements ReactiveController {
   constructor(
     host: ReactiveControllerHost & HTMLElement,
     routes: Array<RouteConfig>,
-    fallback?: BaseRouteConfig
+    options?: {fallback?: BaseRouteConfig}
   ) {
     (this._host = host).addController(this);
     this.routes = [...routes];
-    this.fallback = fallback;
+    this.fallback = options?.fallback;
   }
 
   /**
