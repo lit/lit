@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 import {Package, Module, ClassDeclaration, PackageJson} from './model.js';
-import {AbsolutePath, absoluteToPackage, sourceToJs} from './paths.js';
+import {AbsolutePath, absoluteToPackage, PackagePath} from './paths.js';
 import {
   isLitElement,
   getLitElementDeclaration,
@@ -50,10 +50,17 @@ export class Analyzer {
       throw new Error('tsconfig.json not found');
     }
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
+    // Note that passing `packageRoot` for `basePath` works, but
+    // `getOutputFileNames` will fail without passing `configFileName`; once you
+    // pass that, it looks like paths are relative to the `configFileName`
+    // location (which is also under `packageRoot`), in which case `basePath`
+    // shouldn't duplicate `packageRoot`
     this.commandLine = ts.parseJsonConfigFileContent(
-      configFile.config,
-      ts.sys,
-      packageRoot
+      configFile.config /* json */,
+      ts.sys /* host */,
+      './' /* basePath */,
+      undefined /* existingOptions */,
+      configFileName /* configFileName */
     );
     this.program = ts.createProgram(
       this.commandLine.fileNames,
@@ -85,11 +92,19 @@ export class Analyzer {
   analyzeFile(fileName: AbsolutePath) {
     const sourceFile = this.program.getSourceFile(fileName)!;
     const sourcePath = absoluteToPackage(fileName, this.packageRoot);
-    const jsPath = sourceToJs(sourcePath, this.packageRoot, this.commandLine);
+    const fullSourcePath = path.join(this.packageRoot, sourcePath);
+    const jsPath = ts
+      .getOutputFileNames(this.commandLine, fullSourcePath, false)
+      .filter((f) => f.endsWith('.js'))[0];
+    if (jsPath === undefined) {
+      throw new Error(
+        `Could not determine output filename for '${sourcePath}'`
+      );
+    }
 
     const module = new Module({
       sourcePath,
-      jsPath,
+      jsPath: jsPath as PackagePath,
       sourceFile,
     });
 
