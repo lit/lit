@@ -16,6 +16,7 @@
     "start": "http-server & npm run build-and-watch --prefix packages/lit-virtualizer-examples",
     "deploy-examples": "./scripts/deploy-examples.sh",
     "init": "npm run bootstrap; npm run build --prefix packages/lit-virtualizer; npm run bootstrap;",
+    "test": "lerna run test --scope @lit-labs/virtualizer",
     "link:dev": "rm -fr node_modules/lit-{html,element} && ln -s ~/source/lit-html/packages/lit-html/development node_modules/lit-html && ln -sf ~/source/lit-html/packages/lit-html/package.json ~/source/lit-html/packages/lit-html/development/package.json && ln -s ~/source/lit-html/packages/lit-element/development node_modules/lit-element && ln -sf ~/source/lit-html/packages/lit-element/package.json ~/source/lit-html/packages/lit-element/development/package.json",
     "link:prod": "rm -f node_modules/lit-{html,element} && npm run bootstrap"
   }

@@ -14,7 +14,7 @@ Here is an overview of the repository contents.
 
 ### Integration and Unit
 
-Karma with Mocha and Chai is used for integration and unit testing. Run `npm run test` to run these suites.
+Web Test Runner with Mocha and Chai is used for integration and unit testing. Run `npm run test` to run these suites.
 
 ### Screenshots
 

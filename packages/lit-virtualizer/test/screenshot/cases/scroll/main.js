@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import { virtualize } from '../../../../lit-virtualizer.js'
+import { virtualize } from '../../../../virtualize.js'
 import { html, render } from 'lit-html';
 
 (async function go() {

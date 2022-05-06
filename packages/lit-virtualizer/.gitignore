@@ -17,4 +17,8 @@
 /LitVirtualizer.d.ts
 /LitVirtualizer.d.ts.map
 /LitVirtualizer.js.map
+/test/**/*.d.ts
+/test/**/*.d.ts.map
+/test/**/*.js
+/test/**/*.js.map
 /test/screenshot/cases/*/actual.*.png

@@ -62,17 +62,14 @@ export class StackTest extends LitElement {
             <lit-virtualizer
                 .items=${this.data1}
                 .renderItem=${this.renderItem}
-                .scrollTarget=${window}
             ></lit-virtualizer>
             <lit-virtualizer
                 .items=${this.data2}
                 .renderItem=${this.renderItem}
-                .scrollTarget=${window}
             ></lit-virtualizer>
             <lit-virtualizer
                 .items=${this.data3}
                 .renderItem=${this.renderItem}
-                .scrollTarget=${window}
             ></lit-virtualizer>
         `;
     }

@@ -84,7 +84,7 @@ export interface VirtualizerConfig {
 /**
  * Provides virtual scrolling boilerplate.
  *
- * Extensions of this class must set hostElement, layout, and scrollTarget.
+ * Extensions of this class must set hostElement and layout.
  *
  * Extensions of this class must also override VirtualRepeater's DOM
  * manipulation methods.
