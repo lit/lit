@@ -179,7 +179,7 @@
       ]
     },
     "test:dev": {
-      "command": "cd ../tests && MODE=dev npx wtr \"../lit-element/development/**/*_test.(js|html)\"",
+      "command": "MODE=dev node ../tests/run-web-tests.js  \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts"
       ],
@@ -192,7 +192,7 @@
       "output": []
     },
     "test:prod": {
-      "command": "cd ../tests && MODE=prod npx wtr \"../lit-element/development/**/*_test.(js|html)\"",
+      "command": "MODE=prod node ../tests/run-web-tests.js  \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:rollup"

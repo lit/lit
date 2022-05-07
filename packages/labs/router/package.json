@@ -59,7 +59,7 @@
       ]
     },
     "test:dev": {
-      "command": "cd ../../tests && npx wtr '../labs/router/development/**/*_test.js'",
+      "command": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "#comment": "build:rollup is needed to move the test html file to development/test.",
       "dependencies": [
         "build:ts",
@@ -73,7 +73,7 @@
       "output": []
     },
     "test:prod": {
-      "command": "cd ../../tests && MODE=prod npx wtr '../labs/router/development/**/*_test.js'",
+      "command": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:rollup"
