@@ -17,7 +17,7 @@ import {
   SanitizerFactory,
   Part,
   CompiledTemplate,
-} from '../lit-html.js';
+} from 'lit-html';
 
 import {
   directive,
@@ -25,21 +25,23 @@ import {
   PartType,
   PartInfo,
   DirectiveParameters,
-} from '../directive.js';
+} from 'lit-html/directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-import {repeat} from '../directives/repeat.js';
-import {AsyncDirective} from '../async-directive.js';
+import {repeat} from 'lit-html/directives/repeat.js';
+import {AsyncDirective} from 'lit-html/async-directive.js';
 
-import {createRef, ref} from '../directives/ref.js';
+import {createRef, ref} from 'lit-html/directives/ref.js';
 
 // For compiled template tests
-import {_$LH} from '../private-ssr-support.js';
-import {until} from '../directives/until.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
+import {until} from 'lit-html/directives/until.js';
 const {AttributePart} = _$LH;
+console.log('_$LH', _$LH);
+console.log('AttributePart', typeof AttributePart, AttributePart);
 
 type AttributePart = InstanceType<typeof AttributePart>;
 
@@ -622,7 +624,7 @@ suite('lit-html', () => {
     });
 
     test.skip('renders a Symbol', () => {
-      render(html`<div>${Symbol('A')}</div>`, container);
+      render(html`<div>${Symbol('A') as any}</div>`, container);
       assert.include(
         container.querySelector('div')!.textContent!.toLowerCase(),
         'symbol'
@@ -862,7 +864,7 @@ suite('lit-html', () => {
     });
 
     test.skip('renders a Symbol to an attribute', () => {
-      render(html`<div foo=${Symbol('A')}></div>`, container);
+      render(html`<div foo=${Symbol('A') as any}></div>`, container);
       assert.include(container.querySelector('div')!.getAttribute('foo'), '');
     });
 
@@ -1626,7 +1628,7 @@ suite('lit-html', () => {
       assertRender(result, '<div>A</div>');
     });
 
-    test('attribute expression', () => {
+    test.only('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML('<div></div>'),

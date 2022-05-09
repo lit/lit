@@ -58,7 +58,7 @@
     }
   ],
   "settings": {
-    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.tsdk": "lit-html/node_modules/typescript/lib",
     "debug.javascript.warnOnLongPrediction": false,
     // Regardless of the user's usual formatter, files
     // in the Lit repo must be formatted using prettier.

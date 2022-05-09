@@ -6,32 +6,28 @@
 
 import {createRequire} from 'module';
 import {playwrightLauncher} from '@web/test-runner-playwright';
-import {fromRollup} from '@web/dev-server-rollup';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
-import {resolveRemap} from './rollup-resolve-remap.js';
-import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
 }
 
-let resolveRemapConfig;
+let exportCondition = 'development';
 if (mode === 'prod') {
   console.log('Using production builds');
-  resolveRemapConfig = prodResolveRemapConfig;
+  exportCondition = 'default';
 } else {
   console.log('Using development builds');
-  resolveRemapConfig = devResolveRemapConfig;
 }
 
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
   local: [
     'chromium', // keep browsers on separate lines
-    'firefox', // to make it easier to comment out
-    'webkit', // individual browsers
+    // 'firefox', // to make it easier to comment out
+    // 'webkit', // individual browsers
   ],
 
   // Browsers to test during automated continuous integration.
@@ -176,12 +172,13 @@ export default {
     '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],
-  nodeResolve: true,
+  nodeResolve: {
+    exportConditions: [exportCondition],
+  },
   concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
   browsers,
   plugins: [
-    fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
@@ -212,7 +209,7 @@ export default {
     }),
   ],
   // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  // filterBrowserLogs: (type) => type === 'warn' || type === 'error',
   browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
