@@ -31,7 +31,6 @@
   },
   "files": [
     "index.js",
-    "lib",
     "npm-shrinkwrap.json"
   ],
   "homepage": "https://github.com/lit/lit",

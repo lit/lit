@@ -41,7 +41,7 @@ const concat = (strings: TemplateStringsArray, ...values: unknown[]) => {
   return strings.slice(1).reduce((prev, next, i) => {
     let v = values[i];
     if (Array.isArray(v)) {
-      v = v.flat().join('');
+      v = v.flat(Infinity).join('');
     }
     return prev + v + next;
   }, strings[0]);

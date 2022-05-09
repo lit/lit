@@ -6,6 +6,9 @@
 
 import {test} from 'uvu';
 
-test('element-a', async () => {});
+test('element-a', async () => {
+  // TODO(kschaaf): This is where react-specific tests will go
+  // https://github.com/lit/lit/issues/2859
+});
 
 test.run();

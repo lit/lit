@@ -13,6 +13,7 @@ import {
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, FileTree} from '@lit-labs/gen-utils';
 
+// TODO(kschaaf): Move helpers into analyzer
 const isLitElementDeclaration = (
   dec: ClassDeclaration
 ): dec is LitElementDeclaration => {
@@ -24,6 +25,7 @@ interface LitModule {
   elements: LitElementDeclaration[];
 }
 
+// TODO(kschaaf): Move helpers into analyzer
 const getLitModules = (analysis: Package) => {
   const modules: LitModule[] = [];
   for (const module of analysis.modules) {
@@ -181,7 +183,13 @@ export const ${name} = createComponent(
   {
     ${Array.from(events.keys()).map(
       (eventName) => javascript`
-    ${eventNameToCallbackName(eventName)}: '${eventName}',`
+    ${eventNameToCallbackName(eventName)}: '${
+        // TODO(kschaaf): add cast to `as EventName<EVENT_TYPE>` once the
+        // analyzer reports the event type correctly (currently we have the
+        // type string without an AST reference to get its import, etc.)
+        // https://github.com/lit/lit/issues/2850
+        eventName
+      }',`
     )}
   }
 );    

@@ -5,7 +5,3 @@
 /index.d.ts
 /index.d.ts.map
 /test-gen/
-/test-project/*.d.ts
-/test-project/*.d.ts.map
-/test-project/*.js
-/test-project/*.js.map

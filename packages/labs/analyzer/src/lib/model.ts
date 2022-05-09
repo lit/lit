@@ -35,8 +35,20 @@ export interface ModuleInit {
 }
 
 export class Module {
+  /**
+   * The TS AST node for the file
+   */
   readonly sourceFile: ts.SourceFile;
+  /**
+   * The path to the source file for this module. In a TS project, this will be
+   * a .ts file. In a JS project, this will be the same as `jsPath`.
+   */
   readonly sourcePath: PackagePath;
+  /**
+   * The path to the javascript file for this module. In a TS project, this will
+   * be the output location of the compiler for the given `sourcePath`. In a JS
+   * project this will be the same as `sourcePath`.
+   */
   readonly jsPath: PackagePath;
   readonly declarations: Array<Declaration> = [];
 
@@ -133,4 +145,5 @@ export interface Event {
   description: string | undefined;
   typeString: string | undefined;
   // TODO(justinfagnani): store a type reference too
+  // https://github.com/lit/lit/issues/2850
 }
