@@ -82,7 +82,7 @@
     "test": {
       "command": "uvu test/ \".*-test.js$\"",
       "dependencies": [
-        "build:ts"
+        "build"
       ],
       "files": [],
       "output": []
