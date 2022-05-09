@@ -83,7 +83,7 @@
       ],
       "files": [
         "rollup.config.js",
-        "../../rollup-common.js"
+        "../../../rollup-common.js"
       ],
       "output": [
         "index.js{,.map}",
