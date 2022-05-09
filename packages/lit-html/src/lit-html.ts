@@ -446,9 +446,14 @@ const COMMENT_PART = 7;
  * The return type of the template tag functions, {@linkcode html} and
  * {@linkcode svg}.
  *
- * This object captures the arguments passed into the tag function. A special
- * array of strings that retain their identity between multiple evaluations of
- * the tagged literal, and the values from the interpolated expressions.
+ * The `TemplateResult` object captures the arguments passed into the tag
+ * function. A special array of strings that retain their identity between
+ * multiple evaluations of the tagged literal, and the values from the
+ * interpolated expressions.
+ *
+ * To create or update DOM from the `TemplateResult` you need to render the
+ * `TemplateResult`. See [Rendering](https://lit.dev/docs/components/rendering)
+ * for more information.
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
