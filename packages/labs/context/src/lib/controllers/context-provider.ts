@@ -56,7 +56,7 @@ export class ContextProvider<T extends ContextKey<unknown, unknown>>
   public onContextRequest = (
     ev: ContextRequestEvent<ContextKey<unknown, unknown>>
   ): void => {
-    if (ev.context !== this.context) {
+    if (ev.context !== this.context || ev.composedPath()[0] === this.host) {
       return;
     }
     ev.stopPropagation();
