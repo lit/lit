@@ -6,10 +6,11 @@
 
 import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
-import {writeFileTree} from './utils.js';
+import {writeFileTree} from '@lit-labs/gen-utils';
 
 const frameworkGenerators = {
-  react: () => import('../generate/react.js'),
+  react: async () =>
+    (await import('@lit-labs/gen-wrapper-react/index.js')).generateReactWrapper,
 };
 
 type FrameworkName = keyof typeof frameworkGenerators;
@@ -20,7 +21,7 @@ export const run = async (
     frameworks,
     outDir,
   }: {packages: string[]; frameworks: string[]; outDir: string},
-  console: Console
+  _console: Console
 ) => {
   for (const packageRoot of packages) {
     const analyzer = new Analyzer(packageRoot as AbsolutePath);
@@ -40,8 +41,7 @@ export const run = async (
     await Promise.allSettled(
       importers.map(async (importer) => {
         const generator = await importer();
-        const files = await generator.run(analysis, console);
-        await writeFileTree(outDir, files);
+        await writeFileTree(outDir, await generator(analysis));
       })
     );
   }

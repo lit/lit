@@ -11,7 +11,7 @@ import {
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
-import {javascript, FileTree} from './utils.js';
+import {javascript, FileTree} from '@lit-labs/gen-utils';
 
 const isLitElementDeclaration = (
   dec: ClassDeclaration
@@ -38,9 +38,8 @@ const getLitModules = (analysis: Package) => {
   return modules;
 };
 
-export const run = async (
-  analysis: Package,
-  _console: Console
+export const generateReactWrapper = async (
+  analysis: Package
 ): Promise<FileTree> => {
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
@@ -56,8 +55,7 @@ export const run = async (
       },
     };
   } else {
-    // TODO(kschaaf) Should we warn if no LitElements were found?
-    return {};
+    throw new Error('No Lit components were found in this package.');
   }
 };
 

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "test-project",
+  "name": "test-element-a",
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",

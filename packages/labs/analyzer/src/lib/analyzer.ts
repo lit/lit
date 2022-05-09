@@ -37,7 +37,7 @@ export class Analyzer {
         fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
       );
     } catch (e) {
-      throw new Error('package.json not found');
+      throw new Error(`package.json not found in ${packageRoot}`);
     }
 
     const configFileName = ts.findConfigFile(
@@ -47,7 +47,7 @@ export class Analyzer {
     );
     if (configFileName === undefined) {
       // TODO: use a hard-coded tsconfig for JS projects.
-      throw new Error('tsconfig.json not found');
+      throw new Error(`tsconfig.json not found in ${packageRoot}`);
     }
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
     // Note that passing `packageRoot` for `basePath` works, but
