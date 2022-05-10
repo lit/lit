@@ -21,7 +21,13 @@ interface TestContext {
 const test = suite<TestContext>();
 
 test.before((ctx) => {
-  ctx.outputFolder = fs.mkdtempSync(os.tmpdir());
+  // TODO(kschaaf): Use FilesystemTestRig once moved into test utils
+  ctx.outputFolder = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'generateReactTest-')
+  );
+  if (!ctx.outputFolder) {
+    throw new Error(`Failed to create temp dir under ${os.tmpdir()}`);
+  }
   ctx.console = new TestConsole();
 });
 

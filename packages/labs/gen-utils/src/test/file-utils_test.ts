@@ -18,7 +18,10 @@ const writeFileTreeTest = suite<{outputFolder: string}>('writeFileTree');
 
 writeFileTreeTest.before((ctx) => {
   // TODO(kschaaf): Use FilesystemTestRig once moved into test utils
-  ctx.outputFolder = fs.mkdtempSync(os.tmpdir());
+  ctx.outputFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'writeFileTest-'));
+  if (!ctx.outputFolder) {
+    throw new Error(`Failed to create temp dir under ${os.tmpdir()}`);
+  }
 });
 
 writeFileTreeTest.after(({outputFolder}) => {

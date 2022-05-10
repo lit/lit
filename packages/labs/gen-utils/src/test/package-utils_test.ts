@@ -17,7 +17,12 @@ const test = suite<{outputFolder: string}>('test');
 
 test.before((ctx) => {
   // TODO(kschaaf): Use FilesystemTestRig once moved into test utils
-  ctx.outputFolder = fs.mkdtempSync(os.tmpdir());
+  ctx.outputFolder = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'packageUtilsTest-')
+  );
+  if (!ctx.outputFolder) {
+    throw new Error(`Failed to create temp dir under ${os.tmpdir()}`);
+  }
 });
 
 test.after(({outputFolder}) => {
