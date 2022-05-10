@@ -1628,7 +1628,7 @@ suite('lit-html', () => {
       assertRender(result, '<div>A</div>');
     });
 
-    test.only('attribute expression', () => {
+    test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML('<div></div>'),

@@ -19,10 +19,10 @@ import {
 } from './lit-html.js';
 export type {Template} from './lit-html.js';
 
-const DEV_MODE = true;
+// const DEV_MODE = true;
 
-console.log('DEV_MODE', DEV_MODE);
-console.log('p', p);
+// console.log('DEV_MODE', DEV_MODE);
+// console.log('p', p);
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
