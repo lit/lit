@@ -36,7 +36,7 @@ export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 export type StatusRenderer<R> = {
   initial?: (value?: R) => unknown;
   pending?: (value?: R) => unknown;
-  complete?: (value?: R) => unknown;
+  complete?: (value: R) => unknown;
   error?: (error: unknown) => unknown;
 };
 
@@ -197,7 +197,6 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       });
     }
     this.status = TaskStatus.PENDING;
-    this._value = this._intialValue;
     this._error = undefined;
     let result!: R | typeof initialState;
     let error: unknown;
@@ -244,7 +243,7 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       case TaskStatus.PENDING:
         return renderer.pending?.(this.value);
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value);
+        return renderer.complete?.(this.value!);
       case TaskStatus.ERROR:
         return renderer.error?.(this.error);
       default:
