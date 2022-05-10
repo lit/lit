@@ -77,6 +77,9 @@ const wrapperFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
 };
 
 const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
+  // Refinement of package.json generation ala the TODOs below tracked in
+  // https://github.com/lit/lit/issues/2855
+
   // TODO(kschaaf): spread in/adapt other relevant fields from source
   // package.json (description, license, keywords, etc.)
   return JSON.stringify(
