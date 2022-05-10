@@ -7,6 +7,7 @@
 import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {writeFileTree} from '@lit-labs/gen-utils';
+import * as path from 'path';
 
 const frameworkGenerators = {
   react: async () =>
@@ -24,7 +25,7 @@ export const run = async (
   _console: Console
 ) => {
   for (const packageRoot of packages) {
-    const analyzer = new Analyzer(packageRoot as AbsolutePath);
+    const analyzer = new Analyzer(path.resolve(packageRoot) as AbsolutePath);
     const analysis = analyzer.analyzePackage();
     if (!analysis.packageJson.name) {
       throw new Error(

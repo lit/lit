@@ -68,10 +68,7 @@ export const installPackage = async (
       // npm pack the linked package into a tarball
       try {
         const {stdout: tarballFile} = await exec('npm pack', {cwd: folder});
-        const tarballPath = `file:${path.relative(
-          packageRoot,
-          path.join(folder, tarballFile.trim())
-        )}`;
+        const tarballPath = `file:${path.resolve(folder, tarballFile.trim())}`;
         // Update the package.json dep with a file path to the tarball
         deps[pkg] = tarballPath;
       } catch (e) {

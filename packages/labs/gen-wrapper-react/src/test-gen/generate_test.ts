@@ -30,10 +30,10 @@ test('basic wrapper generation', async () => {
   const analysis = analyzer.analyzePackage();
   await writeFileTree(outputFolder, await generateReactWrapper(analysis));
 
-  const wrapperFile = fs.readFileSync(
-    path.join(outputPackage, '/src/element-a.ts')
+  const wrapperSourceFile = fs.readFileSync(
+    path.join(outputPackage, 'src/element-a.ts')
   );
-  assert.ok(wrapperFile.length > 0);
+  assert.ok(wrapperSourceFile.length > 0);
 
   await installPackage(outputPackage, {
     [project]: inputPackage,
@@ -41,6 +41,15 @@ test('basic wrapper generation', async () => {
   });
 
   await buildPackage(outputPackage);
+
+  // TODO(kschaaf): Add golden tests. For now, this verifies the package
+  // installation and build nominally succeeded. Note that runtime tests
+  // of this generated package are run as a separate `npm run test:output`
+  // command via web-test-runner.
+  const wrapperJsFile = fs.readFileSync(
+    path.join(outputPackage, 'element-a.js')
+  );
+  assert.ok(wrapperJsFile.length > 0);
 });
 
 test.run();

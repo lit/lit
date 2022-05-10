@@ -6,6 +6,9 @@
     "build": "tsc",
     "build:watch": "tsc --watch"
   },
+  "files": [
+    "/element-a.{js,js.map,d.ts,d.ts.map}"
+  ],
   "dependencies": {
     "lit": "^2.0.0"
   }

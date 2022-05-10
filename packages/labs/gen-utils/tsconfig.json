@@ -14,8 +14,6 @@
     "outDir": "./",
     "declaration": true,
     "sourceMap": true,
-    "incremental": true,
-    "tsBuildInfoFile": "./lib/.tsbuildinfo",
     "skipLibCheck": true
   },
   "include": ["src/**/*"],

@@ -4,37 +4,35 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
+import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../../lib/lit-cli.js';
-import {LitConsole} from '../../lib/console.js';
-import {BufferedWritable} from '../buffered-writable.js';
+import {TestConsole} from '../cli-test-utils.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 
-let outputStream: BufferedWritable;
-let errorStream: BufferedWritable;
-let cliConsole: LitConsole;
+interface TestContext {
+  console: TestConsole;
+  outputFolder: string;
+}
 
-// TODO(kschaaf): Use TestFilesystemRig once moved into test utils
-const outputFolder = 'test-gen';
+const test = suite<TestContext>();
 
-test.before(() => {
-  if (fs.existsSync(outputFolder)) {
-    fs.rmSync(outputFolder, {recursive: true});
-  }
-  outputStream = new BufferedWritable();
-  errorStream = new BufferedWritable();
-  cliConsole = new LitConsole({
-    stdout: outputStream,
-    stderr: errorStream,
-  });
+test.before((ctx) => {
+  ctx.outputFolder = fs.mkdtempSync(os.tmpdir());
+  ctx.console = new TestConsole();
 });
 
-test('basic wrapper generation', async () => {
-  const inputPackage = '../../../test-projects/test-element-a';
-  const outputPackage = path.join(outputFolder, inputPackage + '-react');
+test.after(({outputFolder}) => {
+  fs.rmSync(outputFolder, {recursive: true});
+});
+
+test('basic wrapper generation', async ({outputFolder, console}) => {
+  const packageName = 'test-element-a';
+  const inputPackage = path.join('../test-projects/', packageName);
+  const outputPackage = path.join(outputFolder, packageName + '-react');
 
   const cli = new LitCli(
     [
@@ -48,18 +46,20 @@ test('basic wrapper generation', async () => {
       outputFolder,
     ],
     {
-      console: cliConsole,
+      console,
     }
   );
   await cli.run();
 
-  assert.equal(errorStream.buffer.length, 0);
+  assert.equal(console.errorStream.buffer.length, 0);
 
   // Note, this is only a very basic test that wrapper generation succeeds when
   // executed via the CLI. For detailed tests, see tests in
   // @lit-labs/gen-wrapper-react.
   const wrapperSourceFile = fs.readFileSync(
-    path.join(outputPackage, '/src/element-a.ts')
+    path.join(outputPackage, 'src/element-a.ts')
   );
   assert.ok(wrapperSourceFile.length > 0);
 });
+
+test.run();
