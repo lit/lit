@@ -169,7 +169,7 @@ suite('Task', () => {
     // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, `a,b`);
     // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
@@ -181,7 +181,7 @@ suite('Task', () => {
     // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, 'a1,b');
     // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
@@ -248,7 +248,7 @@ suite('Task', () => {
     el.task.run();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, `a,b`);
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
