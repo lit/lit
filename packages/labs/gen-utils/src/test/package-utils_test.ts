@@ -7,7 +7,8 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import {assert} from 'console';
+// eslint-disable-next-line import/extensions
+import * as assert from 'uvu/assert';
 
 import {suite} from 'uvu';
 import {installPackage, buildPackage} from '../lib/package-utils.js';
@@ -36,7 +37,7 @@ test('install package', async ({outputFolder}) => {
 
   await installPackage(outputFolder);
 
-  assert(
+  assert.ok(
     fs.readFileSync(path.join(outputFolder, 'node_modules', 'lit', 'index.js'))
       .length > 0
   );
@@ -56,7 +57,7 @@ test('install package with monorepo link', async ({outputFolder}) => {
     lit: '../../lit',
   });
 
-  assert(
+  assert.ok(
     fs.readFileSync(path.join(outputFolder, 'node_modules', 'lit', 'index.js'))
       .length > 0
   );
@@ -67,15 +68,16 @@ test('build package', async ({outputFolder}) => {
     path.join(outputFolder, 'package.json'),
     JSON.stringify({
       scripts: {
-        build: 'echo hello > hello.txt',
+        build: 'echo hello>hello.txt',
       },
     })
   );
 
   await buildPackage(outputFolder);
 
-  assert(
-    String(fs.readFileSync(path.join(outputFolder, 'hello.txt'))) === 'hello'
+  assert.equal(
+    String(fs.readFileSync(path.join(outputFolder, 'hello.txt'))),
+    'hello\n'
   );
 });
 
