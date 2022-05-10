@@ -50,16 +50,13 @@
   "devDependencies": {
     "@lit-labs/ssr": "^2.1.0",
     "@lit/ts-transformers": "^1.1.0",
-    "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
     "@types/minimist": "^1.2.0",
     "@types/node": "^16.7.8",
     "@types/parse5": "^6.0.1",
     "@types/prettier": "^2.0.1",
-    "diff": "^5.0.0",
-    "dir-compare": "^3.1.5",
-    "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
+    "tests": "0.0.0",
     "typescript-json-schema": "^0.50.0",
     "uvu": "^0.5.1"
   }

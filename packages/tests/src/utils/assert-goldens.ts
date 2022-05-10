@@ -4,10 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as path from 'path';
+// eslint-disable-next-line import/extensions
+import * as assert from 'uvu/assert';
 import fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
+import * as path from 'path';
 import * as diff from 'diff';
+import {execFileSync} from 'child_process';
 
 const red = '\x1b[31m';
 const green = '\x1b[32m';
@@ -74,3 +77,33 @@ function colorLineDiff(a: string, b: string): string {
     })
     .join('');
 }
+
+export const assertGoldensMatch = async (
+  outputDir: string,
+  goldensDir: string,
+  {formatGlob = '**/*.{ts,js}', noFormat = false} = {}
+) => {
+  if (!noFormat) {
+    execFileSync('npx', [
+      '--no-install',
+      'prettier',
+      '--write',
+      `${path.join(outputDir, formatGlob)}`,
+    ]);
+  }
+
+  if (process.env.UPDATE_TEST_GOLDENS) {
+    fsExtra.emptyDirSync(goldensDir);
+    fsExtra.copySync(outputDir, goldensDir);
+    assert.unreachable('Failing on purpose because goldens were updated.');
+    return;
+  }
+
+  const diff = await dirCompare.compare(goldensDir, outputDir, {
+    compareContent: true,
+  });
+
+  if (!diff.same) {
+    assert.unreachable(formatDirDiff(diff));
+  }
+};
