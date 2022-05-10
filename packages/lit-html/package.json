@@ -167,7 +167,8 @@
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
-        "tsconfig.json"
+        "tsconfig.json",
+        "tsconfig.polyfill-support.json"
       ],
       "output": [
         "development",
@@ -245,11 +246,12 @@
     "test": {
       "dependencies": [
         "test:dev",
-        "test:prod"
+        "test:prod",
+        "check-version"
       ]
     },
     "test:dev": {
-      "command": "cd ../tests && MODE=dev npx wtr \"../lit-html/development/**/*_test.(js|html)\"",
+      "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts"
       ],
@@ -262,7 +264,7 @@
       "output": []
     },
     "test:prod": {
-      "command": "cd ../tests && MODE=prod npx wtr \"../lit-html/development/**/*_test.(js|html)\" \"../lit-html/src/test/version-stability_test.js\"",
+      "command": "MODE=prod node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:rollup",
         "build:ts",

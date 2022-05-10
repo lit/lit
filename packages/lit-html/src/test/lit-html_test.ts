@@ -18,7 +18,6 @@ import {
   Part,
   CompiledTemplate,
 } from '../lit-html.js';
-import * as litHtmlLib from '../lit-html.js';
 
 import {
   directive,
@@ -49,10 +48,6 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
-/**
- * litHtmlLib.INTERNAL is not exported in prod mode
- */
-const INTERNAL = litHtmlLib.INTERNAL === true;
 
 class FireEventDirective extends Directive {
   render() {
@@ -3181,24 +3176,6 @@ suite('lit-html', () => {
         container
       );
       assertNoWarning();
-    });
-  });
-
-  suite('internal', () => {
-    test('clearContainerForLit2MigrationOnly', () => {
-      const clearedHtml = `<div>TEST 1</div><div>TEST 2</div>`;
-      const remainingHtml = `<div class="renderBefore">REMAIN 1</div><div>REMAIN 2</div>`;
-      container.innerHTML = `${clearedHtml}${remainingHtml}`;
-      render(html`<p>HELLO</p>`, container, {
-        clearContainerForLit2MigrationOnly: true,
-        renderBefore: container.querySelector('.renderBefore'),
-      } as RenderOptions);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        INTERNAL
-          ? `<p>HELLO</p>${remainingHtml}`
-          : `${clearedHtml}<p>HELLO</p>${remainingHtml}`
-      );
     });
   });
 });
