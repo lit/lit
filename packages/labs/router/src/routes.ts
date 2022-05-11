@@ -85,6 +85,12 @@ export class Routes implements ReactiveController {
    */
   routes: Array<RouteConfig> = [];
 
+  /**
+   * A default fallback route which will always be matched if none of the
+   * {@link routes} match. Implicitly matches to the path "/*".
+   */
+  fallback?: BaseRouteConfig;
+
   /*
    * The current set of child Routes controllers. These are connected via
    * the routes-connected event.
@@ -118,10 +124,12 @@ export class Routes implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
-    routes: Array<RouteConfig>
+    routes: Array<RouteConfig>,
+    options?: {fallback?: BaseRouteConfig}
   ) {
     (this._host = host).addController(this);
     this.routes = [...routes];
+    this.fallback = options?.fallback;
   }
 
   /**
@@ -156,7 +164,8 @@ export class Routes implements ReactiveController {
     // completely disregard the origin for now. The click handler only does
     // an in-page navigation if the origin matches anyway.
     let tailGroup: string | undefined;
-    if (this.routes.length === 0) {
+
+    if (this.routes.length === 0 && this.fallback === undefined) {
       // If a routes controller has none of its own routes it acts like it has
       // one route of `/*` so that it passes the whole pathname as a tail
       // match.
@@ -215,8 +224,19 @@ export class Routes implements ReactiveController {
   /**
    * Matches `url` against the installed routes and returns the first match.
    */
-  private _getRoute(pathname: string) {
-    return this.routes.find((r) => getPattern(r).test({pathname: pathname}));
+  private _getRoute(pathname: string): RouteConfig | undefined {
+    const matchedRoute = this.routes.find((r) =>
+      getPattern(r).test({pathname: pathname})
+    );
+    if (matchedRoute || this.fallback === undefined) {
+      return matchedRoute;
+    }
+    if (this.fallback) {
+      // The fallback route behaves like it has a "/*" path. This is hidden from
+      // the public API but is added here to return a valid RouteConfig.
+      return {...this.fallback, path: '/*'};
+    }
+    return undefined;
   }
 
   hostConnected() {
@@ -300,6 +320,6 @@ export class RoutesConnectedEvent extends Event {
 
 declare global {
   interface HTMLElementEventMap {
-    'lit-routes-connected': RoutesConnectedEvent;
+    [RoutesConnectedEvent.eventName]: RoutesConnectedEvent;
   }
 }

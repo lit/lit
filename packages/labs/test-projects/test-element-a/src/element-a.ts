@@ -7,9 +7,13 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
+/**
+ * My awesome element
+ * @fires a-changed - An awesome event to fire
+ */
 @customElement('element-a')
 export class ElementA extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
     }
@@ -18,7 +22,7 @@ export class ElementA extends LitElement {
   @property()
   foo?: string;
 
-  render() {
+  override render() {
     return html`<h1>${this.foo}</h1>`;
   }
 }

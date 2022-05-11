@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * An absolute path
+ */
 export type AbsolutePath = string & {
   __absolutePathBrand: never;
 };
@@ -15,6 +18,9 @@ export type PackagePath = string & {
   __packagePathBrand: never;
 };
 
+/**
+ * Convert an absolute path to a package-relative path
+ */
 export const absoluteToPackage = (
   path: AbsolutePath,
   packageRoot: AbsolutePath

@@ -96,7 +96,9 @@
       "dependencies": [
         "build:rollup",
         "build:ts",
-        "build:ts:types"
+        "build:ts:types",
+        "../lit-html:build",
+        "../reactive-element:build"
       ]
     },
     "build:ts": {

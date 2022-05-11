@@ -8,6 +8,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
+    "incremental": true,
     "outDir": "./development/",
     "rootDir": "./src",
     "strict": true,
@@ -24,6 +25,5 @@
     "types": ["urlpattern-polyfill", "chai", "mocha", "trusted-types"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [{"path": "../../lit"}]
+  "exclude": []
 }
