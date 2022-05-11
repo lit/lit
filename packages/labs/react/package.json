@@ -78,8 +78,7 @@
     "build:rollup": {
       "command": "rollup -c",
       "dependencies": [
-        "build:ts",
-        "../../reactive-element:build:rollup"
+        "build:ts"
       ],
       "files": [
         "rollup.config.js",
