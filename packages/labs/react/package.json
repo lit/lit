@@ -83,7 +83,7 @@
       ],
       "files": [
         "rollup.config.js",
-        "../../rollup-common.js"
+        "../../../rollup-common.js"
       ],
       "output": [
         "create-component.js{,.map}",
@@ -99,7 +99,7 @@
       ],
       "files": [
         "rollup.config.js",
-        "../../rollup-common.js"
+        "../../../rollup-common.js"
       ],
       "output": []
     },
