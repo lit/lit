@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "target": "es2019",
     "module": "es2015",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
