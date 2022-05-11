@@ -34,7 +34,7 @@
         "build:ts",
         "generate-json-schema",
         "../lit:build",
-        "../labs/ssr-client:build"
+        "../labs/ssr:build"
       ]
     },
     "build:ts": {
