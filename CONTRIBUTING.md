@@ -1,8 +1,8 @@
-# Contributing to lit-html
+# Contributing to lit
 
-Thank you for your interest in contributing to lit-html!
+Thank you for your interest in contributing to lit!
 
-There are many ways to contribute to lit-html project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
+There are many ways to contribute to lit project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
 
 ## Code of Conduct
 
@@ -10,7 +10,7 @@ We have a [Code of Conduct](./CODE_OF_CONDUCT.md), please follow it in all inter
 
 ## Filing Issues
 
-Issues are one of the most important ways to contribute to lit-html.
+Issues are one of the most important ways to contribute to lit.
 
 Please search though open and closed issues to see if a similar issue already exists. If not, open an issue and try to provide a minimal reproduction if you can.
 
