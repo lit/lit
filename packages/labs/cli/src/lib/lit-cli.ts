@@ -147,7 +147,7 @@ export class LitCli {
       if (!commandName || command == null || command == '') {
         return {invalidCommand: commandName ?? 'unknown comand'};
       }
-      const maybeCommand = await this.#resolveCommandAndMaybeInstallNeededDeps(
+      const maybeCommand = await this.resolveCommandAndMaybeInstallNeededDeps(
         command
       );
       if (maybeCommand === undefined) {
@@ -186,7 +186,7 @@ export class LitCli {
     }
   }
 
-  #getImportPath(reference: ReferenceToCommand): string | undefined {
+  private getImportPath(reference: ReferenceToCommand): string | undefined {
     try {
       return createRequire(this.cwd).resolve(reference.importSpecifier, {
         paths: [this.cwd],
@@ -198,7 +198,7 @@ export class LitCli {
       throw e;
     }
   }
-  async #loadCommandFromPath(
+  private async loadCommandFromPath(
     reference: ReferenceToCommand,
     path: string
   ): Promise<Command> {
@@ -223,11 +223,11 @@ export class LitCli {
     if (reference.kind === 'resolved') {
       return reference;
     }
-    const resolvedPackageLocation = this.#getImportPath(reference);
+    const resolvedPackageLocation = this.getImportPath(reference);
     if (resolvedPackageLocation === undefined) {
       return reference;
     }
-    const command = await this.#loadCommandFromPath(
+    const command = await this.loadCommandFromPath(
       reference,
       resolvedPackageLocation
     );
@@ -237,40 +237,40 @@ export class LitCli {
     return command;
   }
 
-  async #resolveCommandAndMaybeInstallNeededDeps(
+  private async resolveCommandAndMaybeInstallNeededDeps(
     maybeReference: Command
   ): Promise<ResolvedCommand | undefined> {
     if (maybeReference.kind === 'resolved') {
       return maybeReference;
     }
     const reference = maybeReference;
-    let resolvedPackageLocation = this.#getImportPath(reference);
+    let resolvedPackageLocation = this.getImportPath(reference);
     if (resolvedPackageLocation === undefined) {
-      const installed = await this.#installDepWithPermission(reference);
+      const installed = await this.installDepWithPermission(reference);
       if (!installed) {
         return undefined;
       }
-      resolvedPackageLocation = this.#getImportPath(reference);
+      resolvedPackageLocation = this.getImportPath(reference);
       if (resolvedPackageLocation === undefined) {
         throw new Error(
           `Internal error: could not resolve command after what looked like a successful installation.`
         );
       }
     }
-    const command = await this.#loadCommandFromPath(
+    const command = await this.loadCommandFromPath(
       reference,
       resolvedPackageLocation
     );
     if (command.kind === 'reference') {
-      return this.#resolveCommandAndMaybeInstallNeededDeps(command);
+      return this.resolveCommandAndMaybeInstallNeededDeps(command);
     }
     return command;
   }
 
-  async #installDepWithPermission(
+  private async installDepWithPermission(
     reference: ReferenceToCommand
   ): Promise<boolean> {
-    const havePermission = await this.#getPermissionToInstall(reference);
+    const havePermission = await this.getPermissionToInstall(reference);
     if (!havePermission) {
       return false;
     }
@@ -305,7 +305,7 @@ export class LitCli {
     return succeeded;
   }
 
-  async #getPermissionToInstall(
+  private async getPermissionToInstall(
     reference: ReferenceToCommand
   ): Promise<boolean> {
     this.console.log(`The command ${reference.name} is not installed.
