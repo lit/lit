@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "wireit",
     "test": "npm run test:dev && npm run test:prod",
     "test:dev": "node ./run-web-tests.js",
     "test:prod": "MODE=prod npm run test:dev",
@@ -26,5 +25,19 @@
     "dir-compare": "^3.1.5",
     "prettier": "^2.3.2",
     "uvu": "^0.5.1"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "utils",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    }
   }
 }

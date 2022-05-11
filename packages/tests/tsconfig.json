@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "incremental": true,
+    "composite": true,
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "target": "es2020",
     "module": "es2022",
     "moduleResolution": "node",
