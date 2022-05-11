@@ -7,7 +7,12 @@
 import {LitElement, css, html, CSSResultGroup, TemplateResult} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {generateElementName, nextFrame} from './test-helpers.js';
+import {
+  generateElementName,
+  nextFrame,
+  sleep,
+  assertDeepCloseTo,
+} from './test-helpers.js';
 import {
   animate,
   Animate,
@@ -60,6 +65,9 @@ suite('Animate', () => {
   ) => {
     const styles: CSSResultGroup = [
       css`
+        :host {
+          display: block;
+        }
         * {
           box-sizing: border-box;
         }
@@ -422,13 +430,13 @@ suite('Animate', () => {
     shiftGChild = false;
     await el.updateComplete;
     await gChildAnimate!.finished;
-    assert.deepEqual(childAnimateProps!, {
+    assertDeepCloseTo(childAnimateProps!, {
       left: -100,
       top: 40,
       width: 2,
       height: 2,
     });
-    assert.deepEqual(gChildAnimateProps!, {left: -50, top: 20});
+    assertDeepCloseTo(gChildAnimateProps!, {left: -50, top: 20});
   });
 
   test('animates in', async () => {
@@ -654,6 +662,8 @@ suite('Animate', () => {
     oneFrames = twoFrames = undefined;
     await el.updateComplete;
     await twoAnimate?.finished;
+    // Note, workaround Safari flakiness by waiting slightly here.
+    await sleep();
     assert.equal(oneFrames, flyAbove);
     assert.equal(
       (twoFrames![0].transform! as string).trim(),
@@ -664,6 +674,8 @@ suite('Animate', () => {
     el.requestUpdate();
     await el.updateComplete;
     await twoAnimate?.finished;
+    // Note, workaround Safari flakiness by waiting slightly here.
+    await sleep();
     assert.equal(twoFrames, flyBelow);
     assert.equal(
       (oneFrames![0].transform! as string).trim(),
