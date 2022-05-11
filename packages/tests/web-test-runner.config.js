@@ -165,8 +165,7 @@ export default {
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
     '../labs/context/development/**/*_test.(js|html)',
-    // Motion tests don't pass?
-    // '../labs/motion/development/**/*_test.(js|html)',
+    '../labs/motion/development/**/*_test.(js|html)',
     '../labs/observers/development/**/*_test.(js|html)',
     '../labs/react/development/**/*_test.(js|html)',
     '../labs/router/development/**/*_test.js',
