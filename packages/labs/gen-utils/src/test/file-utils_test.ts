@@ -26,8 +26,8 @@ writeFileTreeTest('top-level files', async ({tempFs}) => {
     foo: 'foo',
     'bar.js': 'bar.js',
   });
-  assert.equal(tempFs.read('foo'), 'foo');
-  assert.equal(tempFs.read('bar.js'), 'bar.js');
+  assert.equal(await tempFs.read('foo'), 'foo');
+  assert.equal(await tempFs.read('bar.js'), 'bar.js');
 });
 
 writeFileTreeTest('files in folders', async ({tempFs}) => {
@@ -42,10 +42,10 @@ writeFileTreeTest('files in folders', async ({tempFs}) => {
       },
     },
   });
-  assert.equal(tempFs.read('dir1/foo1'), 'foo1');
-  assert.equal(tempFs.read('dir1/bar1.js'), 'bar1.js');
+  assert.equal(await tempFs.read('dir1/foo1'), 'foo1');
+  assert.equal(await tempFs.read('dir1/bar1.js'), 'bar1.js');
   assert.equal(
-    tempFs.read('dir1/dir2/dir3/some-really_long.filename.js'),
+    await tempFs.read('dir1/dir2/dir3/some-really_long.filename.js'),
     'some-really_long.filename.js'
   );
 });
@@ -58,8 +58,8 @@ writeFileTreeTest('filenames containing folders', async ({tempFs}) => {
     },
   });
 
-  assert.equal(tempFs.read('file/with/dir/baz.js'), 'baz.js');
-  assert.equal(tempFs.read('dir3/file/in/dir3/zot.js'), 'zot.js');
+  assert.equal(await tempFs.read('file/with/dir/baz.js'), 'baz.js');
+  assert.equal(await tempFs.read('dir3/file/in/dir3/zot.js'), 'zot.js');
 });
 
 writeFileTreeTest('errors when file escapes root folder', async ({tempFs}) => {
