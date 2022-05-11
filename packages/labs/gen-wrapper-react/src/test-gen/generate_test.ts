@@ -17,6 +17,7 @@ import {
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateReactWrapper} from '../index.js';
+import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
@@ -38,6 +39,8 @@ test('basic wrapper generation', async () => {
     path.join(outputPackage, 'src/element-a.ts')
   );
   assert.ok(wrapperSourceFile.length > 0);
+
+  await assertGoldensMatch(outputPackage, path.join('goldens', project));
 
   await installPackage(outputPackage, {
     [project]: inputPackage,
