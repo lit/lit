@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-wrapper-react",
   "description": "Code generator for React wrapper for Lit components",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -14,8 +14,7 @@
     "build:watch": "tsc --watch",
     "test": "npm run test:gen && npm run test:output",
     "test:gen": "uvu test-gen '.*_test\\.js$'",
-    "test:output": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
-    "prepack": "npm run shrinkwrap"
+    "test:output": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js"
   },
   "dependencies": {
     "@lit-labs/analyzer": "^0.1.1",
@@ -33,8 +32,7 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js",
-    "npm-shrinkwrap.json"
+    "index.js"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [

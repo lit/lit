@@ -11,7 +11,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
-import {installPackage, buildPackage, writeFileTree} from '@lit-labs/gen-utils';
+import {
+  installPackage,
+  buildPackage,
+} from '@lit-labs/gen-utils/lib/package-utils.js';
+import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateReactWrapper} from '../index.js';
 
 const testProjects = '../test-projects';

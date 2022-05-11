@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-utils",
   "description": "Utilities for lit code generators",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -12,8 +12,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "uvu test '.*_test\\.js$'",
-    "prepack": "npm run shrinkwrap"
+    "test": "uvu test '.*_test\\.js$'"
   },
   "dependencies": {
     "@lit-labs/analyzer": "^0.1.1"
@@ -27,9 +26,7 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js",
-    "lib",
-    "npm-shrinkwrap.json"
+    "lib"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [

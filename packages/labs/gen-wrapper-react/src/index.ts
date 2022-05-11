@@ -11,7 +11,7 @@ import {
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
-import {javascript, FileTree} from '@lit-labs/gen-utils';
+import {javascript, FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 
 // TODO(kschaaf): Move helpers into analyzer
 const isLitElementDeclaration = (

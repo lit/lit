@@ -20,16 +20,16 @@ export interface MonorepoPackages {
 }
 
 /**
- * npm installs the package in the given packageRoot, optionally using monorepo
- * packages in place of installing from the registry.
+ * Runs `npm i` in the package in the given packageRoot, optionally using
+ * monorepo packages in place of installing from the registry.
  *
  * Note that rather than using an `npm link` / symlink approach for substituting
  * monorepo packages, we use `npm pack` and point package.json to the tarball
  * for that package. This more closely matches how a given test package will be
  * installed  from the registry, and avoids issues when a monorepo has
  * peerDependencies (since a monorepo package will have its own copy of its
- * peerDependencies installed, which is not what will happen when installed
- * as a dependency itself).
+ * peerDependencies installed, which is not what will happen when installed as a
+ * dependency itself).
  *
  * @param packageRoot
  * @param linkedPackages
@@ -53,6 +53,8 @@ export const installPackage = async (
       } else if (packageJson.peerDependencies?.[pkg] !== undefined) {
         deps = packageJson.peerDependencies;
       } else {
+        // TODO(kschaaf) Would be nice to also validate the monorepo package
+        // fulfills the generated version constraint
         throw new Error(
           `Linked package '${pkg}' was not a dependency of '${packageFile}'.`
         );
@@ -82,12 +84,19 @@ export const installPackage = async (
       'utf8'
     );
   }
-  // Install
-  await exec('npm install', {cwd: packageRoot});
-  // Restore package.json
-  await fs.writeFile(packageFile, packageText, 'utf8');
+  try {
+    // Install
+    await exec('npm install', {cwd: packageRoot});
+  } finally {
+    // Restore package.json
+    await fs.writeFile(packageFile, packageText, 'utf8');
+  }
 };
 
+/**
+ * Runs `npm run build` on the given package
+ * @param packageRoot
+ */
 export const buildPackage = async (packageRoot: string) => {
   try {
     await exec('npm run build', {cwd: packageRoot});

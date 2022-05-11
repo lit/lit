@@ -6,7 +6,7 @@
 
 import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
-import {writeFileTree} from '@lit-labs/gen-utils';
+import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import * as path from 'path';
 
 const frameworkGenerators = {
@@ -42,6 +42,8 @@ export const run = async (
     await Promise.allSettled(
       importers.map(async (importer) => {
         const generator = await importer();
+        // TODO(kschaaf): Add try/catches around each of these operations and
+        // throw more contextural errors
         await writeFileTree(outDir, await generator(analysis));
       })
     );

@@ -90,6 +90,21 @@ writeFileTreeTest('filenames containing folders', async ({outputFolder}) => {
   );
 });
 
+writeFileTreeTest(
+  'errors when file escapes root folder',
+  async ({outputFolder}) => {
+    try {
+      await writeFileTree(outputFolder, {
+        'too_many/../../dots': 'baz.js',
+      });
+      assert.unreachable('Expected writeFileTree to throw an error');
+    } catch (e) {
+      assert.instance(e, Error);
+      assert.match((e as Error).message, 'is not contained in');
+    }
+  }
+);
+
 writeFileTreeTest.run();
 
 const javascriptTest = suite('javascript tag');

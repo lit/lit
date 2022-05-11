@@ -32,6 +32,9 @@ export class Analyzer {
   constructor(packageRoot: AbsolutePath) {
     this.packageRoot = packageRoot;
 
+    // TODO(kschaaf): Consider moving the package.json and tsconfig.json
+    // to analyzePackage() or move it to an async factory function that
+    // passes these to the constructor as arguments.
     try {
       this.packageJson = JSON.parse(
         fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
@@ -96,6 +99,8 @@ export class Analyzer {
     const jsPath = ts
       .getOutputFileNames(this.commandLine, fullSourcePath, false)
       .filter((f) => f.endsWith('.js'))[0];
+    // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
+    // we might need to handle this differently
     if (jsPath === undefined) {
       throw new Error(
         `Could not determine output filename for '${sourcePath}'`
