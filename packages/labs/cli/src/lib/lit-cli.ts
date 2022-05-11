@@ -145,7 +145,7 @@ export class LitCli {
       const commandName = parsedArgs.command;
       let command = commandName && commands.get(commandName);
       if (!commandName || command == null || command == '') {
-        return {invalidCommand: commandName ?? 'unknown comand'};
+        return {invalidCommand: commandName ?? 'unknown command'};
       }
       const maybeCommand = await this.resolveCommandAndMaybeInstallNeededDeps(
         command

@@ -41,6 +41,7 @@ class TestConsole extends LitConsole {
 test.before.each(async (ctx) => {
   ctx.console = new TestConsole();
   ctx.fs = new FilesystemTestRig();
+  // To use, push your input into stdinLines before it would be read.
   ctx.stdinLines = [];
   ctx.stdin = stream.Readable.from(ctx.stdinLines);
   await ctx.fs.setup();
