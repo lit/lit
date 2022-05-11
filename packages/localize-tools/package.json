@@ -41,7 +41,7 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "#comment": [
-        "TODO(aomarks) We depend a test utility from ts-transformers.",
+        "TODO(aomarks) We depend on a test utility from ts-transformers.",
         "It should be moved into the tests/ package and the dep removed."
       ],
       "dependencies": [
