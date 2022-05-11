@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as fs from 'fs';
 import * as path from 'path';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
@@ -14,27 +13,27 @@ import {TestConsole} from '../cli-test-utils.js';
 import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 
 interface TestContext {
+  testConsole: TestConsole;
   rig: FilesystemTestRig;
-  console: TestConsole;
 }
 
 const test = suite<TestContext>();
 
-test.before(async (ctx) => {
+test.before.each(async (ctx) => {
   const rig = new FilesystemTestRig();
   await rig.setup();
   ctx.rig = rig;
-  ctx.console = new TestConsole();
+  ctx.testConsole = new TestConsole();
 });
 
-test.after(async ({rig}) => {
+test.after.each(async ({rig}) => {
   await rig.cleanup();
 });
 
-test('basic wrapper generation', async ({rig, console}) => {
+test('basic wrapper generation', async ({rig, testConsole}) => {
   const packageName = 'test-element-a';
-  const inputDir = path.join('../test-projects/', packageName);
-  const outputPackage = packageName + '-react';
+  const inputPackage = path.join('../test-projects/', packageName);
+  const outputPackage = path.join(rig.rootDir, packageName + '-react');
 
   const cli = new LitCli(
     [
@@ -43,25 +42,23 @@ test('basic wrapper generation', async ({rig, console}) => {
       '--framework',
       'react',
       '--package',
-      inputDir,
+      inputPackage,
       '--out',
       rig.rootDir,
     ],
     {
-      console,
+      console: testConsole,
     }
   );
+  testConsole.alsoLogToGlobalConsole = true;
   await cli.run();
 
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.equal(testConsole.errorStream.buffer.length, 0);
 
   // Note, this is only a very basic test that wrapper generation succeeds when
   // executed via the CLI. For detailed tests, see tests in
   // @lit-labs/gen-wrapper-react.
-  const wrapperSourceFile = await rig.read(
-    outputPackage,
-    'src/element-a.ts'
-  );
+  const wrapperSourceFile = await rig.read(outputPackage, 'src/element-a.ts');
   assert.ok(wrapperSourceFile.length > 0);
 });
 

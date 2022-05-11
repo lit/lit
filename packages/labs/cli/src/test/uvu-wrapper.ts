@@ -2,7 +2,7 @@ import * as uvu from 'uvu';
 
 const IN_CI = process.env['CI'];
 // CI machines are sometimes super slow, so give them plenty of time.
-const TIMEOUT = IN_CI ? 60_000 : 1_000;
+const TIMEOUT = IN_CI ? 60_000 : 5_001;
 
 /**
  * A safer wrapper around uvu.suite.
@@ -22,10 +22,6 @@ export function suite<T>(opts?: {timeout?: number}): uvu.Test<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (wrapped as any)[key] = value;
   }
-  // Automatically run the tests after waiting for them to be registered.
-  setTimeout(() => {
-    wrapped.run();
-  }, 0);
   return wrapped;
 }
 

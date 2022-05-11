@@ -234,3 +234,5 @@ test('we install a referenced command with permission', async ({
     'this is the resolved foo command from the node_modules directory'
   );
 });
+
+test.run();

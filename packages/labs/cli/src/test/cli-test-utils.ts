@@ -14,6 +14,9 @@ export class BufferedWritable extends Writable {
   constructor() {
     super({
       write: (chunk: unknown, encoding, callback) => {
+        if (this.alsoLogToGlobalConsole) {
+          console.log(chunk);
+        }
         if (encoding === 'utf-8') {
           this.buffer.push(chunk as string);
         } else if ((encoding as 'buffer') === 'buffer') {
@@ -29,6 +32,8 @@ export class BufferedWritable extends Writable {
     });
   }
 
+  alsoLogToGlobalConsole = false;
+
   get text() {
     return this.buffer.join('');
   }
@@ -43,5 +48,13 @@ export class TestConsole extends LitConsole {
     super({...opts, stdout: outputStream, stderr: errorStream});
     this.outputStream = outputStream;
     this.errorStream = errorStream;
+  }
+
+  set alsoLogToGlobalConsole(value: boolean) {
+    this.outputStream.alsoLogToGlobalConsole = value;
+    this.errorStream.alsoLogToGlobalConsole = value;
+  }
+  get alsoLogToGlobalConsole() {
+    return this.outputStream.alsoLogToGlobalConsole;
   }
 }
