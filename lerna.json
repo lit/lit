@@ -2,8 +2,8 @@
   "packages": [
     "packages/*",
     "packages/labs/*",
-    "packages/localize/examples/*",
-    "packages/labs/cli/test-project"
+    "packages/labs/test-projects/*",
+    "packages/localize/examples/*"
   ],
   "version": "independent"
 }

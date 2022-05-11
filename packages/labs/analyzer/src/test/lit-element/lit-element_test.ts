@@ -56,7 +56,7 @@ test('isLitElement returns false for non-LitElement', ({
 test('Analyzer finds LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+    (m) => m.sourcePath === 'src/element-a.ts'
   );
   assert.equal(elementAModule?.declarations.length, 1);
   const decl = elementAModule!.declarations[0];
@@ -71,7 +71,7 @@ test('Analyzer finds LitElement declarations', ({analyzer}) => {
 test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+    (m) => m.sourcePath === 'src/element-a.ts'
   );
   const decl = elementAModule!.declarations[0] as LitElementDeclaration;
 

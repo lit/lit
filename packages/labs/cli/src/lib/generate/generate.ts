@@ -6,20 +6,32 @@
 
 import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
+import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import * as path from 'path';
 
 const frameworkGenerators = {
-  react: () => import('../generate/react.js'),
+  react: async () =>
+    (await import('@lit-labs/gen-wrapper-react/index.js')).generateReactWrapper,
 };
 
 type FrameworkName = keyof typeof frameworkGenerators;
 
 export const run = async (
-  {packages, frameworks}: {packages: string[]; frameworks: string[]},
-  console: Console
+  {
+    packages,
+    frameworks,
+    outDir,
+  }: {packages: string[]; frameworks: string[]; outDir: string},
+  _console: Console
 ) => {
-  for (const pkg of packages) {
-    const analyzer = new Analyzer(pkg as AbsolutePath);
+  for (const packageRoot of packages) {
+    const analyzer = new Analyzer(path.resolve(packageRoot) as AbsolutePath);
     const analysis = analyzer.analyzePackage();
+    if (!analysis.packageJson.name) {
+      throw new Error(
+        `Package at '${packageRoot}' did not have a name in package.json. The 'gen' command requires that packages have a name.`
+      );
+    }
     const importers = (frameworks as FrameworkName[]).map((framework) => {
       const importer = frameworkGenerators[framework];
       if (importer === undefined) {
@@ -30,7 +42,9 @@ export const run = async (
     await Promise.allSettled(
       importers.map(async (importer) => {
         const generator = await importer();
-        await generator.run(analysis, console);
+        // TODO(kschaaf): Add try/catches around each of these operations and
+        // throw more contextural errors
+        await writeFileTree(outDir, await generator(analysis));
       })
     );
   }

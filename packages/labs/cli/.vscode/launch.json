@@ -29,7 +29,9 @@
         "${workspaceFolder}/index.js",
         "${workspaceFolder}/bin/**/*.js",
         "${workspaceFolder}/lib/**/*.js",
-        "${workspaceFolder}/test/**/*.js"
+        "${workspaceFolder}/test/**/*.js",
+        "${workspaceFolder}/../analyzer/index.js",
+        "${workspaceFolder}/../analyzer/lib/**/*.js",
       ],
       "console": "integratedTerminal"
     }

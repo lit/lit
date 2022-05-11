@@ -4,40 +4,68 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
+import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../../lib/lit-cli.js';
-import {LitConsole} from '../../lib/console.js';
-import {BufferedWritable} from '../buffered-writable.js';
+import {TestConsole} from '../cli-test-utils.js';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
-let outputStream: BufferedWritable;
-let errorStream: BufferedWritable;
-let cliConsole: LitConsole;
+interface TestContext {
+  console: TestConsole;
+  outputFolder: string;
+}
 
-test.before(() => {
-  outputStream = new BufferedWritable();
-  errorStream = new BufferedWritable();
-  cliConsole = new LitConsole({
-    stdout: outputStream,
-    stderr: errorStream,
-  });
+const test = suite<TestContext>();
+
+test.before((ctx) => {
+  // TODO(kschaaf): Use FilesystemTestRig once moved into test utils
+  ctx.outputFolder = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'generateReactTest-')
+  );
+  if (!ctx.outputFolder) {
+    throw new Error(`Failed to create temp dir under ${os.tmpdir()}`);
+  }
+  ctx.console = new TestConsole();
 });
 
-test('stub test', async () => {
+test.after(({outputFolder}) => {
+  fs.rmSync(outputFolder, {recursive: true});
+});
+
+test('basic wrapper generation', async ({outputFolder, console}) => {
+  const packageName = 'test-element-a';
+  const inputPackage = path.join('../test-projects/', packageName);
+  const outputPackage = path.join(outputFolder, packageName + '-react');
+
   const cli = new LitCli(
-    ['labs', 'gen', '--framework', 'react', '--package', 'test-project'],
+    [
+      'labs',
+      'gen',
+      '--framework',
+      'react',
+      '--package',
+      inputPackage,
+      '--out',
+      outputFolder,
+    ],
     {
-      console: cliConsole,
+      console,
     }
   );
   await cli.run();
 
-  const output = outputStream.text;
+  assert.equal(console.errorStream.buffer.length, 0);
 
-  assert.equal(errorStream.buffer.length, 0);
-
-  // TODO: change to actual test once more is fleshed out; for now the stub
-  // command just outputs analyzed modules
-  assert.match(output, 'element-a.ts');
+  // Note, this is only a very basic test that wrapper generation succeeds when
+  // executed via the CLI. For detailed tests, see tests in
+  // @lit-labs/gen-wrapper-react.
+  const wrapperSourceFile = fs.readFileSync(
+    path.join(outputPackage, 'src/element-a.ts')
+  );
+  assert.ok(wrapperSourceFile.length > 0);
 });
+
+test.run();

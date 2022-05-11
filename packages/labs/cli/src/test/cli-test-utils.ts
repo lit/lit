@@ -5,6 +5,8 @@
  */
 
 import {Writable} from 'stream';
+import {LitConsole} from '../lib/console.js';
+import {ConsoleConstructorOptions} from 'console';
 
 export class BufferedWritable extends Writable {
   buffer: Array<string> = [];
@@ -29,5 +31,17 @@ export class BufferedWritable extends Writable {
 
   get text() {
     return this.buffer.join('');
+  }
+}
+
+export class TestConsole extends LitConsole {
+  readonly outputStream;
+  readonly errorStream;
+  constructor(opts: Partial<ConsoleConstructorOptions> = {}) {
+    const outputStream = new BufferedWritable();
+    const errorStream = new BufferedWritable();
+    super({...opts, stdout: outputStream, stderr: errorStream});
+    this.outputStream = outputStream;
+    this.errorStream = errorStream;
   }
 }

@@ -26,19 +26,26 @@ export const labs: Command = {
           description:
             'Framework to generate wrappers for. Supported frameworks: react.',
         },
+        {
+          name: 'out',
+          defaultValue: './gen',
+          description: 'Folder to output generated packages to.',
+        },
       ],
       async run(
         {
           package: packages,
           framework: frameworks,
+          out: outDir,
         }: {
           package: string[];
           framework: string[];
+          out: string;
         },
         console: Console
       ) {
         const gen = await import('../generate/generate.js');
-        await gen.run({packages, frameworks}, console);
+        await gen.run({packages, frameworks, outDir}, console);
       },
     },
   ],

@@ -27,7 +27,7 @@ test.before((ctx) => {
 
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+    (m) => m.sourcePath === 'src/element-a.ts'
   );
   const element = elementAModule!.declarations[0] as LitElementDeclaration;
 

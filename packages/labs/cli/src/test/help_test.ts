@@ -9,7 +9,7 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import {LitCli} from '../lib/lit-cli.js';
 import {LitConsole} from '../lib/console.js';
-import {BufferedWritable} from './buffered-writable.js';
+import {BufferedWritable} from './cli-test-utils.js';
 
 let outputStream: BufferedWritable;
 let errorStream: BufferedWritable;
