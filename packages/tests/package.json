@@ -5,10 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "wireit",
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "node ./run-web-tests.js",
-    "test:prod": "MODE=prod npm run test:dev",
-    "test:watch": "npm run test:dev -- --watch"
+    "test": "wireit",
+    "test:dev": "wireit",
+    "test:prod": "wireit"
   },
   "devDependencies": {
     "@types/node": "^16.7.8",
@@ -42,6 +41,24 @@
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
+    },
+    "test": {
+      "dependencies": [
+        "test:dev",
+        "test:prod"
+      ]
+    },
+    "test:dev": {
+      "command": "node ./run-web-tests.js",
+      "dependencies": [
+        "build"
+      ]
+    },
+    "test:prod": {
+      "command": "MODE=prod node ./run-web-tests.js",
+      "dependencies": [
+        "build"
+      ]
     }
   }
 }
