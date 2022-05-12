@@ -19,7 +19,8 @@
     "build": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../analyzer:build"
+        "../analyzer:build",
+        "../gen-utils:build"
       ],
       "files": [
         "src/**/*",
