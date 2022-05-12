@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CHROME_VERSION: <specific_version>
-      BROWSERS: selenium:chrome
+      BROWSERS: selenium:firefox
 
     steps:
       - uses: actions/checkout@v2
@@ -25,11 +25,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install Chrome
-        run: |
-          apt-get install libxss1 libappindicator1 libindicator7
-          wget "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
-          apt install ./google-chrome*.deb
+      # - name: Install Chrome
+      #   run: |
+      #     apt install libxss1 libappindicator1 libindicator7
+      #     wget "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
+      #     apt install ./google-chrome*.deb
       
       - name: Install Firefox
         run: |
