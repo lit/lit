@@ -111,6 +111,7 @@ packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
+packages/tests/utils/
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map
