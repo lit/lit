@@ -1,9 +1,9 @@
-name: Chrome
+name: Firefox
 
 on: [push, pull_request]
 
 jobs:
-  tests-sauce:
+  tests-firefox:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
@@ -33,9 +33,9 @@ jobs:
       
       - name: Install Firefox
         run: |
-          add-apt-repository ppa:mozillateam/ppa
-          apt update
-          apt install firefox-esr
+          sudo add-apt-repository ppa:mozillateam/ppa
+          sudo apt update
+          sudo apt install firefox-esr
 
       # - name: NPM install
       #   run: npm ci
