@@ -37,21 +37,21 @@ jobs:
           sudo apt update
           sudo apt install firefox-esr
 
-      # - name: NPM install
-      #   run: npm ci
+      - name: NPM install
+        run: npm ci
 
-      # - name: Lerna bootstrap
-      #   run: npm run bootstrap
+      - name: Lerna bootstrap
+        run: npm run bootstrap
 
-      # - name: Build
-      #   run: npm run build
+      - name: Build
+        run: npm run build
 
-      # - name: Test
-      #   run: |
-      #     cd packages/tests
-      #     npm run test
+      - name: Test
+        run: |
+          cd packages/tests
+          npm run test
 
-      # - name: Test SSR
-      #   run: |
-      #     cd packages/labs/ssr
-      #     npm run test:integration
+      - name: Test SSR
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
