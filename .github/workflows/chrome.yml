@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CHROME_VERSION: 101.0.4951.64
-      BROWSERS: selenium:firefox
+      CHROME_DRIVER_VERSION: 101.0.4951.15
+      BROWSERS: selenium:chrome
 
     steps:
       - uses: actions/checkout@v2
