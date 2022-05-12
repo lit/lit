@@ -1,0 +1,50 @@
+name: Chrome & Firefox
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    # Don't run on forks. Sauce tests need access to secrets.
+    if: github.repository == 'lit/lit'
+
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
+
+    runs-on: ubuntu-latest
+    env:
+      BROWSERS: selenium:firefox
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Firefox
+        run: |
+          sudo add-apt-repository ppa:mozillateam/ppa
+          sudo apt update
+          sudo apt install firefox-esr
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Lerna bootstrap
+        run: npm run bootstrap
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: |
+          cd packages/tests
+          npm run test
+
+      - name: Test SSR
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
