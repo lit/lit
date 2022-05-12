@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      CHROME_VERSION: <specific_version>
+      CHROME_VERSION: 101.0.4951.64
       BROWSERS: selenium:firefox
 
     steps:
@@ -27,9 +27,8 @@ jobs:
 
       - name: Install Chrome
         run: |
-          apt install libxss1 libappindicator1 libindicator7
           wget "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
-          apt install ./google-chrome*.deb
+          sudo apt install ./google-chrome*.deb
 
       - name: Install Chrome Driver
         run: |

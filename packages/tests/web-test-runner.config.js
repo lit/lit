@@ -13,7 +13,8 @@ import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 import {seleniumLauncher} from '@web/test-runner-selenium';
 import webdriver from 'selenium-webdriver';
-import {Options} from 'selenium-webdriver/firefox.js';
+import firefox from 'selenium-webdriver/firefox.js';
+import chrome from 'selenium-webdriver/chrome.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -158,7 +159,8 @@ Expected format "sauce:os/browser".
     return [
       seleniumLauncher({
         driverBuilder: new webdriver.Builder()
-          .setFirefoxOptions(new Options().headless())
+          .setFirefoxOptions(new firefox.Options().headless())
+          .setChromeOptions(new chrome.Options().headless())
           .forBrowser(browserName),
       }),
     ];
