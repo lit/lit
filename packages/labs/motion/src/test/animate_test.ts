@@ -593,94 +593,98 @@ if (DEV_MODE) {
     assert.equal(startCalls, 4);
   });
 
-  test('animates in based on an element that animated out', async () => {
-    let shouldRender = true;
-    let oneAnimate: Animate | undefined, twoAnimate: Animate | undefined;
-    let oneFrames: Keyframe[] | undefined, twoFrames: Keyframe[] | undefined;
-    const onOneStart = (animate: Animate) => {
-      oneAnimate = animate;
-    };
-    const onOneComplete = (animate: Animate) => {
-      oneFrames = animate.frames;
-    };
-    const onTwoStart = (animate: Animate) => {
-      twoAnimate = animate;
-    };
-    const onTwoComplete = (animate: Animate) => {
-      twoFrames = animate.frames;
-    };
-    const El = generateAnimateElement(
-      undefined,
-      css`
-        .one {
-          position: absolute;
-          top: 20px;
-          width: 50px;
-        }
-        .two {
-          position: absolute;
-          top: 40px;
-          width: 50px;
-        }
-      `,
-      () =>
-        html`${shouldRender
-          ? html`<div
-              class="one"
-              ${animate({
-                id: '1',
-                inId: '2',
-                onStart: onOneStart,
-                onComplete: onOneComplete,
-                out: flyAbove,
-                in: fadeIn,
-                skipInitial: true,
-              })}
-            >
-              Out
-            </div>`
-          : html`<div
-              class="two"
-              ${animate({
-                id: '2',
-                inId: '1',
-                onStart: onTwoStart,
-                onComplete: onTwoComplete,
-                in: fadeIn,
-                out: flyBelow,
-              })}
-            >
-              In
-            </div>`}`
-    );
-    el = new El();
-    container.appendChild(el);
-    await el.updateComplete;
-    await oneAnimate?.finished;
-    await twoAnimate?.finished;
-    shouldRender = false;
-    el.requestUpdate();
-    oneFrames = twoFrames = undefined;
-    await el.updateComplete;
-    await twoAnimate?.finished;
-    // Note, workaround Safari flakiness by waiting slightly here.
-    await sleep();
-    assert.equal(oneFrames, flyAbove);
-    assert.equal(
-      (twoFrames![0].transform! as string).trim(),
-      'translateY(-20px)'
-    );
-    oneFrames = twoFrames = undefined;
-    shouldRender = true;
-    el.requestUpdate();
-    await el.updateComplete;
-    await twoAnimate?.finished;
-    // Note, workaround Safari flakiness by waiting slightly here.
-    await sleep();
-    assert.equal(twoFrames, flyBelow);
-    assert.equal(
-      (oneFrames![0].transform! as string).trim(),
-      'translateY(20px)'
-    );
-  });
+  // TODO(sorvell) This is too flakey on Safari.
+  (/apple/i.test(navigator.vendor) ? test.skip : test)(
+    'animates in based on an element that animated out',
+    async () => {
+      let shouldRender = true;
+      let oneAnimate: Animate | undefined, twoAnimate: Animate | undefined;
+      let oneFrames: Keyframe[] | undefined, twoFrames: Keyframe[] | undefined;
+      const onOneStart = (animate: Animate) => {
+        oneAnimate = animate;
+      };
+      const onOneComplete = (animate: Animate) => {
+        oneFrames = animate.frames;
+      };
+      const onTwoStart = (animate: Animate) => {
+        twoAnimate = animate;
+      };
+      const onTwoComplete = (animate: Animate) => {
+        twoFrames = animate.frames;
+      };
+      const El = generateAnimateElement(
+        undefined,
+        css`
+          .one {
+            position: absolute;
+            top: 20px;
+            width: 50px;
+          }
+          .two {
+            position: absolute;
+            top: 40px;
+            width: 50px;
+          }
+        `,
+        () =>
+          html`${shouldRender
+            ? html`<div
+                class="one"
+                ${animate({
+                  id: '1',
+                  inId: '2',
+                  onStart: onOneStart,
+                  onComplete: onOneComplete,
+                  out: flyAbove,
+                  in: fadeIn,
+                  skipInitial: true,
+                })}
+              >
+                Out
+              </div>`
+            : html`<div
+                class="two"
+                ${animate({
+                  id: '2',
+                  inId: '1',
+                  onStart: onTwoStart,
+                  onComplete: onTwoComplete,
+                  in: fadeIn,
+                  out: flyBelow,
+                })}
+              >
+                In
+              </div>`}`
+      );
+      el = new El();
+      container.appendChild(el);
+      await el.updateComplete;
+      await oneAnimate?.finished;
+      await twoAnimate?.finished;
+      shouldRender = false;
+      el.requestUpdate();
+      oneFrames = twoFrames = undefined;
+      await el.updateComplete;
+      await twoAnimate?.finished;
+      // Note, workaround Safari flakiness by waiting slightly here.
+      await sleep();
+      assert.equal(oneFrames, flyAbove);
+      assert.equal(
+        (twoFrames![0].transform! as string).trim(),
+        'translateY(-20px)'
+      );
+      oneFrames = twoFrames = undefined;
+      shouldRender = true;
+      el.requestUpdate();
+      await el.updateComplete;
+      await twoAnimate?.finished;
+      // Note, workaround Safari flakiness by waiting slightly here.
+      await sleep();
+      assert.equal(twoFrames, flyBelow);
+      assert.equal(
+        (oneFrames![0].transform! as string).trim(),
+        'translateY(20px)'
+      );
+    }
+  );
 });
