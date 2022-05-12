@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import * as path from 'path';
 import {
   ClassDeclaration,
   LitElementDeclaration,
@@ -46,7 +47,7 @@ export const generateReactWrapper = async (
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
     const reactPkgName = packageNameToReactPackageName(
-      analysis.packageJson.name!
+      path.basename(analysis.rootDir)
     );
     return {
       [reactPkgName]: {
@@ -107,7 +108,11 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
         // Use typescript from source package, assuming it exists
         typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
       },
-      files: [...litModules.map(({module}) => module.jsPath)],
+      files: [
+        ...litModules.map(({module}) =>
+          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
+        ),
+      ],
     },
     null,
     2

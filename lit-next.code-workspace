@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "name": "lit-monorepo",
+      "path": "."
+    },
+    {
       "name": "lit",
       "path": "packages/lit"
     },
@@ -17,10 +21,6 @@
       "path": "packages/reactive-element"
     },
     {
-      "name": "ssr",
-      "path": "packages/labs/ssr"
-    },
-    {
       "name": "lit-starter-ts",
       "path": "packages/lit-starter-ts"
     },
@@ -29,12 +29,48 @@
       "path": "packages/lit-starter-js"
     },
     {
+      "name": "labs/ssr",
+      "path": "packages/labs/ssr"
+    },
+    {
+      "name": "labs/ssr-client",
+      "path": "packages/labs/ssr-client"
+    },
+    {
+      "name": "labs/task",
+      "path": "packages/labs/task"
+    },
+    {
+      "name": "labs/motion",
+      "path": "packages/labs/motion"
+    },
+    {
+      "name": "labs/react",
+      "path": "packages/labs/react"
+    },
+    {
+      "name": "labs/analyzer",
+      "path": "packages/labs/analyzer"
+    },
+    {
+      "name": "labs/cli",
+      "path": "packages/labs/cli"
+    },
+    {
+      "name": "labs/gen-utils",
+      "path": "packages/labs/gen-utils"
+    },
+    {
+      "name": "labs/gen-wrapper-react",
+      "path": "packages/labs/gen-wrapper-react"
+    },
+    {
       "name": "localize",
       "path": "packages/localize"
     },
     {
-      "name": "labs",
-      "path": "packages/labs"
+      "name": "localize-tools",
+      "path": "packages/localize-tools"
     },
     {
       "name": "tests",
@@ -44,18 +80,6 @@
       "name": "benchmarks",
       "path": "packages/benchmarks"
     },
-    {
-      "name": "analyzer",
-      "path": "packages/labs/analyzer"
-    },
-    {
-      "name": "cli",
-      "path": "packages/labs/cli"
-    },
-    {
-      "name": "lit-monorepo",
-      "path": "."
-    }
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",

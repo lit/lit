@@ -14,6 +14,7 @@ import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
   buildPackage,
+  packPackage,
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateReactWrapper} from '../index.js';
@@ -45,11 +46,13 @@ test('basic wrapper generation', async () => {
   });
 
   await installPackage(outputPackage, {
-    [project]: inputPackage,
+    [`@lit-internal/${project}`]: inputPackage,
     '@lit-labs/react': '../react',
   });
 
   await buildPackage(outputPackage);
+
+  await packPackage(outputPackage);
 
   // This verifies the package installation and build nominally succeeded. Note
   // that runtime tests of this generated package are run as a separate `npm run

@@ -14,6 +14,8 @@
     "test": "wireit",
     "test:gen": "wireit",
     "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen",
+    "install:output": "wireit",
+    "build:output": "wireit",
     "test:output": "wireit"
   },
   "wireit": {
@@ -44,9 +46,12 @@
     },
     "test:gen": {
       "command": "uvu test-gen '.*_test\\.js$'",
-      "files": [],
+      "files": [
+        "goldens/**/*"
+      ],
       "output": [
-        "gen-output"
+        "gen-output",
+        "!gen-output/node_modules"
       ],
       "dependencies": [
         "build",
@@ -54,12 +59,41 @@
         "../test-projects/test-element-a:build"
       ]
     },
-    "test:output": {
-      "command": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+    "install:output": {
       "dependencies": [
-        "build",
         "test:gen",
         "../../tests:build"
+      ],
+      "files": [
+        "test-output/package.json"
+      ],
+      "command": "cd test-output && npm i",
+      "output": [
+        "test-output/node_modules"
+      ]
+    },
+    "build:output": {
+      "dependencies": [
+        "install:output"
+      ],
+      "files": [
+        "test-output/src"
+      ],
+      "command": "cd test-output && npm run build",
+      "output": [
+        "test-output/build/**/*"
+      ]
+    },
+    "test:output": {
+      "command": "node ../../tests/run-web-tests.js \"test-output/build/static/js/*.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build:output"
+      ],
+      "files": [
+        "../../tests/run-web-tests.js",
+        "../../tests/web-test-runner.config.js",
+        "../../tests/wtr-config.js",
+        "../../tests/rollup-resolve-remap.js"
       ],
       "files": [],
       "output": []
@@ -70,9 +104,6 @@
     "@lit-labs/gen-utils": "^0.0.0"
   },
   "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/chai": "^4.0.1",
-    "@types/mocha": "^9.0.0",
     "@types/node": "^17.0.31",
     "tests": "^0.0.0",
     "typescript": "~4.6.2",

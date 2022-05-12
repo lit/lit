@@ -5,23 +5,26 @@
  */
 
 import ts from 'typescript';
-import {PackagePath} from './paths.js';
+import {AbsolutePath, PackagePath} from './paths.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
 export interface PackageInit {
+  rootDir: AbsolutePath;
   packageJson: PackageJson;
   tsConfig: ts.ParsedCommandLine;
   modules: ReadonlyArray<Module>;
 }
 
 export class Package {
+  readonly rootDir: AbsolutePath;
   readonly modules: ReadonlyArray<Module>;
   readonly tsConfig: ts.ParsedCommandLine;
   readonly packageJson: PackageJson;
 
   constructor(init: PackageInit) {
+    this.rootDir = init.rootDir;
     this.packageJson = init.packageJson;
     this.tsConfig = init.tsConfig;
     this.modules = init.modules;

@@ -105,3 +105,16 @@ export const buildPackage = async (packageRoot: string) => {
     throw new Error(`Failed to build package '${packageRoot}': ${stdout}`);
   }
 };
+
+/**
+ * Runs `npm pack` on the given package
+ * @param packageRoot
+ */
+export const packPackage = async (packageRoot: string) => {
+  try {
+    await exec('npm pack', {cwd: packageRoot});
+  } catch (e) {
+    const {stdout} = e as {stdout: string};
+    throw new Error(`Failed to pack package '${packageRoot}': ${stdout}`);
+  }
+};

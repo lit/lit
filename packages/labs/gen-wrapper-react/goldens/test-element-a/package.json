@@ -1,5 +1,5 @@
 {
-  "name": "test-element-a-react",
+  "name": "@lit-internal/test-element-a-react",
   "type": "module",
   "scripts": {
     "build": "tsc",
@@ -7,7 +7,7 @@
   },
   "version": "1.0.0",
   "dependencies": {
-    "test-element-a": "^1.0.0",
+    "@lit-internal/test-element-a": "^1.0.0",
     "@lit-labs/react": "^1.0.4"
   },
   "peerDependencies": {
@@ -18,6 +18,6 @@
     "typescript": "~4.3.5"
   },
   "files": [
-    "element-a.js"
+    "element-a.{js,js.map,d.ts,d.ts.map}"
   ]
 }
