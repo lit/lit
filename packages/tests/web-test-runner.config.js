@@ -158,8 +158,14 @@ Available options:
     }
     const [, browserName] = match;
     const driverBuilder = new webdriver.Builder().forBrowser(browserName);
-    if (browserName === 'firefox' || browserName === 'firefox-esr') {
+    if (browserName === 'firefox') {
       driverBuilder.setFirefoxOptions(new firefox.Options().headless());
+    }
+    if (browserName === 'firefox-esr') {
+      const options = new firefox.Options();
+      options.headless();
+      options.setBinary('/usr/bin/firefox-esr');
+      driverBuilder.setFirefoxOptions(options);
     }
     if (browserName === 'chrome') {
       driverBuilder.setChromeOptions(new chrome.Options().headless());
