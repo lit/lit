@@ -58,10 +58,10 @@
         "test:gen"
       ],
       "files": [
-        "../tests/run-web-tests.js",
-        "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js",
-        "../tests/rollup-resolve-remap.js"
+        "../../tests/run-web-tests.js",
+        "../../tests/web-test-runner.config.js",
+        "../../tests/wtr-config.js",
+        "../../tests/rollup-resolve-remap.js"
       ],
       "output": []
     }
