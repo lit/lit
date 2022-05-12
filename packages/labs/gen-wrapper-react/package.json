@@ -10,11 +10,61 @@
   "main": "lib/index.js",
   "repository": "lit/lit",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "test": "npm run test:gen && npm run test:output",
-    "test:gen": "uvu test-gen '.*_test\\.js$'",
-    "test:output": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js"
+    "build": "wireit",
+    "test": "wireit",
+    "test:gen": "wireit",
+    "test:output": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../analyzer:build"
+      ],
+      "files": [
+        "src/**/*",
+        "tsconfig.json"
+      ],
+      "output": [
+        "test-gen",
+        "test-output",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "dependencies": [
+        "test:gen",
+        "test:output"
+      ]
+    },
+    "test:gen": {
+      "command": "uvu test-gen '.*_test\\.js$'",
+      "files": [],
+      "output": [
+        "gen-output"
+      ],
+      "dependencies": [
+        "build",
+        "../react:build",
+        "../test-projects/test-element-a:build"
+      ]
+    },
+    "test:output": {
+      "command": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build",
+        "test:gen"
+      ],
+      "files": [
+        "../../tests/run-web-tests.js",
+        "../../tests/web-test-runner.config.js",
+        "../../tests/wtr-config.js",
+        "../../tests/rollup-resolve-remap.js"
+      ],
+      "output": []
+    }
   },
   "dependencies": {
     "@lit-labs/analyzer": "^0.1.1",
