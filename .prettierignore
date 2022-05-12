@@ -163,6 +163,14 @@ packages/labs/gen-wrapper-react/index.d.ts
 packages/labs/gen-wrapper-react/index.d.ts.map
 packages/labs/gen-wrapper-react/gen-output/
 
+packages/labs/gen-wrapper-vue/test-gen/
+packages/labs/gen-wrapper-vue/test-output/
+packages/labs/gen-wrapper-vue/index.js
+packages/labs/gen-wrapper-vue/index.js.map
+packages/labs/gen-wrapper-vue/index.d.ts
+packages/labs/gen-wrapper-vue/index.d.ts.map
+packages/labs/gen-wrapper-vue/gen-output/
+
 packages/labs/motion/development/
 packages/labs/motion/test/
 packages/labs/motion/node_modules/
