@@ -40,7 +40,9 @@ test('basic wrapper generation', async () => {
   );
   assert.ok(wrapperSourceFile.length > 0);
 
-  await assertGoldensMatch(outputPackage, path.join('goldens', project));
+  await assertGoldensMatch(outputPackage, path.join('goldens', project), {
+    formatGlob: '**/*.{ts,js,json}',
+  });
 
   await installPackage(outputPackage, {
     [project]: inputPackage,
