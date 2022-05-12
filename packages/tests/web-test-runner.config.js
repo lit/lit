@@ -156,12 +156,13 @@ Available options:
   - safari
       `);
     }
-    const [, browserName] = match;
-    const driverBuilder = new webdriver.Builder().forBrowser(browserName);
+    let [, browserName] = match;
+    const driverBuilder = new webdriver.Builder();
     if (browserName === 'firefox') {
       driverBuilder.setFirefoxOptions(new firefox.Options().headless());
     }
     if (browserName === 'firefox-esr') {
+      browserName = 'firefox';
       const options = new firefox.Options();
       options.headless();
       options.setBinary('/usr/bin/firefox-esr');
@@ -170,6 +171,7 @@ Available options:
     if (browserName === 'chrome') {
       driverBuilder.setChromeOptions(new chrome.Options().headless());
     }
+    driverBuilder.forBrowser(browserName);
 
     return [seleniumLauncher({driverBuilder})];
   }
