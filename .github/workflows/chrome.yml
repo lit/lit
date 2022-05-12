@@ -1,59 +1,58 @@
-name: Chrome
+# name: Chrome
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-jobs:
-  tests-chrome:
-    # Don't run on forks. Sauce tests need access to secrets.
-    if: github.repository == 'lit/lit'
+# jobs:
+#   tests-chrome:
+#     # Don't run on forks. Sauce tests need access to secrets.
+#     if: github.repository == 'lit/lit'
 
-    # Sauce tests are still unreliable. Run them, but don't mark a commit as
-    # failing if it fails.
-    continue-on-error: true
+#     # Sauce tests are still unreliable. Run them, but don't mark a commit as
+#     # failing if it fails.
+#     continue-on-error: true
 
-    runs-on: ubuntu-latest
-    env:
-      CHROME_VERSION: current
-      CHROME_DRIVER_VERSION: 101.0.4951.15
-      BROWSERS: selenium:chrome
+#     runs-on: ubuntu-latest
+#     env:
+#       CHROME_VERSION: current
+#       CHROME_DRIVER_VERSION: 101.0.4951.15
+#       BROWSERS: selenium:chrome
 
-    steps:
-      - uses: actions/checkout@v2
+#     steps:
+#       - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+#       - uses: actions/setup-node@v2
+#         with:
+#           node-version: 16
+#           cache: 'npm'
+#           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install Chrome
-        run: |
-          wget "https://dl.google.com/linux/direct/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
-          sudo apt install ./google-chrome*.deb
+#       - name: Install Chrome
+#         run: |
+#           wget "https://dl.google.com/linux/direct/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
+#           sudo apt install ./google-chrome*.deb
 
-      - name: Install Chrome Driver
-        run: |
-          wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo chmod +x chromedriver
-          sudo mv chromedriver /usr/bin/chromedriver
+#       - name: Install Chrome Driver
+#         run: |
+#           wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
+#           unzip chromedriver_linux64.zip
+#           sudo chmod +x chromedriver
+#           sudo mv chromedriver /usr/bin/chromedriver
 
-      
-      - name: NPM install
-        run: npm ci
+#       - name: NPM install
+#         run: npm ci
 
-      - name: Lerna bootstrap
-        run: npm run bootstrap
+#       - name: Lerna bootstrap
+#         run: npm run bootstrap
 
-      - name: Build
-        run: npm run build
+#       - name: Build
+#         run: npm run build
 
-      - name: Test
-        run: |
-          cd packages/tests
-          npm run test
+#       - name: Test
+#         run: |
+#           cd packages/tests
+#           npm run test
 
-      - name: Test SSR
-        run: |
-          cd packages/labs/ssr
-          npm run test:integration
+#       - name: Test SSR
+#         run: |
+#           cd packages/labs/ssr
+#           npm run test:integration

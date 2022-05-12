@@ -15,6 +15,7 @@ import {seleniumLauncher} from '@web/test-runner-selenium';
 import webdriver from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox.js';
 import chrome from 'selenium-webdriver/chrome.js';
+import safari from 'selenium-webdriver/safari.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
