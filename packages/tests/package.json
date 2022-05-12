@@ -35,6 +35,10 @@
       ],
       "output": [
         "utils",
+        "rollup-resolve-remap.{js,js.map}",
+        "run-web-tests.{js,js.map}",
+        "web-test-runner.config.{js,js.map}",
+        "wtr-config.{js,js.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"

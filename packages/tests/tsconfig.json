@@ -4,7 +4,7 @@
     "composite": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "target": "es2020",
-    "module": "es2022",
+    "module": "esnext",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "lib": ["es2020"],
