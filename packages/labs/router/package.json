@@ -65,6 +65,7 @@
         "build:rollup"
       ],
       "files": [
+        "../../tests/run-web-tests.js",
         "../../tests/web-test-runner.config.js",
         "../../tests/wtr-config.js",
         "../../tests/rollup-resolve-remap.js"
@@ -78,6 +79,7 @@
         "build:rollup"
       ],
       "files": [
+        "../../tests/run-web-tests.js",
         "../../tests/web-test-runner.config.js",
         "../../tests/wtr-config.js",
         "../../tests/rollup-resolve-remap.js"
