@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      BROWSERS: selenium:firefox
+      BROWSERS: selenium:firefox-esr
 
     steps:
       - uses: actions/checkout@v2
@@ -24,11 +24,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # - name: Install Firefox-esr and GeckoDriver
-      #   run: |
-      #     sudo add-apt-repository ppa:mozillateam/ppa
-      #     sudo apt update
-      #     sudo apt install firefox-esr firefox-geckodriver
+      - name: Install Firefox-esr and GeckoDriver
+        run: |
+          sudo add-apt-repository ppa:mozillateam/ppa
+          sudo apt update
+          sudo apt install firefox-esr
 
       - name: NPM install
         run: npm ci
