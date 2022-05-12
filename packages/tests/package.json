@@ -16,5 +16,9 @@
     "@web/test-runner-playwright": "^0.8.8",
     "@web/test-runner-saucelabs": "^0.7.2",
     "@webcomponents/webcomponentsjs": "^2.6.0"
+  },
+  "dependencies": {
+    "@web/test-runner-selenium": "^0.5.3",
+    "selenium-webdriver": "^4.1.2"
   }
 }

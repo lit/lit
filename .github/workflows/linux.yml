@@ -30,22 +30,28 @@ jobs:
           apt-get install libxss1 libappindicator1 libindicator7
           wget "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb"
           apt install ./google-chrome*.deb
-
-      - name: NPM install
-        run: npm ci
-
-      - name: Lerna bootstrap
-        run: npm run bootstrap
-
-      - name: Build
-        run: npm run build
-
-      - name: Test
+      
+      - name: Install Firefox
         run: |
-          cd packages/tests
-          npm run test
+          add-apt-repository ppa:mozillateam/ppa
+          apt update
+          apt install firefox-esr
 
-      - name: Test SSR
-        run: |
-          cd packages/labs/ssr
-          npm run test:integration
+      # - name: NPM install
+      #   run: npm ci
+
+      # - name: Lerna bootstrap
+      #   run: npm run bootstrap
+
+      # - name: Build
+      #   run: npm run build
+
+      # - name: Test
+      #   run: |
+      #     cd packages/tests
+      #     npm run test
+
+      # - name: Test SSR
+      #   run: |
+      #     cd packages/labs/ssr
+      #     npm run test:integration

@@ -11,6 +11,8 @@ import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
+import {seleniumLauncher} from '@web/test-runner-selenium';
+import webdriver from 'selenium-webdriver';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -139,6 +141,26 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
+  if (browser.startsWith('selenium:')) {
+    // Note this is the syntax used by WCT. Might as well use the same one.
+    const match = browser.match(/^selenium:(.+)$/);
+    console.log('selenium browser:', match);
+    if (!match) {
+      throw new Error(`
+
+Invalid Selenium browser string.
+Expected format "sauce:os/browser".
+      `);
+    }
+    const [, browserName] = match;
+    console.log(browserName);
+    return [
+      seleniumLauncher({
+        driverBuilder: new webdriver.Builder().forBrowser(browserName),
+      }),
+    ];
+  }
+
   const config = {
     product: browser,
     ...(browser === 'chromium'
@@ -149,6 +171,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
         }
       : {}),
   };
+
   return [playwrightLauncher(config)];
 }
 
