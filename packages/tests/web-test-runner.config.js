@@ -15,7 +15,6 @@ import {seleniumLauncher} from '@web/test-runner-selenium';
 import webdriver from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox.js';
 import chrome from 'selenium-webdriver/chrome.js';
-import safari from 'selenium-webdriver/safari.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -147,24 +146,26 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   if (browser.startsWith('selenium:')) {
     // Note this is the syntax used by WCT. Might as well use the same one.
     const match = browser.match(/^selenium:(.+)$/);
-    console.log('selenium browser:', match);
     if (!match) {
       throw new Error(`
-
 Invalid Selenium browser string.
-Expected format "sauce:os/browser".
+Expected format: selenium:browser
+Available options:
+  - chrome
+  - firefox
+  - safari
       `);
     }
     const [, browserName] = match;
-    console.log(browserName);
-    return [
-      seleniumLauncher({
-        driverBuilder: new webdriver.Builder()
-          .setFirefoxOptions(new firefox.Options().headless())
-          .setChromeOptions(new chrome.Options().headless())
-          .forBrowser(browserName),
-      }),
-    ];
+    const driverBuilder = new webdriver.Builder().forBrowser(browserName);
+    if (browserName === 'chrome') {
+      driverBuilder.setFirefoxOptions(new firefox.Options().headless());
+    }
+    if (browserName === 'firefox') {
+      driverBuilder.setChromeOptions(new chrome.Options().headless());
+    }
+
+    return [seleniumLauncher({driverBuilder})];
   }
 
   const config = {
