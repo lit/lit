@@ -8,6 +8,7 @@ import {LitElement, css, html, CSSResultGroup, TemplateResult} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {
+  hasWebAnimationsAPI,
   generateElementName,
   nextFrame,
   sleep,
@@ -40,7 +41,7 @@ if (DEV_MODE) {
  * 4. remove `scaleUp` and maybe `reset` and `commit`.
  */
 
-suite('Animate', () => {
+(hasWebAnimationsAPI ? suite : suite.skip)('Animate', () => {
   let el;
   let container: HTMLElement;
 

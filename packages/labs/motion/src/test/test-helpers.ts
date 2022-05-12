@@ -25,3 +25,6 @@ export const assertDeepCloseTo = (
 
 export const sleep = async (delay = 100) =>
   new Promise((r) => setTimeout(r, delay));
+
+export const hasWebAnimationsAPI =
+  'Animation' in window && 'animate' in Element.prototype;
