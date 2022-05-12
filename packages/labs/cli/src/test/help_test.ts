@@ -11,11 +11,11 @@ import {LitCli} from '../lib/lit-cli.js';
 import {LitConsole} from '../lib/console.js';
 import {BufferedWritable} from './cli-test-utils.js';
 import {ReferenceToCommand} from '../lib/command.js';
-import {FilesystemTestRig} from './temp-filesystem-rig.js';
 import {ConsoleConstructorOptions} from 'console';
 import * as stream from 'stream';
 import * as pathlib from 'path';
 import {suite} from './uvu-wrapper.js';
+import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 
 interface TestContext {
   console: TestConsole;
@@ -104,7 +104,7 @@ test('help includes unresolved external command descriptions', async ({
 }) => {
   const cli = new LitCli(['help'], {
     console,
-    cwd: fs.temp,
+    cwd: fs.rootDir,
     stdin,
   });
   cli.addCommand(fooCommandReference);
@@ -126,7 +126,7 @@ test(`help fails when getting details of unresolved external command`, async ({
   stdinLines.push('N\n'); // don't give permission to install
   const cli = new LitCli(['help', 'foo'], {
     console,
-    cwd: fs.temp,
+    cwd: fs.rootDir,
     stdin: stdin,
   });
   cli.addCommand(fooCommandReference);
@@ -162,7 +162,7 @@ test(`help for a resolved external command`, async ({console, fs, stdin}) => {
 
   let cli = new LitCli(['help', 'foo'], {
     console,
-    cwd: fs.temp,
+    cwd: fs.rootDir,
     stdin,
   });
   cli.addCommand(fooCommandReference);
@@ -178,7 +178,7 @@ test(`help for a resolved external command`, async ({console, fs, stdin}) => {
   console = new TestConsole();
   cli = new LitCli(['help'], {
     console,
-    cwd: fs.temp,
+    cwd: fs.rootDir,
     stdin,
   });
   cli.addCommand(fooCommandReference);
@@ -221,7 +221,7 @@ test('we install a referenced command with permission', async ({
   const cli = new LitCli(['help', 'foo'], {
     console,
     stdin,
-    cwd: pathlib.join(fs.temp, 'working-dir'),
+    cwd: pathlib.join(fs.rootDir, 'working-dir'),
   });
   cli.addCommand({...fooCommandReference, installFrom: '../foo-package'});
   await cli.run();
