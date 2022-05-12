@@ -15,7 +15,7 @@ jobs:
     env:
       CHROME_VERSION: current
       CHROME_DRIVER_VERSION: 101.0.4951.15
-      BROWSERS: selenium:chrome,selenium:firefox
+      BROWSERS: selenium:chrome
 
     steps:
       - uses: actions/checkout@v2

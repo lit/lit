@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      BROWSERS: selenium:firefox-esr
+      BROWSERS: selenium:firefox,selenium:firefox-esr
 
     steps:
       - uses: actions/checkout@v2
