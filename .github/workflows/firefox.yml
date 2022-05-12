@@ -29,7 +29,6 @@ jobs:
           sudo add-apt-repository ppa:mozillateam/ppa
           sudo apt update
           sudo apt install firefox-esr
-          echo "firefox-esr: $(which firefox-esr)"
 
       - name: NPM install
         run: npm ci
