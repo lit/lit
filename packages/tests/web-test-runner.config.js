@@ -178,7 +178,7 @@ export default {
   ],
   nodeResolve: true,
   concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
-  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 2), // default 2
+  concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 3), // default 3
   browsers,
   plugins: [
     fromRollup(resolveRemap)(resolveRemapConfig),
