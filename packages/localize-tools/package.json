@@ -86,7 +86,9 @@
         "testdata/*/input",
         "testdata/*/goldens"
       ],
-      "output": []
+      "output": [
+        "testdata/*/output"
+      ]
     },
     "test:unit:ssr": {
       "command": "uvu lib/tests \"ssr\\.unit\\.test\\.js$\"",
