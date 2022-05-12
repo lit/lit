@@ -49,10 +49,9 @@ test('basic wrapper generation', async () => {
 
   await buildPackage(outputPackage);
 
-  // TODO(kschaaf): Add golden tests. https://github.com/lit/lit/issues/2853
-  // For now, this verifies the package installation and build nominally
-  // succeeded. Note that runtime tests of this generated package are run as a
-  // separate `npm run test:output` command via web-test-runner.
+  // This verifies the package installation and build nominally succeeded. Note
+  // that runtime tests of this generated package are run as a separate `npm run
+  // test:output` command via web-test-runner.
   const wrapperJsFile = fs.readFileSync(
     path.join(outputPackage, 'element-a.js')
   );
