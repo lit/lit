@@ -3,7 +3,7 @@ name: Safari
 on: [push, pull_request]
 
 jobs:
-  tests-safari:
+  tests:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 

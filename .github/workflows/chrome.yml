@@ -1,4 +1,4 @@
-name: Chrome & Firefox
+name: Chrome
 
 on: [push, pull_request]
 
