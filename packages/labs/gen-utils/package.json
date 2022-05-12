@@ -17,7 +17,8 @@
     "build": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../analyzer:build"
+        "../analyzer:build",
+        "../../tests:build"
       ],
       "files": [
         "src/**/*.ts",
