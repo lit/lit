@@ -158,10 +158,10 @@ Available options:
     }
     const [, browserName] = match;
     const driverBuilder = new webdriver.Builder().forBrowser(browserName);
-    if (browserName === 'chrome') {
+    if (browserName === 'firefox') {
       driverBuilder.setFirefoxOptions(new firefox.Options().headless());
     }
-    if (browserName === 'firefox') {
+    if (browserName === 'chrome') {
       driverBuilder.setChromeOptions(new chrome.Options().headless());
     }
 

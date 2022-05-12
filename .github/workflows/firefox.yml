@@ -24,11 +24,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install Firefox-esr and GeckoDriver
-        run: |
-          sudo add-apt-repository ppa:mozillateam/ppa
-          sudo apt update
-          sudo apt install firefox-esr firefox-geckodriver
+      # - name: Install Firefox-esr and GeckoDriver
+      #   run: |
+      #     sudo add-apt-repository ppa:mozillateam/ppa
+      #     sudo apt update
+      #     sudo apt install firefox-esr firefox-geckodriver
 
       - name: NPM install
         run: npm ci

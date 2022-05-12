@@ -26,17 +26,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      - name: Install Chrome
-        run: |
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_${CHROME_VERSION}_amd64.deb
-          sudo apt install ./google-chrome*.deb
+      # - name: Install Chrome
+      #   run: |
+      #     wget -q https://dl.google.com/linux/direct/google-chrome-stable_${CHROME_VERSION}_amd64.deb
+      #     sudo apt install ./google-chrome*.deb
 
-      - name: Install Chrome Driver
-        run: |
-          wget -q https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo chmod +x chromedriver
-          sudo mv chromedriver /usr/bin/chromedriver
+      # - name: Install Chrome Driver
+      #   run: |
+      #     wget -q https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
+      #     unzip chromedriver_linux64.zip
+      #     sudo chmod +x chromedriver
+      #     sudo mv chromedriver /usr/bin/chromedriver
 
       - name: NPM install
         run: npm ci
