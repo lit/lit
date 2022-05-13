@@ -23,6 +23,11 @@ jobs:
           node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+      
+      - uses: saucelabs/sauce-connect-action@v2
+        with:
+            username: ${{ secrets.SAUCE_USERNAME }}
+            accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
