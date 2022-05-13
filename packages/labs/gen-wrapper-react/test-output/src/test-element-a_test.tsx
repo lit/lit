@@ -8,7 +8,7 @@ import {assert} from '@esm-bundle/chai';
 
 import React from 'react';
 // eslint-disable-next-line import/extensions
-import ReactDOM from 'react-dom/client';
+import {render, unmountComponentAtNode} from 'react-dom';
 import {ElementA} from '@lit-internal/test-element-a-react/element-a.js';
 import {ElementA as ElementAElement} from '@lit-internal/test-element-a/element-a.js';
 
@@ -22,19 +22,19 @@ suite('test-element-a', () => {
 
   teardown(() => {
     if (container && container.parentNode) {
+      unmountComponentAtNode(container);
       container.parentNode.removeChild(container);
     }
   });
 
   test('renders correctly', async () => {
-    const root = ReactDOM.createRoot(container);
     const foo = 'Hello World';
-    root.render(
+    render(
       <React.StrictMode>
         <ElementA foo={foo}></ElementA>
-      </React.StrictMode>
+      </React.StrictMode>,
+      container
     );
-    await new Promise((r) => setTimeout(r));
     const el = container.querySelector('element-a')! as ElementAElement;
     await el.updateComplete;
     const {firstElementChild} = el.shadowRoot!;
