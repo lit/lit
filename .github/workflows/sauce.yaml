@@ -40,17 +40,11 @@ jobs:
         run: npm run build
 
       - name: Test
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           cd packages/tests
           npm run test
 
       - name: Test SSR
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           cd packages/labs/ssr
           npm run test:integration
