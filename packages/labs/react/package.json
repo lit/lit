@@ -122,14 +122,10 @@
       "command": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
-        "build:rollup"
+        "build:rollup",
+        "../../tests:build"
       ],
-      "files": [
-        "../../tests/run-web-tests.js",
-        "../../tests/web-test-runner.config.js",
-        "../../tests/wtr-config.js",
-        "../../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     }
   },
