@@ -16,6 +16,8 @@ import webdriver from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox.js';
 import chrome from 'selenium-webdriver/chrome.js';
 
+const SELENIUM = 'selenium';
+
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
@@ -37,6 +39,7 @@ const browserPresets = {
     'firefox', // to make it easier to comment out
     'webkit', // individual browsers
   ],
+  selenium: ['chrome', 'firefox', 'firefox-esr', 'safari'],
 
   // Browsers to test during automated continuous integration.
   //
@@ -143,33 +146,33 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  if (browser.startsWith('selenium:')) {
-    // Note this is the syntax used by WCT. Might as well use the same one.
-    const match = browser.match(/^selenium:(.+)$/);
-    if (!match) {
+  if (browser.startsWith(SELENIUM)) {
+    let browserName = browser.substring(SELENIUM.length + 1);
+    if (!browserPresets[SELENIUM][browserName]) {
       throw new Error(`
 Invalid Selenium browser string.
 Expected format: selenium:browser
 Available options:
   - chrome
   - firefox
+  - firefox-esr
   - safari
       `);
     }
-    let [, browserName] = match;
+
     const driverBuilder = new webdriver.Builder();
+    if (browserName === 'chrome') {
+      driverBuilder.setChromeOptions(new chrome.Options().headless());
+    }
     if (browserName === 'firefox') {
       driverBuilder.setFirefoxOptions(new firefox.Options().headless());
     }
     if (browserName === 'firefox-esr') {
+      // selenium does not corrolate 'firefox-esr' with geckodriver
       browserName = 'firefox';
-      const options = new firefox.Options();
-      options.headless();
-      options.setBinary('/usr/bin/firefox-esr');
-      driverBuilder.setFirefoxOptions(options);
-    }
-    if (browserName === 'chrome') {
-      driverBuilder.setChromeOptions(new chrome.Options().headless());
+      driverBuilder.setFirefoxOptions(
+        new firefox.Options().headless().setBinary('/usr/bin/firefox-esr')
+      );
     }
     driverBuilder.forBrowser(browserName);
 
