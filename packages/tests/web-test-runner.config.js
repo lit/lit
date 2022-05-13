@@ -174,7 +174,7 @@ Available options:
       driverBuilder.setFirefoxOptions(new firefox.Options().headless());
     }
     if (browserName === 'firefox-esr') {
-      // selenium does not corrolate 'firefox-esr' with geckodriver
+      // selenium does not correlate 'firefox-esr' with geckodriver
       browserName = 'firefox';
       driverBuilder.setFirefoxOptions(
         new firefox.Options().headless().setBinary('/usr/bin/firefox-esr')
