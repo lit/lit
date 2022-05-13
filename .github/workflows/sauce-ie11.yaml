@@ -28,6 +28,7 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+          tunnelIdentifier: lit-tests-ie
 
       - uses: google/wireit@setup-github-actions-caching/v1
 

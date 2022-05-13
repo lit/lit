@@ -27,7 +27,8 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-      
+          tunnelIdentifier: lit-tests
+
       - uses: google/wireit@setup-github-actions-caching/v1
 
       - name: NPM install
