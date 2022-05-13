@@ -50,7 +50,8 @@
     "test": {
       "command": "node ../tests/run-web-tests.js",
       "dependencies": [
-        "build"
+        "build",
+        "../tests:build"
       ],
       "files": [
         "web-test-runner.config.js"

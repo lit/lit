@@ -6,6 +6,7 @@
 
 import * as pathLib from 'path';
 import {fileURLToPath} from 'url';
+import {RemapConfig} from './rollup-resolve-remap.js';
 
 const packagesDir = pathLib.resolve(
   pathLib.dirname(fileURLToPath(import.meta.url)),
@@ -17,7 +18,7 @@ const packagesDir = pathLib.resolve(
  * to their minified production versions (works for both bare and path module
  * specifiers).
  */
-export const prodResolveRemapConfig = {
+export const prodResolveRemapConfig: RemapConfig = {
   root: packagesDir,
   remap: [
     // The development/test/ directories are special, there are no production
@@ -37,7 +38,7 @@ export const prodResolveRemapConfig = {
  * rollup-resolve-remap config that remaps any lit-html or lit-element imports
  * to the un-minified development versions.
  */
-export const devResolveRemapConfig = {
+export const devResolveRemapConfig: RemapConfig = {
   root: packagesDir,
   remap: [
     // Don't remap external dependencies.

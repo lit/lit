@@ -56,14 +56,10 @@
       "command": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build",
-        "test:gen"
+        "test:gen",
+        "../../tests:build"
       ],
-      "files": [
-        "../../tests/run-web-tests.js",
-        "../../tests/web-test-runner.config.js",
-        "../../tests/wtr-config.js",
-        "../../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     }
   },

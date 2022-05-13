@@ -5,10 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "wireit",
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "node ./run-web-tests.js",
-    "test:prod": "MODE=prod npm run test:dev",
-    "test:watch": "npm run test:dev -- --watch"
+    "test": "wireit"
   },
   "devDependencies": {
     "@types/node": "^16.7.8",
@@ -35,9 +32,19 @@
       ],
       "output": [
         "utils",
+        "rollup-resolve-remap.{js,js.map}",
+        "run-web-tests.{js,js.map}",
+        "web-test-runner.config.{js,js.map}",
+        "wtr-config.{js,js.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
+      "dependencies": [
+        "build"
+      ]
     }
   }
 }

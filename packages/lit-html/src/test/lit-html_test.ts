@@ -1716,34 +1716,43 @@ suite('lit-html', () => {
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
       class CheckNodePropertiesBehavior extends Directive {
-        render(_parentId?: string) {
+        render(_parentId?: string, _done?: (err?: unknown) => void) {
           return nothing;
         }
 
         override update(
           part: ChildPart,
-          [parentId]: DirectiveParameters<this>
+          [parentId, done]: DirectiveParameters<this>
         ) {
-          const {parentNode, startNode, endNode} = part;
+          try {
+            const {parentNode, startNode, endNode} = part;
 
-          if (endNode !== null) {
-            assert.notEqual(startNode, null);
-          }
+            if (endNode !== null) {
+              assert.notEqual(startNode, null);
+            }
 
-          if (startNode === null) {
-            // The part covers all children in `parentNode`.
-            assert.equal(parentNode.childNodes.length, 0);
-            assert.equal(endNode, null);
-          } else if (endNode === null) {
-            // The part covers all siblings following `startNode`.
-            assert.equal(startNode.nextSibling, null);
-          } else {
-            // The part covers all siblings between `startNode` and `endNode`.
-            assert.equal<Node | null>(startNode.nextSibling, endNode);
-          }
+            if (startNode === null) {
+              // The part covers all children in `parentNode`.
+              assert.equal(parentNode.childNodes.length, 0);
+              assert.equal(endNode, null);
+            } else if (endNode === null) {
+              // The part covers all siblings following `startNode`.
+              assert.equal(startNode.nextSibling, null);
+            } else {
+              // The part covers all siblings between `startNode` and `endNode`.
+              assert.equal<Node | null>(startNode.nextSibling, endNode);
+            }
 
-          if (parentId !== undefined) {
-            assert.equal((parentNode as HTMLElement).id, parentId);
+            if (parentId !== undefined) {
+              assert.equal((parentNode as HTMLElement).id, parentId);
+            }
+            done?.();
+          } catch (e) {
+            if (done === undefined) {
+              throw e;
+            } else {
+              done(e);
+            }
           }
 
           return nothing;
@@ -1778,7 +1787,19 @@ suite('lit-html', () => {
       });
 
       test(`part's parentNode is the logical DOM parent`, async () => {
-        const asyncCheckDiv = Promise.resolve(checkPart('divPromise'));
+        let resolve: () => void;
+        let reject: (e: unknown) => void;
+        // This Promise settles when then until() directive calls the directive
+        // in asyncCheckDiv.
+        const asyncCheckDivRendered = new Promise<void>((res, rej) => {
+          resolve = res;
+          reject = rej;
+        });
+        const asyncCheckDiv = Promise.resolve(
+          checkPart('div', (e?: unknown) =>
+            e === undefined ? resolve() : reject(e)
+          )
+        );
         const makeTemplate = () =>
           html`
             ${checkPart('container')}
@@ -1797,10 +1818,8 @@ suite('lit-html', () => {
             </div>
           `;
 
-        // Render twice so that `update` is called.
         render(makeTemplate(), container);
-        await asyncCheckDiv;
-        render(makeTemplate(), container);
+        await asyncCheckDivRendered;
       });
 
       test(`part's parentNode is correct when rendered into a document fragment`, async () => {
