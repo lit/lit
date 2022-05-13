@@ -5,19 +5,25 @@
  */
 
 import {createRequire} from 'module';
-import {playwrightLauncher} from '@web/test-runner-playwright';
+import {
+  playwrightLauncher,
+  PlaywrightLauncherArgs,
+  ProductType,
+} from '@web/test-runner-playwright';
 import {fromRollup} from '@web/dev-server-rollup';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
-import {resolveRemap} from './rollup-resolve-remap.js';
+import {RemapConfig, resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
+import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
+import type {PolyfillConfig} from 'polyfills-loader';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
 }
 
-let resolveRemapConfig;
+let resolveRemapConfig: RemapConfig;
 if (mode === 'prod') {
   console.log('Using production builds');
   resolveRemapConfig = prodResolveRemapConfig;
@@ -50,7 +56,7 @@ const browserPresets = {
   'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 
-let sauceLauncher;
+let sauceLauncher: ReturnType<typeof createSauceLabsLauncher>;
 
 function makeSauceLauncherOnce() {
   if (!sauceLauncher) {
@@ -85,14 +91,16 @@ function makeSauceLauncherOnce() {
  *     Expand one of the preset sets of browsers
  *     E.g. "preset:local", "preset:sauce"
  */
-function parseBrowser(browser) {
+function parseBrowser(browser: string): Array<BrowserLauncher> {
   browser = browser.trim();
   if (!browser) {
     return [];
   }
 
   if (browser.startsWith('preset:')) {
-    const preset = browser.substring('preset:'.length);
+    const preset = browser.substring(
+      'preset:'.length
+    ) as keyof typeof browserPresets;
     const entries = browserPresets[preset];
     if (!entries) {
       throw new Error(
@@ -139,8 +147,8 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  const config = {
-    product: browser,
+  const config: PlaywrightLauncherArgs = {
+    product: browser as ProductType,
     ...(browser === 'chromium'
       ? {
           launchOptions: {
@@ -160,13 +168,12 @@ const browsers = (process.env.BROWSERS || 'preset:local')
 const require = createRequire(import.meta.url);
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
-export default {
+const config: TestRunnerConfig = {
   rootDir: '../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
     '../labs/context/development/**/*_test.(js|html)',
-    // Motion tests don't pass?
-    // '../labs/motion/development/**/*_test.(js|html)',
+    '../labs/motion/development/**/*_test.(js|html)',
     '../labs/observers/development/**/*_test.(js|html)',
     '../labs/react/development/**/*_test.(js|html)',
     '../labs/router/development/**/*_test.js',
@@ -205,14 +212,15 @@ export default {
             // Don't load if the page is tagged with a special meta indicating
             // the polyfills will be loaded manually
             test: '!document.querySelector("meta[name=manual-polyfills]")',
+            // TODO(justinfagnani): this isn't in the PolyfillConfig type?
             module: false,
-          },
+          } as PolyfillConfig,
         ],
       },
     }),
   ],
-  // Only actually log errors and warnings. This helps make test output less spammy.
-  filterBrowserLogs: (type) => type === 'warn' || type === 'error',
+  // Only actually log errors. This helps make test output less spammy.
+  filterBrowserLogs: ({type}) => type === 'error',
   browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
@@ -227,3 +235,5 @@ export default {
     },
   },
 };
+
+export default config;

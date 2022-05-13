@@ -62,26 +62,20 @@
       "#comment": "build:rollup is needed to move the test html file to development/test.",
       "dependencies": [
         "build:ts",
-        "build:rollup"
+        "build:rollup",
+        "../../tests:build"
       ],
-      "files": [
-        "../../tests/web-test-runner.config.js",
-        "../../tests/wtr-config.js",
-        "../../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     },
     "test:prod": {
       "command": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
-        "build:rollup"
+        "build:rollup",
+        "../../tests:build"
       ],
-      "files": [
-        "../../tests/web-test-runner.config.js",
-        "../../tests/wtr-config.js",
-        "../../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     },
     "build": {

@@ -19,10 +19,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": [],
-  "references": [
-    {
-      "path": "../../localize-tools"
-    }
-  ]
+  "exclude": []
 }

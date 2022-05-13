@@ -13,10 +13,66 @@
   "main": "lib/index.js",
   "repository": "lit/lit",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "test": "uvu test '.*_test\\.js$'",
-    "prepack": "npm run shrinkwrap"
+    "build": "wireit",
+    "test": "wireit",
+    "prepack": "npm run shrinkwrap",
+    "test:compile": "wireit",
+    "test:actual": "wireit",
+    "build:deps": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --skipLibCheck >/dev/null || echo ''",
+      "#comment": "This never fails and always emits output so that we can run tests of code that doesn't type check",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts}"
+      ]
+    },
+    "build:deps": {
+      "dependencies": [
+        "../../localize-tools:build:ts",
+        "../../tests:build",
+        "../analyzer:build",
+        "../gen-wrapper-react:build",
+        "../gen-utils:build"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:compile",
+        "test:actual"
+      ]
+    },
+    "test:compile": {
+      "dependencies": [
+        "build:deps"
+      ],
+      "command": "tsc --pretty --noEmit",
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ]
+    },
+    "test:actual": {
+      "command": "uvu test '.*_test\\.js$'",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "test-project"
+      ],
+      "output": []
+    }
   },
   "dependencies": {
     "@lit/localize-tools": "^0.6.1",
@@ -32,6 +88,7 @@
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2",
+    "@types/node": "^17.0.30",
     "chai": "^4.3.4",
     "eslint": "^5.16.0",
     "globby": "^10.0.2",
