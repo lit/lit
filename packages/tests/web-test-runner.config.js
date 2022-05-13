@@ -153,8 +153,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
 
   if (browser.startsWith(SELENIUM)) {
     let browserName = browser.substring(SELENIUM.length);
-    console.log(browser);
-    console.log(browserName);
     if (!seleniumBrowsers.has(browserName)) {
       throw new Error(`
 Invalid Selenium browser string.
