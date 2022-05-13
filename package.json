@@ -30,6 +30,7 @@
     "@babel/eslint-parser": "^7.17.0",
     "@changesets/cli": "^2.16.0",
     "@changesets/get-github-info": "^0.5.0",
+    "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-virtual": "^2.1.0",

@@ -13,10 +13,7 @@
     "build": "wireit",
     "test": "wireit",
     "test:gen": "wireit",
-    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen",
-    "install:output": "wireit",
-    "build:output": "wireit",
-    "test:output": "wireit"
+    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
   },
   "wireit": {
     "build": {
@@ -32,71 +29,31 @@
       ],
       "output": [
         "test-gen",
-        "test-output",
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
     },
-    "test": {
-      "dependencies": [
-        "test:gen",
-        "test:output"
-      ]
-    },
     "test:gen": {
-      "command": "uvu test-gen '.*_test\\.js$'",
       "files": [
         "goldens/**/*"
-      ],
-      "output": [
-        "gen-output",
-        "!gen-output/node_modules"
       ],
       "dependencies": [
         "build",
         "../react:build",
         "../test-projects/test-element-a:build"
+      ],
+      "command": "uvu test-gen '.*_test\\.js$'",
+      "output": [
+        "gen-output",
+        "!gen-output/node_modules"
       ]
     },
-    "install:output": {
+    "test": {
       "dependencies": [
         "test:gen",
-        "../../tests:build"
-      ],
-      "files": [
-        "test-output/package.json"
-      ],
-      "command": "cd test-output && npm i",
-      "output": [
-        "test-output/node_modules"
+        "./test-output:test"
       ]
-    },
-    "build:output": {
-      "dependencies": [
-        "install:output"
-      ],
-      "files": [
-        "test-output/src"
-      ],
-      "command": "cd test-output && npm run build",
-      "output": [
-        "test-output/build/**/*"
-      ]
-    },
-    "test:output": {
-      "command": "node ../../tests/run-web-tests.js \"test-output/build/static/js/*.js\" --config ../../tests/web-test-runner.config.js",
-      "dependencies": [
-        "build:output"
-      ],
-      "files": [
-        "../../tests/run-web-tests.js",
-        "../../tests/web-test-runner.config.js",
-        "../../tests/wtr-config.js",
-        "../../tests/rollup-resolve-remap.js"
-      ],
-      "files": [],
-      "output": []
     }
   },
   "dependencies": {
