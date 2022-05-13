@@ -1,1 +1,4 @@
 /build/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+/package-lock.json
