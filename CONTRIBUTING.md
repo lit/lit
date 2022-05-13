@@ -1,8 +1,8 @@
-# Contributing to lit-html
+# Contributing to Lit
 
-Thank you for your interest in contributing to lit-html!
+Thank you for your interest in contributing to Lit!
 
-There are many ways to contribute to lit-html project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
+There are many ways to contribute to Lit project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
 
 ## Code of Conduct
 
@@ -10,7 +10,7 @@ We have a [Code of Conduct](./CODE_OF_CONDUCT.md), please follow it in all inter
 
 ## Filing Issues
 
-Issues are one of the most important ways to contribute to lit-html.
+Issues are one of the most important ways to contribute to Lit.
 
 Please search though open and closed issues to see if a similar issue already exists. If not, open an issue and try to provide a minimal reproduction if you can.
 
@@ -39,7 +39,7 @@ We follow the [Google JavaScript Style Guide](https://google.github.io/styleguid
 
 ## TypeScript
 
-We use TypeScript on lit-html in order to automatically check the code for type errors and document the types of fields and attributes for easier reading. If you don't know TypeScript, we hope it doesn't discourage you from contributing - TypeScript is a superset of JavaScript that focuses on adding type annotations.
+We use TypeScript on Lit in order to automatically check the code for type errors and document the types of fields and attributes for easier reading. If you don't know TypeScript, we hope it doesn't discourage you from contributing - TypeScript is a superset of JavaScript that focuses on adding type annotations.
 
 TypeScript is hopefully relatively easy to pick up, but if you have any problems we're more than happy to help. You can submit a pull request with type warnings and we'll either help you fix them, or if you allow commits to your PR branch, fix them for you. VS Code is a very nice IDE for TypeScript development if you care to try it.
 
