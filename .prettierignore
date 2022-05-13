@@ -10,6 +10,7 @@ lerna-debug.log
 .DS_Store
 .vscode/
 .wireit
+/temp
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
