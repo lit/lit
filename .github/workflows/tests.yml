@@ -3,48 +3,80 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  changeset:
-    runs-on: ubuntu-latest
-    # When lit-robot creates a release PR, skip this check as it will always
-    # fail.
-    if: ${{ github.actor != 'lit-robot' }}
+  # changeset:
+  #   runs-on: ubuntu-latest
+  #   # When lit-robot creates a release PR, skip this check as it will always
+  #   # fail.
+  #   if: ${{ github.actor != 'lit-robot' }}
 
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 0
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          # Note: we do not cache here because we're not running lerna
-          # bootstrap, so the ~/.npm dir won't have all dependencies, and if
-          # this job finishes first then we'll only cache root dependencies.
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: 16
+  #         # Note: we do not cache here because we're not running lerna
+  #         # bootstrap, so the ~/.npm dir won't have all dependencies, and if
+  #         # this job finishes first then we'll only cache root dependencies.
 
-      - run: git checkout main
-      - run: git checkout ${{ github.sha }}
-      - run: npm ci
-      # Enforce that all PRs that change packages need changesets. Changes
-      # without changesets result in this job failing.
-      - run: npm run changeset status -- --since=main
+  #     - run: git checkout main
+  #     - run: git checkout ${{ github.sha }}
+  #     - run: npm ci
+  #     # Enforce that all PRs that change packages need changesets. Changes
+  #     # without changesets result in this job failing.
+  #     - run: npm run changeset status -- --since=main
 
-  lint:
-    runs-on: ubuntu-latest
+  # lint:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-          # Note: we do not cache here because we're not running lerna
-          # bootstrap, so the ~/.npm dir won't have all dependencies, and if
-          # this job finishes first then we'll only cache root dependencies.
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: 16
+  #         # Note: we do not cache here because we're not running lerna
+  #         # bootstrap, so the ~/.npm dir won't have all dependencies, and if
+  #         # this job finishes first then we'll only cache root dependencies.
 
-      - run: npm ci
-      - run: npm run lint
+  #     - run: npm ci
+  #     - run: npm run lint
 
-  tests-local:
-    runs-on: ubuntu-latest
+  # tests-local:
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: 16
+  #         cache: 'npm'
+  #         cache-dependency-path: '**/package-lock.json'
+
+  #     - uses: google/wireit@setup-github-actions-caching/v1
+
+  #     - name: Install playwright deps
+  #       run: npx playwright install-deps
+
+  #     - name: NPM install
+  #       run: npm ci
+
+  #     - name: Lerna bootstrap
+  #       run: npm run bootstrap
+
+  #     - name: Build
+  #       run: npm run build
+
+  #     - name: Test
+  #       env:
+  #         BROWSERS: preset:local
+  #         CONCURRENT_BROWSERS: 3
+  #       run: npm run test
+
+  windows-tools:
+    runs-on: windows-2019
 
     steps:
       - uses: actions/checkout@v2
@@ -57,20 +89,14 @@ jobs:
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
-      - name: Install playwright deps
-        run: npx playwright install-deps
-
       - name: NPM install
         run: npm ci
 
       - name: Lerna bootstrap
         run: npm run bootstrap
 
-      - name: Build
-        run: npm run build
-
       - name: Test
-        env:
-          BROWSERS: preset:local
-          CONCURRENT_BROWSERS: 3
-        run: npm run test
+        working-directory: 
+        run: npm run test -- --scope @lit-labs/cli
+
+
