@@ -16,7 +16,13 @@ import webdriver from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox.js';
 import chrome from 'selenium-webdriver/chrome.js';
 
-const SELENIUM = 'selenium';
+const SELENIUM = 'selenium:';
+const seleniumBrowsers = new Set([
+  'chrome',
+  'firefox',
+  'firefox-esr',
+  'safari',
+]);
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -39,7 +45,6 @@ const browserPresets = {
     'firefox', // to make it easier to comment out
     'webkit', // individual browsers
   ],
-  selenium: ['chrome', 'firefox', 'firefox-esr', 'safari'],
 
   // Browsers to test during automated continuous integration.
   //
@@ -147,8 +152,10 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   }
 
   if (browser.startsWith(SELENIUM)) {
-    let browserName = browser.substring(SELENIUM.length + 1);
-    if (!browserPresets[SELENIUM][browserName]) {
+    let browserName = browser.substring(SELENIUM.length);
+    console.log(browser);
+    console.log(browserName);
+    if (!seleniumBrowsers.has(browserName)) {
       throw new Error(`
 Invalid Selenium browser string.
 Expected format: selenium:browser
