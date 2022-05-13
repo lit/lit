@@ -105,9 +105,7 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        ...(pkgJson?.devDependencies?.typescript
-          ? {typescript: pkgJson.devDependencies.typescript}
-          : {}),
+        typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
       },
       files: [...litModules.map(({module}) => module.jsPath)],
     },
