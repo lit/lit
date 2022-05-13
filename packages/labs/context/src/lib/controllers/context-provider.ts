@@ -56,6 +56,12 @@ export class ContextProvider<T extends ContextKey<unknown, unknown>>
   public onContextRequest = (
     ev: ContextRequestEvent<ContextKey<unknown, unknown>>
   ): void => {
+    // Only call the callback if the context matches. 
+    // Also, in case an element is a consumer AND a provider 
+    // of the same context, we want to avoid the element to self-register.
+    // The check on composedPath (as opposed to ev.target) is to cover cases
+    // where the consumer is in the shadowDom of the provider (in which case, 
+    // event.target === this.host because of event retargeting).
     if (ev.context !== this.context || ev.composedPath()[0] === this.host) {
       return;
     }
