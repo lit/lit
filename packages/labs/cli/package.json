@@ -17,7 +17,8 @@
     "test": "wireit",
     "prepack": "npm run shrinkwrap",
     "test:compile": "wireit",
-    "test:actual": "wireit"
+    "test:actual": "wireit",
+    "build:deps": "wireit"
   },
   "wireit": {
     "build": {
@@ -25,11 +26,7 @@
       "#comment": "This never fails and always emits output so that we can run tests of code that doesn't type check",
       "clean": "if-file-deleted",
       "dependencies": [
-        "../../localize-tools:build:ts",
-        "../../tests:build",
-        "../analyzer:build",
-        "../gen-wrapper-react:build",
-        "../gen-utils:build"
+        "build:deps"
       ],
       "files": [
         "tsconfig.json",
@@ -41,6 +38,15 @@
         "index.{js,js.map,d.ts}"
       ]
     },
+    "build:deps": {
+      "dependencies": [
+        "../../localize-tools:build:ts",
+        "../../tests:build",
+        "../analyzer:build",
+        "../gen-wrapper-react:build",
+        "../gen-utils:build"
+      ]
+    },
     "test": {
       "dependencies": [
         "test:compile",
@@ -48,6 +54,9 @@
       ]
     },
     "test:compile": {
+      "dependencies": [
+        "build:deps"
+      ],
       "command": "tsc --pretty --noEmit",
       "files": [
         "tsconfig.json",
