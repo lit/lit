@@ -7,10 +7,6 @@ jobs:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
-    # Sauce tests are still unreliable. Run them, but don't mark a commit as
-    # failing if it fails.
-    continue-on-error: true
-
     runs-on: macos-latest
     env:
       BROWSERS: selenium:safari
@@ -18,7 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/setup-node@v2
 
       - name: NPM install

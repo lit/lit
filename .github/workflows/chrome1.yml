@@ -4,22 +4,12 @@ on: [push, pull_request]
 
 jobs:
   tests:
-    # Don't run on forks. Sauce tests need access to secrets.
-    if: github.repository == 'lit/lit'
-
-    # Sauce tests are still unreliable. Run them, but don't mark a commit as
-    # failing if it fails.
-    continue-on-error: true
-
     runs-on: ubuntu-latest
     env:
-      CHROME_VERSION: current
-      CHROME_DRIVER_VERSION: 101.0.4951.15
       BROWSERS: selenium:chrome
 
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/setup-node@v2
         with:
           node-version: 16
