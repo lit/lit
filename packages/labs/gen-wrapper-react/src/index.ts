@@ -104,8 +104,10 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
         '@types/react': '^17.0.19',
       },
       devDependencies: {
-        // TODO(kschaaf): make configurable?
-        typescript: '^4.3.5',
+        // Use typescript from source package, assuming it exists
+        ...(pkgJson?.devDependencies?.typescript
+          ? {typescript: pkgJson.devDependencies.typescript}
+          : {}),
       },
       files: [...litModules.map(({module}) => module.jsPath)],
     },
