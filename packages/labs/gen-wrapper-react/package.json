@@ -67,7 +67,8 @@
   },
   "dependencies": {
     "@lit-labs/analyzer": "^0.1.1",
-    "@lit-labs/gen-utils": "^0.0.0"
+    "@lit-labs/gen-utils": "^0.0.0",
+    "tests": "0.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",
