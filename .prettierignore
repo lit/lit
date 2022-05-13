@@ -175,10 +175,7 @@ packages/labs/gen-utils/index.d.ts.map
 
 packages/labs/gen-wrapper-react/test-gen/
 packages/labs/gen-wrapper-react/test-output/js/
-packages/labs/gen-wrapper-react/test-output/*.js
-packages/labs/gen-wrapper-react/test-output/*.js.map
-packages/labs/gen-wrapper-react/test-output/*.d.ts
-packages/labs/gen-wrapper-react/test-output/*.d.ts.map
+packages/labs/gen-wrapper-react/test-output/tests/
 packages/labs/gen-wrapper-react/index.js
 packages/labs/gen-wrapper-react/index.js.map
 packages/labs/gen-wrapper-react/index.d.ts
