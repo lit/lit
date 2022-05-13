@@ -68,14 +68,9 @@ export const installPackage = async (
         );
       }
       // npm pack the linked package into a tarball
-      try {
-        const {stdout: tarballFile} = await exec('npm pack', {cwd: folder});
-        const tarballPath = `file:${path.resolve(folder, tarballFile.trim())}`;
-        // Update the package.json dep with a file path to the tarball
-        deps[pkg] = tarballPath;
-      } catch (e) {
-        throw new Error(`Error generating tarball for '${pkg}': ${e}`);
-      }
+      const tarballFile = await packPackage(folder);
+      // Update the package.json dep with a file path to the tarball
+      deps[pkg] = `file:${tarballFile}`;
     }
     // Write out the updated package.json
     await fs.writeFile(
@@ -109,10 +104,12 @@ export const buildPackage = async (packageRoot: string) => {
 /**
  * Runs `npm pack` on the given package
  * @param packageRoot
+ * @returns Absolute path to the packaged tarball
  */
 export const packPackage = async (packageRoot: string) => {
   try {
-    await exec('npm pack', {cwd: packageRoot});
+    const {stdout: tarballFile} = await exec('npm pack', {cwd: packageRoot});
+    return path.resolve(packageRoot, tarballFile.trim());
   } catch (e) {
     const {stdout} = e as {stdout: string};
     throw new Error(`Failed to pack package '${packageRoot}': ${stdout}`);
