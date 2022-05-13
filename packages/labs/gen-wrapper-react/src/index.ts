@@ -46,11 +46,13 @@ export const generateReactWrapper = async (
 ): Promise<FileTree> => {
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
-    const reactPkgName = packageNameToReactPackageName(
+    // Base the generated package folder name off the analyzed package folder
+    // name, not the npm package name, since that might have an npm org in it
+    const reactPkgFolder = packageNameToReactPackageName(
       path.basename(analysis.rootDir)
     );
     return {
-      [reactPkgName]: {
+      [reactPkgFolder]: {
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(analysis.packageJson, litModules),
         'tsconfig.json': tsconfigTemplate(),
