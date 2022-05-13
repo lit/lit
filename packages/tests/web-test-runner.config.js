@@ -17,12 +17,6 @@ import firefox from 'selenium-webdriver/firefox.js';
 import chrome from 'selenium-webdriver/chrome.js';
 
 const SELENIUM = 'selenium:';
-const seleniumBrowsers = new Set([
-  'chrome',
-  'firefox',
-  'firefox-esr',
-  'safari',
-]);
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -61,6 +55,13 @@ const browserPresets = {
   ],
   'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
+
+const seleniumBrowsers = new Set([
+  'chrome',
+  'firefox',
+  'firefox-esr',
+  'safari',
+]);
 
 let sauceLauncher;
 
