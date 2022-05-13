@@ -12,9 +12,9 @@ import {legacyPlugin} from '@web/dev-server-legacy';
 import {resolveRemap} from './rollup-resolve-remap.js';
 import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 import {seleniumLauncher} from '@web/test-runner-selenium';
-import webdriver from 'selenium-webdriver';
-import firefox from 'selenium-webdriver/firefox.js';
-import chrome from 'selenium-webdriver/chrome.js';
+import {Builder} from 'selenium-webdriver';
+import {Options as FirefoxOptions} from 'selenium-webdriver/firefox.js';
+import {Options as ChromeOptions} from 'selenium-webdriver/chrome.js';
 
 const SELENIUM = 'selenium:';
 
@@ -166,18 +166,18 @@ Available options:
       `);
     }
 
-    const driverBuilder = new webdriver.Builder();
+    const driverBuilder = new Builder();
     if (browserName === 'chrome') {
-      driverBuilder.setChromeOptions(new chrome.Options().headless());
+      driverBuilder.setChromeOptions(new ChromeOptions().headless());
     }
     if (browserName === 'firefox') {
-      driverBuilder.setFirefoxOptions(new firefox.Options().headless());
+      driverBuilder.setFirefoxOptions(new FirefoxOptions().headless());
     }
     if (browserName === 'firefox-esr') {
       // selenium does not correlate 'firefox-esr' with geckodriver
       browserName = 'firefox';
       driverBuilder.setFirefoxOptions(
-        new firefox.Options().headless().setBinary('/usr/bin/firefox-esr')
+        new FirefoxOptions().headless().setBinary('/usr/bin/firefox-esr')
       );
     }
     driverBuilder.forBrowser(browserName);
