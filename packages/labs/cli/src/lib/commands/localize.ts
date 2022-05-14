@@ -4,13 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Command, CommandOptions} from '../command.js';
+import {ResolvedCommand, CommandOptions} from '../command.js';
 
-export const localize: Command = {
+export const localize: ResolvedCommand = {
+  kind: 'resolved',
   name: 'localize',
   description: 'Lit localize',
   subcommands: [
     {
+      kind: 'resolved',
       name: 'extract',
       description: 'Extracts lit-localize messages',
       options: [
@@ -26,6 +28,7 @@ export const localize: Command = {
       },
     },
     {
+      kind: 'resolved',
       name: 'build',
       description: 'Build lit-localize projects',
       options: [

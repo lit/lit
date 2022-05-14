@@ -10,12 +10,10 @@
  * to a Sauce compatible list.
  */
 
-import {startTestRunner} from '@web/test-runner';
+import {startTestRunner, TestRunner} from '@web/test-runner';
 
-// eslint-disable-next-line no-undef
 process.on('uncaughtException', (error) => {
-  console.log('error.code', error.code);
-  if (error.code === 'EADDRINUSE') {
+  if ((error as Error & {code?: string}).code === 'EADDRINUSE') {
     // Try again
     currentRunner?.stop();
     startWithNextAvailablePort();
@@ -64,7 +62,7 @@ const SAUCE_PORTS = [
 ];
 
 let currentPortIndex = 0;
-let currentRunner;
+let currentRunner: TestRunner | undefined;
 
 async function startWithNextAvailablePort() {
   if (currentPortIndex === SAUCE_PORTS.length) {
@@ -83,7 +81,7 @@ async function startWithNextAvailablePort() {
     },
     autoExitProcess: false,
   });
-  currentRunner.on('stopped', (passed) => {
+  currentRunner?.on('stopped', (passed) => {
     // eslint-disable-next-line no-undef
     process.exit(passed ? 0 : 1);
   });

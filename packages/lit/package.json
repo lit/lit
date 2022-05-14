@@ -232,17 +232,12 @@
     },
     "test:dev": {
       "#comment": "TODO(aomarks) There is only one lit html test, and it doesn't work",
-      "#comment": "TODO(aomarks) Factor out a file-only target in tests/ to DRY these config files into a single place",
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
-        "build:ts"
+        "build:ts",
+        "../tests:build"
       ],
-      "files": [
-        "../tests/run-web-tests.js",
-        "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js",
-        "../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     },
     "test:prod": {
@@ -252,14 +247,10 @@
         "../lit-html:build:rollup",
         "../reactive-element:build:rollup",
         "build:ts",
-        "build:rollup"
+        "build:rollup",
+        "../tests:build"
       ],
-      "files": [
-        "../tests/run-web-tests.js",
-        "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js",
-        "../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     }
   },

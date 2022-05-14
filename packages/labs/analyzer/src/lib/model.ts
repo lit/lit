@@ -147,3 +147,29 @@ export interface Event {
   // TODO(justinfagnani): store a type reference too
   // https://github.com/lit/lit/issues/2850
 }
+
+// TODO(justinfagnani): Move helpers into a Lit-specific module
+export const isLitElementDeclaration = (
+  dec: ClassDeclaration
+): dec is LitElementDeclaration => {
+  return (dec as LitElementDeclaration).isLitElement;
+};
+
+export interface LitModule {
+  module: Module;
+  elements: LitElementDeclaration[];
+}
+
+export const getLitModules = (analysis: Package) => {
+  const modules: LitModule[] = [];
+  for (const module of analysis.modules) {
+    const elements = module.declarations.filter(isLitElementDeclaration);
+    if (elements.length > 0) {
+      modules.push({
+        module,
+        elements,
+      });
+    }
+  }
+  return modules;
+};

@@ -17,6 +17,7 @@ import {
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateReactWrapper} from '../index.js';
+import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
@@ -39,6 +40,10 @@ test('basic wrapper generation', async () => {
   );
   assert.ok(wrapperSourceFile.length > 0);
 
+  await assertGoldensMatch(outputPackage, path.join('goldens', project), {
+    formatGlob: '**/*.{ts,js,json}',
+  });
+
   await installPackage(outputPackage, {
     [project]: inputPackage,
     '@lit-labs/react': '../react',
@@ -46,10 +51,9 @@ test('basic wrapper generation', async () => {
 
   await buildPackage(outputPackage);
 
-  // TODO(kschaaf): Add golden tests. https://github.com/lit/lit/issues/2853
-  // For now, this verifies the package installation and build nominally
-  // succeeded. Note that runtime tests of this generated package are run as a
-  // separate `npm run test:output` command via web-test-runner.
+  // This verifies the package installation and build nominally succeeded. Note
+  // that runtime tests of this generated package are run as a separate `npm run
+  // test:output` command via web-test-runner.
   const wrapperJsFile = fs.readFileSync(
     path.join(outputPackage, 'element-a.js')
   );
