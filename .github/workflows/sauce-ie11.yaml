@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BROWSERS: preset:sauce-ie11
+      TUNNEL_ID: lit-tests-ie
 
     steps:
       - uses: actions/checkout@v2

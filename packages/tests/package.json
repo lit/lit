@@ -8,10 +8,10 @@
     "test": "wireit"
   },
   "devDependencies": {
-    "@types/node": "^16.7.8",
-    "@types/prettier": "^2.0.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
+    "@types/node": "^16.7.8",
+    "@types/prettier": "^2.0.1",
     "@web/dev-server-legacy": "^0.1.7",
     "@web/dev-server-rollup": "^0.3.13",
     "@web/test-runner": "^0.13.22",
@@ -46,5 +46,9 @@
         "build"
       ]
     }
+  },
+  "dependencies": {
+    "@types/ip": "^1.1.0",
+    "ip": "^1.1.8"
   }
 }
