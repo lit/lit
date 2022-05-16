@@ -15,21 +15,22 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "prepack": "npm run shrinkwrap"
+    "prepack": "npm run shrinkwrap",
+    "test:compile": "wireit",
+    "test:actual": "wireit",
+    "build:deps": "wireit"
   },
   "wireit": {
     "build": {
-      "command": "tsc --build --pretty",
+      "command": "tsc --skipLibCheck >/dev/null || echo ''",
+      "#comment": "This never fails and always emits output so that we can run tests of code that doesn't type check",
       "clean": "if-file-deleted",
       "dependencies": [
-        "../../localize-tools:build:ts",
-        "../../tests:build",
-        "../analyzer:build",
-        "../gen-wrapper-react:build",
-        "../gen-utils:build"
+        "build:deps"
       ],
       "files": [
-        "src/**/*.ts"
+        "tsconfig.json",
+        "src/**/*"
       ],
       "output": [
         "lib",
@@ -37,8 +38,33 @@
         "index.{js,js.map,d.ts}"
       ]
     },
+    "build:deps": {
+      "dependencies": [
+        "../../localize-tools:build:ts",
+        "../../tests:build",
+        "../analyzer:build",
+        "../gen-wrapper-react:build",
+        "../gen-utils:build"
+      ]
+    },
     "test": {
-      "command": "uvu test \".*_test\\.js$\"",
+      "dependencies": [
+        "test:compile",
+        "test:actual"
+      ]
+    },
+    "test:compile": {
+      "dependencies": [
+        "build:deps"
+      ],
+      "command": "tsc --pretty --noEmit",
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ]
+    },
+    "test:actual": {
+      "command": "uvu test '.*_test\\.js$'",
       "dependencies": [
         "build"
       ],
@@ -62,6 +88,7 @@
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2",
+    "@types/node": "^17.0.30",
     "chai": "^4.3.4",
     "eslint": "^5.16.0",
     "globby": "^10.0.2",
