@@ -11,6 +11,9 @@
   "dependencies": {
     "lit": "^2.0.0"
   },
+  "devDependencies": {
+    "typescript": "~4.3.5"
+  },
   "wireit": {
     "build": {
       "command": "tsc --build --pretty",

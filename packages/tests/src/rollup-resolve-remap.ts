@@ -5,6 +5,12 @@
  */
 
 import * as pathLib from 'path';
+import type {PluginContext, Plugin} from 'rollup';
+
+export interface RemapConfig {
+  root: string;
+  remap: ReadonlyArray<{from: string; to: string | null}>;
+}
 
 /**
  * Rollup plugin that remaps import module specifiers.
@@ -18,10 +24,10 @@ import * as pathLib from 'path';
  * the given substutitions to that path. This way, the paths we substitute are
  * always normalized and relative to a given root directory.
  */
-export function resolveRemap({root, remap}) {
+export function resolveRemap({root, remap}: RemapConfig): Plugin {
   return {
     name: 'resolve-remap',
-    async resolveId(importee, importer) {
+    async resolveId(this: PluginContext, importee: string, importer?: string) {
       const resolved = await this.resolve(importee, importer, {
         skipSelf: true,
       });
