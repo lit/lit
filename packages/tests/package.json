@@ -45,7 +45,8 @@
     "test": {
       "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
       "dependencies": [
-        "build"
+        "test:dev",
+        "test:prod"
       ]
     },
     "test:dev": {
