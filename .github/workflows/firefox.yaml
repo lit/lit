@@ -3,7 +3,7 @@ name: Firefox
 on: [push, pull_request]
 
 jobs:
-  tests:
+  firefox-tests:
     runs-on: ubuntu-latest
     env:
       BROWSERS: selenium:firefox,selenium:firefox-esr
