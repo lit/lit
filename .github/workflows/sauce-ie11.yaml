@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BROWSERS: preset:sauce-ie11
-      TUNNEL_ID: lit-tests-ie
+      TUNNEL_ID: github-action-tunnel
 
     steps:
       - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          tunnelIdentifier: lit-tests-ie
+          tunnelIdentifier: github-action-tunnel
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
@@ -59,3 +59,9 @@ jobs:
         run: |
           cd packages/labs/ssr
           npm run test:integration || npm run test:integration
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() }}
+        with:
+          name: sauce-connect-log
+          path: ${{ env.SAUCE_CONNECT_DIR_IN_HOST }}/sauce-connect.log

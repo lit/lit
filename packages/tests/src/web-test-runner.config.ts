@@ -199,7 +199,7 @@ function makeSauceLauncherOnce() {
       },
       undefined,
       {
-        tunnelIdentifier: process.env.TUNNEL_ID,
+        tunnelIdentifier: 'github-action-tunnel',
       }
     );
   }
