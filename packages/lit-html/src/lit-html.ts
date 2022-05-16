@@ -446,14 +446,14 @@ const COMMENT_PART = 7;
  * The return type of the template tag functions, {@linkcode html} and
  * {@linkcode svg}.
  *
- * The `TemplateResult` object captures the arguments passed into the tag
- * function. A special array of strings that retain their identity between
- * multiple evaluations of the tagged literal, and the values from the
- * interpolated expressions.
+ * A `TemplateResult` object holds all the information about a template
+ * expression required to render it: the template strings, expression values,
+ * and type of template (html or svg).
  *
- * To create or update DOM from the `TemplateResult` you need to render the
- * `TemplateResult`. See [Rendering](https://lit.dev/docs/components/rendering)
- * for more information.
+ * `TemplateResult` objects do not create any DOM on their own. To create or
+ * update DOM you need to render the `TemplateResult`. See
+ * [Rendering](https://lit.dev/docs/components/rendering) for more information.
+ *
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
@@ -620,23 +620,26 @@ export interface RenderOptions {
 /**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  *
- * For example, to render "Hello, Zoe!" to the container `document.body`:
+ * For example, to render and create the DOM for the TemplateResult describing
+ * "<p>Hello!</p>" to the container `document.body`:
  *
  * ```js
  * import {html, render} from 'lit';
  *
- * const name = "Zoe";
- * render(html`<p>Hello, ${name}!</p>`, document.body);
+ * render(html`<p>Hello!</p>`, document.body);
  * ```
  *
- * @param value Any renderable value, typically a {@linkcode TemplateResult}
- *   created by evaluating a template tag like {@linkcode html} or
- *   {@linkcode svg}.
+ * @param value Any [renderable
+ *   value](https://lit.dev/docs/templates/expressions/#child-expressions),
+ *   typically a {@linkcode TemplateResult} created by evaluating a template tag
+ *   like {@linkcode html} or {@linkcode svg}.
  * @param container A DOM container to render to. The first render will append
  *   the rendered value to the container, and subsequent renders will
  *   efficiently update the rendered value if the same result type was
  *   previously rendered there.
  * @param options See {@linkcode RenderOptions} for options documentation.
+ * @see
+ * {@link https://lit.dev/docs/libraries/standalone-templates/#rendering-lit-html-templates| Rendering Lit HTML Templates}
  */
 export const render = (
   value: unknown,
