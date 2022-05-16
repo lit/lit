@@ -42,9 +42,9 @@ const browserPresets = {
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
-    'sauce:Windows 10/Firefox@78', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
-    'sauce:Windows 10/Chrome@latest-3',
-    'sauce:macOS 10.15/Safari@latest',
+    'sauce:Windows 10/Firefox@91', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
+    'sauce:Windows 10/Chrome@latest-2',
+    'sauce:macOS 10.15/Safari@latest-2',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
@@ -118,8 +118,8 @@ Valid examples:
   sauce:macOS 10.15/safari@13
   sauce:Windows 10/MicrosoftEdge@18
   sauce:Windows 10/internet explorer@11
-  sauce:Linux/chrome@latest-3
-  sauce:Linux/firefox@78
+  sauce:Linux/chrome@latest-2
+  sauce:Linux/firefox@91
 
 See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all options.`);
     }
