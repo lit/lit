@@ -7,7 +7,7 @@ jobs:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
-    runs-on: macos-latest
+    runs-on: macos-10.15
     env:
       BROWSERS: selenium:safari
       CONCURRENT_FRAMES: 1
