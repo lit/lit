@@ -4,9 +4,6 @@ on: [push, pull_request]
 
 jobs:
   tests:
-    # Don't run on forks. Sauce tests need access to secrets.
-    if: github.repository == 'lit/lit'
-
     runs-on: ubuntu-latest
     env:
       BROWSERS: selenium:firefox,selenium:firefox-esr
