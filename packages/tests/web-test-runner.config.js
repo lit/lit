@@ -14,7 +14,6 @@ import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 import {seleniumLauncher} from '@web/test-runner-selenium';
 import {Builder} from 'selenium-webdriver';
 import {Options as FirefoxOptions} from 'selenium-webdriver/firefox.js';
-import {Options as ChromeOptions} from 'selenium-webdriver/chrome.js';
 
 const SELENIUM = 'selenium:';
 
@@ -56,12 +55,7 @@ const browserPresets = {
   'sauce-ie11': ['sauce:Windows 7/Internet Explorer@11'],
 };
 
-const seleniumBrowsers = new Set([
-  'chrome',
-  'firefox',
-  'firefox-esr',
-  'safari',
-]);
+const seleniumBrowsers = new Set(['firefox', 'firefox-esr']);
 
 let sauceLauncher;
 
@@ -159,7 +153,6 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
 Invalid Selenium browser string.
 Expected format: selenium:browser
 Available options:
-  - chrome
   - firefox
   - firefox-esr
   - safari
@@ -167,9 +160,6 @@ Available options:
     }
 
     const driverBuilder = new Builder();
-    if (browserName === 'chrome') {
-      driverBuilder.setChromeOptions(new ChromeOptions().headless());
-    }
     if (browserName === 'firefox') {
       driverBuilder.setFirefoxOptions(new FirefoxOptions().headless());
     }

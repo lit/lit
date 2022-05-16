@@ -1,24 +1,30 @@
-name: Safari
+name: Sauce
 
 on: [push, pull_request]
 
 jobs:
-  tests:
+  tests-sauce:
     # Don't run on forks. Sauce tests need access to secrets.
     if: github.repository == 'lit/lit'
 
-    runs-on: macos-10.15
+    # Sauce tests are still unreliable. Run them, but don't mark a commit as
+    # failing if it fails.
+    continue-on-error: true
+
+    runs-on: ubuntu-latest
     env:
-      BROWSERS: selenium:safari
-      CONCURRENT_FRAMES: 1
+      BROWSERS: 'sauce:Windows 10/Chrome@latest-3,sauce:macOS 10.15/Safari@latest'
 
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v2
         with:
           node-version: 16
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
+
+      - uses: google/wireit@setup-github-actions-caching/v1
 
       - name: NPM install
         run: npm ci
@@ -30,11 +36,17 @@ jobs:
         run: npm run build
 
       - name: Test
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           cd packages/tests
           npm run test
 
       - name: Test SSR
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
         run: |
           cd packages/labs/ssr
           npm run test:integration
