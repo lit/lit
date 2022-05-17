@@ -60,7 +60,7 @@ export interface VirtualizerHostElement extends HTMLElement {
   [virtualizerRef]?: Virtualizer
 }
 
-type ScrollSize = {
+interface ScrollSize {
   height: number | null,
   width: number | null
 }

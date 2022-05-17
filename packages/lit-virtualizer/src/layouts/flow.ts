@@ -402,7 +402,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       const pos = this._physicalMax;
       items.set(this._last, {pos, size});
       this._physicalMax += size + margin;
-      if (this._stable === false && this._estimate === false) {
+      if (!this._stable && !this._estimate) {
         break;
       }
     }
