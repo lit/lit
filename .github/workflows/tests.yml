@@ -75,7 +75,7 @@ jobs:
   #         CONCURRENT_BROWSERS: 3
   #       run: npm run test
 
-  windows-tools:
+  windows-cli:
     runs-on: windows-2019
 
     steps:
@@ -94,6 +94,10 @@ jobs:
 
       - name: Lerna bootstrap
         run: npm run bootstrap
+
+      - name: Build
+        working-directory: 
+        run: npm run build -- --scope @lit-labs/cli
 
       - name: Test
         working-directory: 
