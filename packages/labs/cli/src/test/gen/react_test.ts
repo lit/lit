@@ -4,40 +4,62 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
+import * as path from 'path';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../../lib/lit-cli.js';
-import {LitConsole} from '../../lib/console.js';
-import {BufferedWritable} from '../buffered-writable.js';
+import {suite} from '../uvu-wrapper.js';
+import {TestConsole} from '../cli-test-utils.js';
+import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 
-let outputStream: BufferedWritable;
-let errorStream: BufferedWritable;
-let cliConsole: LitConsole;
+interface TestContext {
+  testConsole: TestConsole;
+  rig: FilesystemTestRig;
+}
 
-test.before(() => {
-  outputStream = new BufferedWritable();
-  errorStream = new BufferedWritable();
-  cliConsole = new LitConsole({
-    stdout: outputStream,
-    stderr: errorStream,
-  });
+const test = suite<TestContext>();
+
+test.before.each(async (ctx) => {
+  const rig = new FilesystemTestRig();
+  await rig.setup();
+  ctx.rig = rig;
+  ctx.testConsole = new TestConsole();
 });
 
-test('stub test', async () => {
+test.after.each(async ({rig}) => {
+  await rig.cleanup();
+});
+
+test('basic wrapper generation', async ({rig, testConsole}) => {
+  const packageName = 'test-element-a';
+  const inputPackage = path.join('../test-projects/', packageName);
+  const outputPackage = path.join(rig.rootDir, packageName + '-react');
+
   const cli = new LitCli(
-    ['labs', 'gen', '--framework', 'react', '--package', 'test-project'],
+    [
+      'labs',
+      'gen',
+      '--framework',
+      'react',
+      '--package',
+      inputPackage,
+      '--out',
+      rig.rootDir,
+    ],
     {
-      console: cliConsole,
+      console: testConsole,
     }
   );
+  testConsole.alsoLogToGlobalConsole = true;
   await cli.run();
 
-  const output = outputStream.text;
+  assert.equal(testConsole.errorStream.buffer.length, 0);
 
-  assert.equal(errorStream.buffer.length, 0);
-
-  // TODO: change to actual test once more is fleshed out; for now the stub
-  // command just outputs analyzed modules
-  assert.match(output, 'element-a.ts');
+  // Note, this is only a very basic test that wrapper generation succeeds when
+  // executed via the CLI. For detailed tests, see tests in
+  // @lit-labs/gen-wrapper-react.
+  const wrapperSourceFile = await rig.read(outputPackage, 'src/element-a.ts');
+  assert.ok(wrapperSourceFile.length > 0);
 });
+
+test.run();

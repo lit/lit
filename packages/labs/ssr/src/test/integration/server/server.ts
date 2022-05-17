@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import Koa from 'koa';
 import Router from '@koa/router';
 import cors from 'koa-cors';
 
@@ -15,11 +14,13 @@ import {Readable} from 'stream';
 import * as testModule from '../tests/basic-ssr.js';
 import {SSRTest} from '../tests/ssr-test.js';
 
-export const startServer = async (port = 9090) => {
-  const app = new Koa();
-
+/**
+ * Koa Middleware for @web/test-runner which handles /render/ prefixed GET
+ * requests and renders the a given file + test with a given SSR render method.
+ */
+export const ssrMiddleware = () => {
   const router = new Router();
-  router.get('/:mode/:testFile/:testName', async (context) => {
+  router.get('/render/:mode/:testFile/:testName', async (context) => {
     const {mode, testFile, testName} = context.params;
 
     let module: typeof testModule,
@@ -52,11 +53,5 @@ export const startServer = async (port = 9090) => {
     context.type = 'text/html';
     context.body = Readable.from(result);
   });
-
-  app.use(cors());
-  app.use(router.routes());
-  app.use(router.allowedMethods());
-  return app.listen(port, () => {
-    console.log(`SSR test server listening on port ${port}`);
-  });
+  return [cors(), router.routes(), router.allowedMethods()];
 };

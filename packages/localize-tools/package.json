@@ -19,13 +19,106 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
-    "build": "npm run clean && tsc --build && npm run generate-json-schema",
-    "generate-json-schema": "typescript-json-schema tsconfig.schema.json ConfigFile --include=lib/types/config.d.ts --required --noExtraProps > config.schema.json",
-    "test": "npm run test:unit && npm run test:check-tsc",
-    "test:unit": "uvu lib/tests '\\.test\\.js$' --ignore 'ssr\\.unit\\.test\\.js$' && uvu lib/tests '\\ssr\\.unit\\.test\\.js$'",
-    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:unit",
-    "test:check-tsc": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project"
+    "build": "wireit",
+    "build:ts": "wireit",
+    "generate-json-schema": "wireit",
+    "test": "wireit",
+    "test:unit": "wireit",
+    "test:unit:ssr": "wireit",
+    "test:update-goldens": "wireit",
+    "test:check-tsc": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "generate-json-schema",
+        "../lit:build",
+        "../labs/ssr:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "#comment": [
+        "TODO(aomarks) We depend on a test utility from ts-transformers.",
+        "It should be moved into the tests/ package and the dep removed."
+      ],
+      "dependencies": [
+        "../localize:build:ts",
+        "../lit:build:ts:types",
+        "../labs/ssr:build:ts",
+        "../ts-transformers:build:ts"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib"
+      ]
+    },
+    "generate-json-schema": {
+      "command": "typescript-json-schema tsconfig.schema.json ConfigFile --include=lib/types/config.d.ts --required --noExtraProps > config.schema.json",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "tsconfig.schema.json"
+      ],
+      "output": [
+        "config.schema.json"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:unit",
+        "test:unit:ssr",
+        "test:check-tsc"
+      ]
+    },
+    "test:unit": {
+      "command": "uvu lib/tests \"\\.test\\.js$\" --ignore \"ssr\\.unit\\.test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "testdata/*/input",
+        "testdata/*/goldens"
+      ],
+      "output": [
+        "testdata/*/output"
+      ]
+    },
+    "test:unit:ssr": {
+      "command": "uvu lib/tests \"ssr\\.unit\\.test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:update-goldens": {
+      "command": "UPDATE_TEST_GOLDENS=true uvu lib/tests \"\\.test\\.js$\" --ignore \"ssr\\.unit\\.test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "testdata/*/input"
+      ],
+      "output": [
+        "testdata/*/goldens"
+      ]
+    },
+    "test:check-tsc": {
+      "command": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
+      "#comment": "Depends on test:unit because it inspects that script's output",
+      "dependencies": [
+        "test:unit"
+      ],
+      "files": [],
+      "output": []
+    }
   },
   "files": [
     "/src/",
@@ -50,16 +143,13 @@
   "devDependencies": {
     "@lit-labs/ssr": "^2.1.0",
     "@lit/ts-transformers": "^1.1.0",
-    "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
     "@types/minimist": "^1.2.0",
     "@types/node": "^16.7.8",
     "@types/parse5": "^6.0.1",
     "@types/prettier": "^2.0.1",
-    "diff": "^5.0.0",
-    "dir-compare": "^3.1.5",
-    "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
+    "tests": "0.0.0",
     "typescript-json-schema": "^0.50.0",
     "uvu": "^0.5.1"
   }

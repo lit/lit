@@ -23,10 +23,5 @@
     "noImplicitOverride": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [
-    {"path": "../../lit-html"},
-    {"path": "../../lit-element"},
-    {"path": "../../reactive-element"}
-  ]
+  "exclude": []
 }

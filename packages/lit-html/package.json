@@ -253,14 +253,10 @@
     "test:dev": {
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
-        "build:ts"
+        "build:ts",
+        "../tests:build"
       ],
-      "#comment": "TODO(aomarks) Factor out a file-only target in tests/ to DRY these config files into a single place",
-      "files": [
-        "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js",
-        "../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     },
     "test:prod": {
@@ -268,13 +264,10 @@
       "dependencies": [
         "build:rollup",
         "build:ts",
-        "build:version-stability-test"
+        "build:version-stability-test",
+        "../tests:build"
       ],
-      "files": [
-        "../tests/web-test-runner.config.js",
-        "../tests/wtr-config.js",
-        "../tests/rollup-resolve-remap.js"
-      ],
+      "files": [],
       "output": []
     }
   },

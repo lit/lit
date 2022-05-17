@@ -29,14 +29,64 @@
     "node": ">=12.16.0"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
-    "build:ts": "tsc --build",
-    "build:ts:watch": "tsc --build --watch",
-    "build:demo": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy",
-    "build:demo:watch": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy --watch",
-    "clean": "rimraf \"index.{js,js.map,d.ts,d.ts.map}\" \"test/**/*.{js,js.map,d.ts,d.ts.map}\" \"worker/**/*.{js,js.map,d.ts,d.ts.map}\" demo/_site *.tsbuildinfo",
-    "serve:demo": "wds --watch --node-resolve --open demo/_site/test",
-    "test": "uvu test/ \".*-test.js$\""
+    "build": "wireit",
+    "build:ts": "wireit",
+    "build:demo": "wireit",
+    "serve:demo": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../ssr:build",
+        "../../lit:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../ssr:build:ts",
+        "../../lit:build:ts:types"
+      ],
+      "files": [
+        "src",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{js,d.ts}",
+        "test",
+        "worker",
+        "*.tsbuildinfo",
+        "!test/package.json",
+        "!worker/package.json"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "build:demo": {
+      "command": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "demo"
+      ]
+    },
+    "serve:demo": {
+      "command": "wds --watch --node-resolve --open demo/_site/test",
+      "dependencies": [
+        "build:demo"
+      ],
+      "files": []
+    },
+    "test": {
+      "command": "uvu test/ \".*-test.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    }
   },
   "dependencies": {
     "@lit-labs/ssr": "^2.0.1",
