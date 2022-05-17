@@ -19,6 +19,6 @@ Published on npm as [@lit-labs/virtualizer](https://www.npmjs.com/package/@lit-l
 To set up this repo for local development, clone it and run:
 
 ```
-npm i
+npm ci
 npm run bootstrap
 ```
