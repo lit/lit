@@ -68,8 +68,9 @@ const legacyProperty = (
   proto: unknown,
   name: PropertyKey
 ) => {
-  ((proto as Record<string, unknown>)
-    .constructor as typeof ReactiveElement).createProperty(name, options);
+  (
+    (proto as Record<string, unknown>).constructor as typeof ReactiveElement
+  ).createProperty(name, options);
 };
 
 /**
