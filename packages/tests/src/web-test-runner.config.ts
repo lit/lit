@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
+import type {PolyfillConfig} from 'polyfills-loader';
+
 import {createRequire} from 'module';
 import {
   playwrightLauncher,
@@ -20,8 +23,6 @@ import {Builder} from 'selenium-webdriver';
 import {Options as FirefoxOptions} from 'selenium-webdriver/firefox.js';
 
 const SELENIUM = 'selenium:';
-import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
-import type {PolyfillConfig} from 'polyfills-loader';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -59,6 +60,7 @@ const browserPresets = {
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
+  firefox: ['selenium:firefox', 'selenium:firefox-esr'],
 };
 
 const seleniumBrowsers = new Set(['firefox', 'firefox-esr']);

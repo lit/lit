@@ -6,7 +6,7 @@ jobs:
   firefox-tests:
     runs-on: ubuntu-latest
     env:
-      BROWSERS: selenium:firefox,selenium:firefox-esr
+      BROWSERS: preset:firefox
 
     steps:
       - uses: actions/checkout@v2
