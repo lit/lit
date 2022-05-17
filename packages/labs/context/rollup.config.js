@@ -10,5 +10,10 @@ import {createRequire} from 'module';
 export default litProdConfig({
   packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: ['index'],
-  external: ['@lit/reactive-element', 'lit', 'lit/directive.js'],
+  external: [
+    '@lit/reactive-element',
+    '@lit/reactive-element/decorators/base.js',
+    'lit',
+    'lit/directive.js',
+  ],
 });

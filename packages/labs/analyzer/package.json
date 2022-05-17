@@ -16,8 +16,32 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc --build",
-    "test": "uvu test '\\_test\\.js$'"
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "uvu test '\\_test\\.js$'",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    }
   },
   "files": [
     "/src/",
@@ -26,11 +50,12 @@
     "!/lib/.tsbuildinfo"
   ],
   "dependencies": {
+    "package-json-type": "^1.0.3",
     "typescript": "~4.6.2"
   },
   "devDependencies": {
     "@types/node": "^16.7.8",
-    "uvu": "^0.5.1",
-    "lit-analyzer-test-files": "./test-files/basic-elements/"
+    "lit-analyzer-test-files": "./test-files/basic-elements/",
+    "uvu": "^0.5.1"
   }
 }

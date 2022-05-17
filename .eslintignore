@@ -9,6 +9,8 @@ lerna-debug.log
 *.tsbuildinfo
 .DS_Store
 .vscode/
+.wireit
+/temp
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -124,6 +126,23 @@ packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
+packages/tests/utils/
+packages/tests/**/rollup-resolve-remap.js
+packages/tests/**/rollup-resolve-remap.js.map
+packages/tests/**/rollup-resolve-remap.d.ts
+packages/tests/**/rollup-resolve-remap.d.ts.map
+packages/tests/**/run-web-tests.js
+packages/tests/**/run-web-tests.js.map
+packages/tests/**/run-web-tests.d.ts
+packages/tests/**/run-web-tests.d.ts.map
+packages/tests/**/web-test-runner.config.js
+packages/tests/**/web-test-runner.config.js.map
+packages/tests/**/web-test-runner.config.d.ts
+packages/tests/**/web-test-runner.config.d.ts.map
+packages/tests/**/wtr-config.js
+packages/tests/**/wtr-config.js.map
+packages/tests/**/wtr-config.d.ts
+packages/tests/**/wtr-config.d.ts.map
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map
@@ -144,6 +163,7 @@ packages/labs/cli/index.js
 packages/labs/cli/index.js.map
 packages/labs/cli/index.d.ts
 packages/labs/cli/index.d.ts.map
+packages/labs/cli/test-gen/
 
 packages/labs/context/development/
 packages/labs/context/test/
@@ -159,6 +179,21 @@ packages/labs/eleventy-plugin-lit/worker/worker.*
 packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
+
+packages/labs/gen-utils/lib/
+packages/labs/gen-utils/test/
+packages/labs/gen-utils/index.js
+packages/labs/gen-utils/index.js.map
+packages/labs/gen-utils/index.d.ts
+packages/labs/gen-utils/index.d.ts.map
+
+packages/labs/gen-wrapper-react/test-gen/
+packages/labs/gen-wrapper-react/test-output/
+packages/labs/gen-wrapper-react/index.js
+packages/labs/gen-wrapper-react/index.js.map
+packages/labs/gen-wrapper-react/index.d.ts
+packages/labs/gen-wrapper-react/index.d.ts.map
+packages/labs/gen-wrapper-react/gen-output/
 
 packages/labs/motion/development/
 packages/labs/motion/test/
