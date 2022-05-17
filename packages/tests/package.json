@@ -8,21 +8,22 @@
     "test": "wireit"
   },
   "devDependencies": {
-    "@types/node": "^16.7.8",
-    "@types/prettier": "^2.0.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
+    "@types/node": "^16.7.8",
+    "@types/prettier": "^2.0.1",
+    "@types/selenium-webdriver": "^4.1.0",
     "@web/dev-server-legacy": "^0.1.7",
     "@web/dev-server-rollup": "^0.3.13",
     "@web/test-runner": "^0.13.22",
     "@web/test-runner-playwright": "^0.8.8",
     "@web/test-runner-saucelabs": "^0.7.2",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
     "@web/test-runner-selenium": "^0.5.3",
-    "selenium-webdriver": "^4.1.2",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
     "diff": "^5.0.0",
     "dir-compare": "^3.1.5",
     "prettier": "^2.3.2",
+    "selenium-webdriver": "^4.1.2",
     "uvu": "^0.5.1"
   },
   "wireit": {

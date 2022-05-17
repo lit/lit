@@ -63,7 +63,6 @@ const browserPresets = {
 
 const seleniumBrowsers = new Set(['firefox', 'firefox-esr']);
 
-let sauceLauncher;
 let sauceLauncher: ReturnType<typeof createSauceLabsLauncher>;
 
 function makeSauceLauncherOnce() {
