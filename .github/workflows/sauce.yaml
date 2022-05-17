@@ -13,7 +13,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      BROWSERS: 'sauce:Windows 10/Chrome@latest-3,sauce:macOS 10.15/Safari@latest'
+      BROWSERS: 'sauce:Windows 10/Chrome@latest-2,sauce:macOS 10.15/Safari@latest'
 
     steps:
       - uses: actions/checkout@v2
