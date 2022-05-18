@@ -5,23 +5,26 @@
  */
 
 import ts from 'typescript';
-import {PackagePath} from './paths.js';
+import {AbsolutePath, PackagePath} from './paths.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
 export interface PackageInit {
+  rootDir: AbsolutePath;
   packageJson: PackageJson;
   tsConfig: ts.ParsedCommandLine;
   modules: ReadonlyArray<Module>;
 }
 
 export class Package {
+  readonly rootDir: AbsolutePath;
   readonly modules: ReadonlyArray<Module>;
   readonly tsConfig: ts.ParsedCommandLine;
   readonly packageJson: PackageJson;
 
   constructor(init: PackageInit) {
+    this.rootDir = init.rootDir;
     this.packageJson = init.packageJson;
     this.tsConfig = init.tsConfig;
     this.modules = init.modules;
@@ -147,3 +150,29 @@ export interface Event {
   // TODO(justinfagnani): store a type reference too
   // https://github.com/lit/lit/issues/2850
 }
+
+// TODO(justinfagnani): Move helpers into a Lit-specific module
+export const isLitElementDeclaration = (
+  dec: ClassDeclaration
+): dec is LitElementDeclaration => {
+  return (dec as LitElementDeclaration).isLitElement;
+};
+
+export interface LitModule {
+  module: Module;
+  elements: LitElementDeclaration[];
+}
+
+export const getLitModules = (analysis: Package) => {
+  const modules: LitModule[] = [];
+  for (const module of analysis.modules) {
+    const elements = module.declarations.filter(isLitElementDeclaration);
+    if (elements.length > 0) {
+      modules.push({
+        module,
+        elements,
+      });
+    }
+  }
+  return modules;
+};

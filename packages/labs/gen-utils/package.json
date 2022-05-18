@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-utils",
   "description": "Utilities for lit code generators",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -36,14 +36,15 @@
       "command": "uvu test \"_test\\.js$\"",
       "dependencies": [
         "build",
-        "../../lit:build"
+        "../../lit:build",
+        "../../tests:build"
       ],
       "files": [],
       "output": []
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.1.1"
+    "@lit-labs/analyzer": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.31",

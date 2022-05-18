@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Lit!
 
-There are many ways to contribute to Lit project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
+There are many ways to contribute to the Lit project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
 
 ## Code of Conduct
 

@@ -4,52 +4,28 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import * as path from 'path';
 import {
-  ClassDeclaration,
+  getLitModules,
   LitElementDeclaration,
-  Module,
+  LitModule,
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
-
-// TODO(kschaaf): Move helpers into analyzer
-const isLitElementDeclaration = (
-  dec: ClassDeclaration
-): dec is LitElementDeclaration => {
-  return (dec as LitElementDeclaration).isLitElement;
-};
-
-interface LitModule {
-  module: Module;
-  elements: LitElementDeclaration[];
-}
-
-// TODO(kschaaf): Move helpers into analyzer
-const getLitModules = (analysis: Package) => {
-  const modules: LitModule[] = [];
-  for (const module of analysis.modules) {
-    const elements = module.declarations.filter(isLitElementDeclaration);
-    if (elements.length > 0) {
-      modules.push({
-        module,
-        elements,
-      });
-    }
-  }
-  return modules;
-};
 
 export const generateReactWrapper = async (
   analysis: Package
 ): Promise<FileTree> => {
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
-    const reactPkgName = packageNameToReactPackageName(
-      analysis.packageJson.name!
+    // Base the generated package folder name off the analyzed package folder
+    // name, not the npm package name, since that might have an npm org in it
+    const reactPkgFolder = packageNameToReactPackageName(
+      path.basename(analysis.rootDir)
     );
     return {
-      [reactPkgName]: {
+      [reactPkgFolder]: {
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(analysis.packageJson, litModules),
         'tsconfig.json': tsconfigTemplate(),
@@ -100,14 +76,18 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
       },
       peerDependencies: {
         // TODO(kschaaf): make react version(s) configurable?
-        react: '^17.0.2',
-        '@types/react': '^17.0.19',
+        react: '^17 || ^18',
+        '@types/react': '^17 || ^18',
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
         typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
       },
-      files: [...litModules.map(({module}) => module.jsPath)],
+      files: [
+        ...litModules.map(({module}) =>
+          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
+        ),
+      ],
     },
     null,
     2

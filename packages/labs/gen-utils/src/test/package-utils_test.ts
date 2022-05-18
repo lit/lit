@@ -4,85 +4,93 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-
 import {suite} from 'uvu';
-import {installPackage, buildPackage} from '../lib/package-utils.js';
+import {
+  installPackage,
+  buildPackage,
+  packPackage,
+} from '../lib/package-utils.js';
+import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 
-const test = suite<{outputFolder: string}>('test');
+const test = suite<{tempFs: FilesystemTestRig}>('test');
 
-test.before((ctx) => {
-  // TODO(kschaaf): Use FilesystemTestRig once moved into test utils
-  ctx.outputFolder = fs.mkdtempSync(
-    path.join(os.tmpdir(), 'packageUtilsTest-')
-  );
-  if (!ctx.outputFolder) {
-    throw new Error(`Failed to create temp dir under ${os.tmpdir()}`);
-  }
+test.before(async (ctx) => {
+  ctx.tempFs = new FilesystemTestRig();
+  await ctx.tempFs.setup();
 });
 
-test.after(({outputFolder}) => {
-  fs.rmSync(outputFolder, {recursive: true});
+test.after(async ({tempFs}) => {
+  await tempFs.cleanup();
 });
 
-test('install package', async ({outputFolder}) => {
-  fs.writeFileSync(
-    path.join(outputFolder, 'package.json'),
-    JSON.stringify({
-      name: 'test-package',
-      dependencies: {
-        lit: '^2.0.0',
-      },
-    })
-  );
+test('install package', async ({tempFs}) => {
+  await tempFs.write('package.json', {
+    name: 'test-package',
+    dependencies: {
+      lit: '^2.0.0',
+    },
+  });
 
-  await installPackage(outputFolder);
+  await installPackage(tempFs.rootDir);
 
-  assert.ok(
-    fs.readFileSync(path.join(outputFolder, 'node_modules', 'lit', 'index.js'))
-      .length > 0
-  );
+  assert.ok((await tempFs.read('node_modules', 'lit', 'index.js')).length > 0);
 });
 
-test('install package with monorepo link', async ({outputFolder}) => {
-  fs.writeFileSync(
-    path.join(outputFolder, 'package.json'),
-    JSON.stringify({
-      dependencies: {
-        lit: '^2.0.0',
-      },
-    })
-  );
+test('install package with monorepo link', async ({tempFs}) => {
+  await tempFs.write('package.json', {
+    dependencies: {
+      lit: '^2.0.0',
+    },
+  });
 
-  await installPackage(outputFolder, {
+  await installPackage(tempFs.rootDir, {
     lit: '../../lit',
   });
 
-  assert.ok(
-    fs.readFileSync(path.join(outputFolder, 'node_modules', 'lit', 'index.js'))
-      .length > 0
-  );
+  assert.ok((await tempFs.read('node_modules', 'lit', 'index.js')).length > 0);
 });
 
-test('build package', async ({outputFolder}) => {
-  fs.writeFileSync(
-    path.join(outputFolder, 'package.json'),
-    JSON.stringify({
-      scripts: {
-        build: 'echo hello>hello.txt',
-      },
-    })
-  );
+test('build package', async ({tempFs}) => {
+  await tempFs.write('package.json', {
+    scripts: {
+      build: 'echo hello>hello.txt',
+    },
+  });
 
-  await buildPackage(outputFolder);
+  await buildPackage(tempFs.rootDir);
+
+  assert.equal((await tempFs.read('hello.txt')).trim(), 'hello');
+});
+
+test('pack package', async ({tempFs}) => {
+  await tempFs.write('package.json', {
+    name: 'pack-test',
+    version: '1.2.3',
+    files: ['a', 'b/c'],
+  });
+
+  await tempFs.write('a', 'a');
+  await tempFs.write(['b', 'c'], 'c');
+
+  const tarballFile = await packPackage(tempFs.rootDir);
+
+  await tempFs.write(['test-output', 'package.json'], {
+    dependencies: {
+      'pack-test': `file:${tarballFile}`,
+    },
+  });
+
+  await installPackage(tempFs.resolve('test-output'));
 
   assert.equal(
-    String(fs.readFileSync(path.join(outputFolder, 'hello.txt'))).trim(),
-    'hello'
+    await tempFs.read('test-output', 'node_modules', 'pack-test', 'a'),
+    'a'
+  );
+  assert.equal(
+    await tempFs.read('test-output', 'node_modules', 'pack-test', 'b', 'c'),
+    'c'
   );
 });
 
