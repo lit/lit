@@ -103,7 +103,8 @@ packages/lit-starter-ts/**/my-element.js
 packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
-
+# only generated for size check
+packages/lit-starter-ts/**/my-element.bundled.js
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
