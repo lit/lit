@@ -13,8 +13,8 @@ export default {
   nodeResolve: true,
   browsers: [
     playwrightLauncher({product: 'chromium'}),
-    // playwrightLauncher({product: 'firefox'}),
-    // playwrightLauncher({product: 'webkit'}),
+    playwrightLauncher({product: 'firefox'}),
+    playwrightLauncher({product: 'webkit'}),
   ],
   testFramework: {
     // https://mochajs.org/api/mocha

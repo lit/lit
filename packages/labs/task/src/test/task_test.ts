@@ -293,6 +293,8 @@ suite('Task', () => {
     await renderElement(el);
     assert.equal(el.task.status, TaskStatus.PENDING);
 
+    // Catch the rejection to supress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
     // Task error reported.
     el.rejectTask();
     await tasksUpdateComplete();
@@ -318,6 +320,8 @@ suite('Task', () => {
     el.a = 'a2';
     el.b = 'b2';
     await tasksUpdateComplete();
+    // Catch the rejection to supress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
     el.rejectTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
@@ -382,6 +386,8 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
 
+    // Catch the rejection to supress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
     el.rejectTask();
     await tasksUpdateComplete();

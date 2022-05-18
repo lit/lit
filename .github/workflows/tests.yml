@@ -55,6 +55,8 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
+      - uses: google/wireit@setup-github-actions-caching/v1
+
       - name: Install playwright deps
         run: npx playwright install-deps
 

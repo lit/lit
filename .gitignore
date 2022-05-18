@@ -4,3 +4,5 @@ lerna-debug.log
 *.tsbuildinfo
 .DS_Store
 .vscode/
+.wireit
+/temp
