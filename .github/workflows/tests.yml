@@ -96,11 +96,9 @@ jobs:
         run: npm run bootstrap
 
       - name: Build
-        working-directory: 
         run: npm run build --  --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
       - name: Test
-        working-directory: 
         run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
 
