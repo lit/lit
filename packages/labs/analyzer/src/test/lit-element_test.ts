@@ -14,7 +14,7 @@ import {fileURLToPath} from 'url';
 import {Analyzer} from '../lib/analyzer.js';
 import {AbsolutePath} from '../lib/paths.js';
 import {LitElementDeclaration} from '../lib/model.js';
-import {isLitElement} from '../lib/lit-element.js';
+import {isLitElement} from '../lib/lit-element/lit-element.js';
 
 const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'LitElement tests'
@@ -56,7 +56,7 @@ test('isLitElement returns false for non-LitElement', ({
 test('Analyzer finds named LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+    (m) => m.sourcePath === 'src/element-a.ts'
   );
   assert.ok(elementAModule);
   assert.equal(elementAModule.declarations.length, 1);
@@ -72,7 +72,7 @@ test('Analyzer finds named LitElement declarations', ({analyzer}) => {
 test('Analyzer finds unnamed LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const defaultElementModule = result.modules.find(
-    (m) => m.path === 'src/default-element.ts'
+    (m) => m.sourcePath === 'src/default-element.ts'
   );
   assert.ok(defaultElementModule);
   assert.equal(defaultElementModule.declarations.length, 1);

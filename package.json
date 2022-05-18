@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "engines": {
-    "npm": "^7.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
@@ -18,7 +19,7 @@
     "lint": "eslint \"**/*.{js,ts}\"",
     "nuke": "rm -rf node_modules && npm install && lerna exec 'rm -rf node_modules' && lerna bootstrap && npm run clean",
     "upgrade": "rm -rf node_modules package-lock.json && npm install && lerna exec 'rm -rf node_modules package-lock.json' && lerna bootstrap && npm run clean",
-    "test": "lerna run test --ignore '{lit,lit-html,lit-element,@lit/reactive-element,@lit-labs/observers,@lit-labs/react,@lit-labs/router,@lit-labs/scoped-registry-mixin,@lit-labs/task,@lit-labs/motion}' --concurrency 1 --stream ",
+    "test": "lerna run test --ignore '{lit,lit-html,lit-element,@lit/reactive-element,@lit-labs/context,@lit-labs/motion,@lit-labs/observers,@lit-labs/react,@lit-labs/router,@lit-labs/scoped-registry-mixin,@lit-labs/task}' --concurrency 1 --stream ",
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
@@ -50,7 +51,7 @@
     "rollup-plugin-summary": "~1.3.0",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.3.5",
-    "wireit": "^0.2.0"
+    "wireit": "^0.4.1"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",

@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {LitClassDeclaration} from '../lit-element.js';
+import {LitClassDeclaration} from './lit-element.js';
 import {ReactiveProperty} from '../model.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 
