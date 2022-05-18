@@ -97,10 +97,10 @@ jobs:
 
       - name: Build
         working-directory: 
-        run: npm run build -- --scope @lit-labs/cli --scope @lit-labs/gen-utils --scope @lit-labs/analyzer --scope @lit-labs/gen-wrapper-react
+        run: npm run build --  --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
       - name: Test
         working-directory: 
-        run: npm run test -- --scope @lit-labs/cli --scope @lit-labs/gen-utils --scope @lit-labs/analyzer --scope @lit-labs/gen-wrapper-react
+        run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
 
