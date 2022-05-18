@@ -188,7 +188,8 @@ packages/labs/gen-utils/index.d.ts
 packages/labs/gen-utils/index.d.ts.map
 
 packages/labs/gen-wrapper-react/test-gen/
-packages/labs/gen-wrapper-react/test-output/
+packages/labs/gen-wrapper-react/test-output/js/
+packages/labs/gen-wrapper-react/test-output/tests/
 packages/labs/gen-wrapper-react/index.js
 packages/labs/gen-wrapper-react/index.js.map
 packages/labs/gen-wrapper-react/index.d.ts

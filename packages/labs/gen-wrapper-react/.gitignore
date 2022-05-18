@@ -1,5 +1,6 @@
 /test-gen/
-/test-output/
+/test-output/js/
+/test-output/tests/
 /index.js
 /index.js.map
 /index.d.ts

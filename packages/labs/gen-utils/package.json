@@ -35,7 +35,8 @@
       "command": "uvu test '.*_test\\.js$'",
       "dependencies": [
         "build",
-        "../../lit:build"
+        "../../lit:build",
+        "../../tests:build"
       ],
       "files": [],
       "output": []
