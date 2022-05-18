@@ -50,7 +50,6 @@
       ],
       "dependencies": [
         "build",
-        "../vue:build",
         "../test-projects/test-element-a:build"
       ]
     },
@@ -66,6 +65,7 @@
     }
   },
   "dependencies": {
+    "vue": "^3.2.25",
     "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
     "tests": "0.0.0"
