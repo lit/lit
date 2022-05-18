@@ -145,11 +145,6 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _stable = true;
 
-  /**
-   * Whether to remeasure children during the next reflow.
-   */
-  _needsRemeasure = false;
-
   private _measureChildren = true;
 
   _estimate = true;
@@ -370,8 +365,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     items.set(this._anchorIdx, {pos: this._anchorPos, size: anchorSize});
 
     this._first = (this._last = this._anchorIdx);
-    this._physicalMin = this._anchorPos;
-    this._physicalMax = this._anchorPos + anchorSize;
+    this._physicalMin = this._anchorPos - anchorLeadingMargin;
+    this._physicalMax = this._anchorPos + anchorSize + anchorTrailingMargin;
 
     while (this._physicalMin > lower && this._first > 0) {
       let size = this._getSize(--this._first);
@@ -379,34 +374,35 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
         this._stable = false;
         size = this._getAverageSize();
       }
-      let margin = this._metricsCache.getMarginSize(this._first + 1);
+      let margin = this._metricsCache.getMarginSize(this._first);
       if (margin === undefined) {
         this._stable = false;
         margin = this._metricsCache.averageMarginSize;
       }
-      this._physicalMin -= size + margin;
+      this._physicalMin -= size;
       const pos = this._physicalMin;
       items.set(this._first, {pos, size});
+      this._physicalMin -= margin;
       if (this._stable === false && this._estimate === false) {
         break;
       }
     }
 
     while (this._physicalMax < upper && this._last < this._totalItems - 1) {
-      let margin = this._metricsCache.getMarginSize(++this._last);
-      if (margin === undefined) {
-        this._stable = false;
-        margin = this._metricsCache.averageMarginSize;
-      }
-      let size = this._getSize(this._last);
+      let size = this._getSize(++this._last);
       if (size === undefined) {
         this._stable = false;
         size = this._getAverageSize();
       }
-      const pos = this._physicalMax + margin;
+      let margin = this._metricsCache.getMarginSize(this._last);
+      if (margin === undefined) {
+        this._stable = false;
+        margin = this._metricsCache.averageMarginSize;
+      }
+      const pos = this._physicalMax;
       items.set(this._last, {pos, size});
-      this._physicalMax += margin + size;
-      if (this._stable === false && this._estimate === false) {
+      this._physicalMax += size + margin;
+      if (!this._stable && !this._estimate) {
         break;
       }
     }
@@ -430,13 +426,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _calculateError(): number {
-    const { averageMarginSize } = this._metricsCache;
     if (this._first === 0) {
-      return this._physicalMin - (this._metricsCache.getMarginSize(0) ?? averageMarginSize);
+      return this._physicalMin;
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - (this._first * this._delta);
     } else if (this._last === this._totalItems - 1) {
-      return (this._physicalMax + (this._metricsCache.getMarginSize(this._totalItems) ?? averageMarginSize)) - this._scrollSize;
+      return this._physicalMax - this._scrollSize;
     } else if (this._physicalMax >= this._scrollSize) {
       return (
           (this._physicalMax - this._scrollSize) +
@@ -460,9 +455,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._emitRange();
     if (this._first === -1 && this._last === -1) {
       this._resetReflowState();
-    } else if (
-        this._first !== _first || this._last !== _last ||
-        this._needsRemeasure) {
+    } else if (this._first !== _first || this._last !== _last) {
       this._emitChildPositions();
       this._emitScrollError();
     } else {
@@ -514,14 +507,6 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _viewDim2Changed() {
-    this._needsRemeasure = true;
     this._scheduleReflow();
-  }
-
-  _emitRange() {
-    const remeasure = this._needsRemeasure;
-    const stable = this._stable;
-    this._needsRemeasure = false;
-    super._emitRange({remeasure, stable});
   }
 }
