@@ -5,40 +5,13 @@
  */
 
 import {
-  ClassDeclaration,
+  getLitModules,
   LitElementDeclaration,
-  Module,
+  LitModule,
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
-
-// TODO(kschaaf): Move helpers into analyzer
-const isLitElementDeclaration = (
-  dec: ClassDeclaration
-): dec is LitElementDeclaration => {
-  return (dec as LitElementDeclaration).isLitElement;
-};
-
-interface LitModule {
-  module: Module;
-  elements: LitElementDeclaration[];
-}
-
-// TODO(kschaaf): Move helpers into analyzer
-const getLitModules = (analysis: Package) => {
-  const modules: LitModule[] = [];
-  for (const module of analysis.modules) {
-    const elements = module.declarations.filter(isLitElementDeclaration);
-    if (elements.length > 0) {
-      modules.push({
-        module,
-        elements,
-      });
-    }
-  }
-  return modules;
-};
 
 export const generateReactWrapper = async (
   analysis: Package
@@ -104,8 +77,8 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
         '@types/react': '^17.0.19',
       },
       devDependencies: {
-        // TODO(kschaaf): make configurable?
-        typescript: '^4.3.5',
+        // Use typescript from source package, assuming it exists
+        typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
       },
       files: [...litModules.map(({module}) => module.jsPath)],
     },

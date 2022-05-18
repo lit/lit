@@ -4,17 +4,47 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "npm run test:dev && npm run test:prod",
-    "test:dev": "node ./run-web-tests.js",
-    "test:prod": "MODE=prod npm run test:dev",
-    "test:watch": "npm run test:dev -- --watch"
+    "build": "wireit",
+    "test": "wireit"
   },
   "devDependencies": {
+    "@types/node": "^16.7.8",
+    "@types/prettier": "^2.0.1",
+    "@types/diff": "^5.0.0",
+    "@types/fs-extra": "^9.0.1",
     "@web/dev-server-legacy": "^0.1.7",
     "@web/dev-server-rollup": "^0.3.13",
     "@web/test-runner": "^0.13.22",
     "@web/test-runner-playwright": "^0.8.8",
     "@web/test-runner-saucelabs": "^0.7.2",
-    "@webcomponents/webcomponentsjs": "^2.6.0"
+    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "diff": "^5.0.0",
+    "dir-compare": "^3.1.5",
+    "prettier": "^2.3.2",
+    "uvu": "^0.5.1"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "utils",
+        "rollup-resolve-remap.{js,js.map}",
+        "run-web-tests.{js,js.map}",
+        "web-test-runner.config.{js,js.map}",
+        "wtr-config.{js,js.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
+      "dependencies": [
+        "build"
+      ]
+    }
   }
 }

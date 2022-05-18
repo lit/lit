@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "composite": true,
-    "tsBuildInfoFile": "./lib/.tsbuildinfo",
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "target": "es2020",
     "lib": ["es2020"],
     "module": "ES2020",

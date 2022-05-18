@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-utils",
   "description": "Utilities for lit code generators",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -10,15 +10,43 @@
   "main": "index.js",
   "repository": "lit/lit",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "test": "uvu test '.*_test\\.js$'"
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../analyzer:build",
+        "../../tests:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "uvu test '.*_test\\.js$'",
+      "dependencies": [
+        "build",
+        "../../lit:build"
+      ],
+      "files": [],
+      "output": []
+    }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.1.1"
+    "@lit-labs/analyzer": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.31",
+    "tests": "^0.0.0",
     "typescript": "~4.6.2",
     "uvu": "^0.5.3"
   },
