@@ -5,40 +5,15 @@
  */
 
 import {
-  ClassDeclaration,
+  getLitModules,
   LitElementDeclaration,
-  Module,
+  LitModule,
+  ReactiveProperty as ModelProperty,
+  Event as ModelEvent,
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
-
-// TODO(kschaaf): Move helpers into analyzer
-const isLitElementDeclaration = (
-  dec: ClassDeclaration
-): dec is LitElementDeclaration => {
-  return (dec as LitElementDeclaration).isLitElement;
-};
-
-interface LitModule {
-  module: Module;
-  elements: LitElementDeclaration[];
-}
-
-// TODO(kschaaf): Move helpers into analyzer
-const getLitModules = (analysis: Package) => {
-  const modules: LitModule[] = [];
-  for (const module of analysis.modules) {
-    const elements = module.declarations.filter(isLitElementDeclaration);
-    if (elements.length > 0) {
-      modules.push({
-        module,
-        elements,
-      });
-    }
-  }
-  return modules;
-};
 
 export const generateVueWrapper = async (
   analysis: Package
@@ -95,12 +70,11 @@ const packageJsonTemplate = (pkgJson: PackageJson, litModules: LitModule[]) => {
         [pkgJson.name!]: '^' + pkgJson.version!,
       },
       peerDependencies: {
-        // TODO(kschaaf): make vue version(s) configurable?
-        vue: '^3.2.33',
+        vue: '^3.2.0',
       },
       devDependencies: {
-        // TODO(kschaaf): make configurable?
-        typescript: '^4.3.5',
+        // Use typescript from source package, assuming it exists
+        typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
       },
       files: [...litModules.map(({module}) => module.jsPath)],
     },
@@ -146,14 +120,14 @@ const tsconfigTemplate = () => {
   );
 };
 
-// TODO(sorvell): generate Vue typescript module (could/should this be an SFC?)
 const wrapperModuleTemplate = (
   packageJson: PackageJson,
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
   return javascript`
-import 'vue';
+  import { h, defineComponent, openBlock, createBlock } from "vue";
+  import { wrapSlots, Slots, eventProp } from "./vue-wrapper-utils";
 ${elements.map(
   (element) => javascript`
 import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';
@@ -172,27 +146,64 @@ const eventNameToCallbackName = (eventName: string) =>
   eventName[0].toUpperCase() +
   eventName.slice(1).replace(/-[a-z]/g, (m) => m[1].toUpperCase());
 
-// TODO(sorvell): Implement for Vue
-const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
+const wrapProps = (props: Map<string, ModelProperty>) =>
+  Array.from(props.values())
+    .map((prop) => `${prop.name}: {type: ${prop.type}, required: false}`)
+    .join(',\n');
+
+// TODO(sorvell): Improve event handling, currently just forwarding the event,
+// but this should be its "payload."
+const wrapEvents = (events: Map<string, ModelEvent>) =>
+  Array.from(events.values())
+    .map(
+      (event) =>
+        `${eventNameToCallbackName(event.name)}: eventProp<(event: ${
+          event.typeString
+        }) => void>()`
+    )
+    .join(',\n');
+
+const renderEvents = (events: Map<string, ModelEvent>) =>
+  Array.from(events.values())
+    .map(
+      (event) =>
+        `${eventNameToCallbackName(event.name)}: (event: ${
+          event.typeString
+        }) => emit(event.type, event.detail || event)`
+    )
+    .join(',\n');
+
+// TODO(sorvell): Add support for `v-bind`.
+const wrapperTemplate = ({
+  name,
+  tagname,
+  events,
+  reactiveProperties,
+}: LitElementDeclaration) => {
   return javascript`
-export const ${name} = {someVueThing: true};
-/*
-createComponent(
-  React,
-  '${tagname}',
-  ${name}Element,
-  {
-    ${Array.from(events.keys()).map(
-      (eventName) => javascript`
-    ${eventNameToCallbackName(eventName)}: '${
-        // TODO(kschaaf): add cast to `as EventName<EVENT_TYPE>` once the
-        // analyzer reports the event type correctly (currently we have the
-        // type string without an AST reference to get its import, etc.)
-        // https://github.com/lit/lit/issues/2850
-        eventName
-      }',`
-    )}
-  }
-);*/
+  const props = {
+    ${wrapProps(reactiveProperties)}
+    ${wrapEvents(events)}
+  };
+
+  const ${name} = defineComponent({
+    name: ${name},
+    props,
+    setup(props, {emit, slots}) {
+      const render = () => h(
+        "${tagname}",
+        {...props,
+        ${renderEvents(events)}
+        },
+        wrapSlots(slots as Slots)
+      );
+      return () => {
+        openBlock();
+        return createBlock(render);
+      };
+    }
+  });
+
+  export default ${name};
 `;
 };
