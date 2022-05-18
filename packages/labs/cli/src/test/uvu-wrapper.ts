@@ -2,7 +2,8 @@ import * as uvu from 'uvu';
 
 const IN_CI = process.env['CI'];
 // CI machines are sometimes super slow, so give them plenty of time.
-const TIMEOUT = IN_CI ? 60_000 : 5_001;
+// When testing locally on Windows, some CLI tests take up to 10s.
+const TIMEOUT = IN_CI ? 60_000 : 10_001;
 
 /**
  * A safer wrapper around uvu.suite.

@@ -81,8 +81,8 @@ test('build package', async ({outputFolder}) => {
   await buildPackage(outputFolder);
 
   assert.equal(
-    String(fs.readFileSync(path.join(outputFolder, 'hello.txt'))),
-    'hello\n'
+    String(fs.readFileSync(path.join(outputFolder, 'hello.txt'))).trim(),
+    'hello'
   );
 });
 

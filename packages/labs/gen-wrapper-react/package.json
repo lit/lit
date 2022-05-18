@@ -43,7 +43,8 @@
       ]
     },
     "test:gen": {
-      "command": "uvu test-gen '.*_test\\.js$'",
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test-gen \"_test\\.js$\"",
       "files": [],
       "output": [
         "gen-output"

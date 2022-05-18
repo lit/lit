@@ -84,7 +84,8 @@ export const assertGoldensMatch = async (
   {formatGlob = '**/*.{ts,js}', noFormat = false} = {}
 ) => {
   if (!noFormat) {
-    execFileSync('npx', [
+    // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
+    execFileSync(/^win/.test(process.platform) ? 'npx.cmd' : 'npx', [
       '--no-install',
       'prettier',
       '--write',
@@ -101,6 +102,11 @@ export const assertGoldensMatch = async (
 
   const diff = await dirCompare.compare(goldensDir, outputDir, {
     compareContent: true,
+    compareFileSync:
+      dirCompare.fileCompareHandlers.lineBasedFileCompare.compareSync,
+    compareFileAsync:
+      dirCompare.fileCompareHandlers.lineBasedFileCompare.compareAsync,
+    ignoreLineEnding: true,
   });
 
   if (!diff.same) {
