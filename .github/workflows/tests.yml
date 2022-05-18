@@ -75,7 +75,7 @@ jobs:
           CONCURRENT_BROWSERS: 3
         run: npm run test
 
-  windows-cli:
+  windows-tools:
     runs-on: windows-2019
 
     steps:
@@ -97,10 +97,10 @@ jobs:
 
       - name: Build
         working-directory: 
-        run: npm run build -- --scope @lit-labs/cli
+        run: npm run build -- --scope @lit-labs/cli --scope @lit-labs/gen-utils --scope @lit-labs/analyzer --scope @lit-labs/gen-wrapper-react
 
       - name: Test
         working-directory: 
-        run: npm run test -- --scope @lit-labs/cli
+        run: npm run test -- --scope @lit-labs/cli --scope @lit-labs/gen-utils --scope @lit-labs/analyzer --scope @lit-labs/gen-wrapper-react
 
 
