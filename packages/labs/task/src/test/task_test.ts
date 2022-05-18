@@ -36,7 +36,7 @@ suite('Task', () => {
     config?: Partial<TaskConfig<unknown[], string>>
   ) => {
     class A extends ReactiveElement {
-      task: Task<string, string>;
+      task: Task<unknown[], string, string>;
 
       @property()
       a = 'a';
@@ -61,7 +61,7 @@ suite('Task', () => {
             }),
         };
         Object.assign(taskConfig, config);
-        this.task = new Task<string, string>(this, taskConfig);
+        this.task = new Task<unknown[], string, string>(this, taskConfig);
       }
 
       override update(changedProperties: PropertyValues): void {

@@ -100,7 +100,7 @@ export interface TaskConfig<T extends unknown[], R> {
  * }
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class Task<R = any, E = any, T extends unknown[] = any> {
+export class Task<T extends unknown[] = any, R = any, E = any> {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
   private _getArgs?: ArgsFunction<T>;
