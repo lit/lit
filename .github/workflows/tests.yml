@@ -78,7 +78,9 @@ jobs:
       - name: Test Firefox
         env:
           BROWSERS: preset:firefox
-        run: npm run test
+        run: |
+          cd packages/tests
+          npm run test
 
       - name: Test Firefox SSR
         env:
@@ -91,10 +93,3 @@ jobs:
         env:
           BROWSERS: preset:local
         run: npm run test
-
-      - name: Test SSR
-        env:
-          BROWSERS: preset:local
-        run: |
-          cd packages/labs/ssr
-          npm run test:integration
