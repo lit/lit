@@ -42,6 +42,8 @@ javascriptTest.run();
 const casingTest = suite('string casing');
 
 casingTest('string to initial capitalized string', () => {
+  assert.equal(toInitialCap(''), '');
+  assert.equal(toInitialCap('f'), 'F');
   assert.equal(toInitialCap('foo'), 'Foo');
 });
 
