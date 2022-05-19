@@ -3,7 +3,7 @@
  * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
+import * as path from 'path';
 import {
   getLitModules,
   LitModule,
@@ -20,7 +20,11 @@ export const generateVueWrapper = async (
 ): Promise<FileTree> => {
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
-    const vuePkgName = packageNameToVuePackageName(analysis.packageJson.name!);
+    // Base the generated package folder name off the analyzed package folder
+    // name, not the npm package name, since that might have an npm org in it
+    const vuePkgName = packageNameToVuePackageName(
+      path.basename(analysis.rootDir)
+    );
     return {
       [vuePkgName]: {
         '.gitignore': gitIgnoreTemplate(litModules),

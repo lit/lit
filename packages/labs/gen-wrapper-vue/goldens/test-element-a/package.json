@@ -1,0 +1,21 @@
+{
+  "name": "test-element-a-vue",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "version": "1.0.0",
+  "dependencies": {
+    "@lit-internal/test-element-a": "^1.0.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.0"
+  },
+  "devDependencies": {
+    "typescript": "~4.3.5"
+  },
+  "files": [
+    "element-a.js"
+  ]
+}
