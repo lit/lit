@@ -28,11 +28,7 @@ export const generateVueWrapper = async (
     return {
       [vuePkgName]: {
         '.gitignore': gitIgnoreTemplate(litModules),
-        'package.json': packageJsonTemplate(
-          vuePkgName,
-          analysis.packageJson,
-          litModules
-        ),
+        'package.json': packageJsonTemplate(analysis.packageJson, litModules),
         'tsconfig.json': tsconfigTemplate(),
         ...wrapperFiles(analysis.packageJson, litModules),
       },

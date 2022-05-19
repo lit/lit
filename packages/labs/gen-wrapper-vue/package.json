@@ -40,7 +40,7 @@
       ],
       "dependencies": [
         "build",
-        "../vue:build",
+        "../vue-utils:build",
         "../test-projects/test-element-a:build"
       ],
       "command": "uvu test-gen '.*_test\\.js$'",

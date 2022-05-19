@@ -1,5 +1,6 @@
 /test-gen/
-/test-output/
+/test-output/js/
+/test-output/tests/
 /lib/
 /*.js
 /*.js.map

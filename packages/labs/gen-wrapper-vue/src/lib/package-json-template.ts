@@ -1,7 +1,6 @@
 import {LitModule, PackageJson} from '@lit-labs/analyzer/lib/model.js';
 
 export const packageJsonTemplate = (
-  name: string,
   pkgJson: PackageJson,
   litModules: LitModule[]
 ) => {
@@ -12,7 +11,7 @@ export const packageJsonTemplate = (
   // package.json (description, license, keywords, etc.)
   return JSON.stringify(
     {
-      name,
+      name: `${pkgJson.name}-vue`,
       type: 'module',
       scripts: {
         build: 'tsc',
@@ -36,7 +35,11 @@ export const packageJsonTemplate = (
         // Use typescript from source package, assuming it exists
         typescript: pkgJson?.devDependencies?.typescript ?? '~4.6.4',
       },
-      files: [...litModules.map(({module}) => module.jsPath)],
+      files: [
+        ...litModules.map(({module}) =>
+          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
+        ),
+      ],
     },
     null,
     2

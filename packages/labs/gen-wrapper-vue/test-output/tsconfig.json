@@ -8,7 +8,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "./js/",
+    "outDir": "./js",
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,
@@ -20,7 +20,6 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "jsx": "preserve",
     "noImplicitOverride": true
   },
   "include": ["src/**/*.ts"],

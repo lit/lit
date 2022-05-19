@@ -20,6 +20,10 @@
     ".": {
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./wrapper-utils.js": {
+      "development": "./development/wrapper-utils.js",
+      "default": "./wrapper-utils.js"
     }
   },
   "files": [
