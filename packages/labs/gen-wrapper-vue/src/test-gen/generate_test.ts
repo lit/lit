@@ -47,6 +47,7 @@ test('basic wrapper generation', async () => {
 
   await installPackage(outputPackage, {
     [`@lit-internal/${project}`]: inputPackage,
+    '@lit-labs/vue-utils': '../vue-utils',
   });
 
   await buildPackage(outputPackage);
