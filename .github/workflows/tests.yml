@@ -89,7 +89,7 @@ jobs:
           cd packages/labs/ssr
           npm run test:integration
 
-      - name: Test Playwright
+      - name: Tests
         env:
           BROWSERS: preset:local
         run: npm run test
