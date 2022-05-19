@@ -17,7 +17,7 @@ export const wrapperModuleTemplate = (
 ) => {
   return javascript`
   import { h, defineComponent, openBlock, createBlock } from "vue";
-  import { wrapSlots, Slots, eventProp } from "@lit-labs/gen-wrapper-vue/wrapper-utils.js";
+  import { wrapSlots, Slots, eventProp } from "@lit-labs/vue-utils/wrapper-utils.js";
   import '${packageJson.name}/${moduleJsPath}';
 
   ${elements.map((element) => wrapperTemplate(element))}

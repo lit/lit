@@ -3,7 +3,7 @@ import {
   wrapSlots,
   Slots,
   eventProp,
-} from '@lit-labs/gen-wrapper-vue/wrapper-utils.js';
+} from '@lit-labs/vue-utils/wrapper-utils.js';
 import '@lit-internal/test-element-a/element-a.js';
 
 const props = {

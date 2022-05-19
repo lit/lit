@@ -24,7 +24,7 @@ export const packageJsonTemplate = (
         // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
         vue: '^3.2.25',
-        '@lib-labs/vue-utils': '^0.0.1',
+        '@lit-labs/vue-utils': '^0.0.1',
       },
       /*
       peerDependencies: {
