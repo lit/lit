@@ -34,7 +34,7 @@ export const packageJsonTemplate = (
       */
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
+        typescript: pkgJson?.devDependencies?.typescript ?? '~4.6.4',
       },
       files: [...litModules.map(({module}) => module.jsPath)],
     },

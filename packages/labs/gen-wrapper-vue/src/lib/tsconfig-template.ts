@@ -22,6 +22,7 @@ export const tsconfigTemplate = () => {
         allowSyntheticDefaultImports: true,
         experimentalDecorators: true,
         noImplicitOverride: true,
+        skipLibCheck: true,
       },
       include: ['src/**/*.ts'],
       exclude: [],
