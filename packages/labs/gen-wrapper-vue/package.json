@@ -83,8 +83,7 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js",
-    "wrapper-utils.js"
+    "index.js"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [
