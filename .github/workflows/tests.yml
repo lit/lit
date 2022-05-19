@@ -75,12 +75,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Test Firefox
+        env:
+          BROWSERS: preset:firefox
+        run: npm run test
+
+      - name: Test Firefox SSR
+        env:
+          BROWSERS: preset:firefox
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
+
       - name: Test Playwright
         env:
           BROWSERS: preset:local
         run: npm run test
 
-      - name: Test Firefox
+      - name: Test SSR
         env:
-          BROWSERS: preset:firefox
-        run: npm run test
+          BROWSERS: preset:local
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
