@@ -65,12 +65,13 @@ const standardProperty = (
 
 const legacyProperty = (
   options: PropertyDeclaration,
-  proto: unknown,
+  proto: object,
   name: PropertyKey
 ) => {
-  (
-    (proto as Record<string, unknown>).constructor as typeof ReactiveElement
-  ).createProperty(name, options);
+  (proto as {constructor: typeof ReactiveElement}).constructor.createProperty(
+    name,
+    options
+  );
 };
 
 /**
