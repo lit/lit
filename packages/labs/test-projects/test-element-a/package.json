@@ -24,7 +24,7 @@
         "src/**/*.ts",
         "tsconfig.json"
       ],
-      "command": "tsc --build --pretty && npm pack",
+      "command": "tsc --build --pretty",
       "output": [
         "element-a.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
