@@ -26,20 +26,20 @@
       ],
       "output": [
         "lib",
+        "test",
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "node ../../tests/run-web-tests.js \"test-output/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "test:gen",
         "../../tests:build"
       ]
     },
     "test:gen": {
-      "command": "uvu test '.*_test\\.js$'",
+      "command": "uvu test \".*_test\\.js$\"",
       "files": [],
       "output": [
         "gen-output"

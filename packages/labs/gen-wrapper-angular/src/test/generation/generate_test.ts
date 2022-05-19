@@ -28,8 +28,6 @@ test('basic wrapper generation', async () => {
   const inputPackage = path.resolve(testProjects, folderName);
   const outputPackage = path.resolve(outputFolder, folderName + '-ng');
 
-  console.log('outputPackage', outputPackage);
-
   if (fs.existsSync(outputPackage)) {
     fs.rmSync(outputPackage, {recursive: true});
   }
@@ -39,7 +37,7 @@ test('basic wrapper generation', async () => {
   await writeFileTree(outputFolder, await generateAngularWrapper(analysis));
 
   const wrapperSourceFile = fs.readFileSync(
-    path.join(outputPackage, 'src/element-a.ts')
+    path.join(outputPackage, 'src', 'element-a.ts')
   );
   assert.ok(wrapperSourceFile.length > 0);
 
