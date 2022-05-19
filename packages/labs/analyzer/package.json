@@ -35,7 +35,8 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "uvu test '\\_test\\.js$'",
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test \"_test\\.js$\"",
       "dependencies": [
         "build"
       ],

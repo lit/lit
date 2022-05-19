@@ -188,9 +188,14 @@ export class LitCli {
 
   private getImportPath(reference: ReferenceToCommand): string | undefined {
     try {
-      return createRequire(this.cwd).resolve(reference.importSpecifier, {
-        paths: [this.cwd],
-      });
+      // Must prepend with `file://` so that windows absolute paths are valid
+      // ESM import specifiers
+      return (
+        'file://' +
+        createRequire(this.cwd).resolve(reference.importSpecifier, {
+          paths: [this.cwd],
+        })
+      );
     } catch (e: unknown) {
       if ((e as undefined | {code?: string})?.code === 'MODULE_NOT_FOUND') {
         return undefined;
@@ -276,7 +281,8 @@ export class LitCli {
     }
     const installFrom = reference.installFrom ?? reference.importSpecifier;
     const child = childProcess.spawn(
-      'npm',
+      // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
+      /^win/.test(process.platform) ? 'npm.cmd' : 'npm',
       ['install', '--save-dev', installFrom],
       {
         cwd: this.cwd,
@@ -297,8 +303,8 @@ export class LitCli {
       child.on('exit', (code) => {
         resolve(code === 0);
       });
-      child.on('error', () => {
-        this.console.error('Error installing dependency');
+      child.on('error', (err) => {
+        this.console.error(`Error installing dependency: ${err}`);
         resolve(false);
       });
     });

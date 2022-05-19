@@ -35,15 +35,16 @@
       "clean": "if-file-deleted"
     },
     "test:gen": {
-      "files": [
-        "goldens/**/*"
-      ],
       "dependencies": [
         "build",
         "../react:build",
-        "../test-projects/test-element-a:build"
+        "../test-projects/test-element-a:pack"
       ],
-      "command": "uvu test-gen '.*_test\\.js$'",
+      "files": [
+        "goldens/**/*"
+      ],
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test-gen \"_test\\.js$\"",
       "output": [
         "gen-output",
         "!gen-output/node_modules"
