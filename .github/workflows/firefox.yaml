@@ -22,6 +22,8 @@ jobs:
           sudo apt update
           sudo apt install firefox-esr
 
+      - uses: google/wireit@setup-github-actions-caching/v1
+
       - name: NPM install
         run: npm ci
 
