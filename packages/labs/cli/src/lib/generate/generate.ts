@@ -57,7 +57,7 @@ export const run = async (
       .map((r, i) =>
         r.status === 'rejected'
           ? `Error generating '${frameworks[i]}' wrapper for package '${packageRoot}': ` +
-            r.reason
+              (r.reason as Error).stack ?? r.reason
           : ''
       )
       .filter((e) => e)
