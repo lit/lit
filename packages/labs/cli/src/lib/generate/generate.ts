@@ -25,7 +25,10 @@ export const run = async (
   _console: Console
 ) => {
   for (const packageRoot of packages) {
-    const analyzer = new Analyzer(path.resolve(packageRoot) as AbsolutePath);
+    // Ensure separators in input paths are normalized and resolved to absolute
+    const root = path.normalize(path.resolve(packageRoot)) as AbsolutePath;
+    const out = path.normalize(path.resolve(outDir)) as AbsolutePath;
+    const analyzer = new Analyzer(root);
     const analysis = analyzer.analyzePackage();
     if (!analysis.packageJson.name) {
       throw new Error(
@@ -39,13 +42,28 @@ export const run = async (
       }
       return importer;
     });
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       importers.map(async (importer) => {
         const generator = await importer();
         // TODO(kschaaf): Add try/catches around each of these operations and
         // throw more contextural errors
-        await writeFileTree(outDir, await generator(analysis));
+        await writeFileTree(out, await generator(analysis));
       })
     );
+    // `allSettled` will swallow errors, so we need to filter them out of
+    // the results and throw a new error up the stack describing all the errors
+    // that happened
+    const errors = results
+      .map((r, i) =>
+        r.status === 'rejected'
+          ? `Error generating '${frameworks[i]}' wrapper for package '${packageRoot}': ` +
+              (r.reason as Error).stack ?? r.reason
+          : ''
+      )
+      .filter((e) => e)
+      .join('\n');
+    if (errors.length > 0) {
+      throw new Error(errors);
+    }
   }
 };
