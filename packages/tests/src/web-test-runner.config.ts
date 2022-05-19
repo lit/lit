@@ -38,6 +38,8 @@ if (mode === 'prod') {
   resolveRemapConfig = devResolveRemapConfig;
 }
 
+const firefoxBrowsers = ['selenium:firefox', 'selenium:firefox-esr'];
+
 const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
   local: [
@@ -59,10 +61,10 @@ const browserPresets = {
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
-  firefox: ['selenium:firefox', 'selenium:firefox-esr'],
+  firefox: firefoxBrowsers,
 };
 
-const seleniumBrowsers = new Set(['firefox', 'firefox-esr']);
+const seleniumBrowsers = new Set(firefoxBrowsers);
 
 let sauceLauncher: ReturnType<typeof createSauceLabsLauncher>;
 
