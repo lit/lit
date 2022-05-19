@@ -20,14 +20,14 @@ export interface FileTree {
 /**
  * Test whether a path is contained within a root path
  */
-export const pathIsinRootPath = (path: string, rootPath: string) => {
-  if (!path.startsWith(rootPath)) {
+export const pathIsinRootPath = (subPath: string, rootPath: string) => {
+  if (!subPath.startsWith(rootPath)) {
     return false;
   }
-  const subpath = path.substring(rootPath.length);
-  if (!rootPath.endsWith('/')) {
+  const subpath = subPath.substring(rootPath.length);
+  if (!rootPath.endsWith(path.sep)) {
     // Make sure we don't have path='/abc/def' and root='/ab'
-    if (!subpath.startsWith('/')) {
+    if (!subpath.startsWith(path.sep)) {
       return false;
     }
   }
