@@ -15,9 +15,11 @@ import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import * as path from 'path';
+import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 
 export const generateAngularWrapper = async (
-  analysis: Package
+  analysis: Package,
+  angularWorkspaceFolder: AbsolutePath
 ): Promise<FileTree> => {
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
@@ -31,8 +33,11 @@ export const generateAngularWrapper = async (
     }
     // TODO(justinfagnani): make configurable
     const angularPackageName = `${packageName}-ng`;
-    // TODO(justinfagnani): put inside an Angular workspace
-    const angularPackageFolder = `${path.basename(analysis.rootDir)}-ng`;
+    const angularPackageFolder = path.resolve(
+      angularWorkspaceFolder,
+      'projects',
+      `${path.basename(analysis.rootDir)}-ng`
+    );
     return {
       [angularPackageFolder]: {
         '.gitignore': gitIgnoreTemplate(litModules),
