@@ -31,7 +31,7 @@ export interface ClassElement {
 
 export const legacyPrototypeMethod = (
   descriptor: PropertyDescriptor,
-  proto: unknown,
+  proto: object,
   name: PropertyKey
 ) => {
   Object.defineProperty(proto, name, descriptor);
