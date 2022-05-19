@@ -14,9 +14,11 @@ import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
   buildPackage,
+  packPackage,
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateVueWrapper} from '../index.js';
+import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
@@ -39,16 +41,24 @@ test('basic wrapper generation', async () => {
   );
   assert.ok(wrapperSourceFile.length > 0);
 
+  await assertGoldensMatch(outputPackage, path.join('goldens', project), {
+    formatGlob: '**/*.{ts,js,json}',
+  });
+
   await installPackage(outputPackage, {
-    [project]: inputPackage,
+    [`@lit-internal/${project}`]: inputPackage,
   });
 
   await buildPackage(outputPackage);
 
-  // TODO(kschaaf): Add golden tests. https://github.com/lit/lit/issues/2853
-  // For now, this verifies the package installation and build nominally
-  // succeeded. Note that runtime tests of this generated package are run as a
-  // separate `npm run test:output` command via web-test-runner.
+  // Pack the generated package here, as `test-output` package.json will
+  // reference the generated tarball here by filename; `test-output:installSelf`
+  // depends on these tests run by `test:gen`.
+  await packPackage(outputPackage);
+
+  // This verifies the package installation and build nominally succeeded. Note
+  // that runtime tests of this generated package are run as a separate `npm run
+  // test` command in `test-output` using `@web/test-runner`.
   const wrapperJsFile = fs.readFileSync(
     path.join(outputPackage, 'element-a.js')
   );
