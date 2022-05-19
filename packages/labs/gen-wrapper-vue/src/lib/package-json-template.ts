@@ -23,10 +23,15 @@ export const packageJsonTemplate = (
       dependencies: {
         // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
+        vue: '^3.2.25',
+        '@lib-labs/vue-utils': '^0.0.1',
       },
+      /*
       peerDependencies: {
         vue: '^3.2.0',
+
       },
+      */
       devDependencies: {
         // Use typescript from source package, assuming it exists
         typescript: pkgJson?.devDependencies?.typescript ?? '~4.3.5',
