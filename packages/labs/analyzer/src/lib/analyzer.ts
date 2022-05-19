@@ -86,6 +86,7 @@ export class Analyzer {
       modules.push(this.analyzeFile(fileName as AbsolutePath));
     }
     return new Package({
+      rootDir: this.packageRoot,
       modules,
       tsConfig: this.commandLine,
       packageJson: this.packageJson,
