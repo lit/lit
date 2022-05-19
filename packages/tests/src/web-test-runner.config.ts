@@ -158,8 +158,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   }
 
   if (browser.startsWith(SELENIUM)) {
-    let browserName = browser.substring(SELENIUM.length);
-    if (!seleniumBrowsers.has(browserName)) {
+    if (!seleniumBrowsers.has(browser)) {
       throw new Error(`
 Invalid Selenium browser string.
 Expected format: selenium:browser
@@ -169,6 +168,7 @@ Available options:
       `);
     }
 
+    let browserName = browser.substring(SELENIUM.length);
     const driverBuilder = new Builder();
     if (browserName === 'firefox') {
       driverBuilder.setFirefoxOptions(new FirefoxOptions().headless());
