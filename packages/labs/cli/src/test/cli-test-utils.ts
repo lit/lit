@@ -14,22 +14,35 @@ export class BufferedWritable extends Writable {
   constructor() {
     super({
       write: (chunk: unknown, encoding, callback) => {
+        const decodeResult = this.decodeChunk(chunk, encoding);
+        if (!decodeResult.ok) {
+          callback(decodeResult.error);
+          return;
+        }
+        const decoded = decodeResult.string;
         if (this.alsoLogToGlobalConsole) {
-          console.log(chunk);
+          console.log(decoded);
         }
-        if (encoding === 'utf-8') {
-          this.buffer.push(chunk as string);
-        } else if ((encoding as 'buffer') === 'buffer') {
-          this.buffer.push((chunk as Buffer).toString());
-        } else {
-          callback(new Error(`Unsupported encoding ${encoding}`));
-        }
+        this.buffer.push(decoded);
         callback();
       },
       writev: (_chunks, callback) => {
         callback(new Error('Not implemented'));
       },
     });
+  }
+
+  private decodeChunk(
+    chunk: unknown,
+    encoding: BufferEncoding
+  ): {ok: true; string: string} | {ok: false; error: Error} {
+    if (encoding === 'utf-8') {
+      return {ok: true, string: chunk as string};
+    } else if ((encoding as 'buffer') === 'buffer') {
+      return {ok: true, string: (chunk as Buffer).toString()};
+    } else {
+      return {ok: false, error: new Error(`Unsupported encoding ${encoding}`)};
+    }
   }
 
   alsoLogToGlobalConsole = false;
