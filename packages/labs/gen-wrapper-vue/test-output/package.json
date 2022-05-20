@@ -42,7 +42,8 @@
       ],
       "command": "tsc --build --pretty",
       "output": [
-        "js"
+        "js",
+        "tsconfig.tsbuildinfo"
       ]
     },
     "build": {
