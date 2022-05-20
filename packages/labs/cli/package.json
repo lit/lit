@@ -70,9 +70,7 @@
       "dependencies": [
         "build"
       ],
-      "files": [
-        "test-project"
-      ],
+      "files": [],
       "output": []
     }
   },
