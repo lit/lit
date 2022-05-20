@@ -99,4 +99,6 @@ jobs:
         run: npm run build --  --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
       - name: Test
+        env:
+          BROWSERS: ""
         run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
