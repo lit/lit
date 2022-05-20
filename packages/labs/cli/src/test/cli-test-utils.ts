@@ -7,6 +7,9 @@
 import {Writable} from 'stream';
 import {LitConsole} from '../lib/console.js';
 import {ConsoleConstructorOptions} from 'console';
+import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
+import * as pathlib from 'path';
+import * as url from 'url';
 
 export class BufferedWritable extends Writable {
   buffer: Array<string> = [];
@@ -71,3 +74,31 @@ export class TestConsole extends LitConsole {
     return this.outputStream.alsoLogToGlobalConsole;
   }
 }
+
+/**
+ * We lazily install commands, but most tests just want to use the latest
+ * versions of the commands in the monorepo.
+ */
+export const symlinkAllCommands = async (rig: FilesystemTestRig) => {
+  const symLinks: Array<{packageName: string[]; relPath: string[]}> = [
+    {
+      relPath: ['..', '..', '..', 'gen-wrapper-react'],
+      packageName: ['@lit-labs', 'gen-wrapper-react'],
+    },
+    {
+      relPath: ['..', '..', '..', 'gen-wrapper-vue'],
+      packageName: ['@lit-labs', 'gen-wrapper-vue'],
+    },
+  ];
+  await Promise.all(
+    symLinks.map(async ({packageName, relPath}) => {
+      await rig.symlink(
+        pathlib.resolve(
+          pathlib.join(url.fileURLToPath(import.meta.url), ...relPath)
+        ),
+        pathlib.join('node_modules', ...packageName),
+        'dir'
+      );
+    })
+  );
+};
