@@ -17,8 +17,7 @@ npm i
 ## Testing
 
 This sample modern-web.dev's
-[@web/test-runner](https://www.npmjs.com/package/@web/test-runner) along with
-Mocha, Chai, and some related helpers for testing. See the
+[@web/test-runner](https://www.npmjs.com/package/@web/test-runner) for testing. See the
 [modern-web.dev testing documentation](https://modern-web.dev/docs/test-runner/overview) for
 more information.
 

@@ -103,7 +103,8 @@ packages/lit-starter-ts/**/my-element.js
 packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
-
+# only generated for size check
+packages/lit-starter-ts/**/my-element.bundled.js
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
@@ -188,7 +189,8 @@ packages/labs/gen-utils/index.d.ts
 packages/labs/gen-utils/index.d.ts.map
 
 packages/labs/gen-wrapper-react/test-gen/
-packages/labs/gen-wrapper-react/test-output/
+packages/labs/gen-wrapper-react/test-output/js/
+packages/labs/gen-wrapper-react/test-output/tests/
 packages/labs/gen-wrapper-react/index.js
 packages/labs/gen-wrapper-react/index.js.map
 packages/labs/gen-wrapper-react/index.d.ts
