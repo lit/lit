@@ -74,7 +74,7 @@ function makeSauceLauncherOnce() {
         key,
       },
       {},
-      {noSslBumpDomains: 'all'}
+      {noSslBumpDomains: 'all', noRemoveCollidingTunnels: true}
     );
   }
   return sauceLauncher;
