@@ -68,14 +68,10 @@ function makeSauceLauncherOnce() {
           ' and SAUCE_ACCESS_KEY environment variables.'
       );
     }
-    sauceLauncher = createSauceLabsLauncher(
-      {
-        user,
-        key,
-      },
-      {},
-      {noSslBumpDomains: 'all', noRemoveCollidingTunnels: true}
-    );
+    sauceLauncher = createSauceLabsLauncher({
+      user,
+      key,
+    });
   }
   return sauceLauncher;
 }
