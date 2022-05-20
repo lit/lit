@@ -225,12 +225,12 @@ const config: TestRunnerConfig = {
   ],
   // Only actually log errors. This helps make test output less spammy.
   filterBrowserLogs: ({type}) => type === 'error',
-  browserStartTimeout: 60000, // default 30000
+  browserStartTimeout: 120000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
-  testsStartTimeout: 60000 * 10, // default 120000
-  testsFinishTimeout: 120000, // default 20000
+  testsStartTimeout: 120000 * 10, // default 120000
+  testsFinishTimeout: 240000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {
