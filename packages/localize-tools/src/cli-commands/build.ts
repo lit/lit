@@ -9,27 +9,30 @@ import {
   Config,
   TransformOutputConfig,
   RuntimeOutputConfig,
-} from '@lit/localize-tools/lib/config.js';
-import {TransformLitLocalizer} from '@lit/localize-tools/lib/modes/transform.js';
-import {RuntimeLitLocalizer} from '@lit/localize-tools/lib/modes/runtime.js';
-import {printDiagnostics} from '@lit/localize-tools/lib/typescript.js';
-import {KnownError, unreachable} from '@lit/localize-tools/lib/error.js';
-import {LitLocalizer} from '@lit/localize-tools/lib/index.js';
+} from '../config.js';
+import {TransformLitLocalizer} from '../modes/transform.js';
+import {RuntimeLitLocalizer} from '../modes/runtime.js';
+import {KnownError, unreachable} from '../error.js';
+import {LitLocalizer} from '../index.js';
 
 export const run = async (configPath: string, console: Console) => {
   const config = readConfigFileAndWriteSchema(configPath);
   const localizer = makeLocalizer(config);
-  // TODO(aomarks) Don't even require the user to have configured their output
-  // mode if they're just doing extraction.
-  console.log('Extracting messages');
-  const {messages, errors} = localizer.extractSourceMessages();
+  console.log('Building');
+  const {errors} = localizer.validateTranslations();
   if (errors.length > 0) {
-    printDiagnostics(errors);
-    throw new KnownError('Error analyzing program');
+    // TODO(aomarks) It might be more friendly to replace these invalid
+    // localized templates with the source ones, show the errors and return
+    // non-zero, but still continue with the rest of the process so that at
+    // least some of the app can work during development.
+    throw new KnownError(
+      'One or more localized templates contain a set of placeholders ' +
+        '(HTML or template literal expressions) that do not exactly match ' +
+        'the source code, aborting. Details:\n\n' +
+        errors.join('\n')
+    );
   }
-  console.log(`Extracted ${messages.length} messages`);
-  console.log(`Writing interchange files`);
-  await localizer.writeInterchangeFiles();
+  await localizer.build();
 };
 
 const makeLocalizer = (config: Config): LitLocalizer => {
@@ -47,7 +50,7 @@ const makeLocalizer = (config: Config): LitLocalizer => {
     default:
       throw new KnownError(
         `Internal error: unknown mode ${
-          (unreachable(config.output as never) as Config['output']).mode
+          (unreachable(config.output) as Config['output']).mode
         }`
       );
   }
