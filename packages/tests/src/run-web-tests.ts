@@ -91,4 +91,6 @@ const run = process.env.RUN_BROWSER_TESTS?.toLowerCase() !== 'false';
 
 if (run) {
   await startWithNextAvailablePort();
+} else {
+  process.exit(0);
 }
