@@ -87,4 +87,8 @@ async function startWithNextAvailablePort() {
   });
 }
 
-await startWithNextAvailablePort();
+const run = process.env.RUN_BROWSER_TESTS?.toLowerCase() !== 'false';
+
+if (run) {
+  await startWithNextAvailablePort();
+}

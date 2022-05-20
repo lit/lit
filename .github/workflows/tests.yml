@@ -100,5 +100,5 @@ jobs:
 
       - name: Test
         env:
-          BROWSERS: " "
+          RUN_BROWSER_TESTS: false
         run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
