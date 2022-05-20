@@ -34,7 +34,7 @@ test('basic wrapper generation', async () => {
 
   const analyzer = new Analyzer(inputPackage as AbsolutePath);
   const analysis = analyzer.analyzePackage();
-  await writeFileTree(outputFolder, await generateReactWrapper(analysis));
+  await writeFileTree(outputFolder, await generateReactWrapper({analysis}));
 
   const wrapperSourceFile = fs.readFileSync(
     path.join(outputPackage, 'src/element-a.ts')

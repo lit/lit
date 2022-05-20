@@ -21,14 +21,13 @@ export const getCommand = () => {
     description: 'Generate React wrapper components from Lit elements',
     kind: 'resolved',
     async generate(options: {analysis: Package}): Promise<FileTree> {
-      return generateReactWrapper(options.analysis);
+      return await generateReactWrapper(options);
     },
   };
 };
 
-export const generateReactWrapper = async (
-  analysis: Package
-): Promise<FileTree> => {
+export const generateReactWrapper = async (options: { analysis: Package }) => {
+  const analysis = options.analysis;
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length > 0) {
     // Base the generated package folder name off the analyzed package folder
@@ -39,7 +38,10 @@ export const generateReactWrapper = async (
     return {
       [reactPkgFolder]: {
         '.gitignore': gitIgnoreTemplate(litModules),
-        'package.json': packageJsonTemplate(analysis.packageJson, litModules),
+        'package.json': packageJsonTemplate(
+          analysis.packageJson,
+          litModules
+        ),
         'tsconfig.json': tsconfigTemplate(),
         ...wrapperFiles(analysis.packageJson, litModules),
       },
