@@ -175,6 +175,9 @@ packages/labs/gen-utils/index.d.ts
 packages/labs/gen-utils/index.d.ts.map
 
 packages/labs/gen-wrapper-react/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+packages/labs/gen-wrapper-react/test-output/package-lock.json
 packages/labs/gen-wrapper-react/test-output/js/
 packages/labs/gen-wrapper-react/test-output/tests/
 packages/labs/gen-wrapper-react/index.js
@@ -184,6 +187,9 @@ packages/labs/gen-wrapper-react/index.d.ts.map
 packages/labs/gen-wrapper-react/gen-output/
 
 packages/labs/gen-wrapper-vue/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+packages/labs/gen-wrapper-vue/test-output/package-lock.json
 packages/labs/gen-wrapper-vue/test-output/js/
 packages/labs/gen-wrapper-vue/test-output/tests/
 packages/labs/gen-wrapper-vue/lib/
