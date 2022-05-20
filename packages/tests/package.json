@@ -17,7 +17,7 @@
     "@web/dev-server-rollup": "^0.3.13",
     "@web/test-runner": "^0.13.22",
     "@web/test-runner-playwright": "^0.8.8",
-    "@web/test-runner-saucelabs": "^0.7.2",
+    "@web/test-runner-saucelabs": "^0.8.0",
     "@web/test-runner-selenium": "^0.5.3",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "diff": "^5.0.0",

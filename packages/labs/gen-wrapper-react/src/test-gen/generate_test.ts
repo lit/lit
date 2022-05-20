@@ -14,6 +14,7 @@ import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
   buildPackage,
+  packPackage,
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateReactWrapper} from '../index.js';
@@ -45,15 +46,20 @@ test('basic wrapper generation', async () => {
   });
 
   await installPackage(outputPackage, {
-    [project]: inputPackage,
+    [`@lit-internal/${project}`]: inputPackage,
     '@lit-labs/react': '../react',
   });
 
   await buildPackage(outputPackage);
 
+  // Pack the generated package here, as `test-output` package.json will
+  // reference the generated tarball here by filename; `test-output:installSelf`
+  // depends on these tests run by `test:gen`.
+  await packPackage(outputPackage);
+
   // This verifies the package installation and build nominally succeeded. Note
   // that runtime tests of this generated package are run as a separate `npm run
-  // test:output` command via web-test-runner.
+  // test` command in `test-output` using `@web/test-runner`.
   const wrapperJsFile = fs.readFileSync(
     path.join(outputPackage, 'element-a.js')
   );

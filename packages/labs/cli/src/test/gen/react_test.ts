@@ -32,7 +32,7 @@ test.after.each(async ({rig}) => {
 
 test('basic wrapper generation', async ({rig, testConsole}) => {
   const packageName = 'test-element-a';
-  const inputPackage = path.join('../test-projects/', packageName);
+  const inputPackage = path.join('..', 'test-projects', packageName);
   const outputPackage = path.join(rig.rootDir, packageName + '-react');
 
   const cli = new LitCli(
@@ -58,7 +58,11 @@ test('basic wrapper generation', async ({rig, testConsole}) => {
   // Note, this is only a very basic test that wrapper generation succeeds when
   // executed via the CLI. For detailed tests, see tests in
   // @lit-labs/gen-wrapper-react.
-  const wrapperSourceFile = await rig.read(outputPackage, 'src/element-a.ts');
+  const wrapperSourceFile = await rig.read(
+    outputPackage,
+    'src',
+    'element-a.ts'
+  );
   assert.ok(wrapperSourceFile.length > 0);
 });
 

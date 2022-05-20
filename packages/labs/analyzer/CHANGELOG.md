@@ -1,5 +1,19 @@
 # @lit-labs/analyzer
 
+## 0.2.0
+
+### Minor Changes
+
+- [#2822](https://github.com/lit/lit/pull/2822) [`aa57f683`](https://github.com/lit/lit/commit/aa57f6838fa12ec0cb1d1ea0a108edeef67b9ede) - Added basic generation of React wrapper to CLI.
+
+### Patch Changes
+
+- [#2804](https://github.com/lit/lit/pull/2804) [`e0517ccf`](https://github.com/lit/lit/commit/e0517ccf79d983a8d6ec53969f29e130830fe3e8) - Read property options from decorated properties
+
+- [#2896](https://github.com/lit/lit/pull/2896) [`3bd330f3`](https://github.com/lit/lit/commit/3bd330f3db4c2f618181b8602563db3ab879f33d) - Add utilties for getting LitElement declarations
+
+- [#2812](https://github.com/lit/lit/pull/2812) [`93d671fe`](https://github.com/lit/lit/commit/93d671feab82688a79fc60ba22cf204fa4ca02ec) - Read events from class JSDoc @fires tags
+
 ## 0.1.1
 
 ### Patch Changes

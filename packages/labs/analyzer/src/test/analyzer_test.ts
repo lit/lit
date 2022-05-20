@@ -28,7 +28,7 @@ test('Reads project files', ({analyzer, packagePath}) => {
   const rootFileNames = analyzer.program.getRootFileNames();
   assert.equal(rootFileNames.length, 5);
 
-  const elementAPath = path.resolve(packagePath, 'src/element-a.ts');
+  const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
   const sourceFile = analyzer.program.getSourceFile(elementAPath);
   assert.ok(sourceFile);
 });
@@ -36,9 +36,9 @@ test('Reads project files', ({analyzer, packagePath}) => {
 test('Analyzer finds class declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.sourcePath === 'src/class-a.ts'
+    (m) => m.sourcePath === path.normalize('src/class-a.ts')
   );
-  assert.equal(elementAModule?.jsPath, 'out/class-a.js');
+  assert.equal(elementAModule?.jsPath, path.normalize('out/class-a.js'));
   assert.equal(elementAModule?.declarations.length, 1);
   assert.equal(elementAModule?.declarations[0].name, 'ClassA');
 });

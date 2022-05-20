@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -35,7 +35,8 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "uvu test '\\_test\\.js$'",
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test \"_test\\.js$\"",
       "dependencies": [
         "build"
       ],
