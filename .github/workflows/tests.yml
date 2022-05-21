@@ -51,29 +51,7 @@ jobs:
         env:
           BROWSERS: preset:local
         run: npm run test
-  
-      - name: Test Chrome, Firefox, and Safari Browsers
-        env:
-          BROWSERS: preset:sauce
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: |
-          cd packages/tests
-          npm run test
-
-      - name: Test IE
-        env:
-          BROWSERS: preset:sauce-ie11
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: |
-          cd packages/tests
-          npm run test
       
-      - name: Remote Test Sieve
-        if: failure() && (${{steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure'}})
-        run: echo 'Remote tests failed'
-
   windows-tools:
     runs-on: windows-latest
 
