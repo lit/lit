@@ -50,3 +50,21 @@ jobs:
         run: |
           cd packages/labs/ssr
           npm run test:integration
+
+      - name: Test IE
+        env:
+          BROWSERS: preset:sauce-ie11
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/tests
+          npm run test
+
+      - name: Test SSR IE
+        env:
+          BROWSERS: preset:sauce-ie11
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
