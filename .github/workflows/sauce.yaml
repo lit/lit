@@ -32,21 +32,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Test Chrome, Firefox, and Safari
-        env:
-          BROWSERS: preset:sauce
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: |
-          cd packages/tests
-          npm run test
-
-      - name: Test IE
-        env:
-          BROWSERS: preset:sauce-ie11
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: |
-          cd packages/tests
-          npm run test
