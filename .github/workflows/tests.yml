@@ -73,7 +73,7 @@ jobs:
           npm run test
       
       - name: Remote Test Failed
-        if: ${{steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure')}}
+        if: ${{steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure'}}
         run: echo 'Remote tests failed'
 
   windows-tools:
