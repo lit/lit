@@ -53,6 +53,7 @@ jobs:
         run: npm run test
   
       - name: Test Chrome, Firefox, and Safari Browsers
+        continue-on-error: true
         env:
           BROWSERS: preset:sauce
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -62,6 +63,7 @@ jobs:
           npm run test
 
       - name: Test IE
+        continue-on-error: true
         env:
           BROWSERS: preset:sauce-ie11
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -71,7 +73,7 @@ jobs:
           npm run test
       
       - name: Remote Test Failed
-        if: ${{steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure')
+        if: ${{steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure')}}
         run: echo 'Remote tests failed'
 
   windows-tools:
