@@ -32,7 +32,6 @@ jobs:
         run: npm run changeset status -- --since=main
 
       - name: Lint
-        if: failure() && github.actor == 'lit-robot'
         run: npm run lint
 
       - name: Install playwright deps
@@ -48,6 +47,46 @@ jobs:
         env:
           BROWSERS: preset:local
         run: npm run test
+  
+      - name: Test Chrome, Firefox, and Safari
+        continue-on-error: true
+        env:
+          BROWSERS: preset:sauce
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/tests
+          npm run test
+
+      - name: Test SSR Chrome, Firefox, and Safari
+        continue-on-error: true
+        env:
+          BROWSERS: preset:sauce
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
+
+      - name: Test IE
+        continue-on-error: true
+        env:
+          BROWSERS: preset:sauce-ie11
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/tests
+          npm run test
+
+      - name: Test SSR IE
+        continue-on-error: true
+        env:
+          BROWSERS: preset:sauce-ie11
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+        run: |
+          cd packages/labs/ssr
+          npm run test:integration
 
   windows-tools:
     runs-on: windows-latest
