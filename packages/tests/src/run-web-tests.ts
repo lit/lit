@@ -89,6 +89,11 @@ async function startWithNextAvailablePort() {
 
 const run = process.env.RUN_BROWSER_TESTS?.toLowerCase() !== 'false';
 
+console.log(
+  'process.env.RUN_BROWSER_TESTS?.toLowerCase()',
+  process.env.RUN_BROWSER_TESTS?.toLowerCase()
+);
+
 if (run) {
   await startWithNextAvailablePort();
 } else {
