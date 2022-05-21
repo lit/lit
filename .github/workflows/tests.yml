@@ -19,9 +19,13 @@ jobs:
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
+      # only checkout main when merging to main?
+      # if merge main, checkout main
       - run: git checkout main
       - run: git checkout ${{ github.sha }}
-      - run: npm ci
+
+      - name: Install NPM Dependencies
+        run: npm ci
 
       # Enforce that all PRs that change packages need changesets. Changes
       # without changesets result in this job failing.
@@ -48,8 +52,7 @@ jobs:
           BROWSERS: preset:local
         run: npm run test
   
-      - name: Test Chrome, Firefox, and Safari
-        continue-on-error: true
+      - name: Test Chrome, Firefox, and Safari Browsers
         env:
           BROWSERS: preset:sauce
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -59,7 +62,7 @@ jobs:
           npm run test
 
       - name: Test SSR Chrome, Firefox, and Safari
-        continue-on-error: true
+        if: failure() || success()
         env:
           BROWSERS: preset:sauce
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -69,7 +72,7 @@ jobs:
           npm run test:integration
 
       - name: Test IE
-        continue-on-error: true
+        if: failure() || success()
         env:
           BROWSERS: preset:sauce-ie11
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -77,16 +80,10 @@ jobs:
         run: |
           cd packages/tests
           npm run test
-
-      - name: Test SSR IE
-        continue-on-error: true
-        env:
-          BROWSERS: preset:sauce-ie11
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: |
-          cd packages/labs/ssr
-          npm run test:integration
+      
+      - name: Remote Test Sieve
+        if: steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test SSR Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure'
+        run: echo 'Remote tests have failed'
 
   windows-tools:
     runs-on: windows-latest
