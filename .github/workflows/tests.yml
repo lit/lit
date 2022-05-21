@@ -61,15 +61,6 @@ jobs:
           cd packages/tests
           npm run test
 
-      - name: Test SSR Chrome, Firefox, and Safari
-        env:
-          BROWSERS: preset:sauce
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-        run: |
-          cd packages/labs/ssr
-          npm run test:integration
-
       - name: Test IE
         env:
           BROWSERS: preset:sauce-ie11
@@ -80,7 +71,7 @@ jobs:
           npm run test
       
       - name: Remote Test Sieve
-        if: failure() && (steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test SSR Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure')
+        if: failure() && (${{steps['Test Chrome, Firefox, and Safari Browsers'].outcome == 'failure' || steps['Test IE'].outcome == 'failure'}})
         run: echo 'Remote tests failed'
 
   windows-tools:
