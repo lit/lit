@@ -4,6 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * Defines our interface within the Lit CLI.
+ */
 export const getCommand = () => {
   return {
     kind: 'resolved',
@@ -22,8 +25,8 @@ export const getCommand = () => {
           },
         ],
         async run({config}: {config: string}, console: Console) {
-          const extract = await import('./cli-commands/extract.js');
-          await extract.run(config, console);
+          const commands = await import('./cli-commands/commands.js');
+          await commands.extract(config, console);
         },
       },
       {
@@ -38,8 +41,8 @@ export const getCommand = () => {
           },
         ],
         async run({config}: {config: string}, console: Console) {
-          const build = await import('./cli-commands/build.js');
-          await build.run(config, console);
+          const commands = await import('./cli-commands/commands.js');
+          await commands.build(config, console);
         },
       },
     ],

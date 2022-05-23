@@ -4,6 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * The implementations of our commands exposed in the Lit CLI.
+ *
+ * These are in their own module so that we can separate out lightweight
+ * metadata about the commands (which are used for the --help command,
+ * and argument parsing), from their actual implementations here, because
+ * loading all of our deps of the implementation takes time, and loading all
+ * of the deps of all of the implementations of _every_ command would seriously
+ * slow down the CLI.
+ */
+
 import {
   readConfigFileAndWriteSchema,
   Config,
@@ -14,8 +25,9 @@ import {TransformLitLocalizer} from '../modes/transform.js';
 import {RuntimeLitLocalizer} from '../modes/runtime.js';
 import {KnownError, unreachable} from '../error.js';
 import {LitLocalizer} from '../index.js';
+import {printDiagnostics} from '../typescript.js';
 
-export const run = async (configPath: string, console: Console) => {
+export const build = async (configPath: string, console: Console) => {
   const config = readConfigFileAndWriteSchema(configPath);
   const localizer = makeLocalizer(config);
   console.log('Building');
@@ -33,6 +45,22 @@ export const run = async (configPath: string, console: Console) => {
     );
   }
   await localizer.build();
+};
+
+export const extract = async (configPath: string, console: Console) => {
+  const config = readConfigFileAndWriteSchema(configPath);
+  const localizer = makeLocalizer(config);
+  // TODO(aomarks) Don't even require the user to have configured their output
+  // mode if they're just doing extraction.
+  console.log('Extracting messages');
+  const {messages, errors} = localizer.extractSourceMessages();
+  if (errors.length > 0) {
+    printDiagnostics(errors);
+    throw new KnownError('Error analyzing program');
+  }
+  console.log(`Extracted ${messages.length} messages`);
+  console.log(`Writing interchange files`);
+  await localizer.writeInterchangeFiles();
 };
 
 const makeLocalizer = (config: Config): LitLocalizer => {
