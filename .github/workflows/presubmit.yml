@@ -45,7 +45,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
+      - name: Tests
+        id: tests
         # local tests are always run
         env:
           BROWSERS: preset:local
@@ -78,7 +79,7 @@ jobs:
           npm run test
       
       - name: Remote Test Failure Check
-        if: steps.remote_tests.outcome == 'failure' || steps.remote_tests_ie.outcome == 'failure'
+        if: steps.remote_tests.outcome != 'success' || steps.remote_tests_ie.outcome != 'success'
         run: |
           echo '***Remote tests have failed***'
           echo 'chrome, firefox, safari tests: ${{ steps.remote_tests.outcome }}'
