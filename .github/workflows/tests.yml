@@ -3,7 +3,7 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  changeset-lint:
+  lint:
     runs-on: ubuntu-latest
     # When lit-robot creates a release PR, skip this check as it will always
     # fail.
