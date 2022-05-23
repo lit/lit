@@ -28,7 +28,7 @@ process.on('uncaughtException', (error) => {
 });
 
 const stopNicely = () => {
-  if (currentRunner === undefined) {
+  if (run && currentRunner === undefined) {
     // eslint-disable-next-line no-undef
     process.exit(1);
   } else {
@@ -88,11 +88,6 @@ async function startWithNextAvailablePort() {
 }
 
 const run = process.env.RUN_BROWSER_TESTS?.toLowerCase() !== 'false';
-
-console.log(
-  'process.env.RUN_BROWSER_TESTS?.toLowerCase()',
-  process.env.RUN_BROWSER_TESTS?.toLowerCase()
-);
 
 if (run) {
   await startWithNextAvailablePort();
