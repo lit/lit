@@ -1,4 +1,4 @@
-name: Tests
+name: Presubmit
 
 on: [push, pull_request]
 
@@ -46,7 +46,6 @@ jobs:
         run: npm run build
 
       - name: Tests
-        id: tests
         # local tests are always run
         env:
           BROWSERS: preset:local
@@ -55,7 +54,6 @@ jobs:
       - name: Test Chrome, Firefox, and Safari Browsers
         # remote tests are run when local tests pass
         id: remote_tests
-        if: steps.tests.outcome == 'success'
         continue-on-error: true
         env:
           BROWSERS: preset:sauce
@@ -68,8 +66,8 @@ jobs:
       - name: Test IE
         # remote ie tests are run when remote tests pass
         id: remote_tests_ie
-        continue-on-error: true
         if: steps.remote_tests.outcome == 'success'
+        continue-on-error: true
         env:
           BROWSERS: preset:sauce-ie11
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -85,7 +83,7 @@ jobs:
           echo 'chrome, firefox, safari tests: ${{ steps.remote_tests.outcome }}'
           echo 'ie tests: ${{ steps.remote_tests_ie.outcome }}'
 
-  windows-tools:
+  windows-presubmit:
     runs-on: windows-latest
 
     steps:
@@ -105,10 +103,10 @@ jobs:
       - name: Lerna bootstrap
         run: npm run bootstrap
 
-      - name: Build
+      - name: Build Tools
         run: npm run build --  --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
-      - name: Test
+      - name: Test Tools
         run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
 
