@@ -45,7 +45,8 @@
       ],
       "command": "tsc --build --pretty",
       "output": [
-        "js"
+        "js",
+        "tsconfig.tsbuildinfo"
       ]
     },
     "build": {
@@ -63,13 +64,8 @@
     },
     "test": {
       "dependencies": [
-        "build"
-      ],
-      "files": [
-        "../../../tests/run-web-tests.js",
-        "../../../tests/web-test-runner.config.js",
-        "../../../tests/wtr-config.js",
-        "../../../tests/rollup-resolve-remap.js"
+        "build",
+        "../../../tests:build"
       ],
       "command": "node ../../../tests/run-web-tests.js \"tests/**/*_test.js\" --config ../../../tests/web-test-runner.config.js",
       "output": []

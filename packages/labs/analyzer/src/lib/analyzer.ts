@@ -83,7 +83,7 @@ export class Analyzer {
 
     const modules = [];
     for (const fileName of rootFileNames) {
-      modules.push(this.analyzeFile(fileName as AbsolutePath));
+      modules.push(this.analyzeFile(path.normalize(fileName) as AbsolutePath));
     }
     return new Package({
       rootDir: this.packageRoot,
@@ -110,7 +110,10 @@ export class Analyzer {
 
     const module = new Module({
       sourcePath,
-      jsPath: jsPath as PackagePath,
+      // The jsPath appears to come out of the ts API with unix
+      // separators; since sourcePath uses OS separators, normalize
+      // this so that all our model paths are OS-native
+      jsPath: path.normalize(jsPath) as PackagePath,
       sourceFile,
     });
 

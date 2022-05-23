@@ -13,7 +13,6 @@ import {BufferedWritable} from './cli-test-utils.js';
 import {ReferenceToCommand} from '../lib/command.js';
 import {ConsoleConstructorOptions} from 'console';
 import * as stream from 'stream';
-import * as pathlib from 'path';
 import {suite} from './uvu-wrapper.js';
 import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 
@@ -221,7 +220,7 @@ test('we install a referenced command with permission', async ({
   const cli = new LitCli(['help', 'foo'], {
     console,
     stdin,
-    cwd: pathlib.join(fs.rootDir, 'working-dir'),
+    cwd: fs.resolve('working-dir'),
   });
   cli.addCommand({...fooCommandReference, installFrom: '../foo-package'});
   await cli.run();
