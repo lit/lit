@@ -13,9 +13,11 @@ export const packageJsonTemplate = (
     {
       name: `${pkgJson.name}-vue`,
       type: 'module',
+      // Use vite!
       scripts: {
-        build: 'tsc',
-        'build:watch': 'tsc --watch',
+        dev: 'vite',
+        build: 'vue-tsc --noEmit && vite build',
+        preview: 'vite preview',
       },
       // TODO(kschaaf): Version in lock-step with source?
       version: pkgJson.version,
@@ -25,15 +27,13 @@ export const packageJsonTemplate = (
         vue: '^3.2.25',
         '@lit-labs/vue-utils': '^0.0.1',
       },
-      /*
-      peerDependencies: {
-        vue: '^3.2.0',
-
-      },
-      */
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        typescript: pkgJson?.devDependencies?.typescript ?? '~4.6.4',
+        typescript: pkgJson?.devDependencies?.typescript ?? '^4.6.4',
+        '@vitejs/plugin-vue': '^2.3.1',
+        '@rollup/plugin-typescript': '^8.3.2',
+        vite: '^2.9.2',
+        'vue-tsc': '^0.29.8',
       },
       files: [
         ...litModules.map(({module}) =>

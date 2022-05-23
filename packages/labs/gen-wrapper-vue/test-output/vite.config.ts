@@ -8,11 +8,7 @@ export default {
       fileName: () => `test-element-a_test.js`,
       formats: ['es'],
     },
-    rollupOptions: {
-      output: {
-        dir: './tests',
-      },
-    },
+    outDir: './tests',
   },
   plugins: [vue()],
 };

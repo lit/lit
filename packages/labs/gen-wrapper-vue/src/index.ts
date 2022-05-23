@@ -14,6 +14,8 @@ import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {tsconfigNodeTemplate} from './lib/tsconfig.node-template.js';
+import {viteConfigTemplate} from './lib/vite.config-template.js';
 
 export const generateVueWrapper = async (
   analysis: Package
@@ -30,6 +32,8 @@ export const generateVueWrapper = async (
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(analysis.packageJson, litModules),
         'tsconfig.json': tsconfigTemplate(),
+        'tsconfig.node.json': tsconfigNodeTemplate(),
+        'vite.config.ts': viteConfigTemplate(analysis.packageJson, litModules),
         ...wrapperFiles(analysis.packageJson, litModules),
       },
     };
