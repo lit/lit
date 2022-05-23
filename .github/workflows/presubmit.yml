@@ -46,13 +46,13 @@ jobs:
         run: npm run build
 
       - name: Tests
-        # local tests are always run
+        # local tests always run
         env:
           BROWSERS: preset:local
         run: npm run test
   
       - name: Test Chrome, Firefox, and Safari Browsers
-        # remote tests are run when local tests pass
+        # remote tests run when local tests pass
         id: remote_tests
         continue-on-error: true
         env:
@@ -64,7 +64,7 @@ jobs:
           npm run test
 
       - name: Test IE
-        # remote ie tests are run when remote tests pass
+        # remote ie tests run when remote tests pass
         id: remote_tests_ie
         if: steps.remote_tests.outcome == 'success'
         continue-on-error: true
