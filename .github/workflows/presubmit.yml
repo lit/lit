@@ -19,9 +19,6 @@ jobs:
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
-      - name: Install NPM Dependencies
-        run: npm ci
-
       # Enforce that all PRs that change packages need changesets. Changes
       # without changesets result in this job failing.
       - name: Changeset
@@ -32,6 +29,9 @@ jobs:
           git checkout main
           git checkout ${{ github.sha }}
           npm run changeset status -- --since=main
+
+      - name: Install NPM Dependencies
+        run: npm ci
 
       - name: Lint
         run: npm run lint
