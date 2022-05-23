@@ -68,7 +68,7 @@ test('help with localize command', async ({console, stdin}) => {
 
   const output = console.outputStream.text;
 
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(output, 'lit localize');
   assert.match(output, 'Sub-Commands');
   assert.match(output, 'extract');
@@ -84,7 +84,7 @@ test('help with localize extract command', async ({console, stdin}) => {
 
   const output = console.outputStream.text;
 
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(output, 'lit localize extract');
   assert.match(output, '--config');
 });
@@ -109,7 +109,7 @@ test('help includes unresolved external command descriptions', async ({
   cli.addCommand(fooCommandReference);
   await cli.run();
   const output = console.outputStream.text;
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(
     output,
     /\s+foo\s+This is the description in the `foo` reference./
@@ -183,7 +183,7 @@ test(`help for a resolved external command`, async ({console, fs, stdin}) => {
   cli.addCommand(fooCommandReference);
   await cli.run();
   output = console.outputStream.text;
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(
     output,
     /\s+foo\s+this is the resolved foo command from the node_modules directory/
@@ -224,7 +224,7 @@ test('we install a referenced command with permission', async ({
   });
   cli.addCommand({...fooCommandReference, installFrom: '../foo-package'});
   await cli.run();
-  assert.equal(console.errorStream.text, '');
+  assert.snapshot(console.errorStream.text, '');
   // The npm install happend.
   assert.match(console.outputStream.text, 'added 1 package');
   // After installation, we were able to resolve the command.
