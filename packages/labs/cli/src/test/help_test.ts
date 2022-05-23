@@ -9,7 +9,7 @@ import 'source-map-support/register.js';
 import * as assert from 'uvu/assert';
 import {LitCli} from '../lib/lit-cli.js';
 import {LitConsole} from '../lib/console.js';
-import {BufferedWritable} from './cli-test-utils.js';
+import {BufferedWritable, symlinkAllCommands} from './cli-test-utils.js';
 import {ReferenceToCommand} from '../lib/command.js';
 import {ConsoleConstructorOptions} from 'console';
 import * as stream from 'stream';
@@ -50,8 +50,8 @@ test.after.each(async (ctx) => {
   await ctx.fs.cleanup();
 });
 
-test('help with no command', async ({console, stdin}) => {
-  const cli = new LitCli(['help'], {console, stdin: stdin});
+test('help with no command', async ({fs, console, stdin}) => {
+  const cli = new LitCli(['help'], {console, stdin: stdin, cwd: fs.rootDir});
   await cli.run();
 
   const output = console.outputStream.text;
@@ -62,23 +62,29 @@ test('help with no command', async ({console, stdin}) => {
   assert.match(output, 'localize');
 });
 
-test('help with localize command', async ({console, stdin}) => {
-  const cli = new LitCli(['help', 'localize'], {console, stdin});
+test('help with localize command', async ({fs, console, stdin}) => {
+  await symlinkAllCommands(fs);
+  const cli = new LitCli(['help', 'localize'], {
+    console,
+    stdin,
+    cwd: fs.rootDir,
+  });
   await cli.run();
 
   const output = console.outputStream.text;
 
-  assert.snapshot(console.errorStream.text, '');
   assert.match(output, 'lit localize');
   assert.match(output, 'Sub-Commands');
   assert.match(output, 'extract');
   assert.match(output, 'build');
 });
 
-test('help with localize extract command', async ({console, stdin}) => {
+test('help with localize extract command', async ({fs, console, stdin}) => {
+  await symlinkAllCommands(fs);
   const cli = new LitCli(['help', 'localize', 'extract'], {
     console,
     stdin,
+    cwd: fs.rootDir,
   });
   await cli.run();
 

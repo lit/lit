@@ -23,8 +23,9 @@ import {createRequire} from 'module';
 import * as childProcess from 'child_process';
 
 export interface Options {
+  // Mandatory, so that all tests must specify it.
+  cwd: string;
   console?: LitConsole;
-  cwd?: string;
   stdin?: NodeJS.ReadableStream;
 }
 
@@ -36,9 +37,9 @@ export class LitCli {
   private readonly cwd: string;
   private readonly stdin: NodeJS.ReadableStream;
 
-  constructor(args: string[], options?: Options) {
-    this.stdin = options?.stdin ?? process.stdin;
-    this.cwd = options?.cwd ?? process.cwd();
+  constructor(args: string[], options: Options) {
+    this.cwd = options.cwd;
+    this.stdin = options.stdin ?? process.stdin;
     this.console =
       options?.console ?? new LitConsole(process.stdout, process.stderr);
     this.console.logLevel = 'info';
