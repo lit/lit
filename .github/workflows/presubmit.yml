@@ -33,7 +33,6 @@ jobs:
           git checkout ${{ github.sha }}
           npm run changeset status -- --since=main
 
-
       - name: Lint
         run: npm run lint
 
@@ -51,7 +50,7 @@ jobs:
         env:
           BROWSERS: preset:local
         run: npm run test
-  
+
       - name: Test Chrome, Firefox, and Safari Browsers
         # remote tests run when local tests pass
         id: remote_tests
@@ -76,7 +75,7 @@ jobs:
         run: |
           cd packages/tests
           npm run test
-      
+
       - name: Remote Test Failure Check
         if: steps.remote_tests.outcome == 'failure' || steps.remote_tests_ie.outcome == 'failure'
         run: |
@@ -109,5 +108,3 @@ jobs:
 
       - name: Test Tools
         run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
-
-
