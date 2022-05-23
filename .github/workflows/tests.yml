@@ -19,11 +19,6 @@ jobs:
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
-      # only checkout main when merging to main?
-      # if merge main, checkout main
-      - run: git checkout main
-      - run: git checkout ${{ github.sha }}
-
       - name: Install NPM Dependencies
         run: npm ci
 
@@ -48,12 +43,15 @@ jobs:
         run: npm run build
 
       - name: Test
+        # local tests are always run
         env:
           BROWSERS: preset:local
         run: npm run test
   
       - name: Test Chrome, Firefox, and Safari Browsers
+        # remote tests are run when local tests pass
         id: remote_tests
+        if: steps.tests.outcome == 'success'
         continue-on-error: true
         env:
           BROWSERS: preset:sauce
@@ -64,9 +62,10 @@ jobs:
           npm run test
 
       - name: Test IE
+        # remote ie tests are run when remote tests pass
         id: remote_tests_ie
         continue-on-error: true
-        if: success()
+        if: steps.remote_tests.outcome == 'success'
         env:
           BROWSERS: preset:sauce-ie11
           SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
@@ -75,9 +74,9 @@ jobs:
           cd packages/tests
           npm run test
       
-      - name: Remote Test Failed
+      - name: Remote Test Failure Check
         if: steps.remote_tests.outcome == 'failure' || steps.remote_tests_ie.outcome == 'failure'
-        run: echo 'Remote tests failed'
+        run: echo 'Remote tests have failed'
 
   windows-tools:
     runs-on: windows-latest
