@@ -21,14 +21,18 @@ jobs:
           # bootstrap, so the ~/.npm dir won't have all dependencies, and if
           # this job finishes first then we'll only cache root dependencies.
 
-      - name: Changeset
+      - name: NPM install
         # Enforce that all PRs that change packages need changesets. Changes
         # without changesets result in this job failing.
         run: |
           git checkout main
           git checkout ${{ github.sha }}
           npm ci
-          npm run changeset status -- --since=main
+
+      - name: Changeset
+        # Enforce that all PRs that change packages need changesets. Changes
+        # without changesets result in this job failing.
+        run: npm run changeset status -- --since=main
 
       - name: Lint
         run: npm run lint
