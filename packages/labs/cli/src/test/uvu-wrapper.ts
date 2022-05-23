@@ -47,9 +47,12 @@ function timeout<T>(
         );
       }),
     ]);
-    result.finally(() => {
-      clearTimeout(timeoutId);
-    });
+    result
+      .finally(() => {
+        clearTimeout(timeoutId);
+      })
+      // Avoid an uncaught promise event from bubbling up.
+      .catch(() => {});
     return result;
   };
 }

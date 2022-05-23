@@ -56,7 +56,7 @@ test('help with no command', async ({console, stdin}) => {
 
   const output = console.outputStream.text;
 
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(output, 'Lit CLI');
   assert.match(output, 'Available Commands');
   assert.match(output, 'localize');
