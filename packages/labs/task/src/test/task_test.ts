@@ -200,6 +200,40 @@ suite('Task', () => {
     assert.equal(el.taskValue, `a1,b1`);
   });
 
+  test('tasks with initial values do not replace future PENDING values', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], initialValue: 'cbgb'});
+    await renderElement(el);
+    assert.equal(el.taskValue, `cbgb`);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a,b`);
+
+    // *** Changing task argument runs task
+    el.a = 'a1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, `a,b`);
+    // Complete task and check result.
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a1,b`);
+
+    // *** Changing other task argument runs task
+    el.b = 'b1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, 'a1,b');
+    // Complete task and check result.
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a1,b1`);
+  });
+
   test('tasks do not run when `autoRun` is `false`', async () => {
     const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
     await renderElement(el);
