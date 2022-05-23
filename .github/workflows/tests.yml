@@ -28,7 +28,10 @@ jobs:
         # When lit-robot creates a release PR, skip this check as it will always
         # fail.
         if: ${{ github.actor != 'lit-robot' }}
-        run: npm run changeset status -- --since=main
+        run: |
+          git checkout main
+          git checkout ${{ github.sha }}
+          npm run changeset status -- --since=main
 
       - name: Lint
         run: npm run lint
@@ -76,7 +79,10 @@ jobs:
       
       - name: Remote Test Failure Check
         if: steps.remote_tests.outcome == 'failure' || steps.remote_tests_ie.outcome == 'failure'
-        run: echo 'Remote tests have failed'
+        run: |
+          echo '***Remote tests have failed***'
+          echo 'chrome, firefox, safari tests: ${{ steps.remote_tests.outcome }}'
+          echo 'ie tests: ${{ steps.remote_tests_ie.outcome }}'
 
   windows-tools:
     runs-on: windows-latest
