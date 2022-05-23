@@ -77,7 +77,7 @@ jobs:
           npm run test
       
       - name: Remote Test Failure Check
-        if: steps.remote_tests.outcome != 'success' || steps.remote_tests_ie.outcome != 'success'
+        if: steps.remote_tests.outcome == 'failure' || steps.remote_tests_ie.outcome == 'failure'
         run: |
           echo '***Remote tests have failed***'
           echo 'chrome, firefox, safari tests: ${{ steps.remote_tests.outcome }}'
