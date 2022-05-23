@@ -282,6 +282,7 @@ export class LitCli {
       return false;
     }
     const installFrom = reference.installFrom ?? reference.importSpecifier;
+    this.console.log(`Installing ${installFrom}...`);
     const child = childProcess.spawn(
       // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
       /^win/.test(process.platform) ? 'npm.cmd' : 'npm',
