@@ -522,15 +522,16 @@ export type RenderInfo = {
   customElementRendered?: (tagName: string) => void;
 
   /**
-   * An optional flag to defer hydration of top level custom element
+   * Flag to defer hydration of top level custom element. Defaults to false.
    */
-  deferHydration?: boolean;
+  deferHydration: boolean;
 };
 
 const defaultRenderInfo = {
   elementRenderers: [LitElementRenderer],
   customElementInstanceStack: [],
   customElementHostStack: [],
+  deferHydration: false,
 };
 
 declare global {
