@@ -7,7 +7,7 @@
 import { ignoreBenignErrors, wait } from "../helpers.js";
 import { expect } from "@esm-bundle/chai";
 import { LitVirtualizer } from "../../lit-virtualizer.js";
-import { virtualize } from "../../virtualize.js";
+import { virtualize, VirtualizeDirectiveConfig } from "../../virtualize.js";
 import { flow } from "../../layouts/flow.js";
 import { html, render } from "lit";
 
@@ -42,8 +42,8 @@ describe("smoke test", () => {
         it("uses the provided method to render items", async function () {
             const example = html`
             ${virtualize({
-                items: ["foo", "bar", "baz"],
-                renderItem: (item) => html`<p>${item}</p>`,
+                items: ["foo", "bar", "baz"] as Array<string>,
+                renderItem: (item: string) => html`<p>${item}</p>`,
                 layout: flow(),
             })}
             `;
@@ -108,10 +108,10 @@ describe("smoke test", () => {
     
                 const directive = virtualize({
                     scroller: true,
-                    items: ["foo", "bar", "baz", "qux", "bux"],
+                    items: ["foo", "bar", "baz", "qux", "bux"] as Array<string>,
                     renderItem: (item: string) => html`<div style="height: 50px">${item}</div>`,
                     layout: flow(),
-                });
+                } as VirtualizeDirectiveConfig<string>);
     
                 let firstVisible;
                 let lastVisible;

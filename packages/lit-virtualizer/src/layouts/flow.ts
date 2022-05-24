@@ -332,8 +332,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       anchorSize = this._getAverageSize();
     }
 
-    let anchorLeadingMargin = this._metricsCache.getMarginSize(this._anchorIdx) ?? this._metricsCache.averageMarginSize;
-    let anchorTrailingMargin = this._metricsCache.getMarginSize(this._anchorIdx + 1) ?? this._metricsCache.averageMarginSize;
+    const anchorLeadingMargin = this._metricsCache.getMarginSize(this._anchorIdx) ?? this._metricsCache.averageMarginSize;
+    const anchorTrailingMargin = this._metricsCache.getMarginSize(this._anchorIdx + 1) ?? this._metricsCache.averageMarginSize;
 
     if (this._anchorIdx === 0) {
       this._anchorPos = anchorLeadingMargin;

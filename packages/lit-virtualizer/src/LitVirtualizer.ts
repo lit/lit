@@ -12,9 +12,9 @@ import { Virtualizer, VirtualizerHostElement, virtualizerRef, RangeChangedEvent 
 import { LayoutSpecifier, Layout, LayoutConstructor } from './layouts/shared/Layout.js';
 
 
-type RenderItemFunction = ((item: any, index: number) => TemplateResult)
-const defaultKeyFunction = (item: any) => item;
-const defaultRenderItem: RenderItemFunction = (item: any, idx: number) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
+type RenderItemFunction = (<T>(item: T, index: number) => TemplateResult)
+const defaultKeyFunction = <T>(item: T) => item;
+const defaultRenderItem: RenderItemFunction = <T>(item: T, idx: number) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
 
 
 export class LitVirtualizer extends LitElement {
@@ -67,7 +67,7 @@ export class LitVirtualizer extends LitElement {
      * Scroll to the specified index, placing that item at the given position
      * in the scroll view.
      */
-    scrollToIndex(index: number, position: string = 'start') {
+    scrollToIndex(index: number, position = 'start') {
         this._virtualizer!.scrollToIndex = { index, position };
     }
 
@@ -81,10 +81,9 @@ export class LitVirtualizer extends LitElement {
     }
 
     firstUpdated() {
-        const hostElement = this;
         const layout = this._layout;
-        this._virtualizer = new Virtualizer({ hostElement, layout, scroller: this.scroller });
-        hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
+        this._virtualizer = new Virtualizer({ hostElement: this, layout, scroller: this.scroller });
+        this.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
             e.stopPropagation();
             this._first = e.first;
             this._last = e.last;

@@ -7,6 +7,10 @@
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.25.0",
+    "eslint": "^8.15.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
     "http-server": "latest",
     "lerna": "^4.0.0"
   },
@@ -18,6 +22,7 @@
     "init": "npm run bootstrap; npm run build --prefix packages/lit-virtualizer; npm run bootstrap;",
     "test": "lerna run test --scope @lit-labs/virtualizer",
     "link:dev": "rm -fr node_modules/lit-{html,element} && ln -s ~/source/lit-html/packages/lit-html/development node_modules/lit-html && ln -sf ~/source/lit-html/packages/lit-html/package.json ~/source/lit-html/packages/lit-html/development/package.json && ln -s ~/source/lit-html/packages/lit-element/development node_modules/lit-element && ln -sf ~/source/lit-html/packages/lit-element/package.json ~/source/lit-html/packages/lit-element/development/package.json",
-    "link:prod": "rm -f node_modules/lit-{html,element} && npm run bootstrap"
+    "link:prod": "rm -f node_modules/lit-{html,element} && npm run bootstrap",
+    "lint": "eslint \"packages/lit-virtualizer/**/*.{js,ts}\""
   }
 }

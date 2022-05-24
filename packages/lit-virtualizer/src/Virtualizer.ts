@@ -199,7 +199,7 @@ export class Virtualizer {
    */
    protected _measureCallback: ((sizes: ChildMeasurements) => void) | null = null;
 
-   protected _measureChildOverride: ((element: Element, item: unknown) => ItemBox) | null = null;
+   protected _measureChildOverride: (<T>(element: Element, item: T) => ItemBox) | null = null;
 
   constructor(config: VirtualizerConfig) {
     if (!config) {
@@ -569,7 +569,7 @@ export class Virtualizer {
     const hostElement = this._hostElement!;
     const layout = this._layout!;
 
-    let top, left, bottom, right, scrollTop, scrollLeft;
+    let top, left, bottom, right;
 
     const hostElementBounds = hostElement.getBoundingClientRect();
 
@@ -578,7 +578,7 @@ export class Virtualizer {
     bottom = window.innerHeight;
     right = window.innerWidth;
 
-    for (let ancestor of this._clippingAncestors) {
+    for (const ancestor of this._clippingAncestors) {
       const ancestorBounds = ancestor.getBoundingClientRect();
       top = Math.max(top, ancestorBounds.top);
       left = Math.max(left, ancestorBounds.left);
@@ -586,8 +586,8 @@ export class Virtualizer {
       right = Math.min(right, ancestorBounds.right);
     }
 
-    scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-    scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+    const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
+    const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
     
     const height = Math.max(1, bottom - top);
     const width = Math.max(1, right - left);

@@ -129,7 +129,7 @@ export class GridLayout extends SizeGapPaddingBaseLayout<GridLayoutConfig> {
       // Calculate the flexed item size
       metrics.itemSize2 = Math.round((availableSpace - (metrics.gap2 * (metrics.rolumns - 1))) / metrics.rolumns);
       // Calculate item size in the other dimension, preserving area (the default), aspect ratio or ideal size in that dimension as specified
-      let preserve = this.flex === true ? 'area' : (this.flex.preserve);
+      const preserve = this.flex === true ? 'area' : (this.flex.preserve);
       switch (preserve) {
         case 'aspect-ratio':
           metrics.itemSize1 = Math.round((this._idealSize1 / this._idealSize2) * metrics.itemSize2);

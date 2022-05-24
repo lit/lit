@@ -64,7 +64,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   private _rolumnLengthCache = new SizeCache({roundAverageSize: false});
   // private _rolumnStartPositions: Map<number, number> = new Map();
   private _aspectRatios: AspectRatios = {};
-  private _numberOfAspectRatiosMeasured: number = 0;
+  private _numberOfAspectRatiosMeasured = 0;
   // protected _config: FlexWrapLayoutConfig = {};
 
   listenForChildLoadEvents = true;

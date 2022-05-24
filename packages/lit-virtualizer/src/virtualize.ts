@@ -5,7 +5,7 @@
  */
 
 import { TemplateResult, ChildPart, html, noChange } from 'lit';
-import { directive, PartInfo, PartType } from 'lit/directive.js';
+import { directive, DirectiveResult, PartInfo, PartType } from 'lit/directive.js';
 import { AsyncDirective } from 'lit/async-directive.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Layout, LayoutConstructor, LayoutSpecifier } from './layouts/shared/Layout.js';
@@ -14,14 +14,14 @@ import { Virtualizer, ScrollToIndexValue, RangeChangedEvent } from './Virtualize
 /**
  * Configuration options for the virtualize directive.
  */
-interface VirtualizeDirectiveConfig {
+export interface VirtualizeDirectiveConfig<T> {
     /**
      * A function that returns a lit-html TemplateResult. It will be used
      * to generate the DOM for each item in the virtual list.
      */
-    renderItem?: (item: any, index: number) => TemplateResult;
+    renderItem?: (item: T, index: number) => TemplateResult;
 
-    keyFunction?: (item: any) => unknown;
+    keyFunction?: (item: T) => unknown;
 
     scroller?: boolean;
 
@@ -31,7 +31,7 @@ interface VirtualizeDirectiveConfig {
     /**
      * The list of items to display via the renderItem function.
      */
-    items?: Array<unknown>;
+    items?: Array<T>;
 
     /**
      * Index and position of the item to scroll to.
@@ -39,17 +39,17 @@ interface VirtualizeDirectiveConfig {
     scrollToIndex?: ScrollToIndexValue;
   }
 
-/*export */const defaultKeyFunction = (item: any) => item;
-/*export */const defaultRenderItem = (item: any) => html`${JSON.stringify(item, null, 2)}`;
+/*export */const defaultKeyFunction = <T>(item: T) => item;
+/*export */const defaultRenderItem = <T>(item: T) => html`${JSON.stringify(item, null, 2)}`;
 
-class VirtualizeDirective extends AsyncDirective {
-    virtualizer: Virtualizer | null = null
-    first = 0
-    last = -1
-    cachedConfig?: VirtualizeDirectiveConfig
-    renderItem: (item: any, index: number) => TemplateResult = defaultRenderItem;
-    keyFunction: (item: any) => unknown = defaultKeyFunction;
-    items: Array<unknown> = []
+class VirtualizeDirective<T> extends AsyncDirective {
+    virtualizer: Virtualizer | null = null;
+    first = 0;
+    last = -1;
+    cachedConfig?: VirtualizeDirectiveConfig<T>;
+    renderItem: (item: T, index: number) => TemplateResult = defaultRenderItem;
+    keyFunction: (item: T) => unknown = defaultKeyFunction;
+    items: Array<T> = [];
 
     constructor(part: PartInfo) {
         super(part);
@@ -58,11 +58,11 @@ class VirtualizeDirective extends AsyncDirective {
         }
     }
 
-    render(config?: VirtualizeDirectiveConfig) {
+    render(config?: VirtualizeDirectiveConfig<T>) {
         if (config) {
             this._setFunctions(config);
         }
-        const itemsToRender = [];
+        const itemsToRender: Array<T> = [];
         // TODO (graynorton): Is this the best / only place to ensure
         // that _last isn't outside the current bounds of the items array?
         // Not sure we should ever arrive here with it out of bounds.
@@ -77,7 +77,7 @@ class VirtualizeDirective extends AsyncDirective {
         return repeat(itemsToRender, this.keyFunction || defaultKeyFunction, this.renderItem);
     }
 
-    update(part: ChildPart, [config]: [VirtualizeDirectiveConfig]) {
+    update(part: ChildPart, [config]: [VirtualizeDirectiveConfig<T>]) {
         this._setFunctions(config);
         this.items = config.items || [];
         if (this.virtualizer) {
@@ -93,7 +93,7 @@ class VirtualizeDirective extends AsyncDirective {
         // super.update(part, [config]);
     }
 
-    _updateVirtualizerConfig(config: VirtualizeDirectiveConfig) {
+    _updateVirtualizerConfig(config: VirtualizeDirectiveConfig<T>) {
         const { virtualizer } = this;
         virtualizer!.items = this.items;
         if (config.layout) {
@@ -104,14 +104,14 @@ class VirtualizeDirective extends AsyncDirective {
         }
     }
 
-    private _setFunctions(config: VirtualizeDirectiveConfig) {
+    private _setFunctions(config: VirtualizeDirectiveConfig<T>) {
         const { renderItem, keyFunction } = config;
         if (renderItem) {
             this.renderItem = (item, idx) => renderItem(item, idx + this.first);
         }
         if (keyFunction) {
             this.keyFunction = keyFunction;
-        };
+        }
     }
 
     private _initialize(part: ChildPart) {
@@ -143,4 +143,4 @@ class VirtualizeDirective extends AsyncDirective {
     }
 }
 
-export const virtualize = directive(VirtualizeDirective);
+export const virtualize = directive(VirtualizeDirective) as <T>(config?: VirtualizeDirectiveConfig<T>) => DirectiveResult<typeof VirtualizeDirective>;

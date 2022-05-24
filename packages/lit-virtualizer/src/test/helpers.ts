@@ -8,10 +8,10 @@
  * Use this after rendering, resizing or scrolling to `await` the
  * reflow necessary before validating events and visibility changes.
  */
- export async function wait(n=0) {
+export async function wait(n=0) {
     await new Promise(resolve => requestAnimationFrame(resolve));
     return new Promise(resolve => setTimeout(resolve, n));
-};
+}
 
 /**
  * This solution was inspired to address the issue described in the following links:
@@ -33,13 +33,13 @@ export function ignoreWindowErrors(before: Mocha.HookFunction, after: Mocha.Hook
     
     before(() => {
         onerrorOriginal = window.onerror;
-        onerrorNew = (err) => {
+        onerrorNew = (err, ...restArgs) => {
             if (regexp.test(`${err}`)) {
                 console.warn(`Ignored Error: ${err}`);
                 return false;
             }
             if (onerrorOriginal) {
-                return onerrorOriginal.apply(window, [...(arguments as unknown as Parameters<typeof onerrorOriginal>)]);
+                return onerrorOriginal.apply(window, [err, ...restArgs] as unknown as Parameters<typeof onerrorOriginal>);
             }
         };
         window.onerror = onerrorNew;

@@ -244,7 +244,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * Perform a reflow if one has been scheduled.
    */
-  reflowIfNeeded(force: boolean = false) {
+  reflowIfNeeded(force = false) {
     if (force || this._pendingReflow) {
       this._pendingReflow = false;
       this._reflow();
