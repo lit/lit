@@ -49,7 +49,10 @@ export const ssrMiddleware = () => {
     if (test.registerElements) {
       await test.registerElements();
     }
-    const result = render(test.render(...test.expectations[0].args));
+    const result = render(
+      test.render(...test.expectations[0].args),
+      test.serverRenderOptions
+    );
     context.type = 'text/html';
     context.body = Readable.from(result);
   });

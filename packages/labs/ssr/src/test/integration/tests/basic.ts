@@ -4866,4 +4866,51 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-order1'],
     };
   },
+
+  'LitElement: defer hydration': () => {
+    return {
+      registerElements() {
+        class LEDefer extends LitElement {
+          @property({type: Number})
+          clicked = 0;
+          handleClick() {
+            this.clicked += 1;
+          }
+          override render() {
+            return html`<button @click=${this.handleClick}>X</button>`;
+          }
+        }
+        customElements.define('le-defer', LEDefer);
+      },
+      render() {
+        return html`<le-defer></le-defer>`;
+      },
+      serverRenderOptions: {
+        deferHydration: true,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-defer') as LitElement & {
+              clicked: number;
+            };
+            const button = el.shadowRoot!.querySelector('button')!;
+            button.click();
+            assert.equal(el.clicked, 0);
+            el.removeAttribute('defer-hydration');
+            await el.updateComplete;
+            button.click();
+            await el.updateComplete;
+            assert.equal(el.clicked, 1);
+          },
+          html: {
+            root: `<le-defer></le-defer>`,
+            'le-defer': `<button>X</button>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-defer'],
+    };
+  },
 };
