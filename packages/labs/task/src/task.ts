@@ -236,7 +236,7 @@ export class Task<T extends unknown[] = any, R = any, E = any> {
 
   render<SR extends StatusRenderer<R, E>>(
     renderer: Partial<SR>
-  ): ReturnType<SR[this['status']]> | undefined {
+  ): ReturnType<SR[this['status']]> {
     switch (this.status) {
       case TaskStatus.INITIAL:
         return renderer.initial?.();
@@ -246,10 +246,6 @@ export class Task<T extends unknown[] = any, R = any, E = any> {
         return renderer.complete?.(this.value!);
       case TaskStatus.ERROR:
         return renderer.error?.(this.error);
-      default:
-        // exhaustiveness check
-        this.status as void;
-        return;
     }
   }
 
