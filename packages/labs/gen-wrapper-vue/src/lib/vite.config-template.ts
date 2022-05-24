@@ -1,4 +1,5 @@
-import {LitModule, PackageJson} from '@lit-labs/analyzer/lib/model.js';
+import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
+import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {
   javascript,
   kabobToPascalCase,
@@ -17,7 +18,7 @@ const pkgShortName = (str: string) => str.substring(str.lastIndexOf('/') + 1);
  */
 export const viteConfigTemplate = (
   pkgJson: PackageJson,
-  litModules: LitModule[]
+  sfcFiles: FileTree
 ) => {
   // TODO(sorvell): This name is used to generate a UMD global name, but it
   // should be per-output module. It doesn't seem like rollup has a way to
@@ -33,7 +34,9 @@ export default {
     rollupOptions: {
       external: () => true,
       input: [
-        ${litModules.map(({module}) => `'./${module.sourcePath}'`).join(', ')}
+        ${Object.keys(sfcFiles)
+          .map((path) => `'./${path}'`)
+          .join(', ')}
       ],
       preserveModules: true,
       preserveEntrySignatures: true,

@@ -43,11 +43,15 @@ export const pathIsinRootPath = (subPath: string, rootPath: string) => {
  * As a convenience, filenames may contain slashes, in which case folders
  * are automatically created.
  */
-export const writeFileTree = async (outDir: string, tree: FileTree) => {
+export const writeFileTree = async (
+  outDir: string,
+  tree: FileTree,
+  forceCreate = false
+) => {
   outDir = path.resolve(outDir);
   for (const [name, fileOrFolder] of Object.entries(tree)) {
     const fullPath = path.resolve(outDir, name);
-    if (!pathIsinRootPath(fullPath, outDir)) {
+    if (!pathIsinRootPath(fullPath, outDir) && !forceCreate) {
       throw new Error(
         `Path '${fullPath}' is not contained in '${outDir}' when writing a ` +
           `file tree containing an entry of '${name}'.`

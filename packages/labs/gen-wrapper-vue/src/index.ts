@@ -12,7 +12,6 @@ import {
 } from '@lit-labs/analyzer/lib/model.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
-// import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import {wrapperModuleTemplateSFC} from './lib/wrapper-module-template-sfc.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {tsconfigNodeTemplate} from './lib/tsconfig.node-template.js';
@@ -28,14 +27,16 @@ export const generateVueWrapper = async (
     const vuePkgName = packageNameToVuePackageName(
       path.basename(analysis.rootDir)
     );
+    const sfcFiles = wrapperSFCFiles(analysis.packageJson, litModules);
+    // throw new Error(`files: ${Object.keys(sfcFiles)}`);
     return {
       [vuePkgName]: {
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(analysis.packageJson, litModules),
         'tsconfig.json': tsconfigTemplate(),
         'tsconfig.node.json': tsconfigNodeTemplate(),
-        'vite.config.ts': viteConfigTemplate(analysis.packageJson, litModules),
-        ...wrapperSFCFiles(analysis.packageJson, litModules),
+        'vite.config.ts': viteConfigTemplate(analysis.packageJson, sfcFiles),
+        ...sfcFiles,
       },
     };
   } else {
@@ -50,23 +51,7 @@ const gitIgnoreTemplate = (litModules: LitModule[]) => {
   return litModules.map(({module}) => module.jsPath).join('\n');
 };
 
-// const wrapperFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
-//   const wrapperFiles: FileTree = {};
-//   for (const {
-//     module: {sourcePath, jsPath},
-//     elements,
-//   } of litModules) {
-//     wrapperFiles[sourcePath] = wrapperModuleTemplate(
-//       packageJson,
-//       jsPath,
-//       elements
-//     );
-//   }
-//   return wrapperFiles;
-// };
-
-const getVueFileName = (dir: string, name: string) =>
-  path.resolve(dir, `${name}.vue`);
+const getVueFileName = (dir: string, name: string) => `${dir}/${name}.vue`;
 
 const wrapperSFCFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
   const wrapperFiles: FileTree = {};
@@ -78,7 +63,7 @@ const wrapperSFCFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
     const wrappers = wrapperModuleTemplateSFC(packageJson, jsPath, elements);
     const dir = path.dirname(sourcePath);
     if (wrappers.length > 1) {
-      // TODO(sorvell): Throw if components names are re-used in the same folder.
+      // TODO(sorvell): Throw if component names are re-used in the same folder.
       const modules: FileTree = {};
       const exports: string[] = [];
       for (const [name, content] of wrappers) {

@@ -16,7 +16,9 @@ export const packageJsonTemplate = (
       // Use vite!
       scripts: {
         dev: 'vite',
-        build: 'vue-tsc --noEmit && vite build',
+        build: 'npm run check && npm run decl && vite build',
+        check: 'vue-tsc --noEmit',
+        decl: 'vue-tsc --declaration --emitDeclarationOnly',
         preview: 'vite preview',
       },
       // TODO(kschaaf): Version in lock-step with source?

@@ -37,12 +37,12 @@ test('basic wrapper generation', async () => {
   await writeFileTree(outputFolder, await generateVueWrapper(analysis));
 
   const wrapperSourceFile = fs.readFileSync(
-    path.join(outputPackage, 'src/element-a.ts')
+    path.join(outputPackage, 'src/ElementA.vue')
   );
   assert.ok(wrapperSourceFile.length > 0);
 
   await assertGoldensMatch(outputPackage, path.join('goldens', project), {
-    formatGlob: '**/*.{ts,js,json}',
+    formatGlob: '**/*.{vue,ts,js,json}',
   });
 
   await installPackage(outputPackage, {
@@ -61,7 +61,7 @@ test('basic wrapper generation', async () => {
   // that runtime tests of this generated package are run as a separate `npm run
   // test` command in `test-output` using `@web/test-runner`.
   const wrapperJsFile = fs.readFileSync(
-    path.join(outputPackage, 'element-a.js')
+    path.join(outputPackage, 'ElementA.js')
   );
   assert.ok(wrapperJsFile.length > 0);
 });

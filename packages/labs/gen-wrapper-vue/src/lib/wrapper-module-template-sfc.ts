@@ -1,4 +1,3 @@
-import ts from 'typescript';
 import {
   LitElementDeclaration,
   ReactiveProperty as ModelProperty,
@@ -23,29 +22,11 @@ export const wrapperModuleTemplateSFC = (
 const getTypeToken = (node: ModelProperty['node']) =>
   node.questionToken ? '?' : node.exclamationToken ? '!' : '';
 
-// TODO(sorvell): Need to process initializer into value
-const getInitializerValue = (
-  initializer: ModelProperty['node']['initializer']
-) => {
-  if (!initializer?.kind) {
-    throw new Error('Property defaults must be specified with a literal.');
-  }
-  return initializer.kind === ts.SyntaxKind.StringLiteral
-    ? `'${(initializer as ts.StringLiteral).text}'`
-    : (initializer as ts.NumericLiteral)?.text;
-};
+const getEventType = (event: ModelEvent) => event.typeString || `unknown`;
 
 const wrapDefineProps = (props: Map<string, ModelProperty>) =>
   Array.from(props.values())
     .map((prop) => `${prop.name}${getTypeToken(prop.node)}: ${prop.typeString}`)
-    .join(',\n');
-
-const wrapDefaultProps = (props: Map<string, ModelProperty>) =>
-  Array.from(props.values())
-    .filter((prop) => prop.node.initializer)
-    .map(
-      (prop) => `${prop.name}: ${getInitializerValue(prop.node.initializer!)}`
-    )
     .join(',\n');
 
 // TODO(sorvell): Improve event handling, currently just forwarding the event,
@@ -53,8 +34,7 @@ const wrapDefaultProps = (props: Map<string, ModelProperty>) =>
 const wrapEvents = (events: Map<string, ModelEvent>) =>
   Array.from(events.values())
     .map(
-      (event) =>
-        `(e: '${event.name}', payload: ${event.typeString || `unknown`}): void`
+      (event) => `(e: '${event.name}', payload: ${getEventType(event)}): void`
     )
     .join(',\n');
 
@@ -64,9 +44,9 @@ const renderEvents = (events: Map<string, ModelEvent>) =>
       (event) =>
         `${kabobToOnEvent(event.name)}: (event: ${
           event.typeString || `CustomEvent<unknown>`
-        }) => emit('${event.name}', (event.detail || event) as ${
-          event.typeString || `unknown`
-        })`
+        }) => emit('${event.name}', (event.detail || event) as ${getEventType(
+          event
+        )})`
     )
     .join(',\n');
 
@@ -77,13 +57,13 @@ const wrapperTemplate = (
 ) => {
   return javascript`
     <script setup lang="ts">
-      import { h, defineComponent, openBlock, createBlock } from "vue";
-      import { wrapSlots, Slots, eventProp } from "@lit-labs/vue-utils/wrapper-utils.js";
+      import { h, useSlots } from "vue";
+      import { wrapSlots, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
 
-      const props = withDefaults(defineProps<{
+      const props = defineProps<{
         ${wrapDefineProps(reactiveProperties)}
-      }>(), {${wrapDefaultProps(reactiveProperties)}});
+      }>();
 
       const emit = defineEmits<{
         ${wrapEvents(events)}

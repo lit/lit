@@ -6,7 +6,7 @@ export default {
   build: {
     rollupOptions: {
       external: () => true,
-      input: ['./src/element-a.ts'],
+      input: ['./src/ElementA.vue'],
       preserveModules: true,
       preserveEntrySignatures: true,
       output: [

@@ -3,7 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "npm run check && npm run decl && vite build",
+    "check": "vue-tsc --noEmit",
+    "decl": "vue-tsc --declaration --emitDeclarationOnly",
     "preview": "vite preview"
   },
   "version": "1.0.0",
