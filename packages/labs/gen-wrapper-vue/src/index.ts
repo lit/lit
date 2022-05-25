@@ -28,11 +28,13 @@ export const generateVueWrapper = async (
       path.basename(analysis.rootDir)
     );
     const sfcFiles = wrapperSFCFiles(analysis.packageJson, litModules);
-    // throw new Error(`files: ${Object.keys(sfcFiles)}`);
+    const moduleNames = Object.keys(sfcFiles).map(
+      (f) => `${path.basename(f, '.vue')}`
+    );
     return {
       [vuePkgName]: {
-        '.gitignore': gitIgnoreTemplate(litModules),
-        'package.json': packageJsonTemplate(analysis.packageJson, litModules),
+        '.gitignore': gitIgnoreTemplate(moduleNames),
+        'package.json': packageJsonTemplate(analysis.packageJson, moduleNames),
         'tsconfig.json': tsconfigTemplate(),
         'tsconfig.node.json': tsconfigNodeTemplate(),
         'vite.config.ts': viteConfigTemplate(analysis.packageJson, sfcFiles),
@@ -47,9 +49,8 @@ export const generateVueWrapper = async (
 // TODO(kschaaf): Should this be configurable?
 const packageNameToVuePackageName = (pkgName: string) => `${pkgName}-vue`;
 
-const gitIgnoreTemplate = (litModules: LitModule[]) => {
-  return litModules.map(({module}) => module.jsPath).join('\n');
-};
+const gitIgnoreTemplate = (moduleNames: string[]) =>
+  moduleNames.map((f) => `${f}.*`).join('\n');
 
 const getVueFileName = (dir: string, name: string) => `${dir}/${name}.vue`;
 

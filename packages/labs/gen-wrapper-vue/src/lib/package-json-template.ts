@@ -1,8 +1,8 @@
-import {LitModule, PackageJson} from '@lit-labs/analyzer/lib/model.js';
+import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
 
 export const packageJsonTemplate = (
   pkgJson: PackageJson,
-  litModules: LitModule[]
+  moduleNames: string[]
 ) => {
   // Refinement of package.json generation ala the TODOs below tracked in
   // https://github.com/lit/lit/issues/2855
@@ -16,9 +16,9 @@ export const packageJsonTemplate = (
       // Use vite!
       scripts: {
         dev: 'vite',
-        build: 'npm run check && npm run decl && vite build',
-        check: 'vue-tsc --noEmit',
-        decl: 'vue-tsc --declaration --emitDeclarationOnly',
+        build: 'npm run typecheck && npm run build:declarations && vite build',
+        typecheck: 'vue-tsc --noEmit',
+        'build:declarations': 'vue-tsc --declaration --emitDeclarationOnly',
         preview: 'vite preview',
       },
       // TODO(kschaaf): Version in lock-step with source?
@@ -37,11 +37,7 @@ export const packageJsonTemplate = (
         vite: '^2.9.2',
         'vue-tsc': '^0.29.8',
       },
-      files: [
-        ...litModules.map(({module}) =>
-          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
-        ),
-      ],
+      files: [...moduleNames.map((f) => `${f}.{js,js.map,d.ts,vue}`)],
     },
     null,
     2

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ElementA from '@lit-internal/test-element-a-vue/element-a.js';
+import ElementA from '@lit-internal/test-element-a-vue/ElementA.js';
 
 const props = defineProps<{foo?: string}>();
 </script>

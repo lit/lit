@@ -3,9 +3,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run check && npm run decl && vite build",
-    "check": "vue-tsc --noEmit",
-    "decl": "vue-tsc --declaration --emitDeclarationOnly",
+    "build": "npm run typecheck && npm run build:declarations && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "build:declarations": "vue-tsc --declaration --emitDeclarationOnly",
     "preview": "vite preview"
   },
   "version": "1.0.0",
@@ -22,6 +22,6 @@
     "vue-tsc": "^0.29.8"
   },
   "files": [
-    "element-a.{js,js.map,d.ts,d.ts.map}"
+    "ElementA.{js,js.map,d.ts,vue}"
   ]
 }
