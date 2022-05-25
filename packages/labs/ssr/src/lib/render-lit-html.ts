@@ -56,6 +56,30 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import {LitElementRenderer} from './lit-element-renderer.js';
 
+/**
+ * HTML elements which are _void_elements, meaning they cannot have children.
+ * When the HTML parser encounters a void element, any children it has will
+ * instead become siblings.
+ *
+ * Reference:
+ * https://html.spec.whatwg.org/multipage/syntax.html#void-elements
+ */
+const VOID_ELEMENT_TAG_NAMES = new Set([
+  'area',
+  'base',
+  'br',
+  'col',
+  'embed',
+  'hr',
+  'img',
+  'input',
+  'link',
+  'meta',
+  'source',
+  'track',
+  'wbr',
+]);
+
 declare module 'parse5' {
   interface Element {
     isDefinedCustomElement?: boolean;
@@ -199,6 +223,7 @@ type PossibleNodeMarkerOp = {
   type: 'possible-node-marker';
   boundAttributesCount: number;
   nodeIndex: number;
+  isVoidElement: boolean;
 };
 
 type Op =
@@ -472,6 +497,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             type: 'possible-node-marker',
             boundAttributesCount,
             nodeIndex,
+            isVoidElement: VOID_ELEMENT_TAG_NAMES.has(node.tagName),
           });
         }
 
@@ -736,7 +762,11 @@ function* renderTemplateResult(
           op.boundAttributesCount > 0 ||
           renderInfo.customElementHostStack.length > 0
         ) {
-          yield `<!--lit-node ${op.nodeIndex}-->`;
+          if (op.isVoidElement) {
+            yield `<!--lit-nodev ${op.nodeIndex}-->`;
+          } else {
+            yield `<!--lit-node ${op.nodeIndex}-->`;
+          }
         }
         break;
       }

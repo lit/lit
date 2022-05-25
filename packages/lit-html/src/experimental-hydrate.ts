@@ -325,14 +325,15 @@ const createAttributeParts = (
 ) => {
   // Get the nodeIndex from DOM. We're only using this for an integrity
   // check right now, we might not need it.
-  const match = /lit-node (\d+)/.exec(comment.data)!;
-  const nodeIndex = parseInt(match[1]);
+  const match = /lit-node(v?) (\d+)/.exec(comment.data)!;
+  const isVoid = match[1] === 'v';
+  const nodeIndex = parseInt(match[2]);
 
   // For void elements, the node the comment was referring to will be
   // the previousSibling; for non-void elements, the comment is guaranteed
   // to be the first child of the element (i.e. it won't have a previousSibling
   // meaning it should use the parentElement)
-  const node = comment.previousElementSibling ?? comment.parentElement;
+  const node = isVoid ? comment.previousElementSibling : comment.parentElement;
   if (node === null) {
     throw new Error('could not find node for attribute parts');
   }

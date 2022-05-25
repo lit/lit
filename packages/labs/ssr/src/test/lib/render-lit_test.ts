@@ -122,7 +122,7 @@ test('input element with attribute expression with string value', async () => {
   const result = await render(inputTemplateWithAttributeExpression('foo'));
   assert.is(
     result,
-    `<!--lit-part AYwG7rAvcnw=--><input x="foo"><!--lit-node 0--><!--/lit-part-->`
+    `<!--lit-part AYwG7rAvcnw=--><input x="foo"><!--lit-nodev 0--><!--/lit-part-->`
   );
 });
 
@@ -139,7 +139,7 @@ test('input element with attribute expression with string value and child elemen
   );
   assert.is(
     result,
-    `<!--lit-part BIugdiAuV4I=--><input x="foo"><!--lit-node 0--><p>hi</p></input><!--/lit-part-->`
+    `<!--lit-part BIugdiAuV4I=--><input x="foo"><!--lit-nodev 0--><p>hi</p></input><!--/lit-part-->`
   );
 });
 
@@ -173,7 +173,7 @@ test('HTMLInputElement.value', async () => {
   const result = await render(inputTemplateWithValueProperty('foo'));
   assert.is(
     result,
-    `<!--lit-part AxWziS+Adpk=--><input value="foo"><!--lit-node 0--><!--/lit-part-->`
+    `<!--lit-part AxWziS+Adpk=--><input value="foo"><!--lit-nodev 0--><!--/lit-part-->`
   );
 });
 
