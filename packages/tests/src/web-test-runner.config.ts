@@ -165,7 +165,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
       product: 'firefox',
       launchOptions: {
         executablePath: '/usr/bin/firefox-esr',
-        args: ['-no-remote', '-headless', '-juggler-pipe', '-silent'],
+        args: ['-no-remote', '-headless', '-silent'],
       },
     };
   }
