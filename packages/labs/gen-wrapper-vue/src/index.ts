@@ -16,6 +16,7 @@ import {wrapperModuleTemplateSFC} from './lib/wrapper-module-template-sfc.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {tsconfigNodeTemplate} from './lib/tsconfig.node-template.js';
 import {viteConfigTemplate} from './lib/vite.config-template.js';
+import {renameTemplate} from './lib/rename-template.js';
 
 export const generateVueWrapper = async (
   analysis: Package
@@ -38,6 +39,7 @@ export const generateVueWrapper = async (
         'tsconfig.json': tsconfigTemplate(),
         'tsconfig.node.json': tsconfigNodeTemplate(),
         'vite.config.ts': viteConfigTemplate(analysis.packageJson, sfcFiles),
+        'scripts/rename.cjs': renameTemplate(),
         ...sfcFiles,
       },
     };

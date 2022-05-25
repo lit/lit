@@ -18,7 +18,8 @@ export const packageJsonTemplate = (
         dev: 'vite',
         build: 'npm run typecheck && npm run build:declarations && vite build',
         typecheck: 'vue-tsc --noEmit',
-        'build:declarations': 'vue-tsc --declaration --emitDeclarationOnly',
+        'build:declarations':
+          'vue-tsc --declaration --emitDeclarationOnly && node ./scripts/rename.cjs',
         preview: 'vite preview',
       },
       // TODO(kschaaf): Version in lock-step with source?
