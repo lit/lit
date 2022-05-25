@@ -9,24 +9,12 @@ export default {
       input: ['./src/ElementA.vue'],
       preserveModules: true,
       preserveEntrySignatures: true,
-      output: [
-        {
-          format: 'es',
-          entryFileNames: ({name}) => `${name}.js`,
-          dir: './',
-          sourcemap: true,
-        },
-        {
-          format: 'umd',
-          name: 'TestElementA',
-          entryFileNames: ({name}) => `${name}.umd.js`,
-          globals: {
-            vue: 'Vue',
-          },
-          dir: './',
-          sourcemap: true,
-        },
-      ],
+      output: {
+        format: 'es',
+        entryFileNames: ({name}) => `${name}.js`,
+        dir: './',
+        sourcemap: true,
+      },
     },
     outDir: './',
   },
