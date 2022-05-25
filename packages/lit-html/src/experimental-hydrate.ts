@@ -157,11 +157,6 @@ export const hydrate = (
       // Create and hydrate attribute parts into the current ChildPart on the
       // stack
       createAttributeParts(marker, stack, options);
-      // Remove `defer-hydration` attribute, if any
-      const parent = marker.parentElement!;
-      if (parent.hasAttribute('defer-hydration')) {
-        parent.removeAttribute('defer-hydration');
-      }
     } else if (markerText.startsWith('/lit-part')) {
       // Close the current ChildPart, and pop the previous one off the stack
       if (stack.length === 1 && currentChildPart !== rootPart) {
@@ -337,7 +332,12 @@ const createAttributeParts = (
   // the previousSibling; for non-void elements, the comment is guaranteed
   // to be the first child of the element (i.e. it won't have a previousSibling
   // meaning it should use the parentElement)
-  const node = comment.previousSibling ?? comment.parentElement;
+  const node = comment.previousElementSibling ?? comment.parentElement;
+  if (node === null) {
+    throw new Error('could not find node for attribute parts');
+  }
+  // Remove `defer-hydration` attribute, if any
+  node.removeAttribute('defer-hydration');
 
   const state = stack[stack.length - 1];
   if (state.type === 'template-instance') {
