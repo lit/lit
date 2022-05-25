@@ -391,11 +391,7 @@ const createAttributeParts = (
         instance._parts.push(instancePart);
       } else {
         // templatePart.type === PartType.ELEMENT
-        const instancePart = new ElementPart(
-          node as HTMLElement,
-          state.instance,
-          options
-        );
+        const instancePart = new ElementPart(node, state.instance, options);
         resolveDirective(
           instancePart,
           state.result.values[state.instancePartIndex++]
