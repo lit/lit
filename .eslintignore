@@ -310,5 +310,10 @@ packages/labs/vue-utils/node_modules/
 packages/labs/vue-utils/index.*
 packages/labs/vue-utils/wrapper-utils.*
 
+packages/labs/testing/fixtures
+packages/labs/testing/web-test-runner
+packages/labs/testing/index.*
+packages/labs/testing/fixtures.*
+
 packages/localize/testdata/
 packages/localize/examples/

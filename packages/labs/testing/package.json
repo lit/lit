@@ -1,0 +1,64 @@
+{
+  "private": true,
+  "name": "@lit-labs/testing",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Testing utilites for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/testing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lit/Lit.git",
+    "directory": "packages/labs/testing"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "fixtures/",
+        "web-test-runner/",
+        ".tsbuildinfo"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./fixtures.js": {
+      "default": "./fixtures.js"
+    }
+  },
+  "files": [
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/fixtures/ssrFixture.{d.ts,d.ts.map,js,js.map}",
+    "/web-test-runner/litSsrPlugin.{d.ts,d.ts.map,js,js.map}",
+    "/web-test-runner/worker/worker.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr": "^2.1.0",
+    "@web/test-runner-commands": "^0.6.1",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "lit": "^2.2.3"
+  }
+}
