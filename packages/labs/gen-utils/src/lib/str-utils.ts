@@ -28,7 +28,7 @@ export const javascript = concat;
  * Converts string to initial cap.
  */
 export const toInitialCap = (str: string) =>
-  str ? `${str[0].toUpperCase()}${str.slice(1) || ''}` : str;
+  str ? `${str[0].toUpperCase()}${str.slice(1)}` : str;
 
 /**
  * Converts kabob-case string to PascalCase.
