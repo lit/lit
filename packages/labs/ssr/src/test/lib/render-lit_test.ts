@@ -209,6 +209,18 @@ test('simple custom element', async () => {
   assert.is(customElementsRendered[0], 'test-simple');
 });
 
+test('simple custom element with deferHydration', async () => {
+  const {render, simpleTemplateWithElement} = await setup();
+
+  const result = await render(simpleTemplateWithElement, {
+    deferHydration: true,
+  });
+  assert.is(
+    result,
+    `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+  );
+});
+
 test('element with property', async () => {
   const {render, elementWithProperty} = await setup();
   const result = await render(elementWithProperty);
