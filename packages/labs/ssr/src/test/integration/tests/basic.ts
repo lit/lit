@@ -1580,6 +1580,37 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['input'],
   },
 
+  'AttributePart on void element in shadow root': {
+    // Regression test for https://github.com/lit/lit/issues/2946.
+    //
+    // Confirms that we do not crash when hydrating a shadow root containing an
+    // immediate child that is a void element with an attribute binding. This is
+    // an edge case because when the HTML parser encounters a void element, any
+    // children it has, including our <!--lit-node 0--> comments, become
+    // siblings instead of children.
+    registerElements() {
+      class VoidElementHost extends LitElement {
+        @property()
+        maxLen = 64;
+
+        override render() {
+          return html`<input max=${this.maxLen} />`;
+        }
+      }
+      customElements.define('void-element-host', VoidElementHost);
+    },
+    render() {
+      return html`<void-element-host></void-element-host>`;
+    },
+    expectations: [
+      {
+        args: [],
+        html: '<void-element-host></void-element-host>',
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * PropertyPart tests
    ******************************************************/

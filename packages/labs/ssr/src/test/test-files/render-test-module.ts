@@ -35,6 +35,12 @@ export const templateWithMultiBindingAttributeExpression = (
   x: string,
   y: string
 ) => html`<div test="a ${x} b ${y} c"></div>`;
+// prettier-ignore
+export const inputTemplateWithAttributeExpression = (x: string) =>
+html`<input x=${x}>`;
+// prettier-ignore
+export const inputTemplateWithAttributeExpressionAndChildElement = (x: string) =>
+  html`<input x=${x}><p>hi</p></input>`;
 
 /* Reflected Property Expressions */
 
