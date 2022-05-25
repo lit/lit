@@ -40,6 +40,7 @@ const browserPresets = {
     'webkit', // individual browsers
   ],
 
+  firefox: ['firefox', 'firefox-esr'],
   // Browsers to test during automated continuous integration.
   //
   // https://saucelabs.com/platform/supported-browsers-devices
@@ -48,7 +49,6 @@ const browserPresets = {
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
-    'sauce:Windows 10/Firefox@91', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-2',
     'sauce:macOS 10.15/Safari@latest',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
@@ -147,16 +147,27 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
     ];
   }
 
-  const config: PlaywrightLauncherArgs = {
-    product: browser as ProductType,
-    ...(browser === 'chromium'
-      ? {
-          launchOptions: {
-            args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'],
-          },
-        }
-      : {}),
-  };
+  // set firefox-esr binary here
+  let config: PlaywrightLauncherArgs = {};
+
+  if (browser === 'chromium') {
+    config = {
+      product: browser as ProductType,
+      launchOptions: {
+        args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'],
+      },
+    };
+  }
+
+  if (browser === 'firefox-esr') {
+    config = {
+      product: 'firefox',
+      launchOptions: {
+        executablePath: '/usr/bin/firefox-esr',
+      },
+    };
+  }
+
   return [playwrightLauncher(config)];
 }
 

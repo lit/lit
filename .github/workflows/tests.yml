@@ -57,6 +57,12 @@ jobs:
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
+      - name: Install Firefox-esr
+        run: |
+          sudo add-apt-repository ppa:mozillateam/ppa
+          sudo apt update
+          sudo apt install firefox-esr
+
       - name: Install playwright deps
         run: npx playwright install-deps
 
@@ -73,6 +79,11 @@ jobs:
         env:
           BROWSERS: preset:local
           CONCURRENT_BROWSERS: 3
+        run: npm run test
+
+      - name: Test Firefox
+        env:
+          BROWSERS: preset:firefox
         run: npm run test
 
   windows-tools:
