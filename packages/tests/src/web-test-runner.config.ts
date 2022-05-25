@@ -148,11 +148,11 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
   }
 
   // set firefox-esr binary here
-  let config: PlaywrightLauncherArgs = {};
+  let config: PlaywrightLauncherArgs = {product: browser as ProductType};
 
   if (browser === 'chromium') {
     config = {
-      product: browser as ProductType,
+      ...config,
       launchOptions: {
         args: ['--js-flags=--expose-gc', '--enable-precise-memory-info'],
       },
@@ -161,7 +161,7 @@ See https://wiki.saucelabs.com/display/DOCS/Platform+Configurator for all option
 
   if (browser === 'firefox-esr') {
     config = {
-      product: 'firefox',
+      ...config,
       launchOptions: {
         executablePath: '/usr/bin/firefox-esr',
       },
