@@ -1606,6 +1606,23 @@ export const tests: {[name: string]: SSRTest} = {
       {
         args: [],
         html: '<void-element-host></void-element-host>',
+        async check(assert: Chai.Assert, dom: HTMLElement) {
+          const host = dom.querySelector('void-element-host') as LitElement & {
+            maxLen: number;
+          };
+          assert.instanceOf(host, LitElement);
+          assert.equal(host.maxLen, 64);
+
+          await host.updateComplete;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+          const input = host.shadowRoot?.querySelector('input')!;
+          assert.instanceOf(input, HTMLElement);
+          assert.equal(input.getAttribute('max'), '64');
+
+          host.maxLen++;
+          await host.updateComplete;
+          assert.equal(input.getAttribute('max'), '65');
+        },
       },
     ],
     stableSelectors: ['input'],
