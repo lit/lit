@@ -20,6 +20,10 @@
     ".": {
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./use-controller.js": {
+      "development": "./development/use-controller.js",
+      "default": "./use-controller.js"
     }
   },
   "files": [
