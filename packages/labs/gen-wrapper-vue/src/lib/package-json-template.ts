@@ -16,7 +16,7 @@ export const packageJsonTemplate = (
       // Use vite!
       scripts: {
         dev: 'vite',
-        build: 'npm run typecheck && npm run build:declarations && vite build',
+        build: 'npm run build:declarations && vite build',
         typecheck: 'vue-tsc --noEmit',
         'build:declarations':
           'vue-tsc --declaration --emitDeclarationOnly && node ./scripts/rename.cjs',
