@@ -30,6 +30,7 @@
       ],
       "output": [
         "test-gen",
+        "lib",
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
