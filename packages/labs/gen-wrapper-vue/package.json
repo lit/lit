@@ -44,7 +44,8 @@
         "build",
         "../test-projects/test-element-a:pack"
       ],
-      "command": "uvu test-gen '.*_test\\.js$'",
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test-gen \"_test\\.js$\"",
       "output": [
         "gen-output",
         "!gen-output/node_modules"
