@@ -39,7 +39,7 @@ export const generateVueWrapper = async (
         'tsconfig.json': tsconfigTemplate(),
         'tsconfig.node.json': tsconfigNodeTemplate(),
         'vite.config.ts': viteConfigTemplate(analysis.packageJson, sfcFiles),
-        'scripts/rename.cjs': renameTemplate(),
+        'scripts/rename.js': renameTemplate(),
         ...sfcFiles,
       },
     };
