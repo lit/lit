@@ -36,7 +36,7 @@ export function litSsrPlugin() {
       switch (command) {
         case 'lit-ssr-render': {
           const resolvedComponentModules = modules.map((module) =>
-            pathlib.resolve(process.cwd(), module)
+            pathlib.join(process.cwd(), module)
           );
 
           const worker = new Worker(

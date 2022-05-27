@@ -7,10 +7,7 @@
 import {ssrFixture} from './fixtures/ssrFixture.js';
 
 import type {TemplateResult} from 'lit';
-
-interface FixtureOption {
-  modules: string[];
-}
+import type {FixtureOption} from './fixtures/fixtureOption.js';
 
 /**
  * Renders the provided lit-html template with a Lit element server-side by
@@ -23,12 +20,14 @@ interface FixtureOption {
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the project root.
+ * @param {string} option.base - Base path for the module. Genenrally should be
+ * `import.meta.url`.
  */
 export async function ssrHydratedFixture(
   template: TemplateResult,
-  {modules}: FixtureOption
+  {modules, base}: FixtureOption
 ) {
-  return ssrFixture(template, {modules, hydrate: true});
+  return ssrFixture(template, {modules, base, hydrate: true});
 }
 
 /**
@@ -43,12 +42,15 @@ export async function ssrHydratedFixture(
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the project root.
+ * @param {string} option.base - Base path for the module. Genenrally should be
+ * `import.meta.url`.
  */
 export async function ssrNonHydratedFixture(
   template: TemplateResult,
-  {modules}: FixtureOption
+  {modules, base}: FixtureOption
 ) {
-  return ssrFixture(template, {modules, hydrate: false});
+  return ssrFixture(template, {modules, base, hydrate: false});
 }
 
-export {ssrFixture} from './fixtures/ssrFixture.js';
+export {ssrFixture};
+export {csrFixture} from './fixtures/csrFixture.js';

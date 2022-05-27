@@ -47,7 +47,8 @@ import {assert} from '@esm-bundle/chai';
 suite('my-element', () => {
   test('is rendered server-side', async () => {
     const el = await ssrFixture(html`<my-element></my-element>`, {
-      modules: ['./my-element.js'], // path to component definition relative to project root
+      modules: ['./my-element.js'], // path to component definition relative to test file
+      base: import.meta.url, // for resolving module path
       hydrate: false, // whether to hydrate the component after loading to document (default: true)
     });
     assert.equal(el.shadowRoot.querySelector('p').textContent, 'Hello, World!');
@@ -75,6 +76,7 @@ for (const fixture of [ssrNonHydratedFixture, ssrHydratedFixture]) {
     test('renders as expected', async () => {
       const el = await ssrFixture(html`<my-element></my-element>`, {
         modules: ['./my-element.js'],
+        base: import.meta.url,
       });
       assert.equal(
         el.shadowRoot.querySelector('p').textContent,
