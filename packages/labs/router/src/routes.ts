@@ -65,7 +65,7 @@ const getPattern = (route: RouteConfig) => {
  * configuration of URL patterns and associated render callbacks.
  */
 export class Routes implements ReactiveController {
-  protected readonly _host: ReactiveControllerHost & HTMLElement;
+  private readonly _host: ReactiveControllerHost & HTMLElement;
 
   /*
    * The currently installed set of routes in precedence order.
@@ -97,7 +97,7 @@ export class Routes implements ReactiveController {
    */
   private readonly _childRoutes: Array<Routes> = [];
 
-  protected _parentRoutes: Routes | undefined;
+  private _parentRoutes: Routes | undefined;
 
   /*
    * State related to the current matching route.
@@ -106,9 +106,9 @@ export class Routes implements ReactiveController {
    * that we can propagate tail matches to child routes if they are added after
    * navigation / matching.
    */
-  protected _currentPathname: string | undefined;
-  protected _currentRoute: RouteConfig | undefined;
-  protected _currentParams: {
+  private _currentPathname: string | undefined;
+  private _currentRoute: RouteConfig | undefined;
+  private _currentParams: {
     [key: string]: string | undefined;
   } = {};
 

@@ -1580,6 +1580,54 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['input'],
   },
 
+  'AttributePart on void element in shadow root': {
+    // Regression test for https://github.com/lit/lit/issues/2946.
+    //
+    // Confirms that we do not crash when hydrating a shadow root containing an
+    // immediate child that is a void element with an attribute binding. This is
+    // an edge case because when the HTML parser encounters a void element, any
+    // children it has, including our <!--lit-node 0--> comments, become
+    // siblings instead of children.
+    registerElements() {
+      class VoidElementHost extends LitElement {
+        @property()
+        maxLen = 64;
+
+        override render() {
+          return html`<input max=${this.maxLen} />`;
+        }
+      }
+      customElements.define('void-element-host', VoidElementHost);
+    },
+    render() {
+      return html`<void-element-host></void-element-host>`;
+    },
+    expectations: [
+      {
+        args: [],
+        html: '<void-element-host></void-element-host>',
+        async check(assert: Chai.Assert, dom: HTMLElement) {
+          const host = dom.querySelector('void-element-host') as LitElement & {
+            maxLen: number;
+          };
+          assert.instanceOf(host, LitElement);
+          assert.equal(host.maxLen, 64);
+
+          await host.updateComplete;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+          const input = host.shadowRoot?.querySelector('input')!;
+          assert.instanceOf(input, HTMLElement);
+          assert.equal(input.getAttribute('max'), '64');
+
+          host.maxLen++;
+          await host.updateComplete;
+          assert.equal(input.getAttribute('max'), '65');
+        },
+      },
+    ],
+    stableSelectors: ['input'],
+  },
+
   /******************************************************
    * PropertyPart tests
    ******************************************************/
@@ -4864,6 +4912,53 @@ export const tests: {[name: string]: SSRTest} = {
         },
       ],
       stableSelectors: ['le-order1'],
+    };
+  },
+
+  'LitElement: defer hydration': () => {
+    return {
+      registerElements() {
+        class LEDefer extends LitElement {
+          @property({type: Number})
+          clicked = 0;
+          handleClick() {
+            this.clicked += 1;
+          }
+          override render() {
+            return html`<button @click=${this.handleClick}>X</button>`;
+          }
+        }
+        customElements.define('le-defer', LEDefer);
+      },
+      render() {
+        return html`<le-defer></le-defer>`;
+      },
+      serverRenderOptions: {
+        deferHydration: true,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-defer') as LitElement & {
+              clicked: number;
+            };
+            const button = el.shadowRoot!.querySelector('button')!;
+            button.click();
+            assert.equal(el.clicked, 0);
+            el.removeAttribute('defer-hydration');
+            await el.updateComplete;
+            button.click();
+            await el.updateComplete;
+            assert.equal(el.clicked, 1);
+          },
+          html: {
+            root: `<le-defer></le-defer>`,
+            'le-defer': `<button>X</button>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-defer'],
     };
   },
 };
