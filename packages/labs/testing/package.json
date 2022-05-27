@@ -49,7 +49,9 @@
       "command": "wtr",
       "dependencies": [
         "build"
-      ]
+      ],
+      "files": [],
+      "output": []
     }
   },
   "exports": {
