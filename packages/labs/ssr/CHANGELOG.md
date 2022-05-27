@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.2.0
+
+### Minor Changes
+
+- [#2940](https://github.com/lit/lit/pull/2940) [`ac356997`](https://github.com/lit/lit/commit/ac356997351874706f8be235559c765861dce67d) - Add option to defer hydration of top level custom elements.
+
 ## 2.1.0
 
 ### Minor Changes
