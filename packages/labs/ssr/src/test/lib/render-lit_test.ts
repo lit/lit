@@ -111,10 +111,35 @@ test('text expression with null value', async () => {
 test('attribute expression with string value', async () => {
   const {render, templateWithAttributeExpression} = await setup();
   const result = await render(templateWithAttributeExpression('foo'));
-  // TODO: test for the marker comment for attribute binding
   assert.is(
     result,
     `<!--lit-part FAR9hgjJqTI=--><div class="foo"><!--lit-node 0--></div><!--/lit-part-->`
+  );
+});
+
+test('input element with attribute expression with string value', async () => {
+  const {render, inputTemplateWithAttributeExpression} = await setup();
+  const result = await render(inputTemplateWithAttributeExpression('foo'));
+  assert.is(
+    result,
+    `<!--lit-part AYwG7rAvcnw=--><input x="foo"><!--lit-node 0--><!--/lit-part-->`
+  );
+});
+
+test('input element with attribute expression with string value and child element', async () => {
+  // Void elements like input will have their children hoisted to become
+  // siblings by the HTML parser. In this case, we rely on the fact that any
+  // <!--lit-node 0--> comments we create are prepended instead of appended,
+  // so that they will be hoisted as the next sibling, so that we can use
+  // .previousElementSibling to find the effective parent.
+  const {render, inputTemplateWithAttributeExpressionAndChildElement} =
+    await setup();
+  const result = await render(
+    inputTemplateWithAttributeExpressionAndChildElement('foo')
+  );
+  assert.is(
+    result,
+    `<!--lit-part BIugdiAuV4I=--><input x="foo"><!--lit-node 0--><p>hi</p></input><!--/lit-part-->`
   );
 });
 
@@ -207,6 +232,18 @@ test('simple custom element', async () => {
   );
   assert.is(customElementsRendered.length, 1);
   assert.is(customElementsRendered[0], 'test-simple');
+});
+
+test('simple custom element with deferHydration', async () => {
+  const {render, simpleTemplateWithElement} = await setup();
+
+  const result = await render(simpleTemplateWithElement, {
+    deferHydration: true,
+  });
+  assert.is(
+    result,
+    `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+  );
 });
 
 test('element with property', async () => {

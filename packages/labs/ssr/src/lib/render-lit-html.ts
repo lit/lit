@@ -520,12 +520,18 @@ export type RenderInfo = {
    * template, even in the case of conditional templates.
    */
   customElementRendered?: (tagName: string) => void;
+
+  /**
+   * Flag to defer hydration of top level custom element. Defaults to false.
+   */
+  deferHydration: boolean;
 };
 
 const defaultRenderInfo = {
   elementRenderers: [LitElementRenderer],
   customElementInstanceStack: [],
   customElementHostStack: [],
+  deferHydration: false,
 };
 
 declare global {
@@ -710,10 +716,13 @@ function* renderTemplateResult(
         // Render out any attributes on the instance (both static and those
         // that may have been dynamically set by the renderer)
         yield* instance.renderAttributes();
-        // If this element is nested in another, add the `defer-hydration`
-        // attribute, so that it does not enable before the host element
-        // hydrates
-        if (renderInfo.customElementHostStack.length > 0) {
+        // If deferHydration flag is true or if this element is nested in
+        // another, add the `defer-hydration` attribute, so that it does not
+        // enable before the host element hydrates
+        if (
+          renderInfo.deferHydration ||
+          renderInfo.customElementHostStack.length > 0
+        ) {
           yield ' defer-hydration';
         }
         break;

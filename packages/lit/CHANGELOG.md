@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.2.5
+
+### Patch Changes
+
+- [#2952](https://github.com/lit/lit/pull/2952) [`a78cc3b7`](https://github.com/lit/lit/commit/a78cc3b7f221a97e04dfda77d790fbea8f48d12c) - Fix SSR hydration bug relating to <input> and other void elements having attribute bindings.
+
 ## 2.2.4
 
 ### Patch Changes
