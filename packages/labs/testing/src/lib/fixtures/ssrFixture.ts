@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'lit/experimental-hydrate-support.js';
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
 import {litSsrPluginCommand} from '../constants.js';

@@ -9,25 +9,22 @@ import * as pathlib from 'path';
 import {litSsrPluginCommand} from './constants.js';
 
 import type {TemplateResult} from 'lit';
+import type {TestRunnerPlugin} from '@web/test-runner';
 
 export interface Payload {
   template: TemplateResult;
   modules: string[];
 }
 
-interface CommandParam {
-  command: typeof litSsrPluginCommand;
-  payload: Payload;
-}
-
-export function litSsrPlugin() {
+export function litSsrPlugin(): TestRunnerPlugin<Payload> {
   return {
     name: 'lit-ssr-plugin',
-    async executeCommand({
-      command,
-      payload: {template, modules},
-    }: CommandParam): Promise<string | undefined> {
+    async executeCommand({command, payload}) {
       if (command === litSsrPluginCommand) {
+        if (!payload) {
+          throw new Error(`Missing payload for ${litSsrPluginCommand} command`);
+        }
+        const {template, modules} = payload;
         const resolvedModules = modules.map((module) =>
           pathlib.join(process.cwd(), module)
         );

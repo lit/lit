@@ -5,5 +5,3 @@
  */
 
 export {litSsrPlugin} from './lib/litSsrPlugin.js';
-export * from './lib/fixtures/csrFixture.js';
-export * from './lib/fixtures/ssrFixture.js';

@@ -313,7 +313,9 @@ packages/labs/vue-utils/wrapper-utils.*
 packages/labs/testing/fixtures
 packages/labs/testing/web-test-runner
 packages/labs/testing/index.*
+packages/labs/testing/fixtures.*
 packages/labs/testing/lib
+packages/labs/testing/test
 
 packages/localize/testdata/
 packages/localize/examples/
