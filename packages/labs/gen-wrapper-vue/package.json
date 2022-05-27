@@ -21,6 +21,7 @@
       "dependencies": [
         "../analyzer:build",
         "../../tests:build",
+        "../vue-utils:build",
         "../gen-utils:build"
       ],
       "files": [
@@ -40,7 +41,6 @@
       ],
       "dependencies": [
         "build",
-        "../vue-utils:build",
         "../test-projects/test-element-a:build"
       ],
       "command": "uvu test-gen '.*_test\\.js$'",
@@ -59,6 +59,7 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
+    "@lit-labs/vue-utils": "^0.0.1",
     "tests": "0.0.0"
   },
   "devDependencies": {

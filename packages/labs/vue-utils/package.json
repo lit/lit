@@ -13,9 +13,7 @@
   "main": "index.js",
   "module": "index.js",
   "typings": "index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "directories": {},
   "exports": {
     ".": {
       "development": "./development/index.js",
@@ -28,7 +26,6 @@
   },
   "files": [
     "/development/",
-    "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/wrapper-utils.{d.ts,d.ts.map,js,js.map}"
   ],
@@ -71,8 +68,7 @@
       ],
       "files": [],
       "output": [
-        "*.d.ts{,.map}",
-        "test/**/*.d.ts{,.map}"
+        "*.d.ts{,.map}"
       ]
     },
     "build:rollup": {
@@ -86,8 +82,7 @@
       ],
       "output": [
         "index.js{,.map}",
-        "wrapper-utils.js{,.map}",
-        "test/**/*.js{,.map}"
+        "wrapper-utils.js{,.map}"
       ]
     },
     "checksize": {
