@@ -10,8 +10,9 @@ for (const file of files) {
       \`\${root}/\${file}\`,
       \`\${root}/\${file.replace('.vue.d.ts', '.d.ts')}\`,
       (err) => {
-        console.log(err)
+        console.log(err);
       }
     )
   }
-}`;
+}
+`;
