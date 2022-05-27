@@ -43,9 +43,6 @@
   "exports": {
     ".": {
       "default": "./index.js"
-    },
-    "./fixtures.js": {
-      "default": "./lib/fixtures.js"
     }
   },
   "files": [
