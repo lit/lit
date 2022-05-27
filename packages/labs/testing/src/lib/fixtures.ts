@@ -20,7 +20,7 @@ import type {FixtureOption} from './fixtures/fixtureOption.js';
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the project root.
- * @param {string} option.base - Base path for the module. Genenrally should be
+ * @param {string} option.base - Base path for the module. Generally should be
  * `import.meta.url`.
  */
 export async function ssrHydratedFixture(
@@ -42,7 +42,7 @@ export async function ssrHydratedFixture(
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the project root.
- * @param {string} option.base - Base path for the module. Genenrally should be
+ * @param {string} option.base - Base path for the module. Generally should be
  * `import.meta.url`.
  */
 export async function ssrNonHydratedFixture(

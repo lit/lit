@@ -7,10 +7,11 @@
 import 'lit/experimental-hydrate-support.js';
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
+import {litSsrPluginCommand} from '../constants.js';
 
 import type {LitElement, TemplateResult} from 'lit';
 import type {SsrFixtureOption} from './fixtureOption.js';
-import type {Command, Payload} from '../web-test-runner/litSsrPlugin.js';
+import type {Payload} from '../litSsrPlugin.js';
 
 // Enhance DOMParser's parseFromString method to include `includeShadowRoots`
 // option for browsers that support declarative shadow DOM as proposed in
@@ -37,7 +38,7 @@ declare global {
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the project root.
- * @param {string} option.base - Base path for the module. Genenrally should be
+ * @param {string} option.base - Base path for the module. Generally should be
  * `import.meta.url`.
  * @param {boolean} [option.hydrate] - Defaults to true. Hydrates the component
  * after being loaded to the document.
@@ -46,8 +47,8 @@ export async function ssrFixture(
   template: TemplateResult,
   {modules, base, hydrate = true}: SsrFixtureOption
 ): Promise<Element | null | undefined> {
-  const rendered: string = await executeServerCommand<Command, Payload>(
-    'lit-ssr-render',
+  const rendered = await executeServerCommand<string, Payload>(
+    litSsrPluginCommand,
     {
       template,
       modules: modules.map((module) => new URL(module, base).pathname),

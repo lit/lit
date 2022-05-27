@@ -4,5 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export {litSsrPlugin} from './lib/litSsrPlugin.js';
-export * from './lib/fixtures.js';
+export const litSsrPluginCommand = 'lit-ssr-render';

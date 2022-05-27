@@ -40,7 +40,7 @@ Example
 
 ```js
 // my-element.test.js
-import {ssrFixture} from '@lit-labs/testing/fixtures.js';
+import {ssrFixture} from '@lit-labs/testing';
 import {html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 
@@ -64,10 +64,7 @@ Example
 
 ```js
 // my-element.test.js
-import {
-  ssrNonHydratedFixture,
-  ssrHydratedFixture,
-} from '@lit-labs/testing/fixtures.js';
+import {ssrNonHydratedFixture, ssrHydratedFixture} from '@lit-labs/testing';
 import {html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 

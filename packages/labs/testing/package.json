@@ -35,8 +35,7 @@
       ],
       "output": [
         "index.{d.ts,d.ts.map,js,js.map}",
-        "fixtures/",
-        "web-test-runner/",
+        "lib/**/*.{d.ts,d.ts.map,js,js.map}",
         ".tsbuildinfo"
       ]
     }
@@ -46,14 +45,12 @@
       "default": "./index.js"
     },
     "./fixtures.js": {
-      "default": "./fixtures.js"
+      "default": "./lib/fixtures.js"
     }
   },
   "files": [
-    "/index.{d.ts,d.ts.map,js,js.map}",
-    "/fixtures/ssrFixture.{d.ts,d.ts.map,js,js.map}",
-    "/web-test-runner/litSsrPlugin.{d.ts,d.ts.map,js,js.map}",
-    "/web-test-runner/worker/worker.{d.ts,d.ts.map,js,js.map}"
+    "index.{d.ts,d.ts.map,js,js.map}",
+    "./lib/**/*.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
     "@lit-labs/ssr": "^2.1.0",
