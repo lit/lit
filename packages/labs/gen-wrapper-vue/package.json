@@ -42,7 +42,7 @@
       ],
       "dependencies": [
         "build",
-        "../test-projects/test-element-a:build"
+        "../test-projects/test-element-a:pack"
       ],
       "command": "uvu test-gen '.*_test\\.js$'",
       "output": [
