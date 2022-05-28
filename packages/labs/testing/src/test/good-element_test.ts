@@ -23,7 +23,6 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     test('renders with default values', async () => {
       const el = await fixture(html`<good-element></good-element>`, {
         modules: ['./good-element.js'],
-        base: import.meta.url,
       });
       assert.shadowDom.equal(
         el,
@@ -38,7 +37,9 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     test('renders with a set name', async () => {
       const el = await fixture(
         html`<good-element name="Test"></good-element>`,
-        {modules: ['./good-element.js'], base: import.meta.url}
+        {
+          modules: ['./good-element.js'],
+        }
       );
       assert.shadowDom.equal(
         el,
@@ -53,7 +54,6 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     test('styling applied', async () => {
       const el = (await fixture(html`<good-element></good-element>`, {
         modules: ['./good-element.js'],
-        base: import.meta.url,
       })) as GoodElement;
       assert.equal(getComputedStyle(el).paddingTop, '16px');
     });
@@ -63,7 +63,6 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
       async () => {
         const el = (await fixture(html`<good-element></good-element>`, {
           modules: ['./good-element.js'],
-          base: import.meta.url,
         })) as GoodElement;
         const button = el.shadowRoot!.querySelector('button')!;
         button.click();

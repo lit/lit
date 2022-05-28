@@ -6,7 +6,6 @@
 
 export interface FixtureOption {
   modules: string[];
-  base: string;
 }
 
 export interface SsrFixtureOption extends FixtureOption {
