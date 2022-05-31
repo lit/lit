@@ -37,39 +37,42 @@ declare global {
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the test file.
- * @param {string} option.base - Base path for the module. Generally should be
- * `import.meta.url`.
+ * @param {string} [option.base] - Optional. Base path for the modules.
+ * Generally should be `import.meta.url`. Will guess from stack trace if not
+ * provided.
  * @param {boolean} [option.hydrate] - Defaults to true. Hydrates the component
  * after being loaded to the document.
  */
 export async function ssrFixture(
   template: TemplateResult,
-  {modules, hydrate = true}: SsrFixtureOption
+  {modules, base, hydrate = true}: SsrFixtureOption
 ): Promise<Element | null | undefined> {
-  // Find the test file url from the call stack
-  // Chrome:
-  // Error
-  // at ssrFixture (http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:29:17)
-  // at ssrHydratedFixture (http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:76:12)
-  // at o.<anonymous> (http://localhost:8000/test/my-element_test.js?wtr-session-id=GhB4vW1TXWxXwqgt3F8QD:65:30)
-  //
-  // Firefox:
-  // ssrFixture@http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:29:17
-  // ssrHydratedFixture@http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:76:12
-  // @http://localhost:8000/test/my-element_test.js?wtr-session-id=NaCljZAFiyeOoV6-qBqwr:65:30
-  //
-  // Webkit:
-  // @http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:29:26
-  // asyncFunctionResume@[native code]
-  // asyncFunctionResume@[native code]
-  // @http://localhost:8000/test/my-element_test.js?wtr-session-id=aKWON-wBOBGyzb2CwIvmK:65:37
-  const match = new Error().stack?.match(
-    /http:\/\/localhost.+(?=\?wtr-session-id)/
-  );
-  if (!match) {
-    throw new Error('Could not find call site for ssrFixture');
+  if (base === undefined) {
+    // Find the test file url from the call stack
+    // Chrome:
+    // Error
+    // at ssrFixture (http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:29:17)
+    // at ssrHydratedFixture (http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:76:12)
+    // at o.<anonymous> (http://localhost:8000/test/my-element_test.js?wtr-session-id=GhB4vW1TXWxXwqgt3F8QD:65:30)
+    //
+    // Firefox:
+    // ssrFixture@http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:29:17
+    // ssrHydratedFixture@http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:76:12
+    // @http://localhost:8000/test/my-element_test.js?wtr-session-id=NaCljZAFiyeOoV6-qBqwr:65:30
+    //
+    // Webkit:
+    // @http://localhost:8000/node_modules/@lit-labs/testing/lib/fixtures/ssrFixture.js:29:26
+    // asyncFunctionResume@[native code]
+    // asyncFunctionResume@[native code]
+    // @http://localhost:8000/test/my-element_test.js?wtr-session-id=aKWON-wBOBGyzb2CwIvmK:65:37
+    const match = new Error().stack?.match(
+      /http:\/\/localhost.+(?=\?wtr-session-id)/
+    );
+    if (!match) {
+      throw new Error('Could not find call site for ssrFixture');
+    }
+    base = match[0];
   }
-  const base = match[0];
 
   const rendered = await executeServerCommand<string, Payload>(
     litSsrPluginCommand,
@@ -114,14 +117,15 @@ export async function ssrFixture(
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the test file.
- * @param {string} option.base - Base path for the module. Generally should be
- * `import.meta.url`.
+ * @param {string} [option.base] - Optional. Base path for the modules.
+ * Generally should be `import.meta.url`. Will guess from stack trace if not
+ * provided.
  */
 export async function ssrHydratedFixture(
   template: TemplateResult,
-  {modules}: FixtureOption
+  {modules, base}: FixtureOption
 ) {
-  return ssrFixture(template, {modules, hydrate: true});
+  return ssrFixture(template, {modules, base, hydrate: true});
 }
 
 /**
@@ -136,12 +140,13 @@ export async function ssrHydratedFixture(
  * top level custom element.
  * @param {string[]} option.modules - Path to custom element definition modules
  * needed to render template, relative to the test file.
- * @param {string} option.base - Base path for the module. Generally should be
- * `import.meta.url`.
+ * @param {string} [option.base] - Optional. Base path for the modules.
+ * Generally should be `import.meta.url`. Will guess from stack trace if not
+ * provided.
  */
 export async function ssrNonHydratedFixture(
   template: TemplateResult,
-  {modules}: FixtureOption
+  {modules, base}: FixtureOption
 ) {
-  return ssrFixture(template, {modules, hydrate: false});
+  return ssrFixture(template, {modules, base, hydrate: false});
 }
