@@ -128,6 +128,24 @@ suite('runtime localization configuration', () => {
       assert.equal(container.textContent, 'Hola friend');
     });
 
+    test('renders multiple parameterized template with different expressions in Spanish', async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+
+      const name = 'friend';
+      const name2 = 'buddy';
+      render(
+        html`${msg(html`Hello ${name}`, {
+          id: 'parameterized',
+        })}${' '}${msg(html`Hello ${name2}`, {
+          id: 'parameterized',
+        })}`,
+        container
+      );
+      assert.equal(container.textContent, 'Hola friend Hola buddy');
+    });
+
     test('renders parameterized string template where expression order changed', async () => {
       const loaded = setLocale('es-419');
       lastLoadLocaleResponse.resolve(spanishModule);
