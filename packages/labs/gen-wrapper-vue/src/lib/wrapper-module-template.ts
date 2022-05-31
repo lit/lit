@@ -17,7 +17,7 @@ export const wrapperModuleTemplate = (
 ) => {
   return javascript`
   import { h, defineComponent, openBlock, createBlock } from "vue";
-  import { wrapSlots, Slots, eventProp } from "@lit-labs/vue-utils/wrapper-utils.js";
+  import { assignSlotNodes, Slots, eventProp } from "@lit-labs/vue-utils/wrapper-utils.js";
   import '${packageJson.name}/${moduleJsPath}';
 
   ${elements.map((element) => wrapperTemplate(element))}
@@ -92,7 +92,7 @@ const wrapperTemplate = ({
           ...props,
           ${renderEvents(events)}
         },
-        wrapSlots(slots as Slots)
+        assignSlotNodes(slots as Slots)
       );
       return () => {
         openBlock();

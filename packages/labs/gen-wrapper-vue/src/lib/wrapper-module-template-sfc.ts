@@ -58,7 +58,7 @@ const wrapperTemplate = (
   return javascript`
     <script setup lang="ts">
       import { h, useSlots } from "vue";
-      import { wrapSlots, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
+      import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
 
       const props = defineProps<{
@@ -77,7 +77,7 @@ const wrapperTemplate = (
           ...props,
           ${renderEvents(events)}
         },
-        wrapSlots(slots as Slots)
+        assignSlotNodes(slots as Slots)
       );
     </script>
     <template><render /></template>`;

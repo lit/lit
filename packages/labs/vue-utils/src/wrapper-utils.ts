@@ -1,4 +1,4 @@
-import {h, PropType} from 'vue';
+import {h, PropType, VNode} from 'vue';
 
 /**
  *
@@ -25,13 +25,11 @@ export const eventProp = <T>() => ({
  * Shadow DOM. When, vNodes represent text nodes or other Vue components, they
  * are wrapped in a `span` which is given the slot attribute.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type VNode = any;
 export type Slots = {[index: string]: () => VNode[]};
 
-const isElementVNode = (v: VNode) => typeof v.type === 'string';
+const isElementNode = (v: VNode) => typeof v.type === 'string';
 
-const assignToSlot = (v: VNode, name: string) => {
+const assignNode = (v: VNode, name: string) => {
   (v.props ??= {}).slot = name;
   return v;
 };
@@ -41,18 +39,18 @@ const assignToSlot = (v: VNode, name: string) => {
 // has not been set to `false`, it's safe to `assignToSlot`; otherwise
 // the component must be wrapped via `wrapToSlot`. It's not possible to see
 // the component's vNodes from here so components always use `wrapToSlot`.
-const wrapToSlot = (v: VNode, name: string) =>
+const assignWrappedNode = (v: VNode, name: string) =>
   h('span', {style: 'display: contents;', slot: name}, v);
 
 // Converts Vue slot data to native slot-able nodes by directly manipulating
 // vNodes.
-export const wrapSlots = (slots: Slots) =>
+export const assignSlotNodes = (slots: Slots) =>
   Object.keys(slots).map((name) =>
     slots[name]().map((v: VNode) =>
       name === 'default'
         ? v
-        : isElementVNode(v)
-        ? assignToSlot(v, name)
-        : wrapToSlot(v, name)
+        : isElementNode(v)
+        ? assignNode(v, name)
+        : assignWrappedNode(v, name)
     )
   );

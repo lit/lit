@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {h, useSlots} from 'vue';
-import {wrapSlots, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
+import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
 import '@lit-internal/test-element-a/element-a.js';
 
 const props = defineProps<{
@@ -21,7 +21,7 @@ const render = () =>
       onAChanged: (event: CustomEvent<unknown>) =>
         emit('a-changed', (event.detail || event) as unknown),
     },
-    wrapSlots(slots as Slots)
+    assignSlotNodes(slots as Slots)
   );
 </script>
 <template><render /></template>
