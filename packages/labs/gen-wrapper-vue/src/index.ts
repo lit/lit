@@ -65,19 +65,17 @@ const wrapperSFCFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
     // Format: [...[name, content]]
     const wrappers = wrapperModuleTemplateSFC(packageJson, jsPath, elements);
     const dir = path.dirname(sourcePath);
+    const exports: string[] = [];
+    // TODO(sorvell): Throw if component names are re-used in the same folder.
+    for (const [name, content] of wrappers) {
+      exports.push(`export {default as ${name}} from './${name}.vue';`);
+      wrapperFiles[getVueFileName(dir, name)] = content!;
+    }
+    // Note, if a given source module includes more than component, the author
+    // probably intended to make them available via a single import and this
+    // separate module preserves that intent.
     if (wrappers.length > 1) {
-      // TODO(sorvell): Throw if component names are re-used in the same folder.
-      const modules: FileTree = {};
-      const exports: string[] = [];
-      for (const [name, content] of wrappers) {
-        exports.push(`export {default as ${name}} from './${name}.vue';`);
-        modules[getVueFileName(dir, name)] = content!;
-      }
       wrapperFiles[sourcePath] = exports.join('/n');
-      Object.assign(wrapperFiles, modules);
-    } else {
-      const [name, content] = wrappers[0];
-      wrapperFiles[getVueFileName(dir, name)] = content;
     }
   }
   return wrapperFiles;

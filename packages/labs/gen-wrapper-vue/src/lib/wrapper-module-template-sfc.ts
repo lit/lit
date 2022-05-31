@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {
   LitElementDeclaration,
   ReactiveProperty as ModelProperty,
@@ -6,6 +12,14 @@ import {
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
+/**
+ * Generates a Vue wrapper component as a Vue single file component. This
+ * approach relies on the Vue compiler to generate a Javascript property types
+ * object for Vue runtime type checking from the Typescript property types.
+ *
+ * TODO(sorvell): This is also a Typescript module generator that is unused.
+ * Need to decide which approach is best and delete the unused generator.
+ */
 export const wrapperModuleTemplateSFC = (
   packageJson: PackageJson,
   moduleJsPath: string,
@@ -19,14 +33,17 @@ export const wrapperModuleTemplateSFC = (
 };
 
 // TODO(sorvell): place into model directly?
-const getTypeToken = (node: ModelProperty['node']) =>
+const getFieldModifierString = (node: ModelProperty['node']) =>
   node.questionToken ? '?' : node.exclamationToken ? '!' : '';
 
 const getEventType = (event: ModelEvent) => event.typeString || `unknown`;
 
 const wrapDefineProps = (props: Map<string, ModelProperty>) =>
   Array.from(props.values())
-    .map((prop) => `${prop.name}${getTypeToken(prop.node)}: ${prop.typeString}`)
+    .map(
+      (prop) =>
+        `${prop.name}${getFieldModifierString(prop.node)}: ${prop.typeString}`
+    )
     .join(',\n');
 
 // TODO(sorvell): Improve event handling, currently just forwarding the event,
@@ -37,7 +54,10 @@ const wrapEvents = (events: Map<string, ModelEvent>) =>
       (event) => `(e: '${event.name}', payload: ${getEventType(event)}): void`
     )
     .join(',\n');
-
+/**
+ * Generates VNode props for events. Note that vue automatically maps
+ * event names from e.g. `event-name` to `onEventName`.
+ */
 const renderEvents = (events: Map<string, ModelEvent>) =>
   Array.from(events.values())
     .map(

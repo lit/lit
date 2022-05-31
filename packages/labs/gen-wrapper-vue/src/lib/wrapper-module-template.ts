@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {
   LitElementDeclaration,
   ReactiveProperty as ModelProperty,
@@ -10,6 +16,15 @@ import {
   toInitialCap,
 } from '@lit-labs/gen-utils/lib/str-utils.js';
 
+/**
+ * Generates a Vue wrapper component as a Typescript module. This approach
+ * requires generating a Javascript property types object for Vue runtime
+ * type checking to work.
+ *
+ * TODO(sorvell): This is currently unused and instead the wrapper is generated
+ * as a Vue SFC. Need to decide which approach is best and delete the unused
+ * generator.
+ */
 export const wrapperModuleTemplate = (
   packageJson: PackageJson,
   moduleJsPath: string,
@@ -59,6 +74,10 @@ const wrapEvents = (events: Map<string, ModelEvent>) =>
     )
     .join(',\n');
 
+/**
+ * Generates VNode props for events. Note that vue automatically maps
+ * event names from e.g. `event-name` to `onEventName`.
+ */
 const renderEvents = (events: Map<string, ModelEvent>) =>
   Array.from(events.values())
     .map(

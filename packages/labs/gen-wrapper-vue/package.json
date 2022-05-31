@@ -61,8 +61,7 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
-    "@lit-labs/vue-utils": "^0.0.1",
-    "tests": "0.0.0"
+    "@lit-labs/vue-utils": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^17.0.31",

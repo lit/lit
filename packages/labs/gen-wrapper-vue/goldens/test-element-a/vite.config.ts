@@ -5,6 +5,7 @@ import typescript from '@rollup/plugin-typescript';
 export default {
   build: {
     rollupOptions: {
+      // Ensures no deps are bundled with this build.
       external: () => true,
       input: ['./src/ElementA.vue'],
       preserveModules: true,
