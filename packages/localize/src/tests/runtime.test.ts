@@ -51,8 +51,9 @@ suite('runtime localization configuration', () => {
     templates: {
       greeting: html`<b>Hola Mundo</b>`,
       parameterized: html`<b>Hola ${0}</b>`,
-      strOrderChange: str`2:${1} 1:${0}`,
       htmlOrderChange: html`<b>2:${1} 1:${0}</b>`,
+      strParameterized: str`Hola ${0}`,
+      strOrderChange: str`2:${1} 1:${0}`,
     },
   };
 
@@ -94,10 +95,10 @@ suite('runtime localization configuration', () => {
       assert.equal(container.textContent, 'Hola Mundo');
     });
 
-    test('renders parameterized template in English', () => {
+    test('renders parameterized HTML template in English', () => {
       const name = 'friend';
       render(
-        msg(html`Hello ${name}`, {
+        msg(html`<b>Hello ${name}</b>`, {
           id: 'parameterized',
         }),
         container
@@ -105,22 +106,13 @@ suite('runtime localization configuration', () => {
       assert.equal(container.textContent, 'Hello friend');
     });
 
-    test('renders parameterized string template in English', () => {
-      const renderAndTest = () => {
-        const x = msg(str`1:${'A'} 2:${'B'}`, {id: 'strOrderChange'});
-        render(x, container);
-        assert.equal(container.textContent, '1:A 2:B');
-      };
-      renderAndTest();
-    });
-
-    test('renders parameterized template in Spanish', async () => {
+    test('renders parameterized HTML template in Spanish', async () => {
       const loaded = setLocale('es-419');
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
       const name = 'friend';
       render(
-        msg(html`Hello ${name}`, {
+        msg(html`<b>Hello ${name}</b>`, {
           id: 'parameterized',
         }),
         container
@@ -128,7 +120,7 @@ suite('runtime localization configuration', () => {
       assert.equal(container.textContent, 'Hola friend');
     });
 
-    test('renders multiple parameterized template with different expressions in Spanish', async () => {
+    test('renders multiple parameterized HTML template with different expressions in Spanish', async () => {
       const loaded = setLocale('es-419');
       lastLoadLocaleResponse.resolve(spanishModule);
       await loaded;
@@ -136,10 +128,73 @@ suite('runtime localization configuration', () => {
       const name = 'friend';
       const name2 = 'buddy';
       render(
-        html`${msg(html`Hello ${name}`, {
+        html`${msg(html`<b>Hello ${name}</b>`, {
           id: 'parameterized',
-        })}${' '}${msg(html`Hello ${name2}`, {
+        })}${' '}${msg(html`<b>Hello ${name2}</b>`, {
           id: 'parameterized',
+        })}`,
+        container
+      );
+      assert.equal(container.textContent, 'Hola friend Hola buddy');
+    });
+
+    test('renders parameterized HTML template where expression order changed', async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+
+      const renderAndTest = () => {
+        render(
+          msg(html`<b>1:${'A'} 2:${'B'}</b>`, {id: 'htmlOrderChange'}),
+          container
+        );
+        assert.equal(container.textContent, '2:B 1:A');
+      };
+
+      renderAndTest();
+
+      // Render again in case we lost our value ordering somehow.
+      renderAndTest();
+    });
+
+    test('renders parameterized string template in English', async () => {
+      const name = 'friend';
+      render(
+        msg(str`Hello ${name}`, {
+          id: 'strParameterized',
+        }),
+        container
+      );
+      assert.equal(container.textContent, 'Hello friend');
+    });
+
+    test('renders parameterized string template in Spanish', async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+
+      const name = 'friend';
+      render(
+        msg(str`Hello ${name}`, {
+          id: 'strParameterized',
+        }),
+        container
+      );
+      assert.equal(container.textContent, 'Hola friend');
+    });
+
+    test('renders multiple parameterized string template in Spanish', async () => {
+      const loaded = setLocale('es-419');
+      lastLoadLocaleResponse.resolve(spanishModule);
+      await loaded;
+
+      const name = 'friend';
+      const name2 = 'buddy';
+      render(
+        `${msg(str`Hello ${name}`, {
+          id: 'strParameterized',
+        })}${' '}${msg(str`Hello ${name2}`, {
+          id: 'strParameterized',
         })}`,
         container
       );
@@ -159,28 +214,6 @@ suite('runtime localization configuration', () => {
       renderAndTest();
 
       // Render again in case we lost our value ordering somehow.
-      renderAndTest();
-    });
-
-    test('renders parameterized HTML template where expression order changed', async () => {
-      const loaded = setLocale('es-419');
-      lastLoadLocaleResponse.resolve(spanishModule);
-      await loaded;
-
-      const renderAndTest = () => {
-        render(
-          msg(html`<b>1:${'A'} 2:${'B'}</b>`, {id: 'htmlOrderChange'}),
-          container
-        );
-        assert.equal(container.textContent, '2:B 1:A');
-      };
-
-      renderAndTest();
-
-      // Render again in case we lost our value ordering somehow. This is a
-      // possible source of bugs, because we do an in-place update of
-      // TemplateResult values, so it's easy to lose track of the original order
-      // if not careful.
       renderAndTest();
     });
   });
