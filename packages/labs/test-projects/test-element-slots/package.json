@@ -1,13 +1,13 @@
 {
   "private": true,
-  "name": "@lit-internal/test-element-a",
+  "name": "@lit-internal/test-element-slots",
   "version": "1.0.0",
   "scripts": {
     "build": "wireit",
     "pack": "wireit"
   },
   "files": [
-    "/element-a.{js,js.map,d.ts,d.ts.map}"
+    "/element-slots.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
     "lit": "^2.0.0"
@@ -26,7 +26,7 @@
       ],
       "command": "tsc --build --pretty",
       "output": [
-        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-slots.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"

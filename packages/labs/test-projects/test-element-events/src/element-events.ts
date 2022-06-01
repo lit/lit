@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html, css} from 'lit';
+import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 class EventSubclass extends Event {
@@ -12,14 +12,22 @@ class EventSubclass extends Event {
   aNumber: number;
 
   constructor(
-    type = 'event-subclass',
-    options = {composed: true, bubbles: true, cancelable: true},
     aStr = 'aStr',
-    aNumber = 5
+    aNumber = 5,
+    type = 'event-subclass',
+    options = {composed: true, bubbles: true, cancelable: true}
   ) {
     super(type, options);
     this.aStr = aStr;
     this.aNumber = aNumber;
+  }
+}
+
+declare global {
+  interface HTMLElementEventMap {
+    'event-subclass': EventSubclass;
+    'string-custom-event': CustomEvent<string>;
+    'number-custom-event': CustomEvent<number>;
   }
 }
 
@@ -31,12 +39,6 @@ class EventSubclass extends Event {
  */
 @customElement('element-events')
 export class ElementEvents extends LitElement {
-  static override styles = css`
-    :host {
-      display: block;
-    }
-  `;
-
   @property()
   foo?: string;
 
@@ -64,5 +66,9 @@ export class ElementEvents extends LitElement {
         cancelable: true,
       })
     );
+  }
+
+  fireEventSubclass(str: string, num: number, fromNode = this) {
+    fromNode.dispatchEvent(new EventSubclass(str, num));
   }
 }
