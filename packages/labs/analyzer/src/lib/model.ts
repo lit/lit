@@ -6,9 +6,12 @@
 
 import ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
+import {DiagnosticError} from './errors.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
+import * as typedoc from 'typedoc';
+import path from 'path';
 
 export interface PackageInit {
   rootDir: AbsolutePath;
@@ -62,7 +65,24 @@ export class Module {
   }
 }
 
-export type Declaration = ClassDeclaration;
+export type Declaration = ClassDeclaration | VariableDeclaration;
+
+export interface VariableDeclarationInit {
+  name: string;
+  node: ts.VariableDeclaration;
+  type: Type | undefined;
+}
+
+export class VariableDeclaration {
+  readonly name: string;
+  readonly node: ts.VariableDeclaration;
+  readonly type: Type | undefined;
+  constructor(init: VariableDeclarationInit) {
+    this.name = init.name;
+    this.node = init.node;
+    this.type = init.type;
+  }
+}
 
 export interface ClassDeclarationInit {
   name: string | undefined;
@@ -115,9 +135,7 @@ export interface ReactiveProperty {
   name: string;
   node: ts.PropertyDeclaration;
 
-  // TODO(justinfagnani): where do we convert this to a type string and CEM type references?
-  type: ts.Type;
-  typeString: string;
+  type: Type;
 
   reflect: boolean;
 
@@ -146,16 +164,17 @@ export interface ReactiveProperty {
 export interface Event {
   name: string;
   description: string | undefined;
-  typeString: string | undefined;
-  // TODO(justinfagnani): store a type reference too
-  // https://github.com/lit/lit/issues/2850
+  type: Type | undefined;
 }
 
 // TODO(justinfagnani): Move helpers into a Lit-specific module
 export const isLitElementDeclaration = (
-  dec: ClassDeclaration
+  dec: Declaration
 ): dec is LitElementDeclaration => {
-  return (dec as LitElementDeclaration).isLitElement;
+  return (
+    dec instanceof ClassDeclaration &&
+    (dec as LitElementDeclaration).isLitElement
+  );
 };
 
 export interface LitModule {
@@ -176,3 +195,266 @@ export const getLitModules = (analysis: Package) => {
   }
   return modules;
 };
+
+export interface ReferenceInit {
+  name: string;
+  package?: string;
+  module?: string;
+  isGlobal: boolean;
+}
+
+export class Reference {
+  readonly name: string;
+  readonly package: string | undefined;
+  readonly module: string | undefined;
+  readonly isGlobal: boolean;
+  constructor(init: ReferenceInit) {
+    this.name = init.name;
+    this.package = init.package;
+    this.module = init.module;
+    this.isGlobal = init.isGlobal;
+  }
+}
+
+export class Type {
+  type: ts.Type;
+  text: string;
+  references: Reference[];
+
+  constructor(type: ts.Type, text: string, references: Reference[]) {
+    this.type = type;
+    this.text = text;
+    this.references = references;
+  }
+
+  getImportStatementsForReferences() {
+    return this.references
+      .filter((ref) => !ref.isGlobal)
+      .map(
+        (ref) =>
+          `import {${ref.name}} from '${ref.package}${
+            ref.module ? '/' + ref.module : ''
+          }';`
+      )
+      .join('\n');
+  }
+}
+
+/**
+ * Utility class that stores context about the current program under
+ * analysis and helpers for generating Type objects.
+ */
+export class ProgramContext {
+  readonly program: ts.Program;
+  readonly checker: ts.TypeChecker;
+  readonly package: string;
+  private readonly _typedocContext: typedoc.Context;
+  private readonly _typedocConverter: typedoc.Converter;
+
+  currentModule: Module | undefined = undefined;
+
+  constructor(program: ts.Program, packageName: string) {
+    this.program = program;
+    this.checker = program.getTypeChecker();
+    this.package = packageName;
+    this._typedocConverter = new typedoc.Converter(new typedoc.Application());
+    this._typedocContext = new typedoc.Context(
+      this._typedocConverter,
+      [this.program],
+      new typedoc.ProjectReflection('')
+    );
+    this._typedocContext.setActiveProgram(this.program);
+  }
+
+  /**
+   * Returns a ts.Symbol for a name in scope at a given location in the AST.
+   */
+  getSymbolForName(name: string, location: ts.Node): ts.Symbol | undefined {
+    return this.checker
+      .getSymbolsInScope(
+        location,
+        (ts.SymbolFlags as unknown as {All: number}).All
+      )
+      .filter((s) => s.name === name)[0];
+  }
+
+  /**
+   * Returns an analyzer `Type` object for the given constructor name
+   * in scope at a given location in the AST.
+   *
+   * `ctorName` can either refer to a class declaration or the instance
+   * interface for one (since built-in DOM classes are often defined
+   * as a legacy class using an interface)
+   */
+  getTypeForConstructorName(ctorName: string, location: ts.Node): Type {
+    const symbol = this.getSymbolForName(ctorName, location);
+    if (symbol === undefined) {
+      throw new DiagnosticError(
+        location,
+        `Symbol '${ctorName}' reference could not be found`
+      );
+    }
+    const declaration = symbol.declarations?.[0];
+    if (declaration === undefined) {
+      throw new DiagnosticError(
+        location,
+        `Declaration for symbol '${ctorName}' could not be found`
+      );
+    }
+    const type = this.convertType(
+      this.checker.getTypeOfSymbolAtLocation(symbol, location),
+      location
+    );
+    // Since we're starting from a constructor name, we can just use that as the
+    // type text, since that will be the instance type. The actual inferred type
+    // of a constructor symbol might be `typeof SomeClass` or even `{new(): ...,
+    // prototype: ...}` for builtins; however, we just care about the instance
+    // type, which is just going to be the constructor name. TODO(kschaaf) note
+    // that the `type` ts.Type will still point to the constructor, not the
+    // InstanceType of the constructor; do we care?
+    type.text = ctorName;
+    return type;
+  }
+
+  /**
+   * Returns an analyzer `Type` object for the given AST node.
+   */
+  getTypeForNode(node: ts.Node): Type {
+    // Since getTypeAtLocation will return `any` for an untyped node, to support
+    // jsdoc @type for JS (TBD), we look at the jsdoc type first.
+    const jsdocType = ts.getJSDocType(node);
+    return this.convertType(
+      jsdocType
+        ? this.checker.getTypeFromTypeNode(jsdocType)
+        : this.checker.getTypeAtLocation(node),
+      node
+    );
+  }
+
+  /**
+   * Returns the module specifier for a declaration if it was imported,
+   * or `undefined` if the declaration was not imported.
+   */
+  getImportModuleSpecifier(declaration: ts.Node): string | undefined {
+    // TODO(kschaaf) support the various import syntaxes
+    if (
+      ts.isImportSpecifier(declaration) &&
+      ts.isNamedImports(declaration.parent) &&
+      ts.isImportClause(declaration.parent.parent) &&
+      ts.isImportDeclaration(declaration.parent.parent.parent)
+    ) {
+      const module = declaration.parent.parent.parent.moduleSpecifier
+        .getText()
+        // Remove quotes
+        .slice(1, -1);
+      return module;
+    }
+    return undefined;
+  }
+
+  /**
+   * Returns an analyzer `Reference` object for a named identifier at the given
+   * AST location.
+   *
+   * If the symbol's declaration was imported, the Reference will be based on
+   * the import's module specifier; otherwise the Reference will point to the
+   * current module being analyzed.
+   */
+  getReferenceForSymbol(name: string, location: ts.Node): Reference {
+    const symbol = this.getSymbolForName(name, location);
+    if (this.currentModule === undefined) {
+      throw new Error(`Internal error: expected currentModule to be set`);
+    }
+    const declaration = symbol?.declarations?.[0];
+    if (declaration === undefined) {
+      throw new DiagnosticError(
+        location,
+        `Could not find declaration for symbol '${name}'`
+      );
+    }
+    if (declaration.getSourceFile() !== location.getSourceFile()) {
+      // If the reference declaration doesn't exist in this module, it must have
+      // been a global (whose declaration is in an ambient .d.ts file)
+      return new Reference({
+        name,
+        isGlobal: true,
+      });
+    } else {
+      const module = this.getImportModuleSpecifier(declaration);
+      if (module) {
+        // The symbol was imported; check whether it is package local or external
+        if (module[0] === '.') {
+          // Relative import from this package
+          return new Reference({
+            name,
+            package: this.package,
+            module: path.join(path.dirname(this.currentModule.jsPath), module),
+            isGlobal: false,
+          });
+        } else {
+          // External import
+          const info = module.match(
+            /^(?<package>(@\w+\/\w+)|\w+)\/?(?<moduleSpecifier>.*)$/
+          );
+          if (!info || !info.groups) {
+            throw new DiagnosticError(
+              declaration,
+              `External npm package could not be parsed from module specifier '${module}'.`
+            );
+          }
+          return new Reference({
+            name,
+            package: info.groups!.package,
+            module: info.groups!.moduleSpecifier,
+            isGlobal: false,
+          });
+        }
+      } else {
+        // Declared in this file
+        return new Reference({
+          name,
+          package: this.package,
+          module: this.currentModule.jsPath,
+          isGlobal: false,
+        });
+      }
+    }
+  }
+
+  /**
+   * Converts a ts.Type into an analyzer Type object (which wraps
+   * the ts.Type, but also provides analyzer Reference objects).
+   */
+  convertType(type: ts.Type, location: ts.Node): Type {
+    let text = this.checker.typeToString(type);
+    // Use typedoc to give us a visitor for type references used in this type to
+    // generate our `Reference`s. Note that `typedoc.ReferenceType` is very
+    // close to the info we want in `Reference`, but it unfortunately is not
+    // sufficient to generate import specifiers. Thus, we just use its visitor
+    // to identify the name of identifiers that require references, and then use
+    // the TS API to figure out their module specifiers.
+    const structure = this._typedocConverter.convertType(
+      this._typedocContext,
+      type
+    );
+    const references: Reference[] = [];
+    structure.visit(
+      typedoc.makeRecursiveVisitor({
+        reference: (ref: typedoc.ReferenceType) => {
+          references.push(this.getReferenceForSymbol(ref.name, location));
+        },
+      })
+    );
+    // Fix inferred types for classes defined with `{new()..., prototype:...}`
+    // (the built-in DOM classes are defined like this in ts)
+    if (text.match(/new\s*\(/) && structure instanceof typedoc.ReflectionType) {
+      const protoType = structure.declaration.children?.find(
+        (dec) => dec.name === 'prototype'
+      )?.type;
+      if (protoType && protoType instanceof typedoc.ReferenceType) {
+        text = protoType.name;
+      }
+    }
+    return new Type(type, text, references);
+  }
+}

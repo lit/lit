@@ -1,5 +1,5 @@
 {
-  "name": "@lit-internal/test-basic-elements",
+  "name": "@lit-internal/test-types",
   "dependencies": {
     "lit": "^2.0.0"
   }

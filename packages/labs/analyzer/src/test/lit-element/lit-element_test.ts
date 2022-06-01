@@ -21,10 +21,17 @@ const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
 );
 
 test.before((ctx) => {
-  const packagePath = (ctx.packagePath = fileURLToPath(
-    new URL('../../test-files/basic-elements', import.meta.url).href
-  ) as AbsolutePath);
-  ctx.analyzer = new Analyzer(packagePath);
+  try {
+    const packagePath = (ctx.packagePath = fileURLToPath(
+      new URL('../../test-files/basic-elements', import.meta.url).href
+    ) as AbsolutePath);
+    ctx.analyzer = new Analyzer(packagePath);
+  } catch (e) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error(e);
+    process.exit(1);
+  }
 });
 
 test('isLitElement returns true for a direct import', ({
@@ -32,12 +39,16 @@ test('isLitElement returns true for a direct import', ({
   packagePath,
 }) => {
   const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile = analyzer.program.getSourceFile(elementAPath)!;
+  const sourceFile =
+    analyzer.programContext.program.getSourceFile(elementAPath)!;
   const elementADeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'ElementA'
   );
   assert.ok(elementADeclaration);
-  assert.equal(isLitElement(elementADeclaration, analyzer.checker), true);
+  assert.equal(
+    isLitElement(elementADeclaration, analyzer.programContext),
+    true
+  );
 });
 
 test('isLitElement returns false for non-LitElement', ({
@@ -45,12 +56,12 @@ test('isLitElement returns false for non-LitElement', ({
   packagePath,
 }) => {
   const notLitPath = path.resolve(packagePath, 'src', 'not-lit.ts');
-  const sourceFile = analyzer.program.getSourceFile(notLitPath)!;
+  const sourceFile = analyzer.programContext.program.getSourceFile(notLitPath)!;
   const notLitDeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'NotLit'
   );
   assert.ok(notLitDeclaration);
-  assert.equal(isLitElement(notLitDeclaration, analyzer.checker), false);
+  assert.equal(isLitElement(notLitDeclaration, analyzer.programContext), false);
 });
 
 test('Analyzer finds LitElement declarations', ({analyzer}) => {
@@ -82,7 +93,7 @@ test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
   assert.ok(aProp);
   assert.equal(aProp.name, 'a', 'property name');
   assert.equal(aProp.attribute, 'a', 'attribute name');
-  assert.equal(aProp.typeString, 'string');
+  assert.equal(aProp.type.text, 'string');
   // TODO (justinfagnani) better assertion
   assert.ok(aProp.type);
   assert.equal(aProp.reflect, false);
@@ -92,7 +103,7 @@ test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
   assert.equal(bProp.name, 'b');
   assert.equal(bProp.attribute, 'bbb');
   // This is inferred
-  assert.equal(bProp.typeString, 'number');
+  assert.equal(bProp.type.text, 'number');
   assert.equal(bProp.typeOption, 'Number');
 });
 
