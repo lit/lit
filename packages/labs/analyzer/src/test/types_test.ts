@@ -179,8 +179,8 @@ test('jsdocStringExternalGlobalClassUnion', ({module}) => {
   assert.equal(type.references[1].isGlobal, true);
 });
 
-test('crazyType', ({module}) => {
-  const type = typeForVariable(module, 'crazyType');
+test('complexType', ({module}) => {
+  const type = typeForVariable(module, 'complexType');
   assert.equal(type.text, 'Promise<Map<keyof LitElement, ImportedClass[]>>[]');
   assert.equal(type.references.length, 4);
   assert.equal(type.references[0].name, 'Promise');
@@ -198,7 +198,7 @@ test('crazyType', ({module}) => {
 });
 
 test('getImportStringForReferences', ({module}) => {
-  const type = typeForVariable(module, 'crazyType');
+  const type = typeForVariable(module, 'complexType');
   assert.equal(
     type.getImportStatementsForReferences(),
     `

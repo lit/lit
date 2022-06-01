@@ -40,4 +40,4 @@ export let jsdocStringExternalClassUnion;
 /** @type {string | ImportedClass | HTMLElement} */
 export let jsdocStringExternalGlobalClassUnion;
 
-export let crazyType: Promise<Map<keyof LitElement, ImportedClass[]>>[];
+export let complexType: Promise<Map<keyof LitElement, ImportedClass[]>>[];

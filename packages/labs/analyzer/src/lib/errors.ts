@@ -19,30 +19,34 @@ const diagnosticsHost: ts.FormatDiagnosticsHost = {
 };
 
 export class DiagnosticsError extends Error {
-  constructor(diagnostics: readonly ts.Diagnostic[], message?: string) {
+  diagnostics: ts.Diagnostic[];
+  constructor(diagnostics: readonly ts.Diagnostic[], message?: string);
+  constructor(node: ts.Node, message: string);
+  constructor(
+    readonly nodeOrDiagnostics: readonly ts.Diagnostic[] | ts.Node,
+    message?: string
+  ) {
+    let diagnostics;
+    if (Array.isArray(nodeOrDiagnostics)) {
+      diagnostics = nodeOrDiagnostics;
+    } else {
+      const node = nodeOrDiagnostics as ts.Node;
+      diagnostics = [
+        {
+          file: node.getSourceFile(),
+          start: node.getStart(),
+          length: node.getWidth(),
+          category: ts.DiagnosticCategory.Error,
+          code: 2323,
+          messageText: message ?? '',
+        },
+      ];
+      message = undefined;
+    }
     super(
       (message ? message + ':\n' : '') +
         ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
     );
-  }
-}
-
-export class DiagnosticError extends Error {
-  constructor(node: ts.Node, message: string) {
-    const diagnostics = [
-      {
-        file: node.getSourceFile(),
-        start: node.getStart(),
-        length: node.getWidth(),
-        category: ts.DiagnosticCategory.Error,
-        code: 2323,
-        messageText: message ?? '',
-      },
-    ];
-    super(
-      message +
-        ':\n' +
-        ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
-    );
+    this.diagnostics = diagnostics;
   }
 }

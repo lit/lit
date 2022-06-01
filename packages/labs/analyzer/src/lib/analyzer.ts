@@ -136,7 +136,7 @@ export class Analyzer {
           module.declarations.push(
             getLitElementDeclaration(statement, this.programContext)
           );
-        } else {
+        } else if (isExported(statement)) {
           module.declarations.push(
             new ClassDeclaration({
               name: statement.name?.text,
@@ -145,18 +145,17 @@ export class Analyzer {
           );
         }
       } else if (ts.isVariableStatement(statement) && isExported(statement)) {
-        const declarations = statement.declarationList.declarations.filter(
-          (dec) => ts.isIdentifier(dec.name)
-        );
         module.declarations.push(
-          ...declarations.map((dec) => {
-            const vdec = new VariableDeclaration({
-              name: (dec.name as ts.Identifier).text,
-              node: dec,
-              type: this.programContext.getTypeForNode(dec),
-            });
-            return vdec;
-          })
+          ...statement.declarationList.declarations
+            .filter((dec) => ts.isIdentifier(dec.name))
+            .map(
+              (dec) =>
+                new VariableDeclaration({
+                  name: (dec.name as ts.Identifier).text,
+                  node: dec,
+                  type: this.programContext.getTypeForNode(dec),
+                })
+            )
         );
       }
     }

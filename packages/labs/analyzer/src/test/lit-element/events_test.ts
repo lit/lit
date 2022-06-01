@@ -79,6 +79,8 @@ test('Event with type', ({element}) => {
   assert.equal(event.name, 'typed-event');
   assert.equal(event.type?.text, 'MouseEvent');
   assert.equal(event.description, undefined);
+  assert.equal(event.type?.references[0].name, 'MouseEvent');
+  assert.equal(event.type?.references[0].isGlobal, true);
 });
 
 test('Event with type and description', ({element}) => {
@@ -101,12 +103,24 @@ test('Event with local custom event type', ({element}) => {
   const localEvent = element.events.get('local-custom-event');
   assert.ok(localEvent);
   assert.equal(localEvent.type?.text, 'LocalCustomEvent');
+  assert.equal(
+    localEvent.type?.references[0].package,
+    '@lit-internal/test-events'
+  );
+  assert.equal(localEvent.type?.references[0].module, 'element-a.js');
+  assert.equal(localEvent.type?.references[0].name, 'LocalCustomEvent');
 });
 
 test('Event with imported custom event type', ({element}) => {
   const externalEvent = element.events.get('external-custom-event');
   assert.ok(externalEvent);
   assert.equal(externalEvent.type?.text, 'ExternalCustomEvent');
+  assert.equal(
+    externalEvent.type?.references[0].package,
+    '@lit-internal/test-events'
+  );
+  assert.equal(externalEvent.type?.references[0].module, 'custom-event.js');
+  assert.equal(externalEvent.type?.references[0].name, 'ExternalCustomEvent');
 });
 
 test.run();

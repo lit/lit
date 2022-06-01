@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
-import {DiagnosticError} from './errors.js';
+import {DiagnosticsError} from './errors.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
@@ -268,6 +268,8 @@ export class ProgramContext {
 
   /**
    * Returns a ts.Symbol for a name in scope at a given location in the AST.
+   * TODO(kschaaf): There are ~1748 symbols in scope of a typical hello world,
+   * due to DOM globals. Perf might become an issue here.
    */
   getSymbolForName(name: string, location: ts.Node): ts.Symbol | undefined {
     return this.checker
@@ -289,14 +291,14 @@ export class ProgramContext {
   getTypeForConstructorName(ctorName: string, location: ts.Node): Type {
     const symbol = this.getSymbolForName(ctorName, location);
     if (symbol === undefined) {
-      throw new DiagnosticError(
+      throw new DiagnosticsError(
         location,
         `Symbol '${ctorName}' reference could not be found`
       );
     }
     const declaration = symbol.declarations?.[0];
     if (declaration === undefined) {
-      throw new DiagnosticError(
+      throw new DiagnosticsError(
         location,
         `Declaration for symbol '${ctorName}' could not be found`
       );
@@ -360,14 +362,14 @@ export class ProgramContext {
    * the import's module specifier; otherwise the Reference will point to the
    * current module being analyzed.
    */
-  getReferenceForSymbol(name: string, location: ts.Node): Reference {
+  getReferenceForSymbolName(name: string, location: ts.Node): Reference {
     const symbol = this.getSymbolForName(name, location);
     if (this.currentModule === undefined) {
       throw new Error(`Internal error: expected currentModule to be set`);
     }
     const declaration = symbol?.declarations?.[0];
     if (declaration === undefined) {
-      throw new DiagnosticError(
+      throw new DiagnosticsError(
         location,
         `Could not find declaration for symbol '${name}'`
       );
@@ -384,7 +386,8 @@ export class ProgramContext {
       if (module) {
         // The symbol was imported; check whether it is package local or external
         if (module[0] === '.') {
-          // Relative import from this package
+          // Relative import from this package: use the current package and
+          // module path relative to this module
           return new Reference({
             name,
             package: this.package,
@@ -392,12 +395,13 @@ export class ProgramContext {
             isGlobal: false,
           });
         } else {
-          // External import
+          // External import: extract the npm package (taking care to respect
+          // npm orgs) and module specifier (if any)
           const info = module.match(
-            /^(?<package>(@\w+\/\w+)|\w+)\/?(?<moduleSpecifier>.*)$/
+            /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/
           );
           if (!info || !info.groups) {
-            throw new DiagnosticError(
+            throw new DiagnosticsError(
               declaration,
               `External npm package could not be parsed from module specifier '${module}'.`
             );
@@ -405,12 +409,12 @@ export class ProgramContext {
           return new Reference({
             name,
             package: info.groups!.package,
-            module: info.groups!.moduleSpecifier,
+            module: info.groups!.module,
             isGlobal: false,
           });
         }
       } else {
-        // Declared in this file
+        // Declared in this file: use the current package and module
         return new Reference({
           name,
           package: this.package,
@@ -433,28 +437,29 @@ export class ProgramContext {
     // sufficient to generate import specifiers. Thus, we just use its visitor
     // to identify the name of identifiers that require references, and then use
     // the TS API to figure out their module specifiers.
-    const structure = this._typedocConverter.convertType(
+    let typeTree = this._typedocConverter.convertType(
       this._typedocContext,
       type
     );
     const references: Reference[] = [];
-    structure.visit(
-      typedoc.makeRecursiveVisitor({
-        reference: (ref: typedoc.ReferenceType) => {
-          references.push(this.getReferenceForSymbol(ref.name, location));
-        },
-      })
-    );
     // Fix inferred types for classes defined with `{new()..., prototype:...}`
-    // (the built-in DOM classes are defined like this in ts)
-    if (text.match(/new\s*\(/) && structure instanceof typedoc.ReflectionType) {
-      const protoType = structure.declaration.children?.find(
+    // (the built-in DOM classes are defined like this in lib.dom.d.ts)
+    if (text.match(/new\s*\(/) && typeTree instanceof typedoc.ReflectionType) {
+      const protoType = typeTree.declaration.children?.find(
         (dec) => dec.name === 'prototype'
       )?.type;
       if (protoType && protoType instanceof typedoc.ReferenceType) {
+        typeTree = protoType;
         text = protoType.name;
       }
     }
+    typeTree.visit(
+      typedoc.makeRecursiveVisitor({
+        reference: (ref: typedoc.ReferenceType) => {
+          references.push(this.getReferenceForSymbolName(ref.name, location));
+        },
+      })
+    );
     return new Type(type, text, references);
   }
 }

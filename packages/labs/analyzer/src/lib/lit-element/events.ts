@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticError} from '../errors.js';
+import {DiagnosticsError} from '../errors.js';
 import {Event, ProgramContext} from '../model.js';
 
 import {LitClassDeclaration} from './lit-element.js';
@@ -31,7 +31,7 @@ export const getEvents = (
         } else if (typeof comment === 'string') {
           const result = parseFiresTagComment(comment);
           if (result === undefined) {
-            throw new DiagnosticError(
+            throw new DiagnosticsError(
               tag,
               'The @fires annotation was not in a recognized form. ' +
                 'Use `@fires event-name {Type} - Description`.'
@@ -47,7 +47,7 @@ export const getEvents = (
           });
         } else {
           // TODO: when do we get a ts.NodeArray<ts.JSDocComment>?
-          throw new DiagnosticError(
+          throw new DiagnosticsError(
             tag,
             `Internal error: unsupported node type`
           );
