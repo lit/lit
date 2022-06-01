@@ -11,7 +11,10 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
-import {installPackage} from '@lit-labs/gen-utils/lib/package-utils.js';
+import {
+  buildPackage,
+  installPackage,
+} from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateAngularWrapper} from '../../index.js';
 import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
@@ -65,6 +68,8 @@ test('basic wrapper generation', async () => {
   await installPackage(outputPackage, {
     [packageName]: inputPackage,
   });
+
+  await buildPackage(outputPackage);
 });
 
 test.run();
