@@ -40,14 +40,14 @@ class ContextProviderElement extends LitElement {
 }
 customElements.define('context-provider', ContextProviderElement);
 
-suite('@contextRequest', () => {
+suite('@contextProvided', () => {
   let consumer: ContextConsumerElement;
   let provider: ContextProviderElement;
   let container: HTMLElement;
   setup(async () => {
     container = document.createElement('div');
     container.innerHTML = `
-        <context-provider value="1000">            
+        <context-provider value="1000">
             <context-consumer></context-consumer>
         </context-provider>
     `;
@@ -80,5 +80,59 @@ suite('@contextRequest', () => {
     provider.value = 500;
     await consumer.updateComplete;
     assert.strictEqual(consumer.value, 500);
+  });
+});
+
+suite('@contextProvided: multiple instances', () => {
+  let consumers: ContextConsumerElement[];
+  let providers: ContextProviderElement[];
+  let container: HTMLElement;
+  const count = 3;
+  setup(async () => {
+    container = document.createElement('div');
+    container.innerHTML = new Array(count)
+      .fill(0)
+      .map(
+        (_v, i) => `
+        <context-provider value="${1000 + i}">
+            <context-consumer></context-consumer>
+        </context-provider>`
+      )
+      .join('/n');
+    document.body.appendChild(container);
+
+    providers = Array.from(
+      container.querySelectorAll('context-provider')
+    ) as ContextProviderElement[];
+
+    consumers = Array.from(
+      container.querySelectorAll('context-consumer')
+    ) as ContextConsumerElement[];
+
+    await Promise.all(providers.map((el) => el.updateComplete));
+    await Promise.all(consumers.map((el) => el.updateComplete));
+
+    consumers.forEach((c) => assert.isDefined(c));
+  });
+
+  teardown(() => {
+    document.body.removeChild(container);
+  });
+
+  test(`consumers receive context`, async () => {
+    consumers.forEach((consumer, i) =>
+      assert.strictEqual(consumer.value, 1000 + i)
+    );
+  });
+
+  test(`consumers receive updated context on provider change`, async () => {
+    consumers.forEach((consumer, i) =>
+      assert.strictEqual(consumer.value, 1000 + i)
+    );
+    providers.forEach((provider, i) => (provider.value = 500 + i));
+    await Promise.all(consumers.map((el) => el.updateComplete));
+    consumers.forEach((consumer, i) =>
+      assert.strictEqual(consumer.value, 500 + i)
+    );
   });
 });
