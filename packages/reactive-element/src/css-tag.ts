@@ -31,8 +31,6 @@ export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
 
 const constructionToken = Symbol();
 
-const styleSheetCache = new Map<string, CSSStyleSheet>();
-
 /**
  * A container for a string of CSS text, that may be used to create a CSSStyleSheet.
  *
@@ -44,6 +42,7 @@ export class CSSResult {
   // This property needs to remain unminified.
   ['_$cssResult$'] = true;
   readonly cssText: string;
+  private _styleSheet?: CSSStyleSheet;
 
   private constructor(cssText: string, safeToken: symbol) {
     if (safeToken !== constructionToken) {
@@ -54,17 +53,15 @@ export class CSSResult {
     this.cssText = cssText;
   }
 
-  // Note, this is a getter so that it's lazy. In practice, this means
-  // stylesheets are not created until the first element instance is made.
+  // This is a getter so that it's lazy. In practice, this means stylesheets
+  // are not created until the first element instance is made.
   get styleSheet(): CSSStyleSheet | undefined {
-    // Note, if `supportsAdoptingStyleSheets` is true then we assume
-    // CSSStyleSheet is constructable.
-    let styleSheet = styleSheetCache.get(this.cssText);
-    if (supportsAdoptingStyleSheets && styleSheet === undefined) {
-      styleSheetCache.set(this.cssText, (styleSheet = new CSSStyleSheet()));
-      styleSheet.replaceSync(this.cssText);
+    // If `supportsAdoptingStyleSheets` is true then we assume CSSStyleSheet is
+    // constructable.
+    if (supportsAdoptingStyleSheets && this._styleSheet === undefined) {
+      (this._styleSheet = new CSSStyleSheet()).replaceSync(this.cssText);
     }
-    return styleSheet;
+    return this._styleSheet;
   }
 
   toString(): string {
