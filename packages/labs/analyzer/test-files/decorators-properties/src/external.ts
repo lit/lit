@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export class ImportedClass {
-  someData: number;
-}
+export class ImportedClass {}
+
 export interface ImportedInterface {
   someData: number;
 }

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ImportedClass} from './external.js';
+import {ImportedClass, ImportedInterface} from './external.js';
 import {LitElement} from 'lit';
 
 // eslint-disable-next-line @typescript-eslint/no-inferrable-types
@@ -12,10 +12,16 @@ export const testString: string = 'hi';
 export const inferredString = 'hi';
 
 export class LocalClass {}
+export interface LocalInterface {
+  someData: number;
+}
 
 export let localClass: LocalClass;
 export let importedClass: ImportedClass;
 export let externalClass: LitElement;
+
+export let localInterface: LocalInterface;
+export let importedInterface: ImportedInterface;
 
 export const testStringNumberUnion: string | number = 'hi';
 export const testStringClassUnion: string | LocalClass = 'hi';

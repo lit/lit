@@ -11,7 +11,10 @@ import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../../lib/analyzer.js';
 import {AbsolutePath} from '../../lib/paths.js';
-import {LitElementDeclaration} from '../../lib/model.js';
+import {
+  isLitElementDeclaration,
+  LitElementDeclaration,
+} from '../../lib/model.js';
 
 const test = suite<{
   analyzer: Analyzer;
@@ -30,7 +33,9 @@ test.before((ctx) => {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === 'src/element-a.ts'
     );
-    const element = elementAModule!.declarations[0] as LitElementDeclaration;
+    const element = elementAModule!.declarations.filter(
+      isLitElementDeclaration
+    )[0] as LitElementDeclaration;
 
     ctx.packagePath = packagePath;
     ctx.analyzer = analyzer;
@@ -55,6 +60,7 @@ test('string property with no options', ({element}) => {
   assert.equal(property.name, 'noOptionsString');
   assert.equal(property.attribute, 'nooptionsstring');
   assert.equal(property.type.text, 'string');
+  assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
   assert.equal(property.reflect, false);
   assert.equal(property.converter, undefined);
@@ -65,25 +71,81 @@ test('number property with no options', ({element}) => {
   assert.equal(property.name, 'noOptionsNumber');
   assert.equal(property.attribute, 'nooptionsnumber');
   assert.equal(property.type.text, 'number');
+  assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
 });
 
 test('string property with type', ({element}) => {
   const property = element.reactiveProperties.get('typeString')!;
   assert.equal(property.type.text, 'string');
+  assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
 });
 
 test('number property with type', ({element}) => {
   const property = element.reactiveProperties.get('typeNumber')!;
   assert.equal(property.type.text, 'number');
+  assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
 });
 
 test('boolean property with type', ({element}) => {
   const property = element.reactiveProperties.get('typeBoolean')!;
   assert.equal(property.type.text, 'boolean');
+  assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
+});
+
+test('property typed with local class', ({element}) => {
+  const property = element.reactiveProperties.get('localClass')!;
+  assert.equal(property.type.text, 'LocalClass');
+  assert.equal(property.type.references.length, 1);
+  assert.equal(property.type.references[0].name, 'LocalClass');
+  assert.equal(
+    property.type.references[0].package,
+    '@lit-internal/test-decorators-properties'
+  );
+  assert.equal(property.type.references[0].module, 'element-a.js');
+});
+
+test('property typed with imported class', ({element}) => {
+  const property = element.reactiveProperties.get('importedClass')!;
+  assert.equal(property.type.text, 'ImportedClass');
+  assert.equal(property.type.references.length, 1);
+  assert.equal(property.type.references[0].name, 'ImportedClass');
+  assert.equal(
+    property.type.references[0].package,
+    '@lit-internal/test-decorators-properties'
+  );
+  assert.equal(property.type.references[0].module, 'external.js');
+});
+
+test('property typed with global class', ({element}) => {
+  const property = element.reactiveProperties.get('globalClass')!;
+  assert.equal(property.type.text, 'HTMLElement');
+  assert.equal(property.type.references.length, 1);
+  assert.equal(property.type.references[0].name, 'HTMLElement');
+  assert.equal(property.type.references[0].isGlobal, true);
+});
+
+test('property typed with union', ({element}) => {
+  const property = element.reactiveProperties.get('union')!;
+  assert.equal(property.type.text, 'LocalClass | HTMLElement | ImportedClass');
+  assert.equal(property.type.references.length, 3);
+  assert.equal(property.type.references[0].name, 'LocalClass');
+  assert.equal(
+    property.type.references[0].package,
+    '@lit-internal/test-decorators-properties'
+  );
+  assert.equal(property.type.references[0].module, 'element-a.js');
+  assert.equal(property.type.references[1].name, 'HTMLElement');
+  assert.equal(property.type.references[1].isGlobal, true);
+  assert.equal(property.type.references[2].name, 'ImportedClass');
+  assert.equal(
+    property.type.references[2].package,
+    '@lit-internal/test-decorators-properties'
+  );
+  assert.equal(property.type.references[2].module, 'external.js');
 });
 
 test('reflect: true', ({element}) => {

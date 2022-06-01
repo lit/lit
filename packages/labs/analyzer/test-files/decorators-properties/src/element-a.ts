@@ -6,6 +6,14 @@
 
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {ImportedClass, ImportedInterface} from './external.js';
+
+export class LocalClass {
+  someData: number;
+}
+export interface LocalInterface {
+  someData: number;
+}
 
 @customElement('element-a')
 export class ElementA extends LitElement {
@@ -49,4 +57,16 @@ export class ElementA extends LitElement {
 
   @property({converter: {fromAttribute() {}, toAttribute() {}}})
   customConverter: string;
+
+  @property()
+  localClass: LocalClass;
+
+  @property()
+  importedClass: ImportedClass;
+
+  @property()
+  globalClass: HTMLElement;
+
+  @property()
+  union: LocalClass | HTMLElement | ImportedClass;
 }

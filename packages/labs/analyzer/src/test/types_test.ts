@@ -73,6 +73,26 @@ test('importedClass', ({module}) => {
   assert.equal(type.references[0].isGlobal, false);
 });
 
+test('localInterface', ({module}) => {
+  const type = typeForVariable(module, 'localInterface');
+  assert.equal(type.text, 'LocalInterface');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LocalInterface');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'module.js');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('importedInterface', ({module}) => {
+  const type = typeForVariable(module, 'importedInterface');
+  assert.equal(type.text, 'ImportedInterface');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'ImportedInterface');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'external.js');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
 test('testStringNumberUnion', ({module}) => {
   const type = typeForVariable(module, 'testStringNumberUnion');
   assert.equal(type.text, 'string | number');
