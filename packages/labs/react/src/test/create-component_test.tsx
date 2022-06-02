@@ -73,11 +73,17 @@ suite('createComponent', () => {
     onBar: 'bar',
   };
 
+  const basicElementChildren = {
+    foos: 'slot-a',
+    bars: 'slot-b',
+  };
+
   const BasicElementComponent = createComponent(
     window.React,
     elementName,
     BasicElement,
-    basicElementEvents
+    basicElementEvents,
+    basicElementChildren,
   );
 
   let el: BasicElement;
@@ -112,6 +118,7 @@ suite('createComponent', () => {
       elementName,
       BasicElement,
       basicElementEvents,
+      basicElementChildren,
       'FooBar'
     );
     
@@ -331,6 +338,19 @@ suite('createComponent', () => {
     await renderReactComponent({children});
     assert.equal(el.childNodes.length, 1);
     assert.equal(el.firstElementChild!.localName, 'div');
+  });
+
+  test('can set multiple children to multiple slots', async () => {
+    const children = window.React.createElement('div');
+    const foos = window.React.createElement('div');
+    const bars = window.React.createElement('div');
+
+    await renderReactComponent({children, foos, bars});
+
+    assert.equal(el.childNodes.length, 3);
+    assert.equal(el.children?.[0].getAttribute('slot'), null);
+    assert.equal(el.children?.[1].getAttribute('slot'), 'slot-a');
+    assert.equal(el.children?.[2].getAttribute('slot'), 'slot-b');
   });
 
   test('can set reserved React properties', async () => {

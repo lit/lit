@@ -106,6 +106,26 @@ type EventProps<R extends Events> = {
     : (e: Event) => void;
 };
 
+type ElementChildren<C extends Record<string, string>> = {
+  [k in keyof C]: React.ReactNode;
+};
+
+const createSlottedChild = (
+  React: typeof ReactModule,
+  slot: string,
+  children: React.ReactNode
+) => {
+  return React.createElement(
+    'div',
+    {
+      style: {display: 'contents'},
+      key: slot,
+      slot,
+    },
+    children
+  );
+};
+
 /**
  * Creates a React component for a custom element. Properties are distinguished
  * from attributes automatically, and events can be configured so they are
@@ -127,15 +147,21 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
+export const createComponent = <
+  I extends HTMLElement,
+  E extends Events,
+  C extends Record<string, string>
+>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
+  children?: C,
   displayName?: string
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
+  const reactChildren = children;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
@@ -145,6 +171,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
     React.PropsWithRef<
       Partial<Omit<I, 'children'>> &
         Partial<EventProps<E>> &
+        Partial<ElementChildren<C>> &
         Omit<React.HTMLAttributes<HTMLElement>, keyof E>
     >
   >;
@@ -254,18 +281,34 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
+
+      // ReactNode children are collected into one array. Each child
+      // is assigned a slot via createSlottedChild.
+      // React requires a list of unique keys on ReactNode lists so
+      // the slot-name is used as the unique key. However, the first
+      // set of ReactNodes has a unique key of 'undefined'.
+      const children: React.ReactNodeArray = [this.props.children];
+
       for (const [k, v] of Object.entries(this.props)) {
-        if (k === '__forwardedRef') continue;
+        if (k === '__forwardedRef' || k === 'children') continue;
 
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
-        } else {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        const slot = reactChildren?.[k];
+        if (slot) {
+          children.push(createSlottedChild(React, slot, v as React.ReactNode));
+          continue;
+        }
+
+        // React does *not* handle `className` for custom elements so
+        // coerce it to `class` so it's handled correctly.
+        props[k === 'className' ? 'class' : k] = v;
       }
-      return createElement(tagName, props);
+
+      return createElement(tagName, props, children);
     }
   }
 
