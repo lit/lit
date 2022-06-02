@@ -90,29 +90,26 @@ suite('@contextProvided: multiple instances', () => {
   const count = 3;
   setup(async () => {
     container = document.createElement('div');
-    container.innerHTML = new Array(count)
-      .fill(0)
-      .map(
-        (_v, i) => `
+    container.innerHTML = Array.from(
+      {length: count},
+      (_v, i) => `
         <context-provider value="${1000 + i}">
             <context-consumer></context-consumer>
         </context-provider>`
-      )
-      .join('/n');
+    ).join('/n');
     document.body.appendChild(container);
 
     providers = Array.from(
-      container.querySelectorAll('context-provider')
-    ) as ContextProviderElement[];
+      container.querySelectorAll<ContextProviderElement>('context-provider')
+    );
 
     consumers = Array.from(
-      container.querySelectorAll('context-consumer')
-    ) as ContextConsumerElement[];
+      container.querySelectorAll<ContextConsumerElement>('context-consumer')
+    );
 
-    await Promise.all([...providers, ...consumers].map((el) => el.updateComplete));
-    await Promise.all(consumers.map((el) => el.updateComplete));
-
-    consumers.forEach((c) => assert.isDefined(c));
+    await Promise.all(
+      [...providers, ...consumers].map((el) => el.updateComplete)
+    );
   });
 
   teardown(() => {
