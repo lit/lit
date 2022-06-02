@@ -8,7 +8,7 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
-import {writeFileTree, javascript} from '../lib/file-utils.js';
+import {writeFileTree} from '../lib/file-utils.js';
 
 const writeFileTreeTest = suite<{tempFs: FilesystemTestRig}>('writeFileTree');
 
@@ -75,28 +75,3 @@ writeFileTreeTest('errors when file escapes root folder', async ({tempFs}) => {
 });
 
 writeFileTreeTest.run();
-
-const javascriptTest = suite('javascript tag');
-
-javascriptTest('string interoplation', () => {
-  assert.equal(javascript`foo=${'bar'};\nbaz=${'zot'};`, 'foo=bar;\nbaz=zot;');
-});
-
-javascriptTest('nested interpolation', () => {
-  assert.equal(javascript`foo=${javascript`(bar=${'zot'})`}`, 'foo=(bar=zot)');
-});
-
-javascriptTest('array interpolation', () => {
-  const arr = [
-    ['a1', 'a2'],
-    ['b1', 'b2'],
-    ['c1', 'c2'],
-  ];
-  assert.equal(javascript`foo=${arr.map((arr2) => arr2[0])};`, 'foo=a1b1c1;');
-  assert.equal(
-    javascript`foo=1${arr.map((arr2) => arr2.map((i) => javascript`*${i}`))};`,
-    'foo=1*a1*a2*b1*b2*c1*c2;'
-  );
-});
-
-javascriptTest.run();

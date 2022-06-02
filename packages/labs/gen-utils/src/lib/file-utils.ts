@@ -63,23 +63,3 @@ export const writeFileTree = async (outDir: string, tree: FileTree) => {
     }
   }
 };
-
-/**
- * Generic tagged-template literal string concatenator with array value
- * flattening. Can be assigned to various tag names for syntax highlighting.
- */
-const concat = (strings: TemplateStringsArray, ...values: unknown[]) => {
-  return strings.slice(1).reduce((prev, next, i) => {
-    let v = values[i];
-    if (Array.isArray(v)) {
-      v = v.flat(Infinity).join('');
-    }
-    return prev + v + next;
-  }, strings[0]);
-};
-
-/**
- * Use https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html
- * for JS syntax highlighting
- */
-export const javascript = concat;

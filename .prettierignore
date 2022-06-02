@@ -183,6 +183,9 @@ packages/labs/gen-wrapper-angular/index.d.ts.map
 packages/labs/gen-wrapper-angular/gen-output/
 
 packages/labs/gen-wrapper-react/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+packages/labs/gen-wrapper-react/test-output/package-lock.json
 packages/labs/gen-wrapper-react/test-output/js/
 packages/labs/gen-wrapper-react/test-output/tests/
 packages/labs/gen-wrapper-react/index.js
@@ -190,6 +193,19 @@ packages/labs/gen-wrapper-react/index.js.map
 packages/labs/gen-wrapper-react/index.d.ts
 packages/labs/gen-wrapper-react/index.d.ts.map
 packages/labs/gen-wrapper-react/gen-output/
+
+packages/labs/gen-wrapper-vue/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+packages/labs/gen-wrapper-vue/test-output/package-lock.json
+packages/labs/gen-wrapper-vue/test-output/js/
+packages/labs/gen-wrapper-vue/test-output/tests/
+packages/labs/gen-wrapper-vue/lib/
+packages/labs/gen-wrapper-vue/*.js
+packages/labs/gen-wrapper-vue/*.js.map
+packages/labs/gen-wrapper-vue/*.d.ts
+packages/labs/gen-wrapper-vue/*.d.ts.map
+packages/labs/gen-wrapper-vue/gen-output/
 
 packages/labs/motion/development/
 packages/labs/motion/test/
@@ -246,6 +262,12 @@ packages/labs/task/test/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*
+packages/labs/vue-utils/development/
+packages/labs/vue-utils/test/
+packages/labs/vue-utils/node_modules/
+packages/labs/vue-utils/index.*
+packages/labs/vue-utils/wrapper-utils.*
+
 packages/lit-starter-js/node_modules/*
 packages/lit-starter-js/docs/*
 packages/lit-starter-js/docs-src/*

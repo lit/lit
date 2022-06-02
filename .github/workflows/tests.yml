@@ -88,9 +88,9 @@ jobs:
         run: npm run bootstrap
 
       - name: Build
-        run: npm run build --  --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
+        run: npm run build --  --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-vue --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
 
       - name: Test
         env:
           RUN_BROWSER_TESTS: false
-        run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
+        run: npm run test -- --scope @lit-labs/analyzer --scope @lit-labs/gen-utils --scope @lit-labs/gen-wrapper-angular --scope @lit-labs/gen-wrapper-vue --scope @lit-labs/gen-wrapper-react --scope @lit-labs/cli
