@@ -17,3 +17,7 @@ declare global {
     'external-custom-event': ExternalCustomEvent;
   }
 }
+
+export class ExternalClass {
+  someData: number;
+}

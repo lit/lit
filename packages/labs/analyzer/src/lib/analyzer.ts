@@ -73,9 +73,10 @@ export class Analyzer {
       undefined /* existingOptions */,
       path.relative(packageRoot, configFileName) /* configFileName */
     );
+
     this.programContext = new ProgramContext(
-      ts.createProgram(this.commandLine.fileNames, this.commandLine.options),
-      this.packageJson.name
+      this.commandLine,
+      this.packageJson
     );
   }
 
@@ -87,15 +88,14 @@ export class Analyzer {
         `Error analyzing package '${this.packageRoot}': Please fix errors first`
       );
     }
+
     const rootFileNames = this.programContext.program.getRootFileNames();
 
-    const modules = [];
-    for (const fileName of rootFileNames) {
-      modules.push(this.analyzeFile(path.normalize(fileName) as AbsolutePath));
-    }
     return new Package({
       rootDir: this.packageRoot,
-      modules,
+      modules: rootFileNames.map((fileName) =>
+        this.analyzeFile(path.normalize(fileName) as AbsolutePath)
+      ),
       tsConfig: this.commandLine,
       packageJson: this.packageJson,
     });

@@ -40,9 +40,7 @@ export const getEvents = (
           const {name, type, description} = result;
           events.set(name, {
             name,
-            type: type
-              ? programContext.getTypeForConstructorName(type, tag)
-              : undefined,
+            type: type ? programContext.getTypeForJSDocTag(tag) : undefined,
             description,
           });
         } else {

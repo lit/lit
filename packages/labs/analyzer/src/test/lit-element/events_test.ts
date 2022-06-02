@@ -49,7 +49,7 @@ test.before((ctx) => {
 });
 
 test('Correct number of events found', ({element}) => {
-  assert.equal(element.events.size, 8);
+  assert.equal(element.events.size, 9);
 });
 
 test('Just event name', ({element}) => {
@@ -100,27 +100,32 @@ test('Event with type and dash-separated description', ({element}) => {
 });
 
 test('Event with local custom event type', ({element}) => {
-  const localEvent = element.events.get('local-custom-event');
-  assert.ok(localEvent);
-  assert.equal(localEvent.type?.text, 'LocalCustomEvent');
-  assert.equal(
-    localEvent.type?.references[0].package,
-    '@lit-internal/test-events'
-  );
-  assert.equal(localEvent.type?.references[0].module, 'element-a.js');
-  assert.equal(localEvent.type?.references[0].name, 'LocalCustomEvent');
+  const event = element.events.get('local-custom-event');
+  assert.ok(event);
+  assert.equal(event.type?.text, 'LocalCustomEvent');
+  assert.equal(event.type?.references[0].package, '@lit-internal/test-events');
+  assert.equal(event.type?.references[0].module, 'element-a.js');
+  assert.equal(event.type?.references[0].name, 'LocalCustomEvent');
 });
 
 test('Event with imported custom event type', ({element}) => {
-  const externalEvent = element.events.get('external-custom-event');
-  assert.ok(externalEvent);
-  assert.equal(externalEvent.type?.text, 'ExternalCustomEvent');
-  assert.equal(
-    externalEvent.type?.references[0].package,
-    '@lit-internal/test-events'
-  );
-  assert.equal(externalEvent.type?.references[0].module, 'custom-event.js');
-  assert.equal(externalEvent.type?.references[0].name, 'ExternalCustomEvent');
+  const event = element.events.get('external-custom-event');
+  assert.ok(event);
+  assert.equal(event.type?.text, 'ExternalCustomEvent');
+  assert.equal(event.type?.references[0].package, '@lit-internal/test-events');
+  assert.equal(event.type?.references[0].module, 'custom-event.js');
+  assert.equal(event.type?.references[0].name, 'ExternalCustomEvent');
+});
+
+test('Event with generic custom event', ({element}) => {
+  const event = element.events.get('generic-custom-event');
+  assert.ok(event);
+  assert.equal(event.type?.text, 'CustomEvent<ExternalClass>');
+  assert.equal(event.type?.references[0].name, 'CustomEvent');
+  assert.equal(event.type?.references[0].isGlobal, true);
+  assert.equal(event.type?.references[1].package, '@lit-internal/test-events');
+  assert.equal(event.type?.references[1].module, 'custom-event.js');
+  assert.equal(event.type?.references[1].name, 'ExternalClass');
 });
 
 test.run();

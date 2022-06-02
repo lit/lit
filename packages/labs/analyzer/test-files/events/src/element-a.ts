@@ -6,7 +6,7 @@
 
 import {LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {ExternalCustomEvent} from './custom-event.js';
+import {ExternalCustomEvent, ExternalClass} from './custom-event.js';
 
 export class LocalCustomEvent extends Event {
   message: string;
@@ -26,6 +26,7 @@ export class LocalCustomEvent extends Event {
  * @fires typed-event-three {MouseEvent} - This is another typed event
  * @fires external-custom-event {ExternalCustomEvent} - External custom event
  * @fires local-custom-event {LocalCustomEvent} - Local custom event
+ * @fires generic-custom-event {CustomEvent<ExternalClass>} - Local custom event
  *
  * @comment malformed fires tag:
  *
@@ -38,5 +39,12 @@ export class ElementA extends LitElement {
   }
   fireLocalEvent() {
     this.dispatchEvent(new LocalCustomEvent('local'));
+  }
+  foreGenericEvent() {
+    this.dispatchEvent(
+      new CustomEvent<ExternalClass>('generic-custom-event', {
+        detail: new ExternalClass(),
+      })
+    );
   }
 }

@@ -12,6 +12,49 @@ import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 import * as typedoc from 'typedoc';
 import path from 'path';
+import fs from 'fs';
+
+const customJSDocTypeTags = new Set(['fires']);
+const visitCustomJSDocTypeTags = (
+  node: ts.Node,
+  callback: (tag: ts.JSDocTag, typeString: string) => void
+) => {
+  const jsDocTags = ts.getJSDocTags(node);
+  if (jsDocTags?.length > 0) {
+    for (const tag of jsDocTags) {
+      if (
+        ts.isJSDocUnknownTag(tag) &&
+        customJSDocTypeTags.has(tag.tagName.text) &&
+        typeof tag.comment === 'string'
+      ) {
+        const match = tag.comment.match(/{(?<type>.*)}/);
+        if (match) {
+          callback(tag, match.groups!.type);
+        }
+      }
+    }
+  }
+  ts.forEachChild(node, (child: ts.Node) =>
+    visitCustomJSDocTypeTags(child, callback)
+  );
+};
+
+const customJSDocTypeInferPrefix = '__$$customJsDOCType';
+const visitCustomJSDocTypeInferedTypes = (
+  node: ts.Node,
+  callback: (node: ts.VariableDeclaration) => void
+) => {
+  if (
+    ts.isVariableDeclaration(node) &&
+    ts.isIdentifier(node.name) &&
+    node.name.text.startsWith(customJSDocTypeInferPrefix)
+  ) {
+    callback(node);
+  }
+  ts.forEachChild(node, (child) =>
+    visitCustomJSDocTypeInferedTypes(child, callback)
+  );
+};
 
 export interface PackageInit {
   rootDir: AbsolutePath;
@@ -245,18 +288,59 @@ export class Type {
  * analysis and helpers for generating Type objects.
  */
 export class ProgramContext {
-  readonly program: ts.Program;
-  readonly checker: ts.TypeChecker;
+  readonly services: ts.LanguageService;
   readonly package: string;
-  private readonly _typedocContext: typedoc.Context;
-  private readonly _typedocConverter: typedoc.Converter;
+  program!: ts.Program;
+  checker!: ts.TypeChecker;
+  private _typedocContext!: typedoc.Context;
+  private _typedocConverter!: typedoc.Converter;
 
   currentModule: Module | undefined = undefined;
 
-  constructor(program: ts.Program, packageName: string) {
-    this.program = program;
-    this.checker = program.getTypeChecker();
-    this.package = packageName;
+  files: ts.MapLike<{version: 0; content?: ts.IScriptSnapshot}> = {};
+
+  constructor(commandLine: ts.ParsedCommandLine, packageJson: PackageJson) {
+    for (const fileName of commandLine.fileNames) {
+      this.files[fileName] = {version: 0};
+    }
+    const servicesHost: ts.LanguageServiceHost = {
+      getScriptFileNames: () => commandLine.fileNames,
+      getScriptVersion: (fileName) => this.files[fileName]?.version.toString(),
+      getScriptSnapshot: (fileName) => {
+        if (this.files[fileName]?.version > 0) {
+          return this.files[fileName].content;
+        } else {
+          if (!fs.existsSync(fileName)) {
+            return undefined;
+          }
+          return ts.ScriptSnapshot.fromString(
+            fs.readFileSync(fileName).toString()
+          );
+        }
+      },
+      getCurrentDirectory: () => process.cwd(),
+      getCompilationSettings: () => commandLine.options,
+      getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+      fileExists: ts.sys.fileExists,
+      readFile: ts.sys.readFile,
+      readDirectory: ts.sys.readDirectory,
+      directoryExists: ts.sys.directoryExists,
+      getDirectories: ts.sys.getDirectories,
+    };
+
+    const services = ts.createLanguageService(
+      servicesHost,
+      ts.createDocumentRegistry()
+    );
+    this.services = services;
+    this.package = packageJson.name!;
+    this.invalidate();
+    this.extractJsdocTypes();
+  }
+
+  private invalidate() {
+    this.program = this.services.getProgram()!;
+    this.checker = this.program.getTypeChecker();
     this._typedocConverter = new typedoc.Converter(new typedoc.Application());
     this._typedocContext = new typedoc.Context(
       this._typedocConverter,
@@ -264,6 +348,80 @@ export class ProgramContext {
       new typedoc.ProjectReflection('')
     );
     this._typedocContext.setActiveProgram(this.program);
+  }
+
+  updateFiles(sourceFiles: ts.SourceFile[]) {
+    for (const sourceFile of sourceFiles) {
+      const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed});
+      this.files[sourceFile.fileName].content = ts.ScriptSnapshot.fromString(
+        printer.printFile(sourceFile)
+      );
+      this.files[sourceFile.fileName].version++;
+    }
+    this.invalidate();
+  }
+
+  private jsdocTypeMap = new WeakMap<ts.JSDocTag, ts.Type>();
+
+  private extractJsdocTypes() {
+    const sourceFilesWithTags = [];
+    for (const fileName of this.program.getRootFileNames()) {
+      const inferStatements: string[] = [];
+      const sourceFile = this.program.getSourceFile(path.normalize(fileName))!;
+      // Find JSDoc tags that contain string types and generate dummy variable
+      // declarations using their types
+      visitCustomJSDocTypeTags(
+        sourceFile,
+        (_tag: ts.Node, typeString: string) => {
+          inferStatements.push(
+            `export let ${customJSDocTypeInferPrefix}${inferStatements.length}: ${typeString};\n`
+          );
+        }
+      );
+      // Update the source files with the dummy variable declarations (add to
+      // end). We could try to keep these in the same lexical scope as the jsdoc
+      // comment, but that's a lot more work, and given any references used also
+      // need to be exported, seems unlikely they would use non-module scoped
+      // symbols
+      if (inferStatements.length > 0) {
+        const inferStatementText = inferStatements.join('');
+        const newSourceFile = sourceFile.update(
+          sourceFile.text + inferStatementText,
+          ts.createTextChangeRange(
+            ts.createTextSpan(sourceFile.text.length, 0),
+            inferStatementText.length
+          )
+        );
+        sourceFilesWithTags.push(newSourceFile);
+      }
+    }
+    if (sourceFilesWithTags.length > 0) {
+      // If we had source files with type tags, update the language service
+      // with the modified files
+      this.updateFiles(sourceFilesWithTags);
+      for (const oldSourceFile of sourceFilesWithTags) {
+        const tags: ts.JSDocTag[] = [];
+        const sourceFile = this.program.getSourceFile(oldSourceFile.fileName)!;
+        // Find typed JSDoc tags in the new source file
+        visitCustomJSDocTypeTags(sourceFile, (tag: ts.JSDocTag) => {
+          tags.push(tag);
+        });
+        let tagIndex = 0;
+        // Find the inferred types and associate them with their JSDoc tag
+        // (note they are generated in the same order)
+        visitCustomJSDocTypeInferedTypes(
+          sourceFile,
+          (node: ts.VariableDeclaration) => {
+            const tag = tags[tagIndex++];
+            const type = this.checker.getTypeAtLocation(node);
+            this.jsdocTypeMap.set(tag, type);
+          }
+        );
+      }
+    }
+    // TODO(kschaaf): As is, this leaves the generated declarations in the AST;
+    // ideally we delete those so the downstream traversals don't have to ignore
+    // them
   }
 
   /**
@@ -280,42 +438,15 @@ export class ProgramContext {
       .filter((s) => s.name === name)[0];
   }
 
-  /**
-   * Returns an analyzer `Type` object for the given constructor name
-   * in scope at a given location in the AST.
-   *
-   * `ctorName` can either refer to a class declaration or the instance
-   * interface for one (since built-in DOM classes are often defined
-   * as a legacy class using an interface)
-   */
-  getTypeForConstructorName(ctorName: string, location: ts.Node): Type {
-    const symbol = this.getSymbolForName(ctorName, location);
-    if (symbol === undefined) {
+  getTypeForJSDocTag(tag: ts.JSDocTag): Type {
+    const type = this.jsdocTypeMap.get(tag);
+    if (type === undefined) {
       throw new DiagnosticsError(
-        location,
-        `Symbol '${ctorName}' reference could not be found`
+        tag,
+        `Internal error: no type was pre-processed for this JSDoc tag`
       );
     }
-    const declaration = symbol.declarations?.[0];
-    if (declaration === undefined) {
-      throw new DiagnosticsError(
-        location,
-        `Declaration for symbol '${ctorName}' could not be found`
-      );
-    }
-    const type = this.convertType(
-      this.checker.getTypeOfSymbolAtLocation(symbol, location),
-      location
-    );
-    // Since we're starting from a constructor name, we can just use that as the
-    // type text, since that will be the instance type. The actual inferred type
-    // of a constructor symbol might be `typeof SomeClass` or even `{new(): ...,
-    // prototype: ...}` for builtins; however, we just care about the instance
-    // type, which is just going to be the constructor name. TODO(kschaaf) note
-    // that the `type` ts.Type will still point to the constructor, not the
-    // InstanceType of the constructor; do we care?
-    type.text = ctorName;
-    return type;
+    return this.convertType(type, tag);
   }
 
   /**
