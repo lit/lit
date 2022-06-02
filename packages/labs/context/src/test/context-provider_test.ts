@@ -109,7 +109,7 @@ suite('@contextProvided: multiple instances', () => {
       container.querySelectorAll('context-consumer')
     ) as ContextConsumerElement[];
 
-    await Promise.all(providers.map((el) => el.updateComplete));
+    await Promise.all([...providers, ...consumers].map((el) => el.updateComplete));
     await Promise.all(consumers.map((el) => el.updateComplete));
 
     consumers.forEach((c) => assert.isDefined(c));
