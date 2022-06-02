@@ -106,9 +106,7 @@ type EventProps<R extends Events> = {
     : (e: Event) => void;
 };
 
-type ElementChildren<C extends Record<string, string>> = {
-  [k in keyof C]: React.ReactNode;
-};
+type ElementChildren<C> = Record<keyof C, React.ReactNode>;
 
 const createSlottedChild = (
   React: typeof ReactModule,
