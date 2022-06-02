@@ -156,8 +156,8 @@ export const createComponent = <
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
-  children?: C,
-  displayName?: string
+  displayName?: string,
+  children?: C
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
@@ -169,10 +169,10 @@ export const createComponent = <
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
+      Partial<Omit<I, 'children' | keyof C>> &
         Partial<EventProps<E>> &
         Partial<ElementChildren<C>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
+        Omit<React.HTMLAttributes<HTMLElement>, keyof E | keyof C>
     >
   >;
 

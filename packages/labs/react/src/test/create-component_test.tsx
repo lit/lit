@@ -83,6 +83,7 @@ suite('createComponent', () => {
     elementName,
     BasicElement,
     basicElementEvents,
+    'BasicElement',
     basicElementChildren,
   );
 
@@ -118,7 +119,6 @@ suite('createComponent', () => {
       elementName,
       BasicElement,
       basicElementEvents,
-      basicElementChildren,
       'FooBar'
     );
     
