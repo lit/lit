@@ -32,7 +32,7 @@ export const loggerContext = createContext<Logger>('logger');
 
 Now we can define a consumer for this context - some component in our app needs the logger.
 
-Here we're using the `@contextRequest` property decorator to make a `ContextConsumer` controller
+Here we're using the `@contextProvided` property decorator to make a `ContextConsumer` controller
 and update its value when the context changes:
 
 #### **`my-element.ts`**:
@@ -43,7 +43,7 @@ import {LitElement, property} from 'lit';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
-  @contextRequest({context: loggerContext, subscribe: true})
+  @contextProvided({context: loggerContext, subscribe: true})
   @property({attribute: false})
   public logger?: Logger;
 
