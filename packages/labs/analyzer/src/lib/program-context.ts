@@ -13,27 +13,32 @@ import {Module, PackageJson, Type, Reference} from './model.js';
 
 type FileCache = ts.MapLike<{version: 0; content?: ts.IScriptSnapshot}>;
 
+/**
+ * Create a language service host that reads from the filesystem initially,
+ * and supports updating individual source files in memory by updating its
+ * content and version in the FileCache.
+ */
 const createServiceHost = (
   commandLine: ts.ParsedCommandLine,
   cache: FileCache
 ): ts.LanguageServiceHost => {
-  for (const fileName of commandLine.fileNames) {
-    cache[fileName] = {version: 0};
-  }
   return {
     getScriptFileNames: () => commandLine.fileNames,
     getScriptVersion: (fileName) => cache[fileName]?.version.toString(),
     getScriptSnapshot: (fileName) => {
-      if (cache[fileName]?.version > 0) {
-        return cache[fileName].content;
-      } else {
+      let file = cache[fileName];
+      if (!file) {
         if (!fs.existsSync(fileName)) {
           return undefined;
         }
-        return ts.ScriptSnapshot.fromString(
-          fs.readFileSync(fileName).toString()
-        );
+        file = {
+          version: 0,
+          content: ts.ScriptSnapshot.fromString(
+            fs.readFileSync(fileName).toString()
+          ),
+        };
       }
+      return file.content;
     },
     getCurrentDirectory: () => process.cwd(),
     getCompilationSettings: () => commandLine.options,
@@ -104,9 +109,11 @@ export class ProgramContext {
   updateFiles(sourceFiles: ts.SourceFile[]) {
     for (const sourceFile of sourceFiles) {
       const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed});
-      this.fileCache[sourceFile.fileName].content =
-        ts.ScriptSnapshot.fromString(printer.printFile(sourceFile));
-      this.fileCache[sourceFile.fileName].version++;
+      const file = (this.fileCache[sourceFile.fileName] ??= {version: 0});
+      file.content = ts.ScriptSnapshot.fromString(
+        printer.printFile(sourceFile)
+      );
+      file.version++;
     }
     this.invalidate();
   }
@@ -397,6 +404,11 @@ export class ProgramContext {
 }
 
 const customJSDocTypeTags = new Set(['fires']);
+
+/**
+ * Visitor that calls callback for each ts.JSDocUnknownTag containing a `{...}`
+ * type string
+ */
 const visitCustomJSDocTypeTags = (
   node: ts.Node,
   callback: (tag: ts.JSDocTag, typeString: string) => void
@@ -422,6 +434,11 @@ const visitCustomJSDocTypeTags = (
 };
 
 const customJSDocTypeInferPrefix = '__$$customJsDOCType';
+
+/**
+ * Visitor that calls callback for each dummy type declaration created to
+ * infer types from jsDoc strings.
+ */
 const visitCustomJSDocTypeInferredTypes = (
   node: ts.Node,
   callback: (node: ts.VariableDeclaration) => void
@@ -438,7 +455,16 @@ const visitCustomJSDocTypeInferredTypes = (
   );
 };
 
-const getTagForError = (error: ts.Diagnostic, tags: ts.JSDocTag[]) => {
+/**
+ * Returns the ts.JSDocTag tag for a given diagnostic error.
+ *
+ * Each type declaration includes an index in its identifier, which is extracted
+ * and used to identify the jsDoc tag.
+ */
+const getTagForError = (
+  error: ts.Diagnostic,
+  tags: ts.JSDocTag[]
+): ts.JSDocTag | undefined => {
   if (error.file === undefined) {
     return;
   }
