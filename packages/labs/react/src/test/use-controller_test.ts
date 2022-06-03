@@ -100,14 +100,20 @@ suite('useController', () => {
       render({x: 1});
       // Note, strict mode 2x renders
       const expectedCtorCallCount = strict ? 2 : 1;
-      const expectedUpdates = strict ? ['update', 'update'] : ['update'];
+      // TODO(sorvell): in strict mode, this would be more correct if it were
+      // ['update', 'updated', 'update'] since that would indicate the first
+      // strict mode render was properly balanced, but React does
+      // "2x render then effects" in strict mode so this would require
+      // explicitly detecting this case. Ignoring for now since relying on this
+      // seems like a corner case.
+      const expectedNonInitialRenderUpdates = strict
+        ? ['update', 'update']
+        : ['update'];
       //
       assert.equal(ctorCallCount, expectedCtorCallCount);
       assert.equal(container.innerHTML, `<div class="foo">x:1, a:a</div>`);
+      assert.deepEqual(componentRenderLog, ['connected', 'update']);
       assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
-      // Note, due to limitations of `useState`, controller lifecycle has
-      // not run inside first component render call.
-      assert.deepEqual(componentRenderLog, []);
       assert.deepEqual(componentLayoutEffectLog, testController.log);
       const firstTestController = testController;
       componentRenderLog.length =
@@ -117,8 +123,11 @@ suite('useController', () => {
       render({x: 2});
       assert.equal(ctorCallCount, expectedCtorCallCount);
       assert.equal(container.innerHTML, `<div class="foo">x:2, a:a</div>`);
-      assert.deepEqual(testController.log, [...expectedUpdates, 'updated']);
-      assert.deepEqual(componentRenderLog, expectedUpdates);
+      assert.deepEqual(componentRenderLog, expectedNonInitialRenderUpdates);
+      assert.deepEqual(testController.log, [
+        ...expectedNonInitialRenderUpdates,
+        'updated',
+      ]);
       assert.deepEqual(componentLayoutEffectLog, testController.log);
       assert.strictEqual(testController, firstTestController);
     });
