@@ -196,7 +196,7 @@ export class ProgramContext {
         const sourceFile = this.program.getSourceFile(
           modifiedSourceFile.fileName
         )!;
-        visitCustomJSDocTypeInferedTypes(
+        visitCustomJSDocTypeInferredTypes(
           sourceFile,
           (node: ts.VariableDeclaration) => {
             types.push(this.checker.getTypeAtLocation(node));
@@ -231,7 +231,18 @@ export class ProgramContext {
       .filter((s) => s.name === name)[0];
   }
 
+  /**
+   * Returns an analyzer `Type` object for the given jsDoc tag.
+   *
+   * Note, the tag type must
+   */
   getTypeForJSDocTag(tag: ts.JSDocTag): Type {
+    if (!customJSDocTypeTags.has(tag.tagName.text)) {
+      throw new DiagnosticsError(
+        tag,
+        `Internal error: '${tag.tagName.text}' is not included in customJSDocTypeTags.`
+      );
+    }
     const type = this.jsdocTypeMap.get(tag);
     if (type === undefined) {
       throw new DiagnosticsError(
@@ -316,7 +327,6 @@ export class ProgramContext {
             name,
             package: this.package,
             module: path.join(path.dirname(this.currentModule.jsPath), module),
-            isGlobal: false,
           });
         } else {
           // External import: extract the npm package (taking care to respect
@@ -334,7 +344,6 @@ export class ProgramContext {
             name,
             package: info.groups!.package,
             module: info.groups!.module,
-            isGlobal: false,
           });
         }
       } else {
@@ -343,7 +352,6 @@ export class ProgramContext {
           name,
           package: this.package,
           module: this.currentModule.jsPath,
-          isGlobal: false,
         });
       }
     }
@@ -414,7 +422,7 @@ const visitCustomJSDocTypeTags = (
 };
 
 const customJSDocTypeInferPrefix = '__$$customJsDOCType';
-const visitCustomJSDocTypeInferedTypes = (
+const visitCustomJSDocTypeInferredTypes = (
   node: ts.Node,
   callback: (node: ts.VariableDeclaration) => void
 ) => {
@@ -426,7 +434,7 @@ const visitCustomJSDocTypeInferedTypes = (
     callback(node);
   }
   ts.forEachChild(node, (child) =>
-    visitCustomJSDocTypeInferedTypes(child, callback)
+    visitCustomJSDocTypeInferredTypes(child, callback)
   );
 };
 

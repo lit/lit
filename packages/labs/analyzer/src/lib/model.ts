@@ -197,7 +197,7 @@ export interface ReferenceInit {
   name: string;
   package?: string;
   module?: string;
-  isGlobal: boolean;
+  isGlobal?: boolean;
 }
 
 export class Reference {
@@ -209,7 +209,7 @@ export class Reference {
     this.name = init.name;
     this.package = init.package;
     this.module = init.module;
-    this.isGlobal = init.isGlobal;
+    this.isGlobal = init.isGlobal ?? false;
   }
 }
 

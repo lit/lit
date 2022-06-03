@@ -40,7 +40,7 @@ export class ElementA extends LitElement {
   fireLocalEvent() {
     this.dispatchEvent(new LocalCustomEvent('local'));
   }
-  foreGenericEvent() {
+  fireGenericEvent() {
     this.dispatchEvent(
       new CustomEvent<ExternalClass>('generic-custom-event', {
         detail: new ExternalClass(),

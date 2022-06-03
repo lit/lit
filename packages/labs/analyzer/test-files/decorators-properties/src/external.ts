@@ -5,7 +5,3 @@
  */
 
 export class ImportedClass {}
-
-export interface ImportedInterface {
-  someData: number;
-}

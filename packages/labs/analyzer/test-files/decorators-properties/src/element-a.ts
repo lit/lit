@@ -6,7 +6,7 @@
 
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {ImportedClass, ImportedInterface} from './external.js';
+import {ImportedClass} from './external.js';
 
 export class LocalClass {
   someData: number;
