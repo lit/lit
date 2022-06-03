@@ -131,7 +131,6 @@ export const useController = <C extends ReactiveController>(
     const host = new ReactControllerHost<C>(kickCount, kick);
     const controller = createController(host);
     host._primaryController = controller;
-    host._connected();
     return host;
   });
 
@@ -142,9 +141,12 @@ export const useController = <C extends ReactiveController>(
   useLayoutEffect(() => host._updated());
 
   // Returning a cleanup function simulates hostDisconnected timing. An empty
-  // deps array tells React to only call this once: on mount with the cleanup
-  // called on unmount.
-  useLayoutEffect(() => () => host._disconnected(), []);
+  // deps array tells React to only call this once: calling `connected` on
+  // mount, and `disconnected` on unmount.
+  useLayoutEffect(() => {
+    host._connected();
+    return () => host._disconnected();
+  }, []);
 
   // TODO (justinfagnani): don't call in SSR
   host._update();
