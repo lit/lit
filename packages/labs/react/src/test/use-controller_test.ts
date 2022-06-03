@@ -69,33 +69,63 @@ suite('useController', () => {
     );
   };
 
-  test('basic lifecycle', () => {
-    let testController!: TestController;
+  const lifeCycleTest = ({strict}: {strict: boolean}) => {
+    test(`basic lifecycle${strict ? ' - strict mode' : ''}`, () => {
+      let testController!: TestController;
 
-    const TestComponent = ({x}: {x: number}) => {
-      testController = useTest('a');
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
-    };
+      let componentRenderLog: string[] = [];
+      let componentLayoutEffectLog: string[] = [];
 
-    const render = (props: any) => {
-      ReactDOM.render(React.createElement(TestComponent, props), container);
-    };
+      const TestComponent = ({x}: {x: number}) => {
+        testController = useTest('a');
+        componentRenderLog = [...testController.log];
+        React.useLayoutEffect(() => {
+          componentLayoutEffectLog = [...testController.log];
+        });
+        return React.createElement('div', {className: 'foo'}, [
+          `x:${x}, a:${testController.a}`,
+        ]);
+      };
 
-    render({x: 1});
-    assert.equal(ctorCallCount, 1);
-    assert.equal(container.innerHTML, `<div class="foo">x:1, a:a</div>`);
-    assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
-    const firstTestController = testController;
+      const render = (props: any) => {
+        const component = React.createElement(TestComponent, props);
+        ReactDOM.render(
+          strict
+            ? React.createElement(React.StrictMode, {}, component)
+            : component,
+          container
+        );
+      };
 
-    testController.log.length = 0;
-    render({x: 2});
-    assert.equal(ctorCallCount, 1);
-    assert.equal(container.innerHTML, `<div class="foo">x:2, a:a</div>`);
-    assert.deepEqual(testController.log, ['update', 'updated']);
-    assert.strictEqual(testController, firstTestController);
-  });
+      render({x: 1});
+      // Note, strict mode 2x renders
+      const expectedCtorCallCount = strict ? 2 : 1;
+      const expectedUpdates = strict ? ['update', 'update'] : ['update'];
+      //
+      assert.equal(ctorCallCount, expectedCtorCallCount);
+      assert.equal(container.innerHTML, `<div class="foo">x:1, a:a</div>`);
+      assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+      // Note, due to limitations of `useState`, controller lifecycle has
+      // not run inside first component render call.
+      assert.deepEqual(componentRenderLog, []);
+      assert.deepEqual(componentLayoutEffectLog, testController.log);
+      const firstTestController = testController;
+      componentRenderLog.length =
+        componentLayoutEffectLog.length =
+        testController.log.length =
+          0;
+      render({x: 2});
+      assert.equal(ctorCallCount, expectedCtorCallCount);
+      assert.equal(container.innerHTML, `<div class="foo">x:2, a:a</div>`);
+      assert.deepEqual(testController.log, [...expectedUpdates, 'updated']);
+      assert.deepEqual(componentRenderLog, expectedUpdates);
+      assert.deepEqual(componentLayoutEffectLog, testController.log);
+      assert.strictEqual(testController, firstTestController);
+    });
+  };
+
+  lifeCycleTest({strict: false});
+  lifeCycleTest({strict: true});
 
   test('requestUpdate', async () => {
     let testController!: TestController;

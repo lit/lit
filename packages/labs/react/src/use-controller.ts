@@ -34,6 +34,9 @@ class ReactControllerHost<C extends ReactiveController>
   _updatePending = true;
   private _resolveUpdate!: (value: boolean | PromiseLike<boolean>) => void;
 
+  /* @internal */
+  _isConnected = false;
+
   private _kickCount: number;
   // A function to trigger an update of the React component
   private _kick: (k: number) => void;
@@ -70,11 +73,13 @@ class ReactControllerHost<C extends ReactiveController>
 
   /* @internal */
   _connected() {
+    this._isConnected = true;
     this._controllers.forEach((c) => c.hostConnected?.());
   }
 
   /* @internal */
   _disconnected() {
+    this._isConnected = false;
     this._controllers.forEach((c) => c.hostDisconnected?.());
   }
 
@@ -131,23 +136,46 @@ export const useController = <C extends ReactiveController>(
     const host = new ReactControllerHost<C>(kickCount, kick);
     const controller = createController(host);
     host._primaryController = controller;
-    host._connected();
     return host;
   });
 
   host._updatePending = true;
 
+  // Returning a cleanup function simulates hostDisconnected timing. An empty
+  // deps array tells React to only call this once: on mount with the cleanup
+  // called on unmount.
+  //
+  // Note, it's important to call `connected` here and not when the host
+  // is created in the `useState` call since connection typically produces
+  // side effects and `useState` is expected to be pure.
+  // To preserve expected lifecycle ordering, the first update is also called
+  // here.
+  //
+  // This means that the initial value a controller produces may be incorrect
+  // since the React component sees this value before the controller has run
+  // connected+update.
+  //
+  // We could add an option to do a `requestUpdate` instead of an `update`
+  // here, but this would trigger a React re-render so it should only be done
+  // if required. Users can work around this initial value limitation by using
+  // the controller value in a `useLayoutEffect` and/or calling `requestUpdate`
+  // on the controller.
+  useLayoutEffect(() => {
+    host._connected();
+    host._update();
+    return () => host._disconnected();
+  }, []);
+
   // We use useLayoutEffect because we need updated() called synchronously
   // after rendering.
   useLayoutEffect(() => host._updated());
 
-  // Returning a cleanup function simulates hostDisconnected timing. An empty
-  // deps array tells React to only call this once: on mount with the cleanup
-  // called on unmount.
-  useLayoutEffect(() => () => host._disconnected(), []);
-
-  // TODO (justinfagnani): don't call in SSR
-  host._update();
+  // Only call update if connected; it's called explicitly above when
+  // connecting.
+  if (host._isConnected) {
+    // TODO (justinfagnani): don't call in SSR
+    host._update();
+  }
 
   return host._primaryController;
 };

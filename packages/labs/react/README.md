@@ -127,6 +127,12 @@ Controller timings are implemented as follows:
 | requestUpdate    | useState setter                     |
 | updateComplete   | useLayoutEffect                     |
 
+### Limitations
+
+Because the controller's lifecycle is run via a `useLayoutEffect` callback, the initial value a controller produces for the React component may
+be incorrect. This is the case only if the controller sets up its initial value via `hostConnected` or `hostUpdate`. This limitation can be worked
+around by accessing the controller's value in a `useLayoutEffect` hook run on first mount, e.g. `useLayoutEffect(() => setSomeComponentState(controller.value), [])`.
+
 ### Usage
 
 ```jsx
