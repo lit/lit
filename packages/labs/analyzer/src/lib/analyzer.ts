@@ -11,8 +11,8 @@ import {
   ClassDeclaration,
   PackageJson,
   VariableDeclaration,
-  ProgramContext,
 } from './model.js';
+import {ProgramContext} from './program-context.js';
 import {AbsolutePath, absoluteToPackage} from './paths.js';
 import {
   isLitElement,
@@ -20,7 +20,6 @@ import {
 } from './lit-element/lit-element.js';
 import * as fs from 'fs';
 import * as path from 'path';
-import {DiagnosticsError} from './errors.js';
 export {PackageJson};
 
 /**
@@ -81,14 +80,6 @@ export class Analyzer {
   }
 
   analyzePackage() {
-    const diagnostics = this.programContext.program.getSemanticDiagnostics();
-    if (diagnostics.length > 0) {
-      throw new DiagnosticsError(
-        diagnostics,
-        `Error analyzing package '${this.packageRoot}': Please fix errors first`
-      );
-    }
-
     const rootFileNames = this.programContext.program.getRootFileNames();
 
     return new Package({

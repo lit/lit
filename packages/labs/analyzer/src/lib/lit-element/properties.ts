@@ -12,7 +12,8 @@
 
 import ts from 'typescript';
 import {LitClassDeclaration} from './lit-element.js';
-import {ProgramContext, ReactiveProperty} from '../model.js';
+import {ReactiveProperty} from '../model.js';
+import {ProgramContext} from '../program-context.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 
 export const getProperties = (

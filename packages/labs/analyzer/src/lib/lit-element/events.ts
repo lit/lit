@@ -12,7 +12,8 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {Event, ProgramContext} from '../model.js';
+import {Event} from '../model.js';
+import {ProgramContext} from '../program-context.js';
 
 import {LitClassDeclaration} from './lit-element.js';
 

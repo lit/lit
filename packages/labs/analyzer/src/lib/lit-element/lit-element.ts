@@ -11,7 +11,8 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration, ProgramContext} from '../model.js';
+import {LitElementDeclaration} from '../model.js';
+import {ProgramContext} from '../program-context.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
 import {getProperties} from './properties.js';

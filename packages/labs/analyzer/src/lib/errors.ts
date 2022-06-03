@@ -18,6 +18,15 @@ const diagnosticsHost: ts.FormatDiagnosticsHost = {
   },
 };
 
+export const createDiagnostic = (node: ts.Node, message: string) => ({
+  file: node.getSourceFile(),
+  start: node.getStart(),
+  length: node.getWidth(),
+  category: ts.DiagnosticCategory.Error,
+  code: 2323,
+  messageText: message ?? '',
+});
+
 export class DiagnosticsError extends Error {
   diagnostics: ts.Diagnostic[];
   constructor(diagnostics: readonly ts.Diagnostic[], message?: string);
@@ -31,16 +40,7 @@ export class DiagnosticsError extends Error {
       diagnostics = nodeOrDiagnostics;
     } else {
       const node = nodeOrDiagnostics as ts.Node;
-      diagnostics = [
-        {
-          file: node.getSourceFile(),
-          start: node.getStart(),
-          length: node.getWidth(),
-          category: ts.DiagnosticCategory.Error,
-          code: 2323,
-          messageText: message ?? '',
-        },
-      ];
+      diagnostics = [createDiagnostic(node, message!)];
       message = undefined;
     }
     super(
