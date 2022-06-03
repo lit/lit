@@ -7,6 +7,7 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
+import * as path from 'path';
 import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../../lib/analyzer.js';
@@ -31,7 +32,7 @@ test.before((ctx) => {
 
     const result = analyzer.analyzePackage();
     const elementAModule = result.modules.find(
-      (m) => m.sourcePath === 'src/element-a.ts'
+      (m) => m.sourcePath === path.normalize('src/element-a.ts')
     );
     const element = elementAModule!.declarations.filter(
       isLitElementDeclaration
@@ -40,10 +41,10 @@ test.before((ctx) => {
     ctx.packagePath = packagePath;
     ctx.analyzer = analyzer;
     ctx.element = element;
-  } catch (e) {
+  } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
-    console.error(e);
+    console.error('uvu before error', error);
     process.exit(1);
   }
 });

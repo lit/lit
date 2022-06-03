@@ -23,10 +23,10 @@ test.before((ctx) => {
       new URL('../test-files/basic-elements', import.meta.url).href
     ) as AbsolutePath);
     ctx.analyzer = new Analyzer(packagePath);
-  } catch (e) {
+  } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
-    console.error(e);
+    console.error('uvu before error', error);
     process.exit(1);
   }
 });

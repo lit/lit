@@ -41,7 +41,7 @@
         "build"
       ],
       "files": [
-        "test-files/**"
+        "test-files/"
       ],
       "output": []
     }

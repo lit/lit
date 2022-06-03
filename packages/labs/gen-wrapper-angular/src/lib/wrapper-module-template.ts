@@ -8,7 +8,7 @@ import {
   LitElementDeclaration,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
-import {javascript} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
 
 export const wrapperModuleTemplate = (
   packageJson: PackageJson,
