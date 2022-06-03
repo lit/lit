@@ -73,7 +73,7 @@ suite('createComponent', () => {
     onBar: 'bar',
   };
 
-  const basicElementChildren = {
+  const basicElementSlots = {
     foos: 'slot-a',
     bars: 'slot-b',
   };
@@ -84,7 +84,7 @@ suite('createComponent', () => {
     BasicElement,
     basicElementEvents,
     'BasicElement',
-    basicElementChildren,
+    basicElementSlots,
   );
 
   let el: BasicElement;

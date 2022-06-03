@@ -97,18 +97,17 @@ type Constructor<T> = {new (): T};
 export type EventName<T extends Event = Event> = string & {
   __event_type: T;
 };
-
 type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
+type EventMap<R extends Events> = {
   [K in keyof R]: R[K] extends EventName
     ? (e: R[K]['__event_type']) => void
     : (e: Event) => void;
 };
 
-type ElementChildren<C> = Record<keyof C, React.ReactNode>;
+type Slots = Record<string, string>;
+type SlotMap<C> = Record<keyof C, React.ReactNode>;
 
-const createSlottedChild = (
+const slotReactNode = (
   React: typeof ReactModule,
   slot: string,
   children: React.ReactNode
@@ -148,18 +147,17 @@ const createSlottedChild = (
 export const createComponent = <
   I extends HTMLElement,
   E extends Events,
-  C extends Record<string, string>
+  S extends Slots
 >(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string,
-  children?: C
+  slots?: S
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
-  const reactChildren = children;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
@@ -167,10 +165,10 @@ export const createComponent = <
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
-      Partial<Omit<I, 'children' | keyof C>> &
-        Partial<EventProps<E>> &
-        Partial<ElementChildren<C>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E | keyof C>
+      Partial<Omit<I, 'children' | keyof S>> &
+        Partial<EventMap<E>> &
+        Partial<SlotMap<S>> &
+        Omit<React.HTMLAttributes<HTMLElement>, keyof E | keyof S>
     >
   >;
 
@@ -281,7 +279,7 @@ export const createComponent = <
       this._elementProps = {};
 
       // ReactNode children are collected into one array. Each child
-      // is assigned a slot via createSlottedChild.
+      // is assigned a slot via slotReactNode.
       // React requires a list of unique keys on ReactNode lists so
       // the slot-name is used as the unique key. However, the first
       // set of ReactNodes has a unique key of 'undefined'.
@@ -295,9 +293,9 @@ export const createComponent = <
           continue;
         }
 
-        const slot = reactChildren?.[k];
+        const slot = slots?.[k];
         if (slot) {
-          children.push(createSlottedChild(React, slot, v as React.ReactNode));
+          children.push(slotReactNode(React, slot, v as React.ReactNode));
           continue;
         }
 
