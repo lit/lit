@@ -108,11 +108,11 @@ type Slots = Record<string, string>;
 type SlotMap<C> = Record<keyof C, React.ReactNode>;
 
 const slotReactNode = (
-  React: typeof ReactModule,
+  createElement: typeof ReactModule.createElement,
   slot: string,
   children: React.ReactNode
 ) => {
-  return React.createElement(
+  return createElement(
     'div',
     {
       style: {display: 'contents'},
@@ -295,7 +295,9 @@ export const createComponent = <
 
         const slot = slots?.[k];
         if (slot) {
-          children.push(slotReactNode(React, slot, v as React.ReactNode));
+          children.push(
+            slotReactNode(createElement, slot, v as React.ReactNode)
+          );
           continue;
         }
 
