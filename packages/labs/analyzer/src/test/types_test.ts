@@ -234,7 +234,7 @@ import {ImportedClass} from '@lit-internal/test-types/external.js';
   );
 });
 test('getImportsStringForReferences coalesced', () => {
-  const referencs = [
+  const reference = [
     new Reference({package: 'foo', name: 'foo1'}),
     new Reference({package: 'bar', name: 'bar1'}),
     new Reference({package: 'foo', name: 'foo1'}),
@@ -244,7 +244,7 @@ test('getImportsStringForReferences coalesced', () => {
     new Reference({package: 'foo', name: 'foo3'}),
   ];
   assert.equal(
-    getImportsStringForReferences(referencs),
+    getImportsStringForReferences(reference),
     `
 import {foo1, foo2, foo3} from 'foo';
 import {bar1, bar2} from 'bar';
