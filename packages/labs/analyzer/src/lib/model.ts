@@ -211,6 +211,12 @@ export class Reference {
     this.module = init.module;
     this.isGlobal = init.isGlobal ?? false;
   }
+
+  get moduleSpecifier() {
+    return this.isGlobal
+      ? undefined
+      : this.package! + (this.module ? '/' + this.module : '');
+  }
 }
 
 export class Type {
@@ -223,16 +229,29 @@ export class Type {
     this.text = text;
     this.references = references;
   }
-
-  getImportStatementsForReferences() {
-    return this.references
-      .filter((ref) => !ref.isGlobal)
-      .map(
-        (ref) =>
-          `import {${ref.name}} from '${ref.package}${
-            ref.module ? '/' + ref.module : ''
-          }';`
-      )
-      .join('\n');
-  }
 }
+
+/**
+ * Returns a deduped / coalesced string of import statements required to load
+ * the given references.
+ */
+export const getImportsStringForReferences = (references: Reference[]) => {
+  const modules = new Map<string, Set<string>>();
+  for (const {moduleSpecifier, name, isGlobal} of references) {
+    if (!isGlobal) {
+      let namesForModule = modules.get(moduleSpecifier!);
+      if (namesForModule === undefined) {
+        modules.set(moduleSpecifier!, (namesForModule = new Set()));
+      }
+      namesForModule.add(name);
+    }
+  }
+  return Array.from(modules)
+    .map(
+      ([moduleSpecifier, namesForModule]) =>
+        `import {${Array.from(namesForModule).join(
+          ', '
+        )}} from '${moduleSpecifier}';`
+    )
+    .join('\n');
+};

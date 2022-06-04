@@ -12,7 +12,13 @@ import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../lib/analyzer.js';
 import {AbsolutePath} from '../lib/paths.js';
-import {Module, Type, VariableDeclaration} from '../lib/model.js';
+import {
+  Module,
+  Type,
+  VariableDeclaration,
+  getImportsStringForReferences,
+  Reference,
+} from '../lib/model.js';
 
 const test = suite<{module: Module; packagePath: AbsolutePath}>('Types tests');
 
@@ -217,13 +223,31 @@ test('complexType', ({module}) => {
   assert.equal(type.references[3].isGlobal, false);
 });
 
-test('getImportStringForReferences', ({module}) => {
+test('getImportsStringForReferences', ({module}) => {
   const type = typeForVariable(module, 'complexType');
   assert.equal(
-    type.getImportStatementsForReferences(),
+    getImportsStringForReferences(type.references),
     `
 import {LitElement} from 'lit';
 import {ImportedClass} from '@lit-internal/test-types/external.js';
+`.trim()
+  );
+});
+test('getImportsStringForReferences coalesced', () => {
+  const referencs = [
+    new Reference({package: 'foo', name: 'foo1'}),
+    new Reference({package: 'bar', name: 'bar1'}),
+    new Reference({package: 'foo', name: 'foo1'}),
+    new Reference({package: 'foo', name: 'foo2'}),
+    new Reference({package: 'bar', name: 'bar2'}),
+    new Reference({package: 'bar', name: 'bar2'}),
+    new Reference({package: 'foo', name: 'foo3'}),
+  ];
+  assert.equal(
+    getImportsStringForReferences(referencs),
+    `
+import {foo1, foo2, foo3} from 'foo';
+import {bar1, bar2} from 'bar';
 `.trim()
   );
 });

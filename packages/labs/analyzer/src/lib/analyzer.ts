@@ -127,7 +127,7 @@ export class Analyzer {
           module.declarations.push(
             getLitElementDeclaration(statement, this.programContext)
           );
-        } else if (isExported(statement)) {
+        } else {
           module.declarations.push(
             new ClassDeclaration({
               name: statement.name?.text,
@@ -135,6 +135,7 @@ export class Analyzer {
             })
           );
         }
+        // TODO(kschaaf) should we only analyze exported things?
       } else if (ts.isVariableStatement(statement) && isExported(statement)) {
         module.declarations.push(
           ...statement.declarationList.declarations
