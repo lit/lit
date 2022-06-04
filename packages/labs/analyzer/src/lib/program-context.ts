@@ -280,7 +280,7 @@ export class ProgramContext {
    * or `undefined` if the declaration was not imported.
    */
   getImportModuleSpecifier(declaration: ts.Node): string | undefined {
-    // TODO(kschaaf) support the various import syntaxes
+    // TODO(kschaaf) support the various import syntaxes, e.g. `import {foo as bar} from 'baz'`
     if (
       ts.isImportSpecifier(declaration) &&
       ts.isNamedImports(declaration.parent) &&
