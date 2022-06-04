@@ -73,12 +73,12 @@ suite('createComponent', () => {
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createComponent(
-    window.React,
-    elementName,
-    BasicElement,
-    basicElementEvents
-  );
+  const BasicElementComponent = createComponent({
+    React: window.React,
+    tagName: elementName,
+    elementClass: BasicElement,
+    events: basicElementEvents,
+  });
 
   let el: BasicElement;
 
@@ -107,13 +107,13 @@ suite('createComponent', () => {
   test('has valid displayName', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
-    const NamedComponent = createComponent(
-      window.React,
-      elementName,
-      BasicElement,
-      basicElementEvents,
-      'FooBar'
-    );
+    const NamedComponent = createComponent({
+      React: window.React,
+      tagName: elementName,
+      elementClass: BasicElement,
+      events: basicElementEvents,
+      displayName: 'FooBar'
+    });
     
     assert.equal(NamedComponent.displayName, 'FooBar');
   });
@@ -354,7 +354,11 @@ suite('createComponent', () => {
       @property()
       ref = 'hi';
     }
-    createComponent(window.React, tag, Warn);
+    createComponent({
+      React: window.React,
+      tagName: tag,
+      elementClass: Warn,
+    });
     assert.include(warning!, 'ref');
     console.warn = warn;
   });

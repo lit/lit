@@ -106,6 +106,14 @@ type EventProps<R extends Events> = {
     : (e: Event) => void;
 };
 
+interface CreateComponentParams<I extends HTMLElement, E extends Events> {
+  React: typeof ReactModule;
+  tagName: string;
+  elementClass: Constructor<I>;
+  events?: E;
+  displayName?: string;
+}
+
 /**
  * Creates a React component for a custom element. Properties are distinguished
  * from attributes automatically, and events can be configured so they are
@@ -127,13 +135,13 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
-  React: typeof ReactModule,
-  tagName: string,
-  elementClass: Constructor<I>,
-  events?: E,
-  displayName?: string
-) => {
+export const createComponent = <I extends HTMLElement, E extends Events>({
+  React,
+  tagName,
+  elementClass,
+  events,
+  displayName,
+}: CreateComponentParams<I, E>) => {
   const Component = React.Component;
   const createElement = React.createElement;
 
