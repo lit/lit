@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "element-a.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementA",
+          "summary": "TODO",
+          "description": "TODO",
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false,
+          "tagName": "element-a",
+          "attributes": [],
+          "events": [{"name": "a-changed", "type": {"text": "TODO"}}],
+          "slots": [],
+          "cssParts": [],
+          "cssProperties": [],
+          "demos": [],
+          "customElement": true
+        }
+      ],
+      "exports": [],
+      "deprecated": false
+    }
+  ]
+}
