@@ -13,6 +13,7 @@
 import ts from 'typescript';
 import {LitElementDeclaration} from '../model.js';
 import {ProgramContext} from '../program-context.js';
+import {getHeritage} from '../javascript/classes.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
 import {getProperties} from './properties.js';
@@ -22,15 +23,16 @@ import {getProperties} from './properties.js';
  * (branded as LitClassDeclaration).
  */
 export const getLitElementDeclaration = (
-  node: LitClassDeclaration,
+  declaration: LitClassDeclaration,
   programContext: ProgramContext
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
-    tagname: getTagName(node),
-    name: node.name?.text,
-    node,
-    reactiveProperties: getProperties(node, programContext),
-    events: getEvents(node, programContext),
+    tagname: getTagName(declaration),
+    name: declaration.name?.text,
+    node: declaration,
+    reactiveProperties: getProperties(declaration, programContext),
+    events: getEvents(declaration, programContext),
+    ...getHeritage(declaration, programContext),
   });
 };
 
@@ -84,12 +86,11 @@ export const isLitElement = (
     node
   ) as ts.InterfaceType;
   const baseTypes = programContext.checker.getBaseTypes(type);
-  for (const t of baseTypes) {
-    if (_isLitElementClassDeclaration(t)) {
-      return true;
-    }
-  }
-  return false;
+  return baseTypes.some((t) =>
+    t.isIntersection()
+      ? t.types.some(_isLitElementClassDeclaration)
+      : _isLitElementClassDeclaration(t)
+  );
 };
 
 /**

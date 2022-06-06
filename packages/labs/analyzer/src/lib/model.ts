@@ -62,7 +62,10 @@ export class Module {
   }
 }
 
-export type Declaration = ClassDeclaration | VariableDeclaration;
+export type Declaration =
+  | ClassDeclaration
+  | VariableDeclaration
+  | MixinDeclaration;
 
 export interface VariableDeclarationInit {
   name: string;
@@ -84,15 +87,49 @@ export class VariableDeclaration {
 export interface ClassDeclarationInit {
   name: string | undefined;
   node: ts.ClassDeclaration;
+  superClass: ts.Declaration | undefined;
+  superClassType: ts.Type | undefined;
+  mixins: MixinDeclarationNode[];
 }
 
 export class ClassDeclaration {
   readonly name: string | undefined;
   readonly node: ts.ClassDeclaration;
+  readonly superClass: ts.Declaration | undefined;
+  readonly superClassType: ts.Type | undefined;
+  readonly mixins: MixinDeclarationNode[];
 
   constructor(init: ClassDeclarationInit) {
     this.name = init.name;
     this.node = init.node;
+    this.superClass = init.superClass;
+    this.superClassType = init.superClassType;
+    this.mixins = init.mixins;
+  }
+}
+
+export type MixinDeclarationNode =
+  | ts.ArrowFunction
+  | ts.FunctionDeclaration
+  | ts.FunctionExpression;
+
+export interface MixinDeclarationInit {
+  name: string | undefined;
+  node: MixinDeclarationNode;
+  classDeclaration: ClassDeclaration;
+  superClassConstraintType: ts.Type | undefined;
+}
+
+export class MixinDeclaration {
+  readonly name: string | undefined;
+  readonly node: MixinDeclarationNode;
+  readonly classDeclaration: ClassDeclaration;
+  readonly superClassConstraintType: ts.Type | undefined;
+  constructor(init: MixinDeclarationInit) {
+    this.name = init.name;
+    this.node = init.node;
+    this.classDeclaration = init.classDeclaration;
+    this.superClassConstraintType = init.superClassConstraintType;
   }
 }
 

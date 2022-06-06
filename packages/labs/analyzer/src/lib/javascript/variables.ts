@@ -11,8 +11,9 @@
  */
 
 import ts from 'typescript';
-import {VariableDeclaration} from '../model.js';
+import {MixinDeclaration, VariableDeclaration} from '../model.js';
 import {ProgramContext} from '../program-context.js';
+import {maybeGetMixinDeclaration} from './mixins.js';
 import {DiagnosticsError} from '../errors.js';
 
 type VariableName =
@@ -24,14 +25,15 @@ export const getVariableDeclarations = (
   dec: ts.VariableDeclaration,
   name: VariableName,
   programContext: ProgramContext
-): VariableDeclaration[] => {
+): (VariableDeclaration | MixinDeclaration)[] => {
   if (ts.isIdentifier(name)) {
     return [
-      new VariableDeclaration({
-        name: name.text,
-        node: dec,
-        type: programContext.getTypeForNode(name),
-      }),
+      maybeGetMixinDeclaration(dec, programContext) ??
+        new VariableDeclaration({
+          name: name.text,
+          node: dec,
+          type: programContext.getTypeForNode(name),
+        }),
     ];
   } else if (
     // Recurse into the elements of an array/object destructuring variable
