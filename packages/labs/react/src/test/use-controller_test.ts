@@ -78,8 +78,12 @@ suite('useController', () => {
 
       const TestComponent = ({x}: {x: number}) => {
         testController = useTest('a');
+        // Record the state of the testController's log when the component
+        // runs. It should have at least run `connect + update` by now.
         componentRenderLog = [...testController.log];
         React.useLayoutEffect(() => {
+          // Record the state of the testController's log when the component
+          // runs. It should have completed an update by now.
           componentLayoutEffectLog = [...testController.log];
         });
         return React.createElement('div', {className: 'foo'}, [
@@ -112,8 +116,14 @@ suite('useController', () => {
       //
       assert.equal(ctorCallCount, expectedCtorCallCount);
       assert.equal(container.innerHTML, `<div class="foo">x:1, a:a</div>`);
+      // Tests the state of the controllerLog in the component's render.
+      // We expect the controller to have run `connected + update` when
+      // `useController` returns in the component.
       assert.deepEqual(componentRenderLog, ['connected', 'update']);
       assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+      // Tests the state of the controllerLog in a `useLayoutEffect` callback
+      // used in the component. We expect the controller to have completed
+      // an update by then.
       assert.deepEqual(componentLayoutEffectLog, testController.log);
       const firstTestController = testController;
       componentRenderLog.length =
