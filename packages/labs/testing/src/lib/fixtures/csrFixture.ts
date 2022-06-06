@@ -5,7 +5,7 @@
  */
 
 import {render} from 'lit';
-import type {TemplateResult} from 'lit';
+import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOption} from './fixtureOption.js';
 
 /**
@@ -19,10 +19,10 @@ import type {FixtureOption} from './fixtureOption.js';
  * Generally should be `import.meta.url`. Will guess from stack trace if not
  * provided.
  */
-export async function csrFixture(
+export async function csrFixture<T extends LitElement>(
   template: TemplateResult,
   {modules, base}: FixtureOption
-) {
+): Promise<T> {
   if (base === undefined) {
     // Find the test file url from the call stack
     // Chrome:
@@ -62,5 +62,5 @@ export async function csrFixture(
   // synchronously. Awaiting for the next microtask tick seems to work.
   await render(template, container);
 
-  return container.firstElementChild;
+  return container.firstElementChild as T;
 }

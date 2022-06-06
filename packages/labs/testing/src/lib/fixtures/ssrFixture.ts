@@ -43,10 +43,10 @@ declare global {
  * @param {boolean} [option.hydrate] - Defaults to true. Hydrates the component
  * after being loaded to the document.
  */
-export async function ssrFixture(
+export async function ssrFixture<T extends LitElement>(
   template: TemplateResult,
   {modules, base, hydrate = true}: SsrFixtureOption
-): Promise<Element | null | undefined> {
+): Promise<T> {
   if (base === undefined) {
     // Find the test file url from the call stack
     // Chrome:
@@ -97,7 +97,7 @@ export async function ssrFixture(
     hydrateShadowRoots(container);
   }
 
-  const el = container.firstElementChild as LitElement;
+  const el = container.firstElementChild as T;
   if (hydrate) {
     // TODO(augustinekim) Consider handling cases where el is not a LitElement
     el.removeAttribute('defer-hydration');
@@ -121,11 +121,11 @@ export async function ssrFixture(
  * Generally should be `import.meta.url`. Will guess from stack trace if not
  * provided.
  */
-export async function ssrHydratedFixture(
+export async function ssrHydratedFixture<T extends LitElement>(
   template: TemplateResult,
   {modules, base}: FixtureOption
 ) {
-  return ssrFixture(template, {modules, base, hydrate: true});
+  return ssrFixture<T>(template, {modules, base, hydrate: true});
 }
 
 /**
@@ -144,9 +144,9 @@ export async function ssrHydratedFixture(
  * Generally should be `import.meta.url`. Will guess from stack trace if not
  * provided.
  */
-export async function ssrNonHydratedFixture(
+export async function ssrNonHydratedFixture<T extends LitElement>(
   template: TemplateResult,
   {modules, base}: FixtureOption
 ) {
-  return ssrFixture(template, {modules, base, hydrate: false});
+  return ssrFixture<T>(template, {modules, base, hydrate: false});
 }
