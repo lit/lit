@@ -65,7 +65,7 @@
   "files": [
     "index.{d.ts,d.ts.map,js,js.map}",
     "fixtures.{d.ts,d.ts.map,js,js.map}",
-    "./lib/**/*.{d.ts,d.ts.map,js,js.map}"
+    "lib/**/*.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
     "@lit-labs/ssr": "^2.2.0",
