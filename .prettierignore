@@ -286,19 +286,16 @@ packages/labs/virtualizer/test/**/*.d.ts.map
 packages/labs/virtualizer/test/**/*.js
 packages/labs/virtualizer/test/**/*.js.map
 packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
+packages/labs/testing/index.*
+packages/labs/testing/fixtures.*
+packages/labs/testing/lib
+packages/labs/testing/test
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/
 packages/labs/vue-utils/node_modules/
 packages/labs/vue-utils/index.*
 packages/labs/vue-utils/wrapper-utils.*
-
-packages/labs/testing/fixtures
-packages/labs/testing/web-test-runner
-packages/labs/testing/index.*
-packages/labs/testing/fixtures.*
-packages/labs/testing/lib
-packages/labs/testing/test
 
 packages/lit-starter-js/node_modules/*
 packages/lit-starter-js/docs/*
