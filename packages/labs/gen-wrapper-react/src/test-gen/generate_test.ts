@@ -23,47 +23,51 @@ import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
 
-test('basic wrapper generation', async () => {
-  const project = 'test-element-a';
-  const inputPackage = path.resolve(testProjects, project);
-  const outputPackage = path.resolve(outputFolder, project + '-react');
+const testWrapper =
+  (projectName = '') =>
+  async () => {
+    const project = `test-${projectName}`;
+    const inputPackage = path.resolve(testProjects, project);
+    const outputPackage = path.resolve(outputFolder, project + '-react');
 
-  if (fs.existsSync(outputPackage)) {
-    fs.rmSync(outputPackage, {recursive: true});
-  }
+    if (fs.existsSync(outputPackage)) {
+      fs.rmSync(outputPackage, {recursive: true});
+    }
 
-  const analyzer = new Analyzer(inputPackage as AbsolutePath);
-  const analysis = analyzer.analyzePackage();
-  await writeFileTree(outputFolder, await generateReactWrapper(analysis));
+    const analyzer = new Analyzer(inputPackage as AbsolutePath);
+    const analysis = analyzer.analyzePackage();
+    await writeFileTree(outputFolder, await generateReactWrapper(analysis));
 
-  const wrapperSourceFile = fs.readFileSync(
-    path.join(outputPackage, 'src/element-a.ts')
-  );
-  assert.ok(wrapperSourceFile.length > 0);
+    const wrapperSourceFile = fs.readFileSync(
+      path.join(outputPackage, `src/${projectName}.ts`)
+    );
+    assert.ok(wrapperSourceFile.length > 0);
 
-  await assertGoldensMatch(outputPackage, path.join('goldens', project), {
-    formatGlob: '**/*.{ts,js,json}',
-  });
+    await assertGoldensMatch(outputPackage, path.join('goldens', project), {
+      formatGlob: '**/*.{ts,js,json}',
+    });
 
-  await installPackage(outputPackage, {
-    [`@lit-internal/${project}`]: inputPackage,
-    '@lit-labs/react': '../react',
-  });
+    await installPackage(outputPackage, {
+      [`@lit-internal/${project}`]: inputPackage,
+      '@lit-labs/react': '../react',
+    });
 
-  await buildPackage(outputPackage);
+    await buildPackage(outputPackage);
 
-  // Pack the generated package here, as `test-output` package.json will
-  // reference the generated tarball here by filename; `test-output:installSelf`
-  // depends on these tests run by `test:gen`.
-  await packPackage(outputPackage);
+    // Pack the generated package here, as `test-output` package.json will
+    // reference the generated tarball here by filename; `test-output:installSelf`
+    // depends on these tests run by `test:gen`.
+    await packPackage(outputPackage);
 
-  // This verifies the package installation and build nominally succeeded. Note
-  // that runtime tests of this generated package are run as a separate `npm run
-  // test` command in `test-output` using `@web/test-runner`.
-  const wrapperJsFile = fs.readFileSync(
-    path.join(outputPackage, 'element-a.js')
-  );
-  assert.ok(wrapperJsFile.length > 0);
-});
+    // This verifies the package installation and build nominally succeeded. Note
+    // that runtime tests of this generated package are run as a separate `npm run
+    // test` command in `test-output` using `@web/test-runner`.
+    const wrapperJsFile = fs.readFileSync(
+      path.join(outputPackage, `${projectName}.js`)
+    );
+    assert.ok(wrapperJsFile.length > 0);
+  };
+
+test('basic wrapper generation', testWrapper('element-a'));
 
 test.run();

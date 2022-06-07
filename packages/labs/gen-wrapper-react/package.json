@@ -38,7 +38,8 @@
       "dependencies": [
         "build",
         "../react:build",
-        "../test-projects/test-element-a:pack"
+        "../test-projects/test-element-a:pack",
+        "../test-projects/test-element-events:pack"
       ],
       "files": [
         "goldens/**/*"
