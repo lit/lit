@@ -26,6 +26,21 @@ const optionDefinitions = [
 
 export const run = async () => {
   const options = commandLineArgs(optionDefinitions);
+
+  if (!options.filename && !options.version) {
+    console.error(
+      `
+USAGE
+    release-image CHANGELOG_PATH [--version VERSION]
+
+EXAMPLES
+    To generate the release image for the reactive-element package:
+
+        release-image packages/reactive-element/CHANGELOG.md
+          `.trim()
+    );
+    process.exit(1);
+  }
   const filename: string = options.file || 'CHANGELOG.md';
   const version: string = options.version;
 
@@ -95,8 +110,9 @@ export const run = async () => {
   const bounds = await page.evaluate(`
      document.documentElement.getBoundingClientRect().toJSON()
    `);
+  const imageFileName = `${path.basename(packageName)}-${release.title}.png`;
   await page.screenshot({
-    path: 'release.png',
+    path: imageFileName,
     encoding: 'binary',
     type: 'png',
     clip: {
@@ -106,7 +122,7 @@ export const run = async () => {
       height: bounds.height,
     },
   });
-  console.log('Wrote screenshot to release.png');
+  console.log(`Wrote screenshot to '${imageFileName}'`);
   await browser.close();
   process.exit();
 };
