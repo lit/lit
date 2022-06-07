@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -21,10 +21,8 @@ import {ContextKey} from '../context-key.js';
  * which will try and retrieve a value for the property via the Context API.
  *
  * @param context A Context identifier value created via `createContext`
- * @param multiple An optional boolean which when true allows the value to be updated
+ * @param subscribe An optional boolean which when true allows the value to be updated
  *   multiple times.
- *
- * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
  * @example
  *

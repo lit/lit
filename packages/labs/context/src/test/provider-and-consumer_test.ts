@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2021 Google LLC
+ * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -25,28 +25,13 @@ class ContextConsumerAndProviderElement extends LitElement {
 
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span
-      ><span id="formAbove">${this.provided}</span><slot></slot>`;
+      ><span id="fromAbove">${this.provided}</span><slot></slot>`;
   }
 }
 customElements.define(
   'context-consumer-and-provider',
   ContextConsumerAndProviderElement
 );
-
-//  class ContextProviderElement extends LitElement {
-// 	 @contextProvider({context: simpleContext})
-// 	 @property({type: Number, reflect: true})
-// 	 public value = 0;
-
-// 	 protected render(): TemplateResult {
-// 		 return html`
-// 			 <div>
-// 				 <slot></slot>
-// 			 </div>
-// 		 `;
-// 	 }
-//  }
-//  customElements.define('context-provider', ContextProviderElement);
 
 suite('@providerAndConsumer', () => {
   let root: ContextConsumerAndProviderElement;
@@ -56,12 +41,12 @@ suite('@providerAndConsumer', () => {
   setup(async () => {
     container = document.createElement('div');
     container.innerHTML = `
-				 <context-consumer-and-provider id="root" value="10" provided="20">            
-						 <context-consumer-and-provider id="parent" value="100" provided="200">
-						 	 <context-consumer-and-provider id="child"></context-consumer-and-provider>
-						 </context-consumer-and-provider>
-				 </context-consumer-and-provider>
-		 `;
+      <context-consumer-and-provider id="root" value="10" provided="20">
+        <context-consumer-and-provider id="parent" value="100" provided="200">
+          <context-consumer-and-provider id="child"></context-consumer-and-provider>
+        </context-consumer-and-provider>
+      </context-consumer-and-provider>
+    `;
     document.body.appendChild(container);
 
     root = container.querySelector(
@@ -88,30 +73,30 @@ suite('@providerAndConsumer', () => {
   });
 
   test(`parent receives a context from root`, async () => {
-    assert.strictEqual(parent.value, 20);
+    assert.strictEqual(parent.provided, 10);
   });
   test(`child receives a context from parent`, async () => {
-    assert.strictEqual(child.value, 200);
+    assert.strictEqual(child.provided, 100);
   });
 
   test(`parent receives updated context on root change`, async () => {
-    assert.strictEqual(parent.value, 20);
-    root.provided = 50;
+    assert.strictEqual(parent.provided, 10);
+    root.value = 50;
     await parent.updateComplete;
-    assert.strictEqual(parent.value, 50);
+    assert.strictEqual(parent.provided, 50);
   });
 
   test(`child does not receives updated context on root change`, async () => {
-    assert.strictEqual(child.value, 200);
-    root.provided = 51;
+    assert.strictEqual(child.provided, 100);
+    root.value = 51;
     await child.updateComplete;
-    assert.strictEqual(child.value, 200);
+    assert.strictEqual(child.provided, 100);
   });
 
   test(`child receives updated context on parent change`, async () => {
-    assert.strictEqual(child.value, 20);
-    parent.provided = 500;
+    assert.strictEqual(child.provided, 100);
+    parent.value = 500;
     await child.updateComplete;
-    assert.strictEqual(child.value, 500);
+    assert.strictEqual(child.provided, 500);
   });
 });
