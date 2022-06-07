@@ -76,8 +76,8 @@ function configureWorker(
 
   eleventyConfig.addTransform(
     'render-lit',
-    async (content: string, outputPath: string) => {
-      if (!outputPath.endsWith('.html')) {
+    async (content: string, outputPath?: string) => {
+      if (!outputPath?.endsWith('.html')) {
         return content;
       }
 
@@ -180,8 +180,8 @@ ${reset}`
 
   eleventyConfig.addTransform(
     'render-lit',
-    async (content: string, outputPath: string) => {
-      if (!outputPath.endsWith('.html')) {
+    async (content: string, outputPath?: string) => {
+      if (!outputPath?.endsWith('.html')) {
         return content;
       }
 
