@@ -1,0 +1,23 @@
+{
+  "name": "@lit-internal/test-element-events-react",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "version": "1.0.0",
+  "dependencies": {
+    "@lit-internal/test-element-events": "^1.0.0",
+    "@lit-labs/react": "^1.0.4"
+  },
+  "peerDependencies": {
+    "react": "^17 || ^18",
+    "@types/react": "^17 || ^18"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  },
+  "files": [
+    "element-events.{js,js.map,d.ts,d.ts.map}"
+  ]
+}

@@ -69,5 +69,6 @@ const testWrapper =
   };
 
 test('basic wrapper generation', testWrapper('element-a'));
+test('events wrapper generation', testWrapper('element-events'));
 
 test.run();
