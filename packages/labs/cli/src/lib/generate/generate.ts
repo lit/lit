@@ -12,6 +12,8 @@ import * as path from 'path';
 const frameworkGenerators = {
   react: async () =>
     (await import('@lit-labs/gen-wrapper-react/index.js')).generateReactWrapper,
+  vue: async () =>
+    (await import('@lit-labs/gen-wrapper-vue/index.js')).generateVueWrapper,
 };
 
 type FrameworkName = keyof typeof frameworkGenerators;

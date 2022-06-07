@@ -1,5 +1,13 @@
 # @lit-labs/router
 
+## 0.1.0
+
+### Minor Changes
+
+- [#2937](https://github.com/lit/lit/pull/2937) [`d2584ad6`](https://github.com/lit/lit/commit/d2584ad6bc5c7dd36f3e8ab9056587a87027b803) - **[BREAKING]** Router properties prefixed with an underscore have been made
+  private. These properties were being renamed in production builds and should not
+  have been exposed as part of a public API.
+
 ## 0.0.2
 
 ### Patch Changes
