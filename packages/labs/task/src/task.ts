@@ -36,12 +36,11 @@ export const initialState = Symbol();
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type StatusRenderer<R, E, I = any, P = any, C = any, ER = any> = {
-  initial: () => I;
-  pending: () => P;
-  complete: (value: R) => C;
-  error: (error?: E) => ER;
+export type StatusRenderer<R, E> = {
+  initial: () => unknown;
+  pending: () => unknown;
+  complete: (value: R) => unknown;
+  error: (error?: E) => unknown;
 };
 
 export interface TaskConfig<T extends unknown[], R> {
@@ -237,18 +236,16 @@ export class Task<T extends unknown[] = any, R = any, E = any> {
     return this._error;
   }
 
-  render<SR extends StatusRenderer<R, E>>(
-    renderer: Partial<SR>
-  ): ReturnType<SR[this['status']]> {
+  render<SR extends StatusRenderer<R, E>>(renderer: Partial<SR>) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.();
+        return renderer.initial?.() as ReturnType<SR['initial']>;
       case TaskStatus.PENDING:
-        return renderer.pending?.();
+        return renderer.pending?.() as ReturnType<SR['pending']>;
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value!);
+        return renderer.complete?.(this.value!) as ReturnType<SR['complete']>;
       case TaskStatus.ERROR:
-        return renderer.error?.(this.error);
+        return renderer.error?.(this.error) as ReturnType<SR['error']>;
     }
   }
 
