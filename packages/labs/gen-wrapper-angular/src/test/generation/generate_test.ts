@@ -32,9 +32,15 @@ test('basic wrapper generation', async () => {
   const packageName = '@lit-internal/test-element-a';
   const folderName = 'test-element-a';
   const inputPackage = path.resolve(testProjects, folderName);
+
+  // TODO(justinfagnani): reading angular.json belongs in the generator itself
+  const angularJsonPath = path.resolve(angularWorkspaceFolder, 'angular.json');
+  const angularJson = JSON.parse(await fs.readFile(angularJsonPath, 'utf-8'));
+  const newProjectRoot = angularJson.newProjectRoot;
+
   const outputPackage = path.resolve(
     angularWorkspaceFolder,
-    'projects',
+    newProjectRoot,
     folderName + '-ng'
   );
 
