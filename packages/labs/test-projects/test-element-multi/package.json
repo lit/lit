@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "@lit-internal/test-element-a",
+  "name": "@lit-internal/test-element-multi",
   "version": "1.0.0",
   "scripts": {
     "build": "wireit",
