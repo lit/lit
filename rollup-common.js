@@ -31,6 +31,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/router': '_$K',
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
+  '@lit-labs/vue-utils': '_$N',
 };
 
 // Validate prefix uniqueness

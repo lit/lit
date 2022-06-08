@@ -1,5 +1,11 @@
 # @lit/lit-starter-ts
 
+## 1.0.4
+
+### Patch Changes
+
+- [#2922](https://github.com/lit/lit/pull/2922) [`da9db86a`](https://github.com/lit/lit/commit/da9db86a33cba710d439e254df2492f9f6dcbbee) - Update dependencies and remove unused dependencies
+
 ## 1.0.3
 
 ### Patch Changes

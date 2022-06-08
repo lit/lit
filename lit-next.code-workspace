@@ -62,7 +62,10 @@
     "debug.javascript.warnOnLongPrediction": false,
     // Regardless of the user's usual formatter, files
     // in the Lit repo must be formatted using prettier.
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.exclude": {
+      "**/.wireit": true
+    }
   },
   "extensions": {
     "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

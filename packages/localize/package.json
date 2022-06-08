@@ -16,18 +16,55 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
-    "build": "npm run clean && tsc",
-    "test": "node ../tests/run-web-tests.js",
-    "prepack": "npm run build"
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../lit:build",
+        "../reactive-element:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../lit:build:ts:types",
+        "../reactive-element:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lit-localize.{js,js.map,d.ts}",
+        "init",
+        "internal",
+        "tests",
+        ".tsbuildinfo"
+      ]
+    },
+    "test": {
+      "command": "node ../tests/run-web-tests.js",
+      "dependencies": [
+        "build",
+        "../tests:build"
+      ],
+      "files": [
+        "web-test-runner.config.js"
+      ],
+      "output": []
+    }
   },
   "files": [
     "/lit-localize.d.ts",
     "/lit-localize.js",
     "/lit-localize.js.map",
     "/internal/",
-    "/init/",
-    "/config.schema.json"
+    "/init/"
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",

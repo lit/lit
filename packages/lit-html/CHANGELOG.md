@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.2.5
+
+### Patch Changes
+
+- [#2952](https://github.com/lit/lit/pull/2952) [`a78cc3b7`](https://github.com/lit/lit/commit/a78cc3b7f221a97e04dfda77d790fbea8f48d12c) - Fix SSR hydration bug relating to <input> and other void elements having attribute bindings.
+
+## 2.2.4
+
+### Patch Changes
+
+- [#2847](https://github.com/lit/lit/pull/2847) [`79d82385`](https://github.com/lit/lit/commit/79d823851fcf938a8b6a0ca5f164b6b6fb1b4155) - Fix typo in API docs for live() directive.
+
+- [#2828](https://github.com/lit/lit/pull/2828) [`b3b6bc33`](https://github.com/lit/lit/commit/b3b6bc336910d73b5abad1c7da81731c110e74be) - Remove private Lit 2 migration helpers: `INTERNAL` and `clearContainerForLit2MigrationOnly`. This logic is no longer depended on.
+
 ## 2.2.3
 
 ### Patch Changes

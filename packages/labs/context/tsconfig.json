@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2021",
+    "target": "es2019",
     "module": "es2015",
     "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
@@ -22,6 +22,5 @@
     "experimentalDecorators": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [{"path": "../../lit"}]
+  "exclude": []
 }

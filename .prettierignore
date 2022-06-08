@@ -10,6 +10,7 @@ lerna-debug.log
 .DS_Store
 .vscode/
 .wireit
+/temp
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -88,7 +89,8 @@ packages/lit-starter-ts/**/my-element.js
 packages/lit-starter-ts/**/my-element.js.map
 packages/lit-starter-ts/**/my-element.d.ts
 packages/lit-starter-ts/**/my-element.d.ts.map
-
+# only generated for size check
+packages/lit-starter-ts/**/my-element.bundled.js
 packages/localize/node_modules/
 packages/localize/tests/
 packages/localize/.tsbuildinfo
@@ -111,6 +113,23 @@ packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
+packages/tests/utils/
+packages/tests/**/rollup-resolve-remap.js
+packages/tests/**/rollup-resolve-remap.js.map
+packages/tests/**/rollup-resolve-remap.d.ts
+packages/tests/**/rollup-resolve-remap.d.ts.map
+packages/tests/**/run-web-tests.js
+packages/tests/**/run-web-tests.js.map
+packages/tests/**/run-web-tests.d.ts
+packages/tests/**/run-web-tests.d.ts.map
+packages/tests/**/web-test-runner.config.js
+packages/tests/**/web-test-runner.config.js.map
+packages/tests/**/web-test-runner.config.d.ts
+packages/tests/**/web-test-runner.config.d.ts.map
+packages/tests/**/wtr-config.js
+packages/tests/**/wtr-config.js.map
+packages/tests/**/wtr-config.d.ts
+packages/tests/**/wtr-config.d.ts.map
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map
@@ -131,6 +150,7 @@ packages/labs/cli/index.js
 packages/labs/cli/index.js.map
 packages/labs/cli/index.d.ts
 packages/labs/cli/index.d.ts.map
+packages/labs/cli/test-gen/
 
 packages/labs/context/development/
 packages/labs/context/test/
@@ -146,6 +166,46 @@ packages/labs/eleventy-plugin-lit/worker/worker.*
 packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
+
+packages/labs/gen-utils/lib/
+packages/labs/gen-utils/test/
+packages/labs/gen-utils/index.js
+packages/labs/gen-utils/index.js.map
+packages/labs/gen-utils/index.d.ts
+packages/labs/gen-utils/index.d.ts.map
+
+packages/labs/gen-wrapper-angular/lib/
+packages/labs/gen-wrapper-angular/test/
+packages/labs/gen-wrapper-angular/index.js
+packages/labs/gen-wrapper-angular/index.js.map
+packages/labs/gen-wrapper-angular/index.d.ts
+packages/labs/gen-wrapper-angular/index.d.ts.map
+packages/labs/gen-wrapper-angular/gen-output/
+
+packages/labs/gen-wrapper-react/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+packages/labs/gen-wrapper-react/test-output/package-lock.json
+packages/labs/gen-wrapper-react/test-output/js/
+packages/labs/gen-wrapper-react/test-output/tests/
+packages/labs/gen-wrapper-react/index.js
+packages/labs/gen-wrapper-react/index.js.map
+packages/labs/gen-wrapper-react/index.d.ts
+packages/labs/gen-wrapper-react/index.d.ts.map
+packages/labs/gen-wrapper-react/gen-output/
+
+packages/labs/gen-wrapper-vue/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+packages/labs/gen-wrapper-vue/test-output/package-lock.json
+packages/labs/gen-wrapper-vue/test-output/js/
+packages/labs/gen-wrapper-vue/test-output/tests/
+packages/labs/gen-wrapper-vue/lib/
+packages/labs/gen-wrapper-vue/*.js
+packages/labs/gen-wrapper-vue/*.js.map
+packages/labs/gen-wrapper-vue/*.d.ts
+packages/labs/gen-wrapper-vue/*.d.ts.map
+packages/labs/gen-wrapper-vue/gen-output/
 
 packages/labs/motion/development/
 packages/labs/motion/test/
@@ -202,6 +262,12 @@ packages/labs/task/test/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*
+packages/labs/vue-utils/development/
+packages/labs/vue-utils/test/
+packages/labs/vue-utils/node_modules/
+packages/labs/vue-utils/index.*
+packages/labs/vue-utils/wrapper-utils.*
+
 packages/lit-starter-js/node_modules/*
 packages/lit-starter-js/docs/*
 packages/lit-starter-js/docs-src/*

@@ -7,6 +7,7 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
+import * as path from 'path';
 import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../../lib/analyzer.js';
@@ -20,20 +21,27 @@ const test = suite<{
 }>('LitElement event tests');
 
 test.before((ctx) => {
-  const packagePath = fileURLToPath(
-    new URL('../../test-files/events', import.meta.url).href
-  ) as AbsolutePath;
-  const analyzer = new Analyzer(packagePath);
+  try {
+    const packagePath = fileURLToPath(
+      new URL('../../test-files/events', import.meta.url).href
+    ) as AbsolutePath;
+    const analyzer = new Analyzer(packagePath);
 
-  const result = analyzer.analyzePackage();
-  const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
-  );
-  const element = elementAModule!.declarations[0] as LitElementDeclaration;
+    const result = analyzer.analyzePackage();
+    const elementAModule = result.modules.find(
+      (m) => m.sourcePath === path.normalize('src/element-a.ts')
+    );
+    const element = elementAModule!.declarations[0] as LitElementDeclaration;
 
-  ctx.packagePath = packagePath;
-  ctx.analyzer = analyzer;
-  ctx.element = element;
+    ctx.packagePath = packagePath;
+    ctx.analyzer = analyzer;
+    ctx.element = element;
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
 });
 
 test('Correct number of events found', ({element}) => {

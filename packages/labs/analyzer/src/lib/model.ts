@@ -5,29 +5,60 @@
  */
 
 import ts from 'typescript';
-import {PackagePath} from './paths.js';
+import {AbsolutePath, PackagePath} from './paths.js';
+
+import {IPackageJson as PackageJson} from 'package-json-type';
+export {PackageJson};
+
+export interface PackageInit {
+  rootDir: AbsolutePath;
+  packageJson: PackageJson;
+  tsConfig: ts.ParsedCommandLine;
+  modules: ReadonlyArray<Module>;
+}
 
 export class Package {
+  readonly rootDir: AbsolutePath;
   readonly modules: ReadonlyArray<Module>;
+  readonly tsConfig: ts.ParsedCommandLine;
+  readonly packageJson: PackageJson;
 
-  constructor(modules: ReadonlyArray<Module>) {
-    this.modules = modules;
+  constructor(init: PackageInit) {
+    this.rootDir = init.rootDir;
+    this.packageJson = init.packageJson;
+    this.tsConfig = init.tsConfig;
+    this.modules = init.modules;
   }
 }
 
 export interface ModuleInit {
   sourceFile: ts.SourceFile;
-  path: PackagePath;
+  sourcePath: PackagePath;
+  jsPath: PackagePath;
 }
 
 export class Module {
+  /**
+   * The TS AST node for the file
+   */
   readonly sourceFile: ts.SourceFile;
-  readonly path: PackagePath;
+  /**
+   * The path to the source file for this module. In a TS project, this will be
+   * a .ts file. In a JS project, this will be the same as `jsPath`.
+   */
+  readonly sourcePath: PackagePath;
+  /**
+   * The path to the javascript file for this module. In a TS project, this will
+   * be the output location of the compiler for the given `sourcePath`. In a JS
+   * project this will be the same as `sourcePath`.
+   */
+  readonly jsPath: PackagePath;
   readonly declarations: Array<Declaration> = [];
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
-    this.path = init.path;
+    this.sourcePath = init.sourcePath;
+    this.jsPath = init.jsPath;
   }
 }
 
@@ -117,4 +148,31 @@ export interface Event {
   description: string | undefined;
   typeString: string | undefined;
   // TODO(justinfagnani): store a type reference too
+  // https://github.com/lit/lit/issues/2850
 }
+
+// TODO(justinfagnani): Move helpers into a Lit-specific module
+export const isLitElementDeclaration = (
+  dec: ClassDeclaration
+): dec is LitElementDeclaration => {
+  return (dec as LitElementDeclaration).isLitElement;
+};
+
+export interface LitModule {
+  module: Module;
+  elements: LitElementDeclaration[];
+}
+
+export const getLitModules = (analysis: Package) => {
+  const modules: LitModule[] = [];
+  for (const module of analysis.modules) {
+    const elements = module.declarations.filter(isLitElementDeclaration);
+    if (elements.length > 0) {
+      modules.push({
+        module,
+        elements,
+      });
+    }
+  }
+  return modules;
+};

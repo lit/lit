@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -16,9 +16,35 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc --build",
-    "build:watch": "tsc --build --watch",
-    "test": "uvu test '\\_test\\.js$'"
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test \"_test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "test-files/"
+      ],
+      "output": []
+    }
   },
   "files": [
     "/src/",
@@ -27,11 +53,12 @@
     "!/lib/.tsbuildinfo"
   ],
   "dependencies": {
+    "package-json-type": "^1.0.3",
     "typescript": "~4.6.2"
   },
   "devDependencies": {
     "@types/node": "^16.7.8",
-    "uvu": "^0.5.1",
-    "lit-analyzer-test-files": "./test-files/basic-elements/"
+    "lit-analyzer-test-files": "./test-files/basic-elements/",
+    "uvu": "^0.5.1"
   }
 }

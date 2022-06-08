@@ -21,17 +21,24 @@ const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
 );
 
 test.before((ctx) => {
-  const packagePath = (ctx.packagePath = fileURLToPath(
-    new URL('../../test-files/basic-elements', import.meta.url).href
-  ) as AbsolutePath);
-  ctx.analyzer = new Analyzer(packagePath);
+  try {
+    const packagePath = (ctx.packagePath = fileURLToPath(
+      new URL('../../test-files/basic-elements', import.meta.url).href
+    ) as AbsolutePath);
+    ctx.analyzer = new Analyzer(packagePath);
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
 });
 
 test('isLitElement returns true for a direct import', ({
   analyzer,
   packagePath,
 }) => {
-  const elementAPath = path.resolve(packagePath, 'src/element-a.ts');
+  const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
   const sourceFile = analyzer.program.getSourceFile(elementAPath)!;
   const elementADeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'ElementA'
@@ -44,7 +51,7 @@ test('isLitElement returns false for non-LitElement', ({
   analyzer,
   packagePath,
 }) => {
-  const notLitPath = path.resolve(packagePath, 'src/not-lit.ts');
+  const notLitPath = path.resolve(packagePath, 'src', 'not-lit.ts');
   const sourceFile = analyzer.program.getSourceFile(notLitPath)!;
   const notLitDeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'NotLit'
@@ -56,7 +63,7 @@ test('isLitElement returns false for non-LitElement', ({
 test('Analyzer finds LitElement declarations', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+    (m) => m.sourcePath === path.normalize('src/element-a.ts')
   );
   assert.equal(elementAModule?.declarations.length, 1);
   const decl = elementAModule!.declarations[0];
@@ -71,7 +78,7 @@ test('Analyzer finds LitElement declarations', ({analyzer}) => {
 test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
   const result = analyzer.analyzePackage();
   const elementAModule = result.modules.find(
-    (m) => m.path === 'src/element-a.ts'
+    (m) => m.sourcePath === path.normalize('src/element-a.ts')
   );
   const decl = elementAModule!.declarations[0] as LitElementDeclaration;
 
