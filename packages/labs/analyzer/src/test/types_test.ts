@@ -54,8 +54,7 @@ test('testString', ({module}) => {
 
 test('inferredString', ({module}) => {
   const type = typeForVariable(module, 'inferredString');
-  // TODO(kschaaf): Do we want to widen e.g. string literal types to 'string'?
-  assert.equal(type.text, '"hi"');
+  assert.equal(type.text, 'string');
   assert.equal(type.references.length, 0);
 });
 

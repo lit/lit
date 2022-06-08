@@ -419,6 +419,8 @@ export class ProgramContext {
    * the ts.Type, but also provides analyzer Reference objects).
    */
   getTypeForType(type: ts.Type, location: ts.Node): Type {
+    // Ensure we treat inferred `foo = 'hi'` as 'string' not '"hi"'
+    type = this.checker.getBaseTypeOfLiteralType(type);
     const text = this.checker.typeToString(type);
     const typeNode = this.checker.typeToTypeNode(
       type,
