@@ -15,9 +15,6 @@ export type ArgsFunction<D extends unknown[]> = () => D;
 // `DepsFunction` is being maintained for BC with its previous name.
 export {ArgsFunction as DepsFunction};
 
-/**
- * States for task status
- */
 export const TaskStatus = {
   INITIAL: 0,
   PENDING: 1,
