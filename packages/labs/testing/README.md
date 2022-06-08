@@ -30,7 +30,7 @@ fixture functions.
 ### Fixtures
 
 The package exports functions that will generate fixtures by passing the
-provided lit-html templates to the dev server to be rendered server-side, and
+provided Lit templates to the dev server to be rendered server-side, and
 added to the browser document. The Web Test Runner plugin must be added to the
 config file for this to work.
 
@@ -49,7 +49,7 @@ suite('my-element', () => {
     const el = await ssrFixture(html`<my-element></my-element>`, {
       modules: ['./my-element.js'], // path to component definition relative to test file
       base: import.meta.url, // for resolving module path
-      hydrate: false, // whether to hydrate the component after loading to document (default: true)
+      hydrate: false, // whether to hydrate the component after loading the document (default: true)
     });
     assert.equal(el.shadowRoot.querySelector('p').textContent, 'Hello, World!');
   });
@@ -71,7 +71,7 @@ import {assert} from '@esm-bundle/chai';
 for (const fixture of [ssrNonHydratedFixture, ssrHydratedFixture]) {
   suite(`my-element rendered with ${fixture.name}`, () => {
     test('renders as expected', async () => {
-      const el = await ssrFixture(html`<my-element></my-element>`, {
+      const el = await fixture(html`<my-element></my-element>`, {
         modules: ['./my-element.js'],
         base: import.meta.url,
       });
@@ -90,5 +90,5 @@ Any `lit` imports including those for custom element definitions, **must**
 follow the fixture imports so that `lit/experimental-hydrate-support.js` is
 imported before it.
 
-The fixture functions expect a lit `TemplateResult` with a Lit element as the
+The fixture functions expect a Lit `TemplateResult` with a Lit element as the
 top level element.
