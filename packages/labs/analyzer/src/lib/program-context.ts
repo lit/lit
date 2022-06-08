@@ -16,7 +16,6 @@
 
 import ts from 'typescript';
 import {DiagnosticsError, createDiagnostic} from './errors.js';
-import * as typedoc from 'typedoc';
 import path from 'path';
 import fs from 'fs';
 import {Module, PackageJson, Type, Reference} from './model.js';
@@ -74,8 +73,6 @@ export class ProgramContext {
   readonly package: string;
   program!: ts.Program;
   checker!: ts.TypeChecker;
-  private _typedocContext!: typedoc.Context;
-  private _typedocConverter!: typedoc.Converter;
 
   currentModule: Module | undefined = undefined;
 
@@ -101,19 +98,12 @@ export class ProgramContext {
   }
 
   /**
-   * Re-initialize the program, checker, and typedoc converter (causes the file
-   * cache versions to be diffed, and changed files to be re-parsed/checked)
+   * Re-initialize the program and checker (causes the file cache versions to be
+   * diffed, and changed files to be re-parsed/checked)
    */
   private invalidate() {
     this.program = this.service.getProgram()!;
     this.checker = this.program.getTypeChecker();
-    this._typedocConverter = new typedoc.Converter(new typedoc.Application());
-    this._typedocContext = new typedoc.Context(
-      this._typedocConverter,
-      [this.program],
-      new typedoc.ProjectReflection('')
-    );
-    this._typedocContext.setActiveProgram(this.program);
   }
 
   /**
@@ -277,7 +267,7 @@ export class ProgramContext {
         `Internal error: no type was pre-processed for this JSDoc tag`
       );
     }
-    return this.convertType(type, tag);
+    return this.getTypeForType(type, tag);
   }
 
   /**
@@ -287,7 +277,7 @@ export class ProgramContext {
     // Since getTypeAtLocation will return `any` for an untyped node, to support
     // jsdoc @type for JS (TBD), we look at the jsdoc type first.
     const jsdocType = ts.getJSDocType(node);
-    return this.convertType(
+    return this.getTypeForType(
       jsdocType
         ? this.checker.getTypeFromTypeNode(jsdocType)
         : this.checker.getTypeAtLocation(node),
@@ -317,15 +307,14 @@ export class ProgramContext {
   }
 
   /**
-   * Returns an analyzer `Reference` object for a named identifier at the given
-   * AST location.
+   * Returns an analyzer `Reference` object for the given symbol.
    *
    * If the symbol's declaration was imported, the Reference will be based on
    * the import's module specifier; otherwise the Reference will point to the
    * current module being analyzed.
    */
-  getReferenceForSymbolName(name: string, location: ts.Node): Reference {
-    const symbol = this.getSymbolForName(name, location);
+  getReferenceForSymbol(symbol: ts.Symbol, location: ts.Node): Reference {
+    const {name} = symbol;
     if (this.currentModule === undefined) {
       throw new Error(`Internal error: expected currentModule to be set`);
     }
@@ -429,37 +418,44 @@ export class ProgramContext {
    * Converts a ts.Type into an analyzer Type object (which wraps
    * the ts.Type, but also provides analyzer Reference objects).
    */
-  convertType(type: ts.Type, location: ts.Node): Type {
-    let text = this.checker.typeToString(type);
-    // Use typedoc to give us a visitor for type references used in this type to
-    // generate our `Reference`s. Note that `typedoc.ReferenceType` is very
-    // close to the info we want in `Reference`, but it unfortunately is not
-    // sufficient to generate import specifiers. Thus, we just use its visitor
-    // to identify the name of identifiers that require references, and then use
-    // the TS API to figure out their module specifiers.
-    let typeTree = this._typedocConverter.convertType(
-      this._typedocContext,
-      type
+  getTypeForType(type: ts.Type, location: ts.Node): Type {
+    const text = this.checker.typeToString(type);
+    const typeNode = this.checker.typeToTypeNode(
+      type,
+      location,
+      ts.NodeBuilderFlags.IgnoreErrors
     );
-    const references: Reference[] = [];
-    // Fix inferred types for classes defined with `{new()..., prototype:...}`
-    // (the built-in DOM classes are defined like this in lib.dom.d.ts)
-    if (text.match(/new\s*\(/) && typeTree instanceof typedoc.ReflectionType) {
-      const protoType = typeTree.declaration.children?.find(
-        (dec) => dec.name === 'prototype'
-      )?.type;
-      if (protoType && protoType instanceof typedoc.ReferenceType) {
-        typeTree = protoType;
-        text = protoType.name;
-      }
+    if (typeNode === undefined) {
+      throw new DiagnosticsError(
+        location,
+        `Internal error: could not convert type to type node`
+      );
     }
-    typeTree.visit(
-      typedoc.makeRecursiveVisitor({
-        reference: (ref: typedoc.ReferenceType) => {
-          references.push(this.getReferenceForSymbolName(ref.name, location));
-        },
-      })
-    );
+    const references: Reference[] = [];
+    const visit = (node: ts.Node) => {
+      if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
+        const name = getRootName(
+          ts.isTypeReferenceNode(node) ? node.typeName : node.qualifier
+        );
+        const symbol =
+          this.checker.getSymbolAtLocation(node) ??
+          // The only time we need to fall back and do a name-based lookup is
+          // when `typeToTypeNode` fails to create a symbol for a TypeReference,
+          // which appears to occur when a global symbol is in scope due to an
+          // ambient .d.ts file (e.g. MouseEvent)
+          this.getSymbolForName(name, location);
+        if (symbol === undefined) {
+          throw new DiagnosticsError(
+            location,
+            `Could not get symbol for '${name}'.`
+          );
+        }
+        references.push(this.getReferenceForSymbol(symbol, location));
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(typeNode);
+
     return new Type(type, text, references);
   }
 }
@@ -492,6 +488,24 @@ const visitCustomJSDocTypeTags = (
   ts.forEachChild(node, (child: ts.Node) =>
     visitCustomJSDocTypeTags(child, callback)
   );
+};
+
+/**
+ * Gets the left-most name of a (possibly qualified) identifier, i.e.
+ * 'Foo' returns 'Foo', but 'ts.SyntaxKind' returns 'ts'. This is the
+ * symbol that would need to be imported into a given scope.
+ */
+const getRootName = (
+  name: ts.Identifier | ts.QualifiedName | undefined
+): string => {
+  if (name === undefined) {
+    return '';
+  }
+  if (ts.isQualifiedName(name)) {
+    return getRootName(name.left);
+  } else {
+    return name.text;
+  }
 };
 
 const customJSDocTypeInferPrefix = '__$$customJsDOCType';

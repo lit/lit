@@ -138,15 +138,11 @@ test('Event with custom event type with inline detail', ({element}) => {
   );
   assert.equal(event.type?.references[0].name, 'CustomEvent');
   assert.equal(event.type?.references[0].isGlobal, true);
-  // TODO(kschaaf) The typedoc type reference visitor does not seem to reach
-  // references in inline interfaces like this; this is another reason we should
-  // consider finding or building our own native TypeScript type visitor
-  // https://github.com/lit/lit/issues/3001
-  // assert.equal(event.type?.references[1].name, 'MouseEvent');
-  // assert.equal(event.type?.references[1].isGlobal, true);
-  // assert.equal(event.type?.references[2].package, '@lit-internal/test-events');
-  // assert.equal(event.type?.references[2].module, 'custom-event.js');
-  // assert.equal(event.type?.references[2].name, 'ExternalClass');
+  assert.equal(event.type?.references[1].name, 'MouseEvent');
+  assert.equal(event.type?.references[1].isGlobal, true);
+  assert.equal(event.type?.references[2].package, '@lit-internal/test-events');
+  assert.equal(event.type?.references[2].module, 'custom-event.js');
+  assert.equal(event.type?.references[2].name, 'ExternalClass');
 });
 
 test.run();

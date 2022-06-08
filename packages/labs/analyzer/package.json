@@ -54,7 +54,6 @@
   ],
   "dependencies": {
     "package-json-type": "^1.0.3",
-    "typedoc": "^0.22.15",
     "typescript": "~4.6.2"
   },
   "devDependencies": {
