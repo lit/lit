@@ -356,6 +356,9 @@ export class ProgramContext {
     if (declaration.getSourceFile() !== location.getSourceFile()) {
       // If the reference declaration doesn't exist in this module, it must have
       // been a global (whose declaration is in an ambient .d.ts file)
+      // TODO(kschaaf): We might want to further differentiate e.g. DOM globals
+      // (that don't have any e.g. source to link to) from other ambient
+      // declarations where we could at least point to a declaration file
       return new Reference({
         name,
         isGlobal: true,
