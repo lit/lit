@@ -620,13 +620,14 @@ export interface RenderOptions {
 /**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  *
- * For example, to render and create the DOM for the TemplateResult describing
- * "<p>Hello!</p>" to the container `document.body`:
+ * For example, to render "Hello, Zoe!" to the container `document.body` where
+ * the name "Zoe" is from a variable:
  *
  * ```js
  * import {html, render} from 'lit';
  *
- * render(html`<p>Hello!</p>`, document.body);
+ * const name = "Zoe";
+ * render(html`<p>Hello, ${name}!</p>`, document.body);
  * ```
  *
  * @param value Any [renderable
