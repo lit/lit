@@ -20,6 +20,7 @@ import {
 } from './lit-element/lit-element.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import {DiagnosticsError} from './errors.js';
 export {PackageJson};
 
 /**
@@ -135,19 +136,13 @@ export class Analyzer {
             })
           );
         }
-        // TODO(kschaaf) should we only analyze exported things?
-      } else if (ts.isVariableStatement(statement) && isExported(statement)) {
+      } else if (ts.isVariableStatement(statement)) {
         module.declarations.push(
           ...statement.declarationList.declarations
-            .filter((dec) => ts.isIdentifier(dec.name))
-            .map(
-              (dec) =>
-                new VariableDeclaration({
-                  name: (dec.name as ts.Identifier).text,
-                  node: dec,
-                  type: this.programContext.getTypeForNode(dec),
-                })
+            .map((dec) =>
+              getVariableDeclarations(dec, dec.name, this.programContext)
             )
+            .flat()
         );
       }
     }
@@ -156,8 +151,40 @@ export class Analyzer {
   }
 }
 
-const isExported = (node: ts.Statement): boolean => {
-  return (
-    node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ?? false
-  );
+type VariableName =
+  | ts.Identifier
+  | ts.ObjectBindingPattern
+  | ts.ArrayBindingPattern;
+
+const getVariableDeclarations = (
+  dec: ts.VariableDeclaration,
+  name: VariableName,
+  programContext: ProgramContext
+): VariableDeclaration[] => {
+  if (ts.isIdentifier(name)) {
+    return [
+      new VariableDeclaration({
+        name: name.text,
+        node: dec,
+        type: programContext.getTypeForNode(name),
+      }),
+    ];
+  } else if (
+    // Recurse into the elements of an array/object destructuring variable
+    // declaration to find the identifiers
+    ts.isObjectBindingPattern(name) ||
+    ts.isArrayBindingPattern(name)
+  ) {
+    const els = name.elements.filter((el) =>
+      ts.isBindingElement(el)
+    ) as ts.BindingElement[];
+    return els
+      .map((el) => getVariableDeclarations(dec, el.name, programContext))
+      .flat();
+  } else {
+    throw new DiagnosticsError(
+      dec,
+      `Expected declaration name to either be an Identifier or a BindingPattern`
+    );
+  }
 };

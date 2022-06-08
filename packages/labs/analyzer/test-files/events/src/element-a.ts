@@ -27,6 +27,7 @@ export class LocalCustomEvent extends Event {
  * @fires external-custom-event {ExternalCustomEvent} - External custom event
  * @fires local-custom-event {LocalCustomEvent} - Local custom event
  * @fires generic-custom-event {CustomEvent<ExternalClass>} - Local custom event
+ * @fires inline-detail-custom-event {CustomEvent<{ event: MouseEvent; more: { impl: ExternalClass; }; }>}
  *
  * @comment malformed fires tag:
  *

@@ -213,9 +213,10 @@ export class Reference {
   }
 
   get moduleSpecifier() {
+    const separator = this.package && this.module ? '/' : '';
     return this.isGlobal
       ? undefined
-      : this.package! + (this.module ? '/' + this.module : '');
+      : (this.package || '') + separator + (this.module || '');
   }
 }
 
@@ -234,6 +235,8 @@ export class Type {
 /**
  * Returns a deduped / coalesced string of import statements required to load
  * the given references.
+ * TODO(kschaaf): Probably want to accept info about existing imports to dedupe
+ * with.
  */
 export const getImportsStringForReferences = (references: Reference[]) => {
   const modules = new Map<string, Set<string>>();

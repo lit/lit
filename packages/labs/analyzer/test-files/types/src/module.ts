@@ -47,3 +47,29 @@ export let jsdocStringExternalClassUnion;
 export let jsdocStringExternalGlobalClassUnion;
 
 export let complexType: Promise<Map<keyof LitElement, ImportedClass[]>>[];
+
+export const {
+  destructObj,
+  foo: {destructObjNested},
+} = {
+  destructObj: new LocalClass(),
+  foo: {destructObjNested: new LitElement()},
+};
+
+const separatelyExportedClass: LocalClass = new LocalClass();
+export {separatelyExportedClass};
+
+const {
+  separatelyExportedDestructObj,
+  foo: {separatelyExportedDestructObjNested},
+} = {
+  separatelyExportedDestructObj: new LocalClass(),
+  foo: {separatelyExportedDestructObjNested: new LitElement()},
+};
+export {separatelyExportedDestructObj, separatelyExportedDestructObjNested};
+
+const [separatelyExportedDestructArr, [separatelyExportedDestructArrNested]] = [
+  new LocalClass(),
+  [new LitElement()],
+];
+export {separatelyExportedDestructArr, separatelyExportedDestructArrNested};

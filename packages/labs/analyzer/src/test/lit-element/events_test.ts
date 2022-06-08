@@ -50,7 +50,7 @@ test.before((ctx) => {
 });
 
 test('Correct number of events found', ({element}) => {
-  assert.equal(element.events.size, 9);
+  assert.equal(element.events.size, 10);
 });
 
 test('Just event name', ({element}) => {
@@ -118,7 +118,7 @@ test('Event with imported custom event type', ({element}) => {
   assert.equal(event.type?.references[0].name, 'ExternalCustomEvent');
 });
 
-test('Event with generic custom event', ({element}) => {
+test('Event with generic custom event type', ({element}) => {
   const event = element.events.get('generic-custom-event');
   assert.ok(event);
   assert.equal(event.type?.text, 'CustomEvent<ExternalClass>');
@@ -127,6 +127,26 @@ test('Event with generic custom event', ({element}) => {
   assert.equal(event.type?.references[1].package, '@lit-internal/test-events');
   assert.equal(event.type?.references[1].module, 'custom-event.js');
   assert.equal(event.type?.references[1].name, 'ExternalClass');
+});
+
+test('Event with custom event type with inline detail', ({element}) => {
+  const event = element.events.get('inline-detail-custom-event');
+  assert.ok(event);
+  assert.equal(
+    event.type?.text,
+    'CustomEvent<{ event: MouseEvent; more: { impl: ExternalClass; }; }>'
+  );
+  assert.equal(event.type?.references[0].name, 'CustomEvent');
+  assert.equal(event.type?.references[0].isGlobal, true);
+  // TODO(kschaaf) The typedoc type reference visitor does not seem to reach
+  // references in inline interfaces like this; this is another reason we should
+  // consider finding or building our own native TypeScript type visitor
+  // https://github.com/lit/lit/issues/3001
+  // assert.equal(event.type?.references[1].name, 'MouseEvent');
+  // assert.equal(event.type?.references[1].isGlobal, true);
+  // assert.equal(event.type?.references[2].package, '@lit-internal/test-events');
+  // assert.equal(event.type?.references[2].module, 'custom-event.js');
+  // assert.equal(event.type?.references[2].name, 'ExternalClass');
 });
 
 test.run();

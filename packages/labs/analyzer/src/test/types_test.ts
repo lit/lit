@@ -223,6 +223,76 @@ test('complexType', ({module}) => {
   assert.equal(type.references[3].isGlobal, false);
 });
 
+test('destructObj', ({module}) => {
+  const type = typeForVariable(module, 'destructObj');
+  assert.equal(type.text, 'LocalClass');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LocalClass');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'module.js');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('destructObjNested', ({module}) => {
+  const type = typeForVariable(module, 'destructObjNested');
+  assert.equal(type.text, 'LitElement');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LitElement');
+  assert.equal(type.references[0].package, 'lit');
+  assert.equal(type.references[0].module, '');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('separatelyExportedClass', ({module}) => {
+  const type = typeForVariable(module, 'separatelyExportedClass');
+  assert.equal(type.text, 'LocalClass');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LocalClass');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'module.js');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('separatelyExportedDestructObj', ({module}) => {
+  const type = typeForVariable(module, 'separatelyExportedDestructObj');
+  assert.equal(type.text, 'LocalClass');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LocalClass');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'module.js');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('separatelyExportedDestructObjNested', ({module}) => {
+  const type = typeForVariable(module, 'separatelyExportedDestructObjNested');
+  assert.equal(type.text, 'LitElement');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LitElement');
+  assert.equal(type.references[0].package, 'lit');
+  assert.equal(type.references[0].module, '');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('separatelyExportedDestructArr', ({module}) => {
+  const type = typeForVariable(module, 'separatelyExportedDestructArr');
+  assert.equal(type.text, 'LocalClass');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LocalClass');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'module.js');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
+test('separatelyExportedDestructArrNested', ({module}) => {
+  const type = typeForVariable(module, 'separatelyExportedDestructArrNested');
+  assert.equal(type.text, 'LitElement');
+  assert.equal(type.references.length, 1);
+  assert.equal(type.references[0].name, 'LitElement');
+  assert.equal(type.references[0].package, 'lit');
+  assert.equal(type.references[0].module, '');
+  assert.equal(type.references[0].isGlobal, false);
+});
+
 test('getImportsStringForReferences', ({module}) => {
   const type = typeForVariable(module, 'complexType');
   assert.equal(
@@ -233,6 +303,7 @@ import {ImportedClass} from '@lit-internal/test-types/external.js';
 `.trim()
   );
 });
+
 test('getImportsStringForReferences coalesced', () => {
   const reference = [
     new Reference({package: 'foo', name: 'foo1'}),

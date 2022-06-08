@@ -4,6 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * @fileoverview Utility class that stores context about the current program
+ * under analysis and helpers for generating Type objects.
+ *
+ * TODO(kschaaf): This code could just be part of the Analyzer base class, but
+ * is factored out for now to avoid circular references. We could also just make
+ * an Analyzer interface that modules can import to type the Analyzer when
+ * passed as an argument.
+ */
+
 import ts from 'typescript';
 import {DiagnosticsError, createDiagnostic} from './errors.js';
 import * as typedoc from 'typedoc';
@@ -11,7 +21,9 @@ import path from 'path';
 import fs from 'fs';
 import {Module, PackageJson, Type, Reference} from './model.js';
 
-type FileCache = ts.MapLike<{version: 0; content?: ts.IScriptSnapshot}>;
+const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
+
+type FileCache = Map<string, {version: 0; content?: ts.IScriptSnapshot}>;
 
 /**
  * Create a language service host that reads from the filesystem initially,
@@ -24,19 +36,21 @@ const createServiceHost = (
 ): ts.LanguageServiceHost => {
   return {
     getScriptFileNames: () => commandLine.fileNames,
-    getScriptVersion: (fileName) => cache[fileName]?.version.toString(),
+    getScriptVersion: (fileName) =>
+      cache.get(fileName)?.version.toString() ?? '-1',
     getScriptSnapshot: (fileName) => {
-      let file = cache[fileName];
-      if (!file) {
+      let file = cache.get(fileName);
+      if (file === undefined) {
         if (!fs.existsSync(fileName)) {
           return undefined;
         }
         file = {
           version: 0,
           content: ts.ScriptSnapshot.fromString(
-            fs.readFileSync(fileName).toString()
+            fs.readFileSync(fileName, 'utf-8')
           ),
         };
+        cache.set(fileName, file);
       }
       return file.content;
     },
@@ -65,15 +79,15 @@ export class ProgramContext {
 
   currentModule: Module | undefined = undefined;
 
-  fileCache: FileCache = {};
+  fileCache: FileCache = new Map();
 
   constructor(commandLine: ts.ParsedCommandLine, packageJson: PackageJson) {
     const serviceHost = createServiceHost(commandLine, this.fileCache);
-    const services = ts.createLanguageService(
+    const service = ts.createLanguageService(
       serviceHost,
       ts.createDocumentRegistry()
     );
-    this.service = services;
+    this.service = service;
     this.package = packageJson.name!;
     this.invalidate();
     const diagnostics = this.program.getSemanticDiagnostics();
@@ -109,7 +123,11 @@ export class ProgramContext {
   updateFiles(sourceFiles: ts.SourceFile[]) {
     for (const sourceFile of sourceFiles) {
       const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed});
-      const file = (this.fileCache[sourceFile.fileName] ??= {version: 0});
+      let file = this.fileCache.get(sourceFile.fileName);
+      if (file === undefined) {
+        file = {version: 0};
+        this.fileCache.set(sourceFile.fileName, file);
+      }
       file.content = ts.ScriptSnapshot.fromString(
         printer.printFile(sourceFile)
       );
@@ -227,7 +245,9 @@ export class ProgramContext {
   /**
    * Returns a ts.Symbol for a name in scope at a given location in the AST.
    * TODO(kschaaf): There are ~1748 symbols in scope of a typical hello world,
-   * due to DOM globals. Perf might become an issue here.
+   * due to DOM globals. Perf might become an issue here. This is a reason to
+   * look for a better Type visitor than typedoc:
+   * https://github.com/lit/lit/issues/3001
    */
   getSymbolForName(name: string, location: ts.Node): ts.Symbol | undefined {
     return this.checker
@@ -316,6 +336,23 @@ export class ProgramContext {
         `Could not find declaration for symbol '${name}'`
       );
     }
+    // There are 6 cases to cover:
+    // 1. A global symbol that wasn't imported; in this case, its declaration
+    //    will exist in a different source file than where we got the symbol
+    //    from. For all other cases, the symbol's declaration node will be in
+    //    this file, either as an ImportModuleSpecifier or a normal declaration.
+    // 2. A symbol imported from a URL. The declaration will be an
+    //    ImportModuleSpecifier and its module path will be parsable as a URL.
+    // 3. A symbol imported from a relative file within this package. The
+    //    declaration will be an ImportModuleSpecifier and its module path will
+    //    start with a '.'
+    // 4. A symbol imported from an absolute path. The declaration will be an
+    //    ImportModuleSpecifier and its module path will start with a '/' This
+    //    is a weird case to cover in the analyzer because it isn't portable.
+    // 5. A symbol imported from an external package. The declaration will be an
+    //    ImportModuleSpecifier and its module path will not start with a '.'
+    // 6. A symbol declared in this file. The declaration will be one of many
+    //    declaration types (just not an ImportModuleSpecifier).
     if (declaration.getSourceFile() !== location.getSourceFile()) {
       // If the reference declaration doesn't exist in this module, it must have
       // been a global (whose declaration is in an ambient .d.ts file)
@@ -325,33 +362,54 @@ export class ProgramContext {
       });
     } else {
       const module = this.getImportModuleSpecifier(declaration);
-      if (module) {
-        // The symbol was imported; check whether it is package local or external
-        if (module[0] === '.') {
-          // Relative import from this package: use the current package and
-          // module path relative to this module
+      if (module !== undefined) {
+        // The symbol was imported; check whether it is a URL, absolute, package
+        // local, or external
+        try {
+          new URL(module);
+          // If this didn't throw, module was a valid URL; no package, just
+          // use the URL as the module
           return new Reference({
             name,
-            package: this.package,
-            module: path.join(path.dirname(this.currentModule.jsPath), module),
+            package: '',
+            module: module,
           });
-        } else {
-          // External import: extract the npm package (taking care to respect
-          // npm orgs) and module specifier (if any)
-          const info = module.match(
-            /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/
-          );
-          if (!info || !info.groups) {
-            throw new DiagnosticsError(
-              declaration,
-              `External npm package could not be parsed from module specifier '${module}'.`
-            );
+        } catch {
+          if (module[0] === '.') {
+            // Relative import from this package: use the current package and
+            // module path relative to this module
+            return new Reference({
+              name,
+              package: this.package,
+              module: path.join(
+                path.dirname(this.currentModule.jsPath),
+                module
+              ),
+            });
+          } else if (module[0] === '/') {
+            // Absolute import; no package, just use the entire path as the
+            // module
+            return new Reference({
+              name,
+              package: '',
+              module: module,
+            });
+          } else {
+            // External import: extract the npm package (taking care to respect
+            // npm orgs) and module specifier (if any)
+            const info = module.match(npmModule);
+            if (!info || !info.groups) {
+              throw new DiagnosticsError(
+                declaration,
+                `External npm package could not be parsed from module specifier '${module}'.`
+              );
+            }
+            return new Reference({
+              name,
+              package: info.groups.package,
+              module: info.groups.module,
+            });
           }
-          return new Reference({
-            name,
-            package: info.groups!.package,
-            module: info.groups!.module,
-          });
         }
       } else {
         // Declared in this file: use the current package and module
