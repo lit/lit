@@ -17,15 +17,12 @@ export {ArgsFunction as DepsFunction};
 
 /**
  * States for task status
- *
- * String values allow us to infer types from StatusRenderer
- * based on on Task["status"].
  */
 export const TaskStatus = {
-  INITIAL: 'initial',
-  PENDING: 'pending',
-  COMPLETE: 'complete',
-  ERROR: 'error',
+  INITIAL: 0,
+  PENDING: 1,
+  COMPLETE: 2,
+  ERROR: 3,
 } as const;
 
 /**
