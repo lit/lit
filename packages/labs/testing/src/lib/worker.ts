@@ -17,10 +17,12 @@ const {template, modules} = workerData as Payload;
 
 await Promise.all(modules.map((module) => import(module)));
 
-// Dangerously spoof TemplateStringsArray
+// Dangerously spoof TemplateStringsArray by adding back the `raw` property
+// property which gets stripped during serialization of the TemplateResult.
+// This is needed to get through the check here
+// https://github.com/lit/lit/blob/1fbd2b7a1e6da09912f5c681d2b6eaf1c4920bb4/packages/lit-html/src/lit-html.ts#L867
 const strings = template.strings;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(strings as any).raw = strings;
+(strings as {raw: TemplateStringsArray['raw']}).raw = strings;
 
 let rendered = '';
 for (const str of render({...template, strings}, {deferHydration: true})) {
