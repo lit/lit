@@ -12,7 +12,7 @@ import {
   buildPackage,
   packPackage,
 } from '../lib/package-utils.js';
-import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
+import {FilesystemTestRig} from '@lit-internal/tests/utils/filesystem-test-rig.js';
 
 const test = suite<{tempFs: FilesystemTestRig}>('test');
 
