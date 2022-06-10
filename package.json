@@ -22,7 +22,7 @@
     "test": "lerna run test --ignore '{lit,lit-html,lit-element,@lit/reactive-element,@lit-labs/context,@lit-labs/motion,@lit-labs/observers,@lit-labs/react,@lit-labs/router,@lit-labs/scoped-registry-mixin,@lit-labs/task}' --concurrency 1 --stream ",
     "prepare": "husky install",
     "changeset": "changeset",
-    "version": "npm run changeset version && npm run update-version-vars",
+    "version": "npm run changeset version && npm run update-version-vars && lerna bootstrap -- --package-lock-only",
     "update-version-vars": "node scripts/update-version-variables.js",
     "release": "npm run bootstrap && npm run build && npm run changeset publish"
   },
