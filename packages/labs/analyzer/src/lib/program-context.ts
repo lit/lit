@@ -318,6 +318,11 @@ export class ProgramContext {
     if (this.currentModule === undefined) {
       throw new Error(`Internal error: expected currentModule to be set`);
     }
+    // TODO(kschaaf): Do we need to check other declarations? The assumption is
+    // that even with multiple declarations (e.g. because of class interface +
+    // constructor), the reference would point to the same location for all,
+    // or else (in the case of e.g. namespace augmentation) it will be global
+    // and not need a specific module specifier.
     const declaration = symbol?.declarations?.[0];
     if (declaration === undefined) {
       throw new DiagnosticsError(
@@ -439,13 +444,12 @@ export class ProgramContext {
         const name = getRootName(
           ts.isTypeReferenceNode(node) ? node.typeName : node.qualifier
         );
-        const symbol =
-          this.checker.getSymbolAtLocation(node) ??
-          // The only time we need to fall back and do a name-based lookup is
-          // when `typeToTypeNode` fails to create a symbol for a TypeReference,
-          // which appears to occur when a global symbol is in scope due to an
-          // ambient .d.ts file (e.g. MouseEvent)
-          this.getSymbolForName(name, location);
+        // TODO(kschaaf): we'd like to just do
+        // `checker.getSymbolAtLocation(node)` to get the symbol, but it appears
+        // that nodes created with `checker.typeToTypeNode()` do not have
+        // associated symbols, so we need to look up by name via
+        // `checker.getSymbolsInScope()`
+        const symbol = this.getSymbolForName(name, location);
         if (symbol === undefined) {
           throw new DiagnosticsError(
             location,
