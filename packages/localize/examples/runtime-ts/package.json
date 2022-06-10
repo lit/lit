@@ -1,5 +1,5 @@
 {
-  "name": "lit-localize-examples-runtime-ts",
+  "name": "@lit-internal/localize-examples-runtime-ts",
   "description": "Example of using lit-localize in runtime mode with TypeScript",
   "version": "1.0.1",
   "private": true,
