@@ -6,7 +6,7 @@
 
 import {render} from 'lit';
 import type {LitElement, TemplateResult} from 'lit';
-import type {FixtureOption} from './fixtureOption.js';
+import type {FixtureOption} from './fixture-options.js';
 
 /**
  * Renders the provided lit-html template with a Lit element client-side.

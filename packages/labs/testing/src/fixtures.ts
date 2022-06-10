@@ -6,5 +6,5 @@
 
 import 'lit/experimental-hydrate-support.js';
 
-export * from './lib/fixtures/csrFixture.js';
-export * from './lib/fixtures/ssrFixture.js';
+export * from './lib/fixtures/csr-fixture.js';
+export * from './lib/fixtures/ssr-fixture.js';

@@ -7,7 +7,7 @@
 import {parentPort, workerData} from 'worker_threads';
 import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
 
-import type {Payload} from './litSsrPlugin.js';
+import type {Payload} from './lit-ssr-plugin.js';
 
 if (parentPort === null) {
   throw new Error('worker.js must only be run in a worker thread');

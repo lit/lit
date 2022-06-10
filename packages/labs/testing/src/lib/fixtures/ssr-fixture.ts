@@ -9,8 +9,8 @@ import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
 import {litSsrPluginCommand} from '../constants.js';
 
 import type {LitElement, TemplateResult} from 'lit';
-import type {FixtureOption, SsrFixtureOption} from './fixtureOption.js';
-import type {Payload} from '../litSsrPlugin.js';
+import type {FixtureOption, SsrFixtureOption} from './fixture-options.js';
+import type {Payload} from '../lit-ssr-plugin.js';
 
 // Enhance DOMParser's parseFromString method to include `includeShadowRoots`
 // option for browsers that support declarative shadow DOM as proposed in
