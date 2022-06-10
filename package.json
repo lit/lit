@@ -1,5 +1,5 @@
 {
-  "name": "lit-monorepo",
+  "name": "@lit-internal/monorepo",
   "private": true,
   "type": "module",
   "engines": {
