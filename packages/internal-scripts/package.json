@@ -1,12 +1,12 @@
 {
-  "name": "internal-scripts",
+  "name": "@lit-internal/scripts",
   "private": true,
   "version": "1.0.0",
   "description": "Internal scripts for the Lit monorepo",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
-    "directory": "packages/internal-scripts"
+    "directory": "packages/@lit-internal/scripts"
   },
   "author": "Google LLC",
   "license": "BSD-3-Clause",

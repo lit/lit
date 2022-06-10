@@ -1,4 +1,4 @@
-# lit-localize-examples-runtime-js
+# @lit-internal/localize-examples-runtime-js
 
 ## 1.0.1
 ### Patch Changes
