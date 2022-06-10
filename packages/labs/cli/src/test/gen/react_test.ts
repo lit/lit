@@ -10,7 +10,7 @@ import * as assert from 'uvu/assert';
 import {LitCli} from '../../lib/lit-cli.js';
 import {suite} from '../uvu-wrapper.js';
 import {TestConsole} from '../cli-test-utils.js';
-import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
+import {FilesystemTestRig} from '@lit-internal/tests/utils/filesystem-test-rig.js';
 
 interface TestContext {
   testConsole: TestConsole;

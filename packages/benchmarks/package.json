@@ -1,5 +1,5 @@
 {
-  "name": "lit-benchmarks",
+  "name": "@lit-internal/benchmarks",
   "version": "1.0.2",
   "private": true,
   "description": "Benchmarks for lit",
