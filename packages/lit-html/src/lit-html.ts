@@ -620,8 +620,8 @@ export interface RenderOptions {
 /**
  * Renders a value, usually a lit-html TemplateResult, to the container.
  *
- * For example, to render "Hello, Zoe!" to the container `document.body` where
- * the name "Zoe" is from a variable:
+ * This example renders the text "Hello, Zoe!" inside a paragraph tag, appending
+ * it to the container `document.body`.
  *
  * ```js
  * import {html, render} from 'lit';
