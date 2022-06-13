@@ -50,9 +50,10 @@ export async function csrFixture<T extends LitElement>(
     modules.map((module) => import(new URL(module, base).href))
   );
 
-  // Webkit does not seem to render the contents of the custom element
-  // synchronously. Awaiting for the next microtask tick seems to work.
-  await render(template, container);
+  render(template, container);
+
+  // Awaiting for the next microtask to ensure contents are rendered.
+  await undefined;
 
   return container.firstElementChild as T;
 }
