@@ -4,11 +4,30 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export interface FixtureOption {
+/**
+ * Shared options for all fixture functions
+ */
+export interface FixtureOptions {
+  /**
+   * Array of module paths to be imported before rendering. Normally would
+   * contain custom element definitions.
+   */
   modules: string[];
+  /**
+   * Base url for resolving module paths provided. If not provided, will guess
+   * the location based on call stack to have the same effect as passing in
+   * `import.meta.url`.
+   */
   base?: string;
 }
 
-export interface SsrFixtureOption extends FixtureOption {
+/**
+ * Options for SSR fixture functions
+ */
+export interface SsrFixtureOptions extends FixtureOptions {
+  /**
+   * Whether to hydrate the SSRed component after adding to the browser
+   * document. Defaults to true.
+   */
   hydrate?: boolean;
 }

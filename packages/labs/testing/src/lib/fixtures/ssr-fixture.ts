@@ -9,7 +9,7 @@ import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
 import {litSsrPluginCommand} from '../constants.js';
 
 import type {LitElement, TemplateResult} from 'lit';
-import type {FixtureOption, SsrFixtureOption} from './fixture-options.js';
+import type {FixtureOptions, SsrFixtureOptions} from './fixture-options.js';
 import type {Payload} from '../lit-ssr-plugin.js';
 
 // Enhance DOMParser's parseFromString method to include `includeShadowRoots`
@@ -32,20 +32,10 @@ declare global {
  * element.
  *
  * This module **must** be imported before any custom element definitions.
- *
- * @param {TemplateResult} template - lit-html template. Must contain a single
- * top level custom element.
- * @param {string[]} option.modules - Path to custom element definition modules
- * needed to render template, relative to the test file.
- * @param {string} [option.base] - Optional. Base path for the modules.
- * Generally should be `import.meta.url`. Will guess from stack trace if not
- * provided.
- * @param {boolean} [option.hydrate] - Defaults to true. Hydrates the component
- * after being loaded to the document.
  */
 export async function ssrFixture<T extends LitElement>(
   template: TemplateResult,
-  {modules, base, hydrate = true}: SsrFixtureOption
+  {modules, base, hydrate = true}: SsrFixtureOptions
 ): Promise<T> {
   if (base === undefined) {
     // Find the test file url from the call stack
@@ -112,18 +102,10 @@ export async function ssrFixture<T extends LitElement>(
  * Plugin, loads it to the document and hydrates it, returning the element.
  *
  * This module **must** be imported before any custom element definitions.
- *
- * @param {TemplateResult} template - lit-html template. Must contain a single
- * top level custom element.
- * @param {string[]} option.modules - Path to custom element definition modules
- * needed to render template, relative to the test file.
- * @param {string} [option.base] - Optional. Base path for the modules.
- * Generally should be `import.meta.url`. Will guess from stack trace if not
- * provided.
  */
 export async function ssrHydratedFixture<T extends LitElement>(
   template: TemplateResult,
-  {modules, base}: FixtureOption
+  {modules, base}: FixtureOptions
 ) {
   return ssrFixture<T>(template, {modules, base, hydrate: true});
 }
@@ -135,18 +117,10 @@ export async function ssrHydratedFixture<T extends LitElement>(
  * element.
  *
  * This module **must** be imported before any custom element definitions.
- *
- * @param {TemplateResult} template - lit-html template. Must contain a single
- * top level custom element.
- * @param {string[]} option.modules - Path to custom element definition modules
- * needed to render template, relative to the test file.
- * @param {string} [option.base] - Optional. Base path for the modules.
- * Generally should be `import.meta.url`. Will guess from stack trace if not
- * provided.
  */
 export async function ssrNonHydratedFixture<T extends LitElement>(
   template: TemplateResult,
-  {modules, base}: FixtureOption
+  {modules, base}: FixtureOptions
 ) {
   return ssrFixture<T>(template, {modules, base, hydrate: false});
 }

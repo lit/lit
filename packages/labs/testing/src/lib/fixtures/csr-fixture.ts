@@ -6,22 +6,14 @@
 
 import {render} from 'lit';
 import type {LitElement, TemplateResult} from 'lit';
-import type {FixtureOption} from './fixture-options.js';
+import type {FixtureOptions} from './fixture-options.js';
 
 /**
  * Renders the provided lit-html template with a Lit element client-side.
- *
- * @param {TemplateResult} template - lit-html template. Must contain a single
- * top level custom element.
- * @param {string[]} option.modules - Path to custom element definition modules
- * needed to render template, relative to the test file.
- * @param {string} [option.base] - Optional. Base path for the modules.
- * Generally should be `import.meta.url`. Will guess from stack trace if not
- * provided.
  */
 export async function csrFixture<T extends LitElement>(
   template: TemplateResult,
-  {modules, base}: FixtureOption
+  {modules, base}: FixtureOptions
 ): Promise<T> {
   if (base === undefined) {
     // Find the test file url from the call stack
