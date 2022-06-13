@@ -76,7 +76,10 @@ export async function ssrFixture<T extends LitElement>(
   document.body.appendChild(container);
 
   if (HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
-    // Browser natively supports declarative shadowroot but must use DOMParser
+    // Browser natively supports declarative shadowroot.
+    // Shadowroots are only parsed and attached during initial HTML parsing.
+    // innerHTML will not work and must use DOMParser.
+    // See https://web.dev/declarative-shadow-dom/#parser-only
     const fragment = new DOMParser().parseFromString(rendered, 'text/html', {
       includeShadowRoots: true,
     });
