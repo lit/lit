@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.3
+
+### Patch Changes
+
+- [#2972](https://github.com/lit/lit/pull/2972) [`ee864b6d`](https://github.com/lit/lit/commit/ee864b6dd6616d6cb72924089581af220196c894) - Fix multiple runtime msg call with same template but different expressions
+
 ## 0.11.2
 
 ### Patch Changes
