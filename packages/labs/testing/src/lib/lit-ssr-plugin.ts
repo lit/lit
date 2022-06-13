@@ -20,37 +20,39 @@ export function litSsrPlugin(): TestRunnerPlugin<Payload> {
   return {
     name: 'lit-ssr-plugin',
     async executeCommand({command, payload}) {
-      if (command === litSsrPluginCommand) {
-        if (!payload) {
-          throw new Error(`Missing payload for ${litSsrPluginCommand} command`);
-        }
-        const {template, modules} = payload;
-        const resolvedModules = modules.map((module) =>
-          pathlib.join(process.cwd(), module)
-        );
-
-        let resolve: (value: string) => void;
-        let reject: (reason: unknown) => void;
-        const promise = new Promise<string>((res, rej) => {
-          resolve = res;
-          reject = rej;
-        });
-
-        const worker = new Worker(new URL('./worker.js', import.meta.url), {
-          workerData: {template, modules: resolvedModules},
-        });
-
-        worker.on('error', (err) => {
-          reject(err);
-        });
-
-        worker.on('message', (message) => {
-          resolve(message);
-        });
-
-        return promise;
+      if (command !== litSsrPluginCommand) {
+        return undefined;
       }
-      return undefined;
+
+      if (!payload) {
+        throw new Error(`Missing payload for ${litSsrPluginCommand} command`);
+      }
+
+      const {template, modules} = payload;
+      const resolvedModules = modules.map((module) =>
+        pathlib.join(process.cwd(), module)
+      );
+
+      let resolve: (value: string) => void;
+      let reject: (reason: unknown) => void;
+      const promise = new Promise<string>((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+
+      const worker = new Worker(new URL('./worker.js', import.meta.url), {
+        workerData: {template, modules: resolvedModules},
+      });
+
+      worker.on('error', (err) => {
+        reject(err);
+      });
+
+      worker.on('message', (message) => {
+        resolve(message);
+      });
+
+      return promise;
     },
   };
 }
