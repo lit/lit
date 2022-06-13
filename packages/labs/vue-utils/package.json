@@ -1,4 +1,5 @@
 {
+  "private": true,
   "name": "@lit-labs/vue-utils",
   "version": "0.0.1",
   "description": "Utilities for generating a Vue component wrapper for a LitElement.",
