@@ -6,7 +6,7 @@
 // @ts-check
 
 import {playwrightLauncher} from '@web/test-runner-playwright';
-import {litSsrPlugin} from './lib/litSsrPlugin.js';
+import {litSsrPlugin} from './lib/lit-ssr-plugin.js';
 
 /**
  * @type {import('@web/test-runner').TestRunnerConfig}
