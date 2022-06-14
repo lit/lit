@@ -35,6 +35,12 @@ export const templateWithMultiBindingAttributeExpression = (
   x: string,
   y: string
 ) => html`<div test="a ${x} b ${y} c"></div>`;
+// prettier-ignore
+export const inputTemplateWithAttributeExpression = (x: string) =>
+html`<input x=${x}>`;
+// prettier-ignore
+export const inputTemplateWithAttributeExpressionAndChildElement = (x: string) =>
+  html`<input x=${x}><p>hi</p></input>`;
 
 /* Reflected Property Expressions */
 
@@ -80,6 +86,8 @@ export class TestProperty extends LitElement {
 
 // prettier-ignore
 export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
+export const elementWithAttribute = (x: string | undefined | null) =>
+  html`<test-property foo=${x}></test-property>`;
 
 @customElement('test-reflected-properties')
 export class TestReflectedProperties extends LitElement {

@@ -6,6 +6,10 @@
 
 import {assert} from '@esm-bundle/chai';
 import type {Test1, Child1, Child2} from './router_test_code.js';
+import type {RouteConfig, PathRouteConfig} from '../routes.js';
+
+const isPathRouteConfig = (route: RouteConfig): route is PathRouteConfig =>
+  route.hasOwnProperty('path');
 
 const canTest =
   window.ShadowRoot &&
@@ -162,6 +166,12 @@ const canTest =
     contentDocument!.body.append(el);
     await el.updateComplete;
 
+    assert.isFalse(
+      el._router.routes.some(
+        (r) => isPathRouteConfig(r) && r.path === '/server-route'
+      )
+    );
+
     //
     // Fallback
     //
@@ -169,10 +179,23 @@ const canTest =
     // '/server-route' is not pre-configured, is dynamically installed
     await el._router.goto('/server-route');
 
+    assert.isTrue(
+      el._router.routes.some(
+        (r) => isPathRouteConfig(r) && r.path === '/server-route'
+      )
+    );
+
     await el.updateComplete;
     assert.include(
       stripExpressionComments(el.shadowRoot!.innerHTML),
       '<h2>Server</h2>'
+    );
+
+    await el._router.goto('/404');
+    await el.updateComplete;
+    assert.include(
+      stripExpressionComments(el.shadowRoot!.innerHTML),
+      '<h2>Not Found</h2>'
     );
   });
 });

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.6.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
+## 0.6.2
+
+### Patch Changes
+
+- [#2692](https://github.com/lit/lit/pull/2692) [`c41a92c9`](https://github.com/lit/lit/commit/c41a92c96eeb8c2db4875c94c2eabcd512e044c4) - Fix issue with placing expressions as html attribute values in transform mode
+
+## 0.6.1
+
+### Patch Changes
+
+- [#2561](https://github.com/lit/lit/pull/2561) [`6be4ac29`](https://github.com/lit/lit/commit/6be4ac29d7fe786790471cd3c67217bc7865b4cb) - Reorder xliff `<note>` elements to follow `<target>` elements to be OASIS-compliant
+
+- Updated dependencies [[`2c9d0008`](https://github.com/lit/lit/commit/2c9d00082a416457ee02107013dd4925bf589628)]:
+  - lit@2.2.0
+
 ## 0.6.0
 
 ### Minor Changes

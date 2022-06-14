@@ -1,0 +1,44 @@
+{
+  "private": true,
+  "name": "@lit-internal/test-element-a",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "wireit",
+    "pack": "wireit"
+  },
+  "files": [
+    "/element-a.{js,js.map,d.ts,d.ts.map}"
+  ],
+  "dependencies": {
+    "lit": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~4.3.5"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "../../../lit:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "command": "tsc --build --pretty",
+      "output": [
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "pack": {
+      "dependencies": [
+        "build"
+      ],
+      "command": "npm pack",
+      "output": [
+        "*.tgz"
+      ]
+    }
+  }
+}

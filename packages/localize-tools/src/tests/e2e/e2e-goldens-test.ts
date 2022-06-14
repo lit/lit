@@ -5,15 +5,15 @@
  */
 
 import * as path from 'path';
-import {execFileSync} from 'child_process';
 import {suite} from 'uvu';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {runAndLog} from '../../cli.js';
 import fsExtra from 'fs-extra';
-import * as dirCompare from 'dir-compare';
-import {formatDirDiff} from '../format-dir-diff.js';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
+
+import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
 /**
  * Run lit-localize end-to-end using input and golden files from the filesystem.
@@ -104,28 +104,7 @@ export function e2eGoldensTest(
       `stdout/stderr did not include expected value, got: ${stdOutErr}`
     );
 
-    // Format emitted TypeScript to make test output more readable.
-    execFileSync('npx', [
-      '--no-install',
-      'prettier',
-      '--write',
-      `${outputDir}/**/*.{ts,js}`,
-    ]);
-
-    if (process.env.UPDATE_TEST_GOLDENS) {
-      fsExtra.emptyDirSync(goldensDir);
-      fsExtra.copySync(outputDir, goldensDir);
-      assert.unreachable('Failing on purpose because goldens were updated.');
-      return;
-    }
-
-    const diff = await dirCompare.compare(goldensDir, outputDir, {
-      compareContent: true,
-    });
-
-    if (!diff.same) {
-      assert.unreachable(formatDirDiff(diff));
-    }
+    await assertGoldensMatch(outputDir, goldensDir);
   });
 
   testSuite.run();

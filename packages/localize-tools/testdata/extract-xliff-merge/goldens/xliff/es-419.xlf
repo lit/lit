@@ -3,13 +3,13 @@
 <file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="se86f4e822256d113">
-  <note>Description of not translated</note>
   <source>I am not translated</source>
+  <note>Description of not translated</note>
 </trans-unit>
 <trans-unit id="s677cb50a446c46f4">
-  <note>Description of translated</note>
   <source>I am translated</source>
   <target>Estoy traducido</target>
+  <note>Description of translated</note>
 </trans-unit>
 </body>
 </file>

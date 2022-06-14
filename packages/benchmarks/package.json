@@ -1,5 +1,5 @@
 {
-  "name": "lit-benchmarks",
+  "name": "@lit-internal/benchmarks",
   "version": "1.0.2",
   "private": true,
   "description": "Benchmarks for lit",
@@ -45,7 +45,7 @@
     "tachometer": "^0.5.9"
   },
   "devDependencies": {
-    "chromedriver": "^97.0.0",
+    "chromedriver": "^101.0.0",
     "typescript": "^4.3.5"
   }
 }

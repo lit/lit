@@ -9,8 +9,11 @@ import {
   PropertyValues,
   ReactiveControllerHost,
 } from '@lit/reactive-element';
-import {ResizeController, ResizeControllerConfig} from '../resize_controller';
-import {generateElementName, nextFrame} from './test-helpers';
+import {
+  ResizeController,
+  ResizeControllerConfig,
+} from '../resize_controller.js';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE

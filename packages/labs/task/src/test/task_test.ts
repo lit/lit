@@ -7,7 +7,7 @@
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {initialState, Task, TaskStatus, TaskConfig} from '../task.js';
-import {generateElementName, nextFrame} from './test-helpers';
+import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -282,6 +282,8 @@ suite('Task', () => {
     await renderElement(el);
     assert.equal(el.task.status, TaskStatus.PENDING);
 
+    // Catch the rejection to supress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
     // Task error reported.
     el.rejectTask();
     await tasksUpdateComplete();
@@ -307,6 +309,8 @@ suite('Task', () => {
     el.a = 'a2';
     el.b = 'b2';
     await tasksUpdateComplete();
+    // Catch the rejection to supress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
     el.rejectTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
@@ -371,6 +375,8 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
 
+    // Catch the rejection to supress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
     el.rejectTask();
     await tasksUpdateComplete();

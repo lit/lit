@@ -1,5 +1,29 @@
 # Change Log
 
+## 2.2.0
+
+### Minor Changes
+
+- [#2940](https://github.com/lit/lit/pull/2940) [`ac356997`](https://github.com/lit/lit/commit/ac356997351874706f8be235559c765861dce67d) - Add option to defer hydration of top level custom elements.
+
+## 2.1.0
+
+### Minor Changes
+
+- [#2662](https://github.com/lit/lit/pull/2662) [`1d51ed8b`](https://github.com/lit/lit/commit/1d51ed8b7eb991e151759f9dbf8643b4ed781457) - Adds HTMLElement.shadowRoot property to dom-shim.
+
+## 2.0.4
+
+### Patch Changes
+
+- [#2580](https://github.com/lit/lit/pull/2580) [`b8ceafb0`](https://github.com/lit/lit/commit/b8ceafb00651b9a4b5021ac5a3d1d960ceb10e6b) - Handle rendering of null and undefined element attribute values
+
+## 2.0.3
+
+### Patch Changes
+
+- [#2510](https://github.com/lit/lit/pull/2510) [`937388e2`](https://github.com/lit/lit/commit/937388e247a26ee201f58be1c4fa536635b2fc5c) - Replace window proxy with reference to globalThis in global DOM shim
+
 ## 2.0.2
 
 ### Patch Changes

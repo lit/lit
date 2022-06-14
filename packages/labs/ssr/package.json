@@ -1,24 +1,115 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "2.0.2",
+  "version": "2.2.0",
   "publishConfig": {
     "access": "public"
   },
   "description": "SSR for Lit",
   "main": "index.js",
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
-    "build:ts": "tsc",
-    "build:ts:watch": "tsc --watch",
-    "clean": "rm -rf index.js demo/ test/ lib/ *.tsbuildinfo",
-    "demo:vm-modules": "node --experimental-vm-modules ./demo/vm-modules/server.js",
-    "demo:global": "node ./demo/global/server.js",
-    "test": "npm run test:unit && npm run test:integration",
-    "test:integration": "npm run test:integration:dev && npm run test:integration:prod",
-    "test:integration:dev": "MODE=dev NODE_OPTIONS=--experimental-vm-modules wtr",
-    "test:integration:prod": "MODE=prod NODE_OPTIONS=--experimental-vm-modules wtr",
-    "test:unit": "node --experimental-vm-modules ./test/all-tests.js"
+    "build": "wireit",
+    "build:ts": "wireit",
+    "demo:vm-modules": "wireit",
+    "demo:global": "wireit",
+    "test": "wireit",
+    "test:integration": "wireit",
+    "test:integration:dev": "wireit",
+    "test:integration:prod": "wireit",
+    "test:unit": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../ssr-client:build",
+        "../../lit:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../ssr-client:build:ts:types",
+        "../../lit:build:ts:types",
+        "../../lit-html:build:ts:types",
+        "../../lit-element:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "custom_typings/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib/",
+        "test/",
+        "demo/",
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "demo:vm-modules": {
+      "command": "node --experimental-vm-modules ./demo/vm-modules/server.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "demo:global": {
+      "command": "node ./demo/global/server.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test": {
+      "dependencies": [
+        "test:unit",
+        "test:integration"
+      ]
+    },
+    "test:unit": {
+      "command": "node --experimental-vm-modules ./test/all-tests.js",
+      "#comment": [
+        "These unit tests use the default export condition, so they require a",
+        "full build of all dependencies."
+      ],
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:integration": {
+      "dependencies": [
+        "test:integration:dev",
+        "test:integration:prod"
+      ]
+    },
+    "test:integration:dev": {
+      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js",
+      "#comment": [
+        "TODO(aomarks) It seems like this should only depend on build:ts",
+        "but it errors on missing .js files that come from core library Rollup builds"
+      ],
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:integration:prod": {
+      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js",
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "files": [],
+      "output": []
+    }
   },
   "files": [
     "/lib/",

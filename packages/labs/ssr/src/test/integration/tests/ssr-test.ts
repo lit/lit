@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult} from 'lit';
+import type {TemplateResult} from 'lit';
+import type {RenderInfo} from '../../../lib/render-lit-html.js';
 
 export type SSRExpectedHTML =
   | string
@@ -39,6 +40,7 @@ export interface SSRTestDescription {
   skip?: boolean;
   only?: boolean;
   registerElements?(): void | Promise<unknown>;
+  serverRenderOptions?: Partial<RenderInfo>;
 }
 
 export type SSRTestFactory = () => SSRTestDescription;

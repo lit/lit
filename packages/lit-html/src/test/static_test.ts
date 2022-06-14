@@ -164,4 +164,17 @@ suite('static', () => {
       );
     });
   });
+
+  test(`don't render simple spoofed static values`, () => {
+    const spoof = {
+      ['_$staticValue$']: 'foo',
+      r: {},
+    };
+    const template = html`<div>${spoof}</div>`;
+    render(template, container);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div>[object Object]</div>'
+    );
+  });
 });

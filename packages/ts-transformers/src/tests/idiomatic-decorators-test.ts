@@ -7,6 +7,7 @@
 import {suite} from 'uvu';
 import {compileTsFragment, CompilerHostCache} from './compile-ts-fragment.js';
 import ts from 'typescript';
+// eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import prettier from 'prettier';
 import {idiomaticDecoratorsTransformer} from '../idiomatic-decorators.js';
@@ -126,6 +127,19 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
+
+      /**
+       * Reactive getter description.
+       */
+      @property({type: Boolean})
+      get reactiveGetter() {
+        return false;
+      }
+
+      @property({type: Boolean})
+      get reactiveGetterNoComment() {
+        return false;
+      }
     }
     `;
 
@@ -140,6 +154,8 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           reactiveUninitializedObj: {type: Object},
           reactiveInitializedNum: {type: Number, attribute: false},
           reactiveInitializedBool: {type: Boolean, reflect: true},
+          reactiveGetter: {type: Boolean},
+          reactiveGetterNoComment: {type: Boolean},
         };
 
         constructor() {
@@ -150,11 +166,22 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedStr = "foo";
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
-        }
+      }
 
         nonReactiveInitialized = 123;
 
         nonReactiveUninitialized;
+
+        /**
+         * Reactive getter description.
+         */
+        get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
+          return false;
+        }
       }
       `;
     } else {
@@ -173,12 +200,25 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           this.reactiveInitializedNum = 42;
           this.reactiveInitializedBool = false;
         }
+
+        /**
+         * Reactive getter description.
+         */
+        get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
+          return false;
+        }
       }
       MyElement.properties = {
         reactiveInitializedStr: {},
         reactiveUninitializedObj: {type: Object},
         reactiveInitializedNum: {type: Number, attribute: false},
         reactiveInitializedBool: {type: Boolean, reflect: true},
+        reactiveGetter: {type: Boolean},
+        reactiveGetterNoComment: {type: Boolean},
       };
       `;
     }
@@ -207,6 +247,19 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       @property({type: Boolean, reflect: true})
       reactiveInitializedBool = false;
 
+      /**
+       * Reactive getter description.
+       */
+      @property({type: Boolean})
+      get reactiveGetter() {
+        return false;
+      }
+
+      @property({type: Boolean})
+      get reactiveGetterNoComment() {
+        return false;
+      }
+
       constructor() {
         super();
       }
@@ -224,11 +277,24 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           reactiveUninitializedObj: {type: Object},
           reactiveInitializedNum: {type: Number, attribute: false},
           reactiveInitializedBool: {type: Boolean, reflect: true},
+          reactiveGetter: {type: Boolean},
+          reactiveGetterNoComment: {type: Boolean},
         };
 
         nonReactiveInitialized = 123;
 
         nonReactiveUninitialized;
+
+        /**
+         * Reactive getter description.
+         */
+        get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
+          return false;
+        }
 
         constructor() {
           super();
@@ -243,6 +309,17 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import {LitElement} from 'lit';
 
       class MyElement extends LitElement {
+        /**
+         * Reactive getter description.
+         */
+        get reactiveGetter() {
+          return false;
+        }
+
+        get reactiveGetterNoComment() {
+          return false;
+        }
+
         constructor() {
           super();
 
@@ -257,6 +334,52 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         reactiveUninitializedObj: {type: Object},
         reactiveInitializedNum: {type: Number, attribute: false},
         reactiveInitializedBool: {type: Boolean, reflect: true},
+        reactiveGetter: {type: Boolean},
+        reactiveGetterNoComment: {type: Boolean},
+      };
+      `;
+    }
+    checkTransform(input, expected, options);
+  });
+
+  test('@property (do not create constructor if just getter)', () => {
+    const input = `
+    import {LitElement} from 'lit';
+    import {property} from 'lit/decorators.js';
+
+    class MyElement extends LitElement {
+      @property({type: Boolean})
+      get reactiveGetter() {
+        return false;
+      }
+    }
+    `;
+
+    let expected;
+    if (options.useDefineForClassFields) {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        static properties = {
+          reactiveGetter: {type: Boolean},
+        };
+        get reactiveGetter() {
+          return false;
+        }
+      }
+      `;
+    } else {
+      expected = `
+      import {LitElement} from 'lit';
+
+      class MyElement extends LitElement {
+        get reactiveGetter() {
+          return false;
+        }
+      }
+      MyElement.properties = {
+        reactiveGetter: {type: Boolean},
       };
       `;
     }

@@ -30,6 +30,8 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/task': '_$J',
   '@lit-labs/router': '_$K',
   '@lit-labs/observers': '_$L',
+  '@lit-labs/context': '_$M',
+  '@lit-labs/vue-utils': '_$N',
 };
 
 // Validate prefix uniqueness
@@ -373,12 +375,14 @@ export function litProdConfig({
         // way or another, so it's difficult to define a default in the source code
         // itself.
         replace({
-          'const DEV_MODE = true': 'const DEV_MODE = false',
-          'const ENABLE_EXTRA_SECURITY_HOOKS = true':
-            'const ENABLE_EXTRA_SECURITY_HOOKS = false',
-          'const ENABLE_SHADYDOM_NOPATCH = true':
-            'const ENABLE_SHADYDOM_NOPATCH = false',
-          'export const INTERNAL = true': 'const INTERNAL = false',
+          preventAssignment: true,
+          values: {
+            'const DEV_MODE = true': 'const DEV_MODE = false',
+            'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+              'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+            'const ENABLE_SHADYDOM_NOPATCH = true':
+              'const ENABLE_SHADYDOM_NOPATCH = false',
+          },
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
@@ -440,21 +444,27 @@ const litMonoBundleConfig = ({
     sourcemapPathTransform,
   },
   plugins: [
-    nodeResolve(),
+    nodeResolve({
+      // We want to resolve to development, because the default is production,
+      // which is already rolled-up sources. That creates an unnecessary
+      // dependency between rollup build steps, and causes double-minification.
+      exportConditions: ['development'],
+    }),
     replace({
-      'const DEV_MODE = true': 'const DEV_MODE = false',
-      'const ENABLE_EXTRA_SECURITY_HOOKS = true':
-        'const ENABLE_EXTRA_SECURITY_HOOKS = false',
-      'const ENABLE_SHADYDOM_NOPATCH = true':
-        'const ENABLE_SHADYDOM_NOPATCH = false',
-      'export const INTERNAL = true': 'const INTERNAL = false',
-      // For downleveled ES5 build of polyfill-support
-      'var DEV_MODE = true': 'var DEV_MODE = false',
-      'var ENABLE_EXTRA_SECURITY_HOOKS = true':
-        'var ENABLE_EXTRA_SECURITY_HOOKS = false',
-      'var INTERNAL = true': 'var INTERNAL = false',
-      'var ENABLE_SHADYDOM_NOPATCH = true':
-        'var ENABLE_SHADYDOM_NOPATCH = false',
+      preventAssignment: true,
+      values: {
+        'const DEV_MODE = true': 'const DEV_MODE = false',
+        'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+          'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+        'const ENABLE_SHADYDOM_NOPATCH = true':
+          'const ENABLE_SHADYDOM_NOPATCH = false',
+        // For downleveled ES5 build of polyfill-support
+        'var DEV_MODE = true': 'var DEV_MODE = false',
+        'var ENABLE_EXTRA_SECURITY_HOOKS = true':
+          'var ENABLE_EXTRA_SECURITY_HOOKS = false',
+        'var ENABLE_SHADYDOM_NOPATCH = true':
+          'var ENABLE_SHADYDOM_NOPATCH = false',
+      },
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.

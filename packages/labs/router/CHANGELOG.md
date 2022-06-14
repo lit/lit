@@ -1,5 +1,26 @@
 # @lit-labs/router
 
+## 0.1.0
+
+### Minor Changes
+
+- [#2937](https://github.com/lit/lit/pull/2937) [`d2584ad6`](https://github.com/lit/lit/commit/d2584ad6bc5c7dd36f3e8ab9056587a87027b803) - **[BREAKING]** Router properties prefixed with an underscore have been made
+  private. These properties were being renamed in production builds and should not
+  have been exposed as part of a public API.
+
+## 0.0.2
+
+### Patch Changes
+
+- [#2838](https://github.com/lit/lit/pull/2838) [`f1b26bfe`](https://github.com/lit/lit/commit/f1b26bfe706ad93a3a312932b0eca5b0261023e0) - Add `fallback` route option to the Routes and Router class. The fallback route
+  will always be matched if none of the `routes` match, and implicitly matches to
+  the path `/*`.
+
+- [#2831](https://github.com/lit/lit/pull/2831) [`a16fd48c`](https://github.com/lit/lit/commit/a16fd48c549f2d28cdfed814976184e2b11ba2ae) - Update URLPattern polyfill dependency, and fix types. The params passed into
+  `render` and `enter` may contain `undefined` values as [Unmatched optional
+  groups are set to undefined instead of
+  ''](https://github.com/kenchris/urlpattern-polyfill/issues/66).
+
 ## 0.0.1
 
 ### Patch Changes

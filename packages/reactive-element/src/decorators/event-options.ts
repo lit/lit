@@ -47,7 +47,11 @@ import {decorateProperty} from './base.js';
 export function eventOptions(options: AddEventListenerOptions) {
   return decorateProperty({
     finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      Object.assign(ctor.prototype[name as keyof ReactiveElement], options);
+      Object.assign(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ctor.prototype[name as keyof ReactiveElement] as any,
+        options
+      );
     },
   });
 }
