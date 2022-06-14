@@ -2153,7 +2153,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.5');
+(globalThis.litHtmlVersions ??= []).push('2.2.6');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/context",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
