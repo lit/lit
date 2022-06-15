@@ -70,17 +70,13 @@
       "dependencies": [
         "build"
       ],
-      "files": [
-        "test-project"
-      ],
+      "files": [],
       "output": []
     }
   },
   "dependencies": {
     "@lit/localize-tools": "^0.6.1",
     "@lit-labs/gen-utils": "^0.0.1",
-    "@lit-labs/gen-wrapper-react": "^0.0.1",
-    "@lit-labs/gen-wrapper-vue": "^0.0.1",
     "command-line-args": "^5.2.1",
     "command-line-commands": "^3.0.2",
     "command-line-usage": "^6.1.1",
