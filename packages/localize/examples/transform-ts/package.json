@@ -5,8 +5,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "rm -rf lib/* && lit-localize build && npx rollup -c",
+    "build": "wireit",
     "serve": "web-dev-server"
+  },
+  "wireit": {
+    "build": {
+      "command": "rm -rf lib/* && lit-localize build && npx rollup -c",
+      "dependencies": [
+        "../../../localize:build",
+        "../../../localize-tools:build"
+      ]
+    }
   },
   "dependencies": {
     "@lit/localize": "^0.11.0",
