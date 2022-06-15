@@ -48,7 +48,8 @@
         "../localize:build:ts",
         "../lit:build:ts:types",
         "../labs/ssr:build:ts",
-        "../ts-transformers:build:ts"
+        "../ts-transformers:build:ts",
+        "../tests:build"
       ],
       "files": [
         "src/**/*.ts",
