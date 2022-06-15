@@ -7,9 +7,9 @@
 import {Writable} from 'stream';
 import {LitConsole} from '../lib/console.js';
 import {ConsoleConstructorOptions} from 'console';
-import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
 import * as pathlib from 'path';
 import * as url from 'url';
+import {FilesystemTestRig} from '@lit-internal/tests/utils/filesystem-test-rig.js';
 
 export class BufferedWritable extends Writable {
   buffer: Array<string> = [];
