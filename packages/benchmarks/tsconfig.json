@@ -26,10 +26,5 @@
     "lit-html/**/*.ts",
     "utils/**/*.ts"
   ],
-  "exclude": [],
-  "references": [
-    {"path": "../lit-html"},
-    {"path": "../lit-element"},
-    {"path": "../reactive-element"}
-  ]
+  "exclude": []
 }
