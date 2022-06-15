@@ -1,0 +1,49 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "eslint-plugin-import",
+    "eslint-plugin-no-only-tests",
+    "@typescript-eslint"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "import/extensions": ["error", "always"],
+    "no-prototype-builtins": "off",
+    "no-only-tests/no-only-tests": "error",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "check-version-tracker.js",
+        "rollup-common.js",
+        "rollup.config.js",
+        "web-test-runner.config.js"
+      ],
+      "env": {
+        "node": true
+      }
+    }
+  ]
+}
