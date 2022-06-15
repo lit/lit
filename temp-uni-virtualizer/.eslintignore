@@ -1,9 +1,0 @@
-packages/lit-virtualizer/LitVirtualizer.*
-packages/lit-virtualizer/Virtualizer.*
-packages/lit-virtualizer/lit-virtualizer.*
-packages/lit-virtualizer/virtualize.*
-packages/lit-virtualizer/test/**/*
-packages/lit-virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js
-packages/lit-virtualizer/src/polyfills/resize-observer-polyfill/ResizeObserver.js
-
-packages/lit-virtualizer-examples/
