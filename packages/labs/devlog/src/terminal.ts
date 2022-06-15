@@ -1,7 +1,7 @@
 import {
   html,
   css,
-  DebugLog,
+  LitUnstable,
   nothing,
   TemplateResult,
   noChange,
@@ -568,8 +568,9 @@ function getRegionToHighlight(entry: TreeEntry): Highlightable | undefined {
       }
       const range = document.createRange();
       range.setStartAfter(entry.start);
-      const maybeEnd = (entry as Partial<DebugLog.CommitNothingToChildEntry>)
-        .end;
+      const maybeEnd = (
+        entry as Partial<LitUnstable.DebugLog.CommitNothingToChildEntry>
+      ).end;
       if (maybeEnd) {
         range.setEndBefore(maybeEnd);
       } else {
@@ -626,8 +627,9 @@ export class TemplatePrepEntryElement extends DebugLogLitElement {
     }
   `;
 
-  @property({attribute: false}) entry: DebugLog.TemplatePrep | undefined =
-    undefined;
+  @property({attribute: false}) entry:
+    | LitUnstable.DebugLog.TemplatePrep
+    | undefined = undefined;
 
   @property({type: Boolean, reflect: true}) expanded = false;
 
@@ -849,6 +851,7 @@ export class RenderEntryElement extends DebugLogLitElement {
   }
 
   private renderChild(child: TreeEntry) {
+    const templates = new Set<unknown>();
     switch (child.kind) {
       case 'commit attribute':
         return html`<div ${highlightElemOnHover(child.element)}>
@@ -993,3 +996,12 @@ export class RenderEntryElement extends DebugLogLitElement {
   }
 }
 DebugLitTerminal.install();
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'lit-debug-frame-entry': FrameEntryElement;
+    'lit-debug-terminal': DebugLitTerminal;
+    'lit-debug-render-entry': RenderEntryElement;
+    'lit-debug-template-prep-entry': TemplatePrepEntryElement;
+  }
+}
