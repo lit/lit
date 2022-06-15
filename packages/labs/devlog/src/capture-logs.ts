@@ -1,4 +1,4 @@
-import {LitElement, DebugLog, RenderOptions} from 'lit';
+import {LitElement, LitUnstable, RenderOptions} from 'lit';
 
 /**
  * A collection of all of the debug log events that took place in inside of a single
@@ -6,22 +6,22 @@ import {LitElement, DebugLog, RenderOptions} from 'lit';
  */
 export interface RenderEntry {
   kind: 'render';
-  begin: DebugLog.BeginRender;
+  begin: LitUnstable.DebugLog.BeginRender;
   beginContent: Node;
   beginTime: number;
   endTime: number;
-  end: DebugLog.EndRender;
+  end: LitUnstable.DebugLog.EndRender;
   endContent: Node;
   events: TreeEntry[];
 }
 export type TreeEntry =
   | RenderEntry
-  | DebugLog.TemplateInstantiated
-  | DebugLog.TemplateInstantiatedAndUpdated
-  | DebugLog.TemplateUpdating
-  | DebugLog.TemplatePrep
-  | DebugLog.SetPartValue
-  | DebugLog.CommitPartEntry;
+  | LitUnstable.DebugLog.TemplateInstantiated
+  | LitUnstable.DebugLog.TemplateInstantiatedAndUpdated
+  | LitUnstable.DebugLog.TemplateUpdating
+  | LitUnstable.DebugLog.TemplatePrep
+  | LitUnstable.DebugLog.SetPartValue
+  | LitUnstable.DebugLog.CommitPartEntry;
 
 /**
  * All of the debug log events that were emitted in a single frame.
@@ -76,7 +76,7 @@ export class DebugLitController {
     ).emitLitDebugLogEvents = true;
     // memory leak, but ensures we capture as many events as possible by subscribing here and never unsubscribing
     window.addEventListener('lit-debug', (e: Event) => {
-      const event = e as CustomEvent<DebugLog.Entry>;
+      const event = e as CustomEvent<LitUnstable.DebugLog.Entry>;
       const entry = event.detail;
       const maybeOptions = (entry as {options?: ExtendedRenderOptions}).options;
 
