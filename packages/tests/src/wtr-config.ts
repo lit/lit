@@ -26,11 +26,21 @@ export const prodResolveRemapConfig: RemapConfig = {
     {from: 'lit-html/development/test/', to: null},
     {from: 'lit-element/development/test/', to: null},
     {from: 'reactive-element/development/test/', to: null},
+    {from: 'labs/router/development/test/', to: null},
+    {from: 'labs/react/development/test/', to: null},
+    {from: 'labs/task/development/test/', to: null},
+    {from: 'labs/context/development/test/', to: null},
+    {from: 'labs/motion/development/test/', to: null},
     // Remap any other development/ modules up one level to the production
     // version.
     {from: 'lit-html/development/', to: 'lit-html/'},
     {from: 'lit-element/development/', to: 'lit-element/'},
     {from: 'reactive-element/development/', to: 'reactive-element/'},
+    {from: 'labs/router/development/', to: 'labs/router/'},
+    {from: 'labs/react/development/', to: 'labs/react/'},
+    {from: 'labs/task/development/', to: 'labs/task/'},
+    {from: 'labs/context/development/', to: 'labs/context/'},
+    {from: 'labs/motion/development/', to: 'labs/motion/'},
   ],
 };
 
