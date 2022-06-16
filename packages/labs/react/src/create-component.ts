@@ -141,10 +141,9 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // ref, as well as special event and element properties.
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
-  type ElementWithoutChildren = Omit<I, 'children'>;
 
   type UserProps = Partial<
-    EventProps<E> & React.PropsWithChildren<ElementWithoutChildren>
+    React.PropsWithChildren<Omit<I, 'children'>> & EventProps<E>
   > &
     React.HTMLAttributes<I>;
 
