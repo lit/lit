@@ -111,6 +111,7 @@
       ],
       "output": [
         "development",
+        "!development/test/decorators-babel",
         "tsconfig.tsbuildinfo",
         "tsconfig.polyfill-support.tsbuildinfo"
       ]
