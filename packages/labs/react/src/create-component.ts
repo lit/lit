@@ -127,7 +127,7 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
+export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
@@ -143,7 +143,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
+      Partial<Omit<I, 'children' | 'style' | 'ref' | 'key'>> &
         Partial<EventProps<E>> &
         Omit<React.HTMLAttributes<HTMLElement>, keyof E>
     >
