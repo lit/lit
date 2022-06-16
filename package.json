@@ -8,7 +8,7 @@
   },
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
-    "bootstrap": "lerna bootstrap --ci --ignore @lit/lit-starter-* && lerna bootstrap --ci --scope @lit/lit-starter-*",
+    "bootstrap": "lerna bootstrap --ci --ignore @lit/lit-starter-* && lerna bootstrap --ci --scope @lit/lit-starter-* --concurrency=1",
     "build": "lerna run build",
     "build:ts": "lerna run build:ts",
     "clean": "lerna run clean",
