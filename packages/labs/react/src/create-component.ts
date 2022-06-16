@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
+import React, * as ReactModule from 'react';
 
 const reservedReactProperties = new Set([
   'children',
@@ -131,7 +131,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events?: E,
+  events: E = {} as E,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -141,12 +141,16 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // ref, as well as special event and element properties.
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
-  type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
-        Partial<EventProps<E>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
-    >
+  // type UserProps = React.PropsWithChildren<
+  //   React.PropsWithRef<
+  //     Partial<Omit<I, 'children'>> &
+  //       Partial<EventProps<E>> &
+  //       Omit<React.HTMLAttributes<HTMLElement>, keyof E>
+  //   >
+  // >;
+  type ElementWithoutChildren = Omit<I, 'children'>;
+  type UserProps = Partial<
+    EventProps<E> & React.PropsWithChildren<ElementWithoutChildren>
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
