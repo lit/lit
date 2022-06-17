@@ -34,6 +34,7 @@
     },
     "test": {
       "dependencies": [
+        "build",
         "test:gen",
         "../../tests:build"
       ]

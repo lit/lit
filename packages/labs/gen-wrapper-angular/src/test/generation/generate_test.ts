@@ -33,17 +33,6 @@ test('basic wrapper generation', async () => {
   const folderName = 'test-element-a';
   const inputPackage = path.resolve(testProjects, folderName);
 
-  // TODO(justinfagnani): reading angular.json belongs in the generator itself
-  const angularJsonPath = path.resolve(angularWorkspaceFolder, 'angular.json');
-  const angularJson = JSON.parse(await fs.readFile(angularJsonPath, 'utf-8'));
-  const newProjectRoot = angularJson.newProjectRoot;
-
-  const outputPackage = path.resolve(
-    angularWorkspaceFolder,
-    newProjectRoot,
-    folderName + '-ng'
-  );
-
   try {
     await fs.rm(angularWorkspaceFolder, {recursive: true});
   } catch (e) {
@@ -54,6 +43,16 @@ test('basic wrapper generation', async () => {
     recursive: true,
   });
   await installPackage(angularWorkspaceFolder);
+
+  const angularJsonPath = path.resolve(angularWorkspaceFolder, 'angular.json');
+  const angularJson = JSON.parse(await fs.readFile(angularJsonPath, 'utf-8'));
+  const newProjectRoot = angularJson.newProjectRoot;
+
+  const outputPackage = path.resolve(
+    angularWorkspaceFolder,
+    newProjectRoot,
+    folderName + '-ng'
+  );
 
   const analyzer = new Analyzer(inputPackage as AbsolutePath);
   const analysis = analyzer.analyzePackage();
