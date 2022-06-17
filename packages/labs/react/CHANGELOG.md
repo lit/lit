@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.0.5
+
+### Patch Changes
+
+- [#2987](https://github.com/lit/lit/pull/2987) [`93b30f7d`](https://github.com/lit/lit/commit/93b30f7de81eb203ad88abfc1e0e87a719d132c5) - [labs/react] `useController` is compatible with React strict mode.
+
+- [#2960](https://github.com/lit/lit/pull/2960) [`16a900c7`](https://github.com/lit/lit/commit/16a900c7d0191140a65cdb38126ab3653c334935) - Fix `'@lit-labs/react/use-controller.js'` not being correctly exported from package.json.
+
 ## 1.0.4
 
 ### Patch Changes

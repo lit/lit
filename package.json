@@ -1,5 +1,5 @@
 {
-  "name": "lit-monorepo",
+  "name": "@lit-internal/monorepo",
   "private": true,
   "type": "module",
   "engines": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
-    "bootstrap": "lerna bootstrap --ci",
+    "bootstrap": "lerna bootstrap --ci --ignore @lit/lit-starter-* && lerna bootstrap --ci --scope @lit/lit-starter-* --concurrency=1",
     "build": "lerna run build",
     "build:ts": "lerna run build:ts",
     "clean": "lerna run clean",
@@ -52,7 +52,7 @@
     "rollup-plugin-summary": "~1.3.0",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.3.5",
-    "wireit": "^0.4.1"
+    "wireit": "^0.6.1"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
