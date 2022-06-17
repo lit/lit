@@ -25,7 +25,7 @@ export const getCommand = () => {
           },
         ],
         async run({config}: {config: string}, console: Console) {
-          const commands = await import('./cli-commands/commands.js');
+          const commands = await import('./commands.js');
           await commands.extract(config, console);
         },
       },
@@ -41,7 +41,7 @@ export const getCommand = () => {
           },
         ],
         async run({config}: {config: string}, console: Console) {
-          const commands = await import('./cli-commands/commands.js');
+          const commands = await import('./commands.js');
           await commands.build(config, console);
         },
       },

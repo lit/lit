@@ -20,12 +20,12 @@ import {
   Config,
   TransformOutputConfig,
   RuntimeOutputConfig,
-} from '../config.js';
-import {TransformLitLocalizer} from '../modes/transform.js';
-import {RuntimeLitLocalizer} from '../modes/runtime.js';
-import {KnownError, unreachable} from '../error.js';
-import {LitLocalizer} from '../index.js';
-import {printDiagnostics} from '../typescript.js';
+} from '@lit/localize-tools/lib/config.js';
+import {TransformLitLocalizer} from '@lit/localize-tools/lib/modes/transform.js';
+import {RuntimeLitLocalizer} from '@lit/localize-tools/lib/modes/runtime.js';
+import {KnownError, unreachable} from '@lit/localize-tools/lib/error.js';
+import {LitLocalizer} from '@lit/localize-tools/lib/index.js';
+import {printDiagnostics} from '@lit/localize-tools/lib/typescript.js';
 
 export const build = async (configPath: string, console: Console) => {
   const config = readConfigFileAndWriteSchema(configPath);

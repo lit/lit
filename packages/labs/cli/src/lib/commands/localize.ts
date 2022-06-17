@@ -10,6 +10,6 @@ export const localize: ReferenceToCommand = {
   kind: 'reference',
   name: 'localize',
   description: 'Lit localize',
-  importSpecifier: '@lit/localize-tools/lib/cli-command.js',
-  installFrom: '@lit/localize-tools',
+  importSpecifier: '@lit-labs/cli-localize',
+  installFrom: '@lit-labs/cli-localize',
 };
