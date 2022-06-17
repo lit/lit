@@ -79,4 +79,76 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
       }
     );
   });
+
+  suite(`nested good-element rendered with ${fixture.name}`, () => {
+    test('renders with default values', async () => {
+      const el = await fixture(html`<div><good-element></good-element></div>`, {
+        modules: ['./good-element.js'],
+      });
+      const goodEl = el.querySelector('good-element');
+      assert.ok(goodEl);
+      assert.shadowDom.equal(
+        goodEl,
+        `
+          <h1>Hello, World!</h1>
+          <button part="button">Click Count: 0</button>
+          <slot></slot>
+        `
+      );
+    });
+
+    test('renders with a set name', async () => {
+      const el = await fixture(
+        html`<div><good-element name="Test"></good-element></div>`,
+        {
+          modules: ['./good-element.js'],
+        }
+      );
+      assert.shadowDom.equal(
+        el.querySelector('good-element'),
+        `
+          <h1>Hello, Test!</h1>
+          <button part="button">Click Count: 0</button>
+          <slot></slot>
+        `
+      );
+    });
+
+    test('styling applied', async () => {
+      const el = (await fixture(
+        html`<div><good-element></good-element></div>`,
+        {
+          modules: ['./good-element.js'],
+        }
+      )) as GoodElement;
+      assert.equal(
+        getComputedStyle(el.querySelector('good-element')!).paddingTop,
+        '16px'
+      );
+    });
+
+    (fixture === ssrNonHydratedFixture ? test.skip : test)(
+      `handles a click`,
+      async () => {
+        const el = (await fixture(
+          html`<div><good-element></good-element></div>`,
+          {
+            modules: ['./good-element.js'],
+          }
+        )) as GoodElement;
+        const goodEl = el.querySelector('good-element')!;
+        const button = goodEl.shadowRoot!.querySelector('button')!;
+        button.click();
+        await goodEl.updateComplete;
+        assert.shadowDom.equal(
+          goodEl,
+          `
+            <h1>Hello, World!</h1>
+            <button part="button">Click Count: 1</button>
+            <slot></slot>
+          `
+        );
+      }
+    );
+  });
 }

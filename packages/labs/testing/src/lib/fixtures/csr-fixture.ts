@@ -9,7 +9,7 @@ import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOptions} from './fixture-options.js';
 
 /**
- * Renders the provided lit-html template with a Lit element client-side.
+ * Renders the provided Lit template client-side.
  */
 export async function csrFixture<T extends LitElement>(
   template: TemplateResult,

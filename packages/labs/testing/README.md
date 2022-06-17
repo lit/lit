@@ -58,8 +58,8 @@ import {assert} from '@esm-bundle/chai';
 suite('my-element', () => {
   test('is rendered server-side', async () => {
     const el = await ssrFixture(html`<my-element></my-element>`, {
-      modules: ['./my-element.js'], // path to component definition
-      base: import.meta.url, // for resolving module path (default: relative to test file)
+      modules: ['./my-element.js'], // relative path to component definition
+      base: import.meta.url, // base for resolving module path (default: test file path)
       hydrate: false, // whether to hydrate the component after loading the document (default: true)
     });
     assert.equal(el.shadowRoot.querySelector('p').textContent, 'Hello, World!');
@@ -104,11 +104,11 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
 }
 ```
 
-### Notes and limitations
+### Notes
 
 Any `lit` imports including those for custom element definitions, **must**
 follow the fixture imports so that `lit/experimental-hydrate-support.js` is
 imported before it.
 
-The fixture functions expect a Lit `TemplateResult` with a Lit element as the
-top level element.
+The fixture functions expect a Lit `TemplateResult` with a single top level
+element.

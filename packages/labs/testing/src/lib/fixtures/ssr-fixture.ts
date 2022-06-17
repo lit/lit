@@ -7,6 +7,7 @@
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
 import {litSsrPluginCommand} from '../constants.js';
+import {hydrate as hydrateFunc} from 'lit/experimental-hydrate.js';
 
 import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOptions, SsrFixtureOptions} from './fixture-options.js';
@@ -26,14 +27,13 @@ declare global {
 }
 
 /**
- * Renders the provided lit-html template with a Lit element server-side by
- * executing a custom command for Web Test Runner provided by the Lit SSR
- * Plugin, loads it to the document and (optionally) hydrates it, returning the
- * element.
+ * Renders the provided Lit template server-side by executing a custom command
+ * for Web Test Runner provided by the Lit SSR Plugin, loads it to the document
+ * and (optionally) hydrates it, returning the element.
  *
  * This module **must** be imported before any custom element definitions.
  */
-export async function ssrFixture<T extends LitElement>(
+export async function ssrFixture<T extends HTMLElement>(
   template: TemplateResult,
   {modules, base, hydrate = true}: SsrFixtureOptions
 ): Promise<T> {
@@ -71,6 +71,7 @@ export async function ssrFixture<T extends LitElement>(
       modules: modules.map((module) => new URL(module, base).pathname),
     }
   );
+
   // TODO(augustinekim) Clean up the container from the document
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -80,10 +81,18 @@ export async function ssrFixture<T extends LitElement>(
     // Shadowroots are only parsed and attached during initial HTML parsing.
     // innerHTML will not work and must use DOMParser.
     // See https://web.dev/declarative-shadow-dom/#parser-only
-    const fragment = new DOMParser().parseFromString(rendered, 'text/html', {
-      includeShadowRoots: true,
-    });
-    container.replaceChildren(...Array.from(fragment.body.childNodes));
+    const fragment = new DOMParser().parseFromString(
+      // DOMParser removes the opening lit-part comment node
+      // wraping it in a div preserves it
+      '<div>' + rendered + '</div>',
+      'text/html',
+      {
+        includeShadowRoots: true,
+      }
+    );
+    container.replaceChildren(
+      ...Array.from(fragment.body.querySelector('div')!.childNodes)
+    );
   } else {
     // Utilize ponyfill
     container.innerHTML = rendered;
@@ -92,17 +101,25 @@ export async function ssrFixture<T extends LitElement>(
 
   const el = container.firstElementChild as T;
   if (hydrate) {
-    // TODO(augustinekim) Consider handling cases where el is not a LitElement
-    el.removeAttribute('defer-hydration');
-    await el.updateComplete;
+    if (el.hasAttribute('defer-hydration')) {
+      el.removeAttribute('defer-hydration');
+      await (el as unknown as LitElement).updateComplete;
+    } else {
+      hydrateFunc(template, container);
+      const litEl = container.querySelector('[defer-hydration]');
+      if (litEl) {
+        litEl.removeAttribute('defer-hydration');
+        await (litEl as LitElement).updateComplete;
+      }
+    }
   }
   return el;
 }
 
 /**
- * Renders the provided lit-html template with a Lit element server-side by
- * executing a custom command for Web Test Runner provided by the Lit SSR
- * Plugin, loads it to the document and hydrates it, returning the element.
+ * Renders the provided Lit template server-side by executing a custom command
+ * for Web Test Runner provided by the Lit SSR Plugin, loads it to the document
+ * and hydrates it, returning the element.
  *
  * This module **must** be imported before any custom element definitions.
  */
@@ -114,10 +131,9 @@ export async function ssrHydratedFixture<T extends LitElement>(
 }
 
 /**
- * Renders the provided lit-html template with a Lit element server-side by
- * executing a custom command for Web Test Runner provided by the Lit SSR
- * Plugin, loads it to the document **without** hydrating it, returning the
- * element.
+ * Renders the provided Lit template server-side by executing a custom command
+ * for Web Test Runner provided by the Lit SSR Plugin, loads it to the document
+ * **without** hydrating it, returning the element.
  *
  * This module **must** be imported before any custom element definitions.
  */

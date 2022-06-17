@@ -9,13 +9,13 @@
  */
 export interface FixtureOptions {
   /**
-   * Array of module paths to be imported before rendering. Normally would
-   * contain custom element definitions.
+   * Array of relative module paths to be imported before rendering. Normally
+   * would contain custom element definitions.
    */
   modules: string[];
   /**
-   * Base url for resolving module paths provided. If not provided, will guess
-   * the location based on call stack to have the same effect as passing in
+   * Base url for resolving module paths. If not provided, will guess the
+   * location based on call stack to have the same effect as passing in
    * `import.meta.url`.
    */
   base?: string;
