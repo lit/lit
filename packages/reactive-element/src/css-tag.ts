@@ -73,10 +73,22 @@ type ConstructableCSSResult = CSSResult & {
   new (cssText: string, safeToken: symbol): CSSResult;
 };
 
+// Type guard for CSSResult
+const isCSSResult = (value: unknown): value is CSSResult =>
+  (value as CSSResult)['_$cssResult$'] === true;
+
+// Type guard for style element
+const isStyleEl = (
+  value: unknown
+): value is HTMLStyleElement | HTMLLinkElement => {
+  const {localName} = value as HTMLElement;
+  return localName === 'style' || localName === 'link';
+};
+
 const textFromCSSResult = (value: CSSResultGroup | number) => {
   // This property needs to remain unminified.
-  if ((value as CSSResult)['_$cssResult$'] === true) {
-    return (value as CSSResult).cssText;
+  if (isCSSResult(value)) {
+    return value.cssText;
   } else if (typeof value === 'number') {
     return value;
   } else {
@@ -123,6 +135,44 @@ export const css = (
   return new (CSSResult as ConstructableCSSResult)(cssText, constructionToken);
 };
 
+// Markers used to determine where style elements have been inserted in the
+// shadowRoot so that they can be easily updated.
+const styleMarkersMap = new WeakMap<ShadowRoot, [Comment, Comment]>();
+const getStyleMarkers = (renderRoot: ShadowRoot) => {
+  let markers = styleMarkersMap.get(renderRoot);
+  if (markers === undefined) {
+    const start = renderRoot.appendChild(document.createComment(''));
+    const end = renderRoot.appendChild(document.createComment(''));
+    styleMarkersMap.set(renderRoot, (markers = [start, end]));
+  }
+  return markers;
+};
+
+/**
+ * Clears any nodes between the given nodes. Used to remove style elements that
+ * have been inserted via `adoptStyles`. This allows ensures any previously
+ * applied styling is not re-applied.
+ */
+const removeNodesBetween = (start: Node, end: Node) => {
+  let n = start.nextSibling;
+  while (n && n !== end) {
+    const next = n.nextSibling;
+    n.remove();
+    n = next;
+  }
+};
+
+/**
+ * Applies the optional globally set `litNonce` to an element.
+ */
+const applyNonce = (el: HTMLElement) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nonce = (window as any)['litNonce'];
+  if (nonce !== undefined) {
+    el.setAttribute('nonce', nonce);
+  }
+};
+
 /**
  * Applies the given styles to a `shadowRoot`. When Shadow DOM is
  * available but `adoptedStyleSheets` is not, styles are appended to the
@@ -131,27 +181,64 @@ export const css = (
  * the shadowRoot should be placed *before* any shimmed adopted styles. This
  * will match spec behavior that gives adopted sheets precedence over styles in
  * shadowRoot.
+ *
+ * The given styles can be a CSSResult or CSSStyleSheet. If a CSSStyleSheet is
+ * supplied, it should be a constructed stylesheet.
+ *
+ * Optionally preserves any existing adopted styles, sheets or elements.
  */
 export const adoptStyles = (
   renderRoot: ShadowRoot,
-  styles: Array<CSSResultOrNative>
+  styles: CSSResultOrNative[],
+  preserveExisting = false
 ) => {
-  if (supportsAdoptingStyleSheets) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
-      s instanceof CSSStyleSheet ? s : s.styleSheet!
-    );
-  } else {
-    styles.forEach((s) => {
-      const style = document.createElement('style');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const nonce = (window as any)['litNonce'];
-      if (nonce !== undefined) {
-        style.setAttribute('nonce', nonce);
-      }
-      style.textContent = (s as CSSResult).cssText;
-      renderRoot.appendChild(style);
-    });
+  // Get a set of sheets and elements to apply.
+  const elements: Array<HTMLStyleElement | HTMLLinkElement> = [];
+  const sheets: CSSStyleSheet[] = styles
+    .map((s) => getSheetOrElementToApply(s))
+    .filter((s): s is CSSStyleSheet => !(isStyleEl(s) && elements.push(s)));
+  // By default, clear any existing styling.
+  if (!preserveExisting) {
+    if ((renderRoot as ShadowRoot).adoptedStyleSheets) {
+      (renderRoot as ShadowRoot).adoptedStyleSheets = [];
+    }
+    if (styleMarkersMap.has(renderRoot)) {
+      removeNodesBetween(...getStyleMarkers(renderRoot));
+    }
   }
+  // Apply sheets, Note, this are only set if `adoptedStyleSheets` is supported.
+  if (sheets.length) {
+    (renderRoot as ShadowRoot).adoptedStyleSheets = sheets;
+  }
+  // Apply any style elements
+  if (elements.length) {
+    const [, end] = getStyleMarkers(renderRoot);
+    end.before(...elements);
+  }
+};
+
+/**
+ * Gets compatible style object (sheet or element) which can be applied to a
+ * shadowRoot.
+ */
+const getSheetOrElementToApply = (styling: CSSResultOrNative) => {
+  // Converts to a CSSResult when `adoptedStyleSheets` is unsupported.
+  if (styling instanceof CSSStyleSheet) {
+    styling = getCompatibleStyle(styling);
+  }
+  // If it's a CSSResult, return the stylesheet or a style element
+  if (isCSSResult(styling)) {
+    if (styling.styleSheet !== undefined) {
+      return styling.styleSheet;
+    } else {
+      const style = document.createElement('style');
+      style.textContent = styling.cssText;
+      applyNonce(style);
+      return style;
+    }
+  }
+  // Otherwise, it should be a constructed stylesheet
+  return styling;
 };
 
 const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
@@ -162,6 +249,10 @@ const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
   return unsafeCSS(cssText);
 };
 
+/**
+ * Given a CSSStylesheet or CSSResult, converts from CSSStyleSheet to CSSResult
+ * if the browser does not support `adoptedStyleSheets`.
+ */
 export const getCompatibleStyle = supportsAdoptingStyleSheets
   ? (s: CSSResultOrNative) => s
   : (s: CSSResultOrNative) =>

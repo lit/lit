@@ -9,7 +9,9 @@ import {
   CSSResult,
   unsafeCSS,
   supportsAdoptingStyleSheets,
+  adoptStyles,
 } from '../css-tag.js';
+import {html, getComputedStyleValue, createShadowRoot} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {
@@ -98,6 +100,83 @@ suite('Styling', () => {
       // document.body level.
       const bodyStyles = `${cssModule}`;
       assert.equal(bodyStyles.replace(/\s/g, ''), '.my-module{color:yellow;}');
+    });
+  });
+
+  suite('adopting styles', () => {
+    let container: HTMLElement;
+
+    setup(() => {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      if (container && container.parentNode) {
+        container.remove();
+      }
+    });
+
+    test('adoptStyles sets styles in a shadowRoot', () => {
+      const host = document.createElement('host-el');
+      container.appendChild(host);
+      const root = createShadowRoot(host);
+      root.innerHTML = html`<div></div>`;
+      const div = root.querySelector('div')!;
+      adoptStyles(root, [
+        css`
+          div {
+            border: 2px solid black;
+          }
+        `,
+      ]);
+      assert.equal(getComputedStyleValue(div), '2px');
+    });
+
+    test('adoptStyles resets styles in a shadowRoot', () => {
+      const host = document.createElement('host-el');
+      container.appendChild(host);
+      const root = createShadowRoot(host);
+      root.innerHTML = html`<div></div>`;
+      const div = root.querySelector('div')!;
+      adoptStyles(root, [
+        css`
+          div {
+            border: 2px solid black;
+          }
+        `,
+      ]);
+      adoptStyles(root, []);
+      assert.equal(getComputedStyleValue(div), '0px');
+    });
+
+    test('adoptStyles can preserve and add to styles in a shadowRoot', () => {
+      const host = document.createElement('host-el');
+      container.appendChild(host);
+      const root = createShadowRoot(host);
+      root.innerHTML = html`<div></div>`;
+      const div = root.querySelector('div')!;
+      adoptStyles(root, [
+        css`
+          div {
+            border: 2px solid black;
+          }
+        `,
+      ]);
+      adoptStyles(root, [], true);
+      assert.equal(getComputedStyleValue(div), '2px');
+      adoptStyles(
+        root,
+        [
+          css`
+            div {
+              border: 4px solid black;
+            }
+          `,
+        ],
+        true
+      );
+      assert.equal(getComputedStyleValue(div), '4px');
     });
   });
 });

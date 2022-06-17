@@ -12,10 +12,14 @@ export const generateElementName = () => `x-${count++}`;
 export const nextFrame = () =>
   new Promise((resolve) => requestAnimationFrame(resolve));
 
-export const getComputedStyleValue = (element: Element, property: string) =>
-  window.ShadyCSS
+export const getComputedStyleValue = (
+  element: Element,
+  property = 'border-top-width'
+): string =>
+  (window.ShadyCSS
     ? window.ShadyCSS.getComputedStyleValue(element, property)
-    : getComputedStyle(element).getPropertyValue(property);
+    : getComputedStyle(element).getPropertyValue(property)
+  ).trim();
 
 export const stripExpressionComments = (html: string) =>
   html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
@@ -61,4 +65,18 @@ export const html = (strings: TemplateStringsArray, ...values: unknown[]) => {
     (a: string, v: unknown, i: number) => a + v + strings[i + 1],
     strings[0]
   );
+};
+
+export const createShadowRoot = (host: HTMLElement) => {
+  if (window.ShadyDOM && window.ShadyDOM.inUse) {
+    host = window.ShadyDOM.wrap(host) as HTMLElement;
+    if (window.ShadyCSS) {
+      window.ShadyCSS.prepareTemplateStyles(
+        document.createElement('template'),
+        host.localName
+      );
+      window.ShadyCSS.styleElement(host);
+    }
+  }
+  return host.attachShadow({mode: 'open'});
 };
