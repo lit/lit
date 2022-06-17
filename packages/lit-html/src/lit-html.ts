@@ -932,8 +932,12 @@ class Template {
   parts: Array<TemplatePart> = [];
 
   constructor(
-    // This property needs to remain unminified.
-    {strings, ['_$litType$']: type}: TemplateResult,
+    {
+      strings,
+      // This property needs to remain unminified.
+      /** @internal */
+      ['_$litType$']: type,
+    }: TemplateResult,
     options?: RenderOptions
   ) {
     let node: Node | null;
