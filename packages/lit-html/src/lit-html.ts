@@ -457,6 +457,7 @@ const COMMENT_PART = 7;
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
+  /** @internal */
   ['_$litType$']: T;
   strings: TemplateStringsArray;
   values: unknown[];
