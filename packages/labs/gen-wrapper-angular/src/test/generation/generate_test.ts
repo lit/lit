@@ -17,7 +17,7 @@ import {
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateAngularWrapper} from '../../index.js';
-import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
+import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';

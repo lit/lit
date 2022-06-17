@@ -1,4 +1,4 @@
-# lit-localize-examples-transform-ts
+# @lit-internal/localize-examples-transform-ts
 
 ## 1.0.1
 ### Patch Changes

@@ -13,7 +13,7 @@ import fsExtra from 'fs-extra';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 
-import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
+import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
 /**
  * Run lit-localize end-to-end using input and golden files from the filesystem.

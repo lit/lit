@@ -1,4 +1,4 @@
-# lit-localize-examples-runtime-ts
+# @lit-internal/localize-examples-runtime-ts
 
 ## 1.0.1
 ### Patch Changes
