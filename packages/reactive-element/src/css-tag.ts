@@ -14,18 +14,22 @@ export const supportsAdoptingStyleSheets =
   'replace' in CSSStyleSheet.prototype;
 
 /**
- * A CSSResult or native CSSStyleSheet.
+ * A CSSResult, CSSStyleSheet, HTMLStyleElement, or HTMLLinkElement.
  *
  * In browsers that support constructible CSS style sheets, CSSStyleSheet
- * object can be used for styling along side CSSResult from the `css`
- * template tag.
+ * objects can be used for styling.
  */
-export type CSSResultOrNative = CSSResult | CSSStyleSheet;
+export type CSSResultOrNative =
+  | CSSResult
+  | CSSStyleSheet
+  | HTMLStyleElement
+  | HTMLLinkElement;
 
 export type CSSResultArray = Array<CSSResultOrNative | CSSResultArray>;
 
 /**
- * A single CSSResult, CSSStyleSheet, or an array or nested arrays of those.
+ * A single CSSResult, CSSStyleSheet, or style element, or an array or nested
+ * arrays of those.
  */
 export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
 
@@ -182,8 +186,9 @@ const applyNonce = (el: HTMLElement) => {
  * will match spec behavior that gives adopted sheets precedence over styles in
  * shadowRoot.
  *
- * The given styles can be a CSSResult or CSSStyleSheet. If a CSSStyleSheet is
- * supplied, it should be a constructed stylesheet.
+ * The given styles can be CSSResult, CSSStyleSheet, HTMLStyleElement, or
+ * HTMLLinkElements. If a CSSStyleSheet is supplied, it should be a constructed
+ * stylesheet.
  *
  * Optionally preserves any existing adopted styles, sheets or elements.
  */
@@ -195,7 +200,7 @@ export const adoptStyles = (
   // Get a set of sheets and elements to apply.
   const elements: Array<HTMLStyleElement | HTMLLinkElement> = [];
   const sheets: CSSStyleSheet[] = styles
-    .map((s) => getSheetOrElementToApply(s))
+    .map((s) => getSheetOrElementToApply(s, renderRoot))
     .filter((s): s is CSSStyleSheet => !(isStyleEl(s) && elements.push(s)));
   // By default, clear any existing styling.
   if (!preserveExisting) {
@@ -218,26 +223,63 @@ export const adoptStyles = (
 };
 
 /**
+ * Returns an array of adopted styles for the given `renderRoot`. The adopted
+ * styles can include both style sheet objects applied via `adoptedStyleSheets`
+ * and style elements (`<style>` or `<link>`) embedded in the shadowRoot itself.
+ */
+export const getAdoptedStyles = (renderRoot: ShadowRoot) => {
+  const adopted: CSSResultOrNative[] = [
+    ...(renderRoot?.adoptedStyleSheets ?? []),
+  ];
+  if (styleMarkersMap.has(renderRoot)) {
+    const [start, end] = getStyleMarkers(renderRoot);
+    for (let n = start.nextSibling; n && n !== end; n = n.nextSibling) {
+      adopted.push(n as HTMLStyleElement | HTMLLinkElement);
+    }
+  }
+  return adopted;
+};
+
+/**
  * Gets compatible style object (sheet or element) which can be applied to a
  * shadowRoot.
  */
-const getSheetOrElementToApply = (styling: CSSResultOrNative) => {
+const getSheetOrElementToApply = (
+  styling: CSSResultOrNative,
+  renderRoot: ShadowRoot
+) => {
+  // TODO: There doesn't appear to be a good way to confirm that a stylesheet
+  // is constructed and therefore can be applied. However, if it has an
+  // `ownerNode` then it is the sheet of an element currently in DOM and
+  // therefore was not constructed. In that case, use the element as input.
+  const owner = (styling as CSSStyleSheet).ownerNode as
+    | HTMLStyleElement
+    | HTMLLinkElement;
+  if (owner) {
+    styling = owner;
+  }
   // Converts to a CSSResult when `adoptedStyleSheets` is unsupported.
   if (styling instanceof CSSStyleSheet) {
     styling = getCompatibleStyle(styling);
   }
-  // If it's a CSSResult, return the stylesheet or a style element
-  if (isCSSResult(styling)) {
+  // If it's an element, just clone it.
+  if (isStyleEl(styling) && styling.parentNode !== renderRoot) {
+    const s = styling.cloneNode(true) as HTMLStyleElement | HTMLLinkElement;
+    applyNonce(s);
+    return s;
+    // If it's a cssResult, return the stylesheet or a style element
+  } else if (isCSSResult(styling)) {
     if (styling.styleSheet !== undefined) {
       return styling.styleSheet;
     } else {
-      const style = document.createElement('style');
-      style.textContent = styling.cssText;
-      applyNonce(style);
-      return style;
+      const s = document.createElement('style');
+      s.textContent = styling.cssText;
+      applyNonce(s);
+      return s;
     }
   }
-  // Otherwise, it should be a constructed stylesheet
+  // Otherwise, it should be a constructed stylesheet or elements already
+  // in the root
   return styling;
 };
 

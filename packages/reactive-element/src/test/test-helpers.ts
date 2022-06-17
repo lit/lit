@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement, PropertyValues} from '../reactive-element.js';
+import {
+  ReactiveElement,
+  PropertyValues,
+  getAdoptedStyles,
+} from '../reactive-element.js';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
@@ -43,19 +47,14 @@ export class RenderingElement extends ReactiveElement {
       // Note, don't use `innerHTML` here to avoid a polyfill issue
       // where `innerHTML` is not patched by CE on shadowRoot.
       // https://github.com/webcomponents/custom-elements/issues/73
-      Array.from(this.renderRoot.childNodes).forEach((e) => {
-        // Leave any style elements that might be simulating
-        // adoptedStylesheets
-        if ((e as Element).localName !== 'style') {
-          this.renderRoot.removeChild(e);
-        }
-      });
+      const styleElements = getAdoptedStyles(
+        this.renderRoot as ShadowRoot
+      ).filter(
+        (s) => (s as HTMLElement).nodeType === Node.ELEMENT_NODE
+      ) as HTMLElement[];
       const div = document.createElement('div');
       div.innerHTML = result;
-      const ref = this.renderRoot.firstChild;
-      Array.from(div.childNodes).forEach((e) => {
-        this.renderRoot.insertBefore(e, ref);
-      });
+      this.renderRoot.replaceChildren(...div.childNodes, ...styleElements);
     }
   }
 }

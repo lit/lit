@@ -25,11 +25,16 @@ interface RenderOptions {
 
 const SCOPED = '__scoped';
 
-type CSSResults = Array<{cssText: string} | CSSStyleSheet>;
+interface CSSResult {
+  cssText: string;
+  ['_$cssResult$']: boolean;
+}
 
+type StylingElement = HTMLStyleElement | HTMLLinkElement;
+type CSSResultOrNative = CSSResult | CSSStyleSheet | StylingElement;
 interface PatchableReactiveElementConstructor {
   [SCOPED]: boolean;
-  elementStyles: CSSResults;
+  elementStyles: CSSResultOrNative[];
   shadowRootOptions: ShadowRootInit;
   _$handlesPrepareStyles?: boolean;
 }
@@ -82,6 +87,31 @@ const polyfillSupport = ({
     window.ShadyDOM.patchElementProto(elementProto);
   }
 
+  const getCssText = (styling: CSSResultOrNative) => {
+    if ((styling as CSSResult)['_$cssResult$'] === true) {
+      return (styling as CSSResult).cssText;
+    }
+    let rules: CSSRuleList | undefined;
+    try {
+      const sheet =
+        (styling as StylingElement).nodeType === Node.ELEMENT_NODE
+          ? (styling as StylingElement).sheet
+          : (styling as CSSStyleSheet);
+      rules = sheet?.cssRules;
+    } catch (e) {
+      // Accessing `cssRules` can generate an exception
+    }
+    return rules
+      ? Array.from(rules).reduce(
+          (a: string, r: CSSRule) => (a += r.cssText),
+          ''
+        )
+      : // fallback to textContent when a `<style>` doesn't have a sheet
+      (styling as StylingElement).localName === 'style'
+      ? (styling as StylingElement).textContent ?? ''
+      : '';
+  };
+
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
    */
@@ -101,14 +131,7 @@ const polyfillSupport = ({
         // Use ShadyCSS's `prepareAdoptedCssText` to shim adoptedStyleSheets.
         const css = (
           this.constructor as PatchableReactiveElementConstructor
-        ).elementStyles.map((v) =>
-          v instanceof CSSStyleSheet
-            ? Array.from(v.cssRules).reduce(
-                (a: string, r: CSSRule) => (a += r.cssText),
-                ''
-              )
-            : v.cssText
-        );
+        ).elementStyles.map((v) => getCssText(v));
         window.ShadyCSS?.ScopingShim?.prepareAdoptedCssText(css, name);
         if (this.constructor._$handlesPrepareStyles === undefined) {
           window.ShadyCSS!.prepareTemplateStyles(

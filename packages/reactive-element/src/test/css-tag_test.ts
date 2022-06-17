@@ -10,8 +10,14 @@ import {
   unsafeCSS,
   supportsAdoptingStyleSheets,
   adoptStyles,
+  getAdoptedStyles,
 } from '../css-tag.js';
-import {html, getComputedStyleValue, createShadowRoot} from './test-helpers.js';
+import {
+  html,
+  getComputedStyleValue,
+  createShadowRoot,
+  nextFrame,
+} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {
@@ -177,6 +183,124 @@ suite('Styling', () => {
         true
       );
       assert.equal(getComputedStyleValue(div), '4px');
+    });
+
+    test('adoptStyles can set CSSResults, sheets, and style elements based styles in a shadowRoot', async () => {
+      const host = document.createElement('host-el');
+      container.appendChild(host);
+      const root = createShadowRoot(host);
+      root.innerHTML = html`
+        <div></div>
+        <p></p>
+        <span></span>
+        <header></header>
+      `;
+      const div = root.querySelector('div')!;
+      const p = root.querySelector('p')!;
+      const span = root.querySelector('span')!;
+      const header = root.querySelector('header')!;
+      // result
+      const result = css`
+        div {
+          border: 2px solid black;
+        }
+      `;
+      // sheet (if supported)
+      let sheet;
+      try {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(`p { border: 4px solid orange;}`);
+      } catch (e) {
+        // unsupported
+      }
+      // style
+      const style = document.createElement('style');
+      style.textContent = `span {border: 8px solid tomato; }`;
+      // link
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `data:text/css;charset=utf-8, header { border: 16px solid orange;}`;
+      adoptStyles(root, [result, sheet ?? css``, style, link]);
+      await nextFrame();
+      // validate
+      // result
+      assert.equal(getComputedStyleValue(div), '2px');
+      // sheet
+      if (sheet) {
+        assert.equal(getComputedStyleValue(p), '4px');
+      }
+      // style
+      assert.equal(getComputedStyleValue(span), '8px');
+      // link
+      assert.equal(getComputedStyleValue(header), '16px');
+    });
+
+    test('getAdoptedStyles returns adopted sheets and these can be re-applied via `adoptStyles`', async () => {
+      const host = document.createElement('host-el');
+      container.appendChild(host);
+      const root = createShadowRoot(host);
+      root.innerHTML = html`
+        <div></div>
+        <p></p>
+        <span></span>
+        <header></header>
+      `;
+      const div = root.querySelector('div')!;
+      const p = root.querySelector('p')!;
+      const span = root.querySelector('span')!;
+      const header = root.querySelector('header')!;
+      // result
+      const result = css`
+        div {
+          border: 2px solid black;
+        }
+      `;
+      // sheet (if supported)
+      let sheet;
+      try {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(`p { border: 4px solid orange;}`);
+      } catch (e) {
+        // unsupported
+      }
+      // style
+      const style = document.createElement('style');
+      style.textContent = `span {border: 8px solid tomato; }`;
+      // link
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `data:text/css;charset=utf-8, header { border: 16px solid orange;}`;
+      const styles = [result, sheet ?? css``, style, link];
+      adoptStyles(root, styles);
+      await nextFrame();
+      const adopted = getAdoptedStyles(root);
+      assert.equal(adopted.length, styles.length);
+      adoptStyles(root, []);
+      await nextFrame();
+      // validate
+      // result
+      assert.equal(getComputedStyleValue(div), '0px');
+      // sheet
+      if (sheet) {
+        assert.equal(getComputedStyleValue(p), '0px');
+      }
+      // style
+      assert.equal(getComputedStyleValue(span), '0px');
+      // link
+      assert.equal(getComputedStyleValue(header), '0px');
+      adoptStyles(root, adopted);
+      await nextFrame();
+      // validate
+      // result
+      assert.equal(getComputedStyleValue(div), '2px');
+      // sheet
+      if (sheet) {
+        assert.equal(getComputedStyleValue(p), '4px');
+      }
+      // style
+      assert.equal(getComputedStyleValue(span), '8px');
+      // link
+      assert.equal(getComputedStyleValue(header), '16px');
     });
   });
 });

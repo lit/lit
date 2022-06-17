@@ -741,6 +741,65 @@ import {assert} from '@esm-bundle/chai';
       }
     );
 
+    test('Can supply HTMLStyleElement or HTMLLinkElement', async () => {
+      const testingWithShadyCSS =
+        window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow;
+      const style = document.createElement('style');
+      style.textContent = 'div { border: 1px solid red; }';
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = `data:text/css;charset=utf-8, p { border: 2px solid orange;}`;
+      // make a sheet for this when using ShadyCSS
+      if (testingWithShadyCSS) {
+        document.head.append(link);
+        await nextFrame();
+      }
+      const normal = css`
+        span {
+          border: 4px solid blue;
+        }
+      `;
+
+      const base = generateElementName();
+      customElements.define(
+        base,
+        class extends RenderingElement {
+          static override styles = [style, link, normal];
+
+          override render() {
+            return html`<div></div>
+              <p></p>
+              <span></span>`;
+          }
+        }
+      );
+
+      const el = document.createElement(base);
+      container.appendChild(el);
+      await (el as ReactiveElement).updateComplete;
+      // Wait for frame to ensure `link.href` is processed into a sheet.
+      await nextFrame();
+      const div = el.shadowRoot!.querySelector('div')!;
+      assert.equal(
+        getComputedStyle(div).getPropertyValue('border-top-width').trim(),
+        '1px'
+      );
+      const p = el.shadowRoot!.querySelector('p')!;
+      assert.equal(
+        getComputedStyle(p).getPropertyValue('border-top-width').trim(),
+        '2px'
+      );
+
+      const span = el.shadowRoot!.querySelector('span')!;
+      assert.equal(
+        getComputedStyle(span).getPropertyValue('border-top-width').trim(),
+        '4px'
+      );
+      if (testingWithShadyCSS) {
+        link.remove();
+      }
+    });
+
     // Test that when ShadyCSS is enabled (while still having native support for
     // adoptedStyleSheets), we can return a CSSStyleSheet that will be flattened
     // and play nice with others.
