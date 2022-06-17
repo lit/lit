@@ -131,7 +131,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
-  events: E = {} as E,
+  events?: E,
   displayName?: string
 ) => {
   const Component = React.Component;
@@ -142,10 +142,8 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
 
-  type UserProps = Partial<
-    React.PropsWithChildren<Omit<I, 'children'>> & EventProps<E>
-  > &
-    React.HTMLAttributes<I>;
+  type ElementWithoutChildren = Omit<I, 'children' & keyof E>;
+  type UserProps = Partial<React.PropsWithChildren<ElementWithoutChildren>>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because

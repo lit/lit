@@ -77,7 +77,7 @@ suite('createComponent', () => {
     window.React,
     elementName,
     BasicElement,
-    basicElementEvents
+    // basicElementEvents
   );
 
   let el: BasicElement;
