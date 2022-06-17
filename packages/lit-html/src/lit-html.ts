@@ -931,15 +931,12 @@ class Template {
   /** @internal */
   parts: Array<TemplatePart> = [];
 
-  constructor(
-    {
+  constructor(templateResult: TemplateResult, options?: RenderOptions) {
+    const {
       strings,
       // This property needs to remain unminified.
-      /** @internal */
       ['_$litType$']: type,
-    }: TemplateResult,
-    options?: RenderOptions
-  ) {
+    } = templateResult;
     let node: Node | null;
     let nodeIndex = 0;
     let attrNameIndex = 0;
