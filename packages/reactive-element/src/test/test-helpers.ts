@@ -54,7 +54,12 @@ export class RenderingElement extends ReactiveElement {
       ) as HTMLElement[];
       const div = document.createElement('div');
       div.innerHTML = result;
-      this.renderRoot.replaceChildren(...div.childNodes, ...styleElements);
+      Array.from(this.renderRoot.childNodes).forEach((e) => {
+        this.renderRoot.removeChild(e);
+      });
+      [...Array.from(div.childNodes), ...styleElements].forEach((e) => {
+        this.renderRoot.appendChild(e);
+      });
     }
   }
 }
@@ -78,4 +83,22 @@ export const createShadowRoot = (host: HTMLElement) => {
     }
   }
   return host.attachShadow({mode: 'open'});
+};
+
+const testingWithShadyCSS =
+  window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow;
+
+export const getLinkWithSheet = async (css: string) => {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `data:text/css;charset=utf-8, ${css}`;
+  if (testingWithShadyCSS) {
+    const linkLoaded = new Promise((r) => {
+      link.addEventListener('load', r, {once: true});
+    });
+    document.head.append(link);
+    await linkLoaded;
+    await nextFrame();
+  }
+  return link;
 };

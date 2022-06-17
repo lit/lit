@@ -17,6 +17,7 @@ import {
   RenderingElement,
   nextFrame,
   html,
+  getLinkWithSheet,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -742,18 +743,9 @@ import {assert} from '@esm-bundle/chai';
     );
 
     test('Can supply HTMLStyleElement or HTMLLinkElement', async () => {
-      const testingWithShadyCSS =
-        window.ShadyCSS !== undefined && !window.ShadyCSS.nativeShadow;
       const style = document.createElement('style');
       style.textContent = 'div { border: 1px solid red; }';
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = `data:text/css;charset=utf-8, p { border: 2px solid orange;}`;
-      // make a sheet for this when using ShadyCSS
-      if (testingWithShadyCSS) {
-        document.head.append(link);
-        await nextFrame();
-      }
+      const link = await getLinkWithSheet(`p { border: 2px solid orange;}`);
       const normal = css`
         span {
           border: 4px solid blue;
@@ -795,9 +787,8 @@ import {assert} from '@esm-bundle/chai';
         getComputedStyle(span).getPropertyValue('border-top-width').trim(),
         '4px'
       );
-      if (testingWithShadyCSS) {
-        link.remove();
-      }
+      // ensure link is removed.
+      link.remove();
     });
 
     // Test that when ShadyCSS is enabled (while still having native support for

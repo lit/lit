@@ -17,6 +17,7 @@ import {
   getComputedStyleValue,
   createShadowRoot,
   nextFrame,
+  getLinkWithSheet,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -217,10 +218,12 @@ suite('Styling', () => {
       const style = document.createElement('style');
       style.textContent = `span {border: 8px solid tomato; }`;
       // link
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = `data:text/css;charset=utf-8, header { border: 16px solid orange;}`;
+      const link = await getLinkWithSheet(
+        `header { border: 16px solid orange;}`
+      );
       adoptStyles(root, [result, sheet ?? css``, style, link]);
+      // ensure source link is removed
+      link.remove();
       await nextFrame();
       // validate
       // result
@@ -267,11 +270,13 @@ suite('Styling', () => {
       const style = document.createElement('style');
       style.textContent = `span {border: 8px solid tomato; }`;
       // link
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = `data:text/css;charset=utf-8, header { border: 16px solid orange;}`;
+      const link = await getLinkWithSheet(
+        `header { border: 16px solid orange;}`
+      );
       const styles = [result, sheet ?? css``, style, link];
       adoptStyles(root, styles);
+      // ensure source link is removed
+      link.remove();
       await nextFrame();
       const adopted = getAdoptedStyles(root);
       assert.equal(adopted.length, styles.length);
