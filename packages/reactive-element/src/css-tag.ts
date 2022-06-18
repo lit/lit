@@ -285,6 +285,11 @@ const getSheetOrElementToApply = (
   if (owner) {
     styling = owner;
   }
+  // Converts to a CSSResult if needed. This is needed when forcing polyfilled
+  // ShadyDOM/CSS on a browser that supports constructible stylesheets.
+  if (styling instanceof CSSStyleSheet) {
+    styling = getCompatibleStyle(styling);
+  }
   // If it's an element, just clone it.
   if (isStyleEl(styling) && styling.parentNode !== renderRoot) {
     const s = styling.cloneNode(true) as HTMLStyleElement | HTMLLinkElement;

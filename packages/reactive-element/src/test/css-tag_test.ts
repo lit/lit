@@ -148,6 +148,27 @@ suite('Styling', () => {
       assert.equal(getComputedStyleValue(p), '4px');
     });
 
+    test('adoptStyles can adopt CSSStyleSheet when supported', () => {
+      const host = document.createElement('host-el');
+      container.appendChild(host);
+      const root = createShadowRoot(host);
+      root.innerHTML = html`<div></div>`;
+      const div = root.querySelector('div')!;
+      let sheet: CSSStyleSheet | undefined;
+      try {
+        sheet = new CSSStyleSheet();
+        sheet.replaceSync(`div {
+          border: 12px solid black;
+        }`);
+      } catch (e) {
+        // unsupported
+      }
+      if (sheet !== undefined) {
+        adoptStyles(root, [sheet]);
+        assert.equal(getComputedStyleValue(div), '12px');
+      }
+    });
+
     test('adoptStyles resets styles in a shadowRoot', () => {
       const host = document.createElement('host-el');
       container.appendChild(host);
