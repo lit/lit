@@ -121,16 +121,24 @@ suite('Styling', () => {
       const host = document.createElement('host-el');
       container.appendChild(host);
       const root = createShadowRoot(host);
-      root.innerHTML = html`<div></div>`;
+      root.innerHTML = html`<div></div>
+        <p></p>`;
       const div = root.querySelector('div')!;
+      const p = root.querySelector('p')!;
       adoptStyles(root, [
         css`
           div {
             border: 2px solid black;
           }
         `,
+        css`
+          p {
+            border: 4px solid black;
+          }
+        `,
       ]);
       assert.equal(getComputedStyleValue(div), '2px');
+      assert.equal(getComputedStyleValue(p), '4px');
     });
 
     test('adoptStyles resets styles in a shadowRoot', () => {
@@ -154,8 +162,10 @@ suite('Styling', () => {
       const host = document.createElement('host-el');
       container.appendChild(host);
       const root = createShadowRoot(host);
-      root.innerHTML = html`<div></div>`;
+      root.innerHTML = html`<div></div>
+        <p></p>`;
       const div = root.querySelector('div')!;
+      const p = root.querySelector('p')!;
       adoptStyles(root, [
         css`
           div {
@@ -176,7 +186,19 @@ suite('Styling', () => {
         ],
         true
       );
+      adoptStyles(
+        root,
+        [
+          css`
+            p {
+              border: 6px solid black;
+            }
+          `,
+        ],
+        true
+      );
       assert.equal(getComputedStyleValue(div), '4px');
+      assert.equal(getComputedStyleValue(p), '6px');
     });
   });
 });

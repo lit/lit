@@ -228,19 +228,16 @@ export const adoptStyles = (
     .map((s) => getSheetOrElementToApply(s))
     .filter((s): s is CSSStyleSheet => !(isStyleEl(s) && elements.push(s)));
   // By default, clear any existing styling.
-  if (!preserveExisting) {
-    if ((renderRoot as ShadowRoot).adoptedStyleSheets) {
-      (renderRoot as ShadowRoot).adoptedStyleSheets = [];
-    }
-    if (styleMarkersMap.has(renderRoot)) {
-      removeNodesBetween(...getStyleMarkers(renderRoot));
-    }
+  if (supportsAdoptingStyleSheets && (sheets.length || !preserveExisting)) {
+    renderRoot.adoptedStyleSheets = [
+      ...(preserveExisting ? renderRoot.adoptedStyleSheets : []),
+      ...sheets,
+    ];
   }
-  // Apply sheets, Note, this are only set if `adoptedStyleSheets` is supported.
-  if (sheets.length) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = sheets;
+  // Remove / Apply any style elements
+  if (!preserveExisting && styleMarkersMap.has(renderRoot)) {
+    removeNodesBetween(...getStyleMarkers(renderRoot));
   }
-  // Apply any style elements
   if (elements.length) {
     const [, end] = getStyleMarkers(renderRoot);
     end.before(...elements);
@@ -252,10 +249,6 @@ export const adoptStyles = (
  * shadowRoot.
  */
 const getSheetOrElementToApply = (styling: CSSResultOrNative) => {
-  // Converts to a CSSResult when `adoptedStyleSheets` is unsupported.
-  if (styling instanceof CSSStyleSheet) {
-    styling = getCompatibleStyle(styling);
-  }
   // If it's a CSSResult, return the stylesheet or a style element
   if (isCSSResult(styling)) {
     if (styling.styleSheet !== undefined) {
