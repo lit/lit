@@ -82,7 +82,7 @@ export class CSSResult {
         }
       }
     }
-    return this._styleSheet;
+    return styleSheet;
   }
 
   toString(): string {
