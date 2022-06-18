@@ -91,14 +91,22 @@ const testingWithShadyCSS =
 export const getLinkWithSheet = async (css: string) => {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
+  // Safari needs this so it doesn't consider the link x-origin.
+  link.crossOrigin = 'anonymous';
   link.href = `data:text/css;charset=utf-8, ${css}`;
+  // Ensure the link has a sheet when testing with ShadyCSS so that it can
+  // attempt to build the cssText to shim via the sheet's cssRules.
   if (testingWithShadyCSS) {
-    const linkLoaded = new Promise((r) => {
-      link.addEventListener('load', r, {once: true});
-    });
     document.head.append(link);
-    await linkLoaded;
-    await nextFrame();
+    await ensureLinkLoaded(link);
   }
   return link;
+};
+
+export const ensureLinkLoaded = async (link: HTMLLinkElement) => {
+  if (!link.sheet) {
+    await new Promise((r) => {
+      link.addEventListener('load', r, {once: true});
+    });
+  }
 };

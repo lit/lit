@@ -18,6 +18,7 @@ import {
   createShadowRoot,
   nextFrame,
   getLinkWithSheet,
+  ensureLinkLoaded,
 } from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -267,6 +268,8 @@ suite('Styling', () => {
       adoptStyles(root, [result, sheet ?? css``, style, link]);
       // ensure source link is removed
       link.remove();
+      // Need to explicitly wait for this for Firefox.
+      await ensureLinkLoaded(root.querySelector('link')!);
       await nextFrame();
       // validate
       // result
@@ -320,6 +323,8 @@ suite('Styling', () => {
       adoptStyles(root, styles);
       // ensure source link is removed
       link.remove();
+      // Need to explicitly wait for this for Firefox.
+      await ensureLinkLoaded(root.querySelector('link')!);
       await nextFrame();
       const adopted = getAdoptedStyles(root);
       assert.equal(adopted.length, styles.length);

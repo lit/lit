@@ -245,7 +245,10 @@ export const adoptStyles = (
   }
   if (elements.length) {
     const [, end] = getStyleMarkers(renderRoot);
-    end.before(...elements);
+    // TODO: The following is slightly less code but not supported in ShadyDOM's
+    // `noPatch`mode:
+    // end.before(...elements);
+    elements.forEach((n) => renderRoot.insertBefore(n, end));
   }
 };
 
@@ -275,16 +278,6 @@ const getSheetOrElementToApply = (
   styling: CSSResultOrNative,
   renderRoot: ShadowRoot
 ) => {
-  // TODO: There doesn't appear to be a good way to confirm that a stylesheet
-  // is constructed and therefore can be applied. However, if it has an
-  // `ownerNode` then it is the sheet of an element currently in DOM and
-  // therefore was not constructed. In that case, use the element as input.
-  const owner = (styling as CSSStyleSheet).ownerNode as
-    | HTMLStyleElement
-    | HTMLLinkElement;
-  if (owner) {
-    styling = owner;
-  }
   // Converts to a CSSResult if needed. This is needed when forcing polyfilled
   // ShadyDOM/CSS on a browser that supports constructible stylesheets.
   if (styling instanceof CSSStyleSheet) {
