@@ -249,6 +249,11 @@ export const adoptStyles = (
  * shadowRoot.
  */
 const getSheetOrElementToApply = (styling: CSSResultOrNative) => {
+  // Converts to a CSSResult if needed. This is needed when forcing polyfilled
+  // ShadyDOM/CSS on a browser that supports constructible stylesheets.
+  if (styling instanceof CSSStyleSheet) {
+    styling = getCompatibleStyle(styling);
+  }
   // If it's a CSSResult, return the stylesheet or a style element
   if (isCSSResult(styling)) {
     if (styling.styleSheet !== undefined) {
