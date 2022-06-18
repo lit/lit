@@ -12,7 +12,24 @@ import {
   Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
-import {javascript, FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
+
+/**
+ * Our command for the Lit CLI.
+ *
+ * See ../../cli/src/lib/generate/generate.ts
+ */
+export const getCommand = () => {
+  return {
+    name: 'react',
+    description: 'Generate React wrapper components from Lit elements',
+    kind: 'resolved',
+    async generate(options: {analysis: Package}): Promise<FileTree> {
+      return await generateReactWrapper(options.analysis);
+    },
+  };
+};
 
 export const generateReactWrapper = async (
   analysis: Package
@@ -152,11 +169,6 @@ ${elements.map((element) => wrapperTemplate(element))}
 // TODO(kschaaf): Should this be configurable?
 const packageNameToReactPackageName = (pkgName: string) => `${pkgName}-react`;
 
-const eventNameToCallbackName = (eventName: string) =>
-  'on' +
-  eventName[0].toUpperCase() +
-  eventName.slice(1).replace(/-[a-z]/g, (m) => m[1].toUpperCase());
-
 const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
   return javascript`
 export const ${name} = createComponent(
@@ -166,7 +178,7 @@ export const ${name} = createComponent(
   {
     ${Array.from(events.keys()).map(
       (eventName) => javascript`
-    ${eventNameToCallbackName(eventName)}: '${
+    ${kabobToOnEvent(eventName)}: '${
         // TODO(kschaaf): add cast to `as EventName<EVENT_TYPE>` once the
         // analyzer reports the event type correctly (currently we have the
         // type string without an AST reference to get its import, etc.)
@@ -175,6 +187,6 @@ export const ${name} = createComponent(
       }',`
     )}
   }
-);    
+);
 `;
 };

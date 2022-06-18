@@ -14,7 +14,7 @@ import {ReferenceToCommand} from '../lib/command.js';
 import {ConsoleConstructorOptions} from 'console';
 import * as stream from 'stream';
 import {suite} from './uvu-wrapper.js';
-import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
+import {FilesystemTestRig} from '@lit-internal/tests/utils/filesystem-test-rig.js';
 
 interface TestContext {
   console: TestConsole;

@@ -18,7 +18,7 @@ import {LitConsole} from './console.js';
 import {globalOptions, mergeOptions} from './options.js';
 import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
-import {labs} from './commands/labs.js';
+import {makeLabsCommand} from './commands/labs.js';
 import {createRequire} from 'module';
 import * as childProcess from 'child_process';
 
@@ -60,7 +60,7 @@ export class LitCli {
     this.console.debug('got args:', {args: args});
 
     this.addCommand(localize);
-    this.addCommand(labs);
+    this.addCommand(makeLabsCommand(this));
     this.addCommand(makeHelpCommand(this));
   }
 
@@ -186,7 +186,7 @@ export class LitCli {
     }
   }
 
-  private getImportPath(reference: ReferenceToCommand): string | undefined {
+  resolveImportForReference(reference: ReferenceToCommand): string | undefined {
     try {
       // Must prepend with `file://` so that windows absolute paths are valid
       // ESM import specifiers
@@ -203,6 +203,7 @@ export class LitCli {
       throw e;
     }
   }
+
   private async loadCommandFromPath(
     reference: ReferenceToCommand,
     path: string
@@ -228,7 +229,7 @@ export class LitCli {
     if (reference.kind === 'resolved') {
       return reference;
     }
-    const resolvedPackageLocation = this.getImportPath(reference);
+    const resolvedPackageLocation = this.resolveImportForReference(reference);
     if (resolvedPackageLocation === undefined) {
       return reference;
     }
@@ -242,20 +243,20 @@ export class LitCli {
     return command;
   }
 
-  private async resolveCommandAndMaybeInstallNeededDeps(
+  async resolveCommandAndMaybeInstallNeededDeps(
     maybeReference: Command
   ): Promise<ResolvedCommand | undefined> {
     if (maybeReference.kind === 'resolved') {
       return maybeReference;
     }
     const reference = maybeReference;
-    let resolvedPackageLocation = this.getImportPath(reference);
+    let resolvedPackageLocation = this.resolveImportForReference(reference);
     if (resolvedPackageLocation === undefined) {
       const installed = await this.installDepWithPermission(reference);
       if (!installed) {
         return undefined;
       }
-      resolvedPackageLocation = this.getImportPath(reference);
+      resolvedPackageLocation = this.resolveImportForReference(reference);
       if (resolvedPackageLocation === undefined) {
         throw new Error(
           `Internal error: could not resolve command after what looked like a successful installation.`

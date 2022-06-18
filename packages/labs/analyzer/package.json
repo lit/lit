@@ -40,7 +40,9 @@
       "dependencies": [
         "build"
       ],
-      "files": [],
+      "files": [
+        "test-files/"
+      ],
       "output": []
     }
   },
