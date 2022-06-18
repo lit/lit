@@ -54,10 +54,9 @@ export function contextProvider<ValueType>({
 ) => void | any {
   return decorateProperty({
     finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      let controller: ContextProvider<ContextKey<unknown, ValueType>>;
+      const controllerMap = new WeakMap();
       ctor.addInitializer((element: ReactiveElement): void => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        controller = new ContextProvider(element, context);
+        controllerMap.set(element, new ContextProvider(element, context));
       });
       // proxy any existing setter for this property and use it to
       // notify the controller of an updated value
@@ -66,7 +65,7 @@ export function contextProvider<ValueType>({
       const newDescriptor = {
         ...descriptor,
         set: function (value: ValueType) {
-          controller?.setValue(value);
+          controllerMap.get(this)?.setValue(value);
           if (oldSetter) {
             oldSetter.call(this, value);
           }

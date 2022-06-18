@@ -21,10 +21,17 @@ const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
 );
 
 test.before((ctx) => {
-  const packagePath = (ctx.packagePath = fileURLToPath(
-    new URL('../../test-files/basic-elements', import.meta.url).href
-  ) as AbsolutePath);
-  ctx.analyzer = new Analyzer(packagePath);
+  try {
+    const packagePath = (ctx.packagePath = fileURLToPath(
+      new URL('../../test-files/basic-elements', import.meta.url).href
+    ) as AbsolutePath);
+    ctx.analyzer = new Analyzer(packagePath);
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
 });
 
 test('isLitElement returns true for a direct import', ({

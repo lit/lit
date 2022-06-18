@@ -65,7 +65,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "files.exclude": {
       "**/.wireit": true
-    }
+    },
+    "javascript.preferences.importModuleSpecifierEnding": "js"
   },
   "extensions": {
     "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

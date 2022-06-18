@@ -35,6 +35,8 @@ export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
 
 const constructionToken = Symbol();
 
+const cssTagCache = new WeakMap<TemplateStringsArray, CSSStyleSheet>();
+
 /**
  * A container for a string of CSS text, that may be used to create a CSSStyleSheet.
  *
@@ -47,14 +49,20 @@ export class CSSResult {
   ['_$cssResult$'] = true;
   readonly cssText: string;
   private _styleSheet?: CSSStyleSheet;
+  private _strings: TemplateStringsArray | undefined;
 
-  private constructor(cssText: string, safeToken: symbol) {
+  private constructor(
+    cssText: string,
+    strings: TemplateStringsArray | undefined,
+    safeToken: symbol
+  ) {
     if (safeToken !== constructionToken) {
       throw new Error(
         'CSSResult is not constructable. Use `unsafeCSS` or `css` instead.'
       );
     }
     this.cssText = cssText;
+    this._strings = strings;
   }
 
   // This is a getter so that it's lazy. In practice, this means stylesheets
@@ -62,10 +70,23 @@ export class CSSResult {
   get styleSheet(): CSSStyleSheet | undefined {
     // If `supportsAdoptingStyleSheets` is true then we assume CSSStyleSheet is
     // constructable.
-    if (supportsAdoptingStyleSheets && this._styleSheet === undefined) {
-      (this._styleSheet = new CSSStyleSheet()).replaceSync(this.cssText);
+    let styleSheet = this._styleSheet;
+    const strings = this._strings;
+    if (supportsAdoptingStyleSheets && styleSheet === undefined) {
+      const cacheable = strings !== undefined && strings.length === 1;
+      if (cacheable) {
+        styleSheet = cssTagCache.get(strings);
+      }
+      if (styleSheet === undefined) {
+        (this._styleSheet = styleSheet = new CSSStyleSheet()).replaceSync(
+          this.cssText
+        );
+        if (cacheable) {
+          cssTagCache.set(strings, styleSheet);
+        }
+      }
     }
-    return this._styleSheet;
+    return styleSheet;
   }
 
   toString(): string {
@@ -74,7 +95,11 @@ export class CSSResult {
 }
 
 type ConstructableCSSResult = CSSResult & {
-  new (cssText: string, safeToken: symbol): CSSResult;
+  new (
+    cssText: string,
+    strings: TemplateStringsArray | undefined,
+    safeToken: symbol
+  ): CSSResult;
 };
 
 // Type guard for CSSResult
@@ -114,6 +139,7 @@ const textFromCSSResult = (value: CSSResultGroup | number) => {
 export const unsafeCSS = (value: unknown) =>
   new (CSSResult as ConstructableCSSResult)(
     typeof value === 'string' ? value : String(value),
+    undefined,
     constructionToken
   );
 
@@ -136,7 +162,11 @@ export const css = (
           (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
           strings[0]
         );
-  return new (CSSResult as ConstructableCSSResult)(cssText, constructionToken);
+  return new (CSSResult as ConstructableCSSResult)(
+    cssText,
+    strings,
+    constructionToken
+  );
 };
 
 // Markers used to determine where style elements have been inserted in the
@@ -203,19 +233,16 @@ export const adoptStyles = (
     .map((s) => getSheetOrElementToApply(s, renderRoot))
     .filter((s): s is CSSStyleSheet => !(isStyleEl(s) && elements.push(s)));
   // By default, clear any existing styling.
-  if (!preserveExisting) {
-    if ((renderRoot as ShadowRoot).adoptedStyleSheets) {
-      (renderRoot as ShadowRoot).adoptedStyleSheets = [];
-    }
-    if (styleMarkersMap.has(renderRoot)) {
-      removeNodesBetween(...getStyleMarkers(renderRoot));
-    }
+  if (supportsAdoptingStyleSheets && (sheets.length || !preserveExisting)) {
+    renderRoot.adoptedStyleSheets = [
+      ...(preserveExisting ? renderRoot.adoptedStyleSheets : []),
+      ...sheets,
+    ];
   }
-  // Apply sheets, Note, this are only set if `adoptedStyleSheets` is supported.
-  if (sheets.length) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = sheets;
+  // Remove / Apply any style elements
+  if (!preserveExisting && styleMarkersMap.has(renderRoot)) {
+    removeNodesBetween(...getStyleMarkers(renderRoot));
   }
-  // Apply any style elements
   if (elements.length) {
     const [, end] = getStyleMarkers(renderRoot);
     end.before(...elements);
@@ -257,10 +284,6 @@ const getSheetOrElementToApply = (
     | HTMLLinkElement;
   if (owner) {
     styling = owner;
-  }
-  // Converts to a CSSResult when `adoptedStyleSheets` is unsupported.
-  if (styling instanceof CSSStyleSheet) {
-    styling = getCompatibleStyle(styling);
   }
   // If it's an element, just clone it.
   if (isStyleEl(styling) && styling.parentNode !== renderRoot) {

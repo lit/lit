@@ -62,7 +62,7 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
 - Internal packages (not published to npm)
   - [`tests`](./packages/tests) - Test infrastructure for the monorepo.
   - [`benchmarks`](./packages/benchmarks) - Benchmarks for testing various libraries in the monorepo.
-  - [`internal-scripts`](./packages/internal-scripts) - Utility scripts used within the monorepo.
+  - [`@lit-internal/scripts`](./packages/@lit-internal/scripts) - Utility scripts used within the monorepo.
 
 ## Contributing to Lit
 

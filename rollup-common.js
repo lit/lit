@@ -31,6 +31,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/router': '_$K',
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
+  '@lit-labs/vue-utils': '_$N',
 };
 
 // Validate prefix uniqueness
@@ -305,7 +306,12 @@ export function litProdConfig({
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
     // Import every entry point so that we see all property accesses.
-    ...entryPoints.map((name) => `import './development/${name}.js';`),
+    // Give a unique named import to prevent duplicate identifier errors.
+    ...entryPoints.map(
+      (name, idx) => `import * as import${idx} from './development/${name}.js';`
+    ),
+    // Prevent tree shaking that occurs during mangling.
+    ...entryPoints.map((_name, idx) => `console.log(import${idx});`),
     // Synthesize a property access for all cross-package mangled property names
     // so that even if we don't access a property in this package, we will still
     // reserve other properties from re-using that name.
