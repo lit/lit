@@ -336,8 +336,8 @@ suite('createComponent', () => {
   test('can set reserved React properties', async () => {
     await renderReactComponent({
       style: {display: 'block'},
-      className: 'foo bar',
-    } as any);
+      className: 'foo bar'
+    });
     assert.equal(el.style.display, 'block');
     assert.equal(el.getAttribute('class'), 'foo bar');
   });
