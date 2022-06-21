@@ -6,6 +6,24 @@
 
 import React, * as ReactModule from 'react';
 
+/***
+ * Typecast that curries an Event type through a string. The goal of the type
+ * cast is to match a prop name to a typed event callback.
+ */
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+type Events = Record<string, EventName | string>;
+
+type EventProps<R extends Events> = {
+  [K in keyof R]: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
+
+type Constructor<T> = {new (): T};
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -82,24 +100,6 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   } else {
     (ref as {current: Element | null}).current = value;
   }
-};
-
-type Constructor<T> = {new (): T};
-
-/***
- * Typecast that curries an Event type through a string. The goal of the type
- * cast is to match a prop name to a typed event callback.
- */
-export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
-};
-
-type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
-  [K in keyof R]: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
-    : (e: Event) => void;
 };
 
 /**
