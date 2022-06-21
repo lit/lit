@@ -56,8 +56,8 @@ export const getWindow = ({
       value: string | null
     ): void;
     setAttribute(name: string, value: unknown) {
-      // The browser will silently cast all values to strings. E.g. `42` becomes
-      // `"42"` and `{}` becomes `"[object Object]""`.
+      // Emulate browser behavior that silently casts all values to string. E.g.
+      // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
       attributesForElement(this).set(name, String(value));
     }
     removeAttribute(name: string) {
