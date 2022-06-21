@@ -55,14 +55,14 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element>(
+const setProperty = <E extends Element, T>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
-  events?: Events
+  events?: StringValued<T>
 ) => {
-  const event = events?.[name];
+  const event = events?.[name as keyof T];
   if (event !== undefined) {
     // Dirty check event value.
     if (value !== old) {
@@ -82,6 +82,10 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   } else {
     (ref as {current: Element | null}).current = value;
   }
+};
+
+type StringValued<T> = {
+  [P in keyof T]: string;
 };
 
 type Constructor<T> = {new (): T};
@@ -123,10 +127,7 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <
-  I extends HTMLElement,
-  E extends Events = Events
->(
+export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
@@ -140,11 +141,12 @@ export const createComponent = <
   // ref, as well as special event and element properties.
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
-
-  type ReactProps = React.PropsWithChildren<React.HTMLAttributes<I>>;
-  type ElementWithoutChildrenOrEvents = Omit<I, keyof E | keyof ReactProps>;
-  type UserProps = Partial<
-    ElementWithoutChildrenOrEvents & ReactProps & EventProps<E>
+  type UserProps = React.PropsWithChildren<
+    React.PropsWithRef<
+      Partial<Omit<I, 'children'>> &
+        Partial<EventProps<E>> &
+        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
+    >
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
