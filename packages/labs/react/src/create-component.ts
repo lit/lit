@@ -127,7 +127,7 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
+export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
@@ -142,8 +142,11 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
 
-  type ElementWithoutChildren = Omit<I, 'children' & keyof E>;
-  type UserProps = Partial<React.PropsWithChildren<ElementWithoutChildren>>;
+  type ReactProps = React.PropsWithChildren<React.HTMLAttributes<I>>;
+  type ElementWithoutChildrenOrEvents = Omit<I, keyof E | keyof ReactProps>;
+  type UserProps = Partial<
+    ElementWithoutChildrenOrEvents & ReactProps & EventProps<E>
+  >;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
