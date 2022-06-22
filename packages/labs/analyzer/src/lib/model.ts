@@ -174,12 +174,6 @@ export const isLitElementDeclaration = (
   );
 };
 
-export const isExported = (node: ts.Statement): boolean => {
-  return (
-    node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) ?? false
-  );
-};
-
 export interface LitModule {
   module: Module;
   elements: LitElementDeclaration[];
