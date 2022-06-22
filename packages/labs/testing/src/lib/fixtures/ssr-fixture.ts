@@ -82,17 +82,16 @@ export async function ssrFixture<T extends HTMLElement>(
     // innerHTML will not work and must use DOMParser.
     // See https://web.dev/declarative-shadow-dom/#parser-only
     const fragment = new DOMParser().parseFromString(
-      // DOMParser removes the opening lit-part comment node
-      // wraping it in a div preserves it
-      '<div>' + rendered + '</div>',
+      // DOMParser could separate opening lit-part comment from others as it
+      // selectively places some elements into <body>. Wraping the entire
+      // rendered content in <body> preserves order.
+      '<body>' + rendered + '</body>',
       'text/html',
       {
         includeShadowRoots: true,
       }
     );
-    container.replaceChildren(
-      ...Array.from(fragment.body.querySelector('div')!.childNodes)
-    );
+    container.replaceChildren(...Array.from(fragment.body.childNodes));
   } else {
     // Utilize ponyfill
     container.innerHTML = rendered;
