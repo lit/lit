@@ -77,7 +77,7 @@ export class Analyzer {
       rootDir: this.packageRoot,
       modules: rootFileNames.map((fileName) =>
         getModule(
-          this.programContext.program.getSourceFile(fileName)!,
+          this.programContext.program.getSourceFile(path.normalize(fileName))!,
           this.programContext
         )
       ),
