@@ -10,7 +10,7 @@ import {ProgramContext} from './program-context.js';
 import {AbsolutePath} from './paths.js';
 import * as fs from 'fs';
 import * as path from 'path';
-import {getModule} from './standard/modules.js';
+import {getModule} from './javascript/modules.js';
 export {PackageJson};
 
 /**
