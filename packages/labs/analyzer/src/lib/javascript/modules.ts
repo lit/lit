@@ -6,10 +6,6 @@
 
 import ts from 'typescript';
 import {Module} from '../model.js';
-import {
-  isLitElement,
-  getLitElementDeclaration,
-} from '../lit-element/lit-element.js';
 import * as path from 'path';
 import {getClassDeclaration} from './classes.js';
 import {getVariableDeclarations} from './variables.js';
@@ -50,11 +46,7 @@ export const getModule = (
 
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
-      module.declarations.push(
-        isLitElement(statement, programContext)
-          ? getLitElementDeclaration(statement, programContext)
-          : getClassDeclaration(statement, programContext)
-      );
+      module.declarations.push(getClassDeclaration(statement, programContext));
     } else if (ts.isVariableStatement(statement)) {
       module.declarations.push(
         ...statement.declarationList.declarations
