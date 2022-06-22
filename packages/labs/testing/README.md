@@ -1,6 +1,6 @@
 # @lit-labs/testing
 
-A package containing utilities for testing Lit.
+A package containing utilities for testing Lit components.
 
 ## Status
 
@@ -13,7 +13,7 @@ changes are likely to happen frequently.
 
 This package contains utilities that will be useful for testing Lit elements,
 especially for ensuring your components are compatible with server-side
-rendering(SSR).
+rendering (SSR).
 
 These are meant to be used with [Web Test Runner
 (WTR)](https://modern-web.dev/docs/test-runner/overview/). A WTR plugin and
