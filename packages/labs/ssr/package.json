@@ -98,7 +98,10 @@
         "build",
         "../../tests:build"
       ],
-      "files": [],
+      "files": [
+        "web-test-runner.config.js",
+        "../../tests/web-test-runner.config.js"
+      ],
       "output": []
     },
     "test:integration:prod": {
@@ -107,7 +110,10 @@
         "build",
         "../../tests:build"
       ],
-      "files": [],
+      "files": [
+        "web-test-runner.config.js",
+        "../../tests/web-test-runner.config.js"
+      ],
       "output": []
     }
   },

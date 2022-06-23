@@ -1,4 +1,4 @@
-# lit-benchmarks
+# @lit-internal/benchmarks
 
 ## 1.0.2
 

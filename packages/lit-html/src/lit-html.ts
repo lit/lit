@@ -443,7 +443,17 @@ const ELEMENT_PART = 6;
 const COMMENT_PART = 7;
 
 /**
- * The return type of the template tag functions.
+ * The return type of the template tag functions, {@linkcode html} and
+ * {@linkcode svg}.
+ *
+ * A `TemplateResult` object holds all the information about a template
+ * expression required to render it: the template strings, expression values,
+ * and type of template (html or svg).
+ *
+ * `TemplateResult` objects do not create any DOM on their own. To create or
+ * update DOM you need to render the `TemplateResult`. See
+ * [Rendering](https://lit.dev/docs/components/rendering) for more information.
+ *
  */
 export type TemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
@@ -609,9 +619,28 @@ export interface RenderOptions {
 
 /**
  * Renders a value, usually a lit-html TemplateResult, to the container.
- * @param value
- * @param container
- * @param options
+ *
+ * This example renders the text "Hello, Zoe!" inside a paragraph tag, appending
+ * it to the container `document.body`.
+ *
+ * ```js
+ * import {html, render} from 'lit';
+ *
+ * const name = "Zoe";
+ * render(html`<p>Hello, ${name}!</p>`, document.body);
+ * ```
+ *
+ * @param value Any [renderable
+ *   value](https://lit.dev/docs/templates/expressions/#child-expressions),
+ *   typically a {@linkcode TemplateResult} created by evaluating a template tag
+ *   like {@linkcode html} or {@linkcode svg}.
+ * @param container A DOM container to render to. The first render will append
+ *   the rendered value to the container, and subsequent renders will
+ *   efficiently update the rendered value if the same result type was
+ *   previously rendered there.
+ * @param options See {@linkcode RenderOptions} for options documentation.
+ * @see
+ * {@link https://lit.dev/docs/libraries/standalone-templates/#rendering-lit-html-templates| Rendering Lit HTML Templates}
  */
 export const render = (
   value: unknown,
@@ -2124,7 +2153,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.5');
+(globalThis.litHtmlVersions ??= []).push('2.2.6');
 if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
