@@ -115,7 +115,7 @@
         "tsconfig.polyfill-support.json"
       ],
       "output": [
-        "development",
+        "development/**/*.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo",
         "tsconfig.polyfill-support.tsbuildinfo"
       ]
@@ -141,7 +141,9 @@
       ],
       "files": [
         "rollup.config.js",
-        "../../rollup-common.js"
+        "../../rollup-common.js",
+        "src/test/*_test.html",
+        "src/test/polyfill-support/*_test.html"
       ],
       "output": [
         "decorators.js{,.map}",
@@ -150,7 +152,11 @@
         "lit-element.js{,.map}",
         "polyfill-support.js{,.map}",
         "private-ssr-support.js{,.map}",
-        "decorators/*.js{,.map}"
+        "decorators/*.js{,.map}",
+        "test/*_test.html",
+        "development/test/*_test.html",
+        "test/polyfill-support/*_test.html",
+        "development/test/polyfill-support/*_test.html"
       ]
     },
     "checksize": {
