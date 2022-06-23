@@ -36,8 +36,6 @@
     "build:ts": "wireit",
     "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
     "test": "wireit",
-    "test:dev": "wireit",
-    "test:prod": "wireit",
     "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
     "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
   },
@@ -49,10 +47,33 @@
       ]
     },
     "build:copy-polyfill": {
-      "command": "copyfiles -u 1 src/polyfills/resize-observer-polyfill/ResizeObserver.js ."
+      "command": "copyfiles -u 1 src/polyfills/resize-observer-polyfill/ResizeObserver.js .",
+      "files": [
+        "src/polyfills/resize-observer-polyfill/ResizeObserver.js"
+      ],
+      "output": [
+        "polyfills/resize-observer-polyfill/ResizeObserver.js"
+      ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        ".tsbuildinfo",
+        "layouts/**/*.{js,d.ts,d.ts.map}",
+        "polyfillLoaders/**/*.{js,d.ts,d.ts.map}",
+        "polyfills/**/*.{js,d.ts,d.ts.map}",
+        "test/**/*.{js,d.ts,d.ts.map}",
+        "!test/screenshot/**",
+        "lit-virtualizer.{js,d.ts,d.ts.map}",
+        "LitVirtualizer.{js,d.ts,d.ts.map}",
+        "virtualize.{js,d.ts,d.ts.map}",
+        "Virtualizer.{js,d.ts,d.ts.map}"
+      ],
       "dependencies": [
         "../../internal-scripts:build",
         "../../lit:build"
@@ -63,7 +84,11 @@
       "dependencies": [
         "build",
         "../../tests:build"
-      ]
+      ],
+      "files": [
+        "web-test-runner.config.js"
+      ],
+      "output": []
     }
   },
   "files": [
