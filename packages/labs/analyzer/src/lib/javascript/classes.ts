@@ -35,42 +35,52 @@ export const getClassDeclaration = (
 };
 
 export type Heritage = {
-  mixins: MixinDeclarationNode[];
-  superClass: ts.Declaration | undefined;
+  mixinDeclarationNodes: MixinDeclarationNode[];
+  superClassDeclarationNode: ts.Declaration | undefined;
   superClassType: ts.Type | undefined;
 };
 
+/**
+ * Returns the superClass and any applied mixins for a given class declaration.
+ */
 export const getHeritage = (
   declaration: ts.ClassLikeDeclaration,
   programContext: ProgramContext
 ): Heritage => {
-  const superClassType = getSuperClassType(declaration, programContext);
-  let superClass = undefined;
+  const classInterfaceType = getClassInterfaceType(declaration, programContext);
+  let superClassDeclarationNode = undefined;
   const mixins: MixinDeclarationNode[] = [];
-  const extended = declaration.heritageClauses?.find(
+  const extendsClause = declaration.heritageClauses?.find(
     (c) => c.token === ts.SyntaxKind.ExtendsKeyword
   );
-  if (extended !== undefined) {
-    if (extended.types.length !== 1) {
+  if (extendsClause !== undefined) {
+    if (extendsClause.types.length !== 1) {
       throw new DiagnosticsError(
-        extended,
+        extendsClause,
         'Internal error: did not expect extends clause to have multiple types'
       );
     }
-    superClass = getSuperClassAndMixins(
-      extended.types[0].expression,
+    superClassDeclarationNode = getSuperClassAndMixins(
+      extendsClause.types[0].expression,
+      getIntersectionTypeSet(classInterfaceType, programContext),
       mixins,
-      superClassType!,
       programContext
     );
   }
   return {
-    mixins,
-    superClass,
-    superClassType,
+    mixinDeclarationNodes: mixins,
+    superClassDeclarationNode,
+    superClassType: classInterfaceType,
   };
 };
 
+/**
+ * For a given ts.Type, expands all intersected types contained within it into a
+ * Set of type strings.
+ *
+ * For example, a type of `Foo & Bar & Baz` becomes `new Set(['Foo', 'Bar',
+ * 'Baz'])`
+ */
 const getIntersectionTypeSet = (
   type: ts.Type,
   programContext: ProgramContext,
@@ -86,40 +96,113 @@ const getIntersectionTypeSet = (
   return set;
 };
 
-const constructsSubset = (
-  fullType: ts.Type,
+/**
+ * Tests whether the given expression evaluates to a constructor that implements
+ * at least a subset of the given interfaceType (where interfaceType may contain
+ * one or more intersections of interfaces).
+ *
+ * For example, for interfaceType `Foo & Bar`, and given:
+ * - makeFoo: () => Constructor<Foo>
+ * - makeBar: () => typeof Bar
+ *
+ * Then returnsConstructorForInterfaceSubset() returns true for these
+ * expressions (the type of each expression is a constructor for a subset of
+ * `interfaceType`):
+ * - makeFoo()
+ * - makeBar()
+ * - Foo
+ * - Bar
+ *
+ * Note that constructors must either be expressed as `typeof SomeClass` or
+ * `Constructor<SomeInterface>`, the latter being important for manually typing
+ * mixin interfaces and casting the return value of a mixin, since TS sucks at
+ * inferring mixin interfaces.
+ *
+ * An alternative here would be to use ts-simple-type and check isAssignableTo,
+ * but seems a bit overkill.
+ */
+const returnsConstructorForInterfaceSubset = (
   expression: ts.Expression,
+  interfaceTypeSet: Set<string>,
   programContext: ProgramContext
 ) => {
-  const type = programContext.checker.getTypeAtLocation(expression);
-  const fullTypeSet = getIntersectionTypeSet(fullType, programContext);
-  for (const t of getIntersectionTypeSet(type, programContext)) {
+  const expressionType = programContext.checker.getTypeAtLocation(expression);
+  // Check whether the expression returns a constructor that constructs at least
+  // one type in the interfaceSet
+  for (const t of getIntersectionTypeSet(expressionType, programContext)) {
     const ctorMatch = t.match(/(Constructor<(?<c1>\w+)>)|(typeof (?<c2>\w+))/);
     const constructs = ctorMatch?.groups?.c1 ?? ctorMatch?.groups?.c2;
-    if (constructs === undefined || !fullTypeSet.has(constructs)) {
-      return false;
+    if (constructs !== undefined && interfaceTypeSet.has(constructs)) {
+      return true;
     }
   }
-  return true;
+  return false;
 };
 
+/**
+ * Given a classInterfaceType, recursively walks an extends clause expression
+ * looking for mixins and the concrete base class that was extended.
+ *
+ * For example, given:
+ * - class Sub extends A(x(), B('hi', y(), C(Super)), z()) { }
+ *
+ * And given:
+ * - A = <T extends HTMLElement>(superClass: T) => T & Constructor<IA>
+ * - B = <T extends HTMLElement>(superClass: T) => T & Constructor<IB>
+ * - C = <T extends HTMLElement>(superClass: T) => T & Constructor<IC>
+ * - x, y return types unrelated to the class's interface type
+ *
+ * Then the classInterfaceType inferred by the type checker for Sub will be
+ * `typeof Super & Constructor<IA> & Constructor<IB> & Constructor<IC>`.
+ *
+ * We then descend into the extends clause expression:
+ * 1. `A()` returns an intersection containing Constructor<IA>, which is a
+ *    subset of the inferred class interface, so add A to the mixins list and
+ *    check its arguments.
+ * 2. `x()` does not return a subset of the inferred class interface, skip
+ * 3. `B()` returns an intersection containing Constructor<IB>, which is a
+ *    subset of the inferred class interface, so add B to the mixins list and
+ *    check its arguments.
+ * 4. `'hi'` is not a call expression or an identifier so it can't be a mixin or
+ *    super class, so skip.
+ * 5. `y()` does not return a subset of the inferred class interface, skip
+ * 6. `C()` returns an intersection containing Constructor<IC>, which is a
+ *    subset of the inferred class interface, so add C to the mixins list and
+ *    check its arguments.
+ * 7. `Super` is an identifier whose type is a subset of the inferred class
+ *    interface; since it's an identifier, this is the concrete super class.
+ * 8. `z()` does not return a subset of the inferred class interface, skip
+ */
 export const getSuperClassAndMixins = (
   expression: ts.Expression,
-  mixins: MixinDeclarationNode[],
-  superClassType: ts.Type,
+  interfaceTypeSet: Set<string>,
+  foundMixins: MixinDeclarationNode[],
   programContext: ProgramContext
-): ts.ClassLikeDeclaration | undefined => {
+): ts.Declaration | undefined => {
   // Only continue searching for the superClass (and any mixins) if this
   // expression constructs at least a subset of the type of the extends clause
-  if (!constructsSubset(superClassType, expression, programContext)) {
+  if (
+    !returnsConstructorForInterfaceSubset(
+      expression,
+      interfaceTypeSet,
+      programContext
+    )
+  ) {
     return undefined;
   }
+  // TODO(kschaaf) Could add support for inline class expressions here as well
   if (ts.isIdentifier(expression)) {
     // Found the superClass, as a direct identifier in the extends clause or as
     // an argument to a mixin
     const declaration =
       programContext.checker.getSymbolAtLocation(expression)?.declarations?.[0];
-    return declaration as ts.ClassLikeDeclaration | undefined;
+    if (declaration === undefined) {
+      throw new DiagnosticsError(
+        expression,
+        'Could not find declaration for this symbol.'
+      );
+    }
+    return declaration;
   } else if (
     ts.isCallExpression(expression) &&
     ts.isIdentifier(expression.expression)
@@ -128,29 +211,39 @@ export const getSuperClassAndMixins = (
       expression.expression
     );
     const declaration = symbol?.getDeclarations()?.[0];
-    mixins.push(declaration as MixinDeclarationNode);
+    foundMixins.push(declaration as MixinDeclarationNode);
+    let foundSuperClass = undefined;
     for (const arg of expression.arguments) {
       const superClass = getSuperClassAndMixins(
         arg,
-        mixins,
-        superClassType,
+        interfaceTypeSet,
+        foundMixins,
         programContext
       );
       if (superClass !== undefined) {
-        return superClass;
+        if (foundSuperClass !== undefined) {
+          const name = (superClass as ts.Declaration & {name: ts.Identifier})
+            .name;
+          throw new DiagnosticsError(
+            expression,
+            `Internal error: found more than one concrete superclass ` +
+              `in extends clause: '${name?.text}' and ${name?.text}`
+          );
+        }
+        foundSuperClass = superClass;
       }
     }
-    return undefined;
+    return foundSuperClass;
   } else {
     // We only look for mixins / superclass in calls or identifiers
     return undefined;
   }
 };
 
-export const getSuperClassType = (
+export const getClassInterfaceType = (
   declaration: ts.ClassLikeDeclaration,
   programContext: ProgramContext
-): ts.Type | undefined => {
+): ts.Type => {
   const type = programContext.checker.getTypeAtLocation(
     declaration
   ) as ts.InterfaceType;

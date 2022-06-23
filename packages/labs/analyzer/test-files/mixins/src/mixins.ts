@@ -46,3 +46,61 @@ export const Highlightable = <T extends Constructor<LitElement>>(
   }
   return HighlightableElement as Constructor<HighlightableInterface> & T;
 };
+
+export declare class IA {
+  a: string;
+}
+
+export declare class IB {
+  b: number;
+}
+
+export declare class IC {
+  c: boolean;
+}
+
+/**
+ * Mixin A
+ * @mixin
+ */
+export const A = <T extends Constructor<LitElement>>(
+  x: string,
+  superClass: T,
+  z: Constructor<{z: string}>
+) => {
+  console.log(x, z);
+  class A extends superClass {
+    private pa = true;
+    a = 'hi';
+  }
+  return A as Constructor<IA> & T;
+};
+
+/**
+ * Mixin B
+ * @mixin
+ */
+export const B = <T extends Constructor<LitElement>>(
+  s: string,
+  y: Constructor<{z: string}>,
+  superClass: T
+) => {
+  console.log(s, y);
+  class B extends superClass {
+    private pb = true;
+    b = 5;
+  }
+  return B as Constructor<IB> & T;
+};
+
+/**
+ * Mixin C
+ * @mixin
+ */
+export const C = <T extends Constructor<LitElement>>(superClass: T) => {
+  class C extends superClass {
+    private pc = true;
+    c = true;
+  }
+  return C as Constructor<IC> & T;
+};

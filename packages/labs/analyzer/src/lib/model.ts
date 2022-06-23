@@ -87,24 +87,24 @@ export class VariableDeclaration {
 export interface ClassDeclarationInit {
   name: string | undefined;
   node: ts.ClassDeclaration;
-  superClass: ts.Declaration | undefined;
+  superClassDeclarationNode: ts.Declaration | undefined;
   superClassType: ts.Type | undefined;
-  mixins: MixinDeclarationNode[];
+  mixinDeclarationNodes: MixinDeclarationNode[];
 }
 
 export class ClassDeclaration {
   readonly name: string | undefined;
   readonly node: ts.ClassDeclaration;
-  readonly superClass: ts.Declaration | undefined;
+  readonly superClassDeclarationNode: ts.Declaration | undefined;
   readonly superClassType: ts.Type | undefined;
-  readonly mixins: MixinDeclarationNode[];
+  readonly mixinDeclarationNodes: MixinDeclarationNode[];
 
   constructor(init: ClassDeclarationInit) {
     this.name = init.name;
     this.node = init.node;
-    this.superClass = init.superClass;
+    this.superClassDeclarationNode = init.superClassDeclarationNode;
     this.superClassType = init.superClassType;
-    this.mixins = init.mixins;
+    this.mixinDeclarationNodes = init.mixinDeclarationNodes;
   }
 }
 

@@ -6,7 +6,7 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {Highlightable} from './mixin.js';
+import {Highlightable} from './mixins.js';
 
 @customElement('element-a')
 export class ElementA extends Highlightable('hi', LitElement) {
