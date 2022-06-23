@@ -67,7 +67,7 @@ class MyElement extends LitElement {
   ]);
 
   render() {
-    return router.outlet;
+    return router.outlet();
   }
 }
 ```

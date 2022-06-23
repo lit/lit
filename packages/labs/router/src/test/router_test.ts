@@ -5,7 +5,7 @@
  */
 
 import {assert} from '@esm-bundle/chai';
-import type {Test1, Child1, Child2} from './router_test_code.js';
+import type {Test1, Test2, Child1, Child2} from './router_test_code.js';
 import type {RouteConfig, PathRouteConfig} from '../routes.js';
 
 const isPathRouteConfig = (route: RouteConfig): route is PathRouteConfig =>
@@ -103,7 +103,7 @@ const canTest =
     // Initial location
     //
 
-    // Set the iframe URL to / before appending the element
+    // Set the iframe URL before appending the element
     contentWindow!.history.pushState({}, '', '/child1/def');
     contentDocument!.body.append(el);
     await el.updateComplete;
@@ -143,6 +143,35 @@ const canTest =
     assert.include(
       stripExpressionComments(child2.shadowRoot!.innerHTML),
       '<h3>Child 2: xyz</h3>'
+    );
+  });
+
+  test('Nested routing where the parent contains no routes', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-2'
+    ) as Test2;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL to / before appending the element
+    contentWindow!.history.pushState({}, '', '/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    const child2 = el.shadowRoot!.querySelector('child-2') as Child2;
+    await child2.updateComplete;
+
+    // Verify the child route rendered
+    assert.include(
+      stripExpressionComments(child1.shadowRoot!.innerHTML),
+      '<h3>Child 1: def</h3>'
+    );
+    assert.include(
+      stripExpressionComments(child2.shadowRoot!.innerHTML),
+      '<h3>Child 2: def</h3>'
     );
   });
 
