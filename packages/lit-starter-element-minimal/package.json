@@ -1,0 +1,40 @@
+{
+  "name": "lit-starter-element-minimal",
+  "version": "1.0.0",
+  "description": "A Minimal Lit Element starter kit",
+  "type": "module",
+  "main": "lib/my-element.js",
+  "scripts": {
+    "serve": "wds --node-resolve -onw"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit-starter-element-minimal.git"
+  },
+  "keywords": [
+    "web-components",
+    "lit-element",
+    "javascript",
+    "lit"
+  ],
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/lit/lit-starter-element-minimal/issues"
+  },
+  "homepage": "https://github.com/lit/lit-starter-element-minimal#readme",
+  "dependencies": {
+    "lit": "^2.2.6"
+  },
+  "devDependencies": {
+    "@web/dev-server": "^0.1.32"
+  },
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./lib/my-element.js": {
+      "default": "./lib/my-element.js"
+    }
+  }
+}
