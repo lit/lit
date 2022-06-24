@@ -10,7 +10,9 @@
     "vue": "^3.2.25",
     "@lit-labs/vue-utils": "../../vue-utils",
     "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.0.tgz",
-    "@lit-internal/test-element-a-vue": "file:../gen-output/test-element-a-vue/lit-internal-test-element-a-vue-1.0.0.tgz"
+    "@lit-internal/test-element-a-vue": "file:../gen-output/test-element-a-vue/lit-internal-test-element-a-vue-1.0.0.tgz",
+    "@lit-internal/test-element-events": "file:../../test-projects/test-element-events/lit-internal-test-element-events-1.0.0.tgz",
+    "@lit-internal/test-element-events-vue": "file:../gen-output/test-element-events-vue/lit-internal-test-element-events-vue-1.0.0.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.1",
@@ -57,7 +59,7 @@
         "../../../tests:build"
       ],
       "files": [],
-      "command": "node ../../../tests/run-web-tests.js \"tests/**/*_test.js\" --config ../../../tests/web-test-runner.config.js",
+      "command": "node ../../../tests/run-web-tests.js \"tests/tests.js\" --config ../../../tests/web-test-runner.config.js",
       "output": []
     }
   }

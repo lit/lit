@@ -1,5 +1,5 @@
 {
-  "name": "@lit-internal/test-element-a-vue",
+  "name": "@lit-internal/test-element-events-vue",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
   },
   "version": "1.0.0",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.0",
+    "@lit-internal/test-element-events": "^1.0.0",
     "vue": "^3.2.25",
     "@lit-labs/vue-utils": "^0.0.1"
   },
@@ -22,6 +22,6 @@
     "vue-tsc": "^0.29.8"
   },
   "files": [
-    "ElementA.{js,js.map,d.ts,vue}"
+    "ElementEvents.{js,js.map,d.ts,vue}"
   ]
 }

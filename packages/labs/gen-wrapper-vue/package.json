@@ -42,7 +42,8 @@
       ],
       "dependencies": [
         "build",
-        "../test-projects/test-element-a:pack"
+        "../test-projects/test-element-a:pack",
+        "../test-projects/test-element-events:pack"
       ],
       "#comment": "The quotes around the file regex must be double quotes on windows!",
       "command": "uvu test-gen \"_test\\.js$\"",
