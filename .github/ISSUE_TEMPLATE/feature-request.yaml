@@ -11,7 +11,7 @@ body:
       multiple: true
       description: Note you can select more than one.
       options:
-        - Lit Core (lit/lit-html/reactive-element/lit-element)
+        - Lit Core (lit / lit-html / lit-element / reactive-element)
         - Context (@lit-labs/context)
         - Eleventy Plugin (@lit-labs/eleventy-plugin-lit)
         - Localize (@lit/localize)
@@ -19,9 +19,10 @@ body:
         - Observers (@lit-labs/observers)
         - React (@lit-labs/react)
         - SSR (@lit-labs/ssr)
-        - Starter Kits (@lit/lit-starter-(js|ts))
+        - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
         - Task (@lit-labs/task)
-        - Other/unknown
+        - Virtualizer (@lit-labs/virtualizer)
+        - Other/unknown (please mention in description)
 
   - type: textarea
     id: description
