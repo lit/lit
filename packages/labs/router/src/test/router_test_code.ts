@@ -68,6 +68,21 @@ export class Test1 extends LitElement {
   }
 }
 
+@customElement('router-test-2')
+export class Test2 extends LitElement {
+  _router = new Router(this, [
+    {path: '/*'}, // TODO: Note this should be implicit if `new Router(this)` was created.
+  ]);
+
+  override render() {
+    return html`
+      <h1>Test: no top level routes</h1>
+      <child-1></child-1>
+      <child-2></child-2>
+    `;
+  }
+}
+
 @customElement('child-1')
 export class Child1 extends LitElement {
   _routes = new Routes(this, [
