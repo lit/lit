@@ -56,7 +56,7 @@
     }
   },
   "dependencies": {
-    "ts-clone-node": "^0.3.23",
+    "ts-clone-node": "=0.3.30",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
