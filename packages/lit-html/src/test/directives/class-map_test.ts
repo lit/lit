@@ -131,6 +131,24 @@ suite('classMap directive', () => {
     assert.isTrue(el.classList.contains('cc'));
   });
 
+  test('works if there are class names combined into a single string, separated by whitespace', () => {
+    const classInfo = {'foo bar': true, 'baz zonk': false};
+    renderClassMap(classInfo);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isFalse(el.classList.contains('baz'));
+    assert.isFalse(el.classList.contains('zonk'));
+
+    classInfo['foo bar'] = false;
+    classInfo['baz zonk'] = true;
+    renderClassMap(classInfo);
+    assert.isFalse(el.classList.contains('foo'));
+    assert.isFalse(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('baz'));
+    assert.isTrue(el.classList.contains('zonk'));
+  });
+
   test('throws when used on non-class attribute', () => {
     assert.throws(() => {
       render(html`<div id="${classMap({})}"></div>`, container);
