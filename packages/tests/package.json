@@ -43,8 +43,20 @@
     "test": {
       "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
       "dependencies": [
-        "build"
-      ]
+        "build",
+        "../labs/context:build",
+        "../labs/motion:build",
+        "../labs/observers:build",
+        "../labs/react:build",
+        "../labs/router:build",
+        "../labs/scoped-registry-mixin:build",
+        "../labs/task:build",
+        "../lit-element:build",
+        "../lit-html:build",
+        "../reactive-element:build"
+      ],
+      "files": [],
+      "output": []
     }
   }
 }

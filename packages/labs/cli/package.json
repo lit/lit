@@ -62,7 +62,8 @@
       "files": [
         "tsconfig.json",
         "src/**/*"
-      ]
+      ],
+      "output": []
     },
     "test:actual": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
