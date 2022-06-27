@@ -6,14 +6,45 @@
   "type": "module",
   "scripts": {
     "build": "wireit",
+    "build:localize": "wireit",
+    "build:ts": "wireit",
     "serve": "web-dev-server --node-resolve"
   },
   "wireit": {
     "build": {
-      "command": "rm -rf lib/* && lit-localize build && tsc",
+      "dependencies": [
+        "build:localize",
+        "build:ts"
+      ]
+    },
+    "build:localize": {
+      "command": "lit-localize build",
       "dependencies": [
         "../../../localize:build",
         "../../../localize-tools:build"
+      ],
+      "files": [
+        "lit-localize.json",
+        "tsconfig.json",
+        "src/**",
+        "xliff/**",
+        "!src/generated/**"
+      ],
+      "output": [
+        "src/generated/**"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc",
+      "dependencies": [
+        "build:localize",
+        "../../../localize:build"
+      ],
+      "files": [
+        "src/**"
+      ],
+      "output": [
+        "lib/**"
       ]
     }
   },

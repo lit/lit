@@ -54,6 +54,7 @@
         "../labs/task:build",
         "../lit-element:build",
         "../lit-html:build",
+        "../lit:build",
         "../reactive-element:build"
       ],
       "files": [],

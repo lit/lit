@@ -396,9 +396,8 @@ export function litProdConfig({
         terser(terserOptions),
         summary(),
         ...(CHECKSIZE ? [skipBundleOutput] : []),
-        ...(CHECKSIZE && copyHtmlTests
-          ? []
-          : [
+        ...(copyHtmlTests && !CHECKSIZE
+          ? [
               // Copy polyfill support tests.
               copy({
                 targets: [
@@ -417,7 +416,8 @@ export function litProdConfig({
                   },
                 ],
               }),
-            ]),
+            ]
+          : []),
       ],
     },
     ...bundled.map(({file, output, name, format, sourcemapPathTransform}) =>
