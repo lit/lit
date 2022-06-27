@@ -21,6 +21,8 @@ const tempRoot = pathlib.resolve(__dirname, '__temp');
  * Normalizes indentation and leading/trailing newlines.
  */
 const normalize = (s: string) => stripIndent(s).trim() + '\n';
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 
 /**
  * Utilities for managing a temporary filesystem and running Eleventy.
@@ -533,6 +535,32 @@ modes.forEach((mode) => {
         `)
       );
     }
+  });
+
+  test('template files with `permalink: false` in frontmatter', async ({
+    rig,
+  }) => {
+    await rig.write({
+      ...myElementDefinitionAndConfig,
+      // md
+      'index.md': `
+        ---
+        permalink: false
+        ---
+        # Heading
+        <my-element></my-element>
+      `,
+    });
+
+    const {kill, done} = rig.exec(baseCommandToExec);
+    const timeout = 10_000;
+    await Promise.race([
+      done.then(({code}) => assert.equal(code, 0)),
+      sleep(timeout).then(() => {
+        kill(9);
+        assert.not(true, `11ty process didn't exit in ${timeout}ms.`);
+      }),
+    ]);
   });
 });
 
