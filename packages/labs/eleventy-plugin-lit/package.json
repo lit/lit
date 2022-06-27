@@ -58,6 +58,7 @@
         "test",
         "worker",
         "*.tsbuildinfo",
+        "!test/__temp",
         "!test/package.json",
         "!worker/package.json"
       ],
