@@ -138,7 +138,7 @@
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
-    "typescript": "^4.3.5"
+    "typescript": "~4.4.0"
   },
   "devDependencies": {
     "@lit-labs/ssr": "^2.1.0",
@@ -149,7 +149,7 @@
     "@types/parse5": "^6.0.1",
     "@types/prettier": "^2.0.1",
     "rimraf": "^3.0.2",
-    "tests": "0.0.0",
+    "@lit-internal/tests": "0.0.0",
     "typescript-json-schema": "^0.50.0",
     "uvu": "^0.5.1"
   }

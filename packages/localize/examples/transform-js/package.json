@@ -1,5 +1,5 @@
 {
-  "name": "lit-localize-examples-transform-js",
+  "name": "@lit-internal/localize-examples-transform-js",
   "description": "Example of using lit-localize in transform mode with JavaScript",
   "version": "1.0.1",
   "private": true,

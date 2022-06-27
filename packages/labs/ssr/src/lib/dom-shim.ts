@@ -55,8 +55,10 @@ export const getWindow = ({
       old: string | null,
       value: string | null
     ): void;
-    setAttribute(name: string, value: string) {
-      attributesForElement(this).set(name, value);
+    setAttribute(name: string, value: unknown) {
+      // Emulate browser behavior that silently casts all values to string. E.g.
+      // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
+      attributesForElement(this).set(name, String(value));
     }
     removeAttribute(name: string) {
       attributesForElement(this).delete(name);

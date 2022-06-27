@@ -15,6 +15,22 @@ import {
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
+/**
+ * Our command for the Lit CLI.
+ *
+ * See ../../cli/src/lib/generate/generate.ts
+ */
+export const getCommand = () => {
+  return {
+    name: 'react',
+    description: 'Generate React wrapper components from Lit elements',
+    kind: 'resolved',
+    async generate(options: {analysis: Package}): Promise<FileTree> {
+      return await generateReactWrapper(options.analysis);
+    },
+  };
+};
+
 export const generateReactWrapper = async (
   analysis: Package
 ): Promise<FileTree> => {
