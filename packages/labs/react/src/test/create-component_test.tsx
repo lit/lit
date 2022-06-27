@@ -93,6 +93,24 @@ suite('createComponent', () => {
     await el.updateComplete;
   };
 
+  test('works without event map', async () => {
+    const EventlessComponent = createComponent(
+      window.React,
+      elementName,
+      BasicElement,
+    );
+
+    const name = 'Eventless';
+    window.ReactDOM.render(
+      <EventlessComponent>Hello {name}</EventlessComponent>,
+      container
+    );
+
+    el = container.querySelector(elementName)! as BasicElement;
+    await el.updateComplete;
+    assert.equal(el.textContent, 'Hello Eventless');
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     window.ReactDOM.render(
