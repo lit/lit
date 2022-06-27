@@ -304,7 +304,7 @@ modes.forEach((mode) => {
         <my-container>
           <my-content></my-content>
         </my-container>
-  
+
         # Heading 2
         <my-container></my-container>
       `,
@@ -323,14 +323,14 @@ modes.forEach((mode) => {
       // js
       'js/my-element.js': `
         import { html, LitElement } from 'lit';
-  
+
         class MyContainer extends LitElement {
           render() {
             return html\`<slot></slot>\`;
           }
         }
         customElements.define('my-container', MyContainer);
-  
+
         class MyContent extends LitElement {
           render() {
             return html\`<b>shadow content</b>\`;
@@ -557,7 +557,7 @@ modes.forEach((mode) => {
     await Promise.race([
       done.then(({code}) => assert.equal(code, 0)),
       sleep(timeout).then(() => {
-        kill(9);
+        kill(/* SIGINT */ 2);
         assert.not(true, `11ty process didn't exit in ${timeout}ms.`);
       }),
     ]);
