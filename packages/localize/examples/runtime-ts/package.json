@@ -35,16 +35,18 @@
       ]
     },
     "build:ts": {
-      "command": "tsc",
+      "command": "tsc --build --pretty",
       "dependencies": [
         "build:localize",
         "../../../localize:build"
       ],
+      "clean": "if-file-deleted",
       "files": [
         "src/**"
       ],
       "output": [
-        "lib/**"
+        "lib/**",
+        ".tsbuildinfo"
       ]
     }
   },
