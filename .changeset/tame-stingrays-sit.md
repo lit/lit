@@ -2,4 +2,4 @@
 '@lit-labs/eleventy-plugin-lit': patch
 ---
 
-Fix using Lit SSR with Eleventy's Serverless Plugin #3074
+Fix transform breakage in situations where `outputPath` is false (e.g. setting `permalink: false` or using the serverless plugin).
