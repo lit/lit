@@ -76,6 +76,15 @@ packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
+packages/lit-starter-element-maximal/test/**/*
+packages/lit-starter-element-maximal/lib/**/*
+packages/lit-starter-element-maximal/demo/js
+packages/lit-starter-element-maximal/docs/**/*
+packages/lit-starter-element-maximal/**/node_modules
+packages/lit-starter-element-maximal/**/*.tsbuildinfo
+packages/lit-starter-element-maximal/**/.wireit
+packages/lit-starter-element-maximal/**/custom-elements.json
+
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
 # only generated for size check

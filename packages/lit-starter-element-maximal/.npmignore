@@ -3,5 +3,7 @@ demo
 test
 src
 docs
+docs-src
 node_modules
 README.md
+.wireit
