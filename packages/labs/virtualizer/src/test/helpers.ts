@@ -5,12 +5,43 @@
  */
 
 /**
- * Use this after rendering, resizing or scrolling to `await` the
- * reflow necessary before validating events and visibility changes.
+ * To aid in Mocha's reporting from within any helper method that
+ * throws an error, this function returns the line of a stack trace
+ * which indicates the caller of the caller of this function.
  */
-export async function wait(n = 0) {
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  return new Promise((resolve) => setTimeout(resolve, n));
+export function getCallerFromStack() {
+  try {
+    throw new Error();
+  } catch (e: unknown) {
+    return (e as Error).stack?.split(/\n/)[3]?.replace(/^ {2}/, '');
+  }
+}
+
+/**
+ * Use this to await a condition (given as an anonymous function that returns
+ * a boolean value) to be met.  We will stop waiting after the timeout is
+ * exceeded, after which time we will reject the promise.
+ */
+export async function until(cond: () => Boolean, timeout = 1000) {
+  const start = new Date().getTime();
+  const caller = getCallerFromStack();
+  return new Promise((resolve, reject) => {
+    check();
+    function check() {
+      if (cond()) {
+        return resolve(true);
+      }
+      const now = new Date().getTime();
+      if (now - start > timeout) {
+        return reject(
+          new Error(
+            `Condition not met within ${timeout}ms: "${cond.toString()}"\n${caller}`
+          )
+        );
+      }
+      setTimeout(check, 0);
+    }
+  });
 }
 
 /**
