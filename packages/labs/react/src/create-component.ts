@@ -145,7 +145,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   type ReactProps = Omit<React.HTMLAttributes<I>, keyof E>;
   type ElementWithoutPropsOrEvents = Omit<I, keyof E | keyof ReactProps>;
   type UserProps = Partial<
-    ElementWithoutPropsOrEvents & ReactProps & EventProps<E>
+    ReactProps & ElementWithoutPropsOrEvents & EventProps<E>
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
