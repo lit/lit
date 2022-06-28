@@ -65,6 +65,7 @@ jobs:
         env:
           BROWSERS: preset:local
           CONCURRENT_BROWSERS: 3
+          WIREIT_PARALLEL: 1
         run: npm run test
 
   windows-tools:
