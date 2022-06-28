@@ -31,7 +31,7 @@ Add the plugin to your config file.
 
 ```js
 // web-test-runner.config.js
-import {litSsrPlugin} from '@lit-labs/testing';
+import {litSsrPlugin} from '@lit-labs/testing/web-test-runner.js';
 
 export default {
   plugins: [litSsrPlugin()],
@@ -51,7 +51,7 @@ Example
 
 ```js
 // my-element.test.js
-import {ssrFixture} from '@lit-labs/testing';
+import {ssrFixture} from '@lit-labs/testing/fixtures.js';
 import {html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 
@@ -84,7 +84,7 @@ import {
   csrFixture,
   ssrNonHydratedFixture,
   ssrHydratedFixture,
-} from '@lit-labs/testing';
+} from '@lit-labs/testing/fixtures.js';
 import {html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 

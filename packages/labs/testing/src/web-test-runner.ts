@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export {stripExpressionComments, stripExpressionMarkers} from './lib/utils.js';
+export {litSsrPlugin} from './lib/lit-ssr-plugin.js';
