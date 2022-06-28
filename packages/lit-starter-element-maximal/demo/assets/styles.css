@@ -1,0 +1,15 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+img {
+  width: 200px;
+  margin-block-end: 1rem;
+}
+
+api-viewer {
+  width: 100%;
+  max-width: none;
+}

@@ -1,0 +1,7 @@
+**/*.tsbuildinfo
+demo
+test
+src
+docs
+node_modules
+README.md

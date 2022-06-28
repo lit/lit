@@ -1,0 +1,163 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: #333;
+  font-family: 'Open Sans', arial, sans-serif;
+  min-width: min-content;
+  min-height: 100vh;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+#main-wrapper {
+  flex-grow: 1;
+}
+
+main {
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+a:visited {
+  color: inherit;
+}
+
+header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 360px;
+  margin: 0;
+  background: linear-gradient(0deg, rgba(9,9,121,1) 0%, rgba(0,212,255,1) 100%);
+  color: white;
+}
+
+footer {
+  width: 100%;
+  min-height: 120px;
+  background: gray;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px;
+  margin-top: 64px;
+}
+
+h1 {
+  font-size: 2.5em;
+  font-weight: 400;
+}
+
+h2 {
+  font-size: 1.6em;
+  font-weight: 300;
+  margin: 64px 0 12px;
+}
+
+h3 {
+  font-weight: 300;
+}
+
+header h1 {
+  width: auto;
+  font-size: 2.8em;
+  margin: 0;
+}
+
+header h2 {
+  width: auto;
+  margin: 0;
+}
+
+nav {
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  grid-template-columns: repeat(auto-fit, 240px);
+  justify-content: center;
+  border-bottom: 1px solid #efefef;
+}
+
+nav > a {
+  color: #444;
+  display: block;
+  flex: 1;
+  font-size: 18px;
+  padding: 20px 0;
+  text-align: center;
+  text-decoration: none;
+}
+
+nav > a:hover {
+  text-decoration: underline;
+}
+
+nav.collection {
+  border: none;
+}
+
+nav.collection > ul {
+  padding: 0;
+  list-style: none;
+}
+
+nav.collection > ul > li {
+  padding: 4px 0;
+}
+
+nav.collection > ul > li.selected {
+  font-weight: 600;
+}
+
+nav.collection a {
+  text-decoration: none;
+}
+
+nav.collection a:hover {
+  text-decoration: underline;
+}
+
+section.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 488px));
+  grid-gap: 48px;
+  justify-content: center;
+}
+
+section.columns > div {
+  flex: 1;
+}
+
+section.examples {
+  display: grid;
+  grid-template-columns: 240px minmax(400px, 784px);
+  grid-gap: 48px;
+  justify-content: center;
+}
+
+section.examples h2:first-of-type {
+  margin-top: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  font-weight: 600;
+}
+
+td, th {
+  border: solid 1px #aaa;
+  padding: 4px;
+  text-align: left;
+  vertical-align: top;
+}

@@ -1,0 +1,8 @@
+/test/**/*
+/lib/**/*
+/demo/js
+/docs/**/*
+node_modules
+**/*.tsbuildinfo
+.wireit
+custom-elements.json

@@ -1,0 +1,9 @@
+node_modules/*
+/docs-src
+/docs
+custom-elements.json
+web-test-runner.config.js
+/lib
+/demo
+/test
+.wireit
