@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "composite": true,
+    "incremental": true,
     "target": "es2019",
     // "module": "es2015",
     "module": "es2020",
@@ -22,9 +22,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["*.d.ts", "**/*.d.ts"],
-  "references": []
+  "exclude": ["*.d.ts", "**/*.d.ts"]
 }

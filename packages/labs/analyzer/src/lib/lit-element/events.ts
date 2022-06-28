@@ -11,11 +11,16 @@
  */
 
 import ts from 'typescript';
+import {DiagnosticsError} from '../errors.js';
 import {Event} from '../model.js';
+import {ProgramContext} from '../program-context.js';
 
 import {LitClassDeclaration} from './lit-element.js';
 
-export const getEvents = (node: LitClassDeclaration) => {
+export const getEvents = (
+  node: LitClassDeclaration,
+  programContext: ProgramContext
+) => {
   const events = new Map<string, Event>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
@@ -27,22 +32,24 @@ export const getEvents = (node: LitClassDeclaration) => {
         } else if (typeof comment === 'string') {
           const result = parseFiresTagComment(comment);
           if (result === undefined) {
-            // TODO(justinfagnani): report syntax error?
-            continue;
+            throw new DiagnosticsError(
+              tag,
+              'The @fires annotation was not in a recognized form. ' +
+                'Use `@fires event-name {Type} - Description`.'
+            );
           }
           const {name, type, description} = result;
-          // TODO(justinfagnani): how do we dereference the event type name
-          // into a TypeScript type? TypeScript will automatically do this for
-          // jsdoc tags it understands, but unfortunately @fires is not one of
-          // them.
           events.set(name, {
             name,
-            typeString: type,
+            type: type ? programContext.getTypeForJSDocTag(tag) : undefined,
             description,
           });
         } else {
           // TODO: when do we get a ts.NodeArray<ts.JSDocComment>?
-          throw new Error(`Internal error: unsupported node type`);
+          throw new DiagnosticsError(
+            tag,
+            `Internal error: unsupported node type`
+          );
         }
       }
     }

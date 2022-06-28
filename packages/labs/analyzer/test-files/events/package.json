@@ -1,4 +1,5 @@
 {
+  "name": "@lit-internal/test-events",
   "dependencies": {
     "lit": "^2.0.0"
   }

@@ -9,4 +9,5 @@ import {defaultConfig} from './rollup.config.js';
 export default defaultConfig({
   outputDir: './version-stability-build/',
   testPropertyPrefix: 'VERSION_TEST_',
+  copyHtmlTests: false,
 });
