@@ -5,24 +5,21 @@
  */
 
 import ts from 'typescript';
-import {Module} from '../model.js';
+import {Module, Analyzer} from '../model.js';
 import * as path from 'path';
 import {getClassDeclaration} from './classes.js';
 import {getVariableDeclarations} from './variables.js';
-import {ProgramContext} from '../program-context.js';
 import {AbsolutePath, absoluteToPackage} from '../paths.js';
+import {getFunctionDeclaration} from './functions.js';
 
-export const getModule = (
-  sourceFile: ts.SourceFile,
-  programContext: ProgramContext
-) => {
+export const getModule = (sourceFile: ts.SourceFile, analyzer: Analyzer) => {
   const sourcePath = absoluteToPackage(
     sourceFile.fileName as AbsolutePath,
-    programContext.packageRoot
+    analyzer.packageRoot
   );
-  const fullSourcePath = path.join(programContext.packageRoot, sourcePath);
+  const fullSourcePath = path.join(analyzer.packageRoot, sourcePath);
   const jsPath = ts
-    .getOutputFileNames(programContext.commandLine, fullSourcePath, false)
+    .getOutputFileNames(analyzer.commandLine, fullSourcePath, false)
     .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
   // we might need to handle this differently
@@ -37,24 +34,26 @@ export const getModule = (
     // this so that all our model paths are OS-native
     jsPath: absoluteToPackage(
       path.normalize(jsPath) as AbsolutePath,
-      programContext.packageRoot as AbsolutePath
+      analyzer.packageRoot as AbsolutePath
     ),
     sourceFile,
   });
 
-  programContext.currentModule = module;
-
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
-      module.declarations.push(getClassDeclaration(statement, programContext));
+      module.declarations.push(getClassDeclaration(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
       module.declarations.push(
         ...statement.declarationList.declarations
-          .map((dec) => getVariableDeclarations(dec, dec.name, programContext))
+          .map((dec) => getVariableDeclarations(dec, dec.name, analyzer))
           .flat()
+      );
+    } else if (ts.isFunctionDeclaration(statement)) {
+      module.declarations.push(
+        getFunctionDeclaration(statement, statement.name!, analyzer)
       );
     }
   }
-  programContext.currentModule = undefined;
+
   return module;
 };

@@ -7,14 +7,14 @@
 /**
  * @fileoverview
  *
- * Utilities for working with classes
+ * Utilities for working with variables
  */
 
 import ts from 'typescript';
-import {MixinDeclaration, VariableDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
-import {maybeGetMixinDeclaration} from './mixins.js';
+import {VariableDeclaration, Analyzer, Declaration} from '../model.js';
 import {DiagnosticsError} from '../errors.js';
+import {getFunctionDeclaration} from './functions.js';
+import {getClassDeclaration} from './classes.js';
 
 type VariableName =
   | ts.Identifier
@@ -24,16 +24,26 @@ type VariableName =
 export const getVariableDeclarations = (
   dec: ts.VariableDeclaration,
   name: VariableName,
-  programContext: ProgramContext
-): (VariableDeclaration | MixinDeclaration)[] => {
+  analyzer: Analyzer
+): Declaration[] => {
   if (ts.isIdentifier(name)) {
+    const initializer = dec.initializer;
+    if (initializer !== undefined) {
+      if (
+        ts.isArrowFunction(initializer) ||
+        ts.isFunctionExpression(initializer)
+      ) {
+        return [getFunctionDeclaration(initializer, name, analyzer)];
+      } else if (ts.isClassExpression(initializer)) {
+        return [getClassDeclaration(initializer, analyzer)];
+      }
+    }
     return [
-      maybeGetMixinDeclaration(dec, programContext) ??
-        new VariableDeclaration({
-          name: name.text,
-          node: dec,
-          type: programContext.getTypeForNode(name),
-        }),
+      new VariableDeclaration({
+        name: name.text,
+        node: dec,
+        getType: () => analyzer.getTypeForNode(name),
+      }),
     ];
   } else if (
     // Recurse into the elements of an array/object destructuring variable
@@ -45,7 +55,7 @@ export const getVariableDeclarations = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarations(dec, el.name, programContext))
+      .map((el) => getVariableDeclarations(dec, el.name, analyzer))
       .flat();
   } else {
     throw new DiagnosticsError(

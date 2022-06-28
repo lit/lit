@@ -214,7 +214,7 @@ test('complexType', ({module}) => {
   assert.equal(type.references[1].isGlobal, true);
   assert.equal(type.references[2].name, 'LitElement');
   assert.equal(type.references[2].package, 'lit');
-  assert.equal(type.references[2].module, '');
+  assert.equal(type.references[2].module, undefined);
   assert.equal(type.references[2].isGlobal, false);
   assert.equal(type.references[3].name, 'ImportedClass');
   assert.equal(type.references[3].package, '@lit-internal/test-types');
@@ -238,7 +238,7 @@ test('destructObjNested', ({module}) => {
   assert.equal(type.references.length, 1);
   assert.equal(type.references[0].name, 'LitElement');
   assert.equal(type.references[0].package, 'lit');
-  assert.equal(type.references[0].module, '');
+  assert.equal(type.references[0].module, undefined);
   assert.equal(type.references[0].isGlobal, false);
 });
 
@@ -268,7 +268,7 @@ test('separatelyExportedDestructObjNested', ({module}) => {
   assert.equal(type.references.length, 1);
   assert.equal(type.references[0].name, 'LitElement');
   assert.equal(type.references[0].package, 'lit');
-  assert.equal(type.references[0].module, '');
+  assert.equal(type.references[0].module, undefined);
   assert.equal(type.references[0].isGlobal, false);
 });
 
@@ -288,7 +288,7 @@ test('separatelyExportedDestructArrNested', ({module}) => {
   assert.equal(type.references.length, 1);
   assert.equal(type.references[0].name, 'LitElement');
   assert.equal(type.references[0].package, 'lit');
-  assert.equal(type.references[0].module, '');
+  assert.equal(type.references[0].module, undefined);
   assert.equal(type.references[0].isGlobal, false);
 });
 

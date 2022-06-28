@@ -11,8 +11,7 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {LitElementDeclaration, Analyzer} from '../model.js';
 import {getHeritage} from '../javascript/classes.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
@@ -24,15 +23,15 @@ import {getProperties} from './properties.js';
  */
 export const getLitElementDeclaration = (
   declaration: LitClassDeclaration,
-  programContext: ProgramContext
+  analyzer: Analyzer
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(declaration),
     name: declaration.name?.text,
     node: declaration,
-    reactiveProperties: getProperties(declaration, programContext),
-    events: getEvents(declaration, programContext),
-    ...getHeritage(declaration, programContext),
+    reactiveProperties: getProperties(declaration, analyzer),
+    events: getEvents(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer),
   });
 };
 
@@ -77,15 +76,13 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
  */
 export const isLitElement = (
   node: ts.Node,
-  programContext: ProgramContext
+  analyzer: Analyzer
 ): node is LitClassDeclaration => {
   if (!ts.isClassLike(node)) {
     return false;
   }
-  const type = programContext.checker.getTypeAtLocation(
-    node
-  ) as ts.InterfaceType;
-  const baseTypes = programContext.checker.getBaseTypes(type);
+  const type = analyzer.checker.getTypeAtLocation(node) as ts.InterfaceType;
+  const baseTypes = analyzer.checker.getBaseTypes(type);
   return baseTypes.some((t) =>
     t.isIntersection()
       ? t.types.some(_isLitElementClassDeclaration)

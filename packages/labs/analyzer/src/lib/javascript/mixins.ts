@@ -12,142 +12,104 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {MixinDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {MixinDeclaration, Analyzer} from '../model.js';
 import {getClassDeclaration} from './classes.js';
+
+const nodeHasMixinHint = (node: ts.Node) =>
+  ts.getJSDocTags(node).some((tag) => tag.tagName.text === 'mixin');
+
+const throwIfMixin = (
+  hasMixinHint: boolean,
+  node: ts.Node,
+  message: string
+) => {
+  if (hasMixinHint) {
+    throw new DiagnosticsError(node, message);
+  } else {
+    return undefined;
+  }
+};
 
 /**
  * If the given variable declaration was a mixin function, returns a
  * MixinDeclaration, otherwise returns undefined.
  *
- * The mixin logic requires a few important heuristics to be met in order to be
- * detected as a mixin. This shouldn't be too onerous since TypeScript also
- * requires a fairly rigid structure (described at
- * https://lit.dev/docs/composition/mixins/#mixins-in-typescript):
+ * The mixin logic requires a few important syntactic heuristics to be met in
+ * order to be detected as a mixin.
  *
- * 1. Must be a single const assignment to an arrow function. TODO(kschaaf)
- *    expand this to function declarations once those are added to analyzer.
- * 2. Must have a type parameter of `<T extends Constructor<MyBaseClass>>`; even
- *    though Constructor isn't a TS built-in (yet) and we could look for a
- *    class-like interface, for now we'll just require users to use a
- *    `Constructor` named type helper. The generic name can be whatever, need
- *    not be "T".
- * 3. Must have a parameter that accepts the super class being extended, typed
- *    to the type parameter found in (2) (e.g. `T`, or whatever it was named).
- * 4. Must have a function block containing a class declaration and a return
- *    statement returning that class. Class expressions returned from a
- *    block-less arrow function is not supported for now, since decorators don't
- *    work with those in TS anyway.
- * 5. The return value must be cast to the super class type parameter (e.g. T),
- *    or an intersection of it with the mixin's interface. The cast can either
- *    be on the return value, i.e.
- *     `return MyClass as T & Constructor<MyInterface>`
- *                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- *    or in the function's type position, i.e.
- *     `const MyMixin = <T...>(s: T): T & Constructor<MyInterface> => {...}`
- *                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^q
  * If the function is unannotated and does not match the above mixin shape, it
  * will silently just be analyzed as a simple function and not a mixin. However,
  * the `@mixin` annotation can be added to produce specific diagnostic errors
- * when a condition for being analyzed as a mixin are not met.
+ * when a condition for being analyzed as a mixin is not met.
  */
-export const maybeGetMixinDeclaration = (
+export const maybeGetMixinFromVariableDeclaration = (
   declaration: ts.VariableDeclaration,
-  programContext: ProgramContext
+  analyzer: Analyzer
 ): MixinDeclaration | undefined => {
-  const hasMixinHint = ts
-    .getJSDocTags(declaration)
-    .some((tag) => tag.tagName.text === 'mixin');
-  const notMixin = (node: ts.Node, message: string) => {
-    if (hasMixinHint) {
-      throw new DiagnosticsError(node, message);
-    } else {
-      return undefined;
-    }
-  };
-  const fn = declaration.initializer;
-  if (!fn || !ts.isArrowFunction(fn)) {
-    return notMixin(
-      fn ?? declaration,
+  const hasMixinHint = nodeHasMixinHint(declaration);
+  const initializer = declaration.initializer;
+  if (
+    initializer === undefined ||
+    !(
+      ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)
+    ) ||
+    !ts.isIdentifier(declaration.name)
+  ) {
+    return throwIfMixin(
+      hasMixinHint,
+      initializer ?? declaration,
       `Expected mixin to be defined as a single const assignment to an ` +
-        `arrow function.`
+        `arrow function or function expression.`
     );
   }
-  if (!fn.typeParameters || fn.typeParameters.length < 1) {
-    // TODO(kschaaf): This expects a conventional syntax-based "Constructor"
-    // type param; we could also use the type-checker to be less prescriptive
-    // and find a type param that resolves to `{new: something}`, but it would
-    // take more work to pull a constructor constraint out of it
-    return notMixin(
-      fn,
-      `Expected mixin to have a type parameter of "Constructor"`
-    );
-  }
-  let superClassTemplateName: string | undefined = undefined;
-  let superClassConstraintType;
-  for (const typeParam of fn.typeParameters) {
-    if (
-      ts.isIdentifier(typeParam.name) &&
-      typeParam.constraint !== undefined &&
-      ts.isTypeReferenceNode(typeParam.constraint) &&
-      ts.isIdentifier(typeParam.constraint.typeName) &&
-      typeParam.constraint.typeName.text === 'Constructor'
-    ) {
-      superClassTemplateName = typeParam.name.text;
-      const {constraint} = typeParam;
-      if (constraint?.typeArguments !== undefined) {
-        if (constraint.typeArguments.length > 1) {
-          return notMixin(
-            constraint,
-            `Expected mixin Constructor constraint to have zero or one ` +
-              `type arguments.`
-          );
-        }
-        const superClassConstraint = constraint.typeArguments![0];
-        superClassConstraintType =
-          programContext.checker.getTypeFromTypeNode(superClassConstraint);
-      }
-    }
-  }
-  if (superClassTemplateName === undefined) {
-    return notMixin(
-      fn,
-      `Expected mixin to have a type parameter of "Constructor"`
-    );
-  }
+  return maybeGetMixinFromFunctionLike(
+    initializer,
+    declaration.name,
+    analyzer,
+    hasMixinHint
+  );
+};
+
+/**
+ * If the given variable declaration was a mixin function, returns a
+ * MixinDeclaration, otherwise returns undefined.
+ *
+ * The mixin logic requires a few important syntactic heuristics to be met in
+ * order to be detected as a mixin.
+ *
+ * If the function is unannotated and does not match the above mixin shape, it
+ * will silently just be analyzed as a simple function and not a mixin. However,
+ * the `@mixin` annotation can be added to produce specific diagnostic errors
+ * when a condition for being analyzed as a mixin is not met.
+ */
+export const maybeGetMixinFromFunctionLike = (
+  fn: ts.FunctionLikeDeclaration,
+  name: ts.Identifier,
+  analyzer: Analyzer,
+  hasMixinHint = nodeHasMixinHint(fn)
+) => {
   if (!fn.parameters || fn.parameters.length < 1) {
-    return notMixin(
+    return throwIfMixin(
+      hasMixinHint,
       fn,
-      `Expected mixin to have a single "superClass" parameter of type T ` +
-        `(where T is a Constructor)`
+      `Expected mixin to have a superClass parameter.`
     );
   }
-  let foundSuperClass = false;
-  for (const param of fn.parameters) {
-    if (
-      param.type !== undefined &&
-      ts.isTypeReferenceNode(param.type) &&
-      ts.isIdentifier(param.type.typeName) &&
-      param.type.typeName.text === superClassTemplateName
-    ) {
-      foundSuperClass = true;
-      break;
-    }
-  }
-  if (!foundSuperClass) {
-    return notMixin(
-      fn,
-      `Expected mixin to have a superClass parameter of type ` +
-        `"${superClassTemplateName}"`
-    );
-  }
+  const possibleSuperClasses = fn.parameters.map((p) =>
+    ts.isIdentifier(p.name) ? p.name.text : ''
+  );
   const functionBody = fn.body;
   if (functionBody === undefined) {
-    return notMixin(fn, `Expected mixin to have a block function body.`);
+    return throwIfMixin(
+      hasMixinHint,
+      fn,
+      `Expected mixin to have a block function body.`
+    );
   }
   if (!ts.isBlock(functionBody)) {
-    return notMixin(
-      fn.body,
+    return throwIfMixin(
+      hasMixinHint,
+      functionBody,
       `Expected mixin to have a block function body; arrow-function class ` +
         `expression syntax is not supported.`
     );
@@ -163,74 +125,70 @@ export const maybeGetMixinDeclaration = (
     }
   });
   if (!classDeclaration) {
-    return notMixin(
-      fn.body,
+    return throwIfMixin(
+      hasMixinHint,
+      functionBody,
       `Expected mixin to contain a class declaration statement.`
     );
   }
   if (!returnStatement) {
-    return notMixin(
-      fn.body,
+    return throwIfMixin(
+      hasMixinHint,
+      functionBody,
       `Expected mixin to contain a return statement returning a class.`
     );
   }
-  let returnType = fn.type;
-  if (!returnType) {
-    if (
-      !returnStatement.expression ||
-      !ts.isAsExpression(returnStatement.expression)
-    ) {
-      return notMixin(
-        returnStatement,
-        `Expected mixin to explicitly type the return value to ` +
-          `${superClassTemplateName} (or an intersection of ` +
-          `${superClassTemplateName} with the mixin's interface).`
-      );
-    }
-    returnType = returnStatement.expression.type;
+  const extendsClause = classDeclaration.heritageClauses?.find(
+    (c) => c.token === ts.SyntaxKind.ExtendsKeyword
+  );
+  if (extendsClause === undefined) {
+    return throwIfMixin(
+      hasMixinHint,
+      classDeclaration,
+      `Expected mixin to contain class declaration extending a superClass argument to function.`
+    );
   }
-  if (ts.isTypeReferenceNode(returnType)) {
-    if (!ts.isIdentifier(returnType.typeName)) {
-      return notMixin(
-        returnType.typeName,
-        `Mixins must explicitly type the return value to ` +
-          `${superClassTemplateName} (or an intersection of ` +
-          `${superClassTemplateName} with the mixin's interface).`
-      );
-    }
-    if (returnType.typeName.text !== superClassTemplateName) {
-      return notMixin(
-        returnType.typeName,
-        `Mixins must explicitly type the return value to ` +
-          `${superClassTemplateName} (or an intersection of ` +
-          `${superClassTemplateName} with the mixin's interface).`
-      );
-    }
-  } else if (ts.isIntersectionTypeNode(returnType)) {
-    if (
-      !returnType.types.some(
-        (t) =>
-          ts.isTypeReferenceNode(t) &&
-          ts.isIdentifier(t.typeName) &&
-          t.typeName.text === superClassTemplateName
-      )
-    ) {
-      return notMixin(
-        returnType,
-        `Mixins must explicitly type the return value to ` +
-          `${superClassTemplateName} (or an intersection of ` +
-          `${superClassTemplateName} with the mixin's interface).`
-      );
-    }
+  if (extendsClause.types.length !== 1) {
+    throw new DiagnosticsError(
+      extendsClause,
+      'Internal error: did not expect a mixin class extends clause to have multiple types'
+    );
   }
-  const name =
-    classDeclaration.name ?? ts.isIdentifier(declaration.name)
-      ? declaration.name.getText()
-      : '';
+  const superClassArgIdx = findSuperClassArgIndexFromHeritage(
+    possibleSuperClasses,
+    extendsClause.types[0].expression
+  );
+  if (superClassArgIdx < 0) {
+    throw new DiagnosticsError(
+      extendsClause,
+      'Did not find a "superClass" argument used in the extends clause of mixin class.'
+    );
+  }
+
   return new MixinDeclaration({
     node: fn,
-    name,
-    classDeclaration: getClassDeclaration(classDeclaration, programContext),
-    superClassConstraintType,
+    name: name.getText(),
+    superClassArgIdx,
+    classDeclaration: getClassDeclaration(classDeclaration, analyzer),
   });
+};
+
+const findSuperClassArgIndexFromHeritage = (
+  possibleSuperClasses: string[],
+  expression: ts.Expression
+): number => {
+  if (ts.isIdentifier(expression)) {
+    return possibleSuperClasses.indexOf(expression.text);
+  } else if (ts.isCallExpression(expression)) {
+    for (const arg of expression.arguments) {
+      const index = findSuperClassArgIndexFromHeritage(
+        possibleSuperClasses,
+        arg
+      );
+      if (index >= 0) {
+        return index;
+      }
+    }
+  }
+  return -1;
 };

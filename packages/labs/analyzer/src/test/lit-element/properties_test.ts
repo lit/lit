@@ -60,6 +60,7 @@ test('string property with no options', ({element}) => {
   assert.ok(property);
   assert.equal(property.name, 'noOptionsString');
   assert.equal(property.attribute, 'nooptionsstring');
+  assert.ok(property.type);
   assert.equal(property.type.text, 'string');
   assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
@@ -71,6 +72,7 @@ test('number property with no options', ({element}) => {
   const property = element.reactiveProperties.get('noOptionsNumber')!;
   assert.equal(property.name, 'noOptionsNumber');
   assert.equal(property.attribute, 'nooptionsnumber');
+  assert.ok(property.type);
   assert.equal(property.type.text, 'number');
   assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
@@ -78,6 +80,7 @@ test('number property with no options', ({element}) => {
 
 test('string property with type', ({element}) => {
   const property = element.reactiveProperties.get('typeString')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'string');
   assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
@@ -85,6 +88,7 @@ test('string property with type', ({element}) => {
 
 test('number property with type', ({element}) => {
   const property = element.reactiveProperties.get('typeNumber')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'number');
   assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
@@ -92,6 +96,7 @@ test('number property with type', ({element}) => {
 
 test('boolean property with type', ({element}) => {
   const property = element.reactiveProperties.get('typeBoolean')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'boolean');
   assert.equal(property.type.references.length, 0);
   assert.ok(property.type);
@@ -99,6 +104,7 @@ test('boolean property with type', ({element}) => {
 
 test('property typed with local class', ({element}) => {
   const property = element.reactiveProperties.get('localClass')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'LocalClass');
   assert.equal(property.type.references.length, 1);
   assert.equal(property.type.references[0].name, 'LocalClass');
@@ -111,6 +117,7 @@ test('property typed with local class', ({element}) => {
 
 test('property typed with imported class', ({element}) => {
   const property = element.reactiveProperties.get('importedClass')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'ImportedClass');
   assert.equal(property.type.references.length, 1);
   assert.equal(property.type.references[0].name, 'ImportedClass');
@@ -123,6 +130,7 @@ test('property typed with imported class', ({element}) => {
 
 test('property typed with global class', ({element}) => {
   const property = element.reactiveProperties.get('globalClass')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'HTMLElement');
   assert.equal(property.type.references.length, 1);
   assert.equal(property.type.references[0].name, 'HTMLElement');
@@ -131,6 +139,7 @@ test('property typed with global class', ({element}) => {
 
 test('property typed with union', ({element}) => {
   const property = element.reactiveProperties.get('union')!;
+  assert.ok(property.type);
   assert.equal(property.type.text, 'LocalClass | HTMLElement | ImportedClass');
   assert.equal(property.type.references.length, 3);
   assert.equal(property.type.references[0].name, 'LocalClass');

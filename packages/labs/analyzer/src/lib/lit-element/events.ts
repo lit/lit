@@ -12,15 +12,11 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {Event} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {Event, Analyzer} from '../model.js';
 
 import {LitClassDeclaration} from './lit-element.js';
 
-export const getEvents = (
-  node: LitClassDeclaration,
-  programContext: ProgramContext
-) => {
+export const getEvents = (node: LitClassDeclaration, analyzer: Analyzer) => {
   const events = new Map<string, Event>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
@@ -39,11 +35,15 @@ export const getEvents = (
             );
           }
           const {name, type, description} = result;
-          events.set(name, {
+          events.set(
             name,
-            type: type ? programContext.getTypeForJSDocTag(tag) : undefined,
-            description,
-          });
+            new Event({
+              name,
+              getType: () =>
+                type ? analyzer.getTypeForJSDocTag(tag) : undefined,
+              description,
+            })
+          );
         } else {
           // TODO: when do we get a ts.NodeArray<ts.JSDocComment>?
           throw new DiagnosticsError(

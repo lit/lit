@@ -8,12 +8,11 @@ import {suite} from 'uvu';
 import 'source-map-support/register.js';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import * as path from 'path';
-import ts from 'typescript';
+// import ts from 'typescript';
 import {fileURLToPath} from 'url';
 
 import {Analyzer} from '../../lib/analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
+import {AbsolutePath, PackagePath} from '../../lib/paths.js';
 import {
   Package,
   ClassDeclaration,
@@ -39,13 +38,8 @@ try {
 }
 
 test('basic mixin declaration', () => {
-  const module = pkg.modules.find(
-    (m) => m.sourcePath === path.normalize('src/mixins.ts')
-  );
-  const decl = module!.declarations.find(
-    (d) => d.name === 'Highlightable'
-  ) as MixinDeclaration;
-  assert.instance(decl, MixinDeclaration);
+  const module = pkg.getModule('mixins.js' as PackagePath);
+  const decl = module.getExport('Highlightable', MixinDeclaration);
   assert.instance(decl.classDeclaration, ClassDeclaration);
   assert.instance(decl.classDeclaration, LitElementDeclaration);
   const classDecl = decl.classDeclaration as LitElementDeclaration;
@@ -54,48 +48,65 @@ test('basic mixin declaration', () => {
 });
 
 test('basic mixin usage', () => {
-  const module = pkg.modules.find(
-    (m) => m.sourcePath === path.normalize('src/element-a.ts')
-  );
-  const decl = module!.declarations.find(
-    (d) => d.name === 'ElementA'
-  ) as LitElementDeclaration;
-  assert.instance(decl, LitElementDeclaration);
-  assert.ok(ts.isImportSpecifier(decl.superClassDeclarationNode!));
-  assert.equal(decl.superClassDeclarationNode?.name?.text, 'LitElement');
-  assert.equal(decl.mixinDeclarationNodes.length, 1);
-  assert.equal(decl.mixinDeclarationNodes[0].name?.text, 'Highlightable');
+  const module = pkg.getModule('element-a.js' as PackagePath);
+  const decl = module.getExport('ElementA', LitElementDeclaration);
+  assert.ok(decl.heritage.superClass);
+  assert.equal(decl.heritage.superClass.name, 'LitElement');
+  assert.equal(decl.heritage.mixins.length, 1);
+  assert.equal(decl.heritage.mixins[0].name, 'Highlightable');
 });
 
 test('complex mixin declaration A', () => {
-  const module = pkg.modules.find(
-    (m) => m.sourcePath === path.normalize('src/mixins.ts')
-  );
-  const decl = module!.declarations.find(
-    (d) => d.name === 'Highlightable'
-  ) as MixinDeclaration;
-  assert.instance(decl, MixinDeclaration);
+  const module = pkg.getModule('mixins.js' as PackagePath);
+  const decl = module.getExport('A', MixinDeclaration);
   assert.instance(decl.classDeclaration, ClassDeclaration);
   assert.instance(decl.classDeclaration, LitElementDeclaration);
   const classDecl = decl.classDeclaration as LitElementDeclaration;
-  assert.equal(classDecl.name, 'HighlightableElement');
-  assert.ok(classDecl.reactiveProperties.get('highlight'));
+  assert.equal(classDecl.name, 'A');
+  assert.ok(classDecl.reactiveProperties.get('a'));
+});
+
+test('complex mixin declaration B', () => {
+  const module = pkg.getModule('mixins.js' as PackagePath);
+  const decl = module.getExport('B', MixinDeclaration);
+  assert.instance(decl.classDeclaration, ClassDeclaration);
+  assert.instance(decl.classDeclaration, LitElementDeclaration);
+  const classDecl = decl.classDeclaration as LitElementDeclaration;
+  assert.equal(classDecl.name, 'B');
+  assert.ok(classDecl.reactiveProperties.get('b'));
+});
+
+test('complex mixin declaration C', () => {
+  const module = pkg.getModule('mixins.js' as PackagePath);
+  const decl = module.getExport('C', MixinDeclaration);
+  assert.instance(decl.classDeclaration, ClassDeclaration);
+  assert.instance(decl.classDeclaration, LitElementDeclaration);
+  const classDecl = decl.classDeclaration as LitElementDeclaration;
+  assert.equal(classDecl.name, 'C');
+  assert.ok(classDecl.reactiveProperties.get('c'));
 });
 
 test('complex mixin usage', () => {
-  const module = pkg.modules.find(
-    (m) => m.sourcePath === path.normalize('src/element-b.ts')
-  );
-  const decl = module!.declarations.find(
-    (d) => d.name === 'ElementB'
-  ) as LitElementDeclaration;
-  assert.instance(decl, LitElementDeclaration);
-  assert.ok(ts.isImportSpecifier(decl.superClassDeclarationNode!));
-  assert.equal(decl.superClassDeclarationNode?.name?.text, 'LitElement');
-  assert.equal(decl.mixinDeclarationNodes.length, 3);
-  assert.equal(decl.mixinDeclarationNodes[0].name?.text, 'A');
-  assert.equal(decl.mixinDeclarationNodes[1].name?.text, 'B');
-  assert.equal(decl.mixinDeclarationNodes[2].name?.text, 'C');
+  const module = pkg.getModule('element-b.js' as PackagePath);
+  const decl = module.getExport('ElementB', LitElementDeclaration);
+  assert.ok(decl.heritage.superClass);
+  assert.equal(decl.heritage.superClass.name, 'LitElement');
+  assert.equal(decl.heritage.mixins.length, 3);
+  assert.equal(decl.heritage.mixins[0].name, 'A');
+  assert.equal(decl.heritage.mixins[1].name, 'B');
+  assert.equal(decl.heritage.mixins[2].name, 'C');
+});
+
+// TODO(kschaaf): In `CBase = C(LitElement)`, can't make CBase a
+// ClassDeclaration model in first pass because we can't know that `C` is a
+// mixin
+test.skip('mixins applied outside extends clause', () => {
+  const module = pkg.getModule('element-c.js' as PackagePath);
+  const decl = module.getExport('ElementC', LitElementDeclaration);
+  assert.ok(decl.heritage.superClass);
+  assert.equal(decl.heritage.superClass.name, 'LitElement');
+  assert.equal(decl.heritage.mixins.length, 1);
+  assert.equal(decl.heritage.mixins[0].name, 'C');
 });
 
 test.run();

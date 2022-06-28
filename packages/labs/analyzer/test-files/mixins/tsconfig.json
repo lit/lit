@@ -4,7 +4,7 @@
     "lib": ["es2020", "DOM"],
     "module": "ES2020",
     "rootDir": "./src",
-    "outDir": "./out",
+    "outDir": "./",
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "skipDefaultLibCheck": true,

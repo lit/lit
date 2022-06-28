@@ -32,12 +32,11 @@ test.before((ctx) => {
 });
 
 test('Reads project files', ({analyzer, packagePath}) => {
-  const rootFileNames = analyzer.programContext.program.getRootFileNames();
+  const rootFileNames = analyzer.program.getRootFileNames();
   assert.equal(rootFileNames.length, 5);
 
   const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile =
-    analyzer.programContext.program.getSourceFile(elementAPath);
+  const sourceFile = analyzer.program.getSourceFile(elementAPath);
   assert.ok(sourceFile);
 });
 

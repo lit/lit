@@ -60,7 +60,7 @@ export declare class IC {
 }
 
 /**
- * Mixin A
+ * Mixin A - const assignment to arrow function
  * @mixin
  */
 export const A = <T extends Constructor<LitElement>>(
@@ -71,36 +71,39 @@ export const A = <T extends Constructor<LitElement>>(
   console.log(x, z);
   class A extends superClass {
     private pa = true;
+    @property()
     a = 'hi';
   }
   return A as Constructor<IA> & T;
 };
 
 /**
- * Mixin B
+ * Mixin B - function declaration
  * @mixin
  */
-export const B = <T extends Constructor<LitElement>>(
+export function B<T extends Constructor<LitElement>>(
   s: string,
   y: Constructor<{z: string}>,
   superClass: T
-) => {
+) {
   console.log(s, y);
   class B extends superClass {
     private pb = true;
+    @property({type: Number})
     b = 5;
   }
   return B as Constructor<IB> & T;
-};
+}
 
 /**
- * Mixin C
+ * Mixin C - const assignment to function expression
  * @mixin
  */
-export const C = <T extends Constructor<LitElement>>(superClass: T) => {
+export const C = function C<T extends Constructor<LitElement>>(superClass: T) {
   class C extends superClass {
     private pc = true;
-    c = true;
+    @property({type: Boolean})
+    c = false;
   }
   return C as Constructor<IC> & T;
 };
