@@ -7,6 +7,7 @@
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
 import {hydrate as hydrateFunc} from 'lit/experimental-hydrate.js';
+import {createContainer} from './fixture-wrapper.js';
 import {litSsrPluginCommand} from '../constants.js';
 import {nextFrame} from '../utils.js';
 
@@ -73,9 +74,7 @@ export async function ssrFixture<T extends HTMLElement>(
     }
   );
 
-  // TODO(augustinekim) Clean up the container from the document
-  const container = document.createElement('div');
-  document.body.appendChild(container);
+  const container = createContainer();
 
   if (HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
     // Browser natively supports declarative shadowroot.

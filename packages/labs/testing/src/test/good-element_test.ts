@@ -8,11 +8,16 @@ import {
   csrFixture,
   ssrNonHydratedFixture,
   ssrHydratedFixture,
+  cleanupFixtures,
 } from '../fixtures.js';
 
 import {html} from 'lit';
 import {assert} from '@open-wc/testing';
 import {GoodElement} from './good-element.js';
+
+teardown(() => {
+  cleanupFixtures();
+});
 
 for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
   suite(`good-element rendered with ${fixture.name}`, () => {

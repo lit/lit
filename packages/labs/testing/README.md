@@ -93,7 +93,6 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     test('renders as expected', async () => {
       const el = await fixture(html`<my-element></my-element>`, {
         modules: ['./my-element.js'],
-        base: import.meta.url,
       });
       assert.equal(
         el.shadowRoot.querySelector('p').textContent,
@@ -102,6 +101,27 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     });
   });
 }
+```
+
+#### `cleanupFixtures`
+
+Call this if you wish to clean up the created fixture from the document, for
+instance, in a cleanup hook.
+
+Example
+
+```js
+import {cleanupFixtures} from '@lit-labs/testing/fixtures.js';
+
+teardown(() => {
+  cleanupFixtures();
+});
+
+// or
+
+afterEach(() => {
+  cleanupFixtures();
+});
 ```
 
 ### Notes

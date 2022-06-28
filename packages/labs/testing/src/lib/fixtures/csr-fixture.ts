@@ -6,6 +6,7 @@
 
 import {render} from 'lit';
 import {nextFrame} from '../utils.js';
+import {createContainer} from './fixture-wrapper.js';
 
 import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOptions} from './fixture-options.js';
@@ -44,9 +45,7 @@ export async function csrFixture<T extends HTMLElement>(
     base = match[0];
   }
 
-  // TODO(augustinekim) Clean up the container from the document
-  const container = document.createElement('div');
-  document.body.appendChild(container);
+  const container = createContainer();
 
   await Promise.all(
     modules.map((module) => import(new URL(module, base).href))
