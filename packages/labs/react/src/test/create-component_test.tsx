@@ -93,6 +93,10 @@ suite('createComponent', () => {
     await el.updateComplete;
   };
 
+  /*
+    The following test will not build if an incorrect typing occurs
+    when events are not provided to `createComponent`.
+  */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent(
       window.React,
