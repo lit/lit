@@ -12,6 +12,7 @@
     "rootDir": "src/",
     "outDir": ".",
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
