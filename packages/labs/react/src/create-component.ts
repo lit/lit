@@ -142,10 +142,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // TODO: we might need to omit more properties from HTMLElement than just
   // 'children', but 'children' is special to JSX, so we must at least do that.
 
-  type ReactProps = Omit<
-    React.PropsWithChildren<React.HTMLAttributes<I>>,
-    keyof E
-  >;
+  type ReactProps = Omit<React.HTMLAttributes<I>, keyof E>;
   type ElementWithoutPropsOrEvents = Omit<I, keyof E | keyof ReactProps>;
   type UserProps = Partial<
     ElementWithoutPropsOrEvents & ReactProps & EventProps<E>
