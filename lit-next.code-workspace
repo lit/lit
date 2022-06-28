@@ -49,6 +49,10 @@
       "path": "packages/labs/analyzer"
     },
     {
+      "name": "testing",
+      "path": "packages/labs/testing"
+    },
+    {
       "name": "cli",
       "path": "packages/labs/cli"
     },
