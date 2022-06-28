@@ -22,6 +22,7 @@
     "test": "wireit",
     "test:lit-starter-js": "wireit",
     "test:lit-starter-ts": "wireit",
+    "test:windows": "wireit",
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars && lerna bootstrap -- --package-lock-only",
@@ -133,6 +134,16 @@
       "dependencies": [
         "build:lit-starter-ts",
         "./packages/lit:build"
+      ]
+    },
+    "test:windows": {
+      "dependencies": [
+        "./packages/labs/analyzer:test",
+        "./packages/labs/cli:test",
+        "./packages/labs/gen-utils:test",
+        "./packages/labs/gen-wrapper-angular:test",
+        "./packages/labs/gen-wrapper-react:test",
+        "./packages/labs/gen-wrapper-vue:test"
       ]
     }
   },
