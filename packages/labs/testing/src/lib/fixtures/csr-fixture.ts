@@ -5,13 +5,15 @@
  */
 
 import {render} from 'lit';
+import {nextFrame} from '../utils.js';
+
 import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOptions} from './fixture-options.js';
 
 /**
  * Renders the provided Lit template client-side.
  */
-export async function csrFixture<T extends LitElement>(
+export async function csrFixture<T extends HTMLElement>(
   template: TemplateResult,
   {modules, base}: FixtureOptions
 ): Promise<T> {
@@ -52,8 +54,9 @@ export async function csrFixture<T extends LitElement>(
 
   render(template, container);
 
-  // Awaiting for the next microtask to ensure contents are rendered.
-  await undefined;
+  const el = container.firstElementChild;
 
-  return container.firstElementChild as T;
+  await ((el as LitElement)?.updateComplete || nextFrame());
+
+  return el as T;
 }

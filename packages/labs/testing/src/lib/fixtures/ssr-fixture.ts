@@ -6,8 +6,9 @@
 
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
-import {litSsrPluginCommand} from '../constants.js';
 import {hydrate as hydrateFunc} from 'lit/experimental-hydrate.js';
+import {litSsrPluginCommand} from '../constants.js';
+import {nextFrame} from '../utils.js';
 
 import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOptions, SsrFixtureOptions} from './fixture-options.js';
@@ -98,9 +99,9 @@ export async function ssrFixture<T extends HTMLElement>(
     hydrateShadowRoots(container);
   }
 
-  const el = container.firstElementChild as T;
+  const el = container.firstElementChild;
   if (hydrate) {
-    if (el.hasAttribute('defer-hydration')) {
+    if (el?.hasAttribute('defer-hydration')) {
       el.removeAttribute('defer-hydration');
       await (el as unknown as LitElement).updateComplete;
     } else {
@@ -109,10 +110,12 @@ export async function ssrFixture<T extends HTMLElement>(
       if (litEl) {
         litEl.removeAttribute('defer-hydration');
         await (litEl as LitElement).updateComplete;
+      } else {
+        await nextFrame();
       }
     }
   }
-  return el;
+  return el as T;
 }
 
 /**
@@ -122,7 +125,7 @@ export async function ssrFixture<T extends HTMLElement>(
  *
  * This module **must** be imported before any custom element definitions.
  */
-export async function ssrHydratedFixture<T extends LitElement>(
+export async function ssrHydratedFixture<T extends HTMLElement>(
   template: TemplateResult,
   {modules, base}: FixtureOptions
 ) {
@@ -136,7 +139,7 @@ export async function ssrHydratedFixture<T extends LitElement>(
  *
  * This module **must** be imported before any custom element definitions.
  */
-export async function ssrNonHydratedFixture<T extends LitElement>(
+export async function ssrNonHydratedFixture<T extends HTMLElement>(
   template: TemplateResult,
   {modules, base}: FixtureOptions
 ) {
