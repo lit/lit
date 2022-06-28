@@ -1,5 +1,5 @@
 /index.*
 /fixtures.*
-/web-test-runner.*
+/web-test-runner-ssr-plugin.*
 /lib
 /test
