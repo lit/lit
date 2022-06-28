@@ -98,7 +98,8 @@ describe('smoke test', () => {
     // })
 
     describe('visible indices', function () {
-      it('emits visibilityChanged events with the proper indices', async function () {
+      // TODO(usergenic) Disabled because flaky, see https://github.com/lit/lit/issues/3099.
+      it.skip('emits visibilityChanged events with the proper indices', async function () {
         container.style.height = '100px';
         container.style.minHeight = '100px';
         await wait();
