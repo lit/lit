@@ -93,22 +93,23 @@ suite('createComponent', () => {
     await el.updateComplete;
   };
 
-  test('works without event map', async () => {
-    const EventlessComponent = createComponent(
+  test('renders element without optional event map', async () => {
+    const ComponentWithoutEventMap = createComponent(
       window.React,
       elementName,
       BasicElement,
     );
 
-    const name = 'Eventless';
+    const name = 'Component without event map.';
     window.ReactDOM.render(
-      <EventlessComponent>Hello {name}</EventlessComponent>,
+      <ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>,
       container
     );
 
     el = container.querySelector(elementName)! as BasicElement;
     await el.updateComplete;
-    assert.equal(el.textContent, 'Hello Eventless');
+    
+    assert.equal(el.textContent, 'Component without event map.');
   });
 
   test('works with text children', async () => {
