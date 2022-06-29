@@ -173,7 +173,6 @@
     "eslint-plugin-no-only-tests": "^2.4.0",
     "husky": "^7.0.2",
     "ignore-sync": "^5.0.1",
-    "lerna": "^4.0.0",
     "lint-staged": "^12.4.0",
     "prettier": "^2.4.1",
     "rollup-plugin-copy": "^3.3.0",
