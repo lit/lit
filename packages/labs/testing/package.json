@@ -23,14 +23,17 @@
   "wireit": {
     "build": {
       "dependencies": [
-        "build:ts"
+        "build:ts",
+        "../../lit:build",
+        "../ssr-client:build"
       ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "dependencies": [
-        "../../lit:build:ts:types"
+        "../../lit:build:ts:types",
+        "../ssr:build:ts"
       ],
       "files": [
         "src/**/*.ts",
@@ -50,7 +53,9 @@
       "dependencies": [
         "build"
       ],
-      "files": [],
+      "files": [
+        "web-test-runner.config.js"
+      ],
       "output": []
     }
   },
