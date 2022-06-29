@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bin": {

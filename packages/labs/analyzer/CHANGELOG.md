@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.2.1
+
+### Patch Changes
+
+- [#2976](https://github.com/lit/lit/pull/2976) [`bf13dae2`](https://github.com/lit/lit/commit/bf13dae231d26f350c117271a45e047ee151fc20) - Added Type, Reference, and VariableDeclaration to model
+
 ## 0.2.0
 
 ### Minor Changes
