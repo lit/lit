@@ -60,6 +60,7 @@
         "./packages/labs/ssr:build",
         "./packages/labs/ssr-client:build",
         "./packages/labs/task:build",
+        "./packages/labs/testing:build",
         "./packages/labs/virtualizer:build",
         "./packages/labs/vue-utils:build",
         "./packages/labs/test-projects/test-element-a:build",
@@ -89,6 +90,7 @@
         "./packages/labs/ssr:build:ts",
         "./packages/labs/ssr-client:build:ts",
         "./packages/labs/task:build:ts",
+        "./packages/labs/testing:build:ts",
         "./packages/labs/virtualizer:build:ts",
         "./packages/labs/vue-utils:build:ts"
       ]
@@ -120,6 +122,7 @@
         "./packages/labs/gen-wrapper-react:test",
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/ssr:test",
+        "./packages/labs/testing:test",
         "./packages/labs/virtualizer:test"
       ]
     },
