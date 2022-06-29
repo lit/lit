@@ -150,13 +150,8 @@
       ]
     }
   },
-  "#comment": [
-    "@babel/types is pinned due to https://github.com/babel/babel/issues/14705",
-    "once fixed, the dependency can be removed entirely."
-  ],
   "devDependencies": {
     "@babel/eslint-parser": "^7.17.0",
-    "@babel/types": "=7.18.4",
     "@changesets/cli": "^2.16.0",
     "@changesets/get-github-info": "^0.5.0",
     "@rollup/plugin-commonjs": "^22.0.0",
