@@ -17,9 +17,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-          # Note: we do not cache here because we're not running lerna
-          # bootstrap, so the ~/.npm dir won't have all dependencies, and if
-          # this job finishes first then we'll only cache root dependencies.
+          cache-dependency-path: '**/package-lock.json'
 
       - name: NPM install
         run: |
@@ -55,9 +53,6 @@ jobs:
       - name: NPM install
         run: npm ci
 
-      - name: Lerna bootstrap
-        run: npm run bootstrap
-
       - name: Build
         run: npm run build
 
@@ -85,9 +80,6 @@ jobs:
 
       - name: NPM install
         run: npm ci
-
-      - name: Lerna bootstrap
-        run: npm run bootstrap
 
       - name: Test
         env:

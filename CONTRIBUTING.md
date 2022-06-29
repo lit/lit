@@ -95,8 +95,7 @@ If you've already signed a CLA but are still getting bothered by the awfully ins
 ```bash
 git clone https://github.com/lit/lit.git
 cd lit
-npm install
-npm run bootstrap
+npm ci
 npm run build
 ```
 
