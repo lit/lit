@@ -6,6 +6,12 @@
     "node": ">=16.0.0",
     "npm": ">=7.0.0"
   },
+  "workspaces": [
+    "packages/*",
+    "packages/labs/*",
+    "packages/labs/test-projects/*",
+    "packages/localize/examples/*"
+  ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
     "bootstrap": "lerna bootstrap --ci --ignore @lit/lit-starter-* && lerna bootstrap --ci --scope @lit/lit-starter-* --concurrency=1",
