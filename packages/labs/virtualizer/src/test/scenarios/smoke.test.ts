@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, wait} from '../helpers.js';
+import {ignoreBenignErrors, until} from '../helpers.js';
 import {expect} from '@esm-bundle/chai';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {virtualize, VirtualizeDirectiveConfig} from '../../virtualize.js';
@@ -46,7 +46,7 @@ describe('smoke test', () => {
       `;
 
       render(example, container);
-      await wait();
+      await until(() => container.innerHTML.includes('baz'));
 
       expect(container.innerHTML).to.include('foo');
       expect(container.innerHTML).to.include('bar');
@@ -102,7 +102,6 @@ describe('smoke test', () => {
       it.skip('emits visibilityChanged events with the proper indices', async function () {
         container.style.height = '100px';
         container.style.minHeight = '100px';
-        await wait();
 
         const directive = virtualize({
           scroller: true,
@@ -112,29 +111,28 @@ describe('smoke test', () => {
           layout: flow(),
         } as VirtualizeDirectiveConfig<string>);
 
-        let firstVisible;
-        let lastVisible;
+        let firstVisible: Number = -1;
+        let lastVisible: Number = -1;
+
         container.addEventListener('visibilityChanged', (e) => {
           firstVisible = e.first;
           lastVisible = e.last;
         });
 
         render(directive, container);
-        await wait();
-
-        expect(firstVisible).to.equal(0);
-        expect(lastVisible).to.equal(1);
+        await until(() => lastVisible === 1);
+        expect(firstVisible).to.eq(0);
+        expect(lastVisible).to.eq(1);
 
         container.scrollTop = 50;
-        await wait();
+        await until(() => lastVisible === 2);
+        expect(firstVisible).to.eq(1);
+        expect(lastVisible).to.eq(2);
 
-        expect(firstVisible).to.equal(1);
-        expect(lastVisible).to.equal(2);
         container.scrollTop += 1;
-        await wait();
-
-        expect(firstVisible).to.equal(1);
-        expect(lastVisible).to.equal(3);
+        await until(() => lastVisible === 3);
+        expect(firstVisible).to.eq(1);
+        expect(lastVisible).to.eq(3);
 
         document.body.removeChild(container);
       });
