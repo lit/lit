@@ -47,6 +47,22 @@ config file for this to work.
 
 #### `ssrFixture`
 
+Signature
+
+`ssrFixture<T extends HTMLElement>(template, options): T`
+
+- `template: TemplateResult` - Lit template to be rendered. It must contain a
+  single top level element.
+- `options: object` - Options object containing the following properties
+  - `modules: string[]` - Relative paths to modules to be loaded before
+    rendering. Usually will contain custom element definitions.
+  - `base?: string` - Base location for resolving module paths provided. If not
+    provided, the call site will be treated as the base effectively making it
+    the same as providing `import.meta.url`.
+  - `hydrate?: boolean` - Whether to hydrate the template after being loaded to
+    the browser. Defaults to true if omitted.
+- Returns the top level element rendered in the document.
+
 Example
 
 ```js
@@ -58,9 +74,9 @@ import {assert} from '@esm-bundle/chai';
 suite('my-element', () => {
   test('is rendered server-side', async () => {
     const el = await ssrFixture(html`<my-element></my-element>`, {
-      modules: ['./my-element.js'], // relative path to component definition
-      base: import.meta.url, // base for resolving module path (default: test file path)
-      hydrate: false, // whether to hydrate the component after loading the document (default: true)
+      modules: ['./my-element.js'],
+      base: 'http://localhost:8000/dist/components/',
+      hydrate: false,
     });
     assert.equal(el.shadowRoot.querySelector('p').textContent, 'Hello, World!');
   });
