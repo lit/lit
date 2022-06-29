@@ -58,18 +58,24 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     });
 
     test('styling applied', async () => {
-      const el = (await fixture(html`<good-element></good-element>`, {
-        modules: ['./good-element.js'],
-      })) as GoodElement;
+      const el = await fixture<GoodElement>(
+        html`<good-element></good-element>`,
+        {
+          modules: ['./good-element.js'],
+        }
+      );
       assert.equal(getComputedStyle(el).paddingTop, '16px');
     });
 
     (fixture === ssrNonHydratedFixture ? test.skip : test)(
       `handles a click`,
       async () => {
-        const el = (await fixture(html`<good-element></good-element>`, {
-          modules: ['./good-element.js'],
-        })) as GoodElement;
+        const el = await fixture<GoodElement>(
+          html`<good-element></good-element>`,
+          {
+            modules: ['./good-element.js'],
+          }
+        );
         const button = el.shadowRoot!.querySelector('button')!;
         button.click();
         await el.updateComplete;
@@ -120,12 +126,9 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     });
 
     test('styling applied', async () => {
-      const el = (await fixture(
-        html`<div><good-element></good-element></div>`,
-        {
-          modules: ['./good-element.js'],
-        }
-      )) as GoodElement;
+      const el = await fixture(html`<div><good-element></good-element></div>`, {
+        modules: ['./good-element.js'],
+      });
       assert.equal(
         getComputedStyle(el.querySelector('good-element')!).paddingTop,
         '16px'
@@ -135,12 +138,12 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
     (fixture === ssrNonHydratedFixture ? test.skip : test)(
       `handles a click`,
       async () => {
-        const el = (await fixture(
+        const el = await fixture(
           html`<div><good-element></good-element></div>`,
           {
             modules: ['./good-element.js'],
           }
-        )) as GoodElement;
+        );
         const goodEl = el.querySelector('good-element')!;
         const button = goodEl.shadowRoot!.querySelector('button')!;
         button.click();
