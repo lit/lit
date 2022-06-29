@@ -1,5 +1,11 @@
 # @lit-labs/router
 
+## 0.1.1
+
+### Patch Changes
+
+- [#3050](https://github.com/lit/lit/pull/3050) [`5227ca52`](https://github.com/lit/lit/commit/5227ca52863ac6fd9f3ee57d7a6c78ea1e617b56) - Fix a property collision in the minified production build.
+
 ## 0.1.0
 
 ### Minor Changes

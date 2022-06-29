@@ -1,5 +1,11 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 0.2.2
+
+### Patch Changes
+
+- [#3006](https://github.com/lit/lit/pull/3006) [`da4e097b`](https://github.com/lit/lit/commit/da4e097b09ba5769a3daa4f1539c415ce3699a5e) - Fix transform breakage in situations where `outputPath` is false (e.g. setting `permalink: false` or using the serverless plugin).
+
 ## 0.2.1
 
 ### Patch Changes
