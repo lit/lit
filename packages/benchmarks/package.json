@@ -29,6 +29,7 @@
     "benchmark:reactive-element:list-render": "tach --config reactive-element/list/tachometer-render.json",
     "benchmark:reactive-element:list-update": "tach --config reactive-element/list/tachometer-update.json",
     "benchmark:reactive-element:list-update-reflect": "tach --config reactive-element/list/tachometer-update-reflect.json",
+    "benchmark:lit-element:class-map": "tach --config lit-element/class-map/tachometer.json",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config reactive-element/list/tachometer.json",
     "build": "wireit",
     "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
