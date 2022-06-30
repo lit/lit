@@ -50,6 +50,15 @@ test('basic wrapper generation', async () => {
     '@lit-labs/react': '../react',
   });
 
+  // The version of @types/react might conflict with the one installed to the
+  // top-level of our monorepo. By default, TypeScript will load all
+  // node_modules/@types/* packages for all parent directories. By setting
+  // typeRoots here, we ensure it only loads the immediate ones.
+  const tsConfigPath = path.join(outputPackage, 'tsconfig.json');
+  const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'));
+  tsConfig.compilerOptions.typeRoots = ['./node_modules/@types'];
+  fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf8');
+
   await buildPackage(outputPackage);
 
   // Pack the generated package here, as `test-output` package.json will
