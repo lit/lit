@@ -169,7 +169,9 @@ const require = createRequire(import.meta.url);
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 const config: TestRunnerConfig = {
-  rootDir: '../',
+  // Serve from the root of the monorepo, because most dependencies are hoisted
+  // into its node_modules folder.
+  rootDir: '../../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
     '../labs/context/development/**/*_test.(js|html)',
