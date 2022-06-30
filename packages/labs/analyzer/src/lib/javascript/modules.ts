@@ -52,6 +52,8 @@ export const getModule = (sourceFile: ts.SourceFile, analyzer: Analyzer) => {
       module.declarations.push(
         getFunctionDeclaration(statement, statement.name!, analyzer)
       );
+    } else if (ts.isImportDeclaration(statement)) {
+      module.dependencies.add(statement.moduleSpecifier.getText().slice(1, -1));
     }
   }
 

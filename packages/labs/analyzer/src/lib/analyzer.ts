@@ -19,6 +19,7 @@ import {
   Reference,
   Constructor,
 } from './model.js';
+import {createRequire} from 'node:module';
 
 const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
 
@@ -29,7 +30,7 @@ type FileCache = Map<string, {version: 0; content?: ts.IScriptSnapshot}>;
 // custom-elements.json for `lit`
 const defaultPackages = [
   new Package({
-    rootDir: '' as AbsolutePath,
+    rootDir: path.join(process.cwd(), 'node_modules', 'lit') as AbsolutePath,
     packageJson: {name: 'lit', main: 'index.js'},
     tsConfig: {options: {}, fileNames: [], errors: []},
     modules: [
@@ -60,10 +61,9 @@ export class Analyzer implements AnalyzerInterface {
   program!: ts.Program;
   checker!: ts.TypeChecker;
 
-  packages = new Map<string, Package>(
-    defaultPackages.map((p) => [p.packageJson.name!, p])
-  );
-  modulesByAbsolutePath = new Map<AbsolutePath, Module>();
+  packages: Map<string, Package>;
+  modulesBySourceFilePath = new Map<AbsolutePath, Module>();
+  modulesByJSFilePath = new Map<AbsolutePath, Module>();
 
   private fileCache: FileCache = new Map();
 
@@ -73,6 +73,10 @@ export class Analyzer implements AnalyzerInterface {
    */
   constructor(packageRoot: AbsolutePath) {
     this.packageRoot = packageRoot;
+
+    // Initialize default packages
+    this.packages = new Map();
+    defaultPackages.forEach((p) => this.addPackage(p));
 
     // TODO(kschaaf): Consider moving the package.json and tsconfig.json
     // to analyzePackage() or move it to an async factory function that
@@ -142,16 +146,39 @@ export class Analyzer implements AnalyzerInterface {
       tsConfig: this.commandLine,
       packageJson: this.packageJson,
     });
-    this.packages.set(pkg.packageJson.name!, pkg);
-    pkg.modules.forEach((mod) => {
-      this.modulesByAbsolutePath.set(
-        mod.sourceFile.fileName as AbsolutePath,
-        mod
-      );
-    });
+    this.addPackage(pkg);
     this._isAnalyzingPackage = false;
 
     return pkg;
+  }
+
+  addPackage(pkg: Package) {
+    this.packages.set(this.packageRoot, pkg);
+    pkg.modules.forEach((mod) => {
+      this.modulesBySourceFilePath.set(
+        mod.sourceFile.fileName as AbsolutePath,
+        mod
+      );
+      this.modulesByJSFilePath.set(
+        path.join(pkg.rootDir, mod.jsPath) as AbsolutePath,
+        mod
+      );
+    });
+  }
+
+  invalidateModule(fileName: AbsolutePath) {
+    const module = this.modulesBySourceFilePath.get(fileName);
+    if (module === undefined) {
+      throw new Error(
+        `Internal error: attempted to invalidate un-analyzed module: ${fileName}`
+      );
+    }
+    this.modulesBySourceFilePath.delete(fileName);
+    const require = createRequire(fileName);
+    for (const depSpecifier of module.dependencies) {
+      const depFileName = require.resolve(depSpecifier) as AbsolutePath;
+      this.invalidateModule(depFileName);
+    }
   }
 
   /**
@@ -532,7 +559,7 @@ export class Analyzer implements AnalyzerInterface {
       );
     }
     const fileName = node.getSourceFile().fileName as AbsolutePath;
-    const module = this.modulesByAbsolutePath.get(fileName);
+    const module = this.modulesBySourceFilePath.get(fileName);
     if (module === undefined) {
       throw new Error(
         `Internal error: attempted to look up module model for source file '${fileName}' which has not been analyzed.`
@@ -561,21 +588,23 @@ export class Analyzer implements AnalyzerInterface {
         } reference: ${ref.moduleSpecifier}`
       );
     }
-    const pkg = this.packages.get(ref.package);
-    if (pkg === undefined) {
-      throw new DiagnosticsError(
-        identifier,
-        `Not implemented: Looking up model for reference to '${ref.moduleSpecifier}' via custom-elements.json is not yet supported.`
-      );
+    let module: Module | undefined;
+    if (ref.package === this.packageJson.name) {
+      module = this.packages
+        .get(this.packageRoot)
+        ?.getModule(ref.module as PackagePath);
+    } else {
+      const require = createRequire(identifier.getSourceFile().fileName);
+      const resolvedFilePath = require.resolve(ref.moduleSpecifier!);
+      module = this.modulesByJSFilePath.get(resolvedFilePath as AbsolutePath);
     }
-    const module = ref.module ?? pkg.packageJson.main;
     if (module === undefined) {
       throw new DiagnosticsError(
         identifier,
-        `Cannot dereference ${ref.moduleSpecifier}: package has no 'main' field`
+        `No analysis for module ${ref.moduleSpecifier}.`
       );
     }
-    return pkg.getModule(module as PackagePath).getExport(ref.name, type);
+    return module.getExport(ref.name, type);
   }
 }
 

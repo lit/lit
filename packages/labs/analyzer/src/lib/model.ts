@@ -74,6 +74,7 @@ export class Module {
    */
   readonly jsPath: PackagePath;
   readonly declarations: Array<Declaration>;
+  readonly dependencies = new Set<string>();
 
   private _exportsByName: Map<string, Declaration> | undefined;
 
