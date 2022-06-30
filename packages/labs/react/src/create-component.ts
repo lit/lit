@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
+import * as React from 'react';
+
+interface JSXUtility {
+  Component: typeof React.Component;
+  forwardRef: typeof React.forwardRef;
+  createElement: typeof React.createElement;
+}
 
 const reservedReactProperties = new Set([
   'children',
@@ -128,14 +134,14 @@ type EventProps<R extends Events> = {
  * registered via `customElements.define`.
  */
 export const createComponent = <I extends HTMLElement, E extends Events>(
-  React: typeof ReactModule,
+  jsxUtility: JSXUtility,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
 ) => {
-  const Component = React.Component;
-  const createElement = React.createElement;
+  const Component = jsxUtility.Component;
+  const createElement = jsxUtility.createElement;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
@@ -269,7 +275,7 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
     }
   }
 
-  const ForwardedComponent = React.forwardRef(
+  const ForwardedComponent = jsxUtility.forwardRef(
     (props?: UserProps, ref?: React.Ref<unknown>) =>
       createElement(
         ReactComponent,
