@@ -21,10 +21,6 @@
         {
           "mode": "performance",
           "entryName": "nop-update"
-        },
-        {
-          "mode": "performance",
-          "entryName": "update-and-nop"
         }
       ],
       "expand": [

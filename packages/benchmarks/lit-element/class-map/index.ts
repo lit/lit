@@ -146,27 +146,6 @@ function generateData(number: number): IData[] {
     };
     await nopupdate();
 
-    const updateAndNopUpdate = async () => {
-      const test = 'update-and-nop';
-      el = create();
-      let selected = 1;
-      const start = getTestStartName(test);
-      performance.mark(start);
-      for (let i = 0; i < updateCount; i++) {
-        // Increment the selected index.
-        el.selected = selected++;
-        await updateComplete();
-        // nop update since state hasn't changed.
-        el.requestUpdate();
-        await updateComplete();
-        // Force a style recalc.
-        window.getComputedStyle(el);
-      }
-      performance.measure(test, start);
-      destroy();
-    };
-    await updateAndNopUpdate();
-
     // Log
     performance
       .getEntriesByType('measure')
