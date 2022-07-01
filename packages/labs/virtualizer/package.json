@@ -28,8 +28,8 @@
     }
   },
   "scripts": {
-    "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/basic.html --measure=fcp",
-    "bench:debug": "tach --root=../.. test/benchmarks/basic.html --measure=fcp",
+    "bench": "tach --root=../../.. --browser=chrome-headless test/benchmarks/basic.html --measure=fcp",
+    "bench:debug": "tach --root=../../.. test/benchmarks/basic.html --measure=fcp",
     "bench:scroll": "tach --force-clean-npm-install --config=test/benchmarks/scrollingBenchmarks.json",
     "build": "wireit",
     "build:copy-polyfill": "wireit",

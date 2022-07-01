@@ -14,6 +14,7 @@
   ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
+    "bootstrap": "echo NOTICE: \\\"npm run bootstrap\\\" is no longer required. \\\"npm ci\\\" is sufficient.",
     "build": "wireit",
     "build:ts": "wireit",
     "build:lit-starter-ts": "wireit",
