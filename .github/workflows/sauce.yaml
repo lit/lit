@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: package-lock.json
 
       - uses: google/wireit@setup-github-actions-caching/v1
 

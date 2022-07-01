@@ -22,8 +22,6 @@
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
-    "nuke": "rm -rf node_modules && npm exec -ws -c 'rm -rf node_modules' && npm ci",
-    "upgrade": "rm -rf node_modules package-lock.json && npm exec -ws -c 'rm -rf node_modules' && npm i",
     "test": "wireit",
     "test:lit-starter-js": "wireit",
     "test:lit-starter-ts": "wireit",

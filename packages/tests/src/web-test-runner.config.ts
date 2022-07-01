@@ -170,7 +170,10 @@ const require = createRequire(import.meta.url);
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 const config: TestRunnerConfig = {
   // Serve from the root of the monorepo, because most dependencies are hoisted
-  // into its node_modules folder.
+  // into its node_modules folder. Usually this wouldn't matter, because wtr
+  // will serve node modules from outside the root automatically, however our
+  // HTML tests use hard-coded paths to load the polyfills, so the automatic
+  // node resolution doesn't apply there.
   rootDir: '../../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [

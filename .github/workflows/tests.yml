@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: package-lock.json
 
       - name: NPM install
         run: |
@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: package-lock.json
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
@@ -74,7 +74,7 @@ jobs:
           # TODO(augustinekim) Unpin when latest node installed by action includes fixed npm
           node-version: 16.15.0
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: package-lock.json
 
       - uses: google/wireit@setup-github-actions-caching/v1
 
