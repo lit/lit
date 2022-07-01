@@ -75,8 +75,7 @@ Initialize repo:
 ```sh
 git clone https://github.com/lit/lit.git
 cd lit
-npm install
-npm run bootstrap
+npm ci
 ```
 
 Build all packages:
