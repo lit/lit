@@ -76,6 +76,7 @@
     }
   },
   "dependencies": {
+    "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
     "@lit/localize-tools": "^0.6.1",
     "chalk": "^5.0.1",
@@ -86,7 +87,6 @@
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.0",
-    "@lit-labs/analyzer": "^0.2.0",
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2",
