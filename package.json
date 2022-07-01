@@ -30,7 +30,7 @@
     "test:windows": "wireit",
     "prepare": "husky install",
     "changeset": "changeset",
-    "version": "npm run changeset version && npm run update-version-vars && npm i",
+    "version": "npm run changeset version && npm run update-version-vars",
     "update-version-vars": "node scripts/update-version-variables.js",
     "release": "npm run bootstrap && npm run build && npm run changeset publish"
   },
