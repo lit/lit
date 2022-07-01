@@ -76,15 +76,17 @@
     }
   },
   "dependencies": {
-    "@lit/localize-tools": "^0.6.1",
+    "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
+    "@lit/localize-tools": "^0.6.1",
+    "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",
     "command-line-commands": "^3.0.2",
     "command-line-usage": "^6.1.1",
     "tslib": "^1.14.1"
   },
   "devDependencies": {
-    "@lit-labs/analyzer": "^0.2.0",
+    "@lit-internal/tests": "^0.0.0",
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2",
@@ -93,7 +95,6 @@
     "eslint": "^5.16.0",
     "globby": "^10.0.2",
     "stdout-stderr": "^0.1.13",
-    "@lit-internal/tests": "^0.0.0",
     "typescript": "~4.6.2",
     "uvu": "^0.5.3"
   },
