@@ -1,0 +1,37 @@
+{
+  "name": "lit-starter-design-system-minimal",
+  "version": "1.0.0",
+  "description": "A Minimal Lit Design System starter kit",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build:demo:watch & npm run serve",
+    "serve": "wds --node-resolve -w",
+    "build:demo": "cem analyze  --litelement --globs components/**/*.js components/*/lib/**/*.js",
+    "build:demo:watch": "npm run build:demo -- --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit-starter-element-minimal.git"
+  },
+  "keywords": [
+    "web-components",
+    "lit-element",
+    "javascript",
+    "lit"
+  ],
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/lit/lit-starter-element-minimal/issues"
+  },
+  "homepage": "https://github.com/lit/lit-starter-element-minimal#readme",
+  "dependencies": {
+    "lit": "^2.2.6"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.6.3",
+    "@web/dev-server": "^0.1.32",
+    "api-viewer-element": "^1.0.0-pre.3",
+    "dark-mode-toggle": "^0.10.0"
+  }
+}
