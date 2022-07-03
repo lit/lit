@@ -131,22 +131,22 @@ test('property typed with global class', ({element}) => {
 
 test('property typed with union', ({element}) => {
   const property = element.reactiveProperties.get('union')!;
-  assert.equal(property.type.text, 'LocalClass | HTMLElement | ImportedClass');
+  assert.equal(property.type.text, 'ImportedClass | LocalClass | HTMLElement');
   assert.equal(property.type.references.length, 3);
-  assert.equal(property.type.references[0].name, 'LocalClass');
+  assert.equal(property.type.references[1].name, 'LocalClass');
+  assert.equal(
+    property.type.references[1].package,
+    '@lit-internal/test-decorators-properties'
+  );
+  assert.equal(property.type.references[1].module, 'element-a.js');
+  assert.equal(property.type.references[2].name, 'HTMLElement');
+  assert.equal(property.type.references[2].isGlobal, true);
+  assert.equal(property.type.references[0].name, 'ImportedClass');
   assert.equal(
     property.type.references[0].package,
     '@lit-internal/test-decorators-properties'
   );
-  assert.equal(property.type.references[0].module, 'element-a.js');
-  assert.equal(property.type.references[1].name, 'HTMLElement');
-  assert.equal(property.type.references[1].isGlobal, true);
-  assert.equal(property.type.references[2].name, 'ImportedClass');
-  assert.equal(
-    property.type.references[2].package,
-    '@lit-internal/test-decorators-properties'
-  );
-  assert.equal(property.type.references[2].module, 'external.js');
+  assert.equal(property.type.references[0].module, 'external.js');
 });
 
 test('reflect: true', ({element}) => {
