@@ -13,7 +13,7 @@ import {
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
 import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
-import type {PolyfillConfig} from 'polyfills-loader';
+import type {PolyfillConfig} from '@web/polyfills-loader';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
