@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {customElement} from '../../decorators/custom-element.js';
+import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
