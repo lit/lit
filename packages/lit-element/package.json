@@ -19,62 +19,77 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
     },
     "./decorators.js": {
+      "types": "./development/decorators.d.ts",
       "development": "./development/decorators.js",
       "default": "./decorators.js"
     },
     "./decorators/custom-element.js": {
+      "types": "./development/decorators/custom-element.d.ts",
       "development": "./development/decorators/custom-element.js",
       "default": "./decorators/custom-element.js"
     },
     "./decorators/event-options.js": {
+      "types": "./development/decorators/event-options.d.ts",
       "development": "./development/decorators/event-options.js",
       "default": "./decorators/event-options.js"
     },
     "./decorators/property.js": {
+      "types": "./development/decorators/property.d.ts",
       "development": "./development/decorators/property.js",
       "default": "./decorators/property.js"
     },
     "./decorators/query-all.js": {
+      "types": "./development/decorators/query-all.d.ts",
       "development": "./development/decorators/query-all.js",
       "default": "./decorators/query-all.js"
     },
     "./decorators/query-assigned-elements.js": {
+      "types": "./development/decorators/query-assigned-elements.d.ts",
       "development": "./development/decorators/query-assigned-elements.js",
       "default": "./decorators/query-assigned-elements.js"
     },
     "./decorators/query-assigned-nodes.js": {
+      "types": "./development/decorators/query-assigned-nodes.d.ts",
       "development": "./development/decorators/query-assigned-nodes.js",
       "default": "./decorators/query-assigned-nodes.js"
     },
     "./decorators/query-async.js": {
+      "types": "./development/decorators/query-async.d.ts",
       "development": "./development/decorators/query-async.js",
       "default": "./decorators/query-async.js"
     },
     "./decorators/query.js": {
+      "types": "./development/decorators/query.d.ts",
       "development": "./development/decorators/query.js",
       "default": "./decorators/query.js"
     },
     "./decorators/state.js": {
+      "types": "./development/decorators/state.d.ts",
       "development": "./development/decorators/state.js",
       "default": "./decorators/state.js"
     },
     "./experimental-hydrate-support.js": {
+      "types": "./development/experimental-hydrate-support.d.ts",
       "development": "./development/experimental-hydrate-support.js",
       "default": "./experimental-hydrate-support.js"
     },
     "./lit-element.js": {
+      "types": "./development/lit-element.d.ts",
       "development": "./development/lit-element.js",
       "default": "./lit-element.js"
     },
     "./polyfill-support.js": {
+      "types": "./development/polyfill-support.d.ts",
       "development": "./development/polyfill-support.js",
       "default": "./polyfill-support.js"
     },
     "./private-ssr-support.js": {
+      "types": "./development/private-ssr-support.d.ts",
       "development": "./development/private-ssr-support.js",
       "default": "./private-ssr-support.js"
     }

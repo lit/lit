@@ -42,7 +42,7 @@
 
           // Note, only test `noPatch` if it's explicitly enabled. This is set
           // on the `litHtmlPolyfillSupport` object for this purpose.
-          await import('../../polyfill-support.js');
+          await import('lit-element/polyfill-support.js');
           if (
             // Note, since this file is not built, it doesn't support DEV_MODE
             // so manually check both globals
