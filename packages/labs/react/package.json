@@ -18,10 +18,12 @@
   },
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
     },
     "./use-controller.js": {
+      "types": "./development/use-controller.d.ts",
       "development": "./development/use-controller.js",
       "default": "./use-controller.js"
     }
