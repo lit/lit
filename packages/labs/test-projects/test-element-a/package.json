@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "build": "wireit",
-    "pack": "wireit"
+    "pack": "wireit",
+    "lint": "wireit"
   },
   "files": [
     "/element-a.{js,js.map,d.ts,d.ts.map}"
@@ -13,6 +14,8 @@
     "lit": "^2.0.0"
   },
   "devDependencies": {
+    "@lit-labs/tsserver-plugin": "^0.1.0",
+    "@lit-labs/eslint-plugin": "^0.1.0",
     "typescript": "~4.3.5"
   },
   "wireit": {
@@ -39,6 +42,16 @@
       "output": [
         "*.tgz"
       ]
+    },
+    "lint": {
+      "dependencies": [
+        "../../eslint-plugin:build"
+      ],
+      "files": [
+        "../.eslintrc",
+        "src/**/*.ts"
+      ],
+      "command": "eslint \"src/**/*.ts\""
     }
   }
 }

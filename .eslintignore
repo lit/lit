@@ -181,6 +181,14 @@ packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
 
+packages/labs/eslint-plugin/lib/
+packages/labs/eslint-plugin/test/
+
+packages/labs/eslint-plugin/**/index.js
+packages/labs/eslint-plugin/**/index.js.map
+packages/labs/eslint-plugin/**/index.d.ts
+packages/labs/eslint-plugin/**/index.d.ts.map
+
 packages/labs/gen-utils/lib/
 packages/labs/gen-utils/test/
 packages/labs/gen-utils/index.js
@@ -276,6 +284,14 @@ packages/labs/task/test/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*
+packages/labs/tsserver-plugin/lib/
+packages/labs/tsserver-plugin/test/
+
+packages/labs/tsserver-plugin/**/index.js
+packages/labs/tsserver-plugin/**/index.js.map
+packages/labs/tsserver-plugin/**/index.d.ts
+packages/labs/tsserver-plugin/**/index.d.ts.map
+
 packages/labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js
 packages/labs/virtualizer/src/polyfills/resize-observer-polyfill/ResizeObserver.js
 

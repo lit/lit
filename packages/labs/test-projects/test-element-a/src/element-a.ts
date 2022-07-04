@@ -22,6 +22,8 @@ export class ElementA extends LitElement {
   @property()
   foo?: string;
 
+  xkevin = 'hi';
+
   override render() {
     return html`<h1>${this.foo}</h1>`;
   }
