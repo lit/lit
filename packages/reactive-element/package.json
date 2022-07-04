@@ -235,8 +235,7 @@
     "chokidar-cli": "^3.0.0",
     "@lit-internal/scripts": "^1.0.0",
     "mocha": "^9.1.1",
-    "rollup": "^2.70.2",
-    "typescript": "^4.3.5"
+    "rollup": "^2.70.2"
   },
   "typings": "reactive-element.d.ts",
   "directories": {

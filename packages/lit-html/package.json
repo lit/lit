@@ -292,8 +292,7 @@
     "concurrently": "^6.2.1",
     "@lit-internal/scripts": "^1.0.0",
     "mocha": "^9.1.1",
-    "rollup": "^2.70.2",
-    "typescript": "^4.3.5"
+    "rollup": "^2.70.2"
   },
   "typings": "lit-html.d.ts",
   "directories": {
