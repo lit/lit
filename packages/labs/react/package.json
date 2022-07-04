@@ -144,7 +144,6 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/trusted-types": "^2.0.2",
-    "@web/test-runner-mocha": "^0.7.4",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^6.2.1",
     "@lit-internal/scripts": "^1.0.0",

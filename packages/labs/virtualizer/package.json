@@ -104,8 +104,6 @@
     "@esm-bundle/chai": "^4.3.4-fix.0",
     "@types/selenium-webdriver": "^4.0.19",
     "@web/dev-server-esbuild": "^0.3.0",
-    "@web/test-runner": "^0.13.27",
-    "@web/test-runner-mocha": "^0.7.5",
     "chai": "^4.2.0",
     "copyfiles": "^2.4.1",
     "http-server": "^14.1.0",
