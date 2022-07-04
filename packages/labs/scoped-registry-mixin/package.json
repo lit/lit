@@ -18,6 +18,7 @@
   },
   "exports": {
     ".": {
+      "types": "./development/scoped-registry-mixin.d.ts",
       "development": "./development/scoped-registry-mixin.js",
       "default": "./scoped-registry-mixin.js"
     }
