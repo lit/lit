@@ -23,6 +23,5 @@
     "noImplicitOverride": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [{"path": "../../lit"}]
+  "exclude": []
 }
