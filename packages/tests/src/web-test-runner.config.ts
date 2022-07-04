@@ -10,26 +10,14 @@ import {
   PlaywrightLauncherArgs,
   ProductType,
 } from '@web/test-runner-playwright';
-import {fromRollup} from '@web/dev-server-rollup';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
-import {RemapConfig, resolveRemap} from './rollup-resolve-remap.js';
-import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
 import type {PolyfillConfig} from 'polyfills-loader';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
-}
-
-let resolveRemapConfig: RemapConfig;
-if (mode === 'prod') {
-  console.log('Using production builds');
-  resolveRemapConfig = prodResolveRemapConfig;
-} else {
-  console.log('Using development builds');
-  resolveRemapConfig = devResolveRemapConfig;
 }
 
 const browserPresets = {
@@ -188,12 +176,13 @@ const config: TestRunnerConfig = {
     '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],
-  nodeResolve: true,
+  nodeResolve: {
+    exportConditions: mode === 'dev' ? ['development'] : [],
+  },
   concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 3), // default 3
   browsers,
   plugins: [
-    fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
