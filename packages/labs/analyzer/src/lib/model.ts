@@ -420,7 +420,7 @@ export interface Analyzer {
   readonly service: ts.LanguageService;
   program: ts.Program;
   checker: ts.TypeChecker;
-  getTypeForJSDocTag(tag: ts.JSDocTag): Type;
+  getTypeForJSDocTag(tag: ts.JSDocTag): Type | undefined;
   getTypeForNode(node: ts.Node): Type;
   getModelForIdentifier<T extends Declaration>(
     identifier: ts.Identifier,

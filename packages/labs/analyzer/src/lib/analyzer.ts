@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
-import {DiagnosticsError, createDiagnostic} from './errors.js';
+import {DiagnosticsError} from './errors.js';
 import {
   Analyzer as AnalyzerInterface,
   Module,
@@ -20,6 +20,7 @@ import {
   Constructor,
 } from './model.js';
 import {createRequire} from 'node:module';
+import {parseType} from './parse-type.js';
 
 const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
 
@@ -121,7 +122,8 @@ export class Analyzer implements AnalyzerInterface {
       createServiceHost(commandLine, this.fileCache),
       ts.createDocumentRegistry()
     );
-    this.invalidate();
+    this.program = this.service.getProgram()!;
+    this.checker = this.program.getTypeChecker();
     const diagnostics = this.program.getSemanticDiagnostics();
     if (diagnostics.length > 0) {
       throw new DiagnosticsError(
@@ -129,7 +131,6 @@ export class Analyzer implements AnalyzerInterface {
         `Error analyzing package '${packageJson.name}': Please fix errors first`
       );
     }
-    this.extractJsdocTypes();
   }
 
   private _isAnalyzingPackage = false;
@@ -182,141 +183,6 @@ export class Analyzer implements AnalyzerInterface {
   }
 
   /**
-   * Re-initialize the program and checker (causes the file cache versions to be
-   * diffed, and changed files to be re-parsed/checked)
-   */
-  private invalidate() {
-    this.program = this.service.getProgram()!;
-    this.checker = this.program.getTypeChecker();
-  }
-
-  /**
-   * Update the file cache with the new text of one or more modified source
-   * file, and re-parse/check them
-   */
-  private updateFiles(sourceFiles: ts.SourceFile[]) {
-    for (const sourceFile of sourceFiles) {
-      const printer = ts.createPrinter({newLine: ts.NewLineKind.LineFeed});
-      let file = this.fileCache.get(sourceFile.fileName);
-      if (file === undefined) {
-        file = {version: 0};
-        this.fileCache.set(sourceFile.fileName, file);
-      }
-      file.content = ts.ScriptSnapshot.fromString(
-        printer.printFile(sourceFile)
-      );
-      file.version++;
-    }
-    this.invalidate();
-  }
-
-  /**
-   * Associates jsdoc tags with any string `{Type}`s in them
-   */
-  private jsdocTypeMap = new WeakMap<ts.JSDocTag, ts.Type>();
-
-  /**
-   * Generates ts.Type nodes for types specified as {Type} strings in the
-   * comment text of custom jsdoc tags listed in the `customJSDocTypeTags`
-   * allowlist.
-   *
-   * Achieved by doing a pass over the AST, finding all such jsdoc tags and
-   * extracting the type text, generating dummy `let __$$customJsDOCType52:
-   * SomeType;` statements, finding those and extracting their type, and then
-   * re-associating them with the jsdoc comments via a WeakMap.  The original
-   * source is restored (and re-parsed/checked) prior to returning.
-   *
-   * This should be run once prior to analysis. The type for a jsdoc comment can
-   * then be looked up via `getTypeForJSDocTag`.
-   */
-  private extractJsdocTypes() {
-    const origSourceFiles = [];
-    const modifiedSourceFiles = [];
-    const tags: ts.JSDocTag[] = [];
-    for (const fileName of this.program.getRootFileNames()) {
-      const inferStatements: string[] = [];
-      const sourceFile = this.program.getSourceFile(path.normalize(fileName))!;
-      // Find JSDoc tags that contain string types and generate dummy variable
-      // declarations using their types
-      visitCustomJSDocTypeTags(
-        sourceFile,
-        (tag: ts.JSDocTag, typeString: string) => {
-          tags.push(tag);
-          inferStatements.push(
-            `export let ${customJSDocTypeInferPrefix}${inferStatements.length}: ${typeString};\n`
-          );
-        }
-      );
-      // Update the source files with the dummy variable declarations (add to
-      // end). We could try to keep these in the same lexical scope as the jsdoc
-      // comment, but that's a lot more work, and given any references used also
-      // need to be exported, seems unlikely they would use non-module scoped
-      // symbols
-      if (inferStatements.length > 0) {
-        const inferStatementText = inferStatements.join('');
-        const newSourceFile = sourceFile.update(
-          sourceFile.text + inferStatementText,
-          ts.createTextChangeRange(
-            ts.createTextSpan(sourceFile.text.length, 0),
-            inferStatementText.length
-          )
-        );
-        origSourceFiles.push(sourceFile);
-        modifiedSourceFiles.push(newSourceFile);
-      }
-    }
-    if (modifiedSourceFiles.length > 0) {
-      // If we had source files with type tags, update the language service
-      // with the modified files
-      this.updateFiles(modifiedSourceFiles);
-      const origErrors = this.program.getSemanticDiagnostics();
-      if (origErrors.length) {
-        const retargetedErrors: ts.Diagnostic[] = [];
-        for (const error of origErrors) {
-          const tag = getTagForError(error, tags);
-          if (tag) {
-            retargetedErrors.push(
-              createDiagnostic(tag, error.messageText as string)
-            );
-          } else {
-            throw new Error(
-              'Internal error: Could not associate inferred type error with original jsdoc tag.'
-            );
-          }
-        }
-        throw new DiagnosticsError(
-          retargetedErrors,
-          `Error analyzing package '${this.packageJson.name}': Please fix errors first`
-        );
-      }
-      // Find the inferred types and store them in a list
-      const types: ts.Type[] = [];
-      for (const modifiedSourceFile of modifiedSourceFiles) {
-        const sourceFile = this.program.getSourceFile(
-          modifiedSourceFile.fileName
-        )!;
-        visitCustomJSDocTypeInferredTypes(
-          sourceFile,
-          (node: ts.VariableDeclaration) => {
-            types.push(this.checker.getTypeAtLocation(node));
-          }
-        );
-      }
-      // Restore the original source files
-      this.updateFiles(origSourceFiles);
-      // Find typed JSDoc tags again and associate them with their type
-      for (const origSourceFile of origSourceFiles) {
-        const sourceFile = this.program.getSourceFile(origSourceFile.fileName)!;
-        let tagIndex = 0;
-        visitCustomJSDocTypeTags(sourceFile, (tag: ts.JSDocTag) => {
-          const type = types[tagIndex++];
-          this.jsdocTypeMap.set(tag, type);
-        });
-      }
-    }
-  }
-
-  /**
    * Returns a ts.Symbol for a name in scope at a given location in the AST.
    * TODO(kschaaf): There are ~1748 symbols in scope of a typical hello world,
    * due to DOM globals. Perf might become an issue here. This is a reason to
@@ -340,21 +206,28 @@ export class Analyzer implements AnalyzerInterface {
    *
    * Note, the tag type must
    */
-  getTypeForJSDocTag(tag: ts.JSDocTag): Type {
-    if (!customJSDocTypeTags.has(tag.tagName.text)) {
-      throw new DiagnosticsError(
-        tag,
-        `Internal error: '${tag.tagName.text}' is not included in customJSDocTypeTags.`
+  getTypeForJSDocTag(tag: ts.JSDocTag): Type | undefined {
+    const typeString =
+      ts.isJSDocUnknownTag(tag) && typeof tag.comment === 'string'
+        ? tag.comment?.match(/{(?<type>.*)}/)?.groups?.type
+        : undefined;
+    if (typeString !== undefined) {
+      const typeNode = parseType(typeString);
+      if (typeNode == undefined) {
+        throw new DiagnosticsError(
+          tag,
+          `Internal error: failed to parse type from JSDoc comment.`
+        );
+      }
+      const type = this.checker.getTypeFromTypeNode(typeNode);
+      return new Type(
+        type,
+        typeString,
+        this.getReferencesForTypeNode(typeNode, tag)
       );
+    } else {
+      return undefined;
     }
-    const type = this.jsdocTypeMap.get(tag);
-    if (type === undefined) {
-      throw new DiagnosticsError(
-        tag,
-        `Internal error: no type was pre-processed for this JSDoc tag`
-      );
-    }
-    return this.getTypeForType(type, tag);
   }
 
   /**
@@ -525,6 +398,17 @@ export class Analyzer implements AnalyzerInterface {
         `Internal error: could not convert type to type node`
       );
     }
+    return new Type(
+      type,
+      text,
+      this.getReferencesForTypeNode(typeNode, location)
+    );
+  }
+
+  private getReferencesForTypeNode(
+    typeNode: ts.TypeNode,
+    location: ts.Node
+  ): Reference[] {
     const references: Reference[] = [];
     const visit = (node: ts.Node) => {
       if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
@@ -548,8 +432,7 @@ export class Analyzer implements AnalyzerInterface {
       ts.forEachChild(node, visit);
     };
     visit(typeNode);
-
-    return new Type(type, text, references);
+    return references;
   }
 
   getModuleForNode(node: ts.Node): Module {
@@ -648,36 +531,6 @@ const createServiceHost = (
   };
 };
 
-const customJSDocTypeTags = new Set(['fires']);
-
-/**
- * Visitor that calls callback for each ts.JSDocUnknownTag containing a `{...}`
- * type string
- */
-const visitCustomJSDocTypeTags = (
-  node: ts.Node,
-  callback: (tag: ts.JSDocTag, typeString: string) => void
-) => {
-  const jsDocTags = ts.getJSDocTags(node);
-  if (jsDocTags?.length > 0) {
-    for (const tag of jsDocTags) {
-      if (
-        ts.isJSDocUnknownTag(tag) &&
-        customJSDocTypeTags.has(tag.tagName.text) &&
-        typeof tag.comment === 'string'
-      ) {
-        const match = tag.comment.match(/{(?<type>.*)}/);
-        if (match) {
-          callback(tag, match.groups!.type);
-        }
-      }
-    }
-  }
-  ts.forEachChild(node, (child: ts.Node) =>
-    visitCustomJSDocTypeTags(child, callback)
-  );
-};
-
 /**
  * Gets the left-most name of a (possibly qualified) identifier, i.e.
  * 'Foo' returns 'Foo', but 'ts.SyntaxKind' returns 'ts'. This is the
@@ -694,48 +547,4 @@ const getRootName = (
   } else {
     return name.text;
   }
-};
-
-const customJSDocTypeInferPrefix = '__$$customJsDOCType';
-
-/**
- * Visitor that calls callback for each dummy type declaration created to
- * infer types from jsDoc strings.
- */
-const visitCustomJSDocTypeInferredTypes = (
-  node: ts.Node,
-  callback: (node: ts.VariableDeclaration) => void
-) => {
-  if (
-    ts.isVariableDeclaration(node) &&
-    ts.isIdentifier(node.name) &&
-    node.name.text.startsWith(customJSDocTypeInferPrefix)
-  ) {
-    callback(node);
-  }
-  ts.forEachChild(node, (child) =>
-    visitCustomJSDocTypeInferredTypes(child, callback)
-  );
-};
-
-/**
- * Returns the ts.JSDocTag tag for a given diagnostic error.
- *
- * Each type declaration includes an index in its identifier, which is extracted
- * and used to identify the jsDoc tag.
- */
-const getTagForError = (
-  error: ts.Diagnostic,
-  tags: ts.JSDocTag[]
-): ts.JSDocTag | undefined => {
-  if (error.file === undefined) {
-    return;
-  }
-  const beforeError = error.file.text.slice(0, error.start);
-  const symbolStart = beforeError.lastIndexOf(customJSDocTypeInferPrefix);
-  const index = parseInt(
-    beforeError.slice(symbolStart + customJSDocTypeInferPrefix.length),
-    10
-  );
-  return tags[index];
 };
