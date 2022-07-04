@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {CSSValues} from '../animate.js';
+import {CSSValues} from '@lit-labs/motion';
 import {assert} from '@esm-bundle/chai';
 
 let count = 0;
