@@ -18,22 +18,27 @@
   },
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
     },
     "./mutation_controller.js": {
+      "types": "./development/mutation_controller.d.ts",
       "development": "./development/mutation_controller.js",
       "default": "./mutation_controller.js"
     },
     "./performance_controller.js": {
+      "types": "./development/performance_controller.d.ts",
       "development": "./development/performance_controller.js",
       "default": "./performance_controller.js"
     },
     "./resize_controller.js": {
+      "types": "./development/resize_controller.d.ts",
       "development": "./development/resize_controller.js",
       "default": "./resize_controller.js"
     },
     "./intersection_controller.js": {
+      "types": "./development/intersection_controller.d.ts",
       "development": "./development/intersection_controller.js",
       "default": "./intersection_controller.js"
     }
