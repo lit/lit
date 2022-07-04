@@ -18,10 +18,12 @@
   },
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
     },
     "./task.js": {
+      "types": "./development/task.d.ts",
       "development": "./development/task.js",
       "default": "./task.js"
     }
