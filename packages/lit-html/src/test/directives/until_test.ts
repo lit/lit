@@ -5,8 +5,8 @@
  */
 
 import {assert} from '@esm-bundle/chai';
-import {until} from '../../directives/until.js';
-import {html, nothing, render} from '../../lit-html.js';
+import {until} from 'lit-html/directives/until.js';
+import {html, nothing, render} from 'lit-html';
 import {Deferred} from '../test-utils/deferred.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {memorySuite} from '../test-utils/memory.js';
