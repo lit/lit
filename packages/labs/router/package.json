@@ -21,14 +21,17 @@
   },
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
     },
     "./router.js": {
+      "types": "./development/router.d.ts",
       "development": "./development/router.js",
       "default": "./router.js"
     },
     "./routes.js": {
+      "types": "./development/routes.d.ts",
       "development": "./development/routes.js",
       "default": "./routes.js"
     }
