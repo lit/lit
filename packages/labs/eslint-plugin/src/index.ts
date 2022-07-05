@@ -6,6 +6,8 @@
 
 import {ESLintUtils} from '@typescript-eslint/utils';
 import ts from 'typescript';
+import fs from 'fs';
+import path from 'path';
 
 const createRule = ESLintUtils.RuleCreator(
   (name) => `https://lit.dev/eslint/${name}`
@@ -21,6 +23,25 @@ export const rules = {
         // console.log('Mod:', m.fileName, lastMods.get(m.fileName) === m);
         lastMods.set(m.fileName, m);
       });
+      console.log(`Program info:
+      \trootFileNames: ${services.program.getRootFileNames()}
+      \tconfigFile: ${services.program.getCompilerOptions().configFilePath}
+      \tackageJson.name: ${
+        (
+          JSON.parse(
+            fs.readFileSync(
+              path.join(
+                path.dirname(
+                  services.program.getCompilerOptions().configFilePath as string
+                ),
+                'package.json'
+              ),
+              'utf-8'
+            )
+          ) as {name: string}
+        ).name
+      }
+      `);
       return {
         Identifier(node) {
           if (node.name.toLowerCase() === 'kevin') {

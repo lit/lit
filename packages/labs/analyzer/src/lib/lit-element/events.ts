@@ -12,11 +12,15 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {Event, Analyzer} from '../model.js';
+import {AnalyzerContext, Event} from '../model.js';
+import {getTypeForJSDocTag} from '../types.js';
 
 import {LitClassDeclaration} from './lit-element.js';
 
-export const getEvents = (node: LitClassDeclaration, analyzer: Analyzer) => {
+export const getEvents = (
+  node: LitClassDeclaration,
+  context: AnalyzerContext
+) => {
   const events = new Map<string, Event>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
@@ -40,7 +44,7 @@ export const getEvents = (node: LitClassDeclaration, analyzer: Analyzer) => {
             new Event({
               name,
               getType: () =>
-                type ? analyzer.getTypeForJSDocTag(tag) : undefined,
+                type ? getTypeForJSDocTag(tag, context) : undefined,
               description,
             })
           );

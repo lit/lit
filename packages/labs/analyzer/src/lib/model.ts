@@ -7,30 +7,26 @@
 import ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
 
-import {IPackageJson as PackageJson} from 'package-json-type';
-export {PackageJson};
+import type {IPackageJson as PackageJson} from 'package-json-type';
+export type {PackageJson};
+import type ManifestJson from 'custom-elements-manifest/schema';
+export type {ManifestJson};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T> = new (...args: any[]) => T;
 
 export interface PackageInit {
   rootDir: AbsolutePath;
-  packageJson: PackageJson;
-  tsConfig: ts.ParsedCommandLine;
   modules: ReadonlyArray<Module>;
 }
 
 export class Package {
   readonly rootDir: AbsolutePath;
   readonly modules: ReadonlyArray<Module>;
-  readonly tsConfig: ts.ParsedCommandLine;
-  readonly packageJson: PackageJson;
   private _modulesByPackagePath: Map<PackagePath, Module> | undefined;
 
   constructor(init: PackageInit) {
     this.rootDir = init.rootDir;
-    this.packageJson = init.packageJson;
-    this.tsConfig = init.tsConfig;
     this.modules = init.modules;
   }
 
@@ -40,28 +36,25 @@ export class Package {
     );
     const module = this._modulesByPackagePath.get(path);
     if (module === undefined) {
-      throw new Error(
-        `No module with path ${path} in package ${
-          this.packageJson.name ?? this.rootDir
-        }`
-      );
+      throw new Error(`No module with path ${path} in package ${this.rootDir}`);
     }
     return module;
   }
 }
 
 export interface ModuleInit {
-  sourceFile: ts.SourceFile;
+  sourceFile?: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
   declarations?: Declaration[];
+  packageJson: PackageJson;
 }
 
 export class Module {
   /**
    * The TS AST node for the file
    */
-  readonly sourceFile: ts.SourceFile;
+  readonly sourceFile: ts.SourceFile | undefined;
   /**
    * The path to the source file for this module. In a TS project, this will be
    * a .ts file. In a JS project, this will be the same as `jsPath`.
@@ -76,6 +69,8 @@ export class Module {
   readonly declarations: Array<Declaration>;
   readonly dependencies = new Set<string>();
 
+  readonly packageJson: PackageJson;
+
   private _exportsByName: Map<string, Declaration> | undefined;
 
   constructor(init: ModuleInit) {
@@ -83,6 +78,7 @@ export class Module {
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
     this.declarations = init.declarations ?? [];
+    this.packageJson = init.packageJson;
   }
 
   getExport<T extends Declaration>(name: string, type: Constructor<T>): T {
@@ -150,13 +146,13 @@ export type ClassHeritage = {
 
 export interface ClassDeclarationInit {
   name: string | undefined;
-  node: ts.ClassLikeDeclarationBase;
+  node?: ts.ClassLikeDeclarationBase;
   getHeritage: () => ClassHeritage;
 }
 
 export class ClassDeclaration {
   readonly name: string | undefined;
-  readonly node: ts.ClassLikeDeclarationBase;
+  readonly node: ts.ClassLikeDeclarationBase | undefined;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined;
 
@@ -352,6 +348,7 @@ export interface ReferenceInit {
   package?: string | undefined;
   module?: string | undefined;
   isGlobal?: boolean;
+  isLocal?: boolean;
 }
 
 export class Reference {
@@ -359,11 +356,13 @@ export class Reference {
   readonly package: string | undefined;
   readonly module: string | undefined;
   readonly isGlobal: boolean;
+  readonly isLocal: boolean;
   constructor(init: ReferenceInit) {
     this.name = init.name;
     this.package = init.package;
     this.module = init.module;
     this.isGlobal = init.isGlobal ?? false;
+    this.isLocal = init.isLocal ?? false;
   }
 
   get moduleSpecifier() {
@@ -413,17 +412,37 @@ export const getImportsStringForReferences = (references: Reference[]) => {
     .join('\n');
 };
 
-export interface Analyzer {
-  readonly packageRoot: AbsolutePath;
-  readonly commandLine: ts.ParsedCommandLine;
-  readonly packageJson: PackageJson;
-  readonly service: ts.LanguageService;
+export interface AnalyzerContext {
   program: ts.Program;
   checker: ts.TypeChecker;
-  getTypeForJSDocTag(tag: ts.JSDocTag): Type | undefined;
-  getTypeForNode(node: ts.Node): Type;
-  getModelForIdentifier<T extends Declaration>(
-    identifier: ts.Identifier,
-    type: Constructor<T>
-  ): T;
+  commandLine: ts.ParsedCommandLine;
+  fs: Pick<
+    ts.System,
+    | 'readDirectory'
+    | 'readFile'
+    | 'realpath'
+    | 'fileExists'
+    | 'useCaseSensitiveFileNames'
+  >;
+  path: Pick<
+    typeof import('path'),
+    'join' | 'relative' | 'dirname' | 'basename' | 'dirname' | 'parse'
+  >;
 }
+
+/*
+This should get a commandLine usable in ts.getOutputFileNames from a ts.Program:
+
+const compilerOptions = program.getCompilerOptions();
+const commandLine = ts.parseJsonConfigFileContent(
+  {
+    files: program.getRootFileNames(),
+    compilerOptions,
+  },
+  ts.sys,
+  path.basename(compilerOptions.configFilePath as string),
+  undefined,
+  compilerOptions.configFilePath as string
+);
+
+*/

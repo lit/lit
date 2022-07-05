@@ -11,10 +11,11 @@
  */
 
 import ts from 'typescript';
-import {VariableDeclaration, Analyzer, Declaration} from '../model.js';
+import {VariableDeclaration, Declaration, AnalyzerContext} from '../model.js';
 import {DiagnosticsError} from '../errors.js';
 import {getFunctionDeclaration} from './functions.js';
 import {getClassDeclaration} from './classes.js';
+import {getTypeForNode} from '../types.js';
 
 type VariableName =
   | ts.Identifier
@@ -24,7 +25,7 @@ type VariableName =
 export const getVariableDeclarations = (
   dec: ts.VariableDeclaration,
   name: VariableName,
-  analyzer: Analyzer
+  context: AnalyzerContext
 ): Declaration[] => {
   if (ts.isIdentifier(name)) {
     const initializer = dec.initializer;
@@ -33,16 +34,16 @@ export const getVariableDeclarations = (
         ts.isArrowFunction(initializer) ||
         ts.isFunctionExpression(initializer)
       ) {
-        return [getFunctionDeclaration(initializer, name, analyzer)];
+        return [getFunctionDeclaration(initializer, name, context)];
       } else if (ts.isClassExpression(initializer)) {
-        return [getClassDeclaration(initializer, analyzer)];
+        return [getClassDeclaration(initializer, context)];
       }
     }
     return [
       new VariableDeclaration({
         name: name.text,
         node: dec,
-        getType: () => analyzer.getTypeForNode(name),
+        getType: () => getTypeForNode(name, context),
       }),
     ];
   } else if (
@@ -55,7 +56,7 @@ export const getVariableDeclarations = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarations(dec, el.name, analyzer))
+      .map((el) => getVariableDeclarations(dec, el.name, context))
       .flat();
   } else {
     throw new DiagnosticsError(

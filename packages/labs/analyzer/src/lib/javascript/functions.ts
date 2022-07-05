@@ -11,16 +11,20 @@
  */
 
 import ts from 'typescript';
-import {Analyzer, FunctionDeclaration, MixinDeclaration} from '../model.js';
+import {
+  AnalyzerContext,
+  FunctionDeclaration,
+  MixinDeclaration,
+} from '../model.js';
 import {maybeGetMixinFromFunctionLike} from './mixins.js';
 
 export const getFunctionDeclaration = (
   dec: ts.FunctionLikeDeclaration,
   name: ts.Identifier,
-  analyzer: Analyzer
+  context: AnalyzerContext
 ): FunctionDeclaration | MixinDeclaration => {
   return (
-    maybeGetMixinFromFunctionLike(dec, name, analyzer) ??
+    maybeGetMixinFromFunctionLike(dec, name, context) ??
     new FunctionDeclaration({
       name: name.getText(),
       node: dec,

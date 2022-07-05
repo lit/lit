@@ -54,6 +54,15 @@ function init(_modules: {
         info.project.projectService.logger.info(
           `Changed ${entriesChanged} entries from the completion list`
         );
+        info.project.projectService.logger.info(
+          `Program info:
+\trootFileNames: ${info.languageService.getProgram()?.getRootFileNames()}
+\tconfigFile: ${
+            info.languageService.getProgram()?.getCompilerOptions()
+              .configFilePath
+          }
+`
+        );
       }
 
       return prior;

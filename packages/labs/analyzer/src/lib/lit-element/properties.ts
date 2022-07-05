@@ -12,12 +12,13 @@
 
 import ts from 'typescript';
 import {LitClassDeclaration} from './lit-element.js';
-import {ReactiveProperty, Analyzer} from '../model.js';
+import {AnalyzerContext, ReactiveProperty} from '../model.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
+import {getTypeForNode} from '../types.js';
 
 export const getProperties = (
   node: LitClassDeclaration,
-  analyzer: Analyzer
+  context: AnalyzerContext
 ) => {
   const reactiveProperties = new Map<string, ReactiveProperty>();
 
@@ -38,7 +39,7 @@ export const getProperties = (
         name,
         new ReactiveProperty({
           name,
-          getType: () => analyzer.getTypeForNode(prop),
+          getType: () => getTypeForNode(prop, context),
           node: prop,
           attribute: getPropertyAttribute(options, name),
           typeOption: getPropertyType(options),

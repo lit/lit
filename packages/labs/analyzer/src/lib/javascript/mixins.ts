@@ -12,7 +12,7 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {MixinDeclaration, Analyzer} from '../model.js';
+import {AnalyzerContext, MixinDeclaration} from '../model.js';
 import {getClassDeclaration} from './classes.js';
 
 const nodeHasMixinHint = (node: ts.Node) =>
@@ -44,7 +44,7 @@ const throwIfMixin = (
  */
 export const maybeGetMixinFromVariableDeclaration = (
   declaration: ts.VariableDeclaration,
-  analyzer: Analyzer
+  context: AnalyzerContext
 ): MixinDeclaration | undefined => {
   const hasMixinHint = nodeHasMixinHint(declaration);
   const initializer = declaration.initializer;
@@ -65,7 +65,7 @@ export const maybeGetMixinFromVariableDeclaration = (
   return maybeGetMixinFromFunctionLike(
     initializer,
     declaration.name,
-    analyzer,
+    context,
     hasMixinHint
   );
 };
@@ -85,7 +85,7 @@ export const maybeGetMixinFromVariableDeclaration = (
 export const maybeGetMixinFromFunctionLike = (
   fn: ts.FunctionLikeDeclaration,
   name: ts.Identifier,
-  analyzer: Analyzer,
+  context: AnalyzerContext,
   hasMixinHint = nodeHasMixinHint(fn)
 ) => {
   if (!fn.parameters || fn.parameters.length < 1) {
@@ -169,7 +169,7 @@ export const maybeGetMixinFromFunctionLike = (
     node: fn,
     name: name.getText(),
     superClassArgIdx,
-    classDeclaration: getClassDeclaration(classDeclaration, analyzer),
+    classDeclaration: getClassDeclaration(classDeclaration, context),
   });
 };
 

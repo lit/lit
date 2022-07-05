@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0.0",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "index.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "LitElement",
+          "summary": "TODO",
+          "description": "TODO",
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false,
+          "attributes": [],
+          "events": [],
+          "slots": [],
+          "cssParts": [],
+          "cssProperties": [],
+          "demos": [],
+          "customElement": true
+        }
+      ],
+      "exports": [],
+      "deprecated": false
+    }
+  ]
+}
