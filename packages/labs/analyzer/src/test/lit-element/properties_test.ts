@@ -9,6 +9,7 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
+import ts from 'typescript';
 
 import {Analyzer} from '../../lib/analyzer.js';
 import {AbsolutePath} from '../../lib/paths.js';
@@ -131,22 +132,33 @@ test('property typed with global class', ({element}) => {
 
 test('property typed with union', ({element}) => {
   const property = element.reactiveProperties.get('union')!;
-  assert.equal(property.type.text, 'ImportedClass | LocalClass | HTMLElement');
+  ts.isUnionTypeNode(property.node);
   assert.equal(property.type.references.length, 3);
-  assert.equal(property.type.references[1].name, 'LocalClass');
+  // The order is not necessarily reliable. It changed between TypeScript
+  // versions once.
+
+  const localClass = property.type.references.find(
+    (node) => node.name === 'LocalClass'
+  );
+  assert.ok(localClass);
+  assert.equal(localClass.package, '@lit-internal/test-decorators-properties');
+  assert.equal(localClass.module, 'element-a.js');
+
+  const htmlElement = property.type.references.find(
+    (node) => node.name === 'HTMLElement'
+  );
+  assert.ok(htmlElement);
+  assert.equal(htmlElement.isGlobal, true);
+
+  const importedClass = property.type.references.find(
+    (node) => node.name === 'ImportedClass'
+  );
+  assert.ok(importedClass);
   assert.equal(
-    property.type.references[1].package,
+    importedClass.package,
     '@lit-internal/test-decorators-properties'
   );
-  assert.equal(property.type.references[1].module, 'element-a.js');
-  assert.equal(property.type.references[2].name, 'HTMLElement');
-  assert.equal(property.type.references[2].isGlobal, true);
-  assert.equal(property.type.references[0].name, 'ImportedClass');
-  assert.equal(
-    property.type.references[0].package,
-    '@lit-internal/test-decorators-properties'
-  );
-  assert.equal(property.type.references[0].module, 'external.js');
+  assert.equal(importedClass.module, 'external.js');
 });
 
 test('reflect: true', ({element}) => {
