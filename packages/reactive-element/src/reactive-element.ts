@@ -1069,9 +1069,11 @@ export abstract class ReactiveElement
       this.constructor as typeof ReactiveElement
     ).__attributeNameForProperty(name, options);
     if (attr !== undefined && options.reflect === true) {
+      const converter = options.converter;
       const toAttribute =
-        (options.converter as ComplexAttributeConverter)?.toAttribute ??
-        defaultConverter.toAttribute;
+        (converter as ComplexAttributeConverter)?.toAttribute?.bind(
+          converter
+        ) ?? defaultConverter.toAttribute;
       const attrValue = toAttribute!(value, options.type);
       if (
         DEV_MODE &&
@@ -1119,7 +1121,9 @@ export abstract class ReactiveElement
       const options = ctor.getPropertyOptions(propName);
       const converter = options.converter;
       const fromAttribute =
-        (converter as ComplexAttributeConverter)?.fromAttribute ??
+        (converter as ComplexAttributeConverter)?.fromAttribute?.bind(
+          converter
+        ) ??
         (typeof converter === 'function'
           ? (converter as (value: string | null, type?: unknown) => unknown)
           : null) ??

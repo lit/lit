@@ -302,6 +302,72 @@ suite('ReactiveElement', () => {
     assert.equal(el.getAttribute('foo'), 'toAttribute: FooType');
   });
 
+  test('property option `converter` can use a class instance', async () => {
+    class IntegerAttributeConverter
+      implements ComplexAttributeConverter<Number>
+    {
+      private _defaultValue: Number;
+
+      constructor(defaultValue: Number) {
+        this._defaultValue = defaultValue;
+      }
+
+      toAttribute(value: Number, _type?: unknown): unknown {
+        return `${value}`;
+      }
+
+      fromAttribute(value: string | null, _type?: unknown): Number {
+        if (!value) {
+          return this._defaultValue;
+        }
+
+        const parsedValue = Number.parseInt(value, 10);
+        if (isNaN(parsedValue)) {
+          return this._defaultValue;
+        }
+        return parsedValue;
+      }
+    }
+
+    const defaultIntAttrConverterVal = 1;
+
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          num: {
+            type: Number,
+            converter: new IntegerAttributeConverter(
+              defaultIntAttrConverterVal
+            ),
+            reflect: true,
+          },
+        };
+      }
+
+      num?: number;
+    }
+
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+
+    assert.equal(el.getAttribute('num'), null);
+    assert.equal(el.num, undefined);
+
+    el.setAttribute('num', 'notANumber');
+    await el.updateComplete;
+    assert.equal(el.num, defaultIntAttrConverterVal);
+
+    el.num = 10;
+    await el.updateComplete;
+    assert.equal(el.getAttribute('num'), '10');
+
+    el.setAttribute('num', '5');
+    await el.updateComplete;
+    assert.equal(el.num, 5);
+  });
+
   test('property/attribute values when attributes removed', async () => {
     class E extends ReactiveElement {
       static override get properties() {
