@@ -44,8 +44,7 @@
     "fast-glob": "^3.2.5",
     "line-reader": "^0.4.0",
     "marked": "^4.0.16",
-    "puppeteer": "^14.3.0",
-    "typescript": "^4.3.5"
+    "puppeteer": "^14.3.0"
   },
   "devDependencies": {
     "@types/changelog-parser": "^2.8.1",
