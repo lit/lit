@@ -97,13 +97,30 @@ type Constructor<T> = {new (): T};
 export type EventName<T extends Event = Event> = string & {
   __event_type: T;
 };
-
 type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
+type EventMap<R extends Events> = {
   [K in keyof R]: R[K] extends EventName
     ? (e: R[K]['__event_type']) => void
     : (e: Event) => void;
+};
+
+type Slots = Record<string, string>;
+type SlotMap<C> = Record<keyof C, React.ReactNode>;
+
+const slotReactNode = (
+  createElement: typeof ReactModule.createElement,
+  slot: string,
+  children: React.ReactNode
+) => {
+  return createElement(
+    'div',
+    {
+      style: {display: 'contents'},
+      key: slot,
+      slot,
+    },
+    children
+  );
 };
 
 /**
@@ -127,12 +144,17 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
+export const createComponent = <
+  I extends HTMLElement,
+  E extends Events,
+  S extends Slots
+>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
-  displayName?: string
+  displayName?: string,
+  slots?: S
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
@@ -143,9 +165,10 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   // 'children', but 'children' is special to JSX, so we must at least do that.
   type UserProps = React.PropsWithChildren<
     React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
-        Partial<EventProps<E>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
+      Partial<Omit<I, 'children' | keyof S>> &
+        Partial<EventMap<E>> &
+        Partial<SlotMap<S>> &
+        Omit<React.HTMLAttributes<HTMLElement>, keyof E | keyof S>
     >
   >;
 
@@ -254,18 +277,36 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
+
+      // ReactNode children are collected into one array. Each child
+      // is assigned a slot via slotReactNode.
+      // React requires a list of unique keys on ReactNode lists so
+      // the slot-name is used as the unique key. However, the first
+      // set of ReactNodes has a unique key of 'undefined'.
+      const children: React.ReactNodeArray = [this.props.children];
+
       for (const [k, v] of Object.entries(this.props)) {
-        if (k === '__forwardedRef') continue;
+        if (k === '__forwardedRef' || k === 'children') continue;
 
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
-        } else {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        const slot = slots?.[k];
+        if (slot) {
+          children.push(
+            slotReactNode(createElement, slot, v as React.ReactNode)
+          );
+          continue;
+        }
+
+        // React does *not* handle `className` for custom elements so
+        // coerce it to `class` so it's handled correctly.
+        props[k === 'className' ? 'class' : k] = v;
       }
-      return createElement(tagName, props);
+
+      return createElement(tagName, props, children);
     }
   }
 
