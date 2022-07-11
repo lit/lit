@@ -15,7 +15,7 @@
     "@types/react": "^17 || ^18"
   },
   "devDependencies": {
-    "typescript": "^4.6.4"
+    "typescript": "~4.7.4"
   },
   "files": [
     "element-events.{js,js.map,d.ts,d.ts.map}"
