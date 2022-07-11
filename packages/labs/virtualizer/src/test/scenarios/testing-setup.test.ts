@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, ignoreWindowErrors} from '../helpers.js';
+import {ignoreBenignErrors, ignoreWindowErrors, until} from '../helpers.js';
 import {expect} from '@esm-bundle/chai';
 
 describe('ignoreBenignErrors', () => {
@@ -59,5 +59,29 @@ describe('ignoreBenignErrors', () => {
       expect(applesErrorThrown).to.eq(true);
       expect(bananasErrorThrown).to.eq(true);
     });
+  });
+});
+
+describe('until', () => {
+  it('resolves when condition is met', async () => {
+    let condition = false;
+    setTimeout(() => (condition = true), 500);
+    await until(() => condition);
+    expect(condition).to.be.true;
+  });
+
+  it('throws an error if timeout exceeded', async () => {
+    const condition = false;
+    let error: Error;
+    try {
+      await until(() => condition);
+    } catch (e) {
+      error = e as Error;
+    }
+    expect(error!).to.exist;
+    expect(error!.message).to.contain(
+      'Condition not met within 1000ms: "() => condition"'
+    );
+    expect(error!.message).to.contain('at o.<anonymous>');
   });
 });

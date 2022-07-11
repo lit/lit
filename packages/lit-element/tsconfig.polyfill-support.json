@@ -21,7 +21,7 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
     "src/env.d.ts",
     "src/polyfill-support.ts"
   ]

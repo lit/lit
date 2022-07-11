@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
   "sampleSize": 5,
-  "root": "..",
+  "root": "../../../../../",
   "benchmarks": [
     {
       "name": "simple scrolling test",

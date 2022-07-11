@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.2.1
+
+### Patch Changes
+
+- [#3045](https://github.com/lit/lit/pull/3045) [`9a7b6546`](https://github.com/lit/lit/commit/9a7b6546c286a964cafb707812353f33c6f0113c) - Fix behavior of setAttribute when value is not a string to match browsers. It is now cast to a string. Fixes problems such as reflection of type:Number properties on ReactiveElements.
+
 ## 2.2.0
 
 ### Minor Changes
