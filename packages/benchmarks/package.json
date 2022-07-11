@@ -65,7 +65,6 @@
     "tachometer": "^0.6.0-pre.1"
   },
   "devDependencies": {
-    "chromedriver": "^103.0.0",
-    "typescript": "^4.3.5"
+    "chromedriver": "^103.0.0"
   }
 }

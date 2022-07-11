@@ -95,7 +95,6 @@
     "eslint": "^5.16.0",
     "globby": "^10.0.2",
     "stdout-stderr": "^0.1.13",
-    "typescript": "~4.6.2",
     "uvu": "^0.5.3"
   },
   "engines": {

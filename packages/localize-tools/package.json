@@ -139,7 +139,7 @@
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
-    "typescript": "~4.4.0"
+    "typescript": "~4.7.4"
   },
   "devDependencies": {
     "@lit-labs/ssr": "^2.1.0",
