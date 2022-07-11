@@ -127,7 +127,7 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
+export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
