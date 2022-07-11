@@ -171,7 +171,7 @@
         "tsconfig.polyfill-support.json"
       ],
       "output": [
-        "development",
+        "development/**/*.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo",
         "tsconfig.polyfill-support.tsbuildinfo"
       ]
@@ -195,7 +195,9 @@
       ],
       "files": [
         "rollup.config.js",
-        "../../rollup-common.js"
+        "../../rollup-common.js",
+        "src/test/*_test.html",
+        "src/test/polyfill-support/*_test.html"
       ],
       "output": [
         "async-directive.js{,.map}",
@@ -206,7 +208,11 @@
         "polyfill-support.js{,.map}",
         "private-ssr-support.js{,.map}",
         "static.js{,.map}",
-        "directives/*.js{,.map}"
+        "directives/*.js{,.map}",
+        "test/*_test.html",
+        "development/test/*_test.html",
+        "test/polyfill-support/*_test.html",
+        "development/test/polyfill-support/*_test.html"
       ]
     },
     "build:version-stability-test": {
@@ -286,8 +292,7 @@
     "concurrently": "^6.2.1",
     "@lit-internal/scripts": "^1.0.0",
     "mocha": "^9.1.1",
-    "rollup": "^2.70.2",
-    "typescript": "^4.3.5"
+    "rollup": "^2.70.2"
   },
   "typings": "lit-html.d.ts",
   "directories": {

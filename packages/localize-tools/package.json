@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "publishConfig": {
     "access": "public"
   },
@@ -48,7 +48,8 @@
         "../localize:build:ts",
         "../lit:build:ts:types",
         "../labs/ssr:build:ts",
-        "../ts-transformers:build:ts"
+        "../ts-transformers:build:ts",
+        "../tests:build"
       ],
       "files": [
         "src/**/*.ts",
@@ -138,7 +139,7 @@
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
-    "typescript": "^4.3.5"
+    "typescript": "~4.7.4"
   },
   "devDependencies": {
     "@lit-labs/ssr": "^2.1.0",

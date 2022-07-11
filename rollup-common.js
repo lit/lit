@@ -254,6 +254,7 @@ export function litProdConfig({
   testPropertyPrefix,
   packageName,
   outputDir = './',
+  copyHtmlTests = true,
   // eslint-disable-next-line no-undef
 } = options) {
   const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
@@ -394,9 +395,9 @@ export function litProdConfig({
         sourcemaps(),
         terser(terserOptions),
         summary(),
-        ...(CHECKSIZE
-          ? [skipBundleOutput]
-          : [
+        ...(CHECKSIZE ? [skipBundleOutput] : []),
+        ...(copyHtmlTests && !CHECKSIZE
+          ? [
               // Copy polyfill support tests.
               copy({
                 targets: [
@@ -415,7 +416,8 @@ export function litProdConfig({
                   },
                 ],
               }),
-            ]),
+            ]
+          : []),
       ],
     },
     ...bundled.map(({file, output, name, format, sourcemapPathTransform}) =>

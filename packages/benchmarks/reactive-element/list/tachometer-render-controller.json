@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
   "sampleSize": 100,
   "timeout": 0,
   "benchmarks": [
@@ -17,11 +18,11 @@
       "expand": [
         {
           "name": "baseline",
-          "url": "reactive-element/list/index.html?benchmark=render"
+          "url": "index.html?benchmark=render"
         },
         {
           "name": "controller",
-          "url": "reactive-element/list/index.html?benchmark=render&controller"
+          "url": "index.html?benchmark=render&controller"
         }
       ]
     }

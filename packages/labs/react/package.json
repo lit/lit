@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/react",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -149,8 +149,7 @@
     "mocha": "^9.1.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "rollup": "^2.70.2",
-    "typescript": "^4.3.5"
+    "rollup": "^2.70.2"
   },
   "publishConfig": {
     "access": "public"

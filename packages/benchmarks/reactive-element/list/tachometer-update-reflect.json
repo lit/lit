@@ -1,10 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
   "sampleSize": 50,
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "reactive-element/list/index.html?benchmark=update-reflect",
+      "url": "index.html?benchmark=update-reflect",
       "browser": {
         "name": "chrome",
         "headless": true
