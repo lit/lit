@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -233,8 +233,7 @@
     "@lit-internal/scripts": "^1.0.0",
     "mocha": "^9.1.1",
     "rollup": "^2.70.2",
-    "tslib": "^2.0.3",
-    "typescript": "^4.3.5"
+    "tslib": "^2.0.3"
   },
   "directories": {
     "test": "test"

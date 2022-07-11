@@ -169,7 +169,12 @@ const require = createRequire(import.meta.url);
 
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 const config: TestRunnerConfig = {
-  rootDir: '../',
+  // Serve from the root of the monorepo, because most dependencies are hoisted
+  // into its node_modules folder. Usually this wouldn't matter, because wtr
+  // will serve node modules from outside the root automatically, however our
+  // HTML tests use hard-coded paths to load the polyfills, so the automatic
+  // node resolution doesn't apply there.
+  rootDir: '../../',
   // Note this file list can be overridden by wtr command-line arguments.
   files: [
     '../labs/context/development/**/*_test.(js|html)',
@@ -226,7 +231,7 @@ const config: TestRunnerConfig = {
   // enough so that blocked tests have time to wait for all previous test files
   // to run to completion.
   testsStartTimeout: 60000 * 10, // default 120000
-  testsFinishTimeout: 120000, // default 20000
+  testsFinishTimeout: 600000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha
     config: {

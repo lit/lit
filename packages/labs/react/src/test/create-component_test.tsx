@@ -93,6 +93,29 @@ suite('createComponent', () => {
     await el.updateComplete;
   };
 
+  /*
+    The following test will not build if an incorrect typing occurs
+    when events are not provided to `createComponent`.
+  */
+  test('renders element without optional event map', async () => {
+    const ComponentWithoutEventMap = createComponent(
+      window.React,
+      elementName,
+      BasicElement,
+    );
+
+    const name = 'Component without event map.';
+    window.ReactDOM.render(
+      <ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>,
+      container
+    );
+
+    el = container.querySelector(elementName)! as BasicElement;
+    await el.updateComplete;
+    
+    assert.equal(el.textContent, 'Component without event map.');
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     window.ReactDOM.render(

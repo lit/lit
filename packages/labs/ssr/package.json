@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -152,7 +152,6 @@
     "koa-node-resolve": "^1.0.0-pre.5",
     "koa-static": "^5.0.0",
     "mocha": "^9.1.1",
-    "typescript": "^4.3.5",
     "uvu": "^0.5.1"
   },
   "dependencies": {
