@@ -14,7 +14,11 @@
     "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.0.tgz",
     "@lit-internal/test-element-a-react": "file:../gen-output/test-element-a-react/lit-internal-test-element-a-react-1.0.0.tgz",
     "@lit-internal/test-element-events": "file:../../test-projects/test-element-events/lit-internal-test-element-events-1.0.0.tgz",
-    "@lit-internal/test-element-events-react": "file:../gen-output/test-element-events-react/lit-internal-test-element-events-react-1.0.0.tgz"
+    "@lit-internal/test-element-events-react": "file:../gen-output/test-element-events-react/lit-internal-test-element-events-react-1.0.0.tgz",
+    "@lit-internal/test-element-slots": "file:../../test-projects/test-element-slots/lit-internal-test-element-slots-1.0.0.tgz",
+    "@lit-internal/test-element-slots-react": "file:../gen-output/test-element-slots-react/lit-internal-test-element-slots-react-1.0.0.tgz",
+    "@lit-internal/test-element-props": "file:../../test-projects/test-element-props/lit-internal-test-element-props-1.0.0.tgz",
+    "@lit-internal/test-element-props-react": "file:../gen-output/test-element-props-react/lit-internal-test-element-props-react-1.0.0.tgz"
   },
   "scripts": {
     "installSelf": "wireit",

@@ -72,5 +72,17 @@ test(
   'events wrapper generation',
   testWrapper('test-element-events', 'ElementEvents')
 );
+test(
+  'slots wrapper generation',
+  testWrapper('test-element-slots', 'ElementSlots')
+);
+test(
+  'props wrapper generation',
+  testWrapper('test-element-props', 'ElementProps')
+);
+// test(
+//   'multi wrapper generation',
+//   testWrapper('test-element-multi', 'ElementMulti')
+// );
 
 test.run();
