@@ -40,6 +40,8 @@ body {
 
 hr {
   border-color: var(--border-color);
+  border-width: 0px;
+  border-top-width: 1px;
 }
 
 .topBar {
