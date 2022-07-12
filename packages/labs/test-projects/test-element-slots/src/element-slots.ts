@@ -11,7 +11,7 @@ import {customElement, property} from 'lit/decorators.js';
  * My awesome element
  */
 @customElement('element-slots')
-export class ElemenSlots extends LitElement {
+export class ElementSlots extends LitElement {
   @property()
   mainDefault = 'mainDefault';
 

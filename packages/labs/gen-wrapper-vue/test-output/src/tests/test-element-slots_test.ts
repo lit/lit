@@ -24,7 +24,7 @@ suite('test-element-slots', () => {
   });
 
   test('renders correctly', async () => {
-    const foo = 'Hello World';
+    const foo = 'Slots';
     createApp(ElementSlots, {foo}).mount(container);
     const el = container.querySelector('element-slots')! as ElementSlotsElement;
     await el.updateComplete;

@@ -81,13 +81,21 @@ const wrapperTemplate = (
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
 
-      const props = defineProps<{
+      ${
+        reactiveProperties.size
+          ? javascript`const props = defineProps<{
         ${wrapDefineProps(reactiveProperties)}
-      }>();
+      }>();`
+          : ''
+      }
 
-      const emit = defineEmits<{
+      ${
+        events.size
+          ? javascript`const emit = defineEmits<{
         ${wrapEvents(events)}
-      }>()
+      }>();`
+          : ''
+      }
 
       const slots = useSlots();
 
