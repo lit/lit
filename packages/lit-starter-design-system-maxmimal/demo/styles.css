@@ -9,19 +9,6 @@
   color: var(--my-theme-on-surface-color);
 }
 
-:where(.dark) api-viewer {
-  --ave-primary-color: var(--my-theme-primary-color);
-  --ave-header-color: var(--my-theme-on-primary-color);
-  --ave-tab-color: var(--my-theme-on-surface-color);
-  --ave-accent-color: rgb(194, 231, 255);
-  --ave-item-color: var(--my-theme-on-surface-color);
-  --ave-label-color: rgba(227, 227, 227, 0.75);
-}
-
-:where(.dark) api-viewer::part(docs-description) {
-  color: white;
-}
-
 :root :where(.dark) {
   --border-color: rgb(255, 255, 255, 0.12);
 }
@@ -154,6 +141,19 @@ api-viewer {
   --ave-item-color: black;
   --ave-label-color: rgba(31, 31, 31, 0.75);
   background-color: transparent;
+}
+
+:where(.dark) api-viewer {
+  --ave-primary-color: var(--my-theme-primary-color);
+  --ave-header-color: var(--my-theme-on-primary-color);
+  --ave-tab-color: var(--my-theme-on-surface-color);
+  --ave-accent-color: rgb(194, 231, 255);
+  --ave-item-color: var(--my-theme-on-surface-color);
+  --ave-label-color: rgba(227, 227, 227, 0.75);
+}
+
+:where(.dark) api-viewer::part(docs-description) {
+  color: white;
 }
 
 *:not(:defined),
