@@ -9,7 +9,8 @@
     "build:sass": "wireit",
     "build:ts": "wireit",
     "build:demo": "wireit",
-    "build:demo:watch": "npm run build:demo -- --watch"
+    "build:demo:watch": "npm run build:demo -- --watch",
+    "test": "wireit"
   },
   "wireit": {
     "build:sass": {
@@ -48,6 +49,15 @@
       "output": [
         "./custom-elements.json"
       ]
+    },
+    "test": {
+      "command": "wtr",
+      "files": [
+        "components/**/*"
+      ],
+      "dependencies": [
+        "build:ts"
+      ]
     }
   },
   "repository": {
@@ -71,7 +81,10 @@
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.6.3",
+    "@open-wc/testing": "^3.1.6",
     "@web/dev-server": "^0.1.32",
+    "@web/test-runner": "^0.13.31",
+    "@web/test-runner-playwright": "^0.8.9",
     "api-viewer-element": "^1.0.0-pre.3",
     "dark-mode-toggle": "^0.10.0",
     "fast-glob": "^3.2.11",
