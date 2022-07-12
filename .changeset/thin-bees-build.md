@@ -2,4 +2,4 @@
 '@lit-labs/react': patch
 ---
 
-Reduced number of types in createComponent
+Removed the unexposed and unnecessary `StringValued` type used to correlate property names with event listener names.
