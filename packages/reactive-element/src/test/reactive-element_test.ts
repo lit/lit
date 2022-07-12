@@ -313,6 +313,9 @@ suite('ReactiveElement', () => {
       }
 
       toAttribute(value: Number, _type?: unknown): unknown {
+        if (!value) {
+          return this._defaultValue;
+        }
         return `${value}`;
       }
 
@@ -366,6 +369,10 @@ suite('ReactiveElement', () => {
     el.setAttribute('num', '5');
     await el.updateComplete;
     assert.equal(el.num, 5);
+
+    el.num = undefined;
+    await el.updateComplete;
+    assert.equal(el.getAttribute('num'), `${defaultIntAttrConverterVal}`);
   });
 
   test('property/attribute values when attributes removed', async () => {
