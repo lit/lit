@@ -75,6 +75,11 @@ packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 
+packages/lit-starter-design-system-maxmimal/**/node_modules
+packages/lit-starter-design-system-maxmimal/**/custom-elements.json
+packages/lit-starter-design-system-maxmimal/lib
+packages/lit-starter-design-system-maxmimal/components
+packages/lit-starter-design-system-maxmimal/**/*.styles.ts
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
 # only generated for size check

@@ -59,7 +59,11 @@
     {
       "name": "lit-monorepo",
       "path": "."
-    }
+    },
+    {
+      "name": "starter-design-system-maximal",
+      "path": "packages/lit-starter-design-system-maximal"
+    },
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",

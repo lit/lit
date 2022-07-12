@@ -1,0 +1,160 @@
+:root :where(.dark) {
+  --my-theme-surface-color: rgba(0, 0, 0, 0.87);
+  --my-theme-on-surface-color: #e3e3e3;
+  --my-theme-disabled-color: rgba(227, 227, 227, 0.12);
+  --my-theme-on-disabled-color: rgba(227, 227, 227, 0.38);
+  --my-theme-primary-color: rgb(168, 199, 250);
+  --my-theme-on-primary-color: rgb(31, 31, 31);
+  background-color: var(--my-theme-surface-color);
+  color: var(--my-theme-on-surface-color);
+}
+
+:root {
+  font-family: 'Manrope', sans-serif;
+  --dark-mode-toggle-light-icon: url("data:image/svg+xml,%0A%3Csvg xmlns='http://www.w3.org/2000/svg' width='24px' height='24px' viewBox='0 0 48 48' %3E%3Cpath fill='black' d='M24 31q2.9 0 4.95-2.05Q31 26.9 31 24q0-2.9-2.05-4.95Q26.9 17 24 17q-2.9 0-4.95 2.05Q17 21.1 17 24q0 2.9 2.05 4.95Q21.1 31 24 31Zm0 3q-4.15 0-7.075-2.925T14 24q0-4.15 2.925-7.075T24 14q4.15 0 7.075 2.925T34 24q0 4.15-2.925 7.075T24 34ZM3.5 25.5q-.65 0-1.075-.425Q2 24.65 2 24q0-.65.425-1.075Q2.85 22.5 3.5 22.5h5q.65 0 1.075.425Q10 23.35 10 24q0 .65-.425 1.075-.425.425-1.075.425Zm36 0q-.65 0-1.075-.425Q38 24.65 38 24q0-.65.425-1.075.425-.425 1.075-.425h5q.65 0 1.075.425Q46 23.35 46 24q0 .65-.425 1.075-.425.425-1.075.425ZM24 10q-.65 0-1.075-.425Q22.5 9.15 22.5 8.5v-5q0-.65.425-1.075Q23.35 2 24 2q.65 0 1.075.425.425.425.425 1.075v5q0 .65-.425 1.075Q24.65 10 24 10Zm0 36q-.65 0-1.075-.425-.425-.425-.425-1.075v-5q0-.65.425-1.075Q23.35 38 24 38q.65 0 1.075.425.425.425.425 1.075v5q0 .65-.425 1.075Q24.65 46 24 46ZM12 14.1l-2.85-2.8q-.45-.45-.425-1.075.025-.625.425-1.075.45-.45 1.075-.45t1.075.45L14.1 12q.4.45.4 1.05 0 .6-.4 1-.4.45-1.025.45-.625 0-1.075-.4Zm24.7 24.75L33.9 36q-.4-.45-.4-1.075t.45-1.025q.4-.45 1-.45t1.05.45l2.85 2.8q.45.45.425 1.075-.025.625-.425 1.075-.45.45-1.075.45t-1.075-.45ZM33.9 14.1q-.45-.45-.45-1.05 0-.6.45-1.05l2.8-2.85q.45-.45 1.075-.425.625.025 1.075.425.45.45.45 1.075t-.45 1.075L36 14.1q-.4.4-1.025.4-.625 0-1.075-.4ZM9.15 38.85q-.45-.45-.45-1.075t.45-1.075L12 33.9q.45-.45 1.05-.45.6 0 1.05.45.45.45.45 1.05 0 .6-.45 1.05l-2.8 2.85q-.45.45-1.075.425-.625-.025-1.075-.425ZM24 24Z'/%3E%3C/svg%3E");
+  --dark-mode-toggle-dark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24px' height='24px' viewBox='0 0 48 48' %3E%3Cpath fill='white' d='M24 42q-7.5 0-12.75-5.25T6 24q0-7.5 5.25-12.75T24 6q.4 0 .85.025.45.025 1.15.075-1.8 1.6-2.8 3.95-1 2.35-1 4.95 0 4.5 3.15 7.65Q28.5 25.8 33 25.8q2.6 0 4.95-.925T41.9 22.3q.05.6.075.975Q42 23.65 42 24q0 7.5-5.25 12.75T24 42Zm0-3q5.45 0 9.5-3.375t5.05-7.925q-1.25.55-2.675.825Q34.45 28.8 33 28.8q-5.75 0-9.775-4.025T19.2 15q0-1.2.25-2.575.25-1.375.9-3.125-4.9 1.35-8.125 5.475Q9 18.9 9 24q0 6.25 4.375 10.625T24 39Zm-.2-14.85Z'/%3E%3C/svg%3E");
+  --border-color: rgba(0, 0, 0, 0.12);
+}
+
+:root :where(.dark) {
+  --border-color: rgb(255, 255, 255, 0.12);
+}
+
+body {
+  margin: 0;
+  margin-block-start: 56px;
+}
+
+hr {
+  border-color: var(--border-color);
+}
+
+.topBar {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 32px;
+  background-color: #fff;
+  z-index: 8;
+  --dark-mode-toggle-icon-size: 24px;
+}
+
+:where(.dark) .topBar {
+  background-color: rgb(21, 21, 21);
+}
+
+.topBar .title {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.topBar .logo svg {
+  height: 24px;
+  width: 24px;
+}
+
+.topBar .logo path {
+  fill: #324fff;
+}
+
+.dark .topBar .logo path {
+  fill: var(--my-theme-on-surface-color);
+}
+
+main {
+  display: flex;
+  justify-content: center;
+}
+
+main > .wrapper,
+api-viewer {
+  /* two columns width + padading + gap */
+  max-width: calc((450px + 16px * 2) * 2 + 24px);
+  margin: 24px auto;
+}
+
+main > .wrapper {
+  columns: 2 400px;
+  column-gap: 24px;
+}
+
+@media (max-width: 1051px) {
+  main > .wrapper,
+  api-viewer {
+    margin: 24px;
+  }
+
+  api-viewer {
+    max-width: none;
+  }
+}
+
+.card {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border-color);
+  border-radius: 4px;
+  padding: 8px 16px 16px 16px;
+  min-width: 240px;
+  margin-block-end: 24px;
+  box-sizing: border-box;
+  break-inside: avoid;
+}
+
+.card .header {
+  height: 36px;
+  font-weight: bold;
+  font-size: 1.125rem;
+  line-height: 36px;
+  margin-block-end: 16px;
+}
+
+.components > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-block-end: 24px;
+  flex-wrap: wrap;
+}
+
+.card.button .components div > * {
+  margin-inline: 4px;
+  margin-block-end: 16px;
+}
+
+api-viewer {
+  --ave-primary-color: #0b57d0;
+  --ave-header-color: #fff;
+  --ave-tab-color: black;
+  --ave-border-color: var(--border-color);
+  --ave-accent-color: rgb(0, 74, 119);
+  --ave-item-color: black;
+  --ave-label-color: rgba(31, 31, 31, 0.75);
+  background-color: transparent;
+}
+
+:where(.dark) api-viewer {
+  --ave-primary-color: var(--my-theme-primary-color);
+  --ave-header-color: var(--my-theme-on-primary-color);
+  --ave-tab-color: var(--my-theme-on-surface-color);
+  --ave-accent-color: rgb(194, 231, 255);
+  --ave-item-color: var(--my-theme-on-surface-color);
+  --ave-label-color: rgba(227, 227, 227, 0.75);
+}
+
+:where(.dark) api-viewer::part(docs-description) {
+  color: white;
+}
+
+*:not(:defined),
+main:has(:not(:defined)) {
+  display: none;
+}

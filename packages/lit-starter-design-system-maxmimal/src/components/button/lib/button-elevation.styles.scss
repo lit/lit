@@ -1,0 +1,29 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+$elevation-hover: var(
+  --my-button-box-shadow-hover,
+  rgba(0, 0, 0, 0.3) 0px 1px 2px 0px,
+  rgba(0, 0, 0, 0.15) 0px 1px 3px 1px
+);
+$elevation-focus: var(--my-button-box-shadow-focus, transparent);
+$elevation-press: var(--my-button-box-shadow-press, transparent);
+
+.button {
+  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:not([disabled]) {
+    &:hover {
+      box-shadow: $elevation-hover;
+    }
+    &:focus:where(:not(:focus-visible)) {
+      box-shadow: $elevation-focus;
+    }
+    &:active {
+      box-shadow: $elevation-press;
+    }
+  }
+}

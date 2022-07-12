@@ -1,0 +1,5 @@
+node_modules
+custom-elements.json
+/lib
+/components
+*.styles.ts

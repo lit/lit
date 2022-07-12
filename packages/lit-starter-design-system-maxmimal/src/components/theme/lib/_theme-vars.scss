@@ -1,0 +1,19 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+// Colors
+$primary-color: var(--my-theme-primary-color, #0b57d0);
+$on-primary-color: var(--my-theme-on-primary-color, #fff);
+$surface-color: var(--my-theme-surface-color, #fff);
+$on-surface-color: var(--my-theme-on-surface-color, rgb(31, 31, 31));
+$disabled-color: var(--my-theme-disabled-color, rgba(31, 31, 31, 0.12));
+$on-disabled-color: var(--my-theme-on-disabled-color, rgba(31, 31, 31, 0.38));
+$state-opacity-disabled: var(--my-theme-state-opacity-disabled, 0.08);
+
+// State
+$state-opacity-hover: var(--my-theme-state-opacity-hover, 0.08);
+$state-opacity-focus: var(--my-theme-state-opacity-focus, 0.12);
+$state-opacity-press: var(--my-theme-state-opacity-press, 0.18);

@@ -1,0 +1,106 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+@use '../../theme/lib/theme-vars';
+
+$padding-x: var(--my-button-horizontal-padding, 24px);
+$icon-spacing: var(--my-button-horizontal-icon-padding, 8px);
+$ripple-opacity-hover: var(
+--my-button-ripple-opacity-hover,
+  theme-vars.$state-opacity-hover
+);
+$ripple-opacity-focus: var(
+  --my-button-ripple-opacity-focus,
+  theme-vars.$state-opacity-focus
+);
+$ripple-opacity-press: var(
+  --my-button-ripple-opacity-press,
+  theme-vars.$state-opacity-press
+);
+$font-family: var(--my-button-font-family, sans-serif);
+$font-weight: var(--my-button-font-weight, 500);
+$font-size: var(--my-button-font-size, 0.875rem);
+$height: var(--my-button-height, 38px);
+
+:host {
+  height: $height;
+  border-radius: calc($height / 2);
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.button {
+  display: inherit;
+  height: inherit;
+  border-radius: inherit;
+  align-items: center;
+  position: relative;
+  padding-inline: $padding-x;
+  border: none;
+  cursor: pointer;
+  z-index: 0;
+  outline-offset: 2px;
+  font-family: $font-family;
+  font-weight: $font-weight;
+  font-size: $font-size;
+
+  &.hasIcon {
+    &:not(.trailingIcon) {
+      padding-inline-start: calc($padding-x - $icon-spacing);
+    }
+
+    &.trailingIcon {
+      padding-inline-end: calc($padding-x - $icon-spacing);
+    }
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+    inset: 0;
+    opacity: 0;
+    border-radius: inherit;
+  }
+
+  &:hover:not([disabled])::before {
+    opacity: $ripple-opacity-hover;
+  }
+  &:focus:not([disabled]):where(:not(:focus-visible))::before {
+    opacity: $ripple-opacity-focus;
+  }
+  &:active:not([disabled])::before {
+    opacity: $ripple-opacity-press;
+  }
+}
+
+#touch {
+  min-height: 48px;
+  min-width: 48px;
+  width: 100%;
+  position: absolute;
+  inset-inline-start: 0px;
+}
+
+::slotted(*) {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  color: currentColor;
+  fill: currentColor;
+}
+
+:not(.trailingIcon) ::slotted(*) {
+  margin-inline-end: $icon-spacing;
+}
+
+.trailingIcon ::slotted(*) {
+  margin-inline-start: $icon-spacing;
+}

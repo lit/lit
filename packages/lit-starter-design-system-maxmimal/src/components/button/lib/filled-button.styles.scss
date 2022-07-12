@@ -1,0 +1,34 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+@use '../../theme/lib/theme-vars';
+
+$color: var(--my-button-filled-color, theme-vars.$on-primary-color);
+$color-disabled: var(
+  --my-button-filled-color-disabled,
+  theme-vars.$on-disabled-color
+);
+$background-color: var(
+  --my-button-filled-background-color,
+  theme-vars.$primary-color
+);
+$background-color-disabled: var(
+  --my-button-filled-background-color-disabled,
+  theme-vars.$disabled-color
+);
+
+.button {
+  color: $color;
+  outline-color: $background-color;
+  background-color: $background-color;
+
+  &[disabled] {
+    color: $color-disabled;
+    background-color: $background-color-disabled;
+  }
+  &::before {
+    background-color: $color;
+  }
+}

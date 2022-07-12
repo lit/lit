@@ -1,0 +1,121 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+@use '../../theme/lib/theme-vars';
+
+$checkbox-padding: var(--my-checkbox-padding, 2px);
+$border-width: var(--my-checkbox-border-width, 2px);
+$border-radius: var(--my-checkbox-border-radius, 4px);
+$border-color: var(--my-checkbox-border-color, theme-vars.$on-surface-color);
+$border-color-disabled: var(
+  --my-checkbox-border-color-disabled,
+  theme-vars.$disabled-color
+);
+$icon-color: var(--my-checkbox-icon-color, theme-vars.$on-primary-color);
+$color: var(--my-checkbox-color, theme-vars.$primary-color);
+$color-disabled: var(--my-checkbox-color-disabled, theme-vars.$disabled-color);
+$ripple-opacity-disabled: var(
+  --my-checkbox-ripple-opacity-disabled,
+  theme-vars.$state-opacity-disabled
+);
+$ripple-opacity-hover: var(
+  --my-checkbox-ripple-opacity-hover,
+  theme-vars.$state-opacity-hover
+);
+$ripple-opacity-focus: var(
+  --my-checkbox-ripple-opacity-focus,
+  theme-vars.$state-opacity-focus
+);
+$ripple-opacity-press: var(
+  --my-checkbox-ripple-opacity-press,
+  theme-vars.$state-opacity-press
+);
+
+:host {
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+#root {
+  position: relative;
+  width: inherit;
+  height: inherit;
+  border-radius: inherit;
+}
+#square {
+  border-style: solid;
+  border-color: $border-color;
+  border-width: $border-width;
+  border-radius: $border-radius;
+  position: absolute;
+  box-sizing: border-box;
+  pointer-events: none;
+  inset: calc(100% * 5 / 8 / 2);
+  padding: $checkbox-padding;
+  z-index: 1;
+  width: calc(100% * 3 / 8);
+  height: calc(100% * 3 / 8);
+}
+.checked #square {
+  border-width: 0px;
+}
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: $icon-color;
+}
+.checked path {
+  stroke: currentColor;
+  stroke-width: 4;
+}
+input {
+  margin: 0;
+  border: none;
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  cursor: pointer;
+  outline-offset: 4px;
+  outline-color: $color;
+}
+input:disabled {
+  cursor: auto;
+}
+.checked #square {
+  background-color: $color;
+}
+#ripple {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  width: inherit;
+  height: inherit;
+  border-radius: inherit;
+  z-index: 0;
+  background-color: $border-color;
+}
+#root:hover #ripple {
+  opacity: $ripple-opacity-hover;
+}
+#root:active #ripple {
+  opacity: $ripple-opacity-press;
+}
+.checked #ripple {
+  background-color: $color;
+}
+#root input:disabled ~ #square {
+  border-color: $color-disabled;
+}
+#root.checked input:disabled ~ #square {
+  background-color: $color-disabled;
+}
+#root input:disabled ~ #ripple {
+  opacity: 0;
+}
