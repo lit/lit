@@ -7,6 +7,8 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
+export const numberVar = 42;
+
 /**
  * My awesome element
  * @fires a-changed - An awesome event to fire

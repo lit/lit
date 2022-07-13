@@ -8,6 +8,13 @@
       "description": "TODO",
       "declarations": [
         {
+          "kind": "variable",
+          "name": "numberVar",
+          "summary": "TODO",
+          "description": "TODO",
+          "type": {"text": "number", "references": []}
+        },
+        {
           "kind": "class",
           "name": "ElementA",
           "summary": "TODO",
