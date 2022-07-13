@@ -1,0 +1,93 @@
+{
+  "name": "@lit-labs/testing",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Testing utilites for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/testing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/testing"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../../lit:build",
+        "../ssr-client:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../../lit:build:ts:types",
+        "../ssr:build:ts"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "fixtures.{d.ts,d.ts.map,js,js.map}",
+        "web-test-runner-ssr-plugin.{d.ts,d.ts.map,js,js.map}",
+        "lib/",
+        "test/",
+        ".tsbuildinfo"
+      ]
+    },
+    "test": {
+      "command": "wtr",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "web-test-runner.config.js"
+      ],
+      "output": []
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./fixtures.js": {
+      "types": "./fixtures.d.ts",
+      "default": "./fixtures.js"
+    },
+    "./web-test-runner-ssr-plugin.js": {
+      "types": "./web-test-runner-ssr-plugin.d.ts",
+      "default": "./web-test-runner-ssr-plugin.js"
+    }
+  },
+  "files": [
+    "index.{d.ts,d.ts.map,js,js.map}",
+    "fixtures.{d.ts,d.ts.map,js,js.map}",
+    "web-test-runner-ssr-plugin.{d.ts,d.ts.map,js,js.map}",
+    "lib/**/*.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr": "^2.2.0",
+    "@web/test-runner-commands": "^0.6.1",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "lit": "^2.2.5"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^3.1.5",
+    "@web/test-runner": "^0.13.28",
+    "@web/test-runner-playwright": "^0.8.8"
+  }
+}

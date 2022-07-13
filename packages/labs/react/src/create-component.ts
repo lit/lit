@@ -55,14 +55,14 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element, T>(
+const setProperty = <E extends Element>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
-  events?: StringValued<T>
+  events?: Events
 ) => {
-  const event = events?.[name as keyof T];
+  const event = events?.[name];
   if (event !== undefined) {
     // Dirty check event value.
     if (value !== old) {
@@ -82,10 +82,6 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   } else {
     (ref as {current: Element | null}).current = value;
   }
-};
-
-type StringValued<T> = {
-  [P in keyof T]: string;
 };
 
 type Constructor<T> = {new (): T};
@@ -127,7 +123,7 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
+export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,

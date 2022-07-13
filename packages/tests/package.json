@@ -12,9 +12,10 @@
     "@types/prettier": "^2.0.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
+    "@web/dev-server": "=0.1.30",
     "@web/dev-server-legacy": "^0.1.7",
-    "@web/dev-server-rollup": "^0.3.13",
-    "@web/test-runner": "^0.13.22",
+    "@web/dev-server-rollup": "=0.3.15",
+    "@web/test-runner": "=0.13.30",
     "@web/test-runner-playwright": "^0.8.8",
     "@web/test-runner-saucelabs": "^0.8.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
@@ -43,8 +44,21 @@
     "test": {
       "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
       "dependencies": [
-        "build"
-      ]
+        "build",
+        "../labs/context:build",
+        "../labs/motion:build",
+        "../labs/observers:build",
+        "../labs/react:build",
+        "../labs/router:build",
+        "../labs/scoped-registry-mixin:build",
+        "../labs/task:build",
+        "../lit-element:build",
+        "../lit-html:build",
+        "../lit:build",
+        "../reactive-element:build"
+      ],
+      "files": [],
+      "output": []
     }
   }
 }
