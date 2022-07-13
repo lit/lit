@@ -6,6 +6,34 @@
 
 import * as ReactModule from 'react';
 
+const booleanAttributes = new Set([
+  'allowfullscreen',
+  'async,',
+  'autofocus',
+  'autoplay',
+  'checked',
+  'controls',
+  'default',
+  'defer',
+  'disabled',
+  'formnovalidate',
+  'hidden',
+  'inert',
+  'ismap',
+  'itemscope',
+  'loop',
+  'multiple',
+  'muted',
+  'nomodule',
+  'novalidate',
+  'open',
+  'playsinline',
+  'readonly',
+  'required',
+  'reversed',
+  'selected',
+]);
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -28,7 +56,7 @@ const listenedEvents: WeakMap<
 const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  listener: (event?: Event) => void
+  listener: EventListener
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
@@ -55,23 +83,30 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element>(
+const setProperty = <E extends HTMLElement>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
   events?: Events
 ) => {
+  // if values haven't changed, bail early
+  if (value === old) return;
+
+  // remove false boolean attributes
+  if (value === false && booleanAttributes.has(name)) {
+    node.removeAttribute(name);
+    return;
+  }
+
   const event = events?.[name];
   if (event !== undefined) {
-    // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    }
-  } else {
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as EventListener);
+    return;
   }
+
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
@@ -246,16 +281,23 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
+
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
+        if (v === false && booleanAttributes.has(k)) {
+          continue;
+        }
+
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
-        } else {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        // React does *not* handle `className` for custom elements so
+        // coerce it to `class` so it's handled correctly.
+        const key = k === 'className' ? 'class' : k;
+        props[key] = v;
       }
       return createElement(tagName, props);
     }

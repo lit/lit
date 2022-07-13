@@ -198,6 +198,16 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('id'), 'id2');
   });
 
+  test('can remove boolean attributes', async () => {
+    await renderReactComponent({});
+    assert.equal(el.getAttribute('hidden'), null);
+    await renderReactComponent({hidden: true});
+    assert.equal(el.getAttribute('hidden'), 'true');
+    await renderReactComponent({hidden: false});
+    assert.equal(el.getAttribute('hidden'), null);
+  });
+
+
   test('can set properties', async () => {
     let o = {foo: true};
     let a = [1, 2, 3];
