@@ -21,7 +21,7 @@ export const getModule = (
   programContext: ProgramContext
 ) => {
   const sourcePath = absoluteToPackage(
-    sourceFile.fileName as AbsolutePath,
+    path.normalize(sourceFile.fileName) as AbsolutePath,
     programContext.packageRoot
   );
   const fullSourcePath = path.join(programContext.packageRoot, sourcePath);
