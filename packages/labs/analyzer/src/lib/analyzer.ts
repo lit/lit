@@ -30,16 +30,23 @@ export class Analyzer {
     // TODO(kschaaf): Consider moving the package.json and tsconfig.json
     // to analyzePackage() or move it to an async factory function that
     // passes these to the constructor as arguments.
+    const packageJsonFilename = path.join(packageRoot, 'package.json');
+    let packageJsonText;
+    try {
+      packageJsonText = fs.readFileSync(packageJsonFilename, 'utf8');
+    } catch (e) {
+      throw new Error(`package.json not found at ${packageJsonFilename}`);
+    }
     let packageJson;
     try {
-      packageJson = JSON.parse(
-        fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8')
-      );
+      packageJson = JSON.parse(packageJsonText);
     } catch (e) {
-      throw new Error(`package.json not found in ${packageRoot}`);
+      throw new Error(`Malformed package.json found at ${packageJsonFilename}`);
     }
     if (packageJson.name === undefined) {
-      throw new Error(`package.json in ${packageRoot} did not have a name.`);
+      throw new Error(
+        `package.json in ${packageJsonFilename} did not have a name.`
+      );
     }
 
     const configFileName = ts.findConfigFile(
