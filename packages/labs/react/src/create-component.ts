@@ -83,25 +83,25 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends HTMLElement>(
+const setProperty = <E extends Element>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
   events?: Events
 ) => {
-  // if values haven't changed, bail early
+  // bail early if values haven't changed.
   if (value === old) return;
-
-  // remove false boolean attributes
-  if (value === false && booleanAttributes.has(name)) {
-    node.removeAttribute(name);
-    return;
-  }
 
   const event = events?.[name];
   if (event !== undefined) {
     addOrUpdateEventListener(node, event, value as EventListener);
+    return;
+  }
+
+  // remove false boolean attributes
+  if (value === false && booleanAttributes.has(name)) {
+    node.removeAttribute(name);
     return;
   }
 
@@ -285,6 +285,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
+        // do not forward false boolean attributes
         if (v === false && booleanAttributes.has(k)) {
           continue;
         }
@@ -296,8 +297,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
 
         // React does *not* handle `className` for custom elements so
         // coerce it to `class` so it's handled correctly.
-        const key = k === 'className' ? 'class' : k;
-        props[key] = v;
+        props[k === 'className' ? 'class' : k] = v;
       }
       return createElement(tagName, props);
     }
