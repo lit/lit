@@ -1,5 +1,5 @@
 ---
-'@lit-labs/react': major
+'@lit-labs/react': patch
 ---
 
-Avoid nested type declarations in favor of flatter typing. This change greatly speeds up types in the labs react package.
+Avoid nested component props type declarations. Incrementally define what types are needed rather than nesting.
