@@ -1,0 +1,67 @@
+{
+  "name": "lit-starter-spa",
+  "version": "1.0.0",
+  "description": "A Maximal Lit Design System starter kit",
+  "type": "module",
+  "scripts": {
+    "start": "npm run build:prod:ts --watch & npm run serve:prod",
+    "dev": "npm run serve:dev",
+    "build:prod:ts": "wireit",
+    "serve:dev": "wireit",
+    "serve:prod": "wireit"
+  },
+  "wireit": {
+    "build:prod:ts": {
+      "command": "node esbuild.config.js",
+      "files": [
+        "tsconfig.json",
+        "./src/**/*.ts",
+        "esbuild.config.js"
+      ],
+      "output": [
+        "./build/**/*"
+      ]
+    },
+    "serve:dev": {
+      "command": "wds -c web-dev-server-config.mjs"
+    },
+    "serve:prod": {
+      "command": "wds -c web-dev-server-config-prod.mjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit-starter-element-maximal.git"
+  },
+  "keywords": [
+    "web-components",
+    "lit-element",
+    "javascript",
+    "lit"
+  ],
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/lit/lit-starter-element-maximal/issues"
+  },
+  "homepage": "https://github.com/lit/lit-starter-element-maximal#readme",
+  "dependencies": {
+    "@lit-labs/router": "^0.1.1",
+    "dark-mode-toggle": "^0.10.0",
+    "lit": "^2.2.6",
+    "tslib": "^2.4.0"
+  },
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.6.3",
+    "@open-wc/dev-server-hmr": "^0.1.2",
+    "@open-wc/testing": "^3.1.6",
+    "@web/dev-server": "^0.1.32",
+    "@web/dev-server-esbuild": "^0.3.1",
+    "@web/test-runner": "^0.13.31",
+    "@web/test-runner-playwright": "^0.8.9",
+    "esbuild": "^0.14.49",
+    "esbuild-plugin-minify-html-literals": "^1.0.1",
+    "typescript": "^4.3.5",
+    "wireit": "^0.7.1"
+  }
+}
