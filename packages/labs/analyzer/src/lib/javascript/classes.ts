@@ -78,15 +78,15 @@ export const getSuperClassAndMixins = (
 ): ClassDeclaration => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
   if (ts.isIdentifier(expression)) {
-    return getModelForIdentifier(expression, ClassDeclaration, context);
+    return getModelForIdentifier(expression, context, ClassDeclaration);
   } else if (
     ts.isCallExpression(expression) &&
     ts.isIdentifier(expression.expression)
   ) {
     const mixin = getModelForIdentifier(
       expression.expression,
-      MixinDeclaration,
-      context
+      context,
+      MixinDeclaration
     );
     foundMixins.push(mixin);
     const superArg = expression.arguments[mixin.superClassArgIdx];

@@ -81,16 +81,26 @@ export class Module {
     this.packageJson = init.packageJson;
   }
 
-  getExport<T extends Declaration>(name: string, type: Constructor<T>): T {
+  getExport<T extends Declaration>(name: string, type: Constructor<T>): T;
+  getExport<T extends Declaration>(
+    name: string,
+    type?: Constructor<T>
+  ): Declaration | undefined;
+  getExport<T extends Declaration>(
+    name: string,
+    type?: Constructor<T>
+  ): T | Declaration | undefined {
     this._exportsByName ??= new Map(this.declarations.map((d) => [d.name!, d]));
     const declaration = this._exportsByName!.get(name);
-    if (declaration === undefined) {
-      throw new Error(`Module ${this.jsPath} has no export named ${name}`);
-    }
-    if (!(declaration instanceof type)) {
-      throw new Error(
-        `Export ${name} from module ${this.jsPath} was of type ${declaration.constructor.name}; expected ${type.name}`
-      );
+    if (type !== undefined) {
+      if (declaration === undefined) {
+        throw new Error(`Module ${this.jsPath} has no export named ${name}`);
+      }
+      if (!(declaration instanceof type)) {
+        throw new Error(
+          `Export ${name} from module ${this.jsPath} was of type ${declaration.constructor.name}; expected ${type.name}`
+        );
+      }
     }
     return declaration;
   }
@@ -430,19 +440,20 @@ export interface AnalyzerContext {
   >;
 }
 
-/*
-This should get a commandLine usable in ts.getOutputFileNames from a ts.Program:
-
-const compilerOptions = program.getCompilerOptions();
-const commandLine = ts.parseJsonConfigFileContent(
-  {
-    files: program.getRootFileNames(),
-    compilerOptions,
-  },
-  ts.sys,
-  path.basename(compilerOptions.configFilePath as string),
-  undefined,
-  compilerOptions.configFilePath as string
-);
-
-*/
+export const getCommandLine = (
+  program: ts.Program,
+  path: AnalyzerContext['path']
+) => {
+  const compilerOptions = program.getCompilerOptions();
+  const commandLine = ts.parseJsonConfigFileContent(
+    {
+      files: program.getRootFileNames(),
+      compilerOptions,
+    },
+    ts.sys,
+    path.basename(compilerOptions.configFilePath as string),
+    undefined,
+    compilerOptions.configFilePath as string
+  );
+  return commandLine;
+};

@@ -22,6 +22,7 @@ const getPackageRootForModulePath = (
   modulePath: AbsolutePath,
   context: AnalyzerContext
 ): AbsolutePath => {
+  // TODO(kschaaf): Add caching
   const {fs, path} = context;
   let searchDir = path.dirname(modulePath);
   const root = path.parse(searchDir).root;
@@ -38,6 +39,7 @@ const getPackageJsonFromPackageRoot = (
   packageRoot: AbsolutePath,
   context: AnalyzerContext
 ): PackageJson => {
+  // TODO(kschaaf): Add caching
   const {fs, path} = context;
   const packageJson = fs.readFile(path.join(packageRoot, 'package.json'));
   if (packageJson !== undefined) {
@@ -61,9 +63,8 @@ const getAndValidateModuleFromCache = (
       })
     ) {
       return module;
-    } else {
-      sourceModuleCache.delete(sourceFile);
     }
+    sourceModuleCache.delete(sourceFile);
   }
   return undefined;
 };
@@ -141,7 +142,7 @@ export const getModule = (
       module.dependencies.add(statement.moduleSpecifier.getText().slice(1, -1));
     }
   }
-
+  sourceModuleCache.set(sourceFile, module);
   return module;
 };
 

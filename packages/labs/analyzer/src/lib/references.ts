@@ -14,11 +14,21 @@ const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
 
 const referenceCache = new WeakMap<ts.Symbol, Reference>();
 
-export const getModelForIdentifier = <T extends Declaration>(
+function getModelForIdentifier<T extends Declaration>(
   identifier: ts.Identifier,
-  type: Constructor<T>,
-  context: AnalyzerContext
-): T => {
+  context: AnalyzerContext,
+  type: Constructor<T>
+): T;
+function getModelForIdentifier<T extends Declaration>(
+  identifier: ts.Identifier,
+  context: AnalyzerContext,
+  type?: Constructor<T>
+): Declaration | undefined;
+function getModelForIdentifier<T extends Declaration>(
+  identifier: ts.Identifier,
+  context: AnalyzerContext,
+  type?: Constructor<T>
+): T | Declaration | undefined {
   const symbol = context.checker.getSymbolAtLocation(identifier);
   if (symbol === undefined) {
     throw new DiagnosticsError(
@@ -51,7 +61,7 @@ export const getModelForIdentifier = <T extends Declaration>(
       );
     }
   } else {
-    sourceFile = identifier.getSourceFile();
+    sourceFile = declaration.getSourceFile();
   }
 
   if (sourceFile === undefined) {
@@ -68,7 +78,8 @@ export const getModelForIdentifier = <T extends Declaration>(
     );
   }
   return module.getExport(symbol.name, type);
-};
+}
+export {getModelForIdentifier};
 
 /**
  * Returns the module specifier for a declaration if it was imported,
