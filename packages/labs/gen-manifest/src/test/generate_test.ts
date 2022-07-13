@@ -12,7 +12,7 @@ import {Analyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateManifest} from '../index.js';
-import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
+import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
