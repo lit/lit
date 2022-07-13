@@ -7,7 +7,7 @@
 /**
  * @fileoverview
  *
- * Utilities for working with classes
+ * Utilities for analyzing class declarations
  */
 
 import ts from 'typescript';

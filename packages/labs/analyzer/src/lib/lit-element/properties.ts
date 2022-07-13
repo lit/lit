@@ -7,7 +7,7 @@
 /**
  * @fileoverview
  *
- * Utilities for working with reactive property declarations
+ * Utilities for analyzing reactive property declarations
  */
 
 import ts from 'typescript';

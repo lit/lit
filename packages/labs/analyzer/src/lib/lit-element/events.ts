@@ -7,7 +7,7 @@
 /**
  * @fileoverview
  *
- * Utilities for working with events
+ * Utilities for analyzing with events
  */
 
 import ts from 'typescript';
