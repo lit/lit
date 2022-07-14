@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["es2020"],
+    "declaration": false,
+    "sourceMap": false,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "outDir": ".",
+    "importHelpers": true,
+    "tsBuildInfoFile": ".tsbuildinfo-node",
+    "incremental": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["./scripts/**/*.ts", "./server/*.ts"],
+  "exclude": ["./src/**/*"]
+}

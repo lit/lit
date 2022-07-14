@@ -3,10 +3,29 @@
   <head>
     <title>My Starter App</title>
     <meta name="viewport" content="width=480, initial-scale=1" />
+    <script type="module" src="/build/hydrate-support.js"></script>
     <link rel="modulepreload" href="/build/_router.js" />
-    <link rel="modulepreload" href="/build/views-U3M7ELFY.js" />
-    <link rel="stylesheet" href="/assets/root-styles.css" />
-    <script type="module" src="/build/_router.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        height: 100%;
+        font-family: Georgia, 'Times New Roman', Times, serif;
+      }
+
+      :root :where(.dark) {
+        --theme-surface-color: #212121;
+        --theme-on-surface-color: #e3e3e3;
+        --theme-disabled-color: rgba(227, 227, 227, 0.12);
+        --theme-on-disabled-color: rgba(227, 227, 227, 0.38);
+        --theme-primary-color: rgb(168, 199, 250);
+        --theme-on-primary-color: rgb(31, 31, 31);
+        --theme-outline-color: #8e918f;
+        background-color: var(--theme-surface-color);
+        color: var(--theme-on-surface-color);
+        --logo-color: var(--theme-on-surface-color);
+      }
+    </style>
   </head>
   <body>
     <script>
@@ -14,5 +33,6 @@
         document.body.classList.add('dark');
     </script>
     <app-root></app-root>
+    <script type="module" src="/build/_router.js"></script>
   </body>
 </html>

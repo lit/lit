@@ -73,6 +73,18 @@ export const styles = html` <style>
     border-radius: 50%;
   }
 
+  dark-mode-toggle::part(aside),
+  dark-mode-toggle::part(fieldset) {
+    padding: 0;
+    margin: 0;
+  }
+
+  dark-mode-toggle:not(:defined) {
+    display: block;
+    width: 48px;
+    height: 48px;
+  }
+
   dark-mode-toggle::part(toggleLabel)::after {
     content: '';
     position: absolute;

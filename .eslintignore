@@ -125,6 +125,26 @@ packages/reactive-element/polyfill-support.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 
+packages/starter-spa/**/esbuild.config.js
+packages/starter-spa/**/web-dev-server-config.mjs
+packages/starter-spa/scripts
+packages/starter-spa/server
+
+packages/starter-spa/dev
+packages/starter-spa/build
+packages/starter-spa/**/.wireit
+packages/starter-spa/**/node_modules
+packages/starter-spa/index-prod.html
+packages/starter-spa/src/**/*.js
+packages/starter-spa/scripts/**/*.js
+packages/starter-spa/scripts/**/*.d.ts
+packages/starter-spa/scripts/**/*.map
+packages/starter-spa/scripts/.*
+packages/starter-spa/server/**/*.js
+packages/starter-spa/server/**/*.d.ts
+packages/starter-spa/server/**/*.map
+packages/starter-spa/server/.*
+packages/starter-spa/**/.tsbuildinfo*
 packages/tests/node_modules/
 packages/tests/utils/
 packages/tests/**/rollup-resolve-remap.js

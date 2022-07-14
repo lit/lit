@@ -2,3 +2,14 @@
 /build
 .wireit
 node_modules
+/index-prod.html
+/src/**/*.js
+/scripts/**/*.js
+/scripts/**/*.d.ts
+/scripts/**/*.map
+/scripts/.*
+/server/**/*.js
+/server/**/*.d.ts
+/server/**/*.map
+/server/.*
+.tsbuildinfo*

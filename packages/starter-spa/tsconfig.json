@@ -13,7 +13,8 @@
     "outDir": "./dev",
     "importHelpers": true,
     "tsBuildInfoFile": ".tsbuildinfo",
-    "incremental": true
+    "incremental": true,
+    "noEmit": true
   },
   "include": ["src/**/*.ts"],
   "exclude": []

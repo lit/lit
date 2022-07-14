@@ -2,9 +2,10 @@ import {html, TemplateResult} from 'lit';
 import '../components/top-app-bar/top-app-bar.js';
 import '../components/tabs/my-tabs.js';
 import '../components/tabs/my-tab.js';
-import 'dark-mode-toggle';
 import {styles} from './shell.styles.js';
 import {tabs} from './tabs.js';
+import {ref} from 'lit/directives/ref.js';
+import type {DarkModeToggle} from 'dark-mode-toggle';
 
 export const shell = (content: TemplateResult) => {
   return html`
@@ -24,6 +25,9 @@ export const shell = (content: TemplateResult) => {
             @colorschemechange=${onColorSchemeChange}
             permanent
             slot="controls"
+            ${ref(() => {
+              import('dark-mode-toggle');
+            })}
           ></dark-mode-toggle>
           <my-tabs slot="nav"> ${tabs()} </my-tabs>
         </top-app-bar>
@@ -35,6 +39,7 @@ export const shell = (content: TemplateResult) => {
   `;
 };
 
-const onColorSchemeChange = () => {
-  document.body.classList.toggle('dark');
+const onColorSchemeChange = (e: Event) => {
+  const toggleEl = e.target as DarkModeToggle;
+  document.body.classList.toggle('dark', toggleEl.mode === 'dark');
 };

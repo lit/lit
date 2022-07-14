@@ -108,6 +108,7 @@ export class Routes implements ReactiveController {
    */
   private _currentPathname: string | undefined;
   private _currentRoute: RouteConfig | undefined;
+  public currentEntrySuccess: Promise<boolean> | boolean = true;
   private _currentParams: {
     [key: string]: string | undefined;
   } = {};
@@ -183,7 +184,8 @@ export class Routes implements ReactiveController {
       const params = result?.pathname.groups ?? {};
       tailGroup = getTailGroup(params);
       if (typeof route.enter === 'function') {
-        const success = await route.enter(params);
+        this.currentEntrySuccess = route.enter(params);
+        const success = await this.currentEntrySuccess;
         // If enter() returns false, cancel this navigation
         if (success === false) {
           return;

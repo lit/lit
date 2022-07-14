@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "npm run build:prod:ts --watch & npm run serve:prod",
-    "dev": "npm run serve:dev",
+    "dev": "npm run build:routes --watch & npm run serve:dev",
+    "build:prod": "wireit",
     "build:prod:ts": "wireit",
+    "build:routes": "wireit",
+    "build:node-scripts": "wireit",
     "serve:dev": "wireit",
     "serve:prod": "wireit"
   },
@@ -16,17 +19,73 @@
       "files": [
         "tsconfig.json",
         "./src/**/*.ts",
-        "esbuild.config.js"
+        "esbuild.config.js",
+        "index.html",
+        "./assets/root-styles.css"
       ],
       "output": [
-        "./build/**/*"
+        "./build/**/*",
+        "index-prod.html"
+      ],
+      "dependencies": [
+        "build:routes"
       ]
     },
     "serve:dev": {
-      "command": "wds -c web-dev-server-config.mjs"
+      "command": "wds -c web-dev-server-config.mjs",
+      "files": [
+        "web-dev-server-config.mjs"
+      ],
+      "dependencies": [
+        "build:routes"
+      ]
     },
     "serve:prod": {
-      "command": "wds -c web-dev-server-config-prod.mjs"
+      "command": "node ./server/server.js",
+      "clean": "if-file-deleted",
+      "files": [
+        "server/**/*.js"
+      ],
+      "dependencies": [
+        "build:prod"
+      ]
+    },
+    "build:prod": {
+      "dependencies": [
+        "build:routes",
+        "build:prod:ts",
+        "build:node-scripts"
+      ]
+    },
+    "build:node-scripts": {
+      "command": "tsc -p tsconfig-node.json --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        ".tsbuildinfo-node",
+        "tsconfig-node.json",
+        "scripts/**/*.ts",
+        "server/**/*.ts"
+      ],
+      "output": [
+        "scripts/**/*.js",
+        "server/**/*.js",
+        "src/**/*.js"
+      ]
+    },
+    "build:routes": {
+      "command": "node scripts/generate-routes.js",
+      "clean": "if-file-deleted",
+      "files": [
+        "scripts/.routes-incremental",
+        "scripts/generate-routes.js",
+        "src/views/**/*.ts"
+      ],
+      "output": [
+        "src/_routes.ts"
+      ],
+      "dependencies": [
+        "build:node-scripts"
+      ]
     }
   },
   "repository": {
@@ -53,15 +112,24 @@
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.6.3",
+    "@fastify/compress": "^6.1.0",
+    "@fastify/cookie": "^7.0.0",
+    "@fastify/session": "^9.0.0",
+    "@fastify/static": "^6.4.0",
+    "@lit-labs/ssr": "^2.2.1",
     "@open-wc/dev-server-hmr": "^0.1.2",
     "@open-wc/testing": "^3.1.6",
+    "@types/node": "^18.0.3",
     "@web/dev-server": "^0.1.32",
     "@web/dev-server-esbuild": "^0.3.1",
     "@web/test-runner": "^0.13.31",
     "@web/test-runner-playwright": "^0.8.9",
     "esbuild": "^0.14.49",
     "esbuild-plugin-minify-html-literals": "^1.0.1",
+    "fastify": "^4.2.1",
+    "html-minifier": "^4.0.0",
     "typescript": "^4.3.5",
+    "urlpattern-polyfill": "^5.0.3",
     "wireit": "^0.7.1"
   }
 }

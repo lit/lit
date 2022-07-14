@@ -19,7 +19,8 @@ export default {
             } else if (
               url.startsWith('/src/views/') ||
               url.startsWith('/src/layouts/') ||
-              url.startsWith('/src/_routes.ts')
+              url.startsWith('/src/_routes.ts') ||
+              url.startsWith('/src/view-shared.styles.ts')
             ) {
               let body = response.body;
               body += `
