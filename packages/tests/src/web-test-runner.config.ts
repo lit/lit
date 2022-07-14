@@ -215,6 +215,46 @@ const config: TestRunnerConfig = {
   ],
   // Only actually log errors. This helps make test output less spammy.
   filterBrowserLogs: ({type}) => type === 'error',
+  middleware: [
+    /**
+     * Ensures that when we're in dev mode we only load dev sources, and when
+     * we're in prod mode we only load prod sources.
+     *
+     * The most common way to get an error here is to have a relative import in
+     * a /test/ module (e.g. `import '../lit-element.js'`). A bare module should
+     * instead always be used in test modules (e.g. `import
+     * '../lit-element.js'`). The bare module is necessary, even for imports
+     * from the same package, so that export conditions take effect.
+     */
+    function devVsProdSourcesChecker(context, next) {
+      if (mode === 'dev') {
+        if (
+          context.url.includes('/packages/') &&
+          !context.url.includes('/development/') &&
+          // lit doesn't have a dev mode
+          !context.url.includes('/packages/lit/') &&
+          // some 3rd party modles can come from e.g. /packages/node_modules/*
+          !context.url.includes('/node_modules/')
+        ) {
+          console.log('Unexpected prod request in dev mode:', context.url);
+          context.response.status = 403;
+          return;
+        }
+      } else {
+        if (
+          context.url.includes('/packages/') &&
+          context.url.includes('/development/') &&
+          // test are always served from /development/
+          !context.url.includes('/development/test/')
+        ) {
+          console.log('Unexpected dev request in prod mode:', context.url);
+          context.response.status = 403;
+          return;
+        }
+      }
+      return next();
+    },
+  ],
   browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files
