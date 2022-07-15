@@ -61,7 +61,7 @@
     "@rollup/plugin-typescript": "^8.2.0",
     "@web/dev-server": "^0.1.22",
     "rollup": "^2.70.2",
-    "rollup-plugin-summary": "^1.3.0",
+    "rollup-plugin-summary": "^1.4.3",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "~4.7.4"
   }

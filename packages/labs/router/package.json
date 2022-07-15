@@ -147,16 +147,9 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/chai": "^4.0.1",
-    "@types/mocha": "^9.0.0",
     "@types/trusted-types": "^2.0.2",
-    "chokidar-cli": "^3.0.0",
-    "concurrently": "^6.2.1",
     "@lit-internal/scripts": "^1.0.0",
-    "mocha": "^9.1.1",
-    "rollup": "^2.70.2",
-    "urlpattern-polyfill": "^4.0.3"
+    "urlpattern-polyfill": "^5.0.5"
   },
   "dependencies": {
     "lit": "^2.1.0"
