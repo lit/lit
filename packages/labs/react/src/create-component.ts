@@ -66,7 +66,11 @@ const setProperty = <E extends Element>(
   if (value === old) return;
 
   // remove false boolean attributes
-  if (value === false && node.hasAttribute(name)) {
+  if (
+    value === false &&
+    node.hasAttribute(name) &&
+    !node.hasOwnProperty(name)
+  ) {
     node.removeAttribute(name);
     return;
   }
