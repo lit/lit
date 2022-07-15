@@ -1,6 +1,6 @@
-import filesize from 'rollup-plugin-filesize';
+import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 
 export default [
   {
@@ -22,9 +22,7 @@ export default [
         warnings: true,
         module: true,
       }),
-      filesize({
-        showBrotliSize: true,
-      }),
+      summary(),
     ],
   },
   {
@@ -41,9 +39,7 @@ export default [
         warnings: true,
         module: true,
       }),
-      filesize({
-        showBrotliSize: true,
-      }),
+      summary(),
       resolve(),
     ],
   },
