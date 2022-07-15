@@ -6,34 +6,6 @@
 
 import * as ReactModule from 'react';
 
-const booleanAttributes = new Set([
-  'allowfullscreen',
-  'async,',
-  'autofocus',
-  'autoplay',
-  'checked',
-  'controls',
-  'default',
-  'defer',
-  'disabled',
-  'formnovalidate',
-  'hidden',
-  'inert',
-  'ismap',
-  'itemscope',
-  'loop',
-  'multiple',
-  'muted',
-  'nomodule',
-  'novalidate',
-  'open',
-  'playsinline',
-  'readonly',
-  'required',
-  'reversed',
-  'selected',
-]);
-
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -93,15 +65,15 @@ const setProperty = <E extends Element>(
   // bail early if values haven't changed.
   if (value === old) return;
 
-  const event = events?.[name];
-  if (event !== undefined) {
-    addOrUpdateEventListener(node, event, value as EventListener);
+  // remove false boolean attributes
+  if (value === false && node.hasAttribute(name)) {
+    node.removeAttribute(name);
     return;
   }
 
-  // remove false boolean attributes
-  if (value === false && booleanAttributes.has(name)) {
-    node.removeAttribute(name);
+  const event = events?.[name];
+  if (event !== undefined) {
+    addOrUpdateEventListener(node, event, value as EventListener);
     return;
   }
 
@@ -286,9 +258,9 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
         if (k === '__forwardedRef') continue;
 
         // do not forward false boolean attributes
-        if (v === false && booleanAttributes.has(k)) {
-          continue;
-        }
+        // if (v === false) {
+        //   continue;
+        // }
 
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;

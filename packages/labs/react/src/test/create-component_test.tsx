@@ -204,9 +204,10 @@ suite('createComponent', () => {
     await renderReactComponent({hidden: true});
     assert.equal(el.getAttribute('hidden'), 'true');
     await renderReactComponent({hidden: false});
+    assert.equal(el.getAttribute('hidden'), 'false');
+    await renderReactComponent({hidden: undefined});
     assert.equal(el.getAttribute('hidden'), null);
   });
-
 
   test('can set properties', async () => {
     let o = {foo: true};
