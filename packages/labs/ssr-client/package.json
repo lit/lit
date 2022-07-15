@@ -103,7 +103,6 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "rollup": "^2.70.2",
     "@lit-internal/scripts": "^1.0.0"
   },
   "dependencies": {

@@ -69,12 +69,5 @@
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",
     "lit": "^2.0.0"
-  },
-  "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/chai": "^4.2.12",
-    "@types/mocha": "^9.0.0",
-    "chai": "^4.2.0",
-    "mocha": "^9.1.1"
   }
 }

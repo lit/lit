@@ -394,7 +394,10 @@ export function litProdConfig({
         // sourcemap with the raw JS -> minified JS one that we're generating here.
         sourcemaps(),
         terser(terserOptions),
-        summary(),
+        summary({
+          showBrotliSize: true,
+          showGzippedSize: true,
+        }),
         ...(CHECKSIZE ? [skipBundleOutput] : []),
         ...(copyHtmlTests && !CHECKSIZE
           ? [
@@ -477,6 +480,9 @@ const litMonoBundleConfig = ({
     // sourcemap with the raw JS -> minified JS one that we're generating here.
     sourcemaps(),
     terser(terserOptions),
-    summary(),
+    summary({
+      showBrotliSize: true,
+      showGzippedSize: true,
+    }),
   ],
 });
