@@ -95,7 +95,6 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.0",
-    "@web/dev-server": "^0.1.11",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "rimraf": "^3.0.2",
     "uvu": "^0.5.3"

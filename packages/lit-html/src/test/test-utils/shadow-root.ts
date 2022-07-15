@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {render, RenderOptions} from '../../lit-html.js';
+import {render, RenderOptions} from 'lit-html';
 
 export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;

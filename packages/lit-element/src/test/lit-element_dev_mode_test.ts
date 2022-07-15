@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement} from '../lit-element.js';
+import {LitElement} from 'lit-element';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

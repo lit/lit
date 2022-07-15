@@ -10,26 +10,14 @@ import {
   PlaywrightLauncherArgs,
   ProductType,
 } from '@web/test-runner-playwright';
-import {fromRollup} from '@web/dev-server-rollup';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
-import {RemapConfig, resolveRemap} from './rollup-resolve-remap.js';
-import {prodResolveRemapConfig, devResolveRemapConfig} from './wtr-config.js';
 import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
-import type {PolyfillConfig} from 'polyfills-loader';
+import type {PolyfillConfig} from '@web/polyfills-loader';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
   throw new Error(`MODE must be "dev" or "prod", was "${mode}"`);
-}
-
-let resolveRemapConfig: RemapConfig;
-if (mode === 'prod') {
-  console.log('Using production builds');
-  resolveRemapConfig = prodResolveRemapConfig;
-} else {
-  console.log('Using development builds');
-  resolveRemapConfig = devResolveRemapConfig;
 }
 
 const browserPresets = {
@@ -188,12 +176,13 @@ const config: TestRunnerConfig = {
     '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],
-  nodeResolve: true,
+  nodeResolve: {
+    exportConditions: mode === 'dev' ? ['development'] : [],
+  },
   concurrency: Number(process.env.CONCURRENT_FRAMES || 6), // default cores / 2
   concurrentBrowsers: Number(process.env.CONCURRENT_BROWSERS || 3), // default 3
   browsers,
   plugins: [
-    fromRollup(resolveRemap)(resolveRemapConfig),
     // Detect browsers without modules (e.g. IE11) and transform to SystemJS
     // (https://modern-web.dev/docs/dev-server/plugins/legacy/).
     legacyPlugin({
@@ -226,6 +215,46 @@ const config: TestRunnerConfig = {
   ],
   // Only actually log errors. This helps make test output less spammy.
   filterBrowserLogs: ({type}) => type === 'error',
+  middleware: [
+    /**
+     * Ensures that when we're in dev mode we only load dev sources, and when
+     * we're in prod mode we only load prod sources.
+     *
+     * The most common way to get an error here is to have a relative import in
+     * a /test/ module (e.g. `import '../lit-element.js'`). A bare module should
+     * instead always be used in test modules (e.g. `import
+     * '../lit-element.js'`). The bare module is necessary, even for imports
+     * from the same package, so that export conditions take effect.
+     */
+    function devVsProdSourcesChecker(context, next) {
+      if (mode === 'dev') {
+        if (
+          context.url.includes('/packages/') &&
+          !context.url.includes('/development/') &&
+          // lit doesn't have a dev mode
+          !context.url.includes('/packages/lit/') &&
+          // some 3rd party modles can come from e.g. /packages/node_modules/*
+          !context.url.includes('/node_modules/')
+        ) {
+          console.log('Unexpected prod request in dev mode:', context.url);
+          context.response.status = 403;
+          return;
+        }
+      } else {
+        if (
+          context.url.includes('/packages/') &&
+          context.url.includes('/development/') &&
+          // test are always served from /development/
+          !context.url.includes('/development/test/')
+        ) {
+          console.log('Unexpected dev request in prod mode:', context.url);
+          context.response.status = 403;
+          return;
+        }
+      }
+      return next();
+    },
+  ],
   browserStartTimeout: 60000, // default 30000
   // For ie11 where tests run more slowly, this timeout needs to be long
   // enough so that blocked tests have time to wait for all previous test files

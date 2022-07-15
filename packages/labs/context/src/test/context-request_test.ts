@@ -7,9 +7,13 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextConsumer, ContextProvider, createContext} from '../index.js';
+import {
+  ContextConsumer,
+  ContextProvider,
+  createContext,
+  contextProvided,
+} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
-import {contextProvided} from '../lib/decorators/context-provided.js';
 
 const simpleContext = createContext<number>('simple-context');
 
