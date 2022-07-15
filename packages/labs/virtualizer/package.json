@@ -102,6 +102,7 @@
   ],
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@open-wc/testing": "^3.1.6",
     "@types/selenium-webdriver": "^4.0.19",
     "@web/dev-server-esbuild": "^0.3.0",
     "@web/test-runner": "^0.13.27",

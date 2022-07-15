@@ -4,8 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, ignoreWindowErrors, until} from '../helpers.js';
-import {expect} from '@esm-bundle/chai';
+import {
+  ignoreBenignErrors,
+  ignoreWindowErrors,
+  justText,
+  until,
+} from '../helpers.js';
+import {expect} from '@open-wc/testing';
 
 describe('ignoreBenignErrors', () => {
   ignoreBenignErrors(beforeEach, afterEach);
@@ -59,6 +64,23 @@ describe('ignoreBenignErrors', () => {
       expect(applesErrorThrown).to.eq(true);
       expect(bananasErrorThrown).to.eq(true);
     });
+  });
+});
+
+describe('justText', () => {
+  it('strips tags', () => {
+    expect(justText('<span>some text</span>')).to.equal('some text');
+  });
+  it('squeezes and trims white space', () => {
+    expect(
+      justText(`
+      this
+        will
+          all
+            be  on
+              one    line.
+    `)
+    ).to.equal('this will all be on one line.');
   });
 });
 

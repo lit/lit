@@ -9,12 +9,44 @@
  * throws an error, this function returns the line of a stack trace
  * which indicates the caller of the caller of this function.
  */
-export function getCallerFromStack() {
+export function getCallerFromStack(offset = 0) {
   try {
     throw new Error();
   } catch (e: unknown) {
-    return (e as Error).stack?.split(/\n/)[3]?.replace(/^ {2}/, '');
+    return (e as Error).stack?.split(/\n/)[3 + offset]?.replace(/^ {2}/, '');
   }
+}
+
+/**
+ * Strips tags, squeezes whitespace and trims a string, to make
+ * text content comparisons of HTML fragments easier.  This helper
+ * takes an undefined value to make it convenient to use with
+ * optional chaining operators, i.e. justText(x?.y?.z)
+ */
+export function justText(html: string | undefined): string {
+  if (html === undefined) {
+    return '';
+  }
+  return squeeze(stripTags(html, ' ')).trim();
+}
+
+/**
+ * Transforms any amount of whitespace in a string into a single
+ * space character.
+ */
+export function squeeze(text: string): string {
+  return text.replace(/\s+/gm, ' ').trim();
+}
+
+/**
+ * Removes all tags and comments from a string, by naively
+ * stripping out everything between < and > characters.
+ */
+export function stripTags(html: string, replaceWith?: string): string {
+  return html.replace(
+    /<[^>]+>/gm,
+    replaceWith === undefined ? ' ' : replaceWith
+  );
 }
 
 /**
