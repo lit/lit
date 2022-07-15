@@ -22,7 +22,10 @@ export default [
         warnings: true,
         module: true,
       }),
-      summary(),
+      summary({
+        showBrotliSize: true,
+        showGzippedSize: true,
+      }),
     ],
   },
   {
@@ -39,7 +42,10 @@ export default [
         warnings: true,
         module: true,
       }),
-      summary(),
+      summary({
+        showBrotliSize: true,
+        showGzippedSize: true,
+      }),
       resolve(),
     ],
   },

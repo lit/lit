@@ -17,7 +17,8 @@ export default locales.map(({locale, localeTransformer}) => ({
     resolve(),
     terser(),
     summary({
-      showMinifiedSize: false,
+      showBrotliSize: true,
+      showGzippedSize: true,
     }),
   ],
   output: {
