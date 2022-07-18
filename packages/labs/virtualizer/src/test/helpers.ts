@@ -50,14 +50,15 @@ export function stripTags(html: string, replaceWith?: string): string {
 }
 
 /**
- * Use this to await a condition (given as an anonymous function that returns
- * a boolean value) to be met.  We will stop waiting after the timeout is
- * exceeded, after which time we will reject the promise.
+ * A promise which will resolve to true or false depending on whether
+ * the condition function returns true within the given timeout.  The
+ * intended usage of this function in a test would look like:
+ *
+ * expect(await eventually(() => expectedState === true)).to.be.true
  */
-export async function until(cond: () => Boolean, timeout = 1000) {
+export async function eventually(cond: () => boolean, timeout = 1000) {
   const start = new Date().getTime();
-  const caller = getCallerFromStack();
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     check();
     function check() {
       if (cond()) {
@@ -65,15 +66,27 @@ export async function until(cond: () => Boolean, timeout = 1000) {
       }
       const now = new Date().getTime();
       if (now - start > timeout) {
-        return reject(
-          new Error(
-            `Condition not met within ${timeout}ms: "${cond.toString()}"\n${caller}`
-          )
-        );
+        return resolve(false);
       }
       setTimeout(check, 0);
     }
   });
+}
+
+/**
+ * Use this to await a condition (given as an anonymous function that returns
+ * a boolean value) to be met.  We will stop waiting after the timeout is
+ * exceeded, after which time we will reject the promise.
+ */
+export async function until(cond: () => boolean, timeout = 1000) {
+  const caller = getCallerFromStack();
+  if (await eventually(cond, timeout)) {
+    return true;
+  } else {
+    throw new Error(
+      `Condition not met within ${timeout}ms: "${cond.toString()}"\n${caller}`
+    );
+  }
 }
 
 /**
