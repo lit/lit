@@ -77,7 +77,7 @@ EXAMPLES
       );
       const packageName = packageJson.name as string;
 
-      console.log(`Reading ${packageName} release ${version} from ${filename}`);
+      console.log(`Reading ${packageName} release ${version ?? 'latest'} from ${filename}`);
       changelog = (await parseChangelog({
         filePath: filename,
         removeMarkdown: false,
