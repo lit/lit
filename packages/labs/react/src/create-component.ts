@@ -35,7 +35,6 @@ const addOrUpdateEventListener = (
 
   const prevListener = events.get(eventName);
   if (prevListener !== undefined) {
-    events.delete(eventName);
     node.removeEventListener(eventName, prevListener);
   }
 
@@ -61,7 +60,6 @@ const setProperty = <E extends Element>(
 
   const event = events?.[name];
   if (event !== undefined) {
-    // Dirty check event value.
     addOrUpdateEventListener(node, event, value as EventListener);
     return;
   }
