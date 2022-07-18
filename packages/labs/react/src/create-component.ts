@@ -14,7 +14,7 @@ const reservedReactProperties = new Set([
 
 const listenedEvents: WeakMap<
   Element,
-  Map<string, EventListenerObject>
+  Map<string, EventListener>
 > = new WeakMap();
 
 /**
@@ -25,27 +25,23 @@ const listenedEvents: WeakMap<
  */
 const addOrUpdateEventListener = (
   node: Element,
-  event: string,
-  listener: (event?: Event) => void
+  eventName: string,
+  listener?: EventListener
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
     listenedEvents.set(node, (events = new Map()));
   }
-  let handler = events.get(event);
+
+  const prevListener = events.get(eventName);
+  if (prevListener !== undefined) {
+    events.delete(eventName);
+    node.removeEventListener(eventName, prevListener);
+  }
+
   if (listener !== undefined) {
-    // If necessary, add listener and track handler
-    if (handler === undefined) {
-      events.set(event, (handler = {handleEvent: listener}));
-      node.addEventListener(event, handler);
-      // Otherwise just update the listener with new value
-    } else {
-      handler.handleEvent = listener;
-    }
-    // Remove listener if one exists and value is undefined
-  } else if (handler !== undefined) {
-    events.delete(event);
-    node.removeEventListener(event, handler);
+    events.set(eventName, listener);
+    node.addEventListener(eventName, listener);
   }
 };
 
@@ -60,16 +56,17 @@ const setProperty = <E extends Element>(
   old: unknown,
   events?: Events
 ) => {
+  // bail early if values have not changed
+  if (value === old) return;
+
   const event = events?.[name];
   if (event !== undefined) {
     // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    }
-  } else {
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as EventListener);
+    return;
   }
+
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
