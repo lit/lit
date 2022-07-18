@@ -73,12 +73,12 @@ suite('createComponent', () => {
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createComponent({
-    React: window.React,
-    tagName: elementName,
-    elementClass: BasicElement,
-    events: basicElementEvents,
-  });
+  const BasicElementComponent = createComponent(
+    window.React,
+    elementName,
+    BasicElement,
+    basicElementEvents,
+  );
 
   let el: BasicElement;
 
@@ -377,11 +377,11 @@ suite('createComponent', () => {
       @property()
       ref = 'hi';
     }
-    createComponent({
-      React: window.React,
-      tagName: tag,
-      elementClass: Warn,
-    });
+    createComponent(
+      window.React,
+      tag,
+      Warn,
+    );
     assert.include(warning!, 'ref');
     console.warn = warn;
   });
