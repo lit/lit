@@ -41,6 +41,8 @@ const addOrUpdateEventListener = (
   if (listener !== undefined) {
     events.set(eventName, listener);
     node.addEventListener(eventName, listener);
+  } else {
+    events.delete(eventName);
   }
 };
 
