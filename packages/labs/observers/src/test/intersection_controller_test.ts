@@ -12,7 +12,7 @@ import {
 import {
   IntersectionController,
   IntersectionControllerConfig,
-} from '../intersection_controller.js';
+} from '@lit-labs/observers/intersection_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

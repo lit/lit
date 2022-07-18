@@ -3,8 +3,8 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html, render} from '../../lit-html.js';
-import {ref, createRef, RefOrCallback} from '../../directives/ref.js';
+import {html, render} from 'lit-html';
+import {ref, createRef, RefOrCallback} from 'lit-html/directives/ref.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('ref', () => {

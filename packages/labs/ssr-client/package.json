@@ -60,7 +60,6 @@
       ],
       "output": [
         "development",
-        "directives",
         "tsconfig.tsbuildinfo"
       ]
     },
@@ -89,13 +88,22 @@
         "index.js{,.map}",
         "directives/*.js{,.map}"
       ]
+    },
+    "checksize": {
+      "command": "rollup -c --environment=CHECKSIZE",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "rollup.config.js",
+        "../../../rollup-common.js"
+      ],
+      "output": []
     }
   },
   "author": "Google LLC",
   "devDependencies": {
-    "rollup": "^2.70.2",
-    "typescript": "^4.3.5",
-    "internal-scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.0"
   },
   "dependencies": {
     "lit": "^2.0.0",

@@ -4,13 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type * as ReactModule from 'react';
 import {
   ReactiveController,
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
-
-type React = typeof ReactModule;
 
 export type ControllerConstructor<C extends ReactiveController> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,6 +30,9 @@ class ReactControllerHost<C extends ReactiveController>
   /* @internal */
   _updatePending = true;
   private _resolveUpdate!: (value: boolean | PromiseLike<boolean>) => void;
+
+  /* @internal */
+  _isConnected = false;
 
   private _kickCount: number;
   // A function to trigger an update of the React component
@@ -70,11 +70,13 @@ class ReactControllerHost<C extends ReactiveController>
 
   /* @internal */
   _connected() {
+    this._isConnected = true;
     this._controllers.forEach((c) => c.hostConnected?.());
   }
 
   /* @internal */
   _disconnected() {
+    this._isConnected = false;
     this._controllers.forEach((c) => c.hostDisconnected?.());
   }
 
@@ -110,7 +112,7 @@ class ReactControllerHost<C extends ReactiveController>
  * create function is only called once per component.
  */
 export const useController = <C extends ReactiveController>(
-  React: React,
+  React: typeof window.React,
   createController: (host: ReactiveControllerHost) => C
 ): C => {
   const {useState, useLayoutEffect} = React;
@@ -127,24 +129,59 @@ export const useController = <C extends ReactiveController>(
   // `useMutableSource`:
   // https://github.com/reactjs/rfcs/blob/master/text/0147-use-mutable-source.md
   // We can address this when React's concurrent mode is closer to shipping.
+
+  let shouldDisconnect = false;
   const [host] = useState(() => {
     const host = new ReactControllerHost<C>(kickCount, kick);
     const controller = createController(host);
     host._primaryController = controller;
+    // Note, calls to `useState` are expected to produce no side effects and in
+    // StrictMode this is enforced by not running effects for the first render.
+    //
+    // This happens in StrictMode:
+    // 1. Throw away render: component function runs but does not call effects
+    // 2. Real render: component function runs and *does* call effects,
+    // 2.a. if first render, run effects and
+    // 2.a.1 mount,
+    // 2.a.2 unmount,
+    // 2.a.3 remount
+    // 2b. if not first render, just run effects
+    //
+    // To preserve update lifecycle ordering and run it before this hook
+    // returns, run connected here but schedule and async disconnect (handles
+    // lifecycle balance for `(1) Throw away render`).
+    // The disconnect is cancelled if the effects actually run (handles
+    // `(2.a.1) Real render, mount`).
     host._connected();
+    shouldDisconnect = true;
+    microtask.then(() => {
+      if (shouldDisconnect) {
+        host._disconnected();
+      }
+    });
     return host;
   });
 
   host._updatePending = true;
 
+  // This effect runs only on mount/unmount of the component (via the empty
+  // deps array). If the controller has just been created, it's scheduled
+  // a disconnect so that it behaves correctly in StrictMode (see above).
+  // The returned callback here disconnects the host when the component is
+  // unmounted (handles `(2.a.2) Real render, unmount` above).
+  // And finally, if the component is disconnected when the effect runs, we
+  // connect it (handles `(2.a.3) Real render, remount`).
+  useLayoutEffect(() => {
+    shouldDisconnect = false;
+    if (!host._isConnected) {
+      host._connected();
+    }
+    return () => host._disconnected();
+  }, []);
+
   // We use useLayoutEffect because we need updated() called synchronously
   // after rendering.
   useLayoutEffect(() => host._updated());
-
-  // Returning a cleanup function simulates hostDisconnected timing. An empty
-  // deps array tells React to only call this once: on mount with the cleanup
-  // called on unmount.
-  useLayoutEffect(() => () => host._disconnected(), []);
 
   // TODO (justinfagnani): don't call in SSR
   host._update();

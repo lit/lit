@@ -11,7 +11,7 @@ import {
   PropertyDeclarations,
   PropertyValues,
   ReactiveElement,
-} from '../reactive-element.js';
+} from '@lit/reactive-element';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

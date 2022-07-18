@@ -3,7 +3,7 @@
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {css, html as htmlWithStyles, LitElement} from '../lit-element.js';
+import {css, html as htmlWithStyles, LitElement} from 'lit-element';
 import {html as staticHtml, unsafeStatic} from 'lit-html/static.js';
 
 import {

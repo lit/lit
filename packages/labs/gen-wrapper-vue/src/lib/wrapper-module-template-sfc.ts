@@ -36,13 +36,13 @@ export const wrapperModuleTemplateSFC = (
 const getFieldModifierString = (node: ModelProperty['node']) =>
   node.questionToken ? '?' : node.exclamationToken ? '!' : '';
 
-const getEventType = (event: ModelEvent) => event.typeString || `unknown`;
+const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
 
 const wrapDefineProps = (props: Map<string, ModelProperty>) =>
   Array.from(props.values())
     .map(
       (prop) =>
-        `${prop.name}${getFieldModifierString(prop.node)}: ${prop.typeString}`
+        `${prop.name}${getFieldModifierString(prop.node)}: ${prop.type?.text}`
     )
     .join(',\n');
 
@@ -63,7 +63,7 @@ const renderEvents = (events: Map<string, ModelEvent>) =>
     .map(
       (event) =>
         `${kabobToOnEvent(event.name)}: (event: ${
-          event.typeString || `CustomEvent<unknown>`
+          event.type?.text || `CustomEvent<unknown>`
         }) => emit('${event.name}', (event.detail || event) as ${getEventType(
           event
         )})`

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/eleventy-plugin-lit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Eleventy plugin for rendering Lit components.",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
@@ -58,6 +58,7 @@
         "test",
         "worker",
         "*.tsbuildinfo",
+        "!test/__temp",
         "!test/package.json",
         "!worker/package.json"
       ],
@@ -94,10 +95,7 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.0",
-    "@web/dev-server": "^0.1.11",
     "@webcomponents/template-shadowroot": "^0.1.0",
-    "rimraf": "^3.0.2",
-    "typescript": "^4.1.3",
-    "uvu": "^0.5.3"
+    "rimraf": "^3.0.2"
   }
 }

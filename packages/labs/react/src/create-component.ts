@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
+import React from "react";
 
 const reservedReactProperties = new Set([
   'children',
@@ -55,14 +55,14 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element, T>(
+const setProperty = <E extends Element>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
-  events?: StringValued<T>
+  events?: Events
 ) => {
-  const event = events?.[name as keyof T];
+  const event = events?.[name];
   if (event !== undefined) {
     // Dirty check event value.
     if (value !== old) {
@@ -84,10 +84,6 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
-type StringValued<T> = {
-  [P in keyof T]: string;
-};
-
 type Constructor<T> = {new (): T};
 
 /***
@@ -107,7 +103,7 @@ type EventProps<R extends Events> = {
 };
 
 interface CreateComponentParams<I extends HTMLElement, E extends Events> {
-  React: typeof ReactModule;
+  React: typeof React;
   tagName: string;
   elementClass: Constructor<I>;
   events?: E;
@@ -135,26 +131,44 @@ interface CreateComponentParams<I extends HTMLElement, E extends Events> {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>({
-  React,
-  tagName,
-  elementClass,
-  events,
-  displayName,
-}: CreateComponentParams<I, E>) => {
+
+export function createComponent<I extends HTMLElement, E extends Events = {}>(
+  React: typeof window.React,
+  tagName: string,
+  elementClass: Constructor<I>,
+  events?: E,
+  displayName?: string
+): React.ForwardRefExoticComponent<Partial<
+React.PropsWithRef<Omit<React.HTMLAttributes<I>, keyof E>> & Omit<I, keyof E | keyof React.PropsWithRef<Omit<React.HTMLAttributes<I>, keyof E>>> & EventProps<E>
+>>;
+export function createComponent<I extends HTMLElement, E extends Events = {}>(
+  params: CreateComponentParams<I, E>
+): React.ForwardRefExoticComponent<Partial<
+React.PropsWithRef<Omit<React.HTMLAttributes<I>, keyof E>> & Omit<I, keyof E | keyof React.PropsWithRef<Omit<React.HTMLAttributes<I>, keyof E>>> & EventProps<E>
+>>;
+export function createComponent<I extends HTMLElement, E extends Events = {}>(
+  RModule: unknown,
+  tName?: string,
+  elClass?: Constructor<I>,
+  evs?: E,
+  dName?: string
+) {
+
+  const React: typeof window.React = (tName === undefined) ? RModule.React : RModule;
+  const tagName: string = (tName === undefined) ? RModule.tagName : tName;
+  const elementClass: Constructor<I> = (tName === undefined) ? RModule.elementClass : elClass;
+  const events: E = (tName === undefined) ? RModule.events : evs;
+  const displayName: string = (tName === undefined) ? RModule.dName : dName;
+
   const Component = React.Component;
   const createElement = React.createElement;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
-  // TODO: we might need to omit more properties from HTMLElement than just
-  // 'children', but 'children' is special to JSX, so we must at least do that.
-  type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
-        Partial<EventProps<E>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
-    >
+  type ReactProps = React.PropsWithRef<Omit<React.HTMLAttributes<I>, keyof E>>;
+  type ElementWithoutPropsOrEvents = Omit<I, keyof E | keyof ReactProps>;
+  type UserProps = Partial<
+    ReactProps & ElementWithoutPropsOrEvents & EventProps<E>
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
@@ -290,4 +304,4 @@ export const createComponent = <I extends HTMLElement, E extends Events>({
   ForwardedComponent.displayName = ReactComponent.displayName;
 
   return ForwardedComponent;
-};
+}
