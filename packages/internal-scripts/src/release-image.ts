@@ -77,7 +77,9 @@ EXAMPLES
       );
       const packageName = packageJson.name as string;
 
-      console.log(`Reading ${packageName} release ${version ?? 'latest'} from ${filename}`);
+      console.log(
+        `Reading ${packageName} release ${version ?? 'latest'} from ${filename}`
+      );
       changelog = (await parseChangelog({
         filePath: filename,
         removeMarkdown: false,
@@ -132,12 +134,13 @@ EXAMPLES
          </style>
        </head>
        <body>
-         ${releasesToRender.map(
-           ({title, body, version}) =>
-             `<h2><span class="name">${title}</span> ${version}</h2>
-           ${marked(body)}
-         `
-         )}
+         ${releasesToRender
+           .map(
+             ({title, body, version}) =>
+               `<h2><span class="name">${title}</span> ${version}</h2>
+              ${marked(body)}`
+           )
+           .join('')}
        </body>
      </html>
    `;
