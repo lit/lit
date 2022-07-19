@@ -5,9 +5,9 @@
  */
 
 import '@webcomponents/shadycss/apply-shim.min.js';
-import '../polyfill-support.js';
+import 'lit-element/polyfill-support.js';
 
-import {html as htmlWithStyles, LitElement, css} from '../lit-element.js';
+import {html as htmlWithStyles, LitElement, css} from 'lit-element';
 
 import {
   canTestLitElement,

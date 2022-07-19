@@ -64,10 +64,7 @@
     "@lit-labs/vue-utils": "^0.0.1"
   },
   "devDependencies": {
-    "@types/node": "^17.0.31",
-    "@lit-internal/tests": "^0.0.0",
-    "typescript": "^4.6.4",
-    "uvu": "^0.5.3"
+    "@lit-internal/tests": "^0.0.0"
   },
   "engines": {
     "node": ">=14.8.0"

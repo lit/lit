@@ -3,8 +3,8 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {render} from '../lit-html.js';
-import {html, literal, unsafeStatic} from '../static.js';
+import {render} from 'lit-html';
+import {html, literal, unsafeStatic} from 'lit-html/static.js';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
 

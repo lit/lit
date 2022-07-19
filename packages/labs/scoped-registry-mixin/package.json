@@ -18,6 +18,7 @@
   },
   "exports": {
     ".": {
+      "types": "./development/scoped-registry-mixin.d.ts",
       "development": "./development/scoped-registry-mixin.js",
       "default": "./scoped-registry-mixin.js"
     }
@@ -138,17 +139,8 @@
     "lit": "^2.0.0"
   },
   "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/chai": "^4.0.1",
-    "@types/mocha": "^9.0.0",
     "@types/trusted-types": "^2.0.2",
-    "@web/test-runner-mocha": "^0.7.4",
-    "@webcomponents/scoped-custom-element-registry": "^0.0.3",
-    "chokidar-cli": "^3.0.0",
-    "concurrently": "^6.2.1",
-    "mocha": "^9.1.1",
-    "rollup": "^2.70.2",
-    "typescript": "^4.3.5",
+    "@webcomponents/scoped-custom-element-registry": "^0.0.5",
     "@lit-internal/scripts": "^1.0.0"
   },
   "publishConfig": {

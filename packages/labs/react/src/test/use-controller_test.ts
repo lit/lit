@@ -7,7 +7,7 @@
 // import * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
-import {useController} from '../use-controller.js';
+import {useController} from '@lit-labs/react/use-controller.js';
 import {assert} from '@esm-bundle/chai';
 import {
   ReactiveController,

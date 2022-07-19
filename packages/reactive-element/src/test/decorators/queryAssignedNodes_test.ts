@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {queryAssignedNodes} from '../../decorators/query-assigned-nodes.js';
-import {queryAssignedElements} from '../../decorators/query-assigned-elements.js';
+import {queryAssignedNodes} from '@lit/reactive-element/decorators/query-assigned-nodes.js';
+import {queryAssignedElements} from '@lit/reactive-element/decorators/query-assigned-elements.js';
 import {
   canTestReactiveElement,
   generateElementName,
