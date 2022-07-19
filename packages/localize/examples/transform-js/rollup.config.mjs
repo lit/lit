@@ -1,7 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import {terser} from 'rollup-plugin-terser';
-import summary from 'rollup-plugin-summary';
+import {summary} from 'rollup-plugin-summary';
 import {localeTransformers} from '@lit/localize-tools/lib/rollup.js';
 
 const locales = localeTransformers();
@@ -25,7 +25,8 @@ export default locales.map(({locale, localeTransformer}) => ({
     resolve(),
     terser(),
     summary({
-      showMinifiedSize: false,
+      showBrotliSize: true,
+      showGzippedSize: true,
     }),
   ],
   output: {

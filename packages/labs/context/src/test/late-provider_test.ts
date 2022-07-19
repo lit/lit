@@ -7,11 +7,13 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextKey} from '../index.js';
-import {contextProvided} from '../lib/decorators/context-provided.js';
-import {contextProvider} from '../lib/decorators/context-provider.js';
+import {
+  ContextKey,
+  contextProvided,
+  contextProvider,
+  ContextRoot,
+} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
-import {ContextRoot} from '../lib/context-root.js';
 
 const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
 
@@ -55,7 +57,7 @@ suite('late context provider', () => {
     new ContextRoot().attach(container);
 
     container.innerHTML = `
-         <late-context-provider value="1000">            
+         <late-context-provider value="1000">
              <context-consumer></context-consumer>
          </late-context-provider>
      `;

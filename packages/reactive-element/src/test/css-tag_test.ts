@@ -10,7 +10,7 @@ import {
   unsafeCSS,
   supportsAdoptingStyleSheets,
   adoptStyles,
-} from '../css-tag.js';
+} from '@lit/reactive-element/css-tag.js';
 import {html, getComputedStyleValue, createShadowRoot} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

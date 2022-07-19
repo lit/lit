@@ -7,10 +7,10 @@ import {notEqual} from '@lit/reactive-element';
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TaskFunction<D extends [...unknown[]], R = any> = (
+export type TaskFunction<D extends ReadonlyArray<unknown>, R = any> = (
   args: D
 ) => R | typeof initialState | Promise<R | typeof initialState>;
-export type ArgsFunction<D extends [...unknown[]]> = () => D;
+export type ArgsFunction<D extends ReadonlyArray<unknown>> = () => D;
 
 // `DepsFunction` is being maintained for BC with its previous name.
 export {ArgsFunction as DepsFunction};
@@ -40,7 +40,7 @@ export type StatusRenderer<R> = {
   error?: (error: unknown) => unknown;
 };
 
-export interface TaskConfig<T extends unknown[], R> {
+export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
@@ -98,8 +98,10 @@ export interface TaskConfig<T extends unknown[], R> {
  *   }
  * }
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class Task<T extends [...unknown[]] = any, R = any> {
+export class Task<
+  T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+  R = unknown
+> {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
   private _getArgs?: ArgsFunction<T>;

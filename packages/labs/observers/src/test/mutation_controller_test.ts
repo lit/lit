@@ -12,7 +12,7 @@ import {
 import {
   MutationController,
   MutationControllerConfig,
-} from '../mutation_controller.js';
+} from '@lit-labs/observers/mutation_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

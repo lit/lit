@@ -57,7 +57,7 @@ const wrapProps = (props: Map<string, ModelProperty>) =>
     .map(
       (prop) =>
         `${prop.name}: ${tsTypeToVuePropType(
-          prop.typeString || 'string|undefined'
+          prop.type?.text || 'string|undefined'
         )}`
     )
     .join(',\n');
@@ -69,7 +69,7 @@ const wrapEvents = (events: Map<string, ModelEvent>) =>
     .map(
       (event) =>
         `${kabobToOnEvent(event.name)}: eventProp<(event: ${
-          event.typeString || `CustomEvent<unknown>`
+          event.type?.text || `CustomEvent<unknown>`
         }) => void>()`
     )
     .join(',\n');
@@ -83,7 +83,7 @@ const renderEvents = (events: Map<string, ModelEvent>) =>
     .map(
       (event) =>
         `${kabobToOnEvent(event.name)}: (event: ${
-          event.typeString || `CustomEvent<unknown>`
+          event.type?.text || `CustomEvent<unknown>`
         }) => emit(event.type, event.detail || event)`
     )
     .join(',\n');

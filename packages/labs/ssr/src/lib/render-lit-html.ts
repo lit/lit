@@ -813,7 +813,7 @@ function* renderAttributePart(
 ) {
   if (value !== nothing) {
     if (instance !== undefined) {
-      instance.setAttribute(op.name, value as string);
+      instance.setAttribute(op.name, String(value ?? ''));
     } else {
       yield `${op.name}="${escapeHtml(String(value ?? ''))}"`;
     }
