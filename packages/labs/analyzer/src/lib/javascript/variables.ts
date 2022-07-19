@@ -7,13 +7,15 @@
 /**
  * @fileoverview
  *
- * Utilities for working with classes
+ * Utilities for working with variables
  */
 
 import ts from 'typescript';
-import {VariableDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {VariableDeclaration, Declaration, AnalyzerContext} from '../model.js';
 import {DiagnosticsError} from '../errors.js';
+import {getFunctionDeclaration} from './functions.js';
+import {getClassDeclaration, maybeGetAppliedMixin} from './classes.js';
+import {getTypeForNode} from '../types.js';
 
 type VariableName =
   | ts.Identifier
@@ -23,16 +25,33 @@ type VariableName =
 export const getVariableDeclarations = (
   dec: ts.VariableDeclaration,
   name: VariableName,
-  programContext: ProgramContext
-): VariableDeclaration[] => {
+  context: AnalyzerContext
+): [string, () => Declaration][] => {
   if (ts.isIdentifier(name)) {
-    return [
-      new VariableDeclaration({
+    const getVariableDeclaration = () => {
+      const initializer = dec.initializer;
+      if (initializer !== undefined) {
+        if (
+          ts.isArrowFunction(initializer) ||
+          ts.isFunctionExpression(initializer)
+        ) {
+          return getFunctionDeclaration(initializer, name, context);
+        } else if (ts.isClassExpression(initializer)) {
+          return getClassDeclaration(initializer, context);
+        } else {
+          const classDec = maybeGetAppliedMixin(initializer, name, context);
+          if (classDec !== undefined) {
+            return classDec;
+          }
+        }
+      }
+      return new VariableDeclaration({
         name: name.text,
         node: dec,
-        type: programContext.getTypeForNode(name),
-      }),
-    ];
+        getType: () => getTypeForNode(name, context),
+      });
+    };
+    return [[name.text, getVariableDeclaration]];
   } else if (
     // Recurse into the elements of an array/object destructuring variable
     // declaration to find the identifiers
@@ -43,7 +62,7 @@ export const getVariableDeclarations = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarations(dec, el.name, programContext))
+      .map((el) => getVariableDeclarations(dec, el.name, context))
       .flat();
   } else {
     throw new DiagnosticsError(

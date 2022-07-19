@@ -7,41 +7,55 @@
 import ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
 
-import {IPackageJson as PackageJson} from 'package-json-type';
-export {PackageJson};
+import type {IPackageJson as PackageJson} from 'package-json-type';
+export type {PackageJson};
+import type ManifestJson from 'custom-elements-manifest/schema';
+export type {ManifestJson};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Constructor<T> = new (...args: any[]) => T;
 
 export interface PackageInit {
   rootDir: AbsolutePath;
-  packageJson: PackageJson;
-  tsConfig: ts.ParsedCommandLine;
   modules: ReadonlyArray<Module>;
 }
 
 export class Package {
   readonly rootDir: AbsolutePath;
   readonly modules: ReadonlyArray<Module>;
-  readonly tsConfig: ts.ParsedCommandLine;
-  readonly packageJson: PackageJson;
+  private _modulesByPackagePath: Map<PackagePath, Module> | undefined;
 
   constructor(init: PackageInit) {
     this.rootDir = init.rootDir;
-    this.packageJson = init.packageJson;
-    this.tsConfig = init.tsConfig;
     this.modules = init.modules;
+  }
+
+  getModule(path: PackagePath): Module {
+    this._modulesByPackagePath ??= new Map(
+      this.modules.map((m) => [m.jsPath, m])
+    );
+    const module = this._modulesByPackagePath.get(path);
+    if (module === undefined) {
+      throw new Error(`No module with path ${path} in package ${this.rootDir}`);
+    }
+    return module;
   }
 }
 
 export interface ModuleInit {
-  sourceFile: ts.SourceFile;
+  sourceFile?: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
+  packageJson: PackageJson;
+  getDeclarations: () => Declaration[];
+  getExport: (name: string) => Declaration;
 }
 
 export class Module {
   /**
    * The TS AST node for the file
    */
-  readonly sourceFile: ts.SourceFile;
+  readonly sourceFile: ts.SourceFile | undefined;
   /**
    * The path to the source file for this module. In a TS project, this will be
    * a .ts file. In a JS project, this will be the same as `jsPath`.
@@ -53,46 +67,138 @@ export class Module {
    * project this will be the same as `sourcePath`.
    */
   readonly jsPath: PackagePath;
-  readonly declarations: Array<Declaration> = [];
+  readonly dependencies = new Set<string>();
+
+  readonly packageJson: PackageJson;
+
+  private _getDeclarations: () => Declaration[];
+  private _declarations: Declaration[] | undefined = undefined;
+  private _getExport: (name: string) => Declaration;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
+    this.packageJson = init.packageJson;
+    this._getDeclarations = init.getDeclarations;
+    this._getExport = init.getExport;
+  }
+
+  getExport<T extends Declaration>(name: string, type: Constructor<T>): T;
+  getExport<T extends Declaration>(
+    name: string,
+    type?: Constructor<T>
+  ): Declaration | undefined;
+  getExport<T extends Declaration>(
+    name: string,
+    type?: Constructor<T>
+  ): T | Declaration | undefined {
+    const declaration = this._getExport(name);
+    if (type !== undefined) {
+      if (declaration === undefined) {
+        throw new Error(`Module ${this.jsPath} has no export named ${name}`);
+      }
+      if (!(declaration instanceof type)) {
+        throw new Error(
+          `Export ${name} from module ${this.jsPath} was of type ${declaration.constructor.name}; expected ${type.name}`
+        );
+      }
+    }
+    return declaration;
+  }
+
+  get declarations() {
+    return (this._declarations ??= this._getDeclarations());
   }
 }
 
-export type Declaration = ClassDeclaration | VariableDeclaration;
+export type Declaration =
+  | VariableDeclaration
+  | FunctionDeclaration
+  | ClassDeclaration
+  | MixinDeclaration;
 
 export interface VariableDeclarationInit {
   name: string;
   node: ts.VariableDeclaration;
-  type: Type | undefined;
+  getType: () => Type | undefined;
 }
 
 export class VariableDeclaration {
   readonly name: string;
   readonly node: ts.VariableDeclaration;
-  readonly type: Type | undefined;
+  private _getType: () => Type | undefined;
+  private _type: Type | undefined;
+
   constructor(init: VariableDeclarationInit) {
     this.name = init.name;
     this.node = init.node;
-    this.type = init.type;
+    this._getType = init.getType;
+  }
+
+  get type(): Type | undefined {
+    return (this._type ??= this._getType());
   }
 }
 
+export interface FunctionDeclarationInit {
+  name: string;
+  node: ts.FunctionLikeDeclaration;
+}
+
+export class FunctionDeclaration {
+  readonly name: string;
+  readonly node: ts.FunctionLikeDeclaration;
+  constructor(init: FunctionDeclarationInit) {
+    this.name = init.name;
+    this.node = init.node;
+  }
+}
+
+export type ClassHeritage = {
+  mixins: Reference<MixinDeclaration>[];
+  superClass: Reference<ClassDeclaration> | undefined;
+};
+
 export interface ClassDeclarationInit {
   name: string | undefined;
-  node: ts.ClassDeclaration;
+  node?: ts.ClassLikeDeclarationBase;
+  getHeritage: () => ClassHeritage;
 }
 
 export class ClassDeclaration {
   readonly name: string | undefined;
-  readonly node: ts.ClassDeclaration;
+  readonly node: ts.ClassLikeDeclarationBase | undefined;
+  private _getHeritage: () => ClassHeritage;
+  private _heritage: ClassHeritage | undefined;
 
   constructor(init: ClassDeclarationInit) {
     this.name = init.name;
     this.node = init.node;
+    this._getHeritage = init.getHeritage;
+  }
+
+  get heritage(): ClassHeritage {
+    return (this._heritage ??= this._getHeritage());
+  }
+}
+
+export interface MixinDeclarationInit extends FunctionDeclarationInit {
+  node: ts.FunctionLikeDeclaration;
+  classDeclaration: ClassDeclaration;
+  superClassArgIdx: number;
+  // superClassConstraintType: ts.Type | undefined;
+}
+
+export class MixinDeclaration extends FunctionDeclaration {
+  readonly classDeclaration: ClassDeclaration;
+  readonly superClassArgIdx: number;
+  // readonly superClassConstraintType: ts.Type | undefined;
+  constructor(init: MixinDeclarationInit) {
+    super(init);
+    this.classDeclaration = init.classDeclaration;
+    this.superClassArgIdx = init.superClassArgIdx;
+    // this.superClassConstraintType = init.superClassConstraintType;
   }
 }
 
@@ -128,11 +234,11 @@ export class LitElementDeclaration extends ClassDeclaration {
   }
 }
 
-export interface ReactiveProperty {
+export interface ReactivePropertyInit {
   name: string;
   node: ts.PropertyDeclaration;
 
-  type: Type;
+  getType: () => Type | undefined;
 
   reflect: boolean;
 
@@ -158,10 +264,70 @@ export interface ReactiveProperty {
   // TODO(justinfagnani): hasChanged?
 }
 
-export interface Event {
+export class ReactiveProperty {
+  readonly name: string;
+  readonly node: ts.PropertyDeclaration;
+  readonly reflect: boolean;
+  private _getType: () => Type | undefined;
+  private _type: Type | undefined;
+
+  // TODO(justinfagnani): should we convert into attribute name?
+  readonly attribute: boolean | string | undefined;
+
+  /**
+   * The test of the `type` property option.
+   *
+   * This is really only useful if the type is one of the well known types:
+   * String, Number, or Boolean.
+   */
+  typeOption: string | undefined;
+
+  /**
+   * The Node for the `converter` option if present.
+   *
+   * This is mostly useful to know whether the `type` option can be interpreted
+   * with the default semantics or not.
+   */
+  converter: ts.Node | undefined;
+
+  // TODO(justinfagnani): hasChanged?
+
+  constructor(init: ReactivePropertyInit) {
+    this.name = init.name;
+    this.node = init.node;
+    this.reflect = init.reflect;
+    this.attribute = init.attribute;
+    this.typeOption = init.typeOption;
+    this.converter = init.converter;
+    this._getType = init.getType;
+  }
+
+  get type(): Type | undefined {
+    return (this._type ??= this._getType());
+  }
+}
+
+export interface EventInit {
   name: string;
   description: string | undefined;
-  type: Type | undefined;
+  getType: () => Type | undefined;
+}
+
+export class Event {
+  readonly name: string;
+  readonly description: string | undefined;
+  private _getType: () => Type | undefined;
+  private _type: Type | undefined;
+
+  constructor(init: EventInit) {
+    this.name = init.name;
+    this.description = init.description;
+    this._getType = init.getType;
+  }
+
+  get type(): Type | undefined {
+    return (this._type ??= this._getType());
+  }
 }
 
 // TODO(justinfagnani): Move helpers into a Lit-specific module
@@ -193,23 +359,30 @@ export const getLitModules = (analysis: Package) => {
   return modules;
 };
 
-export interface ReferenceInit {
+export interface ReferenceInit<T extends Declaration> {
   name: string;
-  package?: string;
-  module?: string;
+  package?: string | undefined;
+  module?: string | undefined;
   isGlobal?: boolean;
+  isLocal?: boolean;
+  getModel?: () => T | undefined;
 }
 
-export class Reference {
+export class Reference<T extends Declaration = Declaration> {
   readonly name: string;
   readonly package: string | undefined;
   readonly module: string | undefined;
   readonly isGlobal: boolean;
-  constructor(init: ReferenceInit) {
+  readonly isLocal: boolean;
+  readonly _getModel: (() => T | undefined) | undefined;
+  _model: Declaration | undefined;
+  constructor(init: ReferenceInit<T>) {
     this.name = init.name;
     this.package = init.package;
     this.module = init.module;
     this.isGlobal = init.isGlobal ?? false;
+    this.isLocal = init.isLocal ?? false;
+    this._getModel = init.getModel;
   }
 
   get moduleSpecifier() {
@@ -217,6 +390,10 @@ export class Reference {
     return this.isGlobal
       ? undefined
       : (this.package || '') + separator + (this.module || '');
+  }
+
+  dereference() {
+    return (this._model ??= this._getModel?.()) as T | undefined;
   }
 }
 
@@ -257,4 +434,40 @@ export const getImportsStringForReferences = (references: Reference[]) => {
         )}} from '${moduleSpecifier}';`
     )
     .join('\n');
+};
+
+export interface AnalyzerContext {
+  program: ts.Program;
+  checker: ts.TypeChecker;
+  commandLine: ts.ParsedCommandLine;
+  fs: Pick<
+    ts.System,
+    | 'readDirectory'
+    | 'readFile'
+    | 'realpath'
+    | 'fileExists'
+    | 'useCaseSensitiveFileNames'
+  >;
+  path: Pick<
+    typeof import('path'),
+    'join' | 'relative' | 'dirname' | 'basename' | 'dirname' | 'parse'
+  >;
+}
+
+export const getCommandLine = (
+  program: ts.Program,
+  path: AnalyzerContext['path']
+) => {
+  const compilerOptions = program.getCompilerOptions();
+  const commandLine = ts.parseJsonConfigFileContent(
+    {
+      files: program.getRootFileNames(),
+      compilerOptions,
+    },
+    ts.sys,
+    path.basename(compilerOptions.configFilePath as string),
+    undefined,
+    compilerOptions.configFilePath as string
+  );
+  return commandLine;
 };
