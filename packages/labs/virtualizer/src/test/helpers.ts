@@ -9,11 +9,11 @@
  * throws an error, this function returns the line of a stack trace
  * which indicates the caller of the caller of this function.
  */
-export function getCallerFromStack(offset = 0) {
+export function getCallerFromStack() {
   try {
     throw new Error();
   } catch (e: unknown) {
-    return (e as Error).stack?.split(/\n/)[3 + offset]?.replace(/^ {2}/, '');
+    return (e as Error).stack?.split(/\n/)[3]?.replace(/^ {2}/, '');
   }
 }
 
@@ -53,8 +53,6 @@ export function stripTags(html: string, replaceWith?: string): string {
  * A promise which will resolve to true or false depending on whether
  * the condition function returns true within the given timeout.  The
  * intended usage of this function in a test would look like:
- *
- * expect(await eventually(() => expectedState === true)).to.be.true
  */
 export async function eventually(cond: () => boolean, timeout = 1000) {
   const start = new Date().getTime();
