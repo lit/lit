@@ -7,7 +7,7 @@
 import {LitElement, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
-interface MyType {
+export interface MyType {
   a: string;
   b: number;
   c: boolean;

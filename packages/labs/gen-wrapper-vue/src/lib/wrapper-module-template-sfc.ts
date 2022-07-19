@@ -9,6 +9,7 @@ import {
   ReactiveProperty as ModelProperty,
   Event as ModelEvent,
   PackageJson,
+  getImportsStringForReferences,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -70,16 +71,33 @@ const renderEvents = (events: Map<string, ModelEvent>) =>
     )
     .join(',\n');
 
+const getTypeImportsForMap = (map: Map<string, ModelProperty | ModelEvent>) =>
+  Array.from(map.values())
+    .map((e) =>
+      e.type ? getImportsStringForReferences(e.type.references) : null
+    )
+    .filter((e) => e);
+
+const getElementTypeImports = (declaration: LitElementDeclaration) => {
+  const {events, reactiveProperties} = declaration;
+  return [
+    ...getTypeImportsForMap(events),
+    ...getTypeImportsForMap(reactiveProperties),
+  ].join(';\n');
+};
+
 // TODO(sorvell): Add support for `v-bind`.
 const wrapperTemplate = (
-  {tagname, events, reactiveProperties}: LitElementDeclaration,
+  declaration: LitElementDeclaration,
   wcPath: string
 ) => {
+  const {tagname, events, reactiveProperties} = declaration;
   return javascript`
     <script setup lang="ts">
       import { h, useSlots } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
+      ${getElementTypeImports(declaration)}
 
       ${
         reactiveProperties.size

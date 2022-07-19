@@ -1,0 +1,27 @@
+{
+  "name": "@lit-internal/test-element-props-vue",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:declarations && vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "build:declarations": "vue-tsc --declaration --emitDeclarationOnly && node ./scripts/rename.js",
+    "preview": "vite preview"
+  },
+  "version": "1.0.0",
+  "dependencies": {
+    "@lit-internal/test-element-props": "^1.0.0",
+    "vue": "^3.2.25",
+    "@lit-labs/vue-utils": "^0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "~4.7.4",
+    "@vitejs/plugin-vue": "^2.3.1",
+    "@rollup/plugin-typescript": "^8.3.2",
+    "vite": "^2.9.2",
+    "vue-tsc": "^0.29.8"
+  },
+  "files": [
+    "ElementProps.{js,js.map,d.ts,vue}"
+  ]
+}

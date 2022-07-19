@@ -24,7 +24,7 @@ suite('test-element-props', () => {
   });
 
   test('renders correctly', async () => {
-    const foo = 'Hello World';
+    const foo = 'Props';
     createApp(ElementProps, {foo}).mount(container);
     const el = container.querySelector('element-props')! as ElementPropsElement;
     await el.updateComplete;
