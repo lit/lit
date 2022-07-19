@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ChildPart, html, noChange} from 'lit';
+import {TemplateResult, ChildPart, html} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat} from 'lit/directives/repeat.js';
@@ -103,7 +103,7 @@ class VirtualizeDirective<T> extends AsyncDirective {
       }
       this.cachedConfig = config;
     }
-    return noChange;
+    return this.render();
     // super.update(part, [config]);
   }
 
