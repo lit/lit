@@ -254,6 +254,7 @@ export function litProdConfig({
   testPropertyPrefix,
   packageName,
   outputDir = './',
+  copyHtmlTests = true,
   // eslint-disable-next-line no-undef
 } = options) {
   const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
@@ -306,7 +307,12 @@ export function litProdConfig({
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
     // Import every entry point so that we see all property accesses.
-    ...entryPoints.map((name) => `import './development/${name}.js';`),
+    // Give a unique named import to prevent duplicate identifier errors.
+    ...entryPoints.map(
+      (name, idx) => `import * as import${idx} from './development/${name}.js';`
+    ),
+    // Prevent tree shaking that occurs during mangling.
+    ...entryPoints.map((_name, idx) => `console.log(import${idx});`),
     // Synthesize a property access for all cross-package mangled property names
     // so that even if we don't access a property in this package, we will still
     // reserve other properties from re-using that name.
@@ -388,10 +394,13 @@ export function litProdConfig({
         // sourcemap with the raw JS -> minified JS one that we're generating here.
         sourcemaps(),
         terser(terserOptions),
-        summary(),
-        ...(CHECKSIZE
-          ? [skipBundleOutput]
-          : [
+        summary({
+          showBrotliSize: true,
+          showGzippedSize: true,
+        }),
+        ...(CHECKSIZE ? [skipBundleOutput] : []),
+        ...(copyHtmlTests && !CHECKSIZE
+          ? [
               // Copy polyfill support tests.
               copy({
                 targets: [
@@ -410,7 +419,8 @@ export function litProdConfig({
                   },
                 ],
               }),
-            ]),
+            ]
+          : []),
       ],
     },
     ...bundled.map(({file, output, name, format, sourcemapPathTransform}) =>
@@ -470,6 +480,9 @@ const litMonoBundleConfig = ({
     // sourcemap with the raw JS -> minified JS one that we're generating here.
     sourcemaps(),
     terser(terserOptions),
-    summary(),
+    summary({
+      showBrotliSize: true,
+      showGzippedSize: true,
+    }),
   ],
 });

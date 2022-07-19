@@ -55,8 +55,10 @@ export const getWindow = ({
       old: string | null,
       value: string | null
     ): void;
-    setAttribute(name: string, value: string) {
-      attributesForElement(this).set(name, value);
+    setAttribute(name: string, value: unknown) {
+      // Emulate browser behavior that silently casts all values to string. E.g.
+      // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
+      attributesForElement(this).set(name, String(value));
     }
     removeAttribute(name: string) {
       attributesForElement(this).delete(name);
@@ -137,7 +139,10 @@ export const getWindow = ({
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    fetch: (url: URL, init: {}) => fetch(url, init),
+    fetch: (url: URL, init: {}) =>
+      // TODO(aomarks) The typings from node-fetch are wrong because they don't
+      // allow URL.
+      fetch(url as unknown as Parameters<typeof fetch>[0], init),
 
     location: new URL('http://localhost'),
     MutationObserver: class {

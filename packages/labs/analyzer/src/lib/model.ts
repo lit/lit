@@ -62,7 +62,24 @@ export class Module {
   }
 }
 
-export type Declaration = ClassDeclaration;
+export type Declaration = ClassDeclaration | VariableDeclaration;
+
+export interface VariableDeclarationInit {
+  name: string;
+  node: ts.VariableDeclaration;
+  type: Type | undefined;
+}
+
+export class VariableDeclaration {
+  readonly name: string;
+  readonly node: ts.VariableDeclaration;
+  readonly type: Type | undefined;
+  constructor(init: VariableDeclarationInit) {
+    this.name = init.name;
+    this.node = init.node;
+    this.type = init.type;
+  }
+}
 
 export interface ClassDeclarationInit {
   name: string | undefined;
@@ -115,9 +132,7 @@ export interface ReactiveProperty {
   name: string;
   node: ts.PropertyDeclaration;
 
-  // TODO(justinfagnani): where do we convert this to a type string and CEM type references?
-  type: ts.Type;
-  typeString: string;
+  type: Type;
 
   reflect: boolean;
 
@@ -146,16 +161,17 @@ export interface ReactiveProperty {
 export interface Event {
   name: string;
   description: string | undefined;
-  typeString: string | undefined;
-  // TODO(justinfagnani): store a type reference too
-  // https://github.com/lit/lit/issues/2850
+  type: Type | undefined;
 }
 
 // TODO(justinfagnani): Move helpers into a Lit-specific module
 export const isLitElementDeclaration = (
-  dec: ClassDeclaration
+  dec: Declaration
 ): dec is LitElementDeclaration => {
-  return (dec as LitElementDeclaration).isLitElement;
+  return (
+    dec instanceof ClassDeclaration &&
+    (dec as LitElementDeclaration).isLitElement
+  );
 };
 
 export interface LitModule {
@@ -175,4 +191,70 @@ export const getLitModules = (analysis: Package) => {
     }
   }
   return modules;
+};
+
+export interface ReferenceInit {
+  name: string;
+  package?: string;
+  module?: string;
+  isGlobal?: boolean;
+}
+
+export class Reference {
+  readonly name: string;
+  readonly package: string | undefined;
+  readonly module: string | undefined;
+  readonly isGlobal: boolean;
+  constructor(init: ReferenceInit) {
+    this.name = init.name;
+    this.package = init.package;
+    this.module = init.module;
+    this.isGlobal = init.isGlobal ?? false;
+  }
+
+  get moduleSpecifier() {
+    const separator = this.package && this.module ? '/' : '';
+    return this.isGlobal
+      ? undefined
+      : (this.package || '') + separator + (this.module || '');
+  }
+}
+
+export class Type {
+  type: ts.Type;
+  text: string;
+  references: Reference[];
+
+  constructor(type: ts.Type, text: string, references: Reference[]) {
+    this.type = type;
+    this.text = text;
+    this.references = references;
+  }
+}
+
+/**
+ * Returns a deduped / coalesced string of import statements required to load
+ * the given references.
+ * TODO(kschaaf): Probably want to accept info about existing imports to dedupe
+ * with.
+ */
+export const getImportsStringForReferences = (references: Reference[]) => {
+  const modules = new Map<string, Set<string>>();
+  for (const {moduleSpecifier, name, isGlobal} of references) {
+    if (!isGlobal) {
+      let namesForModule = modules.get(moduleSpecifier!);
+      if (namesForModule === undefined) {
+        modules.set(moduleSpecifier!, (namesForModule = new Set()));
+      }
+      namesForModule.add(name);
+    }
+  }
+  return Array.from(modules)
+    .map(
+      ([moduleSpecifier, namesForModule]) =>
+        `import {${Array.from(namesForModule).join(
+          ', '
+        )}} from '${moduleSpecifier}';`
+    )
+    .join('\n');
 };

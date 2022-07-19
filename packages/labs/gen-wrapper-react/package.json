@@ -60,13 +60,10 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
-    "tests": "0.0.0"
+    "@lit-internal/tests": "0.0.0"
   },
   "devDependencies": {
-    "@types/node": "^17.0.31",
-    "tests": "^0.0.0",
-    "typescript": "~4.6.2",
-    "uvu": "^0.5.3"
+    "@lit-internal/tests": "^0.0.0"
   },
   "engines": {
     "node": ">=14.8.0"

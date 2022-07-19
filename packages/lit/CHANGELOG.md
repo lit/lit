@@ -1,5 +1,17 @@
 # Change Log
 
+## 2.2.7
+
+### Patch Changes
+
+- [#2978](https://github.com/lit/lit/pull/2978) [`634d4560`](https://github.com/lit/lit/commit/634d45601b1d13be6d21fce725ece6abb9b3ee71) - Changed the caching behavior of the css`` template literal tag so that same-text styles do not share a CSSStyleSheet. Note that this may be a breaking change in some very unusual scenarios on Chromium and Firefox > 101 only.
+
+## 2.2.6
+
+### Patch Changes
+
+- [#2849](https://github.com/lit/lit/pull/2849) [`b12e8d93`](https://github.com/lit/lit/commit/b12e8d93fb4a45b1a16e37716ac6e0a684d5e220) - Expand documentation for `render` and `TemplateResult`.
+
 ## 2.2.5
 
 ### Patch Changes

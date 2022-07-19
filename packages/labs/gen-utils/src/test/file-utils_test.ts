@@ -7,7 +7,7 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {FilesystemTestRig} from 'tests/utils/filesystem-test-rig.js';
+import {FilesystemTestRig} from '@lit-internal/tests/utils/filesystem-test-rig.js';
 import {writeFileTree} from '../lib/file-utils.js';
 
 const writeFileTreeTest = suite<{tempFs: FilesystemTestRig}>('writeFileTree');

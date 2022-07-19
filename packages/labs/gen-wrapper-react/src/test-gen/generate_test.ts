@@ -18,7 +18,7 @@ import {
 } from '@lit-labs/gen-utils/lib/package-utils.js';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateReactWrapper} from '../index.js';
-import {assertGoldensMatch} from 'tests/utils/assert-goldens.js';
+import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
@@ -49,6 +49,15 @@ test('basic wrapper generation', async () => {
     [`@lit-internal/${project}`]: inputPackage,
     '@lit-labs/react': '../react',
   });
+
+  // The version of @types/react might conflict with the one installed to the
+  // top-level of our monorepo. By default, TypeScript will load all
+  // node_modules/@types/* packages for all parent directories. By setting
+  // typeRoots here, we ensure it only loads the immediate ones.
+  const tsConfigPath = path.join(outputPackage, 'tsconfig.json');
+  const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'));
+  tsConfig.compilerOptions.typeRoots = ['./node_modules/@types'];
+  fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf8');
 
   await buildPackage(outputPackage);
 

@@ -12,7 +12,7 @@ import {
 import {
   ResizeController,
   ResizeControllerConfig,
-} from '../resize_controller.js';
+} from '@lit-labs/observers/resize_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

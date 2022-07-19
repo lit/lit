@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as litHtml1 from '../../lit-html.js';
-import * as directive1 from '../../directive.js';
-import * as asyncDirective1 from '../../async-directive.js';
-import * as repeat1 from '../../directives/repeat.js';
+import * as litHtml1 from 'lit-html';
+import * as directive1 from 'lit-html/directive.js';
+import * as asyncDirective1 from 'lit-html/async-directive.js';
+import * as repeat1 from 'lit-html/directives/repeat.js';
 
-import * as litHtml2 from '../../version-stability-build/lit-html.js';
-import * as directive2 from '../../version-stability-build/directive.js';
-import * as asyncDirective2 from '../../version-stability-build/async-directive.js';
-import * as repeat2 from '../../version-stability-build/directives/repeat.js';
+import * as litHtml2 from 'lit-html/version-stability-build/lit-html.js';
+import * as directive2 from 'lit-html/version-stability-build/directive.js';
+import * as asyncDirective2 from 'lit-html/version-stability-build/async-directive.js';
+import * as repeat2 from 'lit-html/version-stability-build/directives/repeat.js';
 
-import {stripExpressionComments} from '../../development/test/test-utils/strip-markers.js';
+import {stripExpressionComments} from 'lit-html/development/test/test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
 
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));

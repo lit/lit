@@ -4,7 +4,6 @@
 ############################################
 
 node_modules/
-lerna-debug.log
 *.tgz
 *.tsbuildinfo
 .DS_Store
@@ -114,10 +113,6 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 packages/tests/utils/
-packages/tests/**/rollup-resolve-remap.js
-packages/tests/**/rollup-resolve-remap.js.map
-packages/tests/**/rollup-resolve-remap.d.ts
-packages/tests/**/rollup-resolve-remap.d.ts.map
 packages/tests/**/run-web-tests.js
 packages/tests/**/run-web-tests.js.map
 packages/tests/**/run-web-tests.d.ts
@@ -126,10 +121,6 @@ packages/tests/**/web-test-runner.config.js
 packages/tests/**/web-test-runner.config.js.map
 packages/tests/**/web-test-runner.config.d.ts
 packages/tests/**/web-test-runner.config.d.ts.map
-packages/tests/**/wtr-config.js
-packages/tests/**/wtr-config.js.map
-packages/tests/**/wtr-config.d.ts
-packages/tests/**/wtr-config.d.ts.map
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map
@@ -262,6 +253,37 @@ packages/labs/task/test/
 packages/labs/task/node_modules/
 packages/labs/task/index.*
 packages/labs/task/task.*
+packages/labs/testing/index.*
+packages/labs/testing/fixtures.*
+packages/labs/testing/web-test-runner-ssr-plugin.*
+packages/labs/testing/lib
+packages/labs/testing/test
+
+packages/labs/virtualizer/layouts/
+packages/labs/virtualizer/polyfillLoaders/
+packages/labs/virtualizer/polyfills/
+packages/labs/virtualizer/lit-virtualizer.js
+packages/labs/virtualizer/lit-virtualizer.d.ts
+packages/labs/virtualizer/lit-virtualizer.d.ts.map
+packages/labs/virtualizer/lit-virtualizer.js.map
+packages/labs/virtualizer/Virtualizer.js
+packages/labs/virtualizer/Virtualizer.d.ts
+packages/labs/virtualizer/Virtualizer.d.ts.map
+packages/labs/virtualizer/Virtualizer.js.map
+packages/labs/virtualizer/virtualize.js
+packages/labs/virtualizer/virtualize.d.ts
+packages/labs/virtualizer/virtualize.d.ts.map
+packages/labs/virtualizer/virtualize.js.map
+packages/labs/virtualizer/LitVirtualizer.js
+packages/labs/virtualizer/LitVirtualizer.d.ts
+packages/labs/virtualizer/LitVirtualizer.d.ts.map
+packages/labs/virtualizer/LitVirtualizer.js.map
+packages/labs/virtualizer/test/**/*.d.ts
+packages/labs/virtualizer/test/**/*.d.ts.map
+packages/labs/virtualizer/test/**/*.js
+packages/labs/virtualizer/test/**/*.js.map
+packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
+
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/
 packages/labs/vue-utils/node_modules/

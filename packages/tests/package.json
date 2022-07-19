@@ -1,5 +1,5 @@
 {
-  "name": "tests",
+  "name": "@lit-internal/tests",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,20 +8,13 @@
     "test": "wireit"
   },
   "devDependencies": {
-    "@types/node": "^16.7.8",
     "@types/prettier": "^2.0.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
-    "@web/dev-server-legacy": "^0.1.7",
-    "@web/dev-server-rollup": "^0.3.13",
-    "@web/test-runner": "^0.13.22",
-    "@web/test-runner-playwright": "^0.8.8",
-    "@web/test-runner-saucelabs": "^0.8.0",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "diff": "^5.0.0",
-    "dir-compare": "^3.1.5",
-    "prettier": "^2.3.2",
-    "uvu": "^0.5.1"
+    "dir-compare": "^4.0.0",
+    "prettier": "^2.3.2"
   },
   "wireit": {
     "build": {
@@ -32,10 +25,8 @@
       ],
       "output": [
         "utils",
-        "rollup-resolve-remap.{js,js.map}",
         "run-web-tests.{js,js.map}",
         "web-test-runner.config.{js,js.map}",
-        "wtr-config.{js,js.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
@@ -43,8 +34,21 @@
     "test": {
       "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
       "dependencies": [
-        "build"
-      ]
+        "build",
+        "../labs/context:build",
+        "../labs/motion:build",
+        "../labs/observers:build",
+        "../labs/react:build",
+        "../labs/router:build",
+        "../labs/scoped-registry-mixin:build",
+        "../labs/task:build",
+        "../lit-element:build",
+        "../lit-html:build",
+        "../lit:build",
+        "../reactive-element:build"
+      ],
+      "files": [],
+      "output": []
     }
   }
 }

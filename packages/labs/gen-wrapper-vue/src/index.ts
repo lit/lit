@@ -18,6 +18,17 @@ import {tsconfigNodeTemplate} from './lib/tsconfig.node-template.js';
 import {viteConfigTemplate} from './lib/vite.config-template.js';
 import {renameTemplate} from './lib/rename-template.js';
 
+export const getCommand = () => {
+  return {
+    name: 'vue',
+    description: 'Generate Vue wrapper components from Lit elements',
+    kind: 'resolved',
+    async generate(options: {analysis: Package}): Promise<FileTree> {
+      return generateVueWrapper(options.analysis);
+    },
+  };
+};
+
 export const generateVueWrapper = async (
   analysis: Package
 ): Promise<FileTree> => {
