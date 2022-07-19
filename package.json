@@ -106,6 +106,14 @@
         "hack integrates it into the overall build with correct ordering."
       ],
       "command": "cd packages/lit-starter-ts && npm run build",
+      "files": [
+        "./packages/lit-starter-ts/tsconfig.json",
+        "./packages/lit-starter-ts/src/**/*.ts"
+      ],
+      "output": [
+        "./packages/lit-starter-ts/my-element.{js,js.map,d.ts,d.ts.map}",
+        "./packages/lit-starter-ts/test/"
+      ],
       "dependencies": [
         "./packages/lit:build:ts:types"
       ]
@@ -134,14 +142,22 @@
       "command": "cd packages/lit-starter-js && npm test",
       "dependencies": [
         "./packages/lit:build"
-      ]
+      ],
+      "files": [
+        "./packages/lit-starter-js/web-test-runner.config.js"
+      ],
+      "output": []
     },
     "test:lit-starter-ts": {
       "command": "cd packages/lit-starter-ts && npm test",
       "dependencies": [
         "build:lit-starter-ts",
         "./packages/lit:build"
-      ]
+      ],
+      "files": [
+        "./packages/lit-starter-ts/web-test-runner.config.js"
+      ],
+      "output": []
     },
     "test:windows": {
       "dependencies": [
