@@ -119,6 +119,7 @@ packages/localize-tools/testdata/*/output/
 
 packages/reactive-element/decorators/
 packages/reactive-element/development/
+packages/reactive-element/node/
 packages/reactive-element/test/
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
