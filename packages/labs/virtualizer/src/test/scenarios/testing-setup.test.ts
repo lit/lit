@@ -24,6 +24,23 @@ describe('justText', () => {
   });
 });
 
+describe('justText', () => {
+  it('strips tags', () => {
+    expect(justText('<span>some text</span>')).to.equal('some text');
+  });
+  it('squeezes and trims white space', () => {
+    expect(
+      justText(`
+      this
+        will
+          all
+            be  on
+              one    line.
+    `)
+    ).to.equal('this will all be on one line.');
+  });
+});
+
 describe('until', () => {
   it('resolves when condition is met', async () => {
     let condition = false;
