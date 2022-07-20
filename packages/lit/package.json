@@ -294,5 +294,6 @@
     "rollup": "^2.70.2",
     "tslib": "^2.0.3"
   },
-  "typings": "index.d.ts"
+  "typings": "index.d.ts",
+  "customElements": "custom-elements.json"
 }

@@ -17,20 +17,54 @@
   "type": "module",
   "scripts": {
     "build": "wireit",
+    "build:esm": "wireit",
+    "build:cjs": "wireit",
     "test": "wireit"
+  },
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./cjs/index.js"
+    },
+    "./": {
+      "import": "./",
+      "require": "./cjs/"
+    }
   },
   "wireit": {
     "build": {
+      "dependencies": [
+        "build:esm",
+        "build:cjs"
+      ]
+    },
+    "build:esm": {
       "command": "tsc --build --pretty",
       "files": [
         "src/**/*.ts",
-        "tsconfig.json"
+        "tsconfig.json",
+        "tsconfig.cjs.json"
       ],
       "output": [
         "lib",
         "test",
+        "cjs",
         "index.{js,js.map,d.ts,d.ts.map}",
-        "tsconfig.tsbuildinfo"
+        "tsconfig.tsbuildinfo",
+        "tsconfig.cjs.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "build:cjs": {
+      "command": "tsc --project tsconfig.cjs.json --pretty && echo '{\"type\": \"commonjs\"}' > cjs/package.json",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json",
+        "tsconfig.cjs.json"
+      ],
+      "output": [
+        "cjs",
+        "tsconfig.cjs.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
     },

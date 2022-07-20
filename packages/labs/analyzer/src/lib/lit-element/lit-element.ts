@@ -23,6 +23,7 @@ import {getProperties} from './properties.js';
  */
 export const getLitElementDeclaration = (
   declaration: LitClassDeclaration,
+  isMixinClass: boolean,
   context: AnalyzerContext
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
@@ -31,7 +32,7 @@ export const getLitElementDeclaration = (
     node: declaration,
     reactiveProperties: getProperties(declaration, context),
     events: getEvents(declaration, context),
-    getHeritage: () => getHeritage(declaration, context),
+    getHeritage: () => getHeritage(declaration, isMixinClass, context),
   });
 };
 

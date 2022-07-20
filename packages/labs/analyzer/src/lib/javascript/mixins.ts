@@ -169,7 +169,7 @@ export const maybeGetMixinFromFunctionLike = (
     node: fn,
     name: name.getText(),
     superClassArgIdx,
-    classDeclaration: getClassDeclaration(classDeclaration, context),
+    classDeclaration: getClassDeclaration(classDeclaration, true, context),
   });
 };
 

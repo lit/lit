@@ -1,0 +1,63 @@
+{
+  "name": "@lit-labs/tsserver-plugin",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A TypeScript Language Server Plugin for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/tsserver-plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/eslint-plugin-ts-lit"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test \"_test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "test-files/"
+      ],
+      "output": []
+    }
+  },
+  "files": [
+    "/src/",
+    "!/src/test/",
+    "/lib/",
+    "!/lib/.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.2.0",
+    "source-map-support": "^0.5.21",
+    "typescript": "~4.7.4"
+  },
+  "devDependencies": {
+    "@types/node": "^16.7.8",
+    "uvu": "^0.5.1"
+  }
+}

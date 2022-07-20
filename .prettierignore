@@ -137,6 +137,7 @@ packages/ts-transformers/internal/
 packages/ts-transformers/tests/
 packages/labs/analyzer/lib/
 packages/labs/analyzer/test/
+packages/labs/analyzer/cjs/
 
 packages/labs/analyzer/**/index.js
 packages/labs/analyzer/**/index.js.map
@@ -266,6 +267,14 @@ packages/labs/testing/fixtures.*
 packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test
+
+packages/labs/tsserver-plugin/lib/
+packages/labs/tsserver-plugin/test/
+
+packages/labs/tsserver-plugin/**/index.js
+packages/labs/tsserver-plugin/**/index.js.map
+packages/labs/tsserver-plugin/**/index.d.ts
+packages/labs/tsserver-plugin/**/index.d.ts.map
 
 packages/labs/virtualizer/layouts/
 packages/labs/virtualizer/polyfillLoaders/

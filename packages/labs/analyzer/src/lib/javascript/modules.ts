@@ -129,7 +129,9 @@ export const getModule = (
             `Internal error: Expected name for statmeent`
           );
         }
-        declarationMap.set(name, () => getClassDeclaration(statement, context));
+        declarationMap.set(name, () =>
+          getClassDeclaration(statement, false, context)
+        );
       } else if (ts.isVariableStatement(statement)) {
         for (const [
           name,

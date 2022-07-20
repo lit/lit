@@ -28,15 +28,16 @@ import {getReferenceForIdentifier} from '../references.js';
 
 export const getClassDeclaration = (
   declaration: ts.ClassLikeDeclarationBase,
+  isMixinClass: boolean,
   context: AnalyzerContext
 ): ClassDeclaration => {
   if (isLitElement(declaration, context)) {
-    return getLitElementDeclaration(declaration, context);
+    return getLitElementDeclaration(declaration, isMixinClass, context);
   } else {
     return new ClassDeclaration({
       name: declaration.name?.text,
       node: declaration,
-      getHeritage: () => getHeritage(declaration, context),
+      getHeritage: () => getHeritage(declaration, isMixinClass, context),
     });
   }
 };
@@ -46,6 +47,7 @@ export const getClassDeclaration = (
  */
 export const getHeritage = (
   declaration: ts.ClassLikeDeclarationBase,
+  isMixinClass: boolean,
   context: AnalyzerContext
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
@@ -60,6 +62,7 @@ export const getHeritage = (
     }
     return getHeritageFromExpression(
       extendsClause.types[0].expression,
+      isMixinClass,
       context
     );
   }
@@ -71,11 +74,13 @@ export const getHeritage = (
 
 export const getHeritageFromExpression = (
   expression: ts.Expression,
+  isMixinClass: boolean,
   context: AnalyzerContext
 ): ClassHeritage => {
   const mixins: Reference<MixinDeclaration>[] = [];
+  const superClass = getSuperClassAndMixins(expression, mixins, context);
   return {
-    superClass: getSuperClassAndMixins(expression, mixins, context),
+    superClass: isMixinClass ? undefined : superClass,
     mixins,
   };
 };
@@ -125,7 +130,7 @@ export const maybeGetAppliedMixin = (
   context: AnalyzerContext
 ): ClassDeclaration | undefined => {
   if (ts.isCallExpression(expression)) {
-    const heritage = getHeritageFromExpression(expression, context);
+    const heritage = getHeritageFromExpression(expression, false, context);
     if (heritage.superClass) {
       return new ClassDeclaration({
         name: identifier.text,

@@ -20,7 +20,7 @@ const getSourceFileFromSpecifier = (
   let sourceFilePath = ts.resolveModuleName(
     moduleSpecifier,
     sourceFile.fileName,
-    {...context.commandLine.options, preserveSymlinks: true},
+    context.commandLine.options,
     context.fs
   ).resolvedModule?.resolvedFileName;
   if (sourceFilePath !== undefined) {

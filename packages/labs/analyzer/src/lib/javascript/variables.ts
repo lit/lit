@@ -37,7 +37,7 @@ export const getVariableDeclarations = (
         ) {
           return getFunctionDeclaration(initializer, name, context);
         } else if (ts.isClassExpression(initializer)) {
-          return getClassDeclaration(initializer, context);
+          return getClassDeclaration(initializer, false, context);
         } else {
           const classDec = maybeGetAppliedMixin(initializer, name, context);
           if (classDec !== undefined) {
