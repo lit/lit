@@ -12,7 +12,7 @@ import {
 import {
   PerformanceController,
   PerformanceControllerConfig,
-} from '../performance_controller.js';
+} from '@lit-labs/observers/performance_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

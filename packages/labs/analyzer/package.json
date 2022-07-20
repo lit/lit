@@ -91,11 +91,9 @@
     "typescript": "~4.7.4"
   },
   "devDependencies": {
-    "@types/node": "^16.7.8",
     "lit": "^2.0.0",
     "lit-analyzer-test-files": "./test-files/basic-elements/",
     "package-json-type": "^1.0.3",
-    "custom-elements-manifest": "webcomponents/custom-elements-manifest#f893b20",
-    "uvu": "^0.5.1"
+    "custom-elements-manifest": "webcomponents/custom-elements-manifest#f893b20"
   }
 }

@@ -17,7 +17,7 @@ import {
   SanitizerFactory,
   Part,
   CompiledTemplate,
-} from '../lit-html.js';
+} from 'lit-html';
 
 import {
   directive,
@@ -25,20 +25,20 @@ import {
   PartType,
   PartInfo,
   DirectiveParameters,
-} from '../directive.js';
+} from 'lit-html/directive.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
 } from './test-utils/strip-markers.js';
-import {repeat} from '../directives/repeat.js';
-import {AsyncDirective} from '../async-directive.js';
+import {repeat} from 'lit-html/directives/repeat.js';
+import {AsyncDirective} from 'lit-html/async-directive.js';
 
-import {createRef, ref} from '../directives/ref.js';
+import {createRef, ref} from 'lit-html/directives/ref.js';
 
 // For compiled template tests
-import {_$LH} from '../private-ssr-support.js';
-import {until} from '../directives/until.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
+import {until} from 'lit-html/directives/until.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;

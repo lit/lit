@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {asyncAppend} from '../../directives/async-append.js';
-import {render, html, nothing} from '../../lit-html.js';
+import {asyncAppend} from 'lit-html/directives/async-append.js';
+import {render, html, nothing} from 'lit-html';
 import {TestAsyncIterable} from './test-async-iterable.js';
 import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
