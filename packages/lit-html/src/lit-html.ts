@@ -10,6 +10,8 @@ import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
+const NODE_MODE = false;
+const global = NODE_MODE ? globalThis : window;
 
 /**
  * Contains types that are part of the unstable debug API.
@@ -190,12 +192,12 @@ interface DebugLoggingWindow {
  */
 const debugLogEvent = DEV_MODE
   ? (event: LitUnstable.DebugLog.Entry) => {
-      const shouldEmit = (window as unknown as DebugLoggingWindow)
+      const shouldEmit = (global as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (!shouldEmit) {
         return;
       }
-      window.dispatchEvent(
+      global.dispatchEvent(
         new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
           detail: event,
         })
@@ -210,16 +212,16 @@ let debugLogRenderId = 0;
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
-  globalThis.litIssuedWarnings ??= new Set();
+  global.litIssuedWarnings ??= new Set();
 
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
     warning += code
       ? ` See https://lit.dev/msg/${code} for more information.`
       : '';
-    if (!globalThis.litIssuedWarnings!.has(warning)) {
+    if (!global.litIssuedWarnings!.has(warning)) {
       console.warn(warning);
-      globalThis.litIssuedWarnings!.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 
@@ -231,12 +233,12 @@ if (DEV_MODE) {
 
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  global.ShadyDOM?.inUse &&
+  global.ShadyDOM?.noPatch === true
+    ? global.ShadyDOM!.wrap
     : (node: Node) => node;
 
-const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
+const trustedTypes = (global as unknown as Partial<Window>).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -341,7 +343,13 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = document;
+const d = NODE_MODE
+  ? ({
+      createTreeWalker() {
+        return {};
+      },
+    } as unknown as Document)
+  : document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
 const createMarker = (v = '') => d.createComment(v);
@@ -2147,14 +2155,14 @@ export const _$LH = {
 
 // Apply polyfills if available
 const polyfillSupport = DEV_MODE
-  ? window.litHtmlPolyfillSupportDevMode
-  : window.litHtmlPolyfillSupport;
+  ? global.litHtmlPolyfillSupportDevMode
+  : global.litHtmlPolyfillSupport;
 polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.6');
-if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
+(global.litHtmlVersions ??= []).push('2.2.6');
+if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
     `Multiple versions of Lit loaded. ` +
