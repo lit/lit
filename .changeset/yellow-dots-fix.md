@@ -2,4 +2,4 @@
 '@lit-labs/virtualizer': patch
 ---
 
-Changed the update behavior of virtualize directive to match lit-virtualizer's rendering of non-item changes.
+The virtualize directive will now correctly re-render children when data stored outside the items array has changed.
