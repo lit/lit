@@ -88,24 +88,6 @@ export async function until(cond: () => boolean, timeout = 1000) {
 }
 
 /**
- * This solution was inspired to address the issue described in the following links:
- * https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded
- * https://stackoverflow.com/questions/9025095/how-can-i-test-uncaught-errors-in-mocha
- *
- * Before/After parameters are given to the function to ensure there are no user-error
- * cases where teardown is forgotten/skipped.
- */
-export function ignoreBenignErrors(
-  before: Mocha.HookFunction,
-  after: Mocha.HookFunction
-) {
-  ignoreWindowErrors(
-    before,
-    after,
-    /ResizeObserver loop limit exceeded|ResizeObserver loop completed with undelivered notifications/
-  );
-}
-/**
  * Sets up the window.onerror handler to ignore uncaught exceptions which match the regexp.
  */
 export function ignoreWindowErrors(

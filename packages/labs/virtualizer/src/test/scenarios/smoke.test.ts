@@ -4,15 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, justText, until} from '../helpers.js';
+import {justText, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {render} from 'lit';
 import {virtualize} from '../../virtualize.js';
 import {expect, fixture, html} from '@open-wc/testing';
 
 describe('smoke test', () => {
-  ignoreBenignErrors(beforeEach, afterEach);
-
   describe('<lit-virtualizer>', function () {
     it('registers lit-virtualizer as a custom element', async () => {
       const lvs = document.createElement('lit-virtualizer');

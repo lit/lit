@@ -772,22 +772,25 @@ export class Virtualizer {
   // end up here if one or more children change size independently of
   // the virtualizer update cycle.
   private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
-    // Only measure if the layout requires it
-    if (this._layout!.measureChildren) {
-      for (const change of changes) {
-        this._toBeMeasured.set(
-          change.target as HTMLElement,
-          change.contentRect
-        );
+    // avoids ResizeObserver loop warnings
+    requestAnimationFrame(() => {
+      // Only measure if the layout requires it
+      if (this._layout!.measureChildren) {
+        for (const change of changes) {
+          this._toBeMeasured.set(
+            change.target as HTMLElement,
+            change.contentRect
+          );
+        }
+        this._measureChildren();
       }
-      this._measureChildren();
-    }
-    // If this is the end of an update cycle, we need to reset some
-    // internal state. This should be a harmless no-op if we're handling
-    // an out-of-cycle ResizeObserver callback, so we don't need to
-    // distinguish between the two cases.
-    this._itemsChanged = false;
-    this._rangeChanged = false;
+      // If this is the end of an update cycle, we need to reset some
+      // internal state. This should be a harmless no-op if we're handling
+      // an out-of-cycle ResizeObserver callback, so we don't need to
+      // distinguish between the two cases.
+      this._itemsChanged = false;
+      this._rangeChanged = false;
+    });
   }
 }
 

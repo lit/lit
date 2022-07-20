@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, justText, until} from '../helpers.js';
+import {justText, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {virtualize} from '../../virtualize.js';
 import {css, LitElement} from 'lit';
@@ -66,8 +66,6 @@ describe('test fixture classes', () => {
 });
 
 describe('lit-virtualizer and virtualize directive', () => {
-  ignoreBenignErrors(beforeEach, afterEach);
-
   /**
    * Regression test to cover the difference in behavior which led
    * to this issue: https://github.com/lit/lit/issues/3052
