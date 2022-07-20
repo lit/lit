@@ -68,6 +68,10 @@ describe('test fixture classes', () => {
 describe('lit-virtualizer and virtualize directive', () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
+  /**
+   * Regression test to cover the difference in behavior which led
+   * to this issue: https://github.com/lit/lit/issues/3052
+   */
   it('both render changes based on non-item data changes', async () => {
     const items: Array<number> = Array.from(Array(100).keys());
     const selected = new Set([2, 5]);

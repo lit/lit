@@ -104,7 +104,6 @@ class VirtualizeDirective<T> extends AsyncDirective {
       this.cachedConfig = config;
     }
     return this.render();
-    // super.update(part, [config]);
   }
 
   _updateVirtualizerConfig(config: VirtualizeDirectiveConfig<T>) {

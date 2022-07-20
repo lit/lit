@@ -15,6 +15,11 @@ describe('smoke test', () => {
 
   describe('<lit-virtualizer>', function () {
     it('registers lit-virtualizer as a custom element', async () => {
+      const lvs = document.createElement('lit-virtualizer');
+      expect(lvs).to.be.instanceOf(LitVirtualizer);
+    });
+
+    it('renders its items in light DOM', async () => {
       const items = [1, 2, 3];
       const lvs = await fixture(html`
         <lit-virtualizer
@@ -22,7 +27,6 @@ describe('smoke test', () => {
           .renderItem=${(i: number) => html`<span>number ${i}</span>`}
         ></lit-virtualizer>
       `);
-      expect(lvs).to.be.instanceOf(LitVirtualizer);
 
       await until(() => justText(lvs.innerHTML).includes('number 3'));
 
