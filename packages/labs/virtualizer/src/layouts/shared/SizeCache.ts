@@ -4,12 +4,12 @@ export interface SizeCacheConfig {
 
 export class SizeCache {
   private _map: Map<number | string, number> = new Map();
-  private _roundAverageSize = true;
+  private _roundAverageSize = false;
   totalSize = 0;
 
   constructor(config?: SizeCacheConfig) {
-    if (config?.roundAverageSize === false) {
-      this._roundAverageSize = false;
+    if (config?.roundAverageSize === true) {
+      this._roundAverageSize = true;
     }
   }
 

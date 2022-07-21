@@ -67,7 +67,7 @@ describe('RangeChanged event', () => {
       virtualizerEvents.push(e as RangeChangedEvent);
     });
 
-    virtualizer.scrollToIndex(500);
+    virtualizer.scrollElementIntoView({index: 500});
 
     await until(() => virtualizerEvents.length === 1);
 
