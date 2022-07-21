@@ -6,7 +6,7 @@
   "configurations": [
     {
       "type": "node",
-      "runtimeVersion": "14.4.0",
+      "runtimeVersion": "16.15.0",
       "request": "launch",
       "name": "Test: Integration (debug)",
       "skipFiles": ["<node_internals>/**"],
@@ -22,18 +22,18 @@
     },
     {
       "type": "node",
-      "runtimeVersion": "14.4.0",
+      "runtimeVersion": "16.15.0",
       "request": "launch",
       "name": "Test: Unit (debug)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/test/all-tests.js",
-      "args": ["--debug"],
       "outFiles": ["${workspaceFolder}/./**/*.js"],
-      "runtimeArgs": ["--experimental-vm-modules"]
+      "runtimeArgs": ["--experimental-vm-modules"],
+      "console": "integratedTerminal",
     },
     {
       "type": "node",
-      "runtimeVersion": "14.4.0",
+      "runtimeVersion": "16.15.0",
       "request": "launch",
       "name": "Demo Server",
       "skipFiles": ["<node_internals>/**"],

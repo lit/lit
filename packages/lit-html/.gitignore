@@ -8,6 +8,7 @@
 /directive.*
 /directive-helpers.*
 /async-directive.*
+/part-types.*
 /polyfill-support.*
 /private-ssr-support.*
 /static.*

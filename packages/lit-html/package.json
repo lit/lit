@@ -138,6 +138,10 @@
       "development": "./development/experimental-hydrate.js",
       "default": "./experimental-hydrate.js"
     },
+    "./part-types.js": {
+      "development": "./development/part-types.js",
+      "default": "./part-types.js"
+    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "development": "./development/polyfill-support.js",
@@ -173,6 +177,7 @@
     "/directive.{d.ts,d.ts.map,js,js.map}",
     "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
     "/lit-html.{d.ts,d.ts.map,js,js.map}",
+    "/part-types.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
     "/static.{d.ts,d.ts.map,js,js.map}",
@@ -233,6 +238,7 @@
         "directive.js{,.map}",
         "experimental-hydrate.js{,.map}",
         "lit-html.js{,.map}",
+        "part-types.js{,.map}",
         "polyfill-support.js{,.map}",
         "private-ssr-support.js{,.map}",
         "static.js{,.map}",

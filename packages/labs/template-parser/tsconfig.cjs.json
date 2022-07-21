@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "./cjs",
+    "tsBuildInfoFile": "tsconfig.cjs.tsbuildinfo"
+  },
+  "exclude": ["src/test"]
+}

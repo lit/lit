@@ -19,9 +19,6 @@ import {isTemplateResult, getDirectiveClass} from 'lit/directive-helpers.js';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
-  getTemplateHtml,
-  marker,
-  markerMatch,
   boundAttributeSuffix,
   overrideDirectiveResolve,
   setDirectiveClass,
@@ -44,23 +41,16 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {
-  traverse,
-  parseFragment,
-  isCommentNode,
-  isElement,
-} from './util/parse5-utils.js';
-
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+import {
+  parseTemplateResult,
+  hasChildPart,
+  hasAttributePart,
+  isElement,
+} from '@lit-labs/template-parser/index.js';
 
 import {LitElementRenderer} from './lit-element-renderer.js';
-
-declare module 'parse5' {
-  interface Element {
-    isDefinedCustomElement?: boolean;
-  }
-}
 
 const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
   new Map();
@@ -271,32 +261,15 @@ type Op =
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
 const getTemplateOpcodes = (result: TemplateResult) => {
-  const template = templateCache.get(result.strings);
-  if (template !== undefined) {
-    return template;
+  const opcodes = templateCache.get(result.strings);
+  if (opcodes !== undefined) {
+    return opcodes;
   }
-  // The property '_$litType$' needs to remain unminified.
-  const [html, attrNames] = getTemplateHtml(
-    result.strings,
-    result['_$litType$']
-  );
-
-  /**
-   * The html string is parsed into a parse5 AST with source code information
-   * on; this lets us skip over certain ast nodes by string character position
-   * while walking the AST.
-   */
-  const ast = parseFragment(String(html), {
-    sourceCodeLocationInfo: true,
-  });
 
   const ops: Array<Op> = [];
 
   /* The last offset of html written to the stream */
   let lastOffset: number | undefined = 0;
-
-  /* Current attribute part index, for indexing attrNames */
-  let attrIndex = 0;
 
   /**
    * Sets `lastOffset` to `offset`, skipping a range of characters. This is
@@ -337,7 +310,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * Creates or appends to a text opcode with a substring of the html from the
    * `lastOffset` flushed to `offset`.
    */
-  const flushTo = (offset?: number) => {
+  const flushTo = (html: string, offset?: number) => {
     if (lastOffset === undefined) {
       throw new Error('lastOffset is undefined');
     }
@@ -347,24 +320,17 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     flush(value);
   };
 
-  // Depth-first node index, counting only comment and element nodes, to match
-  // client-side lit-html.
-  let nodeIndex = 0;
-
-  traverse(ast, {
-    pre(node, parent) {
-      if (isCommentNode(node)) {
-        if (node.data === markerMatch) {
-          flushTo(node.sourceCodeLocation!.startOffset);
-          skipTo(node.sourceCodeLocation!.endOffset);
-          ops.push({
-            type: 'child-part',
-            index: nodeIndex,
-            useCustomElementInstance:
-              parent && isElement(parent) && parent.isDefinedCustomElement,
-          });
-        }
-        nodeIndex++;
+  const {html} = parseTemplateResult(result, {
+    pre(node, parent, html) {
+      if (hasChildPart(node)) {
+        flushTo(html, node.sourceCodeLocation!.startOffset);
+        skipTo(node.sourceCodeLocation!.endOffset);
+        ops.push({
+          type: 'child-part',
+          index: node.litNodeIndex,
+          useCustomElementInstance:
+            parent && isElement(parent) && parent.isDefinedCustomElement,
+        });
       } else if (isElement(node)) {
         // Whether to flush the start tag. This is necessary if we're changing
         // any of the attributes in the tag, so it's true for custom-elements
@@ -398,48 +364,38 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         }
         if (node.attrs.length > 0) {
           for (const attr of node.attrs) {
-            const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
-            const isElementBinding = attr.name.startsWith(marker);
-            if (isAttrBinding || isElementBinding) {
+            if (hasAttributePart(attr)) {
+              const {
+                litPart: {type, name, strings},
+              } = attr;
               writeTag = true;
               boundAttributesCount += 1;
-              // Note that although we emit a lit-node comment marker for any
-              // nodes with bindings, we don't account for it in the nodeIndex because
-              // that will not be injected into the client template
-              const strings = attr.value.split(marker);
-              // We store the case-sensitive name from `attrNames` (generated
-              // while parsing the template strings); note that this assumes
-              // parse5 attribute ordering matches string ordering
-              const name = attrNames[attrIndex++];
               const attrSourceLocation =
                 node.sourceCodeLocation!.attrs![attr.name]!;
               const attrNameStartOffset = attrSourceLocation.startOffset;
               const attrEndOffset = attrSourceLocation.endOffset;
-              flushTo(attrNameStartOffset);
-              if (isAttrBinding) {
-                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
-                  name as string
-                )!;
+              flushTo(html, attrNameStartOffset);
+              if (attr.litPart.type === PartType.ELEMENT) {
+                ops.push({
+                  type: 'element-part',
+                  index: node.litNodeIndex,
+                });
+              } else {
                 ops.push({
                   type: 'attribute-part',
-                  index: nodeIndex,
-                  name: caseSensitiveName,
+                  index: node.litNodeIndex,
+                  name: name!,
                   ctor:
-                    prefix === '.'
+                    type === PartType.PROPERTY
                       ? PropertyPart
-                      : prefix === '?'
+                      : type === PartType.BOOLEAN_ATTRIBUTE
                       ? BooleanAttributePart
-                      : prefix === '@'
+                      : type === PartType.EVENT
                       ? EventPart
                       : AttributePart,
                   strings,
                   tagName: tagName.toUpperCase(),
                   useCustomElementInstance: ctor !== undefined,
-                });
-              } else {
-                ops.push({
-                  type: 'element-part',
-                  index: nodeIndex,
                 });
               }
               skipTo(attrEndOffset);
@@ -451,7 +407,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               // skip over static attribute text here.
               const attrSourceLocation =
                 node.sourceCodeLocation!.attrs![attr.name]!;
-              flushTo(attrSourceLocation.startOffset);
+              flushTo(html, attrSourceLocation.startOffset);
               skipTo(attrSourceLocation.endOffset);
             }
           }
@@ -459,19 +415,19 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 
         if (writeTag) {
           if (node.isDefinedCustomElement) {
-            flushTo(node.sourceCodeLocation!.startTag.endOffset - 1);
+            flushTo(html, node.sourceCodeLocation!.startTag!.endOffset - 1);
             ops.push({
               type: 'custom-element-attributes',
             });
             flush('>');
-            skipTo(node.sourceCodeLocation!.startTag.endOffset);
+            skipTo(node.sourceCodeLocation!.startTag!.endOffset);
           } else {
-            flushTo(node.sourceCodeLocation!.startTag.endOffset);
+            flushTo(html, node.sourceCodeLocation!.startTag!.endOffset);
           }
           ops.push({
             type: 'possible-node-marker',
             boundAttributesCount,
-            nodeIndex,
+            nodeIndex: node.litNodeIndex,
           });
         }
 
@@ -480,7 +436,6 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             type: 'custom-element-shadow',
           });
         }
-        nodeIndex++;
       }
     },
     post(node) {
@@ -492,7 +447,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     },
   });
   // Flush remaining static text in the template (e.g. closing tags)
-  flushTo();
+  flushTo(html);
   templateCache.set(result.strings, ops);
   return ops;
 };

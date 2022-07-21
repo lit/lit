@@ -9,6 +9,7 @@ import {promises as fs} from 'fs';
 import {URL, fileURLToPath, pathToFileURL} from 'url';
 import * as vm from 'vm';
 import resolveAsync from 'resolve';
+import {resolve as resolveExports} from 'resolve.exports';
 import {builtinModules} from 'module';
 
 type PackageJSON = {main?: string; module?: string; 'jsnext:main'?: string};
@@ -286,6 +287,15 @@ export const resolveSpecifier = async (
         packageJson.main =
           packageJson.module ?? packageJson['jsnext:main'] ?? packageJson.main;
         return packageJson;
+      },
+      // Add support for package export conditions to ensure we load the esm version
+      // when differentiated by exports ("import" condition is added by default)
+      pathFilter: (
+        packageJson: PackageJSON,
+        _path: string,
+        relativePath: string
+      ) => {
+        return resolveExports(packageJson, relativePath) ?? relativePath;
       },
     });
     return pathToFileURL(modulePath);

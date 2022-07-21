@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/eslint-plugin-ts-lit"
+    "directory": "packages/labs/tsserver-plugin"
   },
   "main": "index.js",
   "scripts": {
@@ -46,18 +46,11 @@
     }
   },
   "files": [
-    "/src/",
-    "!/src/test/",
-    "/lib/",
-    "!/lib/.tsbuildinfo"
+    "/index.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
     "@lit-labs/analyzer": "^0.2.0",
     "source-map-support": "^0.5.21",
     "typescript": "~4.7.4"
-  },
-  "devDependencies": {
-    "@types/node": "^16.7.8",
-    "uvu": "^0.5.1"
   }
 }
