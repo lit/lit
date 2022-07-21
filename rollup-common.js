@@ -255,7 +255,7 @@ export function litProdConfig({
   packageName,
   outputDir = './',
   copyHtmlTests = true,
-  nodeBuild = false,
+  includeNodeBuild = false,
   // eslint-disable-next-line no-undef
 } = options) {
   const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
@@ -426,7 +426,7 @@ export function litProdConfig({
       ],
     },
     // Node build
-    ...(nodeBuild
+    ...(includeNodeBuild
       ? [
           {
             input: entryPoints.map((name) => `development/${name}.js`),

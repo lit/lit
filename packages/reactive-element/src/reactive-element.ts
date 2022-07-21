@@ -31,7 +31,6 @@ const NODE_MODE = false;
 const global = NODE_MODE ? globalThis : window;
 
 if (NODE_MODE) {
-  global.HTMLElement ??= class HTMLElement {} as unknown as typeof HTMLElement;
   global.customElements ??= {
     define() {},
   } as unknown as CustomElementRegistry;
@@ -400,7 +399,9 @@ export type Initializer = (element: ReactiveElement) => void;
  * @noInheritDoc
  */
 export abstract class ReactiveElement
-  extends HTMLElement
+  extends (NODE_MODE
+    ? (class HTMLElement {} as unknown as typeof HTMLElement)
+    : HTMLElement)
   implements ReactiveControllerHost
 {
   // Note: these are patched in only in DEV_MODE.

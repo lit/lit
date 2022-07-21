@@ -27,3 +27,6 @@ import {ReactiveElement} from '@lit/reactive-element';
 
 @customElement('my-element')
 export class MyElement extends ReactiveElement {}
+
+export class MyOtherElement extends ReactiveElement {}
+customElements.define('my-other-element', MyOtherElement);

@@ -30,3 +30,10 @@ export class MyElement extends LitElement {
     return html`Hello World`;
   }
 }
+
+export class MyOtherElement extends LitElement {
+  override render() {
+    return html`Hello World`;
+  }
+}
+customElements.define('my-other-element', MyOtherElement);

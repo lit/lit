@@ -31,5 +31,5 @@ export default litProdConfig({
       file: 'polyfill-support',
     },
   ],
-  nodeBuild: true,
+  includeNodeBuild: true,
 });
