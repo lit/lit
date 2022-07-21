@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.2.2
+
+### Patch Changes
+
+- [#3138](https://github.com/lit/lit/pull/3138) [`6450e17b`](https://github.com/lit/lit/commit/6450e17b58d1000d0501ad2b427a3248564d0c29) - JS source maps now include the TS source inline
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Upgrade node-fetch version
+
 ## 2.2.1
 
 ### Patch Changes

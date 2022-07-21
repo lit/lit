@@ -1,5 +1,15 @@
 ## [0.7.0] - 2022-04-04
 
+## 0.7.1
+
+### Patch Changes
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Upgrade tslib version
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Upgrade event-target-shim
+
+- [#3133](https://github.com/lit/lit/pull/3133) [`36db238c`](https://github.com/lit/lit/commit/36db238ce5ae53a3bfe656b5cb57856b0ac9ed3f) - The virtualize directive will now correctly re-render children when data stored outside the items array has changed.
+
 ### Changed
 
 - The `scroll` directive has been renamed to `virtualize`. Note that the `<lit-virtualizer>` element remains the recommended way to use virtualizer in most cases; the directive exists primarily for developers who are using Lit's `lit-html` templating system standalone and don't need the `LitElement` base class elsewhere in their project.
