@@ -101,6 +101,7 @@
     "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}"
   ],
   "devDependencies": {
+    "@open-wc/testing": "^3.1.6",
     "@web/dev-server-esbuild": "^0.3.0",
     "tachometer": "^0.7.0"
   },
