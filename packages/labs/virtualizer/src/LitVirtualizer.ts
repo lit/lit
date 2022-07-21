@@ -13,6 +13,8 @@ import {
   VirtualizerHostElement,
   virtualizerRef,
   RangeChangedEvent,
+  ScrollPositionOptions,
+  ScrollElementIntoViewOptions,
 } from './Virtualizer.js';
 import {
   LayoutSpecifier,
@@ -72,24 +74,43 @@ export class LitVirtualizer extends LitElement {
     return (this as VirtualizerHostElement)[virtualizerRef]!.layout;
   }
 
+  @property({attribute: false})
+  set scrollPosition(value: ScrollPositionOptions) {
+    if (this._virtualizer) {
+      this._virtualizer.scrollPosition = value;
+    }
+  }
+
   /**
    * Scroll to the specified index, placing that item at the given position
    * in the scroll view.
    */
-  scrollToIndex(index: number, position = 'start') {
-    this._virtualizer!.scrollToIndex = {index, position};
-  }
-
-  updated() {
+  scrollElementIntoView(options: ScrollElementIntoViewOptions) {
     if (this._virtualizer) {
-      if (this._layout !== undefined) {
-        this._virtualizer!.layout = this._layout;
-      }
-      this._virtualizer!.items = this.items;
+      this._virtualizer.scrollElementIntoView(options);
     }
   }
 
-  firstUpdated() {
+  scrollTo(options: ScrollToOptions): void;
+  scrollTo(x: number, y: number): void;
+  scrollTo(p1: ScrollToOptions | number, p2?: number) {
+    if (this._virtualizer) {
+      this._virtualizer.scrollTo(p1, p2);
+    }
+  }
+
+  willUpdate(changed: Map<string, unknown>) {
+    if (this._virtualizer) {
+      if (changed.has('layout')) {
+        this._virtualizer.layout = this._layout!;
+      }
+      if (changed.has('items')) {
+        this._virtualizer.items = this.items;
+      }
+    }
+  }
+
+  _init() {
     const layout = this._layout;
     this._virtualizer = new Virtualizer({
       hostElement: this,
@@ -101,13 +122,16 @@ export class LitVirtualizer extends LitElement {
       this._first = e.first;
       this._last = e.last;
     });
-    this._virtualizer!.connected();
+    this._virtualizer.items = this.items;
+    this._virtualizer.connected();
   }
 
   connectedCallback() {
     super.connectedCallback();
     if (this._virtualizer) {
       this._virtualizer.connected();
+    } else {
+      this._init();
     }
   }
 

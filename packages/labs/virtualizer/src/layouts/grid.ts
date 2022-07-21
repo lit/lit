@@ -84,7 +84,7 @@ export class GridLayout extends SizeGapPaddingBaseLayout<GridLayoutConfig> {
   }
 
   set gap(spec: AutoGapSpec) {
-    this._setGap(spec);
+    super.gap = spec;
   }
 
   _updateLayout() {

@@ -64,7 +64,7 @@ render() {
 
 When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. (By default, it has a `min-height` of 150 pixels to prevent it from collapsing to a zero-height block, but this default will rarely be what you want in practice.)
 
-### Layout
+### Choosing a layout
 
 `@lit-labs/virtualizer` currently supports two basic layouts, [`flow`](#flow-layout) (the default) and [`grid`](#grid-layout), which together cover a wide range of common use cases.
 
@@ -93,7 +93,7 @@ render() {
 
 The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. It is likely that official support of custom layouts will be a post-1.0 feature.
 
-### Flow layout
+### Using the `flow` layout
 
 By default, a virtualizer lays out its children using the `flow` layout, a simplified form of the browser's own default layout.
 
@@ -126,13 +126,39 @@ The `flow` layout works vertically by default. However, it also supports laying 
 
 ```
 
-### Grid layout
+### Using the `grid` layout
 
 TODO
 
-### Scrolling to a specific item or position
+### Scrolling
 
-TODO
+You may sometimes need to scroll a view to specific coordinates, or scroll a specific element into view. The web platform provides native APIs for these purposes:
+
+- You can scroll a window or a scrollable element to specific coordinates by calling its `scrollTo()` method
+- You can also scroll a window by calling `scrollBy()` (to scroll by a specific distance) or `scroll()` (an alias for `scrollTo()`)
+- You can also scroll a scrollable element to specific coordinates by setting its `scrollTop` and `scrollLeft` properties
+- Finally, you can scroll an element into view by calling its `scrollIntoView()` method
+
+When you call one of the various scrolling methods in a modern browser, you can choose between "jumping" straight to the specified destination, or scrolling there smoothly. (Setting an element's `scrollTop` or `scrollLeft` properties always jumps straight to the specified location.)
+
+As much as possible, `@lit-labs/virtualizer` strives to "just work" with all of these native scrolling APIs. However, there are a couple of cases where using a virtualizer introduces special scrolling considerations:
+
+- When you want to scroll one of the virtualizer's child elements into view, but it isn't currently in the DOM because it's too far outside the viewport
+- When you want to scroll smoothly and you're using a virtualizer layout (like the default `flex` layout) that estimates the sizes of child elements it hasn't yet seen
+
+In addition to these special considerations, `@lit-labs/virtualizer` provides its own declarative API for specifying scroll position that you may find useful in certain circumstances.
+
+See the sections below for usage details.
+
+#### Scrolling to specific coordinates
+
+If you
+
+If you are using the `<lit-virtualizer>` element
+
+#### Scrolling a specific element into view
+
+#### Declaratively specifying the scroll position
 
 ### `virtualize` directive
 
