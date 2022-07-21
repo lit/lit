@@ -7,6 +7,7 @@
 '@lit-labs/task': patch
 'lit-element': patch
 'lit-html': patch
+'lit': patch
 '@lit/reactive-element': patch
 ---
 
