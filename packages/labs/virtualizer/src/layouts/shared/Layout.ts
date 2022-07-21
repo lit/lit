@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {ScrollElementIntoViewOptions} from '../../Virtualizer.js';
+
 export type dimension = 'height' | 'width';
 export type Size = {
   [key in dimension]: number;
@@ -39,6 +41,8 @@ export type Positions = {
   yOffset?: number;
 };
 
+export type ChildPositions = Map<number, Positions>;
+
 export type LayoutConstructor = new (config?: object) => Layout;
 
 export interface LayoutSpecifier {
@@ -46,6 +50,11 @@ export interface LayoutSpecifier {
 }
 
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
+
+export interface PinnedItem {
+  index: number;
+  block?: ScrollLogicalPosition;
+}
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
@@ -73,7 +82,15 @@ export interface Layout {
 
   removeEventListener: Function;
 
-  scrollToIndex: (index: number, position: string) => void;
+  pinnedItem: PinnedItem | null;
+
+  pinnedCoordinates: ScrollToOptions | null;
+
+  unpin: Function;
+
+  getScrollIntoViewCoordinates: (
+    options: ScrollElementIntoViewOptions
+  ) => ScrollToOptions;
 
   /**
    * Called by a Virtualizer when an update that

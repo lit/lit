@@ -15,9 +15,11 @@ import {
 } from './layouts/shared/Layout.js';
 import {
   Virtualizer,
-  ScrollToIndexValue,
+  ScrollPositionOptions,
   RangeChangedEvent,
 } from './Virtualizer.js';
+
+export {virtualizerRef} from './Virtualizer.js';
 
 /**
  * Configuration options for the virtualize directive.
@@ -44,7 +46,7 @@ export interface VirtualizeDirectiveConfig<T> {
   /**
    * Index and position of the item to scroll to.
    */
-  scrollToIndex?: ScrollToIndexValue;
+  scrollPosition?: ScrollPositionOptions;
 }
 
 /*export */ const defaultKeyFunction = <T>(item: T) => item;
@@ -112,8 +114,8 @@ class VirtualizeDirective<T> extends AsyncDirective {
     if (config.layout) {
       virtualizer!.layout = config.layout;
     }
-    if (config.scrollToIndex) {
-      virtualizer!.scrollToIndex = config.scrollToIndex;
+    if (config.scrollPosition) {
+      virtualizer!.scrollPosition = config.scrollPosition;
     }
   }
 

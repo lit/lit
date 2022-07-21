@@ -9,7 +9,7 @@ import {
   ItemBox,
   Margins,
   Layout,
-  Positions,
+  ChildPositions,
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
@@ -74,7 +74,14 @@ interface ScrollSize {
 
 type ChildMeasurements = {[key: number]: ItemBox};
 
-export type ScrollToIndexValue = {index: number; position?: string} | null;
+export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
+  index: number;
+}
+
+export type ScrollPositionOptions =
+  | Omit<ScrollToOptions, 'behavior'>
+  | Omit<ScrollElementIntoViewOptions, 'behavior'>
+  | null;
 
 export interface VirtualizerConfig {
   layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
@@ -122,7 +129,7 @@ export class Virtualizer {
   /**
    * A list of the positions (top, left) of the children in the current range.
    */
-  private _childrenPos: Array<{top: number; left: number}> | null = null;
+  private _childrenPos: ChildPositions | null = null;
 
   // TODO: (graynorton): type
   private _childMeasurements: ChildMeasurements | null = null;
@@ -169,9 +176,26 @@ export class Virtualizer {
   private _loadListener = this._childLoaded.bind(this);
 
   /**
-   * Index and position of item to scroll to.
+   * Desired scroll position, as declaratively specified
+   * via the `scrollPosition` property. May be expressed
+   * as either top / left coordinates or the index of an
+   * element to scroll into view
    */
-  private _scrollToIndex: ScrollToIndexValue = null;
+  private _scrollPosition: ScrollPositionOptions = null;
+
+  /**
+   * Desired scroll coordinates and scroll behavior options
+   * as imperatively specified via the `scrollTo` method
+   */
+  private _scrollToDestination: ScrollToOptions | null = null;
+
+  /**
+   * Index of element to scroll into view, plus scroll
+   * behavior options, as imperatively specified via the
+   * `scrollElementIntoView` method
+   */
+  private _scrollIntoViewDestination: ScrollElementIntoViewOptions | null =
+    null;
 
   /**
    * Items to render. Set by items.
@@ -325,7 +349,7 @@ export class Virtualizer {
     const style = hostElement.style as CSSStyleDeclaration & {contain: string};
     style.display = style.display || 'block';
     style.position = style.position || 'relative';
-    style.contain = style.contain || 'strict';
+    style.contain = style.contain || 'size layout';
 
     if (this._isScroller) {
       style.overflow = style.overflow || 'auto';
@@ -491,15 +515,6 @@ export class Virtualizer {
     return Object.assign({width, height}, getMargins(element));
   }
 
-  /**
-   * Index and position of item to scroll to. The virtualizer will fix to that point
-   * until the user scrolls.
-   */
-  set scrollToIndex(newValue: ScrollToIndexValue) {
-    this._scrollToIndex = newValue;
-    this._schedule(this._updateLayout);
-  }
-
   protected async _schedule(method: Function): Promise<void> {
     if (!this._scheduled.has(method)) {
       this._scheduled.add(method);
@@ -511,6 +526,7 @@ export class Virtualizer {
 
   async _updateDOM() {
     const {_rangeChanged, _itemsChanged} = this;
+    const originalScrollCoordinates = this._getCurrentScrollCoordinates();
     if (this._visibilityChanged) {
       this._notifyVisibility();
       this._visibilityChanged = false;
@@ -520,11 +536,11 @@ export class Virtualizer {
       await this._mutationPromise;
     }
     this._children.forEach((child) => this._childrenRO!.observe(child));
-    this._positionChildren(this._childrenPos!);
+    this._checkScrollIntoViewDestination(this._childrenPos);
+    this._positionChildren(this._childrenPos);
     this._sizeHostElement(this._scrollSize);
     if (this._scrollError) {
-      this._correctScrollError(this._scrollError);
-      this._scrollError = null;
+      this._correctScrollError(originalScrollCoordinates, this._scrollError);
     }
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
@@ -534,12 +550,19 @@ export class Virtualizer {
   _updateLayout() {
     if (this._layout) {
       this._layout!.totalItems = this._items.length;
-      if (this._scrollToIndex !== null) {
-        this._layout!.scrollToIndex(
-          this._scrollToIndex.index,
-          this._scrollToIndex!.position!
-        );
-        this._scrollToIndex = null;
+      if (this._scrollPosition !== null) {
+        const {index, block} = this
+          ._scrollPosition as ScrollElementIntoViewOptions;
+        if (index !== undefined) {
+          this._layout!.pinnedItem = {index, block};
+          this._scrollPosition = null;
+        } else {
+          const {top, left} = this._scrollPosition as ScrollToOptions;
+          if (top !== undefined || left !== undefined) {
+            this._layout!.pinnedCoordinates = {top, left};
+            this._scrollPosition = null;
+          }
+        }
       }
       this._updateView();
       if (this._childMeasurements !== null) {
@@ -564,6 +587,13 @@ export class Virtualizer {
         console.warn('Error measuring performance data: ', e);
       }
       window.performance.mark('uv-start');
+    }
+    if (this._scrollError === null) {
+      // This is a user-initiated scroll, so we unpin the layout
+      this._layout!.unpin();
+    } else {
+      // We are scrolling to correct a scroll error; we reset state here
+      this._scrollError = null;
     }
     this._schedule(this._updateLayout);
   }
@@ -640,6 +670,8 @@ export class Virtualizer {
 
     layout.viewportSize = {width, height};
     layout.viewportScroll = {top: scrollTop, left: scrollLeft};
+
+    this._finishSmoothScrollingIfArrived(scrollTop, scrollLeft);
   }
 
   /**
@@ -667,15 +699,11 @@ export class Virtualizer {
    * Sets the top and left transform style of the children from the values in
    * pos.
    */
-  private _positionChildren(pos: Array<Positions>) {
+  private _positionChildren(pos: ChildPositions | null) {
     if (pos) {
-      const children = this._children;
-      Object.keys(pos).forEach((key) => {
-        const idx = (key as unknown as number) - this._first;
-        const child = children[idx];
+      pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
+        const child = this._children[index - this._first];
         if (child) {
-          const {top, left, width, height, xOffset, yOffset} =
-            pos[key as unknown as number];
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
           child.style.transform = `translate(${left}px, ${top}px)`;
@@ -708,16 +736,155 @@ export class Virtualizer {
       this._lastVisible !== _lastVisible;
   }
 
-  private _correctScrollError(err: {top: number; left: number}) {
+  private _getCurrentScrollCoordinates(): {top: number; left: number} {
     const target = this._clippingAncestors[0];
     if (target) {
-      target.scrollTop -= err.top;
-      target.scrollLeft -= err.left;
+      return {
+        top: target.scrollTop,
+        left: target.scrollLeft,
+      };
+    } else {
+      return {
+        top: window.pageYOffset,
+        left: window.pageXOffset,
+      };
+    }
+  }
+
+  private _correctScrollError(
+    orig: {top: number; left: number},
+    err: {top: number; left: number}
+  ) {
+    const target = this._clippingAncestors[0];
+    if (target) {
+      target.scrollTop = orig.top - err.top;
+      target.scrollLeft = orig.left - err.left;
     } else {
       window.scroll(
         window.pageXOffset - err.left,
         window.pageYOffset - err.top
       );
+    }
+
+    // If we were in the process of smoothly scrolling, corrrecting our
+    // scroll error will have halted the scrolling, so we need to resume
+    this._resumeSmoothScrolling();
+  }
+
+  /**
+   * Index and position of item to scroll to. The virtualizer will fix to that point
+   * until the user scrolls.
+   */
+  public set scrollPosition(newValue: ScrollPositionOptions) {
+    this._scrollPosition = newValue;
+    this._schedule(this._updateLayout);
+  }
+
+  public scrollTo(options: ScrollToOptions): void;
+  public scrollTo(x: number, y: number): void;
+  public scrollTo(p1: ScrollToOptions | number, p2?: number): void;
+  public scrollTo(p1: ScrollToOptions | number, p2?: number) {
+    const options: ScrollToOptions =
+      typeof p1 === 'number' && typeof p2 === 'number'
+        ? {left: p1, top: p2}
+        : (p1 as ScrollToOptions);
+    this._scrollToDestination = options;
+    const target = this._clippingAncestors[0];
+    if (target) {
+      // We explicitly call the native `scrollTo()` here so that our host
+      // element can safely override it and call this method without causing
+      // infinite recursion
+      HTMLElement.prototype.scrollTo.bind(this._clippingAncestors[0])(options);
+    } else {
+      window.scrollTo(options);
+    }
+  }
+
+  public scrollElementIntoView(options: ScrollElementIntoViewOptions) {
+    options.index = Math.min(options.index, this._items.length - 1);
+    if (options.behavior === 'smooth') {
+      this._scrollIntoViewDestination = options;
+      const coordinates = (this.layout! as Layout).getScrollIntoViewCoordinates(
+        options
+      );
+      const {behavior} = options;
+      this.scrollTo(Object.assign(coordinates, {behavior}));
+    } else {
+      this.scrollPosition = options;
+    }
+  }
+
+  private _resumeScrollTo() {
+    if (this._scrollToDestination) {
+      this.scrollTo(this._scrollToDestination);
+    }
+  }
+
+  private _resumeScrollIntoView() {
+    if (this._scrollIntoViewDestination) {
+      this.scrollElementIntoView(this._scrollIntoViewDestination);
+    }
+  }
+
+  private _resumeSmoothScrolling() {
+    if (this._scrollIntoViewDestination !== null) {
+      // We were scrolling to a specific element
+      this._resumeScrollIntoView();
+    } else {
+      if (this._scrollToDestination !== null) {
+        // We were scrolling to specific coordinates
+        this._resumeScrollTo();
+      }
+    }
+  }
+
+  private _retargetScrollIntoView() {
+    const {top, left} = this._layout!.getScrollIntoViewCoordinates(
+      this._scrollIntoViewDestination!
+    );
+    if (
+      top !== this._scrollToDestination!.top ||
+      left !== this._scrollToDestination!.left
+    ) {
+      Object.assign(this._scrollIntoViewDestination!, {top, left});
+      this._resumeScrollIntoView();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * If we are smoothly scrolling to an element and the target element
+   * is in the DOM, we update our scroll destination as needed
+   */
+  private _checkScrollIntoViewDestination(pos: ChildPositions | null) {
+    const {index} = this._scrollIntoViewDestination || {};
+    if (index && pos?.has(index)) {
+      this._retargetScrollIntoView();
+    }
+  }
+
+  private _finishSmoothScrollingIfArrived(
+    scrollTop: number,
+    scrollLeft: number
+  ) {
+    // If we're smoothly scrolling...
+    if (this._scrollToDestination !== null) {
+      const {top, left} = this._scrollToDestination;
+      // We check to see if we've arrived at our destination.
+      if (scrollTop === (top || 0) && scrollLeft === (left || 0)) {
+        // If we have, we see whether we were aiming for a specific element.
+        if (this._scrollIntoViewDestination !== null) {
+          // If we were, we check to see if the element is where we thought it was
+          if (this._retargetScrollIntoView()) {
+            // The element is not at the expected position, so we're not done yet
+            return;
+          }
+        }
+        // We have arrived at our destination, so we reset our state
+        this._scrollToDestination = null;
+        this._scrollIntoViewDestination = null;
+      }
     }
   }
 
