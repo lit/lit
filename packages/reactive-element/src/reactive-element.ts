@@ -392,6 +392,11 @@ export type WarningKind = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
 
+const htmlElementShimNeeded = NODE_MODE && global.HTMLElement === undefined;
+if (htmlElementShimNeeded) {
+  global.HTMLElement = class HTMLElement {} as unknown as typeof HTMLElement;
+}
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -399,9 +404,7 @@ export type Initializer = (element: ReactiveElement) => void;
  * @noInheritDoc
  */
 export abstract class ReactiveElement
-  extends (NODE_MODE
-    ? (class HTMLElement {} as unknown as typeof HTMLElement)
-    : HTMLElement)
+  extends HTMLElement
   implements ReactiveControllerHost
 {
   // Note: these are patched in only in DEV_MODE.
@@ -1493,6 +1496,10 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
+}
+
+if (htmlElementShimNeeded) {
+  delete (global as Partial<typeof global>).HTMLElement;
 }
 
 // Apply polyfills if available
