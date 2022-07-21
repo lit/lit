@@ -11,6 +11,7 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 const NODE_MODE = false;
+// Use window for browser builds because IE11 doesn't have globalThis.
 const global = NODE_MODE ? globalThis : window;
 
 /**
