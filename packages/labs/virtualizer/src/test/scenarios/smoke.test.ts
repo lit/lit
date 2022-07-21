@@ -4,57 +4,54 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, until} from '../helpers.js';
-import {expect} from '@esm-bundle/chai';
+import {ignoreBenignErrors, justText, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
-import {virtualize, VirtualizeDirectiveConfig} from '../../virtualize.js';
-import {flow} from '../../layouts/flow.js';
-import {html, render} from 'lit';
+import {render} from 'lit';
+import {virtualize} from '../../virtualize.js';
+import {expect, fixture, html} from '@open-wc/testing';
 
 describe('smoke test', () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   describe('<lit-virtualizer>', function () {
-    it('registers lit-virtualizer as a custom element', function () {
+    it('registers lit-virtualizer as a custom element', async () => {
       const lvs = document.createElement('lit-virtualizer');
       expect(lvs).to.be.instanceOf(LitVirtualizer);
+    });
+
+    it('renders its items in light DOM', async () => {
+      const items = [1, 2, 3];
+      const lvs = await fixture(html`
+        <lit-virtualizer
+          .items=${items}
+          .renderItem=${(i: number) => html`<span>number ${i}</span>`}
+        ></lit-virtualizer>
+      `);
+
+      await until(() => justText(lvs.innerHTML).includes('number 3'));
+
+      expect(justText(lvs.innerHTML)).to.include('number 1');
+      expect(justText(lvs.innerHTML)).to.include('number 2');
+      expect(justText(lvs.innerHTML)).to.include('number 3');
     });
   });
 
   describe('virtualize', function () {
-    let container: HTMLElement;
-
-    beforeEach(function () {
-      container = document.createElement('div');
-      container.className = 'container';
-      document.body.appendChild(container);
-    });
-
-    afterEach(function () {
-      if (document.body.contains(container)) {
-        document.body.removeChild(container);
-      }
-    });
-
     it('uses the provided method to render items', async function () {
-      const example = html`
-        ${virtualize({
-          items: ['foo', 'bar', 'baz'] as Array<string>,
-          renderItem: (item: string) => html`<p>${item}</p>`,
-          layout: flow(),
-        })}
-      `;
+      const example = await fixture(html`
+        <div>
+          ${virtualize({
+            items: ['foo', 'bar', 'baz'],
+            renderItem: (item: string) => html`<p>${item}</p>`,
+          })}
+        </div>
+      `);
 
-      render(example, container);
-      await until(() => container.innerHTML.includes('baz'));
+      await until(() => example.innerHTML.includes('baz'));
 
-      expect(container.innerHTML).to.include('foo');
-      expect(container.innerHTML).to.include('bar');
-      expect(container.innerHTML).to.include('baz');
-
-      // must remove child _before_ end of spec. TODO @straversi: find a way
-      // to move into afterEach.
-      document.body.removeChild(container);
+      expect(example.innerHTML).to.include('foo');
+      expect(example.innerHTML).to.include('bar');
+      expect(example.innerHTML).to.include('baz');
     });
 
     // TODO (graynorton): We no longer have an explicit `useShadowDOM`
@@ -98,6 +95,17 @@ describe('smoke test', () => {
     // })
 
     describe('visible indices', function () {
+      let container: HTMLElement;
+
+      this.beforeEach(() => {
+        container = document.createElement('div');
+        document.body.appendChild(container);
+      });
+
+      this.afterEach(() => {
+        document.body.removeChild(container);
+      });
+
       it('emits visibilityChanged events with the proper indices', async function () {
         container.style.height = '100px';
         container.style.minHeight = '100px';
@@ -107,8 +115,7 @@ describe('smoke test', () => {
           items: ['foo', 'bar', 'baz', 'qux', 'bux'] as Array<string>,
           renderItem: (item: string) =>
             html`<div style="height: 50px">${item}</div>`,
-          layout: flow(),
-        } as VirtualizeDirectiveConfig<string>);
+        });
 
         let firstVisible: Number = -1;
         let lastVisible: Number = -1;
@@ -132,8 +139,6 @@ describe('smoke test', () => {
         await until(() => lastVisible === 3);
         expect(firstVisible).to.eq(1);
         expect(lastVisible).to.eq(3);
-
-        document.body.removeChild(container);
       });
     });
   });
