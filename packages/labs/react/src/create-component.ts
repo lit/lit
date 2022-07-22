@@ -272,7 +272,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement<React.HTMLProps<I>, I>(tagName, props);
+      return createElement<React.HTMLAttributes<I>, I>(tagName, props);
     }
   }
 
