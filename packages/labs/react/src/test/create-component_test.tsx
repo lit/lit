@@ -74,7 +74,7 @@ suite('createComponent', () => {
   };
 
   const BasicElementComponent = createComponent(
-    window.React,
+    React,
     elementName,
     BasicElement,
     basicElementEvents,
@@ -99,7 +99,7 @@ suite('createComponent', () => {
   */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent(
-      window.React,
+      React,
       elementName,
       BasicElement,
     );
@@ -131,7 +131,7 @@ suite('createComponent', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
     const NamedComponent = createComponent(
-      window.React,
+      React,
       elementName,
       BasicElement,
       basicElementEvents,
@@ -378,7 +378,7 @@ suite('createComponent', () => {
       ref = 'hi';
     }
     createComponent(
-      window.React,
+      React,
       tag,
       Warn,
     );

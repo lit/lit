@@ -4,8 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import React from 'react';
-import ReactModule from 'react';
+import * as ReactModule from 'react';
+
+interface JSXInterface {
+  Component: typeof ReactModule.Component;
+  createElement: typeof ReactModule.createElement;
+  forwardRef: typeof ReactModule.forwardRef;
+}
 
 /***
  * Typecast that curries an Event type through a string. The goal of the type
@@ -137,7 +142,7 @@ const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
  * registered via `customElements.define`.
  */
 export function createComponent<I extends HTMLElement, E extends Events = {}>(
-  React: typeof ReactModule,
+  React: JSXInterface,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
@@ -181,7 +186,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
-    private _elementProps!: {[index: string]: unknown};
+    private _elementProps: Record<string, unknown> = {};
     private _userRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
