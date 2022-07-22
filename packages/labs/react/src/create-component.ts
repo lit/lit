@@ -6,6 +6,24 @@
 
 import React from 'react';
 
+/***
+ * Typecast that curries an Event type through a string. The goal of the type
+ * cast is to match a prop name to a typed event callback.
+ */
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+type Events = Record<string, EventName | string>;
+
+type EventProps<R extends Events> = {
+  [K in keyof R]: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
+
+type Constructor<I> = {new (): I};
+
 type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
 type ElementWithoutPropsOrEvents<I, E> = Omit<
   I,
@@ -98,24 +116,6 @@ const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
   } else {
     (ref as {current: I | null}).current = value;
   }
-};
-
-type Constructor<T> = {new (): T};
-
-/***
- * Typecast that curries an Event type through a string. The goal of the type
- * cast is to match a prop name to a typed event callback.
- */
-export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
-};
-
-type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
-  [K in keyof R]: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
-    : (e: Event) => void;
 };
 
 /**
