@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
+import * as React from 'react';
 
 interface JSXInterface {
-  Component: typeof ReactModule.Component;
-  createElement: typeof ReactModule.createElement;
-  forwardRef: typeof ReactModule.forwardRef;
+  Component: typeof React.Component;
+  createElement: typeof React.createElement;
+  forwardRef: typeof React.forwardRef;
 }
 
 /***
@@ -142,14 +142,14 @@ const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
  * registered via `customElements.define`.
  */
 export function createComponent<I extends HTMLElement, E extends Events = {}>(
-  React: JSXInterface,
+  JSXModule: JSXInterface,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
 ): WrappedWebComponent<I, E> {
-  const Component = React.Component;
-  const createElement = React.createElement;
+  const Component = JSXModule.Component;
+  const createElement = JSXModule.createElement;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
@@ -274,7 +274,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  const ForwardedComponent: WrappedWebComponent<I, E> = React.forwardRef<
+  const ForwardedComponent: WrappedWebComponent<I, E> = JSXModule.forwardRef<
     I,
     UserProps<I, E>
   >((props, ref) =>
