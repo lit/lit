@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import React from 'react';
+import * as ReactModule from 'react';
 
 /***
  * Typecast that curries an Event type through a string. The goal of the type
@@ -137,7 +137,7 @@ const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
  * registered via `customElements.define`.
  */
 export function createComponent<I extends HTMLElement, E extends Events = {}>(
-  React: typeof window.React,
+  React: typeof ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
