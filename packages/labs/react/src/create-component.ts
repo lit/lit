@@ -15,7 +15,6 @@ export type EventName<T extends Event = Event> = string & {
 };
 
 type Events = Record<string, EventName | string>;
-
 type EventProps<R extends Events> = {
   [K in keyof R]: R[K] extends EventName
     ? (e: R[K]['__event_type']) => void
@@ -29,11 +28,9 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>
 >;
-
 type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
-
 type ForwardedProps<I, E extends Events> = UserProps<I, E>;
 
 type WrappedWebComponent<I, E extends Events> = React.ForwardRefExoticComponent<
