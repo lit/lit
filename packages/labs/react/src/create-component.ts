@@ -64,11 +64,7 @@ const setProperty = <E extends Element>(
   if (value === old) return;
 
   // remove false boolean attributes
-  if (
-    value === false &&
-    node.hasAttribute(name) &&
-    !node.hasOwnProperty(name)
-  ) {
+  if (value === false && node.hasAttribute(name)) {
     node.removeAttribute(name);
     return;
   }
@@ -260,9 +256,9 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
         if (k === '__forwardedRef') continue;
 
         // do not forward false boolean attributes
-        // if (v === false) {
-        //   continue;
-        // }
+        if (v === false) {
+          continue;
+        }
 
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;

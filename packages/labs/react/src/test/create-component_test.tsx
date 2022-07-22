@@ -201,11 +201,11 @@ suite('createComponent', () => {
   test('can remove boolean attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('hidden'), null);
+    await renderReactComponent({hidden: undefined});
+    assert.equal(el.getAttribute('hidden'), null);
     await renderReactComponent({hidden: true});
     assert.equal(el.getAttribute('hidden'), 'true');
     await renderReactComponent({hidden: false});
-    assert.equal(el.getAttribute('hidden'), 'false');
-    await renderReactComponent({hidden: undefined});
     assert.equal(el.getAttribute('hidden'), null);
   });
 
