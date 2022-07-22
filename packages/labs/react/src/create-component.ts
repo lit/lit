@@ -137,13 +137,17 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>
 >;
-type UserProps<I, E extends Events = {}> = Partial<
+type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
 
-type ComponentProps<I, E extends Events = {}> = UserProps<I, E> & {
-  __forwardedRef?: React.Ref<unknown>;
+type ForwardedProps<I, E extends Events> = UserProps<I, E> & {
+  ref?: React.Ref<unknown>;
 };
+
+type WrappedFunctionComponent<P, T = unknown> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<P> & React.RefAttributes<T>
+>;
 
 export function createComponent<I extends HTMLElement, E extends Events = {}>(
   React: typeof window.React,
@@ -151,19 +155,22 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-): React.ForwardedRef<ComponentProps<I, E>> {
+): WrappedFunctionComponent<ForwardedProps<I, E>> {
   const Component = React.Component;
   const createElement = React.createElement;
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
-  type PropsUser = UserProps<I, E>;
 
   // Props used by this component wrapper. This is the UserProps and the
   // special `__forwardedRef` property. Note, this ref is special because
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
-  type PropsComponent = ComponentProps<I, E>;
+  type ComponentProps = UserProps<I, E> & {
+    __forwardedRef?: React.Ref<unknown>;
+  };
+
+  // type PropsForwarded = ForwardedProps<I, E>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
@@ -187,7 +194,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  class ReactComponent extends Component<PropsComponent> {
+  class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
     private _userRef?: React.Ref<unknown>;
@@ -195,7 +202,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
 
     static displayName = displayName ?? elementClass.name;
 
-    private _updateElement(oldProps?: PropsComponent) {
+    private _updateElement(oldProps?: ComponentProps) {
       if (this._element === null) {
         return;
       }
@@ -204,8 +211,8 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
         setProperty(
           this._element,
           prop,
-          this.props[prop as keyof PropsComponent],
-          oldProps ? oldProps[prop as keyof PropsComponent] : undefined,
+          this.props[prop as keyof ComponentProps],
+          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
           events
         );
       }
@@ -226,7 +233,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    override componentDidUpdate(old: PropsComponent) {
+    override componentDidUpdate(old: ComponentProps) {
       this._updateElement(old);
     }
 
@@ -277,14 +284,14 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  const ForwardedComponent = React.forwardRef(
-    (props?: PropsUser, ref?: React.Ref<unknown>) =>
+  const ForwardedComponent: WrappedFunctionComponent<ForwardedProps<I, E>> =
+    React.forwardRef((props?: UserProps<I, E>, ref?: React.Ref<unknown>) =>
       createElement(
         ReactComponent,
-        {...props, __forwardedRef: ref} as PropsComponent,
+        {...props, __forwardedRef: ref} as ComponentProps,
         props?.children
       )
-  );
+    );
 
   // To ease debugging in the React Developer Tools
   ForwardedComponent.displayName = ReactComponent.displayName;
