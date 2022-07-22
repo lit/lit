@@ -6,6 +6,28 @@
 
 import React from 'react';
 
+type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
+type ElementWithoutPropsOrEvents<I, E> = Omit<
+  I,
+  keyof E | keyof ReactProps<I, E>
+>;
+
+type UserProps<I, E extends Events> = Partial<
+  ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
+>;
+
+type ForwardedProps<I, E extends Events> = UserProps<I, E> & {
+  ref?: React.Ref<unknown>;
+};
+
+type WrappedWebComponent<
+  I,
+  E extends Events,
+  T = unknown
+> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<ForwardedProps<I, E>> & React.RefAttributes<T>
+>;
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -102,14 +124,6 @@ type EventProps<R extends Events> = {
     : (e: Event) => void;
 };
 
-// interface CreateComponentParams<I extends HTMLElement, E extends Events> {
-//   React: typeof React;
-//   tagName: string;
-//   elementClass: Constructor<I>;
-//   events?: E;
-//   displayName?: string;
-// }
-
 /**
  * Creates a React component for a custom element. Properties are distinguished
  * from attributes automatically, and events can be configured so they are
@@ -131,31 +145,17 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-
-type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
-type ElementWithoutPropsOrEvents<I, E> = Omit<
-  I,
-  keyof E | keyof ReactProps<I, E>
->;
-type UserProps<I, E extends Events> = Partial<
-  ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
->;
-
-type ForwardedProps<I, E extends Events> = UserProps<I, E> & {
-  ref?: React.Ref<unknown>;
-};
-
-type WrappedFunctionComponent<P, T = unknown> = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<P> & React.RefAttributes<T>
->;
-
-export function createComponent<I extends HTMLElement, E extends Events = {}>(
+export function createComponent<
+  I extends HTMLElement,
+  E extends Events = {},
+  T = unknown
+>(
   React: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-): WrappedFunctionComponent<ForwardedProps<I, E>> {
+): WrappedWebComponent<I, E, T> {
   const Component = React.Component;
   const createElement = React.createElement;
 
@@ -169,8 +169,6 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
   type ComponentProps = UserProps<I, E> & {
     __forwardedRef?: React.Ref<unknown>;
   };
-
-  // type PropsForwarded = ForwardedProps<I, E>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
@@ -284,14 +282,14 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  const ForwardedComponent: WrappedFunctionComponent<ForwardedProps<I, E>> =
-    React.forwardRef((props?: UserProps<I, E>, ref?: React.Ref<unknown>) =>
+  const ForwardedComponent: WrappedWebComponent<I, E, T> = React.forwardRef(
+    (props?: UserProps<I, E>, ref?: React.Ref<T>) =>
       createElement(
         ReactComponent,
         {...props, __forwardedRef: ref} as ComponentProps,
         props?.children
       )
-    );
+  );
 
   // To ease debugging in the React Developer Tools
   ForwardedComponent.displayName = ReactComponent.displayName;
