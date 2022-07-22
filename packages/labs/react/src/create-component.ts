@@ -59,7 +59,7 @@ const listenedEvents: WeakMap<
 const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  listener: (event?: Event) => void
+  listener: EventListener
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
@@ -97,7 +97,7 @@ const setProperty = <E extends HTMLElement>(
   if (event !== undefined) {
     // Dirty check event value.
     if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+      addOrUpdateEventListener(node, event, value as EventListener);
     }
   } else {
     // But don't dirty check properties; elements are assumed to do this.
