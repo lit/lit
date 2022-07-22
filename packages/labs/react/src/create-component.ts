@@ -16,8 +16,8 @@ type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
 
-type ForwardedProps<I, E extends Events> = UserProps<I, E> & {
-  ref?: React.Ref<unknown>;
+type ForwardedProps<I, E extends Events, T> = UserProps<I, E> & {
+  ref?: React.Ref<T>;
 };
 
 type WrappedWebComponent<
@@ -25,7 +25,7 @@ type WrappedWebComponent<
   E extends Events,
   T = unknown
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<ForwardedProps<I, E>> & React.RefAttributes<T>
+  React.PropsWithoutRef<ForwardedProps<I, E, T>> & React.RefAttributes<T>
 >;
 
 const reservedReactProperties = new Set([
