@@ -16,16 +16,10 @@ type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
 
-type ForwardedProps<I, E extends Events, T> = UserProps<I, E> & {
-  ref?: React.Ref<T>;
-};
+type ForwardedProps<I, E extends Events> = UserProps<I, E>;
 
-type WrappedWebComponent<
-  I,
-  E extends Events,
-  T = unknown
-> = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<ForwardedProps<I, E, T>> & React.RefAttributes<T>
+type WrappedWebComponent<I, E extends Events> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<ForwardedProps<I, E>> & React.RefAttributes<I>
 >;
 
 const reservedReactProperties = new Set([
@@ -77,7 +71,7 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element>(
+const setProperty = <E extends HTMLElement>(
   node: E,
   name: string,
   value: unknown,
@@ -98,11 +92,11 @@ const setProperty = <E extends Element>(
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
 // React API to set a ref.
-const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
+const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
   if (typeof ref === 'function') {
-    (ref as (e: Element | null) => void)(value);
+    (ref as (e: I | null) => void)(value);
   } else {
-    (ref as {current: Element | null}).current = value;
+    (ref as {current: I | null}).current = value;
   }
 };
 
@@ -145,17 +139,13 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export function createComponent<
-  I extends HTMLElement,
-  E extends Events = {},
-  T = unknown
->(
+export function createComponent<I extends HTMLElement, E extends Events = {}>(
   React: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-): WrappedWebComponent<I, E, T> {
+): WrappedWebComponent<I, E> {
   const Component = React.Component;
   const createElement = React.createElement;
 
@@ -167,7 +157,7 @@ export function createComponent<
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
   type ComponentProps = UserProps<I, E> & {
-    __forwardedRef?: React.Ref<unknown>;
+    __forwardedRef?: React.Ref<I>;
   };
 
   // Set of properties/events which should be specially handled by the wrapper
@@ -209,8 +199,8 @@ export function createComponent<
         setProperty(
           this._element,
           prop,
-          this.props[prop as keyof ComponentProps],
-          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
+          this.props[prop],
+          oldProps ? oldProps[prop] : undefined,
           events
         );
       }
@@ -247,14 +237,14 @@ export function createComponent<
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.Ref<unknown>;
+      const userRef = this.props.__forwardedRef ?? null;
       if (this._ref === undefined || this._userRef !== userRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
             this._element = value;
           }
           if (userRef !== null) {
-            setRef(userRef, value);
+            setRef<I>(userRef, value);
           }
           this._userRef = userRef;
         };
@@ -267,9 +257,10 @@ export function createComponent<
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
-      for (const [k, v] of Object.entries(this.props)) {
+      for (const k in this.props) {
         if (k === '__forwardedRef') continue;
 
+        const v = this.props[k];
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
         } else {
@@ -282,8 +273,8 @@ export function createComponent<
     }
   }
 
-  const ForwardedComponent: WrappedWebComponent<I, E, T> = React.forwardRef(
-    (props?: UserProps<I, E>, ref?: React.Ref<T>) =>
+  const ForwardedComponent: WrappedWebComponent<I, E> = React.forwardRef(
+    (props?: UserProps<I, E>, ref?: React.Ref<I>) =>
       createElement(
         ReactComponent,
         {...props, __forwardedRef: ref} as ComponentProps,
