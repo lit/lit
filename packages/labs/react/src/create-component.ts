@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import React from 'react';
 import ReactModule from 'react';
 
 /***
@@ -31,10 +32,9 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
 type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
-type ForwardedProps<I, E extends Events> = UserProps<I, E>;
 
 type WrappedWebComponent<I, E extends Events> = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<ForwardedProps<I, E>> & React.RefAttributes<I>
+  React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
 >;
 
 const reservedReactProperties = new Set([
@@ -236,12 +236,12 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
       // having a value to null.
       const userRef = this.props.__forwardedRef ?? null;
       if (this._ref === undefined || this._userRef !== userRef) {
-        this._ref = (value: I | null) => {
+        this._ref = (value) => {
           if (this._element === null) {
             this._element = value;
           }
           if (userRef !== null) {
-            setRef<I>(userRef, value);
+            setRef(userRef, value);
           }
           this._userRef = userRef;
         };
@@ -266,17 +266,19 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement(tagName, props);
+      return createElement<React.HTMLAttributes<I>, I>(tagName, props);
     }
   }
 
-  const ForwardedComponent: WrappedWebComponent<I, E> = React.forwardRef(
-    (props?: UserProps<I, E>, ref?: React.Ref<I>) =>
-      createElement(
-        ReactComponent,
-        {...props, __forwardedRef: ref} as ComponentProps,
-        props?.children
-      )
+  const ForwardedComponent: WrappedWebComponent<I, E> = React.forwardRef<
+    I,
+    UserProps<I, E>
+  >((props, ref) =>
+    createElement(
+      ReactComponent,
+      {...props, __forwardedRef: ref},
+      props?.children
+    )
   );
 
   // To ease debugging in the React Developer Tools
