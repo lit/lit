@@ -249,8 +249,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
       // Filters class properties out and passes the remaining
       // attributes to React. This allows attributes to use framework rules
       // for setting attributes and render correctly under SSR.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = {ref: this._ref};
+      const props: Record<string, unknown> = {ref: this._ref};
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
