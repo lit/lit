@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
-
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -135,7 +133,7 @@ type EventProps<R extends Events> = {
  * registered via `customElements.define`.
  */
 export const createComponent = <I extends HTMLElement, E extends Events = {}>(
-  React: typeof ReactModule,
+  React: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,

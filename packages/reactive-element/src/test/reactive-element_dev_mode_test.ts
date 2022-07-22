@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement} from '../reactive-element.js';
+import {ReactiveElement} from '@lit/reactive-element';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

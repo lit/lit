@@ -99,9 +99,9 @@ EXAMPLES
   await page.setViewport({width: 800, height: 800, deviceScaleFactor: 2});
   await page.setContent(html);
   await page.evaluate(`document.fonts.ready`);
-  const bounds = await page.evaluate(`
+  const bounds = (await page.evaluate(`
      document.documentElement.getBoundingClientRect().toJSON()
-   `);
+   `)) as DOMRect;
   const imageFileName = `${path.basename(packageName)}-${release.title}.png`;
   await page.screenshot({
     path: imageFileName,

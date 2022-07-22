@@ -139,7 +139,10 @@ export const getWindow = ({
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    fetch: (url: URL, init: {}) => fetch(url, init),
+    fetch: (url: URL, init: {}) =>
+      // TODO(aomarks) The typings from node-fetch are wrong because they don't
+      // allow URL.
+      fetch(url as unknown as Parameters<typeof fetch>[0], init),
 
     location: new URL('http://localhost'),
     MutationObserver: class {

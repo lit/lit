@@ -127,10 +127,6 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 packages/tests/utils/
-packages/tests/**/rollup-resolve-remap.js
-packages/tests/**/rollup-resolve-remap.js.map
-packages/tests/**/rollup-resolve-remap.d.ts
-packages/tests/**/rollup-resolve-remap.d.ts.map
 packages/tests/**/run-web-tests.js
 packages/tests/**/run-web-tests.js.map
 packages/tests/**/run-web-tests.d.ts
@@ -139,10 +135,6 @@ packages/tests/**/web-test-runner.config.js
 packages/tests/**/web-test-runner.config.js.map
 packages/tests/**/web-test-runner.config.d.ts
 packages/tests/**/web-test-runner.config.d.ts.map
-packages/tests/**/wtr-config.js
-packages/tests/**/wtr-config.js.map
-packages/tests/**/wtr-config.d.ts
-packages/tests/**/wtr-config.d.ts.map
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map

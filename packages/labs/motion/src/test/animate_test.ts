@@ -22,7 +22,7 @@ import {
   fadeIn,
   flyAbove,
   flyBelow,
-} from '../animate.js';
+} from '@lit-labs/motion';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventName} from "../create-component.js";
+import type {EventName} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -12,7 +12,7 @@ import {customElement} from '@lit/reactive-element/decorators/custom-element.js'
 import type * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
-import {createComponent} from '../create-component.js';
+import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
 // Needed for JSX expressions
@@ -137,7 +137,7 @@ suite('createComponent', () => {
       basicElementEvents,
       'FooBar'
     );
-    
+
     assert.equal(NamedComponent.displayName, 'FooBar');
   });
 
