@@ -185,7 +185,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
-    private _userRef?: React.Ref<unknown>;
+    private _userRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
     static displayName = displayName ?? elementClass.name;
