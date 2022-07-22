@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
+import ReactModule from 'react';
 
 /***
  * Typecast that curries an Event type through a string. The goal of the type
