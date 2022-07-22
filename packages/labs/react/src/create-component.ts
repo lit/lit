@@ -3,13 +3,14 @@
  * Copyright 2018 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
 import * as React from 'react';
 
-interface JSXInterface {
-  Component: typeof React.Component;
-  createElement: typeof React.createElement;
-  forwardRef: typeof React.forwardRef;
+type ReactModule = typeof React;
+
+interface JSXInterface<R extends ReactModule = ReactModule> {
+  Component: R['Component'];
+  createElement: R['createElement'];
+  forwardRef: R['forwardRef'];
 }
 
 /***
@@ -37,6 +38,9 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
 type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
+type ComponentProps<I, E extends Events> = UserProps<I, E> & {
+  __forwardedRef?: React.Ref<I>;
+};
 
 type WrappedWebComponent<I, E extends Events> = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
@@ -125,7 +129,7 @@ const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
  * from attributes automatically, and events can be configured so they are
  * added to the custom element as event listeners.
  *
- * @param React The React module, typically imported from the `react` npm
+ * @param JSXModule The JSX module, typically imported from the `react` npm
  * package.
  * @param tagName The custom element tag name registered via
  * `customElements.define`.
@@ -158,9 +162,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
   // special `__forwardedRef` property. Note, this ref is special because
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
-  type ComponentProps = UserProps<I, E> & {
-    __forwardedRef?: React.Ref<I>;
-  };
+  type Props = ComponentProps<I, E>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
@@ -184,7 +186,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  class ReactComponent extends Component<ComponentProps> {
+  class ReactComponent extends Component<Props> {
     private _element: I | null = null;
     private _elementProps: Record<string, unknown> = {};
     private _userRef?: React.Ref<I>;
@@ -192,7 +194,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
 
     static displayName = displayName ?? elementClass.name;
 
-    private _updateElement(oldProps?: ComponentProps) {
+    private _updateElement(oldProps?: Props) {
       if (this._element === null) {
         return;
       }
@@ -223,7 +225,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    override componentDidUpdate(old: ComponentProps) {
+    override componentDidUpdate(old: Props) {
       this._updateElement(old);
     }
 
@@ -270,7 +272,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement<React.HTMLAttributes<I>, I>(tagName, props);
+      return createElement<React.HTMLProps<I>, I>(tagName, props);
     }
   }
 
