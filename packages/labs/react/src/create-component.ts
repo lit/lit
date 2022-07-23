@@ -35,9 +35,15 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>
 >;
+// Props the user is allowed to use, includes standard attributes, children,
+// ref, as well as special event and element properties.
 type UserProps<I, E extends Events> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
+// Props used by this component wrapper. This is the UserProps and the
+// special `__forwardedRef` property. Note, this ref is special because
+// it's both needed in this component to get access to the rendered element
+// and must fulfill any ref passed by the user.
 type ComponentProps<I, E extends Events> = UserProps<I, E> & {
   __forwardedRef?: React.Ref<I>;
 };
@@ -152,17 +158,10 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
   events?: E,
   displayName?: string
 ): WrappedWebComponent<I, E> {
+  type Props = ComponentProps<I, E>;
+
   const Component = JSXModule.Component;
   const createElement = JSXModule.createElement;
-
-  // Props the user is allowed to use, includes standard attributes, children,
-  // ref, as well as special event and element properties.
-
-  // Props used by this component wrapper. This is the UserProps and the
-  // special `__forwardedRef` property. Note, this ref is special because
-  // it's both needed in this component to get access to the rendered element
-  // and must fulfill any ref passed by the user.
-  type Props = ComponentProps<I, E>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
