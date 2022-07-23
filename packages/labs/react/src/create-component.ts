@@ -280,7 +280,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
     I,
     UserProps<I, E>
   >((props, ref) =>
-    createElement(
+    createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
       {...props, __forwardedRef: ref},
       props?.children
