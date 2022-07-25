@@ -48,7 +48,10 @@ type ComponentProps<I, E extends Events> = UserProps<I, E> & {
   __forwardedRef?: React.Ref<I>;
 };
 
-type WrappedWebComponent<I, E extends Events> = React.ForwardRefExoticComponent<
+export type WrappedWebComponent<
+  I,
+  E extends Events = {}
+> = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
 >;
 
@@ -124,7 +127,7 @@ const setProperty = <E extends HTMLElement>(
 // React API to set a ref.
 const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
   if (typeof ref === 'function') {
-    (ref as (e: I | null) => void)(value);
+    ref(value);
   } else {
     (ref as {current: I | null}).current = value;
   }
