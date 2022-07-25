@@ -10,7 +10,7 @@
     "/element-a.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^2.3.0-next.0"
   },
   "devDependencies": {
     "typescript": "~4.7.4"

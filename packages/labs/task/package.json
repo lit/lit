@@ -137,7 +137,7 @@
     "@lit-internal/scripts": "^1.0.0"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.1.0"
+    "@lit/reactive-element": "^1.4.0-next.0"
   },
   "publishConfig": {
     "access": "public"

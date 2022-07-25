@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@lit/localize": "^0.11.0",
-    "lit": "^2.0.0"
+    "lit": "^2.3.0-next.0"
   },
   "devDependencies": {
     "@lit/localize-tools": "^0.6.0",

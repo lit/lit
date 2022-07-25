@@ -132,8 +132,8 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0",
-    "lit": "^2.0.0"
+    "@lit/reactive-element": "^1.4.0-next.0",
+    "lit": "^2.3.0-next.0"
   },
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",

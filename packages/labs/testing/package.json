@@ -83,7 +83,7 @@
     "@lit-labs/ssr": "^2.2.0",
     "@web/test-runner-commands": "^0.6.1",
     "@webcomponents/template-shadowroot": "^0.1.0",
-    "lit": "^2.2.5"
+    "lit": "^2.3.0-next.0"
   },
   "devDependencies": {
     "@open-wc/testing": "^3.1.5"

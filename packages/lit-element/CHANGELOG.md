@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.2.3-next.0
+
+### Patch Changes
+
+- Updated dependencies [[`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd), [`6d6ec286`](https://github.com/lit/lit/commit/6d6ec28605aa58e7c35d842b13ae161d417192c3)]:
+  - lit-html@2.3.0-next.0
+  - @lit/reactive-element@1.4.0-next.0
+
 ## 3.2.2
 
 ### Patch Changes

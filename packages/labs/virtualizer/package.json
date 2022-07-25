@@ -107,7 +107,7 @@
   },
   "dependencies": {
     "event-target-shim": "^6.0.2",
-    "lit": "^2.0.0",
+    "lit": "^2.3.0-next.0",
     "tslib": "^2.0.3"
   }
 }

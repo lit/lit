@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.3.0-next.0
+
+### Minor Changes
+
+- [#3156](https://github.com/lit/lit/pull/3156) [`6d6ec286`](https://github.com/lit/lit/commit/6d6ec28605aa58e7c35d842b13ae161d417192c3) - Lit and its underlying libraries can now be imported directly from Node without crashing, without the need to load the @lit-labs/ssr dom-shim library. Note that actually rendering from a Node context still requires the @lit-labs/ssr dom-shim, and the appropriate integration between @lit-labs/ssr and your framework/tool.
+
+### Patch Changes
+
+- [#3003](https://github.com/lit/lit/pull/3003) [`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd) - Lit's `async-directive` now re-exports everything from the `directive` module.
+
 ## 2.2.7
 
 ### Patch Changes

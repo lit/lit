@@ -91,7 +91,7 @@
   },
   "dependencies": {
     "@lit-labs/ssr": "^2.0.1",
-    "lit": "^2.0.2"
+    "lit": "^2.3.0-next.0"
   },
   "devDependencies": {
     "@11ty/eleventy": "^1.0.0",
