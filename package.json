@@ -170,7 +170,8 @@
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
-        "./packages/labs/gen-wrapper-vue:test"
+        "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/testing:test"
       ]
     }
   },
