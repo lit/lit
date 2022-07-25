@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -129,7 +129,7 @@
     "directory": "packages/labs/ssr"
   },
   "devDependencies": {
-    "@koa/router": "^11.0.1",
+    "@koa/router": "^12.0.0",
     "@open-wc/testing": "^3.0.0-next.1",
     "@open-wc/testing-karma": "^4.0.9",
     "@types/command-line-args": "^5.0.0",
