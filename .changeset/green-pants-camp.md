@@ -2,4 +2,4 @@
 '@lit-labs/react': patch
 ---
 
-Removes the use of `any` in the package.
+Provide the explicit return type `WrappedWebComponent` for `createComponent`. This exposes an explicit typing for wrapped components rather than relying on inferences from Typescript. A well defined type should provide more resilience for implementations like SSR and others.
