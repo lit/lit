@@ -17,7 +17,6 @@ import {assert} from '@esm-bundle/chai';
 
 // Needed for JSX expressions
 const React = window.React;
-const ReactDOM = window.ReactDOM;
 
 const elementName = 'basic-element';
 @customElement(elementName)
@@ -75,10 +74,10 @@ suite('createComponent', () => {
   };
 
   const BasicElementComponent = createComponent(
-    React,
+    window.React,
     elementName,
     BasicElement,
-    basicElementEvents,
+    basicElementEvents
   );
 
   let el: BasicElement;
@@ -86,7 +85,7 @@ suite('createComponent', () => {
   const renderReactComponent = async (
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
   ) => {
-    ReactDOM.render(
+    window.ReactDOM.render(
       <BasicElementComponent {...props}/>,
       container
     );
@@ -100,13 +99,13 @@ suite('createComponent', () => {
   */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent(
-      React,
+      window.React,
       elementName,
       BasicElement,
     );
 
     const name = 'Component without event map.';
-    ReactDOM.render(
+    window.ReactDOM.render(
       <ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>,
       container
     );
@@ -119,7 +118,7 @@ suite('createComponent', () => {
 
   test('works with text children', async () => {
     const name = 'World';
-    ReactDOM.render(
+    window.ReactDOM.render(
       <BasicElementComponent>Hello {name}</BasicElementComponent>,
       container
     );
@@ -132,7 +131,7 @@ suite('createComponent', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
     const NamedComponent = createComponent(
-      React,
+      window.React,
       elementName,
       BasicElement,
       basicElementEvents,
@@ -149,10 +148,10 @@ suite('createComponent', () => {
   });
 
   test('can get ref to element', async () => {
-    const elementRef1 = React.createRef<BasicElement>();
+    const elementRef1 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef1});
     assert.equal(elementRef1.current, el);
-    const elementRef2 = React.createRef<BasicElement>();
+    const elementRef2 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef2});
     assert.equal(elementRef1.current, null);
     assert.equal(elementRef2.current, el);
@@ -166,7 +165,7 @@ suite('createComponent', () => {
     const el = container.querySelector(elementName);
     const outerHTML = el?.outerHTML;
 
-    const elementRef1 = React.createRef<BasicElement>();
+    const elementRef1 = window.React.createRef<BasicElement>();
     await renderReactComponent({ref: elementRef1});
 
     const elAfterRef = container.querySelector(elementName);
@@ -346,7 +345,7 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = (React.createElement(
+    const children = (window.React.createElement(
       'div'
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
@@ -378,11 +377,7 @@ suite('createComponent', () => {
       @property()
       ref = 'hi';
     }
-    createComponent(
-      React,
-      tag,
-      Warn,
-    );
+    createComponent(window.React, tag, Warn);
     assert.include(warning!, 'ref');
     console.warn = warn;
   });

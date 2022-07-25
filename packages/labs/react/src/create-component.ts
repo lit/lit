@@ -104,8 +104,8 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends HTMLElement>(
-  node: E,
+const setProperty = <I extends HTMLElement>(
+  node: I,
   name: string,
   value: unknown,
   old: unknown,
@@ -119,7 +119,7 @@ const setProperty = <E extends HTMLElement>(
     }
   } else {
     // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    node[name as keyof I] = value as I[keyof I];
   }
 };
 
@@ -191,8 +191,8 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
   class ReactComponent extends Component<Props> {
     private _element: I | null = null;
     private _elementProps: Record<string, unknown> = {};
-    private _userRef?: React.Ref<I>;
-    private _ref?: React.RefCallback<I>;
+    private _userRef: React.Ref<I> = {current: null};
+    private _ref: React.RefCallback<I> = () => {};
 
     static displayName = displayName ?? elementClass.name;
 
@@ -262,10 +262,9 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
-      for (const k in this.props) {
+      for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        const v = this.props[k];
         if (elementClassProps.has(k)) {
           this._elementProps[k] = v;
         } else {
