@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.3.0-next.0",
+  "version": "2.3.0-next.1",
   "publishConfig": {
     "access": "public"
   },

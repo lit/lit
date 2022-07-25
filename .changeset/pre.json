@@ -39,5 +39,5 @@
     "@lit-internal/tests": "0.0.0",
     "@lit/ts-transformers": "1.1.3"
   },
-  "changesets": ["curly-cars-peel", "tall-mirrors-notice"]
+  "changesets": ["curly-cars-peel", "fresh-deers-brake", "tall-mirrors-notice"]
 }

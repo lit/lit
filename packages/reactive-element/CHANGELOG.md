@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.4.0-next.1
+
+### Patch Changes
+
+- Fix invalid pre-releases that lacked build output.
+
 ## 1.4.0-next.0
 
 ### Minor Changes
