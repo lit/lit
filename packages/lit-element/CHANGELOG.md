@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.2.3-next.1
+
+### Patch Changes
+
+- Fix invalid pre-releases that lacked build output.
+
 ## 3.2.3-next.0
 
 ### Patch Changes
