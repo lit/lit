@@ -9,7 +9,7 @@ import {
   CSSResult,
   unsafeCSS,
   supportsAdoptingStyleSheets,
-} from '../css-tag.js';
+} from '@lit/reactive-element/css-tag.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {

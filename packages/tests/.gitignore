@@ -1,9 +1,5 @@
 /node_modules/
 /utils/
-rollup-resolve-remap.js
-rollup-resolve-remap.js.map
-rollup-resolve-remap.d.ts
-rollup-resolve-remap.d.ts.map
 run-web-tests.js
 run-web-tests.js.map
 run-web-tests.d.ts
@@ -12,7 +8,3 @@ web-test-runner.config.js
 web-test-runner.config.js.map
 web-test-runner.config.d.ts
 web-test-runner.config.d.ts.map
-wtr-config.js
-wtr-config.js.map
-wtr-config.d.ts
-wtr-config.d.ts.map

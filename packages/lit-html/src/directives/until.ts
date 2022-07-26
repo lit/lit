@@ -5,9 +5,8 @@
  */
 
 import {Part, noChange} from '../lit-html.js';
-import {directive} from '../directive.js';
 import {isPrimitive} from '../directive-helpers.js';
-import {AsyncDirective} from '../async-directive.js';
+import {directive, AsyncDirective} from '../async-directive.js';
 import {Pauser, PseudoWeakRef} from './private-async-helpers.js';
 
 const isPromise = (x: unknown) => {

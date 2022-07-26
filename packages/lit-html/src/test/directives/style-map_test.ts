@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {AttributePart, html, render} from '../../lit-html.js';
-import {directive} from '../../directive.js';
-import {StyleInfo, styleMap} from '../../directives/style-map.js';
+import {AttributePart, html, render} from 'lit-html';
+import {directive} from 'lit-html/directive.js';
+import {StyleInfo, styleMap} from 'lit-html/directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
 
 const ua = window.navigator.userAgent;

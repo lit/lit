@@ -4,13 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type * as ReactModule from 'react';
 import {
   ReactiveController,
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
-
-type React = typeof ReactModule;
 
 export type ControllerConstructor<C extends ReactiveController> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,7 +112,7 @@ class ReactControllerHost<C extends ReactiveController>
  * create function is only called once per component.
  */
 export const useController = <C extends ReactiveController>(
-  React: React,
+  React: typeof window.React,
   createController: (host: ReactiveControllerHost) => C
 ): C => {
   const {useState, useLayoutEffect} = React;

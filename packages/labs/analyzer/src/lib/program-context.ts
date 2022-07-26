@@ -19,6 +19,7 @@ import {DiagnosticsError, createDiagnostic} from './errors.js';
 import path from 'path';
 import fs from 'fs';
 import {Module, PackageJson, Type, Reference} from './model.js';
+import {AbsolutePath} from './paths.js';
 
 const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
 
@@ -69,8 +70,10 @@ const createServiceHost = (
  * analysis and helpers for generating Type objects.
  */
 export class ProgramContext {
+  readonly packageRoot: AbsolutePath;
+  readonly commandLine: ts.ParsedCommandLine;
+  readonly packageJson: PackageJson;
   readonly service: ts.LanguageService;
-  readonly package: string;
   program!: ts.Program;
   checker!: ts.TypeChecker;
 
@@ -78,20 +81,24 @@ export class ProgramContext {
 
   fileCache: FileCache = new Map();
 
-  constructor(commandLine: ts.ParsedCommandLine, packageJson: PackageJson) {
-    const serviceHost = createServiceHost(commandLine, this.fileCache);
-    const service = ts.createLanguageService(
-      serviceHost,
+  constructor(
+    packageRoot: AbsolutePath,
+    commandLine: ts.ParsedCommandLine,
+    packageJson: PackageJson
+  ) {
+    this.packageRoot = packageRoot;
+    this.commandLine = commandLine;
+    this.packageJson = packageJson;
+    this.service = ts.createLanguageService(
+      createServiceHost(commandLine, this.fileCache),
       ts.createDocumentRegistry()
     );
-    this.service = service;
-    this.package = packageJson.name!;
     this.invalidate();
     const diagnostics = this.program.getSemanticDiagnostics();
     if (diagnostics.length > 0) {
       throw new DiagnosticsError(
         diagnostics,
-        `Error analyzing package '${this.package}': Please fix errors first`
+        `Error analyzing package '${packageJson.name}': Please fix errors first`
       );
     }
     this.extractJsdocTypes();
@@ -202,7 +209,7 @@ export class ProgramContext {
         }
         throw new DiagnosticsError(
           retargetedErrors,
-          `Error analyzing package '${this.package}': Please fix errors first`
+          `Error analyzing package '${this.packageJson.name}': Please fix errors first`
         );
       }
       // Find the inferred types and store them in a list
@@ -377,7 +384,7 @@ export class ProgramContext {
             // module path relative to this module
             return new Reference({
               name,
-              package: this.package,
+              package: this.packageJson.name!,
               module: path.join(
                 path.dirname(this.currentModule.jsPath),
                 module
@@ -412,7 +419,7 @@ export class ProgramContext {
         // Declared in this file: use the current package and module
         return new Reference({
           name,
-          package: this.package,
+          package: this.packageJson.name!,
           module: this.currentModule.jsPath,
         });
       }

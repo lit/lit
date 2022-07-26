@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, render, nothing} from '../../lit-html.js';
-import {cache} from '../../directives/cache.js';
+import {html, render, nothing} from 'lit-html';
+import {cache} from 'lit-html/directives/cache.js';
 import {stripExpressionComments} from '../test-utils/strip-markers.js';
 import {assert} from '@esm-bundle/chai';
-import {directive, AsyncDirective} from '../../async-directive.js';
+import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 
 suite('cache directive', () => {
   let container: HTMLDivElement;

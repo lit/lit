@@ -35,7 +35,7 @@ interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
 
 const frameworkCommands = {
   react: reactCommand,
-  vue: vueCommand
+  vue: vueCommand,
 };
 
 type FrameworkName = keyof typeof frameworkCommands;

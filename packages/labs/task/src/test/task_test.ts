@@ -6,7 +6,7 @@
 
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
-import {initialState, Task, TaskStatus, TaskConfig} from '../task.js';
+import {initialState, Task, TaskStatus, TaskConfig} from '@lit-labs/task';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -66,7 +66,7 @@ suite('Task', () => {
 
       override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
-        this.taskValue = this.task.value ?? this.task.error;
+        this.taskValue = (this.task.value as string) ?? this.task.error;
         this.task.render({
           initial: () => (this.renderedStatus = 'initial'),
           pending: () => (this.renderedStatus = 'pending'),
@@ -424,5 +424,17 @@ suite('Task', () => {
     // so we wait a event loop turn:
     await new Promise((r) => setTimeout(r, 0));
     assert.equal(el.task.status, TaskStatus.INITIAL, 'new initial');
+  });
+
+  test('task args functions can return const arrays', () => {
+    return class MyElement extends ReactiveElement {
+      task = new Task(
+        this,
+        ([a, b]) => [a * 2, b.split('')],
+        // Make sure that we can use `as const` to force inferece of the args
+        // as [number, string] instead of (number | string)[]
+        () => [1, 'b'] as const
+      );
+    };
   });
 });

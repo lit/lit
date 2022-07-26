@@ -48,7 +48,8 @@
         "installSelf"
       ],
       "files": [
-        "src/**/*.ts, src/**/*.vue",
+        "src/**/*.ts",
+        "src/**/*.vue",
         "tsconfig.json"
       ],
       "command": "vue-tsc --noEmit && vite build",

@@ -86,8 +86,6 @@
     "lit": "^2.2.5"
   },
   "devDependencies": {
-    "@open-wc/testing": "^3.1.5",
-    "@web/test-runner": "^0.13.28",
-    "@web/test-runner-playwright": "^0.8.8"
+    "@open-wc/testing": "^3.1.5"
   }
 }

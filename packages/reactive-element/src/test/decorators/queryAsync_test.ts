@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {queryAsync} from '../../decorators/query-async.js';
+import {queryAsync} from '@lit/reactive-element/decorators/query-async.js';
 import {
   canTestReactiveElement,
   generateElementName,

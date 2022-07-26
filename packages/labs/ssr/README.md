@@ -114,7 +114,7 @@ const ssrResult = render(html`
           hasNativeDeclarativeShadowRoots,
           hydrateShadowRoots
         } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
-        if (!hasNativeDeclarativeShadowRoots) {
+        if (!hasNativeDeclarativeShadowRoots()) {
           hydrateShadowRoots(document.body);
         }
         // ...

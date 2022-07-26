@@ -23,7 +23,8 @@
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
-    "test": "wireit",
+    "test": "npm run test:not-starter-kits && npm run test:lit-starter-js && npm run test:lit-starter-ts",
+    "test:not-starter-kits": "wireit",
     "test:lit-starter-js": "wireit",
     "test:lit-starter-ts": "wireit",
     "test:windows": "wireit",
@@ -106,14 +107,25 @@
         "hack integrates it into the overall build with correct ordering."
       ],
       "command": "cd packages/lit-starter-ts && npm run build",
+      "files": [
+        "./packages/lit-starter-ts/tsconfig.json",
+        "./packages/lit-starter-ts/src/**/*.ts"
+      ],
+      "output": [
+        "./packages/lit-starter-ts/my-element.{js,js.map,d.ts,d.ts.map}",
+        "./packages/lit-starter-ts/test/"
+      ],
       "dependencies": [
         "./packages/lit:build:ts:types"
       ]
     },
-    "test": {
+    "test:not-starter-kits": {
+      "#comment": [
+        "We run the starter kit tests separately because when running in our",
+        "CI they require a longer browserStartTimeout, but we don't want to",
+        "change that default because it's a user template."
+      ],
       "dependencies": [
-        "test:lit-starter-js",
-        "test:lit-starter-ts",
         "./packages/localize:test",
         "./packages/localize-tools:test",
         "./packages/tests:test",
@@ -134,14 +146,22 @@
       "command": "cd packages/lit-starter-js && npm test",
       "dependencies": [
         "./packages/lit:build"
-      ]
+      ],
+      "files": [
+        "./packages/lit-starter-js/web-test-runner.config.js"
+      ],
+      "output": []
     },
     "test:lit-starter-ts": {
       "command": "cd packages/lit-starter-ts && npm test",
       "dependencies": [
         "build:lit-starter-ts",
         "./packages/lit:build"
-      ]
+      ],
+      "files": [
+        "./packages/lit-starter-ts/web-test-runner.config.js"
+      ],
+      "output": []
     },
     "test:windows": {
       "dependencies": [
@@ -150,7 +170,8 @@
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
-        "./packages/labs/gen-wrapper-vue:test"
+        "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/testing:test"
       ]
     }
   },
@@ -158,27 +179,37 @@
     "@babel/eslint-parser": "^7.17.0",
     "@changesets/cli": "^2.16.0",
     "@changesets/get-github-info": "^0.5.0",
+    "@esm-bundle/chai": "^4.3.4",
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-virtual": "^2.1.0",
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^16.11.44",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
-    "as-table": "^1.0.55",
-    "chalk": "^4.1.0",
+    "@web/dev-server": "^0.1.32",
+    "@web/dev-server-legacy": "^1.0.0",
+    "@web/test-runner": "^0.13.31",
+    "@web/test-runner-mocha": "^0.7.5",
+    "@web/test-runner-playwright": "^0.8.9",
+    "@web/test-runner-saucelabs": "^0.8.0",
     "eslint": "^8.13.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-no-only-tests": "^2.4.0",
-    "husky": "^7.0.2",
+    "husky": "^8.0.1",
     "ignore-sync": "^5.0.1",
-    "lint-staged": "^12.4.0",
+    "lint-staged": "^13.0.3",
+    "mocha": "^10.0.0",
     "prettier": "^2.4.1",
+    "rollup": "^2.76.0",
     "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-sourcemaps": "^0.6.2",
-    "rollup-plugin-summary": "~1.3.0",
+    "rollup-plugin-summary": "^1.4.3",
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "~4.7.4",
+    "uvu": "^0.5.6",
     "wireit": "^0.7.1"
   },
   "lint-staged": {

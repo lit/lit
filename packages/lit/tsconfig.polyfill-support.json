@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "target": "es5",
-    "module": "es2020",
+    "module": "NodeNext",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
@@ -17,7 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/env.d.ts", "src/polyfill-support.ts"]
