@@ -2,9 +2,6 @@ name: Generate Release Image
 
 on:
   pull_request:
-    paths:
-      - 'CHANGELOG.md'
-      - '**/CHANGELOG.md'
 
 jobs:
   release-image:
@@ -31,7 +28,7 @@ jobs:
         run: npm run build
 
       - name: Create release image
-        run: node_modules/.bin/release-image -m <(node scripts/fetch-release-changelog.js ${{ github.event.pull_request.number }})
+        run: node_modules/.bin/release-image -m <(${{ github.event.pull_request.body }})
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
