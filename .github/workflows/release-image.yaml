@@ -31,7 +31,14 @@ jobs:
         run: npm run build
 
       - name: Create release image
-        run: node_modules/.bin/release-image -m <(node scripts/fetch-release-changelog.js ${{ github.event.pull_request.number }})
+        run: |
+          # Store the PR body contents containing the changelog in 'release.md'
+          cat <<'EOF' > release.md
+          ${{ github.event.pull_request.body }}
+          EOF
+          # Only render the pull request content including and after the "#
+          # Releases" heading.
+          node_modules/.bin/release-image -m <(sed -n '/# Releases/,$p' release.md)
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
