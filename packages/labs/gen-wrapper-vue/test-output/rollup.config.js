@@ -18,6 +18,8 @@ export default {
     'js/tests/tests.js',
     'js/tests/test-element-a_test.js',
     'js/tests/test-element-events_test.js',
+    'js/tests/test-element-slots_test.js',
+    'js/tests/test-element-props_test.js',
   ],
   output: {
     dir: './tests',

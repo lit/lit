@@ -79,5 +79,8 @@ const testWrapper =
 
 test('basic wrapper generation', testWrapper('element-a'));
 test('events wrapper generation', testWrapper('element-events'));
+test('slots wrapper generation', testWrapper('element-slots'));
+test('props wrapper generation', testWrapper('element-props'));
+// test('multi wrapper generation', testWrapper('element-multi'));
 
 test.run();

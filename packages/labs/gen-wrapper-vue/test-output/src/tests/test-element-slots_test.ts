@@ -24,12 +24,11 @@ suite('test-element-slots', () => {
   });
 
   test('renders correctly', async () => {
-    const foo = 'Slots';
-    createApp(ElementSlots, {foo}).mount(container);
+    createApp(ElementSlots).mount(container);
     const el = container.querySelector('element-slots')! as ElementSlotsElement;
     await el.updateComplete;
     const {firstElementChild} = el.shadowRoot!;
     assert.equal(firstElementChild?.localName, 'h1');
-    assert.equal(firstElementChild?.textContent, foo);
+    assert.equal(firstElementChild?.textContent, 'Slots');
   });
 });

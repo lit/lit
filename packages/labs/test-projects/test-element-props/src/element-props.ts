@@ -43,25 +43,25 @@ export class ElementProps extends LitElement {
   @property({type: Array})
   optAStrArray?: string[];
 
-  @property({type: Object})
+  @property({type: Object, attribute: false})
   optAMyType?: MyType;
 
-  @state()
+  @property()
   aStr = 'aStr';
 
-  @state()
+  @property({type: Number})
   aNum = -1;
 
-  @state()
+  @property({type: String})
   aStrOrNum = 'aStrOrNum';
 
-  @state()
+  @property({type: Boolean})
   aBool = false;
 
-  @state()
+  @property({type: Array})
   aStrArray = ['a', 'b'];
 
-  @state()
+  @property({type: Object, attribute: false})
   aMyType: MyType = {
     a: 'a',
     b: -1,
@@ -71,6 +71,9 @@ export class ElementProps extends LitElement {
     strOrNum: 'strOrNum',
     optB: 100,
   };
+
+  @state()
+  aState = 'aState';
 
   override render() {
     return html`<h1>Props</h1>
@@ -85,6 +88,7 @@ export class ElementProps extends LitElement {
       <div id="aStrOrNum">${this.aStrOrNum}</div>
       <div id="aBool">${this.aBool}</div>
       <div id="aStrArray">${JSON.stringify(this.aStrArray)}</div>
-      <div id="aMyType">${JSON.stringify(this.aMyType)}</div> `;
+      <div id="aMyType">${JSON.stringify(this.aMyType)}</div>
+      <div id="aState">${this.aState}</div> `;
   }
 }

@@ -24,12 +24,39 @@ suite('test-element-props', () => {
   });
 
   test('renders correctly', async () => {
-    const foo = 'Props';
-    createApp(ElementProps, {foo}).mount(container);
+    const props = {
+      optAStr: 'optAStr',
+      optANum: 10,
+      optAStrOrNum: 'optAStrOrNum',
+      optABool: true,
+      aStr: 'aStr',
+      aNum: 11,
+      aStrOrNum: 'aStrOrNum',
+      aBool: true,
+      aStrArray: ['11', '22'],
+      aMyType: {
+        a: 'aa',
+        b: 22,
+        c: false,
+        d: ['a', 'b', 'c'],
+        e: null,
+        strOrNum: 'strOrNum',
+      },
+    };
+
+    createApp(ElementProps, props).mount(container);
     const el = container.querySelector('element-props')! as ElementPropsElement;
     await el.updateComplete;
-    const {firstElementChild} = el.shadowRoot!;
+    const {shadowRoot} = el;
+    const {firstElementChild} = shadowRoot!;
     assert.equal(firstElementChild?.localName, 'h1');
-    assert.equal(firstElementChild?.textContent, foo);
+    assert.equal(firstElementChild?.textContent, 'Props');
+    Object.entries(props).forEach(([prop, value]) => {
+      assert.equal(
+        shadowRoot!.getElementById(prop)!.textContent,
+        typeof value === 'object' ? JSON.stringify(value) : String(value),
+        `fail on ${prop}`
+      );
+    });
   });
 });

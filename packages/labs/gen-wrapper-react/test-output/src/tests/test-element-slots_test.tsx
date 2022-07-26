@@ -28,17 +28,20 @@ suite('test-element-slots', () => {
   });
 
   test('renders correctly', async () => {
-    const foo = 'Hello World';
+    const c = 'Hello World';
     render(
       <React.StrictMode>
-        <ElementSlots foo={foo}></ElementSlots>
+        <ElementSlots mainDefault={c}></ElementSlots>
       </React.StrictMode>,
       container
     );
     const el = container.querySelector('element-slots')! as ElementSlotsElement;
     await el.updateComplete;
-    const {firstElementChild} = el.shadowRoot!;
+    const {shadowRoot} = el;
+    const {firstElementChild} = shadowRoot!;
     assert.equal(firstElementChild?.localName, 'h1');
-    assert.equal(firstElementChild?.textContent, foo);
+    assert.equal(firstElementChild?.textContent, 'Slots');
+    const main = shadowRoot!.querySelector<HTMLSlotElement>('slot[name=main]')!;
+    assert.equal(main.assignedNodes({flatten: true})[0].textContent, c);
   });
 });
