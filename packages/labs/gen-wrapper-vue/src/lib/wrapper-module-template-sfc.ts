@@ -71,19 +71,17 @@ const renderEvents = (events: Map<string, ModelEvent>) =>
     )
     .join(',\n');
 
-const getTypeImportsForMap = (map: Map<string, ModelProperty | ModelEvent>) =>
-  Array.from(map.values())
-    .map((e) =>
-      e.type ? getImportsStringForReferences(e.type.references) : null
-    )
-    .filter((e) => e);
+const getTypeReferencesForMap = (
+  map: Map<string, ModelProperty | ModelEvent>
+) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
 
 const getElementTypeImports = (declaration: LitElementDeclaration) => {
   const {events, reactiveProperties} = declaration;
-  return [
-    ...getTypeImportsForMap(events),
-    ...getTypeImportsForMap(reactiveProperties),
-  ].join(';\n');
+  const refs = [
+    ...getTypeReferencesForMap(events),
+    ...getTypeReferencesForMap(reactiveProperties),
+  ];
+  return getImportsStringForReferences(refs);
 };
 
 // TODO(sorvell): Add support for `v-bind`.
