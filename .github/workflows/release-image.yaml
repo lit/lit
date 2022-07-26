@@ -1,0 +1,40 @@
+name: Generate Release Image
+
+on:
+  pull_request:
+    paths:
+      - 'CHANGELOG.md'
+      - '**/CHANGELOG.md'
+
+jobs:
+  release-image:
+    if: github.repository == 'lit/lit'
+
+    name: Generate Release Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - uses: google/wireit@setup-github-actions-caching/v1
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Build release-image script
+        working-directory: packages/internal-scripts
+        run: npm run build
+
+      - name: Create release image
+        run: node_modules/.bin/release-image -m <(node scripts/fetch-release-changelog.js ${{ github.event.pull_request.number }})
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: releaseimage
+          path: release.png
