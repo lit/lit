@@ -84,7 +84,8 @@ export interface ReferenceToCommand {
   /**
    * The location to `npm install` from, if different from importSpecifier.
    *
-   * e.g. this could be a github repo, a relative directory (e.g. for testing, * or it could be an npm package name with a version. Or if the import
+   * e.g. this could be a github repo, a relative directory (e.g. for testing,
+   * or it could be an npm package name with a version. Or if the import
    * specifier is 'foo/command.js' then this might be 'foo'.
    *
    * If this is 'foo' then, if this command isn't installed in the user's

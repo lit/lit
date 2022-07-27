@@ -7,10 +7,12 @@
 import {
   getLitModules,
   LitModule,
-  Package,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {installDepWithPermission} from '@lit-labs/cli/lib/install.js';
+import type {GenerateOptions} from '@lit-labs/cli/lib/generate/generate.js';
+
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
@@ -18,16 +20,36 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {angularJsonProject} from './lib/angular-json-project.js';
-import {exec as execCb} from 'child_process';
+import {exec as execCb, ExecException} from 'child_process';
 import {promisify} from 'util';
 
 const exec = promisify(execCb);
 
+/**
+ * See ../../cli/src/lib/generate/generate.ts
+ */
+export const getCommand = () => {
+  return {
+    name: 'angular',
+    description: 'Generate Angular wrapper components from Lit elements',
+    kind: 'resolved',
+    async generate(options: GenerateOptions): Promise<FileTree> {
+      // TODO(justinfagnani): feed in ng generator specific command-line options
+      return await generateAngularWrapper(
+        options,
+        '' as unknown as AbsolutePath
+      );
+    },
+  };
+};
+
 export const generateAngularWrapper = async (
-  analysis: Package,
+  options: GenerateOptions,
   angularWorkspaceFolder: AbsolutePath
 ): Promise<FileTree> => {
   console.log('Angular Generator');
+
+  const {analysis} = options;
 
   const litModules: LitModule[] = getLitModules(analysis);
   if (litModules.length === 0) {
@@ -43,8 +65,30 @@ export const generateAngularWrapper = async (
     );
   }
 
-  const {stdout: ngVersionOut} = await exec('ng --version');
-  console.log({ngVersionOut});
+  try {
+    const {stdout: ngVersionOut} = await exec('ng --version');
+    console.log({ngVersionOut});
+  } catch (e: unknown) {
+    // See https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback
+    const err = e as ExecException & {stdout: string; stderr: string};
+    if (err.stderr.includes('command not found')) {
+      await installDepWithPermission({
+        description: 'The Angular CLI',
+        npmPackage: '@angular/cli',
+        global: true,
+        cwd: options.cwd,
+        stdin: options.stdin,
+        console: options.console,
+      });
+    }
+  }
+
+  // TODO:justinfagnani): temporary and incorrect check
+  if (angularWorkspaceFolder === '') {
+    throw new Error(`Invalid workspace path: ${angularWorkspaceFolder}`);
+  }
+
+  throw new Error('Not implemented');
 
   const angularJsonPath = path.resolve(angularWorkspaceFolder, 'angular.json');
   const angularJson = JSON.parse(await fs.readFile(angularJsonPath, 'utf-8'));

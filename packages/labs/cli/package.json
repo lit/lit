@@ -99,7 +99,10 @@
     "lib",
     "npm-shrinkwrap.json"
   ],
-  "exports": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./lib/install.js": "./lib/install.js"
+  },
   "homepage": "https://github.com/lit/lit",
   "keywords": [
     "lit",

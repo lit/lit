@@ -19,6 +19,8 @@ import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateAngularWrapper} from '../../index.js';
 import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
+import {stdin, cwd} from 'process';
+
 const testProjects = '../test-projects';
 const angularWorkspaceTemplate = path.resolve('./test-files/angular-workspace');
 
@@ -58,7 +60,10 @@ test('basic wrapper generation', async () => {
   const analysis = analyzer.analyzePackage();
   await writeFileTree(
     outputFolder,
-    await generateAngularWrapper(analysis, angularWorkspaceFolder)
+    await generateAngularWrapper(
+      {analysis, console, stdin, cwd: cwd()},
+      angularWorkspaceFolder
+    )
   );
 
   const wrapperSourceFile = await fs.readFile(

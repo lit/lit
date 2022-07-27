@@ -14,7 +14,7 @@ import {Package} from '@lit-labs/analyzer/lib/model.js';
 
 const reactCommand: Command = {
   name: 'react',
-  description: 'Generate React wrapper for a LitElement',
+  description: 'Generate React wrappers for LitElements',
   kind: 'reference',
   installFrom: '@lit-labs/gen-wrapper-react',
   importSpecifier: '@lit-labs/gen-wrapper-react/index.js',
@@ -22,20 +22,36 @@ const reactCommand: Command = {
 
 const vueCommand: Command = {
   name: 'vue',
-  description: 'Generate Vue wrapper for a LitElement',
+  description: 'Generate Vue wrappers for a LitElements',
   kind: 'reference',
   installFrom: '@lit-labs/gen-wrapper-vue',
   importSpecifier: '@lit-labs/gen-wrapper-vue/index.js',
 };
 
+const angularCommand: Command = {
+  name: 'angular',
+  description: 'Generate Angular wrappers for LitElements',
+  kind: 'reference',
+  installFrom: '@lit-labs/gen-wrapper-angular',
+  importSpecifier: '@lit-labs/gen-wrapper-angular/index.js',
+};
+
+export interface GenerateOptions {
+  analysis: Package;
+  console: Console;
+  cwd: string;
+  stdin: NodeJS.ReadableStream;
+}
+
 // A generate command has a generate method instead of a run method.
-interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
-  generate(options: {analysis: Package}, console: Console): Promise<FileTree>;
+export interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
+  generate(options: GenerateOptions): Promise<FileTree>;
 }
 
 const frameworkCommands = {
   react: reactCommand,
   vue: vueCommand,
+  angular: angularCommand,
 };
 
 type FrameworkName = keyof typeof frameworkCommands;
@@ -49,6 +65,7 @@ export const run = async (
   }: {packages: string[]; frameworks: string[]; outDir: string; cli: LitCli},
   console: Console
 ) => {
+  console.log('packages', packages);
   for (const packageRoot of packages) {
     // Ensure separators in input paths are normalized and resolved to absolute
     const root = path.normalize(path.resolve(packageRoot)) as AbsolutePath;
@@ -93,12 +110,18 @@ export const run = async (
     }
     const options = {
       analysis,
+      cwd: cli.cwd,
+      stdin: cli.stdin,
+      console,
     };
     const results = await Promise.allSettled(
       generators.map(async (generator) => {
-        // TODO(kschaaf): Add try/catches around each of these operations and
-        // throw more contextural errors
-        await writeFileTree(out, await generator.generate(options, console));
+        try {
+          await writeFileTree(out, await generator.generate(options));
+        } catch (e) {
+          console.error('Wrapper generation failed', e);
+          return;
+        }
       })
     );
     // `allSettled` will swallow errors, so we need to filter them out of
