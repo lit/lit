@@ -36,7 +36,6 @@ export {
   svg as staticSvg,
   unsafeStatic,
   withStatic,
-  StaticValue,
 } from './static-html.js';
 
 if (!window.litDisableBundleWarning) {

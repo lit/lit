@@ -1,5 +1,4 @@
 ---
-'lit': patch
 'lit-html': patch
 ---
 
