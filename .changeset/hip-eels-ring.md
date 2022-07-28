@@ -3,4 +3,4 @@
 'lit-html': patch
 ---
 
-export StaticValue type
+`StaticValue` interface type is now exported.
