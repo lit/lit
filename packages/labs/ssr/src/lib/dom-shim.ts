@@ -168,6 +168,8 @@ export const getWindow = ({
       clearTimeout() {},
       // Required for node-fetch
       Buffer,
+      URL,
+      URLSearchParams,
       console: {
         log(...args: unknown[]) {
           console.log(...args);
