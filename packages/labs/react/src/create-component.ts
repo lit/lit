@@ -4,6 +4,49 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+type Constructor<T> = {new (): T};
+
+/***
+ * Typecast that curries an Event type through a string. The goal of the type
+ * cast is to match a prop name to a typed event callback.
+ */
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+type Events = Record<string, EventName | string>;
+
+type EventProps<R extends Events> = {
+  [K in keyof R]: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
+
+type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
+type ElementWithoutPropsOrEvents<I, E> = Omit<
+  I,
+  keyof E | keyof ReactProps<I, E>
+>;
+// Props the user is allowed to use, includes standard attributes, children,
+// ref, as well as special event and element properties.
+export type UserProps<I, E extends Events = {}> = Partial<
+  ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
+>;
+// Props used by this component wrapper. This is the UserProps and the
+// special `__forwardedRef` property. Note, this ref is special because
+// it's both needed in this component to get access to the rendered element
+// and must fulfill any ref passed by the user.
+type ComponentProps<I, E extends Events = {}> = UserProps<I, E> & {
+  __forwardedRef?: React.Ref<I>;
+};
+
+export type WrappedWebComponent<
+  I,
+  E extends Events = {}
+> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
+>;
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -81,49 +124,6 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
     (ref as {current: Element | null}).current = value;
   }
 };
-
-type Constructor<T> = {new (): T};
-
-/***
- * Typecast that curries an Event type through a string. The goal of the type
- * cast is to match a prop name to a typed event callback.
- */
-export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
-};
-
-type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
-  [K in keyof R]: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
-    : (e: Event) => void;
-};
-
-type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
-type ElementWithoutPropsOrEvents<I, E> = Omit<
-  I,
-  keyof E | keyof ReactProps<I, E>
->;
-// Props the user is allowed to use, includes standard attributes, children,
-// ref, as well as special event and element properties.
-export type UserProps<I, E extends Events = {}> = Partial<
-  ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
->;
-// Props used by this component wrapper. This is the UserProps and the
-// special `__forwardedRef` property. Note, this ref is special because
-// it's both needed in this component to get access to the rendered element
-// and must fulfill any ref passed by the user.
-type ComponentProps<I, E extends Events = {}> = UserProps<I, E> & {
-  __forwardedRef?: React.Ref<I>;
-};
-
-export type WrappedWebComponent<
-  I,
-  E extends Events = {}
-> = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
->;
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
