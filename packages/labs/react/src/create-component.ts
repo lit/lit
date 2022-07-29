@@ -4,12 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-type Constructor<T> = {new (): T};
-
-/***
- * Typecast that curries an Event type through a string. The goal of the type
- * cast is to match a prop name to a typed event callback.
- */
+// Typecast that curries an Event type through a string to match
+// a prop name to a typed event callback.
 export type EventName<T extends Event = Event> = string & {
   __event_type: T;
 };
@@ -46,6 +42,8 @@ export type WrappedWebComponent<
 > = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
 >;
+
+type Constructor<T> = {new (): T};
 
 const reservedReactProperties = new Set([
   'children',
