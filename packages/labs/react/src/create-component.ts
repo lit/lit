@@ -5,13 +5,7 @@
  */
 import * as React from 'react';
 
-type ReactModule = typeof React;
-
-interface JSXInterface<R extends ReactModule = ReactModule> {
-  Component: R['Component'];
-  createElement: R['createElement'];
-  forwardRef: R['forwardRef'];
-}
+type ReactModule = typeof window.React;
 
 /***
  * Typecast that curries an Event type through a string. The goal of the type
@@ -37,14 +31,14 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
 >;
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-type UserProps<I, E extends Events> = Partial<
+export type IntrinsicElement<I, E extends Events = {}> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
 // Props used by this component wrapper. This is the UserProps and the
 // special `__forwardedRef` property. Note, this ref is special because
 // it's both needed in this component to get access to the rendered element
 // and must fulfill any ref passed by the user.
-type ComponentProps<I, E extends Events> = UserProps<I, E> & {
+type ComponentProps<I, E extends Events = {}> = IntrinsicElement<I, E> & {
   __forwardedRef?: React.Ref<I>;
 };
 
@@ -52,7 +46,7 @@ export type WrappedWebComponent<
   I,
   E extends Events = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<UserProps<I, E>> & React.RefAttributes<I>
+  React.PropsWithoutRef<IntrinsicElement<I, E>> & React.RefAttributes<I>
 >;
 
 const reservedReactProperties = new Set([
@@ -155,7 +149,7 @@ const setRef = <I>(ref: React.Ref<I>, value: I | null) => {
  * registered via `customElements.define`.
  */
 export function createComponent<I extends HTMLElement, E extends Events = {}>(
-  JSXModule: JSXInterface,
+  JSXModule: ReactModule,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
@@ -279,7 +273,7 @@ export function createComponent<I extends HTMLElement, E extends Events = {}>(
 
   const ForwardedComponent: WrappedWebComponent<I, E> = JSXModule.forwardRef<
     I,
-    UserProps<I, E>
+    IntrinsicElement<I, E>
   >((props, ref) =>
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
