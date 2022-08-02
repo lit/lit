@@ -25,14 +25,20 @@ type ElementWithoutPropsOrEvents<I, E> = Omit<
 >;
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-export type ElementProps<I, E extends Events = {}> = Partial<
+export type ElementProps<
+  I extends HTMLElement,
+  E extends Events = {}
+> = Partial<
   ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
 >;
 // Props used by this component wrapper. This is the ElementProps and the
 // special `__forwardedRef` property. Note, this ref is special because
 // it's both needed in this component to get access to the rendered element
 // and must fulfill any ref passed by the user.
-type ComponentProps<I, E extends Events = {}> = ElementProps<I, E> & {
+type ComponentProps<
+  I extends HTMLElement,
+  E extends Events = {}
+> = ElementProps<I, E> & {
   __forwardedRef?: React.Ref<I>;
 };
 
