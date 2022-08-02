@@ -18,6 +18,29 @@ export function getCallerFromStack() {
 }
 
 /**
+ * Given an element and an optional viewport element, returns true if the
+ * element would be visible in the viewport.  If no viewport is provided,
+ * the window/document.documentElement is used.
+ */
+export function isInViewport(element: Element, viewport?: Element) {
+  const elementRect = element.getBoundingClientRect();
+  const viewportRect = viewport
+    ? viewport.getBoundingClientRect()
+    : {
+        top: 0,
+        left: 0,
+        bottom: window.innerHeight || document.documentElement.clientHeight,
+        right: window.innerWidth || document.documentElement.clientWidth,
+      };
+  return (
+    elementRect.top < viewportRect.bottom &&
+    elementRect.left < viewportRect.right &&
+    elementRect.bottom > viewportRect.top &&
+    elementRect.right > viewportRect.left
+  );
+}
+
+/**
  * Strips tags, squeezes whitespace and trims a string, to make
  * text content comparisons of HTML fragments easier.  This helper
  * takes an undefined value to make it convenient to use with
