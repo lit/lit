@@ -5,6 +5,20 @@
  */
 
 /**
+ * Returns the first item in the array, for more readable tests.
+ */
+export function first<T>(items: T[]) {
+  return items[0];
+}
+
+/**
+ * Returns the last item in the array, for more readable tests.
+ */
+export function last<T>(items: T[]) {
+  return items[items.length - 1];
+}
+
+/**
  * To aid in Mocha's reporting from within any helper method that
  * throws an error, this function returns the line of a stack trace
  * which indicates the caller of the caller of this function.
