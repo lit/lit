@@ -43,7 +43,7 @@ type ComponentProps<
 };
 
 export type WrappedWebComponent<
-  I,
+  I extends HTMLElement,
   E extends Events = {}
 > = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<ElementProps<I, E>> & React.RefAttributes<I>
