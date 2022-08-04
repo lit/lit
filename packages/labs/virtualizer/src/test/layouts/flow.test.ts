@@ -12,6 +12,7 @@ import {
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
+import {VisibilityChangedEvent} from '../../Virtualizer.js';
 import {flow} from '../../layouts/flow.js';
 import {expect, html, fixture} from '@open-wc/testing';
 
@@ -19,10 +20,15 @@ describe('flow layout', () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   let items: unknown[] = [];
+  let rendered: HTMLElement[] = [];
+  let visible: HTMLElement[] = [];
+  let example: HTMLDivElement = undefined as unknown as HTMLDivElement;
   let litVirtualizer: LitVirtualizer;
 
   function getRendered() {
-    return Array.from(litVirtualizer.renderRoot.querySelectorAll('.item'));
+    return Array.from(
+      litVirtualizer.renderRoot.querySelectorAll('.item')
+    ) as HTMLElement[];
   }
 
   function getVisible() {
@@ -33,7 +39,7 @@ describe('flow layout', () => {
     items = Array.from(Array(10).keys());
 
     const renderItem = (item: unknown) => html`<div class="item">${item}</div>`;
-    const example: HTMLDivElement = await fixture(html` <div>
+    example = await fixture(html` <div>
       <style>
         lit-virtualizer {
           height: 200px;
@@ -56,31 +62,49 @@ describe('flow layout', () => {
     litVirtualizer = example.querySelector('lit-virtualizer')!;
     expect(litVirtualizer).to.be.instanceOf(LitVirtualizer);
 
-    // Wait for the rendering of at least one item to complete.
-    await until(() => getRendered().length > 0);
+    await until(() => (rendered = getRendered()).length === items.length);
+    await until(() => (visible = getVisible()).length == 4);
+
+    expect(first(visible).textContent).to.equal('0');
+    expect(last(visible).textContent).to.equal('3');
   });
 
   afterEach(() => {
     items = [];
+    rendered = [];
+    visible = [];
     litVirtualizer = undefined as unknown as LitVirtualizer;
+    example = undefined as unknown as HTMLDivElement;
+  });
+
+  describe('item resizing', () => {
+    it('emits VisibilityChanged event due to item resizing', async () => {
+      const visibilityChangedEvents: VisibilityChangedEvent[] = [];
+      example.addEventListener('visibilityChanged', (e) => {
+        visibilityChangedEvents.push(e);
+      });
+
+      first(rendered).style.height = '100px';
+
+      await until(() => (visible = getVisible()).length == 3);
+      await until(() => visibilityChangedEvents.length === 1);
+
+      expect(last(visibilityChangedEvents).first).to.equal(0);
+      expect(last(visibilityChangedEvents).last).to.equal(2);
+      expect(last(visible)).to.equal(rendered[2]);
+
+      first(rendered).style.height = '10px';
+
+      await until(() => (visible = getVisible()).length == 5);
+      await until(() => visibilityChangedEvents.length === 2);
+
+      expect(last(visibilityChangedEvents).first).to.equal(0);
+      expect(last(visibilityChangedEvents).last).to.equal(4);
+      expect(last(visible)).to.equal(rendered[4]);
+    });
   });
 
   describe('scrollToIndex', () => {
-    let rendered: Element[] = [];
-    let visible: Element[] = [];
-
-    beforeEach(async () => {
-      await until(() => (rendered = getRendered()).length === items.length);
-
-      // All items have been rendered.
-      expect(rendered.length).to.equal(items.length);
-
-      await until(() => (visible = getVisible()).length == 4);
-
-      expect(first(visible).textContent).to.equal('0');
-      expect(last(visible).textContent).to.equal('3');
-    });
-
     it('shows the correct items when scrolling to start position', async () => {
       litVirtualizer.scrollToIndex(5, 'start');
 
