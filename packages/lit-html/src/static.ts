@@ -9,7 +9,7 @@
 
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
 
-interface StaticValue {
+export interface StaticValue {
   /** The value to interpolate as-is into the template. */
   _$litStatic$: string;
 

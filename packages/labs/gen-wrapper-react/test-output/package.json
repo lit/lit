@@ -58,8 +58,7 @@
       ],
       "command": "rollup -c",
       "output": [
-        "*.{js,js.map,d.ts,d.ts.map}",
-        "!rollup.config.js"
+        "tests/*.{js,js.map,d.ts,d.ts.map}"
       ]
     },
     "test": {

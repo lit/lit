@@ -6,6 +6,7 @@
 
 import {Worker} from 'worker_threads';
 import * as pathlib from 'path';
+import {pathToFileURL} from 'node:url';
 import {litSsrPluginCommand} from './constants.js';
 
 import type {TemplateResult} from 'lit';
@@ -29,8 +30,8 @@ export function litSsrPlugin(): TestRunnerPlugin<Payload> {
       }
 
       const {template, modules} = payload;
-      const resolvedModules = modules.map((module) =>
-        pathlib.join(process.cwd(), module)
+      const resolvedModules = modules.map(
+        (module) => pathToFileURL(pathlib.join(process.cwd(), module)).href
       );
 
       let resolve: (value: string) => void;
