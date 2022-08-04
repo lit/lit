@@ -27,6 +27,15 @@ export type {
   ReactiveControllerHost,
 } from './reactive-controller.js';
 
+const NODE_MODE = false;
+const global = NODE_MODE ? globalThis : window;
+
+if (NODE_MODE) {
+  global.customElements ??= {
+    define() {},
+  } as unknown as CustomElementRegistry;
+}
+
 const DEV_MODE = true;
 
 let requestUpdateThenable: (name: string) => {
@@ -38,7 +47,7 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (code: string, warning: string) => void;
 
-const trustedTypes = (window as unknown as {trustedTypes?: {emptyScript: ''}})
+const trustedTypes = (global as unknown as {trustedTypes?: {emptyScript: ''}})
   .trustedTypes;
 
 // Temporary workaround for https://crbug.com/993268
@@ -50,14 +59,14 @@ const emptyStringForBooleanAttribute = trustedTypes
   : '';
 
 const polyfillSupport = DEV_MODE
-  ? window.reactiveElementPolyfillSupportDevMode
-  : window.reactiveElementPolyfillSupport;
+  ? global.reactiveElementPolyfillSupportDevMode
+  : global.reactiveElementPolyfillSupport;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  const issuedWarnings: Set<string | undefined> =
-    (globalThis.litIssuedWarnings ??= new Set());
+  const issuedWarnings: Set<string | undefined> = (global.litIssuedWarnings ??=
+    new Set());
 
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
@@ -74,7 +83,7 @@ if (DEV_MODE) {
   );
 
   // Issue polyfill support warning.
-  if (window.ShadyDOM?.inUse && polyfillSupport === undefined) {
+  if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
     issueWarning(
       'polyfill-support-missing',
       `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
@@ -139,12 +148,12 @@ interface DebugLoggingWindow {
  */
 const debugLogEvent = DEV_MODE
   ? (event: ReactiveUnstable.DebugLog.Entry) => {
-      const shouldEmit = (window as unknown as DebugLoggingWindow)
+      const shouldEmit = (global as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (!shouldEmit) {
         return;
       }
-      window.dispatchEvent(
+      global.dispatchEvent(
         new CustomEvent<ReactiveUnstable.DebugLog.Entry>('lit-debug', {
           detail: event,
         })
@@ -382,6 +391,11 @@ const finalized = 'finalized';
 export type WarningKind = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
+
+const htmlElementShimNeeded = NODE_MODE && global.HTMLElement === undefined;
+if (htmlElementShimNeeded) {
+  global.HTMLElement = class HTMLElement {} as unknown as typeof HTMLElement;
+}
 
 /**
  * Base element class which manages element properties and attributes. When
@@ -1484,6 +1498,10 @@ export abstract class ReactiveElement
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
 
+if (htmlElementShimNeeded) {
+  delete (global as Partial<typeof global>).HTMLElement;
+}
+
 // Apply polyfills if available
 polyfillSupport?.({ReactiveElement});
 
@@ -1521,8 +1539,8 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(globalThis.reactiveElementVersions ??= []).push('1.3.4');
-if (DEV_MODE && globalThis.reactiveElementVersions.length > 1) {
+(global.reactiveElementVersions ??= []).push('1.3.4');
+if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
     `Multiple versions of Lit loaded. Loading multiple versions ` +

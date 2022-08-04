@@ -24,12 +24,12 @@ const updateVersionVariable = async (packageDir, sourcePath, variableName) => {
 
   // Replace version number
   const versionVarRegex = new RegExp(
-    `\\(globalThis\\.${variableName} \\?\\?= \\[\\]\\)\\.push\\('\\d+\\.\\d+\\.\\d+'\\)`
+    `(\\(global(?:This)?\\.${variableName} \\?\\?= \\[\\]\\)\\.push\\(')\\d+\\.\\d+\\.\\d+[^']*('\\))`
   );
   let replaced = false;
-  const newSource = fileSource.replace(versionVarRegex, () => {
+  const newSource = fileSource.replace(versionVarRegex, (_, pre, post) => {
     replaced = true;
-    return `(globalThis.${variableName} ??= []).push('${version}')`;
+    return pre + version + post;
   });
   if (!replaced) {
     throw new Error(`Version variable not found: ${filePath} ${variableName}`);
