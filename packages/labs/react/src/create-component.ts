@@ -111,7 +111,7 @@ const setProperty = <E extends Element>(
   name: string,
   value: unknown,
   old: unknown,
-  events?: EventNameMap
+  events?: EventNames
 ) => {
   const event = events?.[name];
   if (event !== undefined) {
@@ -158,7 +158,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
  */
 export const createComponent = <
   I extends HTMLElement,
-  E extends EventNameMap = {}
+  E extends EventNames = {}
 >(
   React: typeof window.React,
   tagName: string,
