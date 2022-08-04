@@ -18,7 +18,7 @@ import {Constructor, ClassDescriptor} from './base.js';
 type CustomElementClass = Omit<typeof HTMLElement, 'new'>;
 
 const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
-  window.customElements.define(tagName, clazz as CustomElementConstructor);
+  customElements.define(tagName, clazz as CustomElementConstructor);
   // Cast as any because TS doesn't recognize the return type as being a
   // subtype of the decorated class when clazz is typed as
   // `Constructor<HTMLElement>` for some reason.
@@ -38,7 +38,7 @@ const standardCustomElement = (
     elements,
     // This callback is called once the class is otherwise fully defined
     finisher(clazz: Constructor<HTMLElement>) {
-      window.customElements.define(tagName, clazz);
+      customElements.define(tagName, clazz);
     },
   };
 };
