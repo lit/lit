@@ -4,47 +4,53 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-// Typecast that curries an Event type through a string to match
-// a prop name to a typed event callback.
+// Match a prop name to a typed event callback by
+// adding an Event type as an expected property on a string.
 export type EventName<T extends Event = Event> = string & {
   __event_type: T;
 };
 
-type Events = Record<string, EventName | string>;
+// A key value map matching React prop names to event names
+type EventNames = Record<string, EventName | string>;
 
-type EventProps<R extends Events> = {
+// A map of expected event listener types based on EventNames
+type EventListeners<R extends EventNames> = {
   [K in keyof R]: R[K] extends EventName
     ? (e: R[K]['__event_type']) => void
     : (e: Event) => void;
 };
 
 type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
-type ElementWithoutPropsOrEvents<I, E> = Omit<
+type ElementWithoutPropsOrEventListeners<I, E> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>
 >;
+
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
 export type ElementProps<
   I extends HTMLElement,
-  E extends Events = {}
+  E extends EventNames = {}
 > = Partial<
-  ReactProps<I, E> & ElementWithoutPropsOrEvents<I, E> & EventProps<E>
+  ReactProps<I, E> &
+    ElementWithoutPropsOrEventListeners<I, E> &
+    EventListeners<E>
 >;
+
 // Props used by this component wrapper. This is the ElementProps and the
 // special `__forwardedRef` property. Note, this ref is special because
 // it's both needed in this component to get access to the rendered element
 // and must fulfill any ref passed by the user.
 type ComponentProps<
   I extends HTMLElement,
-  E extends Events = {}
+  E extends EventNames = {}
 > = ElementProps<I, E> & {
   __forwardedRef?: React.Ref<I>;
 };
 
-export type WrappedWebComponent<
+export type ReactWebComponent<
   I extends HTMLElement,
-  E extends Events = {}
+  E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<ElementProps<I, E>> & React.RefAttributes<I>
 >;
@@ -105,7 +111,7 @@ const setProperty = <E extends Element>(
   name: string,
   value: unknown,
   old: unknown,
-  events?: Events
+  events?: EventNameMap
 ) => {
   const event = events?.[name];
   if (event !== undefined) {
@@ -150,13 +156,16 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events = {}>(
+export const createComponent = <
+  I extends HTMLElement,
+  E extends EventNameMap = {}
+>(
   React: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-) => {
+): ReactWebComponent<I, E> => {
   const Component = React.Component;
   const createElement = React.createElement;
 
@@ -274,7 +283,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  const ForwardedComponent: WrappedWebComponent<I, E> = React.forwardRef<
+  const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
     I,
     ElementProps<I, E>
   >((props, ref) =>
