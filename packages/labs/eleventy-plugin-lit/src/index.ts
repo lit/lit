@@ -5,6 +5,7 @@
  */
 
 import * as path from 'path';
+import {pathToFileURL} from 'url';
 import {Worker} from 'worker_threads';
 import type {Message} from './worker/types.js';
 
@@ -208,8 +209,8 @@ module.exports = {
       return;
     }
 
-    const resolvedComponentModules = componentModules.map((module) =>
-      path.resolve(process.cwd(), module)
+    const resolvedComponentModules = componentModules.map(
+      (module) => pathToFileURL(path.resolve(process.cwd(), module)).href
     );
 
     switch (mode) {
