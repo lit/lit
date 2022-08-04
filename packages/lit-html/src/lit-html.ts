@@ -727,8 +727,8 @@ export interface DirectiveParent {
 /**
  * Returns an HTML string for the given TemplateStringsArray and result type
  * (HTML or SVG), along with the case-sensitive bound attribute names in
- * template order. The HTML contains comment comment markers denoting the
- * `ChildPart`s and suffixes on bound attributes denoting the `AttributeParts`.
+ * template order. The HTML contains comment markers denoting the `ChildPart`s
+ * and suffixes on bound attributes denoting the `AttributeParts`.
  *
  * @param strings template strings array
  * @param type HTML or SVG
