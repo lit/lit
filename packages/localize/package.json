@@ -61,6 +61,7 @@
   },
   "files": [
     "/lit-localize.d.ts",
+    "/lit-localize.d.ts.map",
     "/lit-localize.js",
     "/lit-localize.js.map",
     "/internal/",
