@@ -5,7 +5,7 @@ import {colors, typography, states, shape} from '../../utils/theme.styles.js';
 @customElement('my-button')
 export class MyButton extends LitElement {
   render() {
-    return html` <button><slot></slot></button> `;
+    return html` <button><slot></slot></button>`;
   }
   static styles = [
     colors,

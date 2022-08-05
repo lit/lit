@@ -33,12 +33,7 @@ app.get('/favicon.ico', async (request, reply) => {
 
 app.get('/*', async (request, reply) => {
   const indexGenerator = await render(request.url);
-  const stream = new Readable({
-    read() {
-      const val = indexGenerator.next().value ?? null;
-      this.push(val);
-    },
-  });
+  const stream = Readable.from(indexGenerator);
   return reply.type('text/html').send(stream);
 });
 

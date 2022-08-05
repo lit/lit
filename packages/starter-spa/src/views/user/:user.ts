@@ -11,7 +11,7 @@ export default (params: UserParams) => {
   return shell(html`
     Hello ${params.user}
     <my-button @click=${(e: Event) => goto(e.target, '/user/asdf')}
-      >Navigate laskjdfklajsdlkfjd</my-button
+      >Navigate</my-button
     >
   `);
 };
