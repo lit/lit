@@ -129,16 +129,16 @@ describe('flow layout', () => {
     });
 
     it('shows the correct items when scrolling to center position', async () => {
-      litVirtualizer.scrollToIndex(5, 'center');
+      litVirtualizer.scrollToIndex(200, 'center');
 
       await until(
-        () => !!(visible = getVisible()).find((e) => e.textContent === '5')
+        () => !!(visible = getVisible()).find((e) => e.textContent === '200')
       );
 
       // 5 items are visible, but the first and last items are only half-visible.
       expect(visible.length).to.equal(5);
-      expect(first(visible).textContent).to.equal('3');
-      expect(last(visible).textContent).to.equal('7');
+      expect(first(visible).textContent).to.equal('198');
+      expect(last(visible).textContent).to.equal('202');
     });
 
     it('shows trailing items when scrolling to first item in end position', async () => {
