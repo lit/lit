@@ -1460,6 +1460,14 @@ class ChildPart implements Disconnectable {
           `[probable mistake: rendered a template's host in itself ` +
             `(commonly caused by writing \${this} in a template]`
         );
+        console.warn(
+          `Attempted to render the template host`,
+          value,
+          `inside itself. This is almost always a mistake, and in dev mode `,
+          `we render some warning text. In production however, we'll `,
+          `render it, which will usually result in an error, and sometimes `,
+          `in the element disappearing from the DOM.`
+        );
         return;
       }
       this._commitNode(value as Node);
