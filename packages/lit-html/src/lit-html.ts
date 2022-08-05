@@ -1455,6 +1455,13 @@ class ChildPart implements Disconnectable {
     } else if ((value as TemplateResult)['_$litType$'] !== undefined) {
       this._commitTemplateResult(value as TemplateResult);
     } else if ((value as Node).nodeType !== undefined) {
+      if (DEV_MODE && this.options?.host === value) {
+        this._commitText(
+          `[probable mistake: rendered a template's host in itself ` +
+            `(commonly caused by writing \${this} in a template]`
+        );
+        return;
+      }
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this._commitIterable(value);
