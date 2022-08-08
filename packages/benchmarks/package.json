@@ -39,12 +39,15 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": [
+        "tsconfig.json",
         "lit-element/**/*.ts",
         "reactive-element/**/*.ts",
         "lit-html/**/*.ts",
-        "utils/**/*.ts"
+        "utils/**/*.ts",
+        "!**/*.d.ts"
       ],
       "output": [
+        "tsconfig.tsbuildinfo",
         "lit-element/**/*.{js,js.map,d.ts,d.ts.map}",
         "reactive-element/**/*.{js,js.map,d.ts,d.ts.map}",
         "lit-html/**/*.{js,js.map,d.ts,d.ts.map}",
