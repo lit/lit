@@ -14,7 +14,7 @@ const reservedReactProperties = new Set([
 
 const listenedEvents: WeakMap<
   Element,
-  Map<string, EventListener>
+  Map<string, EventListenerObject>
 > = new WeakMap();
 
 /**
@@ -25,24 +25,34 @@ const listenedEvents: WeakMap<
  */
 const addOrUpdateEventListener = (
   node: Element,
-  eventName: string,
-  listener?: EventListener
+  event: string,
+  listener: EventListener
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
     listenedEvents.set(node, (events = new Map()));
   }
 
-  const prevListener = events.get(eventName);
-  if (prevListener !== undefined) {
-    node.removeEventListener(eventName, prevListener);
+  let handler = events.get(event);
+  // bail if no change in event handlers
+  if (handler?.handleEvent === listener) return;
+
+  // add event listener if handler is undefined
+  if (handler === undefined && listener !== undefined) {
+    events.set(event, (handler = {handleEvent: listener}));
+    node.addEventListener(event, handler);
+    return;
   }
 
-  if (listener !== undefined) {
-    events.set(eventName, listener);
-    node.addEventListener(eventName, listener);
-  } else {
-    events.delete(eventName);
+  // remove event listener if no listener is passed
+  if (handler !== undefined && listener === undefined) {
+    events.delete(event);
+    node.removeEventListener(event, handler);
+    return;
+  }
+
+  if (handler !== undefined && listener !== undefined) {
+    handler.handleEvent = listener;
   }
 };
 
@@ -54,12 +64,8 @@ const setProperty = <E extends Element>(
   node: E,
   name: string,
   value: unknown,
-  old: unknown,
   events?: Events
 ) => {
-  // bail early if values have not changed
-  if (value === old) return;
-
   const event = events?.[name];
   if (event !== undefined) {
     addOrUpdateEventListener(node, event, value as EventListener);
@@ -174,7 +180,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
 
     static displayName = displayName ?? elementClass.name;
 
-    private _updateElement(oldProps?: ComponentProps) {
+    private _updateElement() {
       if (this._element === null) {
         return;
       }
@@ -184,7 +190,6 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           this._element,
           prop,
           this.props[prop as keyof ComponentProps],
-          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
           events
         );
       }
@@ -205,8 +210,8 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    override componentDidUpdate(old: ComponentProps) {
-      this._updateElement(old);
+    override componentDidUpdate() {
+      this._updateElement();
     }
 
     /**
