@@ -33,14 +33,15 @@ const addOrUpdateEventListener = (
     listenedEvents.set(node, (events = new Map()));
   }
 
-  let handler = events.get(event);
+  const handler = events.get(event);
   // bail if no change in event handlers
   if (handler?.handleEvent === listener) return;
 
   // add event listener if handler is undefined
   if (handler === undefined && listener !== undefined) {
-    events.set(event, (handler = {handleEvent: listener}));
-    node.addEventListener(event, handler);
+    const eventListener = {handleEvent: listener};
+    events.set(event, eventListener);
+    node.addEventListener(event, eventListener);
     return;
   }
 
