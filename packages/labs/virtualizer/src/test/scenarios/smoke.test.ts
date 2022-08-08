@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, justText, until} from '../helpers.js';
+import {ignoreBenignErrors, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {render} from 'lit';
 import {virtualize} from '../../virtualize.js';
@@ -28,11 +28,11 @@ describe('smoke test', () => {
         ></lit-virtualizer>
       `);
 
-      await until(() => justText(lvs.innerHTML).includes('number 3'));
+      await until(() => lvs.textContent?.includes('number 3'));
 
-      expect(justText(lvs.innerHTML)).to.include('number 1');
-      expect(justText(lvs.innerHTML)).to.include('number 2');
-      expect(justText(lvs.innerHTML)).to.include('number 3');
+      expect(lvs.textContent).to.include('number 1');
+      expect(lvs.textContent).to.include('number 2');
+      expect(lvs.textContent).to.include('number 3');
     });
   });
 
