@@ -5,6 +5,7 @@
  */
 
 import {
+  array,
   first,
   ignoreBenignErrors,
   isInViewport,
@@ -52,7 +53,7 @@ describe('VisibilityChanged event', () => {
   }
 
   it('should fire when item moves into view', async () => {
-    const items = Array.from(Array(1000).keys());
+    const items = array(1000);
     const {container, virtualizer} = await createVirtualizer({items});
     const containerEvents: VisibilityChangedEvent[] = [];
     const virtualizerEvents: VisibilityChangedEvent[] = [];
@@ -81,7 +82,7 @@ describe('VisibilityChanged event', () => {
   });
 
   it('should fire when item moves out of view', async () => {
-    const items = Array.from(Array(1000).keys());
+    const items = array(1000);
     const {container, virtualizer} = await createVirtualizer({items});
     const containerEvents: VisibilityChangedEvent[] = [];
     const virtualizerEvents: VisibilityChangedEvent[] = [];

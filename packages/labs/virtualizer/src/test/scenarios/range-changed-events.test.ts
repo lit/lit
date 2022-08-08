@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, isInViewport, last, until} from '../helpers.js';
+import {
+  array,
+  ignoreBenignErrors,
+  isInViewport,
+  last,
+  until,
+} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {RangeChangedEvent} from '../../Virtualizer.js';
 import {expect, html, fixture} from '@open-wc/testing';
@@ -46,7 +52,7 @@ describe('RangeChanged event', () => {
   }
 
   it('should fire when rendered items have changed', async () => {
-    const items = Array.from(Array(1000).keys());
+    const items = array(1000);
     const {container, virtualizer} = await createVirtualizer({items});
     const containerEvents: RangeChangedEvent[] = [];
     const virtualizerEvents: RangeChangedEvent[] = [];

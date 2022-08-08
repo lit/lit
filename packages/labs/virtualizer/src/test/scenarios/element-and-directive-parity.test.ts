@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, until} from '../helpers.js';
+import {array, ignoreBenignErrors, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {virtualize} from '../../virtualize.js';
 import {css, LitElement} from 'lit';
@@ -73,7 +73,7 @@ describe('lit-virtualizer and virtualize directive', () => {
    * to this issue: https://github.com/lit/lit/issues/3052
    */
   it('both render changes based on non-item data changes', async () => {
-    const items: Array<number> = Array.from(Array(100).keys());
+    const items = array(100);
     const selected = new Set([2, 5]);
 
     const example = await fixture(html`
