@@ -64,9 +64,17 @@ const setProperty = <E extends Element>(
   if (value === old) return;
 
   // remove false boolean attributes
-  if (value === false && node.hasAttribute(name)) {
-    node.removeAttribute(name);
-    return;
+  if (typeof value == 'boolean') {
+    const descriptor = Object.getOwnPropertyDescriptor(node, name);
+    if (descriptor?.get || descriptor?.set) {
+      if (value) {
+        node.setAttribute(name, value.toString());
+        return;
+      } else {
+        node.removeAttribute(name);
+        return;
+      }
+    }
   }
 
   const event = events?.[name];
@@ -256,8 +264,13 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
         if (k === '__forwardedRef') continue;
 
         // do not forward false boolean attributes
-        if (v === false) {
-          continue;
+        if (typeof v === 'boolean' && this._element) {
+          const descriptor = Object.getOwnPropertyDescriptor(this._element, k);
+          if (!(descriptor?.get || descriptor?.set)) {
+            if (v === false) {
+              this._element?.removeAttribute(k);
+            }
+          }
         }
 
         if (elementClassProps.has(k)) {
