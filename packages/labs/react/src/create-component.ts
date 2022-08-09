@@ -26,34 +26,37 @@ const listenedEvents: WeakMap<
 const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  listener: EventListener
+  listener?: EventListener
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
-    listenedEvents.set(node, (events = new Map()));
+    events = new Map();
+    listenedEvents.set(node, events);
   }
 
   const handler = events.get(event);
-  // bail if no change in event handlers
+  // bail if no change occurs
   if (handler?.handleEvent === listener) return;
 
+  // swap event listeners on change
+  if (handler && listener) {
+    handler.handleEvent = listener;
+    return;
+  }
+
   // add event listener if handler is undefined
-  if (handler === undefined && listener !== undefined) {
-    const eventListener = {handleEvent: listener};
-    events.set(event, eventListener);
-    node.addEventListener(event, eventListener);
+  if (listener && handler === undefined) {
+    const freshHandler = {handleEvent: listener};
+    events.set(event, freshHandler);
+    node.addEventListener(event, freshHandler);
     return;
   }
 
   // remove event listener if no listener is passed
-  if (handler !== undefined && listener === undefined) {
+  if (handler && listener === undefined) {
     events.delete(event);
     node.removeEventListener(event, handler);
     return;
-  }
-
-  if (handler !== undefined && listener !== undefined) {
-    handler.handleEvent = listener;
   }
 };
 
@@ -73,6 +76,8 @@ const setProperty = <E extends Element>(
     return;
   }
 
+  // All properties should be sent to a web component. The web component
+  // will decide to update or drive other changes.
   node[name as keyof E] = value as E[keyof E];
 };
 
