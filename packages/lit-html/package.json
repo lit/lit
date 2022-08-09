@@ -150,6 +150,7 @@
     "./private-ssr-support.js": {
       "types": "./development/private-ssr-support.d.ts",
       "development": "./development/private-ssr-support.js",
+      "require": "./cjs/private-ssr-support.js",
       "default": "./private-ssr-support.js"
     },
     "./static.js": {
@@ -163,6 +164,7 @@
     "build:ts": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
+    "build:cjs": "wireit",
     "build:version-stability-test": "wireit",
     "check-version": "wireit",
     "checksize": "wireit",
@@ -183,7 +185,8 @@
     "/static.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
-    "/directives/"
+    "/directives/",
+    "/cjs/"
   ],
   "wireit": {
     "build": {
@@ -191,7 +194,8 @@
         "build:rollup",
         "build:ts",
         "build:ts:types",
-        "build:version-stability-test"
+        "build:version-stability-test",
+        "build:cjs"
       ]
     },
     "build:ts": {
@@ -247,6 +251,18 @@
         "development/test/*_test.html",
         "test/polyfill-support/*_test.html",
         "development/test/polyfill-support/*_test.html"
+      ]
+    },
+    "build:cjs": {
+      "dependencies": [
+        "build:rollup"
+      ],
+      "command": "rollup -c rollup-cjs.config.js && echo '{\"type\": \"commonjs\"}' > cjs/package.json",
+      "files": [
+        "rollup-cjs.config.js"
+      ],
+      "output": [
+        "cjs/"
       ]
     },
     "build:version-stability-test": {
@@ -315,11 +331,12 @@
     "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
     "@types/web-ie11": "^0.0.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0"
+    "@webcomponents/webcomponentsjs": "^2.6.0"
   },
   "typings": "lit-html.d.ts",
   "directories": {

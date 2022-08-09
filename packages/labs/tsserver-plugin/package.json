@@ -20,6 +20,9 @@
   },
   "wireit": {
     "build": {
+      "dependencies": [
+        "../analyzer:build"
+      ],
       "command": "tsc --build --pretty",
       "files": [
         "src/**/*.ts",

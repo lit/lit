@@ -85,7 +85,7 @@
       // monorepo "package.json".
       "files": [
         "**/goldens/**",
-        "**/rollup.config.js",
+        "**/rollup*.config.js",
         "**/src/test-gen/**",
         "**/src/test/**",
         "**/src/tests/**",
@@ -94,7 +94,8 @@
         "packages/benchmarks/**",
         "packages/labs/ssr/src/demo/**",
         "packages/tests/**",
-        "rollup-common.js"
+        "rollup-common.js",
+        "packages/labs/eleventy-plugin-lit/demo/**"
       ],
       "rules": {
         "import/no-extraneous-dependencies": "off"

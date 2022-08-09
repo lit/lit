@@ -24,6 +24,7 @@
   "wireit": {
     "build": {
       "dependencies": [
+        "../template-parser:build",
         "build:esm",
         "build:cjs"
       ]
@@ -32,16 +33,13 @@
       "command": "tsc --build --pretty",
       "files": [
         "src/**/*.ts",
-        "tsconfig.json",
-        "tsconfig.cjs.json"
+        "tsconfig.json"
       ],
       "output": [
         "lib",
         "test",
-        "cjs",
         "index.{js,js.map,d.ts,d.ts.map}",
-        "tsconfig.tsbuildinfo",
-        "tsconfig.cjs.tsbuildinfo"
+        "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
     },
@@ -49,7 +47,6 @@
       "command": "tsc --project tsconfig.cjs.json --pretty && echo '{\"type\": \"commonjs\"}' > cjs/package.json",
       "files": [
         "src/**/*.ts",
-        "tsconfig.json",
         "tsconfig.cjs.json"
       ],
       "output": [
@@ -87,12 +84,14 @@
     "/index.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
+    "@lit-labs/template-parser": "^0.1.0",
     "typescript": "~4.7.4"
   },
   "devDependencies": {
+    "@lit-labs/template-parser": "^0.1.0",
+    "custom-elements-manifest": "webcomponents/custom-elements-manifest#f893b20",
     "lit": "^2.0.0",
     "lit-analyzer-test-files": "./test-files/basic-elements/",
-    "package-json-type": "^1.0.3",
-    "custom-elements-manifest": "webcomponents/custom-elements-manifest#f893b20"
+    "package-json-type": "^1.0.3"
   }
 }

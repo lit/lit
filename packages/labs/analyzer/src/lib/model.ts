@@ -10,6 +10,7 @@ import {AbsolutePath, PackagePath} from './paths.js';
 import type {IPackageJson as PackageJson} from 'package-json-type';
 export type {PackageJson};
 import type ManifestJson from 'custom-elements-manifest/schema';
+import {getModule} from './javascript/modules.js';
 export type {ManifestJson};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,8 +48,10 @@ export interface ModuleInit {
   sourcePath: PackagePath;
   jsPath: PackagePath;
   packageJson: PackageJson;
+  dependencies?: Set<AbsolutePath>;
   getDeclarations: () => Declaration[];
   getExport: (name: string) => Declaration;
+  context: AnalyzerContext;
 }
 
 export class Module {
@@ -67,21 +70,25 @@ export class Module {
    * project this will be the same as `sourcePath`.
    */
   readonly jsPath: PackagePath;
-  readonly dependencies = new Set<string>();
+  readonly dependencies: Set<AbsolutePath>;
+  readonly diagnostics: ts.Diagnostic[] = [];
 
   readonly packageJson: PackageJson;
 
   private _getDeclarations: () => Declaration[];
   private _declarations: Declaration[] | undefined = undefined;
   private _getExport: (name: string) => Declaration;
+  private _context: AnalyzerContext;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
+    this.dependencies = init.dependencies ?? new Set();
     this.packageJson = init.packageJson;
     this._getDeclarations = init.getDeclarations;
     this._getExport = init.getExport;
+    this._context = init.context;
   }
 
   getExport<T extends Declaration>(name: string, type: Constructor<T>): T;
@@ -109,6 +116,44 @@ export class Module {
 
   get declarations() {
     return (this._declarations ??= this._getDeclarations());
+  }
+
+  *getDependantModules(): Generator<Module> {
+    for (const dep of this.dependencies) {
+      const sourceFile = this._context.program.getSourceFileByPath(
+        dep as unknown as ts.Path
+      );
+      if (sourceFile === undefined) {
+        throw new Error(
+          `Internal error: Program did not contain SourceFile for '${dep}'`
+        );
+      }
+      yield getModule(sourceFile, this._context);
+    }
+  }
+
+  getCustomElementDeclaration(
+    tagName: string,
+    searchDeps = true
+  ): LitElementDeclaration | undefined {
+    const elements = this.declarations.filter(
+      (dec) => dec instanceof LitElementDeclaration
+    ) as LitElementDeclaration[];
+    let el = elements.find((dec) => dec.tagname === tagName);
+    if (el === undefined && searchDeps) {
+      for (const dep of this.getDependantModules()) {
+        el = dep.getCustomElementDeclaration(tagName, false);
+        if (el !== undefined) {
+          break;
+        }
+      }
+    }
+    return el;
+  }
+
+  getDiagnostics(): ts.Diagnostic[] {
+    this.declarations;
+    return this.diagnostics;
   }
 }
 
@@ -452,9 +497,10 @@ export interface AnalyzerContext {
     typeof import('path'),
     'join' | 'relative' | 'dirname' | 'basename' | 'dirname' | 'parse'
   >;
+  log: (s: string) => void;
 }
 
-export const getCommandLine = (
+export const getCommandLineFromProgram = (
   program: ts.Program,
   path: AnalyzerContext['path']
 ) => {

@@ -4,9 +4,20 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateResult} from 'lit';
+import {_$LH} from 'lit-html/private-ssr-support.js';
+const {
+  getTemplateHtml,
+  marker,
+  markerMatch,
+  boundAttributeSuffix,
+  PartType,
+  HTML_RESULT,
+} = _$LH;
+import type {TemplateResult} from 'lit-html';
+export type {TemplateResult};
 
-import {PartType} from 'lit-html/part-types.js';
+export {PartType, HTML_RESULT};
+type PartTypeType = typeof PartType[keyof typeof PartType];
 
 import {
   type DefaultTreeAdapterMap,
@@ -131,7 +142,7 @@ export const traverse = (node: Node, visitor: Visitor, parent?: ParentNode) => {
 };
 
 export interface PartInfo {
-  type: PartType;
+  type: PartTypeType;
   valueIndex: number;
 }
 
@@ -153,18 +164,20 @@ export const hasAttributePart = (
   return Boolean(node.litPart);
 };
 
-import {_$LH} from 'lit-html/private-ssr-support.js';
-const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = _$LH;
-
 type AstVisitor = {
   pre?(node: Node, parent: Node | undefined, html: string): void;
   post?(node: Node, parent: Node | undefined, html: string): void;
 };
 
+export interface ParsedTemplateResult {
+  ast: Node;
+  html: string;
+}
+
 export const parseTemplateResult = (
   result: TemplateResult,
   visitor?: AstVisitor
-) => {
+): ParsedTemplateResult => {
   // The property '_$litType$' needs to remain unminified.
   const [trustedHtml, attrNames] = getTemplateHtml(
     result.strings,

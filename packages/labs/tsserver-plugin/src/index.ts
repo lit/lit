@@ -9,44 +9,52 @@ import ts from 'typescript/lib/tsserverlibrary.js';
 import {
   AnalyzerContext,
   ClassDeclaration,
-  getCommandLine,
+  getCommandLineFromProgram,
   LitElementDeclaration,
 } from '@lit-labs/analyzer/lib/model.js';
 import {getReferenceForIdentifier} from '@lit-labs/analyzer/lib/references.js';
+import {getModule} from '@lit-labs/analyzer/lib/javascript/modules.js';
+import {getTemplateModelAtPosition} from '@lit-labs/analyzer/lib/lit-html/template-result.js';
 import path from 'path';
+import * as util from 'util';
 
 interface PluginContext extends AnalyzerContext {
   log: (s: string) => void;
 }
 
+const memoMap = new Map<Function, WeakMap<object, unknown>>();
+const memo = <K extends {}, V>(key: K, producer: (key: K) => V): V => {
+  let map = memoMap.get(producer);
+  if (map === undefined) {
+    memoMap.set(producer, (map = new WeakMap()));
+  }
+  let v = map.get(key);
+  if (v === undefined) {
+    v = producer(key);
+  }
+  return v as V;
+};
+
 function init(_modules: {
   typescript: typeof import('typescript/lib/tsserverlibrary');
 }) {
-  let program: ts.Program | undefined;
-  let checker: ts.TypeChecker | undefined;
-  let commandLine: ts.ParsedCommandLine | undefined;
   function create(info: ts.server.PluginCreateInfo) {
-    let context: PluginContext;
-    program = undefined;
-    checker = undefined;
-    const getContext = () => {
-      if (context === undefined) {
-        context = {
-          get program() {
-            return (program ??= info.languageService.getProgram()!);
-          },
-          get checker() {
-            return (checker ??= this.program.getTypeChecker());
-          },
-          path,
-          fs: ts.sys,
-          get commandLine() {
-            return (commandLine ??= getCommandLine(this.program, path));
-          },
-          log: (s: string) => info.project.projectService.logger.info(s),
-        };
-      }
-      return context;
+    const getChecker = (program: ts.Program) => program.getTypeChecker();
+    const getCommandLine = (program: ts.Program) =>
+      getCommandLineFromProgram(program, path);
+    const context = {
+      get program() {
+        return info.languageService.getProgram()!;
+      },
+      get checker() {
+        return memo(this.program, (program) => getChecker(program));
+      },
+      path,
+      fs: ts.sys,
+      get commandLine() {
+        return memo(this.program, (program) => getCommandLine(program));
+      },
+      log: (s: string) => info.project.projectService.logger.info(s),
     };
     info.project.projectService.logger.info(
       '*** Lit analyzer tsserver plugin initialized'
@@ -63,14 +71,36 @@ function init(_modules: {
 
     // Remove specified entries from completion list
     service.getQuickInfoAtPosition = (fileName: ts.Path, position: number) => {
-      const sourceFile = getContext().program.getSourceFileByPath(
+      const sourceFile = context.program.getSourceFileByPath(
         fileName.toLowerCase() as ts.Path
       );
       let result;
       if (sourceFile !== undefined) {
-        result = getQuickInfoAtPosition(sourceFile, position, getContext());
+        result = getQuickInfoAtPosition(sourceFile, position, context);
       }
       return result ?? orig.getQuickInfoAtPosition(fileName, position);
+    };
+
+    service.getSemanticDiagnostics = (fileName: ts.Path) => {
+      const diagnostics = orig.getSemanticDiagnostics(fileName);
+      const sourceFile = context.program.getSourceFileByPath(
+        fileName.toLowerCase() as ts.Path
+      );
+      if (sourceFile !== undefined) {
+        console.log(
+          sourceFile.text.slice(
+            sourceFile.text.indexOf('/** @mixin'),
+            sourceFile.text.indexOf(
+              '};',
+              sourceFile.text.indexOf('/** @mixin')
+            ) + 3
+          )
+        );
+        const module = getModule(sourceFile, context);
+        diagnostics.push(...module.getDiagnostics());
+      }
+      context.log('*** Lit diagnostics:\n' + util.inspect(diagnostics));
+      return diagnostics;
     };
 
     return service;
@@ -86,6 +116,33 @@ const getQuickInfoAtPosition = (
   position: number,
   context: PluginContext
 ): ts.QuickInfo | undefined => {
+  context.log(`Looking for template model at ${position}`);
+  const model = getTemplateModelAtPosition(sourceFile, position, context);
+  if (model !== undefined) {
+    context.log(`Found model at ${position}`);
+    return {
+      kind: ts.ScriptElementKind.label,
+      textSpan: {
+        start: model.start,
+        length: model.end - model.start,
+      },
+      kindModifiers: '',
+      displayParts: [
+        {
+          kind: 'text',
+          text: `class ${model.el.name}`,
+        },
+      ],
+      documentation: [
+        {
+          kind: 'text',
+          text: `Custom element: &lt;${model.el.tagname}&gt;
+          \n
+          Heritage: ${getHeritage(model.el).join(' ← ')}`,
+        },
+      ],
+    };
+  }
   context.log(`Looking for identifier at ${position}`);
   const identifier = getIdentifierAtPosition(sourceFile, position);
   if (identifier !== undefined) {
@@ -120,8 +177,7 @@ const getQuickInfoAtPosition = (
         };
       }
     } catch (e) {
-      console.log((e as Error)?.stack ?? (e as string));
-      context.log((e as Error)?.stack ?? (e as string));
+      context.log((e as {})?.toString());
     }
   }
   return undefined;

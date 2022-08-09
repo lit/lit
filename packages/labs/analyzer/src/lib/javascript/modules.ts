@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import ts, {SourceFile} from 'typescript';
 import {
   AnalyzerContext,
   Declaration,
@@ -63,7 +63,9 @@ const getAndValidateModuleFromCache = (
   if (module !== undefined && module.sourceFile === sourceFile) {
     if (
       Array.from(module.dependencies).every((path) => {
-        const sourceFile = context.program.getSourceFileByPath(path as ts.Path);
+        const sourceFile = context.program.getSourceFileByPath(
+          path as unknown as ts.Path
+        );
         return sourceFile
           ? getAndValidateModuleFromCache(sourceFile, context)
           : true;
@@ -112,44 +114,10 @@ export const getModule = (
         `Could not determine output filename for '${sourcePath}'`
       );
     }
-    const dependencies = new Set<string>();
-    const declarationMap = new Map<string, Declaration | (() => Declaration)>();
-    for (const statement of sourceFile.statements) {
-      if (ts.isClassDeclaration(statement)) {
-        const name =
-          statement.name?.text ??
-          (statement.modifiers?.some(
-            (s) => s.kind === ts.SyntaxKind.DefaultKeyword
-          )
-            ? 'default'
-            : undefined);
-        if (name === undefined) {
-          throw new DiagnosticsError(
-            statement,
-            `Internal error: Expected name for statmeent`
-          );
-        }
-        declarationMap.set(name, () =>
-          getClassDeclaration(statement, false, context)
-        );
-      } else if (ts.isVariableStatement(statement)) {
-        for (const [
-          name,
-          getVariableDeclaration,
-        ] of statement.declarationList.declarations
-          .map((dec) => getVariableDeclarations(dec, dec.name, context))
-          .flat()) {
-          declarationMap.set(name, getVariableDeclaration);
-        }
-      } else if (ts.isFunctionDeclaration(statement)) {
-        declarationMap.set(
-          statement.name?.text ?? '',
-          getFunctionDeclaration(statement, statement.name!, context)
-        );
-      } else if (ts.isImportDeclaration(statement)) {
-        dependencies.add(statement.moduleSpecifier.getText().slice(1, -1));
-      }
-    }
+    const [declarationMap, dependencies] = getDeclarationsAndDependencies(
+      sourceFile,
+      context
+    );
     module = new Module({
       sourcePath,
       // The jsPath appears to come out of the ts API with unix
@@ -161,6 +129,7 @@ export const getModule = (
       ),
       sourceFile,
       packageJson,
+      dependencies,
       getExport: (name: string) => {
         let dec = declarationMap.get(name);
         if (dec === undefined) {
@@ -176,11 +145,21 @@ export const getModule = (
       },
       getDeclarations: () => {
         const declarations = [];
-        for (const [, dec] of declarationMap) {
-          declarations.push(typeof dec === 'function' ? dec() : dec);
+        for (const [name, dec] of declarationMap) {
+          try {
+            declarations.push(typeof dec === 'function' ? dec() : dec);
+          } catch (e) {
+            if (e instanceof DiagnosticsError) {
+              module?.diagnostics.push(...e.diagnostics);
+            } else {
+              context.log(`Error getting declaration '${name}': ${e}`);
+              throw e;
+            }
+          }
         }
         return declarations;
       },
+      context,
     });
     sourceModuleCache.set(sourceFile, module);
   } else {
@@ -197,9 +176,57 @@ export const getModule = (
             `Cannot get export '${name}' from module ${sourcePath}; no manifest existed for this module.`
           );
         },
+        context,
       });
   }
   return module;
+};
+
+const getDeclarationsAndDependencies = (
+  sourceFile: SourceFile,
+  context: AnalyzerContext
+): [Map<string, Declaration | (() => Declaration)>, Set<AbsolutePath>] => {
+  const dependencies = new Set<AbsolutePath>();
+  const declarationMap = new Map<string, Declaration | (() => Declaration)>();
+  for (const statement of sourceFile.statements) {
+    if (ts.isClassDeclaration(statement)) {
+      const name =
+        statement.name?.text ??
+        (statement.modifiers?.some(
+          (s) => s.kind === ts.SyntaxKind.DefaultKeyword
+        )
+          ? 'default'
+          : undefined);
+      if (name === undefined) {
+        throw new DiagnosticsError(
+          statement,
+          `Internal error: Expected name for statmeent`
+        );
+      }
+      declarationMap.set(name, () =>
+        getClassDeclaration(statement, false, context)
+      );
+    } else if (ts.isVariableStatement(statement)) {
+      for (const [
+        name,
+        getVariableDeclaration,
+      ] of statement.declarationList.declarations
+        .map((dec) => getVariableDeclarations(dec, dec.name, context))
+        .flat()) {
+        declarationMap.set(name, getVariableDeclaration);
+      }
+    } else if (ts.isFunctionDeclaration(statement)) {
+      declarationMap.set(
+        statement.name?.text ?? '',
+        getFunctionDeclaration(statement, statement.name!, context)
+      );
+    } else if (ts.isImportDeclaration(statement)) {
+      dependencies.add(
+        statement.moduleSpecifier.getText().slice(1, -1) as AbsolutePath
+      );
+    }
+  }
+  return [declarationMap, dependencies];
 };
 
 const importPackageFromManifest = (
@@ -222,7 +249,7 @@ const importPackageFromManifest = (
   }
   const manifest = JSON.parse(manifestJson) as ManifestJson.Package;
   for (const manifestModule of manifest.modules) {
-    const module = getModuleFromManifest(manifestModule, packageJson);
+    const module = getModuleFromManifest(manifestModule, packageJson, context);
     manifestModuleCache.set(
       context.path.join(packageRoot, module.jsPath),
       module
@@ -232,7 +259,8 @@ const importPackageFromManifest = (
 
 const getModuleFromManifest = (
   manifestModule: ManifestJson.Module,
-  packageJson: PackageJson
+  packageJson: PackageJson,
+  context: AnalyzerContext
 ): Module => {
   const declarations =
     manifestModule.declarations?.map((dec) => {
@@ -262,6 +290,7 @@ const getModuleFromManifest = (
       return dec;
     },
     getDeclarations: () => declarations,
+    context,
   });
   return module;
 };

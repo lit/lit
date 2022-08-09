@@ -44,3 +44,23 @@ export class ElementA extends AMixin(LitElement) {
     return html`<h1>${this.foo}</h1>`;
   }
 }
+
+/**
+ * My awesome element
+ * @fires a-changed - An awesome event to fire
+ */
+@customElement('element-b')
+export class ElementB extends LitElement {
+  static override styles = css`
+    :host {
+      display: block;
+    }
+  `;
+
+  @property()
+  foo?: string;
+
+  override render() {
+    return html`<element-a>${this.foo}</element-a>`;
+  }
+}

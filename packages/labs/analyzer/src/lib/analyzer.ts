@@ -64,6 +64,7 @@ export class Analyzer {
       checker: program.getTypeChecker(),
       path,
       fs: ts.sys,
+      log: (s) => console.log(s),
     };
     const diagnostics = this.context.program.getSemanticDiagnostics();
     if (diagnostics.length > 0) {

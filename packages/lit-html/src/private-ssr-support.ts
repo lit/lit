@@ -9,6 +9,7 @@ import {
   PartInfo,
   DirectiveClass,
   DirectiveResult,
+  PartType,
 } from './directive.js';
 import {
   _$LH as p,
@@ -78,4 +79,5 @@ export const _$LH = {
   BooleanAttributePart: p._BooleanAttributePart,
   EventPart: p._EventPart,
   ElementPart: p._ElementPart,
+  PartType,
 };

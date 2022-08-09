@@ -39,9 +39,9 @@
         "tsconfig.cjs.json"
       ],
       "output": [
-        "lib",
-        "test",
-        "cjs",
+        "lib/",
+        "test/",
+        "cjs/",
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo",
         "tsconfig.cjs.tsbuildinfo"
@@ -84,11 +84,11 @@
   "exports": {
     ".": {
       "import": "./index.js",
-      "xrequire": "./cjs/index.js"
+      "require": "./cjs/index.js"
     },
     "./": {
       "import": "./",
-      "xrequire": "./cjs/"
+      "require": "./cjs/"
     }
   },
   "dependencies": {

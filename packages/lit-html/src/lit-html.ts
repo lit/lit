@@ -341,7 +341,8 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = document;
+const g = globalThis;
+const d = g.document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
 const createMarker = (v = '') => d.createComment(v);
@@ -699,7 +700,7 @@ if (ENABLE_EXTRA_SECURITY_HOOKS) {
   }
 }
 
-const walker = d.createTreeWalker(
+const walker = d?.createTreeWalker(
   d,
   129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
   null,
@@ -2147,8 +2148,8 @@ export const _$LH = {
 
 // Apply polyfills if available
 const polyfillSupport = DEV_MODE
-  ? window.litHtmlPolyfillSupportDevMode
-  : window.litHtmlPolyfillSupport;
+  ? g.litHtmlPolyfillSupportDevMode
+  : g.litHtmlPolyfillSupport;
 polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
