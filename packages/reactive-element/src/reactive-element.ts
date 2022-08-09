@@ -1083,10 +1083,12 @@ export abstract class ReactiveElement
       this.constructor as typeof ReactiveElement
     ).__attributeNameForProperty(name, options);
     if (attr !== undefined && options.reflect === true) {
-      const toAttribute =
-        (options.converter as ComplexAttributeConverter)?.toAttribute ??
-        defaultConverter.toAttribute;
-      const attrValue = toAttribute!(value, options.type);
+      const converter =
+        (options.converter as ComplexAttributeConverter)?.toAttribute !==
+        undefined
+          ? (options.converter as ComplexAttributeConverter)
+          : defaultConverter;
+      const attrValue = converter.toAttribute!(value, options.type);
       if (
         DEV_MODE &&
         (this.constructor as typeof ReactiveElement).enabledWarnings!.indexOf(
@@ -1131,17 +1133,19 @@ export abstract class ReactiveElement
     // if it was just set because the attribute changed.
     if (propName !== undefined && this.__reflectingProperty !== propName) {
       const options = ctor.getPropertyOptions(propName);
-      const converter = options.converter;
-      const fromAttribute =
-        (converter as ComplexAttributeConverter)?.fromAttribute ??
-        (typeof converter === 'function'
-          ? (converter as (value: string | null, type?: unknown) => unknown)
-          : null) ??
-        defaultConverter.fromAttribute;
+      const converter =
+        typeof options.converter === 'function'
+          ? {fromAttribute: options.converter}
+          : options.converter?.fromAttribute !== undefined
+          ? options.converter
+          : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this[propName as keyof this] = fromAttribute!(value, options.type) as any;
+      this[propName as keyof this] = converter.fromAttribute!(
+        value,
+        options.type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
