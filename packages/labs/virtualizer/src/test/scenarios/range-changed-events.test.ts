@@ -71,13 +71,14 @@ describe('RangeChanged event', () => {
 
     await until(() => virtualizerEvents.length === 1);
 
-    expect(last(virtualizerEvents).first).to.be.closeTo(480, 20); // +/- 20
-    expect(last(virtualizerEvents).last).to.be.closeTo(523, 20); // +/- 20
+    // The overhang (i.e. length-in-pixels of rendered DOM that are outside
+    // the viewport) is currently baked in at 1000px, which means there
+    // should be 20 items rendered above and below the first and last
+    // visible items.
+    expect(last(virtualizerEvents).first).to.eq(480);
+    expect(last(virtualizerEvents).last).to.eq(523);
 
-    // Currently the rangechanged event is used by virtualizer internals, and
-    // there are no discriminators on the event to identify the specific
-    // virtualizer it was emitted from, so we are currently expecting it to
-    // not bubble up to the container.
+    // The rangechanged event should not bubble up to its containing element.
     expect(containerEvents.length).to.equal(0);
   });
 });
