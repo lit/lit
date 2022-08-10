@@ -264,11 +264,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       return this._calculateAnchor(lower, upper);
     }
     if (this._first < 0) {
-      console.error('_getAnchor: negative _first');
       return this._calculateAnchor(lower, upper);
     }
     if (this._last < 0) {
-      console.error('_getAnchor: negative _last');
       return this._calculateAnchor(lower, upper);
     }
 
@@ -490,6 +488,10 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._getActiveItems();
     this._updateVisibleIndices();
 
+    if (this._scrollSize !== _scrollSize) {
+      this._emitScrollSize();
+    }
+
     if (
       this._first !== _first ||
       this._last !== _last ||
@@ -501,11 +503,10 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     if (!(this._first === -1 && this._last === -1)) {
       this._emitChildPositions();
-      this._emitScrollError();
     }
 
-    if (this._scrollSize !== _scrollSize) {
-      this._emitScrollSize();
+    if (this._scrollError !== 0) {
+      this._emitScrollError();
     }
 
     if (
