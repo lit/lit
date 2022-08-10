@@ -72,6 +72,10 @@ export interface Layout {
 
   viewportScroll: Positions;
 
+  totalScrollSize: Size;
+
+  offsetWithinScroller: Positions;
+
   readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
 
   readonly listenForChildLoadEvents?: boolean;

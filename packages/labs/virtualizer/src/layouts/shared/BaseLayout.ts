@@ -57,6 +57,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   private _viewportSize: Size = {width: 0, height: 0};
 
+  public totalScrollSize: Size = {width: 0, height: 0};
+
+  public offsetWithinScroller: Positions = {left: 0, top: 0};
+
   /**
    * Flag for debouncing asynchnronous reflow requests.
    */
@@ -280,26 +284,28 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   get pinnedCoordinates() {
-    if (this._pinnedPosition !== null) {
-      const pos = pos1(this.direction);
-      if (this._pinnedPosition[pos] !== undefined) {
-        return {
-          [pos]: Math.max(
-            0,
-            Math.min(
-              this._pinnedPosition[pos]!,
-              this._scrollSize - this._viewDim1
-            )
-          ),
+    const pos = pos1(this.direction);
+    const val = this._pinnedPosition?.[pos];
+    return typeof val !== 'number'
+      ? null
+      : {
+          [pos]: this._clampScrollPosition(val),
         };
-      }
-    }
-    return null;
+  }
+
+  _clampScrollPosition(val: number) {
+    return Math.max(
+      -this.offsetWithinScroller[this._positionDim],
+      Math.min(val, this.totalScrollSize[dim1(this.direction)] - this._viewDim1)
+    );
   }
 
   unpin() {
-    this._pinnedItem = null;
-    this._pinnedPosition = null;
+    if (this._pinnedItem !== null || this._pinnedPosition !== null) {
+      console.log('unpinned');
+      this._pinnedItem = null;
+      this._pinnedPosition = null;
+    }
   }
 
   async dispatchEvent(evt: Event) {
@@ -413,17 +419,18 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected _setPositionFromPin() {
     if (this.pinnedItem !== null) {
-      const {_scrollPosition} = this;
+      const lastScrollPosition = this._scrollPosition;
       const {index, block} = this.pinnedItem;
-      this._scrollPosition = this._calculateScrollIntoViewPosition({
-        index,
-        block: block || 'start',
-      });
-      this._scrollError += _scrollPosition - this._scrollPosition;
+      this._scrollPosition =
+        this._calculateScrollIntoViewPosition({
+          index,
+          block: block || 'start',
+        }) - this.offsetWithinScroller[this._positionDim];
+      this._scrollError = lastScrollPosition - this._scrollPosition;
     } else if (this.pinnedCoordinates !== null) {
       const {_scrollPosition} = this;
       this._scrollPosition = this.pinnedCoordinates[pos1(this.direction)]!;
-      this._scrollError += _scrollPosition - this._scrollPosition;
+      this._scrollError = _scrollPosition - this._scrollPosition;
     }
   }
   /**
@@ -465,7 +472,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
         }
       }
     }
-    return Math.floor(scrollPosition);
+    scrollPosition += this.offsetWithinScroller[this._positionDim];
+    return this._clampScrollPosition(scrollPosition);
   }
 
   public getScrollIntoViewCoordinates(
@@ -533,7 +541,11 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   private _checkThresholds() {
-    if (this._viewDim1 === 0 && this._num > 0) {
+    if (
+      (this._viewDim1 === 0 && this._num > 0) ||
+      this._pinnedItem !== null ||
+      this._pinnedPosition !== null
+    ) {
       this._scheduleReflow();
     } else {
       const min = Math.max(0, this._scrollPosition - this._overhang);

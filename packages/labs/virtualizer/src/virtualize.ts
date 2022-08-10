@@ -13,11 +13,7 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
-import {
-  Virtualizer,
-  ScrollPositionOptions,
-  RangeChangedEvent,
-} from './Virtualizer.js';
+import {Virtualizer, PinOptions, RangeChangedEvent} from './Virtualizer.js';
 
 export {virtualizerRef} from './Virtualizer.js';
 
@@ -46,7 +42,7 @@ export interface VirtualizeDirectiveConfig<T> {
   /**
    * Index and position of the item to scroll to.
    */
-  scrollPosition?: ScrollPositionOptions;
+  pin?: PinOptions;
 }
 
 /*export */ const defaultKeyFunction = <T>(item: T) => item;
@@ -114,8 +110,8 @@ class VirtualizeDirective<T> extends AsyncDirective {
     if (config.layout) {
       virtualizer!.layout = config.layout;
     }
-    if (config.scrollPosition) {
-      virtualizer!.scrollPosition = config.scrollPosition;
+    if (config.pin) {
+      virtualizer!.pin = config.pin;
     }
   }
 
@@ -133,8 +129,8 @@ class VirtualizeDirective<T> extends AsyncDirective {
     const config = this.cachedConfig!;
     const hostElement = part.parentNode as HTMLElement;
     if (hostElement && hostElement.nodeType === 1) {
-      const {layout, scroller} = config;
-      this.virtualizer = new Virtualizer({hostElement, layout, scroller});
+      const {layout, scroller, pin} = config;
+      this.virtualizer = new Virtualizer({hostElement, layout, scroller, pin});
       this.virtualizer!.connected();
       hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
         e.stopPropagation();

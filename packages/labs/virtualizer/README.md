@@ -144,21 +144,62 @@ When you call one of the various scrolling methods in a modern browser, you can 
 As much as possible, `@lit-labs/virtualizer` strives to "just work" with all of these native scrolling APIs. However, there are a couple of cases where using a virtualizer introduces special scrolling considerations:
 
 - When you want to scroll one of the virtualizer's child elements into view, but it isn't currently in the DOM because it's too far outside the viewport
-- When you want to scroll smoothly and you're using a virtualizer layout (like the default `flex` layout) that estimates the sizes of child elements it hasn't yet seen
+- When you want to scroll smoothly and you're using a virtualizer layout (like the default `flow` layout) that estimates the sizes of child elements it hasn't yet seen
 
 In addition to these special considerations, `@lit-labs/virtualizer` provides its own declarative API for specifying scroll position that you may find useful in certain circumstances.
 
 See the sections below for usage details.
 
-#### Scrolling to specific coordinates
-
-If you
-
-If you are using the `<lit-virtualizer>` element
-
 #### Scrolling a specific element into view
 
+If you want to scroll one of a virtualizer's children into view _and that element is currently present in the DOM_ because it is within the viewport or just outside, you can use the native web API: get a reference to the element, and then call `myElement.scrollIntoView()` with whatever options you desire.
+
+However, if the child element you want to scroll into view is not currently present in the DOM—or if you find it more convenient to specify the element by its index—you can instead use the virtualizer's `scrollElementIntoView()` method. Like the native `Element.scrollIntoView()`, `scrollElementIntoView()` takes an options object as its sole argument. The following options are supported:
+
+- **index**: An integer value indicating which element to scroll into view; the value you specify should be the index of an item in the virtualizer's `items` array.
+- **behavior**: Specify `smooth` to scroll smoothly to the specified element, or `auto` (the default) to "jump" directly to the element
+- **block**: Determines the positioning of the element within the viewport, along the layout's primary (scrolling) axis. Specify `start` (the default), `end`, `center` or `nearest`. See these docs on MDN for details.
+
+  > 📝 Note that the related `inline` option has no effect at present, because all currently available layouts are designed for single-axis scrolling and therefore keep child elements within the viewport along the secondary (non-scrolling) axis at all times.
+
+To call a virtualizer's `scrollElementIntoView()` method, you'll need a reference to the virtualizer. If you're using the `<lit-virtualizer>` element, you just need to get a reference to that element, using whatever method you prefer (e.g. a standard DOM API like [`querySelector()`](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/querySelector) or a Lit-specific method like the [`query()` decorator](https://lit.dev/docs/api/decorators/#query) or the [`ref()` directive](https://lit.dev/docs/api/directives/#ref)). Here's an example:
+
+```js
+const virtualizer = this.shadowRoot.querySelector('<lit-virtualizer>');
+virtualizer.scrollElementIntoView({
+  index: 42,
+  block: 'center',
+  behavior: 'smooth',
+});
+```
+
+If you're using the `virtualize` directive, getting a reference to the virtualizer requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
+
+#### Scrolling to specific coordinates
+
+As noted in the introduction above, if you want to scroll to specific coordinates, you can generally just use any of the browser's native APIs to scroll either the window, the virtualizer element itself (if it is a scroller), or some scrollable ancestor of the virtualizer.
+
+However, a virtualizer also exposes its own `scrollTo()` method, which you should be sure to use if you want to scroll smoothly to the specified coordinates and you are using the default `flow` layout (or any other layout that needs to estimate the size of child elements it hasn't yet measured).
+
+> 📝 This is because a virtualizer needs to periodically adjust the scroll position to correct for inaccuracies in its size estimates, and these corrections cause the browser to halt any smooth scrolling animation currently in progress. When you use the virtualizer's `scrollTo()` method, it automatically continues scrolling smoothly to the specified coordinates after applying each correction.
+
+Besides this special smooth-scrolling behavior, a virtualizer's `scrollTo()` method is identical to [the native equivalent](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo). However, note that you only need to provide either the `top` coordinate (if your virtualizer layout is intended to scroll vertically) or the `left` coordinate (if it's intended to scroll horizontally).
+
+To call a virtualizer's `scrollTo()` method, you'll need a reference to the virtualizer. If you're using the `<lit-virtualizer>` element, you just need to get a reference to that element, using whatever method you prefer (e.g. a standard DOM API like [`querySelector()`](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/querySelector) or a Lit-specific method like the [`query()` decorator](https://lit.dev/docs/api/decorators/#query) or the [`ref()` directive](https://lit.dev/docs/api/directives/#ref)). Here's an example:
+
+```js
+const virtualizer = this.shadowRoot.querySelector('<lit-virtualizer>');
+virtualizer.scrollTo({
+  top: 1000,
+  behavior: 'smooth',
+});
+```
+
+If you're using the `virtualize` directive, getting a reference to the virtualizer requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
+
 #### Declaratively specifying the scroll position
+
+Finally, a virtualizer provides a declarative property called `
 
 ### `virtualize` directive
 
@@ -181,7 +222,43 @@ render() {
 }
 ```
 
-The capabilities of the `virtualizer` directive are the same as those of the `<lit-virtualizer>` element. The APIs are the same as well, except that features expressed as properties and attributes on the `<lit-virtualizer>` element are instead expressed as properties in an options object passed as the single argument to the `virtualize` directive.
+The capabilities of the `virtualizer` directive are the same as those of the `<lit-virtualizer>` element. The configuration APIs are the same as well, except that features expressed as properties and attributes on the `<lit-virtualizer>` element are instead expressed as properties in an options object passed as the single argument to the `virtualize` directive.
+
+### Getting a reference to the virtualizer
+
+In addition to its declarative configuration options, a virtualizer exposes a handful of imperative APIs. The `<lit-virtualizer>` element exposes these APIs directly, but to use them with the `virtualize` directive you need to get a reference to the virtualizer. You do this by first getting a reference to the virtualizer's host element (the element within which you rendered the directive) and then using the `virtualizerRef` symbol to get a reference to the virtualizer itself. For example:
+
+```ts
+import {html, LitElement} from 'lit';
+import {customElement, property, query} from 'lit/decorators.js';
+// Import the `virtualizerRef` symbol along with the directive
+import {virtualize, virtualizerRef} from '@lit-labs/virtualizer/virtualize.js';
+
+@customElement('my-items')
+export class MyItems extends LitElement {
+  data = new Array(100).fill('').map((i, n) => ({text: `Item ${n}`}));
+
+  @query('ul')
+  list: HTMLUListElement;
+
+  render() {
+    return html`
+      <ul>
+        ${virtualize({
+          items: this.data,
+          renderItem: (i) => html`<li>${i.text}</li>`,
+        })}
+      </ul>
+    `;
+  }
+
+  scrollToListItem(idx) {
+    // Use the `virtualizerRef` symbol as a property key on the
+    // host element to access the virtualizer reference
+    this.list[virtualizerRef].scrollElementIntoView({index: idx});
+  }
+}
+```
 
 ## API Referrence
 

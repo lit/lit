@@ -13,7 +13,7 @@ import {
   VirtualizerHostElement,
   virtualizerRef,
   RangeChangedEvent,
-  ScrollPositionOptions,
+  PinOptions,
   ScrollElementIntoViewOptions,
 } from './Virtualizer.js';
 import {
@@ -60,6 +60,8 @@ export class LitVirtualizer extends LitElement {
 
   private _layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
 
+  private _pin: PinOptions | null = null;
+
   private _virtualizer?: Virtualizer;
 
   @property({attribute: false})
@@ -75,9 +77,10 @@ export class LitVirtualizer extends LitElement {
   }
 
   @property({attribute: false})
-  set scrollPosition(value: ScrollPositionOptions) {
+  set pin(value: PinOptions) {
+    this._pin = value;
     if (this._virtualizer) {
-      this._virtualizer.scrollPosition = value;
+      this._virtualizer.pin = value;
     }
   }
 
@@ -112,9 +115,11 @@ export class LitVirtualizer extends LitElement {
 
   _init() {
     const layout = this._layout;
+    const pin = this._pin;
     this._virtualizer = new Virtualizer({
       hostElement: this,
       layout,
+      pin,
       scroller: this.scroller,
     });
     this.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
