@@ -20,7 +20,7 @@ Occasionally we'll close issues if they appear stale or are too vague - please d
 
 The Lit project handles "significant" changes and feature requests via our [RFC (Request for Comment) Process](https://github.com/lit/rfcs).
 
-Medium-to-large feature requests should be done via RFC, and feature request issues may be closed after asking that they be submitted as an RFC. If you're wondering whether there's interest in an idea before creating an RFC, file an RRFC issue in https://github.com/lit/rfcs to discuss it.
+Medium-to-large feature requests should be done via RFC, and feature request issues may be closed after asking that they be submitted as an RFC. If you're wondering whether there's interest in an idea before creating an RFC, file an [RRFC issue](https://github.com/lit/rfcs#before-opening-an-rfc) in https://github.com/lit/rfcs to discuss it.
 
 ## Pull Requests
 
