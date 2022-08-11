@@ -1,5 +1,25 @@
 # Change Log
 
+## 2.2.2
+
+### Patch Changes
+
+- [#3138](https://github.com/lit/lit/pull/3138) [`6450e17b`](https://github.com/lit/lit/commit/6450e17b58d1000d0501ad2b427a3248564d0c29) - JS source maps now include the TS source inline
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Upgrade node-fetch version
+
+## 2.2.1
+
+### Patch Changes
+
+- [#3045](https://github.com/lit/lit/pull/3045) [`9a7b6546`](https://github.com/lit/lit/commit/9a7b6546c286a964cafb707812353f33c6f0113c) - Fix behavior of setAttribute when value is not a string to match browsers. It is now cast to a string. Fixes problems such as reflection of type:Number properties on ReactiveElements.
+
+## 2.2.0
+
+### Minor Changes
+
+- [#2940](https://github.com/lit/lit/pull/2940) [`ac356997`](https://github.com/lit/lit/commit/ac356997351874706f8be235559c765861dce67d) - Add option to defer hydration of top level custom elements.
+
 ## 2.1.0
 
 ### Minor Changes

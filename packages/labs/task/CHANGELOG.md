@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.1.3
+
+### Patch Changes
+
+- [#3131](https://github.com/lit/lit/pull/3131) [`ec87d529`](https://github.com/lit/lit/commit/ec87d5297cba77c4272e89c69d0b1bd0e2ec6823) - Update Task typings to work better with inference and casting args to `as const` by making args a readonly array.
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
+## 1.1.2
+
+### Patch Changes
+
+- [#2582](https://github.com/lit/lit/pull/2582) [`24cb1568`](https://github.com/lit/lit/commit/24cb156832fe14b0f96d7041c73a35afa893718d) - Fix example code syntax in lit-labs/task README
+
 ## 1.1.1
 
 ### Patch Changes

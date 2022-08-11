@@ -4,7 +4,7 @@ A package for server-side rendering Lit templates and components.
 
 ## Status
 
-`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that new versions of `lit` (`lit-html` and `lit-element`) are SSR-ready. We expect that the foundational SSR support in this package will support a wide variety of use cases, from full-blown app rendering frameworks built on top of web components, to framework-specific plugins for rending custom elements in e.g. React or Angular, to pre-rendering plugins for static site generators like 11ty. Please stay tuned and file issues with use cases you'd like to see covered.
+`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that new versions of `lit` (`lit-html` and `lit-element`) are SSR-ready. We expect that the foundational SSR support in this package will support a wide variety of use cases, from full-blown app rendering frameworks built on top of web components, to framework-specific plugins for rendering custom elements in e.g. React or Angular, to pre-rendering plugins for static site generators like 11ty. Please stay tuned and file issues with use cases you'd like to see covered.
 
 ## Server Usage
 
@@ -114,7 +114,7 @@ const ssrResult = render(html`
           hasNativeDeclarativeShadowRoots,
           hydrateShadowRoots
         } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
-        if (!hasNativeDeclarativeShadowRoots) {
+        if (!hasNativeDeclarativeShadowRoots()) {
           hydrateShadowRoots(document.body);
         }
         // ...

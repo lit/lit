@@ -1,5 +1,47 @@
 # Change Log
 
+## 2.2.8
+
+### Patch Changes
+
+- [#3130](https://github.com/lit/lit/pull/3130) [`1f0567f1`](https://github.com/lit/lit/commit/1f0567f10c56531e555329eeb006349ba022070f) - Export the underlying type of the `keyed` directive.
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
+## 2.2.7
+
+### Patch Changes
+
+- [#2978](https://github.com/lit/lit/pull/2978) [`634d4560`](https://github.com/lit/lit/commit/634d45601b1d13be6d21fce725ece6abb9b3ee71) - Changed the caching behavior of the css`` template literal tag so that same-text styles do not share a CSSStyleSheet. Note that this may be a breaking change in some very unusual scenarios on Chromium and Firefox > 101 only.
+
+## 2.2.6
+
+### Patch Changes
+
+- [#2849](https://github.com/lit/lit/pull/2849) [`b12e8d93`](https://github.com/lit/lit/commit/b12e8d93fb4a45b1a16e37716ac6e0a684d5e220) - Expand documentation for `render` and `TemplateResult`.
+
+## 2.2.5
+
+### Patch Changes
+
+- [#2952](https://github.com/lit/lit/pull/2952) [`a78cc3b7`](https://github.com/lit/lit/commit/a78cc3b7f221a97e04dfda77d790fbea8f48d12c) - Fix SSR hydration bug relating to <input> and other void elements having attribute bindings.
+
+## 2.2.4
+
+### Patch Changes
+
+- [#2847](https://github.com/lit/lit/pull/2847) [`79d82385`](https://github.com/lit/lit/commit/79d823851fcf938a8b6a0ca5f164b6b6fb1b4155) - Fix typo in API docs for live() directive.
+
+- [#2828](https://github.com/lit/lit/pull/2828) [`b3b6bc33`](https://github.com/lit/lit/commit/b3b6bc336910d73b5abad1c7da81731c110e74be) - Remove private Lit 2 migration helpers: `INTERNAL` and `clearContainerForLit2MigrationOnly`. This logic is no longer depended on.
+
+## 2.2.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
+- [#2688](https://github.com/lit/lit/pull/2688) [`ef178ef6`](https://github.com/lit/lit/commit/ef178ef620c1deffecae391433e94bd64c72ac44) - Add explicit types to the jsdoc code samples for `query`, `queryAll`, and `queryAsync`.
+
 ## 2.2.2
 
 ### Patch Changes

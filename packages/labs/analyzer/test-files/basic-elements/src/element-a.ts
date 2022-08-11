@@ -16,9 +16,12 @@ export class ElementA extends LitElement {
   `;
 
   @property()
-  foo?: string;
+  a?: string;
+
+  @property({reflect: true, type: Number, attribute: 'bbb'})
+  b = 1;
 
   render() {
-    return html`<h1>${this.foo}</h1>`;
+    return html`<h1>${this.a}</h1>`;
   }
 }

@@ -1,16 +1,34 @@
 {
-  "name": "lit-localize-examples-runtime-js",
+  "name": "@lit-internal/localize-examples-runtime-js",
   "description": "Example of using lit-localize in runtime mode with JavaScript",
   "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "rm -rf src/generated && lit-localize build",
+    "build": "wireit",
     "serve": "web-dev-server --node-resolve"
+  },
+  "wireit": {
+    "build": {
+      "command": "lit-localize build",
+      "dependencies": [
+        "../../../localize:build",
+        "../../../localize-tools:build"
+      ],
+      "files": [
+        "lit-localize.json",
+        "src/**",
+        "xliff/**",
+        "!src/generated/**"
+      ],
+      "output": [
+        "src/generated/**"
+      ]
+    }
   },
   "dependencies": {
     "@lit/localize": "^0.11.0",
-    "@material/mwc-circular-progress": "^0.25.1",
+    "@material/mwc-circular-progress": "^0.26.1",
     "lit": "^2.0.0"
   },
   "devDependencies": {

@@ -45,7 +45,19 @@
       "path": "packages/benchmarks"
     },
     {
-      "name": "lit",
+      "name": "analyzer",
+      "path": "packages/labs/analyzer"
+    },
+    {
+      "name": "testing",
+      "path": "packages/labs/testing"
+    },
+    {
+      "name": "cli",
+      "path": "packages/labs/cli"
+    },
+    {
+      "name": "lit-monorepo",
       "path": "."
     }
   ],
@@ -54,7 +66,11 @@
     "debug.javascript.warnOnLongPrediction": false,
     // Regardless of the user's usual formatter, files
     // in the Lit repo must be formatted using prettier.
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.exclude": {
+      "**/.wireit": true
+    },
+    "javascript.preferences.importModuleSpecifierEnding": "js"
   },
   "extensions": {
     "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

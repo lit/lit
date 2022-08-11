@@ -1,5 +1,17 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 0.2.2
+
+### Patch Changes
+
+- [#3006](https://github.com/lit/lit/pull/3006) [`da4e097b`](https://github.com/lit/lit/commit/da4e097b09ba5769a3daa4f1539c415ce3699a5e) - Fix transform breakage in situations where `outputPath` is false (e.g. setting `permalink: false` or using the serverless plugin).
+
+## 0.2.1
+
+### Patch Changes
+
+- [#2797](https://github.com/lit/lit/pull/2797) [`5ae56da2`](https://github.com/lit/lit/commit/5ae56da2c76e9852af26fe387c7c0e689afc76fa) - Fix worker mode by ensuring worker file is run as ES module.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -6,19 +6,13 @@
 
 import baseConfig from '../../tests/web-test-runner.config.js';
 
-import {startServer} from './test/integration/server/server.js';
+import {ssrMiddleware} from './test/integration/server/server.js';
 
-const ssrServer = startServer();
 export default {
   ...baseConfig,
   files: ['test/integration/client/**/*_test.js'],
   nodeResolve: {
     exportConditions: process.env.MODE === 'dev' ? ['development'] : [],
   },
-  middleware: [
-    async (ctx, next) => {
-      await ssrServer;
-      return next();
-    },
-  ],
+  middleware: [...ssrMiddleware()],
 };

@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.5
+
+### Patch Changes
+
+- [#3116](https://github.com/lit/lit/pull/3116) [`7d185b4e`](https://github.com/lit/lit/commit/7d185b4e882aeca70c7b750d8295d0da34a09cd8) - Upgraded TypeScript version to ~4.7.4
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Updated xmldom dependency. Minor change to XML attribute formatting can be expected.
+
+## 0.6.4
+
+### Patch Changes
+
+- [#3092](https://github.com/lit/lit/pull/3092) [`0c9ee0ec`](https://github.com/lit/lit/commit/0c9ee0ec87b831513f04bdd37e9ed434a134f06f) - Dependencies pinned due to breaking changes.
+
+## 0.6.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
 ## 0.6.2
 
 ### Patch Changes

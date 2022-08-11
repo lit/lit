@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult} from 'lit';
+import type {TemplateResult} from 'lit';
+import type {RenderInfo} from '../../../lib/render-lit-html.js';
 
 export type SSRExpectedHTML =
   | string
@@ -29,8 +30,8 @@ export interface SSRTestDescription {
     check?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
   }>;
   /**
-   * A list of selectors of elements that should no change between renders.
-   * Used to assert that the DOM reused in hydration, not recreated.
+   * A list of selectors of elements that should not change between renders.
+   * Used to assert that the DOM was reused in hydration, not recreated.
    */
   stableSelectors: Array<string>;
   expectMutationsOnFirstRender?: boolean;
@@ -39,6 +40,7 @@ export interface SSRTestDescription {
   skip?: boolean;
   only?: boolean;
   registerElements?(): void | Promise<unknown>;
+  serverRenderOptions?: Partial<RenderInfo>;
 }
 
 export type SSRTestFactory = () => SSRTestDescription;

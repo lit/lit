@@ -5,24 +5,49 @@
  */
 
 import ts from 'typescript';
-import {Package, Module, ClassDeclaration} from './model.js';
-import {AbsolutePath, absoluteToPackage} from './paths.js';
+import {Package, PackageJson} from './model.js';
+import {ProgramContext} from './program-context.js';
+import {AbsolutePath} from './paths.js';
+import * as fs from 'fs';
+import * as path from 'path';
+import {getModule} from './javascript/modules.js';
+export {PackageJson};
 
 /**
  * An analyzer for Lit npm packages
  */
 export class Analyzer {
   readonly packageRoot: AbsolutePath;
-  readonly commandLine: ts.ParsedCommandLine;
-  readonly program: ts.Program;
-  readonly checker: ts.TypeChecker;
+  readonly programContext: ProgramContext;
 
   /**
    * @param packageRoot The root directory of the package to analyze. Currently
-   * this directory must have a tsconfig.json file.
+   * this directory must have a tsconfig.json and package.json.
    */
   constructor(packageRoot: AbsolutePath) {
     this.packageRoot = packageRoot;
+
+    // TODO(kschaaf): Consider moving the package.json and tsconfig.json
+    // to analyzePackage() or move it to an async factory function that
+    // passes these to the constructor as arguments.
+    const packageJsonFilename = path.join(packageRoot, 'package.json');
+    let packageJsonText;
+    try {
+      packageJsonText = fs.readFileSync(packageJsonFilename, 'utf8');
+    } catch (e) {
+      throw new Error(`package.json not found at ${packageJsonFilename}`);
+    }
+    let packageJson;
+    try {
+      packageJson = JSON.parse(packageJsonText);
+    } catch (e) {
+      throw new Error(`Malformed package.json found at ${packageJsonFilename}`);
+    }
+    if (packageJson.name === undefined) {
+      throw new Error(
+        `package.json in ${packageJsonFilename} did not have a name.`
+      );
+    }
 
     const configFileName = ts.findConfigFile(
       packageRoot,
@@ -31,88 +56,40 @@ export class Analyzer {
     );
     if (configFileName === undefined) {
       // TODO: use a hard-coded tsconfig for JS projects.
-      throw new Error('tsconfig not found');
+      throw new Error(`tsconfig.json not found in ${packageRoot}`);
     }
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-    this.commandLine = ts.parseJsonConfigFileContent(
-      configFile.config,
-      ts.sys,
-      packageRoot
+    // Note `configFileName` is optional but must be set for
+    // `getOutputFileNames` to work correctly; however, it must be relative to
+    // `packageRoot`
+    const commandLine = ts.parseJsonConfigFileContent(
+      configFile.config /* json */,
+      ts.sys /* host */,
+      packageRoot /* basePath */,
+      undefined /* existingOptions */,
+      path.relative(packageRoot, configFileName) /* configFileName */
     );
-    this.program = ts.createProgram(
-      this.commandLine.fileNames,
-      this.commandLine.options
+
+    this.programContext = new ProgramContext(
+      packageRoot,
+      commandLine,
+      packageJson
     );
-    this.checker = this.program.getTypeChecker();
   }
 
   analyzePackage() {
-    const diagnostics = this.program.getSemanticDiagnostics();
-    if (diagnostics.length > 0) {
-      console.error('Please fix errors first');
-      console.error(diagnostics);
-      throw new Error('Compiler errors');
-    }
-    const rootFileNames = this.program.getRootFileNames();
+    const rootFileNames = this.programContext.program.getRootFileNames();
 
-    const modules = [];
-    for (const fileName of rootFileNames) {
-      modules.push(this.analyzeFile(fileName as AbsolutePath));
-    }
-    // TODO: return a package object...
-    return new Package(modules);
-  }
-
-  analyzeFile(fileName: AbsolutePath) {
-    const sourceFile = this.program.getSourceFile(fileName)!;
-
-    const module = new Module({
-      path: absoluteToPackage(fileName, this.packageRoot),
-      sourceFile,
+    return new Package({
+      rootDir: this.packageRoot,
+      modules: rootFileNames.map((fileName) =>
+        getModule(
+          this.programContext.program.getSourceFile(path.normalize(fileName))!,
+          this.programContext
+        )
+      ),
+      tsConfig: this.programContext.commandLine,
+      packageJson: this.programContext.packageJson,
     });
-
-    for (const statement of sourceFile.statements) {
-      if (ts.isClassDeclaration(statement)) {
-        module.declarations.push(
-          new ClassDeclaration({
-            name: statement.name?.getText(),
-            node: statement,
-          })
-        );
-      }
-    }
-
-    return module;
   }
-
-  private _isLitElementClassDeclaration = (t: ts.BaseType) => {
-    const declarations = t.getSymbol()?.getDeclarations();
-    if (declarations?.length !== 1) {
-      return false;
-    }
-    const node = declarations[0];
-    return (
-      this._isLitElementModule(node.getSourceFile()) &&
-      ts.isClassDeclaration(node) &&
-      node.name?.getText() === 'LitElement'
-    );
-  };
-
-  private _isLitElementModule = (file: ts.SourceFile) => {
-    return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
-  };
-
-  isLitElement = (node: ts.Node): node is ts.ClassDeclaration => {
-    if (!ts.isClassLike(node)) {
-      return false;
-    }
-    const type = this.checker.getTypeAtLocation(node) as ts.InterfaceType;
-    const baseTypes = this.checker.getBaseTypes(type);
-    for (const t of baseTypes) {
-      if (this._isLitElementClassDeclaration(t)) {
-        return true;
-      }
-    }
-    return false;
-  };
 }

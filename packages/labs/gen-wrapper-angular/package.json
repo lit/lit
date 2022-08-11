@@ -1,0 +1,79 @@
+{
+  "private": true,
+  "name": "@lit-labs/gen-wrapper-angular",
+  "description": "Code generator for Angular wrappers for Lit components",
+  "version": "0.0.0",
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "lib/index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "test:gen": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../gen-utils:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "dependencies": [
+        "test:gen",
+        "../../tests:build"
+      ]
+    },
+    "test:gen": {
+      "command": "uvu test \".*_test\\.js$\"",
+      "files": [],
+      "output": [
+        "gen-output"
+      ],
+      "dependencies": [
+        "build",
+        "../test-projects/test-element-a:build"
+      ]
+    }
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.2.0",
+    "@lit-labs/gen-utils": "^0.0.1",
+    "@lit-internal/tests": "0.0.0"
+  },
+  "devDependencies": {
+    "@esm-bundle/chai": "^4.1.5",
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=14.8.0"
+  },
+  "files": [
+    "index.js"
+  ],
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "generator",
+    "cli",
+    "angular"
+  ]
+}

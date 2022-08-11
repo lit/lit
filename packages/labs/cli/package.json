@@ -1,7 +1,8 @@
 {
+  "private": true,
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bin": {
@@ -12,28 +13,83 @@
   "main": "lib/index.js",
   "repository": "lit/lit",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "test": "uvu test '.*_test\\.js$'",
-    "prepack": "npm run shrinkwrap"
+    "build": "wireit",
+    "test": "wireit",
+    "prepack": "npm run shrinkwrap",
+    "test:compile": "wireit",
+    "test:actual": "wireit",
+    "build:deps": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --skipLibCheck || echo ''",
+      "#comment": "This never fails and always emits output so that we can run tests of code that doesn't type check",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts}"
+      ]
+    },
+    "build:deps": {
+      "dependencies": [
+        "../../localize-tools:build:ts",
+        "../../tests:build",
+        "../analyzer:build",
+        "../gen-wrapper-react:build",
+        "../gen-wrapper-vue:build",
+        "../gen-utils:build"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:compile",
+        "test:actual"
+      ]
+    },
+    "test:compile": {
+      "dependencies": [
+        "build:deps"
+      ],
+      "command": "tsc --pretty --noEmit",
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ],
+      "output": []
+    },
+    "test:actual": {
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test \"_test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    }
   },
   "dependencies": {
+    "@lit-labs/analyzer": "^0.2.0",
+    "@lit-labs/gen-utils": "^0.0.1",
     "@lit/localize-tools": "^0.6.1",
+    "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",
     "command-line-commands": "^3.0.2",
     "command-line-usage": "^6.1.1",
-    "tslib": "^1.14.1"
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
+    "@lit-internal/tests": "^0.0.0",
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
-    "@types/command-line-usage": "^5.0.2",
-    "chai": "^4.3.4",
-    "eslint": "^5.16.0",
-    "globby": "^10.0.2",
-    "stdout-stderr": "^0.1.13",
-    "typescript": "~4.6.2",
-    "uvu": "^0.5.3"
+    "@types/command-line-usage": "^5.0.2"
   },
   "engines": {
     "node": ">=14.8.0"

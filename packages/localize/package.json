@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "publishConfig": {
     "access": "public"
   },
@@ -16,30 +16,59 @@
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
-    "clean": "git clean -dXn | sed 's/^Would remove //' | grep -v node_modules | xargs rm -rf",
-    "build": "npm run clean && tsc",
-    "test": "web-test-runner",
-    "prepack": "npm run build"
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../lit:build",
+        "../reactive-element:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../lit:build:ts:types",
+        "../reactive-element:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lit-localize.{js,js.map,d.ts}",
+        "init",
+        "internal",
+        "tests",
+        ".tsbuildinfo"
+      ]
+    },
+    "test": {
+      "command": "node ../tests/run-web-tests.js",
+      "dependencies": [
+        "build",
+        "../tests:build"
+      ],
+      "files": [
+        "web-test-runner.config.js"
+      ],
+      "output": []
+    }
   },
   "files": [
     "/lit-localize.d.ts",
+    "/lit-localize.d.ts.map",
     "/lit-localize.js",
     "/lit-localize.js.map",
     "/internal/",
-    "/init/",
-    "/config.schema.json"
+    "/init/"
   ],
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",
     "lit": "^2.0.0"
-  },
-  "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/chai": "^4.2.12",
-    "@types/mocha": "^9.0.0",
-    "@web/test-runner": "^0.13.16",
-    "@web/test-runner-playwright": "^0.8.4",
-    "chai": "^4.2.0",
-    "mocha": "^9.1.1"
   }
 }

@@ -31,6 +31,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/router': '_$K',
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
+  '@lit-labs/vue-utils': '_$N',
 };
 
 // Validate prefix uniqueness
@@ -253,6 +254,8 @@ export function litProdConfig({
   testPropertyPrefix,
   packageName,
   outputDir = './',
+  copyHtmlTests = true,
+  includeNodeBuild = false,
   // eslint-disable-next-line no-undef
 } = options) {
   const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
@@ -305,7 +308,12 @@ export function litProdConfig({
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
   const nameCacheSeederContents = [
     // Import every entry point so that we see all property accesses.
-    ...entryPoints.map((name) => `import './development/${name}.js';`),
+    // Give a unique named import to prevent duplicate identifier errors.
+    ...entryPoints.map(
+      (name, idx) => `import * as import${idx} from './development/${name}.js';`
+    ),
+    // Prevent tree shaking that occurs during mangling.
+    ...entryPoints.map((_name, idx) => `console.log(import${idx});`),
     // Synthesize a property access for all cross-package mangled property names
     // so that even if we don't access a property in this package, we will still
     // reserve other properties from re-using that name.
@@ -341,6 +349,7 @@ export function litProdConfig({
         skipBundleOutput,
       ],
     },
+    // Production build
     {
       input: entryPoints.map((name) => `development/${name}.js`),
       output: {
@@ -374,21 +383,26 @@ export function litProdConfig({
         // way or another, so it's difficult to define a default in the source code
         // itself.
         replace({
-          'const DEV_MODE = true': 'const DEV_MODE = false',
-          'const ENABLE_EXTRA_SECURITY_HOOKS = true':
-            'const ENABLE_EXTRA_SECURITY_HOOKS = false',
-          'const ENABLE_SHADYDOM_NOPATCH = true':
-            'const ENABLE_SHADYDOM_NOPATCH = false',
-          'export const INTERNAL = true': 'const INTERNAL = false',
+          preventAssignment: true,
+          values: {
+            'const DEV_MODE = true': 'const DEV_MODE = false',
+            'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+              'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+            'const ENABLE_SHADYDOM_NOPATCH = true':
+              'const ENABLE_SHADYDOM_NOPATCH = false',
+          },
         }),
         // This plugin automatically composes the existing TypeScript -> raw JS
         // sourcemap with the raw JS -> minified JS one that we're generating here.
         sourcemaps(),
         terser(terserOptions),
-        summary(),
-        ...(CHECKSIZE
-          ? [skipBundleOutput]
-          : [
+        summary({
+          showBrotliSize: true,
+          showGzippedSize: true,
+        }),
+        ...(CHECKSIZE ? [skipBundleOutput] : []),
+        ...(copyHtmlTests && !CHECKSIZE
+          ? [
               // Copy polyfill support tests.
               copy({
                 targets: [
@@ -407,9 +421,62 @@ export function litProdConfig({
                   },
                 ],
               }),
-            ]),
+            ]
+          : []),
       ],
     },
+    // Node build
+    ...(includeNodeBuild
+      ? [
+          {
+            input: entryPoints.map((name) => `development/${name}.js`),
+            output: {
+              dir: `${outputDir}/node`,
+              format: 'esm',
+              preserveModules: true,
+              sourcemap: !CHECKSIZE,
+            },
+            external,
+            plugins: [
+              replace({
+                preventAssignment: true,
+                values: {
+                  // Setting NODE_MODE to true enables node-specific behaviors,
+                  // i.e. using globalThis instead of window, and shimming APIs
+                  // needed for Lit bootup.
+                  'const NODE_MODE = false': 'const NODE_MODE = true',
+                  // Other variables should behave like prod mode.
+                  'const DEV_MODE = true': 'const DEV_MODE = false',
+                  'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+                    'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+                  'const ENABLE_SHADYDOM_NOPATCH = true':
+                    'const ENABLE_SHADYDOM_NOPATCH = false',
+                },
+              }),
+              sourcemaps(),
+              // We want the Node build to be minified because:
+              //
+              // 1. It should be very slightly faster, even in Node where bytes
+              //    are not as important as in the browser.
+              //
+              // 2. It means we don't need a Node build for lit-element. There
+              //    is no Node-specific logic needed in lit-element. However,
+              //    lit-element and reactive-element must be consistently
+              //    minified or unminified together, because lit-element
+              //    references properties from reactive-element which will
+              //    otherwise have different names. The default export that
+              //    lit-element will use is minified.
+              terser(terserOptions),
+              summary({
+                showBrotliSize: true,
+                showGzippedSize: true,
+              }),
+              ...(CHECKSIZE ? [skipBundleOutput] : []),
+            ],
+          },
+        ]
+      : []),
+    // CDN bundles
     ...bundled.map(({file, output, name, format, sourcemapPathTransform}) =>
       litMonoBundleConfig({
         file,
@@ -441,26 +508,35 @@ const litMonoBundleConfig = ({
     sourcemapPathTransform,
   },
   plugins: [
-    nodeResolve(),
+    nodeResolve({
+      // We want to resolve to development, because the default is production,
+      // which is already rolled-up sources. That creates an unnecessary
+      // dependency between rollup build steps, and causes double-minification.
+      exportConditions: ['development'],
+    }),
     replace({
-      'const DEV_MODE = true': 'const DEV_MODE = false',
-      'const ENABLE_EXTRA_SECURITY_HOOKS = true':
-        'const ENABLE_EXTRA_SECURITY_HOOKS = false',
-      'const ENABLE_SHADYDOM_NOPATCH = true':
-        'const ENABLE_SHADYDOM_NOPATCH = false',
-      'export const INTERNAL = true': 'const INTERNAL = false',
-      // For downleveled ES5 build of polyfill-support
-      'var DEV_MODE = true': 'var DEV_MODE = false',
-      'var ENABLE_EXTRA_SECURITY_HOOKS = true':
-        'var ENABLE_EXTRA_SECURITY_HOOKS = false',
-      'var INTERNAL = true': 'var INTERNAL = false',
-      'var ENABLE_SHADYDOM_NOPATCH = true':
-        'var ENABLE_SHADYDOM_NOPATCH = false',
+      preventAssignment: true,
+      values: {
+        'const DEV_MODE = true': 'const DEV_MODE = false',
+        'const ENABLE_EXTRA_SECURITY_HOOKS = true':
+          'const ENABLE_EXTRA_SECURITY_HOOKS = false',
+        'const ENABLE_SHADYDOM_NOPATCH = true':
+          'const ENABLE_SHADYDOM_NOPATCH = false',
+        // For downleveled ES5 build of polyfill-support
+        'var DEV_MODE = true': 'var DEV_MODE = false',
+        'var ENABLE_EXTRA_SECURITY_HOOKS = true':
+          'var ENABLE_EXTRA_SECURITY_HOOKS = false',
+        'var ENABLE_SHADYDOM_NOPATCH = true':
+          'var ENABLE_SHADYDOM_NOPATCH = false',
+      },
     }),
     // This plugin automatically composes the existing TypeScript -> raw JS
     // sourcemap with the raw JS -> minified JS one that we're generating here.
     sourcemaps(),
     terser(terserOptions),
-    summary(),
+    summary({
+      showBrotliSize: true,
+      showGzippedSize: true,
+    }),
   ],
 });

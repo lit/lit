@@ -7,11 +7,13 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextKey} from '../index.js';
-import {contextProvided} from '../lib/decorators/context-provided.js';
-import {contextProvider} from '../lib/decorators/context-provider.js';
+import {
+  ContextKey,
+  contextProvided,
+  contextProvider,
+  ContextRoot,
+} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
-import {ContextRoot} from '../lib/context-root.js';
 
 const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
 
@@ -19,6 +21,10 @@ class ContextConsumerElement extends LitElement {
   @contextProvided({context: simpleContext, subscribe: true})
   @property({type: Number})
   public value = 0;
+
+  @contextProvided({context: simpleContext})
+  @property({type: Number})
+  public onceValue = 0;
 
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
@@ -51,7 +57,7 @@ suite('late context provider', () => {
     new ContextRoot().attach(container);
 
     container.innerHTML = `
-         <late-context-provider value="1000">            
+         <late-context-provider value="1000">
              <context-consumer></context-consumer>
          </late-context-provider>
      `;
@@ -77,6 +83,7 @@ suite('late context provider', () => {
   test(`handles late upgrade properly`, async () => {
     // initially consumer has initial value
     assert.strictEqual(consumer.value, 0);
+    assert.strictEqual(consumer.onceValue, 0);
     // do upgrade
     customElements.define('late-context-provider', LateContextProviderElement);
     // await update of provider component
@@ -85,9 +92,13 @@ suite('late context provider', () => {
     await consumer.updateComplete;
     // should now have provided context
     assert.strictEqual(consumer.value, 1000);
+    // but only to the subscribed value
+    assert.strictEqual(consumer.onceValue, 0);
     // confirm subscription is established
     provider.value = 500;
     await consumer.updateComplete;
     assert.strictEqual(consumer.value, 500);
+    // and once was not updated
+    assert.strictEqual(consumer.onceValue, 0);
   });
 });

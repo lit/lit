@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
   "timeout": 0,
   "sampleSize": 50,
   "benchmarks": [
@@ -22,11 +23,11 @@
       "expand": [
         {
           "name": "this-change",
-          "url": "lit-html/template-heavy/template-heavy.html"
+          "url": "template-heavy.html"
         },
         {
           "name": "tip-of-tree",
-          "url": "lit-html/template-heavy/template-heavy.html",
+          "url": "template-heavy.html",
           "packageVersions": {
             "label": "tip-of-tree",
             "dependencies": {
@@ -68,7 +69,7 @@
         },
         {
           "name": "previous-release",
-          "url": "lit-html/template-heavy/template-heavy.html",
+          "url": "template-heavy.html",
           "packageVersions": {
             "label": "previous-release",
             "dependencies": {

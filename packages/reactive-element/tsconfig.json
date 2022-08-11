@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "target": "es2019",
-    "module": "es2015",
+    "module": "NodeNext",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
@@ -17,14 +17,14 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "stripInternal": true,
     "noImplicitOverride": true
   },
   "include": [
-    "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
     "src/**/*.ts"
   ],
   "exclude": ["src/polyfill-support.ts"],

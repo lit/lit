@@ -4,12 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+const NODE_MODE = false;
+const global = NODE_MODE ? globalThis : window;
+
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
 export const supportsAdoptingStyleSheets =
-  window.ShadowRoot &&
-  (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
+  global.ShadowRoot &&
+  (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
   'replace' in CSSStyleSheet.prototype;
 
@@ -31,7 +34,7 @@ export type CSSResultGroup = CSSResultOrNative | CSSResultArray;
 
 const constructionToken = Symbol();
 
-const styleSheetCache = new Map<string, CSSStyleSheet>();
+const cssTagCache = new WeakMap<TemplateStringsArray, CSSStyleSheet>();
 
 /**
  * A container for a string of CSS text, that may be used to create a CSSStyleSheet.
@@ -44,25 +47,43 @@ export class CSSResult {
   // This property needs to remain unminified.
   ['_$cssResult$'] = true;
   readonly cssText: string;
+  private _styleSheet?: CSSStyleSheet;
+  private _strings: TemplateStringsArray | undefined;
 
-  private constructor(cssText: string, safeToken: symbol) {
+  private constructor(
+    cssText: string,
+    strings: TemplateStringsArray | undefined,
+    safeToken: symbol
+  ) {
     if (safeToken !== constructionToken) {
       throw new Error(
         'CSSResult is not constructable. Use `unsafeCSS` or `css` instead.'
       );
     }
     this.cssText = cssText;
+    this._strings = strings;
   }
 
-  // Note, this is a getter so that it's lazy. In practice, this means
-  // stylesheets are not created until the first element instance is made.
+  // This is a getter so that it's lazy. In practice, this means stylesheets
+  // are not created until the first element instance is made.
   get styleSheet(): CSSStyleSheet | undefined {
-    // Note, if `supportsAdoptingStyleSheets` is true then we assume
-    // CSSStyleSheet is constructable.
-    let styleSheet = styleSheetCache.get(this.cssText);
+    // If `supportsAdoptingStyleSheets` is true then we assume CSSStyleSheet is
+    // constructable.
+    let styleSheet = this._styleSheet;
+    const strings = this._strings;
     if (supportsAdoptingStyleSheets && styleSheet === undefined) {
-      styleSheetCache.set(this.cssText, (styleSheet = new CSSStyleSheet()));
-      styleSheet.replaceSync(this.cssText);
+      const cacheable = strings !== undefined && strings.length === 1;
+      if (cacheable) {
+        styleSheet = cssTagCache.get(strings);
+      }
+      if (styleSheet === undefined) {
+        (this._styleSheet = styleSheet = new CSSStyleSheet()).replaceSync(
+          this.cssText
+        );
+        if (cacheable) {
+          cssTagCache.set(strings, styleSheet);
+        }
+      }
     }
     return styleSheet;
   }
@@ -73,7 +94,11 @@ export class CSSResult {
 }
 
 type ConstructableCSSResult = CSSResult & {
-  new (cssText: string, safeToken: symbol): CSSResult;
+  new (
+    cssText: string,
+    strings: TemplateStringsArray | undefined,
+    safeToken: symbol
+  ): CSSResult;
 };
 
 const textFromCSSResult = (value: CSSResultGroup | number) => {
@@ -101,6 +126,7 @@ const textFromCSSResult = (value: CSSResultGroup | number) => {
 export const unsafeCSS = (value: unknown) =>
   new (CSSResult as ConstructableCSSResult)(
     typeof value === 'string' ? value : String(value),
+    undefined,
     constructionToken
   );
 
@@ -123,7 +149,11 @@ export const css = (
           (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
           strings[0]
         );
-  return new (CSSResult as ConstructableCSSResult)(cssText, constructionToken);
+  return new (CSSResult as ConstructableCSSResult)(
+    cssText,
+    strings,
+    constructionToken
+  );
 };
 
 /**
@@ -147,7 +177,7 @@ export const adoptStyles = (
     styles.forEach((s) => {
       const style = document.createElement('style');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const nonce = (window as any)['litNonce'];
+      const nonce = (global as any)['litNonce'];
       if (nonce !== undefined) {
         style.setAttribute('nonce', nonce);
       }

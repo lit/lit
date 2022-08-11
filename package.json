@@ -1,55 +1,216 @@
 {
-  "name": "lit-monorepo",
+  "name": "@lit-internal/monorepo",
   "private": true,
   "type": "module",
   "engines": {
-    "npm": "^7.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
+  "workspaces": [
+    "packages/*",
+    "packages/labs/*",
+    "packages/labs/test-projects/*",
+    "packages/localize/examples/*"
+  ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
-    "bootstrap": "lerna bootstrap --ci",
-    "build": "lerna run build",
-    "build:ts": "lerna run build:ts",
-    "clean": "lerna run clean",
+    "bootstrap": "echo NOTICE: \\\"npm run bootstrap\\\" is no longer required. \\\"npm ci\\\" is sufficient.",
+    "build": "wireit",
+    "build:ts": "wireit",
+    "build:lit-starter-ts": "wireit",
     "format": "npm run format:eslint && npm run format:prettier",
     "format:eslint": "eslint \"**/*.{js,ts}\" --fix",
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
     "lint": "eslint \"**/*.{js,ts}\"",
-    "nuke": "rm -rf node_modules && npm install && lerna exec 'rm -rf node_modules' && lerna bootstrap && npm run clean",
-    "upgrade": "rm -rf node_modules package-lock.json && npm install && lerna exec 'rm -rf node_modules package-lock.json' && lerna bootstrap && npm run clean",
-    "test": "lerna run test --ignore '{lit,lit-html,lit-element,@lit/reactive-element,@lit-labs/observers,@lit-labs/react,@lit-labs/router,@lit-labs/scoped-registry-mixin,@lit-labs/task,@lit-labs/motion}' --concurrency 1 --stream ",
+    "test": "npm run test:not-starter-kits && npm run test:lit-starter-js && npm run test:lit-starter-ts",
+    "test:not-starter-kits": "wireit",
+    "test:lit-starter-js": "wireit",
+    "test:lit-starter-ts": "wireit",
+    "test:windows": "wireit",
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
     "update-version-vars": "node scripts/update-version-variables.js",
-    "release": "npm run bootstrap && npm run build && npm run changeset publish"
+    "release": "npm run build && npm run changeset publish"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "./packages/benchmarks:build",
+        "./packages/internal-scripts:build",
+        "./packages/lit:build",
+        "./packages/lit-element:build",
+        "./packages/lit-html:build",
+        "./packages/lit-starter-js:build",
+        "build:lit-starter-ts",
+        "./packages/localize:build",
+        "./packages/localize-tools:build",
+        "./packages/reactive-element:build",
+        "./packages/tests:build",
+        "./packages/ts-transformers:build",
+        "./packages/labs/analyzer:build",
+        "./packages/labs/cli:build",
+        "./packages/labs/context:build",
+        "./packages/labs/eleventy-plugin-lit:build",
+        "./packages/labs/gen-utils:build",
+        "./packages/labs/gen-wrapper-angular:build",
+        "./packages/labs/gen-wrapper-react:build",
+        "./packages/labs/gen-wrapper-vue:build",
+        "./packages/labs/motion:build",
+        "./packages/labs/observers:build",
+        "./packages/labs/react:build",
+        "./packages/labs/router:build",
+        "./packages/labs/scoped-registry-mixin:build",
+        "./packages/labs/ssr:build",
+        "./packages/labs/ssr-client:build",
+        "./packages/labs/task:build",
+        "./packages/labs/testing:build",
+        "./packages/labs/virtualizer:build",
+        "./packages/labs/vue-utils:build",
+        "./packages/labs/test-projects/test-element-a:build",
+        "./packages/localize/examples/runtime-js:build",
+        "./packages/localize/examples/runtime-ts:build",
+        "./packages/localize/examples/transform-js:build",
+        "./packages/localize/examples/transform-ts:build"
+      ]
+    },
+    "build:ts": {
+      "dependencies": [
+        "./packages/internal-scripts:build:ts",
+        "./packages/lit:build:ts",
+        "./packages/lit-element:build:ts",
+        "./packages/lit-html:build:ts",
+        "./packages/localize:build:ts",
+        "./packages/localize-tools:build:ts",
+        "./packages/reactive-element:build:ts",
+        "./packages/ts-transformers:build:ts",
+        "./packages/labs/context:build:ts",
+        "./packages/labs/eleventy-plugin-lit:build:ts",
+        "./packages/labs/motion:build:ts",
+        "./packages/labs/observers:build:ts",
+        "./packages/labs/react:build:ts",
+        "./packages/labs/router:build:ts",
+        "./packages/labs/scoped-registry-mixin:build:ts",
+        "./packages/labs/ssr:build:ts",
+        "./packages/labs/ssr-client:build:ts",
+        "./packages/labs/task:build:ts",
+        "./packages/labs/testing:build:ts",
+        "./packages/labs/virtualizer:build:ts",
+        "./packages/labs/vue-utils:build:ts"
+      ]
+    },
+    "build:lit-starter-ts": {
+      "#comment": [
+        "The starter kits are special because they're templates for other",
+        "repos, so we don't want it to use wireit directly. Instead, this",
+        "hack integrates it into the overall build with correct ordering."
+      ],
+      "command": "cd packages/lit-starter-ts && npm run build",
+      "files": [
+        "./packages/lit-starter-ts/tsconfig.json",
+        "./packages/lit-starter-ts/src/**/*.ts"
+      ],
+      "output": [
+        "./packages/lit-starter-ts/my-element.{js,js.map,d.ts,d.ts.map}",
+        "./packages/lit-starter-ts/test/"
+      ],
+      "dependencies": [
+        "./packages/lit:build:ts:types"
+      ]
+    },
+    "test:not-starter-kits": {
+      "#comment": [
+        "We run the starter kit tests separately because when running in our",
+        "CI they require a longer browserStartTimeout, but we don't want to",
+        "change that default because it's a user template."
+      ],
+      "dependencies": [
+        "./packages/localize:test",
+        "./packages/localize-tools:test",
+        "./packages/tests:test",
+        "./packages/ts-transformers:test",
+        "./packages/labs/analyzer:test",
+        "./packages/labs/cli:test",
+        "./packages/labs/eleventy-plugin-lit:test",
+        "./packages/labs/gen-utils:test",
+        "./packages/labs/gen-wrapper-angular:test",
+        "./packages/labs/gen-wrapper-react:test",
+        "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/ssr:test",
+        "./packages/labs/testing:test",
+        "./packages/labs/virtualizer:test"
+      ]
+    },
+    "test:lit-starter-js": {
+      "command": "cd packages/lit-starter-js && npm test",
+      "dependencies": [
+        "./packages/lit:build"
+      ],
+      "files": [
+        "./packages/lit-starter-js/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:lit-starter-ts": {
+      "command": "cd packages/lit-starter-ts && npm test",
+      "dependencies": [
+        "build:lit-starter-ts",
+        "./packages/lit:build"
+      ],
+      "files": [
+        "./packages/lit-starter-ts/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:windows": {
+      "dependencies": [
+        "./packages/labs/analyzer:test",
+        "./packages/labs/cli:test",
+        "./packages/labs/gen-utils:test",
+        "./packages/labs/gen-wrapper-angular:test",
+        "./packages/labs/gen-wrapper-react:test",
+        "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/testing:test"
+      ]
+    }
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.17.0",
     "@changesets/cli": "^2.16.0",
     "@changesets/get-github-info": "^0.5.0",
+    "@esm-bundle/chai": "^4.3.4",
+    "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-virtual": "^2.1.0",
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^16.11.44",
     "@typescript-eslint/eslint-plugin": "^5.20.0",
     "@typescript-eslint/parser": "^5.20.0",
-    "as-table": "^1.0.55",
-    "chalk": "^4.1.0",
+    "@web/dev-server": "^0.1.32",
+    "@web/dev-server-legacy": "^1.0.0",
+    "@web/test-runner": "^0.13.31",
+    "@web/test-runner-mocha": "^0.7.5",
+    "@web/test-runner-playwright": "^0.8.9",
+    "@web/test-runner-saucelabs": "^0.8.0",
     "eslint": "^8.13.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-no-only-tests": "^2.4.0",
-    "husky": "^7.0.2",
+    "husky": "^8.0.1",
     "ignore-sync": "^5.0.1",
-    "lerna": "^4.0.0",
-    "lint-staged": "^12.4.0",
+    "lint-staged": "^13.0.3",
+    "mocha": "^10.0.0",
     "prettier": "^2.4.1",
+    "rollup": "^2.76.0",
     "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-sourcemaps": "^0.6.2",
-    "rollup-plugin-summary": "~1.3.0",
+    "rollup-plugin-summary": "^1.4.3",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "^4.3.5"
+    "typescript": "~4.7.4",
+    "uvu": "^0.5.6",
+    "wireit": "^0.7.1"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",

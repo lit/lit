@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es2020"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "src/",
+    "outDir": "./",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": []
+}

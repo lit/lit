@@ -1,5 +1,17 @@
 # Change Log
 
+## 3.2.2
+
+### Patch Changes
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
+## 3.2.1
+
+### Patch Changes
+
+- [#2978](https://github.com/lit/lit/pull/2978) [`634d4560`](https://github.com/lit/lit/commit/634d45601b1d13be6d21fce725ece6abb9b3ee71) - Changed the caching behavior of the css`` template literal tag so that same-text styles do not share a CSSStyleSheet. Note that this may be a breaking change in some very unusual scenarios on Chromium and Firefox > 101 only.
+
 ## 3.2.0
 
 ### Minor Changes

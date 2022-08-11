@@ -1,5 +1,17 @@
 # @lit/lit-starter-js
 
+## 1.0.4
+
+### Patch Changes
+
+- [#2922](https://github.com/lit/lit/pull/2922) [`da9db86a`](https://github.com/lit/lit/commit/da9db86a33cba710d439e254df2492f9f6dcbbee) - Update dependencies and remove unused dependencies
+
+## 1.0.3
+
+### Patch Changes
+
+- [#2757](https://github.com/lit/lit/pull/2757) [`55841c14`](https://github.com/lit/lit/commit/55841c14f52891357dd93680d3bc5b1da6c89c8a) - Update Rollup and Rollup plugins
+
 ## 1.0.2
 
 ### Patch Changes
