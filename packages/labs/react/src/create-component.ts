@@ -28,10 +28,7 @@ type ElementWithoutPropsOrEventListeners<I, E> = Omit<
 
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-export type ElementProps<
-  I extends HTMLElement,
-  E extends EventNames = {}
-> = Partial<
+type ElementProps<I extends HTMLElement, E extends EventNames = {}> = Partial<
   ReactProps<I, E> &
     ElementWithoutPropsOrEventListeners<I, E> &
     EventListeners<E>
@@ -48,7 +45,7 @@ type ComponentProps<
   __forwardedRef?: React.Ref<I>;
 };
 
-export type ReactWebComponent<
+type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
