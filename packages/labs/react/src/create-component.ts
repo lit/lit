@@ -28,7 +28,10 @@ type ElementWithoutPropsOrEventListeners<I, E> = Omit<
 
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-type ElementProps<I extends HTMLElement, E extends EventNames = {}> = Partial<
+export type ElementProps<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = Partial<
   ReactProps<I, E> &
     ElementWithoutPropsOrEventListeners<I, E> &
     EventListeners<E>
