@@ -58,9 +58,10 @@
     }
   },
   "dependencies": {
+    "@lit-internal/tests": "0.0.0",
     "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.0.1",
-    "@lit-internal/tests": "0.0.0"
+    "@types/react": "^18.0.17"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.0"
