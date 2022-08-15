@@ -145,7 +145,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   // it's both needed in this component to get access to the rendered element
   // and must fulfill any ref passed by the user.
   type ComponentProps = UserProps & {
-    __forwardedRef?: React.Ref<unknown>;
+    __forwardedRef: React.ForwardedRef<unknown>;
   };
 
   class ReactComponent extends Component<ComponentProps> {
@@ -200,10 +200,10 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
      *
      */
     override render() {
-      // Since refs only get fulfilled once, pass a new one if the user's
-      // ref changed. This allows refs to be fulfilled as expected, going from
+      const {__forwardedRef: userRef, ...userProps} = this.props;
+      // Since refs only get fulfilled once, pass a new one if the user's ref
+      // changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.Ref<unknown>;
       if (this._ref === undefined || this._userRef !== userRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
@@ -215,17 +215,15 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           this._userRef = userRef;
         };
       }
-      // Filters class properties out and passes the remaining
-      // attributes to React. This allows attributes to use framework rules
-      // for setting attributes and render correctly under SSR.
+      // Save element props while iterating to avoid the need to iterate again
+      // when setting properties.
+      this._elementProps = {};
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const props: any = {ref: this._ref};
-      // Note, save element props while iterating to avoid the need to
-      // iterate again when setting properties.
-      this._elementProps = {};
-      for (const [k, v] of Object.entries(this.props)) {
-        if (k === '__forwardedRef') continue;
-
+      // Filters class properties and event properties out and passes the
+      // remaining attributes to React. This allows attributes to use framework
+      // rules for setting attributes and render correctly under SSR.
+      for (const [k, v] of Object.entries(userProps)) {
         if (
           eventProps.has(k) ||
           (!reservedReactProperties.has(k) &&
@@ -243,12 +241,12 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
     }
   }
 
-  const ForwardedComponent = React.forwardRef(
-    (props?: UserProps, ref?: React.Ref<unknown>) =>
+  const ForwardedComponent = React.forwardRef<unknown, UserProps>(
+    (props, __forwardedRef) =>
       createElement(
         ReactComponent,
-        {...props, __forwardedRef: ref} as ComponentProps,
-        props?.children
+        {...props, __forwardedRef} as ComponentProps,
+        props.children
       )
   );
 
