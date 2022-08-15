@@ -168,6 +168,7 @@ export const createComponent = <
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
+  const eventProps = new Set(Object.keys(events ?? {}));
 
   type Props = ComponentProps<I, E>;
 
@@ -271,7 +272,12 @@ export const createComponent = <
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        if (elementClassProps.has(k)) {
+        if (
+          eventProps.has(k) ||
+          (!reservedReactProperties.has(k) &&
+            !(k in HTMLElement.prototype) &&
+            k in elementClass.prototype)
+        ) {
           this._elementProps[k] = v;
         } else {
           // React does *not* handle `className` for custom elements so

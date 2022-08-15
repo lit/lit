@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, justText, until} from '../helpers.js';
+import {array, ignoreBenignErrors, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {virtualize} from '../../virtualize.js';
 import {css, LitElement} from 'lit';
@@ -73,7 +73,7 @@ describe('lit-virtualizer and virtualize directive', () => {
    * to this issue: https://github.com/lit/lit/issues/3052
    */
   it('both render changes based on non-item data changes', async () => {
-    const items: Array<number> = Array.from(Array(100).keys());
+    const items = array(100);
     const selected = new Set([2, 5]);
 
     const example = await fixture(html`
@@ -100,12 +100,10 @@ describe('lit-virtualizer and virtualize directive', () => {
     ulv.items = items;
     ulv.selected = selected;
 
-    await until(() =>
-      justText(ulv.shadowRoot?.innerHTML).includes('2 selected')
-    );
+    await until(() => ulv.shadowRoot?.textContent?.includes('2 selected'));
 
-    expect(justText(ulv.shadowRoot?.innerHTML)).to.include('2 selected');
-    expect(justText(ulv.shadowRoot?.innerHTML)).to.include('5 selected');
+    expect(ulv.shadowRoot?.textContent).to.include('2 selected');
+    expect(ulv.shadowRoot?.textContent).to.include('5 selected');
 
     const uvd: UsingVirtualizeDirective = example.querySelector(
       'using-virtualize-directive'
@@ -114,35 +112,29 @@ describe('lit-virtualizer and virtualize directive', () => {
     uvd.items = items;
     uvd.selected = selected;
 
-    await until(() =>
-      justText(uvd.shadowRoot?.innerHTML).includes('2 selected')
-    );
+    await until(() => uvd.shadowRoot?.textContent?.includes('2 selected'));
 
-    expect(justText(uvd.shadowRoot?.innerHTML)).includes('2 selected');
-    expect(justText(uvd.shadowRoot?.innerHTML)).includes('5 selected');
+    expect(uvd.shadowRoot?.textContent).to.include('2 selected');
+    expect(uvd.shadowRoot?.textContent).to.include('5 selected');
 
     const newSelected = new Set([1, 3]);
 
     ulv.selected = newSelected;
 
-    await until(() =>
-      justText(ulv.shadowRoot?.innerHTML).includes('1 selected')
-    );
+    await until(() => ulv.shadowRoot?.textContent?.includes('1 selected'));
 
-    expect(justText(ulv.shadowRoot!.innerHTML)).to.include('1 selected');
-    expect(justText(ulv.shadowRoot!.innerHTML)).to.include('3 selected');
-    expect(justText(ulv.shadowRoot!.innerHTML)).not.to.include('2 selected');
-    expect(justText(ulv.shadowRoot!.innerHTML)).not.to.include('5 selected');
+    expect(ulv.shadowRoot?.textContent).to.include('1 selected');
+    expect(ulv.shadowRoot?.textContent).to.include('3 selected');
+    expect(ulv.shadowRoot?.textContent).not.to.include('2 selected');
+    expect(ulv.shadowRoot?.textContent).not.to.include('5 selected');
 
     uvd.selected = newSelected;
 
-    await until(() =>
-      justText(uvd.shadowRoot?.innerHTML).includes('1 selected')
-    );
+    await until(() => uvd.shadowRoot?.textContent?.includes('1 selected'));
 
-    expect(justText(uvd.shadowRoot!.innerHTML)).to.include('1 selected');
-    expect(justText(uvd.shadowRoot!.innerHTML)).to.include('3 selected');
-    expect(justText(uvd.shadowRoot!.innerHTML)).not.to.include('2 selected');
-    expect(justText(uvd.shadowRoot!.innerHTML)).not.to.include('5 selected');
+    expect(uvd.shadowRoot?.textContent).to.include('1 selected');
+    expect(uvd.shadowRoot?.textContent).to.include('3 selected');
+    expect(uvd.shadowRoot?.textContent).not.to.include('2 selected');
+    expect(uvd.shadowRoot?.textContent).not.to.include('5 selected');
   });
 });

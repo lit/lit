@@ -25,13 +25,13 @@ jobs:
           git checkout ${{ github.sha }}
           npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Changeset
         # Enforce that all PRs that change packages need changesets. Changes
         # without changesets result in this job failing.
         run: npm run changeset status -- --since=main
-
-      - name: Lint
-        run: npm run lint
 
   tests-local:
     runs-on: ubuntu-latest
