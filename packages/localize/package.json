@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "publishConfig": {
     "access": "public"
   },
@@ -61,13 +61,14 @@
   },
   "files": [
     "/lit-localize.d.ts",
+    "/lit-localize.d.ts.map",
     "/lit-localize.js",
     "/lit-localize.js.map",
     "/internal/",
     "/init/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.0.0",
-    "lit": "^2.0.0"
+    "@lit/reactive-element": "^1.4.0",
+    "lit": "^2.3.0"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.2.8",
+  "version": "2.3.0",
   "publishConfig": {
     "access": "public"
   },
@@ -143,7 +143,8 @@
     "checksize": "wireit",
     "test": "wireit",
     "test:dev": "wireit",
-    "test:prod": "wireit"
+    "test:prod": "wireit",
+    "test:node": "wireit"
   },
   "wireit": {
     "build": {
@@ -233,7 +234,8 @@
     "test": {
       "dependencies": [
         "test:dev",
-        "test:prod"
+        "test:prod",
+        "test:node"
       ]
     },
     "test:dev": {
@@ -258,6 +260,15 @@
       ],
       "files": [],
       "output": []
+    },
+    "test:node": {
+      "command": "node development/test/node-imports.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup"
+      ],
+      "files": [],
+      "output": []
     }
   },
   "files": [
@@ -276,9 +287,9 @@
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.3.0",
+    "@lit/reactive-element": "^1.4.0",
     "lit-element": "^3.2.0",
-    "lit-html": "^2.2.0"
+    "lit-html": "^2.3.0"
   },
   "devDependencies": {
     "@webcomponents/shadycss": "^1.8.0",
