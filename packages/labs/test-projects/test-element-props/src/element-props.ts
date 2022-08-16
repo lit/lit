@@ -47,30 +47,51 @@ export class ElementProps extends LitElement {
   optAMyType?: MyType;
 
   @property()
-  aStr = 'aStr';
+  aStr?: string;
 
   @property({type: Number})
-  aNum = -1;
+  aNum?: number;
 
   @property({type: String})
-  aStrOrNum = 'aStrOrNum';
+  aStrOrNum?: string | number;
 
   @property({type: Boolean})
-  aBool = false;
+  aBool?: boolean;
 
   @property({type: Array})
-  aStrArray = ['a', 'b'];
+  aStrArray?: string[];
 
   @property({type: Object, attribute: false})
-  aMyType: MyType = {
-    a: 'a',
-    b: -1,
-    c: false,
-    d: ['a', 'b'],
-    e: 'isUnknown',
-    strOrNum: 'strOrNum',
-    optB: 100,
-  };
+  aMyType?: MyType;
+
+  @property({type: String})
+  withDefault = 'withDefault';
+
+  // @property()
+  // aStr? = 'aStr';
+
+  // @property({type: Number})
+  // aNum? = -1;
+
+  // @property({type: String})
+  // aStrOrNum? = 'aStrOrNum';
+
+  // @property({type: Boolean})
+  // aBool? = false;
+
+  // @property({type: Array})
+  // aStrArray? = ['a', 'b'];
+
+  // @property({type: Object, attribute: false})
+  // aMyType?: MyType = {
+  //   a: 'a',
+  //   b: -1,
+  //   c: false,
+  //   d: ['a', 'b'],
+  //   e: 'isUnknown',
+  //   strOrNum: 'strOrNum',
+  //   optB: 100,
+  // };
 
   @state()
   aState = 'aState';
@@ -89,6 +110,7 @@ export class ElementProps extends LitElement {
       <div id="aBool">${this.aBool}</div>
       <div id="aStrArray">${JSON.stringify(this.aStrArray)}</div>
       <div id="aMyType">${JSON.stringify(this.aMyType)}</div>
-      <div id="aState">${this.aState}</div> `;
+      <div id="aState">${this.aState}</div>
+      <div id="withDefault">${this.withDefault}</div>`;
   }
 }

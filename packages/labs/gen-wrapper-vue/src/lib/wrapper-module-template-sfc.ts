@@ -33,18 +33,27 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-// TODO(sorvell): place into model directly?
+/**
+ * TODO(sorvell): For now, assume all properties are optional unless they
+ * explicitly have a `!`. Ideally we would also check that they do not
+ * have a default value, but this is not yet provided in the model.
+ **/
 const getFieldModifierString = (node: ModelProperty['node']) =>
-  node.questionToken ? '?' : node.exclamationToken ? '!' : '';
+  node.exclamationToken ? '!' : '?';
 
 const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
 
 const wrapDefineProps = (props: Map<string, ModelProperty>) =>
   Array.from(props.values())
-    .map(
-      (prop) =>
-        `${prop.name}${getFieldModifierString(prop.node)}: ${prop.type?.text}`
-    )
+    .map((prop) => {
+      const modifier = getFieldModifierString(prop.node);
+      const type = `${prop.type?.text}${
+        modifier === '?' && !prop.type?.text.includes('undefined')
+          ? ' | undefined'
+          : ''
+      }`;
+      return `${prop.name}${modifier}: ${type}`;
+    })
     .join(',\n');
 
 // TODO(sorvell): Improve event handling, currently just forwarding the event,

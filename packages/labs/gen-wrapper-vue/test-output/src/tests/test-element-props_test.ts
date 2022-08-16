@@ -8,7 +8,7 @@ import {assert} from '@esm-bundle/chai';
 import {createApp} from 'vue';
 import ElementProps from '@lit-internal/test-element-props-vue/ElementProps.js';
 import {ElementProps as ElementPropsElement} from '@lit-internal/test-element-props/element-props.js';
-
+import {default as Container, state} from './PropsContainer.vue';
 suite('test-element-props', () => {
   let container: HTMLElement;
 
@@ -52,6 +52,27 @@ suite('test-element-props', () => {
     assert.equal(firstElementChild?.localName, 'h1');
     assert.equal(firstElementChild?.textContent, 'Props');
     Object.entries(props).forEach(([prop, value]) => {
+      assert.equal(
+        shadowRoot!.getElementById(prop)!.textContent,
+        typeof value === 'object' ? JSON.stringify(value) : String(value),
+        `fail on ${prop}`
+      );
+    });
+  });
+
+  test('renders correctly in a Vue component', async () => {
+    const bag = {
+      optAStr: 'bagOptAStr',
+      optANum: 101010,
+    };
+    createApp(Container, {bag}).mount(container);
+    const el = container.querySelector('element-props')! as ElementPropsElement;
+    await el.updateComplete;
+    const {shadowRoot} = el;
+    const {firstElementChild} = shadowRoot!;
+    assert.equal(firstElementChild?.localName, 'h1');
+    assert.equal(firstElementChild?.textContent, 'Props');
+    Object.entries(state).forEach(([prop, value]) => {
       assert.equal(
         shadowRoot!.getElementById(prop)!.textContent,
         typeof value === 'object' ? JSON.stringify(value) : String(value),

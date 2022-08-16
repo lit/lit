@@ -27,7 +27,9 @@
   "scripts": {
     "installSelf": "wireit",
     "build": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "build:self:watch": "vue-tsc --noEmit && vite build --watch",
+    "test:self:watch": "vue-tsc --noEmit && vite build && node ../../../tests/run-web-tests.js \"tests/tests.js\" --config ../../../tests/web-test-runner.config.js --watch"
   },
   "wireit": {
     "installSelf": {
