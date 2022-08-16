@@ -94,13 +94,13 @@ export class LitVirtualizer extends LitElement {
     }
   }
 
-  scrollTo(options: ScrollToOptions): void;
-  scrollTo(x: number, y: number): void;
-  scrollTo(p1: ScrollToOptions | number, p2?: number) {
-    if (this._virtualizer) {
-      this._virtualizer.scrollTo(p1, p2);
-    }
-  }
+  // scrollTo(options: ScrollToOptions): void;
+  // scrollTo(x: number, y: number): void;
+  // scrollTo(p1: ScrollToOptions | number, p2?: number) {
+  //   if (this._virtualizer) {
+  //     this._virtualizer.scrollTo(p1, p2);
+  //   }
+  // }
 
   willUpdate(changed: Map<string, unknown>) {
     if (this._virtualizer) {
