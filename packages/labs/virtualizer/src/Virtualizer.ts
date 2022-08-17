@@ -15,10 +15,9 @@ import {
   LayoutSpecifier,
   Size,
   InternalRange,
-  ScrollElementIntoViewOptions,
-  ScrollToOptionsWithoutBehavior,
   PinOptions,
   MeasureChildFunction,
+  ScrollToCoordinates,
 } from './layouts/shared/Layout.js';
 import {RangeChangedEvent, VisibilityChangedEvent} from './events.js';
 
@@ -40,6 +39,9 @@ export interface VirtualizerChildElementProxy {
   scrollIntoView: (options?: ScrollIntoViewOptions) => void;
 }
 
+interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
+  index: number;
+}
 export interface VirtualizerConfig {
   layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
 
@@ -144,7 +146,7 @@ export class Virtualizer {
    * as either top / left coordinates or the index of an
    * element to scroll into view
    */
-  private _pin: PinOptions = null;
+  private _pin: PinOptions | null = null;
 
   /**
    * Index of element to scroll into view, plus scroll
@@ -155,7 +157,7 @@ export class Virtualizer {
     null;
 
   private _updateScrollIntoViewCoordinates:
-    | ((coordinates: ScrollToOptionsWithoutBehavior) => void)
+    | ((coordinates: ScrollToCoordinates) => void)
     | null = null;
 
   /**
@@ -513,17 +515,7 @@ export class Virtualizer {
     if (this._layout) {
       this._layout!.totalItems = this._items.length;
       if (this._pin !== null) {
-        const {index, block} = this._pin as ScrollElementIntoViewOptions;
-        if (index !== undefined) {
-          this._layout!.pinnedItem = {index, block};
-          this._pin = null;
-        } else {
-          const {top, left} = this._pin as ScrollToOptions;
-          if (top !== undefined || left !== undefined) {
-            this._layout!.pinnedCoordinates = {top, left};
-            this._pin = null;
-          }
-        }
+        this._layout!.pin = this._pin;
       }
       this._updateView();
       if (this._childMeasurements !== null) {
@@ -882,7 +874,7 @@ function getParentElement(el: Element) {
 
 ///
 
-type retargetScrollCallback = () => ScrollToOptionsWithoutBehavior;
+type retargetScrollCallback = () => ScrollToCoordinates;
 type endScrollCallback = () => void;
 
 class Scroller {
@@ -1024,7 +1016,7 @@ class Scroller {
     this._end = null;
   }
 
-  private _updateManagedScrollTo(coordinates: ScrollToOptionsWithoutBehavior) {
+  private _updateManagedScrollTo(coordinates: ScrollToCoordinates) {
     if (this.destination) {
       if (this._setDestination(coordinates)) {
         this._nativeScrollTo(this.destination);
@@ -1041,7 +1033,7 @@ class Scroller {
     return this._updateManagedScrollTo;
   }
 
-  public correctScrollError(coordinates: ScrollToOptionsWithoutBehavior) {
+  public correctScrollError(coordinates: ScrollToCoordinates) {
     this.correctingScrollError = true;
     requestAnimationFrame(() =>
       requestAnimationFrame(() => (this.correctingScrollError = false))

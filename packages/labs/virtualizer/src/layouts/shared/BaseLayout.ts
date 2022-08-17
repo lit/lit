@@ -13,9 +13,9 @@ import {
   Size,
   dimension,
   position,
-  PinnedItem,
   InternalRange,
-  ScrollElementIntoViewOptions,
+  PinOptions,
+  ScrollToCoordinates,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -69,9 +69,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   private _pendingLayoutUpdate = false;
 
-  protected _pinnedItem: PinnedItem | null = null;
-
-  protected _pinnedPosition: ScrollToOptions | null = null;
+  protected _pin: PinOptions | null = null;
 
   /**
    * The index of the first item intersecting the viewport.
@@ -263,35 +261,20 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     }
   }
 
-  set pinnedItem(item: PinnedItem | null) {
-    this._pinnedItem = item;
+  set pin(options: PinOptions | null) {
+    this._pin = options;
     this._scheduleReflow();
   }
 
-  get pinnedItem() {
-    if (this._pinnedItem !== null) {
-      const {index, block} = this._pinnedItem;
+  get pin() {
+    if (this._pin !== null) {
+      const {index, block} = this._pin;
       return {
         index: Math.max(0, Math.min(index, this.totalItems - 1)),
         block,
       };
     }
     return null;
-  }
-
-  set pinnedCoordinates(position: ScrollToOptions | null) {
-    this._pinnedPosition = position;
-    this._scheduleReflow();
-  }
-
-  get pinnedCoordinates() {
-    const pos = pos1(this.direction);
-    const val = this._pinnedPosition?.[pos];
-    return typeof val !== 'number'
-      ? null
-      : {
-          [pos]: this._clampScrollPosition(val),
-        };
   }
 
   _clampScrollPosition(val: number) {
@@ -302,10 +285,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   unpin() {
-    if (this._pinnedItem !== null || this._pinnedPosition !== null) {
+    if (this._pin !== null) {
       console.log('unpinned');
-      this._pinnedItem = null;
-      this._pinnedPosition = null;
+      this._pin = null;
     }
   }
 
@@ -419,19 +401,15 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * position in the DOM in sync
    */
   protected _setPositionFromPin() {
-    if (this.pinnedItem !== null) {
+    if (this.pin !== null) {
       const lastScrollPosition = this._scrollPosition;
-      const {index, block} = this.pinnedItem;
+      const {index, block} = this.pin;
       this._scrollPosition =
         this._calculateScrollIntoViewPosition({
           index,
           block: block || 'start',
         }) - this.offsetWithinScroller[this._positionDim];
       this._scrollError = lastScrollPosition - this._scrollPosition;
-    } else if (this.pinnedCoordinates !== null) {
-      const {_scrollPosition} = this;
-      this._scrollPosition = this.pinnedCoordinates[pos1(this.direction)]!;
-      this._scrollError = _scrollPosition - this._scrollPosition;
     }
   }
   /**
@@ -446,9 +424,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * dimension, since we don't yet have any layouts
    * that support virtualization in two dimensions.
    */
-  protected _calculateScrollIntoViewPosition(
-    options: ScrollElementIntoViewOptions
-  ) {
+  protected _calculateScrollIntoViewPosition(options: PinOptions) {
     const {block} = options;
     const index = Math.min(this.totalItems, Math.max(0, options.index));
     const itemStartPosition = this._getItemPosition(index)[this._positionDim];
@@ -478,8 +454,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   public getScrollIntoViewCoordinates(
-    options: ScrollElementIntoViewOptions
-  ): ScrollToOptions {
+    options: PinOptions
+  ): ScrollToCoordinates {
     return {
       [this._positionDim as position]:
         this._calculateScrollIntoViewPosition(options),
@@ -538,11 +514,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   private _checkThresholds() {
-    if (
-      (this._viewDim1 === 0 && this._num > 0) ||
-      this._pinnedItem !== null ||
-      this._pinnedPosition !== null
-    ) {
+    if ((this._viewDim1 === 0 && this._num > 0) || this._pin !== null) {
       this._scheduleReflow();
     } else {
       const min = Math.max(0, this._scrollPosition - this._overhang);
