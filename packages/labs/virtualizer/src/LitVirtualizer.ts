@@ -13,12 +13,12 @@ import {
   VirtualizerHostElement,
   virtualizerRef,
   RangeChangedEvent,
-  PinOptions,
 } from './Virtualizer.js';
 import {
   LayoutSpecifier,
   Layout,
   LayoutConstructor,
+  PinOptions,
 } from './layouts/shared/Layout.js';
 
 type RenderItemFunction = <T>(item: T, index: number) => TemplateResult;

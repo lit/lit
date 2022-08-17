@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ScrollElementIntoViewOptions} from '../../Virtualizer.js';
-
 export type dimension = 'height' | 'width';
 export type Size = {
   [key in dimension]: number;
@@ -41,7 +39,37 @@ export type Positions = {
   yOffset?: number;
 };
 
+export interface Range {
+  first: number;
+  last: number;
+}
+export interface InternalRange {
+  first: number;
+  last: number;
+  firstVisible: number;
+  lastVisible: number;
+}
+
 export type ChildPositions = Map<number, Positions>;
+
+export type ChildMeasurements = {[key: number]: ItemBox};
+
+export type MeasureChildFunction = <T>(element: Element, item: T) => ItemBox;
+
+export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
+  index: number;
+}
+
+export type ScrollToOptionsWithoutBehavior = Omit<ScrollToOptions, 'behavior'>;
+export type ScrollElementIntoViewOptionsWithoutBehavior = Omit<
+  ScrollElementIntoViewOptions,
+  'behavior'
+>;
+
+export type PinOptions =
+  | ScrollToOptionsWithoutBehavior
+  | ScrollElementIntoViewOptionsWithoutBehavior
+  | null;
 
 export type LayoutConstructor = new (config?: object) => Layout;
 
@@ -76,11 +104,11 @@ export interface Layout {
 
   offsetWithinScroller: Positions;
 
-  readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
+  readonly measureChildren?: boolean | MeasureChildFunction;
 
   readonly listenForChildLoadEvents?: boolean;
 
-  updateItemSizes?: (sizes: {[key: number]: ItemBox}) => void;
+  updateItemSizes?: (sizes: ChildMeasurements) => void;
 
   addEventListener: Function;
 
