@@ -5,7 +5,6 @@
  */
 
 import EventTarget from '../../polyfillLoaders/EventTarget.js';
-import {ScrollElementIntoViewOptions} from '../../Virtualizer.js';
 import {
   Layout,
   ChildPositions,
@@ -15,6 +14,8 @@ import {
   dimension,
   position,
   PinnedItem,
+  InternalRange,
+  ScrollElementIntoViewOptions,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -485,17 +486,13 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     } as ScrollToOptions;
   }
 
-  protected _emitRange(inProps: unknown = undefined) {
-    const detail = Object.assign(
-      {
-        first: this._first,
-        last: this._last,
-        num: this._num,
-        firstVisible: this._firstVisible,
-        lastVisible: this._lastVisible,
-      },
-      inProps
-    );
+  protected _emitRange() {
+    const detail: InternalRange = {
+      first: this._first,
+      last: this._last,
+      firstVisible: this._firstVisible,
+      lastVisible: this._lastVisible,
+    };
     this.dispatchEvent(new CustomEvent('rangechange', {detail}));
   }
 

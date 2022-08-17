@@ -7,13 +7,13 @@
 import {SizeCache} from './shared/SizeCache.js';
 import {BaseLayout, BaseLayoutConfig, dim1} from './shared/BaseLayout.js';
 import {
-  ItemBox,
   Positions,
   Size,
   Margins,
   margin,
   ScrollDirection,
   offsetAxis,
+  ChildMeasurements,
 } from './shared/Layout.js';
 
 type ItemBounds = {
@@ -170,7 +170,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * Determine the average size of all children represented in the sizes
    * argument.
    */
-  updateItemSizes(sizes: {[key: number]: ItemBox}) {
+  updateItemSizes(sizes: ChildMeasurements) {
     this._metricsCache.update(sizes as Size & Margins, this.direction);
     // if (this._nMeasured) {
     // this._updateItemSize();
