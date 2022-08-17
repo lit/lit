@@ -14,7 +14,6 @@ import {
   virtualizerRef,
   RangeChangedEvent,
   PinOptions,
-  ScrollElementIntoViewOptions,
 } from './Virtualizer.js';
 import {
   LayoutSpecifier,
@@ -84,14 +83,8 @@ export class LitVirtualizer extends LitElement {
     }
   }
 
-  /**
-   * Scroll to the specified index, placing that item at the given position
-   * in the scroll view.
-   */
-  scrollElementIntoView(options: ScrollElementIntoViewOptions) {
-    if (this._virtualizer) {
-      this._virtualizer.scrollElementIntoView(options);
-    }
+  element(index: number) {
+    return this._virtualizer?.element(index);
   }
 
   // scrollTo(options: ScrollToOptions): void;
