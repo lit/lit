@@ -22,11 +22,24 @@ import '@lit/reactive-element/decorators/query-assigned-elements.js';
 import '@lit/reactive-element/decorators/query-assigned-nodes.js';
 import '@lit/reactive-element/decorators/query-async.js';
 
-import {customElement} from '@lit/reactive-element/decorators.js';
-import {ReactiveElement} from '@lit/reactive-element';
+import {customElement, property} from '@lit/reactive-element/decorators.js';
+import {ReactiveElement, css} from '@lit/reactive-element';
 
 @customElement('my-element')
-export class MyElement extends ReactiveElement {}
+export class MyElement extends ReactiveElement {
+  // Include both static styles and a @property decorator in the test. The
+  // @property decorator trigggers class initialization, and if there are also
+  // static styles, it will trigger a test for adopted stylesheets, which could
+  // explode if not handled with care in the node build.
+  static override styles = css`
+    p {
+      color: purple;
+    }
+  `;
+
+  @property()
+  name = 'World';
+}
 
 export class MyOtherElement extends ReactiveElement {}
 customElements.define('my-other-element', MyOtherElement);
