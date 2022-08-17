@@ -48,6 +48,10 @@ export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
   index: number;
 }
 
+export interface VirtualizerChildElementProxy {
+  scrollIntoView: (options?: ScrollIntoViewOptions) => void;
+}
+
 type ScrollToOptionsWithoutBehavior = Omit<ScrollToOptions, 'behavior'>;
 type ScrollElementIntoViewOptionsWithoutBehavior = Omit<
   ScrollElementIntoViewOptions,
@@ -167,8 +171,8 @@ export class Virtualizer {
 
   /**
    * Index of element to scroll into view, plus scroll
-   * behavior options, as imperatively specified via the
-   * `scrollElementIntoView` method
+   * behavior options, as imperatively specified via
+   * `element(index).scrollIntoView()`
    */
   private _scrollIntoViewDestination: ScrollElementIntoViewOptions | null =
     null;
@@ -761,15 +765,26 @@ export class Virtualizer {
     this._schedule(this._updateLayout);
   }
 
-  public scrollElementIntoView(options: ScrollElementIntoViewOptions) {
+  public element(index: number): VirtualizerChildElementProxy | undefined {
+    if (index === Infinity) {
+      index = this._items.length - 1;
+    }
+    return this._items?.[index] === undefined
+      ? undefined
+      : {
+          scrollIntoView: (options: ScrollIntoViewOptions = {}) =>
+            this._scrollElementIntoView({...options, index}),
+        };
+  }
+
+  private _scrollElementIntoView(options: ScrollElementIntoViewOptions) {
     options.index = Math.min(options.index, this._items.length - 1);
     if (options.behavior === 'smooth') {
-      const layout = this.layout as Layout;
-      const coordinates = layout.getScrollIntoViewCoordinates(options);
+      const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
       const {behavior} = options;
       this._updateScrollIntoViewCoordinates = this._scroller!.managedScrollTo(
         Object.assign(coordinates, {behavior}),
-        () => layout.getScrollIntoViewCoordinates(options),
+        () => this._layout!.getScrollIntoViewCoordinates(options),
         () => (this._scrollIntoViewDestination = null)
       );
       this._scrollIntoViewDestination = options;
@@ -785,9 +800,10 @@ export class Virtualizer {
   private _checkScrollIntoViewDestination(pos: ChildPositions | null) {
     const {index} = this._scrollIntoViewDestination || {};
     if (index && pos?.has(index)) {
-      const layout = this._layout as Layout;
       this._updateScrollIntoViewCoordinates!(
-        layout.getScrollIntoViewCoordinates(this._scrollIntoViewDestination!)
+        this._layout!.getScrollIntoViewCoordinates(
+          this._scrollIntoViewDestination!
+        )
       );
     }
   }
