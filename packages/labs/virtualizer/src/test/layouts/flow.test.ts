@@ -103,11 +103,11 @@ describe('flow layout', () => {
     });
   });
 
-  describe('scrollElementIntoView', () => {
+  describe('element(<index>).scrollIntoView', () => {
     it('shows the correct items when scrolling to start position', async () => {
       const {virtualizer} = await createVirtualizer({items: array(1000)});
 
-      virtualizer.scrollElementIntoView({index: 5, block: 'start'});
+      virtualizer.element(5)!.scrollIntoView({block: 'start'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '5')
@@ -122,7 +122,7 @@ describe('flow layout', () => {
     it('shows leading items when scrolling to last item in start position', async () => {
       const {virtualizer} = await createVirtualizer({items: array(1000)});
 
-      virtualizer.scrollElementIntoView({index: 999, block: 'start'});
+      virtualizer.element(999)!.scrollIntoView({block: 'start'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '999')
@@ -137,7 +137,7 @@ describe('flow layout', () => {
     it('shows the correct items when scrolling to center position', async () => {
       const {virtualizer} = await createVirtualizer({items: array(1000)});
 
-      virtualizer.scrollElementIntoView({index: 200, block: 'center'});
+      virtualizer.element(200)!.scrollIntoView({block: 'center'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '200')
@@ -152,7 +152,7 @@ describe('flow layout', () => {
 
     it('shows trailing items when scrolling to first item in end position', async () => {
       const {virtualizer} = await createVirtualizer({items: array(1000)});
-      virtualizer.scrollElementIntoView({index: 0, block: 'end'});
+      virtualizer.element(0)!.scrollIntoView({block: 'end'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '0')
@@ -168,7 +168,7 @@ describe('flow layout', () => {
       const {virtualizer} = await createVirtualizer({items: array(1000)});
 
       // The nearest position for item 500 will be at the end.
-      virtualizer.scrollElementIntoView({index: 500, block: 'nearest'});
+      virtualizer.element(500)!.scrollIntoView({block: 'nearest'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '500')
@@ -180,7 +180,7 @@ describe('flow layout', () => {
       expect(last(visible).textContent).to.equal('500');
 
       // The nearest position for item 3 will be at the start.
-      virtualizer.scrollElementIntoView({index: 300, block: 'nearest'});
+      virtualizer.element(300)!.scrollIntoView({block: 'nearest'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '300')
@@ -192,7 +192,7 @@ describe('flow layout', () => {
       expect(last(visible).textContent).to.equal('303');
 
       // No change in visible items is expected since item 5 is already visible.
-      virtualizer.scrollElementIntoView({index: 302, block: 'nearest'});
+      virtualizer.element(302)!.scrollIntoView({block: 'nearest'});
 
       await until(() =>
         getVisibleItems(virtualizer).find((e) => e.textContent === '302')
