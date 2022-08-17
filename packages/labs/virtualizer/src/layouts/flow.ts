@@ -335,8 +335,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     // stick with it until stable. first and last are deduced around it.
 
     // If we have a pinned item, we anchor on it
-    if (this.pinnedItem !== null) {
-      const {index} = this.pinnedItem;
+    if (this.pin !== null) {
+      const {index} = this.pin;
       this._anchorIdx = index;
       this._anchorPos = this._getPosition(index);
     }
