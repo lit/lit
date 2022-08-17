@@ -12,8 +12,9 @@ import {
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
+  PinOptions,
 } from './layouts/shared/Layout.js';
-import {Virtualizer, PinOptions, RangeChangedEvent} from './Virtualizer.js';
+import {Virtualizer, RangeChangedEvent} from './Virtualizer.js';
 
 export {virtualizerRef} from './Virtualizer.js';
 

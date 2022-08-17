@@ -10,27 +10,22 @@ import {
   Margins,
   Layout,
   ChildPositions,
+  ChildMeasurements,
   LayoutConstructor,
   LayoutSpecifier,
+  Size,
+  Range,
+  InternalRange,
+  ScrollElementIntoViewOptions,
+  ScrollToOptionsWithoutBehavior,
+  PinOptions,
+  MeasureChildFunction,
 } from './layouts/shared/Layout.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
 
-interface InternalRange {
-  first: number;
-  last: number;
-  num: number;
-  firstVisible: number;
-  lastVisible: number;
-}
-
-interface Range {
-  first: number;
-  last: number;
-}
-
-export class RangeChangedEvent extends Event {
+export class RangeChangedEvent extends Event implements Range {
   static eventName = 'rangeChanged';
 
   first: number;
@@ -67,31 +62,9 @@ export interface VirtualizerHostElement extends HTMLElement {
   [virtualizerRef]?: Virtualizer;
 }
 
-interface ScrollSize {
-  height: number | null;
-  width: number | null;
-}
-
-type ChildMeasurements = {[key: number]: ItemBox};
-
-export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
-  index: number;
-}
-
 export interface VirtualizerChildElementProxy {
   scrollIntoView: (options?: ScrollIntoViewOptions) => void;
 }
-
-type ScrollToOptionsWithoutBehavior = Omit<ScrollToOptions, 'behavior'>;
-type ScrollElementIntoViewOptionsWithoutBehavior = Omit<
-  ScrollElementIntoViewOptions,
-  'behavior'
->;
-
-export type PinOptions =
-  | ScrollToOptionsWithoutBehavior
-  | ScrollElementIntoViewOptionsWithoutBehavior
-  | null;
 
 export interface VirtualizerConfig {
   layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
@@ -130,7 +103,7 @@ export class Virtualizer {
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: ScrollSize | null = null;
+  private _scrollSize: Size | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
@@ -247,9 +220,7 @@ export class Virtualizer {
   protected _measureCallback: ((sizes: ChildMeasurements) => void) | null =
     null;
 
-  protected _measureChildOverride:
-    | (<T>(element: Element, item: T) => ItemBox)
-    | null = null;
+  protected _measureChildOverride: MeasureChildFunction | null = null;
 
   constructor(config: VirtualizerConfig) {
     if (!config) {
@@ -712,7 +683,7 @@ export class Virtualizer {
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeHostElement(size?: ScrollSize | null) {
+  private _sizeHostElement(size?: Size | null) {
     // Some browsers seem to crap out if the host element gets larger than
     // a certain size, so we clamp it here (this value based on ad hoc
     // testing in Chrome / Safari / Firefox Mac)
