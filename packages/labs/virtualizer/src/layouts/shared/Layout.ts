@@ -43,9 +43,7 @@ export interface Range {
   first: number;
   last: number;
 }
-export interface InternalRange {
-  first: number;
-  last: number;
+export interface InternalRange extends Range {
   firstVisible: number;
   lastVisible: number;
 }
@@ -56,20 +54,25 @@ export type ChildMeasurements = {[key: number]: ItemBox};
 
 export type MeasureChildFunction = <T>(element: Element, item: T) => ItemBox;
 
-export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
+export interface PinOptions {
   index: number;
+  block?: ScrollLogicalPosition;
 }
 
-export type ScrollToOptionsWithoutBehavior = Omit<ScrollToOptions, 'behavior'>;
-export type ScrollElementIntoViewOptionsWithoutBehavior = Omit<
-  ScrollElementIntoViewOptions,
-  'behavior'
->;
+// export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
+//   index: number;
+// }
 
-export type PinOptions =
-  | ScrollToOptionsWithoutBehavior
-  | ScrollElementIntoViewOptionsWithoutBehavior
-  | null;
+// export type ScrollToOptionsWithoutBehavior = Omit<ScrollToOptions, 'behavior'>;
+// export type ScrollElementIntoViewOptionsWithoutBehavior = Omit<
+//   ScrollElementIntoViewOptions,
+//   'behavior'
+// >;
+
+// export type PinOptions =
+//   | ScrollToOptionsWithoutBehavior
+//   | ScrollElementIntoViewOptionsWithoutBehavior
+//   | null;
 
 export type LayoutConstructor = new (config?: object) => Layout;
 
@@ -79,12 +82,17 @@ export interface LayoutSpecifier {
 
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 
-export interface PinnedItem {
-  index: number;
-  block?: ScrollLogicalPosition;
-}
+// export interface PinnedItem {
+//   index: number;
+//   block?: ScrollLogicalPosition;
+// }
 
 export type ScrollDirection = 'vertical' | 'horizontal';
+
+export interface ScrollToCoordinates {
+  top?: number;
+  left?: number;
+}
 
 /**
  * Interface for layouts consumed by Virtualizer.
@@ -114,15 +122,11 @@ export interface Layout {
 
   removeEventListener: Function;
 
-  pinnedItem: PinnedItem | null;
-
-  pinnedCoordinates: ScrollToOptions | null;
+  pin: PinOptions | null;
 
   unpin: Function;
 
-  getScrollIntoViewCoordinates: (
-    options: ScrollElementIntoViewOptions
-  ) => ScrollToOptions;
+  getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
   /**
    * Called by a Virtualizer when an update that
