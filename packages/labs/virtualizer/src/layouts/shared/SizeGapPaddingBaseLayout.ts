@@ -1,5 +1,6 @@
 // import { dimension } from './Layout.js';
-import {BaseLayoutConfig, BaseLayout, dim1, dim2} from './BaseLayout.js';
+import {BaseLayoutConfig} from './Layout.js';
+import {BaseLayout, dim1, dim2} from './BaseLayout.js';
 import {ScrollDirection, Size} from './Layout.js';
 
 type PixelSize = `${'0' | `${number}px`}`;
