@@ -11,16 +11,10 @@ const global = NODE_MODE ? globalThis : window;
  * Whether the current browser supports `adoptedStyleSheets`.
  */
 export const supportsAdoptingStyleSheets =
-  // In Node mode, it doesn't really matter whether we believe adopted style
-  // sheets are supported or not, because styles are handled separately as part
-  // of SSR anyway; however if we set this to true then we avoid `instanceof
-  // CSSStyleSheet` checks during initialization, meaning we don't need to shim
-  // that global.
-  NODE_MODE ||
-  (global.ShadowRoot &&
-    (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
-    'adoptedStyleSheets' in Document.prototype &&
-    'replace' in CSSStyleSheet.prototype);
+  global.ShadowRoot &&
+  (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
+  'adoptedStyleSheets' in Document.prototype &&
+  'replace' in CSSStyleSheet.prototype;
 
 /**
  * A CSSResult or native CSSStyleSheet.
@@ -201,7 +195,9 @@ const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
   return unsafeCSS(cssText);
 };
 
-export const getCompatibleStyle = supportsAdoptingStyleSheets
-  ? (s: CSSResultOrNative) => s
-  : (s: CSSResultOrNative) =>
-      s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
+export const getCompatibleStyle =
+  supportsAdoptingStyleSheets ||
+  (NODE_MODE && global.CSSStyleSheet === undefined)
+    ? (s: CSSResultOrNative) => s
+    : (s: CSSResultOrNative) =>
+        s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
