@@ -18,6 +18,7 @@ import {
   PinOptions,
   MeasureChildFunction,
   ScrollToCoordinates,
+  BaseLayoutConfig,
 } from './layouts/shared/Layout.js';
 import {RangeChangedEvent, VisibilityChangedEvent} from './events.js';
 
@@ -42,8 +43,22 @@ export interface VirtualizerChildElementProxy {
 interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
   index: number;
 }
+
+type LayoutInstanceValue = Layout | null;
+type LayoutConfigValue =
+  | LayoutInstanceValue
+  | LayoutConstructor
+  | LayoutSpecifier
+  | BaseLayoutConfig
+  | undefined;
+
+let DEFAULT_LAYOUT: LayoutConstructor | null = null;
+export function setDefaultLayout(ctor: LayoutConstructor) {
+  DEFAULT_LAYOUT = ctor;
+}
+
 export interface VirtualizerConfig {
-  layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
+  layout?: LayoutConfigValue;
 
   pin?: PinOptions | null;
 
@@ -65,13 +80,8 @@ export interface VirtualizerConfig {
  */
 export class Virtualizer {
   private _benchmarkStart: number | null = null;
-  /**
-   * Whether the layout should receive an updated viewport size on the next
-   * render.
-   */
-  // private _needsUpdateView: boolean = false;
 
-  private _layout: Layout | null = null;
+  private _layout: LayoutInstanceValue = null;
 
   private _clippingAncestors: HTMLElement[] = [];
 
@@ -86,8 +96,6 @@ export class Virtualizer {
    * Provided by layout.
    */
   private _scrollError: {left: number; top: number} | null = null;
-
-  // private _correctingScrollError = false;
 
   /**
    * A list of the positions (top, left) of the children in the current range.
@@ -139,14 +147,6 @@ export class Virtualizer {
   // TODO (graynorton): Rethink, per longer comment below
 
   private _loadListener = this._childLoaded.bind(this);
-
-  /**
-   * Desired scroll position, as declaratively specified
-   * via the `pin` property. May be expressed
-   * as either top / left coordinates or the index of an
-   * element to scroll into view
-   */
-  private _pin: PinOptions | null = null;
 
   /**
    * Index of element to scroll into view, plus scroll
@@ -224,7 +224,7 @@ export class Virtualizer {
   _init(config: VirtualizerConfig) {
     this._isScroller = !!config.scroller;
     this._initHostElement(config);
-    this._initLayout(config);
+    this.layout = config.layout;
   }
 
   private async _initObservers() {
@@ -238,12 +238,44 @@ export class Virtualizer {
     this._childrenRO = new ResizeObserver(this._childrenSizeChanged.bind(this));
   }
 
-  async _initLayout(config: VirtualizerConfig) {
-    if (config.layout) {
-      this.layout = config.layout;
-    } else {
-      this.layout = (await import('./layouts/flow.js')).FlowLayout;
+  async _fetchDefaultLayout(layoutConfig: LayoutConfigValue) {
+    const {instance, ctor} = this._parseLayoutConfig(layoutConfig);
+    if (instance === undefined && ctor === undefined) {
+      await import('./layouts/flow.js');
     }
+    this.layout = layoutConfig || {};
+  }
+
+  _parseLayoutConfig(layoutConfig?: LayoutConfigValue) {
+    let instance: Layout | undefined;
+    let ctor: LayoutConstructor | undefined;
+    let config: BaseLayoutConfig | undefined;
+    let isNull = false;
+    if (layoutConfig === null) {
+      isNull = true;
+    } else {
+      if (layoutConfig !== undefined) {
+        if (typeof layoutConfig === 'object') {
+          if ((layoutConfig as Layout).isVirtualizerLayoutInstance) {
+            instance = layoutConfig as Layout;
+          } else if (
+            typeof (layoutConfig as LayoutSpecifier).type === 'function'
+          ) {
+            ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
+            const copy = {...(layoutConfig as LayoutSpecifier)} as {
+              type?: LayoutConstructor;
+            };
+            delete copy.type;
+            config = copy as BaseLayoutConfig;
+          } else {
+            config = layoutConfig as BaseLayoutConfig;
+          }
+        } else if (typeof layoutConfig === 'function') {
+          ctor = layoutConfig as LayoutConstructor;
+        }
+      }
+    }
+    return {instance, ctor, config, isNull};
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -354,73 +386,72 @@ export class Virtualizer {
 
   // This will always actually return a layout instance,
   // but TypeScript wants the getter and setter types to be the same
-  get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
+  get layout(): Layout | null {
     return this._layout;
   }
 
   // TODO (graynorton): Consider not allowing dynamic layout changes and
   // instead just creating a new Virtualizer instance when a layout
   // change is desired. Might simplify quite a bit.
-  set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
-    if (this._layout === layout) {
-      return;
-    }
+  set layout(layoutConfig: LayoutConfigValue) {
+    const {instance, ctor, config, isNull} =
+      this._parseLayoutConfig(layoutConfig);
 
-    let _layout: LayoutConstructor | Layout | null = null;
-    let _config: object = {};
-
-    if (typeof layout === 'object') {
-      if ((layout as LayoutSpecifier).type !== undefined) {
-        _layout = (layout as LayoutSpecifier).type;
-        // delete (layout as LayoutSpecifier).type;
-      }
-      _config = layout as object;
-    } else {
-      _layout = layout;
-    }
-
-    if (typeof _layout === 'function') {
-      if (this._layout instanceof _layout) {
-        if (_config) {
-          this._layout!.config = _config;
+    if (!instance) {
+      let newInstance: Layout | null;
+      if (isNull) {
+        newInstance = null;
+      } else if (ctor || DEFAULT_LAYOUT) {
+        const verifiedCtor = (ctor || DEFAULT_LAYOUT)!;
+        if (this._layout instanceof verifiedCtor) {
+          this._layout.config = config;
+          return;
+        } else {
+          newInstance = new (ctor || DEFAULT_LAYOUT)!(config);
         }
-        return;
       } else {
-        _layout = new _layout(_config);
+        this._fetchDefaultLayout(layoutConfig);
+        return;
       }
-    }
 
-    if (this._layout) {
-      this._measureCallback = null;
-      this._measureChildOverride = null;
-      this._layout.removeEventListener('scrollsizechange', this);
-      this._layout.removeEventListener('scrollerrorchange', this);
-      this._layout.removeEventListener('itempositionchange', this);
-      this._layout.removeEventListener('rangechange', this);
-      this._sizeHostElement(undefined);
-      this._hostElement!.removeEventListener('load', this._loadListener, true);
-    }
+      if (this._layout) {
+        this._measureCallback = null;
+        this._measureChildOverride = null;
+        this._layout.removeEventListener('scrollsizechange', this);
+        this._layout.removeEventListener('scrollerrorchange', this);
+        this._layout.removeEventListener('itempositionchange', this);
+        this._layout.removeEventListener('rangechange', this);
+        this._sizeHostElement(undefined);
+        this._hostElement!.removeEventListener(
+          'load',
+          this._loadListener,
+          true
+        );
+      }
 
-    this._layout = _layout as Layout | null;
+      this._layout = newInstance;
 
-    if (this._layout) {
-      if (
-        this._layout.measureChildren &&
-        typeof this._layout.updateItemSizes === 'function'
-      ) {
-        if (typeof this._layout.measureChildren === 'function') {
-          this._measureChildOverride = this._layout.measureChildren;
+      if (this._layout) {
+        if (
+          this._layout.measureChildren &&
+          typeof this._layout.updateItemSizes === 'function'
+        ) {
+          if (typeof this._layout.measureChildren === 'function') {
+            this._measureChildOverride = this._layout.measureChildren;
+          }
+          this._measureCallback = this._layout.updateItemSizes.bind(
+            this._layout
+          );
         }
-        this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
+        this._layout.addEventListener('scrollsizechange', this);
+        this._layout.addEventListener('scrollerrorchange', this);
+        this._layout.addEventListener('itempositionchange', this);
+        this._layout.addEventListener('rangechange', this);
+        if (this._layout.listenForChildLoadEvents) {
+          this._hostElement!.addEventListener('load', this._loadListener, true);
+        }
+        this._schedule(this._updateLayout);
       }
-      this._layout.addEventListener('scrollsizechange', this);
-      this._layout.addEventListener('scrollerrorchange', this);
-      this._layout.addEventListener('itempositionchange', this);
-      this._layout.addEventListener('rangechange', this);
-      if (this._layout.listenForChildLoadEvents) {
-        this._hostElement!.addEventListener('load', this._loadListener, true);
-      }
-      this._schedule(this._updateLayout);
     }
   }
 
@@ -459,11 +490,7 @@ export class Virtualizer {
       const child = children[i];
       const idx = this._first + i;
       if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(
-          this,
-          child,
-          this._items[idx] /*as unknown as object*/
-        );
+        mm[idx] = fn.call(this, child, this._items[idx]);
       }
     }
     this._childMeasurements = mm;
@@ -514,9 +541,6 @@ export class Virtualizer {
   _updateLayout() {
     if (this._layout) {
       this._layout!.totalItems = this._items.length;
-      if (this._pin !== null) {
-        this._layout!.pin = this._pin;
-      }
       this._updateView();
       if (this._childMeasurements !== null) {
         // If the layout has been changed, we may have measurements but no callback
@@ -619,12 +643,6 @@ export class Virtualizer {
       }
 
       const scrollingElementBounds = scrollingElement.getBoundingClientRect();
-      // const domScroll = {
-      //   left: scrollingElement.scrollLeft,
-      //   top: scrollingElement.scrollTop
-      // }
-
-      // console.log('domScroll', domScroll);
 
       const offsetWithinScroller = {
         left: hostElementBounds.left - scrollingElementBounds.left,
@@ -723,15 +741,6 @@ export class Virtualizer {
     }
   }
 
-  /**
-   * Index and position of item to scroll to. The virtualizer will fix to that point
-   * until the user scrolls.
-   */
-  public set pin(newValue: PinOptions) {
-    this._pin = newValue;
-    this._schedule(this._updateLayout);
-  }
-
   public element(index: number): VirtualizerChildElementProxy | undefined {
     if (index === Infinity) {
       index = this._items.length - 1;
@@ -756,7 +765,7 @@ export class Virtualizer {
       );
       this._scrollIntoViewDestination = options;
     } else {
-      this.pin = options;
+      this._layout!.pin = options;
     }
   }
 

@@ -12,7 +12,6 @@ import {
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
-  PinOptions,
 } from './layouts/shared/Layout.js';
 import {Virtualizer} from './Virtualizer.js';
 import {RangeChangedEvent} from './events.js';
@@ -40,15 +39,10 @@ export interface VirtualizeDirectiveConfig<T> {
    * The list of items to display via the renderItem function.
    */
   items?: Array<T>;
-
-  /**
-   * Index and position of the item to scroll to.
-   */
-  pin?: PinOptions;
 }
 
-/*export */ const defaultKeyFunction = <T>(item: T) => item;
-/*export */ const defaultRenderItem = <T>(item: T) =>
+const defaultKeyFunction = <T>(item: T) => item;
+const defaultRenderItem = <T>(item: T) =>
   html`${JSON.stringify(item, null, 2)}`;
 
 class VirtualizeDirective<T> extends AsyncDirective {
@@ -112,9 +106,6 @@ class VirtualizeDirective<T> extends AsyncDirective {
     if (config.layout) {
       virtualizer!.layout = config.layout;
     }
-    if (config.pin) {
-      virtualizer!.pin = config.pin;
-    }
   }
 
   private _setFunctions(config: VirtualizeDirectiveConfig<T>) {
@@ -131,8 +122,8 @@ class VirtualizeDirective<T> extends AsyncDirective {
     const config = this.cachedConfig!;
     const hostElement = part.parentNode as HTMLElement;
     if (hostElement && hostElement.nodeType === 1) {
-      const {layout, scroller, pin} = config;
-      this.virtualizer = new Virtualizer({hostElement, layout, scroller, pin});
+      const {layout, scroller} = config;
+      this.virtualizer = new Virtualizer({hostElement, layout, scroller});
       this.virtualizer!.connected();
       hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
         e.stopPropagation();

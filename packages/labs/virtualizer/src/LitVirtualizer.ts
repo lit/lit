@@ -18,7 +18,6 @@ import {
   LayoutSpecifier,
   Layout,
   LayoutConstructor,
-  PinOptions,
 } from './layouts/shared/Layout.js';
 
 type RenderItemFunction = <T>(item: T, index: number) => TemplateResult;
@@ -59,8 +58,6 @@ export class LitVirtualizer extends LitElement {
 
   private _layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
 
-  private _pin: PinOptions | null = null;
-
   private _virtualizer?: Virtualizer;
 
   @property({attribute: false})
@@ -75,25 +72,9 @@ export class LitVirtualizer extends LitElement {
     return (this as VirtualizerHostElement)[virtualizerRef]!.layout;
   }
 
-  @property({attribute: false})
-  set pin(value: PinOptions) {
-    this._pin = value;
-    if (this._virtualizer) {
-      this._virtualizer.pin = value;
-    }
-  }
-
   element(index: number) {
     return this._virtualizer?.element(index);
   }
-
-  // scrollTo(options: ScrollToOptions): void;
-  // scrollTo(x: number, y: number): void;
-  // scrollTo(p1: ScrollToOptions | number, p2?: number) {
-  //   if (this._virtualizer) {
-  //     this._virtualizer.scrollTo(p1, p2);
-  //   }
-  // }
 
   willUpdate(changed: Map<string, unknown>) {
     if (this._virtualizer) {
@@ -108,11 +89,9 @@ export class LitVirtualizer extends LitElement {
 
   _init() {
     const layout = this._layout;
-    const pin = this._pin;
     this._virtualizer = new Virtualizer({
       hostElement: this,
       layout,
-      pin,
       scroller: this.scroller,
     });
     this.addEventListener('rangeChanged', (e: RangeChangedEvent) => {

@@ -5,7 +5,7 @@
  */
 
 import {SizeCache} from './shared/SizeCache.js';
-import {BaseLayout, BaseLayoutConfig, dim1} from './shared/BaseLayout.js';
+import {BaseLayout, dim1} from './shared/BaseLayout.js';
 import {
   Positions,
   Size,
@@ -14,7 +14,9 @@ import {
   ScrollDirection,
   offsetAxis,
   ChildMeasurements,
+  BaseLayoutConfig,
 } from './shared/Layout.js';
+import {setDefaultLayout} from '../Virtualizer.js';
 
 type ItemBounds = {
   pos: number;
@@ -573,3 +575,5 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._scheduleReflow();
   }
 }
+
+setDefaultLayout(FlowLayout);
