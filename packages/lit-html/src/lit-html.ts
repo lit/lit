@@ -344,13 +344,14 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = NODE_MODE
-  ? ({
-      createTreeWalker() {
-        return {};
-      },
-    } as unknown as Document)
-  : document;
+const d =
+  NODE_MODE && global.document === undefined
+    ? ({
+        createTreeWalker() {
+          return {};
+        },
+      } as unknown as Document)
+    : document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
 const createMarker = (v = '') => d.createComment(v);
