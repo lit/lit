@@ -59,21 +59,6 @@ export interface PinOptions {
   block?: ScrollLogicalPosition;
 }
 
-// export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
-//   index: number;
-// }
-
-// export type ScrollToOptionsWithoutBehavior = Omit<ScrollToOptions, 'behavior'>;
-// export type ScrollElementIntoViewOptionsWithoutBehavior = Omit<
-//   ScrollElementIntoViewOptions,
-//   'behavior'
-// >;
-
-// export type PinOptions =
-//   | ScrollToOptionsWithoutBehavior
-//   | ScrollElementIntoViewOptionsWithoutBehavior
-//   | null;
-
 export type LayoutConstructor = new (config?: object) => Layout;
 
 export interface LayoutSpecifier {
@@ -82,10 +67,10 @@ export interface LayoutSpecifier {
 
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 
-// export interface PinnedItem {
-//   index: number;
-//   block?: ScrollLogicalPosition;
-// }
+export interface BaseLayoutConfig {
+  direction?: ScrollDirection;
+  pin?: PinOptions;
+}
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
@@ -127,6 +112,8 @@ export interface Layout {
   unpin: Function;
 
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
+
+  isVirtualizerLayoutInstance: boolean;
 
   /**
    * Called by a Virtualizer when an update that

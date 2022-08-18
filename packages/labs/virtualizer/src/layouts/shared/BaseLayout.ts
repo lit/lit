@@ -16,15 +16,12 @@ import {
   InternalRange,
   PinOptions,
   ScrollToCoordinates,
+  BaseLayoutConfig,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
   emit?: boolean;
 };
-
-export interface BaseLayoutConfig {
-  direction?: ScrollDirection;
-}
 
 export function dim1(direction: ScrollDirection): dimension {
   return direction === 'horizontal' ? 'width' : 'height';
@@ -43,6 +40,7 @@ export function pos2(direction: ScrollDirection): position {
 }
 
 export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
+  public isVirtualizerLayoutInstance = true;
   /**
    * The last set viewport scroll position.
    */
@@ -263,7 +261,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   set pin(options: PinOptions | null) {
     this._pin = options;
-    this._scheduleReflow();
+    this._triggerReflow();
   }
 
   get pin() {
