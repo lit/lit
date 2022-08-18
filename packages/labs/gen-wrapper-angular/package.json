@@ -3,6 +3,9 @@
   "name": "@lit-labs/gen-wrapper-angular",
   "description": "Code generator for Angular wrappers for Lit components",
   "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
