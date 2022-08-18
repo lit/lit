@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@lit-labs/gen-wrapper-react",
   "description": "Code generator for React wrapper for Lit components",
   "version": "0.0.1",

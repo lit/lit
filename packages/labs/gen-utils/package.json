@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@lit-labs/gen-utils",
   "description": "Utilities for lit code generators",
   "version": "0.0.1",
