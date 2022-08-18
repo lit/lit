@@ -1,4 +1,4 @@
-# @lit-labs/gen-utils
+# @lit-labs/gen-wrapper-vue
 
 ## 0.1.0
 
