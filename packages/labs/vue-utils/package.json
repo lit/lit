@@ -1,6 +1,9 @@
 {
   "name": "@lit-labs/vue-utils",
   "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Utilities for generating a Vue component wrapper for a LitElement.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -104,8 +107,5 @@
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",
     "@lit-internal/scripts": "^1.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

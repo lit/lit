@@ -2,6 +2,9 @@
   "name": "@lit-labs/gen-utils",
   "description": "Utilities for lit code generators",
   "version": "0.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
