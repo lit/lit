@@ -53,7 +53,7 @@ export namespace LitUnstable {
       kind: 'begin render';
       id: number;
       value: unknown;
-      container: HTMLElement | DocumentFragment;
+      container: Element | DocumentFragment;
       options: RenderOptions | undefined;
       part: ChildPart | undefined;
     }
@@ -61,7 +61,7 @@ export namespace LitUnstable {
       kind: 'end render';
       id: number;
       value: unknown;
-      container: HTMLElement | DocumentFragment;
+      container: Element | DocumentFragment;
       options: RenderOptions | undefined;
       part: ChildPart;
     }
@@ -653,7 +653,7 @@ export interface RenderOptions {
  */
 export const render = (
   value: unknown,
-  container: HTMLElement | DocumentFragment,
+  container: Element | DocumentFragment,
   options?: RenderOptions
 ): RootPart => {
   if (DEV_MODE && container == null) {
