@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 0.7.2
+
+### Patch Changes
+
+- [#3215](https://github.com/lit/lit/pull/3215) [`ecdb3bcd`](https://github.com/lit/lit/commit/ecdb3bcd311772e227f6e2b8e73614471ddf2682) - Exported RangeChangedEvent and VisibilityChangedEvent from main module.
+
 ## 0.7.1
 
 ### Patch Changes
