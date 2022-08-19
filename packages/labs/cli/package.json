@@ -17,7 +17,6 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "prepack": "npm run shrinkwrap",
     "test:compile": "wireit",
     "test:actual": "wireit",
     "build:deps": "wireit"
