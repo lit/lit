@@ -48,14 +48,26 @@ export class LitVirtualizer<T = unknown> extends LitElement {
     return this._providedRenderItem;
   }
 
+  private _keyFunction: KeyFn<T> = (item, idx) =>
+    defaultKeyFunction(item, idx + this._first);
+  private _providedKeyFunction: KeyFn<T> = defaultKeyFunction;
+
+  set keyFunction(fn: KeyFn<T>) {
+    this._providedKeyFunction = fn;
+    this._keyFunction = (item, idx) => fn(item, idx + this._first);
+    this.requestUpdate();
+  }
+
+  @property()
+  get keyFunction() {
+    return this._providedKeyFunction;
+  }
+
   @property({attribute: false})
   items: Array<T> = [];
 
   @property({reflect: true, type: Boolean})
   scroller = false;
-
-  @property()
-  keyFunction: KeyFn<T> | undefined = defaultKeyFunction;
 
   @state()
   private _first = 0;
@@ -147,7 +159,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   }
 
   render(): TemplateResult {
-    const {items, _renderItem, keyFunction} = this;
+    const {items, _renderItem, _keyFunction} = this;
     const itemsToRender = [];
     // TODO (graynorton): Is this the best / only place to ensure
     // that _last isn't outside the current bounds of the items array?
@@ -161,10 +173,6 @@ export class LitVirtualizer<T = unknown> extends LitElement {
       }
     }
 
-    return repeat(
-      itemsToRender,
-      keyFunction || defaultKeyFunction,
-      _renderItem
-    ) as TemplateResult;
+    return repeat(itemsToRender, _keyFunction, _renderItem) as TemplateResult;
   }
 }
