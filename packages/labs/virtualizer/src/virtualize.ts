@@ -26,7 +26,7 @@ export interface VirtualizeDirectiveConfig<T> {
    * A function that returns a lit-html TemplateResult. It will be used
    * to generate the DOM for each item in the virtual list.
    */
-  renderItem?: (item: T, index: number) => TemplateResult;
+  renderItem?: RenderItemFunction<T>;
 
   keyFunction?: KeyFn<T>;
 
@@ -57,8 +57,10 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
   first = 0;
   last = -1;
   cachedConfig?: VirtualizeDirectiveConfig<T>;
-  renderItem: RenderItemFunction<T> = defaultRenderItem;
-  keyFunction: KeyFn<T> = defaultKeyFunction;
+  renderItem: RenderItemFunction<T> = (item: T, idx: number) =>
+    defaultRenderItem(item, idx + this.first);
+  keyFunction: KeyFn<T> = (item: T, idx: number) =>
+    defaultKeyFunction(item, idx + this.first);
   items: Array<T> = [];
 
   constructor(part: PartInfo) {
@@ -86,11 +88,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
         itemsToRender.push(this.items[i]);
       }
     }
-    return repeat(
-      itemsToRender,
-      this.keyFunction || defaultKeyFunction,
-      this.renderItem
-    );
+    return repeat(itemsToRender, this.keyFunction, this.renderItem);
   }
 
   update(part: ChildPart, [config]: [VirtualizeDirectiveConfig<T>]) {
@@ -121,7 +119,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
       this.renderItem = (item, idx) => renderItem(item, idx + this.first);
     }
     if (keyFunction) {
-      this.keyFunction = keyFunction;
+      this.keyFunction = (item, idx) => keyFunction(item, idx + this.first);
     }
   }
 
@@ -139,8 +137,6 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
         this.setValue(this.render());
       });
       this.update(part, [config]);
-    } else {
-      console.log('uh-oh!');
     }
   }
 
