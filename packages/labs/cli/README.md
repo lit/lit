@@ -57,7 +57,7 @@ Generate framework wrappers.
 #### Usage
 
 ```sh
-$ lit localize gen --framework=react
+$ lit labs gen --framework=react
 ```
 
 #### Flags
