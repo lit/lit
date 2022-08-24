@@ -39,16 +39,12 @@ test('isLitElement returns true for a direct import', ({
   packagePath,
 }) => {
   const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile =
-    analyzer.programContext.program.getSourceFile(elementAPath)!;
+  const sourceFile = analyzer.context.program.getSourceFile(elementAPath)!;
   const elementADeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'ElementA'
   );
   assert.ok(elementADeclaration);
-  assert.equal(
-    isLitElement(elementADeclaration, analyzer.programContext),
-    true
-  );
+  assert.equal(isLitElement(elementADeclaration, analyzer.context), true);
 });
 
 test('isLitElement returns false for non-LitElement', ({
@@ -56,12 +52,12 @@ test('isLitElement returns false for non-LitElement', ({
   packagePath,
 }) => {
   const notLitPath = path.resolve(packagePath, 'src', 'not-lit.ts');
-  const sourceFile = analyzer.programContext.program.getSourceFile(notLitPath)!;
+  const sourceFile = analyzer.context.program.getSourceFile(notLitPath)!;
   const notLitDeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'NotLit'
   );
   assert.ok(notLitDeclaration);
-  assert.equal(isLitElement(notLitDeclaration, analyzer.programContext), false);
+  assert.equal(isLitElement(notLitDeclaration, analyzer.context), false);
 });
 
 test('Analyzer finds LitElement declarations', ({analyzer}) => {

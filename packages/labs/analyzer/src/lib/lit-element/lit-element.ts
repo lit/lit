@@ -11,8 +11,7 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {LitElementDeclaration, AnalyzerContext} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
 import {getProperties} from './properties.js';
@@ -23,14 +22,14 @@ import {getProperties} from './properties.js';
  */
 export const getLitElementDeclaration = (
   node: LitClassDeclaration,
-  programContext: ProgramContext
+  context: AnalyzerContext
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(node),
     name: node.name?.text,
     node,
-    reactiveProperties: getProperties(node, programContext),
-    events: getEvents(node, programContext),
+    reactiveProperties: getProperties(node, context),
+    events: getEvents(node, context),
   });
 };
 
@@ -75,15 +74,13 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
  */
 export const isLitElement = (
   node: ts.Node,
-  programContext: ProgramContext
+  context: AnalyzerContext
 ): node is LitClassDeclaration => {
   if (!ts.isClassLike(node)) {
     return false;
   }
-  const type = programContext.checker.getTypeAtLocation(
-    node
-  ) as ts.InterfaceType;
-  const baseTypes = programContext.checker.getBaseTypes(type);
+  const type = context.checker.getTypeAtLocation(node) as ts.InterfaceType;
+  const baseTypes = context.checker.getBaseTypes(type);
   for (const t of baseTypes) {
     if (_isLitElementClassDeclaration(t)) {
       return true;

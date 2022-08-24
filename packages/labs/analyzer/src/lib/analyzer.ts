@@ -5,12 +5,11 @@
  */
 
 import ts from 'typescript';
-import {Package, PackageJson} from './model.js';
-import {ProgramContext} from './program-context.js';
+import {Package, PackageJson, AnalyzerContext} from './model.js';
 import {AbsolutePath} from './paths.js';
-import * as fs from 'fs';
 import * as path from 'path';
 import {getModule} from './javascript/modules.js';
+import {DiagnosticsError} from './errors.js';
 export {PackageJson};
 
 /**
@@ -18,7 +17,7 @@ export {PackageJson};
  */
 export class Analyzer {
   readonly packageRoot: AbsolutePath;
-  readonly programContext: ProgramContext;
+  readonly context: AnalyzerContext;
 
   /**
    * @param packageRoot The root directory of the package to analyze. Currently
@@ -26,28 +25,6 @@ export class Analyzer {
    */
   constructor(packageRoot: AbsolutePath) {
     this.packageRoot = packageRoot;
-
-    // TODO(kschaaf): Consider moving the package.json and tsconfig.json
-    // to analyzePackage() or move it to an async factory function that
-    // passes these to the constructor as arguments.
-    const packageJsonFilename = path.join(packageRoot, 'package.json');
-    let packageJsonText;
-    try {
-      packageJsonText = fs.readFileSync(packageJsonFilename, 'utf8');
-    } catch (e) {
-      throw new Error(`package.json not found at ${packageJsonFilename}`);
-    }
-    let packageJson;
-    try {
-      packageJson = JSON.parse(packageJsonText);
-    } catch (e) {
-      throw new Error(`Malformed package.json found at ${packageJsonFilename}`);
-    }
-    if (packageJson.name === undefined) {
-      throw new Error(
-        `package.json in ${packageJsonFilename} did not have a name.`
-      );
-    }
 
     const configFileName = ts.findConfigFile(
       packageRoot,
@@ -70,26 +47,38 @@ export class Analyzer {
       path.relative(packageRoot, configFileName) /* configFileName */
     );
 
-    this.programContext = new ProgramContext(
-      packageRoot,
-      commandLine,
-      packageJson
+    const program = ts.createProgram(
+      commandLine.fileNames,
+      commandLine.options
     );
+    this.context = {
+      commandLine,
+      program,
+      checker: program.getTypeChecker(),
+      path,
+      fs: ts.sys,
+      log: (s) => console.log(s),
+    };
+    const diagnostics = this.context.program.getSemanticDiagnostics();
+    if (diagnostics.length > 0) {
+      throw new DiagnosticsError(
+        diagnostics,
+        `Error analyzing package '${this.packageRoot}': Please fix errors first`
+      );
+    }
   }
 
   analyzePackage() {
-    const rootFileNames = this.programContext.program.getRootFileNames();
+    const rootFileNames = this.context.program.getRootFileNames();
 
     return new Package({
       rootDir: this.packageRoot,
       modules: rootFileNames.map((fileName) =>
         getModule(
-          this.programContext.program.getSourceFile(path.normalize(fileName))!,
-          this.programContext
+          this.context.program.getSourceFile(path.normalize(fileName))!,
+          this.context
         )
       ),
-      tsConfig: this.programContext.commandLine,
-      packageJson: this.programContext.packageJson,
     });
   }
 }

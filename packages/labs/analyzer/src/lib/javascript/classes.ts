@@ -11,12 +11,15 @@
  */
 
 import ts from 'typescript';
-import {ClassDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {ClassDeclaration, AnalyzerContext} from '../model.js';
 
+/**
+ * Returns an analyzer `ClassDeclaration` model for the given
+ * ts.ClassDeclaration.
+ */
 export const getClassDeclaration = (
   declaration: ts.ClassDeclaration,
-  _programContext: ProgramContext
+  _context: AnalyzerContext
 ): ClassDeclaration => {
   return new ClassDeclaration({
     name: declaration.name?.text,
