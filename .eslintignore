@@ -143,6 +143,12 @@ packages/ts-transformers/*.js.map
 packages/ts-transformers/*.d.ts
 packages/ts-transformers/internal/
 packages/ts-transformers/tests/
+packages/labs/a11y/build/*
+
+# TS artifacts
+packages/labs/a11y/**/*.d.ts
+packages/labs/a11y/**/*.js.map
+
 packages/labs/analyzer/lib/
 packages/labs/analyzer/test/
 
