@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html, css} from 'lit';
+import { LitElement, html, css } from 'lit';
 
 /**
  * An example element.

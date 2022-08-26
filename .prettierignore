@@ -144,6 +144,7 @@ packages/labs/cli/index.js.map
 packages/labs/cli/index.d.ts
 packages/labs/cli/index.d.ts.map
 packages/labs/cli/test-gen/
+packages/labs/cli/test-goldens/
 
 packages/labs/context/development/
 packages/labs/context/test/
