@@ -19,6 +19,7 @@ import {globalOptions, mergeOptions} from './options.js';
 import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
 import {makeLabsCommand} from './commands/labs.js';
+import {makeInitCommand} from './commands/init.js';
 import {createRequire} from 'module';
 import * as childProcess from 'child_process';
 
@@ -33,7 +34,7 @@ export class LitCli {
   readonly args: readonly string[];
   readonly console: LitConsole;
   /** The current working directory. */
-  private readonly cwd: string;
+  readonly cwd: string;
   private readonly stdin: NodeJS.ReadableStream;
 
   constructor(args: string[], options?: Options) {
@@ -62,6 +63,7 @@ export class LitCli {
     this.addCommand(localize);
     this.addCommand(makeLabsCommand(this));
     this.addCommand(makeHelpCommand(this));
+    this.addCommand(makeInitCommand(this));
   }
 
   addCommand(command: Command) {

@@ -1,0 +1,38 @@
+{
+  "name": "my-element",
+  "version": "0.0.1",
+  "description": "A Minimal Lit Element starter kit",
+  "type": "module",
+  "main": "lib/my-element.js",
+  "scripts": {
+    "serve": "wds --node-resolve -onw"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<USERNAME>/my-element.git"
+  },
+  "keywords": [
+    "web-components",
+    "lit-element",
+    "javascript",
+    "typescript",
+    "lit"
+  ],
+  "author": "<YOUR NAME>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/<USERNAME>>/my-element/issues"
+  },
+  "homepage": "https://github.com/<USERNAME>>/my-element#readme",
+  "dependencies": {
+    "lit": "^2.3.0"
+  },
+  "devDependencies": {
+    "@web/dev-server": "^0.1.32"
+  },
+  "exports": {
+    "./lib/my-element.js": {
+      "default": "./lib/my-element.js"
+    }
+  }
+}
