@@ -23,7 +23,7 @@ export const generateLitElementStarter = async (
   let files = {
     ...generatePackage(name, lang),
     ...generateIndex(name),
-    ...generateGitignore(),
+    ...generateGitignore(lang),
     ...generateNpmignore(),
     ...generateElement(name, lang),
   };
