@@ -9,7 +9,7 @@ export const generatePackage = (
     'package.json': `{
   "name": "${elementName}",
   "version": "0.0.1",
-    "description": "A Minimal Lit Element starter kit",
+  "description": "A Minimal Lit Element starter kit",
   "type": "module",
   "main": "lib/${elementName}.js",
   "scripts": {

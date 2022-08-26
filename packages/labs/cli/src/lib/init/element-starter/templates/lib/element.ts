@@ -21,20 +21,20 @@ export const generateElement = (
 const js = (elementName: string) => {
   const className = kabobToPascalCase(elementName);
   return javascript`/**
-* @license
-* Copyright 2022 Google LLC
-* SPDX-License-Identifier: BSD-3-Clause
-*/
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
 import { LitElement, html, css } from 'lit';
 
 /**
-* An example element.
-*
-* @fires count-changed - Indicates when the count changes
-* @slot - This element has a slot
-* @csspart button - The button
-*/
+ * An example element.
+ *
+ * @fires count-changed - Indicates when the count changes
+ * @slot - This element has a slot
+ * @csspart button - The button
+ */
 export class ${className} extends LitElement {
   static get styles() {
     return css\`
@@ -50,15 +50,15 @@ export class ${className} extends LitElement {
   static get properties() {
     return {
       /**
-      * The name to say "Hello" to.
-      * @type {string}
-      */
+       * The name to say "Hello" to.
+       * @type {string}
+       */
       name: {type: String},
 
       /**
-      * The number of times the button has been clicked.
-      * @type {number}
-      */
+       * The number of times the button has been clicked.
+       * @type {number}
+       */
       count: {type: Number},
     };
   }
@@ -85,35 +85,36 @@ export class ${className} extends LitElement {
   }
 
   /**
-  * Formats a greeting
-  * @returns {string} A greeting directed at \`name\`
-  */
+   * Formats a greeting
+   * @returns {string} A greeting directed at \`name\`
+   */
   _sayHello() {
     return html\`Hello, \${this.name}\`;
   }
 }
 
-window.customElements.define('${elementName}', ${className});`;
+window.customElements.define('${elementName}', ${className});
+`;
 };
 
 const ts = (elementName: string) => {
   const className = kabobToPascalCase(elementName);
   return javascript`/**
-* @license
-* Copyright 2022 Google LLC
-* SPDX-License-Identifier: BSD-3-Clause
-*/
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
 import { LitElement, html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 
 /**
-* An example element.
-*
-* @fires count-changed - Indicates when the count changes
-* @slot - This element has a slot
-* @csspart button - The button
-*/
+ * An example element.
+ *
+ * @fires count-changed - Indicates when the count changes
+ * @slot - This element has a slot
+ * @csspart button - The button
+ */
 @customElement('${elementName}')
 export class ${className} extends LitElement {
   static override styles = css\`
@@ -126,14 +127,14 @@ export class ${className} extends LitElement {
   \`;
 
   /**
-  * The name to say "Hello" to.
-  */
+   * The name to say "Hello" to.
+   */
   @property()
   name = 'World';
 
   /**
-  * The number of times the button has been clicked.
-  */
+   * The number of times the button has been clicked.
+   */
   @property({ type: Number })
   count = 0;
 
@@ -153,10 +154,11 @@ export class ${className} extends LitElement {
   }
 
   /**
-  * Formats a greeting
-  */
+   * Formats a greeting
+   */
   protected _sayHello() {
     return \`Hello, \${this.name}\`;
   }
-}`;
+}
+`;
 };

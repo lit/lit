@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html, css} from 'lit';
-import {property, customElement} from 'lit/decorators.js';
+import { LitElement, html, css } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
 
 /**
  * An example element.
@@ -34,7 +34,7 @@ export class ElElement extends LitElement {
   /**
    * The number of times the button has been clicked.
    */
-  @property({type: Number})
+  @property({ type: Number })
   count = 0;
 
   override render() {

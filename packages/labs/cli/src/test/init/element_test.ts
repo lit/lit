@@ -44,7 +44,30 @@ test('element generation default', async ({rig, testConsole}) => {
 
   await assertGoldensMatch(
     path.join(rig.rootDir, 'my-element'),
-    path.join('test_goldens/init', 'js'),
+    path.join('test-goldens/init', 'js'),
+    {
+      noFormat: true,
+    }
+  );
+});
+
+test('lit init command runs lit init element with defaults', async ({
+  rig,
+  testConsole,
+}) => {
+  await symlinkAllCommands(rig);
+  const cli = new LitCli(['init'], {
+    cwd: rig.rootDir,
+    console: testConsole,
+  });
+  testConsole.alsoLogToGlobalConsole = true;
+  await cli.run();
+
+  assert.equal(testConsole.errorStream.buffer.join(''), '');
+
+  await assertGoldensMatch(
+    path.join(rig.rootDir, 'my-element'),
+    path.join('test-goldens/init', 'js'),
     {
       noFormat: true,
     }
@@ -64,7 +87,7 @@ test('element generation named', async ({rig, testConsole}) => {
 
   await assertGoldensMatch(
     path.join(rig.rootDir, 'le-element'),
-    path.join('test_goldens/init', 'js-named'),
+    path.join('test-goldens/init', 'js-named'),
     {
       noFormat: true,
     }
@@ -87,7 +110,7 @@ test('element generation TS named', async ({rig, testConsole}) => {
 
   await assertGoldensMatch(
     path.join(rig.rootDir, 'el-element'),
-    path.join('test_goldens/init', 'ts-named'),
+    path.join('test-goldens/init', 'ts-named'),
     {
       noFormat: true,
     }
