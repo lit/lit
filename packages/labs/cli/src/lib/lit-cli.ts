@@ -94,7 +94,10 @@ export class LitCli {
 
     const result = await this.getCommand(this.commands, this.args);
     if ('invalidCommand' in result) {
-      return helpCommand.run({command: [result.invalidCommand]}, this.console);
+      return await helpCommand.run(
+        {command: [result.invalidCommand]},
+        this.console
+      );
     } else if ('commandNotInstalled' in result) {
       this.console.error(`Command not installed.`);
       return {exitCode: 1};
@@ -125,11 +128,11 @@ export class LitCli {
         this.console.debug(
           `'--help' option found, running 'help' for given command...`
         );
-        return helpCommand.run({command: commandName}, this.console);
+        return await helpCommand.run({command: commandName}, this.console);
       }
 
       this.console.debug('Running command...');
-      return command.run(commandOptions, this.console);
+      return await command.run(commandOptions, this.console);
     }
   }
 
