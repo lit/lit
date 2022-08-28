@@ -7,15 +7,16 @@
 import {TemplateResult, ChildPart, html} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
-import {repeat} from 'lit/directives/repeat.js';
+import {repeat, KeyFn} from 'lit/directives/repeat.js';
 import {
+  BaseLayoutConfig,
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
 import {Virtualizer, RangeChangedEvent} from './Virtualizer.js';
 
-export {virtualizerRef} from './Virtualizer.js';
+export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
 
 /**
  * Configuration options for the virtualize directive.
@@ -27,12 +28,12 @@ export interface VirtualizeDirectiveConfig<T> {
    */
   renderItem?: (item: T, index: number) => TemplateResult;
 
-  keyFunction?: (item: T) => unknown;
+  keyFunction?: KeyFn<T>;
 
   scroller?: boolean;
 
   // TODO (graynorton): Document...
-  layout?: Layout | LayoutConstructor | LayoutSpecifier;
+  layout?: Layout | LayoutConstructor | LayoutSpecifier | BaseLayoutConfig;
 
   /**
    * The list of items to display via the renderItem function.
@@ -40,17 +41,24 @@ export interface VirtualizeDirectiveConfig<T> {
   items?: Array<T>;
 }
 
-const defaultKeyFunction = <T>(item: T) => item;
-const defaultRenderItem = <T>(item: T) =>
-  html`${JSON.stringify(item, null, 2)}`;
+type RenderItemFunction<T = unknown> = (
+  item: T,
+  index: number
+) => TemplateResult;
 
-class VirtualizeDirective<T> extends AsyncDirective {
+const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
+const defaultRenderItem: RenderItemFunction<unknown> = (
+  item: unknown,
+  idx: number
+) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
+
+class VirtualizeDirective<T = unknown> extends AsyncDirective {
   virtualizer: Virtualizer | null = null;
   first = 0;
   last = -1;
   cachedConfig?: VirtualizeDirectiveConfig<T>;
-  renderItem: (item: T, index: number) => TemplateResult = defaultRenderItem;
-  keyFunction: (item: T) => unknown = defaultKeyFunction;
+  renderItem: RenderItemFunction<T> = defaultRenderItem;
+  keyFunction: KeyFn<T> = defaultKeyFunction;
   items: Array<T> = [];
 
   constructor(part: PartInfo) {
