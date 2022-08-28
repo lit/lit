@@ -71,7 +71,7 @@ interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
 }
 
 type LayoutInstanceValue = Layout | null;
-type LayoutConfigValue =
+export type LayoutConfigValue =
   | LayoutInstanceValue
   | LayoutConstructor
   | LayoutSpecifier
@@ -179,8 +179,7 @@ export class Virtualizer {
    * behavior options, as imperatively specified via
    * `element(index).scrollIntoView()`
    */
-  private _scrollIntoViewDestination: ScrollElementIntoViewOptions | null =
-    null;
+  private _scrollIntoViewTarget: ScrollElementIntoViewOptions | null = null;
 
   private _updateScrollIntoViewCoordinates:
     | ((coordinates: ScrollToCoordinates) => void)
@@ -362,6 +361,7 @@ export class Virtualizer {
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();
     this._childrenRO!.disconnect();
+    this._rejectLayoutCompletePromise('disconnected');
   }
 
   private _applyVirtualizerStyles() {
@@ -555,7 +555,7 @@ export class Virtualizer {
       await this._mutationPromise;
     }
     this._children.forEach((child) => this._childrenRO!.observe(child));
-    this._checkScrollIntoViewDestination(this._childrenPos);
+    this._checkScrollIntoViewTarget(this._childrenPos);
     this._positionChildren(this._childrenPos);
     this._sizeHostElement(this._scrollSize);
     this._correctScrollError();
@@ -783,9 +783,9 @@ export class Virtualizer {
       this._updateScrollIntoViewCoordinates = this._scroller!.managedScrollTo(
         Object.assign(coordinates, {behavior}),
         () => this._layout!.getScrollIntoViewCoordinates(options),
-        () => (this._scrollIntoViewDestination = null)
+        () => (this._scrollIntoViewTarget = null)
       );
-      this._scrollIntoViewDestination = options;
+      this._scrollIntoViewTarget = options;
     } else {
       this._layout!.pin = options;
     }
@@ -793,15 +793,13 @@ export class Virtualizer {
 
   /**
    * If we are smoothly scrolling to an element and the target element
-   * is in the DOM, we update our scroll destination as needed
+   * is in the DOM, we update our target coordinates as needed
    */
-  private _checkScrollIntoViewDestination(pos: ChildPositions | null) {
-    const {index} = this._scrollIntoViewDestination || {};
+  private _checkScrollIntoViewTarget(pos: ChildPositions | null) {
+    const {index} = this._scrollIntoViewTarget || {};
     if (index && pos?.has(index)) {
       this._updateScrollIntoViewCoordinates!(
-        this._layout!.getScrollIntoViewCoordinates(
-          this._scrollIntoViewDestination!
-        )
+        this._layout!.getScrollIntoViewCoordinates(this._scrollIntoViewTarget!)
       );
     }
   }
@@ -823,6 +821,45 @@ export class Virtualizer {
         last: this._lastVisible,
       })
     );
+  }
+
+  private _layoutCompleteResolver: Function | null = null;
+  private _layoutCompleteRejecter: Function | null = null;
+  private _pendingLayoutComplete: number | null = null;
+  public get layoutComplete(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._layoutCompleteResolver = resolve;
+      this._layoutCompleteRejecter = reject;
+    });
+  }
+  private _rejectLayoutCompletePromise(reason: string) {
+    if (this._layoutCompleteRejecter !== null) {
+      this._layoutCompleteRejecter!(reason);
+    }
+    this._resetLayoutCompleteState();
+  }
+  private _scheduleLayoutComplete() {
+    if (this._pendingLayoutComplete !== null) {
+      cancelAnimationFrame(this._pendingLayoutComplete);
+    }
+    this._pendingLayoutComplete = requestAnimationFrame(() =>
+      this._layoutComplete()
+    );
+  }
+  private _layoutComplete() {
+    this._resolveLayoutCompletePromise();
+    this._pendingLayoutComplete = null;
+  }
+  private _resolveLayoutCompletePromise() {
+    if (this._layoutCompleteResolver !== null) {
+      this._layoutCompleteResolver();
+    }
+    this._resetLayoutCompleteState();
+  }
+  private _resetLayoutCompleteState() {
+    this._layoutCompleteResolver = null;
+    this._layoutCompleteRejecter = null;
+    this._pendingLayoutComplete = null;
   }
 
   /**
@@ -871,6 +908,7 @@ export class Virtualizer {
     // internal state. This should be a harmless no-op if we're handling
     // an out-of-cycle ResizeObserver callback, so we don't need to
     // distinguish between the two cases.
+    this._scheduleLayoutComplete();
     this._itemsChanged = false;
     this._rangeChanged = false;
   }
@@ -908,43 +946,16 @@ function getParentElement(el: Element) {
 type retargetScrollCallback = () => ScrollToCoordinates;
 type endScrollCallback = () => void;
 
-class Scroller {
-  private static _instanceMap: WeakMap<HTMLElement | Window, Scroller> =
-    new WeakMap();
-  private _node: HTMLElement | Window | null = null;
-  private _element: HTMLElement | null = null;
-  private _originalScrollTo:
-    | typeof HTMLElement.prototype.scrollTo
-    | typeof window.scrollTo
-    | null = null;
-  private _clients: Array<unknown> = [];
-  private _retarget: retargetScrollCallback | null = null;
-  private _end: endScrollCallback | null = null;
-  private _destination: ScrollToOptions | null = null;
+export class ScrollerShim {
+  protected _node: Element | Window | null = null;
+  protected _element: Element | null = null;
 
-  constructor(client: unknown, element?: HTMLElement) {
-    const node = element || window;
-    const instance = Scroller._instanceMap.get(node);
-    if (instance) {
-      instance._attach(client);
-      return instance;
-    } else {
-      this._checkForArrival = this._checkForArrival.bind(this);
-      this._updateManagedScrollTo = this._updateManagedScrollTo.bind(this);
-      this.scrollTo = this.scrollTo.bind(this);
-      this._node = node;
-      if (element) {
-        this._element = element;
-      }
-      this._originalScrollTo = node.scrollTo;
-      this._attach(client);
+  constructor(element?: Element) {
+    const node = element ?? window;
+    this._node = node;
+    if (element) {
+      this._element = element;
     }
-  }
-
-  public correctingScrollError = false;
-
-  public get destination() {
-    return this._destination;
   }
 
   public get element() {
@@ -953,38 +964,90 @@ class Scroller {
     );
   }
 
-  public get scrolling() {
-    return this.destination !== null;
-  }
-
   public get scrollTop() {
-    return this._element?.scrollTop || window.scrollY;
+    return this.element.scrollTop || window.scrollY;
   }
 
   public get scrollLeft() {
-    return this._element?.scrollLeft || window.scrollX;
+    return this.element.scrollLeft || window.scrollX;
   }
 
   public get scrollHeight() {
-    return (
-      this._element?.scrollHeight ||
-      (document.scrollingElement || document.documentElement).scrollHeight
-    );
+    return this.element.scrollHeight;
   }
 
   public get scrollWidth() {
-    return (
-      this._element?.scrollWidth ||
-      (document.scrollingElement || document.documentElement).scrollWidth
-    );
+    return this.element.scrollWidth;
+  }
+
+  public get viewportHeight() {
+    return this._element
+      ? this._element.getBoundingClientRect().height
+      : window.innerHeight;
+  }
+
+  public get viewportWidth() {
+    return this._element
+      ? this._element.getBoundingClientRect().width
+      : window.innerWidth;
   }
 
   public get maxScrollTop() {
-    return this.scrollHeight - this.element.getBoundingClientRect().height;
+    return this.scrollHeight - this.viewportHeight;
   }
 
   public get maxScrollLeft() {
-    return this.scrollWidth - this.element.getBoundingClientRect().width;
+    return this.scrollWidth - this.viewportWidth;
+  }
+}
+
+class Scroller extends ScrollerShim {
+  private static _instanceMap: WeakMap<Element | Window, Scroller> =
+    new WeakMap();
+  private _originalScrollTo:
+    | typeof Element.prototype.scrollTo
+    | typeof window.scrollTo
+    | null = null;
+  private _originalScrollBy:
+    | typeof Element.prototype.scrollBy
+    | typeof window.scrollBy
+    | null = null;
+  private _originalScroll:
+    | typeof Element.prototype.scroll
+    | typeof window.scroll
+    | null = null;
+  private _clients: Array<unknown> = [];
+  private _retarget: retargetScrollCallback | null = null;
+  private _end: endScrollCallback | null = null;
+  private __destination: ScrollToOptions | null = null;
+
+  constructor(client: unknown, element?: Element) {
+    super(element);
+    const node = this._node!;
+    const instance = Scroller._instanceMap.get(node!);
+    if (instance) {
+      instance._attach(client);
+      return instance;
+    } else {
+      this._checkForArrival = this._checkForArrival.bind(this);
+      this._updateManagedScrollTo = this._updateManagedScrollTo.bind(this);
+      this.scrollTo = this.scrollTo.bind(this);
+      this.scrollBy = this.scrollBy.bind(this);
+      this._originalScrollTo = node.scrollTo;
+      this._originalScrollBy = node.scrollBy;
+      this._originalScroll = node.scroll;
+      this._attach(client);
+    }
+  }
+
+  public correctingScrollError = false;
+
+  private get _destination() {
+    return this.__destination;
+  }
+
+  public get scrolling() {
+    return this._destination !== null;
   }
 
   public scrollTo(options: ScrollToOptions): void;
@@ -995,6 +1058,23 @@ class Scroller {
       typeof p1 === 'number' && typeof p2 === 'number'
         ? {left: p1, top: p2}
         : (p1 as ScrollToOptions);
+    this._scrollTo(options);
+  }
+
+  public scrollBy(options: ScrollToOptions): void;
+  public scrollBy(x: number, y: number): void;
+  public scrollBy(p1: ScrollToOptions | number, p2?: number): void;
+  public scrollBy(p1: ScrollToOptions | number, p2?: number) {
+    const options: ScrollToOptions =
+      typeof p1 === 'number' && typeof p2 === 'number'
+        ? {left: p1, top: p2}
+        : (p1 as ScrollToOptions);
+    if (options.top !== undefined) {
+      options.top += this.scrollTop;
+    }
+    if (options.left !== undefined) {
+      options.left += this.scrollLeft;
+    }
     this._scrollTo(options);
   }
 
@@ -1031,26 +1111,26 @@ class Scroller {
         ? undefined
         : Math.max(0, Math.min(left, this.maxScrollLeft));
     if (
-      this.destination !== null &&
-      left === this.destination.left &&
-      top === this.destination.top
+      this._destination !== null &&
+      left === this._destination.left &&
+      top === this._destination.top
     ) {
       return false;
     }
-    this._destination = {top, left, behavior: 'smooth'};
+    this.__destination = {top, left, behavior: 'smooth'};
     return true;
   }
 
   private _resetScrollState() {
-    this._destination = null;
+    this.__destination = null;
     this._retarget = null;
     this._end = null;
   }
 
   private _updateManagedScrollTo(coordinates: ScrollToCoordinates) {
-    if (this.destination) {
+    if (this._destination) {
       if (this._setDestination(coordinates)) {
-        this._nativeScrollTo(this.destination);
+        this._nativeScrollTo(this._destination);
       }
     }
   }
@@ -1077,16 +1157,15 @@ class Scroller {
       this._setDestination(this._retarget());
     }
     // Then we go ahead and resume scrolling
-    const {destination} = this;
-    if (destination) {
-      this._nativeScrollTo(destination);
+    if (this._destination) {
+      this._nativeScrollTo(this._destination);
     }
   }
 
   private _checkForArrival() {
-    if (this.destination !== null) {
+    if (this._destination !== null) {
       const {scrollTop, scrollLeft} = this;
-      let {top, left} = this.destination;
+      let {top, left} = this._destination;
       top = Math.min(top || 0, this.maxScrollTop);
       left = Math.min(left || 0, this.maxScrollLeft);
       const topDiff = Math.abs(top - scrollTop);
@@ -1105,6 +1184,8 @@ class Scroller {
     this._clients = this._clients.splice(this._clients.indexOf(client), 1);
     if (this._clients.length === 0) {
       this._node!.scrollTo = this._originalScrollTo!;
+      this._node!.scrollBy = this._originalScrollBy!;
+      this._node!.scroll = this._originalScroll!;
       this._node!.removeEventListener('scroll', this._checkForArrival);
     }
     return null;
@@ -1114,6 +1195,8 @@ class Scroller {
     this._clients.push(client);
     if (this._clients.length === 1) {
       this._node!.scrollTo = this.scrollTo;
+      this._node!.scrollBy = this.scrollBy;
+      this._node!.scroll = this.scrollTo;
       this._node!.addEventListener('scroll', this._checkForArrival);
     }
   }
