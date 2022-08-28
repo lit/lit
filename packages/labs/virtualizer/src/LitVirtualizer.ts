@@ -7,7 +7,7 @@
 import {html, LitElement, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 import {state} from 'lit/decorators/state.js';
-import {repeat} from 'lit/directives/repeat.js';
+import {repeat, KeyFn} from 'lit/directives/repeat.js';
 import {
   Virtualizer,
   VirtualizerHostElement,
@@ -18,19 +18,26 @@ import {
   LayoutSpecifier,
   Layout,
   LayoutConstructor,
+  BaseLayoutConfig,
 } from './layouts/shared/Layout.js';
 
-type RenderItemFunction = <T>(item: T, index: number) => TemplateResult;
-const defaultKeyFunction = <T>(item: T) => item;
-const defaultRenderItem: RenderItemFunction = <T>(item: T, idx: number) =>
-  html`${idx}: ${JSON.stringify(item, null, 2)}`;
+type RenderItemFunction<T = unknown> = (
+  item: T,
+  index: number
+) => TemplateResult;
 
-export class LitVirtualizer extends LitElement {
-  private _renderItem: RenderItemFunction = (item, idx) =>
+const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
+const defaultRenderItem: RenderItemFunction<unknown> = (
+  item: unknown,
+  idx: number
+) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
+
+export class LitVirtualizer<T = unknown> extends LitElement {
+  private _renderItem: RenderItemFunction<T> = (item, idx) =>
     defaultRenderItem(item, idx + this._first);
-  private _providedRenderItem: RenderItemFunction = defaultRenderItem;
+  private _providedRenderItem: RenderItemFunction<T> = defaultRenderItem;
 
-  set renderItem(fn: RenderItemFunction) {
+  set renderItem(fn: RenderItemFunction<T>) {
     this._providedRenderItem = fn;
     this._renderItem = (item, idx) => fn(item, idx + this._first);
     this.requestUpdate();
@@ -42,13 +49,13 @@ export class LitVirtualizer extends LitElement {
   }
 
   @property({attribute: false})
-  items: Array<unknown> = [];
+  items: Array<T> = [];
 
   @property({reflect: true, type: Boolean})
   scroller = false;
 
   @property()
-  keyFunction: ((item: unknown) => unknown) | undefined = defaultKeyFunction;
+  keyFunction: KeyFn<T> | undefined = defaultKeyFunction;
 
   @state()
   private _first = 0;
@@ -56,20 +63,36 @@ export class LitVirtualizer extends LitElement {
   @state()
   private _last = -1;
 
-  private _layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
+  private _layout?:
+    | Layout
+    | LayoutConstructor
+    | LayoutSpecifier
+    | BaseLayoutConfig
+    | null;
 
   private _virtualizer?: Virtualizer;
 
   @property({attribute: false})
-  set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
+  set layout(
+    layout:
+      | Layout
+      | LayoutConstructor
+      | LayoutSpecifier
+      | BaseLayoutConfig
+      | null
+  ) {
     this._layout = layout;
     if (layout && this._virtualizer) {
       this._virtualizer.layout = layout;
     }
   }
 
-  get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
+  get layout(): Layout | null {
     return (this as VirtualizerHostElement)[virtualizerRef]!.layout;
+  }
+
+  get layoutComplete() {
+    return (this as VirtualizerHostElement)[virtualizerRef]!.layoutComplete;
   }
 
   element(index: number) {
