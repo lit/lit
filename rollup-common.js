@@ -32,7 +32,6 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
   '@lit-labs/vue-utils': '_$N',
-  '@lit-labs/a11y': '_$O',
 };
 
 // Validate prefix uniqueness
