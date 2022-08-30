@@ -28,7 +28,7 @@ type ElementWithoutPropsOrEventListeners<I, E> = Omit<
 
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-export type ElementProps<
+export type WebComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = Partial<
@@ -37,22 +37,22 @@ export type ElementProps<
     EventListeners<E>
 >;
 
-// Props used by this component wrapper. This is the ElementProps and the
+// Props used by this component wrapper. This is the WebComponentProps and the
 // special `__forwardedRef` property. Note, this ref is special because
 // it's both needed in this component to get access to the rendered element
 // and must fulfill any ref passed by the user.
 type ComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
-> = ElementProps<I, E> & {
+> = WebComponentProps<I, E> & {
   __forwardedRef?: React.Ref<I>;
 };
 
-type ReactWebComponent<
+export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<ElementProps<I, E>> & React.RefAttributes<I>
+  React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
 type Constructor<T> = {new (): T};
@@ -291,7 +291,7 @@ export const createComponent = <
 
   const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
     I,
-    ElementProps<I, E>
+    WebComponentProps<I, E>
   >((props, ref) =>
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
