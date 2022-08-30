@@ -289,7 +289,7 @@ export const createComponent = <
     }
   }
 
-  const forwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
+  const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
     I,
     ElementProps<I, E>
   >((props, ref) =>
@@ -301,7 +301,7 @@ export const createComponent = <
   );
 
   // To ease debugging in the React Developer Tools
-  forwardedComponent.displayName = ReactComponent.displayName;
+  ForwardedComponent.displayName = ReactComponent.displayName;
 
-  return forwardedComponent;
+  return ForwardedComponent;
 };
