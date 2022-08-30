@@ -22,7 +22,7 @@ const reactCommand: Command = {
 
 const vueCommand: Command = {
   name: 'vue',
-  description: 'Generate Vue wrappers for a LitElements',
+  description: 'Generate Vue wrappers for a LitElement',
   kind: 'reference',
   installFrom: '@lit-labs/gen-wrapper-vue',
   importSpecifier: '@lit-labs/gen-wrapper-vue/index.js',
@@ -65,7 +65,6 @@ export const run = async (
   }: {packages: string[]; frameworks: string[]; outDir: string; cli: LitCli},
   console: Console
 ) => {
-  console.log('packages', packages);
   for (const packageRoot of packages) {
     // Ensure separators in input paths are normalized and resolved to absolute
     const root = path.normalize(path.resolve(packageRoot)) as AbsolutePath;
@@ -120,7 +119,7 @@ export const run = async (
           await writeFileTree(out, await generator.generate(options));
         } catch (e) {
           console.error('Wrapper generation failed', e);
-          return;
+          throw e;
         }
       })
     );
@@ -128,13 +127,12 @@ export const run = async (
     // the results and throw a new error up the stack describing all the errors
     // that happened
     const errors = results
-      .map((r, i) =>
-        r.status === 'rejected'
-          ? `Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
-              (r.reason as Error).stack ?? r.reason
-          : ''
+      .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+      .map(
+        (r: PromiseRejectedResult, i) =>
+          `Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
+            (r.reason as Error).stack ?? r.reason
       )
-      .filter((e) => e)
       .join('\n');
     if (errors.length > 0) {
       throw new Error(errors);

@@ -66,8 +66,9 @@ export const generateAngularWrapper = async (
   }
 
   try {
-    const {stdout: ngVersionOut} = await exec('ng --version');
-    console.log({ngVersionOut});
+    const {stdout: ngVersionOut} = await exec('ng version');
+    const version = parseAngularCLIVersion(ngVersionOut);
+    console.log(`Angular CLI version: ${version}`);
   } catch (e: unknown) {
     // See https://nodejs.org/api/child_process.html#child_processexeccommand-options-callback
     const err = e as ExecException & {stdout: string; stderr: string};
@@ -80,6 +81,9 @@ export const generateAngularWrapper = async (
         stdin: options.stdin,
         console: options.console,
       });
+      const {stdout: ngVersionOut} = await exec('ng version');
+      const version = parseAngularCLIVersion(ngVersionOut);
+      console.log(`Angular CLI version: ${version}`);
     }
   }
 
@@ -164,4 +168,12 @@ const wrapperFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
 
 const gitIgnoreTemplate = (litModules: LitModule[]) => {
   return litModules.map(({module}) => module.jsPath).join('\n');
+};
+
+const versionLineStart = 'Angular CLI: ';
+const parseAngularCLIVersion = (versionOutput: string) => {
+  const lines = versionOutput.split('\n');
+  const versionLine = lines.find((line) => line.startsWith(versionLineStart));
+  const version = versionLine?.substring(versionLineStart.length);
+  return version;
 };

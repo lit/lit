@@ -253,7 +253,7 @@ export class LitCli {
     let resolvedPackageLocation = this.resolveImportForReference(reference);
     if (resolvedPackageLocation === undefined) {
       const installed = await installDepWithPermission({
-        description: `The command ${reference.name}`,
+        description: `The command ${JSON.stringify(reference.name)}`,
         npmPackage: reference.installFrom ?? reference.importSpecifier,
         global: false,
         cwd: this.cwd,
