@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@lit-labs/analyzer": "^0.2.0",
-    "@lit-labs/cli": "^0.0.1",
+    "@lit-labs/cli": "^0.1.0",
     "@lit-labs/gen-utils": "^0.1.0",
     "@lit-internal/tests": "0.0.0"
   },
