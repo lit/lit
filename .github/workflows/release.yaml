@@ -36,13 +36,6 @@ jobs:
         working-directory: lit
         run: npm ci
 
-      # Changeset uses prettier@1 which creates unstable formatting issues
-      # Deleting this forces fallback to our version of prettier
-      # https://github.com/changesets/changesets/issues/616
-      - name: Remove old version of prettier from changesets
-        working-directory: lit
-        run: rm -rf node_modules/@changesets/*/node_modules/prettier
-
       - name: Create Release Pull Request or Publish to npm
         # The id of this step must not be "changesets", or else the step will be invisible
         # in the list of steps from the GitHub UI when the action runs (though it will still
