@@ -45,6 +45,7 @@ export const defaultConfig = (options = {}) =>
         file: 'polyfill-support',
       },
     ],
+    includeNodeBuild: true,
     ...options,
   });
 

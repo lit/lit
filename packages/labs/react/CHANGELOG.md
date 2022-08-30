@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.8
+
+### Patch Changes
+
+- [#2800](https://github.com/lit/lit/pull/2800) [`043d9c80`](https://github.com/lit/lit/commit/043d9c80de59177335fa6543d5654e0295f5a743) - Support setting custom accessors by using an 'in' check instead of a for/in loop to check for properties.
+
 ## 1.0.7
 
 ### Patch Changes

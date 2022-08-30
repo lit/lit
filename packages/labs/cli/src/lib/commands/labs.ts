@@ -29,7 +29,7 @@ export const makeLabsCommand = (cli: LitCli): Command => {
             name: 'framework',
             multiple: true,
             description:
-              'Framework to generate wrappers for. Supported frameworks: react.',
+              'Framework to generate wrappers for. Supported frameworks: react, vue.',
           },
           {
             name: 'out',

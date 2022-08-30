@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - '**/CHANGELOG.md'
+  push:
+    paths:
+      - '**/CHANGELOG.md'
 
 jobs:
   release-image:
