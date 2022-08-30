@@ -5,11 +5,11 @@
  */
 
 import {
-  getLitModules,
-  LitModule,
   Package,
   PackageJson,
-} from '@lit-labs/analyzer/lib/model.js';
+  LitElementDeclaration,
+  ModuleWithDeclarations,
+} from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
@@ -17,32 +17,32 @@ import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import * as path from 'path';
 
 export const generateAngularWrapper = async (
-  analysis: Package
+  pkg: Package
 ): Promise<FileTree> => {
-  const litModules: LitModule[] = getLitModules(analysis);
+  const litModules = pkg.getLitElementModules();
   if (litModules.length > 0) {
-    const packageName = analysis.packageJson.name;
+    const packageName = pkg.packageJson.name;
     if (packageName === undefined) {
       throw new Error(
         `Package must have a package name. Error in ${
-          analysis.rootDir + '/package.json'
+          pkg.rootDir + '/package.json'
         }`
       );
     }
     // TODO(justinfagnani): make configurable
     const angularPackageName = `${packageName}-ng`;
     // TODO(justinfagnani): put inside an Angular workspace
-    const angularPackageFolder = `${path.basename(analysis.rootDir)}-ng`;
+    const angularPackageFolder = `${path.basename(pkg.rootDir)}-ng`;
     return {
       [angularPackageFolder]: {
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(
           angularPackageName,
-          analysis.packageJson,
+          pkg.packageJson,
           litModules
         ),
         'tsconfig.json': tsconfigTemplate(),
-        ...wrapperFiles(analysis.packageJson, litModules),
+        ...wrapperFiles(pkg.packageJson, litModules),
       },
     };
   } else {
@@ -50,21 +50,24 @@ export const generateAngularWrapper = async (
   }
 };
 
-const wrapperFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
+const wrapperFiles = (
+  packageJson: PackageJson,
+  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+) => {
   const wrapperFiles: FileTree = {};
-  for (const {
-    module: {sourcePath, jsPath},
-    elements,
-  } of litModules) {
+  for (const {module, declarations} of litModules) {
+    const {sourcePath, jsPath} = module;
     wrapperFiles[sourcePath] = wrapperModuleTemplate(
       packageJson,
       jsPath,
-      elements
+      declarations
     );
   }
   return wrapperFiles;
 };
 
-const gitIgnoreTemplate = (litModules: LitModule[]) => {
+const gitIgnoreTemplate = (
+  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+) => {
   return litModules.map(({module}) => module.jsPath).join('\n');
 };

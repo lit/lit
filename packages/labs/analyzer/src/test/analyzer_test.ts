@@ -10,8 +10,7 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {Analyzer} from '../lib/analyzer.js';
-import {AbsolutePath} from '../lib/paths.js';
+import {Analyzer, AbsolutePath} from '../index.js';
 
 const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'Basic Analyzer tests'

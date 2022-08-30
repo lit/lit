@@ -4,12 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitModule, PackageJson} from '@lit-labs/analyzer/lib/model.js';
+import {
+  LitElementDeclaration,
+  ModuleWithDeclarations,
+  PackageJson,
+} from '@lit-labs/analyzer/lib/model.js';
 
 export const packageJsonTemplate = (
   angularPackageName: string,
   packageJson: PackageJson,
-  litModules: LitModule[]
+  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
 ) => {
   // Refinement of package.json generation ala the TODOs below tracked in
   // https://github.com/lit/lit/issues/2855

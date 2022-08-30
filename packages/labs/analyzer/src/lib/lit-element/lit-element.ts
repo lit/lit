@@ -27,7 +27,7 @@ export const getLitElementDeclaration = (
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(node),
-    name: node.name?.text,
+    name: node.name?.text ?? '',
     node,
     reactiveProperties: getProperties(node, programContext),
     events: getEvents(node, programContext),

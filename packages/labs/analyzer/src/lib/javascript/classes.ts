@@ -19,7 +19,7 @@ export const getClassDeclaration = (
   _programContext: ProgramContext
 ): ClassDeclaration => {
   return new ClassDeclaration({
-    name: declaration.name?.text,
+    name: declaration.name?.text ?? '',
     node: declaration,
   });
 };
