@@ -40,20 +40,18 @@ const observerComplete = async (el?: HTMLElement) => {
   await nextFrame();
 };
 
-// const canTest = async () => {
-//   let ok = false;
-//   if (window.PerformanceObserver) {
-//     const o = new PerformanceObserver(() => (ok = true));
-//     o.observe({entryTypes: ['measure']});
-//     await generateMeasure();
-//   }
-//   await observerComplete();
-//   return ok;
-// };
+const canTest = async () => {
+  let ok = false;
+  if (window.PerformanceObserver) {
+    const o = new PerformanceObserver(() => (ok = true));
+    o.observe({entryTypes: ['measure']});
+    await generateMeasure();
+  }
+  await observerComplete();
+  return ok;
+};
 
-// TODO: disable these tests until can figure out issues with Sauce Safari
-// version. They do pass on latest Safari locally.
-suite.skip('PerformanceController', () => {
+((await canTest()) ? suite : suite.skip)('PerformanceController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
