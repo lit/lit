@@ -23,6 +23,9 @@
     "./layouts/grid.js": {
       "default": "./layouts/grid.js"
     },
+    "./layouts/masonry.js": {
+      "default": "./layouts/masonry.js"
+    },
     "./LitVirtualizer.js": {
       "default": "./LitVirtualizer.js"
     },

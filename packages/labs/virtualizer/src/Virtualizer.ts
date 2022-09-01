@@ -497,7 +497,7 @@ export class Virtualizer {
 
   _updateLayout() {
     if (this._layout) {
-      this._layout!.totalItems = this._items.length;
+      this._layout!.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
         // If the layout has been changed, we may have measurements but no callback
@@ -506,7 +506,7 @@ export class Virtualizer {
         }
         this._childMeasurements = null;
       }
-      this._layout!.reflowIfNeeded(this._itemsChanged);
+      this._layout!.reflowIfNeeded();
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
       }
