@@ -16,7 +16,6 @@ import {
   Size,
   Range,
   InternalRange,
-  PinOptions,
   MeasureChildFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
@@ -85,8 +84,6 @@ export function setDefaultLayout(ctor: LayoutConstructor) {
 
 export interface VirtualizerConfig {
   layout?: LayoutConfigValue;
-
-  pin?: PinOptions | null;
 
   /**
    * The parent of all child nodes to be rendered.
