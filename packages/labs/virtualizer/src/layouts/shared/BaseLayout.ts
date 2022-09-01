@@ -143,7 +143,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Total number of items that could possibly be displayed. Used to help
    * calculate the scroll size.
    */
-  protected _totalItems = 0;
+  protected _items: unknown[] = [];
 
   /**
    * The total (estimated) length of all items in the scrolling direction.
@@ -185,13 +185,12 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Maximum index of children + 1, to help estimate total height of the scroll
    * space.
    */
-  get totalItems(): number {
-    return this._totalItems;
+  get items(): unknown[] {
+    return this._items;
   }
-  set totalItems(num) {
-    const _num = Number(num);
-    if (_num !== this._totalItems) {
-      this._totalItems = _num;
+  set items(items: unknown[]) {
+    if (items !== this._items) {
+      this._items = items;
       this._scheduleReflow();
     }
   }
@@ -268,7 +267,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     if (this._pin !== null) {
       const {index, block} = this._pin;
       return {
-        index: Math.max(0, Math.min(index, this.totalItems - 1)),
+        index: Math.max(0, Math.min(index, this.items.length - 1)),
         block,
       };
     }
@@ -424,7 +423,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected _calculateScrollIntoViewPosition(options: PinOptions) {
     const {block} = options;
-    const index = Math.min(this.totalItems, Math.max(0, options.index));
+    const index = Math.min(this.items.length, Math.max(0, options.index));
     const itemStartPosition = this._getItemPosition(index)[this._positionDim];
     let scrollPosition = itemStartPosition;
     if (block !== 'start') {

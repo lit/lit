@@ -85,7 +85,7 @@ export interface ScrollToCoordinates {
 export interface Layout {
   config?: object;
 
-  totalItems: number;
+  items: unknown[];
 
   direction: ScrollDirection;
 
@@ -159,5 +159,5 @@ export interface Layout {
    *       width: number,
    *     }
    */
-  reflowIfNeeded: (force: boolean) => void;
+  reflowIfNeeded: (force?: boolean) => void;
 }

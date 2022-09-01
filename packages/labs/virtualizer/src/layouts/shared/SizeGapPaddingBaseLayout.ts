@@ -3,7 +3,7 @@ import {BaseLayoutConfig} from './Layout.js';
 import {BaseLayout, dim1, dim2} from './BaseLayout.js';
 import {ScrollDirection, Size} from './Layout.js';
 
-type PixelSize = `${'0' | `${number}px`}`;
+export type PixelSize = `${'0' | `${number}px`}`;
 
 type GapValue = PixelSize;
 type TwoGapValues = `${GapValue} ${GapValue}`;
@@ -65,7 +65,7 @@ export function padding2(direction: ScrollDirection): [side, side] {
 export interface SizeGapPaddingBaseLayoutConfig extends BaseLayoutConfig {
   // gap?: GapSpec,
   padding?: PaddingSpec;
-  itemSize?: PixelDimensions;
+  itemSize?: PixelDimensions | PixelSize;
 }
 
 type gap = 'row' | 'column';
@@ -126,8 +126,14 @@ export abstract class SizeGapPaddingBaseLayout<
     return [padding[start], padding[end]];
   }
 
-  set itemSize(dims: PixelDimensions) {
+  set itemSize(dims: PixelDimensions | PixelSize) {
     const size = this._itemSize as Size;
+    if (typeof dims === 'string') {
+      dims = {
+        width: dims,
+        height: dims,
+      };
+    }
     const width = parseInt(dims.width);
     const height = parseInt(dims.height);
     if (width !== size.width) {
