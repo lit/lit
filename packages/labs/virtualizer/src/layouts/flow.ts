@@ -16,7 +16,6 @@ import {
   ChildMeasurements,
   BaseLayoutConfig,
 } from './shared/Layout.js';
-import {setDefaultLayout} from '../Virtualizer.js';
 
 type ItemBounds = {
   pos: number;
@@ -575,5 +574,3 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._scheduleReflow();
   }
 }
-
-setDefaultLayout(FlowLayout);

@@ -99,23 +99,6 @@ export type LayoutConfigValue =
   | BaseLayoutConfig
   | undefined;
 
-/**
- * We want there to be a default layout (currently, and probably
- * always, flow) so that users in the 80% case don't have to
- * explicitly import and instantiate one. However, we don't want
- * to make users of other layouts pay the cost of loading the
- * default one, so we load it dynamically when needed.
- *
- * The timing of this is a bit fiddly; the spot where we discover
- * we need to load the default layout is in a setter, which can't
- * be async. The current scheme involves creating this variable in
- * module scope and populating it
- */
-let DEFAULT_LAYOUT: LayoutConstructor | null = null;
-export function setDefaultLayout(ctor: LayoutConstructor) {
-  DEFAULT_LAYOUT = ctor;
-}
-
 export interface VirtualizerConfig {
   layout?: LayoutConfigValue;
 
@@ -294,14 +277,6 @@ export class Virtualizer {
     this._childrenRO = new ResizeObserver(this._childrenSizeChanged.bind(this));
   }
 
-  async _fetchDefaultLayout(layoutConfig: LayoutConfigValue) {
-    const {instance, Ctor} = this._parseLayoutConfig(layoutConfig);
-    if (instance === undefined && Ctor === undefined) {
-      await import('./layouts/flow.js');
-    }
-    this.layout = layoutConfig || {};
-  }
-
   _parseLayoutConfig(layoutConfig?: LayoutConfigValue) {
     let instance: Layout | undefined;
     let Ctor: LayoutConstructor | undefined;
@@ -441,34 +416,43 @@ export class Virtualizer {
     return this._sizer;
   }
 
-  // This will always actually return a layout instance,
-  // but TypeScript wants the getter and setter types to be the same
-  get layout(): Layout | null {
+  get layout(): LayoutInstanceValue {
     return this._layout;
+  }
+
+  // We want there to be a default layout (currently, and probably
+  // always, flow) so that users in the 80% case don't have to
+  // explicitly import and instantiate one. However, we don't want
+  // to make users of other layouts pay the cost of loading the
+  // default one, so we load it dynamically when needed.
+  //
+  // This requires async setter behavior, but since a setter can't
+  // actually be async, we wrap an async method.
+  set layout(layoutConfig: LayoutConfigValue) {
+    this._setLayout(layoutConfig);
   }
 
   // TODO (graynorton): Consider not allowing dynamic layout changes and
   // instead just creating a new Virtualizer instance when a layout
   // change is desired. Might simplify quite a bit.
-  set layout(layoutConfig: LayoutConfigValue) {
+  async _setLayout(layoutConfig: LayoutConfigValue) {
     const {instance, Ctor, config, isNull} =
       this._parseLayoutConfig(layoutConfig);
 
     if (!instance) {
-      let newInstance: Layout | null;
+      let newInstance: LayoutInstanceValue;
       if (isNull) {
         newInstance = null;
-      } else if (Ctor || DEFAULT_LAYOUT) {
-        const verifiedCtor = (Ctor || DEFAULT_LAYOUT)!;
-        if (this._layout instanceof verifiedCtor) {
+      } else {
+        // Load the default layout if necessary
+        const ResolvedCtor =
+          Ctor || (await import('./layouts/flow.js')).FlowLayout;
+        if (this._layout instanceof ResolvedCtor) {
           this._layout.config = config;
           return;
         } else {
-          newInstance = new (Ctor || DEFAULT_LAYOUT)!(config);
+          newInstance = new ResolvedCtor(config);
         }
-      } else {
-        this._fetchDefaultLayout(layoutConfig);
-        return;
       }
 
       if (this._layout) {
@@ -873,8 +857,10 @@ export class Virtualizer {
     if (this._pendingLayoutComplete !== null) {
       cancelAnimationFrame(this._pendingLayoutComplete);
     }
+    // Seems to require waiting one additional frame to
+    // be sure the layout is stable
     this._pendingLayoutComplete = requestAnimationFrame(() =>
-      this._layoutComplete()
+      requestAnimationFrame(() => this._layoutComplete())
     );
   }
   private _layoutComplete() {
