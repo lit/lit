@@ -35,15 +35,37 @@ export interface VirtualizerHostElement extends HTMLElement {
   [virtualizerRef]?: Virtualizer;
 }
 
+/**
+ * A very limited proxy object for a virtualizer child,
+ * returned by Virtualizer.element(idx: number). Introduced
+ * to enable scrolling a virtual element into view using
+ * a call that looks and behaves essentially the same as for
+ * a real Element. May be useful for other things later.
+ */
 export interface VirtualizerChildElementProxy {
   scrollIntoView: (options?: ScrollIntoViewOptions) => void;
 }
 
+/**
+ * Used internally for scrolling a (possibly virtual) element
+ * into view, given its index
+ */
 interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
   index: number;
 }
 
+/**
+ * Among the various ways to specify a layout for Virtualizer,
+ * you can provide an actual Layout instance. You can also tear
+ * down the current layout (if any) by setting the layout to null
+ */
 type LayoutInstanceValue = Layout | null;
+
+/**
+ * The main way to specify a layout is via a declarative Virtualizer
+ * configuration. These are the different types of values accepted
+ * for a layout in the Virtualizer config.
+ */
 export type LayoutConfigValue =
   | LayoutInstanceValue
   | LayoutConstructor
@@ -51,6 +73,18 @@ export type LayoutConfigValue =
   | BaseLayoutConfig
   | undefined;
 
+/**
+ * We want there to be a default layout (currently, and probably
+ * always, flow) so that users in the 80% case don't have to
+ * explicitly import and instantiate one. However, we don't want
+ * to make users of other layouts pay the cost of loading the
+ * default one, so we load it dynamically when needed.
+ *
+ * The timing of this is a bit fiddly; the spot where we discover
+ * we need to load the default layout is in a setter, which can't
+ * be async. The current scheme involves creating this variable in
+ * module scope and populating it
+ */
 let DEFAULT_LAYOUT: LayoutConstructor | null = null;
 export function setDefaultLayout(ctor: LayoutConstructor) {
   DEFAULT_LAYOUT = ctor;
@@ -235,8 +269,8 @@ export class Virtualizer {
   }
 
   async _fetchDefaultLayout(layoutConfig: LayoutConfigValue) {
-    const {instance, ctor} = this._parseLayoutConfig(layoutConfig);
-    if (instance === undefined && ctor === undefined) {
+    const {instance, Ctor} = this._parseLayoutConfig(layoutConfig);
+    if (instance === undefined && Ctor === undefined) {
       await import('./layouts/flow.js');
     }
     this.layout = layoutConfig || {};
@@ -244,7 +278,7 @@ export class Virtualizer {
 
   _parseLayoutConfig(layoutConfig?: LayoutConfigValue) {
     let instance: Layout | undefined;
-    let ctor: LayoutConstructor | undefined;
+    let Ctor: LayoutConstructor | undefined;
     let config: BaseLayoutConfig | undefined;
     let isNull = false;
     if (layoutConfig === null) {
@@ -257,7 +291,7 @@ export class Virtualizer {
           } else if (
             typeof (layoutConfig as LayoutSpecifier).type === 'function'
           ) {
-            ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
+            Ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
             const copy = {...(layoutConfig as LayoutSpecifier)} as {
               type?: LayoutConstructor;
             };
@@ -267,11 +301,11 @@ export class Virtualizer {
             config = layoutConfig as BaseLayoutConfig;
           }
         } else if (typeof layoutConfig === 'function') {
-          ctor = layoutConfig as LayoutConstructor;
+          Ctor = layoutConfig as LayoutConstructor;
         }
       }
     }
-    return {instance, ctor, config, isNull};
+    return {instance, Ctor, config, isNull};
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -391,20 +425,20 @@ export class Virtualizer {
   // instead just creating a new Virtualizer instance when a layout
   // change is desired. Might simplify quite a bit.
   set layout(layoutConfig: LayoutConfigValue) {
-    const {instance, ctor, config, isNull} =
+    const {instance, Ctor, config, isNull} =
       this._parseLayoutConfig(layoutConfig);
 
     if (!instance) {
       let newInstance: Layout | null;
       if (isNull) {
         newInstance = null;
-      } else if (ctor || DEFAULT_LAYOUT) {
-        const verifiedCtor = (ctor || DEFAULT_LAYOUT)!;
+      } else if (Ctor || DEFAULT_LAYOUT) {
+        const verifiedCtor = (Ctor || DEFAULT_LAYOUT)!;
         if (this._layout instanceof verifiedCtor) {
           this._layout.config = config;
           return;
         } else {
-          newInstance = new (ctor || DEFAULT_LAYOUT)!(config);
+          newInstance = new (Ctor || DEFAULT_LAYOUT)!(config);
         }
       } else {
         this._fetchDefaultLayout(layoutConfig);
