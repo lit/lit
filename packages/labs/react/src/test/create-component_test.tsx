@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventName} from '@lit-labs/react';
+import type {EventName, ReactWebComponent} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -129,6 +129,31 @@ suite('createComponent', () => {
     await el.updateComplete;
     
     assert.equal(el.textContent, 'Component without event map.');
+  });
+
+  /*
+    The following test will not build if createComponent does return
+    the expected type ReactWebComponent.
+  */
+  test('renders element with expected types', async () => {
+    type TypedComponent = ReactWebComponent<BasicElement>;
+
+    const TypedBasicElement: TypedComponent = createComponent(
+      window.React,
+      elementName,
+      BasicElement,
+    );
+
+    const name = 'Component is typed.';
+    window.ReactDOM.render(
+      <TypedBasicElement>{name}</TypedBasicElement>,
+      container
+    );
+
+    el = container.querySelector(elementName)! as BasicElement;
+    await el.updateComplete;
+    
+    assert.equal(el.textContent, name);
   });
 
   test('works with text children', async () => {
