@@ -6,7 +6,8 @@
 
 import {expect, html, fixture} from '@open-wc/testing';
 import {isInViewport, until, last, first} from './helpers.js';
-import {Virtualizer, ScrollerShim} from '../Virtualizer.js';
+import {Virtualizer} from '../Virtualizer.js';
+import {ScrollerShim} from '../ScrollerController.js';
 import {LayoutSpecifier, BaseLayoutConfig} from '../layouts/shared/Layout.js';
 import {LitVirtualizer} from '../LitVirtualizer.js';
 import '../lit-virtualizer.js';
@@ -34,23 +35,6 @@ interface ScrollObserverResults {
   distance: Coordinates;
   duration: number | null;
 }
-
-//   class Scroller {
-//     _target?: Element | Window
-//     constructor(target: Element | Window) {
-//         this._target = target;
-//     }
-//     get coordinates() {
-//         return {
-//             top: this._target === window
-//                 ? this._target.scrollY
-//                 : (this._target as Element).scrollTop,
-//             left: this._target === window
-//                 ? this._target.scrollX
-//                 : (this._target as Element).scrollLeft
-//         }
-//     }
-//   }
 
 class Scroller extends ScrollerShim {
   constructor(target: Element | Window) {
