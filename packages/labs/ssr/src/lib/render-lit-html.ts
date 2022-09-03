@@ -44,19 +44,15 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {
-  traverse,
-  parseFragment,
-  isCommentNode,
-  isElement,
-} from './util/parse5-utils.js';
+import {parseFragment} from 'parse5';
+import {isElementNode, isCommentNode, traverse} from '@parse5/tools';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
 import {LitElementRenderer} from './lit-element-renderer.js';
 
-declare module 'parse5' {
+declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
     isDefinedCustomElement?: boolean;
   }
@@ -352,7 +348,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   let nodeIndex = 0;
 
   traverse(ast, {
-    pre(node, parent) {
+    'pre:node'(node, parent) {
       if (isCommentNode(node)) {
         if (node.data === markerMatch) {
           flushTo(node.sourceCodeLocation!.startOffset);
@@ -361,11 +357,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             type: 'child-part',
             index: nodeIndex,
             useCustomElementInstance:
-              parent && isElement(parent) && parent.isDefinedCustomElement,
+              parent && isElementNode(parent) && parent.isDefinedCustomElement,
           });
         }
         nodeIndex++;
-      } else if (isElement(node)) {
+      } else if (isElementNode(node)) {
         // Whether to flush the start tag. This is necessary if we're changing
         // any of the attributes in the tag, so it's true for custom-elements
         // which might reflect their own state, or any element with a binding.
@@ -459,14 +455,14 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 
         if (writeTag) {
           if (node.isDefinedCustomElement) {
-            flushTo(node.sourceCodeLocation!.startTag.endOffset - 1);
+            flushTo(node.sourceCodeLocation!.startTag!.endOffset - 1);
             ops.push({
               type: 'custom-element-attributes',
             });
             flush('>');
-            skipTo(node.sourceCodeLocation!.startTag.endOffset);
+            skipTo(node.sourceCodeLocation!.startTag!.endOffset);
           } else {
-            flushTo(node.sourceCodeLocation!.startTag.endOffset);
+            flushTo(node.sourceCodeLocation!.startTag!.endOffset);
           }
           ops.push({
             type: 'possible-node-marker',
@@ -483,8 +479,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         nodeIndex++;
       }
     },
-    post(node) {
-      if (isElement(node) && node.isDefinedCustomElement) {
+    node(node) {
+      if (isElementNode(node) && node.isDefinedCustomElement) {
         ops.push({
           type: 'custom-element-close',
         });
