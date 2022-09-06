@@ -8,18 +8,8 @@ import {html, LitElement, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 import {state} from 'lit/decorators/state.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
-import {
-  Virtualizer,
-  VirtualizerHostElement,
-  virtualizerRef,
-  RangeChangedEvent,
-} from './Virtualizer.js';
-import {
-  LayoutSpecifier,
-  Layout,
-  LayoutConstructor,
-  BaseLayoutConfig,
-} from './layouts/shared/Layout.js';
+import {Virtualizer, RangeChangedEvent} from './Virtualizer.js';
+import {Layout, LayoutConfigValue} from './layouts/shared/Layout.js';
 
 type RenderItemFunction<T = unknown> = (
   item: T,
@@ -75,24 +65,12 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @state()
   private _last = -1;
 
-  private _layout?:
-    | Layout
-    | LayoutConstructor
-    | LayoutSpecifier
-    | BaseLayoutConfig
-    | null;
+  private _layout?: LayoutConfigValue;
 
   private _virtualizer?: Virtualizer;
 
   @property({attribute: false})
-  set layout(
-    layout:
-      | Layout
-      | LayoutConstructor
-      | LayoutSpecifier
-      | BaseLayoutConfig
-      | null
-  ) {
+  set layout(layout: LayoutConfigValue) {
     this._layout = layout;
     if (layout && this._virtualizer) {
       this._virtualizer.layout = layout;
@@ -100,15 +78,15 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   }
 
   get layout(): Layout | null {
-    return (this as VirtualizerHostElement)[virtualizerRef]!.layout;
+    return this._virtualizer!.layout;
   }
 
   get layoutComplete() {
-    return (this as VirtualizerHostElement)[virtualizerRef]!.layoutComplete;
+    return this._virtualizer!.layoutComplete;
   }
 
   element(index: number) {
-    return this._virtualizer?.element(index);
+    return this._virtualizer!.element(index);
   }
 
   willUpdate(changed: Map<string, unknown>) {

@@ -8,12 +8,7 @@ import {TemplateResult, ChildPart, html} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
-import {
-  BaseLayoutConfig,
-  Layout,
-  LayoutConstructor,
-  LayoutSpecifier,
-} from './layouts/shared/Layout.js';
+import {LayoutConfigValue} from './layouts/shared/Layout.js';
 import {Virtualizer, RangeChangedEvent} from './Virtualizer.js';
 
 export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
@@ -33,7 +28,7 @@ export interface VirtualizeDirectiveConfig<T> {
   scroller?: boolean;
 
   // TODO (graynorton): Document...
-  layout?: Layout | LayoutConstructor | LayoutSpecifier | BaseLayoutConfig;
+  layout?: LayoutConfigValue;
 
   /**
    * The list of items to display via the renderItem function.
