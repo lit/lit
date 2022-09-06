@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - uses: google/wireit@setup-github-actions-caching/v1
+      # DO NOT SUBMIT - removing cache for repeated testing.
 
       - name: NPM install
         run: npm ci
