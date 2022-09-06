@@ -279,7 +279,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   unpin() {
     if (this._pin !== null) {
-      console.log('unpinned');
+      this._emitUnpinned();
       this._pin = null;
     }
   }
@@ -453,6 +453,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       [this._positionDim as position]:
         this._calculateScrollIntoViewPosition(options),
     } as ScrollToOptions;
+  }
+
+  private _emitUnpinned() {
+    this.dispatchEvent(new CustomEvent('unpinned'));
   }
 
   protected _emitRange() {
