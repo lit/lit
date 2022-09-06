@@ -72,12 +72,30 @@ export interface BaseLayoutConfig {
   pin?: PinOptions;
 }
 
-export type ScrollDirection = 'vertical' | 'horizontal';
+/**
+ * Among the various ways to specify a layout for Virtualizer,
+ * you can provide an actual Layout instance. You can also tear
+ * down the current layout (if any) by setting the layout to null
+ */
+type LayoutInstanceValue = Layout | null;
+
+/**
+ * The main way to specify a layout is via a declarative Virtualizer
+ * configuration. These are the different types of values accepted
+ * for a layout in the Virtualizer config.
+ */
+export type LayoutConfigValue =
+  | LayoutInstanceValue
+  | LayoutConstructor
+  | LayoutSpecifier
+  | BaseLayoutConfig;
 
 export interface ScrollToCoordinates {
   top?: number;
   left?: number;
 }
+
+export type ScrollDirection = 'vertical' | 'horizontal';
 
 /**
  * Interface for layouts consumed by Virtualizer.
