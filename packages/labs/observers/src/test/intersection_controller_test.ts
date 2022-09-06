@@ -90,6 +90,9 @@ if (DEV_MODE) {
     const intersectionComplete = async () => {
       await nextFrame();
       await nextFrame();
+      // For Safari latest Sauce tests to pass, it requires four nextFrame calls!
+      await nextFrame();
+      await nextFrame();
     };
 
     const intersectOut = (el: HTMLElement) => {
@@ -213,6 +216,7 @@ if (DEV_MODE) {
 
       // Observe intersect in
       intersectIn(d);
+      await intersectionComplete();
       await intersectionComplete();
       assert.isTrue(el.observerValue);
     });

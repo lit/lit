@@ -40,18 +40,14 @@ const observerComplete = async (el?: HTMLElement) => {
   await nextFrame();
 };
 
-const canTest = async () => {
-  let ok = false;
-  if (window.PerformanceObserver) {
-    const o = new PerformanceObserver(() => (ok = true));
-    o.observe({entryTypes: ['measure']});
-    await generateMeasure();
-  }
-  await observerComplete();
-  return ok;
+const canTest = () => {
+  return (
+    typeof window.PerformanceObserver !== 'undefined' &&
+    typeof window.PerformanceObserver.prototype.takeRecords !== 'undefined'
+  );
 };
 
-((await canTest()) ? suite : suite.skip)('PerformanceController', () => {
+(canTest() ? suite : suite.skip)('PerformanceController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
