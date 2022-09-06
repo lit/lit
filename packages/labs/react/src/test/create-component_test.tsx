@@ -132,8 +132,7 @@ suite('createComponent', () => {
   });
 
   /*
-    The following test will not build if createComponent does return
-    the expected type ReactWebComponent<BasicElement>.
+    The following test is a type-only test.
   */
   test('renders element with expected type', async () => {
     type TypedComponent = ReactWebComponent<BasicElement>;
