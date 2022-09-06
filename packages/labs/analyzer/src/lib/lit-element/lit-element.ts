@@ -27,6 +27,7 @@ export const getLitElementDeclaration = (
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(node),
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: node.name?.text ?? '',
     node,
     reactiveProperties: getProperties(node, programContext),
