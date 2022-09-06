@@ -41,7 +41,7 @@ export type WebComponentProps<
 // special `__forwardedRef` property. Note, this ref is special because
 // it's both needed in this component to get access to the rendered element
 // and must fulfill any ref passed by the user.
-type ComponentProps<
+type ReactComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = WebComponentProps<I, E> & {
@@ -170,7 +170,7 @@ export const createComponent = <
   const createElement = React.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
 
-  type Props = ComponentProps<I, E>;
+  type Props = ReactComponentProps<I, E>;
 
   // Set of properties/events which should be specially handled by the wrapper
   // and not handled directly by React.
