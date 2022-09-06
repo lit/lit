@@ -51,10 +51,19 @@ export class VisibilityChangedEvent extends Event implements Range {
   }
 }
 
+export class UnpinnedEvent extends Event {
+  static eventName = 'unpinned';
+
+  constructor() {
+    super(UnpinnedEvent.eventName, {bubbles: false});
+  }
+}
+
 declare global {
   interface HTMLElementEventMap {
     rangeChanged: RangeChangedEvent;
     visibilityChanged: VisibilityChangedEvent;
+    unpinned: UnpinnedEvent;
   }
 }
 
@@ -503,6 +512,7 @@ export class Virtualizer {
       this._layout.removeEventListener('scrollerrorchange', this);
       this._layout.removeEventListener('itempositionchange', this);
       this._layout.removeEventListener('rangechange', this);
+      this._layout.removeEventListener('unpinned', this);
       this._sizeHostElement(undefined);
       this._hostElement!.removeEventListener('load', this._loadListener, true);
     }
@@ -527,6 +537,7 @@ export class Virtualizer {
       this._layout.addEventListener('scrollerrorchange', this);
       this._layout.addEventListener('itempositionchange', this);
       this._layout.addEventListener('rangechange', this);
+      this._layout.addEventListener('unpinned', this);
       if (this._layout.listenForChildLoadEvents) {
         this._hostElement!.addEventListener('load', this._loadListener, true);
       }
@@ -711,6 +722,9 @@ export class Virtualizer {
       case 'rangechange':
         this._adjustRange(event.detail);
         this._schedule(this._updateDOM);
+        break;
+      case 'unpinned':
+        this._hostElement!.dispatchEvent(new UnpinnedEvent());
         break;
       default:
         console.warn('event not handled', event);
