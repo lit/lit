@@ -101,6 +101,8 @@ The `flow` layout's primary (and significant) simplification is that it expects 
 
 Child element size is determined "naturally"—that is, the size of each child element will depend on the data you provide in the `items` array, the nature of your `renderItem` template, and any CSS rules that apply to the child.
 
+Internally, a virtualizer uses a native `ResizeObserver` to detect whenever child elements resize, and the `flow` layout automatically updates item positions as needed, behaving just like the browser's native flow layout in this respect.
+
 #### Spacing child elements
 
 To control the spacing of child elements, use standard CSS techniques to set margins on the elements.
@@ -126,80 +128,103 @@ The `flow` layout works vertically by default. However, it also supports laying 
 
 ```
 
+#### Using shorthand to specify `flow` options
+
+Because `flow` is the default layout, you don't need to import it explicitly, even if you want to set options on it. Just pass an options object directly to your virtualizer's `layout` property, without wrapping it in the `flow()` function:
+
+```js
+// This shorthand form...
+html`
+  <lit-virtualizer
+    .layout=${{
+      direction: 'horizontal'
+    }}
+  ></lit-virtualizer>
+`
+
+// ...is equivalent to this:
+html`
+  <lit-virtualizer
+    .layout=${flow(
+      direction: 'horizontal'
+    )}
+  ></lit-virtualizer>
+`
+```
+
 ### Using the `grid` layout
 
 TODO
 
 ### Scrolling
 
-You may sometimes need to scroll a view to specific coordinates, or scroll a specific element into view. The web platform provides native APIs for these purposes:
+As much as possible, `@lit-labs/virtualizer` strives to "just work" with all of the native scrolling APIs (the `scrollTo()` method, the `scrollTop` and `scrollLeft` properties, and so on). When you need to scroll, just use native APIs directly on the `window`, on any scrolling element that happens to be an ancestor of your virtualizer in the DOM tree, or on your virtualizer itself (if it [is a scroller](#making-a-virtualizer-a-scroller)).
 
-- You can scroll a window or a scrollable element to specific coordinates by calling its `scrollTo()` method
-- You can also scroll a window by calling `scrollBy()` (to scroll by a specific distance) or `scroll()` (an alias for `scrollTo()`)
-- You can also scroll a scrollable element to specific coordinates by setting its `scrollTop` and `scrollLeft` properties
-- Finally, you can scroll an element into view by calling its `scrollIntoView()` method
+Besides the native scrolling APIs, there are a couple of virtualizer-specific APIs that you may find useful in certain circumstances: a method for scrolling "virtual" child elements into view, and a declarative way to frame a given child element within the viewport. These APIs are described in the sections below.
 
-When you call one of the various scrolling methods in a modern browser, you can choose between "jumping" straight to the specified destination, or scrolling there smoothly. (Setting an element's `scrollTop` or `scrollLeft` properties always jumps straight to the specified location.)
+Finally, there one quirk to be aware of when smoothly scrolling a view containing a virtualizer.
 
-As much as possible, `@lit-labs/virtualizer` strives to "just work" with all of these native scrolling APIs. However, there are a couple of cases where using a virtualizer introduces special scrolling considerations:
-
-- When you want to scroll one of the virtualizer's child elements into view, but it isn't currently in the DOM because it's too far outside the viewport
-- When you want to scroll smoothly and you're using a virtualizer layout (like the default `flow` layout) that estimates the sizes of child elements it hasn't yet seen
-
-In addition to these special considerations, `@lit-labs/virtualizer` provides its own declarative API for specifying scroll position that you may find useful in certain circumstances.
-
-See the sections below for usage details.
-
-#### Scrolling a specific element into view
+#### Scrolling a child element into view
 
 If you want to scroll one of a virtualizer's children into view _and that element is currently present in the DOM_ because it is within the viewport or just outside, you can use the native web API: get a reference to the element, and then call `myElement.scrollIntoView()` with whatever options you desire.
 
-However, if the child element you want to scroll into view is not currently present in the DOM—or if you find it more convenient to specify the element by its index—you can instead use the virtualizer's `scrollElementIntoView()` method. Like the native `Element.scrollIntoView()`, `scrollElementIntoView()` takes an options object as its sole argument. The following options are supported:
-
-- **index**: An integer value indicating which element to scroll into view; the value you specify should be the index of an item in the virtualizer's `items` array.
-- **behavior**: Specify `smooth` to scroll smoothly to the specified element, or `auto` (the default) to "jump" directly to the element
-- **block**: Determines the positioning of the element within the viewport, along the layout's primary (scrolling) axis. Specify `start` (the default), `end`, `center` or `nearest`. See these docs on MDN for details.
-
-  > 📝 Note that the related `inline` option has no effect at present, because all currently available layouts are designed for single-axis scrolling and therefore keep child elements within the viewport along the secondary (non-scrolling) axis at all times.
-
-To call a virtualizer's `scrollElementIntoView()` method, you'll need a reference to the virtualizer. If you're using the `<lit-virtualizer>` element, you just need to get a reference to that element, using whatever method you prefer (e.g. a standard DOM API like [`querySelector()`](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/querySelector) or a Lit-specific method like the [`query()` decorator](https://lit.dev/docs/api/decorators/#query) or the [`ref()` directive](https://lit.dev/docs/api/directives/#ref)). Here's an example:
+However, this method won't work if the child element you want to scroll into view is currently "virtualized" (i.e., is not currently present in the DOM because it is too far outside the viewport). For this reason, a virtualizer exposes the `element()` method, which takes a numeric index (specifying an item in the `items` array) and returns a simple proxy object representing the corresponding child element (whether the element is present in the DOM or not). This proxy currently exposes just one method: `scrollIntoView()`, which matches the behavior of the native method. Here's an example:
 
 ```js
+// Get a reference to the virtualizer, using any method
 const virtualizer = this.shadowRoot.querySelector('<lit-virtualizer>');
-virtualizer.scrollElementIntoView({
-  index: 42,
+
+// Then use the `element()` method to get a proxy and call `scrollIntoView()`
+virtualizer.element(42).scrollIntoView({
   block: 'center',
   behavior: 'smooth',
 });
 ```
 
-If you're using the `virtualize` directive, getting a reference to the virtualizer requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
+Note:
 
-#### Scrolling to specific coordinates
+- The proxy's `scrollIntoView()` method supports same options as the native API, but the `inline` option has no effect at present, because all currently available layouts virtualize along a single axis and keep child elements within view along the secondary axis at all times.
+- If you're using the `virtualize` directive, getting a reference to the virtualizer so you can call `element()` requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
 
-As noted in the introduction above, if you want to scroll to specific coordinates, you can generally just use any of the browser's native APIs to scroll either the window, the virtualizer element itself (if it is a scroller), or some scrollable ancestor of the virtualizer.
+#### Framing a child element within the viewport
 
-However, a virtualizer also exposes its own `scrollTo()` method, which you should be sure to use if you want to scroll smoothly to the specified coordinates and you are using the default `flow` layout (or any other layout that needs to estimate the size of child elements it hasn't yet measured).
-
-> 📝 This is because a virtualizer needs to periodically adjust the scroll position to correct for inaccuracies in its size estimates, and these corrections cause the browser to halt any smooth scrolling animation currently in progress. When you use the virtualizer's `scrollTo()` method, it automatically continues scrolling smoothly to the specified coordinates after applying each correction.
-
-Besides this special smooth-scrolling behavior, a virtualizer's `scrollTo()` method is identical to [the native equivalent](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollTo). However, note that you only need to provide either the `top` coordinate (if your virtualizer layout is intended to scroll vertically) or the `left` coordinate (if it's intended to scroll horizontally).
-
-To call a virtualizer's `scrollTo()` method, you'll need a reference to the virtualizer. If you're using the `<lit-virtualizer>` element, you just need to get a reference to that element, using whatever method you prefer (e.g. a standard DOM API like [`querySelector()`](https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment/querySelector) or a Lit-specific method like the [`query()` decorator](https://lit.dev/docs/api/decorators/#query) or the [`ref()` directive](https://lit.dev/docs/api/directives/#ref)). Here's an example:
+Whereas `scrollIntoView()` lets you imperatively scroll a given child element into view, the `pin` property on a virtualizer layout provides a declarative way to frame an element within the viewport. This is especially useful if you want a specific element to be in view when you initially render a virtualizer. Here's an example:
 
 ```js
-const virtualizer = this.shadowRoot.querySelector('<lit-virtualizer>');
-virtualizer.scrollTo({
-  top: 1000,
-  behavior: 'smooth',
-});
+render() {
+  // In this toy example, we pin the layout to a hard-coded position. In
+  // reality, you'll almost always want to maintain some state of your
+  // own to keep track of whether the layout should be pinned, and to
+  // which child element. See the note below about the `unpinned` event.
+  return html`
+    <h2>My Contacts</h2>
+    <lit-virtualizer
+      .items=${this.contacts}
+      .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
+      .layout=${{
+        pin: {
+          index: 42,
+          block: 'start'
+        }
+      }}
+    ></lit-virtualizer>
+  `;
+}
 ```
 
-If you're using the `virtualize` directive, getting a reference to the virtualizer requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
+The `pin` property takes an option called `index` to specify (by number) which child element you want to frame in the viewport. If you want, you can also use the `block` option to indicate how the element should be framed relative to the viewport; `block` behaves identically to the same option in the `scrollIntoView()` method.
 
-#### Declaratively specifying the scroll position
+When you pin a layout, it remains pinned until the user intentionally scrolls the view, at which point it is automatically "unpinned". When this occurs, the virtualizer fires an `unpinned` event. Unless you're sure you'll only render your virtualizer once, you should listen for the `unpinned` event so you can omit the `pin` property when you re-render the virtualizer and avoid snapping the view back to the previously pinned position. [TODO: link to an example]
 
-Finally, a virtualizer provides a declarative property called `
+#### A note on smooth scrolling
+
+As noted above, `@lit-labs/virtualizer` essentially "just works" with the browser's native scrolling APIs, including smooth scrolling (as specified via the `behavior: 'smooth'` option).
+
+That said, depending on what layout you're using and what browser you're scrolling in, you may sometimes notice a slight "hitch" in the scrolling animation, where it momentarily slows—usually shortly before reaching its destination.
+
+This only occurs with the `flow` layout and is noticeable mainly (perhaps only) in Chromium-based browsers. It happens when the layout has been estimating the sizes of child elements it hasn't yet measured and needs to correct errors in its estimates while a smooth scrolling animation is in progress.
+
+This is a known limitation which, unless smooth scrolling in Chromium evolves to behave more like other browsers, probably can't be addressed without changing `@lit-labs/virtualizer` to use JavaScript-based scrolling in place of native scrolling.
 
 ### `virtualize` directive
 
