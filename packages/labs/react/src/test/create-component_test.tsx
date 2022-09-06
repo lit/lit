@@ -133,27 +133,17 @@ suite('createComponent', () => {
 
   /*
     The following test will not build if createComponent does return
-    the expected type ReactWebComponent.
+    the expected type ReactWebComponent<BasicElement>.
   */
-  test('renders element with expected types', async () => {
+  test('renders element with expected type', async () => {
     type TypedComponent = ReactWebComponent<BasicElement>;
 
-    const TypedBasicElement: TypedComponent = createComponent(
-      window.React,
-      elementName,
-      BasicElement,
-    );
+    const TypedBasicElement: TypedComponent = BasicElementComponent;
 
-    const name = 'Component is typed.';
     window.ReactDOM.render(
-      <TypedBasicElement>{name}</TypedBasicElement>,
+      <TypedBasicElement></TypedBasicElement>,
       container
     );
-
-    el = container.querySelector(elementName)! as BasicElement;
-    await el.updateComplete;
-    
-    assert.equal(el.textContent, name);
   });
 
   test('works with text children', async () => {
