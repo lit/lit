@@ -7,8 +7,7 @@
 import {
   Package,
   PackageJson,
-  LitElementDeclaration,
-  ModuleWithDeclarations,
+  ModuleWithLitElementDeclarations,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
@@ -52,7 +51,7 @@ export const generateAngularWrapper = async (
 
 const wrapperFiles = (
   packageJson: PackageJson,
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+  litModules: ModuleWithLitElementDeclarations[]
 ) => {
   const wrapperFiles: FileTree = {};
   for (const {module, declarations} of litModules) {
@@ -66,8 +65,6 @@ const wrapperFiles = (
   return wrapperFiles;
 };
 
-const gitIgnoreTemplate = (
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
-) => {
+const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
   return litModules.map(({module}) => module.jsPath).join('\n');
 };

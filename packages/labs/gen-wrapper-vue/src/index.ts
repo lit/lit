@@ -7,8 +7,7 @@ import * as path from 'path';
 import {
   Package,
   PackageJson,
-  LitElementDeclaration,
-  ModuleWithDeclarations,
+  ModuleWithLitElementDeclarations,
 } from '@lit-labs/analyzer';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
@@ -65,7 +64,7 @@ const getVueFileName = (dir: string, name: string) => `${dir}/${name}.vue`;
 
 const wrapperSFCFiles = (
   packageJson: PackageJson,
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+  litModules: ModuleWithLitElementDeclarations[]
 ) => {
   const wrapperFiles: FileTree = {};
   for (const {module, declarations} of litModules) {

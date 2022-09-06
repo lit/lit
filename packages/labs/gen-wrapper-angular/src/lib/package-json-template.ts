@@ -5,15 +5,14 @@
  */
 
 import {
-  LitElementDeclaration,
-  ModuleWithDeclarations,
+  ModuleWithLitElementDeclarations,
   PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 
 export const packageJsonTemplate = (
   angularPackageName: string,
   packageJson: PackageJson,
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+  litModules: ModuleWithLitElementDeclarations[]
 ) => {
   // Refinement of package.json generation ala the TODOs below tracked in
   // https://github.com/lit/lit/issues/2855

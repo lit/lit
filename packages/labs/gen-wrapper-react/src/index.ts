@@ -9,7 +9,7 @@ import {
   Package,
   PackageJson,
   LitElementDeclaration,
-  ModuleWithDeclarations,
+  ModuleWithLitElementDeclarations,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
@@ -53,7 +53,7 @@ export const generateReactWrapper = async (pkg: Package): Promise<FileTree> => {
 
 const wrapperFiles = (
   packageJson: PackageJson,
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+  litModules: ModuleWithLitElementDeclarations[]
 ) => {
   const wrapperFiles: FileTree = {};
   for (const {module, declarations} of litModules) {
@@ -69,7 +69,7 @@ const wrapperFiles = (
 
 const packageJsonTemplate = (
   pkgJson: PackageJson,
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
+  litModules: ModuleWithLitElementDeclarations[]
 ) => {
   // Refinement of package.json generation ala the TODOs below tracked in
   // https://github.com/lit/lit/issues/2855
@@ -112,9 +112,7 @@ const packageJsonTemplate = (
   );
 };
 
-const gitIgnoreTemplate = (
-  litModules: ModuleWithDeclarations<LitElementDeclaration>[]
-) => {
+const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
   return litModules.map(({module}) => module.jsPath).join('\n');
 };
 

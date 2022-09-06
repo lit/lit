@@ -16,7 +16,7 @@ export type {
   ClassDeclaration,
   LitElementDeclaration,
   PackageJson,
-  ModuleWithDeclarations,
+  ModuleWithLitElementDeclarations,
 } from './lib/model.js';
 
 export type {AbsolutePath, PackagePath} from './lib/paths.js';

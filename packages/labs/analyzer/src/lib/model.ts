@@ -10,9 +10,13 @@ import {AbsolutePath, PackagePath} from './paths.js';
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
-export type ModuleWithDeclarations<T extends Declaration> = {
+/**
+ * Return type of `getLitElementModules`: contains a module and filtered list of
+ * LitElementDeclarations contained within it.
+ */
+export type ModuleWithLitElementDeclarations = {
   module: Module;
-  declarations: T[];
+  declarations: LitElementDeclaration[];
 };
 
 export interface PackageInit {
@@ -35,12 +39,17 @@ export class Package {
     this.modules = init.modules;
   }
 
-  getModulesWithDeclarations<T extends Declaration>(
-    filter: (d: Declaration) => d is T
-  ): ModuleWithDeclarations<T>[] {
-    const modules: {module: Module; declarations: T[]}[] = [];
+  /**
+   * Returns a list of modules in this package containing LitElement
+   * declarations, along with the filtered list of LitElementDeclarartions.
+   */
+  getLitElementModules() {
+    const modules: {module: Module; declarations: LitElementDeclaration[]}[] =
+      [];
     for (const module of this.modules) {
-      const declarations = module.declarations.filter(filter);
+      const declarations = module.declarations.filter((d) =>
+        d.isLitElementDeclaration()
+      ) as LitElementDeclaration[];
       if (declarations.length > 0) {
         modules.push({
           module,
@@ -49,12 +58,6 @@ export class Package {
       }
     }
     return modules;
-  }
-
-  getLitElementModules() {
-    return this.getModulesWithDeclarations((d): d is LitElementDeclaration =>
-      d.isLitElementDeclaration()
-    );
   }
 }
 
