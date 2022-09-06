@@ -138,12 +138,10 @@ suite('createComponent', () => {
   test('renders element with expected type', async () => {
     type TypedComponent = ReactWebComponent<BasicElement>;
 
-    const TypedBasicElement: TypedComponent = BasicElementComponent;
+    let TypedBasicElement!: TypedComponent;
 
-    window.ReactDOM.render(
-      <TypedBasicElement></TypedBasicElement>,
-      container
-    );
+    // @ts-expect-error
+    <TypedBasicElement bool={"string"}></TypedBasicElement>
   });
 
   test('works with text children', async () => {
