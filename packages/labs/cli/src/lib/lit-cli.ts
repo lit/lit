@@ -20,7 +20,7 @@ import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
 import {makeLabsCommand} from './commands/labs.js';
 import {createRequire} from 'module';
-import * as childProcess from 'child_process';
+import {installDepWithPermission} from './install.js';
 
 export interface Options {
   console?: LitConsole;
@@ -33,8 +33,8 @@ export class LitCli {
   readonly args: readonly string[];
   readonly console: LitConsole;
   /** The current working directory. */
-  private readonly cwd: string;
-  private readonly stdin: NodeJS.ReadableStream;
+  readonly cwd: string;
+  readonly stdin: NodeJS.ReadableStream;
 
   constructor(args: string[], options?: Options) {
     this.stdin = options?.stdin ?? process.stdin;
@@ -252,10 +252,19 @@ export class LitCli {
     const reference = maybeReference;
     let resolvedPackageLocation = this.resolveImportForReference(reference);
     if (resolvedPackageLocation === undefined) {
-      const installed = await this.installDepWithPermission(reference);
+      const installed = await installDepWithPermission({
+        description: `The command ${JSON.stringify(reference.name)}`,
+        npmPackage: reference.installFrom ?? reference.importSpecifier,
+        global: false,
+        cwd: this.cwd,
+        stdin: this.stdin,
+        console: this.console,
+      });
+
       if (!installed) {
         return undefined;
       }
+
       resolvedPackageLocation = this.resolveImportForReference(reference);
       if (resolvedPackageLocation === undefined) {
         throw new Error(
@@ -271,69 +280,5 @@ export class LitCli {
       return this.resolveCommandAndMaybeInstallNeededDeps(command);
     }
     return command;
-  }
-
-  private async installDepWithPermission(
-    reference: ReferenceToCommand
-  ): Promise<boolean> {
-    const havePermission = await this.getPermissionToInstall(reference);
-    if (!havePermission) {
-      return false;
-    }
-    const installFrom = reference.installFrom ?? reference.importSpecifier;
-    const child = childProcess.spawn(
-      // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
-      /^win/.test(process.platform) ? 'npm.cmd' : 'npm',
-      ['install', '--save-dev', installFrom],
-      {
-        cwd: this.cwd,
-        stdio: [process.stdin, 'pipe', 'pipe'],
-      }
-    );
-    (async () => {
-      for await (const line of child.stdout) {
-        this.console.log(line.toString());
-      }
-    })();
-    (async () => {
-      for await (const line of child.stderr) {
-        this.console.error(line.toString());
-      }
-    })();
-    const succeeded = await new Promise<boolean>((resolve) => {
-      child.on('exit', (code) => {
-        resolve(code === 0);
-      });
-      child.on('error', (err) => {
-        this.console.error(`Error installing dependency: ${err}`);
-        resolve(false);
-      });
-    });
-    return succeeded;
-  }
-
-  private async getPermissionToInstall(
-    reference: ReferenceToCommand
-  ): Promise<boolean> {
-    this.console.log(`The command ${reference.name} is not installed.
-Run 'npm install --save-dev ${
-      reference.installFrom ?? reference.importSpecifier
-    }'? [Y/n]`);
-    // read a line from this.stdin
-    const line = await new Promise<string>((resolve) => {
-      const closeHandler = (data: unknown) => {
-        if (data) {
-          resolve(String(data));
-        } else {
-          resolve('');
-        }
-      };
-      this.stdin.once('close', closeHandler);
-      this.stdin.once('data', (data: unknown) => {
-        resolve(String(data));
-        this.stdin.removeListener('close', closeHandler);
-      });
-    });
-    return line === '\n' || line.trim().toLowerCase() === 'y';
   }
 }

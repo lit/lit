@@ -56,8 +56,8 @@ export const makeLabsCommand = (cli: LitCli): Command => {
     ],
     async run() {
       console.error(
-        'Use one of the labs subcommands, like `lit gen`. ' +
-          'Run `lit help gen` for more help.'
+        'Use one of the labs subcommands, like `lit labs gen`. ' +
+          'Run `lit help labs` for more help.'
       );
     },
   };
