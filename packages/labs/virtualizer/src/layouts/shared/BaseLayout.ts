@@ -135,11 +135,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _scrollError = 0;
 
   /**
-   * Whether all children in range were in range during the previous reflow.
-   */
-  protected _stable = true;
-
-  /**
    * Total number of items that could possibly be displayed. Used to help
    * calculate the scroll size.
    */

@@ -151,6 +151,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _anchorPos: number | null = null;
 
+  /**
+   * Whether all children in range were in range during the previous reflow.
+   */
+  _stable = true;
+
   private _measureChildren = true;
 
   _estimate = true;
