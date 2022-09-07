@@ -103,7 +103,8 @@
     "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
     "/virtualize.{d.ts,d.ts.map,js,js.map}",
     "/Virtualizer.{d.ts,d.ts.map,js,js.map}",
-    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}"
+    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/ScrollerController.{d.ts,d.ts.map,js,js.map}"
   ],
   "devDependencies": {
     "@open-wc/testing": "^3.1.6",
