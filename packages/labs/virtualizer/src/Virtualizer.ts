@@ -8,7 +8,8 @@ import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import {
   ItemBox,
   Margins,
-  Layout,
+  LayoutConfigValue,
+  LayoutInstanceValue,
   ChildPositions,
   ChildMeasurements,
   LayoutConstructor,
@@ -89,24 +90,6 @@ export interface VirtualizerChildElementProxy {
 interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
   index: number;
 }
-
-/**
- * Among the various ways to specify a layout for Virtualizer,
- * you can provide an actual Layout instance. You can also tear
- * down the current layout (if any) by setting the layout to null
- */
-type LayoutInstanceValue = Layout | null;
-
-/**
- * The main way to specify a layout is via a declarative Virtualizer
- * configuration. These are the different types of values accepted
- * for a layout in the Virtualizer config.
- */
-export type LayoutConfigValue =
-  | LayoutInstanceValue
-  | LayoutConstructor
-  | LayoutSpecifier
-  | BaseLayoutConfig;
 
 export interface VirtualizerConfig {
   layout?: LayoutConfigValue;
@@ -281,7 +264,7 @@ export class Virtualizer {
     // If no layout is specified, we make an empty
     // layout config, which will result in the default
     // layout with default parameters
-    this.layout = config.layout || ({} as BaseLayoutConfig);
+    this.setLayout(config.layout || ({} as BaseLayoutConfig));
   }
 
   private async _initObservers() {
@@ -405,104 +388,90 @@ export class Virtualizer {
     return this._sizer;
   }
 
-  get layout(): LayoutInstanceValue {
-    return this._layout;
-  }
-
   // We want there to be a default layout (currently, and probably
   // always, flow) so that users in the 80% case don't have to
   // explicitly import and instantiate one. However, we don't want
   // to make users of other layouts pay the cost of loading the
   // default one, so we load it dynamically when needed.
-  //
-  // This requires async setter behavior, but since a setter can't
-  // actually be async, we wrap an async method.
-  set layout(layoutConfig: LayoutConfigValue) {
-    this._setLayout(layoutConfig);
-  }
-
-  async _setLayout(layoutConfig: LayoutConfigValue) {
+  async setLayout(layoutConfig: LayoutConfigValue) {
     let instance: LayoutInstanceValue | undefined;
     let config: BaseLayoutConfig | undefined;
     let Ctor: LayoutConstructor | undefined;
+
     if (layoutConfig === null) {
       // If the config is null, the user is telling
       // us they don't want a layout yet (or that they
       // want to tear down the current layout)
       instance = null;
     } else {
-      // We have a non-null config; let's see what we were given...
-      const parsedConfig = this._parseLayoutConfig(layoutConfig);
-      Ctor = parsedConfig.Ctor;
-      instance = parsedConfig.instance;
-      config = parsedConfig.config;
+      if (typeof (layoutConfig as LayoutSpecifier).type === 'function') {
+        // If we have a full LayoutSpecifier, the `type` property
+        // gives us our constructor...
+        Ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
+        // ...while the rest of the specifier is our layout config
+        const copy = {...(layoutConfig as LayoutSpecifier)} as {
+          type?: LayoutConstructor;
+        };
+        delete copy.type;
+        config = copy as BaseLayoutConfig;
+      } else {
+        // If we don't have a full LayoutSpecifier, we just
+        // have a config for the default layout
+        config = layoutConfig as BaseLayoutConfig;
+      }
 
-      // If no instance has been provided, we're responsible for
-      // constructing one as needed
-      if (instance === undefined) {
-        if (Ctor === undefined) {
-          // If the user hasn't provided a specific layout,
-          // we will load the default
-          if (this._cachedLayoutConfig !== null) {
-            // If we have a cached config, we've already started
-            // loading the default layout in a previous invocation
-            // of this method and are still awaiting its arrival.
-            // We'll bail and let that invocation finish, but first
-            // we swap in our newer config.
-            this._cachedLayoutConfig = config!;
-            return;
-          } else {
-            // We don't already have a cached config, so we weren't
-            // yet loading the default layout. We do so now, caching
-            // the config to apply once we have the layout in hand.
-            this._cachedLayoutConfig = config!;
-            Ctor = (await import('./layouts/flow.js')).FlowLayout;
-            if (this._cachedLayoutConfig === null) {
-              // If a later call to `setLayout()` has resulted in a
-              // different layout being set, the config we cached will
-              // have been cleared. In this case, we bail.
-              return;
-            } else {
-              // Now that we have the layout, we restore the provided
-              // config from the cache and clear the cache
-              config = this._cachedLayoutConfig;
-              this._cachedLayoutConfig = null;
-            }
-          }
-        } else {
-          // The user has provided a specific layout constructor, so
-          // we will just use it. But in case we were already awaiting
-          // the default layout in a previous invocation of this method,
-          // we clear the cached config to prevent that previous
-          // invocation from finishing (since we want this newly
-          // provided, likely non-default constructor to be used instead)
-          this._cachedLayoutConfig = null;
-        }
-        if (this._layout instanceof Ctor) {
-          // Now that we have a constructor, we check to see if
-          // the current layout is an instance of the same type; if so,
-          // we just apply the new config parameters and we're done
-          this._layout.config = config;
+      if (Ctor === undefined) {
+        // If we don't have a constructor yet, load the default
+        if (this._cachedLayoutConfig !== null) {
+          // We started loading the default layout constructor in a
+          // previous invocation of this method and are awaiting its
+          // arrival. We'll bail and let that invocation finish, but
+          // first we swap in our newer config.
+          this._cachedLayoutConfig = config!;
           return;
         } else {
-          // But if we don't have an instance, or if the current
-          // instance is of another type, we make a new instance
-          // of the requested type, with the provided parameters
-          instance = new Ctor(config);
+          // We weren't yet loading the default constructor. We do so now,
+          // caching the config to apply once we have the constructor in hand.
+          this._cachedLayoutConfig = config!;
+          Ctor = (await import('./layouts/flow.js')).FlowLayout;
+          if (this._cachedLayoutConfig === null) {
+            // If a later call to `setLayout()` has resulted in a
+            // different layout being set, the config we cached will
+            // have been cleared. In this case, we bail.
+            return;
+          } else {
+            // Now that we have the layout, we restore the provided
+            // config from the cache and clear the cache
+            config = this._cachedLayoutConfig;
+            this._cachedLayoutConfig = null;
+          }
         }
       } else {
-        // The user has provided an existing layout instance, so
-        // we will just use it. But in case we were already awaiting
+        // The user has provided a specific layout constructor, so
+        // we will use it. But in case we were already awaiting
         // the default layout in a previous invocation of this method,
         // we clear the cached config to prevent that previous
-        // invocation from finishing
+        // invocation from finishing (since we want this newly
+        // provided, likely non-default constructor to be used instead)
         this._cachedLayoutConfig = null;
+      }
+
+      if (this._layout instanceof Ctor) {
+        // Now that we have a constructor, we check to see if
+        // the current layout is an instance of the same type; if so,
+        // we just apply the new config parameters and we're done
+        this._layout.config = config;
+        return;
+      } else {
+        // But if we don't have an instance, or if the current
+        // instance is of another type, we make a new instance
+        // of the requested type, with the provided parameters
+        instance = new Ctor(config);
       }
     }
 
-    // If we make it here, we have a new layout instance that
-    // we need to wire up, or maching orders to set the layout
-    // to null
+    // If we make it here, we have either a new layout instance
+    // to wire up, or marching orders to set the layout to null
 
     // Either way, if we have a current instance, we tear it down
     if (this._layout) {
@@ -543,41 +512,6 @@ export class Virtualizer {
       }
       this._schedule(this._updateLayout);
     }
-  }
-
-  /**
-   * Helper for _setLayout()
-   */
-  _parseLayoutConfig(layoutConfig: LayoutConfigValue) {
-    let instance: Layout | undefined;
-    let Ctor: LayoutConstructor | undefined;
-    let config: BaseLayoutConfig | undefined;
-    if (typeof layoutConfig === 'object') {
-      // With typeof === 'object', we may have...
-      if ((layoutConfig as Layout).isVirtualizerLayoutInstance) {
-        // ...an existing layout instance...
-        instance = layoutConfig as Layout;
-      } else if (typeof (layoutConfig as LayoutSpecifier).type === 'function') {
-        // ...a 'layout specifier' with a `type` property, whose
-        // value is a specific layout constructor. In this case,
-        // we extract the constructor and store the rest of the
-        // specifier as the layout config
-        Ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
-        const copy = {...(layoutConfig as LayoutSpecifier)} as {
-          type?: LayoutConstructor;
-        };
-        delete copy.type;
-        config = copy as BaseLayoutConfig;
-      } else {
-        // ...or a config for the default layout, which we
-        // identify by its lack of the `type` property
-        config = layoutConfig as BaseLayoutConfig;
-      }
-    } else if (typeof layoutConfig === 'function') {
-      // With typeof === 'function', we have a constructor
-      Ctor = layoutConfig as LayoutConstructor;
-    }
-    return {instance, Ctor, config};
   }
 
   // TODO (graynorton): Rework benchmarking so that it has no API and
