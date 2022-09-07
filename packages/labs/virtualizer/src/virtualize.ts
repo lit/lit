@@ -105,7 +105,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     const {virtualizer} = this;
     virtualizer!.items = this.items;
     if (config.layout) {
-      virtualizer!.layout = config.layout;
+      virtualizer!.setLayout(config.layout);
     }
   }
 

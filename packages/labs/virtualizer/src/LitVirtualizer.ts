@@ -9,7 +9,7 @@ import {property} from 'lit/decorators/property.js';
 import {state} from 'lit/decorators/state.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
 import {Virtualizer} from './Virtualizer.js';
-import {Layout, LayoutConfigValue} from './layouts/shared/Layout.js';
+import {LayoutConfigValue} from './layouts/shared/Layout.js';
 import {RangeChangedEvent} from './events.js';
 
 type RenderItemFunction<T = unknown> = (
@@ -74,12 +74,8 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   set layout(layout: LayoutConfigValue) {
     this._layout = layout;
     if (layout && this._virtualizer) {
-      this._virtualizer.layout = layout;
+      this._virtualizer.setLayout(layout);
     }
-  }
-
-  get layout(): Layout | null {
-    return this._virtualizer!.layout;
   }
 
   get layoutComplete() {
@@ -93,7 +89,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   willUpdate(changed: Map<string, unknown>) {
     if (this._virtualizer) {
       if (changed.has('layout')) {
-        this._virtualizer.layout = this._layout!;
+        this._virtualizer.setLayout(this._layout!);
       }
       if (changed.has('items')) {
         this._virtualizer.items = this.items;

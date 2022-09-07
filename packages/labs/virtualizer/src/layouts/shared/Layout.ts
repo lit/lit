@@ -77,18 +77,14 @@ export interface BaseLayoutConfig {
  * you can provide an actual Layout instance. You can also tear
  * down the current layout (if any) by setting the layout to null
  */
-type LayoutInstanceValue = Layout | null;
+export type LayoutInstanceValue = Layout | null;
 
 /**
  * The main way to specify a layout is via a declarative Virtualizer
  * configuration. These are the different types of values accepted
  * for a layout in the Virtualizer config.
  */
-export type LayoutConfigValue =
-  | LayoutInstanceValue
-  | LayoutConstructor
-  | LayoutSpecifier
-  | BaseLayoutConfig;
+export type LayoutConfigValue = LayoutSpecifier | BaseLayoutConfig;
 
 export interface ScrollToCoordinates {
   top?: number;
