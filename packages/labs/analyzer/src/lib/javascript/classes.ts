@@ -19,7 +19,8 @@ export const getClassDeclaration = (
   _programContext: ProgramContext
 ): ClassDeclaration => {
   return new ClassDeclaration({
-    name: declaration.name?.text,
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
+    name: declaration.name?.text ?? '',
     node: declaration,
   });
 };

@@ -5,11 +5,10 @@
  */
 import * as path from 'path';
 import {
-  getLitModules,
-  LitModule,
   Package,
   PackageJson,
-} from '@lit-labs/analyzer/lib/model.js';
+  ModuleWithLitElementDeclarations,
+} from '@lit-labs/analyzer';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplateSFC} from './lib/wrapper-module-template-sfc.js';
@@ -29,27 +28,23 @@ export const getCommand = () => {
   };
 };
 
-export const generateVueWrapper = async (
-  analysis: Package
-): Promise<FileTree> => {
-  const litModules: LitModule[] = getLitModules(analysis);
+export const generateVueWrapper = async (pkg: Package): Promise<FileTree> => {
+  const litModules = pkg.getLitElementModules();
   if (litModules.length > 0) {
     // Base the generated package folder name off the analyzed package folder
     // name, not the npm package name, since that might have an npm org in it
-    const vuePkgName = packageNameToVuePackageName(
-      path.basename(analysis.rootDir)
-    );
-    const sfcFiles = wrapperSFCFiles(analysis.packageJson, litModules);
+    const vuePkgName = packageNameToVuePackageName(path.basename(pkg.rootDir));
+    const sfcFiles = wrapperSFCFiles(pkg.packageJson, litModules);
     const moduleNames = Object.keys(sfcFiles).map(
       (f) => `${path.basename(f, '.vue')}`
     );
     return {
       [vuePkgName]: {
         '.gitignore': gitIgnoreTemplate(moduleNames),
-        'package.json': packageJsonTemplate(analysis.packageJson, moduleNames),
+        'package.json': packageJsonTemplate(pkg.packageJson, moduleNames),
         'tsconfig.json': tsconfigTemplate(),
         'tsconfig.node.json': tsconfigNodeTemplate(),
-        'vite.config.ts': viteConfigTemplate(analysis.packageJson, sfcFiles),
+        'vite.config.ts': viteConfigTemplate(pkg.packageJson, sfcFiles),
         'scripts/rename.js': renameTemplate(),
         ...sfcFiles,
       },
@@ -67,14 +62,19 @@ const gitIgnoreTemplate = (moduleNames: string[]) =>
 
 const getVueFileName = (dir: string, name: string) => `${dir}/${name}.vue`;
 
-const wrapperSFCFiles = (packageJson: PackageJson, litModules: LitModule[]) => {
+const wrapperSFCFiles = (
+  packageJson: PackageJson,
+  litModules: ModuleWithLitElementDeclarations[]
+) => {
   const wrapperFiles: FileTree = {};
-  for (const {
-    module: {sourcePath, jsPath},
-    elements,
-  } of litModules) {
+  for (const {module, declarations} of litModules) {
+    const {sourcePath, jsPath} = module;
     // Format: [...[name, content]]
-    const wrappers = wrapperModuleTemplateSFC(packageJson, jsPath, elements);
+    const wrappers = wrapperModuleTemplateSFC(
+      packageJson,
+      jsPath,
+      declarations
+    );
     const dir = path.dirname(sourcePath);
     const exports: string[] = [];
     // TODO(sorvell): Throw if component names are re-used in the same folder.

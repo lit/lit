@@ -202,7 +202,7 @@
     "ignore-sync": "^5.0.1",
     "lint-staged": "^13.0.3",
     "mocha": "^10.0.0",
-    "prettier": "^2.4.1",
+    "prettier": "^2.7.1",
     "rollup": "^2.76.0",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-sourcemaps": "^0.6.2",
