@@ -11,12 +11,7 @@ import * as path from 'path';
 import {fileURLToPath} from 'url';
 import ts from 'typescript';
 
-import {Analyzer} from '../../lib/analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
-import {
-  isLitElementDeclaration,
-  LitElementDeclaration,
-} from '../../lib/model.js';
+import {Analyzer, AbsolutePath, LitElementDeclaration} from '../../index.js';
 
 const test = suite<{
   analyzer: Analyzer;
@@ -35,8 +30,8 @@ test.before((ctx) => {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === path.normalize('src/element-a.ts')
     );
-    const element = elementAModule!.declarations.filter(
-      isLitElementDeclaration
+    const element = elementAModule!.declarations.filter((d) =>
+      d.isLitElementDeclaration()
     )[0] as LitElementDeclaration;
 
     ctx.packagePath = packagePath;

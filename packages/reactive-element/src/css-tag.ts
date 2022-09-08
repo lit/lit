@@ -195,7 +195,9 @@ const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
   return unsafeCSS(cssText);
 };
 
-export const getCompatibleStyle = supportsAdoptingStyleSheets
-  ? (s: CSSResultOrNative) => s
-  : (s: CSSResultOrNative) =>
-      s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
+export const getCompatibleStyle =
+  supportsAdoptingStyleSheets ||
+  (NODE_MODE && global.CSSStyleSheet === undefined)
+    ? (s: CSSResultOrNative) => s
+    : (s: CSSResultOrNative) =>
+        s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;

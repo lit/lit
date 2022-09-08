@@ -5,6 +5,30 @@
  */
 
 /**
+ * Returns an array of 'n' items.  If no map function given, it
+ * contains just numbers from 0 to length - 1.  Otherwise, the
+ * map function is applied to each item in the array to produce
+ * the output.
+ */
+export function array(n: number): number[] {
+  return Array.from(Array(n).keys());
+}
+
+/**
+ * Returns the first item in the array, for more readable tests.
+ */
+export function first<T>(items: T[]) {
+  return items[0];
+}
+
+/**
+ * Returns the last item in the array, for more readable tests.
+ */
+export function last<T>(items: T[]) {
+  return items[items.length - 1];
+}
+
+/**
  * To aid in Mocha's reporting from within any helper method that
  * throws an error, this function returns the line of a stack trace
  * which indicates the caller of the caller of this function.
@@ -18,53 +42,45 @@ export function getCallerFromStack() {
 }
 
 /**
- * Strips tags, squeezes whitespace and trims a string, to make
- * text content comparisons of HTML fragments easier.  This helper
- * takes an undefined value to make it convenient to use with
- * optional chaining operators, i.e. justText(x?.y?.z)
+ * Given an element and an optional viewport element, returns true if the
+ * element would be visible in the viewport.  If no viewport is provided,
+ * the window/document.documentElement is used.
  */
-export function justText(html: string | undefined): string {
-  if (html === undefined) {
-    return '';
-  }
-  return squeeze(stripTags(html, ' ')).trim();
-}
-
-/**
- * Transforms any amount of whitespace in a string into a single
- * space character.
- */
-export function squeeze(text: string): string {
-  return text.replace(/\s+/gm, ' ').trim();
-}
-
-/**
- * Removes all tags and comments from a string, by naively
- * stripping out everything between < and > characters.
- */
-export function stripTags(html: string, replaceWith?: string): string {
-  return html.replace(
-    /<[^>]+>/gm,
-    replaceWith === undefined ? ' ' : replaceWith
+export function isInViewport(element: Element, viewport?: Element) {
+  const elementRect = element.getBoundingClientRect();
+  const viewportRect = viewport
+    ? viewport.getBoundingClientRect()
+    : {
+        top: 0,
+        left: 0,
+        bottom: window.innerHeight || document.documentElement.clientHeight,
+        right: window.innerWidth || document.documentElement.clientWidth,
+      };
+  return (
+    elementRect.top < viewportRect.bottom &&
+    elementRect.left < viewportRect.right &&
+    elementRect.bottom > viewportRect.top &&
+    elementRect.right > viewportRect.left
   );
 }
 
 /**
- * A promise which will resolve to true or false depending on whether
- * the condition function returns true within the given timeout.  The
- * intended usage of this function in a test would look like:
+ * A promise which will resolve to the first truthy result of condition
+ * function or the last result of calling it within the given timeout.
+ * The intended usage of this function in a test would look something
+ * like:
+ *
+ *     const thing = await eventually(() => doc.query('thing'));
+ *
  */
-export async function eventually(cond: () => boolean, timeout = 1000) {
+export async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
   const start = new Date().getTime();
   return new Promise((resolve, _reject) => {
     check();
     function check() {
-      if (cond()) {
-        return resolve(true);
-      }
-      const now = new Date().getTime();
-      if (now - start > timeout) {
-        return resolve(false);
+      const result = cond();
+      if (result || new Date().getTime() - start > timeout) {
+        return resolve(result);
       }
       setTimeout(check, 0);
     }
@@ -76,10 +92,11 @@ export async function eventually(cond: () => boolean, timeout = 1000) {
  * a boolean value) to be met.  We will stop waiting after the timeout is
  * exceeded, after which time we will reject the promise.
  */
-export async function until(cond: () => boolean, timeout = 1000) {
+export async function until<T>(cond: () => T, timeout = 1000): Promise<T> {
   const caller = getCallerFromStack();
-  if (await eventually(cond, timeout)) {
-    return true;
+  const result = await eventually(cond, timeout);
+  if (result) {
+    return result;
   } else {
     throw new Error(
       `Condition not met within ${timeout}ms: "${cond.toString()}"\n${caller}`

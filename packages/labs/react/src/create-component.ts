@@ -26,7 +26,7 @@ const listenedEvents: WeakMap<
 const addOrUpdateEventListener = (
   node: Element,
   event: string,
-  listener: EventListener
+  listener: (event?: Event) => void
 ) => {
   let events = listenedEvents.get(node);
   if (events === undefined) {
@@ -60,31 +60,16 @@ const setProperty = <E extends Element>(
   old: unknown,
   events?: Events
 ) => {
-  // bail early if values haven't changed.
-  if (value === old) return;
-
-  // remove false boolean attributes
-  if (typeof value == 'boolean') {
-    const descriptor = Object.getOwnPropertyDescriptor(node, name);
-    if (descriptor?.get || descriptor?.set) {
-      if (value) {
-        node.setAttribute(name, value.toString());
-        return;
-      } else {
-        node.removeAttribute(name);
-        return;
-      }
-    }
-  }
-
   const event = events?.[name];
   if (event !== undefined) {
-    addOrUpdateEventListener(node, event, value as EventListener);
-    return;
+    // Dirty check event value.
+    if (value !== old) {
+      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    }
+  } else {
+    // But don't dirty check properties; elements are assumed to do this.
+    node[name as keyof E] = value as E[keyof E];
   }
-
-  // But don't dirty check properties; elements are assumed to do this.
-  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
@@ -145,6 +130,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
+  const eventProps = new Set(Object.keys(events ?? {}));
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
@@ -161,28 +147,6 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
   type ComponentProps = UserProps & {
     __forwardedRef?: React.Ref<unknown>;
   };
-
-  // Set of properties/events which should be specially handled by the wrapper
-  // and not handled directly by React.
-  const elementClassProps = new Set(Object.keys(events ?? {}));
-  for (const p in elementClass.prototype) {
-    if (!(p in HTMLElement.prototype)) {
-      if (reservedReactProperties.has(p)) {
-        // Note, this effectively warns only for `ref` since the other
-        // reserved props are on HTMLElement.prototype. To address this
-        // would require crawling down the prototype, which doesn't feel worth
-        // it since implementing these properties on an element is extremely
-        // rare.
-        console.warn(
-          `${tagName} contains property ${p} which is a React ` +
-            `reserved property. It will be used by React and not set on ` +
-            `the element.`
-        );
-      } else {
-        elementClassProps.add(p);
-      }
-    }
-  }
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
@@ -259,28 +223,21 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       // Note, save element props while iterating to avoid the need to
       // iterate again when setting properties.
       this._elementProps = {};
-
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        // do not forward false boolean attributes
-        if (typeof v === 'boolean' && this._element) {
-          const descriptor = Object.getOwnPropertyDescriptor(this._element, k);
-          if (!(descriptor?.get || descriptor?.set)) {
-            if (v === false) {
-              this._element?.removeAttribute(k);
-            }
-          }
-        }
-
-        if (elementClassProps.has(k)) {
+        if (
+          eventProps.has(k) ||
+          (!reservedReactProperties.has(k) &&
+            !(k in HTMLElement.prototype) &&
+            k in elementClass.prototype)
+        ) {
           this._elementProps[k] = v;
-          continue;
+        } else {
+          // React does *not* handle `className` for custom elements so
+          // coerce it to `class` so it's handled correctly.
+          props[k === 'className' ? 'class' : k] = v;
         }
-
-        // React does *not* handle `className` for custom elements so
-        // coerce it to `class` so it's handled correctly.
-        props[k === 'className' ? 'class' : k] = v;
       }
       return createElement(tagName, props);
     }

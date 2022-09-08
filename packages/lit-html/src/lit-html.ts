@@ -344,13 +344,14 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = NODE_MODE
-  ? ({
-      createTreeWalker() {
-        return {};
-      },
-    } as unknown as Document)
-  : document;
+const d =
+  NODE_MODE && global.document === undefined
+    ? ({
+        createTreeWalker() {
+          return {};
+        },
+      } as unknown as Document)
+    : document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
 const createMarker = (v = '') => d.createComment(v);
@@ -2177,7 +2178,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('2.2.7');
+(global.litHtmlVersions ??= []).push('2.3.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
