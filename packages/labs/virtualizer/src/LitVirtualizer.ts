@@ -66,17 +66,10 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @state()
   private _last = -1;
 
-  private _layout?: LayoutConfigValue;
-
   private _virtualizer?: Virtualizer;
 
   @property({attribute: false})
-  set layout(layout: LayoutConfigValue) {
-    this._layout = layout;
-    if (layout && this._virtualizer) {
-      this._virtualizer.setLayout(layout);
-    }
-  }
+  layout: LayoutConfigValue = {};
 
   get layoutComplete() {
     return this._virtualizer!.layoutComplete;
@@ -87,27 +80,34 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   }
 
   willUpdate(changed: Map<string, unknown>) {
-    if (this._virtualizer) {
-      if (changed.has('layout')) {
-        this._virtualizer.setLayout(this._layout!);
+    if (changed.has('layout')) {
+      const compatible =
+        this._virtualizer && this._virtualizer.updateLayoutConfig(this.layout);
+      if (!compatible) {
+        this._makeVirtualizer();
       }
-      if (changed.has('items')) {
-        this._virtualizer.items = this.items;
-      }
+    }
+    if (this._virtualizer && changed.has('items')) {
+      this._virtualizer.items = this.items;
     }
   }
 
   _init() {
-    const layout = this._layout;
-    this._virtualizer = new Virtualizer({
-      hostElement: this,
-      layout,
-      scroller: this.scroller,
-    });
     this.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
       e.stopPropagation();
       this._first = e.first;
       this._last = e.last;
+    });
+  }
+
+  _makeVirtualizer() {
+    if (this._virtualizer) {
+      this._virtualizer.disconnected();
+    }
+    this._virtualizer = new Virtualizer({
+      hostElement: this,
+      layout: this.layout,
+      scroller: this.scroller,
     });
     this._virtualizer.items = this.items;
     this._virtualizer.connected();
