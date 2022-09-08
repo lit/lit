@@ -72,18 +72,6 @@ export interface BaseLayoutConfig {
   pin?: PinOptions;
 }
 
-/**
- * Among the various ways to specify a layout for Virtualizer,
- * you can provide an actual Layout instance. You can also tear
- * down the current layout (if any) by setting the layout to null
- */
-export type LayoutInstanceValue = Layout | null;
-
-/**
- * The main way to specify a layout is via a declarative Virtualizer
- * configuration. These are the different types of values accepted
- * for a layout in the Virtualizer config.
- */
 export type LayoutConfigValue = LayoutSpecifier | BaseLayoutConfig;
 
 export interface ScrollToCoordinates {
@@ -126,8 +114,6 @@ export interface Layout {
   unpin: Function;
 
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
-
-  isVirtualizerLayoutInstance: boolean;
 
   /**
    * Called by a Virtualizer when an update that

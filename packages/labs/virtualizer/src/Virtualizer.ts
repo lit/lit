@@ -9,9 +9,9 @@ import {
   ItemBox,
   Margins,
   LayoutConfigValue,
-  LayoutInstanceValue,
   ChildPositions,
   ChildMeasurements,
+  Layout,
   LayoutConstructor,
   LayoutSpecifier,
   Size,
@@ -115,7 +115,7 @@ let DefaultLayoutConstructor: LayoutConstructor;
 export class Virtualizer {
   private _benchmarkStart: number | null = null;
 
-  private _layout: LayoutInstanceValue = null;
+  private _layout: Layout | null = null;
 
   private _clippingAncestors: HTMLElement[] = [];
 
@@ -421,7 +421,7 @@ export class Virtualizer {
     if (Ctor === undefined) {
       // If we don't have a constructor yet, load the default
       DefaultLayoutConstructor = Ctor = (await import('./layouts/flow.js'))
-        .FlowLayout;
+        .FlowLayout as unknown as LayoutConstructor;
     }
 
     this._layout = new Ctor(config);

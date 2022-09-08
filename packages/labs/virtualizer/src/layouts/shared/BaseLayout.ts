@@ -40,7 +40,6 @@ export function pos2(direction: ScrollDirection): position {
 }
 
 export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
-  public isVirtualizerLayoutInstance = true;
   /**
    * The last set viewport scroll position.
    */
