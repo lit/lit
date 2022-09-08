@@ -102,6 +102,8 @@ export interface VirtualizerConfig {
   scroller?: boolean;
 }
 
+let DefaultLayoutConstructor: LayoutConstructor;
+
 /**
  * Provides virtual scrolling boilerplate.
  *
@@ -114,12 +116,6 @@ export class Virtualizer {
   private _benchmarkStart: number | null = null;
 
   private _layout: LayoutInstanceValue = null;
-
-  /**
-   * State variable for caching a provided layout config
-   * while we wait for the default layout to load
-   */
-  private _cachedLayoutConfig: BaseLayoutConfig | null = null;
 
   private _clippingAncestors: HTMLElement[] = [];
 
@@ -264,7 +260,7 @@ export class Virtualizer {
     // If no layout is specified, we make an empty
     // layout config, which will result in the default
     // layout with default parameters
-    this.setLayout(config.layout || ({} as BaseLayoutConfig));
+    this._initLayout(config.layout || ({} as BaseLayoutConfig));
   }
 
   private async _initObservers() {
@@ -388,130 +384,66 @@ export class Virtualizer {
     return this._sizer;
   }
 
-  // We want there to be a default layout (currently, and probably
-  // always, flow) so that users in the 80% case don't have to
-  // explicitly import and instantiate one. However, we don't want
-  // to make users of other layouts pay the cost of loading the
-  // default one, so we load it dynamically when needed.
-  async setLayout(layoutConfig: LayoutConfigValue) {
-    let instance: LayoutInstanceValue | undefined;
+  updateLayoutConfig(layoutConfig: LayoutConfigValue) {
+    const Ctor =
+      ((layoutConfig as LayoutSpecifier).type as LayoutConstructor) ||
+      DefaultLayoutConstructor;
+    if (typeof Ctor === 'function' && this._layout instanceof Ctor) {
+      const config = {...(layoutConfig as LayoutSpecifier)} as {
+        type?: LayoutConstructor;
+      };
+      delete config.type;
+      this._layout.config = config as BaseLayoutConfig;
+      return true;
+    }
+    return false;
+  }
+
+  private async _initLayout(layoutConfig: LayoutConfigValue) {
     let config: BaseLayoutConfig | undefined;
     let Ctor: LayoutConstructor | undefined;
-
-    if (layoutConfig === null) {
-      // If the config is null, the user is telling
-      // us they don't want a layout yet (or that they
-      // want to tear down the current layout)
-      instance = null;
+    if (typeof (layoutConfig as LayoutSpecifier).type === 'function') {
+      // If we have a full LayoutSpecifier, the `type` property
+      // gives us our constructor...
+      Ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
+      // ...while the rest of the specifier is our layout config
+      const copy = {...(layoutConfig as LayoutSpecifier)} as {
+        type?: LayoutConstructor;
+      };
+      delete copy.type;
+      config = copy as BaseLayoutConfig;
     } else {
-      if (typeof (layoutConfig as LayoutSpecifier).type === 'function') {
-        // If we have a full LayoutSpecifier, the `type` property
-        // gives us our constructor...
-        Ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
-        // ...while the rest of the specifier is our layout config
-        const copy = {...(layoutConfig as LayoutSpecifier)} as {
-          type?: LayoutConstructor;
-        };
-        delete copy.type;
-        config = copy as BaseLayoutConfig;
-      } else {
-        // If we don't have a full LayoutSpecifier, we just
-        // have a config for the default layout
-        config = layoutConfig as BaseLayoutConfig;
-      }
-
-      if (Ctor === undefined) {
-        // If we don't have a constructor yet, load the default
-        if (this._cachedLayoutConfig !== null) {
-          // We started loading the default layout constructor in a
-          // previous invocation of this method and are awaiting its
-          // arrival. We'll bail and let that invocation finish, but
-          // first we swap in our newer config.
-          this._cachedLayoutConfig = config!;
-          return;
-        } else {
-          // We weren't yet loading the default constructor. We do so now,
-          // caching the config to apply once we have the constructor in hand.
-          this._cachedLayoutConfig = config!;
-          Ctor = (await import('./layouts/flow.js')).FlowLayout;
-          if (this._cachedLayoutConfig === null) {
-            // If a later call to `setLayout()` has resulted in a
-            // different layout being set, the config we cached will
-            // have been cleared. In this case, we bail.
-            return;
-          } else {
-            // Now that we have the layout, we restore the provided
-            // config from the cache and clear the cache
-            config = this._cachedLayoutConfig;
-            this._cachedLayoutConfig = null;
-          }
-        }
-      } else {
-        // The user has provided a specific layout constructor, so
-        // we will use it. But in case we were already awaiting
-        // the default layout in a previous invocation of this method,
-        // we clear the cached config to prevent that previous
-        // invocation from finishing (since we want this newly
-        // provided, likely non-default constructor to be used instead)
-        this._cachedLayoutConfig = null;
-      }
-
-      if (this._layout instanceof Ctor) {
-        // Now that we have a constructor, we check to see if
-        // the current layout is an instance of the same type; if so,
-        // we just apply the new config parameters and we're done
-        this._layout.config = config;
-        return;
-      } else {
-        // But if we don't have an instance, or if the current
-        // instance is of another type, we make a new instance
-        // of the requested type, with the provided parameters
-        instance = new Ctor(config);
-      }
+      // If we don't have a full LayoutSpecifier, we just
+      // have a config for the default layout
+      config = layoutConfig as BaseLayoutConfig;
     }
 
-    // If we make it here, we have either a new layout instance
-    // to wire up, or marching orders to set the layout to null
-
-    // Either way, if we have a current instance, we tear it down
-    if (this._layout) {
-      this._measureCallback = null;
-      this._measureChildOverride = null;
-      this._layout.removeEventListener('scrollsizechange', this);
-      this._layout.removeEventListener('scrollerrorchange', this);
-      this._layout.removeEventListener('itempositionchange', this);
-      this._layout.removeEventListener('rangechange', this);
-      this._layout.removeEventListener('unpinned', this);
-      this._sizeHostElement(undefined);
-      this._hostElement!.removeEventListener('load', this._loadListener, true);
+    if (Ctor === undefined) {
+      // If we don't have a constructor yet, load the default
+      DefaultLayoutConstructor = Ctor = (await import('./layouts/flow.js'))
+        .FlowLayout;
     }
 
-    // Now we update our internal state variable to the new
-    // instance value (which may be null)
-    this._layout = instance;
+    this._layout = new Ctor(config);
 
-    // If we have an actual instance, not a null value, we
-    // wire it up
-    if (this._layout !== null) {
-      if (
-        this._layout.measureChildren &&
-        typeof this._layout.updateItemSizes === 'function'
-      ) {
-        if (typeof this._layout.measureChildren === 'function') {
-          this._measureChildOverride = this._layout.measureChildren;
-        }
-        this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
+    if (
+      this._layout.measureChildren &&
+      typeof this._layout.updateItemSizes === 'function'
+    ) {
+      if (typeof this._layout.measureChildren === 'function') {
+        this._measureChildOverride = this._layout.measureChildren;
       }
-      this._layout.addEventListener('scrollsizechange', this);
-      this._layout.addEventListener('scrollerrorchange', this);
-      this._layout.addEventListener('itempositionchange', this);
-      this._layout.addEventListener('rangechange', this);
-      this._layout.addEventListener('unpinned', this);
-      if (this._layout.listenForChildLoadEvents) {
-        this._hostElement!.addEventListener('load', this._loadListener, true);
-      }
-      this._schedule(this._updateLayout);
+      this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
+    this._layout.addEventListener('scrollsizechange', this);
+    this._layout.addEventListener('scrollerrorchange', this);
+    this._layout.addEventListener('itempositionchange', this);
+    this._layout.addEventListener('rangechange', this);
+    this._layout.addEventListener('unpinned', this);
+    if (this._layout.listenForChildLoadEvents) {
+      this._hostElement!.addEventListener('load', this._loadListener, true);
+    }
+    this._schedule(this._updateLayout);
   }
 
   // TODO (graynorton): Rework benchmarking so that it has no API and
