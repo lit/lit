@@ -10,7 +10,7 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {Analyzer} from '../../lib/analyzer.js';
+import {FilesystemAnalyzer} from '../../lib/filesystem-analyzer.js';
 import {AbsolutePath} from '../../lib/paths.js';
 import {
   LitElementDeclaration,
@@ -18,7 +18,7 @@ import {
 } from '../../lib/model.js';
 
 const test = suite<{
-  analyzer: Analyzer;
+  analyzer: FilesystemAnalyzer;
   packagePath: AbsolutePath;
   element: LitElementDeclaration;
 }>('LitElement event tests');
@@ -28,7 +28,7 @@ test.before((ctx) => {
     const packagePath = fileURLToPath(
       new URL('../../test-files/events', import.meta.url).href
     ) as AbsolutePath;
-    const analyzer = new Analyzer(packagePath);
+    const analyzer = new FilesystemAnalyzer(packagePath);
 
     const result = analyzer.analyzePackage();
     const elementAModule = result.modules.find(

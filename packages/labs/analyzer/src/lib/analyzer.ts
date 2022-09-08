@@ -5,80 +5,61 @@
  */
 
 import ts from 'typescript';
-import {Package, PackageJson, AnalyzerContext} from './model.js';
+import {PackageJson, AnalyzerInterface} from './model.js';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {getModule} from './javascript/modules.js';
-import {DiagnosticsError} from './errors.js';
 export {PackageJson};
 
+export interface AnalyzerInit {
+  getProgram: () => ts.Program;
+  fs: AnalyzerInterface['fs'];
+  path: AnalyzerInterface['path'];
+}
+
 /**
- * An analyzer for Lit npm packages
+ * An analyzer for Lit typescript modules. Given an AnalyzerInterface containing
+ * a TypeScript program and
  */
-export class Analyzer {
-  readonly packageRoot: AbsolutePath;
-  readonly context: AnalyzerContext;
+export class Analyzer implements AnalyzerInterface {
+  private readonly _getProgram: () => ts.Program;
+  readonly fs: AnalyzerInterface['fs'];
+  readonly path: AnalyzerInterface['path'];
+  private _commandLine: ts.ParsedCommandLine | undefined = undefined;
 
-  /**
-   * @param packageRoot The root directory of the package to analyze. Currently
-   * this directory must have a tsconfig.json and package.json.
-   */
-  constructor(packageRoot: AbsolutePath) {
-    this.packageRoot = packageRoot;
-
-    const configFileName = ts.findConfigFile(
-      packageRoot,
-      ts.sys.fileExists,
-      'tsconfig.json'
-    );
-    if (configFileName === undefined) {
-      // TODO: use a hard-coded tsconfig for JS projects.
-      throw new Error(`tsconfig.json not found in ${packageRoot}`);
-    }
-    const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-    // Note `configFileName` is optional but must be set for
-    // `getOutputFileNames` to work correctly; however, it must be relative to
-    // `packageRoot`
-    const commandLine = ts.parseJsonConfigFileContent(
-      configFile.config /* json */,
-      ts.sys /* host */,
-      packageRoot /* basePath */,
-      undefined /* existingOptions */,
-      path.relative(packageRoot, configFileName) /* configFileName */
-    );
-
-    const program = ts.createProgram(
-      commandLine.fileNames,
-      commandLine.options
-    );
-    this.context = {
-      commandLine,
-      program,
-      checker: program.getTypeChecker(),
-      path,
-      fs: ts.sys,
-      log: (s) => console.log(s),
-    };
-    const diagnostics = this.context.program.getSemanticDiagnostics();
-    if (diagnostics.length > 0) {
-      throw new DiagnosticsError(
-        diagnostics,
-        `Error analyzing package '${this.packageRoot}': Please fix errors first`
-      );
-    }
+  constructor(init: AnalyzerInit) {
+    this._getProgram = init.getProgram;
+    this.fs = init.fs;
+    this.path = init.path;
   }
 
-  analyzePackage() {
-    const rootFileNames = this.context.program.getRootFileNames();
+  get program() {
+    return this._getProgram();
+  }
 
-    return new Package({
-      rootDir: this.packageRoot,
-      modules: rootFileNames.map((fileName) =>
-        getModule(
-          this.context.program.getSourceFile(path.normalize(fileName))!,
-          this.context
-        )
-      ),
-    });
+  get commandLine() {
+    return (this._commandLine ??= getCommandLineFromProgram(this));
+  }
+
+  getModule(modulePath: AbsolutePath) {
+    return getModule(
+      this.program.getSourceFile(path.normalize(modulePath))!,
+      this
+    );
   }
 }
+
+export const getCommandLineFromProgram = (analyzer: Analyzer) => {
+  const compilerOptions = analyzer.program.getCompilerOptions();
+  const commandLine = ts.parseJsonConfigFileContent(
+    {
+      files: analyzer.program.getRootFileNames(),
+      compilerOptions,
+    },
+    ts.sys,
+    analyzer.path.basename(compilerOptions.configFilePath as string),
+    undefined,
+    compilerOptions.configFilePath as string
+  );
+  return commandLine;
+};

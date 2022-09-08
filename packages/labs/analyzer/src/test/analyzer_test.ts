@@ -10,10 +10,10 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {Analyzer} from '../lib/analyzer.js';
+import {FilesystemAnalyzer} from '../lib/filesystem-analyzer.js';
 import {AbsolutePath} from '../lib/paths.js';
 
-const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
+const test = suite<{analyzer: FilesystemAnalyzer; packagePath: AbsolutePath}>(
   'Basic Analyzer tests'
 );
 
@@ -22,7 +22,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../test-files/basic-elements', import.meta.url).href
     ) as AbsolutePath);
-    ctx.analyzer = new Analyzer(packagePath);
+    ctx.analyzer = new FilesystemAnalyzer(packagePath);
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
@@ -32,11 +32,11 @@ test.before((ctx) => {
 });
 
 test('Reads project files', ({analyzer, packagePath}) => {
-  const rootFileNames = analyzer.context.program.getRootFileNames();
+  const rootFileNames = analyzer.program.getRootFileNames();
   assert.equal(rootFileNames.length, 5);
 
   const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile = analyzer.context.program.getSourceFile(elementAPath);
+  const sourceFile = analyzer.program.getSourceFile(elementAPath);
   assert.ok(sourceFile);
 });
 

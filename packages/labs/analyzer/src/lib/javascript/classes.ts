@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {ClassDeclaration, AnalyzerContext} from '../model.js';
+import {ClassDeclaration, AnalyzerInterface} from '../model.js';
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -19,7 +19,7 @@ import {ClassDeclaration, AnalyzerContext} from '../model.js';
  */
 export const getClassDeclaration = (
   declaration: ts.ClassDeclaration,
-  _context: AnalyzerContext
+  _analyzer: AnalyzerInterface
 ): ClassDeclaration => {
   return new ClassDeclaration({
     name: declaration.name?.text,

@@ -267,9 +267,8 @@ export const getImportsStringForReferences = (references: Reference[]) => {
     .join('\n');
 };
 
-export interface AnalyzerContext {
+export interface AnalyzerInterface {
   program: ts.Program;
-  checker: ts.TypeChecker;
   commandLine: ts.ParsedCommandLine;
   fs: Pick<
     ts.System,
@@ -283,5 +282,4 @@ export interface AnalyzerContext {
     typeof import('path'),
     'join' | 'relative' | 'dirname' | 'basename' | 'dirname' | 'parse'
   >;
-  log: (s: string) => void;
 }

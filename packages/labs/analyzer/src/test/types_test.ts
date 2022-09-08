@@ -10,7 +10,7 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 
-import {Analyzer} from '../lib/analyzer.js';
+import {FilesystemAnalyzer} from '../lib/filesystem-analyzer.js';
 import {AbsolutePath} from '../lib/paths.js';
 import {
   Module,
@@ -27,7 +27,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../test-files/types', import.meta.url).href
     ) as AbsolutePath);
-    const analyzer = new Analyzer(packagePath);
+    const analyzer = new FilesystemAnalyzer(packagePath);
     const pkg = analyzer.analyzePackage();
     ctx.module = pkg.modules.filter((m) => m.jsPath === 'module.js')[0];
   } catch (e) {

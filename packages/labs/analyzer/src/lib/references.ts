@@ -7,7 +7,7 @@
 import ts from 'typescript';
 import path from 'path';
 import {DiagnosticsError} from './errors.js';
-import {AnalyzerContext, Reference} from './model.js';
+import {AnalyzerInterface, Reference} from './model.js';
 import {getModule} from './javascript/modules.js';
 
 const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
@@ -43,7 +43,7 @@ const getImportModuleSpecifier = (declaration: ts.Node): string | undefined => {
 export function getReferenceForSymbol(
   symbol: ts.Symbol,
   location: ts.Node,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): Reference {
   const {name} = symbol;
   // TODO(kschaaf): Do we need to check other declarations? The assumption is
@@ -102,7 +102,7 @@ export function getReferenceForSymbol(
         if (moduleSpecifier[0] === '.') {
           // Relative import from this package: use the current package and
           // module path relative to this module
-          const module = getModule(location.getSourceFile(), context);
+          const module = getModule(location.getSourceFile(), analyzer);
           refPackage = module.packageJson.name;
           refModule = path.join(path.dirname(module.jsPath), moduleSpecifier);
         } else if (moduleSpecifier[0] === '/') {
@@ -131,7 +131,7 @@ export function getReferenceForSymbol(
       });
     } else {
       // Declared in this file: use the current package and module
-      const module = getModule(location.getSourceFile(), context);
+      const module = getModule(location.getSourceFile(), analyzer);
       return new Reference({
         name,
         package: module.packageJson.name,

@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
-import {Type, Reference, AnalyzerContext} from './model.js';
+import {Type, Reference, AnalyzerInterface} from './model.js';
 import {getReferenceForSymbol} from './references.js';
 
 /**
@@ -17,9 +17,10 @@ import {getReferenceForSymbol} from './references.js';
 export const getSymbolForName = (
   name: string,
   location: ts.Node,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): ts.Symbol | undefined => {
-  return context.checker
+  return analyzer.program
+    .getTypeChecker()
     .getSymbolsInScope(
       location,
       (ts.SymbolFlags as unknown as {All: number}).All
@@ -34,7 +35,7 @@ export const getSymbolForName = (
  */
 export const getTypeForJSDocTag = (
   tag: ts.JSDocTag,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): Type | undefined => {
   const typeString =
     ts.isJSDocUnknownTag(tag) && typeof tag.comment === 'string'
@@ -48,11 +49,13 @@ export const getTypeForJSDocTag = (
         `Internal error: failed to parse type from JSDoc comment.`
       );
     }
-    const type = context.checker.getTypeFromTypeNode(typeNode);
+    const type = analyzer.program
+      .getTypeChecker()
+      .getTypeFromTypeNode(typeNode);
     return new Type({
       type,
       text: typeString,
-      getReferences: () => getReferencesForTypeNode(typeNode, tag, context),
+      getReferences: () => getReferencesForTypeNode(typeNode, tag, analyzer),
     });
   } else {
     return undefined;
@@ -64,17 +67,17 @@ export const getTypeForJSDocTag = (
  */
 export const getTypeForNode = (
   node: ts.Node,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): Type => {
   // Since getTypeAtLocation will return `any` for an untyped node, to support
   // jsdoc @type for JS (TBD), we look at the jsdoc type first.
   const jsdocType = ts.getJSDocType(node);
   return getTypeForType(
     jsdocType
-      ? context.checker.getTypeFromTypeNode(jsdocType)
-      : context.checker.getTypeAtLocation(node),
+      ? analyzer.program.getTypeChecker().getTypeFromTypeNode(jsdocType)
+      : analyzer.program.getTypeChecker().getTypeAtLocation(node),
     node,
-    context
+    analyzer
   );
 };
 
@@ -85,9 +88,9 @@ export const getTypeForNode = (
 const getTypeForType = (
   type: ts.Type,
   location: ts.Node,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): Type => {
-  const {checker} = context;
+  const checker = analyzer.program.getTypeChecker();
   // Ensure we treat inferred `foo = 'hi'` as 'string' not '"hi"'
   type = checker.getBaseTypeOfLiteralType(type);
   const text = checker.typeToString(type);
@@ -105,7 +108,7 @@ const getTypeForType = (
   return new Type({
     type,
     text,
-    getReferences: () => getReferencesForTypeNode(typeNode, location, context),
+    getReferences: () => getReferencesForTypeNode(typeNode, location, analyzer),
   });
 };
 
@@ -116,7 +119,7 @@ const getTypeForType = (
 const getReferencesForTypeNode = (
   typeNode: ts.TypeNode,
   location: ts.Node,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): Reference[] => {
   const references: Reference[] = [];
   const visit = (node: ts.Node) => {
@@ -129,14 +132,14 @@ const getReferencesForTypeNode = (
       // that nodes created with `checker.typeToTypeNode()` do not have
       // associated symbols, so we need to look up by name via
       // `checker.getSymbolsInScope()`
-      const symbol = getSymbolForName(name, location, context);
+      const symbol = getSymbolForName(name, location, analyzer);
       if (symbol === undefined) {
         throw new DiagnosticsError(
           location,
           `Could not get symbol for '${name}'.`
         );
       }
-      references.push(getReferenceForSymbol(symbol, location, context));
+      references.push(getReferenceForSymbol(symbol, location, analyzer));
     }
     ts.forEachChild(node, visit);
   };
@@ -177,7 +180,7 @@ const getRootName = (
  * tree and the actual program.
  *
  * TODO(kschaaf): Providing diagnostic errors for semantically incorrect custom
- * JSDoc types would be nice, but that's pretty difficult in analyzer contexts
+ * JSDoc types would be nice, but that's pretty difficult in analyzers
  * where we don't control the TS program creation such that we can re-write
  * source files, etc. (as is the case when using in plugins).
  */

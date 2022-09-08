@@ -11,12 +11,12 @@ import ts from 'typescript';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {Analyzer} from '../../lib/analyzer.js';
+import {FilesystemAnalyzer} from '../../lib/filesystem-analyzer.js';
 import {AbsolutePath} from '../../lib/paths.js';
 import {LitElementDeclaration} from '../../lib/model.js';
 import {isLitElement} from '../../lib/lit-element/lit-element.js';
 
-const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
+const test = suite<{analyzer: FilesystemAnalyzer; packagePath: AbsolutePath}>(
   'LitElement tests'
 );
 
@@ -25,7 +25,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../../test-files/basic-elements', import.meta.url).href
     ) as AbsolutePath);
-    ctx.analyzer = new Analyzer(packagePath);
+    ctx.analyzer = new FilesystemAnalyzer(packagePath);
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
@@ -39,12 +39,12 @@ test('isLitElement returns true for a direct import', ({
   packagePath,
 }) => {
   const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile = analyzer.context.program.getSourceFile(elementAPath)!;
+  const sourceFile = analyzer.program.getSourceFile(elementAPath)!;
   const elementADeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'ElementA'
   );
   assert.ok(elementADeclaration);
-  assert.equal(isLitElement(elementADeclaration, analyzer.context), true);
+  assert.equal(isLitElement(elementADeclaration, analyzer), true);
 });
 
 test('isLitElement returns false for non-LitElement', ({
@@ -52,12 +52,12 @@ test('isLitElement returns false for non-LitElement', ({
   packagePath,
 }) => {
   const notLitPath = path.resolve(packagePath, 'src', 'not-lit.ts');
-  const sourceFile = analyzer.context.program.getSourceFile(notLitPath)!;
+  const sourceFile = analyzer.program.getSourceFile(notLitPath)!;
   const notLitDeclaration = sourceFile.statements.find(
     (s) => ts.isClassDeclaration(s) && s.name?.text === 'NotLit'
   );
   assert.ok(notLitDeclaration);
-  assert.equal(isLitElement(notLitDeclaration, analyzer.context), false);
+  assert.equal(isLitElement(notLitDeclaration, analyzer), false);
 });
 
 test('Analyzer finds LitElement declarations', ({analyzer}) => {

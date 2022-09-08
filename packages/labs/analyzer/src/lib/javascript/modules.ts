@@ -5,7 +5,7 @@
  */
 
 import ts from 'typescript';
-import {Module, AnalyzerContext, PackageJson} from '../model.js';
+import {Module, AnalyzerInterface, PackageJson} from '../model.js';
 import {
   isLitElement,
   getLitElementDeclaration,
@@ -21,10 +21,10 @@ import {AbsolutePath, absoluteToPackage} from '../paths.js';
  */
 const getPackageRootForModulePath = (
   modulePath: AbsolutePath,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): AbsolutePath => {
   // TODO(kschaaf): Add caching & invalidation
-  const {fs, path} = context;
+  const {fs, path} = analyzer;
   let searchDir = path.dirname(modulePath);
   const root = path.parse(searchDir).root;
   while (searchDir !== root) {
@@ -41,10 +41,10 @@ const getPackageRootForModulePath = (
  */
 const getPackageJsonFromPackageRoot = (
   packageRoot: AbsolutePath,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): PackageJson => {
   // TODO(kschaaf): Add caching & invalidation
-  const {fs, path} = context;
+  const {fs, path} = analyzer;
   const packageJson = fs.readFile(path.join(packageRoot, 'package.json'));
   if (packageJson !== undefined) {
     return JSON.parse(packageJson) as PackageJson;
@@ -57,7 +57,7 @@ const getPackageJsonFromPackageRoot = (
  */
 export const getModule = (
   sourceFile: ts.SourceFile,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ) => {
   const fileName = sourceFile.fileName as AbsolutePath;
   // Find and load the package.json associated with this module; this both gives
@@ -65,15 +65,15 @@ export const getModule = (
   // path to a package relative path), as well as the packageName (needed for
   // generating references to any symbols in this module). This will need
   // caching/invalidation.
-  const packageRoot = getPackageRootForModulePath(fileName, context);
-  const packageJson = getPackageJsonFromPackageRoot(packageRoot, context);
+  const packageRoot = getPackageRootForModulePath(fileName, analyzer);
+  const packageJson = getPackageJsonFromPackageRoot(packageRoot, analyzer);
   const sourcePath = absoluteToPackage(
     path.normalize(sourceFile.fileName) as AbsolutePath,
     packageRoot
   );
   const fullSourcePath = path.join(packageRoot, sourcePath);
   const jsPath = ts
-    .getOutputFileNames(context.commandLine, fullSourcePath, false)
+    .getOutputFileNames(analyzer.commandLine, fullSourcePath, false)
     .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
   // we might need to handle this differently
@@ -97,14 +97,14 @@ export const getModule = (
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
       module.declarations.push(
-        isLitElement(statement, context)
-          ? getLitElementDeclaration(statement, context)
-          : getClassDeclaration(statement, context)
+        isLitElement(statement, analyzer)
+          ? getLitElementDeclaration(statement, analyzer)
+          : getClassDeclaration(statement, analyzer)
       );
     } else if (ts.isVariableStatement(statement)) {
       module.declarations.push(
         ...statement.declarationList.declarations
-          .map((dec) => getVariableDeclarations(dec, dec.name, context))
+          .map((dec) => getVariableDeclarations(dec, dec.name, analyzer))
           .flat()
       );
     }

@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {VariableDeclaration, AnalyzerContext} from '../model.js';
+import {VariableDeclaration, AnalyzerInterface} from '../model.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 
@@ -27,14 +27,14 @@ type VariableName =
 export const getVariableDeclarations = (
   dec: ts.VariableDeclaration,
   name: VariableName,
-  context: AnalyzerContext
+  analyzer: AnalyzerInterface
 ): VariableDeclaration[] => {
   if (ts.isIdentifier(name)) {
     return [
       new VariableDeclaration({
         name: name.text,
         node: dec,
-        type: getTypeForNode(name, context),
+        type: getTypeForNode(name, analyzer),
       }),
     ];
   } else if (
@@ -47,7 +47,7 @@ export const getVariableDeclarations = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarations(dec, el.name, context))
+      .map((el) => getVariableDeclarations(dec, el.name, analyzer))
       .flat();
   } else {
     throw new DiagnosticsError(

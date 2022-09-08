@@ -11,7 +11,7 @@ import * as path from 'path';
 import {fileURLToPath} from 'url';
 import ts from 'typescript';
 
-import {Analyzer} from '../../lib/analyzer.js';
+import {FilesystemAnalyzer} from '../../lib/filesystem-analyzer.js';
 import {AbsolutePath} from '../../lib/paths.js';
 import {
   isLitElementDeclaration,
@@ -19,7 +19,7 @@ import {
 } from '../../lib/model.js';
 
 const test = suite<{
-  analyzer: Analyzer;
+  analyzer: FilesystemAnalyzer;
   packagePath: AbsolutePath;
   element: LitElementDeclaration;
 }>('LitElement property tests');
@@ -29,7 +29,7 @@ test.before((ctx) => {
     const packagePath = fileURLToPath(
       new URL('../../test-files/decorators-properties', import.meta.url).href
     ) as AbsolutePath;
-    const analyzer = new Analyzer(packagePath);
+    const analyzer = new FilesystemAnalyzer(packagePath);
 
     const result = analyzer.analyzePackage();
     const elementAModule = result.modules.find(
