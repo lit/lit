@@ -22,7 +22,8 @@ export const getClassDeclaration = (
   _analyzer: AnalyzerInterface
 ): ClassDeclaration => {
   return new ClassDeclaration({
-    name: declaration.name?.text,
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
+    name: declaration.name?.text ?? '',
     node: declaration,
   });
 };

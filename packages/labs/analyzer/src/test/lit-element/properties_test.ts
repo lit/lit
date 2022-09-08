@@ -11,12 +11,11 @@ import * as path from 'path';
 import {fileURLToPath} from 'url';
 import ts from 'typescript';
 
-import {FilesystemAnalyzer} from '../../lib/filesystem-analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
 import {
-  isLitElementDeclaration,
+  FilesystemAnalyzer,
+  AbsolutePath,
   LitElementDeclaration,
-} from '../../lib/model.js';
+} from '../../index.js';
 
 const test = suite<{
   analyzer: FilesystemAnalyzer;
@@ -35,8 +34,8 @@ test.before((ctx) => {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === path.normalize('src/element-a.ts')
     );
-    const element = elementAModule!.declarations.filter(
-      isLitElementDeclaration
+    const element = elementAModule!.declarations.filter((d) =>
+      d.isLitElementDeclaration()
     )[0] as LitElementDeclaration;
 
     ctx.packagePath = packagePath;

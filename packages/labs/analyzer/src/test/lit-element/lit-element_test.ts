@@ -7,14 +7,14 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import ts from 'typescript';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {FilesystemAnalyzer} from '../../lib/filesystem-analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
-import {LitElementDeclaration} from '../../lib/model.js';
-import {isLitElement} from '../../lib/lit-element/lit-element.js';
+import {
+  FilesystemAnalyzer,
+  AbsolutePath,
+  LitElementDeclaration,
+} from '../../index.js';
 
 const test = suite<{analyzer: FilesystemAnalyzer; packagePath: AbsolutePath}>(
   'LitElement tests'
@@ -34,30 +34,16 @@ test.before((ctx) => {
   }
 });
 
-test('isLitElement returns true for a direct import', ({
+test('isLitElementDeclaration returns false for non-LitElement', ({
   analyzer,
-  packagePath,
 }) => {
-  const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile = analyzer.program.getSourceFile(elementAPath)!;
-  const elementADeclaration = sourceFile.statements.find(
-    (s) => ts.isClassDeclaration(s) && s.name?.text === 'ElementA'
+  const result = analyzer.analyzePackage();
+  const elementAModule = result.modules.find(
+    (m) => m.sourcePath === path.normalize('src/not-lit.ts')
   );
-  assert.ok(elementADeclaration);
-  assert.equal(isLitElement(elementADeclaration, analyzer), true);
-});
-
-test('isLitElement returns false for non-LitElement', ({
-  analyzer,
-  packagePath,
-}) => {
-  const notLitPath = path.resolve(packagePath, 'src', 'not-lit.ts');
-  const sourceFile = analyzer.program.getSourceFile(notLitPath)!;
-  const notLitDeclaration = sourceFile.statements.find(
-    (s) => ts.isClassDeclaration(s) && s.name?.text === 'NotLit'
-  );
-  assert.ok(notLitDeclaration);
-  assert.equal(isLitElement(notLitDeclaration, analyzer), false);
+  const decl = elementAModule!.declarations.find((d) => d.name === 'NotLit')!;
+  assert.ok(decl);
+  assert.equal(decl.isLitElementDeclaration(), false);
 });
 
 test('Analyzer finds LitElement declarations', ({analyzer}) => {
@@ -68,8 +54,7 @@ test('Analyzer finds LitElement declarations', ({analyzer}) => {
   assert.equal(elementAModule?.declarations.length, 1);
   const decl = elementAModule!.declarations[0];
   assert.equal(decl.name, 'ElementA');
-  assert.instance(decl, LitElementDeclaration);
-  assert.equal((decl as LitElementDeclaration).isLitElement, true);
+  assert.ok(decl.isLitElementDeclaration());
 
   // TODO (justinfagnani): test for customElements.define()
   assert.equal((decl as LitElementDeclaration).tagname, 'element-a');

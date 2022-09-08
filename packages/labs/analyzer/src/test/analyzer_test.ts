@@ -10,8 +10,7 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {FilesystemAnalyzer} from '../lib/filesystem-analyzer.js';
-import {AbsolutePath} from '../lib/paths.js';
+import {FilesystemAnalyzer, AbsolutePath} from '../index.js';
 
 const test = suite<{analyzer: FilesystemAnalyzer; packagePath: AbsolutePath}>(
   'Basic Analyzer tests'

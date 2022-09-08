@@ -10,12 +10,11 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {FilesystemAnalyzer} from '../../lib/filesystem-analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
 import {
+  FilesystemAnalyzer,
+  AbsolutePath,
   LitElementDeclaration,
-  isLitElementDeclaration,
-} from '../../lib/model.js';
+} from '../../index.js';
 
 const test = suite<{
   analyzer: FilesystemAnalyzer;
@@ -34,8 +33,8 @@ test.before((ctx) => {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === path.normalize('src/element-a.ts')
     );
-    const element = elementAModule!.declarations.filter(
-      isLitElementDeclaration
+    const element = elementAModule!.declarations.filter((d) =>
+      d.isLitElementDeclaration()
     )[0] as LitElementDeclaration;
 
     ctx.packagePath = packagePath;

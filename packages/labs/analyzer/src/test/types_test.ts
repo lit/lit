@@ -10,15 +10,15 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 
-import {FilesystemAnalyzer} from '../lib/filesystem-analyzer.js';
-import {AbsolutePath} from '../lib/paths.js';
 import {
+  FilesystemAnalyzer,
+  AbsolutePath,
   Module,
-  Type,
   VariableDeclaration,
   getImportsStringForReferences,
-  Reference,
-} from '../lib/model.js';
+} from '../index.js';
+
+import {Reference} from '../lib/model.js';
 
 const test = suite<{module: Module; packagePath: AbsolutePath}>('Types tests');
 
@@ -41,9 +41,9 @@ test.before((ctx) => {
 const typeForVariable = (module: Module, name: string) => {
   const dec = module.declarations.filter((dec) => dec.name === name)[0];
   assert.ok(dec, `Could not find symbol named ${name}`);
-  assert.instance(dec, VariableDeclaration);
-  assert.instance((dec as VariableDeclaration).type, Type);
-  return (dec as VariableDeclaration).type!;
+  const type = (dec as VariableDeclaration).type;
+  assert.ok(type);
+  return type;
 };
 
 test('testString', ({module}) => {

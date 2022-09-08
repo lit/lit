@@ -18,8 +18,7 @@ export interface AnalyzerInit {
 }
 
 /**
- * An analyzer for Lit typescript modules. Given an AnalyzerInterface containing
- * a TypeScript program and
+ * An analyzer for Lit typescript modules.
  */
 export class Analyzer implements AnalyzerInterface {
   private readonly _getProgram: () => ts.Program;
