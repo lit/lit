@@ -10,6 +10,15 @@ import {AbsolutePath, PackagePath} from './paths.js';
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
+/**
+ * Return type of `getLitElementModules`: contains a module and filtered list of
+ * LitElementDeclarations contained within it.
+ */
+export type ModuleWithLitElementDeclarations = {
+  module: Module;
+  declarations: LitElementDeclaration[];
+};
+
 export interface PackageInit {
   rootDir: AbsolutePath;
   packageJson: PackageJson;
@@ -28,6 +37,27 @@ export class Package {
     this.packageJson = init.packageJson;
     this.tsConfig = init.tsConfig;
     this.modules = init.modules;
+  }
+
+  /**
+   * Returns a list of modules in this package containing LitElement
+   * declarations, along with the filtered list of LitElementDeclarartions.
+   */
+  getLitElementModules() {
+    const modules: {module: Module; declarations: LitElementDeclaration[]}[] =
+      [];
+    for (const module of this.modules) {
+      const declarations = module.declarations.filter((d) =>
+        d.isLitElementDeclaration()
+      ) as LitElementDeclaration[];
+      if (declarations.length > 0) {
+        modules.push({
+          module,
+          declarations,
+        });
+      }
+    }
+    return modules;
   }
 }
 
@@ -62,36 +92,50 @@ export class Module {
   }
 }
 
-export type Declaration = ClassDeclaration | VariableDeclaration;
-
-export interface VariableDeclarationInit {
+interface DeclarationInit {
   name: string;
+}
+
+export abstract class Declaration {
+  name: string;
+  constructor(init: DeclarationInit) {
+    this.name = init.name;
+  }
+  isVariableDeclaration(): this is VariableDeclaration {
+    return this instanceof VariableDeclaration;
+  }
+  isClassDeclaration(): this is ClassDeclaration {
+    return this instanceof ClassDeclaration;
+  }
+  isLitElementDeclaration(): this is LitElementDeclaration {
+    return this instanceof LitElementDeclaration;
+  }
+}
+
+export interface VariableDeclarationInit extends DeclarationInit {
   node: ts.VariableDeclaration;
   type: Type | undefined;
 }
 
-export class VariableDeclaration {
-  readonly name: string;
+export class VariableDeclaration extends Declaration {
   readonly node: ts.VariableDeclaration;
   readonly type: Type | undefined;
   constructor(init: VariableDeclarationInit) {
-    this.name = init.name;
+    super(init);
     this.node = init.node;
     this.type = init.type;
   }
 }
 
-export interface ClassDeclarationInit {
-  name: string | undefined;
+export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
 }
 
-export class ClassDeclaration {
-  readonly name: string | undefined;
+export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
 
   constructor(init: ClassDeclarationInit) {
-    this.name = init.name;
+    super(init);
     this.node = init.node;
   }
 }
@@ -103,8 +147,6 @@ interface LitElementDeclarationInit extends ClassDeclarationInit {
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
-  readonly isLitElement = true;
-
   /**
    * The element's tag name, if one is associated with this class declaration,
    * such as with a `@customElement()` decorator or `customElements.define()`
@@ -164,34 +206,10 @@ export interface Event {
   type: Type | undefined;
 }
 
-// TODO(justinfagnani): Move helpers into a Lit-specific module
-export const isLitElementDeclaration = (
-  dec: Declaration
-): dec is LitElementDeclaration => {
-  return (
-    dec instanceof ClassDeclaration &&
-    (dec as LitElementDeclaration).isLitElement
-  );
-};
-
 export interface LitModule {
   module: Module;
   elements: LitElementDeclaration[];
 }
-
-export const getLitModules = (analysis: Package) => {
-  const modules: LitModule[] = [];
-  for (const module of analysis.modules) {
-    const elements = module.declarations.filter(isLitElementDeclaration);
-    if (elements.length > 0) {
-      modules.push({
-        module,
-        elements,
-      });
-    }
-  }
-  return modules;
-};
 
 export interface ReferenceInit {
   name: string;
