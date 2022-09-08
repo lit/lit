@@ -36,13 +36,13 @@ export interface VirtualizeDirectiveConfig<T> {
   items?: Array<T>;
 }
 
-type RenderItemFunction<T = unknown> = (
+export type RenderItemFunction<T = unknown> = (
   item: T,
   index: number
 ) => TemplateResult;
 
-const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
-const defaultRenderItem: RenderItemFunction<unknown> = (
+export const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
+export const defaultRenderItem: RenderItemFunction<unknown> = (
   item: unknown,
   idx: number
 ) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
