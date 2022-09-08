@@ -239,7 +239,6 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           props[k === 'className' ? 'class' : k] = v;
           if (v === false && this._element?.hasAttribute(k)) {
             props[k] = null;
-            continue;
           }
         }
       }
