@@ -237,6 +237,10 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
+          if (v === false && this._element?.hasAttribute(k)) {
+            props[k] = null;
+            continue;
+          }
         }
       }
       return createElement(tagName, props);
