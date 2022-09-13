@@ -189,6 +189,27 @@ suite('Task', () => {
     assert.equal(el.taskValue, `a1,b1`);
   });
 
+  test('task error is not reset on rerun', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+    el.rejectTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.taskValue, 'error');
+
+    // *** Changing task argument runs task
+    el.a = 'a1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, 'error');
+    // Reject task and check result.
+    el.rejectTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.taskValue, `error`);
+  });
+
   test('tasks do not run when `autoRun` is `false`', async () => {
     const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
     await renderElement(el);
