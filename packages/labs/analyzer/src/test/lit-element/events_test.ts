@@ -11,13 +11,13 @@ import * as path from 'path';
 import {fileURLToPath} from 'url';
 
 import {
-  FilesystemAnalyzer,
+  PackageAnalyzer,
   AbsolutePath,
   LitElementDeclaration,
 } from '../../index.js';
 
 const test = suite<{
-  analyzer: FilesystemAnalyzer;
+  analyzer: PackageAnalyzer;
   packagePath: AbsolutePath;
   element: LitElementDeclaration;
 }>('LitElement event tests');
@@ -27,7 +27,7 @@ test.before((ctx) => {
     const packagePath = fileURLToPath(
       new URL('../../test-files/events', import.meta.url).href
     ) as AbsolutePath;
-    const analyzer = new FilesystemAnalyzer(packagePath);
+    const analyzer = new PackageAnalyzer(packagePath);
 
     const result = analyzer.analyzePackage();
     const elementAModule = result.modules.find(

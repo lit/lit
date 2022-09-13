@@ -1,15 +1,16 @@
 import ts from 'typescript';
-import {Package} from './model.js';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {DiagnosticsError} from './errors.js';
 import {Analyzer} from './analyzer.js';
+import {getPackageInfo} from './javascript/packages.js';
+import {getModule} from './javascript/modules.js';
+import {Package} from './model.js';
 
 /**
- * An analyzer for Lit npm packages.
+ * An analyzer for a Lit npm package based on a filesystem path.
  */
-
-export class FilesystemAnalyzer extends Analyzer {
+export class PackageAnalyzer extends Analyzer {
   readonly packageRoot: AbsolutePath;
 
   /**
@@ -58,10 +59,16 @@ export class FilesystemAnalyzer extends Analyzer {
   analyzePackage() {
     const rootFileNames = this.program.getRootFileNames();
 
+    const packageInfo = getPackageInfo(this.packageRoot, this);
+
     return new Package({
-      rootDir: this.packageRoot,
+      ...packageInfo,
       modules: rootFileNames.map((fileName) =>
-        this.getModule(fileName as AbsolutePath)
+        getModule(
+          this.program.getSourceFile(path.normalize(fileName))!,
+          this,
+          packageInfo
+        )
       ),
     });
   }

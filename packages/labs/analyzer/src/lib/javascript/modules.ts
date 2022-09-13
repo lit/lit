@@ -5,7 +5,7 @@
  */
 
 import ts from 'typescript';
-import {Module, AnalyzerInterface, PackageJson} from '../model.js';
+import {Module, AnalyzerInterface, PackageInfo} from '../model.js';
 import {
   isLitElement,
   getLitElementDeclaration,
@@ -14,64 +14,30 @@ import * as path from 'path';
 import {getClassDeclaration} from './classes.js';
 import {getVariableDeclarations} from './variables.js';
 import {AbsolutePath, absoluteToPackage} from '../paths.js';
-
-/**
- * Starting from a given module path, searches up until the nearest package.json
- * is found, returning that folder. If none is found, an error is thrown.
- */
-const getPackageRootForModulePath = (
-  modulePath: AbsolutePath,
-  analyzer: AnalyzerInterface
-): AbsolutePath => {
-  // TODO(kschaaf): Add caching & invalidation
-  const {fs, path} = analyzer;
-  let searchDir = path.dirname(modulePath);
-  const root = path.parse(searchDir).root;
-  while (searchDir !== root) {
-    if (fs.fileExists(path.join(searchDir, 'package.json'))) {
-      return searchDir as AbsolutePath;
-    }
-    searchDir = path.dirname(searchDir);
-  }
-  throw new Error(`No package.json found for module path ${modulePath}`);
-};
-
-/**
- * Reads and parses a package.json file contained in the given folder.
- */
-const getPackageJsonFromPackageRoot = (
-  packageRoot: AbsolutePath,
-  analyzer: AnalyzerInterface
-): PackageJson => {
-  // TODO(kschaaf): Add caching & invalidation
-  const {fs, path} = analyzer;
-  const packageJson = fs.readFile(path.join(packageRoot, 'package.json'));
-  if (packageJson !== undefined) {
-    return JSON.parse(packageJson) as PackageJson;
-  }
-  throw new Error(`No package.json found at ${packageRoot}`);
-};
+import {getPackageInfo} from './packages.js';
 
 /**
  * Returns an analyzer `Module` model for the given ts.SourceFile.
  */
 export const getModule = (
   sourceFile: ts.SourceFile,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  packageInfo: PackageInfo = getPackageInfo(
+    sourceFile.fileName as AbsolutePath,
+    analyzer
+  )
 ) => {
-  const fileName = sourceFile.fileName as AbsolutePath;
   // Find and load the package.json associated with this module; this both gives
   // us the packageRoot for this module (needed for translating the source file
   // path to a package relative path), as well as the packageName (needed for
   // generating references to any symbols in this module). This will need
   // caching/invalidation.
-  const packageRoot = getPackageRootForModulePath(fileName, analyzer);
-  const packageJson = getPackageJsonFromPackageRoot(packageRoot, analyzer);
+  const {rootDir, packageJson} = packageInfo;
   const sourcePath = absoluteToPackage(
     path.normalize(sourceFile.fileName) as AbsolutePath,
-    packageRoot
+    rootDir
   );
-  const fullSourcePath = path.join(packageRoot, sourcePath);
+  const fullSourcePath = path.join(rootDir, sourcePath);
   const jsPath = ts
     .getOutputFileNames(analyzer.commandLine, fullSourcePath, false)
     .filter((f) => f.endsWith('.js'))[0];
@@ -86,10 +52,7 @@ export const getModule = (
     // The jsPath appears to come out of the ts API with unix
     // separators; since sourcePath uses OS separators, normalize
     // this so that all our model paths are OS-native
-    jsPath: absoluteToPackage(
-      path.normalize(jsPath) as AbsolutePath,
-      packageRoot as AbsolutePath
-    ),
+    jsPath: absoluteToPackage(path.normalize(jsPath) as AbsolutePath, rootDir),
     sourceFile,
     packageJson,
   });

@@ -5,7 +5,7 @@
  */
 
 export {Analyzer} from './lib/analyzer.js';
-export {FilesystemAnalyzer} from './lib/filesystem-analyzer.js';
+export {PackageAnalyzer} from './lib/package-analyzer.js';
 
 export type {
   Package,

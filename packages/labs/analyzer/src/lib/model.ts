@@ -19,17 +19,33 @@ export type ModuleWithLitElementDeclarations = {
   declarations: LitElementDeclaration[];
 };
 
-export interface PackageInit {
+export interface PackageInfoInit {
+  name: string;
   rootDir: AbsolutePath;
+  packageJson: PackageJson;
+}
+
+export class PackageInfo {
+  readonly name: string;
+  readonly rootDir: AbsolutePath;
+  readonly packageJson: PackageJson;
+
+  constructor(init: PackageInfoInit) {
+    this.name = init.name;
+    this.rootDir = init.rootDir;
+    this.packageJson = init.packageJson;
+  }
+}
+
+export interface PackageInit extends PackageInfo {
   modules: ReadonlyArray<Module>;
 }
 
-export class Package {
-  readonly rootDir: AbsolutePath;
+export class Package extends PackageInfo {
   readonly modules: ReadonlyArray<Module>;
 
   constructor(init: PackageInit) {
-    this.rootDir = init.rootDir;
+    super(init);
     this.modules = init.modules;
   }
 

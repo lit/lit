@@ -12,13 +12,13 @@ import {fileURLToPath} from 'url';
 import ts from 'typescript';
 
 import {
-  FilesystemAnalyzer,
+  PackageAnalyzer,
   AbsolutePath,
   LitElementDeclaration,
 } from '../../index.js';
 
 const test = suite<{
-  analyzer: FilesystemAnalyzer;
+  analyzer: PackageAnalyzer;
   packagePath: AbsolutePath;
   element: LitElementDeclaration;
 }>('LitElement property tests');
@@ -28,7 +28,7 @@ test.before((ctx) => {
     const packagePath = fileURLToPath(
       new URL('../../test-files/decorators-properties', import.meta.url).href
     ) as AbsolutePath;
-    const analyzer = new FilesystemAnalyzer(packagePath);
+    const analyzer = new PackageAnalyzer(packagePath);
 
     const result = analyzer.analyzePackage();
     const elementAModule = result.modules.find(

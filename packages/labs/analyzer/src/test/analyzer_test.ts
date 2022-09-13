@@ -10,9 +10,9 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {FilesystemAnalyzer, AbsolutePath} from '../index.js';
+import {PackageAnalyzer, AbsolutePath} from '../index.js';
 
-const test = suite<{analyzer: FilesystemAnalyzer; packagePath: AbsolutePath}>(
+const test = suite<{analyzer: PackageAnalyzer; packagePath: AbsolutePath}>(
   'Basic Analyzer tests'
 );
 
@@ -21,7 +21,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../test-files/basic-elements', import.meta.url).href
     ) as AbsolutePath);
-    ctx.analyzer = new FilesystemAnalyzer(packagePath);
+    ctx.analyzer = new PackageAnalyzer(packagePath);
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.

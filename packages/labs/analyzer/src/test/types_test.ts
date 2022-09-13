@@ -11,7 +11,7 @@ import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 
 import {
-  FilesystemAnalyzer,
+  PackageAnalyzer,
   AbsolutePath,
   Module,
   VariableDeclaration,
@@ -27,7 +27,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../test-files/types', import.meta.url).href
     ) as AbsolutePath);
-    const analyzer = new FilesystemAnalyzer(packagePath);
+    const analyzer = new PackageAnalyzer(packagePath);
     const pkg = analyzer.analyzePackage();
     ctx.module = pkg.modules.filter((m) => m.jsPath === 'module.js')[0];
   } catch (e) {
