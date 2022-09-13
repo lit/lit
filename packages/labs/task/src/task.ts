@@ -44,6 +44,8 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
+  onComplete?: (value: R) => unknown;
+  onError?: (error: unknown) => unknown;
 }
 
 // TODO(sorvell): Some issues:
@@ -109,6 +111,8 @@ export class Task<
   private _host: ReactiveControllerHost;
   private _value?: R;
   private _error?: unknown;
+  private _onComplete?: (result: R) => unknown;
+  private _onError?: (error: unknown) => unknown;
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
@@ -144,6 +148,8 @@ export class Task<
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
+    this._onComplete = taskConfig.onComplete;
+    this._onError = taskConfig.onError;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
     }
@@ -215,9 +221,11 @@ export class Task<
         if (error === undefined) {
           this.status = TaskStatus.COMPLETE;
           this._resolveTaskComplete(result as R);
+          this._onComplete?.(result as R);
         } else {
           this.status = TaskStatus.ERROR;
           this._rejectTaskComplete(error);
+          this._onError?.(error);
         }
         this._value = result as R;
         this._error = error;
