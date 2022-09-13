@@ -89,7 +89,7 @@ suite('createComponent', () => {
   };
 
   const BasicElementComponent = createComponent(
-    window.React,
+    window.React as typeof ReactModule,
     elementName,
     BasicElement,
     basicElementEvents
@@ -114,7 +114,7 @@ suite('createComponent', () => {
   */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent(
-      window.React,
+      window.React as typeof ReactModule,
       elementName,
       BasicElement,
     );
@@ -158,7 +158,7 @@ suite('createComponent', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
     const NamedComponent = createComponent(
-      window.React,
+      window.React as typeof ReactModule,
       elementName,
       BasicElement,
       basicElementEvents,
@@ -381,7 +381,7 @@ suite('createComponent', () => {
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
       // `createElement`.
-    ) as unknown) as HTMLCollection;
+    ) as unknown) as ReactModule.ReactNode;
     await renderReactComponent({children});
     assert.equal(el.childNodes.length, 1);
     assert.equal(el.firstElementChild!.localName, 'div');
