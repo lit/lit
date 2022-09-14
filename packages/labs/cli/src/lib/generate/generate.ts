@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Analyzer} from '@lit-labs/analyzer';
+import {PackageAnalyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
@@ -53,7 +53,7 @@ export const run = async (
     // Ensure separators in input paths are normalized and resolved to absolute
     const root = path.normalize(path.resolve(packageRoot)) as AbsolutePath;
     const out = path.normalize(path.resolve(outDir)) as AbsolutePath;
-    const analyzer = new Analyzer(root);
+    const analyzer = new PackageAnalyzer(root);
     const analysis = analyzer.analyzePackage();
     if (!analysis.packageJson.name) {
       throw new Error(
