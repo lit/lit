@@ -80,10 +80,9 @@ export const isLitElement = (
   if (!ts.isClassLike(node)) {
     return false;
   }
-  const type = analyzer.program
-    .getTypeChecker()
-    .getTypeAtLocation(node) as ts.InterfaceType;
-  const baseTypes = analyzer.program.getTypeChecker().getBaseTypes(type);
+  const checker = analyzer.program.getTypeChecker();
+  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
+  const baseTypes = checker.getBaseTypes(type);
   for (const t of baseTypes) {
     if (_isLitElementClassDeclaration(t)) {
       return true;
