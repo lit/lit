@@ -237,6 +237,9 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
+          // React does not correctly handle boolean attributes on
+          // a custom element. Setting `falsey` values to `null` will
+          // 'remove' an attribute from an element.
           if (v === false && this._element?.hasAttribute(k)) {
             props[k] = null;
           }

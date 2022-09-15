@@ -2,4 +2,4 @@
 '@lit-labs/react': patch
 ---
 
-Boolean attributes are now removed from an HTMLElement when they are false.
+Boolean attributes with a value of `false` are set as `null` on the component.
