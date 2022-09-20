@@ -314,6 +314,12 @@ export interface AnalyzerInterface {
   >;
   path: Pick<
     typeof import('path'),
-    'join' | 'relative' | 'dirname' | 'basename' | 'dirname' | 'parse'
+    | 'join'
+    | 'relative'
+    | 'dirname'
+    | 'basename'
+    | 'dirname'
+    | 'parse'
+    | 'normalize'
   >;
 }

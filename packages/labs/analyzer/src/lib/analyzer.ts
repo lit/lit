@@ -7,7 +7,6 @@
 import ts from 'typescript';
 import {PackageJson, AnalyzerInterface} from './model.js';
 import {AbsolutePath} from './paths.js';
-import * as path from 'path';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
 
@@ -42,7 +41,7 @@ export class Analyzer implements AnalyzerInterface {
 
   getModule(modulePath: AbsolutePath) {
     return getModule(
-      this.program.getSourceFile(path.normalize(modulePath))!,
+      this.program.getSourceFile(this.path.normalize(modulePath))!,
       this
     );
   }

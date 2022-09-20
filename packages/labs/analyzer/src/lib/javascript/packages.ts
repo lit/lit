@@ -62,7 +62,7 @@ export const getPackageInfo = (
   }
   return new PackageInfo({
     name,
-    rootDir,
+    rootDir: analyzer.path.normalize(rootDir) as AbsolutePath,
     packageJson,
   });
 };

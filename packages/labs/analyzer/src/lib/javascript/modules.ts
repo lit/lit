@@ -34,7 +34,7 @@ export const getModule = (
   // caching/invalidation.
   const {rootDir, packageJson} = packageInfo;
   const sourcePath = absoluteToPackage(
-    path.normalize(sourceFile.fileName) as AbsolutePath,
+    analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
     rootDir
   );
   const fullSourcePath = path.join(rootDir, sourcePath);
@@ -52,7 +52,10 @@ export const getModule = (
     // The jsPath appears to come out of the ts API with unix
     // separators; since sourcePath uses OS separators, normalize
     // this so that all our model paths are OS-native
-    jsPath: absoluteToPackage(path.normalize(jsPath) as AbsolutePath, rootDir),
+    jsPath: absoluteToPackage(
+      analyzer.path.normalize(jsPath) as AbsolutePath,
+      rootDir
+    ),
     sourceFile,
     packageJson,
   });

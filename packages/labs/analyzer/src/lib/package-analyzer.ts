@@ -65,7 +65,7 @@ export class PackageAnalyzer extends Analyzer {
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
-          this.program.getSourceFile(path.normalize(fileName))!,
+          this.program.getSourceFile(this.path.normalize(fileName))!,
           this,
           packageInfo
         )
