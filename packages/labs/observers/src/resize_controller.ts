@@ -85,7 +85,7 @@ export class ResizeController implements ReactiveController {
     host: ReactiveControllerHost,
     {target, config, callback, skipInitial}: ResizeControllerConfig
   ) {
-    (this._host = host).addController(this);
+    this._host = host;
     // Target defaults to `host` unless explicitly `null`.
     this._target =
       target === null ? target : target ?? (this._host as unknown as Element);
@@ -103,6 +103,7 @@ export class ResizeController implements ReactiveController {
       this.handleChanges(entries);
       this._host.requestUpdate();
     });
+    host.addController(this);
   }
 
   /**
