@@ -35,7 +35,7 @@ const generateMeasure = async (sync = false) => {
 
 const observerComplete = async (el?: HTMLElement) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (el as any)?.observer.flush();
+  (el as any)?.observer?.flush();
   await nextFrame();
   await nextFrame();
 };
@@ -230,5 +230,43 @@ const canTest = () => {
     await generateMeasure();
     await observerComplete(el);
     assert.match(el.observerValue as string, /2:[\d]/);
+  });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: PerformanceController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new PerformanceController(this, {
+          config: {entryTypes: ['measure']},
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports measure
+    el.resetObserverValue();
+    await generateMeasure();
+    await observerComplete(el);
+    assert.isTrue(el.observerValue);
+
+    // Reports another measure after noop update
+    el.resetObserverValue();
+    el.requestUpdate();
+    await observerComplete(el);
+    assert.isUndefined(el.observerValue);
+    await generateMeasure();
+    await observerComplete(el);
+    assert.isTrue(el.observerValue);
   });
 });
