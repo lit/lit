@@ -233,9 +233,8 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           continue;
         }
 
-        // Only set elementProps that exist remaning properties of
-        // the web component prototype after the intersection of the
-        // web component and the HTMLElement.
+        // Only set elementProps that remain on the web component prototype
+        // after the intersection of the web component and the HTMLElement.
         if (
           eventProps.has(k) ||
           (k in elementClass.prototype && !(k in HTMLElement.prototype))
@@ -244,12 +243,13 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           continue;
         }
 
-        // The remaining properties are a union of reserved react properties
-        // and the properties of the HTMLElement prototype after
+        // Next are the remaining properties of the HTMLElement prototype after
         // the intersection of the web component and the HTMLElement.
         //
-        // Here we watch for a handful of _known_ boolean attributes that
-        // when false must be removed from the web component.
+        // We interrogate for a handful of _known_ boolean attributes
+        // that must be removed from the web component when false.
+        //
+        // This logic should be removed entirely in React 19+
         if (
           k in HTMLElement.prototype &&
           (k === 'hidden' || k === 'disabled' || k === 'inert') &&
@@ -259,7 +259,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           continue;
         }
 
-        // Remaining props are properties React will handle correctly in VDOM
+        // Remaining props are properties React will handle correctly in VDOM.
         props[k] = v;
       }
 
