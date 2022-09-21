@@ -399,4 +399,38 @@ const canTest = () => {
     await intersectionComplete();
     assert.isTrue(el.observerValue);
   });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: IntersectionController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new IntersectionController(this, {});
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports change when not intersecting
+    el.resetObserverValue();
+    intersectOut(el);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change when intersecting
+    el.resetObserverValue();
+    assert.isUndefined(el.observerValue);
+    intersectIn(el);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
 });
