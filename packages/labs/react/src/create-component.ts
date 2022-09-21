@@ -229,6 +229,8 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
 
         // Reserved react properties are set to props
         if (reservedReactProperties.has(k)) {
+          // React does *not* handle `className` for custom elements so
+          // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
           continue;
         }
@@ -252,7 +254,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
         // This logic should be removed entirely in React 19+
         if (
           k in HTMLElement.prototype &&
-          (k === 'hidden' || k === 'disabled' || k === 'inert') &&
+          (k === 'hidden' || k === 'inert') &&
           (v === undefined || v === false)
         ) {
           this._element?.removeAttribute(k);
