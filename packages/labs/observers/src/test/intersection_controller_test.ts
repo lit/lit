@@ -24,10 +24,16 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
-// TODO: disable these tests until can figure out issues with Sauce Safari
-// version. They do pass on latest Safari locally.
-//(window.IntersectionObserver ? suite : suite.skip)
-suite.skip('IntersectionController', () => {
+const canTest = () => {
+  // TODO: disable tests on Sauce Safari until can figure out issues.
+  // The tests pass on latest Safari locally.
+  const isSafari =
+    navigator.userAgent.includes('Safari/') &&
+    navigator.userAgent.includes('Version/');
+  return !isSafari && window.IntersectionObserver;
+};
+
+(canTest() ? suite : suite.skip)('IntersectionController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
@@ -91,6 +97,8 @@ suite.skip('IntersectionController', () => {
   const intersectionComplete = async () => {
     await nextFrame();
     await nextFrame();
+    // For Firefox to pass tests we need a setTimeout.
+    await new Promise((resolve) => setTimeout(resolve, 0));
   };
 
   const intersectOut = (el: HTMLElement) => {
