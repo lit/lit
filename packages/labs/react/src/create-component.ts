@@ -160,6 +160,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       if (this._element === null) {
         return;
       }
+
       // Set element properties to the values in `this.props`
       for (const prop in this._elementProps) {
         setProperty(
@@ -228,11 +229,12 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
 
         if (
           eventProps.has(k) ||
-          (!reservedReactProperties.has(k) &&
-            !(k in HTMLElement.prototype) &&
-            k in elementClass.prototype)
+          (!reservedReactProperties.has(k) && k in elementClass.prototype)
         ) {
           this._elementProps[k] = v;
+          if (v === undefined) {
+            this._elementProps[k] = null;
+          }
         } else {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
@@ -240,9 +242,9 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           // React does not correctly handle boolean attributes on
           // a custom element. Setting `falsey` values to `null` will
           // 'remove' an attribute from an element.
-          if (v === false && this._element?.hasAttribute(k)) {
-            props[k] = null;
-          }
+          // if (v === false && this._element?.hasAttribute(k)) {
+          //   props[k] = null;
+          // }
         }
       }
       return createElement(tagName, props);

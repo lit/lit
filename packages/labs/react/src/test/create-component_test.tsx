@@ -213,16 +213,23 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('id'), 'id2');
   });
 
-  test('can remove boolean attributes', async () => {
-    await renderReactComponent({});
-    assert.equal(el.getAttribute('hidden'), null);
-    await renderReactComponent({hidden: undefined});
-    assert.equal(el.getAttribute('hidden'), null);
-    await renderReactComponent({hidden: true});
-    assert.equal(el.getAttribute('hidden'), 'true');
-    await renderReactComponent({hidden: false});
-    assert.equal(el.getAttribute('hidden'), null);
-  });
+  // test('property logic', async () => {
+  //   // test logic for grabbing a property
+  //   const 
+  //   if (!reservedReactProperties.has(k) &&
+  //     k in BasicElement.prototype)
+  // });
+
+  // test('can remove boolean attributes', async () => {
+  //   await renderReactComponent({});
+  //   assert.equal(el.getAttribute('hidden'), null);
+  //   await renderReactComponent({hidden: undefined});
+  //   assert.equal(el.getAttribute('hidden'), null);
+  //   await renderReactComponent({hidden: true});
+  //   assert.equal(el.getAttribute('hidden'), 'true');
+  //   await renderReactComponent({hidden: false});
+  //   assert.equal(el.getAttribute('hidden'), null);
+  // });
 
   test('can set properties', async () => {
     let o = {foo: true};
