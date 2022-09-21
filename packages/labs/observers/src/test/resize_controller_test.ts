@@ -12,6 +12,7 @@ import {
 import {
   ResizeController,
   ResizeControllerConfig,
+  ResizeValueCallback,
 } from '@lit-labs/observers/resize_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -46,7 +47,10 @@ if (DEV_MODE) {
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new ResizeController(this, config);
+        this.observer = new ResizeController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -377,13 +381,15 @@ if (DEV_MODE) {
 
   test('can observe changes when initialized after host connected', async () => {
     class TestFirstUpdated extends ReactiveElement {
-      observer!: ResizeController;
+      observer!: ResizeController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
-        this.observer = new ResizeController(this, {});
+        this.observer = new ResizeController(this, {
+          callback: () => true,
+        });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -408,16 +414,17 @@ if (DEV_MODE) {
     const d = document.createElement('div');
     container.appendChild(d);
     class A extends ReactiveElement {
-      observer!: ResizeController;
+      observer!: ResizeController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
         this.observer = new ResizeController(this, {
           target: d,
           skipInitial: true,
+          callback: () => true,
         });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -437,5 +444,36 @@ if (DEV_MODE) {
     resizeElement(d);
     await resizeComplete();
     assert.isTrue(el.observerValue);
+  });
+
+  test.skip('ResizeController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement();
+    const A = new ResizeController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new ResizeController(el, {
+      callback: () => '',
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new ResizeController(el, {}) as ResizeController<string>;
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: ResizeValueCallback<string | null> = () => '';
+    const D = new ResizeController(el, {callback: narrowTypeCb});
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
   });
 });
