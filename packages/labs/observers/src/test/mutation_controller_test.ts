@@ -368,4 +368,43 @@ const canTest =
     await nextFrame();
     assert.isTrue(el.observerValue);
   });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: MutationController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new MutationController(this, {
+          config: {attributes: true},
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports attribute change
+    el.resetObserverValue();
+    el.setAttribute('hi', 'hi');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+
+    // Reports another attribute change
+    el.resetObserverValue();
+    el.requestUpdate();
+    await nextFrame();
+    assert.isUndefined(el.observerValue);
+    el.setAttribute('bye', 'bye');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
 });
