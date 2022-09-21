@@ -36,6 +36,10 @@ class BasicElement extends ReactiveElement {
   @property({type: Array})
   arr: unknown[] | null | undefined = null;
 
+  // override a default property
+  @property({type: Boolean})
+  disabled = false;
+
   @property({type: Boolean, reflect: true})
   rbool = false;
   @property({type: String, reflect: true})
@@ -213,23 +217,27 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('id'), 'id2');
   });
 
-  // test('property logic', async () => {
-  //   // test logic for grabbing a property
-  //   const 
-  //   if (!reservedReactProperties.has(k) &&
-  //     k in BasicElement.prototype)
-  // });
+  test('can remove boolean attributes', async () => {
+    await renderReactComponent({});
+    assert.equal(el.getAttribute('hidden'), null);
+    await renderReactComponent({hidden: undefined});
+    assert.equal(el.getAttribute('hidden'), null);
+    await renderReactComponent({hidden: true});
+    assert.equal(el.getAttribute('hidden'), 'true');
+    await renderReactComponent({hidden: false});
+    assert.equal(el.getAttribute('hidden'), null);
 
-  // test('can remove boolean attributes', async () => {
-  //   await renderReactComponent({});
-  //   assert.equal(el.getAttribute('hidden'), null);
-  //   await renderReactComponent({hidden: undefined});
-  //   assert.equal(el.getAttribute('hidden'), null);
-  //   await renderReactComponent({hidden: true});
-  //   assert.equal(el.getAttribute('hidden'), 'true');
-  //   await renderReactComponent({hidden: false});
-  //   assert.equal(el.getAttribute('hidden'), null);
-  // });
+    // do not remove overriden boolean attributes on web component prototypes
+    await renderReactComponent({});
+    assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, false);
+    await renderReactComponent({disabled: true});
+    assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, true);
+    await renderReactComponent({disabled: false});
+    assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, false);
+  });
 
   test('can set properties', async () => {
     let o = {foo: true};
