@@ -51,9 +51,16 @@ const observerComplete = async (el?: HTMLElement) => {
 //   return ok;
 // };
 
-// TODO: disable these tests until can figure out issues with Sauce Safari
-// version. They do pass on latest Safari locally.
-suite.skip('PerformanceController', () => {
+const canTest = () => {
+  // TODO: disable tests on Sauce Safari until can figure out issues.
+  // The tests pass on latest Safari locally.
+  const isSafari =
+    navigator.userAgent.includes('Safari/') &&
+    navigator.userAgent.includes('Version/');
+  return !isSafari && window.PerformanceObserver;
+};
+
+(canTest() ? suite : suite.skip)('PerformanceController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
