@@ -57,7 +57,7 @@ const canTest = () => {
   const isSafari =
     navigator.userAgent.includes('Safari/') &&
     navigator.userAgent.includes('Version/');
-  return !isSafari;
+  return !isSafari && window.PerformanceObserver;
 };
 
 (canTest() ? suite : suite.skip)('PerformanceController', () => {

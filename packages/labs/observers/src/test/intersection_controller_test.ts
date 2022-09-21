@@ -98,7 +98,7 @@ const canTest = () => {
     // For Firefox to pass tests we require three frames!
     await nextFrame();
     await nextFrame();
-    await nextFrame();
+    await new Promise((resolve) => setTimeout(resolve, 0));
   };
 
   const intersectOut = (el: HTMLElement) => {
