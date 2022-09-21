@@ -95,9 +95,9 @@ const canTest = () => {
   };
 
   const intersectionComplete = async () => {
-    // For Firefox to pass tests we require three frames!
     await nextFrame();
     await nextFrame();
+    // For Firefox to pass tests we need a setTimeout.
     await new Promise((resolve) => setTimeout(resolve, 0));
   };
 
