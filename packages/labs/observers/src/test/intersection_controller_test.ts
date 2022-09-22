@@ -12,6 +12,7 @@ import {
 import {
   IntersectionController,
   IntersectionControllerConfig,
+  IntersectionValueCallback,
 } from '@lit-labs/observers/intersection_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -55,7 +56,10 @@ const canTest = () => {
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new IntersectionController(this, config);
+        this.observer = new IntersectionController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -402,13 +406,15 @@ const canTest = () => {
 
   test('can observe changes when initialized after host connected', async () => {
     class TestFirstUpdated extends ReactiveElement {
-      observer!: IntersectionController;
+      observer!: IntersectionController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
-        this.observer = new IntersectionController(this, {});
+        this.observer = new IntersectionController(this, {
+          callback: () => true,
+        });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -438,16 +444,17 @@ const canTest = () => {
     const d = document.createElement('div');
     container.appendChild(d);
     class A extends ReactiveElement {
-      observer!: IntersectionController;
+      observer!: IntersectionController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
         this.observer = new IntersectionController(this, {
           target: d,
           skipInitial: true,
+          callback: () => true,
         });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -467,5 +474,39 @@ const canTest = () => {
     intersectIn(d);
     await intersectionComplete();
     assert.isTrue(el.observerValue);
+  });
+
+  test.skip('IntersectionController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement();
+    const A = new IntersectionController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new IntersectionController(el, {
+      callback: () => '',
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new IntersectionController(
+      el,
+      {} as IntersectionController<string>
+    );
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: IntersectionValueCallback<string | null> = () => '';
+    const D = new IntersectionController(el, {callback: narrowTypeCb});
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
   });
 });
