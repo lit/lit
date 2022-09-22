@@ -105,7 +105,7 @@ const ssrResult = render(html`
       <app-shell>
         <app-page-one></app-page-one>
         <app-page-two></app-page-two>
-      </app-component>
+      </app-shell>
 
       <script type="module">
         // Hydrate template-shadowroots eagerly after rendering (for browsers without
