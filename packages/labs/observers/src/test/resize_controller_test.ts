@@ -403,4 +403,39 @@ if (DEV_MODE) {
     await resizeComplete();
     assert.isTrue(el.observerValue);
   });
+
+  test('can observe external element after host connected', async () => {
+    const d = document.createElement('div');
+    container.appendChild(d);
+    class A extends ReactiveElement {
+      observer!: ResizeController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new ResizeController(this, {
+          target: d,
+          skipInitial: true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const el = (await renderTestElement(A)) as A;
+
+    assert.equal(el.observerValue, undefined);
+    resizeElement(d);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+
+    // Change again
+    el.resetObserverValue();
+    assert.equal(el.observerValue, undefined);
+    resizeElement(d);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+  });
 });

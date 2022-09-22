@@ -433,4 +433,39 @@ const canTest = () => {
     await intersectionComplete();
     assert.isTrue(el.observerValue);
   });
+
+  test('can observe external element after host connected', async () => {
+    const d = document.createElement('div');
+    container.appendChild(d);
+    class A extends ReactiveElement {
+      observer!: IntersectionController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new IntersectionController(this, {
+          target: d,
+          skipInitial: true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const el = (await renderTestElement(A)) as A;
+
+    assert.equal(el.observerValue, undefined);
+    // Observe intersect out
+    intersectOut(d);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+
+    // Observe intersect in
+    intersectIn(d);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
 });

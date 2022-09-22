@@ -407,4 +407,36 @@ const canTest =
     await nextFrame();
     assert.isTrue(el.observerValue);
   });
+
+  test('can observe external element after host connected', async () => {
+    class A extends ReactiveElement {
+      observer!: MutationController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new MutationController(this, {
+          target: document.body,
+          config: {childList: true},
+          skipInitial: true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+
+    const el = (await renderTestElement(A)) as A;
+    assert.equal(el.observerValue, undefined);
+    const d = document.createElement('div');
+    document.body.appendChild(d);
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+    d.remove();
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
 });
