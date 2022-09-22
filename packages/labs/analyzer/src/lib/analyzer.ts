@@ -5,10 +5,11 @@
  */
 
 import ts from 'typescript';
-import {PackageJson, AnalyzerInterface} from './model.js';
+import {Package, PackageJson, AnalyzerInterface} from './model.js';
 import {AbsolutePath} from './paths.js';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
+import {getPackageInfo} from './javascript/packages.js';
 
 export interface AnalyzerInit {
   getProgram: () => ts.Program;
@@ -44,6 +45,26 @@ export class Analyzer implements AnalyzerInterface {
       this.program.getSourceFile(this.path.normalize(modulePath))!,
       this
     );
+  }
+
+  getPackage() {
+    const rootFileNames = this.program.getRootFileNames();
+
+    // Find the package.json for this package based on the first root filename
+    // in the program (we assume all root files in a program belong to the same
+    // package)
+    const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
+
+    return new Package({
+      ...packageInfo,
+      modules: rootFileNames.map((fileName) =>
+        getModule(
+          this.program.getSourceFile(this.path.normalize(fileName))!,
+          this,
+          packageInfo
+        )
+      ),
+    });
   }
 }
 

@@ -10,9 +10,9 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {PackageAnalyzer, AbsolutePath} from '../index.js';
+import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../index.js';
 
-const test = suite<{analyzer: PackageAnalyzer; packagePath: AbsolutePath}>(
+const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'Basic Analyzer tests'
 );
 
@@ -21,7 +21,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../test-files/basic-elements', import.meta.url).href
     ) as AbsolutePath);
-    ctx.analyzer = new PackageAnalyzer(packagePath);
+    ctx.analyzer = createPackageAnalyzer(packagePath);
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
@@ -40,7 +40,7 @@ test('Reads project files', ({analyzer, packagePath}) => {
 });
 
 test('Analyzer finds class declarations', ({analyzer}) => {
-  const result = analyzer.analyzePackage();
+  const result = analyzer.getPackage();
   const elementAModule = result.modules.find(
     (m) => m.sourcePath === path.normalize('src/class-a.ts')
   );

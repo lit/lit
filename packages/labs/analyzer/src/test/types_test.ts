@@ -11,7 +11,7 @@ import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 
 import {
-  PackageAnalyzer,
+  createPackageAnalyzer,
   AbsolutePath,
   Module,
   VariableDeclaration,
@@ -27,8 +27,8 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../test-files/types', import.meta.url).href
     ) as AbsolutePath);
-    const analyzer = new PackageAnalyzer(packagePath);
-    const pkg = analyzer.analyzePackage();
+    const analyzer = createPackageAnalyzer(packagePath);
+    const pkg = analyzer.getPackage();
     ctx.module = pkg.modules.filter((m) => m.jsPath === 'module.js')[0];
   } catch (e) {
     // Uvu has a bug where it silently ignores failures in before and after,

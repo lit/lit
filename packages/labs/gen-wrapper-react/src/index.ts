@@ -24,8 +24,8 @@ export const getCommand = () => {
     name: 'react',
     description: 'Generate React wrapper components from Lit elements',
     kind: 'resolved',
-    async generate(options: {analysis: Package}): Promise<FileTree> {
-      return await generateReactWrapper(options.analysis);
+    async generate(options: {package: Package}): Promise<FileTree> {
+      return await generateReactWrapper(options.package);
     },
   };
 };

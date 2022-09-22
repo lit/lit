@@ -5,7 +5,7 @@
  */
 
 export {Analyzer} from './lib/analyzer.js';
-export {PackageAnalyzer} from './lib/package-analyzer.js';
+export {createPackageAnalyzer} from './lib/analyze-package.js';
 
 export type {
   Package,

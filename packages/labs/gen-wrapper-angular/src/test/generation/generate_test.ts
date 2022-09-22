@@ -9,7 +9,7 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import {PackageAnalyzer} from '@lit-labs/analyzer';
+import {createPackageAnalyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
@@ -32,9 +32,9 @@ test('basic wrapper generation', async () => {
     fs.rmSync(outputPackage, {recursive: true});
   }
 
-  const analyzer = new PackageAnalyzer(inputPackage as AbsolutePath);
-  const analysis = analyzer.analyzePackage();
-  await writeFileTree(outputFolder, await generateAngularWrapper(analysis));
+  const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
+  const pkg = analyzer.getPackage();
+  await writeFileTree(outputFolder, await generateAngularWrapper(pkg));
 
   const wrapperSourceFile = fs.readFileSync(
     path.join(outputPackage, 'src', 'element-a.ts')
