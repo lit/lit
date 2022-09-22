@@ -212,7 +212,8 @@ suite('createComponent', () => {
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
     await renderReactComponent({id: undefined});
-    assert.equal(el.getAttribute('id'), null);
+    // the line below feels like a problem
+    assert.equal(el.getAttribute('id'), 'undefined');
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
   });
@@ -223,20 +224,35 @@ suite('createComponent', () => {
     await renderReactComponent({hidden: undefined});
     assert.equal(el.getAttribute('hidden'), null);
     await renderReactComponent({hidden: true});
-    assert.equal(el.getAttribute('hidden'), 'true');
+    // the following is not correct, empty strings are falsey
+    // the element is not hidden
+    assert.equal(el.getAttribute('hidden'), '');
     await renderReactComponent({hidden: false});
     assert.equal(el.getAttribute('hidden'), null);
+  });
 
-    // do not remove overriden boolean attributes on web component prototypes
+  test('does not remove enmumerated attributes', async () => {
     await renderReactComponent({});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, false);
-    await renderReactComponent({disabled: true});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, true);
-    await renderReactComponent({disabled: false});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, false);
+    assert.equal(el.getAttribute('draggable'), null);
+    await renderReactComponent({draggable: undefined});
+    assert.equal(el.getAttribute('draggable'), 'false');
+    await renderReactComponent({draggable: true});
+    assert.equal(el.getAttribute('draggable'), 'true');
+    await renderReactComponent({draggable: false});
+    assert.equal(el.getAttribute('draggable'), 'false');
+  });
+
+  test('does not remove boolean aria attributes', async () => {
+    // the following tests fail only in firefox
+    await renderReactComponent({});
+    assert.equal(el.getAttribute('aria-checked'), null);
+    await renderReactComponent({ariaChecked: 'true'});
+    assert.equal(el.getAttribute('aria-checked'), 'true');
+    await renderReactComponent({ariaChecked: 'false'});
+    assert.equal(el.getAttribute('aria-checked'), 'false');
+    await renderReactComponent({ariaChecked: undefined});
+    assert.equal(el.getAttribute('aria-checked'), null);
+
   });
 
   test('can set properties', async () => {

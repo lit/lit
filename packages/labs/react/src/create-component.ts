@@ -160,7 +160,6 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       if (this._element === null) {
         return;
       }
-
       // Set element properties to the values in `this.props`
       for (const prop in this._elementProps) {
         setProperty(
@@ -227,44 +226,17 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        // Reserved react properties are set to props
-        if (reservedReactProperties.has(k)) {
+        if (
+          eventProps.has(k) ||
+          (!reservedReactProperties.has(k) && k in elementClass.prototype)
+        ) {
+          this._elementProps[k] = v;
+        } else {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
-          continue;
         }
-
-        // Only set elementProps that remain on the web component prototype
-        // after the intersection of the web component and the HTMLElement.
-        if (
-          eventProps.has(k) ||
-          (k in elementClass.prototype && !(k in HTMLElement.prototype))
-        ) {
-          this._elementProps[k] = v;
-          continue;
-        }
-
-        // Next are the remaining properties of the HTMLElement prototype after
-        // the intersection of the web component and the HTMLElement.
-        //
-        // We interrogate for a handful of _known_ boolean attributes
-        // that must be removed from the web component when false.
-        //
-        // This logic should be removed entirely in React 19+
-        if (
-          k in HTMLElement.prototype &&
-          (k === 'hidden' || k === 'inert') &&
-          (v === undefined || v === false)
-        ) {
-          this._element?.removeAttribute(k);
-          continue;
-        }
-
-        // Remaining props are properties React will handle correctly in VDOM.
-        props[k] = v;
       }
-
       return createElement(tagName, props);
     }
   }
