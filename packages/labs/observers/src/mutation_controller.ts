@@ -11,14 +11,14 @@ import {
 /**
  * The callback function for a MutationController.
  */
-export type MutationValueCallback = (
+export type MutationValueCallback<T = unknown> = (
   ...args: Parameters<MutationCallback>
-) => unknown;
+) => T;
 
 /**
  * The config options for a MutationController.
  */
-export interface MutationControllerConfig {
+export interface MutationControllerConfig<T = unknown> {
   /**
    * Configuration object for the MutationObserver.
    */
@@ -35,7 +35,7 @@ export interface MutationControllerConfig {
    * The callback used to process detected changes into a value stored
    * in the controller's `value` property.
    */
-  callback?: MutationValueCallback;
+  callback?: MutationValueCallback<T>;
   /**
    * By default the `callback` is called without changes when a target is
    * observed. This is done to help manage initial state, but this
@@ -59,7 +59,7 @@ export interface MutationControllerConfig {
  * used to process the result into a value which is stored on the controller.
  * The controller's `value` is usable during the host's update cycle.
  */
-export class MutationController implements ReactiveController {
+export class MutationController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _target: Element | null;
   private _config: MutationObserverInit;
@@ -76,15 +76,15 @@ export class MutationController implements ReactiveController {
    * The result of processing the observer's changes via the `callback`
    * function.
    */
-  value?: unknown;
+  value?: T;
   /**
    * Function that returns a value processed from the observer's changes.
    * The result is stored in the `value` property.
    */
-  callback: MutationValueCallback = () => true;
+  callback?: MutationValueCallback<T>;
   constructor(
     host: ReactiveControllerHost,
-    {target, config, callback, skipInitial}: MutationControllerConfig
+    {target, config, callback, skipInitial}: MutationControllerConfig<T>
   ) {
     this._host = host;
     // Target defaults to `host` unless explicitly `null`.
@@ -92,7 +92,7 @@ export class MutationController implements ReactiveController {
       target === null ? target : target ?? (this._host as unknown as Element);
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
-    this.callback = callback ?? this.callback;
+    this.callback = callback;
     // Check browser support.
     if (!window.MutationObserver) {
       console.warn(
@@ -112,7 +112,7 @@ export class MutationController implements ReactiveController {
    * function to produce a result stored in the `value` property.
    */
   protected handleChanges(records: MutationRecord[]) {
-    this.value = this.callback(records, this._observer);
+    this.value = this.callback?.(records, this._observer);
   }
 
   hostConnected() {
