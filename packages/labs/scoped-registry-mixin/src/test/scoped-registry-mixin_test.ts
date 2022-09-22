@@ -18,48 +18,48 @@ export const canTest =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).ShadowRootInit;
 
-class SimpleGreeting extends LitElement {
-  private name: String;
-
-  static override get properties() {
-    return {name: {type: String}};
-  }
-
-  constructor() {
-    super();
-
-    this.name = 'World';
-  }
-
-  override render() {
-    return html`<span>hello ${this.name}!</span>`;
-  }
-}
-
-class ScopedComponent extends ScopedRegistryHost(LitElement) {
-  static elementDefinitions = {
-    'simple-greeting': SimpleGreeting,
-  };
-
-  static override get styles() {
-    return css`
-      :host {
-        color: #ff0000;
-      }
-    `;
-  }
-
-  override render() {
-    return html` <simple-greeting
-      id="greeting"
-      name="scoped world"
-    ></simple-greeting>`;
-  }
-}
-
-customElements.define('scoped-component', ScopedComponent);
-
 (canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
+  class SimpleGreeting extends LitElement {
+    private name: String;
+
+    static override get properties() {
+      return {name: {type: String}};
+    }
+
+    constructor() {
+      super();
+
+      this.name = 'World';
+    }
+
+    override render() {
+      return html`<span>hello ${this.name}!</span>`;
+    }
+  }
+
+  class ScopedComponent extends ScopedRegistryHost(LitElement) {
+    static elementDefinitions = {
+      'simple-greeting': SimpleGreeting,
+    };
+
+    static override get styles() {
+      return css`
+        :host {
+          color: #ff0000;
+        }
+      `;
+    }
+
+    override render() {
+      return html` <simple-greeting
+        id="greeting"
+        name="scoped world"
+      ></simple-greeting>`;
+    }
+  }
+
+  customElements.define('scoped-component', ScopedComponent);
+
   test(`host element should have a registry`, async () => {
     const container = document.createElement('div');
     container.innerHTML = `<scoped-component></scoped-component>`;
