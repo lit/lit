@@ -5,7 +5,6 @@
  */
 
 import ts from 'typescript';
-import path from 'path';
 import {DiagnosticsError} from './errors.js';
 import {AnalyzerInterface, Reference} from './model.js';
 import {getModule} from './javascript/modules.js';
@@ -45,6 +44,7 @@ export function getReferenceForSymbol(
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): Reference {
+  const {path} = analyzer;
   const {name} = symbol;
   // TODO(kschaaf): Do we need to check other declarations? The assumption is
   // that even with multiple declarations (e.g. because of class interface +

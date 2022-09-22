@@ -68,6 +68,15 @@ export class Analyzer implements AnalyzerInterface {
   }
 }
 
+/**
+ * Extracts a `ts.ParsedCommandLine` (essentially, the key bits of a
+ * `tsconfig.json`) from the analyzer's `ts.Program`.
+ *
+ * The `ts.getOutputFileNames()` function must be passed a
+ * `ts.ParsedCommandLine`; since not all usages of the analyzer create the
+ * program directly from a tsconfig (plugins get passed the program only),
+ * this allows backing the `ParsedCommandLine` out of an existing program.
+ */
 export const getCommandLineFromProgram = (analyzer: Analyzer) => {
   const compilerOptions = analyzer.program.getCompilerOptions();
   const commandLine = ts.parseJsonConfigFileContent(
