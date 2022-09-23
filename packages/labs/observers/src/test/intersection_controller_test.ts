@@ -399,4 +399,73 @@ const canTest = () => {
     await intersectionComplete();
     assert.isTrue(el.observerValue);
   });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: IntersectionController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new IntersectionController(this, {});
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports change when not intersecting
+    el.resetObserverValue();
+    intersectOut(el);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change when intersecting
+    el.resetObserverValue();
+    assert.isUndefined(el.observerValue);
+    intersectIn(el);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe external element after host connected', async () => {
+    const d = document.createElement('div');
+    container.appendChild(d);
+    class A extends ReactiveElement {
+      observer!: IntersectionController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new IntersectionController(this, {
+          target: d,
+          skipInitial: true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const el = (await renderTestElement(A)) as A;
+
+    assert.equal(el.observerValue, undefined);
+    // Observe intersect out
+    intersectOut(d);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+
+    // Observe intersect in
+    intersectIn(d);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
 });
