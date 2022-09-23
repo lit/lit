@@ -34,7 +34,7 @@ export const makeInitCommand = (cli: LitCli): Command => {
           {
             name: 'name',
             defaultValue: 'my-element',
-            description: 'Name of the Element to generate.',
+            description: 'Tag name of the Element to generate.',
           },
         ],
         async run(options: CommandOptions, console: Console) {
