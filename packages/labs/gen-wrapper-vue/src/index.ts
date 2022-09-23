@@ -22,8 +22,8 @@ export const getCommand = () => {
     name: 'vue',
     description: 'Generate Vue wrapper components from Lit elements',
     kind: 'resolved',
-    async generate(options: {analysis: Package}): Promise<FileTree> {
-      return generateVueWrapper(options.analysis);
+    async generate(options: {package: Package}): Promise<FileTree> {
+      return generateVueWrapper(options.package);
     },
   };
 };
