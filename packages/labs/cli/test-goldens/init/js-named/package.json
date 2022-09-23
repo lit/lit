@@ -5,27 +5,15 @@
   "type": "module",
   "main": "lib/le-element.js",
   "scripts": {
-    "serve": "wds --node-resolve -onw"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/<USERNAME>/le-element.git"
+    "serve": "wds --node-resolve -nwo demo"
   },
   "keywords": [
-    "web-components",
+    "web-component",
     "lit-element",
-    "javascript",
-    "typescript",
     "lit"
   ],
-  "author": "<YOUR NAME>",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/<USERNAME>>/le-element/issues"
-  },
-  "homepage": "https://github.com/<USERNAME>>/le-element#readme",
   "dependencies": {
-    "lit": "^2.3.0"
+    "lit": "^2.2.8"
   },
   "devDependencies": {
     "@web/dev-server": "^0.1.32"

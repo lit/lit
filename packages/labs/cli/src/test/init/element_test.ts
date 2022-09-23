@@ -94,6 +94,25 @@ test('element generation named', async ({rig, testConsole}) => {
   );
 });
 
+test('element generation invalid name', async ({rig, testConsole}) => {
+  await symlinkAllCommands(rig);
+  const cli = new LitCli(['init', 'element', '--name', 'element'], {
+    cwd: rig.rootDir,
+    console: testConsole,
+  });
+  testConsole.alsoLogToGlobalConsole = true;
+  let errorThrown = false;
+
+  try {
+    await cli.run();
+  } catch {
+    // Expected
+    errorThrown = true;
+  }
+
+  assert.ok(errorThrown, 'No invalid name error thrown');
+});
+
 test('element generation TS named', async ({rig, testConsole}) => {
   await symlinkAllCommands(rig);
   const cli = new LitCli(
@@ -111,6 +130,26 @@ test('element generation TS named', async ({rig, testConsole}) => {
   await assertGoldensMatch(
     path.join(rig.rootDir, 'el-element'),
     path.join('test-goldens/init', 'ts-named'),
+    {
+      noFormat: true,
+    }
+  );
+});
+
+test('default config in subdirectory', async ({rig, testConsole}) => {
+  await symlinkAllCommands(rig);
+  const cli = new LitCli(['init', 'element', '--dir', 'subdir'], {
+    cwd: rig.rootDir,
+    console: testConsole,
+  });
+  testConsole.alsoLogToGlobalConsole = true;
+  await cli.run();
+
+  assert.equal(testConsole.errorStream.buffer.join(''), '');
+
+  await assertGoldensMatch(
+    path.join(rig.rootDir, 'subdir', 'my-element'),
+    path.join('test-goldens/init', 'js'),
     {
       noFormat: true,
     }

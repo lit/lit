@@ -19,7 +19,6 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "importHelpers": true,
     "noImplicitOverride": true,
     "useDefineForClassFields": false
   },

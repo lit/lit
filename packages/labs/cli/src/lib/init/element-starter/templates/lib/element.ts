@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {
   javascript,
@@ -13,20 +19,21 @@ export const generateElement = (
   return {
     [directory]: {
       [`${elementName}.${language}`]:
-        language === 'js' ? js(elementName) : ts(elementName),
+        language === 'js'
+          ? generateTemplate(elementName, language)
+          : generateTemplate(elementName, language),
     },
   };
 };
 
-const js = (elementName: string) => {
+const generateTemplate = (elementName: string, lang: Language) => {
   const className = kabobToPascalCase(elementName);
-  return javascript`/**
- * @license
- * Copyright 2022 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-import { LitElement, html, css } from 'lit';
+  return javascript`import {LitElement, html, css} from 'lit';${
+    lang === 'js'
+      ? ''
+      : `
+import {property, customElement} from 'lit/decorators.js';`
+  }
 
 /**
  * An example element.
@@ -34,27 +41,30 @@ import { LitElement, html, css } from 'lit';
  * @fires count-changed - Indicates when the count changes
  * @slot - This element has a slot
  * @csspart button - The button
- */
+ * @cssprop --${elementName}-font-size - The button's font size
+ */${
+   lang === 'js'
+     ? ''
+     : `
+@customElement('${elementName}')`
+ }
 export class ${className} extends LitElement {
-  static get styles() {
-    return css\`
-      :host {
-        display: block;
-        border: solid 1px gray;
-        padding: 16px;
-        max-width: 800px;
-      }
-    \`;
-  }
+  static ${lang === 'js' ? '' : 'override '}styles = css\`
+    :host {
+      display: block;
+      border: solid 1px gray;
+      padding: 16px;
+    }
 
-  static get properties() {
+    button {
+      font-size: var(--${elementName}-font-size, 16px);
+    }
+  \`;
+
+  ${
+    lang === 'js'
+      ? `static get properties() {
     return {
-      /**
-       * The name to say "Hello" to.
-       * @type {string}
-       */
-      name: {type: String},
-
       /**
        * The number of times the button has been clicked.
        * @type {number}
@@ -65,82 +75,18 @@ export class ${className} extends LitElement {
 
   constructor() {
     super();
-    this.name = 'World';
     this.count = 0;
-  }
-
-  render() {
-    return html\`
-      <h1>\${this._sayHello()}!</h1>
-      <button @click=\${this._onClick} part="button">
-        Click Count: \${this.count}
-      </button>
-      <slot></slot>
-    \`;
-  }
-
-  _onClick() {
-    this.count++;
-    this.dispatchEvent(new CustomEvent('count-changed'));
-  }
-
-  /**
-   * Formats a greeting
-   * @returns {string} A greeting directed at \`name\`
-   */
-  _sayHello() {
-    return html\`Hello, \${this.name}\`;
-  }
-}
-
-window.customElements.define('${elementName}', ${className});
-`;
-};
-
-const ts = (elementName: string) => {
-  const className = kabobToPascalCase(elementName);
-  return javascript`/**
- * @license
- * Copyright 2022 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-import { LitElement, html, css } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
-
-/**
- * An example element.
- *
- * @fires count-changed - Indicates when the count changes
- * @slot - This element has a slot
- * @csspart button - The button
- */
-@customElement('${elementName}')
-export class ${className} extends LitElement {
-  static override styles = css\`
-    :host {
-      display: block;
-      border: solid 1px gray;
-      padding: 16px;
-      max-width: 800px;
-    }
-  \`;
-
-  /**
-   * The name to say "Hello" to.
-   */
-  @property()
-  name = 'World';
-
-  /**
+  }`
+      : `/**
    * The number of times the button has been clicked.
    */
-  @property({ type: Number })
-  count = 0;
+  @property({type: Number})
+  count = 0;`
+  }
 
-  override render() {
+  ${lang === 'js' ? '' : 'override '}render() {
     return html\`
-      <h1>\${this._sayHello()}!</h1>
+      <h1>Hello World</h1>
       <button @click=\${this._onClick} part="button">
         Click Count: \${this.count}
       </button>
@@ -148,17 +94,16 @@ export class ${className} extends LitElement {
     \`;
   }
 
-  protected _onClick() {
+  ${lang === 'js' ? '' : 'protected '}_onClick() {
     this.count++;
-    this.dispatchEvent(new CustomEvent('count-changed'));
-  }
-
-  /**
-   * Formats a greeting
-   */
-  protected _sayHello() {
-    return \`Hello, \${this.name}\`;
+    const event = new Event('count-changed', {bubbles: true});
+    this.dispatchEvent(event);
   }
 }
-`;
+${
+  lang === 'js'
+    ? `
+customElements.define('${elementName}', ${className});`
+    : ``
+}`;
 };

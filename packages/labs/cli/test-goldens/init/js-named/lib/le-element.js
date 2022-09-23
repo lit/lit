@@ -1,10 +1,4 @@
-/**
- * @license
- * Copyright 2022 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-import { LitElement, html, css } from 'lit';
+import {LitElement, html, css} from 'lit';
 
 /**
  * An example element.
@@ -12,27 +6,23 @@ import { LitElement, html, css } from 'lit';
  * @fires count-changed - Indicates when the count changes
  * @slot - This element has a slot
  * @csspart button - The button
+ * @cssprop --le-element-font-size - The button's font size
  */
 export class LeElement extends LitElement {
-  static get styles() {
-    return css`
-      :host {
-        display: block;
-        border: solid 1px gray;
-        padding: 16px;
-        max-width: 800px;
-      }
-    `;
-  }
+  static styles = css`
+    :host {
+      display: block;
+      border: solid 1px gray;
+      padding: 16px;
+    }
+
+    button {
+      font-size: var(--le-element-font-size, 16px);
+    }
+  `;
 
   static get properties() {
     return {
-      /**
-       * The name to say "Hello" to.
-       * @type {string}
-       */
-      name: {type: String},
-
       /**
        * The number of times the button has been clicked.
        * @type {number}
@@ -43,13 +33,12 @@ export class LeElement extends LitElement {
 
   constructor() {
     super();
-    this.name = 'World';
     this.count = 0;
   }
 
   render() {
     return html`
-      <h1>${this._sayHello()}!</h1>
+      <h1>Hello World</h1>
       <button @click=${this._onClick} part="button">
         Click Count: ${this.count}
       </button>
@@ -59,16 +48,9 @@ export class LeElement extends LitElement {
 
   _onClick() {
     this.count++;
-    this.dispatchEvent(new CustomEvent('count-changed'));
-  }
-
-  /**
-   * Formats a greeting
-   * @returns {string} A greeting directed at `name`
-   */
-  _sayHello() {
-    return html`Hello, ${this.name}`;
+    const event = new Event('count-changed', {bubbles: true});
+    this.dispatchEvent(event);
   }
 }
 
-window.customElements.define('le-element', LeElement);
+customElements.define('le-element', LeElement);

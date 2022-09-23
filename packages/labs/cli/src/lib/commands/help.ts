@@ -88,7 +88,13 @@ export const makeHelpCommand = (cli: LitCli): ResolvedCommand => {
     ],
 
     async run(options: CommandOptions, console: Console) {
-      const commandNames = options['command'] as Array<string> | null;
+      let commandNames = options['command'] as Array<string> | string | null;
+
+      if (typeof commandNames === 'string') {
+        commandNames = commandNames?.split(' ') ?? [];
+      }
+
+      commandNames = commandNames?.map((c) => c.trim()) ?? null;
 
       if (commandNames == null) {
         console.debug('no command given, printing general help...', {options});

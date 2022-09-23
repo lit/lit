@@ -1,7 +1,14 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {Language} from '../../../commands/init.js';
+import {litVersion} from '../../../lit-version.js';
 
-export const generatePackage = (
+export const generatePackageJson = (
   elementName: string,
   language: Language
 ): FileTree => {
@@ -13,7 +20,7 @@ export const generatePackage = (
   "type": "module",
   "main": "lib/${elementName}.js",
   "scripts": {
-    "serve": "wds --node-resolve -onw"${
+    "serve": "wds --node-resolve -nwo demo"${
       language !== 'ts'
         ? ''
         : `,
@@ -22,32 +29,19 @@ export const generatePackage = (
     "dev": "npm run serve & npm run build:watch"`
     }
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/<USERNAME>/${elementName}.git"
-  },
   "keywords": [
-    "web-components",
+    "web-component",
     "lit-element",
-    "javascript",
-    "typescript",
     "lit"
   ],
-  "author": "<YOUR NAME>",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/<USERNAME>>/${elementName}/issues"
-  },
-  "homepage": "https://github.com/<USERNAME>>/${elementName}#readme",
   "dependencies": {
-    "lit": "^2.3.0"
+    "lit": "^${litVersion}"
   },
   "devDependencies": {
     "@web/dev-server": "^0.1.32"${
       language !== 'ts'
         ? ''
         : `,
-    "tslib": "^2.4.0",
     "typescript": "^4.7.4"`
     }
   },

@@ -6,8 +6,8 @@
 
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateTsconfig} from './templates/tsconfig.json.js';
-import {generatePackage} from './templates/package.json.js';
-import {generateIndex} from './templates/index.html.js';
+import {generatePackageJson} from './templates/package.json.js';
+import {generateIndex} from './templates/demo/index.html.js';
 import {generateGitignore} from './templates/gitignore.js';
 import {generateNpmignore} from './templates/npmignore.js';
 import {generateElement} from './templates/lib/element.js';
@@ -21,7 +21,7 @@ export const generateLitElementStarter = async (
 ): Promise<FileTree> => {
   const {name, lang} = options;
   let files = {
-    ...generatePackage(name, lang),
+    ...generatePackageJson(name, lang),
     ...generateIndex(name),
     ...generateGitignore(lang),
     ...generateNpmignore(),
@@ -42,8 +42,10 @@ export const run = async (
   cli: LitCli
 ): Promise<CommandResult> => {
   const files = await generateLitElementStarter(options);
-  await writeFileTree(path.join(cli.cwd, options.name), files);
-  console.log(`Created sharable element in ${options.name}.`);
+  const outPath = path.join(cli.cwd, options.dir, options.name);
+  await writeFileTree(outPath, files);
+  const relativePath = path.relative(cli.cwd, outPath);
+  console.log(`Created sharable element in ${relativePath}/.`);
   return {
     exitCode: 0,
   };

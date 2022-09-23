@@ -36,7 +36,39 @@ const updateVersionVariable = async (packageDir, sourcePath, variableName) => {
   }
 
   // Write file
-  await fs.writeFile(filePath, newSource);
+  await fs.writeFile(filePath, newSource, 'utf-8');
+};
+
+const simpleUpdateVersionVariable = async (
+  packageName,
+  sourcePath,
+  versionRegex,
+  replacementFn
+) => {
+  // Read package.json's version
+  const packagePath = path.resolve('./packages', packageName, 'package.json');
+  const version = JSON.parse(await fs.readFile(packagePath, 'utf-8')).version;
+
+  const fileSource = await fs.readFile(sourcePath, 'utf-8');
+
+  if (!versionRegex.test(fileSource)) {
+    throw new Error(`Version regex not found: ${sourcePath} ${versionRegex}`);
+  }
+
+  console.log(`updating version for ${sourcePath} to ${version}`);
+  // Replace version number
+  const newSource = fileSource.replace(versionRegex, replacementFn(version));
+
+  // Write file
+  await fs.writeFile(sourcePath, newSource, 'utf-8');
+};
+
+const templateGoldens = (goldenDirName) => {
+  return [
+    `packages/labs/cli/test-goldens/init/${goldenDirName}/package.json`,
+    /"lit": "\^.+"/,
+    (version) => `"lit": "^${version}"`,
+  ];
 };
 
 await Promise.all([
@@ -47,4 +79,13 @@ await Promise.all([
     'reactive-element.ts',
     'reactiveElementVersions'
   ),
+  simpleUpdateVersionVariable(
+    'lit',
+    './packages/labs/cli/src/lib/lit-version.ts',
+    /const litVersion = '.+';/,
+    (version) => `const litVersion = '${version}';`
+  ),
+  simpleUpdateVersionVariable('lit', ...templateGoldens('js')),
+  simpleUpdateVersionVariable('lit', ...templateGoldens('js-named')),
+  simpleUpdateVersionVariable('lit', ...templateGoldens('ts-named')),
 ]);
