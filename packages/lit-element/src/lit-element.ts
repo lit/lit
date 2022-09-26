@@ -168,7 +168,7 @@ export class LitElement extends ReactiveElement {
   /**
    * Invoked when the component is added to the document's DOM.
    *
-   * In `connectedCallback()` you should setup tasks that should only occur when
+   * In `connectedCallback()`, you should setup tasks that should only occur when
    * the element is connected to the document. The most common of these is
    * adding event listeners to nodes external to the element, like a keydown
    * event handler added to the window.

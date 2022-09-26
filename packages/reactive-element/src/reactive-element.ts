@@ -1262,9 +1262,9 @@ export abstract class ReactiveElement
    * update synchronously.
    *
    * Note: To ensure `performUpdate()` synchronously completes a pending update,
-   * it should not be overridden. In LitElement 2.x it was suggested to override
+   * it should not be overridden. In lit-element 2.x it was suggested to override
    * `performUpdate()` to also customizing update scheduling. Instead, you should now
-   * override `scheduleUpdate()`. For backwards compatibility with LitElement 2.x,
+   * override `scheduleUpdate()`. For backwards compatibility with lit-element 2.x,
    * scheduling updates via `performUpdate()` continues to work, but will make
    * also calling `performUpdate()` to synchronously process updates difficult.
    *
