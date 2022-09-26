@@ -27,7 +27,7 @@ const loader = new ModuleLoader({
  * cases.
  */
 const appModuleImport = loader.importModule(
-  '../test-files/ts/render-test-module.js',
+  '../test-files/render-test-module.js',
   import.meta.url
 );
 
