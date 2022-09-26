@@ -15,6 +15,7 @@ import {LitClassDeclaration} from './lit-element.js';
 import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
+import {DiagnosticsError} from '../errors.js';
 
 export const getProperties = (
   node: LitClassDeclaration,
@@ -22,8 +23,8 @@ export const getProperties = (
 ) => {
   const reactiveProperties = new Map<string, ReactiveProperty>();
 
-  const propertyDeclarations = node.members.filter((m) =>
-    ts.isPropertyDeclaration(m)
+  const propertyDeclarations = node.members.filter(
+    (m) => ts.isPropertyDeclaration(m) || ts.isGetAccessorDeclaration(m)
   ) as unknown as ts.NodeArray<ts.PropertyDeclaration>;
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
@@ -38,7 +39,66 @@ export const getProperties = (
       reactiveProperties.set(name, {
         name,
         type: getTypeForNode(prop, analyzer),
-        node: prop,
+        attribute: getPropertyAttribute(options, name),
+        typeOption: getPropertyType(options),
+        reflect: getPropertyReflect(options),
+        converter: getPropertyConverter(options),
+      });
+    } else if (
+      name === 'properties' &&
+      prop.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.StaticKeyword)
+    ) {
+      addPropertiesFromStaticBlock(node, prop, reactiveProperties, analyzer);
+    }
+  }
+  return reactiveProperties;
+};
+
+const addPropertiesFromStaticBlock = (
+  classDeclaration: LitClassDeclaration,
+  properties: ts.PropertyDeclaration | ts.GetAccessorDeclaration,
+  reactiveProperties: Map<string, ReactiveProperty>,
+  analyzer: AnalyzerInterface
+) => {
+  let object: ts.ObjectLiteralExpression | undefined = undefined;
+  // Find object literal containing property options
+  if (
+    ts.isPropertyDeclaration(properties) &&
+    properties.initializer !== undefined &&
+    ts.isObjectLiteralExpression(properties.initializer)
+  ) {
+    // Object was in a static initializer
+    object = properties.initializer;
+  } else if (ts.isGetAccessorDeclaration(properties)) {
+    const statement = properties.body?.statements[0];
+    if (
+      statement !== undefined &&
+      ts.isReturnStatement(statement) &&
+      statement.expression !== undefined &&
+      ts.isObjectLiteralExpression(statement.expression)
+    ) {
+      object = statement.expression;
+    }
+  }
+  if (object === undefined) {
+    throw new DiagnosticsError(
+      properties,
+      `Unsupported static properties format. Expected an object literal assigned in a static initializer or returned from a static getter.`
+    );
+  }
+  for (const prop of object.properties) {
+    if (
+      ts.isPropertyAssignment(prop) &&
+      ts.isIdentifier(prop.name) &&
+      ts.isObjectLiteralExpression(prop.initializer)
+    ) {
+      const name = prop.name.text;
+      const options = prop.initializer;
+      const initializers = getInitializersFromConstructor(classDeclaration);
+      const node = initializers.get(name);
+      reactiveProperties.set(name, {
+        name,
+        type: node !== undefined ? getTypeForNode(node, analyzer) : undefined,
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
         reflect: getPropertyReflect(options),
@@ -46,7 +106,29 @@ export const getProperties = (
       });
     }
   }
-  return reactiveProperties;
+};
+
+const getInitializersFromConstructor = (
+  classDeclaration: ts.ClassDeclaration
+): Map<string, ts.Expression> => {
+  const initializers = new Map<string, ts.Expression>();
+  const ctor = classDeclaration.forEachChild((node) =>
+    ts.isConstructorDeclaration(node) ? node : undefined
+  );
+  if (ctor !== undefined) {
+    ctor.body?.statements.forEach((stmt) => {
+      if (
+        ts.isExpressionStatement(stmt) &&
+        ts.isBinaryExpression(stmt.expression) &&
+        ts.isPropertyAccessExpression(stmt.expression.left) &&
+        stmt.expression.left.expression.kind === ts.SyntaxKind.ThisKeyword &&
+        ts.isIdentifier(stmt.expression.left.name)
+      ) {
+        initializers.set(stmt.expression.left.name.text, stmt.expression.right);
+      }
+    });
+  }
+  return initializers;
 };
 
 /**

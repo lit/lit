@@ -97,7 +97,6 @@ export const isLitElement = (
  * @returns
  */
 export const getTagName = (declaration: LitClassDeclaration) => {
-  // TODO (justinfagnani): support customElements.define()
   let tagname: string | undefined = undefined;
   const customElementDecorator = declaration.decorators?.find(
     isCustomElementDecorator
@@ -107,7 +106,30 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     customElementDecorator.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
+    // Get tag from decorator
     tagname = customElementDecorator.expression.arguments[0].text;
+  } else {
+    // Otherwise, search for customElements.define
+    declaration.parent.forEachChild((child) => {
+      if (
+        ts.isExpressionStatement(child) &&
+        ts.isCallExpression(child.expression) &&
+        ts.isPropertyAccessExpression(child.expression.expression)
+      ) {
+        const arg = child.expression.arguments[0];
+        const {expression, name} = child.expression.expression;
+        if (
+          ts.isIdentifier(expression) &&
+          expression.text === 'customElements' &&
+          ts.isIdentifier(name) &&
+          name.text === 'define' &&
+          child.expression.arguments.length === 1 &&
+          ts.isStringLiteralLike(arg)
+        ) {
+          tagname = arg.text;
+        }
+      }
+    });
   }
   return tagname;
 };

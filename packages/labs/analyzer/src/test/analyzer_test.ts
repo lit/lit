@@ -19,7 +19,7 @@ const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
 test.before((ctx) => {
   try {
     const packagePath = (ctx.packagePath = fileURLToPath(
-      new URL('../test-files/basic-elements', import.meta.url).href
+      new URL('../test-files/ts/basic-elements', import.meta.url).href
     ) as AbsolutePath);
     ctx.analyzer = createPackageAnalyzer(packagePath);
   } catch (error) {

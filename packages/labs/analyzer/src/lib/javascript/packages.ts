@@ -11,7 +11,7 @@ import {AbsolutePath} from '../paths.js';
  * Starting from a given module path, searches up until the nearest package.json
  * is found, returning that folder. If none is found, an error is thrown.
  */
-const getPackageRootForModulePath = (
+export const getPackageRootForModulePath = (
   modulePath: AbsolutePath,
   analyzer: AnalyzerInterface
 ): AbsolutePath => {

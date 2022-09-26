@@ -18,7 +18,7 @@ const window = getWindow({
 });
 
 const testIndex = new URL(
-  '../test-files/module-loader/index.js',
+  '../test-files/ts/module-loader/index.js',
   import.meta.url
 ).pathname;
 
