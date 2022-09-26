@@ -209,6 +209,22 @@ export interface ReactiveProperty {
    */
   converter: ts.Node | undefined;
 
+  /**
+   * Whether the property is optional. In TypeScript, this is determined
+   * by the existence of the `?` post-fix operator on the property declaration.
+   * In JavaScript, properties that are initialized in the constructor
+   * are considered optional.
+   */
+  isOptional: boolean;
+
+  /**
+   * Whether the property is non-null. In TypeScript, this is determined
+   * by the existence of the `!` post-fix operator on the property declaration.
+   * In JavaScript, properties that are initialized in the constructor
+   * are considered non-null.
+   */
+  isNonNull: boolean;
+
   // TODO(justinfagnani): hasChanged?
 }
 

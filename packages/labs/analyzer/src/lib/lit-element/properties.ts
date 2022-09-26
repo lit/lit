@@ -44,6 +44,8 @@ export const getProperties = (
       const options = getPropertyOptions(propertyDecorator);
       reactiveProperties.set(name, {
         name,
+        isNonNull: !!prop.exclamationToken,
+        isOptional: !!prop.questionToken,
         type: getTypeForNode(prop, analyzer),
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
@@ -111,12 +113,29 @@ const addPropertiesFromStaticBlock = (
       const name = prop.name.text;
       const options = prop.initializer;
       const nodeForType = undecoratedProperties.get(name);
+      // In JS (where we won't expect a PropertyDeclaration), we treat nodes
+      // with a ctor initializer as non-null and optional; in TS when we have
+      // a PropertyDeclaration, we base it on the post-fix operators
+      const isNonNull =
+        nodeForType === undefined
+          ? false
+          : ts.isPropertyDeclaration(nodeForType)
+          ? !!nodeForType.exclamationToken
+          : true;
+      const isOptional =
+        nodeForType === undefined
+          ? false
+          : ts.isPropertyDeclaration(nodeForType)
+          ? !!nodeForType.questionToken
+          : true;
       reactiveProperties.set(name, {
         name,
         type:
           nodeForType !== undefined
             ? getTypeForNode(nodeForType, analyzer)
             : undefined,
+        isNonNull,
+        isOptional,
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
         reflect: getPropertyReflect(options),

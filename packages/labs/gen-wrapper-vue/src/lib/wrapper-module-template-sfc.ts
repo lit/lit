@@ -32,9 +32,8 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-// TODO(sorvell): place into model directly?
-const getFieldModifierString = (node: ModelProperty['node']) =>
-  node.questionToken ? '?' : node.exclamationToken ? '!' : '';
+const getFieldModifierString = (prop: ModelProperty) =>
+  prop.isOptional ? '?' : prop.isNonNull ? '!' : '';
 
 const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
 
@@ -42,7 +41,7 @@ const wrapDefineProps = (props: Map<string, ModelProperty>) =>
   Array.from(props.values())
     .map(
       (prop) =>
-        `${prop.name}${getFieldModifierString(prop.node)}: ${prop.type?.text}`
+        `${prop.name}${getFieldModifierString(prop)}: ${prop.type?.text}`
     )
     .join(',\n');
 
