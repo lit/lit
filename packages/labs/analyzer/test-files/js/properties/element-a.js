@@ -32,6 +32,7 @@ export class ElementA extends LitElement {
     importedClass: {},
     globalClass: {},
     union: {},
+    staticProp: {attribute: 'static-prop', type: Number},
   };
 
   constructor() {
@@ -53,6 +54,7 @@ export class ElementA extends LitElement {
     this.localClass = new LocalClass();
     this.importedClass = new ImportedClass();
     this.globalClass = document.createElement('foo');
+    this.staticProp = 42;
   }
 }
 customElements.define('element-a', ElementA);

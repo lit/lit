@@ -60,8 +60,6 @@ for (const lang of ['ts', 'js']) {
     const decl = elementAModule!.declarations[0];
     assert.equal(decl.name, 'ElementA');
     assert.ok(decl.isLitElementDeclaration());
-
-    // TODO (justinfagnani): test for customElements.define()
     assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
   });
 

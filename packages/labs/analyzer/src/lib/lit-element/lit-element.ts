@@ -97,7 +97,7 @@ export const isLitElement = (
  * @returns
  */
 export const getTagName = (declaration: LitClassDeclaration) => {
-  let tagname: string | undefined = undefined;
+  let tagName: string | undefined = undefined;
   const customElementDecorator = declaration.decorators?.find(
     isCustomElementDecorator
   );
@@ -107,29 +107,31 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
     // Get tag from decorator
-    tagname = customElementDecorator.expression.arguments[0].text;
+    tagName = customElementDecorator.expression.arguments[0].text;
   } else {
     // Otherwise, search for customElements.define
     declaration.parent.forEachChild((child) => {
       if (
         ts.isExpressionStatement(child) &&
         ts.isCallExpression(child.expression) &&
-        ts.isPropertyAccessExpression(child.expression.expression)
+        ts.isPropertyAccessExpression(child.expression.expression) &&
+        child.expression.arguments.length >= 2
       ) {
-        const arg = child.expression.arguments[0];
+        const [tagNameArg, ctorArg] = child.expression.arguments;
         const {expression, name} = child.expression.expression;
         if (
           ts.isIdentifier(expression) &&
           expression.text === 'customElements' &&
           ts.isIdentifier(name) &&
           name.text === 'define' &&
-          child.expression.arguments.length === 1 &&
-          ts.isStringLiteralLike(arg)
+          ts.isStringLiteralLike(tagNameArg) &&
+          ts.isIdentifier(ctorArg) &&
+          ctorArg.text === declaration.name?.text
         ) {
-          tagname = arg.text;
+          tagName = tagNameArg.text;
         }
       }
     });
   }
-  return tagname;
+  return tagName;
 };

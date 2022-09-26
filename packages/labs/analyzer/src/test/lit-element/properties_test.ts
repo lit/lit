@@ -207,5 +207,13 @@ for (const lang of ['ts', 'js']) {
     assert.ok(property.converter);
   });
 
+  test('property defined in static properties block', ({element}) => {
+    const property = element.reactiveProperties.get('staticProp')!;
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+    assert.equal(property.typeOption, 'Number');
+    assert.equal(property.attribute, 'static-prop');
+  });
+
   test.run();
 }

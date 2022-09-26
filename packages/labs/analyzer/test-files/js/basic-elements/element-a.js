@@ -28,4 +28,4 @@ export class ElementA extends LitElement {
     return html`<h1>${this.a}</h1>`;
   }
 }
-customElements.define('element-a');
+customElements.define('element-a', ElementA);
