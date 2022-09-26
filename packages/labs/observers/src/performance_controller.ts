@@ -76,7 +76,7 @@ export class PerformanceController implements ReactiveController {
     host: ReactiveControllerHost,
     {config, callback, skipInitial}: PerformanceControllerConfig
   ) {
-    (this._host = host).addController(this);
+    this._host = host;
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback ?? this.callback;
@@ -93,6 +93,7 @@ export class PerformanceController implements ReactiveController {
         this._host.requestUpdate();
       }
     );
+    host.addController(this);
   }
 
   /**

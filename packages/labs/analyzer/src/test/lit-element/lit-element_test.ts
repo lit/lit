@@ -10,7 +10,12 @@ import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 
-import {Analyzer, AbsolutePath, LitElementDeclaration} from '../../index.js';
+import {
+  createPackageAnalyzer,
+  Analyzer,
+  AbsolutePath,
+  LitElementDeclaration,
+} from '../../index.js';
 
 const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
   'LitElement tests'
@@ -21,7 +26,7 @@ test.before((ctx) => {
     const packagePath = (ctx.packagePath = fileURLToPath(
       new URL('../../test-files/basic-elements', import.meta.url).href
     ) as AbsolutePath);
-    ctx.analyzer = new Analyzer(packagePath);
+    ctx.analyzer = createPackageAnalyzer(packagePath);
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
@@ -33,7 +38,7 @@ test.before((ctx) => {
 test('isLitElementDeclaration returns false for non-LitElement', ({
   analyzer,
 }) => {
-  const result = analyzer.analyzePackage();
+  const result = analyzer.getPackage();
   const elementAModule = result.modules.find(
     (m) => m.sourcePath === path.normalize('src/not-lit.ts')
   );
@@ -43,7 +48,7 @@ test('isLitElementDeclaration returns false for non-LitElement', ({
 });
 
 test('Analyzer finds LitElement declarations', ({analyzer}) => {
-  const result = analyzer.analyzePackage();
+  const result = analyzer.getPackage();
   const elementAModule = result.modules.find(
     (m) => m.sourcePath === path.normalize('src/element-a.ts')
   );
@@ -57,7 +62,7 @@ test('Analyzer finds LitElement declarations', ({analyzer}) => {
 });
 
 test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
-  const result = analyzer.analyzePackage();
+  const result = analyzer.getPackage();
   const elementAModule = result.modules.find(
     (m) => m.sourcePath === path.normalize('src/element-a.ts')
   );
