@@ -12,41 +12,52 @@ import {fileURLToPath} from 'url';
 
 import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../index.js';
 
-const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
-  'Basic Analyzer tests'
-);
-
-test.before((ctx) => {
-  try {
-    const packagePath = (ctx.packagePath = fileURLToPath(
-      new URL('../test-files/ts/basic-elements', import.meta.url).href
-    ) as AbsolutePath);
-    ctx.analyzer = createPackageAnalyzer(packagePath);
-  } catch (error) {
-    // Uvu has a bug where it silently ignores failures in before and after,
-    // see https://github.com/lukeed/uvu/issues/191.
-    console.error('uvu before error', error);
-    process.exit(1);
-  }
-});
-
-test('Reads project files', ({analyzer, packagePath}) => {
-  const rootFileNames = analyzer.program.getRootFileNames();
-  assert.equal(rootFileNames.length, 5);
-
-  const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile = analyzer.program.getSourceFile(elementAPath);
-  assert.ok(sourceFile);
-});
-
-test('Analyzer finds class declarations', ({analyzer}) => {
-  const result = analyzer.getPackage();
-  const elementAModule = result.modules.find(
-    (m) => m.sourcePath === path.normalize('src/class-a.ts')
+for (const lang of ['ts', 'js']) {
+  const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
+    `Basic Analyzer tests (${lang})`
   );
-  assert.equal(elementAModule?.jsPath, path.normalize('out/class-a.js'));
-  assert.equal(elementAModule?.declarations.length, 1);
-  assert.equal(elementAModule?.declarations[0].name, 'ClassA');
-});
 
-test.run();
+  const getSourceFilename = (f: string) =>
+    lang === 'ts' ? path.join('src', f + '.ts') : f + '.js';
+
+  const getOutputFilename = (f: string) =>
+    lang === 'ts' ? path.join('out', f + '.js') : f + '.js';
+
+  test.before((ctx) => {
+    try {
+      const packagePath = (ctx.packagePath = fileURLToPath(
+        new URL(`../test-files/${lang}/basic-elements`, import.meta.url).href
+      ) as AbsolutePath);
+      ctx.analyzer = createPackageAnalyzer(packagePath);
+    } catch (error) {
+      // Uvu has a bug where it silently ignores failures in before and after,
+      // see https://github.com/lukeed/uvu/issues/191.
+      console.error('uvu before error', error);
+      process.exit(1);
+    }
+  });
+
+  test('Reads project files', ({analyzer, packagePath}) => {
+    const rootFileNames = analyzer.program.getRootFileNames();
+    assert.equal(rootFileNames.length, 5);
+
+    const elementAPath = path.resolve(
+      packagePath,
+      getSourceFilename('element-a')
+    );
+    const sourceFile = analyzer.program.getSourceFile(elementAPath);
+    assert.ok(sourceFile);
+  });
+
+  test('Analyzer finds class declarations', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const elementAModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('class-a')
+    );
+    assert.equal(elementAModule?.jsPath, getOutputFilename('class-a'));
+    assert.equal(elementAModule?.declarations.length, 1);
+    assert.equal(elementAModule?.declarations[0].name, 'ClassA');
+  });
+
+  test.run();
+}
