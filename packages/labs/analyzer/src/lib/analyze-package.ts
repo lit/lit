@@ -6,22 +6,29 @@ import {Analyzer} from './analyzer.js';
 
 /**
  * Returns an analyzer for a Lit npm package based on a filesystem path.
+ *
+ * The path may specify a package root folder, or a specific tsconfig file.
+ * If no tsconfig file is found, the project will be analyzed as JavaScript.
  */
-export const createPackageAnalyzer = (packageRoot: AbsolutePath) => {
-  const configFileName = ts.sys.directoryExists(packageRoot)
-    ? path.join(packageRoot, 'tsconfig.json')
-    : packageRoot;
+export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
+  // This logic accepts either a path to folder containing a tsconfig.json
+  // or a path to a specific tsconfig file. If no tsconfig file is found,
+  // we fallback to creating a Javascript program.
+  const isDirectory = ts.sys.directoryExists(packagePath);
+  const configFileName = isDirectory
+    ? path.join(packagePath, 'tsconfig.json')
+    : packagePath;
   let commandLine: ts.ParsedCommandLine;
   if (ts.sys.fileExists(configFileName)) {
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
     commandLine = ts.parseJsonConfigFileContent(
       configFile.config /* json */,
       ts.sys /* host */,
-      packageRoot /* basePath */,
+      packagePath /* basePath */,
       undefined /* existingOptions */,
-      path.relative(packageRoot, configFileName) /* configFileName */
+      path.relative(packagePath, configFileName) /* configFileName */
     );
-  } else {
+  } else if (isDirectory) {
     console.info(`No tsconfig.json found; assuming package is JavaScript.`);
     commandLine = ts.parseJsonConfigFileContent(
       {
@@ -32,7 +39,11 @@ export const createPackageAnalyzer = (packageRoot: AbsolutePath) => {
         include: ['**/*.js'],
       },
       ts.sys /* host */,
-      packageRoot /* basePath */
+      packagePath /* basePath */
+    );
+  } else {
+    throw new Error(
+      `The specified path '${packagePath}' was not a folder or a tsconfig file.`
     );
   }
 
@@ -44,7 +55,7 @@ export const createPackageAnalyzer = (packageRoot: AbsolutePath) => {
   if (diagnostics.length > 0) {
     throw new DiagnosticsError(
       diagnostics,
-      `Error analyzing package '${packageRoot}': Please fix errors first`
+      `Error analyzing package '${packagePath}': Please fix errors first`
     );
   }
 
