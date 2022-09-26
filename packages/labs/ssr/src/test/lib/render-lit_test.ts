@@ -12,7 +12,7 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import {RenderInfo} from '../../index.js';
 
-import type * as testModule from '../test-files/ts/render-test-module.js';
+import type * as testModule from '../test-files/render-test-module.js';
 
 const loader = new ModuleLoader({
   global: getWindow({
