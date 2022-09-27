@@ -275,7 +275,7 @@ const canTest = () => {
     assert.isTrue(el.observerValue);
   });
 
-  test.skip('PerformanceController<T> type-checks', async () => {
+  test('PerformanceController<T> type-checks', async () => {
     // This test only checks compile-type behavior. There are no runtime checks.
     const el = await getTestElement((_host: ReactiveControllerHost) => ({
       config: {entryTypes: ['measure']},
@@ -283,6 +283,7 @@ const canTest = () => {
     const A = new PerformanceController<number>(el, {
       // @ts-expect-error Type 'string' is not assignable to type 'number'
       callback: () => '',
+      config: {entryTypes: ['measure']},
     });
     if (A) {
       // Suppress no-unused-vars warnings

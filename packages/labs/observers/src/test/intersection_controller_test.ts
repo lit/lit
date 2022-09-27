@@ -476,7 +476,7 @@ const canTest = () => {
     assert.isTrue(el.observerValue);
   });
 
-  test.skip('IntersectionController<T> type-checks', async () => {
+  test('IntersectionController<T> type-checks', async () => {
     // This test only checks compile-type behavior. There are no runtime checks.
     const el = await getTestElement();
     const A = new IntersectionController<number>(el, {

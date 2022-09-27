@@ -446,7 +446,7 @@ if (DEV_MODE) {
     assert.isTrue(el.observerValue);
   });
 
-  test.skip('ResizeController<T> type-checks', async () => {
+  test('ResizeController<T> type-checks', async () => {
     // This test only checks compile-type behavior. There are no runtime checks.
     const el = await getTestElement();
     const A = new ResizeController<number>(el, {

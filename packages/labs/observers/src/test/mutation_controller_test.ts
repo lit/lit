@@ -446,15 +446,16 @@ const canTest =
     assert.isTrue(el.observerValue);
   });
 
-  test.skip('MutationController<T> type-checks', async () => {
+  test('MutationController<T> type-checks', async () => {
     // This test only checks compile-type behavior. There are no runtime checks.
     const el = await getTestElement(() => ({
       target: null,
-      config: {},
+      config: {attributes: true},
     }));
     const A = new MutationController<number>(el, {
       // @ts-expect-error Type 'string' is not assignable to type 'number'
       callback: () => '',
+      config: {attributes: true},
     });
     if (A) {
       // Suppress no-unused-vars warnings
@@ -462,19 +463,22 @@ const canTest =
 
     const B = new MutationController(el, {
       callback: () => '',
-      config: {},
+      config: {attributes: true},
     });
     // @ts-expect-error Type 'number' is not assignable to type 'string'.
     B.value = 2;
 
     const C = new MutationController(el, {
-      config: {},
+      config: {attributes: true},
     }) as MutationController<string>;
     // @ts-expect-error Type 'number' is not assignable to type 'string'.
     C.value = 3;
 
     const narrowTypeCb: MutationValueCallback<string | null> = () => '';
-    const D = new MutationController(el, {callback: narrowTypeCb, config: {}});
+    const D = new MutationController(el, {
+      callback: narrowTypeCb,
+      config: {attributes: true},
+    });
 
     D.value = null;
     D.value = undefined;
