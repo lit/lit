@@ -21,8 +21,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "jsx": "react",
-    "noImplicitOverride": true,
-    "types": ["react", "react-dom", "mocha"]
+    "noImplicitOverride": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": []
