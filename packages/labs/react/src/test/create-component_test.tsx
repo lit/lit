@@ -139,6 +139,10 @@ suite('createComponent', () => {
 
     let TypedBasicElement!: TypedComponent;
 
+    // If this test fails, we can assume types are broken.
+    // If this test passes, we can assume types are working
+    // because a bool !== 'string'.
+    //
     // @ts-expect-error
     <TypedBasicElement bool={"string"}></TypedBasicElement>
   });
