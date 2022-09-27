@@ -94,8 +94,8 @@ const packageJsonTemplate = (
       },
       peerDependencies: {
         // TODO(kschaaf): make react version(s) configurable?
-        react: '^17',
-        '@types/react': '^17',
+        react: '^17 || ^18',
+        '@types/react': '^17 || ^18',
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists

@@ -60,7 +60,6 @@
     }
   },
   "dependencies": {
-    "@lit-internal/tests": "0.0.0",
     "@lit-labs/analyzer": "^0.2.0",
     "@lit-labs/gen-utils": "^0.1.0"
   },
