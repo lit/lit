@@ -7,13 +7,14 @@ import {Analyzer} from './analyzer.js';
 /**
  * Returns an analyzer for a Lit npm package based on a filesystem path.
  *
- * The path may specify a package root folder, or a specific tsconfig file.
- * If no tsconfig file is found, the project will be analyzed as JavaScript.
+ * The path may specify a package root folder, or a specific tsconfig file. When
+ * specifying a folder, if no tsconfig.json file is found directly in the root
+ * folder, the project will be analyzed as JavaScript.
  */
 export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
   // This logic accepts either a path to folder containing a tsconfig.json
-  // or a path to a specific tsconfig file. If no tsconfig file is found,
-  // we fallback to creating a Javascript program.
+  // directly inside it or a path to a specific tsconfig file. If no tsconfig
+  // file is found, we fallback to creating a Javascript program.
   const isDirectory = ts.sys.directoryExists(packagePath);
   const configFileName = isDirectory
     ? path.join(packagePath, 'tsconfig.json')
@@ -33,6 +34,7 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
     commandLine = ts.parseJsonConfigFileContent(
       {
         compilerOptions: {
+          // TODO(kschaaf): probably want to make this configurable
           module: 'esm',
           allowJs: true,
         },

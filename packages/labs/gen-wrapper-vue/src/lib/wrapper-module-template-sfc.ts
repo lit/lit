@@ -32,17 +32,12 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-const getFieldModifierString = (prop: ModelProperty) =>
-  prop.isOptional ? '?' : prop.isNonNull ? '!' : '';
-
 const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
 
+// TODO(kschaaf): Note, for now we consider all properties optional
 const wrapDefineProps = (props: Map<string, ModelProperty>) =>
   Array.from(props.values())
-    .map(
-      (prop) =>
-        `${prop.name}${getFieldModifierString(prop)}: ${prop.type?.text}`
-    )
+    .map((prop) => `${prop.name}?: ${prop.type?.text}`)
     .join(',\n');
 
 // TODO(sorvell): Improve event handling, currently just forwarding the event,

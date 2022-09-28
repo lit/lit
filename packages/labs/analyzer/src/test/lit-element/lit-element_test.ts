@@ -8,6 +8,7 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
+import {getSourceFilename, languages} from '../utils.js';
 
 import {
   createPackageAnalyzer,
@@ -15,15 +16,11 @@ import {
   AbsolutePath,
   LitElementDeclaration,
 } from '../../index.js';
-import path from 'path';
 
-for (const lang of ['ts', 'js']) {
+for (const lang of languages) {
   const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
     `LitElement tests (${lang})`
   );
-
-  const getFilename = (f: string) =>
-    lang === 'ts' ? path.join('src', f + '.ts') : f + '.js';
 
   test.before((ctx) => {
     try {
@@ -44,7 +41,7 @@ for (const lang of ['ts', 'js']) {
   }) => {
     const result = analyzer.getPackage();
     const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getFilename('not-lit')
+      (m) => m.sourcePath === getSourceFilename('not-lit', lang)
     );
     const decl = elementAModule!.declarations.find((d) => d.name === 'NotLit')!;
     assert.ok(decl);
@@ -54,7 +51,7 @@ for (const lang of ['ts', 'js']) {
   test('Analyzer finds LitElement declarations', ({analyzer}) => {
     const result = analyzer.getPackage();
     const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getFilename('element-a')
+      (m) => m.sourcePath === getSourceFilename('element-a', lang)
     );
     assert.equal(elementAModule?.declarations.length, 1);
     const decl = elementAModule!.declarations[0];
@@ -66,7 +63,7 @@ for (const lang of ['ts', 'js']) {
   test('Analyzer finds LitElement properties ', ({analyzer}) => {
     const result = analyzer.getPackage();
     const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getFilename('element-a')
+      (m) => m.sourcePath === getSourceFilename('element-a', lang)
     );
     const decl = elementAModule!.declarations[0] as LitElementDeclaration;
 
@@ -95,7 +92,7 @@ for (const lang of ['ts', 'js']) {
   }) => {
     const result = analyzer.getPackage();
     const elementBModule = result.modules.find(
-      (m) => m.sourcePath === getFilename('element-b')
+      (m) => m.sourcePath === getSourceFilename('element-b', lang)
     );
     const decl = elementBModule!.declarations[0] as LitElementDeclaration;
 

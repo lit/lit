@@ -94,19 +94,27 @@ export const getCommandLineFromProgram = (
     compilerOptions,
   };
   if (compilerOptions.configFilePath !== undefined) {
-    // A TS project should have a configFilePath
+    // For a TS project, derive the package root from the config file path
+    const packageRoot = analyzer.path.basename(
+      compilerOptions.configFilePath as string
+    );
     return ts.parseJsonConfigFileContent(
       json,
       ts.sys,
-      analyzer.path.basename(compilerOptions.configFilePath as string),
+      packageRoot,
       undefined,
       compilerOptions.configFilePath as string
     );
   } else {
-    // Otherwise, this is a JS project; we need to determine the package root
+    // Otherwise, this is a JS project; we can determine the package root
+    // based on the package.json location; we can look that up based on
+    // the first root file
     const packageRoot = getPackageRootForModulePath(
       files[0] as AbsolutePath,
       analyzer
+      // Note we don't pass a configFilePath since we don't have one; This just
+      // means we can't use ts.getOutputFileNames(), which we isn't needed in
+      // JS program
     );
     return ts.parseJsonConfigFileContent(json, ts.sys, packageRoot);
   }

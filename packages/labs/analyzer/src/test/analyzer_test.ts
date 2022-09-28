@@ -9,19 +9,14 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
+import {getOutputFilename, getSourceFilename, languages} from './utils.js';
 
 import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../index.js';
 
-for (const lang of ['ts', 'js']) {
+for (const lang of languages) {
   const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
     `Basic Analyzer tests (${lang})`
   );
-
-  const getSourceFilename = (f: string) =>
-    lang === 'ts' ? path.join('src', f + '.ts') : f + '.js';
-
-  const getOutputFilename = (f: string) =>
-    lang === 'ts' ? path.join('out', f + '.js') : f + '.js';
 
   test.before((ctx) => {
     try {
@@ -43,7 +38,7 @@ for (const lang of ['ts', 'js']) {
 
     const elementAPath = path.resolve(
       packagePath,
-      getSourceFilename('element-a')
+      getSourceFilename('element-a', lang)
     );
     const sourceFile = analyzer.program.getSourceFile(elementAPath);
     assert.ok(sourceFile);
@@ -52,9 +47,9 @@ for (const lang of ['ts', 'js']) {
   test('Analyzer finds class declarations', ({analyzer}) => {
     const result = analyzer.getPackage();
     const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getSourceFilename('class-a')
+      (m) => m.sourcePath === getSourceFilename('class-a', lang)
     );
-    assert.equal(elementAModule?.jsPath, getOutputFilename('class-a'));
+    assert.equal(elementAModule?.jsPath, getOutputFilename('class-a', lang));
     assert.equal(elementAModule?.declarations.length, 1);
     assert.equal(elementAModule?.declarations[0].name, 'ClassA');
   });

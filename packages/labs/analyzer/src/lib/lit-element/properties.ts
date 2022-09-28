@@ -17,6 +17,9 @@ import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 import {DiagnosticsError} from '../errors.js';
 
+const isStatic = (prop: ts.PropertyDeclaration) =>
+  prop.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.StaticKeyword);
+
 export const getProperties = (
   classDeclaration: LitClassDeclaration,
   analyzer: AnalyzerInterface
@@ -44,24 +47,19 @@ export const getProperties = (
       const options = getPropertyOptions(propertyDecorator);
       reactiveProperties.set(name, {
         name,
-        isNonNull: !!prop.exclamationToken,
-        isOptional: !!prop.questionToken,
         type: getTypeForNode(prop, analyzer),
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
         reflect: getPropertyReflect(options),
         converter: getPropertyConverter(options),
       });
-    } else if (
-      name === 'properties' &&
-      prop.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.StaticKeyword)
-    ) {
+    } else if (name === 'properties' && isStatic(prop)) {
       // This field has the static properties block (initializer or getter).
       // Note we will process this after the loop so that the
       // `undecoratedProperties` map is complete before processing the static
       // properties block.
       staticProperties = prop;
-    } else {
+    } else if (!isStatic(prop)) {
       // Store the declaration node for any undecorated properties. In a TS
       // program that happens to use a static properties block along with
       // the `declare` keyword to type the field, we can use this node to
@@ -113,29 +111,12 @@ const addPropertiesFromStaticBlock = (
       const name = prop.name.text;
       const options = prop.initializer;
       const nodeForType = undecoratedProperties.get(name);
-      // In JS (where we won't expect a PropertyDeclaration), we treat nodes
-      // with a ctor initializer as non-null and optional; in TS when we have
-      // a PropertyDeclaration, we base it on the post-fix operators
-      const isNonNull =
-        nodeForType === undefined
-          ? false
-          : ts.isPropertyDeclaration(nodeForType)
-          ? !!nodeForType.exclamationToken
-          : true;
-      const isOptional =
-        nodeForType === undefined
-          ? false
-          : ts.isPropertyDeclaration(nodeForType)
-          ? !!nodeForType.questionToken
-          : true;
       reactiveProperties.set(name, {
         name,
         type:
           nodeForType !== undefined
             ? getTypeForNode(nodeForType, analyzer)
             : undefined,
-        isNonNull,
-        isOptional,
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
         reflect: getPropertyReflect(options),
@@ -176,7 +157,8 @@ const getStaticPropertiesObjectLiteral = (
     object = properties.initializer;
   } else if (ts.isGetAccessorDeclaration(properties)) {
     // Object was in a static getter: find the object in the return value
-    const statement = properties.body?.statements[0];
+    const statements = properties.body?.statements;
+    const statement = statements?.[statements.length - 1];
     if (
       statement !== undefined &&
       ts.isReturnStatement(statement) &&
@@ -208,6 +190,7 @@ const addConstructorInitializers = (
   );
   if (ctor !== undefined) {
     ctor.body?.statements.forEach((stmt) => {
+      // Look for initializers in the form of `this.foo = xxxx`
       if (
         ts.isExpressionStatement(stmt) &&
         ts.isBinaryExpression(stmt.expression) &&
@@ -218,7 +201,9 @@ const addConstructorInitializers = (
       ) {
         // Add the initializer expression to the map
         undecoratedProperties.set(
+          // Property name
           stmt.expression.left.name.text,
+          // Expression from which we can infer a type
           stmt.expression.right
         );
       }

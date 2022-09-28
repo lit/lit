@@ -92,7 +92,7 @@ export const isLitElement = (
 };
 
 /**
- * Returns the tagname associated with a
+ * Returns the tagname associated with a LitClassDeclaration
  * @param declaration
  * @returns
  */
@@ -106,10 +106,11 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     customElementDecorator.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
-    // Get tag from decorator
+    // Get tag from decorator: `@customElement('x-foo')`
     tagName = customElementDecorator.expression.arguments[0].text;
   } else {
-    // Otherwise, search for customElements.define
+    // Otherwise, look for imperative define in the form of:
+    // `customElements.define('x-foo', XFoo);`
     declaration.parent.forEachChild((child) => {
       if (
         ts.isExpressionStatement(child) &&

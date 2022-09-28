@@ -7,8 +7,8 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import * as path from 'path';
 import {fileURLToPath} from 'url';
+import {getSourceFilename, languages} from '../utils.js';
 
 import {
   createPackageAnalyzer,
@@ -17,15 +17,12 @@ import {
   LitElementDeclaration,
 } from '../../index.js';
 
-for (const lang of ['ts', 'js']) {
+for (const lang of languages) {
   const test = suite<{
     analyzer: Analyzer;
     packagePath: AbsolutePath;
     element: LitElementDeclaration;
   }>(`LitElement event tests (${lang})`);
-
-  const getFilename = (f: string) =>
-    lang === 'ts' ? path.join('src', f + '.ts') : f + '.js';
 
   test.before((ctx) => {
     try {
@@ -36,7 +33,7 @@ for (const lang of ['ts', 'js']) {
 
       const result = analyzer.getPackage();
       const elementAModule = result.modules.find(
-        (m) => m.sourcePath === getFilename('element-a')
+        (m) => m.sourcePath === getSourceFilename('element-a', lang)
       );
       const element = elementAModule!.declarations.filter((d) =>
         d.isLitElementDeclaration()
