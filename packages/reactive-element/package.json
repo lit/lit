@@ -135,6 +135,9 @@
       "#comment": "Note this also builds polyfill-support via a TypeScript project reference.",
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
+      "dependencies": [
+        "../labs/testing:build"
+      ],
       "files": [
         "src/**/*.ts",
         "tsconfig.json",

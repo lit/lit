@@ -123,7 +123,8 @@
       "clean": "if-file-deleted",
       "dependencies": [
         "../lit-html:build:ts:types",
-        "../reactive-element:build:ts:types"
+        "../reactive-element:build:ts:types",
+        "../labs/testing:build"
       ],
       "files": [
         "src/**/*.ts",
