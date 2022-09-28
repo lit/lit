@@ -41,7 +41,7 @@
     },
     "build:deps": {
       "dependencies": [
-        "../cli-localize:build",
+        "../cli-localize:build:compile",
         "../../tests:build",
         "../analyzer:build",
         "../gen-wrapper-react:build",
