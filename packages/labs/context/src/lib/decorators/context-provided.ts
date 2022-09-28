@@ -47,7 +47,7 @@ export function contextProvided<ValueType>({
   context: ContextKey<unknown, ValueType>;
   subscribe?: boolean;
 }): <K extends PropertyKey>(
-  protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
+  protoOrDescriptor: ReactiveElement,
   name?: K
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

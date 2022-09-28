@@ -15,7 +15,7 @@ const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
 class ContextConsumerElement extends LitElement {
   @contextProvided({context: simpleContext, subscribe: true})
   @property({type: Number})
-  public value = 0;
+  public value?: number;
 
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
@@ -38,10 +38,11 @@ class ContextProviderElement extends LitElement {
 }
 customElements.define('context-provider', ContextProviderElement);
 
-suite('@contextProvided', () => {
+suite('@contextProvided & @contextProvider', () => {
   let consumer: ContextConsumerElement;
   let provider: ContextProviderElement;
   let container: HTMLElement;
+
   setup(async () => {
     container = document.createElement('div');
     container.innerHTML = `
@@ -86,6 +87,7 @@ suite('@contextProvided: multiple instances', () => {
   let providers: ContextProviderElement[];
   let container: HTMLElement;
   const count = 3;
+
   setup(async () => {
     container = document.createElement('div');
     container.innerHTML = Array.from(
