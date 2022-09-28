@@ -35,3 +35,7 @@ import 'lit-html/static.js';
 import 'lit-html/experimental-hydrate.js';
 import 'lit-html/private-ssr-support.js';
 import 'lit-html/polyfill-support.js';
+
+import assert from 'node:assert/strict';
+import {isServer} from 'lit-html/is-server.js';
+assert.ok(isServer, 'Expected isServer to be truthy');
