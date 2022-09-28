@@ -93,6 +93,7 @@
         "**/web-test-runner.config.js",
         "packages/benchmarks/**",
         "packages/labs/ssr/src/demo/**",
+        "packages/labs/eleventy-plugin-lit/demo/**",
         "packages/tests/**",
         "rollup-common.js"
       ],

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.3.1
+
+### Patch Changes
+
+- [#3223](https://github.com/lit/lit/pull/3223) [`5a65ca97`](https://github.com/lit/lit/commit/5a65ca97464839fcd4ea59240b9910002fa64a82) - Use existing `document` in Node build
+
 ## 2.3.0
 
 ### Minor Changes

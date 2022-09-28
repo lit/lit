@@ -9,7 +9,7 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Analyzer} from '@lit-labs/analyzer';
+import {createPackageAnalyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
@@ -23,64 +23,56 @@ import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
 
-const testWrapper =
-  (projectName = '') =>
-  async () => {
-    const project = `test-${projectName}`;
-    const inputPackage = path.resolve(testProjects, project);
-    const outputPackage = path.resolve(outputFolder, project + '-react');
+test('basic wrapper generation', async () => {
+  const project = 'test-element-a';
+  const inputPackage = path.resolve(testProjects, project);
+  const outputPackage = path.resolve(outputFolder, project + '-react');
 
-    if (fs.existsSync(outputPackage)) {
-      fs.rmSync(outputPackage, {recursive: true});
-    }
+  if (fs.existsSync(outputPackage)) {
+    fs.rmSync(outputPackage, {recursive: true});
+  }
 
-    const analyzer = new Analyzer(inputPackage as AbsolutePath);
-    const analysis = analyzer.analyzePackage();
-    await writeFileTree(outputFolder, await generateReactWrapper(analysis));
+  const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
+  const pkg = analyzer.getPackage();
+  await writeFileTree(outputFolder, await generateReactWrapper(pkg));
 
-    const wrapperSourceFile = fs.readFileSync(
-      path.join(outputPackage, `src/${projectName}.ts`)
-    );
-    assert.ok(wrapperSourceFile.length > 0);
+  const wrapperSourceFile = fs.readFileSync(
+    path.join(outputPackage, 'src/element-a.ts')
+  );
+  assert.ok(wrapperSourceFile.length > 0);
 
-    await assertGoldensMatch(outputPackage, path.join('goldens', project), {
-      formatGlob: '**/*.{ts,js,json}',
-    });
+  await assertGoldensMatch(outputPackage, path.join('goldens', project), {
+    formatGlob: '**/*.{ts,js,json}',
+  });
 
-    await installPackage(outputPackage, {
-      [`@lit-internal/${project}`]: inputPackage,
-      '@lit-labs/react': '../react',
-    });
+  await installPackage(outputPackage, {
+    [`@lit-internal/${project}`]: inputPackage,
+    '@lit-labs/react': '../react',
+  });
 
-    // The version of @types/react might conflict with the one installed to the
-    // top-level of our monorepo. By default, TypeScript will load all
-    // node_modules/@types/* packages for all parent directories. By setting
-    // typeRoots here, we ensure it only loads the immediate ones.
-    const tsConfigPath = path.join(outputPackage, 'tsconfig.json');
-    const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'));
-    tsConfig.compilerOptions.typeRoots = ['./node_modules/@types'];
-    fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf8');
+  // The version of @types/react might conflict with the one installed to the
+  // top-level of our monorepo. By default, TypeScript will load all
+  // node_modules/@types/* packages for all parent directories. By setting
+  // typeRoots here, we ensure it only loads the immediate ones.
+  const tsConfigPath = path.join(outputPackage, 'tsconfig.json');
+  const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'));
+  tsConfig.compilerOptions.typeRoots = ['./node_modules/@types'];
+  fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf8');
 
-    await buildPackage(outputPackage);
+  await buildPackage(outputPackage);
 
-    // Pack the generated package here, as `test-output` package.json will
-    // reference the generated tarball here by filename; `test-output:installSelf`
-    // depends on these tests run by `test:gen`.
-    await packPackage(outputPackage);
+  // Pack the generated package here, as `test-output` package.json will
+  // reference the generated tarball here by filename; `test-output:installSelf`
+  // depends on these tests run by `test:gen`.
+  await packPackage(outputPackage);
 
-    // This verifies the package installation and build nominally succeeded. Note
-    // that runtime tests of this generated package are run as a separate `npm run
-    // test` command in `test-output` using `@web/test-runner`.
-    const wrapperJsFile = fs.readFileSync(
-      path.join(outputPackage, `${projectName}.js`)
-    );
-    assert.ok(wrapperJsFile.length > 0);
-  };
-
-test('basic wrapper generation', testWrapper('element-a'));
-test('events wrapper generation', testWrapper('element-events'));
-test('slots wrapper generation', testWrapper('element-slots'));
-test('props wrapper generation', testWrapper('element-props'));
-// test('multi wrapper generation', testWrapper('element-multi'));
+  // This verifies the package installation and build nominally succeeded. Note
+  // that runtime tests of this generated package are run as a separate `npm run
+  // test` command in `test-output` using `@web/test-runner`.
+  const wrapperJsFile = fs.readFileSync(
+    path.join(outputPackage, 'element-a.js')
+  );
+  assert.ok(wrapperJsFile.length > 0);
+});
 
 test.run();
