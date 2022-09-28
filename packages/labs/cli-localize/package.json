@@ -75,6 +75,7 @@
   "keywords": [
     "lit",
     "localization",
+    "localize",
     "lit-cli"
   ]
 }
