@@ -5,7 +5,7 @@
  */
 import {render} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from './strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 
 export const makeAssertRender =
   (getContainer: () => HTMLElement) => (value: unknown, expected: string) => {

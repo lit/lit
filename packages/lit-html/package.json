@@ -350,11 +350,12 @@
     "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.1.1",
     "@types/web-ie11": "^0.0.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0"
+    "@webcomponents/webcomponentsjs": "^2.6.0"
   },
   "typings": "lit-html.d.ts",
   "directories": {

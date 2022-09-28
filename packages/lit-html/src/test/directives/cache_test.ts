@@ -6,7 +6,7 @@
 
 import {html, render, nothing} from 'lit-html';
 import {cache} from 'lit-html/directives/cache.js';
-import {stripExpressionComments} from '../test-utils/strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 

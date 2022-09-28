@@ -6,7 +6,7 @@
 
 import {keyed} from 'lit-html/directives/keyed.js';
 import {html, render} from 'lit-html';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('keyed directive', () => {

@@ -6,7 +6,7 @@
 import {render} from 'lit-html';
 import {html, literal, unsafeStatic} from 'lit-html/static.js';
 import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from './test-utils/strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 
 suite('static', () => {
   let container: HTMLElement;

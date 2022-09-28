@@ -6,7 +6,7 @@
 
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
 import {render, html, nothing, noChange} from 'lit-html';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('unsafeHTML directive', () => {
