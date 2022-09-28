@@ -119,7 +119,7 @@ export interface CommandModule {
    * strategy, the CLI can offer to install the referenced command if
    * necessary, and we can reuse the error handling code in the CLI core.
    */
-  getCommand(opts: GetCommandsOptions): Command | Promise<Command>;
+  getCommand: GetCommandFunction;
 }
 
 /**
@@ -135,13 +135,30 @@ export interface GetCommandsOptions {
 }
 
 /**
+ * The type of the getCommand function in a command module.
+ *
+ * Note that this can return a ReferenceToCommand, which the CLI will
+ * further resolve.
+ *
+ * If your module is deferring to another in a different npm package, it's
+ * generally preferable to return a ReferenceToCommand rather than doing the
+ * dynamic import yourself. That way we use a consistent module resolution
+ * strategy, the CLI can offer to install the referenced command if
+ * necessary, and we can reuse the error handling code in the CLI core.
+ */
+export interface GetCommandFunction {
+  (opts: GetCommandsOptions):
+    | undefined
+    | Command
+    | Promise<Partial<Command> | undefined>;
+}
+
+/**
  * Like CommandModule, only we're not certain that the module obeys the
  * contract correctly.
  *
  * This is the type we should use internally when loading a module.
  */
 export interface MaybeCommandModule {
-  getCommand?(
-    opts: GetCommandsOptions
-  ): undefined | Command | Promise<Partial<Command> | undefined>;
+  getCommand?: GetCommandFunction;
 }

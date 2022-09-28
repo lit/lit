@@ -3,11 +3,11 @@
  * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
+import type {GetCommandFunction} from '@lit-labs/cli/lib/command';
 /**
  * Defines our interface within the Lit CLI.
  */
-export const getCommand = () => {
+export const getCommand: GetCommandFunction = () => {
   return {
     kind: 'resolved',
     name: 'localize',
