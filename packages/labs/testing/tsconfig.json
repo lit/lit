@@ -14,6 +14,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "inlineSources": true,
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
     "allowSyntheticDefaultImports": true,

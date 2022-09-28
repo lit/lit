@@ -11,12 +11,12 @@ import * as path from 'path';
 import {fileURLToPath} from 'url';
 import ts from 'typescript';
 
-import {Analyzer} from '../../lib/analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
 import {
-  isLitElementDeclaration,
+  createPackageAnalyzer,
+  Analyzer,
+  AbsolutePath,
   LitElementDeclaration,
-} from '../../lib/model.js';
+} from '../../index.js';
 
 const test = suite<{
   analyzer: Analyzer;
@@ -29,14 +29,14 @@ test.before((ctx) => {
     const packagePath = fileURLToPath(
       new URL('../../test-files/decorators-properties', import.meta.url).href
     ) as AbsolutePath;
-    const analyzer = new Analyzer(packagePath);
+    const analyzer = createPackageAnalyzer(packagePath);
 
-    const result = analyzer.analyzePackage();
+    const result = analyzer.getPackage();
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === path.normalize('src/element-a.ts')
     );
-    const element = elementAModule!.declarations.filter(
-      isLitElementDeclaration
+    const element = elementAModule!.declarations.filter((d) =>
+      d.isLitElementDeclaration()
     )[0] as LitElementDeclaration;
 
     ctx.packagePath = packagePath;

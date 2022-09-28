@@ -121,7 +121,7 @@
 import {AttributePart, ChildPart, Disconnectable, Part} from './lit-html.js';
 import {isSingleExpression} from './directive-helpers.js';
 import {Directive, PartInfo, PartType} from './directive.js';
-export {directive} from './directive.js';
+export * from './directive.js';
 
 const DEV_MODE = true;
 

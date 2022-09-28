@@ -5,8 +5,11 @@
  */
 
 import {ChildPart, noChange} from '../lit-html.js';
-import {directive, DirectiveParameters} from '../directive.js';
-import {AsyncDirective} from '../async-directive.js';
+import {
+  AsyncDirective,
+  directive,
+  DirectiveParameters,
+} from '../async-directive.js';
 import {Pauser, PseudoWeakRef, forAwaitOf} from './private-async-helpers.js';
 
 type Mapper<T> = (v: T, index?: number) => unknown;

@@ -195,8 +195,6 @@ export class Task<
       });
     }
     this.status = TaskStatus.PENDING;
-    this._error = undefined;
-    this._value = undefined;
     let result!: R | typeof initialState;
     let error: unknown;
     // Request an update to report pending state.
