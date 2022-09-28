@@ -160,7 +160,7 @@ const debugLogEvent = DEV_MODE
       );
     }
   : undefined;
-
+console.log(debugLogEvent);
 /*
  * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
  * replaced at compile time by the munged name for object[property]. We cannot
@@ -1210,25 +1210,6 @@ export abstract class ReactiveElement
    * Sets up the element to asynchronously update.
    */
   private async __enqueueUpdate() {
-    this.isUpdatePending = true;
-    try {
-      // Ensure any previous update has resolved before updating.
-      // This `await` also ensures that property changes are batched.
-      await this.__updatePromise;
-    } catch (e) {
-      // Refire any previous errors async so they do not disrupt the update
-      // cycle. Errors are refired so developers have a chance to observe
-      // them, and this can be done by implementing
-      // `window.onunhandledrejection`.
-      Promise.reject(e);
-    }
-    const result = this.scheduleUpdate();
-    // If `scheduleUpdate` returns a Promise, we await it. This is done to
-    // enable coordinating updates with a scheduler. Note, the result is
-    // checked to avoid delaying an additional microtask unless we need to.
-    if (result != null) {
-      await result;
-    }
     return !this.isUpdatePending;
   }
 
@@ -1249,9 +1230,7 @@ export abstract class ReactiveElement
    * ```
    * @category updates
    */
-  protected scheduleUpdate(): void | Promise<unknown> {
-    return this.performUpdate();
-  }
+  protected scheduleUpdate(): void | Promise<unknown> {}
 
   /**
    * Performs an element update. Note, if an exception is thrown during the
@@ -1270,71 +1249,7 @@ export abstract class ReactiveElement
    *
    * @category updates
    */
-  protected performUpdate(): void | Promise<unknown> {
-    // Abort any update if one is not pending when this is called.
-    // This can happen if `performUpdate` is called early to "flush"
-    // the update.
-    if (!this.isUpdatePending) {
-      return;
-    }
-    debugLogEvent?.({kind: 'update'});
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      // Produce warning if any class properties are shadowed by class fields
-      if (DEV_MODE) {
-        const shadowedProperties: string[] = [];
-        (
-          this.constructor as typeof ReactiveElement
-        ).__reactivePropertyKeys?.forEach((p) => {
-          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-            shadowedProperties.push(p as string);
-          }
-        });
-        if (shadowedProperties.length) {
-          throw new Error(
-            `The following properties on element ${this.localName} will not ` +
-              `trigger updates as expected because they are set using class ` +
-              `fields: ${shadowedProperties.join(', ')}. ` +
-              `Native class fields and some compiled output will overwrite ` +
-              `accessors used for detecting changes. See ` +
-              `https://lit.dev/msg/class-field-shadowing ` +
-              `for more information.`
-          );
-        }
-      }
-    }
-    // Mixin instance properties once, if they exist.
-    if (this.__instanceProperties) {
-      // Use forEach so this works even if for/of loops are compiled to for loops
-      // expecting arrays
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.__instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
-      this.__instanceProperties = undefined;
-    }
-    let shouldUpdate = false;
-    const changedProperties = this._$changedProperties;
-    try {
-      shouldUpdate = this.shouldUpdate(changedProperties);
-      if (shouldUpdate) {
-        this.willUpdate(changedProperties);
-        this.__controllers?.forEach((c) => c.hostUpdate?.());
-        this.update(changedProperties);
-      } else {
-        this.__markUpdated();
-      }
-    } catch (e) {
-      // Prevent `firstUpdated` and `updated` from running when there's an
-      // update exception.
-      shouldUpdate = false;
-      // Ensure element can accept additional updates after an exception.
-      this.__markUpdated();
-      throw e;
-    }
-    // The update is no longer considered pending and further updates are now allowed.
-    if (shouldUpdate) {
-      this._$didUpdate(changedProperties);
-    }
-  }
+  protected performUpdate(): void | Promise<unknown> {}
 
   /**
    * Invoked before `update()` to compute values needed during the update.
