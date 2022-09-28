@@ -273,6 +273,7 @@
         "polyfill-support.js{,.map}",
         "private-ssr-support.js{,.map}",
         "static.js{,.map}",
+        "is-server.js{,.map}",
         "directives/*.js{,.map}",
         "test/*_test.html",
         "development/test/*_test.html",
