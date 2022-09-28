@@ -124,7 +124,7 @@
       "dependencies": [
         "../lit-html:build:ts:types",
         "../reactive-element:build:ts:types",
-        "../labs/testing:build"
+        "../labs/testing:build:ts:utils"
       ],
       "files": [
         "src/**/*.ts",

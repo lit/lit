@@ -260,6 +260,7 @@ packages/labs/testing/fixtures.*
 packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test
+packages/labs/testing/**/.tsbuildinfo-utils
 
 packages/labs/virtualizer/layouts/
 packages/labs/virtualizer/polyfillLoaders/

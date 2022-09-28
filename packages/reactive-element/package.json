@@ -136,7 +136,7 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "dependencies": [
-        "../labs/testing:build"
+        "../labs/testing:build:ts:utils"
       ],
       "files": [
         "src/**/*.ts",

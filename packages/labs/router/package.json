@@ -118,7 +118,7 @@
         "tsconfig.tsbuildinfo"
       ],
       "dependencies": [
-        "../testing:build",
+        "../testing:build:ts:utils",
         "../../lit:build:ts:types"
       ]
     },
