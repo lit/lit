@@ -180,6 +180,12 @@
       "node": "./node/static.js",
       "development": "./development/static.js",
       "default": "./static.js"
+    },
+    "./is-server.js": {
+      "types": "./development/is-server.d.ts",
+      "node": "./node/is-server.js",
+      "development": "./development/is-server.js",
+      "default": "./is-server.js"
     }
   },
   "scripts": {
@@ -205,6 +211,7 @@
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
     "/static.{d.ts,d.ts.map,js,js.map}",
+    "/is-server.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
     "/directives/",

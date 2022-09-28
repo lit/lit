@@ -75,6 +75,7 @@ packages/lit-html/async-directive.*
 packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
+packages/lit-html/is-server.*
 
 packages/lit-starter-js/node_modules/*
 packages/lit-starter-js/docs/*
