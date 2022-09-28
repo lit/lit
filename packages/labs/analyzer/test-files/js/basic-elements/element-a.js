@@ -16,7 +16,10 @@ export class ElementA extends LitElement {
   static properties = {
     a: {},
     b: {reflect: true, type: Number, attribute: 'bbb'},
+    c: {},
   };
+
+  static c = 'should not be inferred as type for c';
 
   constructor() {
     super();

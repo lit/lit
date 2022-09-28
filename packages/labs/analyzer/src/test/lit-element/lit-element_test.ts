@@ -68,7 +68,7 @@ for (const lang of languages) {
     const decl = elementAModule!.declarations[0] as LitElementDeclaration;
 
     // ElementA has `a` and `b` properties
-    assert.equal(decl.reactiveProperties.size, 2);
+    assert.equal(decl.reactiveProperties.size, 3);
 
     const aProp = decl.reactiveProperties.get('a');
     assert.ok(aProp);
@@ -85,6 +85,12 @@ for (const lang of languages) {
     assert.equal(bProp.attribute, 'bbb');
     assert.equal(bProp.type?.text, 'number');
     assert.equal(bProp.typeOption, 'Number');
+
+    const cProp = decl.reactiveProperties.get('c');
+    assert.ok(cProp);
+    assert.equal(cProp.name, 'c');
+    assert.equal(cProp.attribute, 'c');
+    assert.equal(cProp.type?.text, lang === 'ts' ? 'any' : undefined);
   });
 
   test('Analyzer finds LitElement properties from static getter', ({
