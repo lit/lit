@@ -172,28 +172,6 @@ export const createComponent = <
 
   type Props = ReactComponentProps<I, E>;
 
-  // Set of properties/events which should be specially handled by the wrapper
-  // and not handled directly by React.
-  const elementClassProps = new Set(Object.keys(events ?? {}));
-  for (const p in elementClass.prototype) {
-    if (!(p in HTMLElement.prototype)) {
-      if (reservedReactProperties.has(p)) {
-        // Note, this effectively warns only for `ref` since the other
-        // reserved props are on HTMLElement.prototype. To address this
-        // would require crawling down the prototype, which doesn't feel worth
-        // it since implementing these properties on an element is extremely
-        // rare.
-        console.warn(
-          `${tagName} contains property ${p} which is a React ` +
-            `reserved property. It will be used by React and not set on ` +
-            `the element.`
-        );
-      } else {
-        elementClassProps.add(p);
-      }
-    }
-  }
-
   class ReactComponent extends Component<Props> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
