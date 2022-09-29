@@ -219,13 +219,21 @@ export class Task<
         this.status = TaskStatus.INITIAL;
       } else {
         if (error === undefined) {
+          try {
+            this._onComplete?.(result as R);
+          } catch {
+            // Ignore user errors from onComplete.
+          }
           this.status = TaskStatus.COMPLETE;
           this._resolveTaskComplete(result as R);
-          this._onComplete?.(result as R);
         } else {
+          try {
+            this._onError?.(error);
+          } catch {
+            // Ignore user errors from onError.
+          }
           this.status = TaskStatus.ERROR;
           this._rejectTaskComplete(error);
-          this._onError?.(error);
         }
         this._value = result as R;
         this._error = error;
