@@ -6,10 +6,13 @@
 
 import {
   LitElementDeclaration,
-  ReactiveProperty as ModelProperty,
-  Event as ModelEvent,
   PackageJson,
   getImportsStringForReferences,
+} from '@lit-labs/analyzer';
+
+import {
+  ReactiveProperty as ModelProperty,
+  Event as ModelEvent,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -33,28 +36,14 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-/**
- * TODO(sorvell): For now, assume all properties are optional unless they
- * explicitly have a `!`. Ideally we would also check that they do not
- * have a default value, but this is not yet provided in the model.
- **/
-const getFieldModifierString = (node: ModelProperty['node']) =>
-  node.exclamationToken ? '!' : '?';
-
 const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
 
-const wrapDefineProps = (props: Map<string, ModelProperty>) =>
-  Array.from(props.values())
-    .map((prop) => {
-      const modifier = getFieldModifierString(prop.node);
-      const type = `${prop.type?.text}${
-        modifier === '?' && !prop.type?.text.includes('undefined')
-          ? ' | undefined'
-          : ''
-      }`;
-      return `${prop.name}${modifier}: ${type}`;
-    })
-    .join(',\n');
+const renderPropsInterface = (props: Map<string, ModelProperty>) =>
+  `export interface Props {
+     ${Array.from(props.values())
+       .map((prop) => `${prop.name}?: ${prop.type?.text || 'any'}`)
+       .join(';\n     ')}
+   }`;
 
 // TODO(sorvell): Improve event handling, currently just forwarding the event,
 // but this should be its "payload."
@@ -64,21 +53,24 @@ const wrapEvents = (events: Map<string, ModelEvent>) =>
       (event) => `(e: '${event.name}', payload: ${getEventType(event)}): void`
     )
     .join(',\n');
+
 /**
  * Generates VNode props for events. Note that vue automatically maps
  * event names from e.g. `event-name` to `onEventName`.
  */
 const renderEvents = (events: Map<string, ModelEvent>) =>
-  Array.from(events.values())
-    .map(
-      (event) =>
-        `${kabobToOnEvent(event.name)}: (event: ${
-          event.type?.text || `CustomEvent<unknown>`
-        }) => emit('${event.name}', (event.detail || event) as ${getEventType(
-          event
-        )})`
-    )
-    .join(',\n');
+  javascript`{
+    ${Array.from(events.values())
+      .map(
+        (event) =>
+          `${kabobToOnEvent(event.name)}: (event: ${
+            event.type?.text || `CustomEvent<unknown>`
+          }) => emit('${event.name}', (event.detail || event) as ${getEventType(
+            event
+          )})`
+      )
+      .join(',\n')}
+  }`;
 
 const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | ModelEvent>
@@ -101,18 +93,25 @@ const wrapperTemplate = (
   const {tagname, events, reactiveProperties} = declaration;
   return javascript`
     <script setup lang="ts">
-      import { h, useSlots } from "vue";
+      import { h, useSlots, reactive } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
       ${getElementTypeImports(declaration)}
 
-      ${
-        reactiveProperties.size
-          ? javascript`const props = defineProps<{
-        ${wrapDefineProps(reactiveProperties)}
-      }>();`
-          : ''
-      }
+      ${renderPropsInterface(reactiveProperties)}
+
+      const vueProps = defineProps<Props>();
+
+      const defaults = reactive({} as Props);
+      const vDefaults = {
+        created(el: any) {
+          for (const p in vueProps) {
+            defaults[p as keyof Props] = el[p];
+          }
+        }
+      };
+
+      let hasRendered = false;
 
       ${
         events.size
@@ -124,14 +123,25 @@ const wrapperTemplate = (
 
       const slots = useSlots();
 
-      const render = () => h(
-        '${tagname}',
-        {
-          ...props,
-          ${renderEvents(events)}
-        },
-        assignSlotNodes(slots as Slots)
-      );
+      const render = () => {
+        const eventProps = ${renderEvents(events)};
+
+        const props = eventProps as (typeof eventProps & Props);
+        for (const p in vueProps) {
+          const v = vueProps[p as keyof Props];
+          if ((v !== undefined) || hasRendered) {
+            props[p as keyof Props] = v ?? defaults[p as keyof Props];
+          }
+        }
+
+        hasRendered = true;
+
+        return h(
+          '${tagname}',
+          props,
+          assignSlotNodes(slots as Slots)
+        );
+      };
     </script>
-    <template><render /></template>`;
+    <template><render v-defaults /></template>`;
 };
