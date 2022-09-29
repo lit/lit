@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventName} from "../create-component.js";
+import type {EventName} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -12,11 +12,15 @@ import {customElement} from '@lit/reactive-element/decorators/custom-element.js'
 import type * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
-import {createComponent} from '../create-component.js';
+import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
 // Needed for JSX expressions
 const React = window.React;
+
+interface Foo {
+  foo?: boolean;
+}
 
 const elementName = 'basic-element';
 @customElement(elementName)
@@ -42,6 +46,17 @@ class BasicElement extends ReactiveElement {
   robj: {[index: string]: unknown} | null | undefined = null;
   @property({type: Array, reflect: true})
   rarr: unknown[] | null | undefined = null;
+
+  @property({ type: Object })
+  set customAccessors(customAccessors: Foo) {
+    const oldValue = this._customAccessors;
+    this._customAccessors = customAccessors;
+    this.requestUpdate("customAccessors", oldValue);
+  }
+  get customAccessors(): Foo {
+    return this._customAccessors;
+  }
+  private _customAccessors = {};
 
   fire(name: string) {
     this.dispatchEvent(new Event(name));
@@ -93,6 +108,29 @@ suite('createComponent', () => {
     await el.updateComplete;
   };
 
+  /*
+    The following test will not build if an incorrect typing occurs
+    when events are not provided to `createComponent`.
+  */
+  test('renders element without optional event map', async () => {
+    const ComponentWithoutEventMap = createComponent(
+      window.React,
+      elementName,
+      BasicElement,
+    );
+
+    const name = 'Component without event map.';
+    window.ReactDOM.render(
+      <ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>,
+      container
+    );
+
+    el = container.querySelector(elementName)! as BasicElement;
+    await el.updateComplete;
+    
+    assert.equal(el.textContent, 'Component without event map.');
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     window.ReactDOM.render(
@@ -114,7 +152,7 @@ suite('createComponent', () => {
       basicElementEvents,
       'FooBar'
     );
-    
+
     assert.equal(NamedComponent.displayName, 'FooBar');
   });
 
@@ -184,12 +222,14 @@ suite('createComponent', () => {
       num: 5,
       obj: o,
       arr: a,
+      customAccessors: o
     });
     assert.equal(el.bool, true);
     assert.equal(el.str, 'str');
     assert.equal(el.num, 5);
     assert.deepEqual(el.obj, o);
     assert.deepEqual(el.arr, a);
+    assert.deepEqual(el.customAccessors, o);
     const firstEl = el;
     // update
     o = {foo: false};
@@ -200,6 +240,7 @@ suite('createComponent', () => {
       num: 10,
       obj: o,
       arr: a,
+      customAccessors: o
     });
     assert.equal(firstEl, el);
     assert.equal(el.bool, false);
@@ -207,6 +248,7 @@ suite('createComponent', () => {
     assert.equal(el.num, 10);
     assert.deepEqual(el.obj, o);
     assert.deepEqual(el.arr, a);
+    assert.deepEqual(el.customAccessors, o);
   });
 
   test('can set properties that reflect', async () => {
@@ -340,22 +382,5 @@ suite('createComponent', () => {
     } as any);
     assert.equal(el.style.display, 'block');
     assert.equal(el.getAttribute('class'), 'foo bar');
-  });
-
-  test('warns if element contains reserved props', async () => {
-    const warn = console.warn;
-    let warning: string;
-    console.warn = (m: string) => {
-      warning = m;
-    };
-    const tag = 'x-warn';
-    @customElement(tag)
-    class Warn extends ReactiveElement {
-      @property()
-      ref = 'hi';
-    }
-    createComponent(window.React, tag, Warn);
-    assert.include(warning!, 'ref');
-    console.warn = warn;
   });
 });

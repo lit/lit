@@ -9,4 +9,7 @@ import {defaultConfig} from './rollup.config.js';
 export default defaultConfig({
   outputDir: './version-stability-build/',
   testPropertyPrefix: 'VERSION_TEST_',
+  copyHtmlTests: false,
+  // Don't emit polyfill-support.js from this test
+  bundled: [],
 });

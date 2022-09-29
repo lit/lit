@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ReactModule from 'react';
-
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -55,14 +53,14 @@ const addOrUpdateEventListener = (
  * Sets properties and events on custom elements. These properties and events
  * have been pre-filtered so we know they should apply to the custom element.
  */
-const setProperty = <E extends Element, T>(
+const setProperty = <E extends Element>(
   node: E,
   name: string,
   value: unknown,
   old: unknown,
-  events?: StringValued<T>
+  events?: Events
 ) => {
-  const event = events?.[name as keyof T];
+  const event = events?.[name];
   if (event !== undefined) {
     // Dirty check event value.
     if (value !== old) {
@@ -82,10 +80,6 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   } else {
     (ref as {current: Element | null}).current = value;
   }
-};
-
-type StringValued<T> = {
-  [P in keyof T]: string;
 };
 
 type Constructor<T> = {new (): T};
@@ -127,8 +121,8 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events>(
-  React: typeof ReactModule,
+export const createComponent = <I extends HTMLElement, E extends Events = {}>(
+  React: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
@@ -136,17 +130,14 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
 ) => {
   const Component = React.Component;
   const createElement = React.createElement;
+  const eventProps = new Set(Object.keys(events ?? {}));
 
   // Props the user is allowed to use, includes standard attributes, children,
   // ref, as well as special event and element properties.
-  // TODO: we might need to omit more properties from HTMLElement than just
-  // 'children', but 'children' is special to JSX, so we must at least do that.
-  type UserProps = React.PropsWithChildren<
-    React.PropsWithRef<
-      Partial<Omit<I, 'children'>> &
-        Partial<EventProps<E>> &
-        Omit<React.HTMLAttributes<HTMLElement>, keyof E>
-    >
+  type ReactProps = Omit<React.HTMLAttributes<I>, keyof E>;
+  type ElementWithoutPropsOrEvents = Omit<I, keyof E | keyof ReactProps>;
+  type UserProps = Partial<
+    ReactProps & ElementWithoutPropsOrEvents & EventProps<E>
   >;
 
   // Props used by this component wrapper. This is the UserProps and the
@@ -156,28 +147,6 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
   type ComponentProps = UserProps & {
     __forwardedRef?: React.Ref<unknown>;
   };
-
-  // Set of properties/events which should be specially handled by the wrapper
-  // and not handled directly by React.
-  const elementClassProps = new Set(Object.keys(events ?? {}));
-  for (const p in elementClass.prototype) {
-    if (!(p in HTMLElement.prototype)) {
-      if (reservedReactProperties.has(p)) {
-        // Note, this effectively warns only for `ref` since the other
-        // reserved props are on HTMLElement.prototype. To address this
-        // would require crawling down the prototype, which doesn't feel worth
-        // it since implementing these properties on an element is extremely
-        // rare.
-        console.warn(
-          `${tagName} contains property ${p} which is a React ` +
-            `reserved property. It will be used by React and not set on ` +
-            `the element.`
-        );
-      } else {
-        elementClassProps.add(p);
-      }
-    }
-  }
 
   class ReactComponent extends Component<ComponentProps> {
     private _element: I | null = null;
@@ -257,7 +226,12 @@ export const createComponent = <I extends HTMLElement, E extends Events>(
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        if (elementClassProps.has(k)) {
+        if (
+          eventProps.has(k) ||
+          (!reservedReactProperties.has(k) &&
+            !(k in HTMLElement.prototype) &&
+            k in elementClass.prototype)
+        ) {
           this._elementProps[k] = v;
         } else {
           // React does *not* handle `className` for custom elements so

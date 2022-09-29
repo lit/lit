@@ -1,5 +1,35 @@
 # Change Log
 
+## 2.3.1
+
+### Patch Changes
+
+- [#3223](https://github.com/lit/lit/pull/3223) [`5a65ca97`](https://github.com/lit/lit/commit/5a65ca97464839fcd4ea59240b9910002fa64a82) - Use existing `document` in Node build
+
+## 2.3.0
+
+### Minor Changes
+
+- [#3156](https://github.com/lit/lit/pull/3156) [`ae6f6808`](https://github.com/lit/lit/commit/ae6f6808f539254b72ec7efcff34b812173abe64) - Lit and its underlying libraries can now be imported directly from Node without crashing, without the need to load the @lit-labs/ssr dom-shim library. Note that actually rendering from a Node context still requires the @lit-labs/ssr dom-shim, and the appropriate integration between @lit-labs/ssr and your framework/tool.
+
+### Patch Changes
+
+- [#3003](https://github.com/lit/lit/pull/3003) [`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd) - Lit's `async-directive` now re-exports everything from the `directive` module.
+
+- [#3199](https://github.com/lit/lit/pull/3199) [`0725fdb4`](https://github.com/lit/lit/commit/0725fdb4dd7d36e3a7154830c41b9af4cf866e52) - In DEV_MODE, render a warning instead of rendering a template's host in the template.
+
+  Most commonly this would happen when rendering `${this}` in a LitElement's template, which has the counterintuitive behavior of removing the element from the DOM, because when rendering the element's template we attach it into its own shadow root, which removes it from the DOM, causing it simply disappear. This is especially problematic with a fast HMR system.
+
+- [#3186](https://github.com/lit/lit/pull/3186) [`3766ae4c`](https://github.com/lit/lit/commit/3766ae4c35edf794aa30ee2d738c6f63fdda44e5) - `StaticValue` interface type is now exported.
+
+## 2.2.7
+
+### Patch Changes
+
+- [#3130](https://github.com/lit/lit/pull/3130) [`1f0567f1`](https://github.com/lit/lit/commit/1f0567f10c56531e555329eeb006349ba022070f) - Export the underlying type of the `keyed` directive.
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
 ## 2.2.6
 
 ### Patch Changes

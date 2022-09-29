@@ -4,12 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+const NODE_MODE = false;
+const global = NODE_MODE ? globalThis : window;
+
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
 export const supportsAdoptingStyleSheets =
-  window.ShadowRoot &&
-  (window.ShadyCSS === undefined || window.ShadyCSS.nativeShadow) &&
+  global.ShadowRoot &&
+  (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
   'replace' in CSSStyleSheet.prototype;
 
@@ -316,7 +319,9 @@ const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
  * Given a CSSStylesheet or CSSResult, converts from CSSStyleSheet to CSSResult
  * if the browser does not support `adoptedStyleSheets`.
  */
-export const getCompatibleStyle = supportsAdoptingStyleSheets
-  ? (s: CSSResultOrNative) => s
-  : (s: CSSResultOrNative) =>
-      s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
+export const getCompatibleStyle =
+  supportsAdoptingStyleSheets ||
+  (NODE_MODE && global.CSSStyleSheet === undefined)
+    ? (s: CSSResultOrNative) => s
+    : (s: CSSResultOrNative) =>
+        s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;

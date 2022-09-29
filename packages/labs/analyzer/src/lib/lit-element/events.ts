@@ -11,11 +11,21 @@
  */
 
 import ts from 'typescript';
+import {DiagnosticsError} from '../errors.js';
 import {Event} from '../model.js';
+import {AnalyzerInterface} from '../model.js';
+import {getTypeForJSDocTag} from '../types.js';
 
 import {LitClassDeclaration} from './lit-element.js';
 
-export const getEvents = (node: LitClassDeclaration) => {
+/**
+ * Returns an array of analyzer `Event` models for the given
+ * ts.ClassDeclaration.
+ */
+export const getEvents = (
+  node: LitClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
   const events = new Map<string, Event>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
@@ -27,22 +37,24 @@ export const getEvents = (node: LitClassDeclaration) => {
         } else if (typeof comment === 'string') {
           const result = parseFiresTagComment(comment);
           if (result === undefined) {
-            // TODO(justinfagnani): report syntax error?
-            continue;
+            throw new DiagnosticsError(
+              tag,
+              'The @fires annotation was not in a recognized form. ' +
+                'Use `@fires event-name {Type} - Description`.'
+            );
           }
           const {name, type, description} = result;
-          // TODO(justinfagnani): how do we dereference the event type name
-          // into a TypeScript type? TypeScript will automatically do this for
-          // jsdoc tags it understands, but unfortunately @fires is not one of
-          // them.
           events.set(name, {
             name,
-            typeString: type,
+            type: type ? getTypeForJSDocTag(tag, analyzer) : undefined,
             description,
           });
         } else {
           // TODO: when do we get a ts.NodeArray<ts.JSDocComment>?
-          throw new Error(`Internal error: unsupported node type`);
+          throw new DiagnosticsError(
+            tag,
+            `Internal error: unsupported node type`
+          );
         }
       }
     }

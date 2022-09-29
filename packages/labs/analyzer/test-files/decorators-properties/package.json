@@ -1,4 +1,5 @@
 {
+  "name": "@lit-internal/test-decorators-properties",
   "dependencies": {
     "lit": "^2.0.0"
   }

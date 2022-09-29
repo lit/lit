@@ -4698,6 +4698,178 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  'LitElement: Reflected number attribute': () => {
+    return {
+      registerElements() {
+        class LEReflectedNumberAttribute extends LitElement {
+          @property({type: Number, reflect: true})
+          num = 42;
+        }
+        customElements.define(
+          'le-reflected-number-attribute',
+          LEReflectedNumberAttribute
+        );
+      },
+      render() {
+        return html`
+          <le-reflected-number-attribute></le-reflected-number-attribute>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-reflected-number-attribute'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as unknown as {num: number}).num, 42);
+          },
+          html: {
+            root: `<le-reflected-number-attribute num="42"></le-reflected-number-attribute>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-reflected-number-attribute'],
+      // The property gets re-reflected to an attribute on upgrade.
+      expectMutationsDuringUpgrade: true,
+      expectMutationsDuringHydration: true,
+    };
+  },
+
+  'LitElement: Reflected boolean attribute': () => {
+    return {
+      registerElements() {
+        class LEReflectedBooleanObjectAttribute extends LitElement {
+          @property({type: Boolean, reflect: true})
+          bool = true;
+        }
+        customElements.define(
+          'le-reflected-boolean-attribute',
+          LEReflectedBooleanObjectAttribute
+        );
+      },
+      render() {
+        return html`
+          <le-reflected-boolean-attribute></le-reflected-boolean-attribute>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-reflected-boolean-attribute'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as unknown as {bool: boolean}).bool, true);
+          },
+          html: {
+            root: `<le-reflected-boolean-attribute bool></le-reflected-boolean-attribute>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-reflected-boolean-attribute'],
+      // The property gets re-reflected to an attribute on upgrade.
+      expectMutationsDuringUpgrade: true,
+      expectMutationsDuringHydration: true,
+    };
+  },
+
+  'LitElement: Reflected object attribute': () => {
+    return {
+      registerElements() {
+        class LEReflectedObjectAttribute extends LitElement {
+          @property({type: Object, reflect: true})
+          obj = {foo: 42};
+        }
+        customElements.define(
+          'le-reflected-object-attribute',
+          LEReflectedObjectAttribute
+        );
+      },
+      render() {
+        return html`
+          <le-reflected-object-attribute></le-reflected-object-attribute>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-reflected-object-attribute'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual(
+              (el as unknown as {obj: {foo: number}}).obj.foo,
+              42
+            );
+          },
+          html: {
+            root: `<le-reflected-object-attribute obj="{&quot;foo&quot;:42}"></le-reflected-object-attribute>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-reflected-object-attribute'],
+      // The property gets re-reflected to an attribute on upgrade.
+      expectMutationsDuringUpgrade: true,
+      expectMutationsDuringHydration: true,
+    };
+  },
+
+  'LitElement: Reflected custom attribute': () => {
+    return {
+      registerElements() {
+        class LEReflectedCustomAttribute extends LitElement {
+          @property({
+            converter: {
+              fromAttribute: (value: string) => {
+                return [...value].reverse().join('');
+              },
+              toAttribute: (value: string) => {
+                return [...value].reverse().join('');
+              },
+            },
+            reflect: true,
+          })
+          custom = 'abc';
+        }
+        customElements.define(
+          'le-reflected-custom-attribute',
+          LEReflectedCustomAttribute
+        );
+      },
+      render() {
+        return html`
+          <le-reflected-custom-attribute></le-reflected-custom-attribute>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-reflected-custom-attribute'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual(
+              (el as unknown as {custom: string}).custom,
+              'abc'
+            );
+          },
+          html: {
+            root: `<le-reflected-custom-attribute custom="cba"></le-reflected-custom-attribute>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-reflected-custom-attribute'],
+      // The property gets re-reflected to an attribute on upgrade.
+      expectMutationsDuringUpgrade: true,
+      expectMutationsDuringHydration: true,
+    };
+  },
+
   'LitElement: Static attribute deserializes': () => {
     return {
       registerElements() {

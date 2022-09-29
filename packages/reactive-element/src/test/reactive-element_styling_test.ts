@@ -8,7 +8,7 @@ import {
   ReactiveElement,
   unsafeCSS,
   CSSResultGroup,
-} from '../reactive-element.js';
+} from '@lit/reactive-element';
 
 import {
   canTestReactiveElement,

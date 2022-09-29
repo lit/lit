@@ -5,6 +5,7 @@
  */
 
 import * as path from 'path';
+import {pathToFileURL} from 'url';
 import {Worker} from 'worker_threads';
 import type {Message} from './worker/types.js';
 
@@ -76,8 +77,8 @@ function configureWorker(
 
   eleventyConfig.addTransform(
     'render-lit',
-    async (content: string, outputPath: string) => {
-      if (!outputPath.endsWith('.html')) {
+    async (content: string, outputPath: string | false) => {
+      if (outputPath && !outputPath.endsWith('.html')) {
         return content;
       }
 
@@ -180,8 +181,8 @@ ${reset}`
 
   eleventyConfig.addTransform(
     'render-lit',
-    async (content: string, outputPath: string) => {
-      if (!outputPath.endsWith('.html')) {
+    async (content: string, outputPath: string | false) => {
+      if (outputPath && !outputPath.endsWith('.html')) {
         return content;
       }
 
@@ -208,8 +209,8 @@ module.exports = {
       return;
     }
 
-    const resolvedComponentModules = componentModules.map((module) =>
-      path.resolve(process.cwd(), module)
+    const resolvedComponentModules = componentModules.map(
+      (module) => pathToFileURL(path.resolve(process.cwd(), module)).href
     );
 
     switch (mode) {

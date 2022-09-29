@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration} from '../model.js';
+import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
 import {getProperties} from './properties.js';
@@ -22,14 +22,15 @@ import {getProperties} from './properties.js';
  */
 export const getLitElementDeclaration = (
   node: LitClassDeclaration,
-  checker: ts.TypeChecker
+  analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(node),
-    name: node.name?.text,
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
+    name: node.name?.text ?? '',
     node,
-    reactiveProperties: getProperties(node, checker),
-    events: getEvents(node),
+    reactiveProperties: getProperties(node, analyzer),
+    events: getEvents(node, analyzer),
   });
 };
 
@@ -74,11 +75,12 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
  */
 export const isLitElement = (
   node: ts.Node,
-  checker: ts.TypeChecker
+  analyzer: AnalyzerInterface
 ): node is LitClassDeclaration => {
   if (!ts.isClassLike(node)) {
     return false;
   }
+  const checker = analyzer.program.getTypeChecker();
   const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
   const baseTypes = checker.getBaseTypes(type);
   for (const t of baseTypes) {

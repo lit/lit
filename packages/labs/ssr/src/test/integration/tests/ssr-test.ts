@@ -30,8 +30,8 @@ export interface SSRTestDescription {
     check?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
   }>;
   /**
-   * A list of selectors of elements that should no change between renders.
-   * Used to assert that the DOM reused in hydration, not recreated.
+   * A list of selectors of elements that should not change between renders.
+   * Used to assert that the DOM was reused in hydration, not recreated.
    */
   stableSelectors: Array<string>;
   expectMutationsOnFirstRender?: boolean;

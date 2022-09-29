@@ -12,12 +12,13 @@
 
 import ts from 'typescript';
 import {LitClassDeclaration} from './lit-element.js';
-import {ReactiveProperty} from '../model.js';
+import {ReactiveProperty, AnalyzerInterface} from '../model.js';
+import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 
 export const getProperties = (
   node: LitClassDeclaration,
-  checker: ts.TypeChecker
+  analyzer: AnalyzerInterface
 ) => {
   const reactiveProperties = new Map<string, ReactiveProperty>();
 
@@ -30,15 +31,13 @@ export const getProperties = (
       throw new Error('unsupported property name');
     }
     const name = prop.name.text;
-    const type = checker.getTypeAtLocation(prop);
 
     const propertyDecorator = getPropertyDecorator(prop);
     if (propertyDecorator !== undefined) {
       const options = getPropertyOptions(propertyDecorator);
       reactiveProperties.set(name, {
         name,
-        type,
-        typeString: checker.typeToString(type),
+        type: getTypeForNode(prop, analyzer),
         node: prop,
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),

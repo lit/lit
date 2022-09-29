@@ -7,10 +7,10 @@ import {notEqual} from '@lit/reactive-element';
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TaskFunction<D extends [...unknown[]], R = any> = (
+export type TaskFunction<D extends ReadonlyArray<unknown>, R = any> = (
   args: D
 ) => R | typeof initialState | Promise<R | typeof initialState>;
-export type ArgsFunction<D extends [...unknown[]]> = () => D;
+export type ArgsFunction<D extends ReadonlyArray<unknown>> = () => D;
 
 // `DepsFunction` is being maintained for BC with its previous name.
 export {ArgsFunction as DepsFunction};
@@ -40,10 +40,12 @@ export type StatusRenderer<R> = {
   error?: (error: unknown) => unknown;
 };
 
-export interface TaskConfig<T extends unknown[], R> {
+export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
+  onComplete?: (value: R) => unknown;
+  onError?: (error: unknown) => unknown;
 }
 
 // TODO(sorvell): Some issues:
@@ -98,8 +100,10 @@ export interface TaskConfig<T extends unknown[], R> {
  *   }
  * }
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class Task<T extends [...unknown[]] = any, R = any> {
+export class Task<
+  T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+  R = unknown
+> {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
   private _getArgs?: ArgsFunction<T>;
@@ -107,6 +111,8 @@ export class Task<T extends [...unknown[]] = any, R = any> {
   private _host: ReactiveControllerHost;
   private _value?: R;
   private _error?: unknown;
+  private _onComplete?: (result: R) => unknown;
+  private _onError?: (error: unknown) => unknown;
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
@@ -142,6 +148,8 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
+    this._onComplete = taskConfig.onComplete;
+    this._onError = taskConfig.onError;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
     }
@@ -193,8 +201,6 @@ export class Task<T extends [...unknown[]] = any, R = any> {
       });
     }
     this.status = TaskStatus.PENDING;
-    this._error = undefined;
-    this._value = undefined;
     let result!: R | typeof initialState;
     let error: unknown;
     // Request an update to report pending state.
@@ -211,9 +217,19 @@ export class Task<T extends [...unknown[]] = any, R = any> {
         this.status = TaskStatus.INITIAL;
       } else {
         if (error === undefined) {
+          try {
+            this._onComplete?.(result as R);
+          } catch {
+            // Ignore user errors from onComplete.
+          }
           this.status = TaskStatus.COMPLETE;
           this._resolveTaskComplete(result as R);
         } else {
+          try {
+            this._onError?.(error);
+          } catch {
+            // Ignore user errors from onError.
+          }
           this.status = TaskStatus.ERROR;
           this._rejectTaskComplete(error);
         }

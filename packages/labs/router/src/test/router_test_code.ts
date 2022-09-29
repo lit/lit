@@ -6,8 +6,8 @@
 
 import {LitElement, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {Router} from '../router.js';
-import {Routes} from '../routes.js';
+import {Router} from '@lit-labs/router/router.js';
+import {Routes} from '@lit-labs/router/routes.js';
 
 @customElement('router-test-1')
 export class Test1 extends LitElement {

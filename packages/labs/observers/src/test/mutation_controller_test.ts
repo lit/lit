@@ -12,7 +12,7 @@ import {
 import {
   MutationController,
   MutationControllerConfig,
-} from '../mutation_controller.js';
+} from '@lit-labs/observers/mutation_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -365,6 +365,77 @@ const canTest =
     // Can re-observe after connection.
     el.observer.observe(d1);
     d1.setAttribute('a', 'a2');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: MutationController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new MutationController(this, {
+          config: {attributes: true},
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports attribute change
+    el.resetObserverValue();
+    el.setAttribute('hi', 'hi');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+
+    // Reports another attribute change
+    el.resetObserverValue();
+    el.requestUpdate();
+    await nextFrame();
+    assert.isUndefined(el.observerValue);
+    el.setAttribute('bye', 'bye');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe external element after host connected', async () => {
+    class A extends ReactiveElement {
+      observer!: MutationController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new MutationController(this, {
+          target: document.body,
+          config: {childList: true},
+          skipInitial: true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+
+    const el = (await renderTestElement(A)) as A;
+    assert.equal(el.observerValue, undefined);
+    const d = document.createElement('div');
+    document.body.appendChild(d);
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+    d.remove();
     await nextFrame();
     assert.isTrue(el.observerValue);
   });

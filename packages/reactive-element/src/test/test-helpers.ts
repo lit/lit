@@ -8,7 +8,7 @@ import {
   ReactiveElement,
   PropertyValues,
   getAdoptedStyles,
-} from '../reactive-element.js';
+} from '@lit/reactive-element.js';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;

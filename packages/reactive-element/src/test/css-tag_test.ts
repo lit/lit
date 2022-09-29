@@ -11,7 +11,7 @@ import {
   supportsAdoptingStyleSheets,
   adoptStyles,
   getAdoptedStyles,
-} from '../css-tag.js';
+} from '@lit/reactive-element/css-tag.js';
 import {
   html,
   getComputedStyleValue,

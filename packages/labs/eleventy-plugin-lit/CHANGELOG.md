@@ -1,5 +1,20 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 0.2.3
+
+### Patch Changes
+
+- [#3203](https://github.com/lit/lit/pull/3203) [`23462312`](https://github.com/lit/lit/commit/234623129990c19c535eb36d2bcab38f3842ff82) - Use file urls for resolved module paths for Windows compatibility
+
+- Updated dependencies [[`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd), [`6361a4b4`](https://github.com/lit/lit/commit/6361a4b4a589465cf6836c8454ed8ca4521d7b4d), [`ae6f6808`](https://github.com/lit/lit/commit/ae6f6808f539254b72ec7efcff34b812173abe64)]:
+  - lit@2.3.0
+
+## 0.2.2
+
+### Patch Changes
+
+- [#3006](https://github.com/lit/lit/pull/3006) [`da4e097b`](https://github.com/lit/lit/commit/da4e097b09ba5769a3daa4f1539c415ce3699a5e) - Fix transform breakage in situations where `outputPath` is false (e.g. setting `permalink: false` or using the serverless plugin).
+
 ## 0.2.1
 
 ### Patch Changes

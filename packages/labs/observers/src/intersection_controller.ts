@@ -87,7 +87,7 @@ export class IntersectionController implements ReactiveController {
     host: ReactiveControllerHost,
     {target, config, callback, skipInitial}: IntersectionControllerConfig
   ) {
-    (this._host = host).addController(this);
+    this._host = host;
     // Target defaults to `host` unless explicitly `null`.
     this._target =
       target === null ? target : target ?? (this._host as unknown as Element);
@@ -112,6 +112,7 @@ export class IntersectionController implements ReactiveController {
       },
       config
     );
+    host.addController(this);
   }
 
   /**

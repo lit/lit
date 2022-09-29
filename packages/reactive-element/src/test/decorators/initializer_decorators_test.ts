@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement} from '../../reactive-element.js';
+import {ReactiveElement} from '@lit/reactive-element';
 import {generateElementName} from '../test-helpers.js';
-import {decorateProperty} from '../../decorators/base.js';
+import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {assert} from '@esm-bundle/chai';
-import {property} from '../../decorators/property.js';
+import {property} from '@lit/reactive-element/decorators/property.js';
 
 suite('Decorators using initializers', () => {
   let container: HTMLDivElement;

@@ -10,24 +10,64 @@ import {AbsolutePath, PackagePath} from './paths.js';
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
-export interface PackageInit {
+/**
+ * Return type of `getLitElementModules`: contains a module and filtered list of
+ * LitElementDeclarations contained within it.
+ */
+export type ModuleWithLitElementDeclarations = {
+  module: Module;
+  declarations: LitElementDeclaration[];
+};
+
+export interface PackageInfoInit {
+  name: string;
   rootDir: AbsolutePath;
   packageJson: PackageJson;
-  tsConfig: ts.ParsedCommandLine;
+}
+
+export class PackageInfo {
+  readonly name: string;
+  readonly rootDir: AbsolutePath;
+  readonly packageJson: PackageJson;
+
+  constructor(init: PackageInfoInit) {
+    this.name = init.name;
+    this.rootDir = init.rootDir;
+    this.packageJson = init.packageJson;
+  }
+}
+
+export interface PackageInit extends PackageInfo {
   modules: ReadonlyArray<Module>;
 }
 
-export class Package {
-  readonly rootDir: AbsolutePath;
+export class Package extends PackageInfo {
   readonly modules: ReadonlyArray<Module>;
-  readonly tsConfig: ts.ParsedCommandLine;
-  readonly packageJson: PackageJson;
 
   constructor(init: PackageInit) {
-    this.rootDir = init.rootDir;
-    this.packageJson = init.packageJson;
-    this.tsConfig = init.tsConfig;
+    super(init);
     this.modules = init.modules;
+  }
+
+  /**
+   * Returns a list of modules in this package containing LitElement
+   * declarations, along with the filtered list of LitElementDeclarartions.
+   */
+  getLitElementModules() {
+    const modules: {module: Module; declarations: LitElementDeclaration[]}[] =
+      [];
+    for (const module of this.modules) {
+      const declarations = module.declarations.filter((d) =>
+        d.isLitElementDeclaration()
+      ) as LitElementDeclaration[];
+      if (declarations.length > 0) {
+        modules.push({
+          module,
+          declarations,
+        });
+      }
+    }
+    return modules;
   }
 }
 
@@ -35,6 +75,7 @@ export interface ModuleInit {
   sourceFile: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
+  packageJson: PackageJson;
 }
 
 export class Module {
@@ -54,27 +95,60 @@ export class Module {
    */
   readonly jsPath: PackagePath;
   readonly declarations: Array<Declaration> = [];
+  readonly packageJson: PackageJson;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
+    this.packageJson = init.packageJson;
   }
 }
 
-export type Declaration = ClassDeclaration;
+interface DeclarationInit {
+  name: string;
+}
 
-export interface ClassDeclarationInit {
-  name: string | undefined;
+export abstract class Declaration {
+  name: string;
+  constructor(init: DeclarationInit) {
+    this.name = init.name;
+  }
+  isVariableDeclaration(): this is VariableDeclaration {
+    return this instanceof VariableDeclaration;
+  }
+  isClassDeclaration(): this is ClassDeclaration {
+    return this instanceof ClassDeclaration;
+  }
+  isLitElementDeclaration(): this is LitElementDeclaration {
+    return this instanceof LitElementDeclaration;
+  }
+}
+
+export interface VariableDeclarationInit extends DeclarationInit {
+  node: ts.VariableDeclaration;
+  type: Type | undefined;
+}
+
+export class VariableDeclaration extends Declaration {
+  readonly node: ts.VariableDeclaration;
+  readonly type: Type | undefined;
+  constructor(init: VariableDeclarationInit) {
+    super(init);
+    this.node = init.node;
+    this.type = init.type;
+  }
+}
+
+export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
 }
 
-export class ClassDeclaration {
-  readonly name: string | undefined;
+export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
 
   constructor(init: ClassDeclarationInit) {
-    this.name = init.name;
+    super(init);
     this.node = init.node;
   }
 }
@@ -86,8 +160,6 @@ interface LitElementDeclarationInit extends ClassDeclarationInit {
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
-  readonly isLitElement = true;
-
   /**
    * The element's tag name, if one is associated with this class declaration,
    * such as with a `@customElement()` decorator or `customElements.define()`
@@ -115,9 +187,7 @@ export interface ReactiveProperty {
   name: string;
   node: ts.PropertyDeclaration;
 
-  // TODO(justinfagnani): where do we convert this to a type string and CEM type references?
-  type: ts.Type;
-  typeString: string;
+  type: Type;
 
   reflect: boolean;
 
@@ -146,33 +216,110 @@ export interface ReactiveProperty {
 export interface Event {
   name: string;
   description: string | undefined;
-  typeString: string | undefined;
-  // TODO(justinfagnani): store a type reference too
-  // https://github.com/lit/lit/issues/2850
+  type: Type | undefined;
 }
-
-// TODO(justinfagnani): Move helpers into a Lit-specific module
-export const isLitElementDeclaration = (
-  dec: ClassDeclaration
-): dec is LitElementDeclaration => {
-  return (dec as LitElementDeclaration).isLitElement;
-};
 
 export interface LitModule {
   module: Module;
   elements: LitElementDeclaration[];
 }
 
-export const getLitModules = (analysis: Package) => {
-  const modules: LitModule[] = [];
-  for (const module of analysis.modules) {
-    const elements = module.declarations.filter(isLitElementDeclaration);
-    if (elements.length > 0) {
-      modules.push({
-        module,
-        elements,
-      });
+export interface ReferenceInit {
+  name: string;
+  package?: string | undefined;
+  module?: string | undefined;
+  isGlobal?: boolean;
+}
+
+export class Reference {
+  readonly name: string;
+  readonly package: string | undefined;
+  readonly module: string | undefined;
+  readonly isGlobal: boolean;
+  constructor(init: ReferenceInit) {
+    this.name = init.name;
+    this.package = init.package;
+    this.module = init.module;
+    this.isGlobal = init.isGlobal ?? false;
+  }
+
+  get moduleSpecifier() {
+    const separator = this.package && this.module ? '/' : '';
+    return this.isGlobal
+      ? undefined
+      : (this.package || '') + separator + (this.module || '');
+  }
+}
+
+export interface TypeInit {
+  type: ts.Type;
+  text: string;
+  getReferences: () => Reference[];
+}
+
+export class Type {
+  type: ts.Type;
+  text: string;
+  private _getReferences: () => Reference[];
+  private _references: Reference[] | undefined = undefined;
+
+  constructor(init: TypeInit) {
+    this.type = init.type;
+    this.text = init.text;
+    this._getReferences = init.getReferences;
+  }
+
+  get references() {
+    return (this._references ??= this._getReferences());
+  }
+}
+
+/**
+ * Returns a deduped / coalesced string of import statements required to load
+ * the given references.
+ * TODO(kschaaf): Probably want to accept info about existing imports to dedupe
+ * with.
+ */
+export const getImportsStringForReferences = (references: Reference[]) => {
+  const modules = new Map<string, Set<string>>();
+  for (const {moduleSpecifier, name, isGlobal} of references) {
+    if (!isGlobal) {
+      let namesForModule = modules.get(moduleSpecifier!);
+      if (namesForModule === undefined) {
+        modules.set(moduleSpecifier!, (namesForModule = new Set()));
+      }
+      namesForModule.add(name);
     }
   }
-  return modules;
+  return Array.from(modules)
+    .map(
+      ([moduleSpecifier, namesForModule]) =>
+        `import {${Array.from(namesForModule).join(
+          ', '
+        )}} from '${moduleSpecifier}';`
+    )
+    .join('\n');
 };
+
+export interface AnalyzerInterface {
+  program: ts.Program;
+  commandLine: ts.ParsedCommandLine;
+  fs: Pick<
+    ts.System,
+    | 'readDirectory'
+    | 'readFile'
+    | 'realpath'
+    | 'fileExists'
+    | 'useCaseSensitiveFileNames'
+  >;
+  path: Pick<
+    typeof import('path'),
+    | 'join'
+    | 'relative'
+    | 'dirname'
+    | 'basename'
+    | 'dirname'
+    | 'parse'
+    | 'normalize'
+  >;
+}

@@ -1,5 +1,32 @@
 # Change Log
 
+## 2.2.3
+
+### Patch Changes
+
+- [#3187](https://github.com/lit/lit/pull/3187) [`84437af6`](https://github.com/lit/lit/commit/84437af6826a5cdb61c383c3034a0e4150e8e50f) - When using `renderModule`, `URL` and `URLSearchParams` are now available in global of the VM module context
+
+- [#3204](https://github.com/lit/lit/pull/3204) [`19d7bd25`](https://github.com/lit/lit/commit/19d7bd255987cfeac2d8dfa9f9d04d2378568535) - Use `url` module to parse file URL to path for Windows compatibility
+
+- Updated dependencies [[`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd), [`0725fdb4`](https://github.com/lit/lit/commit/0725fdb4dd7d36e3a7154830c41b9af4cf866e52), [`3766ae4c`](https://github.com/lit/lit/commit/3766ae4c35edf794aa30ee2d738c6f63fdda44e5), [`6361a4b4`](https://github.com/lit/lit/commit/6361a4b4a589465cf6836c8454ed8ca4521d7b4d), [`ae6f6808`](https://github.com/lit/lit/commit/ae6f6808f539254b72ec7efcff34b812173abe64)]:
+  - lit-html@2.3.0
+  - lit@2.3.0
+  - @lit/reactive-element@1.4.0
+
+## 2.2.2
+
+### Patch Changes
+
+- [#3138](https://github.com/lit/lit/pull/3138) [`6450e17b`](https://github.com/lit/lit/commit/6450e17b58d1000d0501ad2b427a3248564d0c29) - JS source maps now include the TS source inline
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Upgrade node-fetch version
+
+## 2.2.1
+
+### Patch Changes
+
+- [#3045](https://github.com/lit/lit/pull/3045) [`9a7b6546`](https://github.com/lit/lit/commit/9a7b6546c286a964cafb707812353f33c6f0113c) - Fix behavior of setAttribute when value is not a string to match browsers. It is now cast to a string. Fixes problems such as reflection of type:Number properties on ReactiveElements.
+
 ## 2.2.0
 
 ### Minor Changes
