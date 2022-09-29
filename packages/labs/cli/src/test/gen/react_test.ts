@@ -55,7 +55,7 @@ test('basic wrapper generation', async ({rig, testConsole}) => {
   testConsole.alsoLogToGlobalConsole = true;
   await cli.run();
 
-  assert.equal(testConsole.errorStream.buffer.join(''), '');
+  assert.snapshot(testConsole.errorStream.text, '');
 
   // Note, this is only a very basic test that wrapper generation succeeds when
   // executed via the CLI. For detailed tests, see tests in
