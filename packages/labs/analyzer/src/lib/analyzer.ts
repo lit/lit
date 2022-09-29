@@ -5,91 +5,89 @@
  */
 
 import ts from 'typescript';
-import {Package, PackageJson} from './model.js';
-import {ProgramContext} from './program-context.js';
+import {Package, PackageJson, AnalyzerInterface} from './model.js';
 import {AbsolutePath} from './paths.js';
-import * as fs from 'fs';
-import * as path from 'path';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
+import {getPackageInfo} from './javascript/packages.js';
+
+export interface AnalyzerInit {
+  getProgram: () => ts.Program;
+  fs: AnalyzerInterface['fs'];
+  path: AnalyzerInterface['path'];
+}
 
 /**
- * An analyzer for Lit npm packages
+ * An analyzer for Lit typescript modules.
  */
-export class Analyzer {
-  readonly packageRoot: AbsolutePath;
-  readonly programContext: ProgramContext;
+export class Analyzer implements AnalyzerInterface {
+  private readonly _getProgram: () => ts.Program;
+  readonly fs: AnalyzerInterface['fs'];
+  readonly path: AnalyzerInterface['path'];
+  private _commandLine: ts.ParsedCommandLine | undefined = undefined;
 
-  /**
-   * @param packageRoot The root directory of the package to analyze. Currently
-   * this directory must have a tsconfig.json and package.json.
-   */
-  constructor(packageRoot: AbsolutePath) {
-    this.packageRoot = packageRoot;
+  constructor(init: AnalyzerInit) {
+    this._getProgram = init.getProgram;
+    this.fs = init.fs;
+    this.path = init.path;
+  }
 
-    // TODO(kschaaf): Consider moving the package.json and tsconfig.json
-    // to analyzePackage() or move it to an async factory function that
-    // passes these to the constructor as arguments.
-    const packageJsonFilename = path.join(packageRoot, 'package.json');
-    let packageJsonText;
-    try {
-      packageJsonText = fs.readFileSync(packageJsonFilename, 'utf8');
-    } catch (e) {
-      throw new Error(`package.json not found at ${packageJsonFilename}`);
-    }
-    let packageJson;
-    try {
-      packageJson = JSON.parse(packageJsonText);
-    } catch (e) {
-      throw new Error(`Malformed package.json found at ${packageJsonFilename}`);
-    }
-    if (packageJson.name === undefined) {
-      throw new Error(
-        `package.json in ${packageJsonFilename} did not have a name.`
-      );
-    }
+  get program() {
+    return this._getProgram();
+  }
 
-    const configFileName = ts.findConfigFile(
-      packageRoot,
-      ts.sys.fileExists,
-      'tsconfig.json'
-    );
-    if (configFileName === undefined) {
-      // TODO: use a hard-coded tsconfig for JS projects.
-      throw new Error(`tsconfig.json not found in ${packageRoot}`);
-    }
-    const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-    // Note `configFileName` is optional but must be set for
-    // `getOutputFileNames` to work correctly; however, it must be relative to
-    // `packageRoot`
-    const commandLine = ts.parseJsonConfigFileContent(
-      configFile.config /* json */,
-      ts.sys /* host */,
-      packageRoot /* basePath */,
-      undefined /* existingOptions */,
-      path.relative(packageRoot, configFileName) /* configFileName */
-    );
+  get commandLine() {
+    return (this._commandLine ??= getCommandLineFromProgram(this));
+  }
 
-    this.programContext = new ProgramContext(
-      packageRoot,
-      commandLine,
-      packageJson
+  getModule(modulePath: AbsolutePath) {
+    return getModule(
+      this.program.getSourceFile(this.path.normalize(modulePath))!,
+      this
     );
   }
 
-  analyzePackage() {
-    const rootFileNames = this.programContext.program.getRootFileNames();
+  getPackage() {
+    const rootFileNames = this.program.getRootFileNames();
+
+    // Find the package.json for this package based on the first root filename
+    // in the program (we assume all root files in a program belong to the same
+    // package)
+    const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
 
     return new Package({
-      rootDir: this.packageRoot,
+      ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
-          this.programContext.program.getSourceFile(path.normalize(fileName))!,
-          this.programContext
+          this.program.getSourceFile(this.path.normalize(fileName))!,
+          this,
+          packageInfo
         )
       ),
-      tsConfig: this.programContext.commandLine,
-      packageJson: this.programContext.packageJson,
     });
   }
 }
+
+/**
+ * Extracts a `ts.ParsedCommandLine` (essentially, the key bits of a
+ * `tsconfig.json`) from the analyzer's `ts.Program`.
+ *
+ * The `ts.getOutputFileNames()` function must be passed a
+ * `ts.ParsedCommandLine`; since not all usages of the analyzer create the
+ * program directly from a tsconfig (plugins get passed the program only),
+ * this allows backing the `ParsedCommandLine` out of an existing program.
+ */
+export const getCommandLineFromProgram = (analyzer: Analyzer) => {
+  const compilerOptions = analyzer.program.getCompilerOptions();
+  const commandLine = ts.parseJsonConfigFileContent(
+    {
+      files: analyzer.program.getRootFileNames(),
+      compilerOptions,
+    },
+    ts.sys,
+    analyzer.path.basename(compilerOptions.configFilePath as string),
+    undefined,
+    compilerOptions.configFilePath as string
+  );
+  return commandLine;
+};

@@ -24,10 +24,16 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
-// TODO: disable these tests until can figure out issues with Sauce Safari
-// version. They do pass on latest Safari locally.
-//(window.IntersectionObserver ? suite : suite.skip)
-suite.skip('IntersectionController', () => {
+const canTest = () => {
+  // TODO: disable tests on Sauce Safari until can figure out issues.
+  // The tests pass on latest Safari locally.
+  const isSafari =
+    navigator.userAgent.includes('Safari/') &&
+    navigator.userAgent.includes('Version/');
+  return !isSafari && window.IntersectionObserver;
+};
+
+(canTest() ? suite : suite.skip)('IntersectionController', () => {
   let container: HTMLElement;
 
   interface TestElement extends ReactiveElement {
@@ -91,6 +97,8 @@ suite.skip('IntersectionController', () => {
   const intersectionComplete = async () => {
     await nextFrame();
     await nextFrame();
+    // For Firefox to pass tests we need a setTimeout.
+    await new Promise((resolve) => setTimeout(resolve, 0));
   };
 
   const intersectOut = (el: HTMLElement) => {
@@ -388,6 +396,75 @@ suite.skip('IntersectionController', () => {
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
     intersectIn(d1);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: IntersectionController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new IntersectionController(this, {});
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports change when not intersecting
+    el.resetObserverValue();
+    intersectOut(el);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change when intersecting
+    el.resetObserverValue();
+    assert.isUndefined(el.observerValue);
+    intersectIn(el);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe external element after host connected', async () => {
+    const d = document.createElement('div');
+    container.appendChild(d);
+    class A extends ReactiveElement {
+      observer!: IntersectionController;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new IntersectionController(this, {
+          target: d,
+          skipInitial: true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value as typeof this.observerValue;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const el = (await renderTestElement(A)) as A;
+
+    assert.equal(el.observerValue, undefined);
+    // Observe intersect out
+    intersectOut(d);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+
+    // Observe intersect in
+    intersectIn(d);
     await intersectionComplete();
     assert.isTrue(el.observerValue);
   });

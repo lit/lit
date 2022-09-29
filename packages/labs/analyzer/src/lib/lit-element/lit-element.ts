@@ -11,8 +11,7 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
 import {getProperties} from './properties.js';
@@ -23,14 +22,15 @@ import {getProperties} from './properties.js';
  */
 export const getLitElementDeclaration = (
   node: LitClassDeclaration,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(node),
-    name: node.name?.text,
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
+    name: node.name?.text ?? '',
     node,
-    reactiveProperties: getProperties(node, programContext),
-    events: getEvents(node, programContext),
+    reactiveProperties: getProperties(node, analyzer),
+    events: getEvents(node, analyzer),
   });
 };
 
@@ -75,15 +75,14 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
  */
 export const isLitElement = (
   node: ts.Node,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface
 ): node is LitClassDeclaration => {
   if (!ts.isClassLike(node)) {
     return false;
   }
-  const type = programContext.checker.getTypeAtLocation(
-    node
-  ) as ts.InterfaceType;
-  const baseTypes = programContext.checker.getBaseTypes(type);
+  const checker = analyzer.program.getTypeChecker();
+  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
+  const baseTypes = checker.getBaseTypes(type);
   for (const t of baseTypes) {
     if (_isLitElementClassDeclaration(t)) {
       return true;

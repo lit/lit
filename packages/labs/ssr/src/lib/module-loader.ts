@@ -131,7 +131,7 @@ export class ModuleLoader {
     if (moduleURL.protocol !== 'file:') {
       throw new Error(`Unsupported protocol: ${moduleURL.protocol}`);
     }
-    const modulePath = moduleURL.pathname;
+    const modulePath = fileURLToPath(moduleURL);
 
     // Look in the cache
     let moduleRecord = this.cache.get(modulePath);

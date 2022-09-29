@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.2.2
+
+### Patch Changes
+
+- [#3116](https://github.com/lit/lit/pull/3116) [`7d185b4e`](https://github.com/lit/lit/commit/7d185b4e882aeca70c7b750d8295d0da34a09cd8) - Upgraded TypeScript version to ~4.7.4
+
 ## 0.2.1
 
 ### Patch Changes

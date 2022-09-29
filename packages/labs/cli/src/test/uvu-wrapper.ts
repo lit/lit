@@ -2,8 +2,8 @@ import * as uvu from 'uvu';
 
 const IN_CI = process.env['CI'];
 // CI machines are sometimes super slow, so give them plenty of time.
-// When testing locally on Windows, some CLI tests take up to 10s.
-const TIMEOUT = IN_CI ? 60_000 : 10_000;
+// When testing locally on Windows, some CLI tests take up to 30s.
+const TIMEOUT = IN_CI ? 60_000 : 30_000;
 
 /**
  * A safer wrapper around uvu.suite.
@@ -37,19 +37,21 @@ function timeout<T>(
   test: uvu.Callback<T>
 ): uvu.Callback<T> {
   return async (ctx) => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const result = Promise.race([
-      test(ctx),
-      new Promise<void>((_, reject) => {
-        timeoutId = setTimeout(
-          () => reject(new Error(`Test timed out: ${JSON.stringify(name)}`)),
-          ms
-        );
-      }),
-    ]);
-    result.finally(() => {
-      clearTimeout(timeoutId);
-    });
-    return result;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        test(ctx),
+        new Promise<void>((_, reject) => {
+          timeoutId = setTimeout(
+            () => reject(new Error(`Test timed out: ${JSON.stringify(name)}`)),
+            ms
+          );
+        }),
+      ]);
+    } finally {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+    }
   };
 }

@@ -18,6 +18,10 @@ import {assert} from '@esm-bundle/chai';
 // Needed for JSX expressions
 const React = window.React;
 
+interface Foo {
+  foo?: boolean;
+}
+
 const elementName = 'basic-element';
 @customElement(elementName)
 class BasicElement extends ReactiveElement {
@@ -42,6 +46,17 @@ class BasicElement extends ReactiveElement {
   robj: {[index: string]: unknown} | null | undefined = null;
   @property({type: Array, reflect: true})
   rarr: unknown[] | null | undefined = null;
+
+  @property({ type: Object })
+  set customAccessors(customAccessors: Foo) {
+    const oldValue = this._customAccessors;
+    this._customAccessors = customAccessors;
+    this.requestUpdate("customAccessors", oldValue);
+  }
+  get customAccessors(): Foo {
+    return this._customAccessors;
+  }
+  private _customAccessors = {};
 
   fire(name: string) {
     this.dispatchEvent(new Event(name));
@@ -207,12 +222,14 @@ suite('createComponent', () => {
       num: 5,
       obj: o,
       arr: a,
+      customAccessors: o
     });
     assert.equal(el.bool, true);
     assert.equal(el.str, 'str');
     assert.equal(el.num, 5);
     assert.deepEqual(el.obj, o);
     assert.deepEqual(el.arr, a);
+    assert.deepEqual(el.customAccessors, o);
     const firstEl = el;
     // update
     o = {foo: false};
@@ -223,6 +240,7 @@ suite('createComponent', () => {
       num: 10,
       obj: o,
       arr: a,
+      customAccessors: o
     });
     assert.equal(firstEl, el);
     assert.equal(el.bool, false);
@@ -230,6 +248,7 @@ suite('createComponent', () => {
     assert.equal(el.num, 10);
     assert.deepEqual(el.obj, o);
     assert.deepEqual(el.arr, a);
+    assert.deepEqual(el.customAccessors, o);
   });
 
   test('can set properties that reflect', async () => {
@@ -363,22 +382,5 @@ suite('createComponent', () => {
     } as any);
     assert.equal(el.style.display, 'block');
     assert.equal(el.getAttribute('class'), 'foo bar');
-  });
-
-  test('warns if element contains reserved props', async () => {
-    const warn = console.warn;
-    let warning: string;
-    console.warn = (m: string) => {
-      warning = m;
-    };
-    const tag = 'x-warn';
-    @customElement(tag)
-    class Warn extends ReactiveElement {
-      @property()
-      ref = 'hi';
-    }
-    createComponent(window.React, tag, Warn);
-    assert.include(warning!, 'ref');
-    console.warn = warn;
   });
 });
