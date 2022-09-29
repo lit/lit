@@ -44,10 +44,10 @@
         "tsconfig.json"
       ],
       "output": [
-        "index.{d.ts,d.ts.map,js,js.map}",
         "fixtures.{d.ts,d.ts.map,js,js.map}",
         "web-test-runner-ssr-plugin.{d.ts,d.ts.map,js,js.map}",
         "lib/",
+        "!lib/utils.{d.ts,d.ts.map,js,js.map}",
         "test/",
         ".tsbuildinfo"
       ]
@@ -62,6 +62,7 @@
         "tsconfig-utils.json"
       ],
       "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
         "lib/utils.{d.ts,d.ts.map,js,js.map}",
         ".tsbuildinfo-utils"
       ]
