@@ -14,7 +14,7 @@
 const NODE_MODE = false;
 
 /**
- * Boolean value that will `true` when imported via the "node" export condition
+ * A boolean that will be `true` in server environments like Node, and `false` in browser environments. Note that your server environment or toolchain must support the `"node"` export condition for this to be `true`.
  * and `false` otherwise.
  */
 export const isServer = NODE_MODE;
