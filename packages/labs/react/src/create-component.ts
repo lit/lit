@@ -165,7 +165,7 @@ export const createComponent = <
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-) => {
+): ReactWebComponent<I, E> => {
   const Component = React.Component;
   const createElement = React.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
