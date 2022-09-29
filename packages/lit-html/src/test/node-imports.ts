@@ -38,4 +38,4 @@ import 'lit-html/polyfill-support.js';
 
 import assert from 'node:assert/strict';
 import {isServer} from 'lit-html/is-server.js';
-assert.ok(isServer, 'Expected isServer to be truthy');
+assert.strictEqual(isServer, true, 'Expected isServer to be true');

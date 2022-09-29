@@ -8,7 +8,7 @@ import {isServer} from 'lit-html/is-server.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('is-server', () => {
-  test('isServer is falsey', () => {
-    assert.notOk(isServer);
+  test('isServer is false', () => {
+    assert.strictEqual(isServer, false);
   });
 });
