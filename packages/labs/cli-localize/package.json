@@ -39,7 +39,6 @@
     },
     "build:deps": {
       "dependencies": [
-        "../cli:build",
         "../../localize-tools:build:ts"
       ]
     },
