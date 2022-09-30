@@ -319,6 +319,36 @@ const canTest =
     assert.isTrue(el.observerValue);
   });
 
+  test('observed targets are re-observed on host connected', async () => {
+    const el = await getTestElement(() => ({
+      target: null,
+      config: {attributes: true},
+    }));
+    el.resetObserverValue();
+    const d1 = document.createElement('div');
+    const d2 = document.createElement('div');
+
+    el.observer.observe(d1);
+    el.observer.observe(d2);
+
+    await nextFrame();
+    el.remove();
+
+    container.appendChild(el);
+
+    // Reports change to first observed target.
+    el.resetObserverValue();
+    d1.setAttribute('a', 'a');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+
+    // Reports change to second observed target.
+    el.resetObserverValue();
+    d2.setAttribute('a', 'a1');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
   test('observed target respects `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
@@ -339,7 +369,7 @@ const canTest =
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target not re-observed on connection', async () => {
+  test('observed target re-observed on connection', async () => {
     const el = await getTestElement(() => ({
       target: null,
       config: {attributes: true},
@@ -360,13 +390,14 @@ const canTest =
     await nextFrame();
     assert.isUndefined(el.observerValue);
 
-    // Does not report change when re-connected
+    // Does report change when re-connected
     container.appendChild(el);
     d1.setAttribute('a', 'a1');
     await nextFrame();
-    assert.isUndefined(el.observerValue);
+    assert.isTrue(el.observerValue);
 
     // Can re-observe after connection.
+    el.resetObserverValue();
     el.observer.observe(d1);
     d1.setAttribute('a', 'a2');
     await nextFrame();

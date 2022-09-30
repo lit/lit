@@ -391,7 +391,7 @@ if (DEV_MODE) {
     await resizeComplete();
     el.remove();
 
-    // Does not reports change when disconnected.
+    // Does not report change when disconnected.
     resizeElement(d1);
     await resizeComplete();
     assert.isUndefined(el.observerValue);
