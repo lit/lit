@@ -126,7 +126,7 @@ export class IntersectionController<T = unknown> implements ReactiveController {
 
   hostConnected() {
     for (const target of this._targets.values()) {
-      this._observe(target);
+      this.observe(target);
     }
   }
 
@@ -145,18 +145,10 @@ export class IntersectionController<T = unknown> implements ReactiveController {
   /**
    * Observe the target element. The controller's `target` is automatically
    * observed when the host connects.
-   * It's a no-op to observe an existing target.
    * @param target Element to observe
    */
   observe(target: Element) {
-    if (this._targets.has(target)) {
-      return;
-    }
     this._targets.add(target);
-    this._observe(target);
-  }
-
-  private _observe(target: Element) {
     // Note, this will always trigger the callback since the initial
     // intersection state is reported.
     this._observer.observe(target);

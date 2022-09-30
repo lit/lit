@@ -417,20 +417,11 @@ const canTest = () => {
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
 
-    // Does report changes when re-connected
+    // Reports changes when re-connected
     container.appendChild(el);
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
     intersectOut(d1);
-    await intersectionComplete();
-    assert.isTrue(el.observerValue);
-
-    el.resetObserverValue();
-    // Re-observing an existing target doesn't invoke callback.
-    el.observer.observe(d1);
-    await intersectionComplete();
-    assert.isUndefined(el.observerValue);
-    intersectIn(d1);
     await intersectionComplete();
     assert.isTrue(el.observerValue);
   });

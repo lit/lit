@@ -401,11 +401,6 @@ if (DEV_MODE) {
     resizeElement(d1);
     await resizeComplete();
     assert.isTrue(el.observerValue);
-
-    // Re-observing without resize should not trigger callback.
-    el.resetObserverValue();
-    el.observer.observe(d1);
-    assert.isUndefined(el.observerValue);
   });
 
   test('can observe changes when initialized after host connected', async () => {
