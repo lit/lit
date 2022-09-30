@@ -178,9 +178,13 @@ const styleMarkersMap = new WeakMap<ShadowRoot, [Comment, Comment]>();
 const getStyleMarkers = (renderRoot: ShadowRoot) => {
   let markers = styleMarkersMap.get(renderRoot);
   if (markers === undefined) {
-    const start = renderRoot.appendChild(document.createComment(''));
-    const end = renderRoot.appendChild(document.createComment(''));
-    styleMarkersMap.set(renderRoot, (markers = [start, end]));
+    styleMarkersMap.set(
+      renderRoot,
+      (markers = [
+        renderRoot.appendChild(document.createComment('')),
+        renderRoot.appendChild(document.createComment('')),
+      ])
+    );
   }
   return markers;
 };
@@ -223,7 +227,7 @@ const applyNonce = (el: HTMLElement) => {
  * HTMLLinkElements. If a CSSStyleSheet is supplied, it should be a constructed
  * stylesheet.
  *
- * Optionally preserves any existing adopted styles, sheets or elements.
+ * Optionally preserves any existing adopted styles.
  */
 export const adoptStyles = (
   renderRoot: ShadowRoot,
