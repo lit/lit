@@ -21,6 +21,11 @@ export class ElementA extends LitElement {
   @property({reflect: true, type: Number, attribute: 'bbb'})
   b = 1;
 
+  @property()
+  c;
+
+  static c = 'should not be inferred as type for c';
+
   render() {
     return html`<h1>${this.a}</h1>`;
   }

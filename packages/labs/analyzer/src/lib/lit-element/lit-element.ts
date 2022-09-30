@@ -92,13 +92,12 @@ export const isLitElement = (
 };
 
 /**
- * Returns the tagname associated with a
+ * Returns the tagname associated with a LitClassDeclaration
  * @param declaration
  * @returns
  */
 export const getTagName = (declaration: LitClassDeclaration) => {
-  // TODO (justinfagnani): support customElements.define()
-  let tagname: string | undefined = undefined;
+  let tagName: string | undefined = undefined;
   const customElementDecorator = declaration.decorators?.find(
     isCustomElementDecorator
   );
@@ -107,7 +106,33 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     customElementDecorator.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
-    tagname = customElementDecorator.expression.arguments[0].text;
+    // Get tag from decorator: `@customElement('x-foo')`
+    tagName = customElementDecorator.expression.arguments[0].text;
+  } else {
+    // Otherwise, look for imperative define in the form of:
+    // `customElements.define('x-foo', XFoo);`
+    declaration.parent.forEachChild((child) => {
+      if (
+        ts.isExpressionStatement(child) &&
+        ts.isCallExpression(child.expression) &&
+        ts.isPropertyAccessExpression(child.expression.expression) &&
+        child.expression.arguments.length >= 2
+      ) {
+        const [tagNameArg, ctorArg] = child.expression.arguments;
+        const {expression, name} = child.expression.expression;
+        if (
+          ts.isIdentifier(expression) &&
+          expression.text === 'customElements' &&
+          ts.isIdentifier(name) &&
+          name.text === 'define' &&
+          ts.isStringLiteralLike(tagNameArg) &&
+          ts.isIdentifier(ctorArg) &&
+          ctorArg.text === declaration.name?.text
+        ) {
+          tagName = tagNameArg.text;
+        }
+      }
+    });
   }
-  return tagname;
+  return tagName;
 };

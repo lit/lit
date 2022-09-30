@@ -185,9 +185,8 @@ export class LitElementDeclaration extends ClassDeclaration {
 
 export interface ReactiveProperty {
   name: string;
-  node: ts.PropertyDeclaration;
 
-  type: Type;
+  type: Type | undefined;
 
   reflect: boolean;
 
