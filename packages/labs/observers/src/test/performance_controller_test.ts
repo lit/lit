@@ -12,6 +12,7 @@ import {
 import {
   PerformanceController,
   PerformanceControllerConfig,
+  PerformanceValueCallback,
 } from '@lit-labs/observers/performance_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -82,7 +83,10 @@ const canTest = () => {
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new PerformanceController(this, config);
+        this.observer = new PerformanceController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -234,15 +238,16 @@ const canTest = () => {
 
   test('can observe changes when initialized after host connected', async () => {
     class TestFirstUpdated extends ReactiveElement {
-      observer!: PerformanceController;
+      observer!: PerformanceController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
         this.observer = new PerformanceController(this, {
           config: {entryTypes: ['measure']},
+          callback: () => true,
         });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -268,5 +273,46 @@ const canTest = () => {
     await generateMeasure();
     await observerComplete(el);
     assert.isTrue(el.observerValue);
+  });
+
+  test('PerformanceController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement((_host: ReactiveControllerHost) => ({
+      config: {entryTypes: ['measure']},
+    }));
+    const A = new PerformanceController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+      config: {entryTypes: ['measure']},
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new PerformanceController(el, {
+      callback: () => '',
+      config: {entryTypes: ['measure']},
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new PerformanceController(el, {
+      callback: () => '',
+      config: {entryTypes: ['measure']},
+    }) as PerformanceController<string>;
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: PerformanceValueCallback<string | null> = () => '';
+    const D = new PerformanceController(el, {
+      callback: narrowTypeCb,
+      config: {entryTypes: ['measure']},
+    });
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
   });
 });

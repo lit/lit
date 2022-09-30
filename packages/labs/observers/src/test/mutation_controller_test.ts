@@ -12,6 +12,7 @@ import {
 import {
   MutationController,
   MutationControllerConfig,
+  MutationValueCallback,
 } from '@lit-labs/observers/mutation_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -53,7 +54,10 @@ const canTest =
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new MutationController(this, config);
+        this.observer = new MutationController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -371,15 +375,16 @@ const canTest =
 
   test('can observe changes when initialized after host connected', async () => {
     class TestFirstUpdated extends ReactiveElement {
-      observer!: MutationController;
+      observer!: MutationController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
         this.observer = new MutationController(this, {
           config: {attributes: true},
+          callback: () => true,
         });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -410,17 +415,18 @@ const canTest =
 
   test('can observe external element after host connected', async () => {
     class A extends ReactiveElement {
-      observer!: MutationController;
+      observer!: MutationController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
         this.observer = new MutationController(this, {
           target: document.body,
           config: {childList: true},
           skipInitial: true,
+          callback: () => true,
         });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -438,5 +444,46 @@ const canTest =
     d.remove();
     await nextFrame();
     assert.isTrue(el.observerValue);
+  });
+
+  test('MutationController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement(() => ({
+      target: null,
+      config: {attributes: true},
+    }));
+    const A = new MutationController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+      config: {attributes: true},
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new MutationController(el, {
+      callback: () => '',
+      config: {attributes: true},
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new MutationController(el, {
+      config: {attributes: true},
+    }) as MutationController<string>;
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: MutationValueCallback<string | null> = () => '';
+    const D = new MutationController(el, {
+      callback: narrowTypeCb,
+      config: {attributes: true},
+    });
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
   });
 });
