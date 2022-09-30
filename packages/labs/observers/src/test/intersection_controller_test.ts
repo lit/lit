@@ -531,4 +531,31 @@ const canTest = () => {
     // @ts-expect-error Type 'number' is not assignable to type 'string'
     D.value = 3;
   });
+
+  test('observed target can be unobserved', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+
+    // Reports initial changes when observe called.
+    el.observer.observe(d1);
+    el.renderRoot.appendChild(d1);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+    await intersectionComplete();
+
+    // Does not report change when unobserved
+    el.observer.unobserve(d1);
+    intersectOut(d1);
+    await intersectionComplete();
+    assert.isUndefined(el.observerValue);
+
+    el.remove();
+    container.appendChild(el);
+
+    // Does not report changes when re-connected
+    intersectIn(d1);
+    await intersectionComplete();
+    assert.isUndefined(el.observerValue);
+  });
 });
