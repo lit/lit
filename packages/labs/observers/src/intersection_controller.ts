@@ -62,7 +62,7 @@ export interface IntersectionControllerConfig<T = unknown> {
  */
 export class IntersectionController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _target: Element | null;
+  private _targets: Set<Element> = new Set();
   private _observer!: IntersectionObserver;
   private _skipInitial = false;
   /**
@@ -84,13 +84,14 @@ export class IntersectionController<T = unknown> implements ReactiveController {
    */
   callback?: IntersectionValueCallback<T>;
   constructor(
-    host: ReactiveControllerHost,
+    host: ReactiveControllerHost & Element,
     {target, config, callback, skipInitial}: IntersectionControllerConfig<T>
   ) {
     this._host = host;
     // Target defaults to `host` unless explicitly `null`.
-    this._target =
-      target === null ? target : target ?? (this._host as unknown as Element);
+    if (target !== null) {
+      this._targets.add(target ?? host);
+    }
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback;
     // Check browser support.
@@ -124,8 +125,8 @@ export class IntersectionController<T = unknown> implements ReactiveController {
   }
 
   hostConnected() {
-    if (this._target) {
-      this.observe(this._target);
+    for (const target of this._targets.values()) {
+      this._observe(target);
     }
   }
 
@@ -144,9 +145,18 @@ export class IntersectionController<T = unknown> implements ReactiveController {
   /**
    * Observe the target element. The controller's `target` is automatically
    * observed when the host connects.
+   * It's a no-op to observe an existing target.
    * @param target Element to observe
    */
   observe(target: Element) {
+    if (this._targets.has(target)) {
+      return;
+    }
+    this._targets.add(target);
+    this._observe(target);
+  }
+
+  private _observe(target: Element) {
     // Note, this will always trigger the callback since the initial
     // intersection state is reported.
     this._observer.observe(target);

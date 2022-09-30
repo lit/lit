@@ -349,6 +349,36 @@ const canTest = () => {
     assert.isTrue(el.observerValue);
   });
 
+  test('observed targets are re-observed on host connected', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+    const d2 = document.createElement('div');
+
+    el.renderRoot.appendChild(d1);
+    el.renderRoot.appendChild(d2);
+
+    el.observer.observe(d1);
+    el.observer.observe(d2);
+
+    await intersectionComplete();
+    el.resetObserverValue();
+    el.remove();
+
+    container.appendChild(el);
+
+    // Reports change to first observed target.
+    el.resetObserverValue();
+    intersectOut(d1);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change to second observed target.
+    el.resetObserverValue();
+    intersectOut(d2);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
+
   test('observed target respects `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
@@ -370,7 +400,7 @@ const canTest = () => {
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target not re-observed on connection', async () => {
+  test('observed target re-observed on connection', async () => {
     const el = await getTestElement(() => ({
       target: null,
       skipInitial: true,
@@ -387,15 +417,16 @@ const canTest = () => {
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
 
-    // Does not report change when re-connected
+    // Does report changes when re-connected
     container.appendChild(el);
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
     intersectOut(d1);
     await intersectionComplete();
-    assert.isUndefined(el.observerValue);
+    assert.isTrue(el.observerValue);
 
-    // Can re-observe after connection, respecting `skipInitial`
+    el.resetObserverValue();
+    // Re-observing an existing target doesn't invoke callback.
     el.observer.observe(d1);
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
