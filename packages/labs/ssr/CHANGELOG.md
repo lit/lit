@@ -1,5 +1,17 @@
 # Change Log
 
+## 2.3.0
+
+### Minor Changes
+
+- [#3304](https://github.com/lit/lit/pull/3304) [`31bed8d6`](https://github.com/lit/lit/commit/31bed8d6542c44a64bad8282b9ce5e5d6514e44a) - Added support for analyzing JavaScript files.
+
+### Patch Changes
+
+- Updated dependencies [[`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4), [`305852d4`](https://github.com/lit/lit/commit/305852d4a4f51174301720985de98fdbf8674648)]:
+  - lit@2.4.0
+  - lit-html@2.4.0
+
 ## 2.2.3
 
 ### Patch Changes

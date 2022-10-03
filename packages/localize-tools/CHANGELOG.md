@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- [#2936](https://github.com/lit/lit/pull/2936) [`7a9fc0f5`](https://github.com/lit/lit/commit/7a9fc0f57e43c2eab44e9442e5896f951a8c751a) - Locally version and lazily install the localize command.
+
+### Patch Changes
+
+- Updated dependencies [[`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4), [`305852d4`](https://github.com/lit/lit/commit/305852d4a4f51174301720985de98fdbf8674648)]:
+  - lit@2.4.0
+
 ## 0.6.5
 
 ### Patch Changes

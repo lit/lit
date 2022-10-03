@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.0.0
+
+### Major Changes
+
+- [#3283](https://github.com/lit/lit/pull/3283) [`a279803d`](https://github.com/lit/lit/commit/a279803d14dd0d0e81d49063587965581bdc759a) - Do not reset value or error on status change
+
+### Minor Changes
+
+- [#3287](https://github.com/lit/lit/pull/3287) [`02b0b7b9`](https://github.com/lit/lit/commit/02b0b7b9f99b85de34e56168cf4ccb6955f4c553) - Adds onComplete and onError callbacks
+
 ## 1.1.3
 
 ### Patch Changes

@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/cli-localize",
   "description": "Implements the `lit localize` command. Use from @lit-labs/cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -60,7 +60,7 @@
     }
   },
   "dependencies": {
-    "@lit/localize-tools": "^0.6.3"
+    "@lit/localize-tools": "^0.7.0"
   },
   "devDependencies": {
     "typescript": "~4.6.2"

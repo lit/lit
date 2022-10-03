@@ -1,5 +1,18 @@
 # @lit-labs/observers
 
+## 1.1.0
+
+### Minor Changes
+
+- [#3294](https://github.com/lit/lit/pull/3294) [`96c05f25`](https://github.com/lit/lit/commit/96c05f258183066b34d2253c57552ef41ed4581a) - Fix value property of type `unknown` on exported controllers. The type of
+  `value` is now generic and can be inferred from the return type of your passed
+  in `callback`. The default callback `() => true` was removed, and is now
+  undefined by default.
+
+### Patch Changes
+
+- [#3293](https://github.com/lit/lit/pull/3293) [`7e22bc2e`](https://github.com/lit/lit/commit/7e22bc2e3918e36c0e46aa6430c17eb8f557968f) - Fix controllers not observing changes to target element if initialized after the host has connected.
+
 ## 1.0.2
 
 ### Patch Changes
