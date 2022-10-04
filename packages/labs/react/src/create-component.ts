@@ -55,9 +55,7 @@ export type ReactWebComponent<
   React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
-interface Options<I extends HTMLElement, E extends EventNames = {}> {
-  tagName: string;
-  elementClass: Constructor<I>;
+interface Options<E extends EventNames = {}> {
   React?: typeof window.React;
   events?: E;
   displayName?: string;
@@ -170,7 +168,11 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
 export function createComponent<
   I extends HTMLElement,
   E extends EventNames = {}
->(options: Options<I, E>): ReactWebComponent<I, E>;
+>(
+  tagName: string,
+  elementClass: Constructor<I>,
+  options?: Options<E>
+): ReactWebComponent<I, E>;
 /**
  * @deprecated Use `createComponent(options)` instead of individual arguments.
  *
@@ -198,8 +200,8 @@ export function createComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 >(
-  ReactOrOptions: typeof window.React,
-  tagName: string,
+  React: typeof window.React,
+  TagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
@@ -208,25 +210,46 @@ export function createComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 >(
-  ReactOrOptions: typeof window.React | Options<I, E> = window.React,
-  tagName?: string,
-  elementClass?: Constructor<I>,
+  ReactOrTagName: typeof window.React | string = window.React,
+  TagNameOrElementClass?: string | Constructor<I>,
+  ElementClassOrOptions?: Constructor<I> | Options<E>,
   events?: E,
   displayName?: string
 ): ReactWebComponent<I, E> {
   // digest overloaded parameters
-  let React: typeof window.React;
+  let React: typeof window.React = window.React;
   let tag: string;
   let element: Constructor<I>;
-  if (tagName === undefined) {
-    const options = ReactOrOptions as Options<I, E>;
-    ({tagName: tag, elementClass: element, events, displayName} = options);
-    React = options.React ?? window.React;
+
+  if (typeof ReactOrTagName === 'string') {
+    tag = ReactOrTagName as string;
   } else {
-    React = ReactOrOptions as typeof window.React;
-    element = elementClass as Constructor<I>;
-    tag = tagName;
+    React = ReactOrTagName as typeof window.React;
   }
+
+  if (typeof TagNameOrElementClass === 'string') {
+    tag = TagNameOrElementClass as string;
+  } else {
+    element = TagNameOrElementClass as Constructor<I>;
+  }
+
+  if (ElementClassOrOptions?.constructor !== undefined) {
+    element = ElementClassOrOptions as Constructor<I>;
+  } else if (ElementClassOrOptions !== undefined) {
+    const options = ElementClassOrOptions as Options<E>;
+    ({events, displayName} = options);
+    React = options.React ?? window.React;
+  }
+
+  // if (tagName === undefined) {
+  //   const options = ElementClassOrOptions as Options<E>;
+  //   ({tagName: tag, elementClass: element, events, displayName} = options);
+  //   React = options.React ?? window.React;
+  // } else {
+  //   React = ReactOrOptions as typeof window.React;
+  //   element = elementClass as Constructor<I>;
+  //   tag = tagName;
+  // }
 
   const Component = React.Component;
   const createElement = React.createElement;
