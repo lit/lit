@@ -188,18 +188,7 @@ export function createComponent<
   events?: E,
   displayName?: string
 ): ReactWebComponent<I, E> {
-  // let params: Params<I, E> = React as Params<I, E>;
-  // if (tagName !== undefined) {
-  //   params = {
-  //     React: React as typeof window.React,
-  //     elementClass: elementClass as Constructor<I>,
-  //     tagName,
-  //     events,
-  //     displayName,
-  //   }
-  // }
-
-  // params bag;
+  // digest overloaded parameters
   let react: typeof window.React;
   let tag: string;
   let element: Constructor<I>;
