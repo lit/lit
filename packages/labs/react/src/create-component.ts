@@ -55,6 +55,14 @@ export type ReactWebComponent<
   React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
+interface Params<I extends HTMLElement, E extends EventNames = {}> {
+  React: typeof window.React;
+  tagName: string;
+  elementClass: Constructor<I>;
+  events?: E;
+  displayName?: string;
+}
+
 type Constructor<T> = {new (): T};
 
 const reservedReactProperties = new Set([
@@ -156,7 +164,11 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <
+export function createComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+>(params: Params<I, E>): ReactWebComponent<I, E>;
+export function createComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 >(
@@ -165,9 +177,48 @@ export const createComponent = <
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-): ReactWebComponent<I, E> => {
-  const Component = React.Component;
-  const createElement = React.createElement;
+): ReactWebComponent<I, E>;
+export function createComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+>(
+  React: typeof window.React | Params<I, E>,
+  tagName?: string,
+  elementClass?: Constructor<I>,
+  events?: E,
+  displayName?: string
+): ReactWebComponent<I, E> {
+  // let params: Params<I, E> = React as Params<I, E>;
+  // if (tagName !== undefined) {
+  //   params = {
+  //     React: React as typeof window.React,
+  //     elementClass: elementClass as Constructor<I>,
+  //     tagName,
+  //     events,
+  //     displayName,
+  //   }
+  // }
+
+  // params bag;
+  let react: typeof window.React;
+  let tag: string;
+  let element: Constructor<I>;
+  if (tagName !== undefined) {
+    react = React as typeof window.React;
+    element = elementClass as Constructor<I>;
+    tag = tagName;
+  } else {
+    const params = React as Params<I, E>;
+    react = params.React;
+    tag = params.tagName;
+    element = params.elementClass;
+    events = params.events;
+    displayName = params.displayName;
+  }
+
+  React as typeof window.React;
+  const Component = react.Component;
+  const createElement = react.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
 
   type Props = ReactComponentProps<I, E>;
@@ -178,7 +229,7 @@ export const createComponent = <
     private _userRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
-    static displayName = displayName ?? elementClass.name;
+    static displayName = displayName ?? element.name;
 
     private _updateElement(oldProps?: Props) {
       if (this._element === null) {
@@ -254,7 +305,7 @@ export const createComponent = <
           eventProps.has(k) ||
           (!reservedReactProperties.has(k) &&
             !(k in HTMLElement.prototype) &&
-            k in elementClass.prototype)
+            k in element.prototype)
         ) {
           this._elementProps[k] = v;
         } else {
@@ -263,11 +314,11 @@ export const createComponent = <
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement<React.HTMLAttributes<I>, I>(tagName, props);
+      return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
   }
 
-  const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
+  const ForwardedComponent: ReactWebComponent<I, E> = react.forwardRef<
     I,
     WebComponentProps<I, E>
   >((props, ref) =>
@@ -282,4 +333,4 @@ export const createComponent = <
   ForwardedComponent.displayName = ReactComponent.displayName;
 
   return ForwardedComponent;
-};
+}
