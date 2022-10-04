@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type * as ReactModule from 'react';
 import type {EventName, ReactWebComponent} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-import type * as ReactModule from 'react';
 import 'react/umd/react.development.js';
 import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '@lit-labs/react';
@@ -22,8 +22,8 @@ interface Foo {
   foo?: boolean;
 }
 
-const elementName = 'basic-element';
-@customElement(elementName)
+const tagName = 'basic-element';
+@customElement(tagName)
 class BasicElement extends ReactiveElement {
   @property({type: Boolean})
   bool = false;
@@ -65,7 +65,7 @@ class BasicElement extends ReactiveElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    [elementName]: BasicElement;
+    [tagName]: BasicElement;
   }
 }
 
@@ -91,10 +91,9 @@ suite('createComponent', () => {
   // if some tag, run options
   // otherwise
   const BasicElementComponent = createComponent({
-    React: window.React,
-    tagName: elementName,
     elementClass: BasicElement,
-    events: basicElementEvents
+    events: basicElementEvents,
+    tagName,
   });
 
   let el: BasicElement;
@@ -106,20 +105,39 @@ suite('createComponent', () => {
       <BasicElementComponent {...props}/>,
       container
     );
-    el = container.querySelector(elementName)! as BasicElement;
+    el = container.querySelector(tagName)! as BasicElement;
     await el.updateComplete;
   };
+
+
+  test('deprecated createComponent without options creates a component', async () => {
+    const ComponentWithoutEventMap = createComponent(
+      window.React,
+      tagName,
+      BasicElement,
+    );
+
+    const name = 'Component made with deprecated params.';
+    window.ReactDOM.render(
+      <ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>,
+      container
+    );
+
+    el = container.querySelector(tagName)! as BasicElement;
+    await el.updateComplete;
+    
+    assert.equal(el.textContent, name);
+  });
 
   /*
     The following test will not build if an incorrect typing occurs
     when events are not provided to `createComponent`.
   */
   test('renders element without optional event map', async () => {
-    const ComponentWithoutEventMap = createComponent(
-      window.React,
-      elementName,
-      BasicElement,
-    );
+    const ComponentWithoutEventMap = createComponent({
+      elementClass: BasicElement,
+      tagName,
+    });
 
     const name = 'Component without event map.';
     window.ReactDOM.render(
@@ -127,7 +145,7 @@ suite('createComponent', () => {
       container
     );
 
-    el = container.querySelector(elementName)! as BasicElement;
+    el = container.querySelector(tagName)! as BasicElement;
     await el.updateComplete;
     
     assert.equal(el.textContent, 'Component without event map.');
@@ -155,7 +173,7 @@ suite('createComponent', () => {
       <BasicElementComponent>Hello {name}</BasicElementComponent>,
       container
     );
-    el = container.querySelector(elementName)! as BasicElement;
+    el = container.querySelector(tagName)! as BasicElement;
     await el.updateComplete;
     assert.equal(el.textContent, 'Hello World');
   });
@@ -163,13 +181,12 @@ suite('createComponent', () => {
   test('has valid displayName', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
-    const NamedComponent = createComponent(
-      window.React,
-      elementName,
-      BasicElement,
-      basicElementEvents,
-      'FooBar'
-    );
+    const NamedComponent = createComponent({
+      elementClass: BasicElement,
+      events: basicElementEvents,
+      displayName: 'FooBar',
+      tagName,
+    });
 
     assert.equal(NamedComponent.displayName, 'FooBar');
   });
@@ -195,13 +212,13 @@ suite('createComponent', () => {
 
   test('ref does not create new attribute on element', async () => {
     await renderReactComponent({ref: undefined});
-    const el = container.querySelector(elementName);
+    const el = container.querySelector(tagName);
     const outerHTML = el?.outerHTML;
 
     const elementRef1 = window.React.createRef<BasicElement>();
     await renderReactComponent({ref: elementRef1});
 
-    const elAfterRef = container.querySelector(elementName);
+    const elAfterRef = container.querySelector(tagName);
     const outerHTMLAfterRef = elAfterRef?.outerHTML;
 
     assert.equal(outerHTML, outerHTMLAfterRef);
@@ -213,13 +230,13 @@ suite('createComponent', () => {
     const ref2Calls: Array<string | undefined> = [];
     const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, [elementName]);
+    assert.deepEqual(ref1Calls, [tagName]);
     renderReactComponent({ref: refCb2});
-    assert.deepEqual(ref1Calls, [elementName, undefined]);
-    assert.deepEqual(ref2Calls, [elementName]);
+    assert.deepEqual(ref1Calls, [tagName, undefined]);
+    assert.deepEqual(ref2Calls, [tagName]);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, [elementName, undefined, elementName]);
-    assert.deepEqual(ref2Calls, [elementName, undefined]);
+    assert.deepEqual(ref1Calls, [tagName, undefined, tagName]);
+    assert.deepEqual(ref2Calls, [tagName, undefined]);
   });
 
   test('can set attributes', async () => {
