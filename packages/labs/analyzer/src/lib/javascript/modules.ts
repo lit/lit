@@ -38,9 +38,11 @@ export const getModule = (
     rootDir
   );
   const fullSourcePath = path.join(rootDir, sourcePath);
-  const jsPath = ts
-    .getOutputFileNames(analyzer.commandLine, fullSourcePath, false)
-    .filter((f) => f.endsWith('.js'))[0];
+  const jsPath = fullSourcePath.endsWith('.js')
+    ? fullSourcePath
+    : ts
+        .getOutputFileNames(analyzer.commandLine, fullSourcePath, false)
+        .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
   // we might need to handle this differently
   if (jsPath === undefined) {

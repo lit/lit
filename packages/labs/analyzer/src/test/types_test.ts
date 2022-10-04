@@ -25,7 +25,7 @@ const test = suite<{module: Module; packagePath: AbsolutePath}>('Types tests');
 test.before((ctx) => {
   try {
     const packagePath = (ctx.packagePath = fileURLToPath(
-      new URL('../test-files/types', import.meta.url).href
+      new URL('../test-files/ts/types', import.meta.url).href
     ) as AbsolutePath);
     const analyzer = createPackageAnalyzer(packagePath);
     const pkg = analyzer.getPackage();

@@ -61,7 +61,7 @@ export class ${name} {
   ${Array.from(reactiveProperties.entries()).map(
     ([propertyName, property]) => javascript`
   @Input()
-  set ${propertyName}(v: ${property.type.text}) {
+  set ${propertyName}(v: ${property.type?.text ?? 'any'}) {
     this._ngZone.runOutsideAngular(() => (this._el.${propertyName} = v));
   }
 
