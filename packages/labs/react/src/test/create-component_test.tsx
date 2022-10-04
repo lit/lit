@@ -88,12 +88,14 @@ suite('createComponent', () => {
     onBar: 'bar',
   };
 
-  const BasicElementComponent = createComponent(
-    window.React,
-    elementName,
-    BasicElement,
-    basicElementEvents
-  );
+  // if some tag, run options
+  // otherwise
+  const BasicElementComponent = createComponent({
+    React: window.React,
+    tagName: elementName,
+    elementClass: BasicElement,
+    events: basicElementEvents
+  });
 
   let el: BasicElement;
 
