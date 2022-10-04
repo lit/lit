@@ -172,7 +172,7 @@ export function createComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 >(
-  React: typeof window.React,
+  ReactOrParams: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
@@ -182,32 +182,31 @@ export function createComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 >(
-  React: typeof window.React | Params<I, E>,
+  ReactOrParams: typeof window.React | Params<I, E>,
   tagName?: string,
   elementClass?: Constructor<I>,
   events?: E,
   displayName?: string
 ): ReactWebComponent<I, E> {
   // digest overloaded parameters
-  let react: typeof window.React;
+  let React: typeof window.React;
   let tag: string;
   let element: Constructor<I>;
   if (tagName !== undefined) {
-    react = React as typeof window.React;
+    React = ReactOrParams as typeof window.React;
     element = elementClass as Constructor<I>;
     tag = tagName;
   } else {
-    const params = React as Params<I, E>;
-    react = params.React;
+    const params = ReactOrParams as Params<I, E>;
+    React = params.React;
     tag = params.tagName;
     element = params.elementClass;
     events = params.events;
     displayName = params.displayName;
   }
 
-  React as typeof window.React;
-  const Component = react.Component;
-  const createElement = react.createElement;
+  const Component = React.Component;
+  const createElement = React.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
 
   type Props = ReactComponentProps<I, E>;
@@ -307,7 +306,7 @@ export function createComponent<
     }
   }
 
-  const ForwardedComponent: ReactWebComponent<I, E> = react.forwardRef<
+  const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
     I,
     WebComponentProps<I, E>
   >((props, ref) =>
