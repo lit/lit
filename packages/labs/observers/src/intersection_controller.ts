@@ -156,6 +156,15 @@ export class IntersectionController<T = unknown> implements ReactiveController {
   }
 
   /**
+   * Unobserve the target element.
+   * @param target Element to unobserve
+   */
+  unobserve(target: Element) {
+    this._targets.delete(target);
+    this._observer.unobserve(target);
+  }
+
+  /**
    * Disconnects the observer. This is done automatically when the host
    * disconnects.
    */
