@@ -60,7 +60,7 @@ export interface ResizeControllerConfig<T = unknown> {
  */
 export class ResizeController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _target: Element | null;
+  private _targets: Set<Element> = new Set();
   private _config?: ResizeObserverOptions;
   private _observer!: ResizeObserver;
   private _skipInitial = false;
@@ -82,13 +82,14 @@ export class ResizeController<T = unknown> implements ReactiveController {
    */
   callback?: ResizeValueCallback<T>;
   constructor(
-    host: ReactiveControllerHost,
+    host: ReactiveControllerHost & Element,
     {target, config, callback, skipInitial}: ResizeControllerConfig<T>
   ) {
     this._host = host;
     // Target defaults to `host` unless explicitly `null`.
-    this._target =
-      target === null ? target : target ?? (this._host as unknown as Element);
+    if (target !== null) {
+      this._targets.add(target ?? host);
+    }
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback;
@@ -115,8 +116,8 @@ export class ResizeController<T = unknown> implements ReactiveController {
   }
 
   hostConnected() {
-    if (this._target) {
-      this.observe(this._target);
+    for (const target of this._targets) {
+      this.observe(target);
     }
   }
 
@@ -140,6 +141,7 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * @param target Element to observe
    */
   observe(target: Element) {
+    this._targets.add(target);
     this._observer.observe(target, this._config);
     this._unobservedUpdate = true;
     this._host.requestUpdate();

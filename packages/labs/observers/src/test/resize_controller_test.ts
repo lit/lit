@@ -328,6 +328,36 @@ if (DEV_MODE) {
     assert.isTrue(el.observerValue);
   });
 
+  test('observed targets are re-observed on host connected', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+    const d2 = document.createElement('div');
+
+    el.renderRoot.appendChild(d1);
+    el.renderRoot.appendChild(d2);
+
+    el.observer.observe(d1);
+    el.observer.observe(d2);
+
+    await resizeComplete();
+    el.resetObserverValue();
+    el.remove();
+
+    container.appendChild(el);
+
+    // Reports change to first observed target.
+    el.resetObserverValue();
+    resizeElement(d1);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change to second observed target.
+    el.resetObserverValue();
+    resizeElement(d2);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+  });
+
   test('observed target respects `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
@@ -348,7 +378,7 @@ if (DEV_MODE) {
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target not re-observed on connection', async () => {
+  test('observed target re-observed on connection', async () => {
     const el = await getTestElement(() => ({target: null}));
     const d1 = document.createElement('div');
 
@@ -361,19 +391,13 @@ if (DEV_MODE) {
     await resizeComplete();
     el.remove();
 
-    // Does not reports change when disconnected.
+    // Does not report change when disconnected.
     resizeElement(d1);
     await resizeComplete();
     assert.isUndefined(el.observerValue);
 
-    // Does not report change when re-connected
+    // Reports change when re-connected
     container.appendChild(el);
-    resizeElement(d1);
-    await resizeComplete();
-    assert.isUndefined(el.observerValue);
-
-    // Can re-observe after connection.
-    el.observer.observe(d1);
     resizeElement(d1);
     await resizeComplete();
     assert.isTrue(el.observerValue);
