@@ -116,7 +116,7 @@ export class ResizeController<T = unknown> implements ReactiveController {
   }
 
   hostConnected() {
-    for (const target of this._targets.values()) {
+    for (const target of this._targets) {
       this.observe(target);
     }
   }
