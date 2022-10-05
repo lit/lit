@@ -219,31 +219,32 @@ export function createComponent<
   let React: typeof window.React = window.React;
   let tagName: string;
   let elementClass: Constructor<I>;
-  let eventNames: E | undefined;
 
   if (typeof ReactOrTagName === 'string') {
     tagName = ReactOrTagName as string;
+    elementClass = TagNameOrElementClass as Constructor<I>;
   } else {
     React = ReactOrTagName as typeof window.React;
   }
 
   if (typeof TagNameOrElementClass === 'string') {
     tagName = TagNameOrElementClass as string;
+    elementClass = ElementClassOrOptions as Constructor<I>;
   } else {
     elementClass = TagNameOrElementClass as Constructor<I>;
   }
 
-  if (ElementClassOrOptions?.constructor !== undefined) {
+  if ((ElementClassOrOptions as Constructor<I>)?.prototype !== undefined) {
     elementClass = ElementClassOrOptions as Constructor<I>;
   } else if (ElementClassOrOptions !== undefined) {
     const options = ElementClassOrOptions as Options<E>;
-    ({events: eventNames, displayName} = options);
+    ({events, displayName} = options);
     React = options.React ?? window.React;
   }
 
   const Component = React.Component;
   const createElement = React.createElement;
-  const eventProps = new Set(Object.keys(eventNames ?? {}));
+  const eventProps = new Set(Object.keys(events ?? {}));
 
   type Props = ReactComponentProps<I, E>;
 
