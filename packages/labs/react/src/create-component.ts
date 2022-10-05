@@ -217,32 +217,33 @@ export function createComponent<
 ): ReactWebComponent<I, E> {
   // digest overloaded parameters
   let React: typeof window.React = window.React;
-  let tag: string;
-  let element: Constructor<I>;
+  let tagName: string;
+  let elementClass: Constructor<I>;
+  let eventNames: E | undefined;
 
   if (typeof ReactOrTagName === 'string') {
-    tag = ReactOrTagName as string;
+    tagName = ReactOrTagName as string;
   } else {
     React = ReactOrTagName as typeof window.React;
   }
 
   if (typeof TagNameOrElementClass === 'string') {
-    tag = TagNameOrElementClass as string;
+    tagName = TagNameOrElementClass as string;
   } else {
-    element = TagNameOrElementClass as Constructor<I>;
+    elementClass = TagNameOrElementClass as Constructor<I>;
   }
 
   if (ElementClassOrOptions?.constructor !== undefined) {
-    element = ElementClassOrOptions as Constructor<I>;
+    elementClass = ElementClassOrOptions as Constructor<I>;
   } else if (ElementClassOrOptions !== undefined) {
     const options = ElementClassOrOptions as Options<E>;
-    ({events, displayName} = options);
+    ({events: eventNames, displayName} = options);
     React = options.React ?? window.React;
   }
 
   const Component = React.Component;
   const createElement = React.createElement;
-  const eventProps = new Set(Object.keys(events ?? {}));
+  const eventProps = new Set(Object.keys(eventNames ?? {}));
 
   type Props = ReactComponentProps<I, E>;
 
@@ -252,7 +253,7 @@ export function createComponent<
     private _userRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
-    static displayName = displayName ?? element.name;
+    static displayName = displayName ?? elementClass.name;
 
     private _updateElement(oldProps?: Props) {
       if (this._element === null) {
@@ -328,7 +329,7 @@ export function createComponent<
           eventProps.has(k) ||
           (!reservedReactProperties.has(k) &&
             !(k in HTMLElement.prototype) &&
-            k in element.prototype)
+            k in elementClass.prototype)
         ) {
           this._elementProps[k] = v;
         } else {
@@ -337,7 +338,7 @@ export function createComponent<
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement<React.HTMLAttributes<I>, I>(tag, props);
+      return createElement<React.HTMLAttributes<I>, I>(tagName, props);
     }
   }
 
