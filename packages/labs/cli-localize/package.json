@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/cli-localize",
   "description": "Implements the `lit localize` command. Use from @lit-labs/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "publishConfig": {
     "access": "public"
   },

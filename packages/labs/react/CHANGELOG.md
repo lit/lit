@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.9
+
+### Patch Changes
+
+- [#3163](https://github.com/lit/lit/pull/3163) [`1212ddd0`](https://github.com/lit/lit/commit/1212ddd0744529c294ea3905782917172c5aa11e) - Provide the explicit return type `WrappedWebComponent` for `createComponent`. This exposes an explicit typing for wrapped components rather than relying on inferences from Typescript. A well defined type should provide more resilience for implementations like SSR and others.
+
 ## 1.0.8
 
 ### Patch Changes
