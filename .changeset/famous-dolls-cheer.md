@@ -1,6 +1,5 @@
 ---
 '@lit-labs/analyzer': minor
-'@lit-labs/gen-wrapper-angular': minor
 '@lit-labs/gen-wrapper-react': minor
 '@lit-labs/gen-wrapper-vue': minor
 ---
