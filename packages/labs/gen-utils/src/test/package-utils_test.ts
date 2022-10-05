@@ -42,14 +42,36 @@ test('install package with monorepo link', async ({tempFs}) => {
   await tempFs.write('package.json', {
     dependencies: {
       lit: '^2.0.0',
+      'lit-html': '^2.0.0',
+      'lit-element': '^3.0.0',
+      '@lit/reactive-element': '^1.0.0',
     },
   });
 
   await installPackage(tempFs.rootDir, {
     lit: '../../lit',
+    'lit-html': '../../lit-html',
+    'lit-element': '../../lit-element',
+    '@lit/reactive-element': '../../reactive-element',
   });
 
   assert.ok((await tempFs.read('node_modules', 'lit', 'index.js')).length > 0);
+  assert.ok(
+    (await tempFs.read('node_modules', 'lit-html', 'lit-html.js')).length > 0
+  );
+  assert.ok(
+    (await tempFs.read('node_modules', 'lit-element', 'index.js')).length > 0
+  );
+  assert.ok(
+    (
+      await tempFs.read(
+        'node_modules',
+        '@lit',
+        'reactive-element',
+        'reactive-element.js'
+      )
+    ).length > 0
+  );
 });
 
 test('build package', async ({tempFs}) => {
