@@ -8,6 +8,7 @@ import 'source-map-support/register.js';
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
+import path from 'path';
 import {fileURLToPath} from 'url';
 import {getSourceFilename, InMemoryAnalyzer, languages} from '../utils.js';
 
@@ -62,7 +63,7 @@ for (const lang of languages) {
       ),
       // The Lit import will always be a .d.ts file regardless of language since
       // it's outside the program and has declarations
-      `packages/lit/index.d.ts`,
+      path.normalize(`packages/lit/index.d.ts`),
     ]);
     assert.equal(expectedDeps.size, module.dependencies.size);
     for (const d of module.dependencies) {

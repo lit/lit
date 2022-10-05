@@ -190,5 +190,5 @@ const getPathForModuleSpecifier = (
   if (!analyzer.fs.useCaseSensitiveFileNames) {
     resolvedPath = resolvedPath.toLowerCase();
   }
-  return resolvedPath as AbsolutePath;
+  return analyzer.path.normalize(resolvedPath) as AbsolutePath;
 };

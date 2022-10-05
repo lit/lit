@@ -152,7 +152,7 @@ export class InMemoryAnalyzer extends Analyzer {
   constructor(lang: Language, files: Files = {}) {
     const cache: Cache = Object.fromEntries(
       Object.entries(files).map(([name, content]) => [
-        name,
+        path.normalize(name),
         {content, version: 0},
       ])
     );
