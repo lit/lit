@@ -53,7 +53,7 @@ for (const lang of languages) {
 
   test('Dependencies correctly analyzed', ({module}) => {
     const getMonorepoSubpath = (f: string) =>
-      f?.slice(f.lastIndexOf('packages/'));
+      f?.slice(f.lastIndexOf('packages' + path.sep));
     const expectedDeps = new Set([
       // This import will either be to a .ts file or a .js file depending on
       // language, since it's in the program
@@ -101,7 +101,7 @@ for (const lang of languages) {
       const module2 = analyzer.getModule(
         getSourceFilename('/module', lang) as AbsolutePath
       );
-      assert.equal(module1, module2);
+      assert.ok(module1 === module2);
       // Change dependency and we expect a different model
       analyzer.setFile('/module', `export class Foo {}; export class Bar {};`);
       const module3 = analyzer.getModule(
@@ -119,7 +119,7 @@ for (const lang of languages) {
       analyzer.setFile(
         '/module',
         `import {Bar} from './dep1.js';
-         export class Foo extends Bar {};`
+          export class Foo extends Bar {};`
       );
       // Read initial model for module
       const module1 = analyzer.getModule(
@@ -129,14 +129,14 @@ for (const lang of languages) {
       const module2 = analyzer.getModule(
         getSourceFilename('/module', lang) as AbsolutePath
       );
-      assert.equal(module1, module2);
+      assert.ok(module1 === module2);
       // Change dependency; we still expect the same model because nothing
       // has caused the dependency model to be created yet
       analyzer.setFile('/dep1', `export class Bar { bar = 2; }`);
       const module3 = analyzer.getModule(
         getSourceFilename('/module', lang) as AbsolutePath
       );
-      assert.equal(module1, module3);
+      assert.ok(module1 === module3);
       // Now cause the dependency model to be created and cached; we still
       // expect the same model since nothing has been invalidated
       const dep1 = analyzer.getModule(
@@ -145,7 +145,7 @@ for (const lang of languages) {
       const module4 = analyzer.getModule(
         getSourceFilename('/module', lang) as AbsolutePath
       );
-      assert.equal(module1, module4);
+      assert.ok(module1 === module4);
       // Now change the dependency; since module depends on dep1, and since the
       // dep1 model has been created/cached (and is now invalid), the module's
       // model should be created anew, ensuring it has no stale information
@@ -171,12 +171,12 @@ for (const lang of languages) {
       analyzer.setFile(
         '/dep1',
         `import {Baz} from './dep2.js';
-         export class Bar extends Baz {}`
+          export class Bar extends Baz {}`
       );
       analyzer.setFile(
         '/module',
         `import {Bar} from './dep1.js';
-         export class Foo extends Bar {};`
+          export class Foo extends Bar {};`
       );
       // Read initial models for module and deps
       const module1 = analyzer.getModule(
@@ -188,7 +188,7 @@ for (const lang of languages) {
       const module2 = analyzer.getModule(
         getSourceFilename('/module', lang) as AbsolutePath
       );
-      assert.equal(module1, module2);
+      assert.ok(module1 === module2);
       // Change transitive dependency and we expect a different model
       analyzer.setFile('/dep2', `export class Baz { baz = 2; }`);
       const module3 = analyzer.getModule(
@@ -206,12 +206,12 @@ for (const lang of languages) {
       analyzer.setFile(
         '/dep1',
         `import {Baz} from './dep2.js';
-         export class Bar extends Baz {}`
+          export class Bar extends Baz {}`
       );
       analyzer.setFile(
         '/module',
         `import {Bar} from './dep1.js';
-         export class Foo extends Bar {};`
+          export class Foo extends Bar {};`
       );
       // Read initial models for module and deps
       const module1 = analyzer.getModule(
@@ -225,7 +225,7 @@ for (const lang of languages) {
       const module2 = analyzer.getModule(
         getSourceFilename('/module', lang) as AbsolutePath
       );
-      assert.equal(module1, module2);
+      assert.ok(module1 === module2);
       // Change transitive dependency and we expect a different model
       analyzer.setFile('/dep2', `export class Baz { baz = 2; }`);
       const module3 = analyzer.getModule(

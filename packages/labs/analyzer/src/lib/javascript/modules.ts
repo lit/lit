@@ -85,7 +85,10 @@ export const getModule = (
     declarations,
     dependencies,
   });
-  moduleCache.set(sourceFile.fileName as AbsolutePath, module);
+  moduleCache.set(
+    analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
+    module
+  );
   return module;
 };
 
@@ -147,6 +150,7 @@ const getJSPathFromSourcePath = (
   sourcePath: AbsolutePath,
   analyzer: AnalyzerInterface
 ) => {
+  sourcePath = analyzer.path.normalize(sourcePath) as AbsolutePath;
   // If the source file was already JS, just return that
   if (sourcePath.endsWith('js')) {
     return sourcePath;

@@ -18,18 +18,29 @@ export const languages: Language[] = ['ts', 'js'];
 // `outDir` is 'out'
 
 export const getSourceFilename = (f: string, lang: Language) =>
-  lang === 'ts'
-    ? path.join(path.dirname(f), 'src', path.basename(f) + '.ts')
-    : f + '.js';
+  path.normalize(
+    lang === 'ts'
+      ? path.join(path.dirname(f), 'src', path.basename(f) + '.ts')
+      : f + '.js'
+  );
 
 export const getOutputFilename = (f: string, lang: Language) =>
-  lang === 'ts'
-    ? path.join(path.dirname(f), 'out', path.basename(f) + '.js')
-    : f + '.js';
+  path.normalize(
+    lang === 'ts'
+      ? path.join(path.dirname(f), 'out', path.basename(f) + '.js')
+      : path.normalize(f + '.js')
+  );
 
 // The following code implements an InMemoryAnalyzer that uses a language
 // service host backed by an updatable in-memory file cache, to allow for easy
-// program invalidation in tests
+// program invalidation in tests.
+
+// Note that because some paths come into the language host filesystem
+// abstractions in posix format and others may come in in OS-native
+// format, we normalize all paths going in/out of the in-memory cache to
+// posix format. There is apparently no path lib method to do this.
+// https://stackoverflow.com/questions/53799385/how-can-i-convert-a-windows-path-to-posix-path-using-node-path
+const normalize = (p: string) => p.split(path.sep).join(path.posix.sep);
 
 /**
  * Map of filenames -> content
@@ -83,7 +94,7 @@ const tsconfigTS = {
  * files we read off of disk; everything else comes from the in-memory cache.
  */
 const isLib = (fileName: string) =>
-  fileName.includes('node_modules/typescript/lib');
+  normalize(fileName).includes('node_modules/typescript/lib');
 
 /**
  * Simulates "reading" a directory from the in-memory cache. The cache stores a
@@ -94,8 +105,8 @@ const isLib = (fileName: string) =>
  * show up multiple times)
  */
 const readDirectory = (cache: Cache, dir: AbsolutePath) => {
-  const sep = dir.endsWith(path.sep) ? '' : '\\' + path.sep;
-  const matcher = new RegExp(`^${path.normalize(dir)}${sep}([^${path.sep}]+)`);
+  const sep = dir.endsWith('/') ? '' : '\\/';
+  const matcher = new RegExp(`^${dir}${sep}([^/]+)`);
   return Array.from(
     new Set(
       Object.keys(cache)
@@ -113,15 +124,18 @@ const createHost = (cache: Cache, lang: Language) => {
   return {
     getScriptFileNames: () =>
       Object.keys(cache).filter((s) => s.endsWith('.ts') || s.endsWith('.js')),
-    getScriptVersion: (fileName: string) => cache[fileName].version.toString(),
+    getScriptVersion: (fileName: string) =>
+      cache[normalize(fileName)].version.toString(),
     getScriptSnapshot: (fileName: string) => {
       if (isLib(fileName)) {
         return fs.existsSync(fileName)
-          ? ts.ScriptSnapshot.fromString(fs.readFileSync(fileName, 'utf-8'))
+          ? ts.ScriptSnapshot.fromString(
+              fs.readFileSync(path.normalize(fileName), 'utf-8')
+            )
           : undefined;
       } else {
         return fileName in cache
-          ? ts.ScriptSnapshot.fromString(cache[fileName].content)
+          ? ts.ScriptSnapshot.fromString(cache[normalize(fileName)].content)
           : undefined;
       }
     },
@@ -130,12 +144,14 @@ const createHost = (cache: Cache, lang: Language) => {
     getDefaultLibFileName: (options: ts.CompilerOptions) =>
       ts.getDefaultLibFilePath(options),
     fileExists: (fileName: string) =>
-      isLib(fileName) ? ts.sys.fileExists(fileName) : fileName in cache,
-    readFile: (fileName: string) => cache[fileName].content,
+      isLib(fileName)
+        ? ts.sys.fileExists(path.normalize(fileName))
+        : normalize(fileName) in cache,
+    readFile: (fileName: string) => cache[normalize(fileName)].content,
     readDirectory: (fileName: string) =>
-      readDirectory(cache, fileName as AbsolutePath),
+      readDirectory(cache, normalize(fileName) as AbsolutePath),
     directoryExists: (dir: string) =>
-      readDirectory(cache, dir as AbsolutePath).length > 0,
+      readDirectory(cache, normalize(dir) as AbsolutePath).length > 0,
     getDirectories: () => [],
   };
 };
@@ -152,7 +168,7 @@ export class InMemoryAnalyzer extends Analyzer {
   constructor(lang: Language, files: Files = {}) {
     const cache: Cache = Object.fromEntries(
       Object.entries(files).map(([name, content]) => [
-        path.normalize(name),
+        normalize(name),
         {content, version: 0},
       ])
     );
@@ -178,7 +194,7 @@ export class InMemoryAnalyzer extends Analyzer {
   }
 
   setFile(name: string, content: string) {
-    const fileName = getSourceFilename(name, this._lang);
+    const fileName = normalize(getSourceFilename(name, this._lang));
     const prev = this._cache[fileName] ?? {version: -1};
     this._cache[fileName] = {content, version: prev.version + 1};
     this._dirty = true;
