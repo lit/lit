@@ -105,7 +105,7 @@ export class Module {
    */
   readonly dependencies: Set<AbsolutePath>;
   /**
-   * The package.json contents for the package owned by this module.
+   * The package.json contents for the package containing this module.
    */
   readonly packageJson: PackageJson;
 

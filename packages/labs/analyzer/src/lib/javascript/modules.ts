@@ -127,10 +127,7 @@ const depsAreValid = (module: Module, analyzer: AnalyzerInterface) =>
  * cached model are considered valid.
  */
 const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
-  const sourceFile = analyzer.program.getSourceFileByPath(
-    modulePath as unknown as ts.Path
-  );
-  if (sourceFile && moduleCache.has(modulePath)) {
+  if (moduleCache.has(modulePath)) {
     // If a dep has a model, it is valid only if its deps are valid
     return Boolean(getAndValidateModuleFromCache(modulePath, analyzer));
   } else {
@@ -140,8 +137,11 @@ const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
 };
 
 /**
- * For a given source file (either JS or TS), return its associated JS file.
- * For a JS source file, these will be the same thing.
+ * For a given source file, return its associated JS file.
+ *
+ * For a JS source file, these will be the same thing. For a TS file, we use the
+ * TS API to determine where the associated JS will be output based on tsconfig
+ * settings.
  */
 const getJSPathFromSourcePath = (
   sourcePath: AbsolutePath,
@@ -151,7 +151,7 @@ const getJSPathFromSourcePath = (
   if (sourcePath.endsWith('js')) {
     return sourcePath;
   }
-  // Use the TS API to determine  where the associated JS will be output based
+  // Use the TS API to determine where the associated JS will be output based
   // on tsconfig settings.
   const outputPath = ts
     .getOutputFileNames(analyzer.commandLine, sourcePath, false)

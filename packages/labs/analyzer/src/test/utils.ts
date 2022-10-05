@@ -29,7 +29,7 @@ export const getOutputFilename = (f: string, lang: Language) =>
 
 // The following code implements an InMemoryAnalyzer that uses a language
 // service host backed by an updatable in-memory file cache, to allow for easy
-// program invalidation
+// program invalidation in tests
 
 /**
  * Map of filenames -> content
@@ -39,7 +39,7 @@ export interface Files {
 }
 
 /**
- * Mao of filenames -> versioned content
+ * Map of filenames -> versioned content
  */
 interface Cache {
   [index: string]: {content: string; version: number};
@@ -89,7 +89,7 @@ const isLib = (fileName: string) =>
  * Simulates "reading" a directory from the in-memory cache. The cache stores a
  * flat list of filenames as keys, so this filters the list using a regex that
  * matches the given path, and returns a list of path segments immediately
- * following the directory (deduped with a Set, since if there are multiple
+ * following the directory (deduped using a Set, since if there are multiple
  * files in a subdirectory under this directory, the subdirectory name would
  * show up multiple times)
  */
