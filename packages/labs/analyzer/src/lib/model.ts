@@ -76,6 +76,8 @@ export interface ModuleInit {
   sourcePath: PackagePath;
   jsPath: PackagePath;
   packageJson: PackageJson;
+  declarations: Declaration[];
+  dependencies: Set<AbsolutePath>;
 }
 
 export class Module {
@@ -94,7 +96,17 @@ export class Module {
    * project this will be the same as `sourcePath`.
    */
   readonly jsPath: PackagePath;
-  readonly declarations: Array<Declaration> = [];
+  /**
+   * A list of all Declaration models in this module.
+   */
+  readonly declarations: Array<Declaration>;
+  /**
+   * A set of all dependencies of this module
+   */
+  readonly dependencies: Set<AbsolutePath>;
+  /**
+   * The package.json contents for the package owned by this module.
+   */
   readonly packageJson: PackageJson;
 
   constructor(init: ModuleInit) {
@@ -102,6 +114,8 @@ export class Module {
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
     this.packageJson = init.packageJson;
+    this.declarations = init.declarations;
+    this.dependencies = init.dependencies;
   }
 }
 

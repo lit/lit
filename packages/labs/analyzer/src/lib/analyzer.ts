@@ -45,10 +45,7 @@ export class Analyzer implements AnalyzerInterface {
   }
 
   getModule(modulePath: AbsolutePath) {
-    return getModule(
-      this.program.getSourceFile(this.path.normalize(modulePath))!,
-      this
-    );
+    return getModule(modulePath, this);
   }
 
   getPackage() {
@@ -66,7 +63,7 @@ export class Analyzer implements AnalyzerInterface {
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
-          this.program.getSourceFile(this.path.normalize(fileName))!,
+          this.path.normalize(fileName) as AbsolutePath,
           this,
           packageInfo
         )
