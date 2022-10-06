@@ -58,7 +58,7 @@ export type ReactWebComponent<
 interface Options<I extends HTMLElement, E extends EventNames = {}> {
   tagName: string;
   elementClass: Constructor<I>;
-  React?: typeof window.React;
+  React: typeof window.React;
   events?: E;
   displayName?: string;
 }
