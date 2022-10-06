@@ -4,6 +4,59 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// Match a prop name to a typed event callback by
+// adding an Event type as an expected property on a string.
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+// A key value map matching React prop names to event names
+type EventNames = Record<string, EventName | string>;
+
+// A map of expected event listener types based on EventNames
+type EventListeners<R extends EventNames> = {
+  [K in keyof R]: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
+
+type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
+type ElementWithoutPropsOrEventListeners<I, E> = Omit<
+  I,
+  keyof E | keyof ReactProps<I, E>
+>;
+
+// Props the user is allowed to use, includes standard attributes, children,
+// ref, as well as special event and element properties.
+type WebComponentProps<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = Partial<
+  ReactProps<I, E> &
+    ElementWithoutPropsOrEventListeners<I, E> &
+    EventListeners<E>
+>;
+
+// Props used by this component wrapper. This is the WebComponentProps and the
+// special `__forwardedRef` property. Note, this ref is special because
+// it's both needed in this component to get access to the rendered element
+// and must fulfill any ref passed by the user.
+type ReactComponentProps<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = WebComponentProps<I, E> & {
+  __forwardedRef?: React.Ref<I>;
+};
+
+export type ReactWebComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
+>;
+
+type Constructor<T> = {new (): T};
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -58,7 +111,7 @@ const setProperty = <E extends Element>(
   name: string,
   value: unknown,
   old: unknown,
-  events?: Events
+  events?: EventNames
 ) => {
   const event = events?.[name];
   if (event !== undefined) {
@@ -82,24 +135,6 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
-type Constructor<T> = {new (): T};
-
-/***
- * Typecast that curries an Event type through a string. The goal of the type
- * cast is to match a prop name to a typed event callback.
- */
-export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
-};
-
-type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
-  [K in keyof R]: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
-    : (e: Event) => void;
-};
-
 /**
  * Creates a React component for a custom element. Properties are distinguished
  * from attributes automatically, and events can be configured so they are
@@ -121,42 +156,31 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events = {}>(
+export const createComponent = <
+  I extends HTMLElement,
+  E extends EventNames = {}
+>(
   React: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-) => {
+): ReactWebComponent<I, E> => {
   const Component = React.Component;
   const createElement = React.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
 
-  // Props the user is allowed to use, includes standard attributes, children,
-  // ref, as well as special event and element properties.
-  type ReactProps = Omit<React.HTMLAttributes<I>, keyof E>;
-  type ElementWithoutPropsOrEvents = Omit<I, keyof E | keyof ReactProps>;
-  type UserProps = Partial<
-    ReactProps & ElementWithoutPropsOrEvents & EventProps<E>
-  >;
+  type Props = ReactComponentProps<I, E>;
 
-  // Props used by this component wrapper. This is the UserProps and the
-  // special `__forwardedRef` property. Note, this ref is special because
-  // it's both needed in this component to get access to the rendered element
-  // and must fulfill any ref passed by the user.
-  type ComponentProps = UserProps & {
-    __forwardedRef?: React.Ref<unknown>;
-  };
-
-  class ReactComponent extends Component<ComponentProps> {
+  class ReactComponent extends Component<Props> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
-    private _userRef?: React.Ref<unknown>;
+    private _userRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
     static displayName = displayName ?? elementClass.name;
 
-    private _updateElement(oldProps?: ComponentProps) {
+    private _updateElement(oldProps?: Props) {
       if (this._element === null) {
         return;
       }
@@ -165,8 +189,8 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
         setProperty(
           this._element,
           prop,
-          this.props[prop as keyof ComponentProps],
-          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
+          this.props[prop],
+          oldProps ? oldProps[prop] : undefined,
           events
         );
       }
@@ -187,7 +211,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    override componentDidUpdate(old: ComponentProps) {
+    override componentDidUpdate(old: Props) {
       this._updateElement(old);
     }
 
@@ -203,7 +227,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
       // Since refs only get fulfilled once, pass a new one if the user's
       // ref changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.Ref<unknown>;
+      const userRef = this.props.__forwardedRef ?? null;
       if (this._ref === undefined || this._userRef !== userRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
@@ -237,17 +261,19 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
           props[k === 'className' ? 'class' : k] = v;
         }
       }
-      return createElement(tagName, props);
+      return createElement<React.HTMLAttributes<I>, I>(tagName, props);
     }
   }
 
-  const ForwardedComponent = React.forwardRef(
-    (props?: UserProps, ref?: React.Ref<unknown>) =>
-      createElement(
-        ReactComponent,
-        {...props, __forwardedRef: ref} as ComponentProps,
-        props?.children
-      )
+  const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
+    I,
+    WebComponentProps<I, E>
+  >((props, ref) =>
+    createElement<Props, ReactComponent, typeof ReactComponent>(
+      ReactComponent,
+      {...props, __forwardedRef: ref},
+      props?.children
+    )
   );
 
   // To ease debugging in the React Developer Tools

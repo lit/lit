@@ -15,8 +15,23 @@ export class ElementB extends LitElement {
     }
   `;
 
+  // Adds a property defined in a static properties block to make sure this
+  // works in TypeScript as expected
+  static get properties() {
+    return {
+      bar: {type: Number},
+    };
+  }
+
   @property()
   foo?: string;
+
+  declare bar: number;
+
+  constructor() {
+    super();
+    this.bar = 42;
+  }
 
   render() {
     return html`<h1>${this.foo}</h1>`;

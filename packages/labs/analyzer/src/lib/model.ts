@@ -19,23 +19,33 @@ export type ModuleWithLitElementDeclarations = {
   declarations: LitElementDeclaration[];
 };
 
-export interface PackageInit {
+export interface PackageInfoInit {
+  name: string;
   rootDir: AbsolutePath;
   packageJson: PackageJson;
-  tsConfig: ts.ParsedCommandLine;
+}
+
+export class PackageInfo {
+  readonly name: string;
+  readonly rootDir: AbsolutePath;
+  readonly packageJson: PackageJson;
+
+  constructor(init: PackageInfoInit) {
+    this.name = init.name;
+    this.rootDir = init.rootDir;
+    this.packageJson = init.packageJson;
+  }
+}
+
+export interface PackageInit extends PackageInfo {
   modules: ReadonlyArray<Module>;
 }
 
-export class Package {
-  readonly rootDir: AbsolutePath;
+export class Package extends PackageInfo {
   readonly modules: ReadonlyArray<Module>;
-  readonly tsConfig: ts.ParsedCommandLine;
-  readonly packageJson: PackageJson;
 
   constructor(init: PackageInit) {
-    this.rootDir = init.rootDir;
-    this.packageJson = init.packageJson;
-    this.tsConfig = init.tsConfig;
+    super(init);
     this.modules = init.modules;
   }
 
@@ -65,6 +75,7 @@ export interface ModuleInit {
   sourceFile: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
+  packageJson: PackageJson;
 }
 
 export class Module {
@@ -84,11 +95,13 @@ export class Module {
    */
   readonly jsPath: PackagePath;
   readonly declarations: Array<Declaration> = [];
+  readonly packageJson: PackageJson;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
+    this.packageJson = init.packageJson;
   }
 }
 
@@ -172,9 +185,8 @@ export class LitElementDeclaration extends ClassDeclaration {
 
 export interface ReactiveProperty {
   name: string;
-  node: ts.PropertyDeclaration;
 
-  type: Type;
+  type: Type | undefined;
 
   reflect: boolean;
 
@@ -213,8 +225,8 @@ export interface LitModule {
 
 export interface ReferenceInit {
   name: string;
-  package?: string;
-  module?: string;
+  package?: string | undefined;
+  module?: string | undefined;
   isGlobal?: boolean;
 }
 
@@ -238,15 +250,26 @@ export class Reference {
   }
 }
 
+export interface TypeInit {
+  type: ts.Type;
+  text: string;
+  getReferences: () => Reference[];
+}
+
 export class Type {
   type: ts.Type;
   text: string;
-  references: Reference[];
+  private _getReferences: () => Reference[];
+  private _references: Reference[] | undefined = undefined;
 
-  constructor(type: ts.Type, text: string, references: Reference[]) {
-    this.type = type;
-    this.text = text;
-    this.references = references;
+  constructor(init: TypeInit) {
+    this.type = init.type;
+    this.text = init.text;
+    this._getReferences = init.getReferences;
+  }
+
+  get references() {
+    return (this._references ??= this._getReferences());
   }
 }
 
@@ -276,3 +299,26 @@ export const getImportsStringForReferences = (references: Reference[]) => {
     )
     .join('\n');
 };
+
+export interface AnalyzerInterface {
+  program: ts.Program;
+  commandLine: ts.ParsedCommandLine;
+  fs: Pick<
+    ts.System,
+    | 'readDirectory'
+    | 'readFile'
+    | 'realpath'
+    | 'fileExists'
+    | 'useCaseSensitiveFileNames'
+  >;
+  path: Pick<
+    typeof import('path'),
+    | 'join'
+    | 'relative'
+    | 'dirname'
+    | 'basename'
+    | 'dirname'
+    | 'parse'
+    | 'normalize'
+  >;
+}

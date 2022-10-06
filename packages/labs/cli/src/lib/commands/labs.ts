@@ -23,7 +23,7 @@ export const makeLabsCommand = (cli: LitCli): Command => {
             multiple: true,
             defaultValue: './',
             description:
-              'Folder containing a package to generate wrappers for.',
+              'Folder containing a package to generate wrappers for. For TypeScript projects, if the package folder does not contain a tsconfig.json, this option may also specify a specific tsconfig.json to use.',
           },
           {
             name: 'framework',

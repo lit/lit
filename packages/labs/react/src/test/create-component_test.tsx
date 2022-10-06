@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventName} from '@lit-labs/react';
+import type {EventName, ReactWebComponent} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -135,6 +135,22 @@ suite('createComponent', () => {
     assert.equal(el.textContent, 'Component without event map.');
   });
 
+  /*
+    The following test is a type-only test.
+  */
+  test('renders element with expected type', async () => {
+    type TypedComponent = ReactWebComponent<BasicElement>;
+
+    let TypedBasicElement!: TypedComponent;
+
+    // If this test fails, we can assume types are broken.
+    // If this test passes, we can assume types are working
+    // because a bool !== 'string'.
+    //
+    // @ts-expect-error
+    <TypedBasicElement bool={"string"}></TypedBasicElement>
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     window.ReactDOM.render(
@@ -167,10 +183,10 @@ suite('createComponent', () => {
   });
 
   test('can get ref to element', async () => {
-    const elementRef1 = window.React.createRef();
+    const elementRef1 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef1});
     assert.equal(elementRef1.current, el);
-    const elementRef2 = window.React.createRef();
+    const elementRef2 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef2});
     assert.equal(elementRef1.current, null);
     assert.equal(elementRef2.current, el);
@@ -184,7 +200,7 @@ suite('createComponent', () => {
     const el = container.querySelector(elementName);
     const outerHTML = el?.outerHTML;
 
-    const elementRef1 = window.React.createRef();
+    const elementRef1 = window.React.createRef<BasicElement>();
     await renderReactComponent({ref: elementRef1});
 
     const elAfterRef = container.querySelector(elementName);
