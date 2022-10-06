@@ -120,12 +120,13 @@ const setProperty = <E extends Element>(
       addOrUpdateEventListener(node, event, value as (e?: Event) => void);
     }
   } else {
-    if (name === 'id' && value === undefined) {
-      node[name as keyof E] = '' as unknown as E[keyof E];
-    } else {
-      // But don't dirty check properties; elements are assumed to do this.
-      node[name as keyof E] = value as E[keyof E];
+    if (name in HTMLElement.prototype && value === undefined) {
+      node.removeAttribute(name);
+      return;
     }
+
+    // But don't dirty check properties; elements are assumed to do this.
+    node[name as keyof E] = value as E[keyof E];
   }
 };
 

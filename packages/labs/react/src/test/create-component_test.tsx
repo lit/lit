@@ -227,42 +227,51 @@ suite('createComponent', () => {
   test('can set attributes', async () => {
         await renderReactComponent({});
     assert.equal(el.getAttribute('id'), null);
+    assert.equal(el.id, '');
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
     await renderReactComponent({id: undefined});
-    assert.equal(el.getAttribute('id'), '');
+    assert.equal(el.getAttribute('id'), null);
     assert.equal(el.id, '');
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
+    assert.equal(el.id, 'id2');
   });
 
   test('can remove boolean attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('hidden'), null);
+    assert.equal(el.hidden, false);
     await renderReactComponent({hidden: undefined});
     assert.equal(el.getAttribute('hidden'), null);
+    assert.equal(el.hidden, false);
     await renderReactComponent({hidden: true});
     assert.equal(el.getAttribute('hidden'), '');
     assert.equal(el.hidden, true);
     await renderReactComponent({hidden: false});
     assert.equal(el.getAttribute('hidden'), null);
+    assert.equal(el.hidden, false);
 
     await renderReactComponent({});
     assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, false);
     await renderReactComponent({disabled: undefined});
     assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, undefined);
     await renderReactComponent({disabled: true});
     assert.equal(el.getAttribute('disabled'), null);
     assert.equal(el.disabled, true);
     await renderReactComponent({disabled: false});
     assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, false);
   });
+  
 
   test('does not remove enmumerated attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('draggable'), null);
     await renderReactComponent({draggable: undefined});
-    assert.equal(el.getAttribute('draggable'), 'false');
+    assert.equal(el.getAttribute('draggable'), null);
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
     await renderReactComponent({draggable: false});
