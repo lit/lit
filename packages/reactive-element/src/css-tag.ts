@@ -182,7 +182,13 @@ export const adoptStyles = (
         style.setAttribute('nonce', nonce);
       }
       style.textContent = (s as CSSResult).cssText;
-      renderRoot.appendChild(style);
+      let renderInto;
+      if (renderRoot instanceof Document) {
+        renderInto = renderRoot.head;
+      } else {
+        renderInto = renderRoot;
+      }
+      renderInto.appendChild(style);
     });
   }
 };

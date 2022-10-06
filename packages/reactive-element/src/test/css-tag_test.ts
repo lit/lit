@@ -102,7 +102,7 @@ suite('Styling', () => {
     });
   });
 
-  describe('adoptStyles', () => {
+  suite('adoptStyles', () => {
     test('works with a Document', () => {
       const style = css`
         .green {
@@ -118,22 +118,24 @@ suite('Styling', () => {
       document.body.removeChild(div);
     });
 
-    test('works with a shadow root', () => {
-      const style = css`
-        .green {
-          color: rgb(0, 128, 0);
-        }
-      `;
-      const host = document.createElement('div');
-      document.body.appendChild(host);
-      const shadow = host.attachShadow({mode: 'open'});
-      const div = document.createElement('div');
-      div.className = 'green';
-      shadow.appendChild(div);
-      assert.notEqual(getComputedStyle(div).color, 'rgb(0, 128, 0)');
-      adoptStyles(shadow, [style]);
-      assert.equal(getComputedStyle(div).color, 'rgb(0, 128, 0)');
-      document.body.removeChild(host);
-    });
+    if (Element.prototype.attachShadow != null) {
+      test('works with a shadow root', () => {
+        const style = css`
+          .green {
+            color: rgb(0, 255, 0);
+          }
+        `;
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        const shadow = host.attachShadow({mode: 'open'});
+        const div = document.createElement('div');
+        div.className = 'green';
+        shadow.appendChild(div);
+        assert.notEqual(getComputedStyle(div).color, 'rgb(0, 255, 0)');
+        adoptStyles(shadow, [style]);
+        assert.equal(getComputedStyle(div).color, 'rgb(0, 255, 0)');
+        document.body.removeChild(host);
+      });
+    }
   });
 });
