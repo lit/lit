@@ -166,7 +166,7 @@ export const css = (
  * shadowRoot.
  */
 export const adoptStyles = (
-  renderRoot: Document | ShadowRoot,
+  renderRoot: ShadowRoot,
   styles: Array<CSSResultOrNative>
 ) => {
   if (supportsAdoptingStyleSheets) {
@@ -182,13 +182,7 @@ export const adoptStyles = (
         style.setAttribute('nonce', nonce);
       }
       style.textContent = (s as CSSResult).cssText;
-      let renderInto;
-      if (renderRoot instanceof Document) {
-        renderInto = renderRoot.head;
-      } else {
-        renderInto = renderRoot;
-      }
-      renderInto.appendChild(style);
+      renderRoot.appendChild(style);
     });
   }
 };

@@ -9,9 +9,9 @@ import {
   CSSResult,
   unsafeCSS,
   supportsAdoptingStyleSheets,
-  adoptStyles,
 } from '@lit/reactive-element/css-tag.js';
 import {assert} from '@esm-bundle/chai';
+import {appendStyles} from '../append-style.js';
 
 suite('Styling', () => {
   suite('css tag', () => {
@@ -102,7 +102,7 @@ suite('Styling', () => {
     });
   });
 
-  suite('adoptStyles', () => {
+  suite('appendStyles', () => {
     test('works with a Document', () => {
       const style = css`
         .green {
@@ -113,7 +113,7 @@ suite('Styling', () => {
       div.className = 'green';
       document.body.appendChild(div);
       assert.notEqual(getComputedStyle(div).color, 'rgb(0, 128, 0)');
-      adoptStyles(document, [style]);
+      appendStyles(document, [style]);
       assert.equal(getComputedStyle(div).color, 'rgb(0, 128, 0)');
       document.body.removeChild(div);
     });
@@ -132,7 +132,7 @@ suite('Styling', () => {
         div.className = 'green';
         shadow.appendChild(div);
         assert.notEqual(getComputedStyle(div).color, 'rgb(0, 255, 0)');
-        adoptStyles(shadow, [style]);
+        appendStyles(shadow, [style]);
         assert.equal(getComputedStyle(div).color, 'rgb(0, 255, 0)');
         document.body.removeChild(host);
       });
