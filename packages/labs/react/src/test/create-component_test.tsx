@@ -225,11 +225,13 @@ suite('createComponent', () => {
   });
 
   test('can set attributes', async () => {
+        await renderReactComponent({});
+    assert.equal(el.getAttribute('id'), null);
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
     await renderReactComponent({id: undefined});
     // the line below feels like a problem
-    assert.equal(el.getAttribute('id'), 'undefined');
+    assert.equal(el.getAttribute('id'), '');
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
   });
@@ -260,13 +262,12 @@ suite('createComponent', () => {
     // the following tests fail only in firefox
     await renderReactComponent({});
     assert.equal(el.getAttribute('aria-checked'), null);
-    await renderReactComponent({ariaChecked: 'true'});
+    await renderReactComponent({'aria-checked': 'true'});
     assert.equal(el.getAttribute('aria-checked'), 'true');
-    await renderReactComponent({ariaChecked: 'false'});
+    await renderReactComponent({'aria-checked': 'false'});
     assert.equal(el.getAttribute('aria-checked'), 'false');
-    await renderReactComponent({ariaChecked: undefined});
+    await renderReactComponent({'aria-checked': undefined});
     assert.equal(el.getAttribute('aria-checked'), null);
-
   });
 
   test('can set properties', async () => {

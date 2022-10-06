@@ -121,7 +121,11 @@ const setProperty = <E extends Element>(
     }
   } else {
     // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    if (name === 'id' && value === undefined) {
+      // node.removeAttribute(name);
+    } else {
+      node[name as keyof E] = value as E[keyof E];
+    }
   }
 };
 
@@ -250,16 +254,30 @@ export const createComponent = <
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        if (
-          eventProps.has(k) ||
-          (!reservedReactProperties.has(k) && k in elementClass.prototype)
-        ) {
+        if (eventProps.has(k)) {
           this._elementProps[k] = v;
-        } else {
+          continue;
+        }
+
+        if (reservedReactProperties.has(k)) {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        if (k in HTMLElement.prototype && v === undefined) {
+          this._elementProps[k] = '';
+          props[k] = '';
+          continue;
+        }
+
+        if (k in elementClass.prototype) {
+          this._elementProps[k] = v;
+          continue;
+        }
+
+        props[k] = v;
       }
       return createElement<React.HTMLAttributes<I>, I>(tagName, props);
     }
