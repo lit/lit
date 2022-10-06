@@ -230,8 +230,8 @@ suite('createComponent', () => {
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
     await renderReactComponent({id: undefined});
-    // the line below feels like a problem
     assert.equal(el.getAttribute('id'), '');
+    assert.equal(el.id, '');
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
   });
@@ -243,8 +243,19 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('hidden'), null);
     await renderReactComponent({hidden: true});
     assert.equal(el.getAttribute('hidden'), '');
+    assert.equal(el.hidden, true);
     await renderReactComponent({hidden: false});
     assert.equal(el.getAttribute('hidden'), null);
+
+    await renderReactComponent({});
+    assert.equal(el.getAttribute('disabled'), null);
+    await renderReactComponent({disabled: undefined});
+    assert.equal(el.getAttribute('disabled'), null);
+    await renderReactComponent({disabled: true});
+    assert.equal(el.getAttribute('disabled'), null);
+    assert.equal(el.disabled, true);
+    await renderReactComponent({disabled: false});
+    assert.equal(el.getAttribute('disabled'), null);
   });
 
   test('does not remove enmumerated attributes', async () => {
