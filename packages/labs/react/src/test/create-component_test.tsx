@@ -240,8 +240,6 @@ suite('createComponent', () => {
     await renderReactComponent({hidden: undefined});
     assert.equal(el.getAttribute('hidden'), null);
     await renderReactComponent({hidden: true});
-    // the following is not correct, empty strings are falsey
-    // the element is not hidden
     assert.equal(el.getAttribute('hidden'), '');
     await renderReactComponent({hidden: false});
     assert.equal(el.getAttribute('hidden'), null);
