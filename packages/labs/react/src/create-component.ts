@@ -221,7 +221,7 @@ export function createComponent<
   if (tagName === undefined) {
     const options = ReactOrOptions as Options<I, E>;
     ({tagName: tag, elementClass: element, events, displayName} = options);
-    React = options.React ?? window.React;
+    React = options.React;
   } else {
     React = ReactOrOptions as typeof window.React;
     element = elementClass as Constructor<I>;
