@@ -166,11 +166,11 @@ export const css = (
  * shadowRoot.
  */
 export const adoptStyles = (
-  renderRoot: ShadowRoot,
+  renderRoot: Document | ShadowRoot,
   styles: Array<CSSResultOrNative>
 ) => {
   if (supportsAdoptingStyleSheets) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
+    renderRoot.adoptedStyleSheets = styles.map((s) =>
       s instanceof CSSStyleSheet ? s : s.styleSheet!
     );
   } else {

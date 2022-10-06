@@ -9,6 +9,7 @@ import {
   CSSResult,
   unsafeCSS,
   supportsAdoptingStyleSheets,
+  adoptStyles,
 } from '@lit/reactive-element/css-tag.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -98,6 +99,41 @@ suite('Styling', () => {
       // document.body level.
       const bodyStyles = `${cssModule}`;
       assert.equal(bodyStyles.replace(/\s/g, ''), '.my-module{color:yellow;}');
+    });
+  });
+
+  describe('adoptStyles', () => {
+    test('works with a Document', () => {
+      const style = css`
+        .green {
+          color: rgb(0, 128, 0);
+        }
+      `;
+      const div = document.createElement('div');
+      div.className = 'green';
+      document.body.appendChild(div);
+      assert.notEqual(getComputedStyle(div).color, 'rgb(0, 128, 0)');
+      adoptStyles(document, [style]);
+      assert.equal(getComputedStyle(div).color, 'rgb(0, 128, 0)');
+      document.body.removeChild(div);
+    });
+
+    test('works with a shadow root', () => {
+      const style = css`
+        .green {
+          color: rgb(0, 128, 0);
+        }
+      `;
+      const host = document.createElement('div');
+      document.body.appendChild(host);
+      const shadow = host.attachShadow({mode: 'open'});
+      const div = document.createElement('div');
+      div.className = 'green';
+      shadow.appendChild(div);
+      assert.notEqual(getComputedStyle(div).color, 'rgb(0, 128, 0)');
+      adoptStyles(shadow, [style]);
+      assert.equal(getComputedStyle(div).color, 'rgb(0, 128, 0)');
+      document.body.removeChild(host);
     });
   });
 });
