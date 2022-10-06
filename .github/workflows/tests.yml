@@ -70,9 +70,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          # Pin to avoid version with problematic npm. See https://github.com/npm/cli/issues/4980
-          # TODO(augustinekim) Unpin when latest node installed by action includes fixed npm
-          node-version: 16.15.0
+          node-version: 16
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
