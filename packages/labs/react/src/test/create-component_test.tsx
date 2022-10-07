@@ -225,7 +225,7 @@ suite('createComponent', () => {
   });
 
   test('can set attributes', async () => {
-        await renderReactComponent({});
+    await renderReactComponent({});
     assert.equal(el.getAttribute('id'), null);
     assert.equal(el.id, '');
     await renderReactComponent({id: 'id'});
