@@ -114,20 +114,19 @@ const setProperty = <E extends Element>(
   events?: EventNames
 ) => {
   const event = events?.[name];
-  if (event !== undefined) {
+  if (event !== undefined && value !== old) {
     // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    }
-  } else {
-    if (name in HTMLElement.prototype && value === undefined) {
-      node.removeAttribute(name);
-      return;
-    }
-
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    return;
   }
+
+  if (name in HTMLElement.prototype && value === undefined) {
+    node.removeAttribute(name);
+    return;
+  }
+
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
