@@ -23,11 +23,11 @@
       "development": "./development/reactive-element.js",
       "default": "./reactive-element.js"
     },
-    "./append-tag.js": {
-      "types": "./development/append-tag.d.ts",
-      "node": "./node/append-tag.js",
-      "development": "./development/append-tag.js",
-      "default": "./append-tag.js"
+    "./append-style.js": {
+      "types": "./development/append-style.d.ts",
+      "node": "./node/append-style.js",
+      "development": "./development/append-style.js",
+      "default": "./append-style.js"
     },
     "./css-tag.js": {
       "types": "./development/css-tag.d.ts",

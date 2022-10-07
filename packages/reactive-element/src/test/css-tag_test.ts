@@ -11,7 +11,7 @@ import {
   supportsAdoptingStyleSheets,
 } from '@lit/reactive-element/css-tag.js';
 import {assert} from '@esm-bundle/chai';
-import {appendStyles} from '@lit/reactive-element/append-tag.js';
+import {appendStyles} from '@lit/reactive-element/append-style.js';
 
 suite('Styling', () => {
   suite('css tag', () => {
@@ -121,7 +121,7 @@ suite('Styling', () => {
     if (Element.prototype.attachShadow != null) {
       test('works with a shadow root', () => {
         const style = css`
-          .green {
+          .very-green {
             color: rgb(0, 255, 0);
           }
         `;
@@ -129,7 +129,7 @@ suite('Styling', () => {
         document.body.appendChild(host);
         const shadow = host.attachShadow({mode: 'open'});
         const div = document.createElement('div');
-        div.className = 'green';
+        div.className = 'very-green';
         shadow.appendChild(div);
         assert.notEqual(getComputedStyle(div).color, 'rgb(0, 255, 0)');
         appendStyles(shadow, [style]);
