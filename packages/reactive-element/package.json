@@ -23,6 +23,12 @@
       "development": "./development/reactive-element.js",
       "default": "./reactive-element.js"
     },
+    "./append-tag.js": {
+      "types": "./development/append-tag.d.ts",
+      "node": "./node/append-tag.js",
+      "development": "./development/append-tag.js",
+      "default": "./append-tag.js"
+    },
     "./css-tag.js": {
       "types": "./development/css-tag.d.ts",
       "node": "./node/css-tag.js",
@@ -171,6 +177,7 @@
         "src/test/polyfill-support/*_test.html"
       ],
       "output": [
+        "append-style.js{,.map}",
         "css-tag.js{,.map}",
         "decorators.js{,.map}",
         "polyfill-support.js{,.map}",
@@ -253,6 +260,7 @@
     }
   },
   "files": [
+    "/append-style.{d.ts,d.ts.map,js,js.map}",
     "/css-tag.{d.ts,d.ts.map,js,js.map}",
     "/decorators.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",

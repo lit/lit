@@ -12,6 +12,7 @@ export default litProdConfig({
   entryPoints: [
     'reactive-element',
     'reactive-controller',
+    'append-style',
     'css-tag',
     'decorators',
     'decorators/base',

@@ -11,7 +11,7 @@ import {
   supportsAdoptingStyleSheets,
 } from '@lit/reactive-element/css-tag.js';
 import {assert} from '@esm-bundle/chai';
-import {appendStyles} from '../append-style.js';
+import {appendStyles} from '@lit/reactive-element/append-tag.js';
 
 suite('Styling', () => {
   suite('css tag', () => {
