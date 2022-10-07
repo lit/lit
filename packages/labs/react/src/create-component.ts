@@ -121,7 +121,7 @@ const setProperty = <E extends Element>(
   }
 
   if (name in HTMLElement.prototype && value === undefined) {
-    node.removeAttribute(name);
+    node[name as keyof E] = '' as unknown as E[keyof E];
     return;
   }
 
