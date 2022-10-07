@@ -315,6 +315,7 @@ export const getImportsStringForReferences = (references: Reference[]) => {
 };
 
 export interface AnalyzerInterface {
+  moduleCache: Map<AbsolutePath, Module>;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
   fs: Pick<

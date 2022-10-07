@@ -16,10 +16,6 @@ import {AbsolutePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
 import {DiagnosticsError} from '../errors.js';
 
-// Cache of Module models by path; invalidated when the sourceFile
-// or any of its dependencies change
-const moduleCache = new Map<AbsolutePath, Module>();
-
 /**
  * Returns an analyzer `Module` model for the given module path.
  */
@@ -85,7 +81,7 @@ export const getModule = (
     declarations,
     dependencies,
   });
-  moduleCache.set(
+  analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
     module
   );
@@ -102,7 +98,7 @@ const getAndValidateModuleFromCache = (
   modulePath: AbsolutePath,
   analyzer: AnalyzerInterface
 ): Module | undefined => {
-  const module = moduleCache.get(modulePath);
+  const module = analyzer.moduleCache.get(modulePath);
   // A cached module is only valid if the source file that was used has not
   // changed in the current program, and if all of its dependencies are still
   // valid
@@ -113,7 +109,7 @@ const getAndValidateModuleFromCache = (
     ) {
       return module;
     }
-    moduleCache.delete(modulePath);
+    analyzer.moduleCache.delete(modulePath);
   }
   return undefined;
 };
@@ -130,7 +126,7 @@ const depsAreValid = (module: Module, analyzer: AnalyzerInterface) =>
  * cached model are considered valid.
  */
 const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
-  if (moduleCache.has(modulePath)) {
+  if (analyzer.moduleCache.has(modulePath)) {
     // If a dep has a model, it is valid only if its deps are valid
     return Boolean(getAndValidateModuleFromCache(modulePath, analyzer));
   } else {
