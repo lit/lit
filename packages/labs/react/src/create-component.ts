@@ -121,8 +121,7 @@ const setProperty = <E extends Element>(
   }
 
   if (name in HTMLElement.prototype && value === undefined) {
-    node[name as keyof E] = '' as unknown as E[keyof E];
-    return;
+    value = '';
   }
 
   // But don't dirty check properties; elements are assumed to do this.
