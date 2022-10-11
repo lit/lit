@@ -121,7 +121,7 @@ const setProperty = <E extends Element>(
   }
 
   if (name in HTMLElement.prototype && value === undefined) {
-    node.removeAttribute(name);
+    value = '';
   }
 
   // But don't dirty check properties; elements are assumed to do this.

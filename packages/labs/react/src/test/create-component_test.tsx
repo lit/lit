@@ -231,7 +231,7 @@ suite('createComponent', () => {
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
     await renderReactComponent({id: undefined});
-    assert.equal(el.getAttribute('id'), null);
+    assert.equal(el.getAttribute('id'), '');
     assert.equal(el.id, '');
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
@@ -278,7 +278,7 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
     await renderReactComponent({draggable: undefined});
-    assert.equal(el.getAttribute('draggable'), null);
+    assert.equal(el.getAttribute('draggable'), 'false');
     assert.equal(el.draggable, false);
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
