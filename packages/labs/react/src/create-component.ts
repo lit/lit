@@ -129,6 +129,7 @@ const setProperty = <E extends Element>(
     //   value = '';
     //   value = null;
     node.removeAttribute(name);
+    return;
   }
 
   // But don't dirty check properties; elements are assumed to do this.
