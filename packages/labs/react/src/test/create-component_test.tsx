@@ -100,6 +100,7 @@ suite('createComponent', () => {
   );
 
   let el: BasicElement;
+  let domEl: HTMLElement;
 
   const renderReactComponent = async (
     props?: ReactModule.ComponentProps<typeof BasicElementComponent>
@@ -109,6 +110,17 @@ suite('createComponent', () => {
       container
     );
     el = container.querySelector(elementName)! as BasicElement;
+    await el.updateComplete;
+  };
+
+  const renderDOMElement = async (
+    props?: ReactModule.HTMLAttributes<HTMLElement>
+  ) => {
+    window.ReactDOM.render(
+      <div {...props}/>,
+      container
+    );
+    domEl = container.querySelector('div')!;
     await el.updateComplete;
   };
 
@@ -231,7 +243,7 @@ suite('createComponent', () => {
     await renderReactComponent({id: 'id'});
     assert.equal(el.getAttribute('id'), 'id');
     await renderReactComponent({id: undefined});
-    assert.equal(el.getAttribute('id'), '');
+    assert.equal(el.getAttribute('id'), null);
     assert.equal(el.id, '');
     await renderReactComponent({id: 'id2'});
     assert.equal(el.getAttribute('id'), 'id2');
@@ -289,7 +301,6 @@ suite('createComponent', () => {
   });
 
   test('does not remove boolean aria attributes', async () => {
-    // the following tests fail only in firefox
     await renderReactComponent({});
     assert.equal(el.getAttribute('aria-checked'), null);
     await renderReactComponent({'aria-checked': 'true'});
@@ -298,6 +309,53 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('aria-checked'), 'false');
     await renderReactComponent({'aria-checked': undefined});
     assert.equal(el.getAttribute('aria-checked'), null);
+  });
+
+  test('div element can set attritbues', async () => {
+    await renderDOMElement({});
+    assert.equal(domEl.getAttribute('id'), null);
+    assert.equal(domEl.id, '');
+    await renderDOMElement({id: 'id'});
+    assert.equal(domEl.getAttribute('id'), 'id');
+    await renderDOMElement({id: undefined});
+    assert.equal(domEl.getAttribute('id'), null);
+    assert.equal(domEl.id, '');
+    await renderDOMElement({id: 'id2'});
+    assert.equal(domEl.getAttribute('id'), 'id2');
+    assert.equal(domEl.id, 'id2');
+  })
+
+  test('div element can set attritbues', async () => {
+    await renderDOMElement({});
+    assert.equal(domEl.getAttribute('hidden'), null);
+    assert.equal(domEl.hidden, false);
+    await renderDOMElement({hidden: true});
+    assert.equal(domEl.getAttribute('hidden'), '');
+    assert.equal(domEl.hidden, true);
+    await renderDOMElement({hidden: undefined});
+    assert.equal(domEl.getAttribute('hidden'), null);
+    assert.equal(domEl.hidden, false);
+    await renderDOMElement({hidden: true});
+    assert.equal(domEl.getAttribute('hidden'), '');
+    assert.equal(domEl.hidden, true);
+    await renderDOMElement({hidden: false});
+    assert.equal(domEl.getAttribute('hidden'), null);
+    assert.equal(domEl.hidden, false);
+  })
+
+  test('does not remove enmumerated attributes', async () => {
+    await renderDOMElement({});
+    assert.equal(domEl.getAttribute('draggable'), null);
+    assert.equal(domEl.draggable, false);
+    await renderDOMElement({draggable: undefined});
+    assert.equal(domEl.getAttribute('draggable'), null);
+    assert.equal(domEl.draggable, false);
+    await renderDOMElement({draggable: true});
+    assert.equal(domEl.getAttribute('draggable'), 'true');
+    assert.equal(domEl.draggable, true);
+    await renderDOMElement({draggable: false});
+    assert.equal(domEl.getAttribute('draggable'), 'false');
+    assert.equal(domEl.draggable, false);
   });
 
   test('can set properties', async () => {
