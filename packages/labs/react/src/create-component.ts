@@ -28,7 +28,7 @@ type ElementWithoutPropsOrEventListeners<I, E> = Omit<
 
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-type WebComponentProps<
+export type WebComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = Partial<
@@ -58,6 +58,7 @@ export type ReactWebComponent<
 type Constructor<T> = {new (): T};
 
 const reservedReactProperties = new Set([
+  'id',
   'children',
   'localName',
   'ref',
@@ -117,18 +118,6 @@ const setProperty = <E extends Element>(
   if (event !== undefined && value !== old) {
     // Dirty check event value.
     addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    return;
-  }
-
-  if (
-    value === undefined &&
-    name in HTMLElement.prototype &&
-    node.hasAttribute(name)
-  ) {
-    // alternatively:
-    //   value = '';
-    //   value = null;
-    node.removeAttribute(name);
     return;
   }
 

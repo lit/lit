@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventName, ReactWebComponent} from '@lit-labs/react';
+import type {EventName, ReactWebComponent, WebComponentProps} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -67,9 +67,18 @@ class BasicElement extends ReactiveElement {
   }
 }
 
+@customElement('x-foo')
+class XFoo extends ReactiveElement {}
+
 declare global {
   interface HTMLElementTagNameMap {
     [elementName]: BasicElement;
+    'x-foo': XFoo,
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      "x-foo": WebComponentProps<XFoo>,
+    }
   }
 }
 
@@ -113,14 +122,14 @@ suite('createComponent', () => {
     await el.updateComplete;
   };
 
-  const renderDOMElement = async (
-    props?: ReactModule.HTMLAttributes<HTMLElement>
+  const renderCustomElement = async (
+    props?: ReactModule.HTMLAttributes<XFoo>
   ) => {
     window.ReactDOM.render(
-      <div {...props}/>,
+      <x-foo {...props}/>,
       container
     );
-    domEl = container.querySelector('div')!;
+    domEl = container.querySelector('x-foo')!;
     await el.updateComplete;
   };
 
@@ -312,48 +321,50 @@ suite('createComponent', () => {
   });
 
   test('div element can set attritbues', async () => {
-    await renderDOMElement({});
+    await renderCustomElement({});
     assert.equal(domEl.getAttribute('id'), null);
     assert.equal(domEl.id, '');
-    await renderDOMElement({id: 'id'});
+    await renderCustomElement({id: 'id'});
     assert.equal(domEl.getAttribute('id'), 'id');
-    await renderDOMElement({id: undefined});
+    await renderCustomElement({id: undefined});
     assert.equal(domEl.getAttribute('id'), null);
     assert.equal(domEl.id, '');
-    await renderDOMElement({id: 'id2'});
+    await renderCustomElement({id: 'id2'});
     assert.equal(domEl.getAttribute('id'), 'id2');
     assert.equal(domEl.id, 'id2');
   })
 
   test('div element can set attritbues', async () => {
-    await renderDOMElement({});
+    await renderCustomElement({});
     assert.equal(domEl.getAttribute('hidden'), null);
     assert.equal(domEl.hidden, false);
-    await renderDOMElement({hidden: true});
-    assert.equal(domEl.getAttribute('hidden'), '');
+    await renderCustomElement({hidden: true});
+    // difference between dom and custom element is expected in react 18
+    assert.equal(domEl.getAttribute('hidden'), 'true');
     assert.equal(domEl.hidden, true);
-    await renderDOMElement({hidden: undefined});
+    await renderCustomElement({hidden: undefined});
     assert.equal(domEl.getAttribute('hidden'), null);
     assert.equal(domEl.hidden, false);
-    await renderDOMElement({hidden: true});
-    assert.equal(domEl.getAttribute('hidden'), '');
+    await renderCustomElement({hidden: true});
+    assert.equal(domEl.getAttribute('hidden'), 'true');
     assert.equal(domEl.hidden, true);
-    await renderDOMElement({hidden: false});
-    assert.equal(domEl.getAttribute('hidden'), null);
-    assert.equal(domEl.hidden, false);
+    // difference between dom and custom element is expected in react 18
+    await renderCustomElement({hidden: false});
+    assert.equal(domEl.getAttribute('hidden'), 'false');
+    assert.equal(domEl.hidden, true);
   })
 
   test('does not remove enmumerated attributes', async () => {
-    await renderDOMElement({});
+    await renderCustomElement({});
     assert.equal(domEl.getAttribute('draggable'), null);
     assert.equal(domEl.draggable, false);
-    await renderDOMElement({draggable: undefined});
+    await renderCustomElement({draggable: undefined});
     assert.equal(domEl.getAttribute('draggable'), null);
     assert.equal(domEl.draggable, false);
-    await renderDOMElement({draggable: true});
+    await renderCustomElement({draggable: true});
     assert.equal(domEl.getAttribute('draggable'), 'true');
     assert.equal(domEl.draggable, true);
-    await renderDOMElement({draggable: false});
+    await renderCustomElement({draggable: false});
     assert.equal(domEl.getAttribute('draggable'), 'false');
     assert.equal(domEl.draggable, false);
   });

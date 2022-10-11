@@ -1,5 +1,6 @@
 ---
-'@lit-labs/react': patch
+'@lit-labs/react': minor
 ---
 
-Boolean attributes with a value of `false` are set as `null` on the component.
+Attributes match the behavior of React properties on
+HTMLElements.
