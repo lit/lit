@@ -151,7 +151,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
  * @param options An options bag containing the parameters needed to generate
  * a wrapped web component.
  *
- * @param options.React The React module, typically imported from the `react` npm
+ * @param options.react The React module, typically imported from the `react` npm
  * package.
  * @param options.tagName The custom element tag name registered via
  * `customElements.define`.
@@ -221,7 +221,7 @@ export function createComponent<
   if (tagName === undefined) {
     const options = ReactOrOptions as Options<I, E>;
     ({tagName: tag, elementClass: element, events, displayName} = options);
-    React = options.React;
+    React = options.react;
   } else {
     React = ReactOrOptions as typeof window.React;
     element = elementClass as Constructor<I>;
