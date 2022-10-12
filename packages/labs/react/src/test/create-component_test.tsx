@@ -91,7 +91,7 @@ suite('createComponent', () => {
   // if some tag, run options
   // otherwise
   const BasicElementComponent = createComponent({
-    React: window.React,
+    react: window.React,
     elementClass: BasicElement,
     events: basicElementEvents,
     tagName,
@@ -136,7 +136,7 @@ suite('createComponent', () => {
   */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent({
-      React: window.React,
+      react: window.React,
       elementClass: BasicElement,
       tagName,
     });
@@ -184,7 +184,7 @@ suite('createComponent', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
     const NamedComponent = createComponent({
-      React: window.React,
+      react: window.React,
       elementClass: BasicElement,
       events: basicElementEvents,
       displayName: 'FooBar',
