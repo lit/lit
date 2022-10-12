@@ -12,6 +12,7 @@ import {
 import {
   IntersectionController,
   IntersectionControllerConfig,
+  IntersectionValueCallback,
 } from '@lit-labs/observers/intersection_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -55,7 +56,10 @@ const canTest = () => {
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new IntersectionController(this, config);
+        this.observer = new IntersectionController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -345,6 +349,36 @@ const canTest = () => {
     assert.isTrue(el.observerValue);
   });
 
+  test('observed targets are re-observed on host connected', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+    const d2 = document.createElement('div');
+
+    el.renderRoot.appendChild(d1);
+    el.renderRoot.appendChild(d2);
+
+    el.observer.observe(d1);
+    el.observer.observe(d2);
+
+    await intersectionComplete();
+    el.resetObserverValue();
+    el.remove();
+
+    container.appendChild(el);
+
+    // Reports change to first observed target.
+    el.resetObserverValue();
+    intersectOut(d1);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change to second observed target.
+    el.resetObserverValue();
+    intersectOut(d2);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+  });
+
   test('observed target respects `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
@@ -366,7 +400,7 @@ const canTest = () => {
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target not re-observed on connection', async () => {
+  test('observed target re-observed on connection', async () => {
     const el = await getTestElement(() => ({
       target: null,
       skipInitial: true,
@@ -383,32 +417,26 @@ const canTest = () => {
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
 
-    // Does not report change when re-connected
+    // Reports changes when re-connected
     container.appendChild(el);
     await intersectionComplete();
     assert.isUndefined(el.observerValue);
     intersectOut(d1);
-    await intersectionComplete();
-    assert.isUndefined(el.observerValue);
-
-    // Can re-observe after connection, respecting `skipInitial`
-    el.observer.observe(d1);
-    await intersectionComplete();
-    assert.isUndefined(el.observerValue);
-    intersectIn(d1);
     await intersectionComplete();
     assert.isTrue(el.observerValue);
   });
 
   test('can observe changes when initialized after host connected', async () => {
     class TestFirstUpdated extends ReactiveElement {
-      observer!: IntersectionController;
+      observer!: IntersectionController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
-        this.observer = new IntersectionController(this, {});
+        this.observer = new IntersectionController(this, {
+          callback: () => true,
+        });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -438,16 +466,17 @@ const canTest = () => {
     const d = document.createElement('div');
     container.appendChild(d);
     class A extends ReactiveElement {
-      observer!: IntersectionController;
+      observer!: IntersectionController<true>;
       observerValue: true | undefined = undefined;
       override firstUpdated() {
         this.observer = new IntersectionController(this, {
           target: d,
           skipInitial: true,
+          callback: () => true,
         });
       }
       override updated() {
-        this.observerValue = this.observer.value as typeof this.observerValue;
+        this.observerValue = this.observer.value;
       }
       resetObserverValue() {
         this.observer.value = this.observerValue = undefined;
@@ -467,5 +496,66 @@ const canTest = () => {
     intersectIn(d);
     await intersectionComplete();
     assert.isTrue(el.observerValue);
+  });
+
+  test('IntersectionController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement();
+    const A = new IntersectionController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new IntersectionController(el, {
+      callback: () => '',
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new IntersectionController(
+      el,
+      {} as IntersectionController<string>
+    );
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: IntersectionValueCallback<string | null> = () => '';
+    const D = new IntersectionController(el, {callback: narrowTypeCb});
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
+  });
+
+  test('observed target can be unobserved', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+
+    // Reports initial changes when observe called.
+    el.observer.observe(d1);
+    el.renderRoot.appendChild(d1);
+    await intersectionComplete();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+    await intersectionComplete();
+
+    // Does not report change when unobserved
+    el.observer.unobserve(d1);
+    intersectOut(d1);
+    await intersectionComplete();
+    assert.isUndefined(el.observerValue);
+
+    el.remove();
+    container.appendChild(el);
+
+    // Does not report changes when re-connected
+    intersectIn(d1);
+    await intersectionComplete();
+    assert.isUndefined(el.observerValue);
   });
 });

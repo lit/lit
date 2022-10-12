@@ -17,6 +17,17 @@ export interface LocalInterface {
 
 @customElement('element-a')
 export class ElementA extends LitElement {
+  static properties = {
+    staticProp: {attribute: 'static-prop', type: Number},
+  };
+
+  declare staticProp: number;
+
+  constructor() {
+    super();
+    this.staticProp = 42;
+  }
+
   notDecorated: string;
 
   @property()
