@@ -36,7 +36,7 @@ const render = () => {
   for (const p in vueProps) {
     const v = vueProps[p as keyof Props];
     if (v !== undefined || hasRendered) {
-      props[p as keyof Props] = v ?? defaults[p as keyof Props];
+      (props[p as keyof Props] as unknown) = v ?? defaults[p as keyof Props];
     }
   }
 
