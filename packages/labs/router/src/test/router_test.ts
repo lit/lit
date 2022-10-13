@@ -252,6 +252,34 @@ const canTest =
     const LOCAL_PATH = '/local_absolute_path';
     assert.equal(child1._routes.link(LOCAL_PATH), LOCAL_PATH);
   });
+
+  test(`goto() doesn't modify parent route`, async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    //
+    // Initial location
+    //
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    await child1._routes.goto('potato');
+    await child1.updateComplete;
+
+    // Verify the child route rendered
+    assert.include(
+      stripExpressionComments(child1.shadowRoot!.innerHTML),
+      '<h3>Child 1: potato</h3>'
+    );
+  });
 });
 
 export const stripExpressionComments = (html: string) =>
