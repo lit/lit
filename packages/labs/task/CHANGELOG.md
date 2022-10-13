@@ -1,5 +1,38 @@
 # Change Log
 
+## 2.0.0
+
+### Major Changes
+
+- [#3283](https://github.com/lit/lit/pull/3283) [`a279803d`](https://github.com/lit/lit/commit/a279803d14dd0d0e81d49063587965581bdc759a) - **[Breaking]** Task will no longer reset its `value` or `error` on pending. This allows us to start chaining tasks e.g.
+
+  ```js
+  const a = new Task(
+    this,
+    async ([url]) => await fetch(url),
+    () => [this.url]
+  );
+  const b = new Task(
+    this,
+    async ([value]) => {
+      /* This is not thrashed */
+    },
+    () => [a.value]
+  );
+  ```
+
+### Minor Changes
+
+- [#3287](https://github.com/lit/lit/pull/3287) [`02b0b7b9`](https://github.com/lit/lit/commit/02b0b7b9f99b85de34e56168cf4ccb6955f4c553) - Adds onComplete and onError callbacks
+
+## 1.1.3
+
+### Patch Changes
+
+- [#3131](https://github.com/lit/lit/pull/3131) [`ec87d529`](https://github.com/lit/lit/commit/ec87d5297cba77c4272e89c69d0b1bd0e2ec6823) - Update Task typings to work better with inference and casting args to `as const` by making args a readonly array.
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
 ## 1.1.2
 
 ### Patch Changes

@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {Module} from '../model.js';
+import {Module, AnalyzerInterface, PackageInfo} from '../model.js';
 import {
   isLitElement,
   getLitElementDeclaration,
@@ -19,21 +19,36 @@ import {
 import * as path from 'path';
 import {getClassDeclaration} from './classes.js';
 import {getVariableDeclarations} from './variables.js';
-import {ProgramContext} from '../program-context.js';
 import {AbsolutePath, absoluteToPackage} from '../paths.js';
+import {getPackageInfo} from './packages.js';
 
+/**
+ * Returns an analyzer `Module` model for the given ts.SourceFile.
+ */
 export const getModule = (
   sourceFile: ts.SourceFile,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface,
+  packageInfo: PackageInfo = getPackageInfo(
+    sourceFile.fileName as AbsolutePath,
+    analyzer
+  )
 ) => {
+  // Find and load the package.json associated with this module; this both gives
+  // us the packageRoot for this module (needed for translating the source file
+  // path to a package relative path), as well as the packageName (needed for
+  // generating references to any symbols in this module). This will need
+  // caching/invalidation.
+  const {rootDir, packageJson} = packageInfo;
   const sourcePath = absoluteToPackage(
-    path.normalize(sourceFile.fileName) as AbsolutePath,
-    programContext.packageRoot
+    analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
+    rootDir
   );
-  const fullSourcePath = path.join(programContext.packageRoot, sourcePath);
-  const jsPath = ts
-    .getOutputFileNames(programContext.commandLine, fullSourcePath, false)
-    .filter((f) => f.endsWith('.js'))[0];
+  const fullSourcePath = path.join(rootDir, sourcePath);
+  const jsPath = fullSourcePath.endsWith('.js')
+    ? fullSourcePath
+    : ts
+        .getOutputFileNames(analyzer.commandLine, fullSourcePath, false)
+        .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
   // we might need to handle this differently
   if (jsPath === undefined) {
@@ -46,29 +61,27 @@ export const getModule = (
     // separators; since sourcePath uses OS separators, normalize
     // this so that all our model paths are OS-native
     jsPath: absoluteToPackage(
-      path.normalize(jsPath) as AbsolutePath,
-      programContext.packageRoot as AbsolutePath
+      analyzer.path.normalize(jsPath) as AbsolutePath,
+      rootDir
     ),
     sourceFile,
+    packageJson,
   });
-
-  programContext.currentModule = module;
 
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
       module.declarations.push(
-        isLitElement(statement, programContext)
-          ? getLitElementDeclaration(statement, programContext)
-          : getClassDeclaration(statement, programContext)
+        isLitElement(statement, analyzer)
+          ? getLitElementDeclaration(statement, analyzer)
+          : getClassDeclaration(statement, analyzer)
       );
     } else if (ts.isVariableStatement(statement)) {
       module.declarations.push(
         ...statement.declarationList.declarations
-          .map((dec) => getVariableDeclarations(dec, dec.name, programContext))
+          .map((dec) => getVariableDeclarations(dec, dec.name, analyzer))
           .flat()
       );
     }
   }
-  programContext.currentModule = undefined;
   return module;
 };

@@ -1,5 +1,27 @@
 # Change Log
 
+## 1.4.1
+
+### Patch Changes
+
+- [#3222](https://github.com/lit/lit/pull/3222) [`486739ec`](https://github.com/lit/lit/commit/486739ec23d70ef9ec93fb7249c2291181a8343b) - Fix `CSSStyleSheet is not defined` error that would occur when importing a Lit component in Node when both static `styles` and the `@property` decorator were used.
+
+## 1.4.0
+
+### Minor Changes
+
+- [#3156](https://github.com/lit/lit/pull/3156) [`ae6f6808`](https://github.com/lit/lit/commit/ae6f6808f539254b72ec7efcff34b812173abe64) - Lit and its underlying libraries can now be imported directly from Node without crashing, without the need to load the @lit-labs/ssr dom-shim library. Note that actually rendering from a Node context still requires the @lit-labs/ssr dom-shim, and the appropriate integration between @lit-labs/ssr and your framework/tool.
+
+### Patch Changes
+
+- [#3120](https://github.com/lit/lit/pull/3120) [`6361a4b4`](https://github.com/lit/lit/commit/6361a4b4a589465cf6836c8454ed8ca4521d7b4d) - Bind `this` to custom attribute converter methods
+
+## 1.3.4
+
+### Patch Changes
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
 ## 1.3.3
 
 ### Patch Changes

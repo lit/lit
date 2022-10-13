@@ -62,6 +62,7 @@ packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
 packages/lit-html/development/
+packages/lit-html/node/
 packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
@@ -74,6 +75,7 @@ packages/lit-html/async-directive.*
 packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
+packages/lit-html/is-server.*
 
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
@@ -104,6 +106,7 @@ packages/localize-tools/testdata/*/output/
 
 packages/reactive-element/decorators/
 packages/reactive-element/development/
+packages/reactive-element/node/
 packages/reactive-element/test/
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
@@ -113,10 +116,6 @@ packages/reactive-element/reactive-controller.*
 
 packages/tests/node_modules/
 packages/tests/utils/
-packages/tests/**/rollup-resolve-remap.js
-packages/tests/**/rollup-resolve-remap.js.map
-packages/tests/**/rollup-resolve-remap.d.ts
-packages/tests/**/rollup-resolve-remap.d.ts.map
 packages/tests/**/run-web-tests.js
 packages/tests/**/run-web-tests.js.map
 packages/tests/**/run-web-tests.d.ts
@@ -125,10 +124,6 @@ packages/tests/**/web-test-runner.config.js
 packages/tests/**/web-test-runner.config.js.map
 packages/tests/**/web-test-runner.config.d.ts
 packages/tests/**/web-test-runner.config.d.ts.map
-packages/tests/**/wtr-config.js
-packages/tests/**/wtr-config.js.map
-packages/tests/**/wtr-config.d.ts
-packages/tests/**/wtr-config.d.ts.map
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map
@@ -150,6 +145,9 @@ packages/labs/cli/index.js.map
 packages/labs/cli/index.d.ts
 packages/labs/cli/index.d.ts.map
 packages/labs/cli/test-gen/
+
+packages/labs/cli-localize/lib/
+packages/labs/cli-localize/node_modules/
 
 packages/labs/context/development/
 packages/labs/context/test/

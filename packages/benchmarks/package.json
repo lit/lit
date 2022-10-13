@@ -39,12 +39,15 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": [
+        "tsconfig.json",
         "lit-element/**/*.ts",
         "reactive-element/**/*.ts",
         "lit-html/**/*.ts",
-        "utils/**/*.ts"
+        "utils/**/*.ts",
+        "!**/*.d.ts"
       ],
       "output": [
+        "tsconfig.tsbuildinfo",
         "lit-element/**/*.{js,js.map,d.ts,d.ts.map}",
         "reactive-element/**/*.{js,js.map,d.ts,d.ts.map}",
         "lit-html/**/*.{js,js.map,d.ts,d.ts.map}",
@@ -62,9 +65,9 @@
     "@lit/reactive-element": "^1.1.0",
     "lit-element": "^3.1.0",
     "lit-html": "^2.1.0",
-    "tachometer": "^0.6.0-pre.1"
+    "tachometer": "^0.7.0"
   },
   "devDependencies": {
-    "chromedriver": "^103.0.0"
+    "chromedriver": "^105.0.0"
   }
 }

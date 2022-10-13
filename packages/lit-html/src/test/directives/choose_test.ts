@@ -3,7 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {choose} from '../../directives/choose.js';
+import {choose} from 'lit-html/directives/choose.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('choose', () => {

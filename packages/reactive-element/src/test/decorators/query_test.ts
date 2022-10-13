@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {query} from '../../decorators/query.js';
+import {query} from '@lit/reactive-element/decorators/query.js';
 import {
   canTestReactiveElement,
   generateElementName,

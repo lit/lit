@@ -12,7 +12,8 @@ import {
 import {
   MutationController,
   MutationControllerConfig,
-} from '../mutation_controller.js';
+  MutationValueCallback,
+} from '@lit-labs/observers/mutation_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -53,7 +54,10 @@ const canTest =
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new MutationController(this, config);
+        this.observer = new MutationController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -315,6 +319,36 @@ const canTest =
     assert.isTrue(el.observerValue);
   });
 
+  test('observed targets are re-observed on host connected', async () => {
+    const el = await getTestElement(() => ({
+      target: null,
+      config: {attributes: true},
+    }));
+    el.resetObserverValue();
+    const d1 = document.createElement('div');
+    const d2 = document.createElement('div');
+
+    el.observer.observe(d1);
+    el.observer.observe(d2);
+
+    await nextFrame();
+    el.remove();
+
+    container.appendChild(el);
+
+    // Reports change to first observed target.
+    el.resetObserverValue();
+    d1.setAttribute('a', 'a');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+
+    // Reports change to second observed target.
+    el.resetObserverValue();
+    d2.setAttribute('a', 'a1');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
   test('observed target respects `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
@@ -335,7 +369,7 @@ const canTest =
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target not re-observed on connection', async () => {
+  test('observed target re-observed on connection', async () => {
     const el = await getTestElement(() => ({
       target: null,
       config: {attributes: true},
@@ -356,16 +390,131 @@ const canTest =
     await nextFrame();
     assert.isUndefined(el.observerValue);
 
-    // Does not report change when re-connected
+    // Does report change when re-connected
     container.appendChild(el);
     d1.setAttribute('a', 'a1');
     await nextFrame();
-    assert.isUndefined(el.observerValue);
+    assert.isTrue(el.observerValue);
 
     // Can re-observe after connection.
+    el.resetObserverValue();
     el.observer.observe(d1);
     d1.setAttribute('a', 'a2');
     await nextFrame();
     assert.isTrue(el.observerValue);
+  });
+
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: MutationController<true>;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new MutationController(this, {
+          config: {attributes: true},
+          callback: () => true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports attribute change
+    el.resetObserverValue();
+    el.setAttribute('hi', 'hi');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+
+    // Reports another attribute change
+    el.resetObserverValue();
+    el.requestUpdate();
+    await nextFrame();
+    assert.isUndefined(el.observerValue);
+    el.setAttribute('bye', 'bye');
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('can observe external element after host connected', async () => {
+    class A extends ReactiveElement {
+      observer!: MutationController<true>;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new MutationController(this, {
+          target: document.body,
+          config: {childList: true},
+          skipInitial: true,
+          callback: () => true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+
+    const el = (await renderTestElement(A)) as A;
+    assert.equal(el.observerValue, undefined);
+    const d = document.createElement('div');
+    document.body.appendChild(d);
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+    d.remove();
+    await nextFrame();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('MutationController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement(() => ({
+      target: null,
+      config: {attributes: true},
+    }));
+    const A = new MutationController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+      config: {attributes: true},
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new MutationController(el, {
+      callback: () => '',
+      config: {attributes: true},
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new MutationController(el, {
+      config: {attributes: true},
+    }) as MutationController<string>;
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: MutationValueCallback<string | null> = () => '';
+    const D = new MutationController(el, {
+      callback: narrowTypeCb,
+      config: {attributes: true},
+    });
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
   });
 });

@@ -4,8 +4,50 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ignoreBenignErrors, ignoreWindowErrors, until} from '../helpers.js';
-import {expect} from '@esm-bundle/chai';
+import {
+  array,
+  first,
+  last,
+  ignoreBenignErrors,
+  ignoreWindowErrors,
+  until,
+} from '../helpers.js';
+import {expect} from '@open-wc/testing';
+
+describe('array', () => {
+  it('creates an array with n items', () => {
+    const items = array(10);
+    expect(items).to.deep.equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+});
+
+describe('first', () => {
+  it('returns the first item of an array', () => {
+    expect(first([1, 2, 3])).to.equal(1);
+  });
+
+  it('returns undefined from an empty array', () => {
+    expect(first([])).to.be.undefined;
+  });
+
+  it('returns the only item from a single item array', () => {
+    expect(first([1])).to.equal(1);
+  });
+});
+
+describe('last', () => {
+  it('returns the last item of an array', () => {
+    expect(last([1, 2, 3])).to.equal(3);
+  });
+
+  it('returns undefined from an empty array', () => {
+    expect(last([])).to.be.undefined;
+  });
+
+  it('returns the only item from a single item array', () => {
+    expect(last([1])).to.equal(1);
+  });
+});
 
 describe('ignoreBenignErrors', () => {
   ignoreBenignErrors(beforeEach, afterEach);
@@ -63,11 +105,18 @@ describe('ignoreBenignErrors', () => {
 });
 
 describe('until', () => {
-  it('resolves when condition is met', async () => {
+  it('resolves when condition is true', async () => {
     let condition = false;
-    setTimeout(() => (condition = true), 500);
+    setTimeout(() => (condition = true), 100);
     await until(() => condition);
     expect(condition).to.be.true;
+  });
+
+  it('resolves when condition is truthy', async () => {
+    let condition: string | undefined = '';
+    setTimeout(() => (condition = 'truthy'), 100);
+    await until(() => condition);
+    expect(condition).to.eq('truthy');
   });
 
   it('throws an error if timeout exceeded', async () => {

@@ -11,8 +11,7 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
 import {getProperties} from './properties.js';
@@ -23,14 +22,15 @@ import {getProperties} from './properties.js';
  */
 export const getLitElementDeclaration = (
   node: LitClassDeclaration,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(node),
-    name: node.name?.text,
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
+    name: node.name?.text ?? '',
     node,
-    reactiveProperties: getProperties(node, programContext),
-    events: getEvents(node, programContext),
+    reactiveProperties: getProperties(node, analyzer),
+    events: getEvents(node, analyzer),
   });
 };
 
@@ -75,15 +75,14 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
  */
 export const isLitElement = (
   node: ts.Node,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface
 ): node is LitClassDeclaration => {
   if (!ts.isClassLike(node)) {
     return false;
   }
-  const type = programContext.checker.getTypeAtLocation(
-    node
-  ) as ts.InterfaceType;
-  const baseTypes = programContext.checker.getBaseTypes(type);
+  const checker = analyzer.program.getTypeChecker();
+  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
+  const baseTypes = checker.getBaseTypes(type);
   for (const t of baseTypes) {
     if (_isLitElementClassDeclaration(t)) {
       return true;
@@ -93,13 +92,12 @@ export const isLitElement = (
 };
 
 /**
- * Returns the tagname associated with a
+ * Returns the tagname associated with a LitClassDeclaration
  * @param declaration
  * @returns
  */
 export const getTagName = (declaration: LitClassDeclaration) => {
-  // TODO (justinfagnani): support customElements.define()
-  let tagname: string | undefined = undefined;
+  let tagName: string | undefined = undefined;
   const customElementDecorator = declaration.decorators?.find(
     isCustomElementDecorator
   );
@@ -108,7 +106,33 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     customElementDecorator.expression.arguments.length === 1 &&
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
-    tagname = customElementDecorator.expression.arguments[0].text;
+    // Get tag from decorator: `@customElement('x-foo')`
+    tagName = customElementDecorator.expression.arguments[0].text;
+  } else {
+    // Otherwise, look for imperative define in the form of:
+    // `customElements.define('x-foo', XFoo);`
+    declaration.parent.forEachChild((child) => {
+      if (
+        ts.isExpressionStatement(child) &&
+        ts.isCallExpression(child.expression) &&
+        ts.isPropertyAccessExpression(child.expression.expression) &&
+        child.expression.arguments.length >= 2
+      ) {
+        const [tagNameArg, ctorArg] = child.expression.arguments;
+        const {expression, name} = child.expression.expression;
+        if (
+          ts.isIdentifier(expression) &&
+          expression.text === 'customElements' &&
+          ts.isIdentifier(name) &&
+          name.text === 'define' &&
+          ts.isStringLiteralLike(tagNameArg) &&
+          ts.isIdentifier(ctorArg) &&
+          ctorArg.text === declaration.name?.text
+        ) {
+          tagName = tagNameArg.text;
+        }
+      }
+    });
   }
-  return tagname;
+  return tagName;
 };

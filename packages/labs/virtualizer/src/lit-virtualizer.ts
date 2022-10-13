@@ -6,6 +6,7 @@
 
 import {LitVirtualizer} from './LitVirtualizer.js';
 export {LitVirtualizer};
+export {RangeChangedEvent, VisibilityChangedEvent} from './Virtualizer.js';
 
 /**
  * Import this module to declare the lit-virtualizer custom element.

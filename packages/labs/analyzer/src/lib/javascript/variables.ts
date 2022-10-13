@@ -11,26 +11,30 @@
  */
 
 import ts from 'typescript';
-import {VariableDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {VariableDeclaration, AnalyzerInterface} from '../model.js';
 import {DiagnosticsError} from '../errors.js';
+import {getTypeForNode} from '../types.js';
 
 type VariableName =
   | ts.Identifier
   | ts.ObjectBindingPattern
   | ts.ArrayBindingPattern;
 
+/**
+ * Returns an array of analyzer `VariableDeclaration` models for the given
+ * ts.VariableDeclaration.
+ */
 export const getVariableDeclarations = (
   dec: ts.VariableDeclaration,
   name: VariableName,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface
 ): VariableDeclaration[] => {
   if (ts.isIdentifier(name)) {
     return [
       new VariableDeclaration({
         name: name.text,
         node: dec,
-        type: programContext.getTypeForNode(name),
+        type: getTypeForNode(name, analyzer),
       }),
     ];
   } else if (
@@ -43,7 +47,7 @@ export const getVariableDeclarations = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarations(dec, el.name, programContext))
+      .map((el) => getVariableDeclarations(dec, el.name, analyzer))
       .flat();
   } else {
     throw new DiagnosticsError(

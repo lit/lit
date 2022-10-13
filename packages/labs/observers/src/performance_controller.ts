@@ -11,16 +11,16 @@ import {
 /**
  * The callback function for a PerformanceController.
  */
-export type PerformanceValueCallback = (
+export type PerformanceValueCallback<T = unknown> = (
   entries: PerformanceEntryList,
   observer: PerformanceObserver,
   entryList?: PerformanceObserverEntryList
-) => unknown;
+) => T;
 
 /**
  * The config options for a PerformanceController.
  */
-export interface PerformanceControllerConfig {
+export interface PerformanceControllerConfig<T = unknown> {
   /**
    * Configuration object for the PerformanceObserver.
    */
@@ -29,7 +29,7 @@ export interface PerformanceControllerConfig {
    * The callback used to process detected changes into a value stored
    * in the controller's `value` property.
    */
-  callback?: PerformanceValueCallback;
+  callback?: PerformanceValueCallback<T>;
   /**
    * By default the `callback` is called without changes when a target is
    * observed. This is done to help manage initial state, but this
@@ -50,7 +50,7 @@ export interface PerformanceControllerConfig {
  * used to process the result into a value which is stored on the controller.
  * The controller's `value` is usable during the host's update cycle.
  */
-export class PerformanceController implements ReactiveController {
+export class PerformanceController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
   private _config: PerformanceObserverInit;
   private _observer!: PerformanceObserver;
@@ -66,20 +66,20 @@ export class PerformanceController implements ReactiveController {
    * The result of processing the observer's changes via the `callback`
    * function.
    */
-  value?: unknown;
+  value?: T;
   /**
    * Function that returns a value processed from the observer's changes.
    * The result is stored in the `value` property.
    */
-  callback: PerformanceValueCallback = () => true;
+  callback?: PerformanceValueCallback<T>;
   constructor(
     host: ReactiveControllerHost,
-    {config, callback, skipInitial}: PerformanceControllerConfig
+    {config, callback, skipInitial}: PerformanceControllerConfig<T>
   ) {
-    (this._host = host).addController(this);
+    this._host = host;
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
-    this.callback = callback ?? this.callback;
+    this.callback = callback;
     // Check browser support.
     if (!window.PerformanceObserver) {
       console.warn(
@@ -93,6 +93,7 @@ export class PerformanceController implements ReactiveController {
         this._host.requestUpdate();
       }
     );
+    host.addController(this);
   }
 
   /**
@@ -103,7 +104,7 @@ export class PerformanceController implements ReactiveController {
     entries: PerformanceEntryList,
     entryList?: PerformanceObserverEntryList
   ) {
-    this.value = this.callback(entries, this._observer, entryList);
+    this.value = this.callback?.(entries, this._observer, entryList);
   }
 
   hostConnected() {

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement} from '../../reactive-element.js';
-import {eventOptions} from '../../decorators/event-options.js';
+import {ReactiveElement} from '@lit/reactive-element';
+import {eventOptions} from '@lit/reactive-element/decorators/event-options.js';
 import {
   canTestReactiveElement,
   generateElementName,

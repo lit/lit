@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/motion",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Lit directives for making things move.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -18,6 +18,7 @@
   },
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
     }
@@ -139,17 +140,8 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@esm-bundle/chai": "^4.1.5",
-    "@types/mocha": "^9.0.0",
-    "@types/chai": "^4.0.1",
     "@types/trusted-types": "^2.0.2",
-    "@web/test-runner-mocha": "^0.7.4",
-    "@web/dev-server": "^0.1.22",
-    "chokidar-cli": "^3.0.0",
-    "concurrently": "^6.2.1",
-    "@lit-internal/scripts": "^1.0.0",
-    "mocha": "^9.1.1",
-    "rollup": "^2.70.2"
+    "@lit-internal/scripts": "^1.0.0"
   },
   "dependencies": {
     "lit": "^2.0.0"

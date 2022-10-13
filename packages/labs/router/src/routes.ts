@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/// <reference types="urlpattern-polyfill" />
+
 import type {ReactiveController, ReactiveControllerHost} from 'lit';
 
 export interface BaseRouteConfig {
