@@ -46,7 +46,7 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.2.0",
+    "@lit-labs/analyzer": "^0.3.0",
     "@lit-labs/gen-utils": "^0.1.0",
     "custom-elements-manifest": "webcomponents/custom-elements-manifest#f893b20"
   },
