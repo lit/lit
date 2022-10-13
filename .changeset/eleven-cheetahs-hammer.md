@@ -1,5 +1,6 @@
 ---
 '@lit-labs/gen-manifest': patch
+'@lit-labs/analyzer': patch
 ---
 
-Added custom elements manifest generator.
+Added initial implementation of custom elements manifest generator (WIP).

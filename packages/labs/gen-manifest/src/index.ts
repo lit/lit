@@ -14,7 +14,7 @@ import {
   Reference,
   Type,
   VariableDeclaration,
-} from '@lit-labs/analyzer/lib/model.js';
+} from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
@@ -48,11 +48,11 @@ const convertModule = (module: Module): cem.Module => {
 };
 
 const convertDeclaration = (declaration: Declaration): cem.Declaration => {
-  if (declaration instanceof LitElementDeclaration) {
+  if (declaration.isLitElementDeclaration()) {
     return convertLitElementDeclaration(declaration);
-  } else if (declaration instanceof ClassDeclaration) {
+  } else if (declaration.isClassDeclaration()) {
     return convertClassDeclaration(declaration);
-  } else if (declaration instanceof VariableDeclaration) {
+  } else if (declaration.isVariableDeclaration()) {
     return convertVariableDeclaration(declaration);
   } else {
     // TODO: FunctionDeclaration

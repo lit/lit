@@ -8,8 +8,7 @@ import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as fs from 'fs';
 import * as path from 'path';
-import {Analyzer} from '@lit-labs/analyzer';
-import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
+import {AbsolutePath, createPackageAnalyzer} from '@lit-labs/analyzer';
 import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {generateManifest} from '../index.js';
 import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
@@ -25,9 +24,9 @@ test('basic manifest generation', async () => {
     fs.rmSync(outputFolder, {recursive: true});
   }
 
-  const analyzer = new Analyzer(inputPackage as AbsolutePath);
-  const analysis = analyzer.analyzePackage();
-  await writeFileTree(outputFolder, await generateManifest(analysis));
+  const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
+  const pkg = analyzer.getPackage();
+  await writeFileTree(outputFolder, await generateManifest(pkg));
 
   await assertGoldensMatch(outputFolder, path.join('goldens', project), {
     formatGlob: '**/*.json',
