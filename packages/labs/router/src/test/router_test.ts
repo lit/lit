@@ -231,8 +231,7 @@ const canTest =
     const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
     await child1.updateComplete;
 
-    const LOCAL_PATH = 'local_path';
-    assert.equal(child1._routes.link(LOCAL_PATH), `/child1/${LOCAL_PATH}`);
+    assert.equal(child1._routes.link('local_path'), `/child1/local_path`);
   });
 
   test(`link() with local absolute path doesn't include parent route`, async () => {
@@ -249,8 +248,10 @@ const canTest =
     const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
     await child1.updateComplete;
 
-    const LOCAL_PATH = '/local_absolute_path';
-    assert.equal(child1._routes.link(LOCAL_PATH), LOCAL_PATH);
+    assert.equal(
+      child1._routes.link('/local_absolute_path'),
+      '/local_absolute_path'
+    );
   });
 });
 
