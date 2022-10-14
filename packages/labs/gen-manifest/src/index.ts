@@ -159,11 +159,16 @@ const convertTypeReference = (
 };
 
 const convertReference = (reference: Reference): cem.TypeReference => {
-  return {
+  const refObj: cem.TypeReference = {
     name: reference.name,
-    ...(reference.package
-      ? {package: reference.isGlobal ? 'global:' : reference.package}
-      : {}),
-    ...(reference.name ? {name: reference.name} : {}),
   };
+  if (reference.isGlobal) {
+    refObj.package = 'global:';
+  } else if (reference.package !== undefined) {
+    refObj.package = reference.package;
+  }
+  if (reference.module !== undefined) {
+    refObj.module = reference.module;
+  }
+  return refObj;
 };

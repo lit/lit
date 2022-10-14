@@ -24,7 +24,8 @@
       ],
       "files": [
         "src/**/*",
-        "tsconfig.json"
+        "tsconfig.json",
+        "../test-projects/test-element-a"
       ],
       "output": [
         "test",
@@ -48,7 +49,7 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.3.0",
     "@lit-labs/gen-utils": "^0.1.0",
-    "custom-elements-manifest": "webcomponents/custom-elements-manifest#f893b20"
+    "custom-elements-manifest": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.31",
