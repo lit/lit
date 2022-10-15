@@ -11,6 +11,7 @@ import {
   supportsAdoptingStyleSheets,
 } from '@lit/reactive-element/css-tag.js';
 import {assert} from '@esm-bundle/chai';
+import {appendStyles} from '@lit/reactive-element/append-style.js';
 
 suite('Styling', () => {
   suite('css tag', () => {
@@ -99,5 +100,42 @@ suite('Styling', () => {
       const bodyStyles = `${cssModule}`;
       assert.equal(bodyStyles.replace(/\s/g, ''), '.my-module{color:yellow;}');
     });
+  });
+
+  suite('appendStyles', () => {
+    test('works with a Document', () => {
+      const style = css`
+        .green {
+          color: rgb(0, 128, 0);
+        }
+      `;
+      const div = document.createElement('div');
+      div.className = 'green';
+      document.body.appendChild(div);
+      assert.notEqual(getComputedStyle(div).color, 'rgb(0, 128, 0)');
+      appendStyles(document, [style]);
+      assert.equal(getComputedStyle(div).color, 'rgb(0, 128, 0)');
+      document.body.removeChild(div);
+    });
+
+    if (Element.prototype.attachShadow != null) {
+      test('works with a shadow root', () => {
+        const style = css`
+          .very-green {
+            color: rgb(0, 255, 0);
+          }
+        `;
+        const host = document.createElement('div');
+        document.body.appendChild(host);
+        const shadow = host.attachShadow({mode: 'open'});
+        const div = document.createElement('div');
+        div.className = 'very-green';
+        shadow.appendChild(div);
+        assert.notEqual(getComputedStyle(div).color, 'rgb(0, 255, 0)');
+        appendStyles(shadow, [style]);
+        assert.equal(getComputedStyle(div).color, 'rgb(0, 255, 0)');
+        document.body.removeChild(host);
+      });
+    }
   });
 });

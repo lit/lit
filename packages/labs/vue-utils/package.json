@@ -102,7 +102,7 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "vue": "^3.2.25"
+    "vue": "^3.2.40"
   },
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",

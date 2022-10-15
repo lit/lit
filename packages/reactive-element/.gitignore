@@ -2,6 +2,7 @@
 /development/
 /node/
 /test/
+/append-style.*
 /css-tag.*
 /decorators.*
 /polyfill-support.*

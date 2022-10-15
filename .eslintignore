@@ -122,6 +122,7 @@ packages/reactive-element/decorators/
 packages/reactive-element/development/
 packages/reactive-element/node/
 packages/reactive-element/test/
+packages/reactive-element/append-style.*
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
 packages/reactive-element/polyfill-support.*

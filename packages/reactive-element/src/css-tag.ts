@@ -170,7 +170,7 @@ export const adoptStyles = (
   styles: Array<CSSResultOrNative>
 ) => {
   if (supportsAdoptingStyleSheets) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
+    renderRoot.adoptedStyleSheets = styles.map((s) =>
       s instanceof CSSStyleSheet ? s : s.styleSheet!
     );
   } else {
