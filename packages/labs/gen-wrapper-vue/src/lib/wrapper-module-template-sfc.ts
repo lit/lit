@@ -36,7 +36,31 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
+//const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
+
+const getEventPayloadType = (type: ModelEvent['type']) => {
+  const {text} = type ?? {text: 'unknown'};
+  const {payload} = text.match(/.*<(?<payload>.*)>/)?.groups ?? {
+    payload: text,
+  };
+  return payload;
+};
+
+const defaultEventType = `CustomEvent<unknown>`;
+const isCustomEvent = (type: string) => /^CustomEvent/.test(type);
+
+const getEventInfo = (event: ModelEvent) => {
+  const {name, type: modelType} = event;
+  const onName = kabobToOnEvent(name);
+  const type = modelType?.text ?? defaultEventType;
+  const payloadType = modelType
+    ? getEventPayloadType(modelType!)
+    : defaultEventType;
+  // TODO: add support for a custom payload extraction function
+  // via the JSDoc annotation.
+  const payloadMapper = isCustomEvent(type) ? `event.detail` : `event`;
+  return {onName, type, payloadType, payloadMapper};
+};
 
 const renderPropsInterface = (props: Map<string, ModelProperty>) =>
   `export interface Props {
@@ -45,13 +69,12 @@ const renderPropsInterface = (props: Map<string, ModelProperty>) =>
        .join(';\n     ')}
    }`;
 
-// TODO(sorvell): Improve event handling, currently just forwarding the event,
-// but this should be its "payload."
 const wrapEvents = (events: Map<string, ModelEvent>) =>
   Array.from(events.values())
-    .map(
-      (event) => `(e: '${event.name}', payload: ${getEventType(event)}): void`
-    )
+    .map((event) => {
+      const {payloadType} = getEventInfo(event);
+      return `(e: '${event.name}', payload: ${payloadType}): void`;
+    })
     .join(',\n');
 
 /**
@@ -61,14 +84,10 @@ const wrapEvents = (events: Map<string, ModelEvent>) =>
 const renderEvents = (events: Map<string, ModelEvent>) =>
   javascript`{
     ${Array.from(events.values())
-      .map(
-        (event) =>
-          `${kabobToOnEvent(event.name)}: (event: ${
-            event.type?.text || `CustomEvent<unknown>`
-          }) => emit('${event.name}', (event.detail || event) as ${getEventType(
-            event
-          )})`
-      )
+      .map((event) => {
+        const {onName, type, payloadMapper, payloadType} = getEventInfo(event);
+        return `${onName}: (event: ${type}) => emit('${event.name}', ${payloadMapper} as ${payloadType})`;
+      })
       .join(',\n')}
   }`;
 

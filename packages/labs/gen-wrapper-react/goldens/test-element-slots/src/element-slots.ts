@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
+import {createComponent, EventName} from '@lit-labs/react';
 
 import {ElementSlots as ElementSlotsElement} from '@lit-internal/test-element-slots/element-slots.js';
 

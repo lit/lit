@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
+import {createComponent, EventName} from '@lit-labs/react';
 
 import {ElementProps as ElementPropsElement} from '@lit-internal/test-element-props/element-props.js';
 
@@ -8,6 +8,6 @@ export const ElementProps = createComponent(
   'element-props',
   ElementPropsElement,
   {
-    onAChanged: 'a-changed',
+    onAChanged: 'a-changed' as EventName<CustomEvent<unknown>>,
   }
 );

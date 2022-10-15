@@ -10,7 +10,9 @@ import {
   PackageJson,
   LitElementDeclaration,
   ModuleWithLitElementDeclarations,
+  getImportsStringForReferences,
 } from '@lit-labs/analyzer';
+import {Event as ModelEvent} from '@lit-labs/analyzer/lib/model.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -149,6 +151,14 @@ const tsconfigTemplate = () => {
   );
 };
 
+const getTypeImports = (declarations: LitElementDeclaration[]) => {
+  // We only need type imports for events.
+  const refs = declarations.flatMap(({events}) =>
+    Array.from(events.values()).flatMap((e) => e.type?.references ?? [])
+  );
+  return getImportsStringForReferences(refs);
+};
+
 const wrapperModuleTemplate = (
   packageJson: PackageJson,
   moduleJsPath: string,
@@ -156,10 +166,13 @@ const wrapperModuleTemplate = (
 ) => {
   return javascript`
 import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
+import {createComponent, EventName} from '@lit-labs/react';
 ${elements.map(
   (element) => javascript`
-import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';
+import {${element.name} as ${element.name}Element} from '${
+    packageJson.name
+  }/${moduleJsPath}';
+${getTypeImports(elements)}
 `
 )}
 
@@ -177,16 +190,13 @@ export const ${name} = createComponent(
   '${tagname}',
   ${name}Element,
   {
-    ${Array.from(events.keys()).map(
-      (eventName) => javascript`
-    ${kabobToOnEvent(eventName)}: '${
-        // TODO(kschaaf): add cast to `as EventName<EVENT_TYPE>` once the
-        // analyzer reports the event type correctly (currently we have the
-        // type string without an AST reference to get its import, etc.)
-        // https://github.com/lit/lit/issues/2850
-        eventName
-      }',`
-    )}
+    ${Array.from(events.values()).map((event: ModelEvent) => {
+      const {name, type} = event;
+      return javascript`
+    ${kabobToOnEvent(name)}: '${name}' as EventName<${
+        type?.text || `CustomEvent<unknown>`
+      }>,`;
+    })}
   }
 );
 `;

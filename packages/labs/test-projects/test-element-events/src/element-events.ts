@@ -6,6 +6,8 @@
 
 import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {SpecialEvent} from './special-event.js';
+import {MyDetail} from './detail-type.js';
 
 class EventSubclass extends Event {
   aStr: string;
@@ -26,16 +28,20 @@ class EventSubclass extends Event {
 declare global {
   interface HTMLElementEventMap {
     'event-subclass': EventSubclass;
+    'special-event': SpecialEvent;
     'string-custom-event': CustomEvent<string>;
     'number-custom-event': CustomEvent<number>;
+    'my-detail-custom-event': CustomEvent<MyDetail>;
   }
 }
 
 /**
  * My awesome element
- * @fires string-custom-event A custom event with a string payload
- * @fires number-custom-event A custom event with a number payload
- * @fires event-subclass - The b changed event with a number payload
+ * @fires string-custom-event {CustomEvent<string>} A custom event with a string payload
+ * @fires number-custom-event {CustomEvent<number>} A custom event with a number payload
+ * @fires my-detail-custom-event {CustomEvent<MyDetail>} A custom event with a MyDetail payload.
+ * @fires event-subclass {EventSubclass} The subclass event with a string and number payload
+ * @fires special-event {SpecialEvent} The special event with a number payload
  */
 @customElement('element-events')
 export class ElementEvents extends LitElement {
@@ -68,7 +74,25 @@ export class ElementEvents extends LitElement {
     );
   }
 
+  fireMyDetailCustomEvent(
+    detail = {a: 'a', b: 5} as MyDetail,
+    fromNode = this
+  ) {
+    fromNode.dispatchEvent(
+      new CustomEvent<MyDetail>('my-detail-custom-event', {
+        detail,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
   fireEventSubclass(str: string, num: number, fromNode = this) {
     fromNode.dispatchEvent(new EventSubclass(str, num));
+  }
+
+  fireSpecialEvent(num: number, fromNode = this) {
+    fromNode.dispatchEvent(new SpecialEvent(num));
   }
 }

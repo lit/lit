@@ -21,7 +21,7 @@ const vDefaults = {
 let hasRendered = false;
 
 const emit = defineEmits<{
-  (e: 'a-changed', payload: unknown): void;
+  (e: 'a-changed', payload: CustomEvent<unknown>): void;
 }>();
 
 const slots = useSlots();
@@ -29,7 +29,7 @@ const slots = useSlots();
 const render = () => {
   const eventProps = {
     onAChanged: (event: CustomEvent<unknown>) =>
-      emit('a-changed', (event.detail || event) as unknown),
+      emit('a-changed', event.detail as CustomEvent<unknown>),
   };
 
   const props = eventProps as typeof eventProps & Props;
