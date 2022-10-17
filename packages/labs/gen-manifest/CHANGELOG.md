@@ -1,0 +1,1 @@
+# @lit-labs/gen-manifest
