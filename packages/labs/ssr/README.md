@@ -98,10 +98,8 @@ import './app-components.js';
 
 const ssrResult = render(html`
   <html>
-    <head>
-    </head>
+    <head> </head>
     <body>
-
       <app-shell>
         <app-page-one></app-page-one>
         <app-page-two></app-page-two>
@@ -112,7 +110,7 @@ const ssrResult = render(html`
         // native declarative shadow roots)
         import {
           hasNativeDeclarativeShadowRoots,
-          hydrateShadowRoots
+          hydrateShadowRoots,
         } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
         if (!hasNativeDeclarativeShadowRoots()) {
           hydrateShadowRoots(document.body);
@@ -121,7 +119,6 @@ const ssrResult = render(html`
         // Load and hydrate components lazily
         import('./app-components.js');
       </script>
-
     </body>
   </html>
 `);

@@ -16,7 +16,9 @@ const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
  * Returns the module specifier for a declaration if it was imported,
  * or `undefined` if the declaration was not imported.
  */
-const getImportModuleSpecifier = (declaration: ts.Node): string | undefined => {
+const getImportNameAndModuleSpecifier = (
+  declaration: ts.Node
+): {module: string; name: string} | undefined => {
   // TODO(kschaaf) support the various import syntaxes, e.g. `import {foo as bar} from 'baz'`
   if (
     ts.isImportSpecifier(declaration) &&
@@ -28,7 +30,10 @@ const getImportModuleSpecifier = (declaration: ts.Node): string | undefined => {
       .getText()
       // Remove quotes
       .slice(1, -1);
-    return module;
+    return {
+      module,
+      name: declaration.propertyName?.text ?? declaration.name.text,
+    };
   }
   return undefined;
 };
@@ -46,7 +51,7 @@ export function getReferenceForSymbol(
   analyzer: AnalyzerInterface
 ): Reference {
   const {path} = analyzer;
-  const {name} = symbol;
+  const {name: symbolName} = symbol;
   // TODO(kschaaf): Do we need to check other declarations? The assumption is
   // that even with multiple declarations (e.g. because of class interface +
   // constructor), the reference would point to the same location for all,
@@ -56,7 +61,7 @@ export function getReferenceForSymbol(
   if (declaration === undefined) {
     throw new DiagnosticsError(
       location,
-      `Could not find declaration for symbol '${name}'`
+      `Could not find declaration for symbol '${symbolName}'`
     );
   }
   const declarationSourceFile = declaration.getSourceFile();
@@ -85,12 +90,13 @@ export function getReferenceForSymbol(
     // (that don't have any e.g. source to link to) from other ambient
     // declarations where we could at least point to a declaration file
     return new Reference({
-      name,
+      name: symbolName,
       isGlobal: true,
     });
   } else {
-    const moduleSpecifier = getImportModuleSpecifier(declaration);
-    if (moduleSpecifier !== undefined) {
+    const importInfo = getImportNameAndModuleSpecifier(declaration);
+    if (importInfo !== undefined) {
+      const {module: moduleSpecifier, name: importName} = importInfo;
       let refPackage;
       let refModule;
       // The symbol was imported; check whether it is a URL, absolute, package
@@ -129,7 +135,7 @@ export function getReferenceForSymbol(
         }
       }
       return new Reference({
-        name,
+        name: importName,
         package: refPackage,
         module: refModule,
       });
@@ -140,7 +146,7 @@ export function getReferenceForSymbol(
         analyzer
       );
       return new Reference({
-        name,
+        name: symbolName,
         package: module.packageJson.name,
         module: module.jsPath,
       });

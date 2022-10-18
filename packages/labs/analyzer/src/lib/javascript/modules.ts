@@ -4,6 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * @fileoverview
+ *
+ * Utilities for analyzing ES modules
+ */
+
 import ts from 'typescript';
 import {Module, AnalyzerInterface, PackageInfo, Declaration} from '../model.js';
 import {

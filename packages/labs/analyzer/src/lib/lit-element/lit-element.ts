@@ -7,7 +7,7 @@
 /**
  * @fileoverview
  *
- * Utilities for working with LitElement (and ReactiveElement) declarations.
+ * Utilities for analyzing LitElement (and ReactiveElement) declarations.
  */
 
 import ts from 'typescript';

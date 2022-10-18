@@ -11,14 +11,14 @@ import {
 /**
  * The callback function for a ResizeController.
  */
-export type ResizeValueCallback = (
+export type ResizeValueCallback<T = unknown> = (
   ...args: Parameters<ResizeObserverCallback>
-) => unknown;
+) => T;
 
 /**
  * The config options for a ResizeController.
  */
-export interface ResizeControllerConfig {
+export interface ResizeControllerConfig<T = unknown> {
   /**
    * Configuration object for the ResizeController.
    */
@@ -35,7 +35,7 @@ export interface ResizeControllerConfig {
    * The callback used to process detected changes into a value stored
    * in the controller's `value` property.
    */
-  callback?: ResizeValueCallback;
+  callback?: ResizeValueCallback<T>;
   /**
    * By default the `callback` is called without changes when a target is
    * observed. This is done to help manage initial state, but this
@@ -58,9 +58,9 @@ export interface ResizeControllerConfig {
  * used to process the result into a value which is stored on the controller.
  * The controller's `value` is usable during the host's update cycle.
  */
-export class ResizeController implements ReactiveController {
+export class ResizeController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _target: Element | null;
+  private _targets: Set<Element> = new Set();
   private _config?: ResizeObserverOptions;
   private _observer!: ResizeObserver;
   private _skipInitial = false;
@@ -75,23 +75,24 @@ export class ResizeController implements ReactiveController {
    * The result of processing the observer's changes via the `callback`
    * function.
    */
-  value?: unknown;
+  value?: T;
   /**
    * Function that returns a value processed from the observer's changes.
    * The result is stored in the `value` property.
    */
-  callback: ResizeValueCallback = () => true;
+  callback?: ResizeValueCallback<T>;
   constructor(
-    host: ReactiveControllerHost,
-    {target, config, callback, skipInitial}: ResizeControllerConfig
+    host: ReactiveControllerHost & Element,
+    {target, config, callback, skipInitial}: ResizeControllerConfig<T>
   ) {
     this._host = host;
     // Target defaults to `host` unless explicitly `null`.
-    this._target =
-      target === null ? target : target ?? (this._host as unknown as Element);
+    if (target !== null) {
+      this._targets.add(target ?? host);
+    }
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
-    this.callback = callback ?? this.callback;
+    this.callback = callback;
     // Check browser support.
     if (!window.ResizeObserver) {
       console.warn(
@@ -111,12 +112,12 @@ export class ResizeController implements ReactiveController {
    * function to produce a result stored in the `value` property.
    */
   protected handleChanges(entries: ResizeObserverEntry[]) {
-    this.value = this.callback(entries, this._observer);
+    this.value = this.callback?.(entries, this._observer);
   }
 
   hostConnected() {
-    if (this._target) {
-      this.observe(this._target);
+    for (const target of this._targets) {
+      this.observe(target);
     }
   }
 
@@ -140,9 +141,19 @@ export class ResizeController implements ReactiveController {
    * @param target Element to observe
    */
   observe(target: Element) {
+    this._targets.add(target);
     this._observer.observe(target, this._config);
     this._unobservedUpdate = true;
     this._host.requestUpdate();
+  }
+
+  /**
+   * Unobserve the target element.
+   * @param target Element to unobserve
+   */
+  unobserve(target: Element) {
+    this._targets.delete(target);
+    this._observer.unobserve(target);
   }
 
   /**

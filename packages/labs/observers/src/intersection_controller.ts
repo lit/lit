@@ -11,14 +11,14 @@ import {
 /**
  * The callback function for a IntersectionController.
  */
-export type IntersectionValueCallback = (
+export type IntersectionValueCallback<T = unknown> = (
   ...args: Parameters<IntersectionObserverCallback>
-) => unknown;
+) => T;
 
 /**
  * The config options for a IntersectionController.
  */
-export interface IntersectionControllerConfig {
+export interface IntersectionControllerConfig<T = unknown> {
   /**
    * Configuration object for the IntersectionObserver.
    */
@@ -35,7 +35,7 @@ export interface IntersectionControllerConfig {
    * The callback used to process detected changes into a value stored
    * in the controller's `value` property.
    */
-  callback?: IntersectionValueCallback;
+  callback?: IntersectionValueCallback<T>;
   /**
    * An IntersectionObserver reports the initial intersection state
    * when observe is called. Setting this flag to true skips processing this
@@ -60,9 +60,9 @@ export interface IntersectionControllerConfig {
  * used to process the result into a value which is stored on the controller.
  * The controller's `value` is usable during the host's update cycle.
  */
-export class IntersectionController implements ReactiveController {
+export class IntersectionController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _target: Element | null;
+  private _targets: Set<Element> = new Set();
   private _observer!: IntersectionObserver;
   private _skipInitial = false;
   /**
@@ -77,22 +77,23 @@ export class IntersectionController implements ReactiveController {
    * The result of processing the observer's changes via the `callback`
    * function.
    */
-  value?: unknown;
+  value?: T;
   /**
    * Function that returns a value processed from the observer's changes.
    * The result is stored in the `value` property.
    */
-  callback: IntersectionValueCallback = () => true;
+  callback?: IntersectionValueCallback<T>;
   constructor(
-    host: ReactiveControllerHost,
-    {target, config, callback, skipInitial}: IntersectionControllerConfig
+    host: ReactiveControllerHost & Element,
+    {target, config, callback, skipInitial}: IntersectionControllerConfig<T>
   ) {
     this._host = host;
     // Target defaults to `host` unless explicitly `null`.
-    this._target =
-      target === null ? target : target ?? (this._host as unknown as Element);
+    if (target !== null) {
+      this._targets.add(target ?? host);
+    }
     this._skipInitial = skipInitial ?? this._skipInitial;
-    this.callback = callback ?? this.callback;
+    this.callback = callback;
     // Check browser support.
     if (!window.IntersectionObserver) {
       console.warn(
@@ -120,12 +121,12 @@ export class IntersectionController implements ReactiveController {
    * function to produce a result stored in the `value` property.
    */
   protected handleChanges(entries: IntersectionObserverEntry[]) {
-    this.value = this.callback(entries, this._observer);
+    this.value = this.callback?.(entries, this._observer);
   }
 
   hostConnected() {
-    if (this._target) {
-      this.observe(this._target);
+    for (const target of this._targets) {
+      this.observe(target);
     }
   }
 
@@ -147,10 +148,20 @@ export class IntersectionController implements ReactiveController {
    * @param target Element to observe
    */
   observe(target: Element) {
+    this._targets.add(target);
     // Note, this will always trigger the callback since the initial
     // intersection state is reported.
     this._observer.observe(target);
     this._unobservedUpdate = true;
+  }
+
+  /**
+   * Unobserve the target element.
+   * @param target Element to unobserve
+   */
+  unobserve(target: Element) {
+    this._targets.delete(target);
+    this._observer.unobserve(target);
   }
 
   /**

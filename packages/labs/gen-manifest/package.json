@@ -1,10 +1,8 @@
 {
-  "name": "@lit-labs/gen-wrapper-react",
-  "description": "Code generator for React wrapper for Lit components",
-  "version": "0.2.0",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
+  "name": "@lit-labs/gen-manifest",
+  "description": "Code generator for generating Custom Elements Manifests for Lit components",
+  "version": "0.0.1",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -14,57 +12,49 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "test:gen": "wireit",
-    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
+    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test"
   },
   "wireit": {
     "build": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../analyzer:build",
         "../../tests:build",
+        "../analyzer:build",
         "../gen-utils:build"
       ],
       "files": [
         "src/**/*",
-        "tsconfig.json"
+        "tsconfig.json",
+        "../test-projects/test-element-a"
       ],
       "output": [
-        "test-gen",
+        "test",
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
     },
-    "test:gen": {
+    "test": {
       "dependencies": [
-        "build",
-        "../react:build",
-        "../test-projects/test-element-a:pack"
+        "build"
       ],
       "files": [
         "goldens/**/*"
       ],
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "uvu test-gen \"_test\\.js$\"",
-      "output": [
-        "gen-output",
-        "!gen-output/node_modules"
-      ]
-    },
-    "test": {
-      "dependencies": [
-        "test:gen",
-        "./test-output:test"
-      ]
+      "command": "uvu test \"_test\\.js$\"",
+      "output": []
     }
   },
   "dependencies": {
     "@lit-labs/analyzer": "^0.3.0",
-    "@lit-labs/gen-utils": "^0.1.0"
+    "@lit-labs/gen-utils": "^0.1.0",
+    "custom-elements-manifest": "^2.0.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.0"
+    "@types/node": "^17.0.31",
+    "@lit-internal/tests": "^0.0.0",
+    "uvu": "^0.5.3"
   },
   "engines": {
     "node": ">=14.8.0"
@@ -80,6 +70,8 @@
     "LitElement",
     "generator",
     "cli",
-    "react"
+    "manifest",
+    "custom-elements-manifest",
+    "CEM"
   ]
 }
