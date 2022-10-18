@@ -39,7 +39,8 @@
       "command": "npm pack",
       "files": [
         "package.json",
-        "element-a.{js,js.map,d.ts,d.ts.map}"
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "package-stuff.{js,js.map,d.ts,d.ts.map}"
       ],
       "output": [
         "*.tgz"
