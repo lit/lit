@@ -28,6 +28,7 @@
       "command": "tsc --build --pretty",
       "output": [
         "element-a.{js,js.map,d.ts,d.ts.map}",
+        "package-stuff.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
