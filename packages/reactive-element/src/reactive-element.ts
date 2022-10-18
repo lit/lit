@@ -490,8 +490,9 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   static addInitializer(initializer: Initializer) {
+    this.finalize();
     this._initializers ??= [];
-    this._initializers.push(initializer);
+    this._initializers!.push(initializer);
   }
 
   static _initializers?: Initializer[];
@@ -762,6 +763,11 @@ export abstract class ReactiveElement
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
+    // Create own set of initializers for this class if any exist on the
+    // superclass and copy them down.
+    if (superCtor._initializers) {
+      this._initializers = [...superCtor._initializers];
+    }
     this.elementProperties = new Map(superCtor.elementProperties);
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
