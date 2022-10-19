@@ -74,6 +74,8 @@ export class Package extends PackageInfo {
   }
 }
 
+export type LocalNameOrReference = string | Reference;
+export type ExportMap = Map<string, LocalNameOrReference>;
 export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
 
 export interface ModuleInit {
@@ -82,7 +84,15 @@ export interface ModuleInit {
   jsPath: PackagePath;
   packageJson: PackageJson;
   declarationMap: DeclarationMap;
+  exportMap: ExportMap;
   dependencies: Set<AbsolutePath>;
+  finalizeExports?: () => void;
+}
+
+export interface ModuleInfo {
+  sourcePath: PackagePath;
+  jsPath: PackagePath;
+  packageJson: PackageJson;
 }
 
 export interface ModuleInfo {
@@ -124,6 +134,16 @@ export class Module {
    * The package.json contents for the package containing this module.
    */
   readonly packageJson: PackageJson;
+  /**
+   * A map of exported names to local declaration names or References, in
+   * the case of re-exported symbols.
+   */
+  private readonly _exportMap: ExportMap;
+  /**
+   * A list of module paths for all wildcard re-exports
+   */
+  private _finalizeExports: (() => void) | undefined;
+
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
@@ -131,6 +151,54 @@ export class Module {
     this.packageJson = init.packageJson;
     this._declarationMap = init.declarationMap;
     this.dependencies = init.dependencies;
+    this._exportMap = init.exportMap;
+    this._finalizeExports = init.finalizeExports;
+  }
+
+  /**
+   * Ensures the list of exports includes the names of all reexports
+   * from other modules.
+   */
+  private _ensureExportsFinalized() {
+    if (this._finalizeExports !== undefined) {
+      this._finalizeExports();
+      this._finalizeExports = undefined;
+    }
+  }
+
+  /**
+   * Returns names of all exported declarations.
+   */
+  get exportNames() {
+    this._ensureExportsFinalized();
+    return Array.from(this._exportMap.keys());
+  }
+
+  /**
+   * Given an exported symbol name, returns a Declaration if it was
+   * defined in this module, or a Reference if it was imported from
+   * another module.
+   */
+  getExport(name: string): Declaration | Reference {
+    this._ensureExportsFinalized();
+    const exp = this._exportMap.get(name);
+    if (exp instanceof Reference) {
+      return exp;
+    } else {
+      return this.getDeclaration(name);
+    }
+  }
+
+  /**
+   * Given an exported symbol name, returns the concrete Declaration
+   * for that symbol, following it through any re-exports.
+   */
+  getResolvedExport(name: string): Declaration {
+    let exp = this.getExport(name);
+    while (exp instanceof Reference) {
+      exp = exp.dereference();
+    }
+    return exp as Declaration;
   }
 
   /**
@@ -283,6 +351,7 @@ export interface ReferenceInit {
   package?: string | undefined;
   module?: string | undefined;
   isGlobal?: boolean;
+  dereference?: () => Declaration | undefined;
 }
 
 export class Reference {
@@ -290,11 +359,14 @@ export class Reference {
   readonly package: string | undefined;
   readonly module: string | undefined;
   readonly isGlobal: boolean;
+  private readonly _dereference: () => Declaration | undefined;
+  private _model: Declaration | undefined = undefined;
   constructor(init: ReferenceInit) {
     this.name = init.name;
     this.package = init.package;
     this.module = init.module;
     this.isGlobal = init.isGlobal ?? false;
+    this._dereference = init.dereference ?? (() => undefined);
   }
 
   get moduleSpecifier() {
@@ -302,6 +374,21 @@ export class Reference {
     return this.isGlobal
       ? undefined
       : (this.package || '') + separator + (this.module || '');
+  }
+
+  /**
+   * Returns the Declaration model that this reference points to, optionally
+   * validating (and casting) it to be of a given type by passing a model
+   * constructor.
+   */
+  dereference<T extends Declaration>(type?: Constructor<T> | undefined): T {
+    const model = (this._model ??= this._dereference());
+    if (type !== undefined && model !== undefined && !(model instanceof type)) {
+      throw new Error(
+        `Expected reference to ${this.name} in module ${this.moduleSpecifier} to be of type ${type.name}`
+      );
+    }
+    return model as T;
   }
 }
 
@@ -385,4 +472,5 @@ export interface AnalyzerInterface {
 export type DeclarationInfo = {
   name: string;
   factory: () => Declaration;
+  isExport?: boolean;
 };

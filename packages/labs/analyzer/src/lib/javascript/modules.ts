@@ -17,13 +17,52 @@ import {
   PackageInfo,
   Declaration,
   DeclarationInfo,
+  ExportMap,
   DeclarationMap,
+  ModuleInfo,
+  LocalNameOrReference,
 } from '../model.js';
 import {getClassDeclarationInfo} from './classes.js';
 import {getVariableDeclarationInfo} from './variables.js';
-import {AbsolutePath, absoluteToPackage} from '../paths.js';
+import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
 import {DiagnosticsError} from '../errors.js';
+import {getExportReferences, getImportReference} from '../references.js';
+
+/**
+ * Returns the sourcePath, jsPath, and package.json contents of the containing
+ * package for the given module path.
+ *
+ * This is a minimal subset of module information needed for constructing a
+ * Reference object for a module.
+ */
+export const getModuleInfo = (
+  modulePath: AbsolutePath,
+  analyzer: AnalyzerInterface,
+  packageInfo: PackageInfo = getPackageInfo(modulePath, analyzer)
+): ModuleInfo => {
+  // The packageRoot for this module is needed for translating the source file
+  // path to a package relative path, and the packageName is needed for
+  // generating references to any symbols in this module.
+  const {rootDir, packageJson} = packageInfo;
+  const absJsPath = getJSPathFromSourcePath(
+    modulePath as AbsolutePath,
+    analyzer
+  );
+  const jsPath =
+    absJsPath !== undefined
+      ? absoluteToPackage(absJsPath, rootDir)
+      : ('not/implemented' as PackagePath);
+  const sourcePath = absoluteToPackage(
+    analyzer.path.normalize(modulePath) as AbsolutePath,
+    rootDir
+  );
+  return {
+    jsPath,
+    sourcePath,
+    packageJson,
+  };
+};
 
 /**
  * Returns an analyzer `Module` model for the given module path.
@@ -45,23 +84,17 @@ export const getModule = (
   if (sourceFile === undefined) {
     throw new Error(`Program did not contain a source file for ${modulePath}`);
   }
-  // The packageRoot for this module is needed for translating the source file
-  // path to a package relative path, and the packageName is needed for
-  // generating references to any symbols in this module.
-  const {rootDir, packageJson} = packageInfo;
-  const sourcePath = absoluteToPackage(
-    analyzer.path.normalize(modulePath) as AbsolutePath,
-    rootDir
-  );
-  const jsPath = absoluteToPackage(
-    getJSPathFromSourcePath(modulePath as AbsolutePath, analyzer),
-    rootDir
-  );
+
   const dependencies = new Set<AbsolutePath>();
   const declarationMap: DeclarationMap = new Map<string, () => Declaration>();
+  const exportMap: ExportMap = new Map<string, LocalNameOrReference>();
+  const reexports: ts.Expression[] = [];
   const addDeclaration = (info: DeclarationInfo) => {
-    const {name, factory} = info;
+    const {name, factory, isExport} = info;
     declarationMap.set(name, factory);
+    if (isExport) {
+      exportMap.set(name, name);
+    }
   };
 
   // Find and add models for declarations in the module
@@ -71,6 +104,16 @@ export const getModule = (
       addDeclaration(getClassDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
+    } else if (ts.isExportDeclaration(statement) && !statement.isTypeOnly) {
+      const {exportClause, moduleSpecifier} = statement;
+      if (exportClause === undefined && moduleSpecifier !== undefined) {
+        reexports.push(moduleSpecifier);
+      } else {
+        getExportReferences(statement, analyzer).forEach(
+          ({exportName, decNameOrRef}) =>
+            exportMap.set(exportName, decNameOrRef)
+        );
+      }
     } else if (ts.isImportDeclaration(statement)) {
       dependencies.add(
         getPathForModuleSpecifierExpression(statement.moduleSpecifier, analyzer)
@@ -79,18 +122,39 @@ export const getModule = (
   }
   // Construct module and save in cache
   const module = new Module({
-    sourcePath,
-    jsPath,
+    ...getModuleInfo(modulePath, analyzer, packageInfo),
     sourceFile,
-    packageJson,
     declarationMap,
     dependencies,
+    exportMap,
+    finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
     module
   );
   return module;
+};
+
+/**
+ * For any re-exported modules (i.e. `export * from 'foo'`), add all of the
+ * exported names of the reexported module to the given exportMap, with
+ * References into that module.
+ */
+const finalizeExports = (
+  reexportSpecifiers: ts.Expression[],
+  exportMap: ExportMap,
+  analyzer: AnalyzerInterface
+) => {
+  for (const moduleSpecifier of reexportSpecifiers) {
+    const module = getModule(
+      getPathForModuleSpecifierExpression(moduleSpecifier, analyzer),
+      analyzer
+    );
+    for (const name of module.exportNames) {
+      exportMap.set(name, getImportReference(moduleSpecifier, name, analyzer));
+    }
+  }
 };
 
 /**
@@ -156,6 +220,19 @@ const getJSPathFromSourcePath = (
   if (sourcePath.endsWith('js')) {
     return sourcePath;
   }
+  // TODO(kschaaf): If the source file was a declaration file, this means we're
+  // likely getting information about an externally imported package that had
+  // types. In this case, we'll need to update our logic to resolve the import
+  // specifier to the JS path (in addition to the source file path that we do
+  // today). Unfortunately, TS's specifier resolver always prefers a declaration
+  // file, and due to type roots and other tsconfig fancies, it's not
+  // straightforward to go from a declaration file to a source file. In order to
+  // properly implement this we'll probably need to bring our own node module
+  // resolver ala https://www.npmjs.com/package/resolve. That change should be
+  // done along with the custom-elements.json manifest work.
+  if (sourcePath.endsWith('.d.ts')) {
+    return undefined;
+  }
   // Use the TS API to determine where the associated JS will be output based
   // on tsconfig settings.
   const outputPath = ts
@@ -194,3 +271,15 @@ export const getPathForModuleSpecifierExpression = (
   }
   return analyzer.path.normalize(resolvedPath) as AbsolutePath;
 };
+
+/**
+ * Returns the declaration for the named export of the given module path;
+ * note that if the given module re-exported a declaration from another
+ * module, references are followed to the concrete declaration, which is
+ * returned.
+ */
+export const getExportFromSourcePath = (
+  modulePath: AbsolutePath,
+  name: string,
+  analyzer: AnalyzerInterface
+) => getModule(modulePath, analyzer)?.getResolvedExport(name);

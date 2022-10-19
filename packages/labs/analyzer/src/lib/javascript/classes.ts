@@ -21,6 +21,7 @@ import {
   isLitElement,
   getLitElementDeclaration,
 } from '../lit-element/lit-element.js';
+import {isExport} from '../references.js';
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -68,5 +69,6 @@ export const getClassDeclarationInfo = (
   return {
     name: getClassDeclarationName(declaration),
     factory: () => getClassDeclaration(declaration, analyzer),
+    isExport: isExport(declaration),
   };
 };

@@ -16,6 +16,7 @@ import {
   AnalyzerInterface,
   DeclarationInfo,
 } from '../model.js';
+import {isExport} from '../references.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 
@@ -68,6 +69,7 @@ const getVariableDeclarationInfoList = (
       {
         name: name.text,
         factory: () => getVariableDeclaration(dec, name, analyzer),
+        isExport: isExport(dec),
       },
     ];
   } else if (
