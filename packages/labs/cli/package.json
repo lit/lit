@@ -68,7 +68,7 @@
     },
     "test:actual": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
+      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
       "dependencies": [
         "build"
       ],
