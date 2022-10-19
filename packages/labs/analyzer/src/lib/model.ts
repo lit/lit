@@ -10,6 +10,9 @@ import {AbsolutePath, PackagePath} from './paths.js';
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Constructor<T> = new (...args: any[]) => T;
+
 /**
  * Return type of `getLitElementModules`: contains a module and filtered list of
  * LitElementDeclarations contained within it.
@@ -71,13 +74,21 @@ export class Package extends PackageInfo {
   }
 }
 
+export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
+
 export interface ModuleInit {
   sourceFile: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
   packageJson: PackageJson;
-  declarations: Declaration[];
+  declarationMap: DeclarationMap;
   dependencies: Set<AbsolutePath>;
+}
+
+export interface ModuleInfo {
+  sourcePath: PackagePath;
+  jsPath: PackagePath;
+  packageJson: PackageJson;
 }
 
 export class Module {
@@ -97,25 +108,55 @@ export class Module {
    */
   readonly jsPath: PackagePath;
   /**
-   * A list of all Declaration models in this module.
+   * A map of names to models or model factories for all Declarations in this module.
    */
-  readonly declarations: Array<Declaration>;
+  private readonly _declarationMap: DeclarationMap;
   /**
-   * A set of all dependencies of this module
+   * Private storage for all declarations within this module, memoized
+   * in `get declarations()` getter.
+   */
+  private _declarations: Declaration[] | undefined = undefined;
+  /**
+   * A set of all dependencies of this module, as module absolute paths.
    */
   readonly dependencies: Set<AbsolutePath>;
   /**
    * The package.json contents for the package containing this module.
    */
   readonly packageJson: PackageJson;
-
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
     this.packageJson = init.packageJson;
-    this.declarations = init.declarations;
+    this._declarationMap = init.declarationMap;
     this.dependencies = init.dependencies;
+  }
+
+  /**
+   * Returns a top-level Declaration model for the given name.
+   */
+  getDeclaration(name: string) {
+    let dec = this._declarationMap.get(name);
+    if (dec === undefined) {
+      throw new Error(
+        `Module ${this.sourcePath} did not contain a declaration named ${name}`
+      );
+    }
+    // Overwrite a factory with its output on first request
+    if (typeof dec === 'function') {
+      this._declarationMap.set(name, (dec = dec()));
+    }
+    return dec;
+  }
+
+  /**
+   * Returns a list of all Declarations locally defined in this module.
+   */
+  get declarations() {
+    return (this._declarations ??= Array.from(this._declarationMap.keys()).map(
+      (name) => this.getDeclaration(name)
+    ));
   }
 }
 
@@ -337,3 +378,11 @@ export interface AnalyzerInterface {
     | 'normalize'
   >;
 }
+
+/**
+ * The name, model factory, and export information about a given declaration.
+ */
+export type DeclarationInfo = {
+  name: string;
+  factory: () => Declaration;
+};

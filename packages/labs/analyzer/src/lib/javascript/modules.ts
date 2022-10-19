@@ -11,13 +11,16 @@
  */
 
 import ts from 'typescript';
-import {Module, AnalyzerInterface, PackageInfo, Declaration} from '../model.js';
 import {
-  isLitElement,
-  getLitElementDeclaration,
-} from '../lit-element/lit-element.js';
-import {getClassDeclaration} from './classes.js';
-import {getVariableDeclarations} from './variables.js';
+  Module,
+  AnalyzerInterface,
+  PackageInfo,
+  Declaration,
+  DeclarationInfo,
+  DeclarationMap,
+} from '../model.js';
+import {getClassDeclarationInfo} from './classes.js';
+import {getVariableDeclarationInfo} from './variables.js';
 import {AbsolutePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
 import {DiagnosticsError} from '../errors.js';
@@ -55,26 +58,22 @@ export const getModule = (
     rootDir
   );
   const dependencies = new Set<AbsolutePath>();
-  const declarations: Declaration[] = [];
+  const declarationMap: DeclarationMap = new Map<string, () => Declaration>();
+  const addDeclaration = (info: DeclarationInfo) => {
+    const {name, factory} = info;
+    declarationMap.set(name, factory);
+  };
 
   // Find and add models for declarations in the module
   // TODO(kschaaf): Add Function and MixinDeclarations
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
-      declarations.push(
-        isLitElement(statement, analyzer)
-          ? getLitElementDeclaration(statement, analyzer)
-          : getClassDeclaration(statement, analyzer)
-      );
+      addDeclaration(getClassDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
-      declarations.push(
-        ...statement.declarationList.declarations
-          .map((dec) => getVariableDeclarations(dec, dec.name, analyzer))
-          .flat()
-      );
+      getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
     } else if (ts.isImportDeclaration(statement)) {
       dependencies.add(
-        getPathForModuleSpecifier(statement.moduleSpecifier, analyzer)
+        getPathForModuleSpecifierExpression(statement.moduleSpecifier, analyzer)
       );
     }
   }
@@ -84,7 +83,7 @@ export const getModule = (
     jsPath,
     sourceFile,
     packageJson,
-    declarations,
+    declarationMap,
     dependencies,
   });
   analyzer.moduleCache.set(
@@ -176,12 +175,12 @@ const getJSPathFromSourcePath = (
 /**
  * Resolve a module specifier to an absolute path on disk.
  */
-const getPathForModuleSpecifier = (
+export const getPathForModuleSpecifierExpression = (
   moduleSpecifier: ts.Expression,
   analyzer: AnalyzerInterface
 ): AbsolutePath => {
   const specifier = moduleSpecifier.getText().slice(1, -1);
-  let resolvedPath = ts.resolveModuleName(
+  const resolvedPath = ts.resolveModuleName(
     specifier,
     moduleSpecifier.getSourceFile().fileName,
     analyzer.commandLine.options,
@@ -192,9 +191,6 @@ const getPathForModuleSpecifier = (
       moduleSpecifier,
       `Could not resolve specifier to filesystem path.`
     );
-  }
-  if (!analyzer.fs.useCaseSensitiveFileNames) {
-    resolvedPath = resolvedPath.toLowerCase();
   }
   return analyzer.path.normalize(resolvedPath) as AbsolutePath;
 };

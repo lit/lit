@@ -13,7 +13,6 @@ import {
   createPackageAnalyzer,
   AbsolutePath,
   Module,
-  VariableDeclaration,
   getImportsStringForReferences,
 } from '../index.js';
 
@@ -38,9 +37,10 @@ test.before((ctx) => {
 });
 
 const typeForVariable = (module: Module, name: string) => {
-  const dec = module.declarations.filter((dec) => dec.name === name)[0];
+  const dec = module.getDeclaration(name);
+  assert.ok(dec.isVariableDeclaration());
   assert.ok(dec, `Could not find symbol named ${name}`);
-  const type = (dec as VariableDeclaration).type;
+  const type = dec.type;
   assert.ok(type);
   return type;
 };

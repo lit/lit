@@ -43,7 +43,7 @@ for (const lang of languages) {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === getSourceFilename('not-lit', lang)
     );
-    const decl = elementAModule!.declarations.find((d) => d.name === 'NotLit')!;
+    const decl = elementAModule?.getDeclaration('NotLit');
     assert.ok(decl);
     assert.equal(decl.isLitElementDeclaration(), false);
   });
@@ -65,7 +65,8 @@ for (const lang of languages) {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === getSourceFilename('element-a', lang)
     );
-    const decl = elementAModule!.declarations[0] as LitElementDeclaration;
+    const decl = elementAModule?.getDeclaration('ElementA');
+    assert.ok(decl?.isLitElementDeclaration());
 
     // ElementA has `a` and `b` properties
     assert.equal(decl.reactiveProperties.size, 3);
@@ -100,7 +101,8 @@ for (const lang of languages) {
     const elementBModule = result.modules.find(
       (m) => m.sourcePath === getSourceFilename('element-b', lang)
     );
-    const decl = elementBModule!.declarations[0] as LitElementDeclaration;
+    const decl = elementBModule?.getDeclaration('ElementB');
+    assert.ok(decl?.isLitElementDeclaration());
 
     // ElementB has `foo` and `bar` properties defined in a static properties getter
     assert.equal(decl.reactiveProperties.size, 2);
