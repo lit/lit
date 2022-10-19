@@ -58,7 +58,7 @@ export const getModule = (
   const declarations: Declaration[] = [];
 
   // Find and add models for declarations in the module
-  // TODO(kschaaf): Add Variable, Function, and MixinDeclarations
+  // TODO(kschaaf): Add Function and MixinDeclarations
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
       declarations.push(
