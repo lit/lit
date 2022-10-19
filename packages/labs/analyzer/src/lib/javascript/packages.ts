@@ -19,13 +19,13 @@ export const getPackageRootForModulePath = (
   const {fs, path} = analyzer;
   let searchDir = modulePath as string;
   const root = path.parse(searchDir).root;
-  while (searchDir !== root) {
-    if (fs.fileExists(path.join(searchDir, 'package.json'))) {
-      return searchDir as AbsolutePath;
+  while (!fs.fileExists(path.join(searchDir, 'package.json'))) {
+    if (searchDir === root) {
+      throw new Error(`No package.json found for module path ${modulePath}`);
     }
     searchDir = path.dirname(searchDir);
   }
-  throw new Error(`No package.json found for module path ${modulePath}`);
+  return searchDir as AbsolutePath;
 };
 
 /**
