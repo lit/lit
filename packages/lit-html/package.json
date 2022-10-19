@@ -354,11 +354,11 @@
       "output": []
     }
   },
-  "dependencies": {
-    "@types/trusted-types": "^2.0.2"
+  "dependencies": {  
   },
   "devDependencies": {
     "@types/web-ie11": "^0.0.0",
+    "@types/trusted-types": "^2.0.2"
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.6.0",
