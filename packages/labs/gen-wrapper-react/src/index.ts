@@ -164,9 +164,12 @@ const wrapperModuleTemplate = (
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
+  const hasEvents = elements.filter(({events}) => events.size).length > 0;
   return javascript`
  import * as React from 'react';
- import {createComponent, EventName} from '@lit-labs/react';
+ import {createComponent${
+   hasEvents ? `, EventName` : ``
+ }} from '@lit-labs/react';
  ${elements.map(
    (element) => javascript`
  import {${element.name} as ${element.name}Element} from '${
