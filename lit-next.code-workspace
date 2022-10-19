@@ -57,6 +57,26 @@
       "path": "packages/labs/cli"
     },
     {
+      "name": "gen-manifest",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-react",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-angular",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-vue",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-utils",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
       "name": "lit-monorepo",
       "path": "."
     }

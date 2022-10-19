@@ -34,15 +34,15 @@ import * as React from 'react';
 import {createComponent} from '@lit-labs/react';
 import {MyElement} from './my-element.js';
 
-export const MyElementComponent = createComponent(
-  React,
-  'my-element',
-  MyElement,
-  {
+export const MyElementComponent = createComponent({
+  tagName: 'my-element',
+  elementClass: MyElement,
+  react: React,
+  events: {
     onactivate: 'activate',
     onchange: 'change',
-  }
-);
+  },
+});
 ```
 
 After defining the React component, you can use it just as you would any other
@@ -70,15 +70,15 @@ import * as React from 'react';
 import {createComponent} from '@lit-labs/react';
 import {MyElement} from './my-element.js';
 
-export const MyElementComponent = createComponent(
-  React,
-  'my-element',
-  MyElement,
-  {
+export const MyElementComponent = createComponent({
+  tagName: 'my-element',
+  elementClass: MyElement,
+  react: React,
+  events: {
     onClick: 'pointerdown' as EventName<PointerEvent>,
     onChange: 'input',
-  }
-);
+  },
+});
 ```
 
 Event callbacks will match their type cast. In the example below, a

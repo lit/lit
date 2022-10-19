@@ -164,6 +164,13 @@ packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
 
+packages/labs/gen-manifest/index.js
+packages/labs/gen-manifest/index.js.map
+packages/labs/gen-manifest/index.d.ts
+packages/labs/gen-manifest/index.d.ts.map
+packages/labs/gen-manifest/test/
+packages/labs/gen-manifest/gen-output/
+
 packages/labs/gen-utils/lib/
 packages/labs/gen-utils/test/
 packages/labs/gen-utils/index.js
