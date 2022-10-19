@@ -6,6 +6,7 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {Foo, Bar as Baz} from './package-stuff.js';
 
 /**
  * My awesome element
@@ -26,3 +27,8 @@ export class ElementA extends LitElement {
     return html`<h1>${this.foo}</h1>`;
   }
 }
+
+export let localTypeVar: ElementA;
+export let packageTypeVar: Foo<Baz>;
+export let externalTypeVar: LitElement;
+export let globalTypeVar: HTMLElement;
