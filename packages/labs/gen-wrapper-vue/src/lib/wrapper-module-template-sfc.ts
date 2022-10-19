@@ -6,9 +6,13 @@
 
 import {
   LitElementDeclaration,
+  PackageJson,
+  getImportsStringForReferences,
+} from '@lit-labs/analyzer';
+
+import {
   ReactiveProperty as ModelProperty,
   Event as ModelEvent,
-  PackageJson,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -32,67 +36,131 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
+//const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
 
-// TODO(kschaaf): Note, for now we consider all properties optional
-const wrapDefineProps = (props: Map<string, ModelProperty>) =>
-  Array.from(props.values())
-    .map((prop) => `${prop.name}?: ${prop.type?.text}`)
-    .join(',\n');
+const getEventPayloadType = (type: ModelEvent['type']) => {
+  const {text} = type ?? {text: 'unknown'};
+  const {payload} = text.match(/.*<(?<payload>.*)>/)?.groups ?? {
+    payload: text,
+  };
+  return payload;
+};
 
-// TODO(sorvell): Improve event handling, currently just forwarding the event,
-// but this should be its "payload."
+const defaultEventType = `CustomEvent<unknown>`;
+const isCustomEvent = (type: string) => /^CustomEvent/.test(type);
+
+const getEventInfo = (event: ModelEvent) => {
+  const {name, type: modelType} = event;
+  const onName = kabobToOnEvent(name);
+  const type = modelType?.text ?? defaultEventType;
+  const payloadType = modelType
+    ? getEventPayloadType(modelType!)
+    : defaultEventType;
+  // TODO: add support for a custom payload extraction function
+  // via the JSDoc annotation.
+  const payloadMapper = isCustomEvent(type) ? `event.detail` : `event`;
+  return {onName, type, payloadType, payloadMapper};
+};
+
+const renderPropsInterface = (props: Map<string, ModelProperty>) =>
+  `export interface Props {
+     ${Array.from(props.values())
+       .map((prop) => `${prop.name}?: ${prop.type?.text || 'any'}`)
+       .join(';\n     ')}
+   }`;
+
 const wrapEvents = (events: Map<string, ModelEvent>) =>
   Array.from(events.values())
-    .map(
-      (event) => `(e: '${event.name}', payload: ${getEventType(event)}): void`
-    )
+    .map((event) => {
+      const {payloadType} = getEventInfo(event);
+      return `(e: '${event.name}', payload: ${payloadType}): void`;
+    })
     .join(',\n');
+
 /**
  * Generates VNode props for events. Note that vue automatically maps
  * event names from e.g. `event-name` to `onEventName`.
  */
 const renderEvents = (events: Map<string, ModelEvent>) =>
-  Array.from(events.values())
-    .map(
-      (event) =>
-        `${kabobToOnEvent(event.name)}: (event: ${
-          event.type?.text || `CustomEvent<unknown>`
-        }) => emit('${event.name}', (event.detail || event) as ${getEventType(
-          event
-        )})`
-    )
-    .join(',\n');
+  javascript`{
+    ${Array.from(events.values())
+      .map((event) => {
+        const {onName, type, payloadMapper, payloadType} = getEventInfo(event);
+        return `${onName}: (event: ${type}) => emit('${event.name}', ${payloadMapper} as ${payloadType})`;
+      })
+      .join(',\n')}
+  }`;
+
+const getTypeReferencesForMap = (
+  map: Map<string, ModelProperty | ModelEvent>
+) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
+
+const getElementTypeImports = (declaration: LitElementDeclaration) => {
+  const {events, reactiveProperties} = declaration;
+  const refs = [
+    ...getTypeReferencesForMap(events),
+    ...getTypeReferencesForMap(reactiveProperties),
+  ];
+  return getImportsStringForReferences(refs);
+};
 
 // TODO(sorvell): Add support for `v-bind`.
 const wrapperTemplate = (
-  {tagname, events, reactiveProperties}: LitElementDeclaration,
+  declaration: LitElementDeclaration,
   wcPath: string
 ) => {
+  const {tagname, events, reactiveProperties} = declaration;
   return javascript`
     <script setup lang="ts">
-      import { h, useSlots } from "vue";
+      import { h, useSlots, reactive } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
+      ${getElementTypeImports(declaration)}
 
-      const props = defineProps<{
-        ${wrapDefineProps(reactiveProperties)}
-      }>();
+      ${renderPropsInterface(reactiveProperties)}
 
-      const emit = defineEmits<{
+      const vueProps = defineProps<Props>();
+
+      const defaults = reactive({} as Props);
+      const vDefaults = {
+        created(el: any) {
+          for (const p in vueProps) {
+            defaults[p as keyof Props] = el[p];
+          }
+        }
+      };
+
+      let hasRendered = false;
+
+      ${
+        events.size
+          ? javascript`const emit = defineEmits<{
         ${wrapEvents(events)}
-      }>()
+      }>();`
+          : ''
+      }
 
       const slots = useSlots();
 
-      const render = () => h(
-        '${tagname}',
-        {
-          ...props,
-          ${renderEvents(events)}
-        },
-        assignSlotNodes(slots as Slots)
-      );
+      const render = () => {
+        const eventProps = ${renderEvents(events)};
+
+        const props = eventProps as (typeof eventProps & Props);
+        for (const p in vueProps) {
+          const v = vueProps[p as keyof Props];
+          if ((v !== undefined) || hasRendered) {
+            (props[p as keyof Props] as unknown) = v ?? defaults[p as keyof Props];
+          }
+        }
+
+        hasRendered = true;
+
+        return h(
+          '${tagname}',
+          props,
+          assignSlotNodes(slots as Slots)
+        );
+      };
     </script>
-    <template><render /></template>`;
+    <template><render v-defaults /></template>`;
 };

@@ -6,7 +6,7 @@ export default {
   build: {
     rollupOptions: {
       // Ensures no deps are bundled with this build.
-      external: () => true,
+      external: (id: string) => !!id.match(/^(vue|@lit.*|lit)$/),
       input: ['./src/ElementA.vue'],
       preserveModules: true,
       preserveEntrySignatures: true,
