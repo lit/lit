@@ -22,6 +22,9 @@
     "vue-tsc": "^1.0.8"
   },
   "files": [
-    "ElementA.*"
+    "ElementA.*",
+    "ElementEvents.*",
+    "ElementProps.*",
+    "ElementSlots.*"
   ]
 }
