@@ -66,7 +66,6 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
 type Constructor<T> = {new (): T};
 
 const reservedReactProperties = new Set([
-  'id',
   'children',
   'localName',
   'ref',
@@ -126,6 +125,11 @@ const setProperty = <E extends Element>(
   if (event !== undefined && value !== old) {
     // Dirty check event value.
     addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    return;
+  }
+
+  if (value === undefined && name in HTMLElement.prototype) {
+    node.removeAttribute(name);
     return;
   }
 
