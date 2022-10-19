@@ -95,12 +95,6 @@ export interface ModuleInfo {
   packageJson: PackageJson;
 }
 
-export interface ModuleInfo {
-  sourcePath: PackagePath;
-  jsPath: PackagePath;
-  packageJson: PackageJson;
-}
-
 export class Module {
   /**
    * The TS AST node for the file
@@ -263,16 +257,29 @@ export class VariableDeclaration extends Declaration {
   }
 }
 
+export type ClassHeritage = {
+  mixins: Reference[];
+  superClass: Reference | undefined;
+};
+
 export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
+  getHeritage: () => ClassHeritage;
 }
 
 export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
+  private _getHeritage: () => ClassHeritage;
+  private _heritage: ClassHeritage | undefined = undefined;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
+    this._getHeritage = init.getHeritage;
+  }
+
+  get heritage(): ClassHeritage {
+    return (this._heritage ??= this._getHeritage());
   }
 }
 

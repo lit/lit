@@ -34,7 +34,7 @@ for (const lang of languages) {
 
   test('Reads project files', ({analyzer, packagePath}) => {
     const rootFileNames = analyzer.program.getRootFileNames();
-    assert.equal(rootFileNames.length, 5);
+    assert.equal(rootFileNames.length, 6);
 
     const elementAPath = path.resolve(
       packagePath,

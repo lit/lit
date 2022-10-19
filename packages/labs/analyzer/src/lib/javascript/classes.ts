@@ -16,12 +16,14 @@ import {
   ClassDeclaration,
   AnalyzerInterface,
   DeclarationInfo,
+  ClassHeritage,
+  Reference,
 } from '../model.js';
 import {
-  isLitElement,
+  isLitElementSubclass,
   getLitElementDeclaration,
 } from '../lit-element/lit-element.js';
-import {isExport} from '../references.js';
+import {isExport, getReferenceForIdentifier} from '../references.js';
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -31,13 +33,14 @@ const getClassDeclaration = (
   declaration: ts.ClassDeclaration,
   analyzer: AnalyzerInterface
 ) => {
-  if (isLitElement(declaration, analyzer)) {
+  if (isLitElementSubclass(declaration, analyzer)) {
     return getLitElementDeclaration(declaration, analyzer);
   }
   return new ClassDeclaration({
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
+    getHeritage: () => getHeritage(declaration, analyzer),
   });
 };
 
@@ -71,4 +74,61 @@ export const getClassDeclarationInfo = (
     factory: () => getClassDeclaration(declaration, analyzer),
     isExport: isExport(declaration),
   };
+};
+
+/**
+ * Returns the superClass and any applied mixins for a given class declaration.
+ */
+export const getHeritage = (
+  declaration: ts.ClassLikeDeclarationBase,
+  analyzer: AnalyzerInterface
+): ClassHeritage => {
+  const extendsClause = declaration.heritageClauses?.find(
+    (c) => c.token === ts.SyntaxKind.ExtendsKeyword
+  );
+  if (extendsClause !== undefined) {
+    if (extendsClause.types.length !== 1) {
+      throw new DiagnosticsError(
+        extendsClause,
+        'Internal error: did not expect extends clause to have multiple types'
+      );
+    }
+    return getHeritageFromExpression(
+      extendsClause.types[0].expression,
+      analyzer
+    );
+  }
+  // No extends clause; return empty heritage
+  return {
+    mixins: [],
+    superClass: undefined,
+  };
+};
+
+export const getHeritageFromExpression = (
+  expression: ts.Expression,
+  analyzer: AnalyzerInterface
+): ClassHeritage => {
+  // TODO(kschaaf): Support for extracting mixing applications from the heritage
+  // expression https://github.com/lit/lit/issues/2998
+  const mixins: Reference[] = [];
+  const superClass = getSuperClass(expression, analyzer);
+  return {
+    superClass,
+    mixins,
+  };
+};
+
+export const getSuperClass = (
+  expression: ts.Expression,
+  analyzer: AnalyzerInterface
+): Reference => {
+  // TODO(kschaaf) Could add support for inline class expressions here as well
+  if (ts.isIdentifier(expression)) {
+    return getReferenceForIdentifier(expression, analyzer);
+  }
+  throw new DiagnosticsError(
+    expression,
+    `Expected expression to be a concrete superclass. Mixins are not yet supported.`
+  );
 };

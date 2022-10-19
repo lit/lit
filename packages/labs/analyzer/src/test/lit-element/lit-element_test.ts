@@ -10,12 +10,11 @@ import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 import {getSourceFilename, languages} from '../utils.js';
 
-import {
-  createPackageAnalyzer,
-  Analyzer,
-  AbsolutePath,
-  LitElementDeclaration,
-} from '../../index.js';
+import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../../index.js';
+
+// Get actual constructor to test internal ability to assert the type
+// of a dereferenced Declaration
+import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
 
 for (const lang of languages) {
   const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
@@ -57,7 +56,7 @@ for (const lang of languages) {
     const decl = elementAModule!.declarations[0];
     assert.equal(decl.name, 'ElementA');
     assert.ok(decl.isLitElementDeclaration());
-    assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
+    assert.equal(decl.tagname, 'element-a');
   });
 
   test('Analyzer finds LitElement properties ', ({analyzer}) => {
@@ -122,6 +121,37 @@ for (const lang of languages) {
     // This is inferred
     assert.equal(bProp.type?.text, 'number');
     assert.equal(bProp.typeOption, 'Number');
+  });
+
+  test('Analyezr finds subclass of LitElement', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const module = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('element-c', lang)
+    );
+    const elementC = module?.getDeclaration('ElementC');
+    assert.ok(elementC?.isLitElementDeclaration());
+
+    assert.equal(elementC.reactiveProperties.size, 1);
+    const bazProp = elementC.reactiveProperties.get('baz');
+    assert.ok(bazProp);
+
+    const elementBRef = elementC.heritage.superClass;
+    assert.ok(elementBRef);
+    const elementB = elementBRef.dereference(LitElementDeclaration);
+    assert.ok(elementB.isLitElementDeclaration());
+    assert.ok(elementB.name, 'ElementB');
+    assert.equal(elementB.reactiveProperties.size, 2);
+    const fooProp = elementB.reactiveProperties.get('foo');
+    assert.ok(fooProp);
+    const barProp = elementB.reactiveProperties.get('bar');
+    assert.ok(barProp);
+
+    const litElementRef = elementB.heritage.superClass;
+    assert.ok(litElementRef);
+    const litElement = litElementRef.dereference(ClassDeclaration);
+    assert.ok(litElement.isClassDeclaration());
+    assert.not.ok(litElement.isLitElementDeclaration());
+    assert.ok(litElement.name, 'LitElement');
   });
 
   test.run();
