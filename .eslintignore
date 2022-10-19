@@ -325,5 +325,25 @@ packages/labs/test-projects/test-element-a/**/*.d.ts.map
 packages/labs/test-projects/test-element-a/**/*.js
 packages/labs/test-projects/test-element-a/**/*.js.map
 
+packages/labs/test-projects/test-element-events/**/*.d.ts
+packages/labs/test-projects/test-element-events/**/*.d.ts.map
+packages/labs/test-projects/test-element-events/**/*.js
+packages/labs/test-projects/test-element-events/**/*.js.map
+
+packages/labs/test-projects/test-element-multi/**/*.d.ts
+packages/labs/test-projects/test-element-multi/**/*.d.ts.map
+packages/labs/test-projects/test-element-multi/**/*.js
+packages/labs/test-projects/test-element-multi/**/*.js.map
+
+packages/labs/test-projects/test-element-props/**/*.d.ts
+packages/labs/test-projects/test-element-props/**/*.d.ts.map
+packages/labs/test-projects/test-element-props/**/*.js
+packages/labs/test-projects/test-element-props/**/*.js.map
+
+packages/labs/test-projects/test-element-slots/**/*.d.ts
+packages/labs/test-projects/test-element-slots/**/*.d.ts.map
+packages/labs/test-projects/test-element-slots/**/*.js
+packages/labs/test-projects/test-element-slots/**/*.js.map
+
 packages/localize/testdata/
 packages/localize/examples/
