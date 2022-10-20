@@ -111,6 +111,9 @@ const wrapperTemplate = (
 ) => {
   const {tagname, events, reactiveProperties} = declaration;
   return javascript`
+    <script lang="ts">
+      export * from '${wcPath}';
+    </script>
     <script setup lang="ts">
       import { h, useSlots, reactive } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";

@@ -1,3 +1,6 @@
+<script lang="ts">
+export * from '@lit-internal/test-element-a/element-a.js';
+</script>
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
 import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';

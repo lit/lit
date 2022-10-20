@@ -8,7 +8,12 @@
   },
   "files": [
     "/element-a.{js,js.map,d.ts,d.ts.map}",
-    "/package-stuff.{js,js.map,d.ts,d.ts.map}"
+    "/element-events.{js,js.map,d.ts,d.ts.map}",
+    "/element-props.{js,js.map,d.ts,d.ts.map}",
+    "/element-slots.{js,js.map,d.ts,d.ts.map}",
+    "/detail-type.{js,js.map,d.ts,d.ts.map}",
+    "/package-stuff.{js,js.map,d.ts,d.ts.map}",
+    "/special-event.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
     "lit": "^2.0.0"

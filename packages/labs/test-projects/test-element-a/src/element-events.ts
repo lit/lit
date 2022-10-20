@@ -9,6 +9,8 @@ import {customElement, property} from 'lit/decorators.js';
 import {SpecialEvent} from './special-event.js';
 import {MyDetail} from './detail-type.js';
 
+export {SpecialEvent} from './special-event.js';
+export {MyDetail} from './detail-type.js';
 export class EventSubclass extends Event {
   aStr: string;
   aNumber: number;
