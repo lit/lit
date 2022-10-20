@@ -4,107 +4,124 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import 'source-map-support/register.js';
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import ts from 'typescript';
-import * as path from 'path';
 import {fileURLToPath} from 'url';
+import {getSourceFilename, languages} from '../utils.js';
 
-import {Analyzer} from '../../lib/analyzer.js';
-import {AbsolutePath} from '../../lib/paths.js';
-import {LitElementDeclaration} from '../../lib/model.js';
-import {isLitElement} from '../../lib/lit-element/lit-element.js';
+import {
+  createPackageAnalyzer,
+  Analyzer,
+  AbsolutePath,
+  LitElementDeclaration,
+} from '../../index.js';
 
-const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
-  'LitElement tests'
-);
-
-test.before((ctx) => {
-  try {
-    const packagePath = (ctx.packagePath = fileURLToPath(
-      new URL('../../test-files/basic-elements', import.meta.url).href
-    ) as AbsolutePath);
-    ctx.analyzer = new Analyzer(packagePath);
-  } catch (error) {
-    // Uvu has a bug where it silently ignores failures in before and after,
-    // see https://github.com/lukeed/uvu/issues/191.
-    console.error('uvu before error', error);
-    process.exit(1);
-  }
-});
-
-test('isLitElement returns true for a direct import', ({
-  analyzer,
-  packagePath,
-}) => {
-  const elementAPath = path.resolve(packagePath, 'src', 'element-a.ts');
-  const sourceFile =
-    analyzer.programContext.program.getSourceFile(elementAPath)!;
-  const elementADeclaration = sourceFile.statements.find(
-    (s) => ts.isClassDeclaration(s) && s.name?.text === 'ElementA'
+for (const lang of languages) {
+  const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
+    `LitElement tests (${lang})`
   );
-  assert.ok(elementADeclaration);
-  assert.equal(
-    isLitElement(elementADeclaration, analyzer.programContext),
-    true
-  );
-});
 
-test('isLitElement returns false for non-LitElement', ({
-  analyzer,
-  packagePath,
-}) => {
-  const notLitPath = path.resolve(packagePath, 'src', 'not-lit.ts');
-  const sourceFile = analyzer.programContext.program.getSourceFile(notLitPath)!;
-  const notLitDeclaration = sourceFile.statements.find(
-    (s) => ts.isClassDeclaration(s) && s.name?.text === 'NotLit'
-  );
-  assert.ok(notLitDeclaration);
-  assert.equal(isLitElement(notLitDeclaration, analyzer.programContext), false);
-});
+  test.before((ctx) => {
+    try {
+      const packagePath = (ctx.packagePath = fileURLToPath(
+        new URL(`../../test-files/${lang}/basic-elements`, import.meta.url).href
+      ) as AbsolutePath);
+      ctx.analyzer = createPackageAnalyzer(packagePath);
+    } catch (error) {
+      // Uvu has a bug where it silently ignores failures in before and after,
+      // see https://github.com/lukeed/uvu/issues/191.
+      console.error('uvu before error', error);
+      process.exit(1);
+    }
+  });
 
-test('Analyzer finds LitElement declarations', ({analyzer}) => {
-  const result = analyzer.analyzePackage();
-  const elementAModule = result.modules.find(
-    (m) => m.sourcePath === path.normalize('src/element-a.ts')
-  );
-  assert.equal(elementAModule?.declarations.length, 1);
-  const decl = elementAModule!.declarations[0];
-  assert.equal(decl.name, 'ElementA');
-  assert.instance(decl, LitElementDeclaration);
-  assert.equal((decl as LitElementDeclaration).isLitElement, true);
+  test('isLitElementDeclaration returns false for non-LitElement', ({
+    analyzer,
+  }) => {
+    const result = analyzer.getPackage();
+    const elementAModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('not-lit', lang)
+    );
+    const decl = elementAModule!.declarations.find((d) => d.name === 'NotLit')!;
+    assert.ok(decl);
+    assert.equal(decl.isLitElementDeclaration(), false);
+  });
 
-  // TODO (justinfagnani): test for customElements.define()
-  assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
-});
+  test('Analyzer finds LitElement declarations', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const elementAModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('element-a', lang)
+    );
+    assert.equal(elementAModule?.declarations.length, 1);
+    const decl = elementAModule!.declarations[0];
+    assert.equal(decl.name, 'ElementA');
+    assert.ok(decl.isLitElementDeclaration());
+    assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
+  });
 
-test('Analyzer finds LitElement properties via decorators', ({analyzer}) => {
-  const result = analyzer.analyzePackage();
-  const elementAModule = result.modules.find(
-    (m) => m.sourcePath === path.normalize('src/element-a.ts')
-  );
-  const decl = elementAModule!.declarations[0] as LitElementDeclaration;
+  test('Analyzer finds LitElement properties ', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const elementAModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('element-a', lang)
+    );
+    const decl = elementAModule!.declarations[0] as LitElementDeclaration;
 
-  // ElementA has `a` and `b` properties
-  assert.equal(decl.reactiveProperties.size, 2);
+    // ElementA has `a` and `b` properties
+    assert.equal(decl.reactiveProperties.size, 3);
 
-  const aProp = decl.reactiveProperties.get('a');
-  assert.ok(aProp);
-  assert.equal(aProp.name, 'a', 'property name');
-  assert.equal(aProp.attribute, 'a', 'attribute name');
-  assert.equal(aProp.type.text, 'string');
-  // TODO (justinfagnani) better assertion
-  assert.ok(aProp.type);
-  assert.equal(aProp.reflect, false);
+    const aProp = decl.reactiveProperties.get('a');
+    assert.ok(aProp);
+    assert.equal(aProp.name, 'a', 'property name');
+    assert.equal(aProp.attribute, 'a', 'attribute name');
+    assert.equal(aProp.type?.text, 'string');
+    // TODO (justinfagnani) better assertion
+    assert.ok(aProp.type);
+    assert.equal(aProp.reflect, false);
 
-  const bProp = decl.reactiveProperties.get('b');
-  assert.ok(bProp);
-  assert.equal(bProp.name, 'b');
-  assert.equal(bProp.attribute, 'bbb');
-  // This is inferred
-  assert.equal(bProp.type.text, 'number');
-  assert.equal(bProp.typeOption, 'Number');
-});
+    const bProp = decl.reactiveProperties.get('b');
+    assert.ok(bProp);
+    assert.equal(bProp.name, 'b');
+    assert.equal(bProp.attribute, 'bbb');
+    assert.equal(bProp.type?.text, 'number');
+    assert.equal(bProp.typeOption, 'Number');
 
-test.run();
+    const cProp = decl.reactiveProperties.get('c');
+    assert.ok(cProp);
+    assert.equal(cProp.name, 'c');
+    assert.equal(cProp.attribute, 'c');
+    assert.equal(cProp.type?.text, lang === 'ts' ? 'any' : undefined);
+  });
+
+  test('Analyzer finds LitElement properties from static getter', ({
+    analyzer,
+  }) => {
+    const result = analyzer.getPackage();
+    const elementBModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('element-b', lang)
+    );
+    const decl = elementBModule!.declarations[0] as LitElementDeclaration;
+
+    // ElementB has `foo` and `bar` properties defined in a static properties getter
+    assert.equal(decl.reactiveProperties.size, 2);
+
+    const fooProp = decl.reactiveProperties.get('foo');
+    assert.ok(fooProp);
+    assert.equal(fooProp.name, 'foo', 'property name');
+    assert.equal(fooProp.attribute, 'foo', 'attribute name');
+    assert.equal(fooProp.type?.text, 'string');
+    assert.equal(fooProp.reflect, false);
+
+    const bProp = decl.reactiveProperties.get('bar');
+    assert.ok(bProp);
+    assert.equal(bProp.name, 'bar');
+    assert.equal(bProp.attribute, 'bar');
+
+    // This is inferred
+    assert.equal(bProp.type?.text, 'number');
+    assert.equal(bProp.typeOption, 'Number');
+  });
+
+  test.run();
+}

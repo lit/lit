@@ -1,8 +1,10 @@
 {
-  "private": true,
   "name": "@lit-labs/gen-wrapper-react",
   "description": "Code generator for React wrapper for Lit components",
-  "version": "0.0.1",
+  "version": "0.2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -58,9 +60,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.2.0",
-    "@lit-labs/gen-utils": "^0.0.1",
-    "@lit-internal/tests": "0.0.0"
+    "@lit-labs/analyzer": "^0.3.0",
+    "@lit-labs/gen-utils": "^0.1.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.0"

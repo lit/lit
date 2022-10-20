@@ -45,3 +45,7 @@ import 'lit/html.js';
 import 'lit/experimental-hydrate-support.js';
 import 'lit/experimental-hydrate.js';
 import 'lit/static-html.js';
+
+import assert from 'node:assert/strict';
+import {isServer} from 'lit';
+assert.strictEqual(isServer, true, 'Expected isServer to be true');

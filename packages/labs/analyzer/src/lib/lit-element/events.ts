@@ -7,19 +7,24 @@
 /**
  * @fileoverview
  *
- * Utilities for working with events
+ * Utilities for analyzing with events
  */
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
 import {Event} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {AnalyzerInterface} from '../model.js';
+import {getTypeForJSDocTag} from '../types.js';
 
 import {LitClassDeclaration} from './lit-element.js';
 
+/**
+ * Returns an array of analyzer `Event` models for the given
+ * ts.ClassDeclaration.
+ */
 export const getEvents = (
   node: LitClassDeclaration,
-  programContext: ProgramContext
+  analyzer: AnalyzerInterface
 ) => {
   const events = new Map<string, Event>();
   const jsDocTags = ts.getJSDocTags(node);
@@ -41,7 +46,7 @@ export const getEvents = (
           const {name, type, description} = result;
           events.set(name, {
             name,
-            type: type ? programContext.getTypeForJSDocTag(tag) : undefined,
+            type: type ? getTypeForJSDocTag(tag, analyzer) : undefined,
             description,
           });
         } else {
