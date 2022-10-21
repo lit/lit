@@ -170,14 +170,14 @@ const wrapperModuleTemplate = (
  import {createComponent${
    hasEvents ? `, EventName` : ``
  }} from '@lit-labs/react';
- ${elements.map(
-   (element) => javascript`
- import {${element.name} as ${element.name}Element} from '${
-     packageJson.name
-   }/${moduleJsPath}';
+ ${elements.map((element) => {
+   const path = `${packageJson.name}/${moduleJsPath}`;
+   return javascript`
+ import {${element.name} as ${element.name}Element} from '${path}';
+ export * from '${path}';
  ${getTypeImports(elements)}
- `
- )}
+ `;
+ })}
 
  ${elements.map((element) => wrapperTemplate(element))}
  `;

@@ -5,8 +5,11 @@
  */
 
 import {assert} from '@esm-bundle/chai';
-import {createApp} from 'vue';
-import SlotContainer from './SlotContainer.vue';
+
+import React from 'react';
+// eslint-disable-next-line import/extensions
+import {render, unmountComponentAtNode} from 'react-dom';
+import {ElementSlots} from '@lit-internal/test-element-a-react/element-slots.js';
 import {ElementSlots as ElementSlotsElement} from '@lit-internal/test-element-a/element-slots.js';
 
 suite('test-element-slots', () => {
@@ -19,12 +22,27 @@ suite('test-element-slots', () => {
 
   teardown(() => {
     if (container && container.parentNode) {
+      unmountComponentAtNode(container);
       container.parentNode.removeChild(container);
     }
   });
 
-  test('renders slots inside a Vue component', async () => {
-    createApp(SlotContainer).mount(container);
+  test('renders correctly', async () => {
+    render(
+      <React.StrictMode>
+        <ElementSlots>
+          <div slot="header" id="header1">
+            Header1
+          </div>
+          <div slot="header" id="header2">
+            Header2
+          </div>
+          <div slot="footer">Footer</div>
+          Default
+        </ElementSlots>
+      </React.StrictMode>,
+      container
+    );
     const ce = container.querySelector('element-slots')! as ElementSlotsElement;
     await ce.updateComplete;
     const shadowRoot = ce.shadowRoot!;

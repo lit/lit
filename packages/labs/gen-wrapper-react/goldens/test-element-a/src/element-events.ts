@@ -2,6 +2,7 @@ import * as React from 'react';
 import {createComponent, EventName} from '@lit-labs/react';
 
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
+export * from '@lit-internal/test-element-a/element-events.js';
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 import {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
 import {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
