@@ -7,7 +7,10 @@ import {
   ReactiveController,
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
-import {BaseController, type BaseControllerConfig} from './base_controller.js';
+import {
+  ObserverController,
+  type ObserverControllerConfig,
+} from './observer_controller.js';
 
 /**
  * The callback function for a MutationController.
@@ -20,7 +23,7 @@ export type MutationValueCallback<T = unknown> = (
  * The config options for a MutationController.
  */
 export interface MutationControllerConfig<T = unknown>
-  extends BaseControllerConfig {
+  extends ObserverControllerConfig {
   /**
    * Configuration object for the MutationObserver.
    */
@@ -48,7 +51,7 @@ export interface MutationControllerConfig<T = unknown>
  * The controller's `value` is usable during the host's update cycle.
  */
 export class MutationController<T = unknown>
-  extends BaseController<MutationObserverInit, MutationValueCallback<T>>
+  extends ObserverController<MutationObserverInit, MutationValueCallback<T>>
   implements ReactiveController
 {
   protected override _observer!: MutationObserver;
@@ -86,15 +89,7 @@ export class MutationController<T = unknown>
     this._unobservedUpdate = false;
   }
 
-  /**
-   * Observe the target element. The controller's `target` is automatically
-   * observed when the host connects.
-   * @param target Element to observe
-   */
-  override observe(target: Element) {
-    this._targets.add(target);
+  protected observeElement(target: Element) {
     this._observer.observe(target, this._config);
-    this._unobservedUpdate = true;
-    this._host.requestUpdate();
   }
 }

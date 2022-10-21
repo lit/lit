@@ -5,13 +5,11 @@
  */
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
-interface IObserver {
-  observe(element: Element): void;
-  takeRecords?: () => unknown[];
+interface CommonObserverInterface {
   disconnect(): void;
 }
 
-export interface BaseControllerConfig {
+export interface ObserverControllerConfig {
   /**
    * The element to observe. In addition to configuring the target here,
    * the `observe` method can be called to observe additional targets. When not
@@ -28,12 +26,19 @@ export interface BaseControllerConfig {
   skipInitial?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class BaseController<Config, Callback extends (...args: any) => any> {
+/**
+ * Base class for `IntersectionController`, `ResizeController`, and
+ * `MutationController`.
+ */
+export abstract class ObserverController<
+  Config,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Callback extends (...args: any) => any
+> {
   protected _host: ReactiveControllerHost;
   protected _targets: Set<Element> = new Set();
   protected _config?: Config;
-  protected _observer!: IObserver;
+  protected _observer!: CommonObserverInterface;
   protected _skipInitial = false;
   /**
    * Flag used to help manage calling the `callback` when observe is called
@@ -60,7 +65,7 @@ export class BaseController<Config, Callback extends (...args: any) => any> {
       skipInitial,
       callback,
       target,
-    }: {config?: Config; callback?: Callback} & BaseControllerConfig
+    }: {config?: Config; callback?: Callback} & ObserverControllerConfig
   ) {
     this._host = host;
     this._skipInitial = skipInitial ?? this._skipInitial;
@@ -79,10 +84,16 @@ export class BaseController<Config, Callback extends (...args: any) => any> {
    */
   observe(target: Element) {
     this._targets.add(target);
-    this._observer.observe(target);
+    this.observeElement(target);
     this._unobservedUpdate = true;
     this._host.requestUpdate();
   }
+
+  /**
+   * Abstract the observer's `observe` method call which differ between the observers.
+   * @param target Element to observe
+   */
+  protected abstract observeElement(target: Element): void;
 
   /**
    * Process the observer's changes with the controller's `callback`

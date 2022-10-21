@@ -8,7 +8,10 @@ import {
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
 
-import {BaseController, type BaseControllerConfig} from './base_controller.js';
+import {
+  ObserverController,
+  type ObserverControllerConfig,
+} from './observer_controller.js';
 /**
  * The callback function for a ResizeController.
  */
@@ -20,7 +23,7 @@ export type ResizeValueCallback<T = unknown> = (
  * The config options for a ResizeController.
  */
 export interface ResizeControllerConfig<T = unknown>
-  extends BaseControllerConfig {
+  extends ObserverControllerConfig {
   /**
    * Configuration object for the ResizeController.
    */
@@ -47,7 +50,7 @@ export interface ResizeControllerConfig<T = unknown>
  * The controller's `value` is usable during the host's update cycle.
  */
 export class ResizeController<T = unknown>
-  extends BaseController<ResizeObserverOptions, ResizeValueCallback<T>>
+  extends ObserverController<ResizeObserverOptions, ResizeValueCallback<T>>
   implements ReactiveController
 {
   protected override _observer!: ResizeObserver;
@@ -79,6 +82,10 @@ export class ResizeController<T = unknown>
       this.handleChanges([]);
     }
     this._unobservedUpdate = false;
+  }
+
+  protected observeElement(target: Element) {
+    this._observer.observe(target, this._config);
   }
 
   /**

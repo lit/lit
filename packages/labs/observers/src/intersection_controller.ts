@@ -7,7 +7,10 @@ import {
   ReactiveController,
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
-import {BaseController, type BaseControllerConfig} from './base_controller.js';
+import {
+  ObserverController,
+  type ObserverControllerConfig,
+} from './observer_controller.js';
 /**
  * The callback function for a IntersectionController.
  */
@@ -19,7 +22,7 @@ export type IntersectionValueCallback<T = unknown> = (
  * The config options for a IntersectionController.
  */
 export interface IntersectionControllerConfig<T = unknown>
-  extends BaseControllerConfig {
+  extends ObserverControllerConfig {
   /**
    * Configuration object for the IntersectionObserver.
    */
@@ -48,7 +51,10 @@ export interface IntersectionControllerConfig<T = unknown>
  * The controller's `value` is usable during the host's update cycle.
  */
 export class IntersectionController<T = unknown>
-  extends BaseController<IntersectionObserverInit, IntersectionValueCallback<T>>
+  extends ObserverController<
+    IntersectionObserverInit,
+    IntersectionValueCallback<T>
+  >
   implements ReactiveController
 {
   protected override _observer!: IntersectionObserver;
@@ -85,6 +91,10 @@ export class IntersectionController<T = unknown>
     if (pendingRecords.length) {
       this.handleChanges(pendingRecords);
     }
+  }
+
+  protected observeElement(target: Element) {
+    this._observer.observe(target);
   }
 
   /**
