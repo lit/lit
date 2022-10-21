@@ -240,6 +240,7 @@ packages/labs/observers/mutation_controller.*
 packages/labs/observers/performance_controller.*
 packages/labs/observers/resize_controller.*
 packages/labs/observers/intersection_controller.*
+packages/labs/observers/base_controller.*
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
