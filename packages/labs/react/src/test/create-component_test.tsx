@@ -300,7 +300,7 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
     await renderReactComponent({draggable: undefined});
-    assert.equal(el.getAttribute('draggable'), 'false');
+    assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
