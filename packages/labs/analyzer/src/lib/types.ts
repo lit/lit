@@ -7,7 +7,7 @@
 import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
 import {Type, Reference, AnalyzerInterface} from './model.js';
-import {getReferenceForSymbol} from './references.js';
+import {getImportReference, getReferenceForSymbol} from './references.js';
 
 /**
  * Returns a ts.Symbol for a name in scope at a given location in the AST.
@@ -123,10 +123,8 @@ const getReferencesForTypeNode = (
 ): Reference[] => {
   const references: Reference[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
-      const name = getRootName(
-        ts.isTypeReferenceNode(node) ? node.typeName : node.qualifier
-      );
+    if (ts.isTypeReferenceNode(node)) {
+      const name = getRootName(node.typeName);
       // TODO(kschaaf): we'd like to just do
       // `checker.getSymbolAtLocation(node)` to get the symbol, but it appears
       // that nodes created with `checker.typeToTypeNode()` do not have
@@ -140,6 +138,14 @@ const getReferencesForTypeNode = (
         );
       }
       references.push(getReferenceForSymbol(symbol, location, analyzer));
+    } else if (ts.isImportTypeNode(node)) {
+      if (!ts.isLiteralTypeNode(node.argument)) {
+        throw new DiagnosticsError(node, 'Expected a string literal.');
+      }
+      const name = getRootName(node.qualifier);
+      references.push(
+        getImportReference(node.argument.literal, name, analyzer)
+      );
     }
     ts.forEachChild(node, visit);
   };

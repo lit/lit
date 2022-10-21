@@ -175,7 +175,10 @@ export const getImportReference = (
   analyzer: AnalyzerInterface
 ) => {
   const {path} = analyzer;
-  const specifier = specifierExpression.getText().slice(1, -1);
+  if (!ts.isStringLiteral(specifierExpression)) {
+    throw new DiagnosticsError(specifierExpression, 'Expected string literal.');
+  }
+  const specifier = specifierExpression.text;
   let refPackage;
   let refModule;
   // Check whether it is a URL, absolute, package local, or external
