@@ -8,6 +8,7 @@ import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
 import {AnalyzerInterface, Reference} from './model.js';
 import {getModule} from './javascript/modules.js';
+import {AbsolutePath} from './paths.js';
 
 const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
 
@@ -108,7 +109,10 @@ export function getReferenceForSymbol(
         if (moduleSpecifier[0] === '.') {
           // Relative import from this package: use the current package and
           // module path relative to this module
-          const module = getModule(location.getSourceFile(), analyzer);
+          const module = getModule(
+            location.getSourceFile().fileName as AbsolutePath,
+            analyzer
+          );
           refPackage = module.packageJson.name;
           refModule = path.join(path.dirname(module.jsPath), moduleSpecifier);
         } else if (moduleSpecifier[0] === '/') {
@@ -137,7 +141,10 @@ export function getReferenceForSymbol(
       });
     } else {
       // Declared in this file: use the current package and module
-      const module = getModule(location.getSourceFile(), analyzer);
+      const module = getModule(
+        location.getSourceFile().fileName as AbsolutePath,
+        analyzer
+      );
       return new Reference({
         name: symbolName,
         package: module.packageJson.name,
