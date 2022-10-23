@@ -12,7 +12,7 @@ import {
   ModuleWithLitElementDeclarations,
   getImportsStringForReferences,
 } from '@lit-labs/analyzer';
-import {Event as ModelEvent} from '@lit-labs/analyzer/lib/model.js';
+import {Event as EventModel} from '@lit-labs/analyzer/lib/model.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -159,25 +159,29 @@ const getTypeImports = (declarations: LitElementDeclaration[]) => {
   return getImportsStringForReferences(refs);
 };
 
+const getElementTypeExportsFromImports = (imports: string) =>
+  imports.replace(/^import /g, 'export');
+
 const wrapperModuleTemplate = (
   packageJson: PackageJson,
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
   const hasEvents = elements.filter(({events}) => events.size).length > 0;
+  const typeImports = getTypeImports(elements);
+  const typeExports = getElementTypeExportsFromImports(typeImports);
   return javascript`
  import * as React from 'react';
  import {createComponent${
    hasEvents ? `, EventName` : ``
  }} from '@lit-labs/react';
- ${elements.map((element) => {
-   const path = `${packageJson.name}/${moduleJsPath}`;
-   return javascript`
- import {${element.name} as ${element.name}Element} from '${path}';
- export * from '${path}';
- ${getTypeImports(elements)}
- `;
- })}
+ ${elements.map(
+   (element) => javascript`
+ import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';
+ ${typeImports}
+ ${typeExports}
+ `
+ )}
 
  ${elements.map((element) => wrapperTemplate(element))}
  `;
@@ -193,7 +197,7 @@ const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
    '${tagname}',
    ${name}Element,
    {
-     ${Array.from(events.values()).map((event: ModelEvent) => {
+     ${Array.from(events.values()).map((event: EventModel) => {
        const {name, type} = event;
        return javascript`
      ${kabobToOnEvent(name)}: '${name}' as EventName<${

@@ -12,7 +12,7 @@ import {
 
 import {
   ReactiveProperty as ModelProperty,
-  Event as ModelEvent,
+  Event as EventModel,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -20,9 +20,6 @@ import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
  * Generates a Vue wrapper component as a Vue single file component. This
  * approach relies on the Vue compiler to generate a Javascript property types
  * object for Vue runtime type checking from the Typescript property types.
- *
- * TODO(sorvell): This is also a Typescript module generator that is unused.
- * Need to decide which approach is best and delete the unused generator.
  */
 export const wrapperModuleTemplateSFC = (
   packageJson: PackageJson,
@@ -36,30 +33,13 @@ export const wrapperModuleTemplateSFC = (
   ]);
 };
 
-//const getEventType = (event: ModelEvent) => event.type?.text || `unknown`;
-
-const getEventPayloadType = (type: ModelEvent['type']) => {
-  const {text} = type ?? {text: 'unknown'};
-  const {payload} = text.match(/.*<(?<payload>.*)>/)?.groups ?? {
-    payload: text,
-  };
-  return payload;
-};
-
 const defaultEventType = `CustomEvent<unknown>`;
-const isCustomEvent = (type: string) => /^CustomEvent/.test(type);
 
-const getEventInfo = (event: ModelEvent) => {
+const getEventInfo = (event: EventModel) => {
   const {name, type: modelType} = event;
   const onName = kabobToOnEvent(name);
   const type = modelType?.text ?? defaultEventType;
-  const payloadType = modelType
-    ? getEventPayloadType(modelType!)
-    : defaultEventType;
-  // TODO: add support for a custom payload extraction function
-  // via the JSDoc annotation.
-  const payloadMapper = isCustomEvent(type) ? `event.detail` : `event`;
-  return {onName, type, payloadType, payloadMapper};
+  return {onName, type};
 };
 
 const renderPropsInterface = (props: Map<string, ModelProperty>) =>
@@ -69,11 +49,11 @@ const renderPropsInterface = (props: Map<string, ModelProperty>) =>
        .join(';\n     ')}
    }`;
 
-const wrapEvents = (events: Map<string, ModelEvent>) =>
+const wrapEvents = (events: Map<string, EventModel>) =>
   Array.from(events.values())
     .map((event) => {
-      const {payloadType} = getEventInfo(event);
-      return `(e: '${event.name}', payload: ${payloadType}): void`;
+      const {type} = getEventInfo(event);
+      return `(e: '${event.name}', payload: ${type}): void`;
     })
     .join(',\n');
 
@@ -81,18 +61,18 @@ const wrapEvents = (events: Map<string, ModelEvent>) =>
  * Generates VNode props for events. Note that vue automatically maps
  * event names from e.g. `event-name` to `onEventName`.
  */
-const renderEvents = (events: Map<string, ModelEvent>) =>
+const renderEvents = (events: Map<string, EventModel>) =>
   javascript`{
     ${Array.from(events.values())
       .map((event) => {
-        const {onName, type, payloadMapper, payloadType} = getEventInfo(event);
-        return `${onName}: (event: ${type}) => emit('${event.name}', ${payloadMapper} as ${payloadType})`;
+        const {onName, type} = getEventInfo(event);
+        return `${onName}: (event: ${type}) => emit('${event.name}', event as ${type})`;
       })
       .join(',\n')}
   }`;
 
 const getTypeReferencesForMap = (
-  map: Map<string, ModelProperty | ModelEvent>
+  map: Map<string, ModelProperty | EventModel>
 ) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
 
 const getElementTypeImports = (declaration: LitElementDeclaration) => {
@@ -104,12 +84,20 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
   return getImportsStringForReferences(refs);
 };
 
+const getElementTypeExportsFromImports = (imports: string) =>
+  imports.replace(/^import /g, 'export');
+
 // TODO(sorvell): Add support for `v-bind`.
+// TODO(sorvell): Investigate if it's possible to save the ~15 lines related to
+// handling defaults by factoring the defaults directive and associated code
+// into the vue-utils package.
 const wrapperTemplate = (
   declaration: LitElementDeclaration,
   wcPath: string
 ) => {
   const {tagname, events, reactiveProperties} = declaration;
+  const typeImports = getElementTypeImports(declaration);
+  const typeExports = getElementTypeExportsFromImports(typeImports);
   return javascript`
     <script lang="ts">
       export * from '${wcPath}';
@@ -118,7 +106,8 @@ const wrapperTemplate = (
       import { h, useSlots, reactive } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
-      ${getElementTypeImports(declaration)}
+      ${typeImports}
+      ${typeExports}
 
       ${renderPropsInterface(reactiveProperties)}
 
