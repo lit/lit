@@ -29,7 +29,7 @@ const slots = useSlots();
 const render = () => {
   const eventProps = {
     onAChanged: (event: CustomEvent<unknown>) =>
-      emit('a-changed', event.detail as CustomEvent<unknown>),
+      emit('a-changed', event as CustomEvent<unknown>),
   };
 
   const props = eventProps as typeof eventProps & Props;
