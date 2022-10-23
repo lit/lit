@@ -58,7 +58,7 @@
         "../../../tests:build"
       ],
       "files": [],
-      "command": "node ../../../tests/run-web-tests.js \"tests/**/(tests|*_test).js\" --config ../../../tests/web-test-runner.config.js --watch",
+      "command": "node ../../../tests/run-web-tests.js \"tests/**/tests.js\" --config ../../../tests/web-test-runner.config.js",
       "output": []
     }
   }

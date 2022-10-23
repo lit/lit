@@ -160,7 +160,7 @@ const getTypeImports = (declarations: LitElementDeclaration[]) => {
 };
 
 const getElementTypeExportsFromImports = (imports: string) =>
-  imports.replace(/^import /g, 'export');
+  imports.replace(/(?:^import|(\s)*import)/gm, '$1export type');
 
 const wrapperModuleTemplate = (
   packageJson: PackageJson,

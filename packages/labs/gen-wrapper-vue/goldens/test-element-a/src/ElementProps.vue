@@ -1,5 +1,5 @@
 <script lang="ts">
-export * from '@lit-internal/test-element-a/element-props.js';
+export type {MyType} from '@lit-internal/test-element-a/element-props.js';
 </script>
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
@@ -37,7 +37,7 @@ const slots = useSlots();
 const render = () => {
   const eventProps = {
     onAChanged: (event: CustomEvent<unknown>) =>
-      emit('a-changed', event.detail as CustomEvent<unknown>),
+      emit('a-changed', event as CustomEvent<unknown>),
   };
 
   const props = eventProps as typeof eventProps & Props;

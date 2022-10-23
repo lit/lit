@@ -1,5 +1,7 @@
 <script lang="ts">
-export * from '@lit-internal/test-element-a/element-events.js';
+export type {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
+export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 </script>
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
@@ -27,9 +29,9 @@ const vDefaults = {
 let hasRendered = false;
 
 const emit = defineEmits<{
-  (e: 'string-custom-event', payload: string): void;
-  (e: 'number-custom-event', payload: number): void;
-  (e: 'my-detail-custom-event', payload: MyDetail): void;
+  (e: 'string-custom-event', payload: CustomEvent<string>): void;
+  (e: 'number-custom-event', payload: CustomEvent<number>): void;
+  (e: 'my-detail-custom-event', payload: CustomEvent<MyDetail>): void;
   (e: 'event-subclass', payload: EventSubclass): void;
   (e: 'special-event', payload: SpecialEvent): void;
 }>();
@@ -39,11 +41,11 @@ const slots = useSlots();
 const render = () => {
   const eventProps = {
     onStringCustomEvent: (event: CustomEvent<string>) =>
-      emit('string-custom-event', event.detail as string),
+      emit('string-custom-event', event as CustomEvent<string>),
     onNumberCustomEvent: (event: CustomEvent<number>) =>
-      emit('number-custom-event', event.detail as number),
+      emit('number-custom-event', event as CustomEvent<number>),
     onMyDetailCustomEvent: (event: CustomEvent<MyDetail>) =>
-      emit('my-detail-custom-event', event.detail as MyDetail),
+      emit('my-detail-custom-event', event as CustomEvent<MyDetail>),
     onEventSubclass: (event: EventSubclass) =>
       emit('event-subclass', event as EventSubclass),
     onSpecialEvent: (event: SpecialEvent) =>
