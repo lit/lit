@@ -1,4 +1,41 @@
-import {h, PropType, VNode} from 'vue';
+import {h, PropType, VNode, reactive, Directive} from 'vue';
+
+type PropsDirective<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  V = HTMLElement & Record<keyof T, any>
+> = Directive<V, T> & {
+  defaults?: T;
+  setProps: (el: V, value: T, hasRendered?: boolean) => void;
+};
+
+/**
+ * Set properties to bound element, preserving Vue's convention of
+ * applying default values when the bound value is `undefined`. Default values
+ * are recorded at created time, before any properties are set. Then, whenever
+ * the element is updated (including mounted), properties are set to a given
+ * defined value or the default.
+ */
+export const vProps: PropsDirective = {
+  created(el, {dir, value}) {
+    (dir as PropsDirective).defaults = reactive({});
+    for (const k in value) {
+      (dir as PropsDirective).defaults[k] = el[k];
+    }
+  },
+  mounted(el, {dir, value}) {
+    (dir as PropsDirective).setProps(el, value);
+  },
+  updated(el, {dir, value}) {
+    (dir as PropsDirective).setProps(el, value);
+  },
+  setProps(el, value) {
+    for (const k in value) {
+      el[k] = value[k] ?? this.defaults[k];
+    }
+  },
+};
 
 /**
  *
