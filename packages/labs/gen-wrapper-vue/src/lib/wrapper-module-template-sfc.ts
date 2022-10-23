@@ -85,7 +85,7 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 };
 
 const getElementTypeExportsFromImports = (imports: string) =>
-  imports.replace(/^import /g, 'export');
+  imports.replace(/(?:^import|(\s)*import)/gm, '$1export type');
 
 // TODO(sorvell): Add support for `v-bind`.
 // TODO(sorvell): Investigate if it's possible to save the ~15 lines related to
@@ -98,13 +98,19 @@ const wrapperTemplate = (
   const {tagname, events, reactiveProperties} = declaration;
   const typeImports = getElementTypeImports(declaration);
   const typeExports = getElementTypeExportsFromImports(typeImports);
-  return javascript`
+  return javascript`${
+    typeExports
+      ? javascript`
+    <script lang="ts">
+      ${typeExports}
+    </script>`
+      : ''
+  }
     <script setup lang="ts">
       import { h, useSlots, reactive } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
       ${typeImports}
-      ${typeExports}
 
       ${renderPropsInterface(reactiveProperties)}
 
