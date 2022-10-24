@@ -54,7 +54,7 @@ export class Package extends PackageInfo {
 
   /**
    * Returns a list of modules in this package containing LitElement
-   * declarations, along with the filtered list of LitElementDeclarartions.
+   * declarations, along with the filtered list of LitElementDeclarations.
    */
   getLitElementModules() {
     const modules: {module: Module; declarations: LitElementDeclaration[]}[] =
