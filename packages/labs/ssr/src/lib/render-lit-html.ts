@@ -319,7 +319,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   /**
    * Records the given string to the output, either by appending to the current
    * opcode (if already `text`) or by creating a new `text` opcode (if the
-   * previous opocde was not `text)
+   * previous opcode was not `text)
    */
   const flush = (value: string) => {
     const op = getLast(ops);
