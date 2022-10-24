@@ -106,7 +106,7 @@ class RepeatDirective extends Directive {
       return newValues;
     }
 
-    // In SSR hydration it's possible for oldParts to be an arrray but for us
+    // In SSR hydration it's possible for oldParts to be an array but for us
     // to not have item keys because the update() hasn't run yet. We set the
     // keys to an empty array. This will cause all oldKey/newKey comparisons
     // to fail and execution to fall to the last nested brach below which
