@@ -549,7 +549,7 @@ declare global {
  *
  * @param value Value to render
  * @param renderInfo Optional render context object that should be passed
- *   to any re-entrant calls to `render`, e.g. from a `renderShadow` callback
+ *   to any reentrant calls to `render`, e.g. from a `renderShadow` callback
  *   on an ElementRenderer.
  */
 export function* render(
