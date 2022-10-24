@@ -26,7 +26,7 @@ import {getHeritage, isStatic} from './internal/util.js';
  *
  * IMPORTANT: This class MUST run as an "after" transformer. If it is run as a
  * "before" transformer, it won't have access to synthesized constructors, and
- * will have no efect.
+ * will have no effect.
  */
 export function constructorCleanupTransformer(
   program: ts.Program
