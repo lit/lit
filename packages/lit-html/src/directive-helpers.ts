@@ -173,7 +173,7 @@ export const setChildPartValue = <T extends ChildPart>(
   return part;
 };
 
-// A sentinal value that can never appear as a part value except when set by
+// A sentinel value that can never appear as a part value except when set by
 // live(). Used to force a dirty-check to fail and cause a re-render.
 const RESET_VALUE = {};
 
