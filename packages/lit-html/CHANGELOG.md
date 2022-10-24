@@ -664,7 +664,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 ### Changed
 
 - Eliminated a cycle in the module import graph ([#472](https://github.com/Polymer/lit-html/pull/472))
-- Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required paremeter ([#472](https://github.com/Polymer/lit-html/pull/472))
+- Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required parameter ([#472](https://github.com/Polymer/lit-html/pull/472))
 
 ## [0.11.0] - 2018-08-28
 
