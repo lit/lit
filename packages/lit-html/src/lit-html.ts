@@ -1670,7 +1670,7 @@ export interface RootPart extends ChildPart {
    * as such, it is the responsibility of the caller to `render` to ensure that
    * `part.setConnected(false)` is called before the part object is potentially
    * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
-   * any resources being held. If a `RootPart` that was prevously
+   * any resources being held. If a `RootPart` that was previously
    * disconnected is subsequently re-connected (and its `AsyncDirective`s should
    * re-connect), `setConnected(true)` should be called.
    *
