@@ -250,7 +250,7 @@ In this example, the page can handle URLs `/foo`, `/child/foo` and `/child/bar`.
 
 This client-side router is intended to be able to integrate with server-side routing, both configuration-based routers and convention-based routers like file-based routers.
 
-Current ideas for integration include a fallback route handler (instaled by the app) that delegates to a server API call that returns additional route configuration dynamically. The minimal API needed in the client router are:
+Current ideas for integration include a fallback route handler (installed by the app) that delegates to a server API call that returns additional route configuration dynamically. The minimal API needed in the client router are:
 
 1. The ability to dynamically add routes
 2. Fallback route handlers.
