@@ -444,7 +444,7 @@ function replaceExpressionsAndHtmlWithPlaceholders(
  * structure.
  *
  * This situation arises because we initially generate unique placeholders for
- * each HTML open/close tag, and for each each template string literal
+ * each HTML open/close tag, and for each template string literal
  * expression, and it's simpler to collapse all of these at once afterwards.
  *
  * For example, if given:
