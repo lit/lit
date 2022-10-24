@@ -157,7 +157,7 @@ render() {
 
 The capabilities of the `virtualizer` directive are the same as those of the `<lit-virtualizer>` element. The APIs are the same as well, except that features expressed as properties and attributes on the `<lit-virtualizer>` element are instead expressed as properties in an options object passed as the single argument to the `virtualize` directive.
 
-## API Referrence
+## API Reference
 
 ### `items` property
 
