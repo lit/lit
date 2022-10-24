@@ -247,7 +247,7 @@ export class LitTransformer {
       isLitImport(node.moduleSpecifier.text)
     ) {
       // Remove the import altogether if there are no bindings left. But only if
-      // we acutally modified the import, and it's from an official Lit module.
+      // we actually modified the import, and it's from an official Lit module.
       // Otherwise we might remove imports that are still needed for their
       // side-effects.
       return undefined;
