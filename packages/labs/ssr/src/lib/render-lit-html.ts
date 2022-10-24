@@ -514,7 +514,7 @@ export type RenderInfo = {
   customElementHostStack: Array<ElementRenderer | undefined>;
 
   /**
-   * An optional callback to notifiy when a custom element has been rendered.
+   * An optional callback to notify when a custom element has been rendered.
    *
    * This allows servers to know what specific tags were rendered for a given
    * template, even in the case of conditional templates.
