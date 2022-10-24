@@ -137,7 +137,7 @@
   re-render to the tree. When called with `true`, any such directives'
   `reconnected` callback will be called prior to its next `update`/`render`
   callbacks. Note that `LitElement` will call this method by default on the
-  rendered part in its `connectedCallback` and `disconnetedCallback`.
+  rendered part in its `connectedCallback` and `disconnectedCallback`.
 - Added the `static-html` module, a static `html` tag function, a `literal` tag function, and `unsafeStatic()`, which allows template authors to add strings to the
   static structure of the template, before it's parsed as HTML. See [Static expressions](https://lit.dev/docs/templates/expressions/#static-expressions) for more details.
 - Added `lit-html/directive-helpers.js` module with helpers for creating custom directives. See [Custom directives](https://lit.dev/docs/api/custom-directives/#clearPart) for more details.
