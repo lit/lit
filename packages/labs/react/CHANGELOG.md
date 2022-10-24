@@ -132,7 +132,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Added
 
-- Added `useControler()` hook for creating React hooks from Reactive Controllers ([#1532](https://github.com/Polymer/lit-html/pulls/1532)).
+- Added `useController()` hook for creating React hooks from Reactive Controllers ([#1532](https://github.com/Polymer/lit-html/pulls/1532)).
 
 ## [1.0.0-pre.2] - 2021-03-31
 
