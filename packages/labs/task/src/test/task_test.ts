@@ -452,7 +452,7 @@ suite('Task', () => {
       task = new Task(
         this,
         ([a, b]) => [a * 2, b.split('')],
-        // Make sure that we can use `as const` to force inferece of the args
+        // Make sure that we can use `as const` to force inference of the args
         // as [number, string] instead of (number | string)[]
         () => [1, 'b'] as const
       );
