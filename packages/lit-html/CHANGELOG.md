@@ -720,7 +720,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - Refactored how template tags and `render()` are implemented so that all
   specialization of template syntax is done in tags, not `render()`, allowing
-  for the mixining of templates of different syntaxes, and for hooks in
+  for the mixing-in of templates of different syntaxes, and for hooks in
   `render()` to change templates before they're initially processed.
 - Added ShadyCSS support in lib/shady-render.js. It's exported render function
   will pass templates to ShadyCSS's `prepareTemplate()` function to process style
