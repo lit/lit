@@ -28,7 +28,7 @@ import {ReactiveElement, css} from '@lit/reactive-element';
 @customElement('my-element')
 export class MyElement extends ReactiveElement {
   // Include both static styles and a @property decorator in the test. The
-  // @property decorator trigggers class initialization, and if there are also
+  // @property decorator triggers class initialization, and if there are also
   // static styles, it will trigger an instanceof check for CSSStyleSheet, which
   // could explode if not handled with care in the node build.
   static override styles = css`
