@@ -2939,7 +2939,7 @@ suite('lit-html', () => {
 
   const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
 
-  securityHooksSuiteFunction('enahnced security hooks', () => {
+  securityHooksSuiteFunction('enhanced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
       constructor(sanitizeTo: string) {
