@@ -55,7 +55,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   private _viewportSize: Size = {width: 0, height: 0};
 
   /**
-   * Flag for debouncing asynchnronous reflow requests.
+   * Flag for debouncing asynchronous reflow requests.
    */
   private _pendingReflow = false;
 
