@@ -56,7 +56,7 @@ export interface Options {
  * (https://nodejs.org/api/vm.html).
  *
  * Most of the hooks implement fairly standard web-compatible module loading:
- *  - An import specifier resolver that uses Node module resoution
+ *  - An import specifier resolver that uses Node module resolution
  *  - A linker that loads dependencies from the local filesystem
  *  - A module cache keyed by resolved URL
  *  - import.meta.url support
