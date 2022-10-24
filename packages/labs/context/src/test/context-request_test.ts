@@ -30,7 +30,7 @@ class SimpleContextProvider extends LitElement {
 }
 
 class SimpleContextConsumer extends LitElement {
-  // a one-time property fullfilled by context
+  // a one-time property fulfilled by context
   @consume({context: simpleContext})
   @property({type: Number})
   public onceValue = 0;
