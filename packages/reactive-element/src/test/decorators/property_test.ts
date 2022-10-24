@@ -373,7 +373,7 @@ suite('@property', () => {
         });
       }
 
-      // provide custom deorator expecting extended type
+      // provide custom decorator expecting extended type
       @myProperty({
         type: Number,
         validator: (value: number) => Math.min(10, Math.max(value, 0)),
