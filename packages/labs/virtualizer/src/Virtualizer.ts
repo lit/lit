@@ -306,7 +306,7 @@ export class Virtualizer {
   _getSizer() {
     const hostElement = this._hostElement!;
     if (!this._sizer) {
-      // Use a pre-existing sizer element if provided (for better integration
+      // Use a preexisting sizer element if provided (for better integration
       // with vDOM renderers)
       let sizer = hostElement.querySelector(
         `[${SIZER_ATTRIBUTE}]`
