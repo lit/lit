@@ -59,7 +59,7 @@ export interface TransformOutputConfig {
   outputDir?: string;
 
   /**
-   * Optional filepath for a generated module module that exports
+   * Optional filepath for a generated module that exports
    * `sourceLocale`, `targetLocales`, and `allLocales` using the locale codes
    * from your config file. Use to keep your config file and client config in
    * sync. For example:
