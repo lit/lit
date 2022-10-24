@@ -914,7 +914,7 @@ class Template {
           const attrsToRemove = [];
           for (const name of (node as Element).getAttributeNames()) {
             // `name` is the name of the attribute we're iterating over, but not
-            // _neccessarily_ the name of the attribute we will create a part
+            // _necessarily_ the name of the attribute we will create a part
             // for. They can be different in browsers that don't iterate on
             // attributes in source order. In that case the attrNames array
             // contains the attribute name we'll process next. We only need the
