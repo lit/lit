@@ -230,7 +230,7 @@ test('we install a referenced command with permission', async ({
   cli.addCommand({...fooCommandReference, installFrom: '../foo-package'});
   await cli.run();
   assert.snapshot(console.errorStream.text, '');
-  // The npm install happend.
+  // The npm install happened.
   assert.match(console.outputStream.text, 'added 1 package');
   // After installation, we were able to resolve the command.
   assert.match(
