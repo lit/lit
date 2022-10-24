@@ -189,7 +189,7 @@ type CustomElementClosedOp = {
 
 /**
  * Operation to possibly emit the `<!--lit-node-->` marker; the operation
- * always emits if there were attribtue parts, and may emit if the node
+ * always emits if there were attribute parts, and may emit if the node
  * was a custom element and it needed `defer-hydration` because it was
  * rendered in the shadow root of another custom element host; we don't
  * know the latter at opcode generation time, and so that test is done at
