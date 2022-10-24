@@ -832,7 +832,7 @@ const getTemplateHtml = (
           issues, e.g. opening your code up to XSS attacks.
 
           If you're using the html or svg tagged template functions normally
-          and and still seeing this error, please file a bug at
+          and still seeing this error, please file a bug at
           https://github.com/lit/lit/issues/new?template=bug_report.md
           and include information about your build tooling, if any.
         `
