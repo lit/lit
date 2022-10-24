@@ -49,7 +49,7 @@ There is a development HTML file located at `/dev/index.html` that you can view 
 
 ## Editing
 
-If you use VS Code, we highly reccomend the [lit-plugin extension](https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin), which enables some extremely useful features for lit-html templates:
+If you use VS Code, we highly recommend the [lit-plugin extension](https://marketplace.visualstudio.com/items?itemName=runem.lit-plugin), which enables some extremely useful features for lit-html templates:
 
 - Syntax highlighting
 - Type-checking
@@ -59,7 +59,7 @@ If you use VS Code, we highly reccomend the [lit-plugin extension](https://marke
 - Linting
 - Quick Fixes
 
-The project is setup to reccomend lit-plugin to VS Code users if they don't already have it installed.
+The project is setup to recommend lit-plugin to VS Code users if they don't already have it installed.
 
 ## Linting
 
