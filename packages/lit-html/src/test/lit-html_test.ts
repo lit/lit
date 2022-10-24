@@ -3055,7 +3055,7 @@ suite('lit-html', () => {
       ]);
     });
 
-    test('sanitizes concatenated attributes after contatonation', () => {
+    test('sanitizes concatenated attributes after concatenation', () => {
       render(html`<div attrib="hello ${'big'} world"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
