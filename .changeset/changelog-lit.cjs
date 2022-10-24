@@ -10,7 +10,7 @@ const {
 } = require('@changesets/get-github-info');
 
 // Forked from: https://github.com/atlassian/changesets/blob/main/packages/changelog-github/src/index.ts
-// Remove the "Thanks!" message, as it's almost always self-congratuatory to our team
+// Remove the "Thanks!" message, as it's almost always self-congratulatory to our team
 // TODO: add back "Thanks!" for external contributors
 
 const repo = 'lit/lit';
