@@ -54,7 +54,7 @@
 - For efficiency, the `css` function now maintains a cache and will use a cached value if available when the same style text is requested.
 - Fixed reflecting a property when it is set in a setter of another property that is called because its attribute changed ([#965](https://github.com/Polymer/lit-element/issues/965)).
 - Fixed exceptions when parsing attributes from JSON ([#722](https://github.com/Polymer/lit-element/issues/722)).
-- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclasss ([#890]https://github.com/Polymer/lit-element/issues/890));
+- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclass ([#890]https://github.com/Polymer/lit-element/issues/890));
 
 ## `@lit/reactive-element` - 1.0.0
 
