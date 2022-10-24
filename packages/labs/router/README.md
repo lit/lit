@@ -147,7 +147,7 @@ html`<main>${this.routes.outlet()}</main>`;
 
 A route can define an `enter()` callback that lets it do work before rendering and optionally reject that route as a match.
 
-`enter()` can be used to load and wait for neccessary component definitions:
+`enter()` can be used to load and wait for necessary component definitions:
 
 ```ts
 {
