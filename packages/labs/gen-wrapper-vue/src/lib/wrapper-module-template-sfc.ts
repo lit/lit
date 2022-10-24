@@ -18,7 +18,7 @@ import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
 /**
  * Generates a Vue wrapper component as a Vue single file component. This
- * approach relies on the Vue compiler to generate a Javascript property types
+ * approach relies on the Vue compiler to generate a JavaScript property types
  * object for Vue runtime type checking from the Typescript property types.
  */
 export const wrapperModuleTemplateSFC = (

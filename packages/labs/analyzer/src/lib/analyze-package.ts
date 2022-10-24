@@ -14,7 +14,7 @@ import {Analyzer} from './analyzer.js';
 export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
   // This logic accepts either a path to folder containing a tsconfig.json
   // directly inside it or a path to a specific tsconfig file. If no tsconfig
-  // file is found, we fallback to creating a Javascript program.
+  // file is found, we fallback to creating a JavaScript program.
   const isDirectory = ts.sys.directoryExists(packagePath);
   const configFileName = isDirectory
     ? path.join(packagePath, 'tsconfig.json')
