@@ -49,5 +49,5 @@ export default {
     },
     outDir: './'
   },
-  plugins: [vue(), typescript()],
+  plugins: [vue({isProduction: true}), typescript()],
 };`;
