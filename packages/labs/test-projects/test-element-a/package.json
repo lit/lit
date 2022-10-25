@@ -7,7 +7,8 @@
     "pack": "wireit"
   },
   "files": [
-    "/element-a.{js,js.map,d.ts,d.ts.map}"
+    "/element-a.{js,js.map,d.ts,d.ts.map}",
+    "/package-stuff.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
     "lit": "^2.0.0"
@@ -27,6 +28,7 @@
       "command": "tsc --build --pretty",
       "output": [
         "element-a.{js,js.map,d.ts,d.ts.map}",
+        "package-stuff.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
@@ -38,7 +40,8 @@
       "command": "npm pack",
       "files": [
         "package.json",
-        "element-a.{js,js.map,d.ts,d.ts.map}"
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "package-stuff.{js,js.map,d.ts,d.ts.map}"
       ],
       "output": [
         "*.tgz"
