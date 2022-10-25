@@ -35,6 +35,19 @@ export const vProps: PropsDirective = {
       el[k] = value[k] ?? this.defaults[k];
     }
   },
+  getSSRProps({value}) {
+    const props = {} as typeof value;
+    for (const k in value) {
+      const v = value[k];
+      // Note, it's unclear if the `undefined` check is needed but
+      // it's there to ensure we avoid initially setting `undefined`,
+      // which would override a default.
+      if (v !== undefined) {
+        props[k] = v;
+      }
+    }
+    return props;
+  },
 };
 
 /**
