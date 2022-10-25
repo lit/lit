@@ -20,8 +20,11 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
-type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
-type ElementWithoutPropsOrEventListeners<I, E> = Omit<
+type ReactProps<I, E = {}> = Omit<
+  React.PropsWithChildren<React.HTMLAttributes<I>>,
+  keyof E
+>;
+type ElementWithoutPropsOrEventListeners<I, E = {}> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>
 >;
@@ -336,7 +339,7 @@ export function createComponent<
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
       {...props, __forwardedRef: ref},
-      props?.children
+      props?.children as React.ReactNode
     )
   );
 

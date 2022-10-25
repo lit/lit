@@ -402,12 +402,7 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = (window.React.createElement(
-      'div'
-      // Note, constructing children like this is rare and the React type expects
-      // this to be an HTMLCollection even though that's not the output of
-      // `createElement`.
-    ) as unknown) as HTMLCollection;
+    const children = window.React.createElement('div');
     await renderReactComponent({children});
     assert.equal(el.childNodes.length, 1);
     assert.equal(el.firstElementChild!.localName, 'div');
