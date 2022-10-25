@@ -109,30 +109,29 @@ suite('createComponent', () => {
     tagName,
   });
 
-  let el: BasicElement;
-  let domEl: HTMLElement;
+  // let vanillaEl: HTMLDivElement;
+  let el: XFoo;
+  let wrappedEl: BasicElement;
 
   const renderReactComponent = async (
     props?: React.ComponentProps<typeof BasicElementComponent>
   ) => {
     window.ReactDOM.render(
-      <BasicElementComponent {...props}/>,
+      <>
+        <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
+        <x-foo {...props}/>,
+        <BasicElementComponent {...props}/>,
+      </>,
       container
     );
-    el = container.querySelector(tagName)! as BasicElement;
-    await el.updateComplete;
+
+    // vanillaEl = container.querySelector('div')! as HTMLDivElement;
+    el = container.querySelector('x-foo')! as XFoo;
+    wrappedEl = container.querySelector(tagName)! as BasicElement;
+
+    await wrappedEl.updateComplete;
   };
 
-  const renderCustomElement = async (
-    props?: React.HTMLAttributes<XFoo>
-  ) => {
-    window.ReactDOM.render(
-      <x-foo {...props}/>,
-      container
-    );
-    domEl = container.querySelector('x-foo')!;
-    await el.updateComplete;
-  };
 
   /*
     The following test will not build if an incorrect typing occurs
@@ -207,13 +206,13 @@ suite('createComponent', () => {
   test('can get ref to element', async () => {
     const elementRef1 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef1});
-    assert.equal(elementRef1.current, el);
+    assert.equal(elementRef1.current, wrappedEl);
     const elementRef2 = window.React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef2});
     assert.equal(elementRef1.current, null);
-    assert.equal(elementRef2.current, el);
+    assert.equal(elementRef2.current, wrappedEl);
     renderReactComponent({ref: elementRef1});
-    assert.equal(elementRef1.current, el);
+    assert.equal(elementRef1.current, wrappedEl);
     assert.equal(elementRef2.current, null);
   });
 
@@ -237,13 +236,13 @@ suite('createComponent', () => {
     const ref2Calls: Array<string | undefined> = [];
     const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, [tagName]);
+    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName]);
     renderReactComponent({ref: refCb2});
-    assert.deepEqual(ref1Calls, [tagName, undefined]);
-    assert.deepEqual(ref2Calls, [tagName]);
+    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
+    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName]);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, [tagName, undefined, tagName]);
-    assert.deepEqual(ref2Calls, [tagName, undefined]);
+    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined, "div", "x-foo", tagName]);
+    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
   });
 
   test('can set attributes', async () => {
@@ -265,33 +264,33 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('hidden'), null);
     assert.equal(el.hidden, false);
     await renderReactComponent({hidden: true});
-    assert.equal(el.getAttribute('hidden'), '');
+    assert.equal(el.getAttribute('hidden'), 'true');
     assert.equal(el.hidden, true);
     await renderReactComponent({hidden: undefined});
     assert.equal(el.getAttribute('hidden'), null);
     assert.equal(el.hidden, false);
     await renderReactComponent({hidden: true});
-    assert.equal(el.getAttribute('hidden'), '');
+    assert.equal(el.getAttribute('hidden'), 'true');
     assert.equal(el.hidden, true);
     await renderReactComponent({hidden: false});
     assert.equal(el.getAttribute('hidden'), null);
     assert.equal(el.hidden, false);
 
-    await renderReactComponent({});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, false);
-    await renderReactComponent({disabled: true});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, true);
-    await renderReactComponent({disabled: undefined});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, undefined);
-    await renderReactComponent({disabled: true});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, true);
-    await renderReactComponent({disabled: false});
-    assert.equal(el.getAttribute('disabled'), null);
-    assert.equal(el.disabled, false);
+    // await renderReactComponent({});
+    // assert.equal(el.getAttribute('disabled'), null);
+    // assert.equal(el.disabled, false);
+    // await renderReactComponent({disabled: true});
+    // assert.equal(el.getAttribute('disabled'), null);
+    // assert.equal(el.disabled, true);
+    // await renderReactComponent({disabled: undefined});
+    // assert.equal(el.getAttribute('disabled'), null);
+    // assert.equal(el.disabled, undefined);
+    // await renderReactComponent({disabled: true});
+    // assert.equal(el.getAttribute('disabled'), null);
+    // assert.equal(el.disabled, true);
+    // await renderReactComponent({disabled: false});
+    // assert.equal(el.getAttribute('disabled'), null);
+    // assert.equal(el.disabled, false);
   });
   
 
@@ -321,136 +320,7 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('aria-checked'), null);
   });
 
-  test('div element can set attritbues', async () => {
-    await renderCustomElement({});
-    assert.equal(domEl.getAttribute('id'), null);
-    assert.equal(domEl.id, '');
-    await renderCustomElement({id: 'id'});
-    assert.equal(domEl.getAttribute('id'), 'id');
-    await renderCustomElement({id: undefined});
-    assert.equal(domEl.getAttribute('id'), null);
-    assert.equal(domEl.id, '');
-    await renderCustomElement({id: 'id2'});
-    assert.equal(domEl.getAttribute('id'), 'id2');
-    assert.equal(domEl.id, 'id2');
-  })
-
-  test('div element can set attritbues', async () => {
-    await renderCustomElement({});
-    assert.equal(domEl.getAttribute('hidden'), null);
-    assert.equal(domEl.hidden, false);
-    await renderCustomElement({hidden: true});
-    // difference between dom and custom element is expected in react 18
-    assert.equal(domEl.getAttribute('hidden'), 'true');
-    assert.equal(domEl.hidden, true);
-    await renderCustomElement({hidden: undefined});
-    assert.equal(domEl.getAttribute('hidden'), null);
-    assert.equal(domEl.hidden, false);
-    await renderCustomElement({hidden: true});
-    assert.equal(domEl.getAttribute('hidden'), 'true');
-    assert.equal(domEl.hidden, true);
-    // difference between dom and custom element is expected in react 18
-    await renderCustomElement({hidden: false});
-    assert.equal(domEl.getAttribute('hidden'), 'false');
-    assert.equal(domEl.hidden, true);
-  })
-
-  test('does not remove enmumerated attributes', async () => {
-    await renderCustomElement({});
-    assert.equal(domEl.getAttribute('draggable'), null);
-    assert.equal(domEl.draggable, false);
-    await renderCustomElement({draggable: undefined});
-    assert.equal(domEl.getAttribute('draggable'), null);
-    assert.equal(domEl.draggable, false);
-    await renderCustomElement({draggable: true});
-    assert.equal(domEl.getAttribute('draggable'), 'true');
-    assert.equal(domEl.draggable, true);
-    await renderCustomElement({draggable: false});
-    assert.equal(domEl.getAttribute('draggable'), 'false');
-    assert.equal(domEl.draggable, false);
-  });
-
-  test('can set properties', async () => {
-    let o = {foo: true};
-    let a = [1, 2, 3];
-    await renderReactComponent({
-      bool: true,
-      str: 'str',
-      num: 5,
-      obj: o,
-      arr: a,
-      customAccessors: o
-    });
-    assert.equal(el.bool, true);
-    assert.equal(el.str, 'str');
-    assert.equal(el.num, 5);
-    assert.deepEqual(el.obj, o);
-    assert.deepEqual(el.arr, a);
-    assert.deepEqual(el.customAccessors, o);
-    const firstEl = el;
-    // update
-    o = {foo: false};
-    a = [1, 2, 3, 4];
-    await renderReactComponent({
-      bool: false,
-      str: 'str2',
-      num: 10,
-      obj: o,
-      arr: a,
-      customAccessors: o
-    });
-    assert.equal(firstEl, el);
-    assert.equal(el.bool, false);
-    assert.equal(el.str, 'str2');
-    assert.equal(el.num, 10);
-    assert.deepEqual(el.obj, o);
-    assert.deepEqual(el.arr, a);
-    assert.deepEqual(el.customAccessors, o);
-  });
-
-  test('can set properties that reflect', async () => {
-    let o = {foo: true};
-    let a = [1, 2, 3];
-    await renderReactComponent({
-      rbool: true,
-      rstr: 'str',
-      rnum: 5,
-      robj: o,
-      rarr: a,
-    });
-    const firstEl = el;
-    assert.equal(el.rbool, true);
-    assert.equal(el.rstr, 'str');
-    assert.equal(el.rnum, 5);
-    assert.deepEqual(el.robj, o);
-    assert.deepEqual(el.rarr, a);
-    assert.equal(el.getAttribute('rbool'), '');
-    assert.equal(el.getAttribute('rstr'), 'str');
-    assert.equal(el.getAttribute('rnum'), '5');
-    assert.equal(el.getAttribute('robj'), '{"foo":true}');
-    assert.equal(el.getAttribute('rarr'), '[1,2,3]');
-    // update
-    o = {foo: false};
-    a = [1, 2, 3, 4];
-    await renderReactComponent({
-      rbool: false,
-      rstr: 'str2',
-      rnum: 10,
-      robj: o,
-      rarr: a,
-    });
-    assert.equal(firstEl, el);
-    assert.equal(el.rbool, false);
-    assert.equal(el.rstr, 'str2');
-    assert.equal(el.rnum, 10);
-    assert.deepEqual(el.robj, o);
-    assert.deepEqual(el.rarr, a);
-    assert.equal(el.getAttribute('rbool'), null);
-    assert.equal(el.getAttribute('rstr'), 'str2');
-    assert.equal(el.getAttribute('rnum'), '10');
-    assert.equal(el.getAttribute('robj'), '{"foo":false}');
-    assert.equal(el.getAttribute('rarr'), '[1,2,3,4]');
-  });
+  // tests that cpmare different props
 
   test('can listen to events', async () => {
     let fooEvent: Event | undefined,
@@ -469,34 +339,34 @@ suite('createComponent', () => {
       onFoo,
       onBar,
     });
-    el.fire('foo');
+    wrappedEl.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
-    el.fire('bar');
+    wrappedEl.fire('bar');
     assert.equal(barEvent!.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
     await renderReactComponent({
       onFoo: undefined,
     });
-    el.fire('foo');
+    wrappedEl.fire('foo');
     assert.equal(fooEvent, undefined);
-    el.fire('bar');
+    wrappedEl.fire('bar');
     assert.equal(barEvent!.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
     await renderReactComponent({
       onFoo,
     });
-    el.fire('foo');
+    wrappedEl.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
-    el.fire('bar');
+    wrappedEl.fire('bar');
     assert.equal(barEvent!.type, 'bar');
     await renderReactComponent({
       onFoo: onFoo2,
     });
     fooEvent = undefined;
     fooEvent2 = undefined;
-    el.fire('foo');
+    wrappedEl.fire('foo');
     assert.equal(fooEvent, undefined);
     assert.equal(fooEvent2!.type, 'foo');
     await renderReactComponent({
@@ -504,7 +374,7 @@ suite('createComponent', () => {
     });
     fooEvent = undefined;
     fooEvent2 = undefined;
-    el.fire('foo');
+    wrappedEl.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
     assert.equal(fooEvent2, undefined);
   });
@@ -516,7 +386,7 @@ suite('createComponent', () => {
         clickEvent = e;
       },
     });
-    el.click();
+    wrappedEl.click();
     assert.equal(clickEvent?.type, 'click');
   });
 
@@ -528,8 +398,8 @@ suite('createComponent', () => {
       // `createElement`.
     ) as unknown) as HTMLCollection;
     await renderReactComponent({children});
-    assert.equal(el.childNodes.length, 1);
-    assert.equal(el.firstElementChild!.localName, 'div');
+    assert.equal(wrappedEl.childNodes.length, 1);
+    assert.equal(wrappedEl.firstElementChild!.localName, 'div');
   });
 
   test('can set reserved React properties', async () => {
@@ -537,7 +407,7 @@ suite('createComponent', () => {
       style: {display: 'block'},
       className: 'foo bar',
     } as any);
-    assert.equal(el.style.display, 'block');
-    assert.equal(el.getAttribute('class'), 'foo bar');
+    assert.equal(wrappedEl.style.display, 'block');
+    assert.equal(wrappedEl.getAttribute('class'), 'foo bar');
   });
 });
