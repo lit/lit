@@ -9,13 +9,14 @@ import {assert} from '@esm-bundle/chai';
 import React from 'react';
 // eslint-disable-next-line import/extensions
 import {render, unmountComponentAtNode} from 'react-dom';
-import {ElementEvents,
+import {
+  ElementEvents,
   SpecialEvent,
   MyDetail,
-  EventSubclass,} from '@lit-internal/test-element-a-react/element-events.js';
-import {
-  ElementEvents as ElementEventsElement
-} from '@lit-internal/test-element-a/element-events.js';
+  EventSubclass,
+  TemplateResult,
+} from '@lit-internal/test-element-a-react/element-events.js';
+import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 
 suite('test-element-events', () => {
   let container: HTMLElement;
@@ -37,6 +38,9 @@ suite('test-element-events', () => {
     let numberCustomEventPayload: CustomEvent<number> | undefined = undefined;
     let myDetailCustomEventPayload: CustomEvent<MyDetail> | undefined =
       undefined;
+    let templateResultCustomEventPayload:
+      | CustomEvent<TemplateResult>
+      | undefined = undefined;
     let eventSubclassPayload: EventSubclass | undefined = undefined;
     let specialEventPayload: SpecialEvent | undefined = undefined;
     const props = {
@@ -46,6 +50,8 @@ suite('test-element-events', () => {
         (numberCustomEventPayload = e),
       onMyDetailCustomEvent: (e: CustomEvent<MyDetail>) =>
         (myDetailCustomEventPayload = e),
+      onTemplateResultCustomEvent: (e: CustomEvent<TemplateResult>) =>
+        (templateResultCustomEventPayload = e),
       onEventSubclass: (e: EventSubclass) => (eventSubclassPayload = e),
       onSpecialEvent: (e: SpecialEvent) => (specialEventPayload = e),
     };
@@ -84,14 +90,18 @@ suite('test-element-events', () => {
       myDetailCustomEventPayload!.detail,
       expected_myDetailCustomEventPayload
     );
+    // Note, default payload is html`` which results in {strings: [], values: []}
+    el.fireTemplateResultCustomEvent();
+    const {strings, values} = templateResultCustomEventPayload!.detail;
+    assert.equal(strings.length, 1);
+    assert.equal(strings[0], '');
+    assert.equal(values.length, 0);
     const str = 'strstr';
     const num = 5555;
     el.fireEventSubclass(str, num);
-    assert.instanceOf(eventSubclassPayload, EventSubclass);
     assert.equal(eventSubclassPayload!.aStr, str);
     assert.equal(eventSubclassPayload!.aNumber, num);
     el.fireSpecialEvent(num);
-    assert.instanceOf(specialEventPayload, SpecialEvent);
     assert.equal(specialEventPayload!.aNumber, num);
   });
 });
