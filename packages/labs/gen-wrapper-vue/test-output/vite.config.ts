@@ -7,8 +7,10 @@ export default {
       entry: './src/tests/test-element-a_test.ts',
       fileName: () => `test-element-a_test.js`,
       formats: ['es'],
+      sourcemaps: false,
     },
     outDir: './tests',
+    sourcemaps: false,
   },
   plugins: [vue()],
 };
