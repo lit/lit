@@ -159,8 +159,9 @@ const getTypeImports = (declarations: LitElementDeclaration[]) => {
   return getImportsStringForReferences(refs);
 };
 
+// TODO(sorvell): add support for getting exports in analyzer.
 const getElementTypeExportsFromImports = (imports: string) =>
-  imports.replace(/(?:^import|(\s)*import)/gm, '$1export type');
+  imports.replace(/(?:^import)/gm, 'export type');
 
 const wrapperModuleTemplate = (
   packageJson: PackageJson,
