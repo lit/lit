@@ -16,10 +16,10 @@ export default {
         format: 'es',
         entryFileNames: ({name}) => `${name}.js`,
         dir: './',
-        sourcemap: true,
+        sourcemap: false,
       },
     },
     outDir: './',
   },
-  plugins: [vue({isProduction: true}), typescript()],
+  plugins: [vue(), typescript()],
 };
