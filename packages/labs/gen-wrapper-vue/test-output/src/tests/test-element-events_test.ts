@@ -11,6 +11,7 @@ import {
   SpecialEvent,
   MyDetail,
   EventSubclass,
+  TemplateResult,
 } from '@lit-internal/test-element-a-vue/ElementEvents.js';
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 
@@ -33,6 +34,9 @@ suite('test-element-events', () => {
     let numberCustomEventPayload: CustomEvent<number> | undefined = undefined;
     let myDetailCustomEventPayload: CustomEvent<MyDetail> | undefined =
       undefined;
+    let templateResultCustomEventPayload:
+      | CustomEvent<TemplateResult>
+      | undefined = undefined;
     let eventSubclassPayload: EventSubclass | undefined = undefined;
     let specialEventPayload: SpecialEvent | undefined = undefined;
 
@@ -43,6 +47,8 @@ suite('test-element-events', () => {
         (numberCustomEventPayload = e),
       onMyDetailCustomEvent: (e: CustomEvent<MyDetail>) =>
         (myDetailCustomEventPayload = e),
+      onTemplateResultCustomEvent: (e: CustomEvent<TemplateResult>) =>
+        (templateResultCustomEventPayload = e),
       onEventSubclass: (e: EventSubclass) => (eventSubclassPayload = e),
       onSpecialEvent: (e: SpecialEvent) => (specialEventPayload = e),
     };
@@ -81,6 +87,12 @@ suite('test-element-events', () => {
       myDetailCustomEventPayload!.detail,
       expected_myDetailCustomEventPayload
     );
+    // Note, default payload is html`` which results in {strings: [''], values: []}
+    el.fireTemplateResultCustomEvent();
+    const {strings, values} = templateResultCustomEventPayload!.detail;
+    assert.equal(strings.length, 1);
+    assert.equal(strings[0], '');
+    assert.equal(values.length, 0);
     const str = 'strstr';
     const num = 5555;
     el.fireEventSubclass(str, num);

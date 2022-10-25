@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html} from 'lit';
+import {LitElement, html, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {SpecialEvent} from './special-event.js';
 import {MyDetail} from './detail-type.js';
@@ -34,6 +34,7 @@ declare global {
     'string-custom-event': CustomEvent<string>;
     'number-custom-event': CustomEvent<number>;
     'my-detail-custom-event': CustomEvent<MyDetail>;
+    'template-result-custom-event': CustomEvent<TemplateResult>;
   }
 }
 
@@ -44,6 +45,7 @@ declare global {
  * @fires my-detail-custom-event {CustomEvent<MyDetail>} A custom event with a MyDetail payload.
  * @fires event-subclass {EventSubclass} The subclass event with a string and number payload
  * @fires special-event {SpecialEvent} The special event with a number payload
+ * @fires template-result-custom-event {CustomEvent<TemplateResult>} The result-custom-event with a TemplateResult payload.
  */
 @customElement('element-events')
 export class ElementEvents extends LitElement {
@@ -82,6 +84,17 @@ export class ElementEvents extends LitElement {
   ) {
     fromNode.dispatchEvent(
       new CustomEvent<MyDetail>('my-detail-custom-event', {
+        detail,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
+  fireTemplateResultCustomEvent(detail = html``, fromNode = this) {
+    fromNode.dispatchEvent(
+      new CustomEvent('template-result-custom-event', {
         detail,
         bubbles: true,
         composed: true,
