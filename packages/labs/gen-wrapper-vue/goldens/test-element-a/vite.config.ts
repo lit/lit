@@ -6,9 +6,9 @@ export default {
   build: {
     rollupOptions: {
       // Ensures no deps are bundled with build.
-      // Source paths are expected to start with `./` or `/`.
-      external: (id: string, parent: string, isResolved: boolean) =>
-        !isResolved && !id.match(/^\.?\//),
+      // Source paths are expected to start with `./` or `/` but may be
+      // `x:` on Windows.
+      external: (id: string) => !id.match(/^((\w:)|(\.?[\\/]))/),
       input: ['./src/ElementA.vue'],
       preserveModules: false,
       preserveEntrySignatures: true,
@@ -16,7 +16,7 @@ export default {
         format: 'es',
         entryFileNames: ({name}) => `${name}.js`,
         dir: './',
-        sourcemap: false,
+        sourcemap: true,
       },
     },
     outDir: './',
