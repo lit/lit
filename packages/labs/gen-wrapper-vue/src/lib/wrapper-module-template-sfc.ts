@@ -88,7 +88,13 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 const getElementTypeExportsFromImports = (imports: string) =>
   imports.replace(/(?:^import)/gm, 'export type');
 
-// TODO(sorvell): Add support for `v-bind`.
+// TODO(sorvell): Add support for `v-model`.
+// Note, this uses the `vProps` directive to set all dynamic properties
+// (non-events) on the wrapped element. This facilitates Vue's convention of
+// always setting default property values when the incoming property is
+// `undefined`. Importantly, Vue automatically handles setting known attributes
+// without the need to forward them as props. Therefore native attributes like
+// `class` and `id` are auto-handled.
 const wrapperTemplate = (
   declaration: LitElementDeclaration,
   wcPath: string
