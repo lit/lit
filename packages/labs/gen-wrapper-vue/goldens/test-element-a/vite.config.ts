@@ -10,7 +10,7 @@ export default {
       external: (id: string, parent: string, isResolved: boolean) =>
         !isResolved && !id.match(/^\.?\//),
       input: ['./src/ElementA.vue'],
-      preserveModules: true,
+      preserveModules: false,
       preserveEntrySignatures: true,
       output: {
         format: 'es',

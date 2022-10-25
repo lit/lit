@@ -38,7 +38,7 @@ export default {
           .map((path) => `'./${path}'`)
           .join(', ')}
       ],
-      preserveModules: true,
+      preserveModules: false,
       preserveEntrySignatures: true,
       output: {
         format: 'es',
