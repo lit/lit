@@ -9,7 +9,12 @@ export default {
       // Source paths are expected to start with `./` or `/` but may be
       // `x:` on Windows.
       external: (id: string) => !id.match(/^((\w:)|(\.?[\\/]))/),
-      input: ['./src/ElementA.vue'],
+      input: [
+        './src/ElementA.vue',
+        './src/ElementEvents.vue',
+        './src/ElementProps.vue',
+        './src/ElementSlots.vue',
+      ],
       preserveModules: false,
       preserveEntrySignatures: true,
       output: {
