@@ -10,7 +10,9 @@ import {
   PackageJson,
   LitElementDeclaration,
   ModuleWithLitElementDeclarations,
+  getImportsStringForReferences,
 } from '@lit-labs/analyzer';
+import {Event as EventModel} from '@lit-labs/analyzer/lib/model.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -149,22 +151,41 @@ const tsconfigTemplate = () => {
   );
 };
 
+const getTypeImports = (declarations: LitElementDeclaration[]) => {
+  // We only need type imports for events.
+  const refs = declarations.flatMap(({events}) =>
+    Array.from(events.values()).flatMap((e) => e.type?.references ?? [])
+  );
+  return getImportsStringForReferences(refs);
+};
+
+// TODO(sorvell): add support for getting exports in analyzer.
+const getElementTypeExportsFromImports = (imports: string) =>
+  imports.replace(/(?:^import)/gm, 'export type');
+
 const wrapperModuleTemplate = (
   packageJson: PackageJson,
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
+  const hasEvents = elements.filter(({events}) => events.size).length > 0;
+  const typeImports = getTypeImports(elements);
+  const typeExports = getElementTypeExportsFromImports(typeImports);
   return javascript`
-import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
-${elements.map(
-  (element) => javascript`
-import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';
-`
-)}
+ import * as React from 'react';
+ import {createComponent${
+   hasEvents ? `, EventName` : ``
+ }} from '@lit-labs/react';
+ ${elements.map(
+   (element) => javascript`
+ import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';
+ ${typeImports}
+ ${typeExports}
+ `
+ )}
 
-${elements.map((element) => wrapperTemplate(element))}
-`;
+ ${elements.map((element) => wrapperTemplate(element))}
+ `;
 };
 
 // TODO(kschaaf): Should this be configurable?
@@ -172,22 +193,19 @@ const packageNameToReactPackageName = (pkgName: string) => `${pkgName}-react`;
 
 const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
   return javascript`
-export const ${name} = createComponent(
-  React,
-  '${tagname}',
-  ${name}Element,
-  {
-    ${Array.from(events.keys()).map(
-      (eventName) => javascript`
-    ${kabobToOnEvent(eventName)}: '${
-        // TODO(kschaaf): add cast to `as EventName<EVENT_TYPE>` once the
-        // analyzer reports the event type correctly (currently we have the
-        // type string without an AST reference to get its import, etc.)
-        // https://github.com/lit/lit/issues/2850
-        eventName
-      }',`
-    )}
-  }
-);
-`;
+ export const ${name} = createComponent(
+   React,
+   '${tagname}',
+   ${name}Element,
+   {
+     ${Array.from(events.values()).map((event: EventModel) => {
+       const {name, type} = event;
+       return javascript`
+     ${kabobToOnEvent(name)}: '${name}' as EventName<${
+         type?.text || `CustomEvent<unknown>`
+       }>,`;
+     })}
+   }
+ );
+ `;
 };

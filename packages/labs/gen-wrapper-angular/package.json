@@ -15,7 +15,8 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "test:gen": "wireit"
+    "test:gen": "wireit",
+    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
   },
   "wireit": {
     "build": {
@@ -43,13 +44,15 @@
     },
     "test:gen": {
       "command": "uvu test \".*_test\\.js$\"",
-      "files": [],
+      "files": [
+        "goldens/**/*"
+      ],
       "output": [
         "gen-output"
       ],
       "dependencies": [
         "build",
-        "../test-projects/test-element-a:build"
+        "../test-projects/test-element-a:pack"
       ]
     }
   },

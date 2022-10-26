@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
 import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
-import '@lit-internal/test-element-a/element-a.js';
+import '@lit-internal/test-element-a/element-slots.js';
 
 export interface Props {
-  foo?: string | undefined;
+  mainDefault?: string;
 }
 
 const vueProps = defineProps<Props>();
@@ -20,17 +20,10 @@ const vDefaults = {
 
 let hasRendered = false;
 
-const emit = defineEmits<{
-  (e: 'a-changed', payload: CustomEvent<unknown>): void;
-}>();
-
 const slots = useSlots();
 
 const render = () => {
-  const eventProps = {
-    onAChanged: (event: CustomEvent<unknown>) =>
-      emit('a-changed', event as CustomEvent<unknown>),
-  };
+  const eventProps = {};
 
   const props = eventProps as typeof eventProps & Props;
   for (const p in vueProps) {
@@ -42,7 +35,7 @@ const render = () => {
 
   hasRendered = true;
 
-  return h('element-a', props, assignSlotNodes(slots as Slots));
+  return h('element-slots', props, assignSlotNodes(slots as Slots));
 };
 </script>
 <template><render v-defaults /></template>
