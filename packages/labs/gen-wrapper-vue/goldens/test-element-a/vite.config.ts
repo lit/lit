@@ -14,7 +14,7 @@ export default {
         './src/ElementProps.vue',
         './src/ElementSlots.vue',
       ],
-      preserveModules: true,
+      preserveModules: false,
       preserveEntrySignatures: true,
       output: {
         format: 'es',
