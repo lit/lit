@@ -5,10 +5,9 @@ import typescript from '@rollup/plugin-typescript';
 export default {
   build: {
     rollupOptions: {
-      // Ensures no deps are bundled with build.
-      // Source paths are expected to start with `./` or `/`.
-      external: (id: string, parent: string, isResolved: boolean) =>
-        !isResolved && !id.match(/^\.?\//),
+      // Source paths are expected to start with `./` or `/` but may be
+      // `x:` on Windows.
+      external: (id: string) => !id.match(/^((\w:)|(\.?[\\/]))/),
       input: [
         './src/ElementA.vue',
         './src/ElementEvents.vue',
