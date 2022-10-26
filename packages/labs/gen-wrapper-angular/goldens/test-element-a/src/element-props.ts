@@ -1,11 +1,13 @@
 import {
   Component,
   ElementRef,
-  EventEmitter,
-  Input,
   NgZone,
+  Input,
+  EventEmitter,
   Output,
 } from '@angular/core';
+import {MyType} from '@lit-internal/test-element-a/element-props.js';
+export type {MyType} from '@lit-internal/test-element-a/element-props.js';
 import type {ElementProps as ElementPropsElement} from '@lit-internal/test-element-a/element-props.js';
 import '@lit-internal/test-element-a/element-props.js';
 

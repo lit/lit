@@ -1,11 +1,5 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  NgZone,
-  Output,
-} from '@angular/core';
+import {Component, ElementRef, NgZone, Input} from '@angular/core';
+
 import type {ElementSlots as ElementSlotsElement} from '@lit-internal/test-element-a/element-slots.js';
 import '@lit-internal/test-element-a/element-slots.js';
 
