@@ -1,252 +1,257 @@
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
+// /**
+//  * @license
+//  * Copyright 2018 Google LLC
+//  * SPDX-License-Identifier: BSD-3-Clause
+//  */
 
-import 'react';
-import 'react-dom';
-import {useController} from '@lit-labs/react/use-controller.js';
-import {assert} from '@esm-bundle/chai';
-import {
-  ReactiveController,
-  ReactiveControllerHost,
-} from '@lit/reactive-element';
+// // import * as ReactModule from 'react';
+// import '../../../../../node_modules/react/umd/react.development.js';
+// import '../../../../../node_modules/react-dom/umd/react-dom.development.js';
+// // import React from 'react';
+// // import ReactDOM from 'react-dom';
+// import {useController} from '@lit-labs/react/use-controller.js';
+// import {assert} from '@esm-bundle/chai';
+// import {
+//   ReactiveController,
+//   ReactiveControllerHost,
+// } from '@lit/reactive-element';
 
-const {React, ReactDOM} = window;
+// import { createRoot } from 'react-dom/client';
 
-suite('useController', () => {
-  let container: HTMLElement;
-  let ctorCallCount = 0;
+// const {React, ReactDOM} = window;
 
-  setup(() => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
-    ctorCallCount = 0;
-  });
+// suite('useController', () => {
+//   let container: HTMLElement;
+//   let ctorCallCount = 0;
 
-  teardown(() => {
-    if (container && container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
-  });
+//   setup(() => {
+//     container = document.createElement('div');
+//     document.body.appendChild(container);
+//     ctorCallCount = 0;
+//   });
 
-  class TestController implements ReactiveController {
-    host: ReactiveControllerHost;
-    a: string;
+//   teardown(() => {
+//     if (container && container.parentNode) {
+//       container.parentNode.removeChild(container);
+//     }
+//   });
 
-    log: Array<string> = [];
+//   class TestController implements ReactiveController {
+//     host: ReactiveControllerHost;
+//     a: string;
 
-    constructor(host: ReactiveControllerHost, a: string) {
-      this.host = host;
-      this.a = a;
-      host.addController(this);
-      ctorCallCount++;
-    }
+//     log: Array<string> = [];
 
-    hostConnected() {
-      this.log.push('connected');
-    }
+//     constructor(host: ReactiveControllerHost, a: string) {
+//       this.host = host;
+//       this.a = a;
+//       host.addController(this);
+//       ctorCallCount++;
+//     }
 
-    hostDisconnected() {
-      this.log.push('disconnected');
-    }
+//     hostConnected() {
+//       this.log.push('connected');
+//     }
 
-    hostUpdate() {
-      this.log.push('update');
-    }
+//     hostDisconnected() {
+//       this.log.push('disconnected');
+//     }
 
-    hostUpdated() {
-      this.log.push('updated');
-    }
-  }
+//     hostUpdate() {
+//       this.log.push('update');
+//     }
 
-  const useTest = (a: string) => {
-    return useController(
-      React,
-      (host: ReactiveControllerHost) => new TestController(host, a)
-    );
-  };
+//     hostUpdated() {
+//       this.log.push('updated');
+//     }
+//   }
 
-  const lifeCycleTest = ({strict}: {strict: boolean}) => {
-    test(`basic lifecycle${strict ? ' - strict mode' : ''}`, () => {
-      let testController!: TestController;
+//   const useTest = (a: string) => {
+//     return useController(
+//       React,
+//       (host: ReactiveControllerHost) => new TestController(host, a)
+//     );
+//   };
 
-      let componentRenderLog: string[] = [];
-      let componentLayoutEffectLog: string[] = [];
+//   const lifeCycleTest = ({strict}: {strict: boolean}) => {
+//     test(`basic lifecycle${strict ? ' - strict mode' : ''}`, () => {
+//       let testController!: TestController;
 
-      const TestComponent = ({x}: {x: number}) => {
-        testController = useTest('a');
-        // Record the state of the testController's log when the component
-        // runs. It should have at least run `connect + update` by now.
-        componentRenderLog = [...testController.log];
-        React.useLayoutEffect(() => {
-          // Record the state of the testController's log when the component
-          // runs. It should have completed an update by now.
-          componentLayoutEffectLog = [...testController.log];
-        });
-        return React.createElement('div', {className: 'foo'}, [
-          `x:${x}, a:${testController.a}`,
-        ]);
-      };
+//       let componentRenderLog: string[] = [];
+//       let componentLayoutEffectLog: string[] = [];
 
-      const render = (props: any) => {
-        const component = React.createElement(TestComponent, props);
-        ReactDOM.render(
-          strict
-            ? React.createElement(React.StrictMode, {}, component)
-            : component,
-          container
-        );
-      };
+//       const TestComponent = ({x}: {x: number}) => {
+//         testController = useTest('a');
+//         // Record the state of the testController's log when the component
+//         // runs. It should have at least run `connect + update` by now.
+//         componentRenderLog = [...testController.log];
+//         React.useLayoutEffect(() => {
+//           // Record the state of the testController's log when the component
+//           // runs. It should have completed an update by now.
+//           componentLayoutEffectLog = [...testController.log];
+//         });
+//         return React.createElement('div', {className: 'foo'}, [
+//           `x:${x}, a:${testController.a}`,
+//         ]);
+//       };
 
-      render({x: 1});
-      // Note, strict mode 2x renders
-      const expectedCtorCallCount = strict ? 2 : 1;
-      // TODO(sorvell): in strict mode, this would be more correct if it were
-      // ['update', 'updated', 'update'] since that would indicate the first
-      // strict mode render was properly balanced, but React does
-      // "2x render then effects" in strict mode so this would require
-      // explicitly detecting this case. Ignoring for now since relying on this
-      // seems like a corner case.
-      const expectedNonInitialRenderUpdates = strict
-        ? ['update', 'update']
-        : ['update'];
-      //
-      assert.equal(ctorCallCount, expectedCtorCallCount);
-      assert.equal(container.innerHTML, `<div class="foo">x:1, a:a</div>`);
-      // Tests the state of the controllerLog in the component's render.
-      // We expect the controller to have run `connected + update` when
-      // `useController` returns in the component.
-      assert.deepEqual(componentRenderLog, ['connected', 'update']);
-      assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
-      // Tests the state of the controllerLog in a `useLayoutEffect` callback
-      // used in the component. We expect the controller to have completed
-      // an update by then.
-      assert.deepEqual(componentLayoutEffectLog, testController.log);
-      const firstTestController = testController;
-      componentRenderLog.length =
-        componentLayoutEffectLog.length =
-        testController.log.length =
-          0;
-      render({x: 2});
-      assert.equal(ctorCallCount, expectedCtorCallCount);
-      assert.equal(container.innerHTML, `<div class="foo">x:2, a:a</div>`);
-      assert.deepEqual(componentRenderLog, expectedNonInitialRenderUpdates);
-      assert.deepEqual(testController.log, [
-        ...expectedNonInitialRenderUpdates,
-        'updated',
-      ]);
-      assert.deepEqual(componentLayoutEffectLog, testController.log);
-      assert.strictEqual(testController, firstTestController);
-    });
-  };
+//       const render = (props: any) => {
+//         const component = React.createElement(TestComponent, props);
+//         ReactDOM.render(
+//           strict
+//             ? React.createElement(React.StrictMode, {}, component)
+//             : component,
+//           container
+//         );
+//       };
 
-  lifeCycleTest({strict: false});
-  lifeCycleTest({strict: true});
+//       render({x: 1});
+//       // Note, strict mode 2x renders
+//       const expectedCtorCallCount = strict ? 2 : 1;
+//       // TODO(sorvell): in strict mode, this would be more correct if it were
+//       // ['update', 'updated', 'update'] since that would indicate the first
+//       // strict mode render was properly balanced, but React does
+//       // "2x render then effects" in strict mode so this would require
+//       // explicitly detecting this case. Ignoring for now since relying on this
+//       // seems like a corner case.
+//       const expectedNonInitialRenderUpdates = strict
+//         ? ['update', 'update']
+//         : ['update'];
+//       //
+//       assert.equal(ctorCallCount, expectedCtorCallCount);
+//       assert.equal(container.innerHTML, `<div class="foo">x:1, a:a</div>`);
+//       // Tests the state of the controllerLog in the component's render.
+//       // We expect the controller to have run `connected + update` when
+//       // `useController` returns in the component.
+//       assert.deepEqual(componentRenderLog, ['connected', 'update']);
+//       assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+//       // Tests the state of the controllerLog in a `useLayoutEffect` callback
+//       // used in the component. We expect the controller to have completed
+//       // an update by then.
+//       assert.deepEqual(componentLayoutEffectLog, testController.log);
+//       const firstTestController = testController;
+//       componentRenderLog.length =
+//         componentLayoutEffectLog.length =
+//         testController.log.length =
+//           0;
+//       render({x: 2});
+//       assert.equal(ctorCallCount, expectedCtorCallCount);
+//       assert.equal(container.innerHTML, `<div class="foo">x:2, a:a</div>`);
+//       assert.deepEqual(componentRenderLog, expectedNonInitialRenderUpdates);
+//       assert.deepEqual(testController.log, [
+//         ...expectedNonInitialRenderUpdates,
+//         'updated',
+//       ]);
+//       assert.deepEqual(componentLayoutEffectLog, testController.log);
+//       assert.strictEqual(testController, firstTestController);
+//     });
+//   };
 
-  test('requestUpdate', async () => {
-    let testController!: TestController;
+//   lifeCycleTest({strict: false});
+//   lifeCycleTest({strict: true});
 
-    const TestComponent = ({x}: {x: number}) => {
-      testController = useTest('a');
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
-    };
+//   test('requestUpdate', async () => {
+//     let testController!: TestController;
 
-    const render = (props: any) => {
-      ReactDOM.render(React.createElement(TestComponent, props), container);
-    };
+//     const TestComponent = ({x}: {x: number}) => {
+//       testController = useTest('a');
+//       return React.createElement('div', {className: 'foo'}, [
+//         `x:${x}, a:${testController.a}`,
+//       ]);
+//     };
 
-    // Initial render
-    render({x: 1});
-    assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+//     const render = (props: any) => {
+//       ReactDOM.render(React.createElement(TestComponent, props), container);
+//     };
 
-    // Update 1
-    testController.log.length = 0;
-    testController.a = 'b';
-    testController.host.requestUpdate();
+//     // Initial render
+//     render({x: 1});
+//     assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
 
-    await new Promise((r) => setTimeout(r, 0));
+//     // Update 1
+//     testController.log.length = 0;
+//     testController.a = 'b';
+//     testController.host.requestUpdate();
 
-    assert.equal(container.innerHTML, `<div class="foo">x:1, a:b</div>`);
-    assert.deepEqual(testController.log, ['update', 'updated']);
+//     await new Promise((r) => setTimeout(r, 0));
 
-    // Update 2
-    testController.log.length = 0;
-    testController.a = 'c';
-    testController.host.requestUpdate();
+//     assert.equal(container.innerHTML, `<div class="foo">x:1, a:b</div>`);
+//     assert.deepEqual(testController.log, ['update', 'updated']);
 
-    await new Promise((r) => setTimeout(r, 0));
+//     // Update 2
+//     testController.log.length = 0;
+//     testController.a = 'c';
+//     testController.host.requestUpdate();
 
-    assert.equal(container.innerHTML, `<div class="foo">x:1, a:c</div>`);
-    assert.deepEqual(testController.log, ['update', 'updated']);
-  });
+//     await new Promise((r) => setTimeout(r, 0));
 
-  test('disconnect', () => {
-    let testController!: TestController;
+//     assert.equal(container.innerHTML, `<div class="foo">x:1, a:c</div>`);
+//     assert.deepEqual(testController.log, ['update', 'updated']);
+//   });
 
-    const TestComponent = ({x}: {x: number}) => {
-      testController = useTest('a');
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
-    };
+//   test('disconnect', () => {
+//     let testController!: TestController;
 
-    ReactDOM.render(React.createElement(TestComponent, {x: 1}), container);
-    assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
-    testController.log.length = 0;
+//     const TestComponent = ({x}: {x: number}) => {
+//       testController = useTest('a');
+//       return React.createElement('div', {className: 'foo'}, [
+//         `x:${x}, a:${testController.a}`,
+//       ]);
+//     };
 
-    ReactDOM.render(React.createElement('div'), container);
-    assert.equal(container.innerHTML, `<div></div>`);
-    assert.deepEqual(testController.log, ['disconnected']);
-  });
+//     ReactDOM.render(React.createElement(TestComponent, {x: 1}), container);
+//     assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+//     testController.log.length = 0;
 
-  test('updateComplete', async () => {
-    let testController!: TestController;
-    let updateCompleteCount = 0;
-    let lastNestedUpdate: boolean | undefined;
-    let rerender = false;
+//     ReactDOM.render(React.createElement('div'), container);
+//     assert.equal(container.innerHTML, `<div></div>`);
+//     assert.deepEqual(testController.log, ['disconnected']);
+//   });
 
-    const TestComponent = ({x}: {x: number}) => {
-      testController = useTest('a');
-      testController.host.updateComplete.then((nestedUpdate) => {
-        updateCompleteCount++;
-        lastNestedUpdate = nestedUpdate;
-      });
-      if (rerender) {
-        // prevent an infinite loop
-        rerender = false;
-        testController.host.requestUpdate();
-      }
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
-    };
+//   test('updateComplete', async () => {
+//     let testController!: TestController;
+//     let updateCompleteCount = 0;
+//     let lastNestedUpdate: boolean | undefined;
+//     let rerender = false;
 
-    const render = (props: any) => {
-      ReactDOM.render(React.createElement(TestComponent, props), container);
-    };
+//     const TestComponent = ({x}: {x: number}) => {
+//       testController = useTest('a');
+//       testController.host.updateComplete.then((nestedUpdate) => {
+//         updateCompleteCount++;
+//         lastNestedUpdate = nestedUpdate;
+//       });
+//       if (rerender) {
+//         // prevent an infinite loop
+//         rerender = false;
+//         testController.host.requestUpdate();
+//       }
+//       return React.createElement('div', {className: 'foo'}, [
+//         `x:${x}, a:${testController.a}`,
+//       ]);
+//     };
 
-    render({x: 1});
-    assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
-    testController.log.length = 0;
-    await 0;
-    assert.equal(updateCompleteCount, 1);
-    assert.strictEqual(lastNestedUpdate, false);
+//     const render = (props: any) => {
+//       ReactDOM.render(React.createElement(TestComponent, props), container);
+//     };
 
-    // cause a requestUpdate() during render
-    rerender = true;
-    render({x: 2});
-    await 0;
-    // Expect only one more renders since requestUpdate() is called
-    // during render
-    assert.equal(updateCompleteCount, 2);
-    assert.strictEqual(lastNestedUpdate, false);
+//     render({x: 1});
+//     assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
+//     testController.log.length = 0;
+//     await 0;
+//     assert.equal(updateCompleteCount, 1);
+//     assert.strictEqual(lastNestedUpdate, false);
 
-    await 0;
+//     // cause a requestUpdate() during render
+//     rerender = true;
+//     render({x: 2});
+//     await 0;
+//     // Expect only one more renders since requestUpdate() is called
+//     // during render
+//     assert.equal(updateCompleteCount, 2);
+//     assert.strictEqual(lastNestedUpdate, false);
 
-    assert.equal(updateCompleteCount, 2);
-  });
-});
+//     await 0;
+
+//     assert.equal(updateCompleteCount, 2);
+//   });
+// });

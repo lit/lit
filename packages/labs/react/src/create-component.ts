@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import React from 'react';
+
 // Match a prop name to a typed event callback by
 // adding an Event type as an expected property on a string.
 export type EventName<T extends Event = Event> = string & {
@@ -336,7 +338,7 @@ export function createComponent<
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
       {...props, __forwardedRef: ref},
-      props?.children
+      props?.children as React.ReactNode
     )
   );
 

@@ -4,14 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type * as ReactModule from 'react';
+// import type * as ReactModule from 'react';
 import type {EventName, ReactWebComponent} from '@lit-labs/react';
+import '../../../../../node_modules/react/umd/react.development.js';
+import '../../../../../node_modules/react-dom/umd/react-dom.development.js';
+// import React from 'react';
+// import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-// import 'react/umd/react.development.js';
-// import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
@@ -99,12 +102,13 @@ suite('createComponent', () => {
 
   let el: BasicElement;
 
+  const root = createRoot(container!);
+
   const renderReactComponent = async (
-    props?: ReactModule.ComponentProps<typeof BasicElementComponent>
+    props?: React.ComponentProps<typeof BasicElementComponent>
   ) => {
-    window.ReactDOM.render(
+    root.render(
       <BasicElementComponent {...props}/>,
-      container
     );
     el = container.querySelector(tagName)! as BasicElement;
     await el.updateComplete;
