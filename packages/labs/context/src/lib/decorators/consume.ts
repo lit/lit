@@ -1,13 +1,13 @@
 /**
  * @license
- * Copyright 2017 Google LLC
+ * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
+import {ContextConsumer} from '../controllers/context-consumer.js';
 import {ContextKey} from '../context-key.js';
-import {ContextProvider} from '../controllers/context-provider.js';
 
 /*
  * IMPORTANT: For compatibility with tsickle and the Closure JS compiler, all
@@ -21,31 +21,32 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * which will try and retrieve a value for the property via the Context API.
  *
  * @param context A Context identifier value created via `createContext`
- * @param multiple An optional boolean which when true allows the value to be updated
+ * @param subscribe An optional boolean which when true allows the value to be updated
  *   multiple times.
- *
- * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
  * @example
  *
  * ```ts
- * import {loggerContext} from 'community-protocols/logger';
+ * import {consume} from '@lit-labs/context';
+ * import {loggerContext, Logger} from 'community-protocols/logger';
  *
  * class MyElement {
- *   @contextProvided(loggerContext)
- *   logger;
+ *   @consume({context: loggerContext})
+ *   logger?: Logger;
  *
  *   doThing() {
- *     this.logger.log('thing was done');
+ *     this.logger!.log('thing was done');
  *   }
  * }
  * ```
  * @category Decorator
  */
-export function contextProvider<ValueType>({
+export function consume<ValueType>({
   context: context,
+  subscribe,
 }: {
   context: ContextKey<unknown, ValueType>;
+  subscribe?: boolean;
 }): <K extends PropertyKey>(
   protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
   name?: K
@@ -54,24 +55,17 @@ export function contextProvider<ValueType>({
 ) => void | any {
   return decorateProperty({
     finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      const controllerMap = new WeakMap();
       ctor.addInitializer((element: ReactiveElement): void => {
-        controllerMap.set(element, new ContextProvider(element, context));
+        new ContextConsumer(
+          element,
+          context,
+          (value: ValueType) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- have to force the property on the type
+            (element as any)[name] = value;
+          },
+          subscribe
+        );
       });
-      // proxy any existing setter for this property and use it to
-      // notify the controller of an updated value
-      const descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, name);
-      const oldSetter = descriptor?.set;
-      const newDescriptor = {
-        ...descriptor,
-        set: function (value: ValueType) {
-          controllerMap.get(this)?.setValue(value);
-          if (oldSetter) {
-            oldSetter.call(this, value);
-          }
-        },
-      };
-      Object.defineProperty(ctor.prototype, name, newDescriptor);
     },
   });
 }
