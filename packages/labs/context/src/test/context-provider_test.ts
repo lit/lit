@@ -15,7 +15,7 @@ const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
 class ContextConsumerElement extends LitElement {
   @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
-  public value = 0;
+  public value?: number;
 
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
