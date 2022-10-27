@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-// import * as ReactModule from 'react';
-import 'react/umd/react.development.js';
-import 'react-dom/umd/react-dom.development.js';
 import 'react';
 import 'react-dom';
 import {useController} from '@lit-labs/react/use-controller.js';

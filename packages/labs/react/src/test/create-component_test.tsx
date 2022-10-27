@@ -10,8 +10,8 @@ import type {EventName, ReactWebComponent} from '@lit-labs/react';
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-import 'react/umd/react.development.js';
-import 'react-dom/umd/react-dom.development.js';
+// import 'react/umd/react.development.js';
+// import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
