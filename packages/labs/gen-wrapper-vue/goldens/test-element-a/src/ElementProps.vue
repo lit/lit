@@ -1,10 +1,18 @@
+<script lang="ts">
+export type {MyType} from '@lit-internal/test-element-a/element-props.js';
+</script>
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
 import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
-import '@lit-internal/test-element-a/element-a.js';
+import '@lit-internal/test-element-a/element-props.js';
+import {MyType} from '@lit-internal/test-element-a/element-props.js';
 
 export interface Props {
-  foo?: string | undefined;
+  aStr?: string;
+  aNum?: number;
+  aBool?: boolean;
+  aStrArray?: string[];
+  aMyType?: MyType;
 }
 
 const vueProps = defineProps<Props>();
@@ -42,7 +50,7 @@ const render = () => {
 
   hasRendered = true;
 
-  return h('element-a', props, assignSlotNodes(slots as Slots));
+  return h('element-props', props, assignSlotNodes(slots as Slots));
 };
 </script>
 <template><render v-defaults /></template>
