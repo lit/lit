@@ -7,7 +7,7 @@
 import {ReactiveElement} from '@lit/reactive-element';
 import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {ContextConsumer} from '../controllers/context-consumer.js';
-import {ContextKey} from '../context-key.js';
+import {Context} from '../create-context.js';
 
 /*
  * IMPORTANT: For compatibility with tsickle and the Closure JS compiler, all
@@ -45,7 +45,7 @@ export function consume<ValueType>({
   context: context,
   subscribe,
 }: {
-  context: ContextKey<unknown, ValueType>;
+  context: Context<unknown, ValueType>;
   subscribe?: boolean;
 }): <K extends PropertyKey>(
   protoOrDescriptor: ReactiveElement,

@@ -6,7 +6,7 @@
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
-import {ContextKey} from '../context-key.js';
+import {Context} from '../create-context.js';
 import {ContextProvider} from '../controllers/context-provider.js';
 
 /*
@@ -46,7 +46,7 @@ import {ContextProvider} from '../controllers/context-provider.js';
 export function provide<ValueType>({
   context: context,
 }: {
-  context: ContextKey<unknown, ValueType>;
+  context: Context<unknown, ValueType>;
 }): <K extends PropertyKey>(
   protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
   name?: K

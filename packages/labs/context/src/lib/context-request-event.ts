@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ContextType, ContextKey} from './context-key.js';
+import {ContextType, Context} from './create-context.js';
 
 declare global {
   interface HTMLElementEventMap {
@@ -12,7 +12,7 @@ declare global {
      * A 'context-request' event can be emitted by any element which desires
      * a context value to be injected by an external provider.
      */
-    'context-request': ContextRequestEvent<ContextKey<unknown, unknown>>;
+    'context-request': ContextRequestEvent<Context<unknown, unknown>>;
   }
 }
 
@@ -28,9 +28,9 @@ export type ContextCallback<ValueType> = (
 /**
  * Interface definition for a ContextRequest
  */
-export interface ContextRequest<Context extends ContextKey<unknown, unknown>> {
-  readonly context: Context;
-  readonly callback: ContextCallback<ContextType<Context>>;
+export interface ContextRequest<C extends Context<unknown, unknown>> {
+  readonly context: C;
+  readonly callback: ContextCallback<ContextType<C>>;
   readonly subscribe?: boolean;
 }
 
@@ -47,9 +47,9 @@ export interface ContextRequest<Context extends ContextKey<unknown, unknown>> {
  * If no `subscribe` value is present in the event, then the provider can assume that this is a 'one time'
  * request for the context and can therefore not track the consumer.
  */
-export class ContextRequestEvent<Context extends ContextKey<unknown, unknown>>
+export class ContextRequestEvent<C extends Context<unknown, unknown>>
   extends Event
-  implements ContextRequest<Context>
+  implements ContextRequest<C>
 {
   /**
    *
@@ -58,8 +58,8 @@ export class ContextRequestEvent<Context extends ContextKey<unknown, unknown>>
    * @param subscribe an optional argument, if true indicates we want to subscribe to future updates
    */
   public constructor(
-    public readonly context: Context,
-    public readonly callback: ContextCallback<ContextType<Context>>,
+    public readonly context: C,
+    public readonly callback: ContextCallback<ContextType<C>>,
     public readonly subscribe?: boolean
   ) {
     super('context-request', {bubbles: true, composed: true});
