@@ -5,12 +5,14 @@
  */
 
 // import type * as ReactModule from 'react';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+
 import type {EventName, ReactWebComponent} from '@lit-labs/react';
-import '../../../../../node_modules/react/umd/react.development.js';
-import '../../../../../node_modules/react-dom/umd/react-dom.development.js';
+// import '../../../../../node_modules/react/cjs/react.development.js';
+// import '../../../../../node_modules/react-dom/cjs/react-dom.development.js';
 // import React from 'react';
 // import ReactDOM from 'react-dom';
-import { createRoot } from 'react-dom/client';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -18,8 +20,10 @@ import {customElement} from '@lit/reactive-element/decorators/custom-element.js'
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
+// const {createRoot} = ReactDOM;
+
 // Needed for JSX expressions
-const React = window.React;
+// const React = window.React;
 
 interface Foo {
   foo?: boolean;
@@ -102,13 +106,14 @@ suite('createComponent', () => {
 
   let el: BasicElement;
 
-  const root = createRoot(container!);
+  // const root = createRoot(container!);
 
   const renderReactComponent = async (
     props?: React.ComponentProps<typeof BasicElementComponent>
   ) => {
-    root.render(
+    ReactDOM.render(
       <BasicElementComponent {...props}/>,
+      container,
     );
     el = container.querySelector(tagName)! as BasicElement;
     await el.updateComplete;
