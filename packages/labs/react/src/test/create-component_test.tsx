@@ -235,13 +235,13 @@ suite('createComponent', () => {
     const ref2Calls: Array<string | undefined> = [];
     const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ["div", tagName]);
+    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName]);
     renderReactComponent({ref: refCb2});
-    assert.deepEqual(ref1Calls, ["div", tagName, undefined, undefined]);
-    assert.deepEqual(ref2Calls, ["div", tagName]);
+    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
+    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName]);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ["div", tagName, undefined, undefined, "div", tagName]);
-    assert.deepEqual(ref2Calls, ["div", tagName, undefined, undefined]);
+    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined, "div", "x-foo", tagName]);
+    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
   });
 
   test('can set attributes', async () => {
