@@ -128,7 +128,10 @@ const setProperty = <E extends Element>(
     return;
   }
 
-  if (value === undefined && name in HTMLElement.prototype) {
+  if (
+    (value === undefined || value === null) &&
+    name in HTMLElement.prototype
+  ) {
     node.removeAttribute(name);
     return;
   }

@@ -109,8 +109,7 @@ suite('createComponent', () => {
     tagName,
   });
 
-  // let vanillaEl: HTMLDivElement;
-  let el: XFoo;
+  let el: HTMLDivElement;
   let wrappedEl: BasicElement;
 
   const renderReactComponent = async (
@@ -119,14 +118,12 @@ suite('createComponent', () => {
     window.ReactDOM.render(
       <>
         <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
-        <x-foo {...props}/>,
         <BasicElementComponent {...props}/>,
       </>,
       container
     );
 
-    // vanillaEl = container.querySelector('div')! as HTMLDivElement;
-    el = container.querySelector('x-foo')! as XFoo;
+    el = container.querySelector('div')!;
     wrappedEl = container.querySelector(tagName)! as BasicElement;
 
     await wrappedEl.updateComplete;
@@ -150,10 +147,10 @@ suite('createComponent', () => {
       container
     );
 
-    el = container.querySelector(tagName)! as BasicElement;
-    await el.updateComplete;
+    const elWithoutMap = container.querySelector(tagName)! as BasicElement;
+    await elWithoutMap.updateComplete;
     
-    assert.equal(el.textContent, 'Component without event map.');
+    assert.equal(elWithoutMap.textContent, 'Component without event map.');
   });
 
   /*
@@ -178,9 +175,11 @@ suite('createComponent', () => {
       <BasicElementComponent>Hello {name}</BasicElementComponent>,
       container
     );
-    el = container.querySelector(tagName)! as BasicElement;
-    await el.updateComplete;
-    assert.equal(el.textContent, 'Hello World');
+
+    const elWithChildren = container.querySelector(tagName)! as BasicElement;
+    await elWithChildren.updateComplete;
+    
+    assert.equal(elWithChildren.textContent, 'Hello World');
   });
 
   test('has valid displayName', () => {
@@ -199,8 +198,8 @@ suite('createComponent', () => {
 
   test('wrapper renders custom element that updates', async () => {
     await renderReactComponent();
-    assert.isOk(el);
-    assert.isOk(el.hasUpdated);
+    assert.isOk(wrappedEl);
+    assert.isOk(wrappedEl.hasUpdated);
   });
 
   test('can get ref to element', async () => {
@@ -218,9 +217,8 @@ suite('createComponent', () => {
 
   test('ref does not create new attribute on element', async () => {
     await renderReactComponent({ref: undefined});
-    const el = container.querySelector(tagName);
-    const outerHTML = el?.outerHTML;
 
+    const outerHTML = wrappedEl?.outerHTML;
     const elementRef1 = window.React.createRef<BasicElement>();
     await renderReactComponent({ref: elementRef1});
 
@@ -236,13 +234,13 @@ suite('createComponent', () => {
     const ref2Calls: Array<string | undefined> = [];
     const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName]);
+    assert.deepEqual(ref1Calls, ["div", tagName]);
     renderReactComponent({ref: refCb2});
-    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
-    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName]);
+    assert.deepEqual(ref1Calls, ["div", tagName, undefined, undefined]);
+    assert.deepEqual(ref2Calls, ["div", tagName]);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined, "div", "x-foo", tagName]);
-    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
+    assert.deepEqual(ref1Calls, ["div", tagName, undefined, undefined, "div", tagName]);
+    assert.deepEqual(ref2Calls, ["div", tagName, undefined, undefined]);
   });
 
   test('can set attributes', async () => {
@@ -261,36 +259,20 @@ suite('createComponent', () => {
 
   test('can remove boolean attributes', async () => {
     await renderReactComponent({});
-    assert.equal(el.getAttribute('hidden'), null);
-    assert.equal(el.hidden, false);
+    assert.equal(wrappedEl.getAttribute('hidden'), null);
+    assert.equal(wrappedEl.hidden, false);
     await renderReactComponent({hidden: true});
-    assert.equal(el.getAttribute('hidden'), 'true');
-    assert.equal(el.hidden, true);
+    assert.equal(wrappedEl.getAttribute('hidden'), '');
+    assert.equal(wrappedEl.hidden, true);
     await renderReactComponent({hidden: undefined});
-    assert.equal(el.getAttribute('hidden'), null);
-    assert.equal(el.hidden, false);
+    assert.equal(wrappedEl.getAttribute('hidden'), null);
+    assert.equal(wrappedEl.hidden, false);
     await renderReactComponent({hidden: true});
-    assert.equal(el.getAttribute('hidden'), 'true');
-    assert.equal(el.hidden, true);
+    assert.equal(wrappedEl.getAttribute('hidden'), '');
+    assert.equal(wrappedEl.hidden, true);
     await renderReactComponent({hidden: false});
-    assert.equal(el.getAttribute('hidden'), null);
-    assert.equal(el.hidden, false);
-
-    // await renderReactComponent({});
-    // assert.equal(el.getAttribute('disabled'), null);
-    // assert.equal(el.disabled, false);
-    // await renderReactComponent({disabled: true});
-    // assert.equal(el.getAttribute('disabled'), null);
-    // assert.equal(el.disabled, true);
-    // await renderReactComponent({disabled: undefined});
-    // assert.equal(el.getAttribute('disabled'), null);
-    // assert.equal(el.disabled, undefined);
-    // await renderReactComponent({disabled: true});
-    // assert.equal(el.getAttribute('disabled'), null);
-    // assert.equal(el.disabled, true);
-    // await renderReactComponent({disabled: false});
-    // assert.equal(el.getAttribute('disabled'), null);
-    // assert.equal(el.disabled, false);
+    assert.equal(wrappedEl.getAttribute('hidden'), null);
+    assert.equal(wrappedEl.hidden, false);
   });
   
 
@@ -391,12 +373,12 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = (window.React.createElement(
+    const children = window.React.createElement(
       'div'
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
       // `createElement`.
-    ) as unknown) as HTMLCollection;
+    );
     await renderReactComponent({children});
     assert.equal(wrappedEl.childNodes.length, 1);
     assert.equal(wrappedEl.firstElementChild!.localName, 'div');
