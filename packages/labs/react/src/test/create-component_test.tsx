@@ -17,9 +17,25 @@ import {assert} from '@esm-bundle/chai';
 // Needed for JSX expressions
 const React = window.React;
 
+declare global {
+  interface HTMLElementTagNameMap {
+    [tagName]: BasicElement;
+    'x-foo': XFoo,
+  }
+  
+  namespace JSX {
+    interface IntrinsicElements {
+      "x-foo": WebComponentProps<XFoo>,
+    }
+  }
+}
+
 interface Foo {
   foo?: boolean;
 }
+
+@customElement('x-foo')
+class XFoo extends ReactiveElement {}
 
 const tagName = 'basic-element';
 @customElement(tagName)
@@ -66,21 +82,6 @@ class BasicElement extends ReactiveElement {
   }
 }
 
-@customElement('x-foo')
-class XFoo extends ReactiveElement {}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    [tagName]: BasicElement;
-    'x-foo': XFoo,
-  }
-  namespace JSX {
-    interface IntrinsicElements {
-      "x-foo": WebComponentProps<XFoo>,
-    }
-  }
-}
-
 suite('createComponent', () => {
   let container: HTMLElement;
 
@@ -118,6 +119,7 @@ suite('createComponent', () => {
     window.ReactDOM.render(
       <>
         <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
+        <x-foo {...props}/>
         <BasicElementComponent {...props}/>,
       </>,
       container
@@ -128,7 +130,6 @@ suite('createComponent', () => {
 
     await wrappedEl.updateComplete;
   };
-
 
   /*
     The following test will not build if an incorrect typing occurs
@@ -344,8 +345,6 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('aria-checked'), null);
     assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
   });
-
-  // tests that cpmare different props
 
   test('can listen to events', async () => {
     let fooEvent: Event | undefined,
