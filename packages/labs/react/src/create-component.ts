@@ -38,14 +38,14 @@ type WebComponentProps<
 >;
 
 // Props used by this component wrapper. This is the WebComponentProps and the
-// special `__forwardedRef` property. Note, this ref is special because
+// special `forwardedRef` property. Note, this ref is special because
 // it's both needed in this component to get access to the rendered element
 // and must fulfill any ref passed by the user.
 type ReactComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = WebComponentProps<I, E> & {
-  __forwardedRef: React.Ref<I>;
+  forwardedRef: React.Ref<I>;
 };
 
 export type ReactWebComponent<
@@ -237,7 +237,7 @@ export function createComponent<
   class ReactComponent extends Component<Props> {
     private _element: I | null = null;
     private _elementProps!: {[index: string]: unknown};
-    private _userRef?: React.Ref<I>;
+    private _forwardedRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
     static displayName = displayName ?? element.name;
@@ -286,19 +286,18 @@ export function createComponent<
      *
      */
     override render() {
-      const {__forwardedRef, ...userProps} = this.props;
+      const {forwardedRef, ...userProps} = this.props;
       // Since refs only get fulfilled once, pass a new one if the user's ref
       // changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      if (this._userRef !== __forwardedRef) {
+      if (this._forwardedRef !== forwardedRef) {
         this._ref = (value: I | null) => {
-          if (this._element === null) {
-            this._element = value;
+          if (forwardedRef !== null) {
+            setRef(forwardedRef, value);
           }
-          if (__forwardedRef !== null) {
-            setRef(__forwardedRef, value);
-          }
-          this._userRef = __forwardedRef;
+
+          this._element = value;
+          this._forwardedRef = forwardedRef;
         };
       }
       // Save element props while iterating to avoid the need to iterate again
@@ -330,10 +329,10 @@ export function createComponent<
   const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
     I,
     WebComponentProps<I, E>
-  >((props, __forwardedRef) =>
+  >((props, forwardedRef) =>
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
-      {...props, __forwardedRef},
+      {...props, forwardedRef},
       props?.children
     )
   );
