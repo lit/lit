@@ -78,6 +78,7 @@ const reservedProperties = [
   '_$litElement$',
   '_$litStatic$',
   '_$cssResult$',
+  // @lit-labs/react
   '__forwardedRef',
 ];
 
