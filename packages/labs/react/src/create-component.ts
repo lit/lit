@@ -317,7 +317,11 @@ export function createComponent<
         if (
           eventProps.has(k) ||
           (!reservedReactProperties.has(k) &&
-            !(NODE_MODE ? false : k in HTMLElement.prototype) &&
+            // NODE_MODE check below is to support React SSR where HTMLElement
+            // might not be defined
+            !(NODE_MODE && typeof HTMLElement === 'undefined'
+              ? false
+              : k in HTMLElement.prototype) &&
             k in element.prototype)
         ) {
           this._elementProps[k] = v;
