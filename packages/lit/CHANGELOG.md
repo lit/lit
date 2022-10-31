@@ -1,5 +1,26 @@
 # Change Log
 
+## 2.4.0
+
+### Minor Changes
+
+- [#3318](https://github.com/lit/lit/pull/3318) [`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4) - Adds an `isServer` variable export to `lit` and `lit-html/is-server.js` which will be `true` in Node and `false` in the browser. This can be used when authoring components to change behavior based on whether or not the component is executing in an SSR context.
+
+### Patch Changes
+
+- [#3320](https://github.com/lit/lit/pull/3320) [`305852d4`](https://github.com/lit/lit/commit/305852d4a4f51174301720985de98fdbf8674648) - The `lit` package now specifies and "types" export condition allowing TypeScript `moduleResolution` to be `nodenext`.
+
+- Updated dependencies [[`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4)]:
+  - lit-html@2.4.0
+
+## 2.3.1
+
+### Patch Changes
+
+- [#3222](https://github.com/lit/lit/pull/3222) [`486739ec`](https://github.com/lit/lit/commit/486739ec23d70ef9ec93fb7249c2291181a8343b) - Fix `CSSStyleSheet is not defined` error that would occur when importing a Lit component in Node when both static `styles` and the `@property` decorator were used.
+
+- [#3223](https://github.com/lit/lit/pull/3223) [`5a65ca97`](https://github.com/lit/lit/commit/5a65ca97464839fcd4ea59240b9910002fa64a82) - Use existing `document` in Node build
+
 ## 2.3.0
 
 ### Minor Changes

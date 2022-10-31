@@ -20,7 +20,9 @@ process.on('unhandledRejection', (error) => {
 
 // eslint-disable-next-line no-undef
 const args = process.argv.slice(2);
-const cli = new LitCli(args);
+// eslint-disable-next-line no-undef
+const cwd = process.cwd();
+const cli = new LitCli(args, {cwd});
 const result = await cli.run();
 // eslint-disable-next-line no-undef
 process.exit(result?.exitCode ?? 0);

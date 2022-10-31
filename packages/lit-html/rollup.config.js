@@ -39,6 +39,7 @@ export const defaultConfig = (options = {}) =>
       'experimental-hydrate',
       'private-ssr-support',
       'polyfill-support',
+      'is-server',
     ],
     bundled: [
       {
