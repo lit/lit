@@ -290,7 +290,7 @@ export function createComponent<
       // Since refs only get fulfilled once, pass a new one if the user's ref
       // changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      if (this._ref === undefined || this._userRef !== __forwardedRef) {
+      if (this._userRef !== __forwardedRef) {
         this._ref = (value: I | null) => {
           if (this._element === null) {
             this._element = value;
