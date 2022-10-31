@@ -4,6 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+const NODE_MODE = false;
+const global = NODE_MODE ? globalThis : window;
+
+const htmlElementShimNeeded = NODE_MODE && global.HTMLElement === undefined;
+if (htmlElementShimNeeded) {
+  global.HTMLElement = class HTMLElement {} as unknown as typeof HTMLElement;
+}
+
 // Match a prop name to a typed event callback by
 // adding an Event type as an expected property on a string.
 export type EventName<T extends Event = Event> = string & {
