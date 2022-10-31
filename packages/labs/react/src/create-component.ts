@@ -5,12 +5,6 @@
  */
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
-
-const htmlElementShimNeeded = NODE_MODE && global.HTMLElement === undefined;
-if (htmlElementShimNeeded) {
-  global.HTMLElement = class HTMLElement {} as unknown as typeof HTMLElement;
-}
 
 // Match a prop name to a typed event callback by
 // adding an Event type as an expected property on a string.
@@ -323,7 +317,7 @@ export function createComponent<
         if (
           eventProps.has(k) ||
           (!reservedReactProperties.has(k) &&
-            !(k in HTMLElement.prototype) &&
+            !(NODE_MODE ? false : k in HTMLElement.prototype) &&
             k in element.prototype)
         ) {
           this._elementProps[k] = v;
