@@ -270,7 +270,7 @@ suite('createComponent', () => {
     assert.equal(el.id, wrappedEl.id);
   });
 
-  test('can remove boolean attributes', async () => {
+  test('sets boolean attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('hidden'), null);
     assert.equal(el.hidden, false);
@@ -300,9 +300,15 @@ suite('createComponent', () => {
     assert.equal(wrappedEl.hidden, false);
     assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
     assert.equal(el.hidden, wrappedEl.hidden);
+
+    await renderReactComponent({});
+    assert.equal(el.getAttribute('hidden'), null);
+    assert.equal(el.hidden, false);
+    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
+    assert.equal(el.hidden, wrappedEl.hidden);
   });
 
-  test('does not remove enmumerated attributes', async () => {
+  test('sets boolean aria attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
@@ -323,6 +329,12 @@ suite('createComponent', () => {
 
     await renderReactComponent({draggable: false});
     assert.equal(el.getAttribute('draggable'), 'false');
+    assert.equal(el.draggable, false);
+    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(el.draggable, wrappedEl.draggable);
+
+    await renderReactComponent({draggable: undefined});
+    assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
     assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
     assert.equal(el.draggable, wrappedEl.draggable);
