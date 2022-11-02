@@ -377,6 +377,12 @@ suite('createComponent', () => {
     assert.equal(el.draggable, false);
     assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
     assert.equal(el.draggable, wrappedEl.draggable);
+
+    await renderReactComponent({draggable: true});
+    assert.equal(el.getAttribute('draggable'), 'true');
+    assert.equal(el.draggable, true);
+    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(el.draggable, wrappedEl.draggable);
   });
 
   test('sets boolean aria attributes', async () => {
