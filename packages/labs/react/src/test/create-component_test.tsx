@@ -269,7 +269,8 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
     assert.equal(el.id, wrappedEl.id);
 
-    await renderReactComponent({id: undefined});
+    // @ts-expect-error
+    await renderReactComponent({id: null});
     assert.equal(el.getAttribute('id'), null);
     assert.equal(el.id, '');
     assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
@@ -295,6 +296,19 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
     assert.equal(el.hidden, wrappedEl.hidden);
 
+    await renderReactComponent({hidden: true});
+    assert.equal(wrappedEl.getAttribute('hidden'), '');
+    assert.equal(wrappedEl.hidden, true);
+    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
+    assert.equal(el.hidden, wrappedEl.hidden);
+
+    // @ts-expect-error
+    await renderReactComponent({hidden: null});
+    assert.equal(wrappedEl.getAttribute('hidden'), null);
+    assert.equal(wrappedEl.hidden, false);
+    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
+    assert.equal(el.hidden, wrappedEl.hidden);
+
     await renderReactComponent({hidden: false});
     assert.equal(wrappedEl.getAttribute('hidden'), null);
     assert.equal(wrappedEl.hidden, false);
@@ -302,6 +316,19 @@ suite('createComponent', () => {
     assert.equal(el.hidden, wrappedEl.hidden);
 
     await renderReactComponent({hidden: undefined});
+    assert.equal(el.getAttribute('hidden'), null);
+    assert.equal(el.hidden, false);
+    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
+    assert.equal(el.hidden, wrappedEl.hidden);
+
+    await renderReactComponent({hidden: false});
+    assert.equal(wrappedEl.getAttribute('hidden'), null);
+    assert.equal(wrappedEl.hidden, false);
+    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
+    assert.equal(el.hidden, wrappedEl.hidden);
+
+    // @ts-expect-error
+    await renderReactComponent({hidden: null});
     assert.equal(el.getAttribute('hidden'), null);
     assert.equal(el.hidden, false);
     assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
@@ -327,6 +354,19 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
     assert.equal(el.draggable, wrappedEl.draggable);
 
+    await renderReactComponent({draggable: true});
+    assert.equal(el.getAttribute('draggable'), 'true');
+    assert.equal(el.draggable, true);
+    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(el.draggable, wrappedEl.draggable);
+
+    // @ts-expect-error
+    await renderReactComponent({draggable: null});
+    assert.equal(el.getAttribute('draggable'), null);
+    assert.equal(el.draggable, false);
+    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(el.draggable, wrappedEl.draggable);
+
     await renderReactComponent({draggable: false});
     assert.equal(el.getAttribute('draggable'), 'false');
     assert.equal(el.draggable, false);
@@ -334,6 +374,19 @@ suite('createComponent', () => {
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: undefined});
+    assert.equal(el.getAttribute('draggable'), null);
+    assert.equal(el.draggable, false);
+    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(el.draggable, wrappedEl.draggable);
+
+    await renderReactComponent({draggable: false});
+    assert.equal(el.getAttribute('draggable'), 'false');
+    assert.equal(el.draggable, false);
+    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(el.draggable, wrappedEl.draggable);
+
+    // @ts-expect-error
+    await renderReactComponent({draggable: null});
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
     assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
@@ -353,11 +406,29 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('aria-checked'), null);
     assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
 
+    await renderReactComponent({'aria-checked': true});
+    assert.equal(el.getAttribute('aria-checked'), 'true');
+    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+
+    // @ts-expect-error
+    await renderReactComponent({'aria-checked': null});
+    assert.equal(el.getAttribute('aria-checked'), null);
+    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+
     await renderReactComponent({'aria-checked': false});
     assert.equal(el.getAttribute('aria-checked'), 'false');
     assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
 
     await renderReactComponent({'aria-checked': undefined});
+    assert.equal(el.getAttribute('aria-checked'), null);
+    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+
+    await renderReactComponent({'aria-checked': false});
+    assert.equal(el.getAttribute('aria-checked'), 'false');
+    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+
+    // @ts-expect-error
+    await renderReactComponent({'aria-checked': null});
     assert.equal(el.getAttribute('aria-checked'), null);
     assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
   });
