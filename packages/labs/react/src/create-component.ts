@@ -128,6 +128,12 @@ const setProperty = <E extends Element>(
     return;
   }
 
+  // Note, the attribute removal here for `undefined` and `null` values is done
+  // to match React's behavior on non-custom elements. It needs special
+  // handling because it does not match platform behavior.  For example,
+  // setting the `id` property to `undefined` sets the attribute to the string
+  // "undefined." React "fixes" that odd behavior and the code here matches
+  // React's convention.
   if (
     (value === undefined || value === null) &&
     name in HTMLElement.prototype
