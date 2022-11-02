@@ -28,7 +28,7 @@ type ElementWithoutPropsOrEventListeners<I, E> = Omit<
 
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-type WebComponentProps<
+export type WebComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = Partial<
@@ -122,15 +122,28 @@ const setProperty = <E extends Element>(
   events?: EventNames
 ) => {
   const event = events?.[name];
-  if (event !== undefined) {
+  if (event !== undefined && value !== old) {
     // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    }
-  } else {
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    return;
   }
+
+  // Note, the attribute removal here for `undefined` and `null` values is done
+  // to match React's behavior on non-custom elements. It needs special
+  // handling because it does not match platform behavior.  For example,
+  // setting the `id` property to `undefined` sets the attribute to the string
+  // "undefined." React "fixes" that odd behavior and the code here matches
+  // React's convention.
+  if (
+    (value === undefined || value === null) &&
+    name in HTMLElement.prototype
+  ) {
+    node.removeAttribute(name);
+    return;
+  }
+
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
@@ -312,18 +325,19 @@ export function createComponent<
       for (const [k, v] of Object.entries(this.props)) {
         if (k === '__forwardedRef') continue;
 
-        if (
-          eventProps.has(k) ||
-          (!reservedReactProperties.has(k) &&
-            !(k in HTMLElement.prototype) &&
-            k in element.prototype)
-        ) {
-          this._elementProps[k] = v;
-        } else {
+        if (reservedReactProperties.has(k)) {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        if (eventProps.has(k) || k in element.prototype) {
+          this._elementProps[k] = v;
+          continue;
+        }
+
+        props[k] = v;
       }
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
