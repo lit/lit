@@ -308,7 +308,7 @@ suite('createComponent', () => {
     assert.equal(el.hidden, wrappedEl.hidden);
   });
 
-  test('sets enumerable attributes', async () => {
+  test('sets enumerated attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
