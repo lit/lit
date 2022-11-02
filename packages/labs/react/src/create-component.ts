@@ -236,7 +236,7 @@ export function createComponent<
 
   class ReactComponent extends Component<Props> {
     private _element: I | null = null;
-    private _elementProps!: {[index: string]: unknown};
+    private _elementProps!: Record<string, unknown>;
     private _forwardedRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
@@ -286,6 +286,7 @@ export function createComponent<
      *
      */
     override render() {
+      // Extract and remove __forwardedRef from userProps in a rename-safe way
       const {__forwardedRef, ...userProps} = this.props;
       // Since refs only get fulfilled once, pass a new one if the user's ref
       // changed. This allows refs to be fulfilled as expected, going from
@@ -303,8 +304,7 @@ export function createComponent<
       // Save element props while iterating to avoid the need to iterate again
       // when setting properties.
       this._elementProps = {};
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = {ref: this._ref};
+      const props: Record<string, unknown> = {ref: this._ref};
       // Filters class properties and event properties out and passes the
       // remaining attributes to React. This allows attributes to use framework
       // rules for setting attributes and render correctly under SSR.
