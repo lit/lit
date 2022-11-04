@@ -15,50 +15,20 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
   Size,
-  Range,
   InternalRange,
   MeasureChildFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
 } from './layouts/shared/Layout.js';
 import {ScrollerController} from './ScrollerController.js';
+import {
+  RangeChangedEvent,
+  UnpinnedEvent,
+  VisibilityChangedEvent,
+} from './events.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
-
-export class RangeChangedEvent extends Event implements Range {
-  static eventName = 'rangeChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(RangeChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
-}
-
-export class VisibilityChangedEvent extends Event implements Range {
-  static eventName = 'visibilityChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(VisibilityChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
-}
-
-export class UnpinnedEvent extends Event {
-  static eventName = 'unpinned';
-
-  constructor() {
-    super(UnpinnedEvent.eventName, {bubbles: false});
-  }
-}
 
 declare global {
   interface HTMLElementEventMap {

@@ -18,7 +18,7 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
 } from '../../layouts/shared/Layout.js';
-import {VisibilityChangedEvent} from '../../Virtualizer.js';
+import {VisibilityChangedEvent} from '../../events.js';
 import {flow} from '../../layouts/flow.js';
 import {expect, html, fixture} from '@open-wc/testing';
 

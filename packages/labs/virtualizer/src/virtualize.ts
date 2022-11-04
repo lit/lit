@@ -8,8 +8,9 @@ import {TemplateResult, ChildPart, html} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
+import {RangeChangedEvent} from './events.js';
 import {LayoutConfigValue} from './layouts/shared/Layout.js';
-import {Virtualizer, RangeChangedEvent} from './Virtualizer.js';
+import {Virtualizer} from './Virtualizer.js';
 
 export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
 

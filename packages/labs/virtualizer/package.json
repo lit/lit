@@ -11,6 +11,9 @@
     ".": {
       "default": "./lit-virtualizer.js"
     },
+    "./events.js": {
+      "default": "./events.js"
+    },
     "./layouts/flexWrap.js": {
       "default": "./layouts/flexWrap.js"
     },
@@ -68,6 +71,7 @@
         "polyfillLoaders/**/*.{js,d.ts,d.ts.map}",
         "test/**/*.{js,d.ts,d.ts.map}",
         "!test/screenshot/**",
+        "events.{js,d.ts,d.ts.map}",
         "lit-virtualizer.{js,d.ts,d.ts.map}",
         "LitVirtualizer.{js,d.ts,d.ts.map}",
         "virtualize.{js,d.ts,d.ts.map}",
@@ -95,6 +99,7 @@
     "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/events.{js,d.ts,d.ts.map}",
     "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
     "/virtualize.{d.ts,d.ts.map,js,js.map}",
     "/Virtualizer.{d.ts,d.ts.map,js,js.map}",

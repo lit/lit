@@ -12,7 +12,7 @@ import {
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
-import {RangeChangedEvent} from '../../Virtualizer.js';
+import {RangeChangedEvent} from '../../events.js';
 import {expect, html, fixture} from '@open-wc/testing';
 
 describe('RangeChanged event', () => {
