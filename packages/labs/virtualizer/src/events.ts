@@ -29,3 +29,8 @@ export class VisibilityChangedEvent extends Event {
     this.last = range.last;
   }
 }
+
+interface Range {
+  first: number;
+  last: number;
+}

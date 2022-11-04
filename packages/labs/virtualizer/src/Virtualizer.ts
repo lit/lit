@@ -26,11 +26,6 @@ interface InternalRange {
   lastVisible: number;
 }
 
-interface Range {
-  first: number;
-  last: number;
-}
-
 declare global {
   interface HTMLElementEventMap {
     rangeChanged: RangeChangedEvent;
