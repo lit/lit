@@ -624,12 +624,16 @@ export class Virtualizer {
     bottom = window.innerHeight;
     right = window.innerWidth;
 
-    for (const ancestor of this._clippingAncestors) {
-      const ancestorBounds = ancestor.getBoundingClientRect();
-      top = Math.max(top, ancestorBounds.top);
-      left = Math.max(left, ancestorBounds.left);
-      bottom = Math.min(bottom, ancestorBounds.bottom);
-      right = Math.min(right, ancestorBounds.right);
+    const ancestorBounds = this._clippingAncestors.map((ancestor) =>
+      ancestor.getBoundingClientRect()
+    );
+    ancestorBounds.unshift(hostElementBounds);
+
+    for (const bounds of ancestorBounds) {
+      top = Math.max(top, bounds.top);
+      left = Math.max(left, bounds.left);
+      bottom = Math.min(bottom, bounds.bottom);
+      right = Math.min(right, bounds.right);
     }
 
     const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
