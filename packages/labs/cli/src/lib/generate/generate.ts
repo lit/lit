@@ -28,6 +28,14 @@ const vueCommand: Command = {
   importSpecifier: '@lit-labs/gen-wrapper-vue/index.js',
 };
 
+const manifestCommand: Command = {
+  name: 'manifest',
+  description: 'Generate custom-elements.json manifest.',
+  kind: 'reference',
+  installFrom: '@lit-labs/gen-manifest',
+  importSpecifier: '@lit-labs/gen-manifest/index.js',
+};
+
 // A generate command has a generate method instead of a run method.
 interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
   generate(options: {package: Package}, console: Console): Promise<FileTree>;
@@ -45,8 +53,15 @@ export const run = async (
     cli,
     packages,
     frameworks: frameworkNames,
+    manifest,
     outDir,
-  }: {packages: string[]; frameworks: string[]; outDir: string; cli: LitCli},
+  }: {
+    packages: string[];
+    frameworks: string[];
+    manifest: boolean;
+    outDir: string;
+    cli: LitCli;
+  },
   console: Console
 ) => {
   for (const packageRoot of packages) {
@@ -61,12 +76,15 @@ export const run = async (
       );
     }
     const generatorReferences = [];
-    for (const name of frameworkNames as FrameworkName[]) {
+    for (const name of (frameworkNames ?? []) as FrameworkName[]) {
       const framework = frameworkCommands[name];
       if (framework == null) {
         throw new Error(`No generator exists for framework '${framework}'`);
       }
       generatorReferences.push(framework);
+    }
+    if (manifest) {
+      generatorReferences.push(manifestCommand);
     }
     // Optimistically try to import all generators in parallel.
     // If any aren't installed we need to ask for permission to install it
