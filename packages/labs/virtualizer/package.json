@@ -11,6 +11,9 @@
     ".": {
       "default": "./lit-virtualizer.js"
     },
+    "./events.js": {
+      "default": "./events.js"
+    },
     "./layouts/flexWrap.js": {
       "default": "./layouts/flexWrap.js"
     },

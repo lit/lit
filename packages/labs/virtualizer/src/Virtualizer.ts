@@ -13,6 +13,7 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
+import {RangeChangedEvent, VisibilityChangedEvent} from './events.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
@@ -28,32 +29,6 @@ interface InternalRange {
 interface Range {
   first: number;
   last: number;
-}
-
-export class RangeChangedEvent extends Event {
-  static eventName = 'rangeChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(RangeChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
-}
-
-export class VisibilityChangedEvent extends Event {
-  static eventName = 'visibilityChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(VisibilityChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
 }
 
 declare global {
