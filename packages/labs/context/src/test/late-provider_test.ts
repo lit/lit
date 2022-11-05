@@ -7,22 +7,17 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {
-  ContextKey,
-  contextProvided,
-  contextProvider,
-  ContextRoot,
-} from '@lit-labs/context';
+import {ContextKey, consume, provide, ContextRoot} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
 
 class ContextConsumerElement extends LitElement {
-  @contextProvided({context: simpleContext, subscribe: true})
+  @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
   public value = 0;
 
-  @contextProvided({context: simpleContext})
+  @consume({context: simpleContext})
   @property({type: Number})
   public onceValue = 0;
 
@@ -33,7 +28,7 @@ class ContextConsumerElement extends LitElement {
 customElements.define('context-consumer', ContextConsumerElement);
 
 class LateContextProviderElement extends LitElement {
-  @contextProvider({context: simpleContext})
+  @provide({context: simpleContext})
   @property({type: Number, reflect: true})
   public value = 0;
 
