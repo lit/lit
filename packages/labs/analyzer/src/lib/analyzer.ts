@@ -5,7 +5,7 @@
  */
 
 import ts from 'typescript';
-import {Package, PackageJson, AnalyzerInterface} from './model.js';
+import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
 import {AbsolutePath} from './paths.js';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
@@ -25,6 +25,9 @@ export interface AnalyzerInit {
  * An analyzer for Lit typescript modules.
  */
 export class Analyzer implements AnalyzerInterface {
+  // Cache of Module models by path; invalidated when the sourceFile
+  // or any of its dependencies change
+  readonly moduleCache = new Map<AbsolutePath, Module>();
   private readonly _getProgram: () => ts.Program;
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
@@ -45,10 +48,7 @@ export class Analyzer implements AnalyzerInterface {
   }
 
   getModule(modulePath: AbsolutePath) {
-    return getModule(
-      this.program.getSourceFile(this.path.normalize(modulePath))!,
-      this
-    );
+    return getModule(modulePath, this);
   }
 
   getPackage() {
@@ -66,7 +66,7 @@ export class Analyzer implements AnalyzerInterface {
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
-          this.program.getSourceFile(this.path.normalize(fileName))!,
+          this.path.normalize(fileName) as AbsolutePath,
           this,
           packageInfo
         )

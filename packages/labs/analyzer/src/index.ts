@@ -12,6 +12,7 @@ export type {
   Module,
   Reference,
   Type,
+  Event,
   Declaration,
   VariableDeclaration,
   ClassDeclaration,

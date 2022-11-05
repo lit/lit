@@ -1,1 +1,4 @@
-ElementA.*
+/ElementA.*
+/ElementEvents.*
+/ElementProps.*
+/ElementSlots.*

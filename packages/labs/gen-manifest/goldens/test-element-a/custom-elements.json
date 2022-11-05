@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0.0",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "element-a.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementA",
+          "summary": "TODO",
+          "description": "TODO",
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false,
+          "tagName": "element-a",
+          "attributes": [],
+          "events": [{"name": "a-changed", "type": {"text": "TODO"}}],
+          "slots": [],
+          "cssParts": [],
+          "cssProperties": [],
+          "demos": [],
+          "customElement": true
+        },
+        {
+          "kind": "variable",
+          "name": "localTypeVar",
+          "summary": "TODO",
+          "description": "TODO",
+          "type": {
+            "text": "ElementA",
+            "references": [
+              {
+                "name": "ElementA",
+                "package": "@lit-internal/test-element-a",
+                "module": "element-a.js",
+                "start": 0,
+                "end": 8
+              }
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "packageTypeVar",
+          "summary": "TODO",
+          "description": "TODO",
+          "type": {
+            "text": "Foo<Bar>",
+            "references": [
+              {
+                "name": "Foo",
+                "package": "@lit-internal/test-element-a",
+                "module": "package-stuff.js",
+                "start": 0,
+                "end": 3
+              },
+              {
+                "name": "Bar",
+                "package": "@lit-internal/test-element-a",
+                "module": "package-stuff.js",
+                "start": 4,
+                "end": 7
+              }
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "externalTypeVar",
+          "summary": "TODO",
+          "description": "TODO",
+          "type": {
+            "text": "LitElement",
+            "references": [
+              {"name": "LitElement", "package": "lit", "start": 0, "end": 10}
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "globalTypeVar",
+          "summary": "TODO",
+          "description": "TODO",
+          "type": {
+            "text": "HTMLElement",
+            "references": [
+              {
+                "name": "HTMLElement",
+                "package": "global:",
+                "start": 0,
+                "end": 11
+              }
+            ]
+          }
+        }
+      ],
+      "exports": [],
+      "deprecated": false
+    },
+    {
+      "kind": "javascript-module",
+      "path": "package-stuff.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "Bar",
+          "summary": "TODO",
+          "description": "TODO",
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false
+        },
+        {
+          "kind": "class",
+          "name": "Foo",
+          "summary": "TODO",
+          "description": "TODO",
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false
+        }
+      ],
+      "exports": [],
+      "deprecated": false
+    }
+  ]
+}
