@@ -19,7 +19,7 @@ class MyElement extends LitElement {
   private _routes = new Routes(this, [
     {path: '/', render: () => html`<h1>Home</h1>`},
     {path: '/projects', render: () => html`<h1>Projects</h1>`},
-    {path: '/about', render: () => html`<h1>About</h3>`},
+    {path: '/about', render: () => html`<h1>About</h1>`},
   ]);
 
   render() {

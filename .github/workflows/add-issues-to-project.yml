@@ -24,13 +24,13 @@ jobs:
           gh api graphql -f query='
             query($organization: String!, $project_number: Int!) {
               organization(login: $organization){
-                projectNext(number: $project_number) {
+                projectV2(number: $project_number) {
                   id
                 }
               }
             }' -f organization=$ORGANIZATION -F project_number=$PROJECT_NUMBER > project_data.json
 
-          echo 'PROJECT_ID='$(jq '.data.organization.projectNext.id' project_data.json) >> $GITHUB_ENV
+          echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
 
       - name: Add issue to project
         env:
@@ -39,8 +39,8 @@ jobs:
         run: |
           gh api graphql -f query='
             mutation($project_id:ID!, $issue_id:ID!) {
-              addProjectNextItem(input: {projectId: $project_id, contentId: $issue_id}) {
-                projectNextItem {
+              addProjectV2ItemById(input: {projectId: $project_id, contentId: $issue_id}) {
+                item {
                   id
                 }
               }

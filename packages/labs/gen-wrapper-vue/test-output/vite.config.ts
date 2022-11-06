@@ -4,8 +4,8 @@ import vue from '@vitejs/plugin-vue';
 export default {
   build: {
     lib: {
-      entry: './src/tests/test-element-a_test.ts',
-      fileName: () => `test-element-a_test.js`,
+      entry: './src/tests/tests.ts',
+      fileName: () => `tests.js`,
       formats: ['es'],
     },
     outDir: './tests',
