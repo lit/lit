@@ -5,7 +5,7 @@
  */
 
 /**
- * The ContextKey type defines a type brand to associate a key value with the context value type
+ * The Context type defines a type brand to associate a key value with the context value type
  */
 export type Context<KeyType, ValueType> = KeyType & {__context__: ValueType};
 

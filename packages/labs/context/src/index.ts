@@ -11,7 +11,7 @@ export {
 
 export {
   Context,
-  Context as ContextKey,
+  ContextKey,
   ContextType,
   createContext,
 } from './lib/create-context.js';
