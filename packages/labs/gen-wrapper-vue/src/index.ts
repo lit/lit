@@ -58,7 +58,7 @@ export const generateVueWrapper = async (pkg: Package): Promise<FileTree> => {
 const packageNameToVuePackageName = (pkgName: string) => `${pkgName}-vue`;
 
 const gitIgnoreTemplate = (moduleNames: string[]) =>
-  moduleNames.map((f) => `${f}.*`).join('\n');
+  moduleNames.map((f) => `/${f}.*`).join('\n');
 
 const getVueFileName = (dir: string, name: string) => `${dir}/${name}.vue`;
 

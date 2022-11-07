@@ -48,7 +48,8 @@ export function consume<ValueType>({
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
 }): <K extends PropertyKey>(
-  protoOrDescriptor: ReactiveElement,
+  // Partial<> allows for providing the value to an optional field
+  protoOrDescriptor: ReactiveElement & Partial<Record<K, ValueType>>,
   name?: K
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

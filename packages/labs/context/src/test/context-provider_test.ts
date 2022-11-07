@@ -17,6 +17,11 @@ class ContextConsumerElement extends LitElement {
   @property({type: Number})
   public value?: number;
 
+  // @ts-expect-error Type 'string' is not assignable to type 'number'.
+  @consume({context: simpleContext, subscribe: true})
+  @property({type: Number})
+  public value2?: string;
+
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
   }

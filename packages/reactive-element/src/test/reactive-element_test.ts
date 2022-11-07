@@ -2550,28 +2550,55 @@ suite('ReactiveElement', () => {
     assert.equal(a.getAttribute('bar'), 'yo');
   });
 
-  test('addInitializer', () => {
-    class A extends ReactiveElement {
+  suite('initializers', () => {
+    class Base extends ReactiveElement {
       prop1?: string;
       prop2?: string;
       event?: string;
     }
-    A.addInitializer((a) => {
-      (a as A).prop1 = 'prop1';
+    Base.addInitializer((a) => {
+      (a as Base).prop1 = 'prop1';
     });
-    A.addInitializer((a) => {
-      (a as A).prop2 = 'prop2';
+    Base.addInitializer((a) => {
+      (a as Base).prop2 = 'prop2';
     });
-    A.addInitializer((a) => {
-      a.addEventListener('click', (e) => ((a as A).event = e.type));
+    Base.addInitializer((a) => {
+      a.addEventListener('click', (e) => ((a as Base).event = e.type));
     });
-    customElements.define(generateElementName(), A);
-    const a = new A();
-    container.appendChild(a);
-    assert.equal(a.prop1, 'prop1');
-    assert.equal(a.prop2, 'prop2');
-    a.dispatchEvent(new Event('click'));
-    assert.equal(a.event, 'click');
+    customElements.define(generateElementName(), Base);
+
+    test('addInitializer', () => {
+      const a = new Base();
+      container.appendChild(a);
+      assert.equal(a.prop1, 'prop1');
+      assert.equal(a.prop2, 'prop2');
+      a.dispatchEvent(new Event('click'));
+      assert.equal(a.event, 'click');
+    });
+
+    class Sub extends Base {
+      prop3?: string;
+    }
+    Sub.addInitializer((a) => {
+      (a as Sub).prop3 = 'prop3';
+    });
+    customElements.define(generateElementName(), Sub);
+
+    test('addInitializer on subclass', () => {
+      const s = new Sub();
+      container.appendChild(s);
+      assert.equal(s.prop1, 'prop1');
+      assert.equal(s.prop2, 'prop2');
+      assert.equal(s.prop3, 'prop3');
+      s.dispatchEvent(new Event('click'));
+      assert.equal(s.event, 'click');
+    });
+
+    test('addInitializer on subclass independent from superclass', () => {
+      const b = new Base();
+      container.appendChild(b);
+      assert.notOk((b as any).prop3);
+    });
   });
 
   suite('exceptions', () => {
