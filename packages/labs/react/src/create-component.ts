@@ -321,7 +321,7 @@ export function createComponent<
       // Filters class properties and event properties out and passes the
       // remaining attributes to React. This allows attributes to use framework
       // rules for setting attributes and render correctly under SSR.
-      for (const [k, v] of Object.entries(this.props)) {
+      for (const [k, v] of Object.entries(userProps)) {
         if (reservedReactProperties.has(k)) {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
