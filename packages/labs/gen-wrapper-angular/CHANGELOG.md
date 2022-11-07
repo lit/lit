@@ -1,5 +1,14 @@
 # @lit-labs/gen-wrapper-angular
 
+## 0.0.3
+
+### Patch Changes
+
+- [#3384](https://github.com/lit/lit/pull/3384) [`9f802646`](https://github.com/lit/lit/commit/9f802646d955198cbaf6e521283fe137e7f5b7a6) - Updates generated wrappers to better support types for properties and events, tested via a suite of test elements.
+
+- Updated dependencies [[`fc2b1c88`](https://github.com/lit/lit/commit/fc2b1c885211e4334d5ae5637570df85dd2e3f9e), [`ad361cc2`](https://github.com/lit/lit/commit/ad361cc22303f759afbefe60512df34fffdee771)]:
+  - @lit-labs/analyzer@0.4.0
+
 ## 0.0.2
 
 ### Patch Changes

@@ -13,6 +13,7 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
+import {RangeChangedEvent, VisibilityChangedEvent} from './events.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
@@ -23,37 +24,6 @@ interface InternalRange {
   num: number;
   firstVisible: number;
   lastVisible: number;
-}
-
-interface Range {
-  first: number;
-  last: number;
-}
-
-export class RangeChangedEvent extends Event {
-  static eventName = 'rangeChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(RangeChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
-}
-
-export class VisibilityChangedEvent extends Event {
-  static eventName = 'visibilityChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(VisibilityChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
 }
 
 declare global {
@@ -624,12 +594,16 @@ export class Virtualizer {
     bottom = window.innerHeight;
     right = window.innerWidth;
 
-    for (const ancestor of this._clippingAncestors) {
-      const ancestorBounds = ancestor.getBoundingClientRect();
-      top = Math.max(top, ancestorBounds.top);
-      left = Math.max(left, ancestorBounds.left);
-      bottom = Math.min(bottom, ancestorBounds.bottom);
-      right = Math.min(right, ancestorBounds.right);
+    const ancestorBounds = this._clippingAncestors.map((ancestor) =>
+      ancestor.getBoundingClientRect()
+    );
+    ancestorBounds.unshift(hostElementBounds);
+
+    for (const bounds of ancestorBounds) {
+      top = Math.max(top, bounds.top);
+      left = Math.max(left, bounds.left);
+      bottom = Math.min(bottom, bounds.bottom);
+      right = Math.min(right, bounds.right);
     }
 
     const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;

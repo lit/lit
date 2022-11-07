@@ -12,8 +12,8 @@ import {
   Virtualizer,
   VirtualizerHostElement,
   virtualizerRef,
-  RangeChangedEvent,
 } from './Virtualizer.js';
+import {RangeChangedEvent} from './events.js';
 import {
   LayoutSpecifier,
   Layout,
