@@ -27,7 +27,10 @@ import {getVariableDeclarationInfo} from './variables.js';
 import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
 import {DiagnosticsError} from '../errors.js';
-import {getExportReferences, getImportReference} from '../references.js';
+import {
+  getExportReferences,
+  getImportReferenceForSpecifierExpression,
+} from '../references.js';
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -152,7 +155,14 @@ const finalizeExports = (
       analyzer
     );
     for (const name of module.exportNames) {
-      exportMap.set(name, getImportReference(moduleSpecifier, name, analyzer));
+      exportMap.set(
+        name,
+        getImportReferenceForSpecifierExpression(
+          moduleSpecifier,
+          name,
+          analyzer
+        )
+      );
     }
   }
 };
@@ -250,23 +260,34 @@ const getJSPathFromSourcePath = (
 };
 
 /**
- * Resolve a module specifier to an absolute path on disk.
+ * Resolves a module specifier expression node to an absolute path on disk.
  */
 export const getPathForModuleSpecifierExpression = (
-  moduleSpecifier: ts.Expression,
+  specifierExpression: ts.Expression,
   analyzer: AnalyzerInterface
 ): AbsolutePath => {
-  const specifier = moduleSpecifier.getText().slice(1, -1);
+  const specifier = specifierExpression.getText().slice(1, -1);
+  return getPathForModuleSpecifier(specifier, specifierExpression, analyzer);
+};
+
+/**
+ * Resolve a module specifier to an absolute path on disk.
+ */
+export const getPathForModuleSpecifier = (
+  specifier: string,
+  location: ts.Node,
+  analyzer: AnalyzerInterface
+): AbsolutePath => {
   const resolvedPath = ts.resolveModuleName(
     specifier,
-    moduleSpecifier.getSourceFile().fileName,
+    location.getSourceFile().fileName,
     analyzer.commandLine.options,
     analyzer.fs
   ).resolvedModule?.resolvedFileName;
   if (resolvedPath === undefined) {
     throw new DiagnosticsError(
-      moduleSpecifier,
-      `Could not resolve specifier to filesystem path.`
+      location,
+      `Could not resolve specifier ${specifier} to filesystem path.`
     );
   }
   return analyzer.path.normalize(resolvedPath) as AbsolutePath;

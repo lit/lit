@@ -9,12 +9,12 @@ import {DiagnosticsError} from './errors.js';
 import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
 import {
   getExportFromSourcePath,
-  getPathForModuleSpecifierExpression,
+  getPathForModuleSpecifier,
   getModuleInfo,
 } from './javascript/modules.js';
 import {AbsolutePath} from './paths.js';
 
-const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
+const npmModule = /^(?<package>(@[\w-]+\/[\w-]+)|[\w-]+)\/?(?<module>.*)$/;
 
 /**
  * Returns if the given declaration is exported from the module or not.
@@ -23,7 +23,8 @@ export const isExport = (node: ts.Declaration) =>
   !!node.modifiers?.find((m) => m.kind === ts.SyntaxKind.ExportKeyword);
 
 interface ModuleSpecifierInfo {
-  specifierExpression: ts.Expression;
+  specifier: string;
+  location: ts.Node;
   name: string;
 }
 
@@ -43,8 +44,10 @@ const getImportSpecifierInfo = (
   ) {
     const specifierExpression =
       declaration.parent.parent.parent.moduleSpecifier;
+    const specifier = specifierExpression.getText().slice(1, -1);
     return {
-      specifierExpression,
+      specifier,
+      location: specifierExpression,
       name: declaration.propertyName?.text ?? declaration.name.text,
     };
   }
@@ -119,7 +122,8 @@ export function getReferenceForSymbol(
     if (importInfo !== undefined) {
       // Declaration was imported
       return getImportReference(
-        importInfo.specifierExpression,
+        importInfo.specifier,
+        importInfo.location,
         importInfo.name,
         analyzer
       );
@@ -170,15 +174,12 @@ const getGlobalReference = (
  *    ImportModuleSpecifier and its module path will not start with a '.'
  */
 export const getImportReference = (
-  specifierExpression: ts.Expression,
+  specifier: string,
+  location: ts.Node,
   name: string,
   analyzer: AnalyzerInterface
 ) => {
   const {path} = analyzer;
-  if (!ts.isStringLiteral(specifierExpression)) {
-    throw new DiagnosticsError(specifierExpression, 'Expected string literal.');
-  }
-  const specifier = specifierExpression.text;
   let refPackage;
   let refModule;
   // Check whether it is a URL, absolute, package local, or external
@@ -190,12 +191,11 @@ export const getImportReference = (
     if (specifier[0] === '.') {
       // Relative import from this package: use the current package and
       // module path relative to this module
-      const sourceFilePath = specifierExpression.getSourceFile()
-        .fileName as AbsolutePath;
+      const sourceFilePath = location.getSourceFile().fileName as AbsolutePath;
       const module = getModuleInfo(sourceFilePath, analyzer);
       refPackage = module.packageJson.name;
       refModule = path.join(path.dirname(module.jsPath), specifier);
-    } else if (specifier[0] === '/') {
+    } else if (analyzer.path.isAbsolute(specifier)) {
       // Absolute import; no package, just use the entire path as the
       // module
       refPackage = '';
@@ -206,7 +206,7 @@ export const getImportReference = (
       const info = specifier.match(npmModule);
       if (!info || !info.groups) {
         throw new DiagnosticsError(
-          specifierExpression,
+          location,
           `External npm package could not be parsed from module specifier '${specifier}'.`
         );
       }
@@ -220,11 +220,23 @@ export const getImportReference = (
     module: refModule,
     dereference: () =>
       getExportFromSourcePath(
-        getPathForModuleSpecifierExpression(specifierExpression!, analyzer),
+        getPathForModuleSpecifier(specifier, location, analyzer),
         name,
         analyzer
       ),
   });
+};
+
+/**
+ * Returns a `Reference` for a symbol that was imported.
+ */
+export const getImportReferenceForSpecifierExpression = (
+  specifierExpression: ts.Expression,
+  name: string,
+  analyzer: AnalyzerInterface
+) => {
+  const specifier = specifierExpression.getText().slice(1, -1);
+  return getImportReference(specifier, specifierExpression, name, analyzer);
 };
 
 /**
@@ -294,9 +306,11 @@ export const getExportReferences = (
       if (moduleSpecifier !== undefined) {
         // This was an explicit re-export (e.g. `export {a} from 'foo'`), so add
         // a Reference
+        const specifier = moduleSpecifier.getText().slice(1, -1);
         refs.push({
           exportName,
           decNameOrRef: getImportReference(
+            specifier,
             moduleSpecifier,
             el.name.getText(),
             analyzer

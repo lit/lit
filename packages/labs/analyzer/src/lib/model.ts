@@ -470,6 +470,7 @@ export interface AnalyzerInterface {
     | 'dirname'
     | 'parse'
     | 'normalize'
+    | 'isAbsolute'
   >;
 }
 

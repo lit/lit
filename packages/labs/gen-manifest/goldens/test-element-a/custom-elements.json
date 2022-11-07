@@ -12,6 +12,7 @@
           "name": "ElementA",
           "summary": "TODO",
           "description": "TODO",
+          "superclass": {"name": "LitElement", "package": "lit"},
           "mixins": [],
           "members": [],
           "source": {"href": "TODO"},

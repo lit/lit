@@ -6,7 +6,14 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
+import {getPackageInfo} from './javascript/packages.js';
 import {Type, Reference, AnalyzerInterface} from './model.js';
+import {
+  AbsolutePath,
+  absoluteToPackage,
+  PackagePath,
+  resolveExtension,
+} from './paths.js';
 import {getImportReference, getReferenceForSymbol} from './references.js';
 
 /**
@@ -143,14 +150,55 @@ const getReferencesForTypeNode = (
         throw new DiagnosticsError(node, 'Expected a string literal.');
       }
       const name = getRootName(node.qualifier);
+      if (!ts.isStringLiteral(node.argument.literal)) {
+        throw new DiagnosticsError(
+          location,
+          `Expected import specifier to be a string literal`
+        );
+      }
+      const specifier = getSpecifierFromTypeImport(
+        node.argument.literal.text,
+        analyzer
+      );
+      // TODO(kschaaf): This may have been an inferred type from a transitive
+      // dependency; in this case we should include version information in the
+      // reference model
       references.push(
-        getImportReference(node.argument.literal, name, analyzer)
+        getImportReference(specifier, node.argument.literal, name, analyzer)
       );
     }
     ts.forEachChild(node, visit);
   };
   visit(typeNode);
   return references;
+};
+
+/**
+ * If the given specifier is an absolute path, turns it into an npm import
+ * specifier by looking for its package.json and using package information found
+ * there.
+ *
+ * If the path was not absolute, it returns the specifier as-is.
+ */
+const getSpecifierFromTypeImport = (
+  specifier: string,
+  analyzer: AnalyzerInterface
+) => {
+  specifier = resolveExtension(specifier as AbsolutePath, analyzer);
+  if (analyzer.path.isAbsolute(specifier)) {
+    const {
+      rootDir,
+      name,
+      packageJson: {main, module},
+    } = getPackageInfo(specifier as AbsolutePath, analyzer);
+    let modulePath = absoluteToPackage(specifier as AbsolutePath, rootDir);
+    const packageMain = module ?? main;
+    if (packageMain !== undefined && modulePath === packageMain) {
+      modulePath = '' as PackagePath;
+    }
+    specifier = name + (modulePath ? `/${modulePath}` : '');
+  }
+  return specifier;
 };
 
 /**

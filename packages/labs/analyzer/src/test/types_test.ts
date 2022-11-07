@@ -291,6 +291,20 @@ test('separatelyExportedDestructArrNested', ({module}) => {
   assert.equal(type.references[0].isGlobal, false);
 });
 
+test('importedType', ({module}) => {
+  const type = typeForVariable(module, 'importedType');
+  //assert.equal(type.text, 'TemplateResult<1>');
+  assert.equal(type.references.length, 2);
+  assert.equal(type.references[0].name, 'ImportedClass');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'external.js');
+  assert.equal(type.references[0].isGlobal, false);
+  assert.equal(type.references[1].name, 'TemplateResult');
+  assert.equal(type.references[1].package, 'lit-html');
+  assert.equal(type.references[1].module, undefined);
+  assert.equal(type.references[1].isGlobal, false);
+});
+
 test('getImportsStringForReferences', ({module}) => {
   const type = typeForVariable(module, 'complexType');
   assert.equal(
