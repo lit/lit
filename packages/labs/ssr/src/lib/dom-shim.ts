@@ -23,10 +23,12 @@ import fetch from 'node-fetch';
  *  generally only be true when adding window to a fresh VM context that
  *  starts with nothing.
  * @param props Additional properties to add to the window global
+ * @param exposeWindow Whether the `window` object should be exposed globally
  */
 export const getWindow = ({
   includeJSBuiltIns = false,
   props = {},
+  exposeWindow = true,
 }): {[key: string]: unknown} => {
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
@@ -159,7 +161,13 @@ export const getWindow = ({
     ...props,
   };
 
-  window.window = window;
+  // Many libraries look for `window` to determine a browser environment
+  // This prevents that exposure as `globalThis` is enough in the vast majority of cases
+  // This is currently off by default, but may become default in future versions
+  // See https://github.com/lit/lit/issues/3412
+  if (exposeWindow) {
+    window.window = window;
+  }
 
   if (includeJSBuiltIns) {
     Object.assign(window, {
@@ -198,14 +206,19 @@ export const getWindow = ({
   return window;
 };
 
-export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
+export const installWindowOnGlobal = (
+  props: {[key: string]: unknown} = {},
+  exposeWindow = true
+) => {
   // Avoid installing the DOM shim if one already exists
   if (globalThis.window === undefined) {
-    const window = getWindow({props});
+    const window = getWindow({props, exposeWindow});
     // Copy initial window globals to node global
     Object.assign(globalThis, window);
     // Set up global reference to window so all globals added to window are
-    // added to the node global
-    globalThis.window = globalThis as typeof globalThis & Window;
+    // added to the node global, unless we explicitly don't want to do this.
+    if (exposeWindow) {
+      globalThis.window = globalThis as typeof globalThis & Window;
+    }
   }
 };
