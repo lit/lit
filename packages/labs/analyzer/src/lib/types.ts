@@ -184,7 +184,9 @@ const getSpecifierFromTypeImport = (
   specifier: string,
   analyzer: AnalyzerInterface
 ) => {
-  specifier = resolveExtension(specifier as AbsolutePath, analyzer);
+  specifier = analyzer.path.normalize(
+    resolveExtension(specifier as AbsolutePath, analyzer)
+  );
   if (analyzer.path.isAbsolute(specifier)) {
     const {
       rootDir,
