@@ -196,16 +196,21 @@ export class Module {
   }
 
   /**
-   * Returns a top-level Declaration model for the given name.
+   * Returns a `Declaration` model for the given name in top-level module scope.
+   *
+   * Note, the name is local to the module, and the declaration may be exported
+   * from with a different name. The declaration is always concrete, and will
+   * never be a `Reference`.
    */
-  getDeclaration(name: string) {
+  getDeclaration(name: string): Declaration {
     let dec = this._declarationMap.get(name);
     if (dec === undefined) {
       throw new Error(
         `Module ${this.sourcePath} did not contain a declaration named ${name}`
       );
     }
-    // Overwrite a factory with its output on first request
+    // Overwrite a factory with its output (a `Declaration` model) on first
+    // request
     if (typeof dec === 'function') {
       this._declarationMap.set(name, (dec = dec()));
     }

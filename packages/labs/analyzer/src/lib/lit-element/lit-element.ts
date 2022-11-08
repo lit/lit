@@ -54,6 +54,9 @@ const _isLitElementClassDeclaration = (
 
 /**
  * Returns true if the given declaration is THE LitElement declaration.
+ *
+ * TODO(kschaaf): consider a less brittle method of detecting canonical
+ * LitElement
  */
 const _isLitElement = (node: ts.Declaration) => {
   return (

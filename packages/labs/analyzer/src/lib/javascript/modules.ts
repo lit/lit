@@ -109,10 +109,22 @@ export const getModule = (
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
     } else if (ts.isExportDeclaration(statement) && !statement.isTypeOnly) {
       const {exportClause, moduleSpecifier} = statement;
-      if (exportClause === undefined && moduleSpecifier !== undefined) {
+      if (exportClause === undefined) {
+        // Case: `export * from 'foo';` The `exportClause` is undefined for
+        // wildcard exports. Add the re-exported module specifier to the
+        // `reexports` list, and we will add references to the exportMap lazily
+        // the first time exports are queried
+        if (moduleSpecifier === undefined) {
+          throw new DiagnosticsError(
+            statement,
+            `Expected a wildcard export to have a module specifier.`
+          );
+        }
         reexports.push(moduleSpecifier);
       } else {
-        getExportReferences(statement, analyzer).forEach(
+        // Case: `export {...}` and `export {...} from '...'`
+        // Add all of the exports in this export statement to the exportMap
+        getExportReferences(exportClause, moduleSpecifier, analyzer).forEach(
           ({exportName, decNameOrRef}) =>
             exportMap.set(exportName, decNameOrRef)
         );
@@ -299,7 +311,7 @@ export const getPathForModuleSpecifier = (
  * module, references are followed to the concrete declaration, which is
  * returned.
  */
-export const getExportFromSourcePath = (
+export const getResolvedExportFromSourcePath = (
   modulePath: AbsolutePath,
   name: string,
   analyzer: AnalyzerInterface

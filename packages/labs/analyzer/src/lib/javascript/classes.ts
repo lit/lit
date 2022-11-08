@@ -50,6 +50,8 @@ const getClassDeclaration = (
 const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
   const name =
     declaration.name?.text ??
+    // The only time a class declaration will not have a name is when it is
+    // a default export, aka `export default class { }`
     (declaration.modifiers?.some((s) => s.kind === ts.SyntaxKind.DefaultKeyword)
       ? 'default'
       : undefined);

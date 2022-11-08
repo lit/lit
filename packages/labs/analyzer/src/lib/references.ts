@@ -8,7 +8,7 @@ import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
 import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
 import {
-  getExportFromSourcePath,
+  getResolvedExportFromSourcePath,
   getPathForModuleSpecifier,
   getModuleInfo,
 } from './javascript/modules.js';
@@ -146,7 +146,7 @@ const getGlobalReference = (
     name,
     isGlobal: true,
     dereference: () =>
-      getExportFromSourcePath(
+      getResolvedExportFromSourcePath(
         declarationSourceFile.fileName as AbsolutePath,
         name,
         analyzer
@@ -219,7 +219,7 @@ export const getImportReference = (
     package: refPackage,
     module: refModule,
     dereference: () =>
-      getExportFromSourcePath(
+      getResolvedExportFromSourcePath(
         getPathForModuleSpecifier(specifier, location, analyzer),
         name,
         analyzer
@@ -256,7 +256,7 @@ const getLocalReference = (
     package: module.packageJson.name,
     module: module.jsPath,
     dereference: () =>
-      getExportFromSourcePath(
+      getResolvedExportFromSourcePath(
         location.getSourceFile().fileName as AbsolutePath,
         name,
         analyzer
@@ -265,11 +265,11 @@ const getLocalReference = (
 };
 
 /**
- * For a given export declaration statement with named exports, returns an array
- * of objects mapping the export name to a LocalNameOrReference, which is a
- * string name that can be looked up directly in `getDeclaration()` of the
- * declaring module for local declarations, or a `Reference` in the case of
- * re-exported declarations.
+ * For a given export clause and (optional) specifier from an export statement,
+ * returns an array of objects mapping the export name to a
+ * LocalNameOrReference, which is a string name that can be looked up directly
+ * in `getDeclaration()` of the declaring module for local declarations, or a
+ * `Reference` in the case of re-exported declarations.
  *
  * For example:
  * ```
@@ -292,15 +292,13 @@ const getLocalReference = (
  * ```
  */
 export const getExportReferences = (
-  exportDeclaration: ts.ExportDeclaration,
+  exportClause: ts.NamedExportBindings,
+  moduleSpecifier: ts.Expression | undefined,
   analyzer: AnalyzerInterface
 ): Array<{exportName: string; decNameOrRef: LocalNameOrReference}> => {
   const refs: Array<{exportName: string; decNameOrRef: string | Reference}> =
     [];
-  const {exportClause, moduleSpecifier} = exportDeclaration;
-  // Note this function only handles named exports; wildcard exports must
-  // be handled separately
-  if (exportClause !== undefined && ts.isNamedExports(exportClause)) {
+  if (ts.isNamedExports(exportClause)) {
     for (const el of exportClause.elements) {
       const exportName = (el.propertyName ?? el.name).getText();
       if (moduleSpecifier !== undefined) {
@@ -317,7 +315,7 @@ export const getExportReferences = (
           ),
         });
       } else {
-        // Check get the declaration for this symbol, so we can determine if
+        // Get the declaration for this symbol, so we can determine if
         // it was declared locally or not
         const symbol = analyzer.program
           .getTypeChecker()
@@ -345,7 +343,7 @@ export const getExportReferences = (
     }
   } else {
     throw new DiagnosticsError(
-      exportDeclaration,
+      exportClause,
       `Unhandled form of ExportDeclaration`
     );
   }
