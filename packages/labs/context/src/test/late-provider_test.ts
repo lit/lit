@@ -7,7 +7,13 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
-import {Context, consume, provide, ContextRoot} from '@lit-labs/context';
+import {
+  Context,
+  consume,
+  provide,
+  ContextRoot,
+  ContextProvider,
+} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
@@ -41,9 +47,16 @@ class LateContextProviderElement extends LitElement {
   }
 }
 
+@customElement('lazy-context-provider')
+export class LazyContextProviderElement extends LitElement {
+  protected render() {
+    return html`<slot></slot>`;
+  }
+}
+
 suite('late context provider', () => {
-  let consumer: ContextConsumerElement;
-  let provider: LateContextProviderElement;
+  // let consumer: ContextConsumerElement;
+  // let provider: LateContextProviderElement;
   let container: HTMLElement;
 
   setup(async () => {
@@ -65,11 +78,11 @@ suite('late context provider', () => {
         </late-context-provider>
     `;
 
-    provider = container.querySelector(
+    const provider = container.querySelector(
       'late-context-provider'
     ) as LateContextProviderElement;
 
-    consumer = container.querySelector(
+    const consumer = container.querySelector(
       'context-consumer'
     ) as ContextConsumerElement;
 
@@ -98,5 +111,32 @@ suite('late context provider', () => {
 
     // and once was not updated
     assert.strictEqual(consumer.onceValue, 0);
+  });
+
+  test('lazy added provider', async () => {
+    container.innerHTML = `
+        <lazy-context-provider>
+            <context-consumer></context-consumer>
+        </latzy-context-provider>
+    `;
+
+    const provider = container.querySelector(
+      'lazy-context-provider'
+    ) as LazyContextProviderElement;
+
+    const consumer = container.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await consumer.updateComplete;
+
+    // Add a provider after the elements are setup
+    new ContextProvider(provider, simpleContext, 1000);
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    // `value` should now be provided
+    assert.strictEqual(consumer.value, 1000);
   });
 });
