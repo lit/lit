@@ -49,8 +49,8 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     initialValue?: ContextType<T>
   ) {
     super(initialValue);
-    this.host.addController(this);
     this.attachListeners();
+    this.host.addController(this);
   }
 
   public onContextRequest = (

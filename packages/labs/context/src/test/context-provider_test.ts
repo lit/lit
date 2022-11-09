@@ -43,7 +43,7 @@ class ContextProviderElement extends LitElement {
 }
 customElements.define('context-provider', ContextProviderElement);
 
-suite('@contextProvided', () => {
+suite('@consume', () => {
   let consumer: ContextConsumerElement;
   let provider: ContextProviderElement;
   let container: HTMLElement;
@@ -86,7 +86,7 @@ suite('@contextProvided', () => {
   });
 });
 
-suite('@contextProvided: multiple instances', () => {
+suite('@consume: multiple instances', () => {
   let consumers: ContextConsumerElement[];
   let providers: ContextProviderElement[];
   let container: HTMLElement;
