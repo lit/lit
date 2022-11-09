@@ -50,15 +50,15 @@ export class ContextRoot {
   }
 
   private onContextProvider = (
-    ev: ContextProviderEvent<Context<unknown, unknown>>
+    event: ContextProviderEvent<Context<unknown, unknown>>
   ) => {
-    const pendingRequests = this.pendingContextRequests.get(ev.context);
+    const pendingRequests = this.pendingContextRequests.get(event.context);
     if (!pendingRequests) {
       return; // no pending requests for this provider at this time
     }
 
     // clear our list, any still unsatisfied requests will re-add themselves
-    this.pendingContextRequests.delete(ev.context);
+    this.pendingContextRequests.delete(event.context);
 
     // loop over all pending requests and re-dispatch them from their source
     pendingRequests.forEach((request) => {
@@ -67,28 +67,28 @@ export class ContextRoot {
       // redispatch if we still have all the parts of the request
       if (element) {
         element.dispatchEvent(
-          new ContextRequestEvent(ev.context, callback, true)
+          new ContextRequestEvent(event.context, callback, true)
         );
       }
     });
   };
 
   private onContextRequest = (
-    ev: ContextRequestEvent<Context<unknown, unknown>>
+    event: ContextRequestEvent<Context<unknown, unknown>>
   ) => {
     // events that are not subscribing should not be captured
-    if (!ev.subscribe) {
+    if (!event.subscribe) {
       return;
     }
     // store a weakref to this element under the context key
     const request: PendingContextRequest = {
-      element: ev.target as HTMLElement,
-      callback: ev.callback,
+      element: event.target as HTMLElement,
+      callback: event.callback,
     };
-    let pendingContextRequests = this.pendingContextRequests.get(ev.context);
+    let pendingContextRequests = this.pendingContextRequests.get(event.context);
     if (!pendingContextRequests) {
       pendingContextRequests = new Set();
-      this.pendingContextRequests.set(ev.context, pendingContextRequests);
+      this.pendingContextRequests.set(event.context, pendingContextRequests);
     }
     // NOTE: if the element is connected multiple times it will add itself
     // to this set multiple times since the set identify of the request
