@@ -117,7 +117,7 @@ suite('late context provider', () => {
     container.innerHTML = `
         <lazy-context-provider>
             <context-consumer></context-consumer>
-        </latzy-context-provider>
+        </lazy-context-provider>
     `;
 
     const provider = container.querySelector(
