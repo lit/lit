@@ -65,6 +65,8 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
 
 type Constructor<T> = {new (): T};
 
+const MODE = process?.env?.MODE;
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -77,8 +79,6 @@ const listenedEvents: WeakMap<
   Element,
   Map<string, EventListenerObject>
 > = new WeakMap();
-
-const MODE = process?.env?.MODE;
 
 /**
  * Adds an event listener for the specified event to the given node. In the
@@ -244,7 +244,7 @@ export function createComponent<
   }
 
   // Warn users when web components use reserved React properties
-  if (MODE === 'DEV') {
+  if (MODE === 'dev') {
     for (const p in element.prototype) {
       if (!(p in HTMLElement.prototype) && reservedReactProperties.has(p)) {
         // Note, this effectively warns only for `ref` since the other
@@ -252,11 +252,9 @@ export function createComponent<
         // would require crawling down the prototype, which doesn't feel worth
         // it since implementing these properties on an element is extremely
         // rare.
-        console.warn(
-          `${tagName} contains property ${p} which is a React
+        console.warn(`${tagName} contains property ${p} which is a React
 reserved property. It will be used by React and not set on
-the element.`
-        );
+the element.`);
       }
     }
   }
