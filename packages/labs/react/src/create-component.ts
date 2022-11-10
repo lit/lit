@@ -65,7 +65,7 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
 
 type Constructor<T> = {new (): T};
 
-const MODE = process?.env?.MODE;
+const MODE = window?.process?.env?.MODE;
 
 const reservedReactProperties = new Set([
   'children',
