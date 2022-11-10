@@ -78,6 +78,8 @@ const listenedEvents: WeakMap<
   Map<string, EventListenerObject>
 > = new WeakMap();
 
+const MODE = process?.env?.MODE;
+
 /**
  * Adds an event listener for the specified event to the given node. In the
  * React setup, there should only ever be one event listener. Thus, for
@@ -239,6 +241,24 @@ export function createComponent<
     React = ReactOrOptions as typeof window.React;
     element = elementClass as Constructor<I>;
     tag = tagName;
+  }
+
+  // Warn users when web components use reserved React properties
+  if (MODE === 'DEV') {
+    for (const p in element.prototype) {
+      if (!(p in HTMLElement.prototype) && reservedReactProperties.has(p)) {
+        // Note, this effectively warns only for `ref` since the other
+        // reserved props are on HTMLElement.prototype. To address this
+        // would require crawling down the prototype, which doesn't feel worth
+        // it since implementing these properties on an element is extremely
+        // rare.
+        console.warn(
+          `${tagName} contains property ${p} which is a React
+reserved property. It will be used by React and not set on
+the element.`
+        );
+      }
+    }
   }
 
   const Component = React.Component;
