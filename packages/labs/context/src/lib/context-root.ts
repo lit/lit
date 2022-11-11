@@ -54,24 +54,43 @@ export class ContextRoot {
       return;
     }
 
-    // TODO (justinfagnani): is this true? How do consumers re-add themselves?
-    // Clear our list, any still unsatisfied requests will re-add themselves
-    // this.pendingContextRequests.delete(event.context);
+    // Clear our list. Any still unsatisfied requests will re-add themselves
+    // when we dispatch the events below.
+    this.pendingContextRequests.delete(event.context);
+
+    // Element may have added themselves multiple times if they dispatched
+    // a context-request event multiple times (like for multiple connections
+    // and disconnections). We keep track of which elements we replayed events
+    // on and which callbacks we called for them so taht we don't call a
+    // callback twice.
+    const replayedElements = new Map<
+      HTMLElement,
+      Set<ContextCallback<unknown>>
+    >();
 
     // Loop over all pending requests and re-dispatch them from their source
     for (let i = 0; i < pendingRequests.length; i++) {
       const {elementRef, callbackRef} = pendingRequests[i];
       const element = elementRef.deref();
       const callback = callbackRef.deref();
-      if (element === undefined || callback === undefined) {
-        // Remove the element and callback refs if the consumer has been GC'ed
-        pendingRequests.splice(i, 1);
-        i--;
+
+      if (
+        element === undefined ||
+        callback === undefined ||
+        replayedElements.get(element)?.has(callback)
+      ) {
+        // Either the element was GC'ed or we already dispatched for this
+        // element/callback pair. Do nothing.
       } else {
-        // Re-dispatch if we still have all the parts of the request
+        // Re-dispatch if we still have the element and callback
         element.dispatchEvent(
           new ContextRequestEvent(event.context, callback, true)
         );
+        let replayedCallbacks = replayedElements.get(element);
+        if (replayedCallbacks === undefined) {
+          replayedElements.set(element, (replayedCallbacks = new Set()));
+        }
+        replayedCallbacks.add(callback);
       }
     }
   };
