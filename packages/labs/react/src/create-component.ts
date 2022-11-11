@@ -65,7 +65,7 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
 
 type Constructor<T> = {new (): T};
 
-const MODE = window?.process?.env?.MODE;
+const DEV_MODE = true;
 
 const reservedReactProperties = new Set([
   'children',
@@ -244,9 +244,9 @@ export function createComponent<
   }
 
   // Warn users when web components use reserved React properties
-  if (MODE === 'dev') {
-    for (const p in element.prototype) {
-      if (!(p in HTMLElement.prototype) && reservedReactProperties.has(p)) {
+  if (DEV_MODE) {
+    for (const p in reservedReactProperties) {
+      if (p in element.prototype && !(p in HTMLElement.prototype)) {
         // Note, this effectively warns only for `ref` since the other
         // reserved props are on HTMLElement.prototype. To address this
         // would require crawling down the prototype, which doesn't feel worth
