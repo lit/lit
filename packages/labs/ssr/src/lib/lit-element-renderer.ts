@@ -8,6 +8,7 @@ import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
+import {getShadowRoot} from './dom-shim.js';
 
 export type Constructor<T> = {new (): T};
 
@@ -30,10 +31,20 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
+    // TODO (justinfagnani): This assumes that connectedCallback() doesn't call
+    // any DOM APIs _except_ addEventListener() - which is obviously a big and
+    // bad assumption. We probably need a new SSR-compatible connected callback.
+    this.element.connectedCallback();
+
+    if (this.element.renderRoot !== getShadowRoot(this.element)) {
+      throw new Error('Cannot render custom render roots');
+    }
+
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)?.willUpdate(changedProperties(this.element as any));
+    (this.element as any).willUpdate(changedProperties(this.element));
+
     // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

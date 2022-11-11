@@ -10,7 +10,7 @@ import {ssrMiddleware} from './test/integration/server/server.js';
 
 export default {
   ...baseConfig,
-  files: ['test/integration/client/**/*_test.js'],
+  files: ['test/integration/client/**/basic-global_test.js'],
   nodeResolve: {
     exportConditions: process.env.MODE === 'dev' ? ['development'] : [],
   },
