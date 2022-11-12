@@ -31,6 +31,7 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   connectedCallback() {
+    console.log('LitELementRenderer connectedCallback');
     // TODO (justinfagnani): This assumes that connectedCallback() doesn't call
     // any DOM APIs _except_ addEventListener() - which is obviously a big and
     // bad assumption. We probably need a new SSR-compatible connected callback.

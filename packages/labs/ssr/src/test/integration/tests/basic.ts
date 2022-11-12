@@ -5137,11 +5137,14 @@ export const tests: {[name: string]: SSRTest} = {
   'LitElement: light DOM rendering throws': () => {
     return {
       only: true,
+      // throwsOnServer: true,
       registerElements() {
         customElements.define(
           'le-light-dom',
           class extends LitElement {
-            protected override createRenderRoot() {
+            override createRenderRoot() {
+              console.log('createRenderRoot');
+              // return super.createRenderRoot();
               return this;
             }
             override connectedCallback(): void {
@@ -5155,6 +5158,7 @@ export const tests: {[name: string]: SSRTest} = {
         );
       },
       render() {
+        console.log('render');
         return html` <le-light-dom></le-light-dom> `;
       },
       expectations: [
@@ -5166,7 +5170,7 @@ export const tests: {[name: string]: SSRTest} = {
           },
         },
       ],
-      stableSelectors: ['le-basic'],
+      stableSelectors: ['le-light-dom'],
     };
   },
 };
