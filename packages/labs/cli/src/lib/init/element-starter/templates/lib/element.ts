@@ -49,7 +49,7 @@ import {property, customElement} from 'lit/decorators.js';`
 @customElement('${elementName}')`
  }
 export class ${className} extends LitElement {
-  static ${lang === 'js' ? '' : 'override '}styles = css\`
+  static styles = css\`
     :host {
       display: block;
       border: solid 1px gray;
@@ -63,14 +63,12 @@ export class ${className} extends LitElement {
 
   ${
     lang === 'js'
-      ? `static get properties() {
-    return {
-      /**
-       * The number of times the button has been clicked.
-       * @type {number}
-       */
-      count: {type: Number},
-    };
+      ? `static properties = {
+    /**
+     * The number of times the button has been clicked.
+     * @type {number}
+     */
+    count: {type: Number},
   }
 
   constructor() {
@@ -84,7 +82,7 @@ export class ${className} extends LitElement {
   count = 0;`
   }
 
-  ${lang === 'js' ? '' : 'override '}render() {
+  render() {
     return html\`
       <h1>Hello World</h1>
       <button @click=\${this._onClick} part="button">

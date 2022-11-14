@@ -20,16 +20,9 @@ export const generateTsconfig = (): FileTree => {
     "rootDir": "src",
     "outDir": "lib",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "noImplicitOverride": true,
     "useDefineForClassFields": false
   },
   "include": ["src/**/*.ts"]

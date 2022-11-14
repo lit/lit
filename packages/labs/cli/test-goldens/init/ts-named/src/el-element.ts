@@ -11,7 +11,7 @@ import {property, customElement} from 'lit/decorators.js';
  */
 @customElement('el-element')
 export class ElElement extends LitElement {
-  static override styles = css`
+  static styles = css`
     :host {
       display: block;
       border: solid 1px gray;
@@ -29,7 +29,7 @@ export class ElElement extends LitElement {
   @property({type: Number})
   count = 0;
 
-  override render() {
+  render() {
     return html`
       <h1>Hello World</h1>
       <button @click=${this._onClick} part="button">

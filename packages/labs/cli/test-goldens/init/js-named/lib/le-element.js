@@ -21,14 +21,12 @@ export class LeElement extends LitElement {
     }
   `;
 
-  static get properties() {
-    return {
-      /**
-       * The number of times the button has been clicked.
-       * @type {number}
-       */
-      count: {type: Number},
-    };
+  static properties = {
+    /**
+     * The number of times the button has been clicked.
+     * @type {number}
+     */
+    count: {type: Number},
   }
 
   constructor() {
