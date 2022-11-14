@@ -14,7 +14,7 @@ import {
 } from './javascript/modules.js';
 import {AbsolutePath} from './paths.js';
 
-const npmModule = /^(?<package>(@[\w-]+\/[\w-]+)|[\w-]+)\/?(?<module>.*)$/;
+const npmModule = /^(?<package>(@[^/]+\/[^/]+)|[^/]+)\/?(?<module>.*)$/;
 
 /**
  * Returns if the given declaration is exported from the module or not.
@@ -44,7 +44,7 @@ const getImportSpecifierInfo = (
   ) {
     const specifierExpression =
       declaration.parent.parent.parent.moduleSpecifier;
-    const specifier = specifierExpression.getText().slice(1, -1);
+    const specifier = getSpecifierString(specifierExpression);
     return {
       specifier,
       location: specifierExpression,
@@ -235,7 +235,7 @@ export const getImportReferenceForSpecifierExpression = (
   name: string,
   analyzer: AnalyzerInterface
 ) => {
-  const specifier = specifierExpression.getText().slice(1, -1);
+  const specifier = getSpecifierString(specifierExpression);
   return getImportReference(specifier, specifierExpression, name, analyzer);
 };
 
@@ -304,7 +304,7 @@ export const getExportReferences = (
       if (moduleSpecifier !== undefined) {
         // This was an explicit re-export (e.g. `export {a} from 'foo'`), so add
         // a Reference
-        const specifier = moduleSpecifier.getText().slice(1, -1);
+        const specifier = getSpecifierString(moduleSpecifier);
         refs.push({
           exportName,
           decNameOrRef: getImportReference(
@@ -348,4 +348,21 @@ export const getExportReferences = (
     );
   }
   return refs;
+};
+
+/**
+ * Returns the specifier string from a specifier expression.
+ *
+ * For a given import statement:
+ * ```
+ * import {foo} from 'foo/bar.js';
+ * ```
+ * The specifierExpression is the string literal 'foo/bar.js' whose getText()
+ * includes the quotes. This function returns the string value without the
+ * quotes.
+ */
+export const getSpecifierString = (specifierExpression: ts.Expression) => {
+  // A specifier expression is always expected to be a quoted string literal.
+  // Slice off the quotes and return the text.
+  return specifierExpression.getText().slice(1, -1);
 };
