@@ -62,7 +62,8 @@
       "command": "tsc --pretty --noEmit",
       "files": [
         "tsconfig.json",
-        "src/**/*"
+        "src/**/*",
+        "test-goldens/**/*"
       ],
       "output": []
     },
