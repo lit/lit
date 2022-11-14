@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+const NODE_MODE = false;
+
 // Match a prop name to a typed event callback by
 // adding an Event type as an expected property on a string.
 export type EventName<T extends Event = Event> = string & {
@@ -155,6 +157,41 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
     (ref as {current: Element | null}).current = value;
   }
 };
+
+const iterateClientProps = <I>(
+  reactProps: Record<string, unknown>,
+  elementProps: Record<string, unknown>,
+  eventProps: Set<string>,
+  element: Constructor<I>,
+  userProps: Record<string, unknown>
+) => {
+  for (const [k, v] of Object.entries(userProps)) {
+    if (reservedReactProperties.has(k)) {
+      // React does *not* handle `className` for custom elements so
+      // coerce it to `class` so it's handled correctly.
+      reactProps[k === 'className' ? 'class' : k] = v;
+      continue;
+    }
+
+    if (eventProps.has(k) || k in element.prototype) {
+      elementProps[k] = v;
+      continue;
+    }
+
+    reactProps[k] = v;
+  }
+};
+
+const iterateServerProps = (
+  reactProps: Record<string, unknown>,
+  userProps: Record<string, unknown>
+) => {
+  for (const [k, v] of Object.entries(userProps)) {
+    reactProps[k] = v;
+  }
+};
+
+// const iterateServerProps = (reactProps, elementProps, userProps) => {};
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -318,24 +355,17 @@ export function createComponent<
       // when setting properties.
       this._elementProps = {};
       const props: Record<string, unknown> = {ref: this._ref};
-      // Filters class properties and event properties out and passes the
-      // remaining attributes to React. This allows attributes to use framework
-      // rules for setting attributes and render correctly under SSR.
-      for (const [k, v] of Object.entries(userProps)) {
-        if (reservedReactProperties.has(k)) {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          props[k === 'className' ? 'class' : k] = v;
-          continue;
-        }
 
-        if (eventProps.has(k) || k in element.prototype) {
-          this._elementProps[k] = v;
-          continue;
-        }
+      NODE_MODE
+        ? iterateServerProps(props, userProps)
+        : iterateClientProps(
+            props,
+            this._elementProps,
+            eventProps,
+            element,
+            userProps
+          );
 
-        props[k] = v;
-      }
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
   }

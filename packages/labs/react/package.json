@@ -20,17 +20,20 @@
     ".": {
       "types": "./development/index.d.ts",
       "development": "./development/index.js",
+      "node": "./node/index.js",
       "default": "./index.js"
     },
     "./use-controller.js": {
       "types": "./development/use-controller.d.ts",
       "development": "./development/use-controller.js",
+      "node": "./node/use-controller.js",
       "default": "./use-controller.js"
     }
   },
   "files": [
     "/development/",
     "!/development/test/",
+    "/node/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/create-component.{d.ts,d.ts.map,js,js.map}",
     "/use-controller.{d.ts,d.ts.map,js,js.map}"
@@ -43,6 +46,7 @@
     "test": "wireit",
     "test:dev": "wireit",
     "test:prod": "wireit",
+    "test:node": "wireit",
     "checksize": "wireit"
   },
   "wireit": {
@@ -111,7 +115,8 @@
     "test": {
       "dependencies": [
         "test:dev",
-        "test:prod"
+        "test:prod",
+        "test:node"
       ]
     },
     "test:dev": {
@@ -133,6 +138,13 @@
       ],
       "files": [],
       "output": []
+    },
+    "test:node": {
+      "command": "node development/test/node-render.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup"
+      ]
     }
   },
   "author": "Google LLC",

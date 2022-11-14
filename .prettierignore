@@ -227,6 +227,7 @@ packages/labs/observers/performance_controller.*
 packages/labs/observers/resize_controller.*
 packages/labs/observers/intersection_controller.*
 packages/labs/react/development/
+packages/labs/react/node/
 packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
