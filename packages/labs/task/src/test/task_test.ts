@@ -27,7 +27,7 @@ suite('Task', () => {
     b: string;
     c?: string;
     resolveTask: () => void;
-    rejectTask: () => void;
+    rejectTask: (error?: string) => void;
     taskValue?: string;
     renderedStatus?: string;
   }
@@ -46,7 +46,7 @@ suite('Task', () => {
       c?: string;
 
       resolveTask!: () => void;
-      rejectTask!: () => void;
+      rejectTask!: (error?: string) => void;
 
       taskValue?: string;
       renderedStatus?: string;
@@ -56,7 +56,7 @@ suite('Task', () => {
         const taskConfig = {
           task: (...args: unknown[]) =>
             new Promise((resolve, reject) => {
-              this.rejectTask = () => reject(`error`);
+              this.rejectTask = (error = 'error') => reject(error);
               this.resolveTask = () => resolve(args.join(','));
             }),
         };
@@ -169,7 +169,7 @@ suite('Task', () => {
     // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, 'a,b');
     // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
@@ -181,12 +181,33 @@ suite('Task', () => {
     // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, 'a1,b');
     // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a1,b1`);
+  });
+
+  test('task error is not reset on rerun', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+    el.rejectTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.taskValue, 'error');
+
+    // *** Changing task argument runs task
+    el.a = 'a1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, 'error');
+    // Reject task and check result.
+    el.rejectTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.taskValue, `error`);
   });
 
   test('tasks do not run when `autoRun` is `false`', async () => {
@@ -248,7 +269,7 @@ suite('Task', () => {
     el.task.run();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, `a,b`);
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
@@ -436,5 +457,75 @@ suite('Task', () => {
         () => [1, 'b'] as const
       );
     };
+  });
+
+  test('onComplete callback is called', async () => {
+    let numOnCompleteInvocations = 0;
+    let lastOnCompleteResult: string | undefined = undefined;
+    const el = getTestElement({
+      args: () => [el.a, el.b],
+      onComplete: (result) => {
+        numOnCompleteInvocations++;
+        lastOnCompleteResult = result;
+      },
+    });
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnCompleteInvocations, 0);
+    assert.equal(lastOnCompleteResult, undefined);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(numOnCompleteInvocations, 1);
+    assert.equal(lastOnCompleteResult, 'a,b');
+
+    numOnCompleteInvocations = 0;
+
+    // Called after every task completion.
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnCompleteInvocations, 0);
+    assert.equal(lastOnCompleteResult, 'a,b');
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(numOnCompleteInvocations, 1);
+    assert.equal(lastOnCompleteResult, 'a1,b');
+  });
+
+  test('onError callback is called', async () => {
+    let numOnErrorInvocations = 0;
+    let lastOnErrorResult: string | undefined = undefined;
+    const el = getTestElement({
+      args: () => [el.a, el.b],
+      onError: (error) => {
+        numOnErrorInvocations++;
+        lastOnErrorResult = error as string;
+      },
+    });
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnErrorInvocations, 0);
+    assert.equal(lastOnErrorResult, undefined);
+    el.rejectTask('error');
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(numOnErrorInvocations, 1);
+    assert.equal(lastOnErrorResult, 'error');
+
+    numOnErrorInvocations = 0;
+
+    // Called after every task error.
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnErrorInvocations, 0);
+    assert.equal(lastOnErrorResult, 'error');
+    el.rejectTask('error2');
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(numOnErrorInvocations, 1);
+    assert.equal(lastOnErrorResult, 'error2');
   });
 });

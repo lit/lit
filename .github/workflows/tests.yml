@@ -25,13 +25,13 @@ jobs:
           git checkout ${{ github.sha }}
           npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Changeset
         # Enforce that all PRs that change packages need changesets. Changes
         # without changesets result in this job failing.
         run: npm run changeset status -- --since=main
-
-      - name: Lint
-        run: npm run lint
 
   tests-local:
     runs-on: ubuntu-latest
@@ -70,9 +70,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          # Pin to avoid version with problematic npm. See https://github.com/npm/cli/issues/4980
-          # TODO(augustinekim) Unpin when latest node installed by action includes fixed npm
-          node-version: 16.15.0
+          node-version: 16
           cache: 'npm'
           cache-dependency-path: package-lock.json
 

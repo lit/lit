@@ -1,8 +1,10 @@
 {
-  "private": true,
   "name": "@lit-labs/gen-wrapper-vue",
   "description": "Code generator for Vue wrapper for Lit components",
-  "version": "0.0.1",
+  "version": "0.2.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -59,9 +61,9 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.2.0",
-    "@lit-labs/gen-utils": "^0.0.1",
-    "@lit-labs/vue-utils": "^0.0.1"
+    "@lit-labs/analyzer": "^0.4.0",
+    "@lit-labs/gen-utils": "^0.1.0",
+    "@lit-labs/vue-utils": "^0.1.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.0"
@@ -70,7 +72,8 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js"
+    "/index.js",
+    "/lib/*.js"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [

@@ -1,5 +1,25 @@
 # Change Log
 
+## 1.1.0
+
+### Minor Changes
+
+- [#2988](https://github.com/lit/lit/pull/2988) [`2d10c26d`](https://github.com/lit/lit/commit/2d10c26d6c526faafacc5d28d0f70f671e72560d) - Provide a params object to createComponent to improve developer experience and make it easier to maintain and add future features.
+
+- [#3128](https://github.com/lit/lit/pull/3128) [`491d0e37`](https://github.com/lit/lit/commit/491d0e379dda03787de088b0c4a74b5234ac4940) - Application of react props on web components matches the behavior of setting props on dom elements.
+
+## 1.0.9
+
+### Patch Changes
+
+- [#3163](https://github.com/lit/lit/pull/3163) [`1212ddd0`](https://github.com/lit/lit/commit/1212ddd0744529c294ea3905782917172c5aa11e) - Provide the explicit return type `WrappedWebComponent` for `createComponent`. This exposes an explicit typing for wrapped components rather than relying on inferences from Typescript. A well defined type should provide more resilience for implementations like SSR and others.
+
+## 1.0.8
+
+### Patch Changes
+
+- [#2800](https://github.com/lit/lit/pull/2800) [`043d9c80`](https://github.com/lit/lit/commit/043d9c80de59177335fa6543d5654e0295f5a743) - Support setting custom accessors by using an 'in' check instead of a for/in loop to check for properties.
+
 ## 1.0.7
 
 ### Patch Changes

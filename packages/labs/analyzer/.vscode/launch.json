@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Test",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/node_modules/.bin/uvu",
+      "program": "${workspaceFolder}/../../../node_modules/uvu/bin.js",
       "args": ["test", "\\_test\\.js$"],
       "outFiles": ["${workspaceFolder}/**/*.js"],
       "console": "integratedTerminal"

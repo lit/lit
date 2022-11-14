@@ -7,19 +7,23 @@
 /**
  * @fileoverview
  *
- * Utilities for working with classes
+ * Utilities for analyzing class declarations
  */
 
 import ts from 'typescript';
-import {ClassDeclaration} from '../model.js';
-import {ProgramContext} from '../program-context.js';
+import {ClassDeclaration, AnalyzerInterface} from '../model.js';
 
+/**
+ * Returns an analyzer `ClassDeclaration` model for the given
+ * ts.ClassDeclaration.
+ */
 export const getClassDeclaration = (
   declaration: ts.ClassDeclaration,
-  _programContext: ProgramContext
+  _analyzer: AnalyzerInterface
 ): ClassDeclaration => {
   return new ClassDeclaration({
-    name: declaration.name?.text,
+    // TODO(kschaaf): support anonymous class expressions when assigned to a const
+    name: declaration.name?.text ?? '',
     node: declaration,
   });
 };

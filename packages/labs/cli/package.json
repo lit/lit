@@ -1,8 +1,10 @@
 {
-  "private": true,
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
-  "version": "0.0.1",
+  "version": "0.2.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bin": {
@@ -15,7 +17,6 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "prepack": "npm run shrinkwrap",
     "test:compile": "wireit",
     "test:actual": "wireit",
     "build:deps": "wireit"
@@ -40,7 +41,7 @@
     },
     "build:deps": {
       "dependencies": [
-        "../../localize-tools:build:ts",
+        "../cli-localize:build",
         "../../tests:build",
         "../analyzer:build",
         "../gen-wrapper-react:build",
@@ -77,8 +78,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.2.0",
-    "@lit-labs/gen-utils": "^0.0.1",
+    "@lit-labs/analyzer": "^0.4.0",
+    "@lit-labs/gen-utils": "^0.1.0",
     "@lit/localize-tools": "^0.6.1",
     "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",
