@@ -7,10 +7,10 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextProvider, ContextKey, ContextConsumer} from '@lit-labs/context';
+import {ContextProvider, Context, ContextConsumer} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
-const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
+const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
 class SimpleContextProvider extends LitElement {
   private provider = new ContextProvider(this, simpleContext, 1000);

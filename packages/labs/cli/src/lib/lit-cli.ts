@@ -19,6 +19,7 @@ import {globalOptions, mergeOptions} from './options.js';
 import {makeHelpCommand} from './commands/help.js';
 import {localize} from './commands/localize.js';
 import {makeLabsCommand} from './commands/labs.js';
+import {makeInitCommand} from './commands/init.js';
 import {createRequire} from 'module';
 import * as childProcess from 'child_process';
 
@@ -34,7 +35,7 @@ export class LitCli {
   readonly args: readonly string[];
   readonly console: LitConsole;
   /** The current working directory. */
-  private readonly cwd: string;
+  readonly cwd: string;
   private readonly stdin: NodeJS.ReadableStream;
 
   constructor(args: string[], options: Options) {
@@ -63,6 +64,7 @@ export class LitCli {
     this.addCommand(localize);
     this.addCommand(makeLabsCommand(this));
     this.addCommand(makeHelpCommand(this));
+    this.addCommand(makeInitCommand(this));
   }
 
   addCommand(command: Command) {
@@ -93,7 +95,10 @@ export class LitCli {
 
     const result = await this.getCommand(this.commands, this.args);
     if ('invalidCommand' in result) {
-      return helpCommand.run({command: [result.invalidCommand]}, this.console);
+      return await helpCommand.run(
+        {command: [result.invalidCommand]},
+        this.console
+      );
     } else if ('commandNotInstalled' in result) {
       this.console.error(`Command not installed.`);
       return {exitCode: 1};
@@ -124,11 +129,11 @@ export class LitCli {
         this.console.debug(
           `'--help' option found, running 'help' for given command...`
         );
-        return helpCommand.run({command: commandName}, this.console);
+        return await helpCommand.run({command: commandName}, this.console);
       }
 
       this.console.debug('Running command...');
-      return command.run(commandOptions, this.console);
+      return await command.run(commandOptions, this.console);
     }
   }
 

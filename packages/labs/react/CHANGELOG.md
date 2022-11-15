@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.0
+
+### Minor Changes
+
+- [#2988](https://github.com/lit/lit/pull/2988) [`2d10c26d`](https://github.com/lit/lit/commit/2d10c26d6c526faafacc5d28d0f70f671e72560d) - Provide a params object to createComponent to improve developer experience and make it easier to maintain and add future features.
+
+- [#3128](https://github.com/lit/lit/pull/3128) [`491d0e37`](https://github.com/lit/lit/commit/491d0e379dda03787de088b0c4a74b5234ac4940) - Application of react props on web components matches the behavior of setting props on dom elements.
+
 ## 1.0.9
 
 ### Patch Changes

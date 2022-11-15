@@ -13,11 +13,8 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
-import {
-  Virtualizer,
-  ScrollToIndexValue,
-  RangeChangedEvent,
-} from './Virtualizer.js';
+import {Virtualizer, ScrollToIndexValue} from './Virtualizer.js';
+import {RangeChangedEvent} from './events.js';
 
 /**
  * Configuration options for the virtualize directive.

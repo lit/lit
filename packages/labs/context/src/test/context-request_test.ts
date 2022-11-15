@@ -11,7 +11,7 @@ import {
   ContextConsumer,
   ContextProvider,
   createContext,
-  contextProvided,
+  consume,
 } from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
@@ -31,12 +31,12 @@ class SimpleContextProvider extends LitElement {
 
 class SimpleContextConsumer extends LitElement {
   // a one-time property fullfilled by context
-  @contextProvided({context: simpleContext})
+  @consume({context: simpleContext})
   @property({type: Number})
   public onceValue = 0;
 
   // a subscribed property fulfilled by context
-  @contextProvided({context: simpleContext, subscribe: true})
+  @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
   public subscribedValue = 0;
 

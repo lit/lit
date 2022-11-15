@@ -49,7 +49,7 @@ import {Task, TaskStatus} from '@lit-labs/task';
 
 class MyElement extends LitElement {
   @state()
-  private _userId: number;
+  private _userId: number = -1;
 
   private _apiTask = new Task(
     this,
@@ -57,7 +57,7 @@ class MyElement extends LitElement {
       fetch(`//example.com/api/userInfo?${userId}`).then((response) =>
         response.json()
       ),
-    () => [this.userId]
+    () => [this._userId]
   );
 
   render() {
