@@ -3,6 +3,9 @@
   <source media="(prefers-color-scheme:dark)">
     <img src="./packages/lit/logo-dark.svg" alt="Lit" width="300" height="141">
   </source>
+  <source media="(prefers-color-scheme:light)">
+    <img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+  </source>
   <img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
 </picture>
 
