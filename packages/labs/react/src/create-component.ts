@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import React from 'react';
+
 const NODE_MODE = false;
 
 // Match a prop name to a typed event callback by
@@ -64,6 +66,16 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
   events?: E;
   displayName?: string;
 }
+
+type WrappedReactComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = React.Component<ReactComponentProps<I, E>> & {
+  _element: I | null;
+  _elementProps: Record<string, unknown>;
+  _forwardedRef?: React.Ref<I>;
+  _ref?: React.RefCallback<I>;
+};
 
 type Constructor<T> = {new (): T};
 
@@ -158,40 +170,53 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   }
 };
 
-const iterateClientProps = <I>(
-  reactProps: Record<string, unknown>,
-  elementProps: Record<string, unknown>,
+const renderClientProps = <I extends HTMLElement, E extends EventNames = {}>(
+  reactComponent: WrappedReactComponent<I, E>,
   eventProps: Set<string>,
-  element: Constructor<I>,
-  userProps: Record<string, unknown>
-) => {
+  element: Constructor<I>
+): Record<string, unknown> => {
+  // Extract and remove __forwardedRef from userProps in a rename-safe way
+  const {__forwardedRef, ...userProps} = reactComponent.props;
+  // Since refs only get fulfilled once, pass a new one if the user's ref
+  // changed. This allows refs to be fulfilled as expected, going from
+  // having a value to null.
+  if (reactComponent._forwardedRef !== __forwardedRef) {
+    reactComponent._ref = (value: I | null) => {
+      if (__forwardedRef !== null) {
+        setRef(__forwardedRef, value);
+      }
+
+      reactComponent._element = value;
+      reactComponent._forwardedRef = __forwardedRef;
+    };
+  }
+
+  const props: Record<string, unknown> = {ref: reactComponent._ref};
+
   for (const [k, v] of Object.entries(userProps)) {
     if (reservedReactProperties.has(k)) {
       // React does *not* handle `className` for custom elements so
       // coerce it to `class` so it's handled correctly.
-      reactProps[k === 'className' ? 'class' : k] = v;
+      props[k === 'className' ? 'class' : k] = v;
       continue;
     }
 
     if (eventProps.has(k) || k in element.prototype) {
-      elementProps[k] = v;
+      reactComponent._elementProps[k] = v;
       continue;
     }
 
-    reactProps[k] = v;
+    props[k] = v;
   }
+
+  return props;
 };
 
-const iterateServerProps = (
-  reactProps: Record<string, unknown>,
-  userProps: Record<string, unknown>
-) => {
-  for (const [k, v] of Object.entries(userProps)) {
-    reactProps[k] = v;
-  }
+const renderServerProps = <I extends HTMLElement, E extends EventNames = {}>(
+  reactComponent: WrappedReactComponent<I, E>
+): Record<string, unknown> => {
+  return reactComponent.props;
 };
-
-// const iterateServerProps = (reactProps, elementProps, userProps) => {};
 
 /**
  * Creates a React component for a custom element. Properties are distinguished
@@ -284,11 +309,14 @@ export function createComponent<
 
   type Props = ReactComponentProps<I, E>;
 
-  class ReactComponent extends Component<Props> {
-    private _element: I | null = null;
-    private _elementProps!: Record<string, unknown>;
-    private _forwardedRef?: React.Ref<I>;
-    private _ref?: React.RefCallback<I>;
+  class ReactComponent
+    extends Component<Props>
+    implements WrappedReactComponent<I, E>
+  {
+    _element: I | null = null;
+    _elementProps!: Record<string, unknown>;
+    _forwardedRef?: React.Ref<I>;
+    _ref?: React.RefCallback<I>;
 
     static displayName = displayName ?? element.name;
 
@@ -336,35 +364,13 @@ export function createComponent<
      *
      */
     override render() {
-      // Extract and remove __forwardedRef from userProps in a rename-safe way
-      const {__forwardedRef, ...userProps} = this.props;
-      // Since refs only get fulfilled once, pass a new one if the user's ref
-      // changed. This allows refs to be fulfilled as expected, going from
-      // having a value to null.
-      if (this._forwardedRef !== __forwardedRef) {
-        this._ref = (value: I | null) => {
-          if (__forwardedRef !== null) {
-            setRef(__forwardedRef, value);
-          }
-
-          this._element = value;
-          this._forwardedRef = __forwardedRef;
-        };
-      }
       // Save element props while iterating to avoid the need to iterate again
       // when setting properties.
       this._elementProps = {};
-      const props: Record<string, unknown> = {ref: this._ref};
 
-      NODE_MODE
-        ? iterateServerProps(props, userProps)
-        : iterateClientProps(
-            props,
-            this._elementProps,
-            eventProps,
-            element,
-            userProps
-          );
+      const props: Record<string, unknown> = NODE_MODE
+        ? renderServerProps(this)
+        : renderClientProps(this, eventProps, element);
 
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
