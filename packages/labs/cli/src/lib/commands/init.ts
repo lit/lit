@@ -12,7 +12,7 @@ export type Language = 'ts' | 'js';
 export interface InitCommandOptions {
   lang: Language;
   name: string;
-  dir: string;
+  out: string;
 }
 
 export const makeInitCommand = (cli: LitCli): Command => {
@@ -39,7 +39,7 @@ export const makeInitCommand = (cli: LitCli): Command => {
               'Tag name of the Element to generate (must include a hyphen).',
           },
           {
-            name: 'dir',
+            name: 'out',
             defaultValue: '.',
             description: 'Directory in which to generate the element package.',
           },
@@ -73,7 +73,7 @@ export const makeInitCommand = (cli: LitCli): Command => {
     async run(_options: CommandOptions, console: Console) {
       // by default run the element command
       return await run(
-        {lang: 'js', name: 'my-element', dir: '.'},
+        {lang: 'js', name: 'my-element', out: '.'},
         console,
         cli
       );
