@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type * as ReactModule from 'react';
 import * as React from 'react';
 
 interface JSXUtility {
   Component: typeof React.Component;
   forwardRef: typeof React.forwardRef;
-  createElement: typeof ReactModule.createElement;
+  createElement: typeof React.createElement;
 }
 
 // Match a prop name to a typed event callback by
