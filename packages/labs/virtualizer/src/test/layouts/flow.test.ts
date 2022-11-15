@@ -194,9 +194,10 @@ describe('flow layout', () => {
       // No change in visible items is expected since item 5 is already visible.
       virtualizer.element(302)!.scrollIntoView({block: 'nearest'});
 
-      await until(() =>
-        getVisibleItems(virtualizer).find((e) => e.textContent === '302')
-      );
+      // Need to wait a frame before testing to ensure that we don't
+      // scroll, since all of the assertions below were already
+      // true before our last call to `scrollIntoView()`
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
       visible = getVisibleItems(virtualizer);
       expect(visible.length).to.equal(4);
