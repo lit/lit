@@ -1,10 +1,8 @@
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme:dark)">
-    <img src="./logo-dark.svg" alt="Lit" width="300" height="141">
+  <source media="(prefers-color-scheme: dark)" srcset="./logo-dark.svg" alt="Lit" width="300" height="141">
   </source>
-  <source media="(prefers-color-scheme:light)">
-    <img src="./logo.svg" alt="Lit" width="300" height="141">
+  <source media="(prefers-color-scheme: light)" srcset="./logo.svg" alt="Lit" width="300" height="141">
   </source>
   <img src="./logo.svg" alt="Lit" width="300" height="141">
 </picture>
