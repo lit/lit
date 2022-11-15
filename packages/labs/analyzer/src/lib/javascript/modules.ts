@@ -30,6 +30,7 @@ import {DiagnosticsError} from '../errors.js';
 import {
   getExportReferences,
   getImportReferenceForSpecifierExpression,
+  getSpecifierString,
 } from '../references.js';
 
 /**
@@ -278,7 +279,7 @@ export const getPathForModuleSpecifierExpression = (
   specifierExpression: ts.Expression,
   analyzer: AnalyzerInterface
 ): AbsolutePath => {
-  const specifier = specifierExpression.getText().slice(1, -1);
+  const specifier = getSpecifierString(specifierExpression);
   return getPathForModuleSpecifier(specifier, specifierExpression, analyzer);
 };
 
