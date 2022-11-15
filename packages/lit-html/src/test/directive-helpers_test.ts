@@ -3,8 +3,7 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html, ChildPart, render, svg} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {html, ChildPart, render, svg} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './test-utils/strip-markers.js';
 import {
@@ -16,9 +15,13 @@ import {
   removePart,
   setChildPartValue,
   TemplateResultType,
-} from '../directive-helpers.js';
-import {classMap} from '../directives/class-map.js';
-import {AsyncDirective} from '../async-directive.js';
+} from 'lit-html/directive-helpers.js';
+import {classMap} from 'lit-html/directives/class-map.js';
+import {
+  directive,
+  Directive,
+  AsyncDirective,
+} from 'lit-html/async-directive.js';
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;

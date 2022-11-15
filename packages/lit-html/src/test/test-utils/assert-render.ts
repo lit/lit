@@ -3,7 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {render} from '../../lit-html.js';
+import {render} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from './strip-markers.js';
 

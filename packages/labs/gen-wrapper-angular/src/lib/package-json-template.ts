@@ -4,12 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitModule, PackageJson} from '@lit-labs/analyzer/lib/model.js';
+import {
+  ModuleWithLitElementDeclarations,
+  PackageJson,
+} from '@lit-labs/analyzer/lib/model.js';
 
 export const packageJsonTemplate = (
   angularPackageName: string,
   packageJson: PackageJson,
-  litModules: LitModule[]
+  litModules: ModuleWithLitElementDeclarations[]
 ) => {
   // Refinement of package.json generation ala the TODOs below tracked in
   // https://github.com/lit/lit/issues/2855
@@ -35,7 +38,7 @@ export const packageJsonTemplate = (
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        typescript: packageJson?.devDependencies?.typescript ?? '~4.3.5',
+        typescript: packageJson?.devDependencies?.typescript ?? '~4.7.4',
       },
       files: [...litModules.map(({module}) => module.jsPath)],
     },

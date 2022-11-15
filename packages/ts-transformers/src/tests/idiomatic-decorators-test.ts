@@ -2001,17 +2001,17 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
 const baseOptions = () => {
   const options = ts.getDefaultCompilerOptions();
-  options.target = ts.ScriptTarget.ESNext;
-  options.module = ts.ModuleKind.ESNext;
   options.moduleResolution = ts.ModuleResolutionKind.NodeJs;
   options.importHelpers = true;
   return options;
 };
 
 const standardOptions = baseOptions();
+standardOptions.target = ts.ScriptTarget.ESNext;
 standardOptions.useDefineForClassFields = true;
 tests(suite('standard class field emit'), standardOptions);
 
 const legacyOptions = baseOptions();
+legacyOptions.target = ts.ScriptTarget.ES2021;
 legacyOptions.useDefineForClassFields = false;
 tests(suite('legacy class field emit'), legacyOptions);

@@ -11,7 +11,7 @@ import {
   PropertyDeclarations,
   PropertyValues,
   ReactiveElement,
-} from '../reactive-element.js';
+} from '@lit/reactive-element';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -300,6 +300,79 @@ suite('ReactiveElement', () => {
     assert.equal(el.getAttribute('num'), 'toAttribute: Number');
     assert.equal(el.getAttribute('str'), 'toAttribute: String');
     assert.equal(el.getAttribute('foo'), 'toAttribute: FooType');
+  });
+
+  test('property option `converter` can use a class instance', async () => {
+    class IntegerAttributeConverter
+      implements ComplexAttributeConverter<Number>
+    {
+      private _defaultValue: Number;
+
+      constructor(defaultValue: Number) {
+        this._defaultValue = defaultValue;
+      }
+
+      toAttribute(value: Number, _type?: unknown): unknown {
+        if (!value) {
+          return this._defaultValue;
+        }
+        return `${value}`;
+      }
+
+      fromAttribute(value: string | null, _type?: unknown): Number {
+        if (!value) {
+          return this._defaultValue;
+        }
+
+        const parsedValue = Number.parseInt(value, 10);
+        if (isNaN(parsedValue)) {
+          return this._defaultValue;
+        }
+        return parsedValue;
+      }
+    }
+
+    const defaultIntAttrConverterVal = 1;
+
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          num: {
+            type: Number,
+            converter: new IntegerAttributeConverter(
+              defaultIntAttrConverterVal
+            ),
+            reflect: true,
+          },
+        };
+      }
+
+      num?: number;
+    }
+
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+
+    assert.equal(el.getAttribute('num'), null);
+    assert.equal(el.num, undefined);
+
+    el.setAttribute('num', 'notANumber');
+    await el.updateComplete;
+    assert.equal(el.num, defaultIntAttrConverterVal);
+
+    el.num = 10;
+    await el.updateComplete;
+    assert.equal(el.getAttribute('num'), '10');
+
+    el.setAttribute('num', '5');
+    await el.updateComplete;
+    assert.equal(el.num, 5);
+
+    el.num = undefined;
+    await el.updateComplete;
+    assert.equal(el.getAttribute('num'), `${defaultIntAttrConverterVal}`);
   });
 
   test('property/attribute values when attributes removed', async () => {
@@ -2477,28 +2550,55 @@ suite('ReactiveElement', () => {
     assert.equal(a.getAttribute('bar'), 'yo');
   });
 
-  test('addInitializer', () => {
-    class A extends ReactiveElement {
+  suite('initializers', () => {
+    class Base extends ReactiveElement {
       prop1?: string;
       prop2?: string;
       event?: string;
     }
-    A.addInitializer((a) => {
-      (a as A).prop1 = 'prop1';
+    Base.addInitializer((a) => {
+      (a as Base).prop1 = 'prop1';
     });
-    A.addInitializer((a) => {
-      (a as A).prop2 = 'prop2';
+    Base.addInitializer((a) => {
+      (a as Base).prop2 = 'prop2';
     });
-    A.addInitializer((a) => {
-      a.addEventListener('click', (e) => ((a as A).event = e.type));
+    Base.addInitializer((a) => {
+      a.addEventListener('click', (e) => ((a as Base).event = e.type));
     });
-    customElements.define(generateElementName(), A);
-    const a = new A();
-    container.appendChild(a);
-    assert.equal(a.prop1, 'prop1');
-    assert.equal(a.prop2, 'prop2');
-    a.dispatchEvent(new Event('click'));
-    assert.equal(a.event, 'click');
+    customElements.define(generateElementName(), Base);
+
+    test('addInitializer', () => {
+      const a = new Base();
+      container.appendChild(a);
+      assert.equal(a.prop1, 'prop1');
+      assert.equal(a.prop2, 'prop2');
+      a.dispatchEvent(new Event('click'));
+      assert.equal(a.event, 'click');
+    });
+
+    class Sub extends Base {
+      prop3?: string;
+    }
+    Sub.addInitializer((a) => {
+      (a as Sub).prop3 = 'prop3';
+    });
+    customElements.define(generateElementName(), Sub);
+
+    test('addInitializer on subclass', () => {
+      const s = new Sub();
+      container.appendChild(s);
+      assert.equal(s.prop1, 'prop1');
+      assert.equal(s.prop2, 'prop2');
+      assert.equal(s.prop3, 'prop3');
+      s.dispatchEvent(new Event('click'));
+      assert.equal(s.event, 'click');
+    });
+
+    test('addInitializer on subclass independent from superclass', () => {
+      const b = new Base();
+      container.appendChild(b);
+      assert.notOk((b as any).prop3);
+    });
   });
 
   suite('exceptions', () => {

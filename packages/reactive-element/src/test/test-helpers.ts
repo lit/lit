@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement, PropertyValues} from '../reactive-element.js';
+import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;

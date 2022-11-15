@@ -33,18 +33,18 @@ export const packageJsonTemplate = (
       dependencies: {
         // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
-        vue: '^3.2.25',
-        '@lit-labs/vue-utils': '^0.0.1',
+        vue: '^3.2.41',
+        '@lit-labs/vue-utils': '^0.1.0',
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        typescript: pkgJson?.devDependencies?.typescript ?? '^4.6.4',
-        '@vitejs/plugin-vue': '^2.3.1',
-        '@rollup/plugin-typescript': '^8.3.2',
-        vite: '^2.9.2',
-        'vue-tsc': '^0.29.8',
+        typescript: pkgJson?.devDependencies?.typescript ?? '~4.7.4',
+        '@vitejs/plugin-vue': '^3.1.2',
+        '@rollup/plugin-typescript': '^9.0.1',
+        vite: '^3.1.8',
+        'vue-tsc': '^1.0.8',
       },
-      files: [...moduleNames.map((f) => `${f}.{js,js.map,d.ts,vue}`)],
+      files: [...moduleNames.map((f) => `${f}.*`)],
     },
     null,
     2

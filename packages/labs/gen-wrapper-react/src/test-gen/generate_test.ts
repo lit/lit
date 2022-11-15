@@ -9,7 +9,7 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import {Analyzer} from '@lit-labs/analyzer';
+import {createPackageAnalyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
@@ -32,9 +32,9 @@ test('basic wrapper generation', async () => {
     fs.rmSync(outputPackage, {recursive: true});
   }
 
-  const analyzer = new Analyzer(inputPackage as AbsolutePath);
-  const analysis = analyzer.analyzePackage();
-  await writeFileTree(outputFolder, await generateReactWrapper(analysis));
+  const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
+  const pkg = analyzer.getPackage();
+  await writeFileTree(outputFolder, await generateReactWrapper(pkg));
 
   const wrapperSourceFile = fs.readFileSync(
     path.join(outputPackage, 'src/element-a.ts')
@@ -49,6 +49,15 @@ test('basic wrapper generation', async () => {
     [`@lit-internal/${project}`]: inputPackage,
     '@lit-labs/react': '../react',
   });
+
+  // The version of @types/react might conflict with the one installed to the
+  // top-level of our monorepo. By default, TypeScript will load all
+  // node_modules/@types/* packages for all parent directories. By setting
+  // typeRoots here, we ensure it only loads the immediate ones.
+  const tsConfigPath = path.join(outputPackage, 'tsconfig.json');
+  const tsConfig = JSON.parse(fs.readFileSync(tsConfigPath, 'utf8'));
+  tsConfig.compilerOptions.typeRoots = ['./node_modules/@types'];
+  fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfig), 'utf8');
 
   await buildPackage(outputPackage);
 

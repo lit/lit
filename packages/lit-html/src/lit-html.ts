@@ -10,6 +10,9 @@ import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
+const NODE_MODE = false;
+// Use window for browser builds because IE11 doesn't have globalThis.
+const global = NODE_MODE ? globalThis : window;
 
 /**
  * Contains types that are part of the unstable debug API.
@@ -190,12 +193,12 @@ interface DebugLoggingWindow {
  */
 const debugLogEvent = DEV_MODE
   ? (event: LitUnstable.DebugLog.Entry) => {
-      const shouldEmit = (window as unknown as DebugLoggingWindow)
+      const shouldEmit = (global as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (!shouldEmit) {
         return;
       }
-      window.dispatchEvent(
+      global.dispatchEvent(
         new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
           detail: event,
         })
@@ -210,16 +213,16 @@ let debugLogRenderId = 0;
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
-  globalThis.litIssuedWarnings ??= new Set();
+  global.litIssuedWarnings ??= new Set();
 
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
     warning += code
       ? ` See https://lit.dev/msg/${code} for more information.`
       : '';
-    if (!globalThis.litIssuedWarnings!.has(warning)) {
+    if (!global.litIssuedWarnings!.has(warning)) {
       console.warn(warning);
-      globalThis.litIssuedWarnings!.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 
@@ -231,12 +234,12 @@ if (DEV_MODE) {
 
 const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
-  window.ShadyDOM?.inUse &&
-  window.ShadyDOM?.noPatch === true
-    ? window.ShadyDOM!.wrap
+  global.ShadyDOM?.inUse &&
+  global.ShadyDOM?.noPatch === true
+    ? global.ShadyDOM!.wrap
     : (node: Node) => node;
 
-const trustedTypes = (globalThis as unknown as Partial<Window>).trustedTypes;
+const trustedTypes = (global as unknown as Partial<Window>).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -341,7 +344,14 @@ const markerMatch = '?' + marker;
 // syntax because it's slightly smaller, but parses as a comment node.
 const nodeMarker = `<${markerMatch}>`;
 
-const d = document;
+const d =
+  NODE_MODE && global.document === undefined
+    ? ({
+        createTreeWalker() {
+          return {};
+        },
+      } as unknown as Document)
+    : document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
 const createMarker = (v = '') => d.createComment(v);
@@ -617,88 +627,6 @@ export interface RenderOptions {
   isConnected?: boolean;
 }
 
-/**
- * Renders a value, usually a lit-html TemplateResult, to the container.
- *
- * This example renders the text "Hello, Zoe!" inside a paragraph tag, appending
- * it to the container `document.body`.
- *
- * ```js
- * import {html, render} from 'lit';
- *
- * const name = "Zoe";
- * render(html`<p>Hello, ${name}!</p>`, document.body);
- * ```
- *
- * @param value Any [renderable
- *   value](https://lit.dev/docs/templates/expressions/#child-expressions),
- *   typically a {@linkcode TemplateResult} created by evaluating a template tag
- *   like {@linkcode html} or {@linkcode svg}.
- * @param container A DOM container to render to. The first render will append
- *   the rendered value to the container, and subsequent renders will
- *   efficiently update the rendered value if the same result type was
- *   previously rendered there.
- * @param options See {@linkcode RenderOptions} for options documentation.
- * @see
- * {@link https://lit.dev/docs/libraries/standalone-templates/#rendering-lit-html-templates| Rendering Lit HTML Templates}
- */
-export const render = (
-  value: unknown,
-  container: HTMLElement | DocumentFragment,
-  options?: RenderOptions
-): RootPart => {
-  if (DEV_MODE && container == null) {
-    // Give a clearer error message than
-    //     Uncaught TypeError: Cannot read properties of null (reading
-    //     '_$litPart$')
-    // which reads like an internal Lit error.
-    throw new TypeError(`The container to render into may not be ${container}`);
-  }
-  const renderId = DEV_MODE ? debugLogRenderId++ : 0;
-  const partOwnerNode = options?.renderBefore ?? container;
-  // This property needs to remain unminified.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
-  debugLogEvent?.({
-    kind: 'begin render',
-    id: renderId,
-    value,
-    container,
-    options,
-    part,
-  });
-  if (part === undefined) {
-    const endNode = options?.renderBefore ?? null;
-    // This property needs to remain unminified.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
-      container.insertBefore(createMarker(), endNode),
-      endNode,
-      undefined,
-      options ?? {}
-    );
-  }
-  part._$setValue(value);
-  debugLogEvent?.({
-    kind: 'end render',
-    id: renderId,
-    value,
-    container,
-    options,
-    part,
-  });
-  return part as RootPart;
-};
-
-if (ENABLE_EXTRA_SECURITY_HOOKS) {
-  render.setSanitizer = setSanitizer;
-  render.createSanitizer = createSanitizer;
-  if (DEV_MODE) {
-    render._testOnlyClearSanitizerFactoryDoNotCallOrElse =
-      _testOnlyClearSanitizerFactoryDoNotCallOrElse;
-  }
-}
-
 const walker = d.createTreeWalker(
   d,
   129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
@@ -727,8 +655,8 @@ export interface DirectiveParent {
 /**
  * Returns an HTML string for the given TemplateStringsArray and result type
  * (HTML or SVG), along with the case-sensitive bound attribute names in
- * template order. The HTML contains comment comment markers denoting the
- * `ChildPart`s and suffixes on bound attributes denoting the `AttributeParts`.
+ * template order. The HTML contains comment markers denoting the `ChildPart`s
+ * and suffixes on bound attributes denoting the `AttributeParts`.
  *
  * @param strings template strings array
  * @param type HTML or SVG
@@ -1446,6 +1374,21 @@ class ChildPart implements Disconnectable {
     } else if ((value as TemplateResult)['_$litType$'] !== undefined) {
       this._commitTemplateResult(value as TemplateResult);
     } else if ((value as Node).nodeType !== undefined) {
+      if (DEV_MODE && this.options?.host === value) {
+        this._commitText(
+          `[probable mistake: rendered a template's host in itself ` +
+            `(commonly caused by writing \${this} in a template]`
+        );
+        console.warn(
+          `Attempted to render the template host`,
+          value,
+          `inside itself. This is almost always a mistake, and in dev mode `,
+          `we render some warning text. In production however, we'll `,
+          `render it, which will usually result in an error, and sometimes `,
+          `in the element disappearing from the DOM.`
+        );
+        return;
+      }
       this._commitNode(value as Node);
     } else if (isIterable(value)) {
       this._commitIterable(value);
@@ -2147,17 +2090,99 @@ export const _$LH = {
 
 // Apply polyfills if available
 const polyfillSupport = DEV_MODE
-  ? window.litHtmlPolyfillSupportDevMode
-  : window.litHtmlPolyfillSupport;
+  ? global.litHtmlPolyfillSupportDevMode
+  : global.litHtmlPolyfillSupport;
 polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(globalThis.litHtmlVersions ??= []).push('2.2.6');
-if (DEV_MODE && globalThis.litHtmlVersions.length > 1) {
+(global.litHtmlVersions ??= []).push('2.4.0');
+if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
     `Multiple versions of Lit loaded. ` +
       `Loading multiple versions is not recommended.`
   );
+}
+
+/**
+ * Renders a value, usually a lit-html TemplateResult, to the container.
+ *
+ * This example renders the text "Hello, Zoe!" inside a paragraph tag, appending
+ * it to the container `document.body`.
+ *
+ * ```js
+ * import {html, render} from 'lit';
+ *
+ * const name = "Zoe";
+ * render(html`<p>Hello, ${name}!</p>`, document.body);
+ * ```
+ *
+ * @param value Any [renderable
+ *   value](https://lit.dev/docs/templates/expressions/#child-expressions),
+ *   typically a {@linkcode TemplateResult} created by evaluating a template tag
+ *   like {@linkcode html} or {@linkcode svg}.
+ * @param container A DOM container to render to. The first render will append
+ *   the rendered value to the container, and subsequent renders will
+ *   efficiently update the rendered value if the same result type was
+ *   previously rendered there.
+ * @param options See {@linkcode RenderOptions} for options documentation.
+ * @see
+ * {@link https://lit.dev/docs/libraries/standalone-templates/#rendering-lit-html-templates| Rendering Lit HTML Templates}
+ */
+export const render = (
+  value: unknown,
+  container: HTMLElement | DocumentFragment,
+  options?: RenderOptions
+): RootPart => {
+  if (DEV_MODE && container == null) {
+    // Give a clearer error message than
+    //     Uncaught TypeError: Cannot read properties of null (reading
+    //     '_$litPart$')
+    // which reads like an internal Lit error.
+    throw new TypeError(`The container to render into may not be ${container}`);
+  }
+  const renderId = DEV_MODE ? debugLogRenderId++ : 0;
+  const partOwnerNode = options?.renderBefore ?? container;
+  // This property needs to remain unminified.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
+  debugLogEvent?.({
+    kind: 'begin render',
+    id: renderId,
+    value,
+    container,
+    options,
+    part,
+  });
+  if (part === undefined) {
+    const endNode = options?.renderBefore ?? null;
+    // This property needs to remain unminified.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
+      container.insertBefore(createMarker(), endNode),
+      endNode,
+      undefined,
+      options ?? {}
+    );
+  }
+  part._$setValue(value);
+  debugLogEvent?.({
+    kind: 'end render',
+    id: renderId,
+    value,
+    container,
+    options,
+    part,
+  });
+  return part as RootPart;
+};
+
+if (ENABLE_EXTRA_SECURITY_HOOKS) {
+  render.setSanitizer = setSanitizer;
+  render.createSanitizer = createSanitizer;
+  if (DEV_MODE) {
+    render._testOnlyClearSanitizerFactoryDoNotCallOrElse =
+      _testOnlyClearSanitizerFactoryDoNotCallOrElse;
+  }
 }

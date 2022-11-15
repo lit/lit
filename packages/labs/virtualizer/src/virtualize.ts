@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ChildPart, html, noChange} from 'lit';
+import {TemplateResult, ChildPart, html} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat} from 'lit/directives/repeat.js';
@@ -13,11 +13,8 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
 } from './layouts/shared/Layout.js';
-import {
-  Virtualizer,
-  ScrollToIndexValue,
-  RangeChangedEvent,
-} from './Virtualizer.js';
+import {Virtualizer, ScrollToIndexValue} from './Virtualizer.js';
+import {RangeChangedEvent} from './events.js';
 
 /**
  * Configuration options for the virtualize directive.
@@ -103,8 +100,7 @@ class VirtualizeDirective<T> extends AsyncDirective {
       }
       this.cachedConfig = config;
     }
-    return noChange;
-    // super.update(part, [config]);
+    return this.render();
   }
 
   _updateVirtualizerConfig(config: VirtualizeDirectiveConfig<T>) {

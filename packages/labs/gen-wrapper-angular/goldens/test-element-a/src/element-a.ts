@@ -1,11 +1,12 @@
 import {
   Component,
   ElementRef,
-  EventEmitter,
-  Input,
   NgZone,
+  Input,
+  EventEmitter,
   Output,
 } from '@angular/core';
+
 import type {ElementA as ElementAElement} from '@lit-internal/test-element-a/element-a.js';
 import '@lit-internal/test-element-a/element-a.js';
 

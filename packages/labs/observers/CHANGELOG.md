@@ -1,5 +1,29 @@
 # @lit-labs/observers
 
+## 1.1.0
+
+### Minor Changes
+
+- [#3294](https://github.com/lit/lit/pull/3294) [`96c05f25`](https://github.com/lit/lit/commit/96c05f258183066b34d2253c57552ef41ed4581a) - Fix value property of type `unknown` on exported controllers. The type of
+  `value` is now generic and can be inferred from the return type of your passed
+  in `callback`. The default callback `() => true` was removed, and is now
+  undefined by default.
+
+- [#3323](https://github.com/lit/lit/pull/3323) [`0f787b29`](https://github.com/lit/lit/commit/0f787b290af1ce68498ddb8fb0ab32b9d6698dc6) - Add unobserve method to `ResizeController` and `IntersectionController`.
+
+### Patch Changes
+
+- [#3293](https://github.com/lit/lit/pull/3293) [`7e22bc2e`](https://github.com/lit/lit/commit/7e22bc2e3918e36c0e46aa6430c17eb8f557968f) - Fix controllers not observing changes to target element if initialized after the host has connected.
+
+- [#3321](https://github.com/lit/lit/pull/3321) [`e90e8fe9`](https://github.com/lit/lit/commit/e90e8fe99423c264827564dcc98236d0329a118a) - Controllers now track all observed targets and will restore observing targets
+  when host is reconnected.
+
+## 1.0.2
+
+### Patch Changes
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
 ## 1.0.1
 
 ### Patch Changes

@@ -7,19 +7,17 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextKey} from '../index.js';
-import {contextProvided} from '../lib/decorators/context-provided.js';
-import {contextProvider} from '../lib/decorators/context-provider.js';
+import {Context, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
-const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
+const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
 class ContextConsumerAndProviderElement extends LitElement {
-  @contextProvided({context: simpleContext, subscribe: true})
+  @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
   public provided = 0;
 
-  @contextProvider({context: simpleContext})
+  @provide({context: simpleContext})
   @property({type: Number})
   public value = 0;
 

@@ -11,7 +11,7 @@ import {
   ReactiveElement,
   Part,
   nothing,
-} from '../lit-element.js';
+} from 'lit-element';
 import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 import {
   canTestLitElement,

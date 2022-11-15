@@ -7,17 +7,20 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextKey} from '../index.js';
-import {contextProvided} from '../lib/decorators/context-provided.js';
-import {contextProvider} from '../lib/decorators/context-provider.js';
+import {Context, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
-const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
+const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
 class ContextConsumerElement extends LitElement {
-  @contextProvided({context: simpleContext, subscribe: true})
+  @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
-  public value = 0;
+  public value?: number;
+
+  // @ts-expect-error Type 'string' is not assignable to type 'number'.
+  @consume({context: simpleContext, subscribe: true})
+  @property({type: Number})
+  public value2?: string;
 
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
@@ -26,7 +29,7 @@ class ContextConsumerElement extends LitElement {
 customElements.define('context-consumer', ContextConsumerElement);
 
 class ContextProviderElement extends LitElement {
-  @contextProvider({context: simpleContext})
+  @provide({context: simpleContext})
   @property({type: Number, reflect: true})
   public value = 0;
 
@@ -40,7 +43,7 @@ class ContextProviderElement extends LitElement {
 }
 customElements.define('context-provider', ContextProviderElement);
 
-suite('@contextProvided', () => {
+suite('@consume', () => {
   let consumer: ContextConsumerElement;
   let provider: ContextProviderElement;
   let container: HTMLElement;
@@ -83,7 +86,7 @@ suite('@contextProvided', () => {
   });
 });
 
-suite('@contextProvided: multiple instances', () => {
+suite('@consume: multiple instances', () => {
   let consumers: ContextConsumerElement[];
   let providers: ContextProviderElement[];
   let container: HTMLElement;

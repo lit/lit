@@ -14,9 +14,12 @@
     "@angular/core": "^13.3.0"
   },
   "devDependencies": {
-    "typescript": "~4.3.5"
+    "typescript": "~4.7.4"
   },
   "files": [
-    "element-a.js"
+    "element-a.js",
+    "element-events.js",
+    "element-props.js",
+    "element-slots.js"
   ]
 }

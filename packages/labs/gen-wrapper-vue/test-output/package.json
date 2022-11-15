@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.1",
-    "typescript": "^4.6.4",
+    "typescript": "~4.7.4",
     "vite": "^2.9.2",
     "vue-tsc": "^0.29.8"
   },
@@ -42,7 +42,8 @@
         "installSelf"
       ],
       "files": [
-        "src/**/*.ts, src/**/*.vue",
+        "src/**/*.ts",
+        "src/**/*.vue",
         "tsconfig.json"
       ],
       "command": "vue-tsc --noEmit && vite build",
@@ -57,7 +58,7 @@
         "../../../tests:build"
       ],
       "files": [],
-      "command": "node ../../../tests/run-web-tests.js \"tests/**/*_test.js\" --config ../../../tests/web-test-runner.config.js",
+      "command": "node ../../../tests/run-web-tests.js \"tests/**/tests.js\" --config ../../../tests/web-test-runner.config.js",
       "output": []
     }
   }

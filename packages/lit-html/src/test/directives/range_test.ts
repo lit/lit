@@ -3,7 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {range} from '../../directives/range.js';
+import {range} from 'lit-html/directives/range.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('range', () => {

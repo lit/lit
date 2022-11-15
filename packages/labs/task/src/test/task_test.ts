@@ -6,7 +6,7 @@
 
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
-import {initialState, Task, TaskStatus, TaskConfig} from '../task.js';
+import {initialState, Task, TaskStatus, TaskConfig} from '@lit-labs/task';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -27,7 +27,7 @@ suite('Task', () => {
     b: string;
     c?: string;
     resolveTask: () => void;
-    rejectTask: () => void;
+    rejectTask: (error?: string) => void;
     taskValue?: string;
     renderedStatus?: string;
   }
@@ -46,7 +46,7 @@ suite('Task', () => {
       c?: string;
 
       resolveTask!: () => void;
-      rejectTask!: () => void;
+      rejectTask!: (error?: string) => void;
 
       taskValue?: string;
       renderedStatus?: string;
@@ -56,7 +56,7 @@ suite('Task', () => {
         const taskConfig = {
           task: (...args: unknown[]) =>
             new Promise((resolve, reject) => {
-              this.rejectTask = () => reject(`error`);
+              this.rejectTask = (error = 'error') => reject(error);
               this.resolveTask = () => resolve(args.join(','));
             }),
         };
@@ -66,7 +66,7 @@ suite('Task', () => {
 
       override update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
-        this.taskValue = this.task.value ?? this.task.error;
+        this.taskValue = (this.task.value as string) ?? this.task.error;
         this.task.render({
           initial: () => (this.renderedStatus = 'initial'),
           pending: () => (this.renderedStatus = 'pending'),
@@ -169,7 +169,7 @@ suite('Task', () => {
     // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, 'a,b');
     // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
@@ -181,12 +181,33 @@ suite('Task', () => {
     // Check task pending.
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, 'a1,b');
     // Complete task and check result.
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a1,b1`);
+  });
+
+  test('task error is not reset on rerun', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+    el.rejectTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.taskValue, 'error');
+
+    // *** Changing task argument runs task
+    el.a = 'a1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, 'error');
+    // Reject task and check result.
+    el.rejectTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.taskValue, `error`);
   });
 
   test('tasks do not run when `autoRun` is `false`', async () => {
@@ -248,7 +269,7 @@ suite('Task', () => {
     el.task.run();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.PENDING);
-    assert.equal(el.taskValue, undefined);
+    assert.equal(el.taskValue, `a,b`);
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
@@ -424,5 +445,87 @@ suite('Task', () => {
     // so we wait a event loop turn:
     await new Promise((r) => setTimeout(r, 0));
     assert.equal(el.task.status, TaskStatus.INITIAL, 'new initial');
+  });
+
+  test('task args functions can return const arrays', () => {
+    return class MyElement extends ReactiveElement {
+      task = new Task(
+        this,
+        ([a, b]) => [a * 2, b.split('')],
+        // Make sure that we can use `as const` to force inferece of the args
+        // as [number, string] instead of (number | string)[]
+        () => [1, 'b'] as const
+      );
+    };
+  });
+
+  test('onComplete callback is called', async () => {
+    let numOnCompleteInvocations = 0;
+    let lastOnCompleteResult: string | undefined = undefined;
+    const el = getTestElement({
+      args: () => [el.a, el.b],
+      onComplete: (result) => {
+        numOnCompleteInvocations++;
+        lastOnCompleteResult = result;
+      },
+    });
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnCompleteInvocations, 0);
+    assert.equal(lastOnCompleteResult, undefined);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(numOnCompleteInvocations, 1);
+    assert.equal(lastOnCompleteResult, 'a,b');
+
+    numOnCompleteInvocations = 0;
+
+    // Called after every task completion.
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnCompleteInvocations, 0);
+    assert.equal(lastOnCompleteResult, 'a,b');
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(numOnCompleteInvocations, 1);
+    assert.equal(lastOnCompleteResult, 'a1,b');
+  });
+
+  test('onError callback is called', async () => {
+    let numOnErrorInvocations = 0;
+    let lastOnErrorResult: string | undefined = undefined;
+    const el = getTestElement({
+      args: () => [el.a, el.b],
+      onError: (error) => {
+        numOnErrorInvocations++;
+        lastOnErrorResult = error as string;
+      },
+    });
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnErrorInvocations, 0);
+    assert.equal(lastOnErrorResult, undefined);
+    el.rejectTask('error');
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(numOnErrorInvocations, 1);
+    assert.equal(lastOnErrorResult, 'error');
+
+    numOnErrorInvocations = 0;
+
+    // Called after every task error.
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnErrorInvocations, 0);
+    assert.equal(lastOnErrorResult, 'error');
+    el.rejectTask('error2');
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(numOnErrorInvocations, 1);
+    assert.equal(lastOnErrorResult, 'error2');
   });
 });

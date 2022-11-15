@@ -8,7 +8,7 @@ import {
   PropertyValues,
   ReactiveElement,
   ReactiveController,
-} from '../reactive-element.js';
+} from '@lit/reactive-element';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/virtualizer",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "description": "Viewport-based virtualization (virtual scrolling) for Lit",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
@@ -10,6 +10,9 @@
   "exports": {
     ".": {
       "default": "./lit-virtualizer.js"
+    },
+    "./events.js": {
+      "default": "./events.js"
     },
     "./layouts/flexWrap.js": {
       "default": "./layouts/flexWrap.js"
@@ -28,8 +31,8 @@
     }
   },
   "scripts": {
-    "bench": "tach --root=../.. --browser=chrome-headless test/benchmarks/basic.html --measure=fcp",
-    "bench:debug": "tach --root=../.. test/benchmarks/basic.html --measure=fcp",
+    "bench": "tach --root=../../.. --browser=chrome-headless test/benchmarks/basic.html --measure=fcp",
+    "bench:debug": "tach --root=../../.. test/benchmarks/basic.html --measure=fcp",
     "bench:scroll": "tach --force-clean-npm-install --config=test/benchmarks/scrollingBenchmarks.json",
     "build": "wireit",
     "build:copy-polyfill": "wireit",
@@ -47,7 +50,7 @@
       ]
     },
     "build:copy-polyfill": {
-      "command": "copyfiles -u 1 src/polyfills/resize-observer-polyfill/ResizeObserver.js .",
+      "command": "mkdir -p polyfills/resize-observer-polyfill && cp src/polyfills/resize-observer-polyfill/ResizeObserver.js polyfills/resize-observer-polyfill/ResizeObserver.js",
       "files": [
         "src/polyfills/resize-observer-polyfill/ResizeObserver.js"
       ],
@@ -68,6 +71,7 @@
         "polyfillLoaders/**/*.{js,d.ts,d.ts.map}",
         "test/**/*.{js,d.ts,d.ts.map}",
         "!test/screenshot/**",
+        "events.{js,d.ts,d.ts.map}",
         "lit-virtualizer.{js,d.ts,d.ts.map}",
         "LitVirtualizer.{js,d.ts,d.ts.map}",
         "virtualize.{js,d.ts,d.ts.map}",
@@ -95,33 +99,20 @@
     "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/events.{js,d.ts,d.ts.map}",
     "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
     "/virtualize.{d.ts,d.ts.map,js,js.map}",
     "/Virtualizer.{d.ts,d.ts.map,js,js.map}",
     "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}"
   ],
   "devDependencies": {
-    "@esm-bundle/chai": "^4.3.4-fix.0",
-    "@types/selenium-webdriver": "^4.0.19",
+    "@open-wc/testing": "^3.1.6",
     "@web/dev-server-esbuild": "^0.3.0",
-    "@web/test-runner": "^0.13.27",
-    "@web/test-runner-mocha": "^0.7.5",
-    "chai": "^4.2.0",
-    "copyfiles": "^2.4.1",
-    "http-server": "^14.1.0",
-    "mocha": "^6.1.4",
-    "pixelmatch": "^4.0.2",
-    "pngjs": "^3.4.0",
-    "rollup": "^1.11.2",
-    "rollup-plugin-filesize": "^6.1.1",
-    "rollup-plugin-node-resolve": "^4.2.3",
-    "rollup-plugin-terser": "^5.0.0",
-    "tachometer": "^0.5.10",
-    "typescript": "^4.1.3"
+    "tachometer": "^0.7.0"
   },
   "dependencies": {
-    "event-target-shim": "^5.0.1",
+    "event-target-shim": "^6.0.2",
     "lit": "^2.0.0",
-    "tslib": "^1.10.0"
+    "tslib": "^2.0.3"
   }
 }

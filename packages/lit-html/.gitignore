@@ -1,4 +1,5 @@
 /development/
+/node/
 /version-stability-build/
 /directives/
 /node_modules/
@@ -11,3 +12,4 @@
 /polyfill-support.*
 /private-ssr-support.*
 /static.*
+/is-server.*
