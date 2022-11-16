@@ -316,10 +316,19 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
+export interface NameDescSummary {
+  name: string;
+  description: string | undefined;
+  summary: string | undefined;
+}
+
 interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   reactiveProperties: Map<string, ReactiveProperty>;
-  readonly events: Map<string, Event>;
+  events: Map<string, Event>;
+  slots: Map<string, NameDescSummary>;
+  cssProperties: Map<string, NameDescSummary>;
+  cssParts: Map<string, NameDescSummary>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -335,14 +344,19 @@ export class LitElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
 
   readonly reactiveProperties: Map<string, ReactiveProperty>;
-
   readonly events: Map<string, Event>;
+  readonly slots: Map<string, NameDescSummary>;
+  readonly cssProperties: Map<string, NameDescSummary>;
+  readonly cssParts: Map<string, NameDescSummary>;
 
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
     this.reactiveProperties = init.reactiveProperties;
     this.events = init.events;
+    this.slots = init.slots;
+    this.cssProperties = init.cssProperties;
+    this.cssParts = init.cssParts;
   }
 }
 

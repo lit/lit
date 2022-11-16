@@ -116,16 +116,10 @@ const convertLitElementDeclaration = (
     attributes: [
       // TODO
     ],
-    events: [...Array.from(declaration.events.values()).map(convertEvent)],
-    slots: [
-      // TODO
-    ],
-    cssParts: [
-      // TODO
-    ],
-    cssProperties: [
-      // TODO
-    ],
+    events: Array.from(declaration.events.values()).map(convertEvent),
+    slots: Array.from(declaration.slots.values()),
+    cssParts: Array.from(declaration.cssParts.values()),
+    cssProperties: Array.from(declaration.cssProperties.values()),
     demos: [
       // TODO
     ],

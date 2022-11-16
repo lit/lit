@@ -11,10 +11,16 @@
  */
 
 import ts from 'typescript';
+import {DiagnosticsError} from '../errors.js';
 import {getHeritage} from '../javascript/classes.js';
-import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
+import {
+  LitElementDeclaration,
+  AnalyzerInterface,
+  Event,
+  NameDescSummary,
+} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
-import {getEvents} from './events.js';
+import {addEventsToMap} from './events.js';
 import {getProperties} from './properties.js';
 
 /**
@@ -31,9 +37,91 @@ export const getLitElementDeclaration = (
     name: node.name?.text ?? '',
     node,
     reactiveProperties: getProperties(node, analyzer),
-    events: getEvents(node, analyzer),
+    ...getJSDocData(node, analyzer),
     getHeritage: () => getHeritage(node, analyzer),
   });
+};
+
+// Regex for parsing name, summary, and descriptions from JSDoc comments
+// for things like @slot, @cssPart, and @cssProp. Supports the following
+// patterns following the tag (TS parses the tag for us):
+// * @slot name
+// * @slot name summary
+// * @slot name: summary
+// * @slot name - summary
+// * @slot name - summary...
+// *
+// * description (multiline)
+const parseNameDescSummary =
+  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n]+)?(\n(?<description>[\s\S]*))?$/m;
+
+/**
+ * Parses element metadata from jsDoc tags from a LitElement declaration into
+ * Maps of <name, info>.
+ */
+export const getJSDocData = (
+  node: LitClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  const events = new Map<string, Event>();
+  const slots = new Map<string, NameDescSummary>();
+  const cssProperties = new Map<string, NameDescSummary>();
+  const cssParts = new Map<string, NameDescSummary>();
+  const jsDocTags = ts.getJSDocTags(node);
+  if (jsDocTags !== undefined) {
+    for (const tag of jsDocTags) {
+      switch (tag.tagName.text) {
+        case 'fires':
+          addEventsToMap(tag, events, analyzer);
+          break;
+        case 'slot':
+          addNamedDescriptionToMap(slots, tag);
+          break;
+        case 'cssProp':
+          addNamedDescriptionToMap(cssProperties, tag);
+          break;
+        case 'cssProperty':
+          addNamedDescriptionToMap(cssProperties, tag);
+          break;
+        case 'cssPart':
+          addNamedDescriptionToMap(cssParts, tag);
+          break;
+      }
+    }
+  }
+  return {
+    events,
+    slots,
+    cssProperties,
+    cssParts,
+  };
+};
+
+/**
+ * Adds name, description, and summary info for a given jsdoc tag into the
+ * provided map.
+ */
+const addNamedDescriptionToMap = (
+  map: Map<string, NameDescSummary>,
+  tag: ts.JSDocTag
+) => {
+  const {comment} = tag;
+  if (comment === undefined) {
+    return;
+  } else if (typeof comment === 'string') {
+    const nameDescSummary = comment.match(parseNameDescSummary);
+    if (nameDescSummary === null) {
+      throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
+    }
+    const {name, description, summary} = nameDescSummary.groups!;
+    map.set(name, {
+      name,
+      description,
+      summary,
+    });
+  } else {
+    throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
+  }
 };
 
 /**

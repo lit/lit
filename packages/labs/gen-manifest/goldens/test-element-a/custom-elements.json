@@ -29,9 +29,18 @@
           "tagName": "element-a",
           "attributes": [],
           "events": [{"name": "a-changed", "type": {"text": "TODO"}}],
-          "slots": [],
-          "cssParts": [],
-          "cssProperties": [],
+          "slots": [
+            {"name": "default", "summary": "The default slot"},
+            {"name": "stuff", "summary": "A slot for stuff"}
+          ],
+          "cssParts": [
+            {"name": "header", "summary": "The header"},
+            {"name": "footer", "summary": "The footer"}
+          ],
+          "cssProperties": [
+            {"name": "--foreground-color", "summary": "The foreground color"},
+            {"name": "--background-color", "summary": "The background color"}
+          ],
           "demos": [],
           "customElement": true
         },
