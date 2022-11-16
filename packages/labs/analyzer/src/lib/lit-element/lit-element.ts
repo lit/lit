@@ -53,7 +53,7 @@ export const getLitElementDeclaration = (
 // *
 // * description (multiline)
 const parseNameDescSummary =
-  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n]+)?([\n\r]+(?<description>[\s\S]*))?$/m;
+  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n\r]+)?([\n\r]+(?<description>[\s\S]*))?$/m;
 
 /**
  * Parses element metadata from jsDoc tags from a LitElement declaration into
@@ -116,13 +116,22 @@ const addNamedDescriptionToMap = (
     const {name, description, summary} = nameDescSummary.groups!;
     map.set(name, {
       name,
-      description,
       summary,
+      description:
+        description !== undefined
+          ? normalizeLineEndings(description)
+          : undefined,
     });
   } else {
     throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
   }
 };
+
+/**
+ * Remove line feeds from jsdoc summaries, so they are normalized to
+ * unix `\n` line endings.
+ */
+const normalizeLineEndings = (s: string) => s.replace(/\r/g, '');
 
 /**
  * Returns true if this type represents the actual LitElement class.
