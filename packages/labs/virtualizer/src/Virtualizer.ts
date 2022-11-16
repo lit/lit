@@ -714,19 +714,23 @@ export class Virtualizer {
   }
 
   private _scrollElementIntoView(options: ScrollElementIntoViewOptions) {
-    options.index = Math.min(options.index, this._items.length - 1);
-    if (options.behavior === 'smooth') {
-      const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
-      const {behavior} = options;
-      this._updateScrollIntoViewCoordinates =
-        this._scrollerController!.managedScrollTo(
-          Object.assign(coordinates, {behavior}),
-          () => this._layout!.getScrollIntoViewCoordinates(options),
-          () => (this._scrollIntoViewTarget = null)
-        );
-      this._scrollIntoViewTarget = options;
+    if (options.index >= this._first && options.index <= this._last) {
+      this._children[options.index - this._first].scrollIntoView(options);
     } else {
-      this._layout!.pin = options;
+      options.index = Math.min(options.index, this._items.length - 1);
+      if (options.behavior === 'smooth') {
+        const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
+        const {behavior} = options;
+        this._updateScrollIntoViewCoordinates =
+          this._scrollerController!.managedScrollTo(
+            Object.assign(coordinates, {behavior}),
+            () => this._layout!.getScrollIntoViewCoordinates(options),
+            () => (this._scrollIntoViewTarget = null)
+          );
+        this._scrollIntoViewTarget = options;
+      } else {
+        this._layout!.pin = options;
+      }
     }
   }
 

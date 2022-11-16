@@ -566,10 +566,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _getItemSize(idx: number): Size {
     return {
-      [this._sizeDim]:
-        (this._getSize(idx) || this._getAverageSize()) +
-        (this._metricsCache.getMarginSize(idx + 1) ??
-          this._metricsCache.averageMarginSize),
+      [this._sizeDim]: this._getSize(idx) || this._getAverageSize(),
       [this._secondarySizeDim]: this._itemSize[this._secondarySizeDim],
     } as Size;
   }
