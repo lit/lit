@@ -6,19 +6,35 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
-import {AnalyzerInterface, Reference} from './model.js';
-import {getModule} from './javascript/modules.js';
+import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
+import {
+  getResolvedExportFromSourcePath,
+  getPathForModuleSpecifier,
+  getModuleInfo,
+} from './javascript/modules.js';
 import {AbsolutePath} from './paths.js';
 
-const npmModule = /^(?<package>(@\w+\/\w+)|\w+)\/?(?<module>.*)$/;
+const npmModule = /^(?<package>(@[^/]+\/[^/]+)|[^/]+)\/?(?<module>.*)$/;
 
 /**
- * Returns the module specifier for a declaration if it was imported,
+ * Returns if the given declaration is exported from the module or not.
+ */
+export const isExport = (node: ts.Declaration) =>
+  !!node.modifiers?.find((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+
+interface ModuleSpecifierInfo {
+  specifier: string;
+  location: ts.Node;
+  name: string;
+}
+
+/**
+ * Returns the module specifier expression for a declaration if it was imported,
  * or `undefined` if the declaration was not imported.
  */
-const getImportNameAndModuleSpecifier = (
+const getImportSpecifierInfo = (
   declaration: ts.Node
-): {module: string; name: string} | undefined => {
+): ModuleSpecifierInfo | undefined => {
   // TODO(kschaaf) support the various import syntaxes, e.g. `import {foo as bar} from 'baz'`
   if (
     ts.isImportSpecifier(declaration) &&
@@ -26,16 +42,39 @@ const getImportNameAndModuleSpecifier = (
     ts.isImportClause(declaration.parent.parent) &&
     ts.isImportDeclaration(declaration.parent.parent.parent)
   ) {
-    const module = declaration.parent.parent.parent.moduleSpecifier
-      .getText()
-      // Remove quotes
-      .slice(1, -1);
+    const specifierExpression =
+      declaration.parent.parent.parent.moduleSpecifier;
+    const specifier = getSpecifierString(specifierExpression);
     return {
-      module,
+      specifier,
+      location: specifierExpression,
       name: declaration.propertyName?.text ?? declaration.name.text,
     };
   }
   return undefined;
+};
+
+/**
+ * Returns an analyzer `Reference` object for the given identifier.
+ *
+ * If the symbol's declaration was imported, the Reference will be based on
+ * the import's module specifier; otherwise the Reference will point to the
+ * current module being analyzed.
+ */
+export const getReferenceForIdentifier = (
+  identifier: ts.Identifier,
+  analyzer: AnalyzerInterface
+) => {
+  const symbol = analyzer.program
+    .getTypeChecker()
+    .getSymbolAtLocation(identifier);
+  if (symbol === undefined) {
+    throw new DiagnosticsError(
+      identifier,
+      'Internal error: Could not get symbol for identifier.'
+    );
+  }
+  return getReferenceForSymbol(symbol, identifier, analyzer);
 };
 
 /**
@@ -50,7 +89,6 @@ export function getReferenceForSymbol(
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): Reference {
-  const {path} = analyzer;
   const {name: symbolName} = symbol;
   // TODO(kschaaf): Do we need to check other declarations? The assumption is
   // that even with multiple declarations (e.g. because of class interface +
@@ -66,90 +104,265 @@ export function getReferenceForSymbol(
   }
   const declarationSourceFile = declaration.getSourceFile();
   const locationSourceFile = location.getSourceFile();
-  // There are 6 cases to cover:
-  // 1. A global symbol that wasn't imported; in this case, its declaration
-  //    will exist in a different source file than where we got the symbol
-  //    from. For all other cases, the symbol's declaration node will be in
-  //    this file, either as an ImportModuleSpecifier or a normal declaration.
-  // 2. A symbol imported from a URL. The declaration will be an
-  //    ImportModuleSpecifier and its module path will be parsable as a URL.
-  // 3. A symbol imported from a relative file within this package. The
-  //    declaration will be an ImportModuleSpecifier and its module path will
-  //    start with a '.'
-  // 4. A symbol imported from an absolute path. The declaration will be an
-  //    ImportModuleSpecifier and its module path will start with a '/' This
-  //    is a weird case to cover in the analyzer because it isn't portable.
-  // 5. A symbol imported from an external package. The declaration will be an
-  //    ImportModuleSpecifier and its module path will not start with a '.'
-  // 6. A symbol declared in this file. The declaration will be one of many
-  //    declaration types (just not an ImportModuleSpecifier).
+  // There are three top-level cases to cover:
+  // 1. A global symbol that wasn't imported.
+  // 2. An imported symbol
+  // 3. A symbol declared in this file.
   if (declarationSourceFile !== locationSourceFile) {
     // If the reference declaration doesn't exist in this module, it must have
     // been a global (whose declaration is in an ambient .d.ts file)
     // TODO(kschaaf): We might want to further differentiate e.g. DOM globals
     // (that don't have any e.g. source to link to) from other ambient
     // declarations where we could at least point to a declaration file
-    return new Reference({
-      name: symbolName,
-      isGlobal: true,
-    });
+    return getGlobalReference(declarationSourceFile, symbolName, analyzer);
   } else {
-    const importInfo = getImportNameAndModuleSpecifier(declaration);
+    // For all other cases, the symbol's declaration node will be in this file,
+    // either as an ImportDeclaration or a normal declaration.
+    const importInfo = getImportSpecifierInfo(declaration);
     if (importInfo !== undefined) {
-      const {module: moduleSpecifier, name: importName} = importInfo;
-      let refPackage;
-      let refModule;
-      // The symbol was imported; check whether it is a URL, absolute, package
-      // local, or external
-      try {
-        new URL(moduleSpecifier);
-        refPackage = '';
-        refModule = moduleSpecifier;
-      } catch {
-        if (moduleSpecifier[0] === '.') {
-          // Relative import from this package: use the current package and
-          // module path relative to this module
-          const module = getModule(
-            location.getSourceFile().fileName as AbsolutePath,
-            analyzer
-          );
-          refPackage = module.packageJson.name;
-          refModule = path.join(path.dirname(module.jsPath), moduleSpecifier);
-        } else if (moduleSpecifier[0] === '/') {
-          // Absolute import; no package, just use the entire path as the
-          // module
-          refPackage = '';
-          refModule = moduleSpecifier;
-        } else {
-          // External import: extract the npm package (taking care to respect
-          // npm orgs) and module specifier (if any)
-          const info = moduleSpecifier.match(npmModule);
-          if (!info || !info.groups) {
-            throw new DiagnosticsError(
-              declaration,
-              `External npm package could not be parsed from module specifier '${moduleSpecifier}'.`
-            );
-          }
-          refPackage = info.groups.package;
-          refModule = info.groups.module || undefined;
-        }
-      }
-      return new Reference({
-        name: importName,
-        package: refPackage,
-        module: refModule,
-      });
-    } else {
-      // Declared in this file: use the current package and module
-      const module = getModule(
-        location.getSourceFile().fileName as AbsolutePath,
+      // Declaration was imported
+      return getImportReference(
+        importInfo.specifier,
+        importInfo.location,
+        importInfo.name,
         analyzer
       );
-      return new Reference({
-        name: symbolName,
-        package: module.packageJson.name,
-        module: module.jsPath,
-      });
+    } else {
+      // Declared in this file: use the current package and module
+      return getLocalReference(location, symbolName, analyzer);
     }
   }
 }
+
+/**
+ * Returns a `Reference` for a global symbol that was not imported.
+ */
+const getGlobalReference = (
+  declarationSourceFile: ts.SourceFile,
+  name: string,
+  analyzer: AnalyzerInterface
+) => {
+  return new Reference({
+    name,
+    isGlobal: true,
+    dereference: () =>
+      getResolvedExportFromSourcePath(
+        declarationSourceFile.fileName as AbsolutePath,
+        name,
+        analyzer
+      ),
+  });
+};
+
+/**
+ * Returns a `Reference` for a symbol that was imported.
+ *
+ * There are 4 main categories of imports we cover:
+ *
+ * 1. A symbol imported from a URL. The declaration will be an
+ *    ImportModuleSpecifier and its module path will be parsable as a URL.
+ *
+ * 2. A symbol imported from a relative file within this package. The
+ *    declaration will be an ImportModuleSpecifier and its module path will
+ *    start with a '.'
+ *
+ * 3. A symbol imported from an absolute path. The declaration will be an
+ *    ImportModuleSpecifier and its module path will start with a '/' This is a
+ *    weird case to cover in the analyzer because it isn't portable.
+ *
+ * 4. A symbol imported from an external package. The declaration will be an
+ *    ImportModuleSpecifier and its module path will not start with a '.'
+ */
+export const getImportReference = (
+  specifier: string,
+  location: ts.Node,
+  name: string,
+  analyzer: AnalyzerInterface
+) => {
+  const {path} = analyzer;
+  let refPackage;
+  let refModule;
+  // Check whether it is a URL, absolute, package local, or external
+  try {
+    new URL(specifier);
+    refPackage = '';
+    refModule = specifier;
+  } catch {
+    if (specifier[0] === '.') {
+      // Relative import from this package: use the current package and
+      // module path relative to this module
+      const sourceFilePath = location.getSourceFile().fileName as AbsolutePath;
+      const module = getModuleInfo(sourceFilePath, analyzer);
+      refPackage = module.packageJson.name;
+      refModule = path.join(path.dirname(module.jsPath), specifier);
+    } else if (analyzer.path.isAbsolute(specifier)) {
+      // Absolute import; no package, just use the entire path as the
+      // module
+      refPackage = '';
+      refModule = specifier;
+    } else {
+      // External import: extract the npm package (taking care to respect
+      // npm orgs) and module specifier (if any)
+      const info = specifier.match(npmModule);
+      if (!info || !info.groups) {
+        throw new DiagnosticsError(
+          location,
+          `External npm package could not be parsed from module specifier '${specifier}'.`
+        );
+      }
+      refPackage = info.groups.package;
+      refModule = info.groups.module || undefined;
+    }
+  }
+  return new Reference({
+    name,
+    package: refPackage,
+    module: refModule,
+    dereference: () =>
+      getResolvedExportFromSourcePath(
+        getPathForModuleSpecifier(specifier, location, analyzer),
+        name,
+        analyzer
+      ),
+  });
+};
+
+/**
+ * Returns a `Reference` for a symbol that was imported.
+ */
+export const getImportReferenceForSpecifierExpression = (
+  specifierExpression: ts.Expression,
+  name: string,
+  analyzer: AnalyzerInterface
+) => {
+  const specifier = getSpecifierString(specifierExpression);
+  return getImportReference(specifier, specifierExpression, name, analyzer);
+};
+
+/**
+ * Returns a `Reference` to a symbol declared in the current source file.
+ */
+const getLocalReference = (
+  location: ts.Node,
+  name: string,
+  analyzer: AnalyzerInterface
+) => {
+  const module = getModuleInfo(
+    location.getSourceFile().fileName as AbsolutePath,
+    analyzer
+  );
+  return new Reference({
+    name,
+    package: module.packageJson.name,
+    module: module.jsPath,
+    dereference: () =>
+      getResolvedExportFromSourcePath(
+        location.getSourceFile().fileName as AbsolutePath,
+        name,
+        analyzer
+      ),
+  });
+};
+
+/**
+ * For a given export clause and (optional) specifier from an export statement,
+ * returns an array of objects mapping the export name to a
+ * LocalNameOrReference, which is a string name that can be looked up directly
+ * in `getDeclaration()` of the declaring module for local declarations, or a
+ * `Reference` in the case of re-exported declarations.
+ *
+ * For example:
+ * ```
+ *   import {a} from 'foo';
+ *   const b = 'b';
+ *   const c = 'c';
+ *   export {a as x, b as y, c};
+ * ```
+ * This would return (using pseudo-code for Reference objects):
+ * ```
+ * [
+ *   {name: 'x', reference: new Reference('a', 'foo')},
+ *   {name: 'y', reference: 'b'},
+ *   {name: 'c', reference: 'c'},
+ * ]
+ * ```
+ * This also handles explicit re-export syntax, which all become References:
+ * ```
+ *   export {a as x, b as y, c} from 'foo';
+ * ```
+ */
+export const getExportReferences = (
+  exportClause: ts.NamedExportBindings,
+  moduleSpecifier: ts.Expression | undefined,
+  analyzer: AnalyzerInterface
+): Array<{exportName: string; decNameOrRef: LocalNameOrReference}> => {
+  const refs: Array<{exportName: string; decNameOrRef: string | Reference}> =
+    [];
+  if (ts.isNamedExports(exportClause)) {
+    for (const el of exportClause.elements) {
+      const exportName = (el.propertyName ?? el.name).getText();
+      if (moduleSpecifier !== undefined) {
+        // This was an explicit re-export (e.g. `export {a} from 'foo'`), so add
+        // a Reference
+        const specifier = getSpecifierString(moduleSpecifier);
+        refs.push({
+          exportName,
+          decNameOrRef: getImportReference(
+            specifier,
+            moduleSpecifier,
+            el.name.getText(),
+            analyzer
+          ),
+        });
+      } else {
+        // Get the declaration for this symbol, so we can determine if
+        // it was declared locally or not
+        const symbol = analyzer.program
+          .getTypeChecker()
+          .getSymbolAtLocation(el.name);
+        const decl = symbol?.declarations?.[0];
+        if (symbol === undefined || decl === undefined) {
+          throw new DiagnosticsError(
+            el,
+            `Could not find declaration for symbol`
+          );
+        }
+        if (ts.isImportSpecifier(decl)) {
+          // If the declaration was an import specifier, this means it's being
+          // re-exported, so add a Reference
+          refs.push({
+            exportName,
+            decNameOrRef: getReferenceForSymbol(symbol, decl, analyzer),
+          });
+        } else {
+          // Otherwise, the declaration is local, so just add its name; this
+          // can be looked up directly in `getDeclaration` for the module
+          refs.push({exportName, decNameOrRef: el.name.getText()});
+        }
+      }
+    }
+  } else {
+    throw new DiagnosticsError(
+      exportClause,
+      `Unhandled form of ExportDeclaration`
+    );
+  }
+  return refs;
+};
+
+/**
+ * Returns the specifier string from a specifier expression.
+ *
+ * For a given import statement:
+ * ```
+ * import {foo} from 'foo/bar.js';
+ * ```
+ * The specifierExpression is the string literal 'foo/bar.js' whose getText()
+ * includes the quotes. This function returns the string value without the
+ * quotes.
+ */
+export const getSpecifierString = (specifierExpression: ts.Expression) => {
+  // A specifier expression is always expected to be a quoted string literal.
+  // Slice off the quotes and return the text.
+  return specifierExpression.getText().slice(1, -1);
+};

@@ -5,6 +5,7 @@
  */
 
 import * as pathlib from 'path';
+import {AnalyzerInterface} from './model.js';
 
 /**
  * An absolute path
@@ -39,4 +40,21 @@ export const absoluteToPackage = (
     packagePath = packagePath.substring(1, packagePath.length);
   }
   return packagePath as PackagePath;
+};
+
+export const resolveExtension = (
+  path: AbsolutePath,
+  analyzer: AnalyzerInterface,
+  extensions = ['js', 'mjs']
+) => {
+  if (analyzer.fs.fileExists(path)) {
+    return path;
+  }
+  for (const ext of extensions) {
+    const fileName = `${path}.${ext}`;
+    if (analyzer.fs.fileExists(fileName)) {
+      return fileName;
+    }
+  }
+  throw new Error(`Could not resolve ${path} to a file on disk.`);
 };

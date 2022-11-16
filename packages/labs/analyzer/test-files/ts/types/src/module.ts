@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ImportedClass, ImportedInterface} from './external.js';
-import {LitElement} from 'lit';
+import {ImportedClass, ImportedInterface, returnsClass} from './external.js';
+import {LitElement, html} from 'lit';
 
 // eslint-disable-next-line @typescript-eslint/no-inferrable-types
 export const testString: string = 'hi';
@@ -73,3 +73,5 @@ const [separatelyExportedDestructArr, [separatelyExportedDestructArrNested]] = [
   [new LitElement()],
 ];
 export {separatelyExportedDestructArr, separatelyExportedDestructArrNested};
+
+export const importedType = Math.random() ? returnsClass() : html``;

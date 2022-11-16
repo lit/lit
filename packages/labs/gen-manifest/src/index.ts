@@ -18,6 +18,22 @@ import {
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
+/**
+ * Our command for the Lit CLI.
+ *
+ * See ../../cli/src/lib/generate/generate.ts
+ */
+export const getCommand = () => {
+  return {
+    name: 'manifest',
+    description: 'Generate custom-elements.json manifest.',
+    kind: 'resolved',
+    async generate(options: {package: Package}): Promise<FileTree> {
+      return await generateManifest(options.package);
+    },
+  };
+};
+
 export const generateManifest = async (
   analysis: Package
 ): Promise<FileTree> => {
@@ -93,12 +109,13 @@ const convertLitElementDeclaration = (
 const convertClassDeclaration = (
   declaration: ClassDeclaration
 ): cem.ClassDeclaration => {
+  const {superClass} = declaration.heritage;
   return {
     kind: 'class',
     name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
     summary: 'TODO', // TODO
     description: 'TODO', // TODO
-    superclass: undefined, // TODO
+    superclass: superClass ? convertReference(superClass) : undefined,
     mixins: [], // TODO
     members: [
       // TODO: ClassField

@@ -11,6 +11,7 @@
  */
 
 import ts from 'typescript';
+import {getHeritage} from '../javascript/classes.js';
 import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {getEvents} from './events.js';
@@ -31,19 +32,33 @@ export const getLitElementDeclaration = (
     node,
     reactiveProperties: getProperties(node, analyzer),
     events: getEvents(node, analyzer),
+    getHeritage: () => getHeritage(node, analyzer),
   });
 };
 
 /**
  * Returns true if this type represents the actual LitElement class.
  */
-const _isLitElementClassDeclaration = (t: ts.BaseType) => {
+const _isLitElementClassDeclaration = (
+  t: ts.BaseType,
+  analyzer: AnalyzerInterface
+) => {
   // TODO: should we memoize this for performance?
   const declarations = t.getSymbol()?.getDeclarations();
   if (declarations?.length !== 1) {
     return false;
   }
   const node = declarations[0];
+  return _isLitElement(node) || isLitElementSubclass(node, analyzer);
+};
+
+/**
+ * Returns true if the given declaration is THE LitElement declaration.
+ *
+ * TODO(kschaaf): consider a less brittle method of detecting canonical
+ * LitElement
+ */
+const _isLitElement = (node: ts.Declaration) => {
   return (
     _isLitElementModule(node.getSourceFile()) &&
     ts.isClassDeclaration(node) &&
@@ -51,6 +66,9 @@ const _isLitElementClassDeclaration = (t: ts.BaseType) => {
   );
 };
 
+/**
+ * Returns true if the given source file is THE lit-element source file.
+ */
 const _isLitElementModule = (file: ts.SourceFile) => {
   return (
     file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts') ||
@@ -73,7 +91,7 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
 /**
  * Returns true if `node` is a ClassLikeDeclaration that extends LitElement.
  */
-export const isLitElement = (
+export const isLitElementSubclass = (
   node: ts.Node,
   analyzer: AnalyzerInterface
 ): node is LitClassDeclaration => {
@@ -84,7 +102,7 @@ export const isLitElement = (
   const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
   const baseTypes = checker.getBaseTypes(type);
   for (const t of baseTypes) {
-    if (_isLitElementClassDeclaration(t)) {
+    if (_isLitElementClassDeclaration(t, analyzer)) {
       return true;
     }
   }

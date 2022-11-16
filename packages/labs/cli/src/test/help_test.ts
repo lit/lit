@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'source-map-support/register.js';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../lib/lit-cli.js';
