@@ -13,6 +13,7 @@ import * as assert from 'uvu/assert';
 import {RenderInfo} from '../../index.js';
 
 import type * as testModule from '../test-files/render-test-module.js';
+import {collectResultSync} from '../../lib/render-result.js';
 
 const loader = new ModuleLoader({
   global: getWindow({
@@ -42,25 +43,17 @@ const setup = async () => {
   const namespace = (await appModuleImport).module
     .namespace as typeof testModule;
 
-  /** Joins an iterable into a string */
-  const collectResult = (iterable: Iterable<string>) => {
-    let result = '';
-    for (const chunk of iterable) {
-      result += chunk;
-    }
-    return result;
-  };
-
   return {
     ...namespace,
 
     /** Renders the value with declarative shadow roots */
     render(r: any, renderInfo?: Partial<RenderInfo>) {
-      return collectResult(namespace.render(r, renderInfo));
+      return collectResultSync(namespace.render(r, renderInfo));
     },
 
     /** Renders the value with flattened shadow roots */
-    renderFlattened: (r: any) => collectResult(namespace.render(r, undefined)),
+    renderFlattened: (r: any) =>
+      collectResultSync(namespace.render(r, undefined)),
   };
 };
 

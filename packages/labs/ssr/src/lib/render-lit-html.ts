@@ -56,6 +56,9 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import {LitElementRenderer} from './lit-element-renderer.js';
 
+import type {RenderResult} from './render-result.js';
+export type {RenderResult} from './render-result.js';
+
 declare module 'parse5' {
   interface Element {
     isDefinedCustomElement?: boolean;
@@ -555,22 +558,22 @@ declare global {
 export function* render(
   value: unknown,
   renderInfo?: Partial<RenderInfo>
-): IterableIterator<string> {
+): RenderResult {
   renderInfo = {...defaultRenderInfo, ...renderInfo};
   yield* renderValue(value, renderInfo as RenderInfo);
 }
 
-function* renderValue(
-  value: unknown,
-  renderInfo: RenderInfo
-): IterableIterator<string> {
+function* renderValue(value: unknown, renderInfo: RenderInfo): RenderResult {
   patchIfDirective(value);
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
     const instance = getLast(renderInfo.customElementInstanceStack);
     if (instance !== undefined) {
-      yield* instance.renderLight(renderInfo);
+      const renderLightResult = instance.renderLight(renderInfo);
+      if (renderLightResult !== undefined) {
+        yield* renderLightResult;
+      }
     }
     value = null;
   } else {
@@ -605,7 +608,7 @@ function* renderValue(
 function* renderTemplateResult(
   result: TemplateResult,
   renderInfo: RenderInfo
-): IterableIterator<string> {
+): RenderResult {
   // In order to render a TemplateResult we have to handle and stream out
   // different parts of the result separately:
   //   - Literal sections of the template
