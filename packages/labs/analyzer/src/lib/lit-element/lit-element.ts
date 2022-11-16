@@ -53,7 +53,7 @@ export const getLitElementDeclaration = (
 // *
 // * description (multiline)
 const parseNameDescSummary =
-  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n]+)?(\n(?<description>[\s\S]*))?$/m;
+  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n]+)?([\n\r]+(?<description>[\s\S]*))?$/m;
 
 /**
  * Parses element metadata from jsDoc tags from a LitElement declaration into
