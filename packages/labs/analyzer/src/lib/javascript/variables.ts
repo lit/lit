@@ -16,7 +16,7 @@ import {
   AnalyzerInterface,
   DeclarationInfo,
 } from '../model.js';
-import {isExport} from '../references.js';
+import {hasExportKeyword} from '../references.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 
@@ -49,8 +49,9 @@ export const getVariableDeclarationInfo = (
   statement: ts.VariableStatement,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
+  const isExport = hasExportKeyword(statement);
   return statement.declarationList.declarations
-    .map((d) => getVariableDeclarationInfoList(d, d.name, analyzer))
+    .map((d) => getVariableDeclarationInfoList(d, d.name, isExport, analyzer))
     .flat();
 };
 
@@ -62,6 +63,7 @@ export const getVariableDeclarationInfo = (
 const getVariableDeclarationInfoList = (
   dec: ts.VariableDeclaration,
   name: VariableName,
+  isExport: boolean,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
   if (ts.isIdentifier(name)) {
@@ -69,7 +71,7 @@ const getVariableDeclarationInfoList = (
       {
         name: name.text,
         factory: () => getVariableDeclaration(dec, name, analyzer),
-        isExport: isExport(dec),
+        isExport,
       },
     ];
   } else if (
@@ -82,7 +84,9 @@ const getVariableDeclarationInfoList = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarationInfoList(dec, el.name, analyzer))
+      .map((el) =>
+        getVariableDeclarationInfoList(dec, el.name, isExport, analyzer)
+      )
       .flat();
   } else {
     throw new DiagnosticsError(

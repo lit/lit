@@ -14,6 +14,7 @@ import {
   Reference,
   Type,
   VariableDeclaration,
+  LitElementExport,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
@@ -57,7 +58,10 @@ const convertModule = (module: Module): cem.Module => {
     description: 'TODO', // TODO
     declarations: [...module.declarations.map(convertDeclaration)],
     exports: [
-      // TODO
+      ...module.exportNames.map((name) =>
+        convertJavascriptExport(name, module.getExportReference(name))
+      ),
+      ...module.getCustomElementExports().map(convertCustomElementExport),
     ],
     deprecated: false, // TODO
   };
@@ -78,6 +82,29 @@ const convertDeclaration = (declaration: Declaration): cem.Declaration => {
       `Unknown declaration: ${(declaration as Object).constructor.name}`
     );
   }
+};
+
+const convertJavascriptExport = (
+  name: string,
+  reference: Reference
+): cem.JavaScriptExport => {
+  return {
+    kind: 'js',
+    name,
+    declaration: convertReference(reference),
+  };
+};
+
+const convertCustomElementExport = (
+  declaration: LitElementExport
+): cem.CustomElementExport => {
+  return {
+    kind: 'custom-element-definition',
+    name: declaration.tagname,
+    declaration: {
+      name: declaration.name,
+    },
+  };
 };
 
 const convertLitElementDeclaration = (

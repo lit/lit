@@ -32,3 +32,5 @@ export let localTypeVar: ElementA;
 export let packageTypeVar: Foo<Baz>;
 export let externalTypeVar: LitElement;
 export let globalTypeVar: HTMLElement;
+
+export {Foo, Baz, localTypeVar as local};

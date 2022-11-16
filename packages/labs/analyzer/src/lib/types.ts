@@ -14,26 +14,11 @@ import {
   PackagePath,
   resolveExtension,
 } from './paths.js';
-import {getImportReference, getReferenceForSymbol} from './references.js';
-
-/**
- * Returns a ts.Symbol for a name in scope at a given location in the AST.
- * TODO(kschaaf): There are ~1748 symbols in scope of a typical hello world,
- * due to DOM globals. Perf might become an issue here.
- */
-export const getSymbolForName = (
-  name: string,
-  location: ts.Node,
-  analyzer: AnalyzerInterface
-): ts.Symbol | undefined => {
-  return analyzer.program
-    .getTypeChecker()
-    .getSymbolsInScope(
-      location,
-      (ts.SymbolFlags as unknown as {All: number}).All
-    )
-    .filter((s) => s.name === name)[0];
-};
+import {
+  getImportReference,
+  getReferenceForSymbol,
+  getSymbolForName,
+} from './references.js';
 
 /**
  * Returns an analyzer `Type` object for the given jsDoc tag.

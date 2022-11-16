@@ -176,10 +176,29 @@ export class Module {
   getExport(name: string): Declaration | Reference {
     this._ensureExportsFinalized();
     const exp = this._exportMap.get(name);
-    if (exp instanceof Reference) {
+    if (exp === undefined) {
+      throw new Error(
+        `Module ${this.sourcePath} did not contain an export named ${name}`
+      );
+    } else if (exp instanceof Reference) {
       return exp;
     } else {
-      return this.getDeclaration(name);
+      return this.getDeclaration(exp);
+    }
+  }
+
+  /**
+   * Return Reference for given export name.
+   *
+   * For references to local declarations, the module will be undefined.
+   * For re-exports, the Reference will point to a package & module.
+   */
+  getExportReference(name: string): Reference {
+    const exp = this.getExport(name);
+    if (exp instanceof Declaration) {
+      return new Reference({name: exp.name, dereference: () => exp});
+    } else {
+      return exp;
     }
   }
 
@@ -224,6 +243,15 @@ export class Module {
     return (this._declarations ??= Array.from(this._declarationMap.keys()).map(
       (name) => this.getDeclaration(name)
     ));
+  }
+
+  /**
+   * Returns all custom elements registered in this module.
+   */
+  getCustomElementExports(): LitElementExport[] {
+    return this.declarations.filter(
+      (d) => d.isLitElementDeclaration() && d.tagname !== undefined
+    ) as LitElementExport[];
   }
 }
 
@@ -316,6 +344,13 @@ export class LitElementDeclaration extends ClassDeclaration {
     this.reactiveProperties = init.reactiveProperties;
     this.events = init.events;
   }
+}
+
+/**
+ * A LitElementDeclaration that has been globally registered with a tagname.
+ */
+export interface LitElementExport extends LitElementDeclaration {
+  tagname: string;
 }
 
 export interface ReactiveProperty {
