@@ -28,7 +28,6 @@ import fetch from 'node-fetch';
 export const getWindow = ({
   includeJSBuiltIns = false,
   props = {},
-  exposeWindow = true,
 }): {[key: string]: unknown} => {
   const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
   const attributesForElement = (element: HTMLElement) => {
@@ -161,14 +160,6 @@ export const getWindow = ({
     ...props,
   };
 
-  // Many libraries look for `window` to determine a browser environment
-  // This prevents that exposure as `globalThis` is enough in the vast majority of cases
-  // This is currently off by default, but may become default in future versions
-  // See https://github.com/lit/lit/issues/3412
-  if (exposeWindow) {
-    window.window = window;
-  }
-
   if (includeJSBuiltIns) {
     Object.assign(window, {
       // No-op any async tasks
@@ -206,19 +197,11 @@ export const getWindow = ({
   return window;
 };
 
-export const installWindowOnGlobal = (
-  props: {[key: string]: unknown} = {},
-  exposeWindow = true
-) => {
+export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
   // Avoid installing the DOM shim if one already exists
   if (globalThis.window === undefined) {
-    const window = getWindow({props, exposeWindow});
+    const window = getWindow({props});
     // Copy initial window globals to node global
     Object.assign(globalThis, window);
-    // Set up global reference to window so all globals added to window are
-    // added to the node global, unless we explicitly don't want to do this.
-    if (exposeWindow) {
-      globalThis.window = globalThis as typeof globalThis & Window;
-    }
   }
 };

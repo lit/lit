@@ -31,8 +31,10 @@ export const ssrMiddleware = () => {
       module = await import(`../tests/${testFile}-ssr.js`);
     } else {
       // mode === 'vm'
+      const window = getWindow({includeJSBuiltIns: true});
+      window.window = window;
       const loader = new ModuleLoader({
-        global: getWindow({includeJSBuiltIns: true}),
+        global: window,
       });
       module = (
         await loader.importModule(

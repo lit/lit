@@ -33,15 +33,13 @@ function testWithHtmlElement(HTMLElement: any) {
 }
 
 function testWithGlobalShim() {
-  installWindowOnGlobal({}, false);
+  installWindowOnGlobal({});
   const {HTMLElement} = globalThis;
-  console.log(globalThis);
   testWithHtmlElement(HTMLElement);
 }
 function testWithWindow() {
-  const window = getWindow({}) as unknown as Window;
-  const {HTMLElement} = window.window;
-  window.window;
+  const window = getWindow({});
+  const {HTMLElement} = window;
   testWithHtmlElement(HTMLElement);
 }
 
