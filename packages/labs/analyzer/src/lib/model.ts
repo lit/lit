@@ -255,14 +255,20 @@ export class Module {
   }
 }
 
-interface DeclarationInit {
+interface DeclarationInit extends NodeJSDocInfo {
   name: string;
 }
 
 export abstract class Declaration {
-  name: string;
+  readonly name: string;
+  readonly description?: string | undefined;
+  readonly summary?: string | undefined;
+  readonly deprecated?: string | boolean | undefined;
   constructor(init: DeclarationInit) {
     this.name = init.name;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
   }
   isVariableDeclaration(): this is VariableDeclaration {
     return this instanceof VariableDeclaration;
@@ -316,19 +322,25 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
-export interface NameDescSummary {
+export interface NamedJSDocInfo {
   name: string;
-  description: string | undefined;
-  summary: string | undefined;
+  description?: string | undefined;
+  summary?: string | undefined;
+}
+
+export interface NodeJSDocInfo {
+  description?: string | undefined;
+  summary?: string | undefined;
+  deprecated?: string | boolean | undefined;
 }
 
 interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   reactiveProperties: Map<string, ReactiveProperty>;
   events: Map<string, Event>;
-  slots: Map<string, NameDescSummary>;
-  cssProperties: Map<string, NameDescSummary>;
-  cssParts: Map<string, NameDescSummary>;
+  slots: Map<string, NamedJSDocInfo>;
+  cssProperties: Map<string, NamedJSDocInfo>;
+  cssParts: Map<string, NamedJSDocInfo>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -345,9 +357,9 @@ export class LitElementDeclaration extends ClassDeclaration {
 
   readonly reactiveProperties: Map<string, ReactiveProperty>;
   readonly events: Map<string, Event>;
-  readonly slots: Map<string, NameDescSummary>;
-  readonly cssProperties: Map<string, NameDescSummary>;
-  readonly cssParts: Map<string, NameDescSummary>;
+  readonly slots: Map<string, NamedJSDocInfo>;
+  readonly cssProperties: Map<string, NamedJSDocInfo>;
+  readonly cssParts: Map<string, NamedJSDocInfo>;
 
   constructor(init: LitElementDeclarationInit) {
     super(init);

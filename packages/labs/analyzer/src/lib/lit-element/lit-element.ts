@@ -11,13 +11,13 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
 import {getHeritage} from '../javascript/classes.js';
+import {parseNodeJSDocInfo, parseNameDescSummary} from '../javascript/jsdoc.js';
 import {
   LitElementDeclaration,
   AnalyzerInterface,
   Event,
-  NameDescSummary,
+  NamedJSDocInfo,
 } from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {addEventsToMap} from './events.js';
@@ -42,19 +42,6 @@ export const getLitElementDeclaration = (
   });
 };
 
-// Regex for parsing name, summary, and descriptions from JSDoc comments
-// for things like @slot, @cssPart, and @cssProp. Supports the following
-// patterns following the tag (TS parses the tag for us):
-// * @slot name
-// * @slot name summary
-// * @slot name: summary
-// * @slot name - summary
-// * @slot name - summary...
-// *
-// * description (multiline)
-const parseNameDescSummary =
-  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n\r]+)?([\n\r]+(?<description>[\s\S]*))?$/m;
-
 /**
  * Parses element metadata from jsDoc tags from a LitElement declaration into
  * Maps of <name, info>.
@@ -64,9 +51,9 @@ export const getJSDocData = (
   analyzer: AnalyzerInterface
 ) => {
   const events = new Map<string, Event>();
-  const slots = new Map<string, NameDescSummary>();
-  const cssProperties = new Map<string, NameDescSummary>();
-  const cssParts = new Map<string, NameDescSummary>();
+  const slots = new Map<string, NamedJSDocInfo>();
+  const cssProperties = new Map<string, NamedJSDocInfo>();
+  const cssParts = new Map<string, NamedJSDocInfo>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
     for (const tag of jsDocTags) {
@@ -75,21 +62,22 @@ export const getJSDocData = (
           addEventsToMap(tag, events, analyzer);
           break;
         case 'slot':
-          addNamedDescriptionToMap(slots, tag);
+          addNamedJSDocInfoToMap(slots, tag);
           break;
         case 'cssProp':
-          addNamedDescriptionToMap(cssProperties, tag);
+          addNamedJSDocInfoToMap(cssProperties, tag);
           break;
         case 'cssProperty':
-          addNamedDescriptionToMap(cssProperties, tag);
+          addNamedJSDocInfoToMap(cssProperties, tag);
           break;
         case 'cssPart':
-          addNamedDescriptionToMap(cssParts, tag);
+          addNamedJSDocInfoToMap(cssParts, tag);
           break;
       }
     }
   }
   return {
+    ...parseNodeJSDocInfo(node, analyzer),
     events,
     slots,
     cssProperties,
@@ -101,37 +89,15 @@ export const getJSDocData = (
  * Adds name, description, and summary info for a given jsdoc tag into the
  * provided map.
  */
-const addNamedDescriptionToMap = (
-  map: Map<string, NameDescSummary>,
+const addNamedJSDocInfoToMap = (
+  map: Map<string, NamedJSDocInfo>,
   tag: ts.JSDocTag
 ) => {
-  const {comment} = tag;
-  if (comment === undefined) {
-    return;
-  } else if (typeof comment === 'string') {
-    const nameDescSummary = comment.match(parseNameDescSummary);
-    if (nameDescSummary === null) {
-      throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
-    }
-    const {name, description, summary} = nameDescSummary.groups!;
-    map.set(name, {
-      name,
-      summary,
-      description:
-        description !== undefined
-          ? normalizeLineEndings(description)
-          : undefined,
-    });
-  } else {
-    throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
+  const info = parseNameDescSummary(tag);
+  if (info !== undefined) {
+    map.set(info.name, info);
   }
 };
-
-/**
- * Remove line feeds from jsdoc summaries, so they are normalized to
- * unix `\n` line endings.
- */
-const normalizeLineEndings = (s: string) => s.replace(/\r/g, '');
 
 /**
  * Returns true if this type represents the actual LitElement class.

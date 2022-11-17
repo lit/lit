@@ -52,3 +52,36 @@ import {customElement} from 'lit/decorators.js';
  */
 @customElement('element-a')
 export class ElementA extends LitElement {}
+
+/**
+ * @description TaggedDescription description. Lorem ipsum dolor sit amet, consectetur
+ * adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+ * aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+ * nisi ut aliquip ex ea commodo consequat.
+ * @summary TaggedDescription summary.
+ * @deprecated TaggedDescription deprecated message.
+ */
+export class TaggedDescription extends LitElement {}
+
+/**
+ * UntaggedDescription description. Lorem ipsum dolor sit amet, consectetur
+ * adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+ * aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+ * nisi ut aliquip ex ea commodo consequat.
+ *
+ * @deprecated UntaggedDescription deprecated message.
+ * @summary UntaggedDescription summary.
+ */
+export class UntaggedDescription extends LitElement {}
+
+/**
+ * UntaggedDescSummary summary.
+ *
+ * UntaggedDescSummary description. Lorem ipsum dolor sit amet, consectetur
+ * adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
+ * aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+ * nisi ut aliquip ex ea commodo consequat.
+ *
+ * @deprecated
+ */
+export class UntaggedDescSummary extends LitElement {}
