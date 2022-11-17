@@ -50,7 +50,7 @@
       ]
     },
     "build:copy-polyfill": {
-      "command": "mkdir -p \"polyfills/resize-observer-polyfill\" && cp src/polyfills/resize-observer-polyfill/ResizeObserver.js polyfills/resize-observer-polyfill/ResizeObserver.js",
+      "command": "cp \"src/polyfills/resize-observer-polyfill/ResizeObserver.js\" \"polyfills/resize-observer-polyfill/ResizeObserver.js\"",
       "files": [
         "src/polyfills/resize-observer-polyfill/ResizeObserver.js"
       ],
