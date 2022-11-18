@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {expect, html, fixture} from '@open-wc/testing';
+import {expect, html} from '@open-wc/testing';
+import {fixture, fixtureCleanup} from '@open-wc/testing-helpers';
 import {isInViewport, until, last, first} from './helpers.js';
 import {Virtualizer} from '../Virtualizer.js';
 import {ScrollerShim} from '../ScrollerController.js';
@@ -320,5 +321,6 @@ export async function virtualizerFixture<T = unknown>(
     inspector,
     scroller: scrollerNode,
     scrollerController,
+    fixtureCleanup,
   };
 }

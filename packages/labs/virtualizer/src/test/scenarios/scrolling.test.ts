@@ -30,7 +30,9 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
 
   describe('smooth scrolling', () => {
     it('should take some time and end up where it is supposed to', async () => {
-      const {scroller} = await virtualizerFixture(fixtureOptions);
+      const {scroller, fixtureCleanup} = await virtualizerFixture(
+        fixtureOptions
+      );
       const {startPos, endPos, events, duration} = await observeScroll(
         scroller,
         () => scroller.scrollTo({[coordinate]: 2000, behavior: 'smooth'})
@@ -39,26 +41,33 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
       expect(endPos[coordinate]).to.equal(2000);
       expect(events.length).to.be.greaterThan(1);
       expect(duration).to.be.greaterThan(0);
+      fixtureCleanup();
     });
   });
 
   describe('instant scrolling', () => {
     it('should take no time and end up where it is supposed to', async () => {
-      const {scroller} = await virtualizerFixture(fixtureOptions);
+      const {scroller, scrollerController, fixtureCleanup} =
+        await virtualizerFixture(fixtureOptions);
+      const {maxScrollLeft, maxScrollTop} = scrollerController;
       const {startPos, endPos, events, duration} = await observeScroll(
         scroller,
         () => scroller.scrollTo({[coordinate]: 2000})
       );
+      console.log('MAX', {maxScrollLeft, maxScrollTop});
       expect(startPos[coordinate]).to.equal(0);
       expect(endPos[coordinate]).to.equal(2000);
       expect(events.length).to.equal(1);
       expect(duration).to.equal(0);
+      fixtureCleanup();
     });
   });
 
   describe('trying to smoothly scroll to the current position', () => {
     it('should not do anything', async () => {
-      const {scroller} = await virtualizerFixture(fixtureOptions);
+      const {scroller, fixtureCleanup} = await virtualizerFixture(
+        fixtureOptions
+      );
       const {startPos, endPos, events, duration} = await observeScroll(
         scroller,
         () => scroller.scrollTo({[coordinate]: 0, behavior: 'smooth'})
@@ -67,12 +76,15 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
       expect(endPos[coordinate]).to.equal(0);
       expect(events.length).to.equal(0);
       expect(duration).to.equal(null);
+      fixtureCleanup();
     });
   });
 
   describe('trying to instantly scroll to the current position', () => {
     it('should not do anything', async () => {
-      const {scroller} = await virtualizerFixture(fixtureOptions);
+      const {scroller, fixtureCleanup} = await virtualizerFixture(
+        fixtureOptions
+      );
       const {startPos, endPos, events, duration} = await observeScroll(
         scroller,
         () => scroller.scrollTo({[coordinate]: 0})
@@ -81,6 +93,7 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
       expect(endPos[coordinate]).to.equal(0);
       expect(events.length).to.equal(0);
       expect(duration).to.equal(null);
+      fixtureCleanup();
     });
   });
 }
@@ -149,7 +162,7 @@ function testScrollBy(fixtureOptions: VirtualizerFixtureOptions) {
   const {coordinate, crossCoordinate} = getCoordinate(fixtureOptions);
 
   it('should work', async () => {
-    const {scroller} = await virtualizerFixture(fixtureOptions);
+    const {scroller, fixtureCleanup} = await virtualizerFixture(fixtureOptions);
     let {startPos, endPos} = await observeScroll(scroller, () =>
       scroller.scrollBy({[coordinate]: 2000})
     );
@@ -162,6 +175,7 @@ function testScrollBy(fixtureOptions: VirtualizerFixtureOptions) {
     ));
     expect(startPos[coordinate]).to.equal(2000);
     expect(endPos[coordinate]).to.equal(1000);
+    fixtureCleanup();
   });
 }
 
