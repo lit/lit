@@ -75,5 +75,8 @@ export const collectResultSync = (result: RenderResult, initialValue = '') => {
   return value;
 };
 
-const isIterable = (v: unknown): v is IterableIterator<unknown> =>
-  typeof (v as IterableIterator<unknown>)[Symbol.iterator] === 'function';
+export const isIterable = (
+  v: string | RenderResult | Promise<string | RenderResult>
+): v is RenderResult =>
+  v !== undefined &&
+  typeof (v as Iterable<unknown>)[Symbol.iterator] === 'function';

@@ -24,7 +24,7 @@ test('collectResultSync throws for a Promise', () => {
   );
 });
 
-test('collectResult throws for iterables of Promises', async () => {
+test('collectResultSync throws for iterables of Promises', () => {
   assert.throws(
     () => collectResultSync(['a', [Promise.resolve('b')], 'c']),
     'abc'
@@ -35,7 +35,7 @@ test('collectResult collects strings', async () => {
   assert.equal(await collectResult(['a', 'b', 'c']), 'abc');
 });
 
-test('collectResultSync collects strings and iterables', async () => {
+test('collectResult collects strings and iterables', async () => {
   assert.equal(await collectResult(['a', ['b', 'c'], 'd']), 'abcd');
 });
 
