@@ -327,7 +327,9 @@ export class Virtualizer {
 
   _getSizer() {
     const hostElement = this._hostElement!;
+    console.log('inside _getSizer() and...');
     if (!this._sizer) {
+      console.log('i cant find my sizer');
       // Use a pre-existing sizer element if provided (for better integration
       // with vDOM renderers)
       let sizer = hostElement.querySelector(
@@ -350,6 +352,8 @@ export class Virtualizer {
       sizer.innerHTML = '&nbsp;';
       sizer.setAttribute(SIZER_ATTRIBUTE, '');
       this._sizer = sizer;
+    } else {
+      console.log('i have a sizer');
     }
     return this._sizer;
   }
@@ -631,11 +635,20 @@ export class Virtualizer {
     }
   }
 
+  private _previousSizeHostElementSize: Size | null = null;
+
   /**
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
   private _sizeHostElement(size?: Size | null) {
+    if (
+      size?.height !== this._previousSizeHostElementSize?.height ||
+      size?.width !== this._previousSizeHostElementSize?.width
+    ) {
+      console.log('_sizeHostElement(', size, ')');
+      this._previousSizeHostElementSize = size!;
+    }
     // Some browsers seem to crap out if the host element gets larger than
     // a certain size, so we clamp it here (this value based on ad hoc
     // testing in Chrome / Safari / Firefox Mac)
@@ -797,7 +810,9 @@ export class Virtualizer {
   }
   private _resolveLayoutCompletePromise() {
     if (this._layoutCompleteResolver !== null) {
+      console.log('===> resolving layoutComplete promise...');
       this._layoutCompleteResolver();
+      console.log('===> resolved layoutComplete promise!');
     }
     this._resetLayoutCompleteState();
   }

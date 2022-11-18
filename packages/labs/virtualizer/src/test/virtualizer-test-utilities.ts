@@ -45,7 +45,7 @@ class Scroller extends ScrollerShim {
 export function observeScroll(
   target: Element | Window,
   trigger: () => void,
-  wait = 100
+  wait = 300
 ): Promise<ScrollObserverResults> {
   const scroller = new Scroller(target);
   const events: Event[] = [];
@@ -142,14 +142,14 @@ const defaultItemGenFn: ItemGenFn<DefaultItem> = (
 const defaultFixtureStyles = html`
   <style>
     section {
-      height: 400px;
-      width: 400px;
+      height: 600px;
+      width: 600px;
     }
 
     lit-virtualizer[scroller],
     .virtualizerHost[scroller] {
-      height: 400px;
-      width: 400px;
+      height: 600px;
+      width: 600px;
     }
   </style>
 `;
