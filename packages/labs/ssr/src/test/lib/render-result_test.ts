@@ -47,4 +47,29 @@ test('collectResult collects strings and iterables of Promises', async () => {
   assert.equal(await collectResult(['a', [Promise.resolve('b')], 'c']), 'abc');
 });
 
+test('collectResult collects strings and Promises of iterables', async () => {
+  assert.equal(
+    await collectResult(['a', Promise.resolve(['b', 'c']), 'd']),
+    'abcd'
+  );
+});
+
+test('collectResult collects strings and iterables of Promises of iterables', async () => {
+  assert.equal(
+    await collectResult(['a', [Promise.resolve(['b', 'c'])], 'd']),
+    'abcd'
+  );
+});
+
+test('collectResult collects strings and nested Promises of iterables', async () => {
+  assert.equal(
+    await collectResult([
+      'a',
+      Promise.resolve([Promise.resolve(['b', 'c'])]),
+      'd',
+    ]),
+    'abcd'
+  );
+});
+
 test.run();

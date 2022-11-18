@@ -46,7 +46,7 @@ export const collectResult = async (
       if (typeof chunk === 'string') {
         value += chunk;
       } else {
-        value += await collectResult(chunk as RenderResult, value);
+        value = await collectResult(chunk as RenderResult, value);
       }
     }
   }

@@ -106,15 +106,28 @@ export class RenderResultReadable extends Readable {
         // _read() when the Promise resolves.
         this._iterators.push(iterator);
         this._waiting = true;
+
         value.then(
           (value) => {
+            if (this._waiting !== true) {
+              throw new Error('Expected RenderResultReadable to be waiting');
+            }
+            this._waiting = false;
             if (typeof value === 'string') {
               const continue_ = this.push(value);
-              this._waiting = false;
               if (continue_ !== false) {
                 // Continue reading by recursing
                 this._read(size);
               }
+            } else if (isIterable(value)) {
+              // Stash the new iterator so we can retreive it when we recurse.
+              this._iterators.push(
+                value[Symbol.iterator]() as RenderResultIterator
+              );
+              // Continue reading by recursing
+              this._read(size);
+            } else {
+              throw new Error(`Unexpected value: ${value}`);
             }
           },
           (e) => {
