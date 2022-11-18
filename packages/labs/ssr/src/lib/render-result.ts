@@ -5,7 +5,7 @@
  */
 
 /**
- * A rendered value as an iteratble of strings or Promises of string, or a
+ * A rendered value as an iterable of strings or Promises of string, or a
  * nested RenderResult.
  *
  * This type is a synchronous Iterable so that consumers do not have to await
@@ -13,10 +13,10 @@
  * cause additional overhead compared to a sync iterator.
  *
  * Consumers should check the type of each value emitted by the iterator, and
- * it is a Promise await it if possible, or throw an error.
+ * if it is a Promise await it if possible, or throw an error.
  *
- * The utility functions `collectRenderResult` and `collectRenderResultSync`
- * do this for you.
+ * The utility functions {@link collectRenderResult} and
+ * {@link collectRenderResultSync} do this for you.
  */
 export type RenderResult = Iterable<
   string | RenderResult | Promise<string | RenderResult>
@@ -28,7 +28,7 @@ export type RenderResult = Iterable<
 export const collectResult = async (
   result: RenderResult,
   initialValue = ''
-) => {
+): Promise<string> => {
   let value = initialValue;
   for (let chunk of result) {
     if (typeof chunk === 'string') {
@@ -39,14 +39,14 @@ export const collectResult = async (
       // TODO (justinfagnani): if we keep a stack of iterables we can reduce
       // the number of `await`s by only awaiting Promises and not having
       // to await recursive calls.
-      value = await collectResult(chunk as RenderResult, value);
+      value = await collectResult(chunk, value);
     } else {
       // Must be a Promise
       chunk = await chunk;
       if (typeof chunk === 'string') {
         value += chunk;
       } else {
-        value = await collectResult(chunk as RenderResult, value);
+        value = await collectResult(chunk, value);
       }
     }
   }
@@ -58,7 +58,10 @@ export const collectResult = async (
  *
  * This function throws if a RenderResult contains a Promise.
  */
-export const collectResultSync = (result: RenderResult, initialValue = '') => {
+export const collectResultSync = (
+  result: RenderResult,
+  initialValue = ''
+): string => {
   let value = initialValue;
   for (const chunk of result) {
     if (typeof chunk === 'string') {

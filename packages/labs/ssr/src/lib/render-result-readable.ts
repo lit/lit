@@ -21,7 +21,7 @@ export class RenderResultReadable extends Readable {
    * A stack of open iterators.
    *
    * We need to keep this as instance state because we can pause and resume
-   * reading values at any time and can't run guarentee to run iterators to
+   * reading values at any time and can't guarentee to run iterators to
    * completion in any one loop.
    */
   private _iterators: Array<RenderResultIterator>;
@@ -60,8 +60,8 @@ export class RenderResultReadable extends Readable {
     //   (We try to verify this with the this._waiting field)
     // - `this.push(null)` ends the stream
     //
-    // RenderResult is a iterable recursive type that can contain other
-    // RenderResults. To accomodate this we keep a stack of open iterators
+    // RenderResult is an iterable recursive type that can contain other
+    // RenderResults. To accommodate this we keep a stack of open iterators
     // where the last iterator is the most nested value we're reading from.
 
     if (this._waiting) {
@@ -85,10 +85,7 @@ export class RenderResultReadable extends Readable {
           continue;
         }
       }
-      const value = next.value as
-        | string
-        | RenderResult
-        | Promise<string | RenderResult>;
+      const value = next.value;
 
       if (typeof value === 'string') {
         const continue_ = this.push(value);
@@ -96,7 +93,7 @@ export class RenderResultReadable extends Readable {
           return;
         }
       } else if (isIterable(value)) {
-        // Stash the current iterator so we can retreive it when this new
+        // Stash the current iterator so we can retrieve it when this new
         // nested iterator is done.
         this._iterators.push(iterator);
         iterator = value[Symbol.iterator]() as RenderResultIterator;
