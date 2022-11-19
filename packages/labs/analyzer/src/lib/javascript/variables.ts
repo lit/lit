@@ -95,3 +95,37 @@ const getVariableDeclarationInfoList = (
     );
   }
 };
+
+/**
+ * Returns declaration info & factory for a default export assignment.
+ */
+export const getExportAssignmentVariableDeclarationInfo = (
+  exportAssignment: ts.ExportAssignment,
+  analyzer: AnalyzerInterface
+): DeclarationInfo => {
+  return {
+    name: 'default',
+    factory: () =>
+      getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
+    isExport: true,
+  };
+};
+
+/**
+ * Returns an analyzer `VariableDeclaration` model for the given default
+ * ts.ExportAssignment, handling the case of: `export const 'some expression'`;
+ *
+ * Note that even though this technically isn't a VariableDeclaration in
+ * TS, we model it as one since it could unobservably be implemented as
+ * `const varDec = 'some expression'; export {varDec as default} `
+ */
+const getExportAssignmentVariableDeclaration = (
+  exportAssignment: ts.ExportAssignment,
+  analyzer: AnalyzerInterface
+): VariableDeclaration => {
+  return new VariableDeclaration({
+    name: 'default',
+    node: exportAssignment,
+    type: getTypeForNode(exportAssignment.expression, analyzer),
+  });
+};

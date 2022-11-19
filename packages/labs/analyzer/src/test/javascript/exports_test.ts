@@ -259,5 +259,132 @@ for (const lang of languages) {
     assert.equal(c2.module, 'a.js');
   });
 
+  test('export {x as default}', ({analyzer}) => {
+    analyzer.setFile(
+      '/a',
+      `
+      const a = 'a';
+      const b = 'b';
+      export {a as default, b}
+      `
+    );
+    const module = analyzer.getModule(
+      getSourceFilename('/a', lang) as AbsolutePath
+    );
+    assert.equal(module.exportNames.sort(), ['b', 'default']);
+    const a = module.getExportReference('default');
+    assert.equal(a.name, 'a');
+    assert.equal(a.module, undefined);
+    const b = module.getExportReference('b');
+    assert.equal(b.name, 'b');
+    assert.equal(b.module, undefined);
+  });
+
+  test(`export * from 'module'`, ({analyzer}) => {
+    analyzer.setFile(
+      '/a',
+      `
+      export const a = 'a';
+      export const b = 'b';
+      `
+    );
+    analyzer.setFile(
+      '/b',
+      `
+      export * from './a.js';
+      `
+    );
+    const module = analyzer.getModule(
+      getSourceFilename('/b', lang) as AbsolutePath
+    );
+    assert.equal(module.exportNames.sort(), ['a', 'b']);
+    const a = module.getExportReference('a');
+    assert.equal(a.name, 'a');
+    assert.equal(a.module, 'a.js');
+    const b = module.getExportReference('b');
+    assert.equal(b.name, 'b');
+    assert.equal(a.module, 'a.js');
+  });
+
+  test(`export * from 'module', transitively`, ({analyzer}) => {
+    analyzer.setFile(
+      '/a',
+      `
+      export const a = 'a';
+      export const b = 'b';
+      `
+    );
+    analyzer.setFile(
+      '/b',
+      `
+      export const c = 'c';
+      export const d = 'd';
+      export * from './a.js';
+      `
+    );
+    analyzer.setFile(
+      '/c',
+      `
+      export * from './b.js';
+      `
+    );
+    const moduleC = analyzer.getModule(
+      getSourceFilename('/c', lang) as AbsolutePath
+    );
+    assert.equal(moduleC.exportNames.sort(), ['a', 'b', 'c', 'd']);
+    const a = moduleC.getExportReference('a');
+    assert.equal(a.name, 'a');
+    assert.equal(a.module, 'b.js');
+    const b = moduleC.getExportReference('b');
+    assert.equal(b.name, 'b');
+    assert.equal(b.module, 'b.js');
+    const c = moduleC.getExportReference('c');
+    assert.equal(c.name, 'c');
+    assert.equal(c.module, 'b.js');
+    const d = moduleC.getExportReference('d');
+    assert.equal(d.name, 'd');
+    assert.equal(d.module, 'b.js');
+
+    const moduleB = analyzer.getModule(
+      getSourceFilename('/b', lang) as AbsolutePath
+    );
+    assert.equal(moduleB.exportNames.sort(), ['a', 'b', 'c', 'd']);
+    const a2 = moduleB.getExportReference('a');
+    assert.equal(a2.name, 'a');
+    assert.equal(a2.module, 'a.js');
+    const b2 = moduleB.getExportReference('b');
+    assert.equal(b2.name, 'b');
+    assert.equal(a2.module, 'a.js');
+    const c2 = moduleB.getExportReference('c');
+    assert.equal(c2.name, 'c');
+    assert.equal(c2.module, undefined);
+    const d2 = moduleB.getExportReference('d');
+    assert.equal(d2.name, 'd');
+    assert.equal(d2.module, undefined);
+  });
+
+  test('export * as ns', ({analyzer}) => {
+    analyzer.setFile(
+      '/a',
+      `
+      export const a = 'a';
+      export const b = 'b';
+      `
+    );
+    analyzer.setFile(
+      '/b',
+      `
+      export * as ns from './a.js';
+      `
+    );
+    const module = analyzer.getModule(
+      getSourceFilename('/b', lang) as AbsolutePath
+    );
+    assert.equal(module.exportNames.sort(), ['ns']);
+    const ns = module.getExportReference('ns');
+    assert.equal(ns.name, '*');
+    assert.equal(ns.module, 'a.js');
+  });
+
   test.run();
 }

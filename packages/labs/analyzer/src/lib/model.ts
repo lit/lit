@@ -282,12 +282,12 @@ export abstract class Declaration {
 }
 
 export interface VariableDeclarationInit extends DeclarationInit {
-  node: ts.VariableDeclaration;
+  node: ts.VariableDeclaration | ts.ExportAssignment;
   type: Type | undefined;
 }
 
 export class VariableDeclaration extends Declaration {
-  readonly node: ts.VariableDeclaration;
+  readonly node: ts.VariableDeclaration | ts.ExportAssignment;
   readonly type: Type | undefined;
   constructor(init: VariableDeclarationInit) {
     super(init);

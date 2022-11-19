@@ -305,9 +305,19 @@ const getLocalReference = (
  *   {name: 'c', reference: 'c'},
  * ]
  * ```
+ *
  * This also handles explicit re-export syntax, which all become References:
  * ```
  *   export {a as x, b as y, c} from 'foo';
+ * ```
+ *
+ * Finally, this handles namespace exports, which become a single Reference:
+ * ```
+ *   export * as ns from 'foo';
+ * ```
+ * becomes:
+ * ```
+ *   [{name: 'ns', reference: new Reference('*', 'foo')}]
  * ```
  */
 export const getExportReferences = (
@@ -363,6 +373,21 @@ export const getExportReferences = (
         }
       }
     }
+  } else if (
+    // e.g. `export * as ns from 'foo'`;
+    ts.isNamespaceExport(exportClause) &&
+    moduleSpecifier !== undefined
+  ) {
+    const specifier = getSpecifierString(moduleSpecifier);
+    refs.push({
+      exportName: exportClause.name.getText(),
+      decNameOrRef: getImportReference(
+        specifier,
+        moduleSpecifier,
+        '*',
+        analyzer
+      ),
+    });
   } else {
     throw new DiagnosticsError(
       exportClause,
