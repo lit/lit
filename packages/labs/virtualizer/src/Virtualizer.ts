@@ -83,6 +83,7 @@ let DefaultLayoutConstructor: LayoutConstructor;
  * manipulation methods.
  */
 export class Virtualizer {
+  birthtime = 'unborn';
   private _benchmarkStart: number | null = null;
 
   private _layout: Layout | null = null;
@@ -202,6 +203,7 @@ export class Virtualizer {
   protected _measureChildOverride: MeasureChildFunction | null = null;
 
   constructor(config: VirtualizerConfig) {
+    this.birthtime = `${new Date().getTime()}`;
     if (!config) {
       throw new Error(
         'Virtualizer constructor requires a configuration object'
@@ -327,7 +329,7 @@ export class Virtualizer {
 
   _getSizer() {
     const hostElement = this._hostElement!;
-    console.log('inside _getSizer() and...');
+    console.log(this.birthtime, 'inside _getSizer() and...');
     if (!this._sizer) {
       console.log('i cant find my sizer');
       // Use a pre-existing sizer element if provided (for better integration
@@ -355,6 +357,7 @@ export class Virtualizer {
     } else {
       console.log('i have a sizer');
     }
+    console.log(this._sizer.style.transform);
     return this._sizer;
   }
 
@@ -646,7 +649,7 @@ export class Virtualizer {
       size?.height !== this._previousSizeHostElementSize?.height ||
       size?.width !== this._previousSizeHostElementSize?.width
     ) {
-      console.log('_sizeHostElement(', size, ')');
+      console.log(this.birthtime, '_sizeHostElement(', size, ')');
       this._previousSizeHostElementSize = size!;
     }
     // Some browsers seem to crap out if the host element gets larger than
@@ -658,6 +661,7 @@ export class Virtualizer {
 
     if (this._isScroller) {
       this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+      console.log(`I JUST SET THE SIZER STYLE TO`, `translate(${h}px, ${v}px)`);
     } else {
       const style = this._hostElement!.style;
       (style.minWidth as string | null) = h ? `${h}px` : '100%';
