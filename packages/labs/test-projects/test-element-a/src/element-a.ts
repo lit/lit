@@ -10,6 +10,10 @@ import {Foo, Bar as Baz} from './package-stuff.js';
 
 /**
  * My awesome element
+ *
+ * This is a description of my element. It's pretty great. The description has
+ * text that spans multiple lines.
+ *
  * @fires a-changed - An awesome event to fire
  * @slot default - The default slot
  * @slot stuff - A slot for stuff

@@ -19,8 +19,8 @@
         {
           "kind": "class",
           "name": "ElementA",
-          "summary": "TODO",
-          "description": "TODO",
+          "description": "This is a description of my element. It's pretty great. The description has\ntext that spans multiple lines.",
+          "summary": "My awesome element",
           "superclass": {"name": "LitElement", "package": "lit"},
           "mixins": [],
           "members": [],
@@ -179,8 +179,6 @@
         {
           "kind": "class",
           "name": "EventSubclass",
-          "summary": "TODO",
-          "description": "TODO",
           "superclass": {"name": "Event", "package": "global:"},
           "mixins": [],
           "members": [],
@@ -190,8 +188,7 @@
         {
           "kind": "class",
           "name": "ElementEvents",
-          "summary": "TODO",
-          "description": "TODO",
+          "description": "My awesome element",
           "superclass": {"name": "LitElement", "package": "lit"},
           "mixins": [],
           "members": [],
@@ -353,8 +350,7 @@
         {
           "kind": "class",
           "name": "ElementProps",
-          "summary": "TODO",
-          "description": "TODO",
+          "description": "My awesome element",
           "superclass": {"name": "LitElement", "package": "lit"},
           "mixins": [],
           "members": [],
@@ -393,8 +389,7 @@
         {
           "kind": "class",
           "name": "ElementSlots",
-          "summary": "TODO",
-          "description": "TODO",
+          "description": "My awesome element",
           "superclass": {"name": "LitElement", "package": "lit"},
           "mixins": [],
           "members": [],
@@ -433,8 +428,6 @@
         {
           "kind": "class",
           "name": "Bar",
-          "summary": "TODO",
-          "description": "TODO",
           "mixins": [],
           "members": [],
           "source": {"href": "TODO"},
@@ -443,8 +436,6 @@
         {
           "kind": "class",
           "name": "Foo",
-          "summary": "TODO",
-          "description": "TODO",
           "mixins": [],
           "members": [],
           "source": {"href": "TODO"},
@@ -466,8 +457,6 @@
         {
           "kind": "class",
           "name": "SpecialEvent",
-          "summary": "TODO",
-          "description": "TODO",
           "superclass": {"name": "Event", "package": "global:"},
           "mixins": [],
           "members": [],

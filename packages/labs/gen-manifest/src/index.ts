@@ -19,6 +19,14 @@ import {
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
+const ifDefined = <O, K extends keyof O>(model: O, name: K) => {
+  const obj: Partial<Pick<O, K>> = {};
+  if (model[name] !== undefined) {
+    obj[name] = model[name];
+  }
+  return obj;
+};
+
 /**
  * Our command for the Lit CLI.
  *
@@ -134,8 +142,8 @@ const convertClassDeclaration = (
   return {
     kind: 'class',
     name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
-    summary: 'TODO', // TODO
-    description: 'TODO', // TODO
+    ...ifDefined(declaration, 'description'),
+    ...ifDefined(declaration, 'summary'),
     superclass: superClass ? convertReference(superClass) : undefined,
     mixins: [], // TODO
     members: [
