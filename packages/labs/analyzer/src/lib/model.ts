@@ -176,10 +176,29 @@ export class Module {
   getExport(name: string): Declaration | Reference {
     this._ensureExportsFinalized();
     const exp = this._exportMap.get(name);
-    if (exp instanceof Reference) {
+    if (exp === undefined) {
+      throw new Error(
+        `Module ${this.sourcePath} did not contain an export named ${name}`
+      );
+    } else if (exp instanceof Reference) {
       return exp;
     } else {
-      return this.getDeclaration(name);
+      return this.getDeclaration(exp);
+    }
+  }
+
+  /**
+   * Return Reference for given export name.
+   *
+   * For references to local declarations, the module will be undefined.
+   * For re-exports, the Reference will point to a package & module.
+   */
+  getExportReference(name: string): Reference {
+    const exp = this.getExport(name);
+    if (exp instanceof Declaration) {
+      return new Reference({name: exp.name, dereference: () => exp});
+    } else {
+      return exp;
     }
   }
 
@@ -225,16 +244,31 @@ export class Module {
       (name) => this.getDeclaration(name)
     ));
   }
+
+  /**
+   * Returns all custom elements registered in this module.
+   */
+  getCustomElementExports(): LitElementExport[] {
+    return this.declarations.filter(
+      (d) => d.isLitElementDeclaration() && d.tagname !== undefined
+    ) as LitElementExport[];
+  }
 }
 
-interface DeclarationInit {
+interface DeclarationInit extends NodeJSDocInfo {
   name: string;
 }
 
 export abstract class Declaration {
-  name: string;
+  readonly name: string;
+  readonly description?: string | undefined;
+  readonly summary?: string | undefined;
+  readonly deprecated?: string | boolean | undefined;
   constructor(init: DeclarationInit) {
     this.name = init.name;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
   }
   isVariableDeclaration(): this is VariableDeclaration {
     return this instanceof VariableDeclaration;
@@ -248,12 +282,12 @@ export abstract class Declaration {
 }
 
 export interface VariableDeclarationInit extends DeclarationInit {
-  node: ts.VariableDeclaration;
+  node: ts.VariableDeclaration | ts.ExportAssignment;
   type: Type | undefined;
 }
 
 export class VariableDeclaration extends Declaration {
-  readonly node: ts.VariableDeclaration;
+  readonly node: ts.VariableDeclaration | ts.ExportAssignment;
   readonly type: Type | undefined;
   constructor(init: VariableDeclarationInit) {
     super(init);
@@ -288,10 +322,25 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
+export interface NamedJSDocInfo {
+  name: string;
+  description?: string | undefined;
+  summary?: string | undefined;
+}
+
+export interface NodeJSDocInfo {
+  description?: string | undefined;
+  summary?: string | undefined;
+  deprecated?: string | boolean | undefined;
+}
+
 interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   reactiveProperties: Map<string, ReactiveProperty>;
-  readonly events: Map<string, Event>;
+  events: Map<string, Event>;
+  slots: Map<string, NamedJSDocInfo>;
+  cssProperties: Map<string, NamedJSDocInfo>;
+  cssParts: Map<string, NamedJSDocInfo>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -307,15 +356,27 @@ export class LitElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
 
   readonly reactiveProperties: Map<string, ReactiveProperty>;
-
   readonly events: Map<string, Event>;
+  readonly slots: Map<string, NamedJSDocInfo>;
+  readonly cssProperties: Map<string, NamedJSDocInfo>;
+  readonly cssParts: Map<string, NamedJSDocInfo>;
 
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
     this.reactiveProperties = init.reactiveProperties;
     this.events = init.events;
+    this.slots = init.slots;
+    this.cssProperties = init.cssProperties;
+    this.cssParts = init.cssParts;
   }
+}
+
+/**
+ * A LitElementDeclaration that has been globally registered with a tagname.
+ */
+export interface LitElementExport extends LitElementDeclaration {
+  tagname: string;
 }
 
 export interface ReactiveProperty {

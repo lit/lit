@@ -3,6 +3,15 @@
   "modules": [
     {
       "kind": "javascript-module",
+      "path": "detail-type.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [],
+      "exports": [],
+      "deprecated": false
+    },
+    {
+      "kind": "javascript-module",
       "path": "element-a.js",
       "summary": "TODO",
       "description": "TODO",
@@ -10,8 +19,8 @@
         {
           "kind": "class",
           "name": "ElementA",
-          "summary": "TODO",
-          "description": "TODO",
+          "description": "This is a description of my element. It's pretty great. The description has\ntext that spans multiple lines.",
+          "summary": "My awesome element",
           "superclass": {"name": "LitElement", "package": "lit"},
           "mixins": [],
           "members": [],
@@ -20,9 +29,18 @@
           "tagName": "element-a",
           "attributes": [],
           "events": [{"name": "a-changed", "type": {"text": "TODO"}}],
-          "slots": [],
-          "cssParts": [],
-          "cssProperties": [],
+          "slots": [
+            {"name": "default", "summary": "The default slot"},
+            {"name": "stuff", "summary": "A slot for stuff"}
+          ],
+          "cssParts": [
+            {"name": "header", "summary": "The header"},
+            {"name": "footer", "summary": "The footer"}
+          ],
+          "cssProperties": [
+            {"name": "--foreground-color", "summary": "The foreground color"},
+            {"name": "--background-color", "summary": "The background color"}
+          ],
           "demos": [],
           "customElement": true
         },
@@ -99,7 +117,306 @@
           }
         }
       ],
-      "exports": [],
+      "exports": [
+        {"kind": "js", "name": "ElementA", "declaration": {"name": "ElementA"}},
+        {
+          "kind": "js",
+          "name": "localTypeVar",
+          "declaration": {"name": "localTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "packageTypeVar",
+          "declaration": {"name": "packageTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "externalTypeVar",
+          "declaration": {"name": "externalTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "globalTypeVar",
+          "declaration": {"name": "globalTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "Foo",
+          "declaration": {
+            "name": "Foo",
+            "package": "@lit-internal/test-element-a",
+            "module": "package-stuff.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "Baz",
+          "declaration": {
+            "name": "Bar",
+            "package": "@lit-internal/test-element-a",
+            "module": "package-stuff.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "local",
+          "declaration": {"name": "localTypeVar"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-a",
+          "declaration": {"name": "ElementA"}
+        }
+      ],
+      "deprecated": false
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-events.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "EventSubclass",
+          "superclass": {"name": "Event", "package": "global:"},
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false
+        },
+        {
+          "kind": "class",
+          "name": "ElementEvents",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false,
+          "tagName": "element-events",
+          "attributes": [],
+          "events": [
+            {
+              "name": "string-custom-event",
+              "type": {
+                "text": "CustomEvent<string>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  }
+                ]
+              }
+            },
+            {
+              "name": "number-custom-event",
+              "type": {
+                "text": "CustomEvent<number>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  }
+                ]
+              }
+            },
+            {
+              "name": "my-detail-custom-event",
+              "type": {
+                "text": "CustomEvent<MyDetail>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "MyDetail",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "detail-type.js",
+                    "start": 12,
+                    "end": 20
+                  }
+                ]
+              }
+            },
+            {
+              "name": "event-subclass",
+              "type": {
+                "text": "EventSubclass",
+                "references": [
+                  {
+                    "name": "EventSubclass",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-events.js",
+                    "start": 0,
+                    "end": 13
+                  }
+                ]
+              }
+            },
+            {
+              "name": "special-event",
+              "type": {
+                "text": "SpecialEvent",
+                "references": [
+                  {
+                    "name": "SpecialEvent",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "special-event.js",
+                    "start": 0,
+                    "end": 12
+                  }
+                ]
+              }
+            },
+            {
+              "name": "template-result-custom-event",
+              "type": {
+                "text": "CustomEvent<TemplateResult>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "TemplateResult",
+                    "package": "lit",
+                    "start": 12,
+                    "end": 26
+                  }
+                ]
+              }
+            }
+          ],
+          "slots": [],
+          "cssParts": [],
+          "cssProperties": [],
+          "demos": [],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SpecialEvent",
+          "declaration": {
+            "name": "SpecialEvent",
+            "package": "@lit-internal/test-element-a",
+            "module": "special-event.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "MyDetail",
+          "declaration": {
+            "name": "MyDetail",
+            "package": "@lit-internal/test-element-a",
+            "module": "detail-type.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "EventSubclass",
+          "declaration": {"name": "EventSubclass"}
+        },
+        {
+          "kind": "js",
+          "name": "ElementEvents",
+          "declaration": {"name": "ElementEvents"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-events",
+          "declaration": {"name": "ElementEvents"}
+        }
+      ],
+      "deprecated": false
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-props.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementProps",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false,
+          "tagName": "element-props",
+          "attributes": [],
+          "events": [{"name": "a-changed", "type": {"text": "TODO"}}],
+          "slots": [],
+          "cssParts": [],
+          "cssProperties": [],
+          "demos": [],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementProps",
+          "declaration": {"name": "ElementProps"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-props",
+          "declaration": {"name": "ElementProps"}
+        }
+      ],
+      "deprecated": false
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-slots.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementSlots",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false,
+          "tagName": "element-slots",
+          "attributes": [],
+          "events": [],
+          "slots": [],
+          "cssParts": [],
+          "cssProperties": [],
+          "demos": [],
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementSlots",
+          "declaration": {"name": "ElementSlots"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-slots",
+          "declaration": {"name": "ElementSlots"}
+        }
+      ],
       "deprecated": false
     },
     {
@@ -111,8 +428,6 @@
         {
           "kind": "class",
           "name": "Bar",
-          "summary": "TODO",
-          "description": "TODO",
           "mixins": [],
           "members": [],
           "source": {"href": "TODO"},
@@ -121,15 +436,41 @@
         {
           "kind": "class",
           "name": "Foo",
-          "summary": "TODO",
-          "description": "TODO",
           "mixins": [],
           "members": [],
           "source": {"href": "TODO"},
           "deprecated": false
         }
       ],
-      "exports": [],
+      "exports": [
+        {"kind": "js", "name": "Bar", "declaration": {"name": "Bar"}},
+        {"kind": "js", "name": "Foo", "declaration": {"name": "Foo"}}
+      ],
+      "deprecated": false
+    },
+    {
+      "kind": "javascript-module",
+      "path": "special-event.js",
+      "summary": "TODO",
+      "description": "TODO",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SpecialEvent",
+          "superclass": {"name": "Event", "package": "global:"},
+          "mixins": [],
+          "members": [],
+          "source": {"href": "TODO"},
+          "deprecated": false
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SpecialEvent",
+          "declaration": {"name": "SpecialEvent"}
+        }
+      ],
       "deprecated": false
     }
   ]

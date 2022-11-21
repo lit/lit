@@ -14,9 +14,18 @@ import {
   Reference,
   Type,
   VariableDeclaration,
+  LitElementExport,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
+
+const ifDefined = <O, K extends keyof O>(model: O, name: K) => {
+  const obj: Partial<Pick<O, K>> = {};
+  if (model[name] !== undefined) {
+    obj[name] = model[name];
+  }
+  return obj;
+};
 
 /**
  * Our command for the Lit CLI.
@@ -57,7 +66,10 @@ const convertModule = (module: Module): cem.Module => {
     description: 'TODO', // TODO
     declarations: [...module.declarations.map(convertDeclaration)],
     exports: [
-      // TODO
+      ...module.exportNames.map((name) =>
+        convertJavascriptExport(name, module.getExportReference(name))
+      ),
+      ...module.getCustomElementExports().map(convertCustomElementExport),
     ],
     deprecated: false, // TODO
   };
@@ -80,6 +92,29 @@ const convertDeclaration = (declaration: Declaration): cem.Declaration => {
   }
 };
 
+const convertJavascriptExport = (
+  name: string,
+  reference: Reference
+): cem.JavaScriptExport => {
+  return {
+    kind: 'js',
+    name,
+    declaration: convertReference(reference),
+  };
+};
+
+const convertCustomElementExport = (
+  declaration: LitElementExport
+): cem.CustomElementExport => {
+  return {
+    kind: 'custom-element-definition',
+    name: declaration.tagname,
+    declaration: {
+      name: declaration.name,
+    },
+  };
+};
+
 const convertLitElementDeclaration = (
   declaration: LitElementDeclaration
 ): cem.CustomElementDeclaration => {
@@ -89,16 +124,10 @@ const convertLitElementDeclaration = (
     attributes: [
       // TODO
     ],
-    events: [...Array.from(declaration.events.values()).map(convertEvent)],
-    slots: [
-      // TODO
-    ],
-    cssParts: [
-      // TODO
-    ],
-    cssProperties: [
-      // TODO
-    ],
+    events: Array.from(declaration.events.values()).map(convertEvent),
+    slots: Array.from(declaration.slots.values()),
+    cssParts: Array.from(declaration.cssParts.values()),
+    cssProperties: Array.from(declaration.cssProperties.values()),
     demos: [
       // TODO
     ],
@@ -113,8 +142,8 @@ const convertClassDeclaration = (
   return {
     kind: 'class',
     name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
-    summary: 'TODO', // TODO
-    description: 'TODO', // TODO
+    ...ifDefined(declaration, 'description'),
+    ...ifDefined(declaration, 'summary'),
     superclass: superClass ? convertReference(superClass) : undefined,
     mixins: [], // TODO
     members: [

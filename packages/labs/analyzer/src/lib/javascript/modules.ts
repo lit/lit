@@ -23,7 +23,10 @@ import {
   LocalNameOrReference,
 } from '../model.js';
 import {getClassDeclarationInfo} from './classes.js';
-import {getVariableDeclarationInfo} from './variables.js';
+import {
+  getExportAssignmentVariableDeclarationInfo,
+  getVariableDeclarationInfo,
+} from './variables.js';
 import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
 import {DiagnosticsError} from '../errors.js';
@@ -130,6 +133,10 @@ export const getModule = (
             exportMap.set(exportName, decNameOrRef)
         );
       }
+    } else if (ts.isExportAssignment(statement)) {
+      addDeclaration(
+        getExportAssignmentVariableDeclarationInfo(statement, analyzer)
+      );
     } else if (ts.isImportDeclaration(statement)) {
       dependencies.add(
         getPathForModuleSpecifierExpression(statement.moduleSpecifier, analyzer)
