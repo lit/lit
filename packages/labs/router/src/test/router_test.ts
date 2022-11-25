@@ -70,6 +70,13 @@ const canTest =
       '#test1'
     ) as HTMLAnchorElement;
     test1Link.click();
+    await new Promise<void>((res) => {
+      const listener = () => {
+        contentWindow!.removeEventListener('popstate', listener);
+        res();
+      };
+      contentWindow!.addEventListener('popstate', listener);
+    });
     await el.updateComplete;
     assert.include(
       stripExpressionComments(el.shadowRoot!.innerHTML),
@@ -124,6 +131,13 @@ const canTest =
     ) as HTMLAnchorElement;
     child1Link.click();
     await child1.updateComplete;
+    await new Promise<void>((res) => {
+      const listener = () => {
+        contentWindow!.removeEventListener('popstate', listener);
+        res();
+      };
+      contentWindow!.addEventListener('popstate', listener);
+    });
     assert.include(
       stripExpressionComments(child1.shadowRoot!.innerHTML),
       '<h3>Child 1: abc</h3>'
@@ -136,6 +150,13 @@ const canTest =
       '#child2'
     ) as HTMLAnchorElement;
     child2Link.click();
+    await new Promise<void>((res) => {
+      const listener = () => {
+        contentWindow!.removeEventListener('popstate', listener);
+        res();
+      };
+      contentWindow!.addEventListener('popstate', listener);
+    });
     await el.updateComplete;
     const child2 = el.shadowRoot!.querySelector('child-2') as Child2;
     await child2.updateComplete;
