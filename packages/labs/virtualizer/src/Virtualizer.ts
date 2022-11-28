@@ -348,7 +348,6 @@ export class Virtualizer {
         position: 'absolute',
         margin: '-2px 0 0 0',
         padding: 0,
-        visibility: 'hidden',
         fontSize: '2px',
       });
       sizer.innerHTML = '&nbsp;';
