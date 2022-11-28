@@ -6,27 +6,19 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from './errors.js';
+import {getPackageInfo} from './javascript/packages.js';
 import {Type, Reference, AnalyzerInterface} from './model.js';
-import {getReferenceForSymbol} from './references.js';
-
-/**
- * Returns a ts.Symbol for a name in scope at a given location in the AST.
- * TODO(kschaaf): There are ~1748 symbols in scope of a typical hello world,
- * due to DOM globals. Perf might become an issue here.
- */
-export const getSymbolForName = (
-  name: string,
-  location: ts.Node,
-  analyzer: AnalyzerInterface
-): ts.Symbol | undefined => {
-  return analyzer.program
-    .getTypeChecker()
-    .getSymbolsInScope(
-      location,
-      (ts.SymbolFlags as unknown as {All: number}).All
-    )
-    .filter((s) => s.name === name)[0];
-};
+import {
+  AbsolutePath,
+  absoluteToPackage,
+  PackagePath,
+  resolveExtension,
+} from './paths.js';
+import {
+  getImportReference,
+  getReferenceForSymbol,
+  getSymbolForName,
+} from './references.js';
 
 /**
  * Returns an analyzer `Type` object for the given jsDoc tag.
@@ -123,10 +115,8 @@ const getReferencesForTypeNode = (
 ): Reference[] => {
   const references: Reference[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isTypeReferenceNode(node) || ts.isImportTypeNode(node)) {
-      const name = getRootName(
-        ts.isTypeReferenceNode(node) ? node.typeName : node.qualifier
-      );
+    if (ts.isTypeReferenceNode(node)) {
+      const name = getRootName(node.typeName);
       // TODO(kschaaf): we'd like to just do
       // `checker.getSymbolAtLocation(node)` to get the symbol, but it appears
       // that nodes created with `checker.typeToTypeNode()` do not have
@@ -140,11 +130,62 @@ const getReferencesForTypeNode = (
         );
       }
       references.push(getReferenceForSymbol(symbol, location, analyzer));
+    } else if (ts.isImportTypeNode(node)) {
+      if (!ts.isLiteralTypeNode(node.argument)) {
+        throw new DiagnosticsError(node, 'Expected a string literal.');
+      }
+      const name = getRootName(node.qualifier);
+      if (!ts.isStringLiteral(node.argument.literal)) {
+        throw new DiagnosticsError(
+          location,
+          `Expected import specifier to be a string literal`
+        );
+      }
+      const specifier = getSpecifierFromTypeImport(
+        node.argument.literal.text,
+        analyzer
+      );
+      // TODO(kschaaf): This may have been an inferred type from a transitive
+      // dependency; in this case we should include version information in the
+      // reference model
+      references.push(
+        getImportReference(specifier, node.argument.literal, name, analyzer)
+      );
     }
     ts.forEachChild(node, visit);
   };
   visit(typeNode);
   return references;
+};
+
+/**
+ * If the given specifier is an absolute path, turns it into an npm import
+ * specifier by looking for its package.json and using package information found
+ * there.
+ *
+ * If the path was not absolute, it returns the specifier as-is.
+ */
+const getSpecifierFromTypeImport = (
+  specifier: string,
+  analyzer: AnalyzerInterface
+) => {
+  specifier = analyzer.path.normalize(
+    resolveExtension(specifier as AbsolutePath, analyzer)
+  );
+  if (analyzer.path.isAbsolute(specifier)) {
+    const {
+      rootDir,
+      name,
+      packageJson: {main, module},
+    } = getPackageInfo(specifier as AbsolutePath, analyzer);
+    let modulePath = absoluteToPackage(specifier as AbsolutePath, rootDir);
+    const packageMain = module ?? main;
+    if (packageMain !== undefined && modulePath === packageMain) {
+      modulePath = '' as PackagePath;
+    }
+    specifier = name + (modulePath ? `/${modulePath}` : '');
+  }
+  return specifier;
 };
 
 /**

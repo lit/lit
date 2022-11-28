@@ -1,0 +1,30 @@
+{
+  "name": "el-element",
+  "version": "0.0.1",
+  "description": "A Minimal Lit Element starter kit",
+  "type": "module",
+  "main": "lib/el-element.js",
+  "scripts": {
+    "serve": "wds --node-resolve -nwo demo",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "npm run serve & npm run build:watch"
+  },
+  "keywords": [
+    "web-component",
+    "lit-element",
+    "lit"
+  ],
+  "dependencies": {
+    "lit": "^2.2.8"
+  },
+  "devDependencies": {
+    "@web/dev-server": "^0.1.32",
+    "typescript": "^4.7.4"
+  },
+  "exports": {
+    "./lib/el-element.js": {
+      "default": "./lib/el-element.js"
+    }
+  }
+}
