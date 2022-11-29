@@ -14,7 +14,7 @@ import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
-const DEV_MODE = true;
+const DEV_MODE = !!ReactiveElement.enableWarning;
 
 // Needed for JSX expressions
 const React = window.React;
@@ -177,7 +177,7 @@ if (DEV_MODE) {
       });
 
       assert.isNotNull(DevComponent);
-      assert.equal(warningCount + 2, warnings.length);
+      assert.equal(warningCount + 1, warnings.length);
     })
   });
 }

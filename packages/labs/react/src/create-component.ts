@@ -245,7 +245,7 @@ export function createComponent<
 
   // Warn users when web components use reserved React properties
   if (DEV_MODE) {
-    for (const p in reservedReactProperties) {
+    for (const p of reservedReactProperties) {
       if (p in element.prototype && !(p in HTMLElement.prototype)) {
         // Note, this effectively warns only for `ref` since the other
         // reserved props are on HTMLElement.prototype. To address this
