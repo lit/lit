@@ -36,16 +36,6 @@ interface Foo {
   foo?: boolean;
 }
 
-const DEV_MODE_WARNINGS = [];
-
-if (DEV_MODE) {
-  const consoleWarn = console.warn;
-  console.warn = (message, ...optionalParams) => {
-    DEV_MODE_WARNINGS.push(message);
-    consoleWarn(message, optionalParams);
-  }
-}
-
 @customElement('x-foo')
 class XFoo extends ReactiveElement {}
 
@@ -153,14 +143,6 @@ if (DEV_MODE) {
 
     setup(() => {
       warnings = [];
-      container = document.createElement('div');
-      document.body.appendChild(container);
-    });
-
-    teardown(() => {
-      if (container && container.parentNode) {
-        container.parentNode.removeChild(container);
-      }
     });
 
     test('warns when react resered properties are used', () => { 
