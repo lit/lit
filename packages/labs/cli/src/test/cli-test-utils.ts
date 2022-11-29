@@ -89,6 +89,10 @@ export const symlinkAllCommands = async (rig: FilesystemTestRig) => {
       relPath: ['..', '..', '..', 'gen-wrapper-vue'],
       packageName: ['@lit-labs', 'gen-wrapper-vue'],
     },
+    {
+      relPath: ['..', '..', '..', 'cli-localize'],
+      packageName: ['@lit-labs', 'cli-localize'],
+    },
   ];
   await Promise.all(
     symLinks.map(async ({packageName, relPath}) => {

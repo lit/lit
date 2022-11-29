@@ -27,4 +27,4 @@
 /test/**/*.js.map
 /test/screenshot/cases/*/actual.*.png
 /events.d.ts*
-/events.js
+/events.js*

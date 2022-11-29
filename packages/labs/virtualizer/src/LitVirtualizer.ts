@@ -10,12 +10,11 @@ import {KeyFn} from 'lit/directives/repeat.js';
 import {LayoutConfigValue} from './layouts/shared/Layout.js';
 import {
   virtualize,
-  virtualizerRef,
-  VirtualizerHostElement,
   defaultRenderItem,
   defaultKeyFunction,
   RenderItemFunction,
 } from './virtualize.js';
+import {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
 
 export class LitVirtualizer<T = unknown> extends LitElement {
   @property({attribute: false})

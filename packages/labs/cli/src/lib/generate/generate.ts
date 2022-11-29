@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Analyzer} from '@lit-labs/analyzer';
+import {createPackageAnalyzer} from '@lit-labs/analyzer';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
@@ -28,9 +28,17 @@ const vueCommand: Command = {
   importSpecifier: '@lit-labs/gen-wrapper-vue/index.js',
 };
 
+const manifestCommand: Command = {
+  name: 'manifest',
+  description: 'Generate custom-elements.json manifest.',
+  kind: 'reference',
+  installFrom: '@lit-labs/gen-manifest',
+  importSpecifier: '@lit-labs/gen-manifest/index.js',
+};
+
 // A generate command has a generate method instead of a run method.
 interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
-  generate(options: {analysis: Package}, console: Console): Promise<FileTree>;
+  generate(options: {package: Package}, console: Console): Promise<FileTree>;
 }
 
 const frameworkCommands = {
@@ -45,28 +53,38 @@ export const run = async (
     cli,
     packages,
     frameworks: frameworkNames,
+    manifest,
     outDir,
-  }: {packages: string[]; frameworks: string[]; outDir: string; cli: LitCli},
+  }: {
+    packages: string[];
+    frameworks: string[];
+    manifest: boolean;
+    outDir: string;
+    cli: LitCli;
+  },
   console: Console
 ) => {
   for (const packageRoot of packages) {
     // Ensure separators in input paths are normalized and resolved to absolute
     const root = path.normalize(path.resolve(packageRoot)) as AbsolutePath;
     const out = path.normalize(path.resolve(outDir)) as AbsolutePath;
-    const analyzer = new Analyzer(root);
-    const analysis = analyzer.analyzePackage();
-    if (!analysis.packageJson.name) {
+    const analyzer = createPackageAnalyzer(root);
+    const pkg = analyzer.getPackage();
+    if (!pkg.packageJson.name) {
       throw new Error(
         `Package at '${packageRoot}' did not have a name in package.json. The 'gen' command requires that packages have a name.`
       );
     }
     const generatorReferences = [];
-    for (const name of frameworkNames as FrameworkName[]) {
+    for (const name of (frameworkNames ?? []) as FrameworkName[]) {
       const framework = frameworkCommands[name];
       if (framework == null) {
         throw new Error(`No generator exists for framework '${framework}'`);
       }
       generatorReferences.push(framework);
+    }
+    if (manifest) {
+      generatorReferences.push(manifestCommand);
     }
     // Optimistically try to import all generators in parallel.
     // If any aren't installed we need to ask for permission to install it
@@ -92,7 +110,7 @@ export const run = async (
       generators.push(resolved as unknown as GenerateCommand);
     }
     const options = {
-      analysis,
+      package: pkg,
     };
     const results = await Promise.allSettled(
       generators.map(async (generator) => {

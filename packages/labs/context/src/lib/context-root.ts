@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ContextKey} from './context-key.js';
+import {Context} from './create-context.js';
 import {ContextRequest, ContextRequestEvent} from './context-request-event.js';
 import {ContextProviderEvent} from './controllers/context-provider.js';
 
-type UnknownContextKey = ContextKey<unknown, unknown>;
+type UnknownContextKey = Context<unknown, unknown>;
 
 /**
  * A context request, with associated source element, with all objects as weak references.
@@ -50,7 +50,7 @@ export class ContextRoot {
   }
 
   private onContextProvider = (
-    ev: ContextProviderEvent<ContextKey<unknown, unknown>>
+    ev: ContextProviderEvent<Context<unknown, unknown>>
   ) => {
     const pendingRequests = this.pendingContextRequests.get(ev.context);
     if (!pendingRequests) {
@@ -74,7 +74,7 @@ export class ContextRoot {
   };
 
   private onContextRequest = (
-    ev: ContextRequestEvent<ContextKey<unknown, unknown>>
+    ev: ContextRequestEvent<Context<unknown, unknown>>
   ) => {
     // events that are not subscribing should not be captured
     if (!ev.subscribe) {

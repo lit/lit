@@ -1,0 +1,6 @@
+{
+  "name": "@lit-internal/test-basic-elements-js",
+  "dependencies": {
+    "lit": "^2.0.0"
+  }
+}
