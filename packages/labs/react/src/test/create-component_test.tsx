@@ -103,6 +103,8 @@ class BasicElement extends ReactiveElement {
 }
 
 let container: HTMLElement;
+let el: HTMLDivElement;
+let wrappedEl: BasicElement;
 
 const basicElementEvents = {
   onFoo: 'foo' as EventName<MouseEvent>,
@@ -117,9 +119,6 @@ const BasicElementComponent = createComponent({
   events: basicElementEvents,
   tagName,
 });
-
-let el: HTMLDivElement;
-let wrappedEl: BasicElement;
 
 const renderReactComponent = async (
   props?: React.ComponentProps<typeof BasicElementComponent>
@@ -141,9 +140,7 @@ const renderReactComponent = async (
 
 if (DEV_MODE) {
   suite('Developer mode warnings', () => {
-    let container: HTMLElement;
     let warnings: string[] = [];
-
     const consoleWarn = console.warn;
 
     suiteSetup(() => {
@@ -167,17 +164,14 @@ if (DEV_MODE) {
     });
 
     test('warns when react resered properties are used', () => { 
-      const warningCount = warnings.length;
-
-      const DevComponent = createComponent({
+      createComponent({
         react: window.React,
         elementClass: BasicElement,
         events: basicElementEvents,
         tagName,
       });
 
-      assert.isNotNull(DevComponent);
-      assert.equal(warningCount + 1, warnings.length);
+      assert.equal(warnings.length, 1);
     })
   });
 }
