@@ -14,6 +14,8 @@ import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
+const DEV_MODE = true;
+
 // Needed for JSX expressions
 const React = window.React;
 
@@ -82,9 +84,44 @@ class BasicElement extends ReactiveElement {
   }
 }
 
-suite('createComponent', () => {
-  let container: HTMLElement;
+let container: HTMLElement;
 
+const basicElementEvents = {
+  onFoo: 'foo' as EventName<MouseEvent>,
+  onBar: 'bar',
+};
+
+// if some tag, run options
+// otherwise
+const BasicElementComponent = createComponent({
+  react: window.React,
+  elementClass: BasicElement,
+  events: basicElementEvents,
+  tagName,
+});
+
+let el: HTMLDivElement;
+let wrappedEl: BasicElement;
+
+const renderReactComponent = async (
+  props?: React.ComponentProps<typeof BasicElementComponent>
+) => {
+  window.ReactDOM.render(
+    <>
+      <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
+      <x-foo {...props}/>
+      <BasicElementComponent {...props}/>,
+    </>,
+    container
+  );
+
+  el = container.querySelector('div')!;
+  wrappedEl = container.querySelector(tagName)! as BasicElement;
+
+  await wrappedEl.updateComplete;
+};
+
+suite('createComponent', () => {
   setup(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -95,41 +132,6 @@ suite('createComponent', () => {
       container.parentNode.removeChild(container);
     }
   });
-
-  const basicElementEvents = {
-    onFoo: 'foo' as EventName<MouseEvent>,
-    onBar: 'bar',
-  };
-
-  // if some tag, run options
-  // otherwise
-  const BasicElementComponent = createComponent({
-    react: window.React,
-    elementClass: BasicElement,
-    events: basicElementEvents,
-    tagName,
-  });
-
-  let el: HTMLDivElement;
-  let wrappedEl: BasicElement;
-
-  const renderReactComponent = async (
-    props?: React.ComponentProps<typeof BasicElementComponent>
-  ) => {
-    window.ReactDOM.render(
-      <>
-        <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
-        <x-foo {...props}/>
-        <BasicElementComponent {...props}/>,
-      </>,
-      container
-    );
-
-    el = container.querySelector('div')!;
-    wrappedEl = container.querySelector(tagName)! as BasicElement;
-
-    await wrappedEl.updateComplete;
-  };
 
   /*
     The following test will not build if an incorrect typing occurs
@@ -509,3 +511,32 @@ suite('createComponent', () => {
     assert.equal(wrappedEl.getAttribute('class'), 'foo bar');
   });
 });
+
+if (DEV_MODE) {
+  suite('Developer mode warnings', () => {
+    let container: HTMLElement;
+    let warnings: string[] = [];
+
+    const consoleWarn = console.warn;
+
+    suiteSetup(() => {
+      console.warn = (message: string) => warnings.push(message);
+    });
+
+    suiteTeardown(() => {
+      console.warn = consoleWarn;
+    });
+
+    setup(() => {
+      warnings = [];
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    });
+  });
+}
