@@ -36,6 +36,16 @@ interface Foo {
   foo?: boolean;
 }
 
+const DEV_MODE_WARNINGS = [];
+
+if (DEV_MODE) {
+  const consoleWarn = console.warn;
+  console.warn = (message, ...optionalParams) => {
+    DEV_MODE_WARNINGS.push(message);
+    consoleWarn(message, optionalParams);
+  }
+}
+
 @customElement('x-foo')
 class XFoo extends ReactiveElement {}
 
@@ -56,6 +66,14 @@ class BasicElement extends ReactiveElement {
   // override a default property
   @property({type: Boolean})
   disabled = false;
+
+  // override a react reserved property
+  @property({type: Boolean})
+  ref = false;
+
+  // override a react reserved property
+  @property({type: Boolean})
+  locaName = false;
 
   @property({type: Boolean, reflect: true})
   rbool = false;
@@ -120,6 +138,49 @@ const renderReactComponent = async (
 
   await wrappedEl.updateComplete;
 };
+
+if (DEV_MODE) {
+  suite('Developer mode warnings', () => {
+    let container: HTMLElement;
+    let warnings: string[] = [];
+
+    const consoleWarn = console.warn;
+
+    suiteSetup(() => {
+      console.warn = (message: string) => warnings.push(message);
+    });
+
+    suiteTeardown(() => {
+      console.warn = consoleWarn;
+    });
+
+    setup(() => {
+      warnings = [];
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    });
+
+    teardown(() => {
+      if (container && container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+    });
+
+    test('warns when react resered properties are used', () => { 
+      const warningCount = warnings.length;
+
+      const DevComponent = createComponent({
+        react: window.React,
+        elementClass: BasicElement,
+        events: basicElementEvents,
+        tagName,
+      });
+
+      assert.isNotNull(DevComponent);
+      assert.equal(warningCount + 2, warnings.length);
+    })
+  });
+}
 
 suite('createComponent', () => {
   setup(() => {
@@ -511,32 +572,3 @@ suite('createComponent', () => {
     assert.equal(wrappedEl.getAttribute('class'), 'foo bar');
   });
 });
-
-if (DEV_MODE) {
-  suite('Developer mode warnings', () => {
-    let container: HTMLElement;
-    let warnings: string[] = [];
-
-    const consoleWarn = console.warn;
-
-    suiteSetup(() => {
-      console.warn = (message: string) => warnings.push(message);
-    });
-
-    suiteTeardown(() => {
-      console.warn = consoleWarn;
-    });
-
-    setup(() => {
-      warnings = [];
-      container = document.createElement('div');
-      document.body.appendChild(container);
-    });
-
-    teardown(() => {
-      if (container && container.parentNode) {
-        container.parentNode.removeChild(container);
-      }
-    });
-  });
-}
