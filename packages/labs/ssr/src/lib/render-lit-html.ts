@@ -754,6 +754,8 @@ function* renderTemplateResult(
           // undefined allows effectively no-op rendering the element)
           if (shadowContents !== undefined) {
             const {mode, delegatesFocus} = instance.shadowRootOptions;
+            // `delegatesFocus` is intentionally allowed to coerce to boolean to
+            // match web platform behavior.
             const delegatesfocusAttr = delegatesFocus
               ? ' shadowrootdelegatesfocus'
               : '';
