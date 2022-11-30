@@ -117,6 +117,14 @@ export abstract class ElementRenderer {
   }
 
   /**
+   * Override this getter to configure the element's shadow root, if one is
+   * created with `renderShadow`.
+   */
+  get shadowRootOptions(): ShadowRootInit {
+    return {mode: 'open'};
+  }
+
+  /**
    * Render a single element's ShadowRoot children.
    */
   abstract renderShadow(

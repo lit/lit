@@ -753,7 +753,19 @@ function* renderTemplateResult(
           // Only emit a DSR if renderShadow() emitted something (returning
           // undefined allows effectively no-op rendering the element)
           if (shadowContents !== undefined) {
-            yield '<template shadowroot="open">';
+            yield '<template';
+            const shadowRootOptions = instance.shadowRootOptions;
+            if (shadowRootOptions) {
+              yield ` shadowroot="${escapeHtml(
+                String(shadowRootOptions.mode)
+              )}"`;
+              if (shadowRootOptions.delegatesFocus) {
+                yield ' shadowrootdelegatesfocus';
+              }
+            } else {
+              yield ' shadowroot="open"';
+            }
+            yield '>';
             yield* shadowContents;
             yield '</template>';
           }
