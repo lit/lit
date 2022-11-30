@@ -22,6 +22,12 @@ const concat = (strings: TemplateStringsArray, ...values: unknown[]) =>
 export const javascript = concat;
 
 /**
+ * Use https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html
+ * for HTML syntax highlighting
+ */
+export const html = concat;
+
+/**
  * Converts string to initial cap.
  */
 export const toInitialCap = (str: string) =>

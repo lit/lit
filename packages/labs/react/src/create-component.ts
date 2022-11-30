@@ -4,6 +4,67 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// Match a prop name to a typed event callback by
+// adding an Event type as an expected property on a string.
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+// A key value map matching React prop names to event names
+type EventNames = Record<string, EventName | string>;
+
+// A map of expected event listener types based on EventNames
+type EventListeners<R extends EventNames> = {
+  [K in keyof R]: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
+
+type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
+type ElementWithoutPropsOrEventListeners<I, E> = Omit<
+  I,
+  keyof E | keyof ReactProps<I, E>
+>;
+
+// Props the user is allowed to use, includes standard attributes, children,
+// ref, as well as special event and element properties.
+export type WebComponentProps<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = Partial<
+  ReactProps<I, E> &
+    ElementWithoutPropsOrEventListeners<I, E> &
+    EventListeners<E>
+>;
+
+// Props used by this component wrapper. This is the WebComponentProps and the
+// special `__forwardedRef` property. Note, this ref is special because
+// it's both needed in this component to get access to the rendered element
+// and must fulfill any ref passed by the user.
+type ReactComponentProps<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = WebComponentProps<I, E> & {
+  __forwardedRef: React.Ref<I>;
+};
+
+export type ReactWebComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+> = React.ForwardRefExoticComponent<
+  React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
+>;
+
+interface Options<I extends HTMLElement, E extends EventNames = {}> {
+  tagName: string;
+  elementClass: Constructor<I>;
+  react: typeof window.React;
+  events?: E;
+  displayName?: string;
+}
+
+type Constructor<T> = {new (): T};
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -58,49 +119,74 @@ const setProperty = <E extends Element>(
   name: string,
   value: unknown,
   old: unknown,
-  events?: Events
+  events?: EventNames
 ) => {
   const event = events?.[name];
-  if (event !== undefined) {
+  if (event !== undefined && value !== old) {
     // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    }
-  } else {
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    return;
   }
+
+  // Note, the attribute removal here for `undefined` and `null` values is done
+  // to match React's behavior on non-custom elements. It needs special
+  // handling because it does not match platform behavior.  For example,
+  // setting the `id` property to `undefined` sets the attribute to the string
+  // "undefined." React "fixes" that odd behavior and the code here matches
+  // React's convention.
+  if (
+    (value === undefined || value === null) &&
+    name in HTMLElement.prototype
+  ) {
+    node.removeAttribute(name);
+    return;
+  }
+
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
 // React API to set a ref.
 const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   if (typeof ref === 'function') {
-    (ref as (e: Element | null) => void)(value);
+    ref(value);
   } else {
     (ref as {current: Element | null}).current = value;
   }
 };
 
-type Constructor<T> = {new (): T};
-
-/***
- * Typecast that curries an Event type through a string. The goal of the type
- * cast is to match a prop name to a typed event callback.
- */
-export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
-};
-
-type Events = Record<string, EventName | string>;
-
-type EventProps<R extends Events> = {
-  [K in keyof R]: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
-    : (e: Event) => void;
-};
-
 /**
+ * Creates a React component for a custom element. Properties are distinguished
+ * from attributes automatically, and events can be configured so they are
+ * added to the custom element as event listeners.
+ *
+ * @param options An options bag containing the parameters needed to generate
+ * a wrapped web component.
+ *
+ * @param options.react The React module, typically imported from the `react` npm
+ * package.
+ * @param options.tagName The custom element tag name registered via
+ * `customElements.define`.
+ * @param options.elementClass The custom element class registered via
+ * `customElements.define`.
+ * @param options.events An object listing events to which the component can listen. The
+ * object keys are the event property names passed in via React props and the
+ * object values are the names of the corresponding events generated by the
+ * custom element. For example, given `{onactivate: 'activate'}` an event
+ * function may be passed via the component's `onactivate` prop and will be
+ * called when the custom element fires its `activate` event.
+ * @param options.displayName A React component display name, used in debugging
+ * messages. Default value is inferred from the name of custom element class
+ * registered via `customElements.define`.
+ */
+export function createComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+>(options: Options<I, E>): ReactWebComponent<I, E>;
+/**
+ * @deprecated Use `createComponent(options)` instead of individual arguments.
+ *
  * Creates a React component for a custom element. Properties are distinguished
  * from attributes automatically, and events can be configured so they are
  * added to the custom element as event listeners.
@@ -121,42 +207,55 @@ type EventProps<R extends Events> = {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export const createComponent = <I extends HTMLElement, E extends Events = {}>(
-  React: typeof window.React,
+export function createComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+>(
+  ReactOrOptions: typeof window.React,
   tagName: string,
   elementClass: Constructor<I>,
   events?: E,
   displayName?: string
-) => {
+): ReactWebComponent<I, E>;
+export function createComponent<
+  I extends HTMLElement,
+  E extends EventNames = {}
+>(
+  ReactOrOptions: typeof window.React | Options<I, E> = window.React,
+  tagName?: string,
+  elementClass?: Constructor<I>,
+  events?: E,
+  displayName?: string
+): ReactWebComponent<I, E> {
+  // digest overloaded parameters
+  let React: typeof window.React;
+  let tag: string;
+  let element: Constructor<I>;
+  if (tagName === undefined) {
+    const options = ReactOrOptions as Options<I, E>;
+    ({tagName: tag, elementClass: element, events, displayName} = options);
+    React = options.react;
+  } else {
+    React = ReactOrOptions as typeof window.React;
+    element = elementClass as Constructor<I>;
+    tag = tagName;
+  }
+
   const Component = React.Component;
   const createElement = React.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
 
-  // Props the user is allowed to use, includes standard attributes, children,
-  // ref, as well as special event and element properties.
-  type ReactProps = Omit<React.HTMLAttributes<I>, keyof E>;
-  type ElementWithoutPropsOrEvents = Omit<I, keyof E | keyof ReactProps>;
-  type UserProps = Partial<
-    ReactProps & ElementWithoutPropsOrEvents & EventProps<E>
-  >;
+  type Props = ReactComponentProps<I, E>;
 
-  // Props used by this component wrapper. This is the UserProps and the
-  // special `__forwardedRef` property. Note, this ref is special because
-  // it's both needed in this component to get access to the rendered element
-  // and must fulfill any ref passed by the user.
-  type ComponentProps = UserProps & {
-    __forwardedRef?: React.Ref<unknown>;
-  };
-
-  class ReactComponent extends Component<ComponentProps> {
+  class ReactComponent extends Component<Props> {
     private _element: I | null = null;
-    private _elementProps!: {[index: string]: unknown};
-    private _userRef?: React.Ref<unknown>;
+    private _elementProps!: Record<string, unknown>;
+    private _forwardedRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
-    static displayName = displayName ?? elementClass.name;
+    static displayName = displayName ?? element.name;
 
-    private _updateElement(oldProps?: ComponentProps) {
+    private _updateElement(oldProps?: Props) {
       if (this._element === null) {
         return;
       }
@@ -165,8 +264,8 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
         setProperty(
           this._element,
           prop,
-          this.props[prop as keyof ComponentProps],
-          oldProps ? oldProps[prop as keyof ComponentProps] : undefined,
+          this.props[prop],
+          oldProps ? oldProps[prop] : undefined,
           events
         );
       }
@@ -187,7 +286,7 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
      * Updates element properties correctly setting properties
      * on every update. Note, this does not include mount.
      */
-    override componentDidUpdate(old: ComponentProps) {
+    override componentDidUpdate(old: Props) {
       this._updateElement(old);
     }
 
@@ -200,60 +299,60 @@ export const createComponent = <I extends HTMLElement, E extends Events = {}>(
      *
      */
     override render() {
-      // Since refs only get fulfilled once, pass a new one if the user's
-      // ref changed. This allows refs to be fulfilled as expected, going from
+      // Extract and remove __forwardedRef from userProps in a rename-safe way
+      const {__forwardedRef, ...userProps} = this.props;
+      // Since refs only get fulfilled once, pass a new one if the user's ref
+      // changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef as React.Ref<unknown>;
-      if (this._ref === undefined || this._userRef !== userRef) {
+      if (this._forwardedRef !== __forwardedRef) {
         this._ref = (value: I | null) => {
-          if (this._element === null) {
-            this._element = value;
+          if (__forwardedRef !== null) {
+            setRef(__forwardedRef, value);
           }
-          if (userRef !== null) {
-            setRef(userRef, value);
-          }
-          this._userRef = userRef;
+
+          this._element = value;
+          this._forwardedRef = __forwardedRef;
         };
       }
-      // Filters class properties out and passes the remaining
-      // attributes to React. This allows attributes to use framework rules
-      // for setting attributes and render correctly under SSR.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = {ref: this._ref};
-      // Note, save element props while iterating to avoid the need to
-      // iterate again when setting properties.
+      // Save element props while iterating to avoid the need to iterate again
+      // when setting properties.
       this._elementProps = {};
-      for (const [k, v] of Object.entries(this.props)) {
-        if (k === '__forwardedRef') continue;
-
-        if (
-          eventProps.has(k) ||
-          (!reservedReactProperties.has(k) &&
-            !(k in HTMLElement.prototype) &&
-            k in elementClass.prototype)
-        ) {
-          this._elementProps[k] = v;
-        } else {
+      const props: Record<string, unknown> = {ref: this._ref};
+      // Filters class properties and event properties out and passes the
+      // remaining attributes to React. This allows attributes to use framework
+      // rules for setting attributes and render correctly under SSR.
+      for (const [k, v] of Object.entries(userProps)) {
+        if (reservedReactProperties.has(k)) {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        if (eventProps.has(k) || k in element.prototype) {
+          this._elementProps[k] = v;
+          continue;
+        }
+
+        props[k] = v;
       }
-      return createElement(tagName, props);
+      return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
   }
 
-  const ForwardedComponent = React.forwardRef(
-    (props?: UserProps, ref?: React.Ref<unknown>) =>
-      createElement(
-        ReactComponent,
-        {...props, __forwardedRef: ref} as ComponentProps,
-        props?.children
-      )
+  const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
+    I,
+    WebComponentProps<I, E>
+  >((props, __forwardedRef) =>
+    createElement<Props, ReactComponent, typeof ReactComponent>(
+      ReactComponent,
+      {...props, __forwardedRef},
+      props?.children
+    )
   );
 
   // To ease debugging in the React Developer Tools
   ForwardedComponent.displayName = ReactComponent.displayName;
 
   return ForwardedComponent;
-};
+}

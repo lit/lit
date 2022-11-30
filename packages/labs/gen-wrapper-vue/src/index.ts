@@ -22,8 +22,8 @@ export const getCommand = () => {
     name: 'vue',
     description: 'Generate Vue wrapper components from Lit elements',
     kind: 'resolved',
-    async generate(options: {analysis: Package}): Promise<FileTree> {
-      return generateVueWrapper(options.analysis);
+    async generate(options: {package: Package}): Promise<FileTree> {
+      return generateVueWrapper(options.package);
     },
   };
 };
@@ -58,7 +58,7 @@ export const generateVueWrapper = async (pkg: Package): Promise<FileTree> => {
 const packageNameToVuePackageName = (pkgName: string) => `${pkgName}-vue`;
 
 const gitIgnoreTemplate = (moduleNames: string[]) =>
-  moduleNames.map((f) => `${f}.*`).join('\n');
+  moduleNames.map((f) => `/${f}.*`).join('\n');
 
 const getVueFileName = (dir: string, name: string) => `${dir}/${name}.vue`;
 

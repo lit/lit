@@ -7,22 +7,56 @@
 import {
   LitElementDeclaration,
   PackageJson,
+  getImportsStringForReferences,
+} from '@lit-labs/analyzer';
+import {
+  ReactiveProperty as ModelProperty,
+  Event as EventModel,
+  Reference,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+
+const getTypeReferencesForMap = (
+  map: Map<string, ModelProperty | EventModel>
+) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
+
+const getElementTypeImports = (declarations: LitElementDeclaration[]) => {
+  const refs: Reference[] = [];
+  declarations.forEach((declaration) => {
+    const {/*events,*/ reactiveProperties} = declaration;
+    refs.push(
+      // TODO(sorvell): Add event types.
+      //...getTypeReferencesForMap(events),
+      ...getTypeReferencesForMap(reactiveProperties)
+    );
+  });
+  return getImportsStringForReferences(refs);
+};
+
+// TODO(sorvell): add support for getting exports in analyzer.
+const getElementTypeExportsFromImports = (imports: string) =>
+  imports.replace(/(?:^import)/gm, 'export type');
 
 export const wrapperModuleTemplate = (
   packageJson: PackageJson,
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
+  const imports = [`Component`, `ElementRef`, `NgZone`];
+  if (elements.filter((e) => e.reactiveProperties.size).length > 0) {
+    imports.push(`Input`);
+  }
+  if (elements.filter((e) => e.events.size).length > 0) {
+    imports.push(`EventEmitter`, `Output`);
+  }
+  const typeImports = getElementTypeImports(elements);
+  const typeExports = getElementTypeExportsFromImports(typeImports);
   return javascript`import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  NgZone,
-  Output,
+  ${imports.join(',\n  ')}
+
 } from '@angular/core';
+${typeImports}
+${typeExports}
 ${elements.map(
   (
     element
@@ -61,7 +95,7 @@ export class ${name} {
   ${Array.from(reactiveProperties.entries()).map(
     ([propertyName, property]) => javascript`
   @Input()
-  set ${propertyName}(v: ${property.type.text}) {
+  set ${propertyName}(v: ${property.type?.text ?? 'any'}) {
     this._ngZone.runOutsideAngular(() => (this._el.${propertyName} = v));
   }
 

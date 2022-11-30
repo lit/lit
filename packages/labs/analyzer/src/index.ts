@@ -5,16 +5,19 @@
  */
 
 export {Analyzer} from './lib/analyzer.js';
+export {createPackageAnalyzer} from './lib/analyze-package.js';
 
 export type {
   Package,
   Module,
   Reference,
   Type,
+  Event,
   Declaration,
   VariableDeclaration,
   ClassDeclaration,
   LitElementDeclaration,
+  LitElementExport,
   PackageJson,
   ModuleWithLitElementDeclarations,
 } from './lib/model.js';
