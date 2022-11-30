@@ -41,6 +41,11 @@ export const getElementRenderer = (
   return new FallbackRenderer(tagName);
 };
 
+export interface ShadowRootOptions {
+  mode: 'open' | 'closed';
+  delegatesFocus?: boolean;
+}
+
 /**
  * An object that renders elements of a certain type.
  */
@@ -120,7 +125,7 @@ export abstract class ElementRenderer {
    * Override this getter to configure the element's shadow root, if one is
    * created with `renderShadow`.
    */
-  get shadowRootOptions(): ShadowRootInit {
+  get shadowRootOptions(): ShadowRootOptions {
     return {mode: 'open'};
   }
 
