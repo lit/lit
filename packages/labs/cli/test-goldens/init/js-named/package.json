@@ -22,5 +22,8 @@
     "./lib/le-element.js": {
       "default": "./lib/le-element.js"
     }
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }

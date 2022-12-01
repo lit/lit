@@ -26,5 +26,8 @@
     "./lib/el-element.js": {
       "default": "./lib/el-element.js"
     }
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }
