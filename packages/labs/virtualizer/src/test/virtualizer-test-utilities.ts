@@ -52,15 +52,17 @@ export function observeScroll(
   let report: () => void = () => {};
   let timeout: number | null = null;
   const startPos = {top: scroller.scrollTop, left: scroller.scrollLeft};
-  target.addEventListener('scroll', (e: Event) => {
+  const recordEvent = (e: Event) => {
     events.push(e);
     if (timeout !== null) {
       clearTimeout(timeout);
     }
     timeout = setTimeout(report, wait) as unknown as number;
-  });
+  };
+  target.addEventListener('scroll', recordEvent);
   const promise = new Promise<ScrollObserverResults>((resolve) => {
     report = () => {
+      target.removeEventListener('scroll', recordEvent);
       target.removeEventListener('scroll', report);
       const endPos = {top: scroller.scrollTop, left: scroller.scrollLeft};
       const duration =
