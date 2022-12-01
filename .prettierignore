@@ -299,6 +299,7 @@ packages/labs/virtualizer/test/**/*.js.map
 packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
 packages/labs/virtualizer/events.d.ts*
 packages/labs/virtualizer/events.js
+packages/labs/virtualizer/events.js.map
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/
