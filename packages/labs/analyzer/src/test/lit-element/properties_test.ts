@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'source-map-support/register.js';
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
@@ -36,9 +35,8 @@ for (const lang of languages) {
       const elementAModule = result.modules.find(
         (m) => m.sourcePath === getSourceFilename('element-a', lang)
       );
-      const element = elementAModule!.declarations.filter((d) =>
-        d.isLitElementDeclaration()
-      )[0] as LitElementDeclaration;
+      const element = elementAModule?.getDeclaration('ElementA');
+      assert.ok(element?.isLitElementDeclaration());
 
       ctx.packagePath = packagePath;
       ctx.analyzer = analyzer;

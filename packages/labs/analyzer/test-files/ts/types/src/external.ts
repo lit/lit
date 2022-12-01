@@ -10,3 +10,7 @@ export class ImportedClass {
 export interface ImportedInterface {
   someData: number;
 }
+
+export const returnsClass = () => {
+  return new ImportedClass();
+};
