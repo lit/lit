@@ -23,7 +23,6 @@ import fetch from 'node-fetch';
  *  generally only be true when adding window to a fresh VM context that
  *  starts with nothing.
  * @param props Additional properties to add to the window global
- * @param exposeWindow Whether the `window` object should be exposed globally
  */
 export const getWindow = ({
   includeJSBuiltIns = false,
