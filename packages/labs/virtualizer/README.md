@@ -64,7 +64,7 @@ render() {
 
 When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. (By default, it has a `min-height` of 150 pixels to prevent it from collapsing to a zero-height block, but this default will rarely be what you want in practice.)
 
-### Layout
+### Choosing a layout
 
 `@lit-labs/virtualizer` currently supports two basic layouts, [`flow`](#flow-layout) (the default) and [`grid`](#grid-layout), which together cover a wide range of common use cases.
 
@@ -93,13 +93,15 @@ render() {
 
 The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. It is likely that official support of custom layouts will be a post-1.0 feature.
 
-### Flow layout
+### Using the `flow` layout
 
 By default, a virtualizer lays out its children using the `flow` layout, a simplified form of the browser's own default layout.
 
 The `flow` layout's primary (and significant) simplification is that it expects all child elements to be styled as block-level elements and lays them out accordingly. Child elements will never be laid out "next to each other" inline, even if there were enough space to do so.
 
 Child element size is determined "naturally"—that is, the size of each child element will depend on the data you provide in the `items` array, the nature of your `renderItem` template, and any CSS rules that apply to the child.
+
+Internally, a virtualizer uses a native `ResizeObserver` to detect whenever child elements resize, and the `flow` layout automatically updates item positions as needed, behaving just like the browser's native flow layout in this respect.
 
 #### Spacing child elements
 
@@ -126,13 +128,103 @@ The `flow` layout works vertically by default. However, it also supports laying 
 
 ```
 
-### Grid layout
+#### Using shorthand to specify `flow` options
+
+Because `flow` is the default layout, you don't need to import it explicitly, even if you want to set options on it. Just pass an options object directly to your virtualizer's `layout` property, without wrapping it in the `flow()` function:
+
+```js
+// This shorthand form...
+html`
+  <lit-virtualizer
+    .layout=${{
+      direction: 'horizontal'
+    }}
+  ></lit-virtualizer>
+`
+
+// ...is equivalent to this:
+html`
+  <lit-virtualizer
+    .layout=${flow(
+      direction: 'horizontal'
+    )}
+  ></lit-virtualizer>
+`
+```
+
+### Using the `grid` layout
 
 TODO
 
-### Scrolling to a specific item or position
+### Scrolling
 
-TODO
+As much as possible, `@lit-labs/virtualizer` strives to "just work" with all of the native scrolling APIs (the `scrollTo()` method, the `scrollTop` and `scrollLeft` properties, and so on). When you need to scroll, just use native APIs directly on the `window`, on any scrolling element that happens to be an ancestor of your virtualizer in the DOM tree, or on your virtualizer itself (if it [is a scroller](#making-a-virtualizer-a-scroller)).
+
+Besides the native scrolling APIs, there are a couple of virtualizer-specific APIs that you may find useful in certain circumstances: a method for scrolling "virtual" child elements into view, and a declarative way to frame a given child element within the viewport. These APIs are described in the sections below.
+
+Finally, there one quirk to be aware of when smoothly scrolling a view containing a virtualizer.
+
+#### Scrolling a child element into view
+
+If you want to scroll one of a virtualizer's children into view _and that element is currently present in the DOM_ because it is within the viewport or just outside, you can use the native web API: get a reference to the element, and then call `myElement.scrollIntoView()` with whatever options you desire.
+
+However, this method won't work if the child element you want to scroll into view is currently "virtualized" (i.e., is not currently present in the DOM because it is too far outside the viewport). For this reason, a virtualizer exposes the `element()` method, which takes a numeric index (specifying an item in the `items` array) and returns a simple proxy object representing the corresponding child element (whether the element is present in the DOM or not). This proxy currently exposes just one method: `scrollIntoView()`, which matches the behavior of the native method. Here's an example:
+
+```js
+// Get a reference to the virtualizer, using any method
+const virtualizer = this.shadowRoot.querySelector('<lit-virtualizer>');
+
+// Then use the `element()` method to get a proxy and call `scrollIntoView()`
+virtualizer.element(42).scrollIntoView({
+  block: 'center',
+  behavior: 'smooth',
+});
+```
+
+Note:
+
+- The proxy's `scrollIntoView()` method supports same options as the native API, but the `inline` option has no effect at present, because all currently available layouts virtualize along a single axis and keep child elements within view along the secondary axis at all times.
+- If you're using the `virtualize` directive, getting a reference to the virtualizer so you can call `element()` requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
+
+#### Framing a child element within the viewport
+
+Whereas `scrollIntoView()` lets you imperatively scroll a given child element into view, the `pin` property on a virtualizer layout provides a declarative way to frame an element within the viewport. This is especially useful if you want a specific element to be in view when you initially render a virtualizer. Here's an example:
+
+```js
+render() {
+  // In this toy example, we pin the layout to a hard-coded position. In
+  // reality, you'll almost always want to maintain some state of your
+  // own to keep track of whether the layout should be pinned, and to
+  // which child element. See the note below about the `unpinned` event.
+  return html`
+    <h2>My Contacts</h2>
+    <lit-virtualizer
+      .items=${this.contacts}
+      .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
+      .layout=${{
+        pin: {
+          index: 42,
+          block: 'start'
+        }
+      }}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+The `pin` property takes an option called `index` to specify (by number) which child element you want to frame in the viewport. If you want, you can also use the `block` option to indicate how the element should be framed relative to the viewport; `block` behaves identically to the same option in the `scrollIntoView()` method.
+
+When you pin a layout, it remains pinned until the user intentionally scrolls the view, at which point it is automatically "unpinned". When this occurs, the virtualizer fires an `unpinned` event. Unless you're sure you'll only render your virtualizer once, you should listen for the `unpinned` event so you can omit the `pin` property when you re-render the virtualizer and avoid snapping the view back to the previously pinned position. [TODO: link to an example]
+
+#### A note on smooth scrolling
+
+As noted above, `@lit-labs/virtualizer` essentially "just works" with the browser's native scrolling APIs, including smooth scrolling (as specified via the `behavior: 'smooth'` option).
+
+That said, depending on what layout you're using and what browser you're scrolling in, you may sometimes notice a slight "hitch" in the scrolling animation, where it momentarily slows—usually shortly before reaching its destination.
+
+This only occurs with the `flow` layout and is noticeable mainly (perhaps only) in Chromium-based browsers. It happens when the layout has been estimating the sizes of child elements it hasn't yet measured and needs to correct errors in its estimates while a smooth scrolling animation is in progress.
+
+This is a known limitation which, unless smooth scrolling in Chromium evolves to behave more like other browsers, probably can't be addressed without changing `@lit-labs/virtualizer` to use JavaScript-based scrolling in place of native scrolling.
 
 ### `virtualize` directive
 
@@ -155,7 +247,43 @@ render() {
 }
 ```
 
-The capabilities of the `virtualizer` directive are the same as those of the `<lit-virtualizer>` element. The APIs are the same as well, except that features expressed as properties and attributes on the `<lit-virtualizer>` element are instead expressed as properties in an options object passed as the single argument to the `virtualize` directive.
+The capabilities of the `virtualizer` directive are the same as those of the `<lit-virtualizer>` element. The configuration APIs are the same as well, except that features expressed as properties and attributes on the `<lit-virtualizer>` element are instead expressed as properties in an options object passed as the single argument to the `virtualize` directive.
+
+### Getting a reference to the virtualizer
+
+In addition to its declarative configuration options, a virtualizer exposes a handful of imperative APIs. The `<lit-virtualizer>` element exposes these APIs directly, but to use them with the `virtualize` directive you need to get a reference to the virtualizer. You do this by first getting a reference to the virtualizer's host element (the element within which you rendered the directive) and then using the `virtualizerRef` symbol to get a reference to the virtualizer itself. For example:
+
+```ts
+import {html, LitElement} from 'lit';
+import {customElement, property, query} from 'lit/decorators.js';
+// Import the `virtualizerRef` symbol along with the directive
+import {virtualize, virtualizerRef} from '@lit-labs/virtualizer/virtualize.js';
+
+@customElement('my-items')
+export class MyItems extends LitElement {
+  data = new Array(100).fill('').map((i, n) => ({text: `Item ${n}`}));
+
+  @query('ul')
+  list: HTMLUListElement;
+
+  render() {
+    return html`
+      <ul>
+        ${virtualize({
+          items: this.data,
+          renderItem: (i) => html`<li>${i.text}</li>`,
+        })}
+      </ul>
+    `;
+  }
+
+  scrollToListItem(idx) {
+    // Use the `virtualizerRef` symbol as a property key on the
+    // host element to access the virtualizer reference
+    this.list[virtualizerRef].scrollElementIntoView({index: idx});
+  }
+}
+```
 
 ## API Referrence
 

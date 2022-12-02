@@ -30,6 +30,14 @@ export class VisibilityChangedEvent extends Event {
   }
 }
 
+export class UnpinnedEvent extends Event {
+  static eventName = 'unpinned';
+
+  constructor() {
+    super(UnpinnedEvent.eventName, {bubbles: false});
+  }
+}
+
 interface Range {
   first: number;
   last: number;
