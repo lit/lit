@@ -55,4 +55,15 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   get layoutComplete() {
     return (this as VirtualizerHostElement)[virtualizerRef]?.layoutComplete;
   }
+
+  /**
+   * This scrollToIndex() shim is here to provide backwards compatibility with other 0.x versions of
+   * lit-virtualizer. It is deprecated and will likely be removed in the 1.0.0 release.
+   */
+  scrollToIndex(
+    index: number,
+    position: 'start' | 'center' | 'end' | 'nearest' = 'start'
+  ) {
+    this.element(index)?.scrollIntoView({block: position});
+  }
 }
