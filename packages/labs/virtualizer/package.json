@@ -74,6 +74,7 @@
         "events.{js,d.ts,d.ts.map}",
         "lit-virtualizer.{js,d.ts,d.ts.map}",
         "LitVirtualizer.{js,d.ts,d.ts.map}",
+        "ScrollerController.{js,d.ts,d.ts.map}",
         "virtualize.{js,d.ts,d.ts.map}",
         "Virtualizer.{js,d.ts,d.ts.map}"
       ],
