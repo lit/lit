@@ -53,4 +53,38 @@ test('loads a module with a built-in import', async () => {
   assert.ok(module.namespace.join);
 });
 
+test('resolves an exact exported path', async () => {
+  const loader = new ModuleLoader({global: window});
+  const result = await loader.importModule('./lit-import.js', testIndex);
+  const {module, path: modulePath} = result;
+  assert.is(module.namespace.litIsServer, true);
+  assert.ok(loader.cache.has(modulePath));
+  const isServerPath = path.resolve(
+    path.dirname(testIndex),
+    '../../../../../lit-html/node/is-server.js'
+  );
+  assert.ok(loader.cache.has(isServerPath));
+});
+
+test('resolves a root exported path (.)', async () => {
+  const loader = new ModuleLoader({global: window});
+  const result = await loader.importModule(
+    './lit-import-from-root.js',
+    testIndex
+  );
+  const {module, path: modulePath} = result;
+  assert.is(module.namespace.litIsServer, true);
+  assert.ok(loader.cache.has(modulePath));
+  const litPath = path.resolve(
+    path.dirname(testIndex),
+    '../../../../../lit/index.js'
+  );
+  const isServerPath = path.resolve(
+    path.dirname(testIndex),
+    '../../../../../lit-html/node/is-server.js'
+  );
+  assert.ok(loader.cache.has(litPath));
+  assert.ok(loader.cache.has(isServerPath));
+});
+
 test.run();
