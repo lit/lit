@@ -204,4 +204,106 @@ describe('flow layout', () => {
       expect(last(visible).textContent).to.equal('303');
     });
   });
+
+  describe('scrollToIndex', () => {
+    it('shows the correct items when scrolling to start position', async () => {
+      const {virtualizer} = await createVirtualizer({items: array(1000)});
+
+      virtualizer.scrollToIndex(5, 'start');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '5')
+      );
+
+      const visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(4);
+      expect(first(visible).textContent).to.equal('5');
+      expect(last(visible).textContent).to.equal('8');
+    });
+
+    it('shows leading items when scrolling to last item in start position', async () => {
+      const {virtualizer} = await createVirtualizer({items: array(1000)});
+
+      virtualizer.scrollToIndex(999, 'start');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '999')
+      );
+
+      const visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(4);
+      expect(first(visible).textContent).to.equal('996');
+      expect(last(visible).textContent).to.equal('999');
+    });
+
+    it('shows the correct items when scrolling to center position', async () => {
+      const {virtualizer} = await createVirtualizer({items: array(1000)});
+
+      virtualizer.scrollToIndex(200, 'center');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '200')
+      );
+
+      // 5 items are visible, but the first and last items are only half-visible.
+      const visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(5);
+      expect(first(visible).textContent).to.equal('198');
+      expect(last(visible).textContent).to.equal('202');
+    });
+
+    it('shows trailing items when scrolling to first item in end position', async () => {
+      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      virtualizer.scrollToIndex(0, 'end');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '0')
+      );
+
+      const visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(4);
+      expect(first(visible).textContent).to.equal('0');
+      expect(last(visible).textContent).to.equal('3');
+    });
+
+    it('shows the correct items when scrolling to nearest position', async () => {
+      const {virtualizer} = await createVirtualizer({items: array(1000)});
+
+      // The nearest position for item 500 will be at the end.
+      virtualizer.scrollToIndex(500, 'nearest');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '500')
+      );
+
+      let visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(4);
+      expect(first(visible).textContent).to.equal('497');
+      expect(last(visible).textContent).to.equal('500');
+
+      // The nearest position for item 3 will be at the start.
+      virtualizer.scrollToIndex(300, 'nearest');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '300')
+      );
+
+      visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(4);
+      expect(first(visible).textContent).to.equal('300');
+      expect(last(visible).textContent).to.equal('303');
+
+      // No change in visible items is expected since item 5 is already visible.
+      virtualizer.scrollToIndex(302, 'nearest');
+
+      await until(() =>
+        getVisibleItems(virtualizer).find((e) => e.textContent === '302')
+      );
+
+      visible = getVisibleItems(virtualizer);
+      expect(visible.length).to.equal(4);
+      expect(first(visible).textContent).to.equal('300');
+      expect(last(visible).textContent).to.equal('303');
+    });
+  });
 });
