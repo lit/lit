@@ -84,7 +84,7 @@ export class GridLayout extends SizeGapPaddingBaseLayout<GridLayoutConfig> {
   }
 
   set gap(spec: AutoGapSpec) {
-    this._setGap(spec);
+    super.gap = spec;
   }
 
   _updateLayout() {
@@ -283,10 +283,13 @@ export class GridLayout extends SizeGapPaddingBaseLayout<GridLayoutConfig> {
   }
 
   _updateScrollSize() {
-    this._scrollSize = Math.max(
-      1,
-      Math.ceil(this._totalItems / this._metrics!.rolumns) * this._delta +
-        this._gap!
-    );
+    const {rolumns, gap1, padding1, itemSize1} = this._metrics!;
+    let size = 1;
+    if (rolumns > 0) {
+      const cows = Math.ceil(this.totalItems / rolumns);
+      size =
+        padding1.start + cows * itemSize1 + (cows - 1) * gap1 + padding1.end;
+    }
+    this._scrollSize = size;
   }
 }

@@ -4,19 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'source-map-support/register.js';
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 import {getSourceFilename, languages} from '../utils.js';
 
-import {
-  createPackageAnalyzer,
-  Analyzer,
-  AbsolutePath,
-  LitElementDeclaration,
-} from '../../index.js';
+import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../../index.js';
+
+// Get actual constructor to test internal ability to assert the type
+// of a dereferenced Declaration
+import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
 
 for (const lang of languages) {
   const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
@@ -44,7 +42,7 @@ for (const lang of languages) {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === getSourceFilename('not-lit', lang)
     );
-    const decl = elementAModule!.declarations.find((d) => d.name === 'NotLit')!;
+    const decl = elementAModule?.getDeclaration('NotLit');
     assert.ok(decl);
     assert.equal(decl.isLitElementDeclaration(), false);
   });
@@ -58,7 +56,7 @@ for (const lang of languages) {
     const decl = elementAModule!.declarations[0];
     assert.equal(decl.name, 'ElementA');
     assert.ok(decl.isLitElementDeclaration());
-    assert.equal((decl as LitElementDeclaration).tagname, 'element-a');
+    assert.equal(decl.tagname, 'element-a');
   });
 
   test('Analyzer finds LitElement properties ', ({analyzer}) => {
@@ -66,7 +64,8 @@ for (const lang of languages) {
     const elementAModule = result.modules.find(
       (m) => m.sourcePath === getSourceFilename('element-a', lang)
     );
-    const decl = elementAModule!.declarations[0] as LitElementDeclaration;
+    const decl = elementAModule?.getDeclaration('ElementA');
+    assert.ok(decl?.isLitElementDeclaration());
 
     // ElementA has `a` and `b` properties
     assert.equal(decl.reactiveProperties.size, 3);
@@ -101,7 +100,8 @@ for (const lang of languages) {
     const elementBModule = result.modules.find(
       (m) => m.sourcePath === getSourceFilename('element-b', lang)
     );
-    const decl = elementBModule!.declarations[0] as LitElementDeclaration;
+    const decl = elementBModule?.getDeclaration('ElementB');
+    assert.ok(decl?.isLitElementDeclaration());
 
     // ElementB has `foo` and `bar` properties defined in a static properties getter
     assert.equal(decl.reactiveProperties.size, 2);
@@ -121,6 +121,37 @@ for (const lang of languages) {
     // This is inferred
     assert.equal(bProp.type?.text, 'number');
     assert.equal(bProp.typeOption, 'Number');
+  });
+
+  test('Analyezr finds subclass of LitElement', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const module = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('element-c', lang)
+    );
+    const elementC = module?.getDeclaration('ElementC');
+    assert.ok(elementC?.isLitElementDeclaration());
+
+    assert.equal(elementC.reactiveProperties.size, 1);
+    const bazProp = elementC.reactiveProperties.get('baz');
+    assert.ok(bazProp);
+
+    const elementBRef = elementC.heritage.superClass;
+    assert.ok(elementBRef);
+    const elementB = elementBRef.dereference(LitElementDeclaration);
+    assert.ok(elementB.isLitElementDeclaration());
+    assert.ok(elementB.name, 'ElementB');
+    assert.equal(elementB.reactiveProperties.size, 2);
+    const fooProp = elementB.reactiveProperties.get('foo');
+    assert.ok(fooProp);
+    const barProp = elementB.reactiveProperties.get('bar');
+    assert.ok(barProp);
+
+    const litElementRef = elementB.heritage.superClass;
+    assert.ok(litElementRef);
+    const litElement = litElementRef.dereference(ClassDeclaration);
+    assert.ok(litElement.isClassDeclaration());
+    assert.not.ok(litElement.isLitElementDeclaration());
+    assert.ok(litElement.name, 'LitElement');
   });
 
   test.run();

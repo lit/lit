@@ -11,9 +11,16 @@
  */
 
 import ts from 'typescript';
-import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
+import {getHeritage} from '../javascript/classes.js';
+import {parseNodeJSDocInfo, parseNameDescSummary} from '../javascript/jsdoc.js';
+import {
+  LitElementDeclaration,
+  AnalyzerInterface,
+  Event,
+  NamedJSDocInfo,
+} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
-import {getEvents} from './events.js';
+import {addEventsToMap} from './events.js';
 import {getProperties} from './properties.js';
 
 /**
@@ -30,20 +37,91 @@ export const getLitElementDeclaration = (
     name: node.name?.text ?? '',
     node,
     reactiveProperties: getProperties(node, analyzer),
-    events: getEvents(node, analyzer),
+    ...getJSDocData(node, analyzer),
+    getHeritage: () => getHeritage(node, analyzer),
   });
+};
+
+/**
+ * Parses element metadata from jsDoc tags from a LitElement declaration into
+ * Maps of <name, info>.
+ */
+export const getJSDocData = (
+  node: LitClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  const events = new Map<string, Event>();
+  const slots = new Map<string, NamedJSDocInfo>();
+  const cssProperties = new Map<string, NamedJSDocInfo>();
+  const cssParts = new Map<string, NamedJSDocInfo>();
+  const jsDocTags = ts.getJSDocTags(node);
+  if (jsDocTags !== undefined) {
+    for (const tag of jsDocTags) {
+      switch (tag.tagName.text) {
+        case 'fires':
+          addEventsToMap(tag, events, analyzer);
+          break;
+        case 'slot':
+          addNamedJSDocInfoToMap(slots, tag);
+          break;
+        case 'cssProp':
+          addNamedJSDocInfoToMap(cssProperties, tag);
+          break;
+        case 'cssProperty':
+          addNamedJSDocInfoToMap(cssProperties, tag);
+          break;
+        case 'cssPart':
+          addNamedJSDocInfoToMap(cssParts, tag);
+          break;
+      }
+    }
+  }
+  return {
+    ...parseNodeJSDocInfo(node, analyzer),
+    events,
+    slots,
+    cssProperties,
+    cssParts,
+  };
+};
+
+/**
+ * Adds name, description, and summary info for a given jsdoc tag into the
+ * provided map.
+ */
+const addNamedJSDocInfoToMap = (
+  map: Map<string, NamedJSDocInfo>,
+  tag: ts.JSDocTag
+) => {
+  const info = parseNameDescSummary(tag);
+  if (info !== undefined) {
+    map.set(info.name, info);
+  }
 };
 
 /**
  * Returns true if this type represents the actual LitElement class.
  */
-const _isLitElementClassDeclaration = (t: ts.BaseType) => {
+const _isLitElementClassDeclaration = (
+  t: ts.BaseType,
+  analyzer: AnalyzerInterface
+) => {
   // TODO: should we memoize this for performance?
   const declarations = t.getSymbol()?.getDeclarations();
   if (declarations?.length !== 1) {
     return false;
   }
   const node = declarations[0];
+  return _isLitElement(node) || isLitElementSubclass(node, analyzer);
+};
+
+/**
+ * Returns true if the given declaration is THE LitElement declaration.
+ *
+ * TODO(kschaaf): consider a less brittle method of detecting canonical
+ * LitElement
+ */
+const _isLitElement = (node: ts.Declaration) => {
   return (
     _isLitElementModule(node.getSourceFile()) &&
     ts.isClassDeclaration(node) &&
@@ -51,6 +129,9 @@ const _isLitElementClassDeclaration = (t: ts.BaseType) => {
   );
 };
 
+/**
+ * Returns true if the given source file is THE lit-element source file.
+ */
 const _isLitElementModule = (file: ts.SourceFile) => {
   return (
     file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts') ||
@@ -73,7 +154,7 @@ export type LitClassDeclaration = ts.ClassDeclaration & {
 /**
  * Returns true if `node` is a ClassLikeDeclaration that extends LitElement.
  */
-export const isLitElement = (
+export const isLitElementSubclass = (
   node: ts.Node,
   analyzer: AnalyzerInterface
 ): node is LitClassDeclaration => {
@@ -84,7 +165,7 @@ export const isLitElement = (
   const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
   const baseTypes = checker.getBaseTypes(type);
   for (const t of baseTypes) {
-    if (_isLitElementClassDeclaration(t)) {
+    if (_isLitElementClassDeclaration(t, analyzer)) {
       return true;
     }
   }

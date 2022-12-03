@@ -5,13 +5,20 @@
  */
 
 import {LitElement, html, TemplateResult} from 'lit';
-import {property} from 'lit/decorators/property.js';
+import {customElement, property} from 'lit/decorators.js';
 
-import {ContextKey, consume, provide, ContextRoot} from '@lit-labs/context';
+import {
+  Context,
+  consume,
+  provide,
+  ContextRoot,
+  ContextProvider,
+} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
-const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
+const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
+@customElement('context-consumer')
 class ContextConsumerElement extends LitElement {
   @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
@@ -25,7 +32,6 @@ class ContextConsumerElement extends LitElement {
     return html`Value <span id="value">${this.value}</span>`;
   }
 }
-customElements.define('context-consumer', ContextConsumerElement);
 
 class LateContextProviderElement extends LitElement {
   @provide({context: simpleContext})
@@ -41,59 +47,96 @@ class LateContextProviderElement extends LitElement {
   }
 }
 
+@customElement('lazy-context-provider')
+export class LazyContextProviderElement extends LitElement {
+  protected render() {
+    return html`<slot></slot>`;
+  }
+}
+
 suite('late context provider', () => {
-  let consumer: ContextConsumerElement;
-  let provider: LateContextProviderElement;
+  // let consumer: ContextConsumerElement;
+  // let provider: LateContextProviderElement;
   let container: HTMLElement;
+
   setup(async () => {
     container = document.createElement('div');
+    document.body.append(container);
 
-    // add a root context to catch late providers and re-dispatch requests
+    // Add a root context to catch late providers and re-dispatch requests
     new ContextRoot().attach(container);
+  });
 
+  teardown(() => {
+    container.remove();
+  });
+
+  test(`handles late upgrade properly`, async () => {
     container.innerHTML = `
-         <late-context-provider value="1000">
-             <context-consumer></context-consumer>
-         </late-context-provider>
-     `;
-    document.body.appendChild(container);
+        <late-context-provider value="1000">
+            <context-consumer></context-consumer>
+        </late-context-provider>
+    `;
 
-    provider = container.querySelector(
+    const provider = container.querySelector(
       'late-context-provider'
     ) as LateContextProviderElement;
 
-    consumer = container.querySelector(
+    const consumer = container.querySelector(
       'context-consumer'
     ) as ContextConsumerElement;
 
     await consumer.updateComplete;
 
-    assert.isDefined(consumer);
-  });
-
-  teardown(() => {
-    document.body.removeChild(container);
-  });
-
-  test(`handles late upgrade properly`, async () => {
-    // initially consumer has initial value
+    // Initially consumer has initial value
     assert.strictEqual(consumer.value, 0);
     assert.strictEqual(consumer.onceValue, 0);
-    // do upgrade
+
+    // Define provider element
     customElements.define('late-context-provider', LateContextProviderElement);
-    // await update of provider component
+
     await provider.updateComplete;
-    // await update of consumer component
     await consumer.updateComplete;
-    // should now have provided context
+
+    // `value` should now be provided
     assert.strictEqual(consumer.value, 1000);
+
     // but only to the subscribed value
     assert.strictEqual(consumer.onceValue, 0);
-    // confirm subscription is established
+
+    // Confirm subscription is established
     provider.value = 500;
     await consumer.updateComplete;
     assert.strictEqual(consumer.value, 500);
+
     // and once was not updated
     assert.strictEqual(consumer.onceValue, 0);
+  });
+
+  test('lazy added provider', async () => {
+    container.innerHTML = `
+        <lazy-context-provider>
+            <context-consumer></context-consumer>
+        </lazy-context-provider>
+    `;
+
+    const provider = container.querySelector(
+      'lazy-context-provider'
+    ) as LazyContextProviderElement;
+
+    const consumer = container.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await consumer.updateComplete;
+
+    // Add a provider after the elements are setup
+    new ContextProvider(provider, simpleContext, 1000);
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    // `value` should now be provided
+    assert.strictEqual(consumer.value, 1000);
   });
 });

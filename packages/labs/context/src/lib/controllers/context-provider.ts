@@ -5,7 +5,7 @@
  */
 
 import {ContextRequestEvent} from '../context-request-event.js';
-import {ContextKey, ContextType} from '../context-key.js';
+import {Context, ContextType} from '../create-context.js';
 import {ValueNotifier} from '../value-notifier.js';
 import {ReactiveController, ReactiveElement} from 'lit';
 
@@ -15,18 +15,18 @@ declare global {
      * A 'context-provider' event can be emitted by any element which hosts
      * a context provider to indicate it is available for use.
      */
-    'context-provider': ContextProviderEvent<ContextKey<unknown, unknown>>;
+    'context-provider': ContextProviderEvent<Context<unknown, unknown>>;
   }
 }
 
 export class ContextProviderEvent<
-  Context extends ContextKey<unknown, unknown>
+  C extends Context<unknown, unknown>
 > extends Event {
   /**
    *
    * @param context the context which this provider can provide
    */
-  public constructor(public readonly context: Context) {
+  public constructor(public readonly context: C) {
     super('context-provider', {bubbles: true, composed: true});
   }
 }
@@ -39,7 +39,7 @@ export class ContextProviderEvent<
  * the host is connected to the DOM and registers the received callbacks
  * against its observable Context implementation.
  */
-export class ContextProvider<T extends ContextKey<unknown, unknown>>
+export class ContextProvider<T extends Context<unknown, unknown>>
   extends ValueNotifier<ContextType<T>>
   implements ReactiveController
 {
@@ -49,12 +49,12 @@ export class ContextProvider<T extends ContextKey<unknown, unknown>>
     initialValue?: ContextType<T>
   ) {
     super(initialValue);
-    this.host.addController(this);
     this.attachListeners();
+    this.host.addController(this);
   }
 
   public onContextRequest = (
-    ev: ContextRequestEvent<ContextKey<unknown, unknown>>
+    ev: ContextRequestEvent<Context<unknown, unknown>>
   ): void => {
     // Only call the callback if the context matches.
     // Also, in case an element is a consumer AND a provider

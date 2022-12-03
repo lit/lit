@@ -7,14 +7,12 @@
 import {TemplateResult, ChildPart, html} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
-import {repeat} from 'lit/directives/repeat.js';
-import {
-  Layout,
-  LayoutConstructor,
-  LayoutSpecifier,
-} from './layouts/shared/Layout.js';
-import {Virtualizer, ScrollToIndexValue} from './Virtualizer.js';
+import {repeat, KeyFn} from 'lit/directives/repeat.js';
+import {Virtualizer} from './Virtualizer.js';
 import {RangeChangedEvent} from './events.js';
+import {LayoutConfigValue} from './layouts/shared/Layout.js';
+
+export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
 
 /**
  * Configuration options for the virtualize directive.
@@ -24,38 +22,41 @@ export interface VirtualizeDirectiveConfig<T> {
    * A function that returns a lit-html TemplateResult. It will be used
    * to generate the DOM for each item in the virtual list.
    */
-  renderItem?: (item: T, index: number) => TemplateResult;
+  renderItem?: RenderItemFunction<T>;
 
-  keyFunction?: (item: T) => unknown;
+  keyFunction?: KeyFn<T>;
 
   scroller?: boolean;
 
   // TODO (graynorton): Document...
-  layout?: Layout | LayoutConstructor | LayoutSpecifier;
+  layout?: LayoutConfigValue;
 
   /**
    * The list of items to display via the renderItem function.
    */
   items?: Array<T>;
-
-  /**
-   * Index and position of the item to scroll to.
-   */
-  scrollToIndex?: ScrollToIndexValue;
 }
 
-/*export */ const defaultKeyFunction = <T>(item: T) => item;
-/*export */ const defaultRenderItem = <T>(item: T) =>
-  html`${JSON.stringify(item, null, 2)}`;
+export type RenderItemFunction<T = unknown> = (
+  item: T,
+  index: number
+) => TemplateResult;
 
-class VirtualizeDirective<T> extends AsyncDirective {
-  virtualizer: Virtualizer | null = null;
-  first = 0;
-  last = -1;
-  cachedConfig?: VirtualizeDirectiveConfig<T>;
-  renderItem: (item: T, index: number) => TemplateResult = defaultRenderItem;
-  keyFunction: (item: T) => unknown = defaultKeyFunction;
-  items: Array<T> = [];
+export const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
+export const defaultRenderItem: RenderItemFunction<unknown> = (
+  item: unknown,
+  idx: number
+) => html`${idx}: ${JSON.stringify(item, null, 2)}`;
+
+class VirtualizeDirective<T = unknown> extends AsyncDirective {
+  _virtualizer: Virtualizer | null = null;
+  _first = 0;
+  _last = -1;
+  _renderItem: RenderItemFunction<T> = (item: T, idx: number) =>
+    defaultRenderItem(item, idx + this._first);
+  _keyFunction: KeyFn<T> = (item: T, idx: number) =>
+    defaultKeyFunction(item, idx + this._first);
+  _items: Array<T> = [];
 
   constructor(part: PartInfo) {
     super(part);
@@ -75,80 +76,83 @@ class VirtualizeDirective<T> extends AsyncDirective {
     // that _last isn't outside the current bounds of the items array?
     // Not sure we should ever arrive here with it out of bounds.
     // Repro case for original issue: https://tinyurl.com/yes8b2e6
-    const lastItem = Math.min(this.items.length, this.last + 1);
+    const lastItem = Math.min(this._items.length, this._last + 1);
 
-    if (this.first >= 0 && this.last >= this.first) {
-      for (let i = this.first; i < lastItem; i++) {
-        itemsToRender.push(this.items[i]);
+    if (this._first >= 0 && this._last >= this._first) {
+      for (let i = this._first; i < lastItem; i++) {
+        itemsToRender.push(this._items[i]);
       }
     }
-    return repeat(
-      itemsToRender,
-      this.keyFunction || defaultKeyFunction,
-      this.renderItem
-    );
+    return repeat(itemsToRender, this._keyFunction, this._renderItem);
   }
 
   update(part: ChildPart, [config]: [VirtualizeDirectiveConfig<T>]) {
     this._setFunctions(config);
-    this.items = config.items || [];
-    if (this.virtualizer) {
-      this._updateVirtualizerConfig(config);
+    this._items = config.items || [];
+    if (this._virtualizer) {
+      this._updateVirtualizerConfig(part, config);
     } else {
-      if (!this.cachedConfig) {
-        setTimeout(() => this._initialize(part));
-      }
-      this.cachedConfig = config;
+      this._initialize(part, config);
     }
     return this.render();
   }
 
-  _updateVirtualizerConfig(config: VirtualizeDirectiveConfig<T>) {
-    const {virtualizer} = this;
-    virtualizer!.items = this.items;
-    if (config.layout) {
-      virtualizer!.layout = config.layout;
+  private _updateVirtualizerConfig(
+    part: ChildPart,
+    config: VirtualizeDirectiveConfig<T>
+  ) {
+    const compatible = this._virtualizer!.updateLayoutConfig(
+      config.layout || {}
+    );
+    if (!compatible) {
+      const hostElement = part.parentNode as HTMLElement;
+      this._makeVirtualizer(hostElement, config);
     }
-    if (config.scrollToIndex) {
-      virtualizer!.scrollToIndex = config.scrollToIndex;
-    }
+    this._virtualizer!.items = this._items;
   }
 
   private _setFunctions(config: VirtualizeDirectiveConfig<T>) {
     const {renderItem, keyFunction} = config;
     if (renderItem) {
-      this.renderItem = (item, idx) => renderItem(item, idx + this.first);
+      this._renderItem = (item, idx) => renderItem(item, idx + this._first);
     }
     if (keyFunction) {
-      this.keyFunction = keyFunction;
+      this._keyFunction = (item, idx) => keyFunction(item, idx + this._first);
     }
   }
 
-  private _initialize(part: ChildPart) {
-    const config = this.cachedConfig!;
+  private _makeVirtualizer(
+    hostElement: HTMLElement,
+    config: VirtualizeDirectiveConfig<T>
+  ) {
+    if (this._virtualizer) {
+      this._virtualizer.disconnected();
+    }
+    const {layout, scroller, items} = config;
+    this._virtualizer = new Virtualizer({hostElement, layout, scroller});
+    this._virtualizer.items = items;
+    this._virtualizer!.connected();
+  }
+
+  private _initialize(part: ChildPart, config: VirtualizeDirectiveConfig<T>) {
     const hostElement = part.parentNode as HTMLElement;
     if (hostElement && hostElement.nodeType === 1) {
-      const {layout, scroller} = config;
-      this.virtualizer = new Virtualizer({hostElement, layout, scroller});
-      this.virtualizer!.connected();
       hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
         e.stopPropagation();
-        this.first = e.first;
-        this.last = e.last;
+        this._first = e.first;
+        this._last = e.last;
         this.setValue(this.render());
       });
-      this.update(part, [config]);
-    } else {
-      console.log('uh-oh!');
+      this._makeVirtualizer(hostElement, config);
     }
   }
 
   disconnected() {
-    this.virtualizer?.disconnected();
+    this._virtualizer?.disconnected();
   }
 
   reconnected() {
-    this.virtualizer?.connected();
+    this._virtualizer?.connected();
   }
 }
 

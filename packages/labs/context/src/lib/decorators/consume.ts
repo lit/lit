@@ -7,7 +7,7 @@
 import {ReactiveElement} from '@lit/reactive-element';
 import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {ContextConsumer} from '../controllers/context-consumer.js';
-import {ContextKey} from '../context-key.js';
+import {Context} from '../create-context.js';
 
 /*
  * IMPORTANT: For compatibility with tsickle and the Closure JS compiler, all
@@ -45,10 +45,11 @@ export function consume<ValueType>({
   context: context,
   subscribe,
 }: {
-  context: ContextKey<unknown, ValueType>;
+  context: Context<unknown, ValueType>;
   subscribe?: boolean;
 }): <K extends PropertyKey>(
-  protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
+  // Partial<> allows for providing the value to an optional field
+  protoOrDescriptor: ReactiveElement & Partial<Record<K, ValueType>>,
   name?: K
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

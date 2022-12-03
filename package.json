@@ -195,6 +195,7 @@
     "@web/test-runner-mocha": "^0.7.5",
     "@web/test-runner-playwright": "^0.8.9",
     "@web/test-runner-saucelabs": "^0.8.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.13.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-no-only-tests": "^2.4.0",
