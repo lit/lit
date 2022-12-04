@@ -18,7 +18,6 @@ const window = getWindow({
   includeJSBuiltIns: true,
   props: {require: createRequire(import.meta.url)},
 });
-window.window = window;
 const loader = new ModuleLoader({
   global: window,
 });

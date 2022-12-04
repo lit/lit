@@ -32,7 +32,6 @@ export const ssrMiddleware = () => {
     } else {
       // mode === 'vm'
       const window = getWindow({includeJSBuiltIns: true});
-      window.window = window;
       const loader = new ModuleLoader({
         global: window,
       });
