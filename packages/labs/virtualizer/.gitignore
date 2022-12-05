@@ -17,6 +17,10 @@
 /LitVirtualizer.d.ts
 /LitVirtualizer.d.ts.map
 /LitVirtualizer.js.map
+/ScrollerController.js
+/ScrollerController.d.ts
+/ScrollerController.d.ts.map
+/ScrollerController.js.map
 /test/**/*.d.ts
 /test/**/*.d.ts.map
 /test/**/*.js
@@ -24,3 +28,4 @@
 /test/screenshot/cases/*/actual.*.png
 /events.d.ts*
 /events.js
+/events.js.map

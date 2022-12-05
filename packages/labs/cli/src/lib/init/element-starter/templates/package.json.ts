@@ -49,7 +49,10 @@ export const generatePackageJson = (
     "./lib/${elementName}.js": {
       "default": "./lib/${elementName}.js"
     }
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }`,
   };
 };

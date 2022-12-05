@@ -18,10 +18,7 @@ export const generateElement = (
   const directory = language === 'js' ? 'lib' : 'src';
   return {
     [directory]: {
-      [`${elementName}.${language}`]:
-        language === 'js'
-          ? generateTemplate(elementName, language)
-          : generateTemplate(elementName, language),
+      [`${elementName}.${language}`]: generateTemplate(elementName, language),
     },
   };
 };

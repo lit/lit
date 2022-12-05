@@ -9,7 +9,6 @@ import {generateTsconfig} from './templates/tsconfig.json.js';
 import {generatePackageJson} from './templates/package.json.js';
 import {generateIndex} from './templates/demo/index.html.js';
 import {generateGitignore} from './templates/gitignore.js';
-import {generateNpmignore} from './templates/npmignore.js';
 import {generateElement} from './templates/lib/element.js';
 import {CommandResult} from '../../command.js';
 import {InitCommandOptions} from '../../commands/init.js';
@@ -24,7 +23,6 @@ export const generateLitElementStarter = async (
     ...generatePackageJson(name, lang),
     ...generateIndex(name),
     ...generateGitignore(lang),
-    ...generateNpmignore(),
     ...generateElement(name, lang),
   };
   if (lang === 'ts') {
@@ -42,7 +40,7 @@ export const run = async (
   cli: LitCli
 ): Promise<CommandResult> => {
   const files = await generateLitElementStarter(options);
-  const outPath = path.join(cli.cwd, options.dir, options.name);
+  const outPath = path.join(cli.cwd, options.out, options.name);
   await writeFileTree(outPath, files);
   const relativePath = path.relative(cli.cwd, outPath);
   console.log(`Created sharable element in ${relativePath}/.`);

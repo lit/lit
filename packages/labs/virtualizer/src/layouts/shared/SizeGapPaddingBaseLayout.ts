@@ -1,5 +1,6 @@
 // import { dimension } from './Layout.js';
-import {BaseLayoutConfig, BaseLayout, dim1, dim2} from './BaseLayout.js';
+import {BaseLayoutConfig} from './Layout.js';
+import {BaseLayout, dim1, dim2} from './BaseLayout.js';
 import {ScrollDirection, Size} from './Layout.js';
 
 type PixelSize = `${'0' | `${number}px`}`;
@@ -87,12 +88,12 @@ export abstract class SizeGapPaddingBaseLayout<
     }) as C;
   }
 
-  // Temp
+  // Temp, to support current flexWrap implementation
   protected get _gap(): number {
     return (this._gaps as Gaps).row;
   }
 
-  // Temp
+  // Temp, to support current flexWrap implementation
   protected get _idealSize(): number {
     return (this._itemSize as Size)[dim1(this.direction)];
   }
@@ -139,22 +140,8 @@ export abstract class SizeGapPaddingBaseLayout<
     }
   }
 
-  /**
-   * Amount of space in between items.
-   */
-  // get gap(): GapSpec {
-  //     const gaps = this._gaps as Gaps;
-  //     return (gaps.row === gaps.column
-  //         ? numberToPixelSize(gaps.row)
-  //         : `${numberToPixelSize(gaps.row)} ${numberToPixelSize(gaps.column)}`
-  //     ) as GapSpec;
-  // }
-
-  // set gap(spec: GapSpec) {
-  //     this._setGap(spec);
-  // }
-
-  protected _setGap(spec: GapSpec | AutoGapSpec) {
+  // This setter is overridden in specific layouts to narrow the accepted types
+  set gap(spec: GapSpec | AutoGapSpec) {
     const values = spec.split(' ').map((v) => gapValueToNumber(v as GapValue));
     const gaps = this._gaps as Gaps;
     if (values[0] !== gaps.row) {
