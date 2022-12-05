@@ -872,6 +872,9 @@ function getMarginValue(value: string): number {
 
 // TODO (graynorton): Deal with iframes?
 function getParentElement(el: Element) {
+  if (el.assignedSlot !== null) {
+    return el.assignedSlot;
+  }
   if (el.parentElement !== null) {
     return el.parentElement;
   }
