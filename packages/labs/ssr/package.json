@@ -150,7 +150,7 @@
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0",
     "@lit/reactive-element": "^1.4.0",
-    "@parse5/tools": "^0.0.2-0",
+    "@parse5/tools": "^0.1.0",
     "@types/node": "^16.0.0",
     "enhanced-resolve": "^5.10.0",
     "lit": "^2.3.0",
