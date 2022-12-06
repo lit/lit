@@ -476,7 +476,7 @@ export function litProdConfig({
           },
           {
             // Also create a development Node build that does not minify to be
-            // used during devlopment so it can work along side the unminified
+            // used during development so it can work along side the unminified
             // dev build of lit-element
             input: entryPoints.map((name) => `development/${name}.js`),
             output: {
