@@ -150,13 +150,14 @@
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0",
     "@lit/reactive-element": "^1.4.0",
+    "@parse5/tools": "^0.1.0",
     "@types/node": "^16.0.0",
     "enhanced-resolve": "^5.10.0",
     "lit": "^2.3.0",
     "lit-element": "^3.1.0",
     "lit-html": "^2.3.0",
     "node-fetch": "^3.2.8",
-    "parse5": "^6.0.1"
+    "parse5": "^7.1.1"
   },
   "engines": {
     "node": ">=13.9.0"
