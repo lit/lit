@@ -62,8 +62,8 @@ class BasicElement extends ReactiveElement {
   ref = false;
 
   // override a react reserved property
-  @property({type: Boolean})
-  locaName = false;
+  @property({type: String})
+  locaName = 'basic-element-x-foo';
 
   @property({type: Boolean, reflect: true})
   rbool = false;
