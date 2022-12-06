@@ -153,6 +153,9 @@ if (DEV_MODE) {
         tagName,
       });
 
+      // We only expect a warning for ref and not localName
+      // since we don't warn on overrides of HTMLElement properties
+      // that React treats specially.
       assert.equal(warnings.length, 1);
     })
   });
