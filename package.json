@@ -19,10 +19,10 @@
     "build:ts": "wireit",
     "build:lit-starter-ts": "wireit",
     "format": "npm run format:eslint && npm run format:prettier",
-    "format:eslint": "eslint \"**/*.{js,ts}\" --fix",
+    "format:eslint": "eslint \"packages/**/*.{js,ts}\" --fix",
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
-    "lint": "eslint \"**/*.{js,ts}\"",
+    "lint": "eslint \"packages/**/*.{js,ts}\"",
     "test": "npm run test:not-starter-kits && npm run test:lit-starter-js && npm run test:lit-starter-ts",
     "test:not-starter-kits": "wireit",
     "test:lit-starter-js": "wireit",
@@ -218,6 +218,6 @@
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
-    "**/*.{js,ts}": "eslint --fix"
+    "packages/**/*.{js,ts}": "eslint --fix"
   }
 }
