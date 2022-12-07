@@ -135,9 +135,6 @@ export class Virtualizer {
   private _childrenRO: ResizeObserver | null = null;
 
   private _mutationObserver: MutationObserver | null = null;
-  private _mutationPromise: Promise<void> | null = null;
-  private _mutationPromiseResolver: Function | null = null;
-  private _mutationsObserved = false;
 
   private _scrollEventListeners: (Element | Window)[] = [];
   private _scrollEventListenerOptions: AddEventListenerOptions = {
@@ -231,7 +228,7 @@ export class Virtualizer {
 
   private async _initObservers() {
     this._mutationObserver = new MutationObserver(
-      this._observeMutations.bind(this)
+      this._finishDOMUpdate.bind(this)
     );
     const ResizeObserver = await getResizeObserver();
     this._hostElementRO = new ResizeObserver(() =>
@@ -265,9 +262,6 @@ export class Virtualizer {
 
   _observeAndListen() {
     this._mutationObserver!.observe(this._hostElement!, {childList: true});
-    this._mutationPromise = new Promise(
-      (resolve) => (this._mutationPromiseResolver = resolve)
-    );
     this._hostElementRO!.observe(this._hostElement!);
     this._scrollEventListeners.push(window);
     window.addEventListener('scroll', this, this._scrollEventListenerOptions);
@@ -483,8 +477,12 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
-      await this._mutationPromise;
+    } else {
+      this._finishDOMUpdate();
     }
+  }
+
+  _finishDOMUpdate() {
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._checkScrollIntoViewTarget(this._childrenPos);
     this._positionChildren(this._childrenPos);
@@ -714,19 +712,23 @@ export class Virtualizer {
   }
 
   private _scrollElementIntoView(options: ScrollElementIntoViewOptions) {
-    options.index = Math.min(options.index, this._items.length - 1);
-    if (options.behavior === 'smooth') {
-      const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
-      const {behavior} = options;
-      this._updateScrollIntoViewCoordinates =
-        this._scrollerController!.managedScrollTo(
-          Object.assign(coordinates, {behavior}),
-          () => this._layout!.getScrollIntoViewCoordinates(options),
-          () => (this._scrollIntoViewTarget = null)
-        );
-      this._scrollIntoViewTarget = options;
+    if (options.index >= this._first && options.index <= this._last) {
+      this._children[options.index - this._first].scrollIntoView(options);
     } else {
-      this._layout!.pin = options;
+      options.index = Math.min(options.index, this._items.length - 1);
+      if (options.behavior === 'smooth') {
+        const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
+        const {behavior} = options;
+        this._updateScrollIntoViewCoordinates =
+          this._scrollerController!.managedScrollTo(
+            Object.assign(coordinates, {behavior}),
+            () => this._layout!.getScrollIntoViewCoordinates(options),
+            () => (this._scrollIntoViewTarget = null)
+          );
+        this._scrollIntoViewTarget = options;
+      } else {
+        this._layout!.pin = options;
+      }
     }
   }
 
@@ -809,17 +811,6 @@ export class Virtualizer {
    */
   private _hostElementSizeChanged() {
     this._schedule(this._updateLayout);
-  }
-
-  private async _observeMutations() {
-    if (!this._mutationsObserved) {
-      this._mutationsObserved = true;
-      this._mutationPromiseResolver!();
-      this._mutationPromise = new Promise(
-        (resolve) => (this._mutationPromiseResolver = resolve)
-      );
-      this._mutationsObserved = false;
-    }
   }
 
   // TODO (graynorton): Rethink how this works. Probably child loading is too specific
