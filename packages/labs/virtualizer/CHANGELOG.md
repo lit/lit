@@ -1,5 +1,30 @@
 # @lit-labs/virtualizer
 
+## 0.8.0
+
+### Minor Changes
+
+- [#3183](https://github.com/lit/lit/pull/3183) [`fd7d86a5`](https://github.com/lit/lit/commit/fd7d86a5001ab38aadf7c474848d8c65f10b156d) - Adds an element(index) proxy with scrollIntoView() method mirroring native Element.scrollIntoView()
+
+  - Adds layoutComplete getter on virtualizer that returns a promise exposing the completion of the cycle of rendering and measuring of items.
+  - Adds virtualizerRef symbol to make obtaining access to virtualizer from the host element when using the virtualize() directive.
+  - This also includes a fair bit of internal refactoring addressing scrolling-related code and layouts.
+
+- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix #3498 (Scrolling to element with 'nearest' option differs from native behavior)
+
+### Patch Changes
+
+- [#3430](https://github.com/lit/lit/pull/3430) [`412b05e7`](https://github.com/lit/lit/commit/412b05e78781a2a7c139a1bbdc1ce6f38ca6c0e6) - Added an events.js to enable exporting of RangeChangedEvent and VisibilityChangedEvent classes.
+
+- [#3424](https://github.com/lit/lit/pull/3424) [`005c68fa`](https://github.com/lit/lit/commit/005c68fa656dd2f96ffdd4c05ef59aa7679193df) - Fixed an issue #3400 where Virtualizer incorrectly calculated its width effecting positioning of items in multi-column layouts.
+
+- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix #3243 (DOM update doesn't successfully complete under some circumstances)
+
+- [#3489](https://github.com/lit/lit/pull/3489) [`f5065f52`](https://github.com/lit/lit/commit/f5065f527999e48c42c15169cac4293ea1bbf0d7) - Added a shim for scrollToIndex API to make SemVer compatible with other 0.x versions.
+
+- Updated dependencies [[`e729f18b`](https://github.com/lit/lit/commit/e729f18be8679f33802409bb89a3e6885af98c0e)]:
+  - lit@2.5.0
+
 ## 0.7.2
 
 ### Patch Changes
