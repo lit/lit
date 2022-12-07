@@ -1,5 +1,13 @@
 # @lit-labs/gen-wrapper-react
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`0260a15e`](https://github.com/lit/lit/commit/0260a15e2087d2b1ea8f5072663a637cedd186d9), [`00f59cf5`](https://github.com/lit/lit/commit/00f59cf560a28e24d9751d0d8db2826fd767158b), [`9b9bdb0e`](https://github.com/lit/lit/commit/9b9bdb0e7be218b8d6e4478867361aaf14de49d5)]:
+  - @lit-labs/analyzer@0.5.0
+  - @lit-labs/gen-utils@0.2.0
+
 ## 0.2.1
 
 ### Patch Changes

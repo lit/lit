@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.1
+
+### Patch Changes
+
+- [#3449](https://github.com/lit/lit/pull/3449) [`6f7d0055`](https://github.com/lit/lit/commit/6f7d00551af0ff3982872fc4e0c3c6cb2a273bee) - Add console warning for reserved react properites found on a wrapped web component in dev mode only.
+
+- [#3409](https://github.com/lit/lit/pull/3409) [`dd6a0ae5`](https://github.com/lit/lit/commit/dd6a0ae5d57407bfe051e723396f7a9feb8c4d4c) - Filter \_\_forwaredRef from build.
+
 ## 1.1.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # @lit-labs/analyzer
 
+## 0.5.0
+
+### Minor Changes
+
+- [#3464](https://github.com/lit/lit/pull/3464) [`0260a15e`](https://github.com/lit/lit/commit/0260a15e2087d2b1ea8f5072663a637cedd186d9) - Added support for export, slot, cssPart, and cssProperty to analyzer and manifest generator. Also improved JS project analysis performance.
+
+- [#3380](https://github.com/lit/lit/pull/3380) [`00f59cf5`](https://github.com/lit/lit/commit/00f59cf560a28e24d9751d0d8db2826fd767158b) - Added superclass analysis to ClassDeclaration, along with the ability to query exports of a Module (via `getExport()` and `getResolvedExport()`) and the ability to dereference `Reference`s to the `Declaration` they point to (via `dereference()`). A ClassDeclaration's superClass may be interrogated via `classDeclaration.heritage.superClass.dereference()` (`heritage.superClass` returns a `Reference`, which can be dereferenced to access its superclass's `ClassDeclaration` model.
+
 ## 0.4.0
 
 ### Minor Changes
