@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'source-map-support/register.js';
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
@@ -14,7 +13,6 @@ import {
   createPackageAnalyzer,
   AbsolutePath,
   Module,
-  VariableDeclaration,
   getImportsStringForReferences,
 } from '../index.js';
 
@@ -39,9 +37,10 @@ test.before((ctx) => {
 });
 
 const typeForVariable = (module: Module, name: string) => {
-  const dec = module.declarations.filter((dec) => dec.name === name)[0];
+  const dec = module.getDeclaration(name);
+  assert.ok(dec.isVariableDeclaration());
   assert.ok(dec, `Could not find symbol named ${name}`);
-  const type = (dec as VariableDeclaration).type;
+  const type = dec.type;
   assert.ok(type);
   return type;
 };
@@ -290,6 +289,20 @@ test('separatelyExportedDestructArrNested', ({module}) => {
   assert.equal(type.references[0].package, 'lit');
   assert.equal(type.references[0].module, undefined);
   assert.equal(type.references[0].isGlobal, false);
+});
+
+test('importedType', ({module}) => {
+  const type = typeForVariable(module, 'importedType');
+  //assert.equal(type.text, 'TemplateResult<1>');
+  assert.equal(type.references.length, 2);
+  assert.equal(type.references[0].name, 'ImportedClass');
+  assert.equal(type.references[0].package, '@lit-internal/test-types');
+  assert.equal(type.references[0].module, 'external.js');
+  assert.equal(type.references[0].isGlobal, false);
+  assert.equal(type.references[1].name, 'TemplateResult');
+  assert.equal(type.references[1].package, 'lit-html');
+  assert.equal(type.references[1].module, undefined);
+  assert.equal(type.references[1].isGlobal, false);
 });
 
 test('getImportsStringForReferences', ({module}) => {

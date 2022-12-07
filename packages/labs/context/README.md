@@ -32,18 +32,18 @@ export const loggerContext = createContext<Logger>('logger');
 
 Now we can define a consumer for this context - some component in our app needs the logger.
 
-Here we're using the `@contextProvided` property decorator to make a `ContextConsumer` controller
+Here we're using the `@consume` property decorator to make a `ContextConsumer` controller
 and update its value when the context changes:
 
 #### **`my-element.ts`**:
 
 ```ts
-import {contextRequest} from '@lit-labs/context';
 import {LitElement, property} from 'lit';
+import {consume} from '@lit-labs/context';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
-  @contextProvided({context: loggerContext, subscribe: true})
+  @consume({context: loggerContext, subscribe: true})
   @property({attribute: false})
   public logger?: Logger;
 
@@ -80,18 +80,18 @@ export class MyElement extends LitElement {
 
 Finally we want to be able to provide this context from somewhere higher in the DOM.
 
-Here we're using a `@contextProvider` property decorator to make a `ContextProvider`
+Here we're using a `@provide` property decorator to make a `ContextProvider`
 controller and update its value when the property value changes.
 
 #### **`my-app.ts`**:
 
 ```ts
 import {LitElement} from 'lit';
-import {contextProvider} from '@lit-labs/context';
-import {loggerContext, Logger} from './my-logger.js';
+import {provide} from '@lit-labs/context';
+import {loggerContext, Logger} from './logger.js';
 
 export class MyApp extends LitElement {
-  @contextProvider({context: loggerContext})
+  @provide({context: loggerContext})
   @property({attribute: false})
   public logger: Logger = {
     log: (msg) => {
@@ -112,7 +112,7 @@ We can also use the `ContextProvider` controller directly:
 ```ts
 import {LitElement} from 'lit';
 import {ContextProvider} from '@lit-labs/context';
-import {loggerContext, Logger} from './my-logger.js';
+import {loggerContext, Logger} from './logger.js';
 
 export class MyApp extends LitElement {
   // create a provider controller and a default logger

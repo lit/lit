@@ -35,8 +35,24 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
       {
         compilerOptions: {
           // TODO(kschaaf): probably want to make this configurable
-          module: 'esm',
+          module: 'ES2020',
+          lib: ['es2020', 'DOM'],
           allowJs: true,
+          skipLibCheck: true,
+          skipDefaultLibCheck: true,
+          // With `allowJs: true`, the program will automatically include every
+          // .d.ts file under node_modules/@types regardless of whether the
+          // program imported modules associated with those types, which can
+          // dramatically slow down the program analysis (this does not
+          // automatically happen when allowJs is false). For now, eliminating
+          // `typeRoots` fixes the automatic over-inclusion of .d.ts files as
+          // long as nodeResolution is properly set (it will still import .d.ts
+          // files into the project as expected based on imports). It may
+          // however cause a failure to find definitely-typed .d.ts files for
+          // imports in a JS project, but it seems unlikely these would be
+          // installed anyway.
+          typeRoots: [],
+          moduleResolution: 'node',
         },
         include: ['**/*.js'],
       },
@@ -49,7 +65,19 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
     );
   }
 
-  const program = ts.createProgram(commandLine.fileNames, commandLine.options);
+  // Ensure that `parent` nodes are set in the AST by creating a compiler
+  // host with this configuration; without these, `getText()` and other
+  // API's that require crawling up the AST tree to find the source file
+  // text may fail
+  const compilerHost = ts.createCompilerHost(
+    commandLine.options,
+    /* setParentNodes */ true
+  );
+  const program = ts.createProgram(
+    commandLine.fileNames,
+    commandLine.options,
+    compilerHost
+  );
 
   const analyzer = new Analyzer({getProgram: () => program, fs: ts.sys, path});
 
