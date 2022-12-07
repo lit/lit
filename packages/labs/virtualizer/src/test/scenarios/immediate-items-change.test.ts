@@ -18,7 +18,7 @@ export class MyExample extends LitElement {
 
   override async firstUpdated() {
     this.data = [0, 1];
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise(requestAnimationFrame);
     this.data = [2, 3];
   }
 
@@ -51,7 +51,7 @@ describe('Successful DOM update on immediate change to items', () => {
       testingHtml`<my-example></my-example>`
     )) as MyExample;
     expect(example).to.be.instanceof(MyExample);
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise(requestAnimationFrame);
     const children = Array.from(
       example.shadowRoot!.querySelector('lit-virtualizer')!.children
     ) as HTMLElement[];

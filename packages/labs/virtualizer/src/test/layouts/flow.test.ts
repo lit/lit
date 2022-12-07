@@ -197,7 +197,7 @@ describe('flow layout', () => {
       // Need to wait a frame before testing to ensure that we don't
       // scroll, since all of the assertions below were already
       // true before our last call to `scrollIntoView()`
-      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise(requestAnimationFrame);
 
       visible = getVisibleItems(virtualizer);
       expect(visible.length).to.equal(4);
