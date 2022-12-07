@@ -48,7 +48,7 @@ describe('Successful DOM update on immediate change to items', () => {
 
   it('should apply transforms to DOM children', async () => {
     const example = (await fixture(
-      testingHtml`<my-example></my-example`
+      testingHtml`<my-example></my-example>`
     )) as MyExample;
     expect(example).to.be.instanceof(MyExample);
     await new Promise((resolve) => requestAnimationFrame(resolve));
