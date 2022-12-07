@@ -454,7 +454,7 @@ export function litProdConfig({
                 },
               }),
               sourcemaps(),
-              // We want the Node build to be minified because:
+              // We want the production Node build to be minified because:
               //
               // 1. It should be very slightly faster, even in Node where bytes
               //    are not as important as in the browser.
@@ -467,6 +467,36 @@ export function litProdConfig({
               //    otherwise have different names. The default export that
               //    lit-element will use is minified.
               terser(terserOptions),
+              summary({
+                showBrotliSize: true,
+                showGzippedSize: true,
+              }),
+              ...(CHECKSIZE ? [skipBundleOutput] : []),
+            ],
+          },
+          {
+            // Also create a development Node build that does not minify to be
+            // used during development so it can work along side the unminified
+            // dev build of lit-element
+            input: entryPoints.map((name) => `development/${name}.js`),
+            output: {
+              dir: `${outputDir}/node/development`,
+              format: 'esm',
+              preserveModules: true,
+              sourcemap: !CHECKSIZE,
+            },
+            external,
+            plugins: [
+              replace({
+                preventAssignment: true,
+                values: {
+                  // Setting NODE_MODE to true enables node-specific behaviors,
+                  // i.e. using globalThis instead of window, and shimming APIs
+                  // needed for Lit bootup.
+                  'const NODE_MODE = false': 'const NODE_MODE = true',
+                },
+              }),
+              sourcemaps(),
               summary({
                 showBrotliSize: true,
                 showGzippedSize: true,
