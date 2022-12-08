@@ -1,21 +1,5 @@
 # @lit-labs/cli
 
-## 0.3.0
-
-### Minor Changes
-
-- [#3456](https://github.com/lit/lit/pull/3456) [`cd46b598`](https://github.com/lit/lit/commit/cd46b5988ccd1c9cd199304043dcac743de82aea) - changed lit init --dir flag to --out
-
-- [#3380](https://github.com/lit/lit/pull/3380) [`00f59cf5`](https://github.com/lit/lit/commit/00f59cf560a28e24d9751d0d8db2826fd767158b) - Added superclass analysis to ClassDeclaration, along with the ability to query exports of a Module (via `getExport()` and `getResolvedExport()`) and the ability to dereference `Reference`s to the `Declaration` they point to (via `dereference()`). A ClassDeclaration's superClass may be interrogated via `classDeclaration.heritage.superClass.dereference()` (`heritage.superClass` returns a `Reference`, which can be dereferenced to access its superclass's `ClassDeclaration` model.
-
-- [#3248](https://github.com/lit/lit/pull/3248) [`9b9bdb0e`](https://github.com/lit/lit/commit/9b9bdb0e7be218b8d6e4478867361aaf14de49d5) - Implemented lit init element command
-
-### Patch Changes
-
-- Updated dependencies [[`0260a15e`](https://github.com/lit/lit/commit/0260a15e2087d2b1ea8f5072663a637cedd186d9), [`00f59cf5`](https://github.com/lit/lit/commit/00f59cf560a28e24d9751d0d8db2826fd767158b), [`9b9bdb0e`](https://github.com/lit/lit/commit/9b9bdb0e7be218b8d6e4478867361aaf14de49d5)]:
-  - @lit-labs/analyzer@0.5.0
-  - @lit-labs/gen-utils@0.2.0
-
 ## 0.2.1
 
 ### Patch Changes
