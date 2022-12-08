@@ -16,7 +16,7 @@
     "lit"
   ],
   "dependencies": {
-    "lit": "^2.2.8"
+    "lit": "^2.5.0"
   },
   "devDependencies": {
     "@web/dev-server": "^0.1.32",
