@@ -54,12 +54,14 @@ export const run = async (
     packages,
     frameworks: frameworkNames,
     manifest,
+    exclude,
     outDir,
   }: {
     packages: string[];
     frameworks: string[];
     manifest: boolean;
     outDir: string;
+    exclude?: string[];
     cli: LitCli;
   },
   console: Console
@@ -68,7 +70,7 @@ export const run = async (
     // Ensure separators in input paths are normalized and resolved to absolute
     const root = path.normalize(path.resolve(packageRoot)) as AbsolutePath;
     const out = path.normalize(path.resolve(outDir)) as AbsolutePath;
-    const analyzer = createPackageAnalyzer(root);
+    const analyzer = createPackageAnalyzer(root, {exclude});
     const pkg = analyzer.getPackage();
     if (!pkg.packageJson.name) {
       throw new Error(

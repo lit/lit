@@ -42,6 +42,12 @@ export const makeLabsCommand = (cli: LitCli): Command => {
             defaultValue: './gen',
             description: 'Folder to output generated packages to.',
           },
+          {
+            name: 'exclude',
+            multiple: true,
+            defaultValue: [],
+            description: 'Glob of source files to exclude from analysis.',
+          },
         ],
         async run(
           {
@@ -49,16 +55,21 @@ export const makeLabsCommand = (cli: LitCli): Command => {
             framework: frameworks,
             manifest,
             out: outDir,
+            exclude,
           }: {
             package: string[];
             framework: string[];
             manifest: boolean;
             out: string;
+            exclude: string[];
           },
           console: Console
         ) {
           const gen = await import('../generate/generate.js');
-          await gen.run({cli, packages, frameworks, manifest, outDir}, console);
+          await gen.run(
+            {cli, packages, frameworks, manifest, outDir, exclude},
+            console
+          );
         },
       },
     ],

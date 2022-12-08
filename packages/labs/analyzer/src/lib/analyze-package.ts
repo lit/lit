@@ -4,6 +4,10 @@ import * as path from 'path';
 import {DiagnosticsError} from './errors.js';
 import {Analyzer} from './analyzer.js';
 
+export interface AnalyzerOptions {
+  exclude?: string[];
+}
+
 /**
  * Returns an analyzer for a Lit npm package based on a filesystem path.
  *
@@ -11,7 +15,10 @@ import {Analyzer} from './analyzer.js';
  * specifying a folder, if no tsconfig.json file is found directly in the root
  * folder, the project will be analyzed as JavaScript.
  */
-export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
+export const createPackageAnalyzer = (
+  packagePath: AbsolutePath,
+  options: AnalyzerOptions = {}
+) => {
   // This logic accepts either a path to folder containing a tsconfig.json
   // directly inside it or a path to a specific tsconfig file. If no tsconfig
   // file is found, we fallback to creating a Javascript program.
@@ -22,6 +29,9 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
   let commandLine: ts.ParsedCommandLine;
   if (ts.sys.fileExists(configFileName)) {
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
+    if (options.exclude !== undefined) {
+      (configFile.config.exclude ??= []).push(...options.exclude);
+    }
     commandLine = ts.parseJsonConfigFileContent(
       configFile.config /* json */,
       ts.sys /* host */,
@@ -55,6 +65,7 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
           moduleResolution: 'node',
         },
         include: ['**/*.js'],
+        exclude: options.exclude ? [...options.exclude] : [],
       },
       ts.sys /* host */,
       packagePath /* basePath */
