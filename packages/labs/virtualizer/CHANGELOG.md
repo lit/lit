@@ -2,12 +2,15 @@
 
 ## 1.0.0
 
+_NOTE: As of this release, virtualizer is moving away from 0.x-based versioning to signify prereleases and adopting standard SemVer major/minor/patch semantics. The fact that this release is numbered 1.0 has no special significance._
+
 ### Major Changes
 
-- [#3183](https://github.com/lit/lit/pull/3183) [`fd7d86a5`](https://github.com/lit/lit/commit/fd7d86a5001ab38aadf7c474848d8c65f10b156d) - - Significantly overhaul scrolling implementation
-  - Make smooth scrolling work as seamlessly as possible
-  - Make the API for scrolling to a virtualizer child element more like the corresponding native API
-  - Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
+- [#3183](https://github.com/lit/lit/pull/3183) [`fd7d86a5`](https://github.com/lit/lit/commit/fd7d86a5001ab38aadf7c474848d8c65f10b156d)
+  - Significantly overhaul scrolling implementation
+    - Make smooth scrolling work as seamlessly as possible
+    - Make the API for scrolling to a virtualizer child element more like the corresponding native API
+    - Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
   - Make `<lit-virtualizer>` use the `virtualize()` directive under the hood, restoring original factoring and reducing duplication
   - Standardize on one way to specify layout (factory function + config object), removing support for older (mostly never documented) options
   - Fix [[labs/virtualizer] keyFunction based on index doesn't work properly #3491](https://github.com/lit/lit/issues/3491)
@@ -15,8 +18,8 @@
 
 ### Minor Changes
 
-- [#3263](https://github.com/lit/lit/pull/3263) [`4271dffa`](https://github.com/lit/lit/commit/4271dffaac2126d9b1147f87208dd3aa9c59e129) - - Add experimental masonry layout (API and behavior subject to change)
-
+- [#3263](https://github.com/lit/lit/pull/3263) [`4271dffa`](https://github.com/lit/lit/commit/4271dffaac2126d9b1147f87208dd3aa9c59e129)
+  - Add experimental masonry layout (API and behavior subject to change)
   - Fix [[labs/virtualizer] Gap miscalculation in grid base layout #3342](https://github.com/lit/lit/issues/3342)
 
 - [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix #3498 (Scrolling to element with 'nearest' option differs from native behavior)
