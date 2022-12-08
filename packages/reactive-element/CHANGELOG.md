@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.5.0
+
+### Minor Changes
+
+- [#3495](https://github.com/lit/lit/pull/3495) [`e729f18b`](https://github.com/lit/lit/commit/e729f18be8679f33802409bb89a3e6885af98c0e) - `lit-html` and `reactive-element` now include development Node builds with unminified code and dev warnings.
+
 ## 1.4.2
 
 ### Patch Changes
