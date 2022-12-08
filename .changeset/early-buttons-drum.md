@@ -1,9 +1,12 @@
 ---
-'@lit-labs/virtualizer': minor
+'@lit-labs/virtualizer': major
 ---
 
-Adds an element(index) proxy with scrollIntoView() method mirroring native Element.scrollIntoView()
-
-- Adds layoutComplete getter on virtualizer that returns a promise exposing the completion of the cycle of rendering and measuring of items.
-- Adds virtualizerRef symbol to make obtaining access to virtualizer from the host element when using the virtualize() directive.
-- This also includes a fair bit of internal refactoring addressing scrolling-related code and layouts.
+- Significantly overhaul scrolling implementation
+  - Make smooth scrolling work as seamlessly as possible
+  - Make the API for scrolling to a virtualizer child element more like the corresponding native API
+  - Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
+- Make `<lit-virtualizer>` use the `virtualize()` directive under the hood, restoring original factoring and reducing duplication
+- Standardize on one way to specify layout (factory function + config object), removing support for older (mostly never documented) options
+- Fix [[labs/virtualizer] keyFunction based on index doesn't work properly #3491](https://github.com/lit/lit/issues/3491)
+- Fix [[labs/virtualizer] Grid layout scrollSize calculated incorrectly when padding doesn't match gap #3492](https://github.com/lit/lit/issues/3492)
