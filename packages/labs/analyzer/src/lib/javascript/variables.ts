@@ -30,7 +30,7 @@ type VariableName =
  * ts.Identifier within a potentially nested ts.VariableDeclaration.
  */
 const getVariableDeclaration = (
-  dec: ts.VariableDeclaration,
+  dec: ts.VariableDeclaration | ts.EnumDeclaration,
   name: ts.Identifier,
   analyzer: AnalyzerInterface
 ): VariableDeclaration => {
@@ -128,4 +128,15 @@ const getExportAssignmentVariableDeclaration = (
     node: exportAssignment,
     type: getTypeForNode(exportAssignment.expression, analyzer),
   });
+};
+
+export const getEnumDeclarationInfo = (
+  statement: ts.EnumDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  return {
+    name: statement.name.text,
+    factory: () => getVariableDeclaration(statement, statement.name, analyzer),
+    isExport: hasExportKeyword(statement),
+  };
 };

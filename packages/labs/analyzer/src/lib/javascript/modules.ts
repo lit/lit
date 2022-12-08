@@ -26,6 +26,7 @@ import {getClassDeclarationInfo} from './classes.js';
 import {
   getExportAssignmentVariableDeclarationInfo,
   getVariableDeclarationInfo,
+  getEnumDeclarationInfo,
 } from './variables.js';
 import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
@@ -111,6 +112,8 @@ export const getModule = (
       addDeclaration(getClassDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
+    } else if (ts.isEnumDeclaration(statement)) {
+      addDeclaration(getEnumDeclarationInfo(statement, analyzer));
     } else if (ts.isExportDeclaration(statement) && !statement.isTypeOnly) {
       const {exportClause, moduleSpecifier} = statement;
       if (exportClause === undefined) {
