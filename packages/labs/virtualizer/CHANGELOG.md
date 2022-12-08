@@ -6,15 +6,17 @@ _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning 
 
 ### Major Changes
 
-- [#3183](https://github.com/lit/lit/pull/3183) [`fd7d86a5`](https://github.com/lit/lit/commit/fd7d86a5001ab38aadf7c474848d8c65f10b156d)
-  - Significantly overhaul scrolling implementation
-    - Make smooth scrolling work as seamlessly as possible
-    - Make the API for scrolling to a virtualizer child element more like the corresponding native API
-    - Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
-  - Make `<lit-virtualizer>` use the `virtualize()` directive under the hood, restoring original factoring and reducing duplication
-  - Standardize on one way to specify layout (factory function + config object), removing support for older (mostly never documented) options
-  - Fix [[labs/virtualizer] keyFunction based on index doesn't work properly #3491](https://github.com/lit/lit/issues/3491)
-  - Fix [[labs/virtualizer] Grid layout scrollSize calculated incorrectly when padding doesn't match gap #3492](https://github.com/lit/lit/issues/3492)
+-   [#3183](https://github.com/lit/lit/pull/3183) [`fd7d86a5`](https://github.com/lit/lit/commit/fd7d86a5001ab38aadf7c474848d8c65f10b156d)
+    -   Significantly overhaul scrolling implementation
+        -   Make smooth scrolling work as seamlessly as possible
+        -   Make the API for scrolling to a virtualizer child element more like the corresponding native API
+        -   Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
+    -   Make `<lit-virtualizer>` use the `virtualize()` directive under the hood, restoring original factoring and reducing duplication
+    -   Standardize on one way to specify layout (factory function + config object), removing support for older (mostly never documented) options
+    -   Add `layoutComplete` promise that resolves when virtualizer thinks it is done with a layout / render cycle (intended primarily for testing purposes)
+    -   Fix [\[labs/virtualizer\] Export virtualizerRef symbol #3290](https://github.com/lit/lit/issues/3290)
+    -   Fix [\[labs/virtualizer\] keyFunction based on index doesn't work properly #3491](https://github.com/lit/lit/issues/3491)
+    -   Fix [\[labs/virtualizer\] Grid layout scrollSize calculated incorrectly when padding doesn't match gap #3492](https://github.com/lit/lit/issues/3492)
 
 ### Minor Changes
 
