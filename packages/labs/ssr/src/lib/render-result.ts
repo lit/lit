@@ -5,8 +5,7 @@
  */
 
 /**
- * A rendered value as an iterable of strings or Promises of string, or a
- * nested RenderResult.
+ * A rendered value as an iterable of strings or Promises of a RenderResult.
  *
  * This type is a synchronous Iterable so that consumers do not have to await
  * every value according to the JS asynchronous iterator protocol, which would
@@ -18,37 +17,16 @@
  * The utility functions {@link collectRenderResult} and
  * {@link collectRenderResultSync} do this for you.
  */
-export type RenderResult = Iterable<
-  string | RenderResult | Promise<string | RenderResult>
->;
+export type RenderResult = Iterable<string | Promise<RenderResult>>;
 
 /**
  * Joins a RenderResult into a string
  */
-export const collectResult = async (
-  result: RenderResult,
-  initialValue = ''
-): Promise<string> => {
-  let value = initialValue;
-  for (let chunk of result) {
-    if (typeof chunk === 'string') {
-      // Check for strings first because they are the common case and should be
-      // handled as fast as possible. Also because strings are iterable
-      value += chunk;
-    } else if (isIterable(chunk)) {
-      // TODO (justinfagnani): if we keep a stack of iterables we can reduce
-      // the number of `await`s by only awaiting Promises and not having
-      // to await recursive calls.
-      value = await collectResult(chunk, value);
-    } else {
-      // Must be a Promise
-      chunk = await chunk;
-      if (typeof chunk === 'string') {
-        value += chunk;
-      } else {
-        value = await collectResult(chunk, value);
-      }
-    }
+export const collectResult = async (result: RenderResult): Promise<string> => {
+  let value = '';
+  for (const chunk of result) {
+    value +=
+      typeof chunk === 'string' ? chunk : await collectResult(await chunk);
   }
   return value;
 };
@@ -58,16 +36,11 @@ export const collectResult = async (
  *
  * This function throws if a RenderResult contains a Promise.
  */
-export const collectResultSync = (
-  result: RenderResult,
-  initialValue = ''
-): string => {
-  let value = initialValue;
+export const collectResultSync = (result: RenderResult): string => {
+  let value = '';
   for (const chunk of result) {
     if (typeof chunk === 'string') {
       value += chunk;
-    } else if (isIterable(chunk)) {
-      value = collectResultSync(chunk as RenderResult, value);
     } else {
       throw new Error(
         'Promises not supported in collectResultSync. ' +
@@ -77,9 +50,3 @@ export const collectResultSync = (
   }
   return value;
 };
-
-export const isIterable = (
-  v: string | RenderResult | Promise<string | RenderResult>
-): v is RenderResult =>
-  v !== undefined &&
-  typeof (v as Iterable<unknown>)[Symbol.iterator] === 'function';

@@ -5,11 +5,9 @@
  */
 
 import {Readable} from 'stream';
-import {isIterable, RenderResult} from './render-result.js';
+import {RenderResult} from './render-result.js';
 
-type RenderResultIterator = Iterator<
-  string | RenderResult | Promise<string | RenderResult>
->;
+type RenderResultIterator = Iterator<string | Promise<RenderResult>>;
 
 /**
  * A Readable that reads from a RenderResult.
@@ -21,7 +19,7 @@ export class RenderResultReadable extends Readable {
    * A stack of open iterators.
    *
    * We need to keep this as instance state because we can pause and resume
-   * reading values at any time and can't guarentee to run iterators to
+   * reading values at any time and can't guarantee to run iterators to
    * completion in any one loop.
    */
   private _iterators: Array<RenderResultIterator>;
@@ -60,15 +58,16 @@ export class RenderResultReadable extends Readable {
     //   (We try to verify this with the this._waiting field)
     // - `this.push(null)` ends the stream
     //
-    // RenderResult is an iterable recursive type that can contain other
-    // RenderResults. To accommodate this we keep a stack of open iterators
-    // where the last iterator is the most nested value we're reading from.
+    // This means that we cannot use for/of loops to iterate on the render
+    // result, because we must be able to return in the middle of the loop
+    // and resume on the next call to _read().
 
     if (this._waiting) {
       throw new Error(
         'Race condition in RenderResultReadable: unexpected _read() call'
       );
     }
+
     // Get the current iterator
     let iterator = this._iterators.pop();
 
@@ -92,11 +91,6 @@ export class RenderResultReadable extends Readable {
         if (continue_ === false) {
           return;
         }
-      } else if (isIterable(value)) {
-        // Stash the current iterator so we can retrieve it when this new
-        // nested iterator is done.
-        this._iterators.push(iterator);
-        iterator = value[Symbol.iterator]() as RenderResultIterator;
       } else {
         // Must be a Promise
         // Save our current iterator so we can resume on a recursive call to
@@ -110,22 +104,12 @@ export class RenderResultReadable extends Readable {
               throw new Error('Expected RenderResultReadable to be waiting');
             }
             this._waiting = false;
-            if (typeof value === 'string') {
-              const continue_ = this.push(value);
-              if (continue_ !== false) {
-                // Continue reading by recursing
-                this._read(size);
-              }
-            } else if (isIterable(value)) {
-              // Stash the new iterator so we can retreive it when we recurse.
-              this._iterators.push(
-                value[Symbol.iterator]() as RenderResultIterator
-              );
-              // Continue reading by recursing
-              this._read(size);
-            } else {
-              throw new Error(`Unexpected value: ${value}`);
-            }
+            // Stash the new iterator so we can retreive it when we recurse.
+            this._iterators.push(
+              value[Symbol.iterator]() as RenderResultIterator
+            );
+            // Continue reading by recursing
+            this._read(size);
           },
           (e) => {
             this.emit('error', e);

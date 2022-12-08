@@ -15,32 +15,11 @@ test('RenderResultReadable collects strings', async () => {
   assert.equal(s, 'abc');
 });
 
-test('RenderResultReadable collects strings and iterables', async () => {
-  const s = await collectReadable(
-    new RenderResultReadable(['a', ['b', 'c'], 'd'])
-  );
-  assert.equal(s, 'abcd');
-});
-
 test('RenderResultReadable collects strings and Promises', async () => {
   const s = await collectReadable(
-    new RenderResultReadable(['a', Promise.resolve('b'), 'c'])
+    new RenderResultReadable(['a', Promise.resolve(['b']), 'c'])
   );
   assert.equal(s, 'abc');
-});
-
-test('RenderResultReadable collects strings and iterables of Promises', async () => {
-  const s = await collectReadable(
-    new RenderResultReadable(['a', [Promise.resolve('b')], 'c'])
-  );
-  assert.equal(s, 'abc');
-});
-
-test('RenderResultReadable collects strings and iterables of Promises of iterables', async () => {
-  const s = await collectReadable(
-    new RenderResultReadable(['a', [Promise.resolve(['b', 'c'])], 'd'])
-  );
-  assert.equal(s, 'abcd');
 });
 
 test('RenderResultReadable collects strings and Promises of iterables', async () => {
