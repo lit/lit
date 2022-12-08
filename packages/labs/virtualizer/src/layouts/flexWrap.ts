@@ -10,7 +10,13 @@ import {
   SizeGapPaddingBaseLayoutConfig,
   GapSpec,
 } from './shared/SizeGapPaddingBaseLayout.js';
-import {ItemBox, Positions, Size} from './shared/Layout.js';
+import {
+  ChildMeasurements,
+  ItemBox,
+  MeasureChildFunction,
+  Positions,
+  Size,
+} from './shared/Layout.js';
 
 interface FlexWrapLayoutConfig extends SizeGapPaddingBaseLayoutConfig {
   gap?: GapSpec;
@@ -82,13 +88,13 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   listenForChildLoadEvents = true;
 
   set gap(spec: GapSpec) {
-    this._setGap(spec);
+    super.gap = spec;
   }
 
   /**
    * TODO graynorton@ Don't hard-code Flickr - probably need a config option
    */
-  measureChildren: (e: Element, i: unknown) => ItemBox = function (e, i) {
+  measureChildren: MeasureChildFunction = function (e: Element, i: unknown) {
     const {naturalWidth, naturalHeight} = e as HTMLImageElement;
     if (naturalWidth !== undefined && naturalHeight != undefined) {
       return {width: naturalWidth, height: naturalHeight};
@@ -100,7 +106,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     return {width: -1, height: -1};
   };
 
-  updateItemSizes(sizes: {[key: number]: ItemBox}) {
+  updateItemSizes(sizes: ChildMeasurements) {
     let dirty;
     Object.keys(sizes).forEach((key) => {
       const n = Number(key);

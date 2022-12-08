@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'source-map-support/register.js';
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
@@ -35,7 +34,7 @@ for (const lang of languages) {
 
   test('Reads project files', ({analyzer, packagePath}) => {
     const rootFileNames = analyzer.program.getRootFileNames();
-    assert.equal(rootFileNames.length, 5);
+    assert.equal(rootFileNames.length, 6);
 
     const elementAPath = path.resolve(
       packagePath,

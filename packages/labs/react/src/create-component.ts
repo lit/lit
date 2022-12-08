@@ -65,6 +65,8 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
 
 type Constructor<T> = {new (): T};
 
+const DEV_MODE = true;
+
 const reservedReactProperties = new Set([
   'children',
   'localName',
@@ -239,6 +241,22 @@ export function createComponent<
     React = ReactOrOptions as typeof window.React;
     element = elementClass as Constructor<I>;
     tag = tagName;
+  }
+
+  // Warn users when web components use reserved React properties
+  if (DEV_MODE) {
+    for (const p of reservedReactProperties) {
+      if (p in element.prototype && !(p in HTMLElement.prototype)) {
+        // Note, this effectively warns only for `ref` since the other
+        // reserved props are on HTMLElement.prototype. To address this
+        // would require crawling down the prototype, which doesn't feel worth
+        // it since implementing these properties on an element is extremely
+        // rare.
+        console.warn(`${tagName} contains property ${p} which is a React
+reserved property. It will be used by React and not set on
+the element.`);
+      }
+    }
   }
 
   const Component = React.Component;

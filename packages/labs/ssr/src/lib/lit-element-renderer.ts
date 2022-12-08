@@ -30,6 +30,13 @@ export class LitElementRenderer extends ElementRenderer {
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
   }
 
+  override get shadowRootOptions() {
+    return (
+      (this.element.constructor as typeof LitElement).shadowRootOptions ??
+      super.shadowRootOptions
+    );
+  }
+
   connectedCallback() {
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.

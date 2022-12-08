@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publishConfig": {
     "access": "public"
   },
@@ -36,7 +36,7 @@
     },
     "test": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "uvu test \"_test\\.js$\"",
+      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
       "dependencies": [
         "build",
         "../../lit:build"

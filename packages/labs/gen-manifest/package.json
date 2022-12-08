@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-manifest",
   "description": "Code generator for generating Custom Elements Manifests for Lit components",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -39,16 +39,17 @@
         "build"
       ],
       "files": [
-        "goldens/**/*"
+        "goldens/**/*",
+        "../test-projects/test-element-a"
       ],
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "uvu test \"_test\\.js$\"",
+      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
       "output": []
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.4.0",
-    "@lit-labs/gen-utils": "^0.1.0",
+    "@lit-labs/analyzer": "^0.5.0",
+    "@lit-labs/gen-utils": "^0.2.0",
     "custom-elements-manifest": "^2.0.0"
   },
   "devDependencies": {

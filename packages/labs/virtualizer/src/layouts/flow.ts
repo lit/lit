@@ -5,15 +5,16 @@
  */
 
 import {SizeCache} from './shared/SizeCache.js';
-import {BaseLayout, BaseLayoutConfig, dim1} from './shared/BaseLayout.js';
+import {BaseLayout, dim1} from './shared/BaseLayout.js';
 import {
-  ItemBox,
   Positions,
   Size,
   Margins,
   margin,
   ScrollDirection,
   offsetAxis,
+  ChildMeasurements,
+  BaseLayoutConfig,
 } from './shared/Layout.js';
 
 type ItemBounds = {
@@ -175,7 +176,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * Determine the average size of all children represented in the sizes
    * argument.
    */
-  updateItemSizes(sizes: {[key: number]: ItemBox}) {
+  updateItemSizes(sizes: ChildMeasurements) {
     this._metricsCache.update(sizes as Size & Margins, this.direction);
     // if (this._nMeasured) {
     // this._updateItemSize();
@@ -205,6 +206,35 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     return this._metricsCache.averageChildSize || this._itemSize[this._sizeDim];
   }
 
+  _estimatePosition(idx: number): number {
+    const c = this._metricsCache;
+    if (this._first === -1 || this._last === -1) {
+      return (
+        c.averageMarginSize +
+        idx * (c.averageMarginSize + this._getAverageSize())
+      );
+    } else {
+      if (idx < this._first) {
+        const delta = this._first - idx;
+        const refItem = this._getPhysicalItem(this._first);
+        return (
+          refItem!.pos -
+          (c.getMarginSize(this._first - 1) || c.averageMarginSize) -
+          (delta * c.averageChildSize + (delta - 1) * c.averageMarginSize)
+        );
+      } else {
+        const delta = idx - this._last;
+        const refItem = this._getPhysicalItem(this._last);
+        return (
+          refItem!.pos +
+          (c.getChildSize(this._last) || c.averageChildSize) +
+          (c.getMarginSize(this._last) || c.averageMarginSize) +
+          delta * (c.averageChildSize + c.averageMarginSize)
+        );
+      }
+    }
+  }
+
   /**
    * Returns the position in the scrolling direction of the item at idx.
    * Estimates it if the item at idx is not in the DOM.
@@ -216,7 +246,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       ? this._metricsCache.getMarginSize(0) ?? averageMarginSize
       : item
       ? item.pos
-      : averageMarginSize + idx * (averageMarginSize + this._getAverageSize());
+      : this._estimatePosition(idx);
   }
 
   _calculateAnchor(lower: number, upper: number): number {
@@ -224,12 +254,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       return 0;
     }
     if (upper > this._scrollSize - this._viewDim1) {
-      return this._totalItems - 1;
+      return this.items.length - 1;
     }
     return Math.max(
       0,
       Math.min(
-        this._totalItems - 1,
+        this.items.length - 1,
         Math.floor((lower + upper) / 2 / this._delta)
       )
     );
@@ -240,11 +270,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       return this._calculateAnchor(lower, upper);
     }
     if (this._first < 0) {
-      console.error('_getAnchor: negative _first');
       return this._calculateAnchor(lower, upper);
     }
     if (this._last < 0) {
-      console.error('_getAnchor: negative _last');
       return this._calculateAnchor(lower, upper);
     }
 
@@ -278,7 +306,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * viewed range.
    */
   _getActiveItems() {
-    if (this._viewDim1 === 0 || this._totalItems === 0) {
+    if (this._viewDim1 === 0 || this.items.length === 0) {
       this._clearItems();
     } else {
       this._getItems();
@@ -312,12 +340,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     // allow jumping to any point of the scroll size. We choose it once and
     // stick with it until stable. first and last are deduced around it.
 
-    // If we have a scrollToIndex, we anchor on the given
-    // index and set the scroll position accordingly
-    if (this._scrollToIndex >= 0) {
-      this._anchorIdx = Math.min(this._scrollToIndex, this._totalItems - 1);
-      this._anchorPos = this._getPosition(this._anchorIdx);
-      this._scrollIfNeeded();
+    // If we have a pinned item, we anchor on it
+    if (this.pin !== null) {
+      const {index} = this.pin;
+      this._anchorIdx = index;
+      this._anchorPos = this._getPosition(index);
     }
 
     // Determine the lower and upper bounds of the region to be
@@ -355,7 +382,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._anchorPos = anchorLeadingMargin;
     }
 
-    if (this._anchorIdx === this._totalItems - 1) {
+    if (this._anchorIdx === this.items.length - 1) {
       this._anchorPos = this._scrollSize - anchorTrailingMargin - anchorSize;
     }
 
@@ -404,7 +431,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       }
     }
 
-    while (this._physicalMax < upper && this._last < this._totalItems - 1) {
+    while (this._physicalMax < upper && this._last < this.items.length - 1) {
       let size = this._getSize(++this._last);
       if (size === undefined) {
         this._stable = false;
@@ -446,13 +473,13 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       return this._physicalMin;
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - this._first * this._delta;
-    } else if (this._last === this._totalItems - 1) {
+    } else if (this._last === this.items.length - 1) {
       return this._physicalMax - this._scrollSize;
     } else if (this._physicalMax >= this._scrollSize) {
       return (
         this._physicalMax -
         this._scrollSize +
-        (this._totalItems - 1 - this._last) * this._delta
+        (this.items.length - 1 - this._last) * this._delta
       );
     }
     return 0;
@@ -460,25 +487,38 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
   // TODO: Can this be made to inherit from base, with proper hooks?
   _reflow() {
-    const {_first, _last, _scrollSize} = this;
+    const {_first, _last, _scrollSize, _firstVisible, _lastVisible} = this;
 
     this._updateScrollSize();
+    this._setPositionFromPin();
     this._getActiveItems();
+    this._updateVisibleIndices();
 
     if (this._scrollSize !== _scrollSize) {
       this._emitScrollSize();
     }
 
-    this._updateVisibleIndices();
-    this._emitRange();
-    if (this._first === -1 && this._last === -1) {
-      this._resetReflowState();
-    } else if (this._first !== _first || this._last !== _last) {
+    if (
+      this._first !== _first ||
+      this._last !== _last ||
+      this._firstVisible !== _firstVisible ||
+      this._lastVisible !== _lastVisible
+    ) {
+      this._emitRange();
+    }
+
+    if (!(this._first === -1 && this._last === -1)) {
       this._emitChildPositions();
+    }
+
+    if (this._scrollError !== 0) {
       this._emitScrollError();
-    } else {
-      this._emitChildPositions();
-      this._emitScrollError();
+    }
+
+    if (
+      (this._first === -1 && this._last == -1) ||
+      (this._first === _first && this._last === _last)
+    ) {
       this._resetReflowState();
     }
   }
@@ -493,7 +533,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     const {averageMarginSize} = this._metricsCache;
     this._scrollSize = Math.max(
       1,
-      this._totalItems * (averageMarginSize + this._getAverageSize()) +
+      this.items.length * (averageMarginSize + this._getAverageSize()) +
         averageMarginSize
     );
   }
@@ -526,15 +566,13 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _getItemSize(idx: number): Size {
     return {
-      [this._sizeDim]:
-        (this._getSize(idx) || this._getAverageSize()) +
-        (this._metricsCache.getMarginSize(idx + 1) ??
-          this._metricsCache.averageMarginSize),
+      [this._sizeDim]: this._getSize(idx) || this._getAverageSize(),
       [this._secondarySizeDim]: this._itemSize[this._secondarySizeDim],
     } as Size;
   }
 
   _viewDim2Changed() {
+    this._metricsCache.clear();
     this._scheduleReflow();
   }
 }
