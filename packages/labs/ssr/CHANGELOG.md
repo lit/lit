@@ -1,5 +1,22 @@
 # Change Log
 
+## 2.3.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - `ReactiveElement`'s `shadowRootOptions` are now used to configure declarative shadow roots' properties.
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Module resolution within SSR now supports package exports (via `package.json`)
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Add support to SSR for loading of modules from packages with export maps
+
+### Patch Changes
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - lit-html@2.5.0
+  - @lit/reactive-element@1.5.0
+  - lit@2.5.0
+
 ## 2.2.3
 
 ### Patch Changes

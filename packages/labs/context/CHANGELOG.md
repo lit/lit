@@ -1,5 +1,23 @@
 # @lit-labs/context
 
+## 0.2.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Rename ContextKey to Context
+
+### Patch Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Make @consume decorator work with optional fields
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Allow ContextProvider to be added lazily and still work with ContextRoot
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Rename @contextProvided and @contextProvider to @consume and @provide
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - @lit/reactive-element@1.5.0
+  - lit@2.5.0
+
 ## 0.1.3
 
 ### Patch Changes
