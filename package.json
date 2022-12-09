@@ -19,7 +19,7 @@
     "build:ts": "wireit",
     "build:lit-starter-ts": "wireit",
     "format": "npm run format:eslint && npm run format:prettier",
-    "format:eslint": "eslint \"packages/**/*.{js,ts}\" --fix",
+    "format:eslint": "eslint --ignore-pattern=examples/ --fix \"**/*.{js,ts}\"",
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
     "lint": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\"",
