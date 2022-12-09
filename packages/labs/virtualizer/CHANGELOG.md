@@ -13,24 +13,27 @@ _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning 
     - Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
   - Make `<lit-virtualizer>` use the `virtualize()` directive under the hood, restoring original factoring and reducing duplication
   - Standardize on one way to specify layout (factory function + config object), removing support for older (mostly never documented) options
-  - Fix [[labs/virtualizer] keyFunction based on index doesn't work properly #3491](https://github.com/lit/lit/issues/3491)
-  - Fix [[labs/virtualizer] Grid layout scrollSize calculated incorrectly when padding doesn't match gap #3492](https://github.com/lit/lit/issues/3492)
+  - Add `layoutComplete` promise that resolves when virtualizer thinks it is done with a layout / render cycle (intended primarily for testing purposes)
+  - Fix [#3290: Export virtualizerRef symbol](https://github.com/lit/lit/issues/3290)
+  - Fix [#3491: keyFunction based on index doesn't work properly](https://github.com/lit/lit/issues/3491)
+  - Fix [#3492: Grid layout scrollSize calculated incorrectly when padding doesn't match gap](https://github.com/lit/lit/issues/3492)
 
 ### Minor Changes
 
 - [#3263](https://github.com/lit/lit/pull/3263) [`4271dffa`](https://github.com/lit/lit/commit/4271dffaac2126d9b1147f87208dd3aa9c59e129)
-  - Add experimental masonry layout (API and behavior subject to change)
-  - Fix [[labs/virtualizer] Gap miscalculation in grid base layout #3342](https://github.com/lit/lit/issues/3342)
 
-- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix #3498 (Scrolling to element with 'nearest' option differs from native behavior)
+  - Add experimental masonry layout (API and behavior subject to change)
+  - Fix [#3342: Gap miscalculation in grid base layout](https://github.com/lit/lit/issues/3342)
+
+- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix [#3498: Scrolling to element with 'nearest' option differs from native behavior](https://github.com/lit/lit/issues/3498)
 
 ### Patch Changes
 
 - [#3430](https://github.com/lit/lit/pull/3430) [`412b05e7`](https://github.com/lit/lit/commit/412b05e78781a2a7c139a1bbdc1ce6f38ca6c0e6) - Added an events.js module to enable exporting of RangeChangedEvent and VisibilityChangedEvent classes
 
-- [#3424](https://github.com/lit/lit/pull/3424) [`005c68fa`](https://github.com/lit/lit/commit/005c68fa656dd2f96ffdd4c05ef59aa7679193df) - Fixed an issue #3400 where Virtualizer incorrectly calculated its width effecting positioning of items in multi-column layouts.
+- [#3424](https://github.com/lit/lit/pull/3424) [`005c68fa`](https://github.com/lit/lit/commit/005c68fa656dd2f96ffdd4c05ef59aa7679193df) - Fix [#3400: Calculates size incorrectly when a scrolling ancestor has padding](https://github.com/lit/lit/issues/3400)
 
-- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix #3243 (DOM update doesn't successfully complete under some circumstances)
+- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix [#3243: DOM update doesn't successfully complete under some circumstances](https://github.com/lit/lit/issues/3243)
 
 - [#3489](https://github.com/lit/lit/pull/3489) [`f5065f52`](https://github.com/lit/lit/commit/f5065f527999e48c42c15169cac4293ea1bbf0d7) - Added a shim for deprecated scrollToIndex API, to be removed in a future version
 
