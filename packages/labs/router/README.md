@@ -12,7 +12,7 @@ This package requires either a native [`URLPattern`](https://developer.mozilla.o
 
 `@lit-labs/router` is a component-oriented router API vended as reactive controllers. Routes are configured as part of component definitions, and integrated into the component lifecycle and rendering.
 
-Usage will generally look like this, with a configuration in a reactive controller, and rendering done via route-specific render callbacks and an "outlet" to use in the main render() method:
+Usage will generally look like this, with a configuration in a reactive controller, and rendering done via route-specific render callbacks and an "outlet" to use in the main `render()` method:
 
 ```ts
 class MyElement extends LitElement {
@@ -58,7 +58,7 @@ It can be installed with no configuration:
 
 ```ts
 class App extends LitElement {
-  private router = new Router(this);
+  private _router = new Router(this);
 }
 ```
 
@@ -66,12 +66,12 @@ Or contain route configurations:
 
 ```ts
 class MyElement extends LitElement {
-  private router = new Router(this, [
+  private _router = new Router(this, [
     {path: '/', render: () => html`<h1>Home</h1>`},
   ]);
 
   render() {
-    return this.router.outlet();
+    return this._router.outlet();
   }
 }
 ```
@@ -82,7 +82,7 @@ A `Routes` is the main interface into the router API. It contains route definiti
 
 ```ts
 class MyElement extends LitElement {
-  private routes = new Routes(this, [
+  private _routes = new Routes(this, [
     {path: '/', render: () => html`<h1>Home</h1>`},
     {path: '/projects', render: () => html`<h1>Projects</h1>`},
     {path: '/about', render: () => html`<h1>About</h1>`},
@@ -144,7 +144,7 @@ Example with named parameter:
 An outlet is where a routes object renders the currently selected route's template. It can be used anywhere in the host element's template:
 
 ```ts
-html`<main>${this.routes.outlet()}</main>`;
+html`<main>${this._routes.outlet()}</main>`;
 ```
 
 #### enter() callbacks
