@@ -48,7 +48,11 @@ The general shape of the API includes:
 
 ### Router
 
-A Router is a controller (a subclass of the Routes controller) for use at the top-level of an application. It's main purpose is to set up global `click` and `popstate` event listeners (which should be installed only once on a page). It can optionally contain route definitions as a convenience.
+A `Router` is a root-level router.
+
+There should only be one `Router` instance on a page, because the `Router` extends [`Routes`](#routes) and installs global `click` and `popstate` event listeners on `window` and `document` (which should be installed only once on a page) to intercept navigation.
+
+Nested routes should be configured with the [`Routes`](#routes) class.
 
 It can be installed with no configuration:
 
@@ -74,7 +78,7 @@ class MyElement extends LitElement {
 
 ### Routes
 
-Routes is the main interface into the router API. A Routes controller contains route definitions and the templates that each route renders:
+A `Routes` is the main interface into the router API. It contains route definitions and the templates that each route renders:
 
 ```ts
 class MyElement extends LitElement {
@@ -155,6 +159,7 @@ A route can define an `enter()` callback that lets it do work before rendering a
   render: (params) => html`<x-foo></x-foo>`,
   enter: async (params) => {
     await import('./x-foo.js');
+    return true;
   },
 }
 ```
