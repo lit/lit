@@ -19,10 +19,47 @@ import {
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
-const ifDefined = <O, K extends keyof O>(model: O, name: K) => {
-  const obj: Partial<Pick<O, K>> = {};
-  if (model[name] !== undefined) {
+const pickIfNotEmpty = <O, K extends keyof O>(model: O, name: K) => {
+  const obj: {[key in K]?: O[K]} = {};
+  const v = model[name];
+  if (
+    v !== undefined &&
+    (typeof v !== 'string' || v.length > 0) &&
+    (!Array.isArray(v) || v.length)
+  ) {
     obj[name] = model[name];
+  }
+  return obj;
+};
+
+const transformIfNotEmpty = <O, K extends keyof O, T>(
+  model: O,
+  name: K,
+  transformer: (v: O[K]) => T
+) => {
+  const obj: {[key in K]?: T} = {};
+  const v = model[name];
+  if (v !== undefined) {
+    const t = transformer(v);
+    if (
+      t !== undefined &&
+      (typeof t !== 'string' || t.length > 0) &&
+      (!Array.isArray(t) || t.length)
+    ) {
+      obj[name] = t;
+    }
+  }
+  return obj;
+};
+
+const useIfNotEmpty = <K extends PropertyKey, T>(name: K, v: T) => {
+  const obj: {[key in K]?: T} = {};
+  if (
+    v !== undefined &&
+    (typeof v !== 'string' || v.length > 0) &&
+    (!Array.isArray(v) || v.length)
+  ) {
+    obj[name] = v;
   }
   return obj;
 };
@@ -62,16 +99,27 @@ const convertModule = (module: Module): cem.Module => {
   return {
     kind: 'javascript-module',
     path: module.jsPath,
-    summary: 'TODO', // TODO
-    description: 'TODO', // TODO
-    declarations: [...module.declarations.map(convertDeclaration)],
-    exports: [
+    ...pickIfNotEmpty(module, 'description'),
+    ...pickIfNotEmpty(module, 'summary'),
+    ...pickIfNotEmpty(module, 'deprecated'),
+    ...transformIfNotEmpty(module, 'declarations', (d) =>
+      d.map(convertDeclaration)
+    ),
+    ...useIfNotEmpty('exports', [
       ...module.exportNames.map((name) =>
         convertJavascriptExport(name, module.getExportReference(name))
       ),
       ...module.getCustomElementExports().map(convertCustomElementExport),
-    ],
-    deprecated: false, // TODO
+    ]),
+  };
+};
+
+const convertCommonDeclarationInfo = (declaration: Declaration) => {
+  return {
+    name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
+    ...pickIfNotEmpty(declaration, 'description'),
+    ...pickIfNotEmpty(declaration, 'summary'),
+    ...pickIfNotEmpty(declaration, 'deprecated'),
   };
 };
 
@@ -121,17 +169,19 @@ const convertLitElementDeclaration = (
   return {
     ...convertClassDeclaration(declaration),
     tagName: declaration.tagname,
-    attributes: [
-      // TODO
-    ],
-    events: Array.from(declaration.events.values()).map(convertEvent),
-    slots: Array.from(declaration.slots.values()),
-    cssParts: Array.from(declaration.cssParts.values()),
-    cssProperties: Array.from(declaration.cssProperties.values()),
-    demos: [
-      // TODO
-    ],
     customElement: true,
+    // attributes: [], // TODO
+    ...transformIfNotEmpty(declaration, 'events', (v) =>
+      Array.from(v.values()).map(convertEvent)
+    ),
+    ...transformIfNotEmpty(declaration, 'slots', (v) => Array.from(v.values())),
+    ...transformIfNotEmpty(declaration, 'cssParts', (v) =>
+      Array.from(v.values())
+    ),
+    ...transformIfNotEmpty(declaration, 'cssProperties', (v) =>
+      Array.from(v.values())
+    ),
+    // demos: [], // TODO
   };
 };
 
@@ -141,17 +191,17 @@ const convertClassDeclaration = (
   const {superClass} = declaration.heritage;
   return {
     kind: 'class',
-    name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
-    ...ifDefined(declaration, 'description'),
-    ...ifDefined(declaration, 'summary'),
-    superclass: superClass ? convertReference(superClass) : undefined,
-    mixins: [], // TODO
-    members: [
-      // TODO: ClassField
-      // TODO: ClassMethod
-    ],
-    source: {href: 'TODO'}, // TODO
-    deprecated: false, // TODO
+    ...convertCommonDeclarationInfo(declaration),
+    ...useIfNotEmpty(
+      'superclass',
+      superClass ? convertReference(superClass) : undefined
+    ),
+    // mixins: [], // TODO
+    // members: [
+    //   // TODO: ClassField
+    //   // TODO: ClassMethod
+    // ],
+    // source: {href: 'TODO'}, // TODO
   };
 };
 
@@ -160,17 +210,16 @@ const convertVariableDeclaration = (
 ): cem.VariableDeclaration => {
   return {
     kind: 'variable',
-    name: declaration.name,
-    summary: 'TODO', // TODO
-    description: 'TODO', // TODO
-    type: declaration.type ? convertType(declaration.type) : {text: 'TODO'}, // TODO(kschaaf) type isn't optional in CEM
+    ...convertCommonDeclarationInfo(declaration),
+    type: declaration.type ? convertType(declaration.type) : {text: 'unknown'}, // TODO(kschaaf) type isn't optional in CEM
   };
 };
 
 const convertEvent = (event: Event): cem.Event => {
   return {
     name: event.name,
-    type: event.type ? convertType(event.type) : {text: 'TODO'}, // TODO(kschaaf) type isn't optional in CEM
+    type: event.type ? convertType(event.type) : {text: 'Event'}, // TODO(kschaaf) type isn't optional in CEM
+    ...pickIfNotEmpty(event, 'description'),
   };
 };
 

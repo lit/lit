@@ -78,7 +78,7 @@ export type LocalNameOrReference = string | Reference;
 export type ExportMap = Map<string, LocalNameOrReference>;
 export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
 
-export interface ModuleInit {
+export interface ModuleInit extends NodeJSDocInfo {
   sourceFile: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
@@ -137,6 +137,18 @@ export class Module {
    * A list of module paths for all wildcard re-exports
    */
   private _finalizeExports: (() => void) | undefined;
+  /**
+   * The module's user-facing description.
+   */
+  readonly description?: string | undefined;
+  /**
+   * The module's user-facing summary.
+   */
+  readonly summary?: string | undefined;
+  /**
+   * The module's user-facing deprecation status.
+   */
+  readonly deprecated?: string | boolean | undefined;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
@@ -147,6 +159,9 @@ export class Module {
     this.dependencies = init.dependencies;
     this._exportMap = init.exportMap;
     this._finalizeExports = init.finalizeExports;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
   }
 
   /**
@@ -332,8 +347,17 @@ export interface NamedJSDocInfo {
 }
 
 export interface NodeJSDocInfo {
+  /**
+   * User-facing description.
+   */
   description?: string | undefined;
+  /**
+   * User-facing summary.
+   */
   summary?: string | undefined;
+  /**
+   * User-facing deprecation status.
+   */
   deprecated?: string | boolean | undefined;
 }
 

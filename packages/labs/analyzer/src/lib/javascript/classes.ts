@@ -24,6 +24,7 @@ import {
   getLitElementDeclaration,
 } from '../lit-element/lit-element.js';
 import {hasExportKeyword, getReferenceForIdentifier} from '../references.js';
+import {parseNodeJSDocInfo} from './jsdoc.js';
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -41,6 +42,7 @@ const getClassDeclaration = (
     name: declaration.name?.text ?? '',
     node: declaration,
     getHeritage: () => getHeritage(declaration, analyzer),
+    ...parseNodeJSDocInfo(declaration, analyzer),
   });
 };
 
