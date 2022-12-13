@@ -20,7 +20,11 @@ import {
   ScrollToCoordinates,
   BaseLayoutConfig,
 } from './layouts/shared/Layout.js';
-import {RangeChangedEvent, VisibilityChangedEvent, UnpinnedEvent} from './events.js';
+import {
+  RangeChangedEvent,
+  VisibilityChangedEvent,
+  UnpinnedEvent,
+} from './events.js';
 import {ScrollerController} from './ScrollerController.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
@@ -299,10 +303,10 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController!.detach(this);
-    this._mutationObserver!.disconnect();
-    this._hostElementRO!.disconnect();
-    this._childrenRO!.disconnect();
+    this._scrollerController = this._scrollerController?.detach(this) || null;
+    this._mutationObserver?.disconnect();
+    this._hostElementRO?.disconnect();
+    this._childrenRO?.disconnect();
     this._rejectLayoutCompletePromise('disconnected');
   }
 
