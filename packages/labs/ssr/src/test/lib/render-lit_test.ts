@@ -14,11 +14,12 @@ import {RenderInfo} from '../../index.js';
 
 import type * as testModule from '../test-files/render-test-module.js';
 
+const window = getWindow({
+  includeJSBuiltIns: true,
+  props: {require: createRequire(import.meta.url)},
+});
 const loader = new ModuleLoader({
-  global: getWindow({
-    includeJSBuiltIns: true,
-    props: {require: createRequire(import.meta.url)},
-  }),
+  global: window,
 });
 
 /**
