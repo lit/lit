@@ -7,11 +7,11 @@
 </trans-unit>
 <trans-unit id="he7b474847636149b">
   <source>Hello <x id="0" equiv-text="&lt;b&gt;${name}"/>!<x id="1" equiv-text="&lt;/b&gt;"/></source>
-  <note>Description of Hello $(name)</note>
+  <note from="lit-localize">Description of Hello $(name)</note>
 </trans-unit>
 <trans-unit id="s8c0ec8d1fb9e6e32">
   <source>Hello World!</source>
-  <note>Description of Hello World</note>
+  <note from="lit-localize">Description of Hello World</note>
 </trans-unit>
 </body>
 </file>
