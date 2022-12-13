@@ -429,12 +429,12 @@ export class XliffFormatter implements Formatter {
   ) {
     const lastChild = parentNode.lastChild;
     if (lastChild) {
-      parentNode.insertBefore(indent(level), lastChild);
+      parentNode.insertBefore(indent(parentNode, level), lastChild);
       parentNode.insertBefore(childNode, lastChild);
     } else {
-      parentNode.appendChild(indent(level));
+      parentNode.appendChild(indent(parentNode, level));
       parentNode.appendChild(childNode);
-      parentNode.appendChild(indent(level - 1));
+      parentNode.appendChild(indent(parentNode, level - 1));
     }
   }
 
