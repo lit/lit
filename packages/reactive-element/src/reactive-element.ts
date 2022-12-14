@@ -31,9 +31,7 @@ const NODE_MODE = false;
 const global = NODE_MODE ? globalThis : window;
 
 if (NODE_MODE) {
-  global.customElements ??= {
-    define() {},
-  } as unknown as CustomElementRegistry;
+  global.customElements ??= customElements;
 }
 
 const DEV_MODE = true;
@@ -391,11 +389,6 @@ const finalized = 'finalized';
 export type WarningKind = 'change-in-update' | 'migration';
 
 export type Initializer = (element: ReactiveElement) => void;
-
-const htmlElementShimNeeded = NODE_MODE && global.HTMLElement === undefined;
-if (htmlElementShimNeeded) {
-  global.HTMLElement = class HTMLElement {} as unknown as typeof HTMLElement;
-}
 
 /**
  * Base element class which manages element properties and attributes. When
@@ -1506,10 +1499,6 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
-}
-
-if (htmlElementShimNeeded) {
-  delete (global as Partial<typeof global>).HTMLElement;
 }
 
 // Apply polyfills if available

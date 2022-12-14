@@ -11,6 +11,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
+import inject from '@rollup/plugin-inject';
 
 // Greek prefixes used with minified class and stable properties on objects to
 // avoid collisions with user code and/or subclasses between packages. They are
@@ -452,6 +453,13 @@ export function litProdConfig({
                   'const ENABLE_SHADYDOM_NOPATCH = true':
                     'const ENABLE_SHADYDOM_NOPATCH = false',
                 },
+              }),
+              inject({
+                HTMLElement: ['@lit-labs/ssr-dom-shim', 'HTMLElement'],
+                customElements: ['@lit-labs/ssr-dom-shim', 'customElements'],
+                include: [
+                  '**/packages/reactive-element/development/reactive-element.js',
+                ],
               }),
               sourcemaps(),
               // We want the production Node build to be minified because:
