@@ -13,8 +13,17 @@
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/ssr-dom-shim"
   },
+  "main": "index.js",
+  "typings": "index.d.ts",
   "type": "module",
-  "files": [],
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "index.{d.ts,d.ts.map,js,js.map}"
+  ],
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit"
@@ -33,6 +42,7 @@
         "tsconfig.json"
       ],
       "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
         "tsconfig.tsbuildinfo"
       ]
     }
