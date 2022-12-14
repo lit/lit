@@ -15,7 +15,7 @@ const attributesForElement = (element: HTMLElement) => {
 
 class Element {}
 
-abstract class HTMLElement extends Element {
+export abstract class HTMLElement extends Element {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -82,3 +82,5 @@ class CustomElementRegistry {
     return definition && definition.ctor;
   }
 }
+
+export const customElements = new CustomElementRegistry();
