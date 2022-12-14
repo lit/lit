@@ -36,7 +36,7 @@ import {
   getImportReferenceForSpecifierExpression,
   getSpecifierString,
 } from '../references.js';
-import {parseNodeJSDocInfo} from './jsdoc.js';
+import {parseModuleJSDocInfo} from './jsdoc.js';
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -155,7 +155,7 @@ export const getModule = (
     dependencies,
     exportMap,
     finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
-    ...parseNodeJSDocInfo(sourceFile, analyzer),
+    ...parseModuleJSDocInfo(sourceFile),
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,

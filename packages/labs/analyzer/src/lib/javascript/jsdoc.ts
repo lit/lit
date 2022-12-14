@@ -67,6 +67,61 @@ export const parseNameDescSummary = (
 };
 
 /**
+ * Add `@description`, `@summary`, and `@deprecated` JSDoc tag info to the
+ * given info object.
+ */
+const addJSDocTagInfo = (
+  info: NodeJSDocInfo,
+  jsDocTags: readonly ts.JSDocTag[]
+) => {
+  for (const tag of jsDocTags) {
+    const {comment} = tag;
+    if (comment !== undefined && typeof comment !== 'string') {
+      throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
+    }
+    switch (tag.tagName.text) {
+      case 'description':
+      case 'fileoverview':
+      case 'packageDocumentation':
+        if (comment !== undefined) {
+          info.description = normalizeLineEndings(comment);
+        }
+        break;
+      case 'summary':
+        if (comment !== undefined) {
+          info.summary = comment;
+        }
+        break;
+      case 'deprecated':
+        info.deprecated = comment !== undefined ? comment : true;
+        break;
+    }
+  }
+};
+
+/**
+ * Description and/or summary info from freeform comment text in a
+ * JSDoc comment block to the given info object.
+ */
+const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
+  if (comment.length === 0) {
+    return;
+  }
+  if (info.summary !== undefined) {
+    info.description = normalizeLineEndings(comment);
+  } else {
+    const match = comment.match(parseDescSummaryRE);
+    if (match === null) {
+      info.description = normalizeLineEndings(comment);
+    } else {
+      const {summary, description} = match.groups!;
+      info.summary = summary;
+      info.description = normalizeLineEndings(description);
+    }
+  }
+};
+
+/**
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given node.
  */
@@ -77,30 +132,7 @@ export const parseNodeJSDocInfo = (
   const v: NodeJSDocInfo = {};
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
-    for (const tag of jsDocTags) {
-      const {comment} = tag;
-      if (comment !== undefined && typeof comment !== 'string') {
-        throw new DiagnosticsError(
-          tag,
-          `Internal error: unsupported node type`
-        );
-      }
-      switch (tag.tagName.text) {
-        case 'description':
-          if (comment !== undefined) {
-            v.description = normalizeLineEndings(comment);
-          }
-          break;
-        case 'summary':
-          if (comment !== undefined) {
-            v.summary = comment;
-          }
-          break;
-        case 'deprecated':
-          v.deprecated = comment !== undefined ? comment : true;
-          break;
-      }
-    }
+    addJSDocTagInfo(v, jsDocTags);
   }
   // If we didn't have a tagged @description, we'll use any untagged text as
   // the description. If we also didn't have a @summary and the untagged text
@@ -116,19 +148,43 @@ export const parseNodeJSDocInfo = (
     const comments = symbol?.getDocumentationComment(checker);
     if (comments !== undefined) {
       const comment = comments.map((c) => c.text).join('\n');
-      if (v.summary !== undefined) {
-        v.description = normalizeLineEndings(comment);
-      } else {
-        const info = comment.match(parseDescSummaryRE);
-        if (info === null) {
-          v.description = normalizeLineEndings(comment);
-        } else {
-          const {summary, description} = info.groups!;
-          v.summary = summary;
-          v.description = normalizeLineEndings(description);
-        }
-      }
+      addJSDocCommentInfo(v, comment);
     }
   }
   return v;
+};
+
+/**
+ * Parse summary, description, and deprecated information from JSDoc comments on
+ * a given source file.
+ */
+export const parseModuleJSDocInfo = (sourceFile: ts.SourceFile) => {
+  const firstChild = ts.forEachChild(sourceFile, (n) => n);
+  if (firstChild === undefined) {
+    return {};
+  }
+  const jsDocs = firstChild.getChildren().filter(ts.isJSDoc);
+  const moduleJSDocs = jsDocs.slice(0, jsDocs.length > 1 ? -1 : 1);
+  const jsDocTags = moduleJSDocs.flatMap((d) => d.tags ?? []);
+  if (
+    jsDocs.length === 1 &&
+    !jsDocTags.find(
+      (t) =>
+        t.tagName.text === 'module' ||
+        t.tagName.text === 'fileoverview' ||
+        t.tagName.text === 'packageDocumentation'
+    )
+  ) {
+    return {};
+  }
+  const info: NodeJSDocInfo = {};
+  addJSDocTagInfo(info, jsDocTags);
+  if (info.description === undefined) {
+    const comment = moduleJSDocs
+      .map((d) => d.comment)
+      .filter((c) => c !== undefined)
+      .join('\n');
+    addJSDocCommentInfo(info, comment);
+  }
+  return info;
 };
