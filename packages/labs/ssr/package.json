@@ -31,6 +31,7 @@
       "clean": "if-file-deleted",
       "dependencies": [
         "../ssr-client:build:ts:types",
+        "../ssr-dom-shim:build:ts",
         "../../lit:build:ts:types",
         "../../lit-html:build:ts:types",
         "../../lit-element:build:ts:types"
@@ -149,6 +150,7 @@
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0",
+    "@lit-labs/ssr-dom-shim": "^1.0.0",
     "@lit/reactive-element": "^1.5.0",
     "@parse5/tools": "^0.1.0",
     "@types/node": "^16.0.0",
