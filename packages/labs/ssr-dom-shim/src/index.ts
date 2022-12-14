@@ -67,7 +67,7 @@ type CustomElementRegistration = {
   observedAttributes: string[];
 };
 
-class CustomElementRegistry {
+export class CustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
 
   define(name: string, ctor: CustomHTMLElement) {

@@ -13,7 +13,7 @@
  */
 
 import fetch from 'node-fetch';
-import {HTMLElement, customElements} from '@lit-labs/ssr-dom-shim';
+import {HTMLElement, CustomElementRegistry} from '@lit-labs/ssr-dom-shim';
 
 /**
  * Constructs a fresh instance of the "window" vm context to use for evaluating
@@ -58,7 +58,7 @@ export const getWindow = ({
     CSSStyleSheet,
     ShadowRoot,
     CustomElementRegistry,
-    customElements,
+    customElements: new CustomElementRegistry(),
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
