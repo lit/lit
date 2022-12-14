@@ -42,7 +42,7 @@ export abstract class HTMLElement extends Element {
   hasAttribute(name: string) {
     return attributesForElement(this).has(name);
   }
-  attachShadow(init: ShadowRootInit) {
+  attachShadow(this: HTMLElement, init: ShadowRootInit) {
     const shadowRoot = {host: this};
     if (init && init.mode === 'open') {
       this._shadowRoot = shadowRoot;
