@@ -14,11 +14,12 @@ import {RenderInfo} from '../../index.js';
 
 import type * as testModule from '../test-files/render-test-module.js';
 
+const window = getWindow({
+  includeJSBuiltIns: true,
+  props: {require: createRequire(import.meta.url)},
+});
 const loader = new ModuleLoader({
-  global: getWindow({
-    includeJSBuiltIns: true,
-    props: {require: createRequire(import.meta.url)},
-  }),
+  global: window,
 });
 
 /**
@@ -335,6 +336,33 @@ test('no slot', async () => {
   assert.is(
     result,
     `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
+  );
+});
+
+test('shadowroot="open"', async () => {
+  const {render, shadowrootOpen} = await setup();
+  const result = await render(shadowrootOpen);
+  assert.is(
+    result,
+    `<!--lit-part eTOxy3auvsY=--><test-shadowroot-open><template shadowroot="open"><!--lit-part--><!--/lit-part--></template></test-shadowroot-open><!--/lit-part-->`
+  );
+});
+
+test('shadowroot="closed"', async () => {
+  const {render, shadowrootClosed} = await setup();
+  const result = await render(shadowrootClosed);
+  assert.is(
+    result,
+    `<!--lit-part 35tY6VC7KzI=--><test-shadowroot-closed><template shadowroot="closed"><!--lit-part--><!--/lit-part--></template></test-shadowroot-closed><!--/lit-part-->`
+  );
+});
+
+test('shadowrootdelegatesfocus', async () => {
+  const {render, shadowrootdelegatesfocus} = await setup();
+  const result = await render(shadowrootdelegatesfocus);
+  assert.is(
+    result,
+    `<!--lit-part Nim07tlWyJ0=--><test-shadowrootdelegatesfocus><template shadowroot="open" shadowrootdelegatesfocus><!--lit-part--><!--/lit-part--></template></test-shadowrootdelegatesfocus><!--/lit-part-->`
   );
 });
 

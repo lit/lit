@@ -1,5 +1,17 @@
 # Change Log
 
+## 2.5.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - `lit-html` and `reactive-element` now include development Node builds with unminified code and dev warnings.
+
+## 2.4.0
+
+### Minor Changes
+
+- [#3318](https://github.com/lit/lit/pull/3318) [`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4) - Adds an `isServer` variable export to `lit` and `lit-html/is-server.js` which will be `true` in Node and `false` in the browser. This can be used when authoring components to change behavior based on whether or not the component is executing in an SSR context.
+
 ## 2.3.1
 
 ### Patch Changes

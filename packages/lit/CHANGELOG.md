@@ -1,5 +1,36 @@
 # Change Log
 
+## 2.5.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - `lit-html` and `reactive-element` now include development Node builds with unminified code and dev warnings.
+
+### Patch Changes
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - lit-html@2.5.0
+  - @lit/reactive-element@1.5.0
+
+## 2.4.1
+
+### Patch Changes
+
+- [#3374](https://github.com/lit/lit/pull/3374) [`bb098950`](https://github.com/lit/lit/commit/bb0989507f73f1e6d484199e3767eed39ebbaf22) - Initializers added to subclasses are no longer improperly added to superclass.
+
+## 2.4.0
+
+### Minor Changes
+
+- [#3318](https://github.com/lit/lit/pull/3318) [`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4) - Adds an `isServer` variable export to `lit` and `lit-html/is-server.js` which will be `true` in Node and `false` in the browser. This can be used when authoring components to change behavior based on whether or not the component is executing in an SSR context.
+
+### Patch Changes
+
+- [#3320](https://github.com/lit/lit/pull/3320) [`305852d4`](https://github.com/lit/lit/commit/305852d4a4f51174301720985de98fdbf8674648) - The `lit` package now specifies and "types" export condition allowing TypeScript `moduleResolution` to be `nodenext`.
+
+- Updated dependencies [[`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4)]:
+  - lit-html@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes

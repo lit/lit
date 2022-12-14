@@ -12,6 +12,7 @@ import {
 import {
   ResizeController,
   ResizeControllerConfig,
+  ResizeValueCallback,
 } from '@lit-labs/observers/resize_controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -46,7 +47,10 @@ if (DEV_MODE) {
       constructor() {
         super();
         const config = getControllerConfig(this);
-        this.observer = new ResizeController(this, config);
+        this.observer = new ResizeController(this, {
+          callback: () => true,
+          ...config,
+        });
       }
 
       override update(props: PropertyValues) {
@@ -324,6 +328,36 @@ if (DEV_MODE) {
     assert.isTrue(el.observerValue);
   });
 
+  test('observed targets are re-observed on host connected', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+    const d2 = document.createElement('div');
+
+    el.renderRoot.appendChild(d1);
+    el.renderRoot.appendChild(d2);
+
+    el.observer.observe(d1);
+    el.observer.observe(d2);
+
+    await resizeComplete();
+    el.resetObserverValue();
+    el.remove();
+
+    container.appendChild(el);
+
+    // Reports change to first observed target.
+    el.resetObserverValue();
+    resizeElement(d1);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+
+    // Reports change to second observed target.
+    el.resetObserverValue();
+    resizeElement(d2);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+  });
+
   test('observed target respects `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
@@ -344,7 +378,7 @@ if (DEV_MODE) {
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target not re-observed on connection', async () => {
+  test('observed target re-observed on connection', async () => {
     const el = await getTestElement(() => ({target: null}));
     const d1 = document.createElement('div');
 
@@ -357,21 +391,140 @@ if (DEV_MODE) {
     await resizeComplete();
     el.remove();
 
-    // Does not reports change when disconnected.
+    // Does not report change when disconnected.
     resizeElement(d1);
     await resizeComplete();
     assert.isUndefined(el.observerValue);
 
-    // Does not report change when re-connected
+    // Reports change when re-connected
     container.appendChild(el);
     resizeElement(d1);
     await resizeComplete();
-    assert.isUndefined(el.observerValue);
+    assert.isTrue(el.observerValue);
+  });
 
-    // Can re-observe after connection.
-    el.observer.observe(d1);
-    resizeElement(d1);
+  test('can observe changes when initialized after host connected', async () => {
+    class TestFirstUpdated extends ReactiveElement {
+      observer!: ResizeController<true>;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new ResizeController(this, {
+          callback: () => true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), TestFirstUpdated);
+
+    const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+
+    // Reports initial change by default
+    assert.isTrue(el.observerValue);
+
+    // Reports attribute change
+    el.resetObserverValue();
+    assert.isUndefined(el.observerValue);
+    resizeElement(el);
     await resizeComplete();
     assert.isTrue(el.observerValue);
+  });
+
+  test('can observe external element after host connected', async () => {
+    const d = document.createElement('div');
+    container.appendChild(d);
+    class A extends ReactiveElement {
+      observer!: ResizeController<true>;
+      observerValue: true | undefined = undefined;
+      override firstUpdated() {
+        this.observer = new ResizeController(this, {
+          target: d,
+          skipInitial: true,
+          callback: () => true,
+        });
+      }
+      override updated() {
+        this.observerValue = this.observer.value;
+      }
+      resetObserverValue() {
+        this.observer.value = this.observerValue = undefined;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const el = (await renderTestElement(A)) as A;
+
+    assert.equal(el.observerValue, undefined);
+    resizeElement(d);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+
+    // Change again
+    el.resetObserverValue();
+    assert.equal(el.observerValue, undefined);
+    resizeElement(d);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+  });
+
+  test('ResizeController<T> type-checks', async () => {
+    // This test only checks compile-type behavior. There are no runtime checks.
+    const el = await getTestElement();
+    const A = new ResizeController<number>(el, {
+      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      callback: () => '',
+    });
+    if (A) {
+      // Suppress no-unused-vars warnings
+    }
+
+    const B = new ResizeController(el, {
+      callback: () => '',
+    });
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    B.value = 2;
+
+    const C = new ResizeController(el, {}) as ResizeController<string>;
+    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    C.value = 3;
+
+    const narrowTypeCb: ResizeValueCallback<string | null> = () => '';
+    const D = new ResizeController(el, {callback: narrowTypeCb});
+
+    D.value = null;
+    D.value = undefined;
+    D.value = '';
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
+    D.value = 3;
+  });
+
+  test('observed target can be unobserved', async () => {
+    const el = await getTestElement(() => ({target: null}));
+    const d1 = document.createElement('div');
+
+    // Reports initial changes when observe called.
+    el.observer.observe(d1);
+    el.renderRoot.appendChild(d1);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+    el.resetObserverValue();
+    await resizeComplete();
+
+    // Does not report change when unobserved
+    el.observer.unobserve(d1);
+    resizeElement(d1);
+    await resizeComplete();
+    assert.isUndefined(el.observerValue);
+
+    el.remove();
+    container.appendChild(el);
+
+    // Does not report changes when re-connected
+    resizeElement(d1);
+    await resizeComplete();
+    assert.isUndefined(el.observerValue);
   });
 });

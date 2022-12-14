@@ -8,10 +8,8 @@ import * as path from 'path';
 import {promises as fs} from 'fs';
 import {URL, fileURLToPath, pathToFileURL} from 'url';
 import * as vm from 'vm';
-import resolveAsync from 'resolve';
+import enhancedResolve from 'enhanced-resolve';
 import {builtinModules} from 'module';
-
-type PackageJSON = {main?: string; module?: string; 'jsnext:main'?: string};
 
 const builtIns = new Set(builtinModules);
 
@@ -276,17 +274,11 @@ export const resolveSpecifier = async (
       // a single version.
       referrerPath = fileURLToPath(import.meta.url);
     }
-    const modulePath = await resolve(specifier, {
-      basedir: path.dirname(referrerPath),
-      moduleDirectory: ['node_modules'],
+    const modulePath = await resolve(specifier, path.dirname(referrerPath), {
+      modules: ['node_modules'],
       extensions: ['.js'],
-      // Some packages use a non-standard alternative to the "main" field
-      // in their package.json to differentiate their ES module version.
-      packageFilter: (packageJson: PackageJSON) => {
-        packageJson.main =
-          packageJson.module ?? packageJson['jsnext:main'] ?? packageJson.main;
-        return packageJson;
-      },
+      mainFields: ['module', 'jsnext:main', 'main'],
+      conditionNames: ['node', 'import'],
     });
     return pathToFileURL(modulePath);
   }
@@ -301,10 +293,12 @@ const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
 
 const resolve = async (
   id: string,
-  opts: resolveAsync.AsyncOpts
+  path: string,
+  opts: Partial<enhancedResolve.ResolveOptions>
 ): Promise<string> => {
+  const resolver = enhancedResolve.create(opts);
   return new Promise((res, rej) => {
-    resolveAsync(id, opts, (err, resolved) => {
+    resolver({}, path, id, {}, (err: unknown, resolved?: string) => {
       if (err != null) {
         rej(err);
       } else {

@@ -23,13 +23,19 @@ export const makeLabsCommand = (cli: LitCli): Command => {
             multiple: true,
             defaultValue: './',
             description:
-              'Folder containing a package to generate wrappers for.',
+              'Folder containing a package to generate wrappers for. For TypeScript projects, if the package folder does not contain a tsconfig.json, this option may also specify a specific tsconfig.json to use.',
           },
           {
             name: 'framework',
             multiple: true,
             description:
               'Framework to generate wrappers for. Supported frameworks: react, vue.',
+          },
+          {
+            name: 'manifest',
+            type: Boolean,
+            description:
+              'Generate a custom-elements.json manifest for this package.',
           },
           {
             name: 'out',
@@ -41,16 +47,18 @@ export const makeLabsCommand = (cli: LitCli): Command => {
           {
             package: packages,
             framework: frameworks,
+            manifest,
             out: outDir,
           }: {
             package: string[];
             framework: string[];
+            manifest: boolean;
             out: string;
           },
           console: Console
         ) {
           const gen = await import('../generate/generate.js');
-          await gen.run({cli, packages, frameworks, outDir}, console);
+          await gen.run({cli, packages, frameworks, manifest, outDir}, console);
         },
       },
     ],

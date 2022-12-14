@@ -159,8 +159,6 @@ export const getWindow = ({
     ...props,
   };
 
-  window.window = window;
-
   if (includeJSBuiltIns) {
     Object.assign(window, {
       // No-op any async tasks
@@ -204,8 +202,5 @@ export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
     const window = getWindow({props});
     // Copy initial window globals to node global
     Object.assign(globalThis, window);
-    // Set up global reference to window so all globals added to window are
-    // added to the node global
-    globalThis.window = globalThis as typeof globalThis & Window;
   }
 };

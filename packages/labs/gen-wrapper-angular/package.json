@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-wrapper-angular",
   "description": "Code generator for Angular wrappers for Lit components",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "publishConfig": {
     "access": "public"
   },
@@ -15,7 +15,8 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "test:gen": "wireit"
+    "test:gen": "wireit",
+    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
   },
   "wireit": {
     "build": {
@@ -43,19 +44,21 @@
     },
     "test:gen": {
       "command": "uvu test \".*_test\\.js$\"",
-      "files": [],
+      "files": [
+        "goldens/**/*"
+      ],
       "output": [
         "gen-output"
       ],
       "dependencies": [
         "build",
-        "../test-projects/test-element-a:build"
+        "../test-projects/test-element-a:pack"
       ]
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.2.0",
-    "@lit-labs/gen-utils": "^0.1.0"
+    "@lit-labs/analyzer": "^0.5.0",
+    "@lit-labs/gen-utils": "^0.2.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.1.5",

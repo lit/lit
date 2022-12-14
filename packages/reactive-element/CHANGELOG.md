@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.5.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - `lit-html` and `reactive-element` now include development Node builds with unminified code and dev warnings.
+
+## 1.4.2
+
+### Patch Changes
+
+- [#3374](https://github.com/lit/lit/pull/3374) [`bb098950`](https://github.com/lit/lit/commit/bb0989507f73f1e6d484199e3767eed39ebbaf22) - Initializers added to subclasses are no longer improperly added to superclass.
+
 ## 1.4.1
 
 ### Patch Changes

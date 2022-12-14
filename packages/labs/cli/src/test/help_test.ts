@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'source-map-support/register.js';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {LitCli} from '../lib/lit-cli.js';
 import {LitConsole} from '../lib/console.js';
-import {BufferedWritable} from './cli-test-utils.js';
+import {BufferedWritable, symlinkAllCommands} from './cli-test-utils.js';
 import {ReferenceToCommand} from '../lib/command.js';
 import {ConsoleConstructorOptions} from 'console';
 import * as stream from 'stream';
@@ -50,41 +49,47 @@ test.after.each(async (ctx) => {
   await ctx.fs.cleanup();
 });
 
-test('help with no command', async ({console, stdin}) => {
-  const cli = new LitCli(['help'], {console, stdin: stdin});
+test('help with no command', async ({fs, console, stdin}) => {
+  const cli = new LitCli(['help'], {console, stdin: stdin, cwd: fs.rootDir});
   await cli.run();
 
   const output = console.outputStream.text;
 
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(output, 'Lit CLI');
   assert.match(output, 'Available Commands');
   assert.match(output, 'localize');
 });
 
-test('help with localize command', async ({console, stdin}) => {
-  const cli = new LitCli(['help', 'localize'], {console, stdin});
+test('help with localize command', async ({fs, console, stdin}) => {
+  await symlinkAllCommands(fs);
+  const cli = new LitCli(['help', 'localize'], {
+    console,
+    stdin,
+    cwd: fs.rootDir,
+  });
   await cli.run();
 
   const output = console.outputStream.text;
 
-  assert.equal(console.errorStream.buffer.length, 0);
   assert.match(output, 'lit localize');
   assert.match(output, 'Sub-Commands');
   assert.match(output, 'extract');
   assert.match(output, 'build');
 });
 
-test('help with localize extract command', async ({console, stdin}) => {
+test('help with localize extract command', async ({fs, console, stdin}) => {
+  await symlinkAllCommands(fs);
   const cli = new LitCli(['help', 'localize', 'extract'], {
     console,
     stdin,
+    cwd: fs.rootDir,
   });
   await cli.run();
 
   const output = console.outputStream.text;
 
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(output, 'lit localize extract');
   assert.match(output, '--config');
 });
@@ -109,7 +114,7 @@ test('help includes unresolved external command descriptions', async ({
   cli.addCommand(fooCommandReference);
   await cli.run();
   const output = console.outputStream.text;
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(
     output,
     /\s+foo\s+This is the description in the `foo` reference./
@@ -183,7 +188,7 @@ test(`help for a resolved external command`, async ({console, fs, stdin}) => {
   cli.addCommand(fooCommandReference);
   await cli.run();
   output = console.outputStream.text;
-  assert.equal(console.errorStream.buffer.length, 0);
+  assert.snapshot(console.errorStream.text, '');
   assert.match(
     output,
     /\s+foo\s+this is the resolved foo command from the node_modules directory/
@@ -224,7 +229,7 @@ test('we install a referenced command with permission', async ({
   });
   cli.addCommand({...fooCommandReference, installFrom: '../foo-package'});
   await cli.run();
-  assert.equal(console.errorStream.text, '');
+  assert.snapshot(console.errorStream.text, '');
   // The npm install happend.
   assert.match(console.outputStream.text, 'added 1 package');
   // After installation, we were able to resolve the command.
