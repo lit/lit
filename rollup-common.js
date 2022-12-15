@@ -248,11 +248,35 @@ const generateTerserOptions = (
   },
 });
 
-const injectNodeDomShimImportIntoReactiveElement = inject({
-  HTMLElement: ['@lit-labs/ssr-dom-shim', 'HTMLElement'],
-  customElements: ['@lit-labs/ssr-dom-shim', 'customElements'],
-  include: ['**/packages/reactive-element/development/reactive-element.js'],
-});
+/**
+ * Inject an import for the SSR DOM Shim into the Node build of
+ * `@lit-labs/reactive-element`, and modify the `extends` clause of
+ * `ReactiveElement` to use that `HTMLElement` shim, unless a global version has
+ * already been defined.
+ *
+ * ```js
+ * import {HTMLElement, customElements} from '@lit-labs/ssr-dom-shim';
+ *
+ * // ...
+ *
+ * export class ReactiveElement extends (globalThis.HTMLElement ?? HTMLElement) {
+ *   // ...
+ * }
+ * ```
+ */
+const injectNodeDomShimIntoReactiveElement = [
+  inject({
+    HTMLElement: ['@lit-labs/ssr-dom-shim', 'HTMLElement'],
+    customElements: ['@lit-labs/ssr-dom-shim', 'customElements'],
+    include: ['**/packages/reactive-element/development/reactive-element.js'],
+  }),
+  replace({
+    values: {
+      'extends HTMLElement': 'extends (globalThis.HTMLElement ?? HTMLElement)',
+    },
+    include: ['**/packages/reactive-element/development/reactive-element.js'],
+  }),
+];
 
 export function litProdConfig({
   entryPoints,
@@ -460,7 +484,7 @@ export function litProdConfig({
                     'const ENABLE_SHADYDOM_NOPATCH = false',
                 },
               }),
-              injectNodeDomShimImportIntoReactiveElement,
+              ...injectNodeDomShimIntoReactiveElement,
               sourcemaps(),
               // We want the production Node build to be minified because:
               //
@@ -504,7 +528,7 @@ export function litProdConfig({
                   'const NODE_MODE = false': 'const NODE_MODE = true',
                 },
               }),
-              injectNodeDomShimImportIntoReactiveElement,
+              ...injectNodeDomShimIntoReactiveElement,
               sourcemaps(),
               summary({
                 showBrotliSize: true,
