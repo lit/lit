@@ -198,6 +198,14 @@ export class Virtualizer {
 
   protected _measureChildOverride: MeasureChildFunction | null = null;
 
+  /**
+   * State for `layoutComplete` promise
+   */
+  private _layoutCompletePromise: Promise<void> | null = null;
+  private _layoutCompleteResolver: Function | null = null;
+  private _layoutCompleteRejecter: Function | null = null;
+  private _pendingLayoutComplete: number | null = null;
+
   constructor(config: VirtualizerConfig) {
     if (!config) {
       throw new Error(
@@ -295,10 +303,10 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController!.detach(this);
-    this._mutationObserver!.disconnect();
-    this._hostElementRO!.disconnect();
-    this._childrenRO!.disconnect();
+    this._scrollerController = this._scrollerController?.detach(this) || null;
+    this._mutationObserver?.disconnect();
+    this._hostElementRO?.disconnect();
+    this._childrenRO?.disconnect();
     this._rejectLayoutCompletePromise('disconnected');
   }
 
@@ -768,42 +776,44 @@ export class Virtualizer {
     );
   }
 
-  private _layoutCompleteResolver: Function | null = null;
-  private _layoutCompleteRejecter: Function | null = null;
-  private _pendingLayoutComplete: number | null = null;
   public get layoutComplete(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this._layoutCompleteResolver = resolve;
-      this._layoutCompleteRejecter = reject;
-    });
+    // Lazily create promise
+    if (!this._layoutCompletePromise) {
+      this._layoutCompletePromise = new Promise((resolve, reject) => {
+        this._layoutCompleteResolver = resolve;
+        this._layoutCompleteRejecter = reject;
+      });
+    }
+    return this._layoutCompletePromise!;
   }
+
   private _rejectLayoutCompletePromise(reason: string) {
     if (this._layoutCompleteRejecter !== null) {
       this._layoutCompleteRejecter!(reason);
     }
     this._resetLayoutCompleteState();
   }
+
   private _scheduleLayoutComplete() {
-    if (this._pendingLayoutComplete !== null) {
-      cancelAnimationFrame(this._pendingLayoutComplete);
+    // Don't do anything unless we have a pending promise
+    // And only request a frame if we haven't already done so
+    if (this._layoutCompletePromise && this._pendingLayoutComplete === null) {
+      // Wait one additional frame to be sure the layout is stable
+      this._pendingLayoutComplete = requestAnimationFrame(() =>
+        requestAnimationFrame(() => this._resolveLayoutCompletePromise())
+      );
     }
-    // Seems to require waiting one additional frame to
-    // be sure the layout is stable
-    this._pendingLayoutComplete = requestAnimationFrame(() =>
-      requestAnimationFrame(() => this._layoutComplete())
-    );
   }
-  private _layoutComplete() {
-    this._resolveLayoutCompletePromise();
-    this._pendingLayoutComplete = null;
-  }
+
   private _resolveLayoutCompletePromise() {
     if (this._layoutCompleteResolver !== null) {
       this._layoutCompleteResolver();
     }
     this._resetLayoutCompleteState();
   }
+
   private _resetLayoutCompleteState() {
+    this._layoutCompletePromise = null;
     this._layoutCompleteResolver = null;
     this._layoutCompleteRejecter = null;
     this._pendingLayoutComplete = null;
