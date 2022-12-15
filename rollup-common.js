@@ -248,6 +248,12 @@ const generateTerserOptions = (
   },
 });
 
+const injectNodeDomShimImportIntoReactiveElement = inject({
+  HTMLElement: ['@lit-labs/ssr-dom-shim', 'HTMLElement'],
+  customElements: ['@lit-labs/ssr-dom-shim', 'customElements'],
+  include: ['**/packages/reactive-element/development/reactive-element.js'],
+});
+
 export function litProdConfig({
   entryPoints,
   external = [],
@@ -454,13 +460,7 @@ export function litProdConfig({
                     'const ENABLE_SHADYDOM_NOPATCH = false',
                 },
               }),
-              inject({
-                HTMLElement: ['@lit-labs/ssr-dom-shim', 'HTMLElement'],
-                customElements: ['@lit-labs/ssr-dom-shim', 'customElements'],
-                include: [
-                  '**/packages/reactive-element/development/reactive-element.js',
-                ],
-              }),
+              injectNodeDomShimImportIntoReactiveElement,
               sourcemaps(),
               // We want the production Node build to be minified because:
               //
@@ -504,6 +504,7 @@ export function litProdConfig({
                   'const NODE_MODE = false': 'const NODE_MODE = true',
                 },
               }),
+              injectNodeDomShimImportIntoReactiveElement,
               sourcemaps(),
               summary({
                 showBrotliSize: true,
