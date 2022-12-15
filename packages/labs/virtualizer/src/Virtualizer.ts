@@ -20,7 +20,11 @@ import {
   ScrollToCoordinates,
   BaseLayoutConfig,
 } from './layouts/shared/Layout.js';
-import {RangeChangedEvent, VisibilityChangedEvent, UnpinnedEvent} from './events.js';
+import {
+  RangeChangedEvent,
+  VisibilityChangedEvent,
+  UnpinnedEvent,
+} from './events.js';
 import {ScrollerController} from './ScrollerController.js';
 
 export const virtualizerRef = Symbol('virtualizerRef');
@@ -863,6 +867,9 @@ function getMarginValue(value: string): number {
 
 // TODO (graynorton): Deal with iframes?
 function getParentElement(el: Element) {
+  if (el.assignedSlot !== null) {
+    return el.assignedSlot;
+  }
   if (el.parentElement !== null) {
     return el.parentElement;
   }
