@@ -1,0 +1,84 @@
+{
+  "name": "@lit-labs/ssr-react",
+  "type": "module",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Lit SSR integration for React",
+  "main": "index.js",
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../ssr:build:ts"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "node/",
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "jsx-runtime.{d.ts,d.ts.map,js,js.map}",
+        "jsx-dev-runtime.{d.ts,d.ts.map,js,js.map}",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "test": {
+      "command": "echo \"TODO\"",
+      "dependencies": []
+    }
+  },
+  "files": [
+    "/node/",
+    "/lib/",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/jsx-runtime.{d.ts,d.ts.map,js,js.map}",
+    "/jsx-dev-runtime.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "node": "./node/index.js",
+      "default": "./index.js"
+    },
+    "./jsx-runtime": {
+      "node": "./node/jsx-runtime.js",
+      "default": "./jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "node": "./node/jsx-dev-runtime.js",
+      "default": "./jsx-dev-runtime.js"
+    }
+  },
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/ssr-react"
+  },
+  "dependencies": {
+    "@lit-labs/ssr": "^2.2.3",
+    "@types/react": "17 || 18",
+    "lit": "^2.4.1"
+  },
+  "peerDependencies": {
+    "react": "17 || 18"
+  },
+  "engines": {
+    "node": ">=13.9.0"
+  }
+}
