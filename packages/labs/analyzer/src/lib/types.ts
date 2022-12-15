@@ -77,7 +77,7 @@ export const getTypeForNode = (
  * Converts a ts.Type into an analyzer Type object (which wraps
  * the ts.Type, but also provides analyzer Reference objects).
  */
-const getTypeForType = (
+export const getTypeForType = (
   type: ts.Type,
   location: ts.Node,
   analyzer: AnalyzerInterface

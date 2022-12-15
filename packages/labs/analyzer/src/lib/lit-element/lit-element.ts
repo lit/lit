@@ -11,8 +11,8 @@
  */
 
 import ts from 'typescript';
-import {getHeritage} from '../javascript/classes.js';
-import {parseNodeJSDocInfo, parseNameDescSummary} from '../javascript/jsdoc.js';
+import {getClassMembers, getHeritage} from '../javascript/classes.js';
+import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
 import {
   LitElementDeclaration,
   AnalyzerInterface,
@@ -28,17 +28,18 @@ import {getProperties} from './properties.js';
  * (branded as LitClassDeclaration).
  */
 export const getLitElementDeclaration = (
-  node: LitClassDeclaration,
+  declaration: LitClassDeclaration,
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
-    tagname: getTagName(node),
+    tagname: getTagName(declaration),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
-    name: node.name?.text ?? '',
-    node,
-    reactiveProperties: getProperties(node, analyzer),
-    ...getJSDocData(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    name: declaration.name?.text ?? '',
+    node: declaration,
+    reactiveProperties: getProperties(declaration, analyzer),
+    ...getJSDocData(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer),
+    ...getClassMembers(declaration, analyzer),
   });
 };
 
@@ -93,7 +94,7 @@ const addNamedJSDocInfoToMap = (
   map: Map<string, NamedJSDocInfo>,
   tag: ts.JSDocTag
 ) => {
-  const info = parseNameDescSummary(tag);
+  const info = parseNamedJSDocInfo(tag);
   if (info !== undefined) {
     map.set(info.name, info);
   }

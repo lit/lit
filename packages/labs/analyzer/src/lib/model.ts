@@ -294,6 +294,15 @@ export abstract class Declaration {
   isLitElementDeclaration(): this is LitElementDeclaration {
     return this instanceof LitElementDeclaration;
   }
+  isFunctionDeclaration(): this is FunctionDeclaration {
+    return this instanceof FunctionDeclaration;
+  }
+  isClassField(): this is ClassField {
+    return this instanceof ClassField;
+  }
+  isClassMethod(): this is ClassMethod {
+    return this instanceof ClassMethod;
+  }
 }
 
 export interface VariableDeclarationInit extends DeclarationInit {
@@ -314,6 +323,78 @@ export class VariableDeclaration extends Declaration {
   }
 }
 
+export interface FunctionLikeInit extends NodeJSDocInfo {
+  name: string;
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+}
+
+export class FunctionDeclaration extends Declaration {
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+  constructor(init: FunctionLikeInit) {
+    super(init);
+    this.parameters = init.parameters;
+    this.return = init.return;
+  }
+}
+
+export type Privacy = 'public' | 'private' | 'protected';
+
+export interface SourceReference {
+  href: string;
+}
+
+export interface ClassMethodInit extends FunctionLikeInit {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+}
+
+export class ClassMethod extends Declaration {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+  constructor(init: ClassMethodInit) {
+    super(init);
+    this.static = init.static;
+    this.privacy = init.privacy;
+    this.inheritedFrom = init.inheritedFrom;
+    this.source = init.source;
+    this.parameters = init.parameters;
+    this.return = init.return;
+  }
+}
+
+export interface ClassFieldInit extends PropertyLike {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+}
+
+export class ClassField extends Declaration {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+  type?: Type | undefined;
+  default?: string | undefined;
+  constructor(init: ClassFieldInit) {
+    super(init);
+    this.static = init.static;
+    this.privacy = init.privacy;
+    this.inheritedFrom = init.inheritedFrom;
+    this.source = init.source;
+    this.type = init.type;
+    this.default = init.default;
+  }
+}
+
 export type ClassHeritage = {
   mixins: Reference[];
   superClass: Reference | undefined;
@@ -322,17 +403,23 @@ export type ClassHeritage = {
 export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
   getHeritage: () => ClassHeritage;
+  fields?: ClassField[] | undefined;
+  methods?: ClassMethod[] | undefined;
 }
 
 export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
+  readonly fields: ClassField[] | undefined;
+  readonly methods: ClassMethod[] | undefined;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
     this._getHeritage = init.getHeritage;
+    this.fields = init.fields;
+    this.methods = init.methods;
   }
 
   get heritage(): ClassHeritage {
@@ -340,24 +427,16 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
-export interface NamedJSDocInfo {
-  name: string;
+export interface JSDocInfo {
   description?: string | undefined;
   summary?: string | undefined;
 }
 
-export interface NodeJSDocInfo {
-  /**
-   * User-facing description.
-   */
-  description?: string | undefined;
-  /**
-   * User-facing summary.
-   */
-  summary?: string | undefined;
-  /**
-   * User-facing deprecation status.
-   */
+export interface NamedJSDocInfo extends JSDocInfo {
+  name: string;
+}
+
+export interface NodeJSDocInfo extends JSDocInfo {
   deprecated?: string | boolean | undefined;
 }
 
@@ -406,11 +485,24 @@ export interface LitElementExport extends LitElementDeclaration {
   tagname: string;
 }
 
-export interface ReactiveProperty {
+export interface PropertyLike extends NodeJSDocInfo {
   name: string;
-
   type: Type | undefined;
+  default?: string | undefined;
+}
 
+export interface Return {
+  type?: Type | undefined;
+  summary?: string | undefined;
+  description?: string | undefined;
+}
+
+export interface Parameter extends PropertyLike {
+  optional?: boolean | undefined;
+  rest?: boolean | undefined;
+}
+
+export interface ReactiveProperty extends PropertyLike {
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?

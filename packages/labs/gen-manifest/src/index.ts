@@ -15,18 +15,25 @@ import {
   Type,
   VariableDeclaration,
   LitElementExport,
+  ClassField,
+  ClassMethod,
+  Parameter,
+  Return,
+  NodeJSDocInfo,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
+const isNotEmpty = (v: unknown) =>
+  v !== undefined &&
+  (typeof v !== 'boolean' || v === true) &&
+  (typeof v !== 'string' || v.length > 0) &&
+  (!Array.isArray(v) || v.length);
+
 const pickIfNotEmpty = <O, K extends keyof O>(model: O, name: K) => {
   const obj: {[key in K]?: O[K]} = {};
   const v = model[name];
-  if (
-    v !== undefined &&
-    (typeof v !== 'string' || v.length > 0) &&
-    (!Array.isArray(v) || v.length)
-  ) {
+  if (isNotEmpty(v)) {
     obj[name] = model[name];
   }
   return obj;
@@ -35,17 +42,13 @@ const pickIfNotEmpty = <O, K extends keyof O>(model: O, name: K) => {
 const transformIfNotEmpty = <O, K extends keyof O, T>(
   model: O,
   name: K,
-  transformer: (v: O[K]) => T
+  transformer: (v: NonNullable<O[K]>) => T
 ) => {
   const obj: {[key in K]?: T} = {};
   const v = model[name];
   if (v !== undefined) {
-    const t = transformer(v);
-    if (
-      t !== undefined &&
-      (typeof t !== 'string' || t.length > 0) &&
-      (!Array.isArray(t) || t.length)
-    ) {
+    const t = transformer(v!);
+    if (isNotEmpty(t)) {
       obj[name] = t;
     }
   }
@@ -54,11 +57,7 @@ const transformIfNotEmpty = <O, K extends keyof O, T>(
 
 const useIfNotEmpty = <K extends PropertyKey, T>(name: K, v: T) => {
   const obj: {[key in K]?: T} = {};
-  if (
-    v !== undefined &&
-    (typeof v !== 'string' || v.length > 0) &&
-    (!Array.isArray(v) || v.length)
-  ) {
+  if (isNotEmpty(v)) {
     obj[name] = v;
   }
   return obj;
@@ -114,12 +113,18 @@ const convertModule = (module: Module): cem.Module => {
   };
 };
 
+const convertCommonInfo = (info: NodeJSDocInfo) => {
+  return {
+    ...pickIfNotEmpty(info, 'description'),
+    ...pickIfNotEmpty(info, 'summary'),
+    ...pickIfNotEmpty(info, 'deprecated'),
+  };
+};
+
 const convertCommonDeclarationInfo = (declaration: Declaration) => {
   return {
     name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
-    ...pickIfNotEmpty(declaration, 'description'),
-    ...pickIfNotEmpty(declaration, 'summary'),
-    ...pickIfNotEmpty(declaration, 'deprecated'),
+    ...convertCommonInfo(declaration),
   };
 };
 
@@ -197,11 +202,74 @@ const convertClassDeclaration = (
       superClass ? convertReference(superClass) : undefined
     ),
     // mixins: [], // TODO
-    // members: [
-    //   // TODO: ClassField
-    //   // TODO: ClassMethod
-    // ],
+    ...useIfNotEmpty('members', [
+      ...(declaration.fields ?? []).map(convertClassField),
+      ...(declaration.methods ?? []).map(convertClassMethod),
+    ]),
     // source: {href: 'TODO'}, // TODO
+  };
+};
+
+const convertCommonMemberInfo = (member: ClassField | ClassMethod) => {
+  return {
+    ...pickIfNotEmpty(member, 'static'),
+    ...pickIfNotEmpty(member, 'privacy'),
+    ...transformIfNotEmpty(member, 'inheritedFrom', convertReference),
+    ...pickIfNotEmpty(member, 'source'),
+  };
+};
+
+const convertCommonFunctionLikeInfo = (functionLike: ClassMethod) => {
+  return {
+    ...transformIfNotEmpty(functionLike, 'parameters', (p) =>
+      p.map(convertParameter)
+    ),
+    ...transformIfNotEmpty(functionLike, 'return', convertReturn),
+  };
+};
+
+const convertReturn = (ret: Return) => {
+  return {
+    ...transformIfNotEmpty(ret, 'type', convertType),
+    ...pickIfNotEmpty(ret, 'summary'),
+    ...pickIfNotEmpty(ret, 'description'),
+  };
+};
+
+const convertCommonPropertyLikeInfo = (
+  propertyLike: Parameter | ClassField
+) => {
+  return {
+    ...transformIfNotEmpty(propertyLike, 'type', convertType),
+    ...pickIfNotEmpty(propertyLike, 'default'),
+  };
+};
+
+const convertParameter = (param: Parameter): cem.Parameter => {
+  return {
+    name: param.name,
+    ...convertCommonInfo(param),
+    ...convertCommonPropertyLikeInfo(param),
+    ...pickIfNotEmpty(param, 'optional'),
+    ...pickIfNotEmpty(param, 'rest'),
+  };
+};
+
+const convertClassField = (field: ClassField): cem.ClassField => {
+  return {
+    kind: 'field',
+    ...convertCommonDeclarationInfo(field),
+    ...convertCommonMemberInfo(field),
+    ...convertCommonPropertyLikeInfo(field),
+  };
+};
+
+const convertClassMethod = (method: ClassMethod): cem.ClassMethod => {
+  return {
+    kind: 'method',
+    ...convertCommonDeclarationInfo(method),
+    ...convertCommonMemberInfo(method),
+    ...convertCommonFunctionLikeInfo(method),
   };
 };
 
@@ -226,7 +294,9 @@ const convertEvent = (event: Event): cem.Event => {
 const convertType = (type: Type): cem.Type => {
   return {
     text: type.text,
-    references: convertTypeReference(type.text, type.references),
+    ...transformIfNotEmpty(type, 'references', (references) =>
+      convertTypeReference(type.text, references)
+    ),
   };
 };
 

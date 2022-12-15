@@ -18,13 +18,23 @@ import {
   DeclarationInfo,
   ClassHeritage,
   Reference,
+  ClassField,
+  ClassMethod,
 } from '../model.js';
 import {
   isLitElementSubclass,
   getLitElementDeclaration,
 } from '../lit-element/lit-element.js';
-import {hasExportKeyword, getReferenceForIdentifier} from '../references.js';
+import {getReferenceForIdentifier} from '../references.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
+import {
+  hasDefaultModifier,
+  hasStaticModifier,
+  hasExportModifier,
+  getPrivacy,
+} from '../utils.js';
+import {getFunctionLikeInfo} from './functions.js';
+import {getTypeForNode} from '../types.js';
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -43,7 +53,50 @@ const getClassDeclaration = (
     node: declaration,
     getHeritage: () => getHeritage(declaration, analyzer),
     ...parseNodeJSDocInfo(declaration, analyzer),
+    ...getClassMembers(declaration, analyzer),
   });
+};
+
+/**
+ * Returns the `fields` and `methods` of a class.
+ */
+export const getClassMembers = (
+  declaration: ts.ClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  const fields: ClassField[] = [];
+  const methods: ClassMethod[] = [];
+  ts.forEachChild(declaration, (node) => {
+    if (ts.isMethodDeclaration(node)) {
+      methods.push(
+        new ClassMethod({
+          ...getMemberInfo(node),
+          ...getFunctionLikeInfo(node, analyzer),
+          ...parseNodeJSDocInfo(node, analyzer),
+        })
+      );
+    } else if (ts.isPropertyDeclaration(node)) {
+      fields.push(
+        new ClassField({
+          ...getMemberInfo(node),
+          type: getTypeForNode(node, analyzer),
+          ...parseNodeJSDocInfo(node, analyzer),
+        })
+      );
+    }
+  });
+  return {
+    fields,
+    methods,
+  };
+};
+
+const getMemberInfo = (node: ts.MethodDeclaration | ts.PropertyDeclaration) => {
+  return {
+    name: node.name.getText(),
+    static: hasStaticModifier(node),
+    privacy: getPrivacy(node),
+  };
 };
 
 /**
@@ -54,9 +107,9 @@ const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
     declaration.name?.text ??
     // The only time a class declaration will not have a name is when it is
     // a default export, aka `export default class { }`
-    (declaration.modifiers?.some((s) => s.kind === ts.SyntaxKind.DefaultKeyword)
+    hasDefaultModifier(declaration)
       ? 'default'
-      : undefined);
+      : undefined;
   if (name === undefined) {
     throw new DiagnosticsError(
       declaration,
@@ -76,7 +129,7 @@ export const getClassDeclarationInfo = (
   return {
     name: getClassDeclarationName(declaration),
     factory: () => getClassDeclaration(declaration, analyzer),
-    isExport: hasExportKeyword(declaration),
+    isExport: hasExportModifier(declaration),
   };
 };
 

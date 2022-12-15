@@ -17,7 +17,7 @@ import {
   DeclarationInfo,
   NodeJSDocInfo,
 } from '../model.js';
-import {hasExportKeyword} from '../references.js';
+import {hasExportModifier} from '../utils.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
@@ -53,7 +53,7 @@ export const getVariableDeclarationInfo = (
   statement: ts.VariableStatement,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
-  const isExport = hasExportKeyword(statement);
+  const isExport = hasExportModifier(statement);
   const jsDocInfo = parseNodeJSDocInfo(statement, analyzer);
   return statement.declarationList.declarations
     .map((d) =>
@@ -154,6 +154,6 @@ export const getEnumDeclarationInfo = (
     name: statement.name.text,
     factory: () =>
       getVariableDeclaration(statement, statement.name, jsDocInfo, analyzer),
-    isExport: hasExportKeyword(statement),
+    isExport: hasExportModifier(statement),
   };
 };

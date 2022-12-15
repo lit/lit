@@ -4,9 +4,20 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * @fileoverview
+ *
+ * Utilities for analyzing JSDoc comments
+ */
+
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {AnalyzerInterface, NamedJSDocInfo, NodeJSDocInfo} from '../model.js';
+import {
+  AnalyzerInterface,
+  JSDocInfo,
+  NamedJSDocInfo,
+  NodeJSDocInfo,
+} from '../model.js';
 
 /**
  * @fileoverview
@@ -22,11 +33,11 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '');
 
 // Regex for parsing name, summary, and descriptions from JSDoc comments
 const parseNameDescSummaryRE =
-  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n\r]+)?([\n\r]+(?<description>[\s\S]*))?$/m;
+  /^\s*(?<name>[^\s:]+)(?:[\s\-:]+)?(?:(?<summary>[\s\S]+)\r?\n\r?\n)?(?<description>[\s\S]*)$/m;
 
 // Regex for parsing summary and description from JSDoc comments
 const parseDescSummaryRE =
-  /^\s*(?<summary>[^\n\r]+)\r?\n\r?\n(?<description>[\s\S]*)$/m;
+  /^(?:(?<summary>[\s\S]+)\r?\n\r?\n)?(?<description>[\s\S]*)$/m;
 
 /**
  * Parses name, summary, and description from JSDoc tag for things like @slot,
@@ -41,7 +52,7 @@ const parseDescSummaryRE =
  * *
  * * description (multiline)
  */
-export const parseNameDescSummary = (
+export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag
 ): NamedJSDocInfo | undefined => {
   const {comment} = tag;
@@ -51,7 +62,7 @@ export const parseNameDescSummary = (
   if (typeof comment !== 'string') {
     throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
   }
-  const nameDescSummary = comment.match(parseNameDescSummaryRE);
+  const nameDescSummary = comment.trim().match(parseNameDescSummaryRE);
   if (nameDescSummary === null) {
     throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
   }
@@ -59,6 +70,38 @@ export const parseNameDescSummary = (
   const v: NamedJSDocInfo = {name};
   if (summary !== undefined) {
     v.summary = summary;
+  }
+  if (description !== undefined) {
+    v.description = normalizeLineEndings(description);
+  }
+  return v;
+};
+
+/**
+ * Parses summary and description from JSDoc tag for things like @return.
+ *
+ * Supports the following patterns following the tag (TS parses the tag for us):
+ * * @return summary
+ * * @return summary...
+ * *
+ * * description (multiline)
+ */
+export const parseJSDocInfo = (tag: ts.JSDocTag): JSDocInfo | undefined => {
+  const {comment} = tag;
+  if (comment == undefined) {
+    return undefined;
+  }
+  if (typeof comment !== 'string') {
+    throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
+  }
+  const descSummary = comment.trim().match(parseDescSummaryRE);
+  if (descSummary === null) {
+    throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
+  }
+  const {description, summary} = descSummary.groups!;
+  const v: JSDocInfo = {};
+  if (summary !== undefined) {
+    v.summary = normalizeLineEndings(summary);
   }
   if (description !== undefined) {
     v.description = normalizeLineEndings(description);
@@ -89,11 +132,12 @@ const addJSDocTagInfo = (
         break;
       case 'summary':
         if (comment !== undefined) {
-          info.summary = comment;
+          info.summary = normalizeLineEndings(comment);
         }
         break;
       case 'deprecated':
-        info.deprecated = comment !== undefined ? comment : true;
+        info.deprecated =
+          comment !== undefined ? normalizeLineEndings(comment) : true;
         break;
     }
   }

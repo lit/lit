@@ -35,12 +35,6 @@ export const getSymbolForName = (
     .filter((s) => s.name === name)[0];
 };
 
-/**
- * Returns if the given declaration is exported from the module or not.
- */
-export const hasExportKeyword = (node: ts.Statement) =>
-  !!node.modifiers?.find((m) => m.kind === ts.SyntaxKind.ExportKeyword);
-
 interface ModuleSpecifierInfo {
   specifier: string;
   location: ts.Node;
