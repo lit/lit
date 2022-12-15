@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.0.0
+
+### Major Changes
+
+- [#3431](https://github.com/lit/lit/pull/3431) [`ff637f52`](https://github.com/lit/lit/commit/ff637f52a3c2252e37d6ea6ae352c3c0f35a9e87) - The Lit SSR DOM shim no longer defines a global `window` variable. This was removed to improve compatibility with libraries that detect whether they are running in Node vs the browser by checking for the presence of `window`.
+
+  If you have code that runs during SSR which depends on the presence of `window`, you can either replace `window` with `globalThis`, or use `isSsr` to avoid running that code on the server (see https://lit.dev/docs/ssr/authoring/#browser-only-code).
+
 ## 2.3.0
 
 ### Minor Changes
