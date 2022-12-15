@@ -13,7 +13,11 @@
  */
 
 import fetch from 'node-fetch';
-import {HTMLElement, CustomElementRegistry} from '@lit-labs/ssr-dom-shim';
+import {
+  HTMLElement,
+  Element,
+  CustomElementRegistry,
+} from '@lit-labs/ssr-dom-shim';
 
 /**
  * Constructs a fresh instance of the "window" vm context to use for evaluating

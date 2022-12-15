@@ -13,7 +13,7 @@ const attributesForElement = (element: HTMLElement) => {
   return attrs;
 };
 
-class Element {}
+export class Element {}
 
 export abstract class HTMLElement extends Element {
   get attributes() {
