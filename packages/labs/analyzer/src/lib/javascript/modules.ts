@@ -100,6 +100,11 @@ export const getModule = (
   const reexports: ts.Expression[] = [];
   const addDeclaration = (info: DeclarationInfo) => {
     const {name, factory, isExport} = info;
+    if (declarationMap.has(name)) {
+      throw new Error(
+        `Internal error: duplicate declaration '${name}' in ${sourceFile.fileName}`
+      );
+    }
     declarationMap.set(name, factory);
     if (isExport) {
       exportMap.set(name, name);

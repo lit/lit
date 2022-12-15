@@ -11,6 +11,7 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/../../../node_modules/uvu/bin.js",
       "args": ["test", "\\_test\\.js$"],
+      "env": {"NODE_OPTIONS": "--enable-source-maps"},
       "outFiles": ["${workspaceFolder}/**/*.js"],
       "console": "integratedTerminal"
     }

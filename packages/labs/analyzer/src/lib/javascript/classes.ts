@@ -107,9 +107,7 @@ const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
     declaration.name?.text ??
     // The only time a class declaration will not have a name is when it is
     // a default export, aka `export default class { }`
-    hasDefaultModifier(declaration)
-      ? 'default'
-      : undefined;
+    (hasDefaultModifier(declaration) ? 'default' : undefined);
   if (name === undefined) {
     throw new DiagnosticsError(
       declaration,

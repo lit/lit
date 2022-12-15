@@ -29,15 +29,15 @@ import {
  * Remove line feeds from JSDoc summaries, so they are normalized to
  * unix `\n` line endings.
  */
-const normalizeLineEndings = (s: string) => s.replace(/\r/g, '');
+const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 
 // Regex for parsing name, summary, and descriptions from JSDoc comments
 const parseNameDescSummaryRE =
-  /^\s*(?<name>[^\s:]+)(?:[\s\-:]+)?(?:(?<summary>[\s\S]+)\r?\n\r?\n)?(?<description>[\s\S]*)$/m;
+  /^(?<name>[^\s:]+)(?:[\s\-:]+)?(?:(?<summary>(?:[^\r\n]+\r?\n)+)\s*\r?\n)?(?<description>[\s\S]*)$/m;
 
 // Regex for parsing summary and description from JSDoc comments
 const parseDescSummaryRE =
-  /^(?:(?<summary>[\s\S]+)\r?\n\r?\n)?(?<description>[\s\S]*)$/m;
+  /^^(?:(?<summary>(?:[^\r\n]+\r?\n)+)\s*\r?\n)?(?<description>[\s\S]*)$/m;
 
 /**
  * Parses name, summary, and description from JSDoc tag for things like @slot,
@@ -45,9 +45,9 @@ const parseDescSummaryRE =
  *
  * Supports the following patterns following the tag (TS parses the tag for us):
  * * @slot name
- * * @slot name summary
- * * @slot name: summary
- * * @slot name - summary
+ * * @slot name description
+ * * @slot name: description
+ * * @slot name - description
  * * @slot name - summary...
  * *
  * * description (multiline)
@@ -69,9 +69,9 @@ export const parseNamedJSDocInfo = (
   const {name, description, summary} = nameDescSummary.groups!;
   const v: NamedJSDocInfo = {name};
   if (summary !== undefined) {
-    v.summary = summary;
+    v.summary = normalizeLineEndings(summary);
   }
-  if (description !== undefined) {
+  if (description.length > 0) {
     v.description = normalizeLineEndings(description);
   }
   return v;
@@ -81,7 +81,7 @@ export const parseNamedJSDocInfo = (
  * Parses summary and description from JSDoc tag for things like @return.
  *
  * Supports the following patterns following the tag (TS parses the tag for us):
- * * @return summary
+ * * @return description
  * * @return summary...
  * *
  * * description (multiline)
@@ -103,7 +103,7 @@ export const parseJSDocInfo = (tag: ts.JSDocTag): JSDocInfo | undefined => {
   if (summary !== undefined) {
     v.summary = normalizeLineEndings(summary);
   }
-  if (description !== undefined) {
+  if (description.length > 0) {
     v.description = normalizeLineEndings(description);
   }
   return v;
@@ -118,7 +118,10 @@ const addJSDocTagInfo = (
   jsDocTags: readonly ts.JSDocTag[]
 ) => {
   for (const tag of jsDocTags) {
-    const {comment} = tag;
+    let {comment} = tag;
+    if (Array.isArray(comment)) {
+      comment = comment.map((c) => c.text).join('');
+    }
     if (comment !== undefined && typeof comment !== 'string') {
       throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
     }
@@ -144,7 +147,7 @@ const addJSDocTagInfo = (
 };
 
 /**
- * Description and/or summary info from freeform comment text in a
+ * Add description and/or summary info from freeform comment text in a
  * JSDoc comment block to the given info object.
  */
 const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
@@ -159,8 +162,12 @@ const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
       info.description = normalizeLineEndings(comment);
     } else {
       const {summary, description} = match.groups!;
-      info.summary = summary;
-      info.description = normalizeLineEndings(description);
+      if (summary !== undefined) {
+        info.summary = normalizeLineEndings(summary);
+      }
+      if (description.length > 0) {
+        info.description = normalizeLineEndings(description);
+      }
     }
   }
 };
