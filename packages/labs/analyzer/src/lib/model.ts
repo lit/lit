@@ -426,6 +426,14 @@ export class ClassDeclaration extends Declaration {
     return (this._heritage ??= this._getHeritage());
   }
 
+  get fields() {
+    return Array.from(this._fieldMap?.values() ?? []);
+  }
+
+  get methods() {
+    return Array.from(this._methodMap?.values() ?? []);
+  }
+
   getField(name: string): ClassField | undefined {
     return this._fieldMap?.get(name);
   }
