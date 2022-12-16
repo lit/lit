@@ -6,5 +6,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",
-  "ignore": []
+  "ignore": ["@lit-labs/ssr"]
 }
