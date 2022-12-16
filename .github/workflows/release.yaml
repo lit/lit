@@ -42,9 +42,7 @@ jobs:
         # run, and its output will appear in the raw logs). Unknown why this is the case,
         # see https://github.com/changesets/action/issues/149 for discussion.
         id: cs
-        # TODO(augustjk) Revert this to use the official after next release
-        # uses: changesets/action@v1
-        uses: augustjk/changesets-action@test
+        uses: changesets/action@v1
         with:
           # The `working-directory` option is only available for steps that use
           # `run`. This `cwd` option is the same, but specific to this action.
