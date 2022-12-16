@@ -111,6 +111,7 @@ for (const lang of languages) {
     );
     assert.equal(event.type?.references[0].module, 'element-a.js');
     assert.equal(event.type?.references[0].name, 'LocalCustomEvent');
+    assert.equal(event.description, 'Local custom event');
   });
 
   test('Event with imported custom event type', ({element}) => {
@@ -123,6 +124,7 @@ for (const lang of languages) {
     );
     assert.equal(event.type?.references[0].module, 'custom-event.js');
     assert.equal(event.type?.references[0].name, 'ExternalCustomEvent');
+    assert.equal(event.description, 'External custom event');
   });
 
   test('Event with generic custom event type', ({element}) => {
@@ -137,6 +139,7 @@ for (const lang of languages) {
     );
     assert.equal(event.type?.references[1].module, 'custom-event.js');
     assert.equal(event.type?.references[1].name, 'ExternalClass');
+    assert.equal(event.description, 'Generic custom event');
   });
 
   test('Event with custom event type with inline detail', ({element}) => {
@@ -156,6 +159,7 @@ for (const lang of languages) {
     );
     assert.equal(event.type?.references[2].module, 'custom-event.js');
     assert.equal(event.type?.references[2].name, 'ExternalClass');
+    assert.equal(event.description, 'Inline\ndetail custom event');
   });
 
   test.run();

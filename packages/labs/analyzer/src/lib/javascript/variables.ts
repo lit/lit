@@ -54,7 +54,7 @@ export const getVariableDeclarationInfo = (
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
   const isExport = hasExportModifier(statement);
-  const jsDocInfo = parseNodeJSDocInfo(statement, analyzer);
+  const jsDocInfo = parseNodeJSDocInfo(statement);
   return statement.declarationList.declarations
     .map((d) =>
       getVariableDeclarationInfoList(d, d.name, isExport, jsDocInfo, analyzer)
@@ -141,7 +141,7 @@ const getExportAssignmentVariableDeclaration = (
     name: 'default',
     node: exportAssignment,
     type: getTypeForNode(exportAssignment.expression, analyzer),
-    ...parseNodeJSDocInfo(exportAssignment, analyzer),
+    ...parseNodeJSDocInfo(exportAssignment),
   });
 };
 
@@ -149,7 +149,7 @@ export const getEnumDeclarationInfo = (
   statement: ts.EnumDeclaration,
   analyzer: AnalyzerInterface
 ) => {
-  const jsDocInfo = parseNodeJSDocInfo(statement, analyzer);
+  const jsDocInfo = parseNodeJSDocInfo(statement);
   return {
     name: statement.name.text,
     factory: () =>

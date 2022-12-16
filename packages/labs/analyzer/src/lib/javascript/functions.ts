@@ -41,6 +41,8 @@ const getParameter = (
     name: param.name.getText(),
     type: getTypeForNode(param, analyzer),
     ...(paramTag ? parseJSDocInfo(paramTag) : {}),
+    optional: false,
+    rest: false,
   };
   if (param.initializer !== undefined) {
     p.optional = true;

@@ -12,18 +12,20 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {
-  AnalyzerInterface,
-  JSDocInfo,
-  NamedJSDocInfo,
-  NodeJSDocInfo,
-} from '../model.js';
+import {JSDocInfo, NamedJSDocInfo, NodeJSDocInfo} from '../model.js';
 
 /**
  * @fileoverview
  *
  * Utilities for parsing JSDoc comments.
  */
+
+/**
+ * Returns true if given node has a JSDoc tag
+ */
+export const hasJSDocTag = (node: ts.Node, tag: string) => {
+  return ts.getJSDocTags(node).some((t) => t.tagName.text === tag);
+};
 
 /**
  * Remove line feeds from JSDoc summaries, so they are normalized to
@@ -156,6 +158,8 @@ const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
   }
   if (info.summary !== undefined) {
     info.description = normalizeLineEndings(comment);
+  } else if (info.description !== undefined) {
+    info.summary = normalizeLineEndings(comment);
   } else {
     const match = comment.match(parseDescSummaryRE);
     if (match === null) {
@@ -176,10 +180,7 @@ const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given node.
  */
-export const parseNodeJSDocInfo = (
-  node: ts.Node,
-  analyzer: AnalyzerInterface
-): NodeJSDocInfo => {
+export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
   const v: NodeJSDocInfo = {};
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
@@ -189,18 +190,14 @@ export const parseNodeJSDocInfo = (
   // the description. If we also didn't have a @summary and the untagged text
   // has a line break, we'll use the first chunk as the summary, and the
   // remainder as a description.
-  if (v.description === undefined) {
-    // Strangely, it only seems possible to get the untagged jsdoc comments
-    // via the typechecker/symbol API
-    const checker = analyzer.program.getTypeChecker();
-    const symbol =
-      checker.getSymbolAtLocation(node) ??
-      checker.getTypeAtLocation(node).getSymbol();
-    const comments = symbol?.getDocumentationComment(checker);
-    if (comments !== undefined) {
-      const comment = comments.map((c) => c.text).join('\n');
-      addJSDocCommentInfo(v, comment);
-    }
+  if (v.description === undefined || v.summary === undefined) {
+    const comment = node
+      .getChildren()
+      .filter(ts.isJSDoc)
+      .map((n) => n.comment)
+      .filter((c) => c !== undefined)
+      .join('\n');
+    addJSDocCommentInfo(v, comment);
   }
   return v;
 };

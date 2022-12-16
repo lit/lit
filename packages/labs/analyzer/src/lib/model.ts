@@ -403,27 +403,39 @@ export type ClassHeritage = {
 export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
   getHeritage: () => ClassHeritage;
-  fields?: ClassField[] | undefined;
-  methods?: ClassMethod[] | undefined;
+  fieldMap?: Map<string, ClassField> | undefined;
+  methodMap?: Map<string, ClassMethod> | undefined;
 }
 
 export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
-  readonly fields: ClassField[] | undefined;
-  readonly methods: ClassMethod[] | undefined;
+  readonly _fieldMap: Map<string, ClassField> | undefined;
+  readonly _methodMap: Map<string, ClassMethod> | undefined;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
     this._getHeritage = init.getHeritage;
-    this.fields = init.fields;
-    this.methods = init.methods;
+    this._fieldMap = init.fieldMap;
+    this._methodMap = init.methodMap;
   }
 
   get heritage(): ClassHeritage {
     return (this._heritage ??= this._getHeritage());
+  }
+
+  getField(name: string): ClassField | undefined {
+    return this._fieldMap?.get(name);
+  }
+
+  getMethod(name: string): ClassMethod | undefined {
+    return this._methodMap?.get(name);
+  }
+
+  getMember(name: string): ClassMethod | ClassField | undefined {
+    return this.getField(name) ?? this.getMethod(name);
   }
 }
 

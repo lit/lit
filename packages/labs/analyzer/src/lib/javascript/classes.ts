@@ -52,7 +52,7 @@ const getClassDeclaration = (
     name: declaration.name?.text ?? '',
     node: declaration,
     getHeritage: () => getHeritage(declaration, analyzer),
-    ...parseNodeJSDocInfo(declaration, analyzer),
+    ...parseNodeJSDocInfo(declaration),
     ...getClassMembers(declaration, analyzer),
   });
 };
@@ -64,30 +64,33 @@ export const getClassMembers = (
   declaration: ts.ClassDeclaration,
   analyzer: AnalyzerInterface
 ) => {
-  const fields: ClassField[] = [];
-  const methods: ClassMethod[] = [];
-  ts.forEachChild(declaration, (node) => {
+  const fieldMap = new Map<string, ClassField>();
+  const methodMap = new Map<string, ClassMethod>();
+  declaration.members.forEach((node) => {
     if (ts.isMethodDeclaration(node)) {
-      methods.push(
+      methodMap.set(
+        node.name.getText(),
         new ClassMethod({
           ...getMemberInfo(node),
           ...getFunctionLikeInfo(node, analyzer),
-          ...parseNodeJSDocInfo(node, analyzer),
+          ...parseNodeJSDocInfo(node),
         })
       );
     } else if (ts.isPropertyDeclaration(node)) {
-      fields.push(
+      fieldMap.set(
+        node.name.getText(),
         new ClassField({
           ...getMemberInfo(node),
+          default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
-          ...parseNodeJSDocInfo(node, analyzer),
+          ...parseNodeJSDocInfo(node),
         })
       );
     }
   });
   return {
-    fields,
-    methods,
+    fieldMap,
+    methodMap,
   };
 };
 

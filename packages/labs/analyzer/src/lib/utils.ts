@@ -11,6 +11,7 @@
  */
 
 import ts from 'typescript';
+import {hasJSDocTag} from './javascript/jsdoc.js';
 import {Privacy} from './model.js';
 
 export const hasModifier = (node: ts.Node, modifier: ts.SyntaxKind) => {
@@ -37,10 +38,18 @@ export const hasProtectedModifier = (node: ts.Node) => {
   return hasModifier(node, ts.SyntaxKind.ProtectedKeyword);
 };
 
+const isPrivate = (node: ts.Node) => {
+  return hasPrivateModifier(node) || hasJSDocTag(node, 'private');
+};
+
+const isProtected = (node: ts.Node) => {
+  return hasProtectedModifier(node) || hasJSDocTag(node, 'protected');
+};
+
 export const getPrivacy = (node: ts.Node): Privacy => {
-  return hasPrivateModifier(node)
+  return isPrivate(node)
     ? 'private'
-    : hasProtectedModifier(node)
+    : isProtected(node)
     ? 'protected'
     : 'public';
 };

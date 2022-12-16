@@ -58,7 +58,7 @@ const parseFiresTagComment = (comment: string) => {
   // @fires event-name {EventType} The event description
   // @fires event-name {EventType} - The event description
   const eventCommentRegex =
-    /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+(?:-\s+)?(?<description>.+))?$/;
+    /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+(?:-\s+)?(?<description>[\s\S]+))?$/;
   const match = comment.match(eventCommentRegex);
   if (match === null) {
     return undefined;

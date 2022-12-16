@@ -78,7 +78,7 @@ export const getJSDocData = (
     }
   }
   return {
-    ...parseNodeJSDocInfo(node, analyzer),
+    ...parseNodeJSDocInfo(node),
     events,
     slots,
     cssProperties,

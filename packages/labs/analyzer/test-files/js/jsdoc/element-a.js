@@ -57,7 +57,84 @@ import {LitElement} from 'lit';
  *
  * Even more description for --short-with-summary
  */
-export class ElementA extends LitElement {}
+export class ElementA extends LitElement {
+  /**
+   * Class field 1 summary
+   * with wraparound
+   *
+   * Class field 1 description
+   * with wraparound
+   * @private
+   */
+  field1 = 'default1';
+
+  /**
+   * @summary Class field 2 summary
+   * with wraparound
+   *
+   * @description Class field 2 description
+   * with wraparound
+   * @protected
+   * @type {number | string}
+   */
+  field2;
+
+  /**
+   * Class field 3 summary
+   * with wraparound
+   *
+   * @description Class field 3 description
+   * with wraparound
+   * @optional
+   * @type {string}
+   * @deprecated
+   */
+  field3;
+
+  /**
+   * Class field 4 description
+   * with wraparound
+   * @summary Class field 4 summary
+   * with wraparound
+   * @type {Promise<void>}
+   * @deprecated Class field 4 deprecated
+   */
+  field4 = new Promise((r) => r());
+
+  /**
+   * Method 1 summary
+   * with wraparound
+   *
+   * Method 1 description
+   * with wraparound
+   */
+  method1() {}
+
+  /**
+   * @summary Method 2 summary
+   * with wraparound
+   *
+   * @description Method 2 description
+   * with wraparound
+   *
+   * @param {string} a Param a description
+   * @param {boolean} b Param b summary
+   * with wraparound
+   *
+   * Param b description
+   * with wraparound
+   *
+   * @param {number[]} c Param c description
+   * @returns {string} Method 2 return summary
+   *
+   * Method 2 return description
+   *
+   * @deprecated Method 2 deprecated
+   */
+  method2(a, b = false, ...c) {
+    return b ? a : c[0].toFixed();
+  }
+}
 customElements.define('element-a', ElementA);
 
 /**
