@@ -40,15 +40,15 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 
 // Regex for parsing name, type, summary, and descriptions from JSDoc comments
 const parseNameTypeDescSummaryRE =
-  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:[\s\-:]+)?(?:(?<summary>(?:[^\r\n]+\r?\n)+)\s*\r?\n(?=\S))?(?<description>[\s\S]*)$/m;
+  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:[\s\-:]+)?(?:(?<summary>(?:[^\n]+\n)+)\s*\n(?=\S))?(?<description>[\s\S]*)$/m;
 
 // Regex for parsing name, summary, and descriptions from JSDoc comments
 const parseNameDescSummaryRE =
-  /^(?<name>[^\s:]+)(?:[\s\-:]+)?(?:(?<summary>(?:[^\r\n]+\r?\n)+)\s*\r?\n(?=\S))?(?<description>[\s\S]*)$/m;
+  /^(?<name>[^\s:]+)(?:[\s\-:]+)?(?:(?<summary>(?:[^\n]+\n)+)\s*\n(?=\S))?(?<description>[\s\S]*)$/m;
 
 // Regex for parsing summary and description from JSDoc comments
 const parseDescSummaryRE =
-  /^^(?:(?<summary>(?:[^\r\n]+\r?\n)+)\s*\r?\n(?=\S))?(?<description>[\s\S]*)$/m;
+  /^^(?:(?<summary>(?:[^\n]+\n)+)\s*\n(?=\S))?(?<description>[\s\S]*)$/m;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
@@ -235,12 +235,14 @@ export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
   // has a line break, we'll use the first chunk as the summary, and the
   // remainder as a description.
   if (info.description === undefined || info.summary === undefined) {
-    const comment = node
-      .getChildren()
-      .filter(ts.isJSDoc)
-      .map((n) => n.comment)
-      .filter((c) => c !== undefined)
-      .join('\n');
+    const comment = normalizeLineEndings(
+      node
+        .getChildren()
+        .filter(ts.isJSDoc)
+        .map((n) => n.comment)
+        .filter((c) => c !== undefined)
+        .join('\n')
+    );
     addJSDocCommentInfo(info, comment);
   }
   return info;
