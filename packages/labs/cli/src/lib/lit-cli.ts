@@ -133,13 +133,7 @@ export class LitCli {
       }
 
       this.console.debug('Running command...');
-      try {
-        return await command.run(commandOptions, this.console);
-      } catch (e) {
-        this.console.error('Error executing command:');
-        this.console.error((e as Error).message ?? e);
-        return 1;
-      }
+      return await command.run(commandOptions, this.console);
     }
   }
 

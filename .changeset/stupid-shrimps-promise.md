@@ -6,7 +6,6 @@
 
 Added CLI improvements:
 
-- Print diagnostic errors more gracefully to CLI)
 - Add support for --exclude options (important for excluding test files from e.g. manifest or wrapper generation)
 
 Added more analysis support and manifest emit:
