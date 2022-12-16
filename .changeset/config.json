@@ -6,5 +6,16 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "minor",
-  "ignore": ["@lit-labs/ssr"]
+  "ignore": [
+    "@lit-labs/ssr",
+    "@lit-labs/eleventy-plugin-lit",
+    "@lit-labs/testing",
+    "@lit/localize-tools",
+    "@lit-labs/cli",
+    "@lit-labs/cli-localize",
+    "@lit-internal/localize-examples-runtime-js",
+    "@lit-internal/localize-examples-runtime-ts",
+    "@lit-internal/localize-examples-transform-js",
+    "@lit-internal/localize-examples-transform-ts"
+  ]
 }
