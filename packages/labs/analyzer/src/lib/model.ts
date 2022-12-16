@@ -456,6 +456,10 @@ export interface NamedJSDocInfo extends JSDocInfo {
   name: string;
 }
 
+export interface NamedTypedJSDocInfo extends NamedJSDocInfo {
+  type?: string;
+}
+
 export interface NodeJSDocInfo extends JSDocInfo {
   deprecated?: string | boolean | undefined;
 }
@@ -550,6 +554,7 @@ export interface ReactiveProperty extends PropertyLike {
 export interface Event {
   name: string;
   description: string | undefined;
+  summary: string | undefined;
   type: Type | undefined;
 }
 

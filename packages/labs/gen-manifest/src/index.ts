@@ -288,6 +288,7 @@ const convertEvent = (event: Event): cem.Event => {
     name: event.name,
     type: event.type ? convertType(event.type) : {text: 'Event'}, // TODO(kschaaf) type isn't optional in CEM
     ...pickIfNotEmpty(event, 'description'),
+    ...pickIfNotEmpty(event, 'summary'),
   };
 };
 
