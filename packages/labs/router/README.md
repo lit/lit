@@ -52,7 +52,7 @@ A `Router` is a root-level router.
 
 There should only be one `Router` instance on a page, because the `Router` extends [`Routes`](#routes) and installs global `click` and `popstate` event listeners on `window` and `document` (which should be installed only once on a page) to intercept navigation.
 
-Nested routes should be configured with the [`Routes`](#routes) class.
+Nested routes should be configured with the [`Routes`](#routes) controller.
 
 It can be installed with no configuration:
 
