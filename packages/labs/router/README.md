@@ -78,7 +78,7 @@ class MyElement extends LitElement {
 
 ### Routes
 
-A `Routes` is the main interface into the router API. It contains route definitions and the templates that each route renders:
+A `Routes` controller is the main interface into the router API. It contains route definitions and the templates that each route renders:
 
 ```ts
 class MyElement extends LitElement {
