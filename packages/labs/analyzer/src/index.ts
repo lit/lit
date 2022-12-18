@@ -17,6 +17,7 @@ export type {
   VariableDeclaration,
   ClassDeclaration,
   LitElementDeclaration,
+  CustomElementDeclaration,
   LitElementExport,
   PackageJson,
   ModuleWithLitElementDeclarations,

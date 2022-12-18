@@ -23,6 +23,10 @@ import {
   isLitElementSubclass,
   getLitElementDeclaration,
 } from '../lit-element/lit-element.js';
+import {
+  isCustomElementSubclass,
+  getCustomElementDeclaration,
+} from '../custom-elements/custom-elements.js';
 import {hasExportKeyword, getReferenceForIdentifier} from '../references.js';
 
 /**
@@ -35,6 +39,9 @@ const getClassDeclaration = (
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
     return getLitElementDeclaration(declaration, analyzer);
+  }
+  if (isCustomElementSubclass(declaration, analyzer)) {
+    return getCustomElementDeclaration(declaration, analyzer);
   }
   return new ClassDeclaration({
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
