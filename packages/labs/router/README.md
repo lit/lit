@@ -187,11 +187,11 @@ or dynamically install new routes:
 
 #### `goto()`
 
-`goto(url: string)` is a programmatic navigation API. It takes full URLs for top-level navigation and relative URLs for navigation within a nested route space.
+`goto(pathname: string)` is a programmatic navigation API. It takes full URLs for top-level navigation and relative URLs for navigation within a nested route space.
 
 `goto(name: string, params: object)` _(not implemented)_ allows navigation via named routes. The name and params are scoped to the Routes object it's called on, though nested routes can be triggered by a "tail" parameter - the match of a trailing `/*` parameter (See tail groups).
 
-`goto()` returns a Promise that resolves when any triggered async `enter()` callbacks have completed.
+`goto()` _(not implemented)_ returns a Promise that resolves when any triggered async `enter()` callbacks have completed.
 
 #### `link()`
 
@@ -200,6 +200,10 @@ Components need to generate links to resources within the app. It's desirable to
 ##### Relative links
 
 Relative links are relative to the parent route and its current state, and can be specified with a path string or name and parameters.
+
+`link(pathname?: string | undefined): string`
+
+`link(name: string, params: object): string` _(not implemented)_
 
 Examples
 
