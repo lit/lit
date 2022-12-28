@@ -19,6 +19,8 @@ export interface SSRTestDescription {
      */
     args: Array<unknown>;
 
+    throwsOnServer?: boolean;
+
     /**
      * The expected HTML string.
      *

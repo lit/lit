@@ -48,7 +48,10 @@ export const getWindow = ({
     }
     private _shadowRoot: null | ShadowRoot = null;
     get shadowRoot() {
-      return this._shadowRoot;
+      if (this._shadowRoot?.mode === 'open') {
+        return this._shadowRoot;
+      }
+      return null;
     }
     abstract attributeChangedCallback?(
       name: string,
@@ -67,11 +70,11 @@ export const getWindow = ({
       return attributesForElement(this).has(name);
     }
     attachShadow(init: ShadowRootInit) {
-      const shadowRoot = {host: this};
-      if (init && init.mode === 'open') {
-        this._shadowRoot = shadowRoot;
-      }
-      return shadowRoot;
+      return (this._shadowRoot = new ShadowRoot(
+        shadowRootConstructionToken,
+        this,
+        init
+      ));
     }
     getAttribute(name: string) {
       const value = attributesForElement(this).get(name);
@@ -84,7 +87,29 @@ export const getWindow = ({
     observedAttributes?: string[];
   }
 
-  class ShadowRoot {}
+  const shadowRootConstructionToken = Symbol();
+
+  class ShadowRoot {
+    host: Element;
+    mode: 'open' | 'closed';
+
+    constructor();
+    /**
+     * @internal
+     */
+    constructor(constructionToken: Symbol, host: Element, init: ShadowRootInit);
+    constructor(
+      constructionToken?: Symbol,
+      host?: Element,
+      init?: ShadowRootInit
+    ) {
+      if (constructionToken !== shadowRootConstructionToken) {
+        throw new TypeError('Illegal constructor');
+      }
+      this.host = host!;
+      this.mode = init!.mode;
+    }
+  }
 
   class Document {
     get adoptedStyleSheets() {
@@ -203,4 +228,15 @@ export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
     // Copy initial window globals to node global
     Object.assign(globalThis, window);
   }
+};
+
+interface HTMLElementInternals extends HTMLElement {
+  _shadowRoot: ShadowRoot | null;
+}
+
+/**
+ * Returns the shadow root of an HTMLElement even if the mode is 'closed'.
+ */
+export const getShadowRoot = (e: HTMLElement) => {
+  return (e as HTMLElementInternals)._shadowRoot;
 };

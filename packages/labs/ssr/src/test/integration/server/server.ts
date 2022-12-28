@@ -19,16 +19,32 @@ import {SSRTest} from '../tests/ssr-test.js';
  * requests and renders the a given file + test with a given SSR render method.
  */
 export const ssrMiddleware = () => {
+  console.log('ssrMiddleware');
   const router = new Router();
   router.get('/render/:mode/:testFile/:testName', async (context) => {
+    console.log('get test');
     const {mode, testFile, testName} = context.params;
 
-    let module: typeof testModule,
-      render: typeof import('../../../lib/render-lit-html.js').render;
+    let module: typeof testModule;
+    let render: typeof import('../../../lib/render-lit-html.js').render;
+
+    console.log('A');
+
     if (mode === 'global') {
       render = (await import('../../../lib/render-with-global-dom-shim.js'))
         .render;
-      module = await import(`../tests/${testFile}-ssr.js`);
+      console.log('B');
+      try {
+        console.log('B1', `${testFile}-ssr.js`);
+        module = await import(`../tests/${testFile}-ssr.js`);
+        console.log('B2');
+      } catch (e) {
+        console.log('WTF');
+        console.error(`Error importing module ${testFile}-ssr.js`);
+        console.error(e);
+        throw e;
+      }
+      console.log('C');
     } else {
       // mode === 'vm'
       const window = getWindow({includeJSBuiltIns: true});
@@ -41,6 +57,7 @@ export const ssrMiddleware = () => {
           import.meta.url
         )
       ).module.namespace as typeof testModule;
+      console.log('D');
       render = module.render;
     }
 
@@ -50,12 +67,26 @@ export const ssrMiddleware = () => {
     if (test.registerElements) {
       await test.registerElements();
     }
-    const result = render(
-      test.render(...test.expectations[0].args),
-      test.serverRenderOptions
-    );
-    context.type = 'text/html';
-    context.body = Readable.from(result);
+    try {
+      console.log('Trying to render...');
+      const result = render(
+        test.render(...test.expectations[0].args),
+        test.serverRenderOptions
+      );
+      context.type = 'text/html';
+      const readable = Readable.from(result);
+      readable.on('error', (e) => {
+        console.log('Readable ERROR', e);
+      });
+      context.onerror = (e) => {
+        console.log('Context ERROR', e);
+      };
+      context.body = readable;
+    } catch (e) {
+      console.log('Sync ERROR', e);
+      context.type = 'text/html';
+      context.body = 'ERROR';
+    }
   });
   return [cors(), router.routes(), router.allowedMethods()];
 };

@@ -5133,4 +5133,44 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-defer'],
     };
   },
+
+  'LitElement: light DOM rendering throws': () => {
+    return {
+      only: true,
+      // throwsOnServer: true,
+      registerElements() {
+        customElements.define(
+          'le-light-dom',
+          class extends LitElement {
+            override createRenderRoot() {
+              console.log('createRenderRoot');
+              // return super.createRenderRoot();
+              return this;
+            }
+            override connectedCallback(): void {
+              console.log('BBB connectedCallback');
+              super.connectedCallback();
+            }
+            override render() {
+              return html` <h1>Hello</h1> `;
+            }
+          }
+        );
+      },
+      render() {
+        console.log('render');
+        return html` <le-light-dom></le-light-dom> `;
+      },
+      expectations: [
+        {
+          args: [],
+          throwsOnServer: true,
+          html: {
+            root: `<le-light-dom></le-light-dom>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-light-dom'],
+    };
+  },
 };

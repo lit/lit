@@ -6,11 +6,11 @@
   "configurations": [
     {
       "type": "node",
-      "runtimeVersion": "14.4.0",
+      "runtimeVersion": "18.10.0",
       "request": "launch",
       "name": "Test: Integration (debug)",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/node_modules/.bin/wtr",
+      "program": "${workspaceFolder}/../../../node_modules/.bin/wtr",
       "args": ["--watch"],
       "outFiles": ["${workspaceFolder}/./**/*.js"],
       "runtimeArgs": ["--experimental-vm-modules"],

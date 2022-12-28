@@ -244,7 +244,10 @@ export const setupTest = async (
       testFn(testName, async () => {
         // Get the SSR result from the server.
         const response = await fetch(`/render/${mode}/${testFile}/${testName}`);
-        container.innerHTML = await response.text();
+
+        const text = await response.text();
+        console.log('response', text);
+        container.innerHTML = text;
 
         // For element tests, hydrate shadowRoots
         if (typeof registerElements === 'function') {

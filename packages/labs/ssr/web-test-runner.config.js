@@ -8,9 +8,11 @@ import baseConfig from '../../tests/web-test-runner.config.js';
 
 import {ssrMiddleware} from './test/integration/server/server.js';
 
+console.log('SSR web-test-runner.config');
+
 export default {
   ...baseConfig,
-  files: ['test/integration/client/**/*_test.js'],
+  files: ['test/integration/client/**/basic-global_test.js'],
   nodeResolve: {
     exportConditions: process.env.MODE === 'dev' ? ['development'] : [],
   },
