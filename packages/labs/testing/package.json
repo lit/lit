@@ -53,6 +53,11 @@
       "dependencies": [
         "build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [
         "web-test-runner.config.js"
       ],
