@@ -2,10 +2,13 @@
 '@lit-labs/ssr-dom-shim': major
 '@lit-labs/ssr': minor
 '@lit/reactive-element': minor
+'lit-html': minor
 'lit': minor
 ---
 
-When running in Node, `ReactiveElement` now automatically includes a minimal DOM shim which is sufficient for most SSR (Server Side Rendering) use-cases, removing the need to import the global DOM shim from `@lit-labs/ssr`.
+When running in Node, Lit now automatically includes minimal DOM shims which are
+sufficient for most SSR (Server Side Rendering) use-cases, removing the need to
+import the global DOM shim from `@lit-labs/ssr`.
 
 The new `@lit-labs/ssr-dom-shim` package has been introduced, which exports an `HTMLElement`, `CustomElementRegistry`, and default `customElements` singleton.
 
