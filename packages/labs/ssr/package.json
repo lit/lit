@@ -72,7 +72,7 @@
       ]
     },
     "test:unit": {
-      "command": "node --experimental-vm-modules ./test/all-tests.js",
+      "command": "NODE_OPTIONS=--experimental-vm-modules uvu test \"lib/.*_test\\.js$\"",
       "#comment": [
         "These unit tests use the default export condition, so they require a",
         "full build of all dependencies."

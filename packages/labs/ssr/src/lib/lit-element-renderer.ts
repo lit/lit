@@ -8,6 +8,7 @@ import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
 import {render, RenderInfo} from './render-lit-html.js';
+import type {RenderResult} from './render-result.js';
 
 export type Constructor<T> = {new (): T};
 
@@ -55,7 +56,7 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  *renderShadow(renderInfo: RenderInfo): IterableIterator<string> {
+  *renderShadow(renderInfo: RenderInfo): RenderResult {
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
@@ -71,7 +72,7 @@ export class LitElementRenderer extends ElementRenderer {
     yield* render((this.element as any).render(), renderInfo);
   }
 
-  *renderLight(renderInfo: RenderInfo): IterableIterator<string> {
+  *renderLight(renderInfo: RenderInfo): RenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {

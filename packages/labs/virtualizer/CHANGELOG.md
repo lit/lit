@@ -1,5 +1,17 @@
 # @lit-labs/virtualizer
 
+## 1.0.1
+
+### Patch Changes
+
+- [#3519](https://github.com/lit/lit/pull/3519) [`393e30cf`](https://github.com/lit/lit/commit/393e30cf7c7f97712e524df34e7343147055fc5d) - Fix [#3481: Error when immediately re-rendering](https://github.com/lit/lit/issues/3481)
+
+- [#3519](https://github.com/lit/lit/pull/3519) [`393e30cf`](https://github.com/lit/lit/commit/393e30cf7c7f97712e524df34e7343147055fc5d) - Fix [#3518: New layoutComplete promise created instead of using existing one](https://github.com/lit/lit/issues/3518)
+
+- [#3525](https://github.com/lit/lit/pull/3525) [`0b67553d`](https://github.com/lit/lit/commit/0b67553d13da43b4039359d4c8c4ef82f0302a4a) - Fix [#3493: Doesn't update on scroll when a clipping ancestor is in Shadow DOM](https://github.com/lit/lit/issues/3493)
+
+- [#3527](https://github.com/lit/lit/pull/3527) [`feb2494d`](https://github.com/lit/lit/commit/feb2494dee3f6f1c907fd432023955fc5f040e28) - Added missing "events.js.map" sourcemap file.
+
 ## 1.0.0
 
 _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning to signify prereleases and adopting standard SemVer major/minor/patch semantics. The fact that this release is numbered 1.0 has no special significance._
