@@ -121,6 +121,11 @@
         "../../reactive-element:build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -131,6 +136,11 @@
         "build:rollup",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     }

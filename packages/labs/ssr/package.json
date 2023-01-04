@@ -98,6 +98,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [
         "web-test-runner.config.js",
         "../../tests/web-test-runner.config.js"
@@ -110,6 +115,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [
         "web-test-runner.config.js",
         "../../tests/web-test-runner.config.js"

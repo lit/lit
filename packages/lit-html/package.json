@@ -417,6 +417,11 @@
         "build:ts",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -428,6 +433,11 @@
         "build:version-stability-test",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },

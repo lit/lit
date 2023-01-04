@@ -72,6 +72,11 @@
         "../../../tests:build"
       ],
       "command": "node ../../../tests/run-web-tests.js \"tests/tests.js\" --config ../../../tests/web-test-runner.config.js",
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "output": []
     }
   }

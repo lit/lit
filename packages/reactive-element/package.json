@@ -273,6 +273,11 @@
         "build:babel",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -284,6 +289,11 @@
         "build:babel",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },

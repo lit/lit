@@ -117,6 +117,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -126,6 +131,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     }
