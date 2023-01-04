@@ -9,9 +9,8 @@ import staticFiles from 'koa-static';
 import koaNodeResolve from 'koa-node-resolve';
 import {URL} from 'url';
 import * as path from 'path';
-import {Readable} from 'stream';
 import {renderAppWithInitialData} from './app-server.js';
-
+import {RenderResultReadable} from '../../lib/render-result-readable.js';
 const {nodeResolve} = koaNodeResolve;
 
 const moduleUrl = new URL(import.meta.url);
@@ -31,7 +30,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
 
   const ssrResult = renderAppWithInitialData();
   ctx.type = 'text/html';
-  ctx.body = Readable.from(ssrResult);
+  ctx.body = new RenderResultReadable(ssrResult);
 });
 app.use(nodeResolve({}));
 app.use(staticFiles(packageRoot));
