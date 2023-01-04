@@ -54,16 +54,16 @@
       "dependencies": [
         "build"
       ],
-      "files": [],
-      "output": []
+      "service": true,
+      "files": []
     },
     "demo:global": {
       "command": "node ./demo/global/server.js",
       "dependencies": [
         "build"
       ],
-      "files": [],
-      "output": []
+      "service": true,
+      "files": []
     },
     "test": {
       "dependencies": [
@@ -137,6 +137,7 @@
     "@types/koa": "^2.0.49",
     "@types/koa__router": "^8.0.2",
     "@types/koa-cors": "*",
+    "@types/koa-mount": "^4.0.2",
     "@types/koa-static": "^4.0.1",
     "@types/parse5": "^6.0.1",
     "@types/resolve": "^1.20.2",
@@ -145,6 +146,7 @@
     "deepmerge": "^4.2.2",
     "koa": "^2.7.0",
     "koa-cors": "^0.0.16",
+    "koa-mount": "^4.0.0",
     "koa-node-resolve": "^1.0.0-pre.5",
     "koa-static": "^5.0.0"
   },

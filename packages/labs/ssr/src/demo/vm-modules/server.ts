@@ -12,11 +12,13 @@ import * as path from 'path';
 
 import {renderModule} from '../../lib/render-module.js';
 import {Readable} from 'stream';
+import mount from 'koa-mount';
 
 const {nodeResolve} = koaNodeResolve;
 
 const moduleUrl = new URL(import.meta.url);
-const packageRoot = path.resolve(moduleUrl.pathname, '../../..');
+const ssrPackageRoot = path.resolve(moduleUrl.pathname, '../../..');
+const monorepoRoot = path.resolve(moduleUrl.pathname, '../../../../../..');
 
 const port = 8080;
 
@@ -40,8 +42,11 @@ app.use(async (ctx: Koa.Context, next: Function) => {
   ctx.type = 'text/html';
   ctx.body = Readable.from(ssrResult);
 });
-app.use(nodeResolve({}));
-app.use(staticFiles(packageRoot));
+app.use(nodeResolve({root: monorepoRoot}));
+app.use(
+  mount('/node_modules', staticFiles(path.join(monorepoRoot, 'node_modules')))
+);
+app.use(staticFiles(ssrPackageRoot));
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
