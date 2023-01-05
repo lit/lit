@@ -48,6 +48,13 @@ export interface InternalRange extends Range {
   lastVisible: number;
 }
 
+export interface LayoutState {
+  scrollSize: Size;
+  range: InternalRange;
+  childPositions: ChildPositions;
+  scrollError?: Positions;
+}
+
 export type ChildPositions = Map<number, Positions>;
 
 export type ChildMeasurements = {[key: number]: ItemBox};

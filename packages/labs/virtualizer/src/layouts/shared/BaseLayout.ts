@@ -13,10 +13,11 @@ import {
   Size,
   dimension,
   position,
-  InternalRange,
+  // InternalRange,
   PinOptions,
   ScrollToCoordinates,
   BaseLayoutConfig,
+  LayoutState,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -378,10 +379,11 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     this._setPositionFromPin();
     this._getActiveItems();
     this._updateVisibleIndices();
-    this._emitScrollSize();
-    this._emitRange();
-    this._emitChildPositions();
-    this._emitScrollError();
+    this._emitState();
+    // this._emitScrollSize();
+    // this._emitRange();
+    // this._emitChildPositions();
+    // this._emitScrollError();
   }
 
   /**
@@ -457,48 +459,78 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     this.dispatchEvent(new CustomEvent('unpinned'));
   }
 
-  protected _emitRange() {
-    const detail: InternalRange = {
-      first: this._first,
-      last: this._last,
-      firstVisible: this._firstVisible,
-      lastVisible: this._lastVisible,
+  protected _emitState() {
+    const childPositions: ChildPositions = new Map();
+    if (this._first !== -1 && this._last !== -1) {
+      for (let idx = this._first; idx <= this._last; idx++) {
+        childPositions.set(idx, this._getItemPosition(idx));
+      }
+    }
+    const detail: LayoutState = {
+      scrollSize: {
+        [this._sizeDim]: this._scrollSize,
+        [this._secondarySizeDim]: null,
+      } as Size,
+      range: {
+        first: this._first,
+        last: this._last,
+        firstVisible: this._firstVisible,
+        lastVisible: this._lastVisible,
+      },
+      childPositions,
     };
-    this.dispatchEvent(new CustomEvent('rangechange', {detail}));
-  }
-
-  protected _emitScrollSize() {
-    const detail = {
-      [this._sizeDim]: this._scrollSize,
-      [this._secondarySizeDim]: null,
-    };
-    this.dispatchEvent(new CustomEvent('scrollsizechange', {detail}));
-  }
-
-  protected _emitScrollError() {
     if (this._scrollError) {
-      const detail = {
+      detail.scrollError = {
         [this._positionDim]: this._scrollError,
         [this._secondaryPositionDim]: 0,
-      };
-      this.dispatchEvent(new CustomEvent('scrollerrorchange', {detail}));
+      } as Positions;
       this._scrollError = 0;
     }
+    this.dispatchEvent(new CustomEvent('statechange', {detail}));
   }
 
-  /**
-   * Get or estimate the top and left positions of items in the current range.
-   * Emit an itempositionchange event with these positions.
-   */
-  protected _emitChildPositions() {
-    if (this._first !== -1 && this._last !== -1) {
-      const detail: ChildPositions = new Map();
-      for (let idx = this._first; idx <= this._last; idx++) {
-        detail.set(idx, this._getItemPosition(idx));
-      }
-      this.dispatchEvent(new CustomEvent('itempositionchange', {detail}));
-    }
-  }
+  // protected _emitRange() {
+  //   const detail: InternalRange = {
+  //     first: this._first,
+  //     last: this._last,
+  //     firstVisible: this._firstVisible,
+  //     lastVisible: this._lastVisible,
+  //   };
+  //   this.dispatchEvent(new CustomEvent('rangechange', {detail}));
+  // }
+
+  // protected _emitScrollSize() {
+  //   const detail = {
+  //     [this._sizeDim]: this._scrollSize,
+  //     [this._secondarySizeDim]: null,
+  //   };
+  //   this.dispatchEvent(new CustomEvent('scrollsizechange', {detail}));
+  // }
+
+  // protected _emitScrollError() {
+  //   if (this._scrollError) {
+  //     const detail = {
+  //       [this._positionDim]: this._scrollError,
+  //       [this._secondaryPositionDim]: 0,
+  //     };
+  //     this.dispatchEvent(new CustomEvent('scrollerrorchange', {detail}));
+  //     this._scrollError = 0;
+  //   }
+  // }
+
+  // /**
+  //  * Get or estimate the top and left positions of items in the current range.
+  //  * Emit an itempositionchange event with these positions.
+  //  */
+  // protected _emitChildPositions() {
+  //   if (this._first !== -1 && this._last !== -1) {
+  //     const detail: ChildPositions = new Map();
+  //     for (let idx = this._first; idx <= this._last; idx++) {
+  //       detail.set(idx, this._getItemPosition(idx));
+  //     }
+  //     this.dispatchEvent(new CustomEvent('itempositionchange', {detail}));
+  //   }
+  // }
 
   /**
    * Number of items to display.
@@ -559,7 +591,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       this._firstVisible = firstVisible;
       this._lastVisible = lastVisible;
       if (options && options.emit) {
-        this._emitRange();
+        // this._emitRange();
+        this._emitState();
       }
     }
   }

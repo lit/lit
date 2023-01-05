@@ -407,10 +407,11 @@ export class Virtualizer {
       }
       this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
-    this._layout.addEventListener('scrollsizechange', this);
-    this._layout.addEventListener('scrollerrorchange', this);
-    this._layout.addEventListener('itempositionchange', this);
-    this._layout.addEventListener('rangechange', this);
+    this._layout.addEventListener('statechange', this);
+    // this._layout.addEventListener('scrollsizechange', this);
+    // this._layout.addEventListener('scrollerrorchange', this);
+    // this._layout.addEventListener('itempositionchange', this);
+    // this._layout.addEventListener('rangechange', this);
     this._layout.addEventListener('unpinned', this);
     if (this._layout.listenForChildLoadEvents) {
       this._hostElement!.addEventListener('load', this._loadListener, true);
@@ -549,22 +550,29 @@ export class Virtualizer {
           this._handleScrollEvent();
         }
         break;
-      case 'scrollsizechange':
-        this._scrollSize = event.detail;
+      case 'statechange':
+        this._scrollSize = event.detail.scrollSize;
+        this._adjustRange(event.detail.range);
+        this._childrenPos = event.detail.childPositions;
+        this._scrollError = event.detail.scrollError;
         this._schedule(this._updateDOM);
         break;
-      case 'scrollerrorchange':
-        this._scrollError = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'itempositionchange':
-        this._childrenPos = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'rangechange':
-        this._adjustRange(event.detail);
-        this._schedule(this._updateDOM);
-        break;
+      // case 'scrollsizechange':
+      //   this._scrollSize = event.detail;
+      //   this._schedule(this._updateDOM);
+      //   break;
+      // case 'scrollerrorchange':
+      //   this._scrollError = event.detail;
+      //   this._schedule(this._updateDOM);
+      //   break;
+      // case 'itempositionchange':
+      //   this._childrenPos = event.detail;
+      //   this._schedule(this._updateDOM);
+      //   break;
+      // case 'rangechange':
+      //   this._adjustRange(event.detail);
+      //   this._schedule(this._updateDOM);
+      //   break;
       case 'unpinned':
         this._hostElement!.dispatchEvent(new UnpinnedEvent());
         break;
