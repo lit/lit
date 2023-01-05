@@ -31,10 +31,6 @@ app.use(async (ctx: Koa.Context, next: Function) => {
     return;
   }
 
-  // TODO(aomarks) We are not using the renderModule() utility function, because
-  // it always installs the global DOM shim, and we no longer need or want that.
-  // Should we have a new version of that utility that omits the DOM shim,
-  // and/or a breaking change to remove it from the existing function?
   const moduleLoader = new ModuleLoader();
   const importResult = await moduleLoader.importModule(
     './app-server.js',
