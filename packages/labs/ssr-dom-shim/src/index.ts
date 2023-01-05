@@ -4,8 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
-const attributesForElement = (element: HTMLElement) => {
+const attributes: WeakMap<
+  InstanceType<typeof HTMLElementShim>,
+  Map<string, string>
+> = new WeakMap();
+const attributesForElement = (
+  element: InstanceType<typeof HTMLElementShim>
+) => {
   let attrs = attributes.get(element);
   if (!attrs) {
     attributes.set(element, (attrs = new Map()));
@@ -13,9 +18,23 @@ const attributesForElement = (element: HTMLElement) => {
   return attrs;
 };
 
-export class Element {}
+// The typings around the exports below are a little funky:
+//
+// 1. We want the `name` of the shim classes to match the real ones at runtime,
+//    hence e.g. `class HTMLElement`.
+// 2. We can't shadow the global types with a simple class declaration, because
+//    then we can't reference the global types for casting, hence
+//    `const HTMLElementShim = class HTMLElement`.
+// 3. We want to export the classes typed as the real ones, hence e.g. `const
+//    HTMLElementShimTyped = HTMLElementShim as object as typeof HTMLElement;`.
+// 4. We want the exported names to match the real ones, hence e.g.
+//    `export {HTMLElementShimWithRealType as HTMLElement}`.
 
-export abstract class HTMLElement extends Element {
+const ElementShim = class Element {};
+const ElementShimWithRealType = ElementShim as object as typeof Element;
+export {ElementShimWithRealType as Element};
+
+const HTMLElementShim = class HTMLElement extends ElementShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -26,7 +45,7 @@ export abstract class HTMLElement extends Element {
   get shadowRoot() {
     return this._shadowRoot;
   }
-  abstract attributeChangedCallback?(
+  attributeChangedCallback?(
     name: string,
     old: string | null,
     value: string | null
@@ -42,7 +61,7 @@ export abstract class HTMLElement extends Element {
   hasAttribute(name: string) {
     return attributesForElement(this).has(name);
   }
-  attachShadow(this: HTMLElement, init: ShadowRootInit) {
+  attachShadow(init: ShadowRootInit): ShadowRoot {
     const shadowRoot = {host: this};
     if (init && init.mode === 'open') {
       this._shadowRoot = shadowRoot;
@@ -53,7 +72,10 @@ export abstract class HTMLElement extends Element {
     const value = attributesForElement(this).get(name);
     return value === undefined ? null : value;
   }
-}
+};
+const HTMLElementShimWithRealType =
+  HTMLElementShim as object as typeof HTMLElement;
+export {HTMLElementShimWithRealType as HTMLElement};
 
 interface CustomHTMLElement {
   new (): HTMLElement;
@@ -67,7 +89,7 @@ type CustomElementRegistration = {
   observedAttributes: string[];
 };
 
-export class CustomElementRegistry {
+const CustomElementRegistryShim = class CustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
 
   define(name: string, ctor: CustomHTMLElement) {
@@ -81,6 +103,9 @@ export class CustomElementRegistry {
     const definition = this.__definitions.get(name);
     return definition && definition.ctor;
   }
-}
+};
+const CustomElementRegistryShimWithRealType =
+  CustomElementRegistryShim as object as typeof CustomElementRegistry;
+export {CustomElementRegistryShimWithRealType as CustomElementRegistry};
 
-export const customElements = new CustomElementRegistry();
+export const customElements = new CustomElementRegistryShimWithRealType();
