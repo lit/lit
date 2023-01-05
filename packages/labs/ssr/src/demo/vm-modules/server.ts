@@ -9,8 +9,7 @@ import staticFiles from 'koa-static';
 import koaNodeResolve from 'koa-node-resolve';
 import {URL} from 'url';
 import * as path from 'path';
-
-import {renderModule} from '../../lib/render-module.js';
+import {ModuleLoader} from '../../lib/module-loader.js';
 import {Readable} from 'stream';
 import mount from 'koa-mount';
 
@@ -32,12 +31,18 @@ app.use(async (ctx: Koa.Context, next: Function) => {
     return;
   }
 
-  const ssrResult = await (renderModule(
+  // TODO(aomarks) We are not using the renderModule() utility function, because
+  // it always installs the global DOM shim, and we no longer need or want that.
+  // Should we have a new version of that utility that omits the DOM shim,
+  // and/or a breaking change to remove it from the existing function?
+  const moduleLoader = new ModuleLoader();
+  const importResult = await moduleLoader.importModule(
     './app-server.js',
-    import.meta.url,
-    'renderAppWithInitialData',
-    []
-  ) as Promise<Iterable<unknown>>);
+    import.meta.url
+  );
+  const {renderAppWithInitialData} = importResult.module
+    .namespace as typeof import('./app-server.js');
+  const ssrResult = await renderAppWithInitialData();
 
   ctx.type = 'text/html';
   ctx.body = Readable.from(ssrResult);
