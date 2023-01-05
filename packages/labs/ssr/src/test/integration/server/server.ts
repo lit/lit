@@ -25,23 +25,46 @@ export const ssrMiddleware = () => {
 
     let module: typeof testModule,
       render: typeof import('../../../lib/render-lit-html.js').render;
-    if (mode === 'global') {
-      render = (await import('../../../lib/render-with-global-dom-shim.js'))
-        .render;
-      module = await import(`../tests/${testFile}-ssr.js`);
-    } else {
-      // mode === 'vm'
-      const window = getWindow({includeJSBuiltIns: true});
-      const loader = new ModuleLoader({
-        global: window,
-      });
-      module = (
-        await loader.importModule(
-          `../tests/${testFile}-ssr.js`,
-          import.meta.url
-        )
-      ).module.namespace as typeof testModule;
-      render = module.render;
+    switch (mode) {
+      case 'vm': {
+        const loader = new ModuleLoader();
+        module = (
+          await loader.importModule(
+            `../tests/${testFile}-ssr.js`,
+            import.meta.url
+          )
+        ).module.namespace as typeof testModule;
+        render = module.render;
+        break;
+      }
+      case 'vm-shimmed': {
+        const window = getWindow({includeJSBuiltIns: true});
+        const loader = new ModuleLoader({
+          global: window,
+        });
+        module = (
+          await loader.importModule(
+            `../tests/${testFile}-ssr.js`,
+            import.meta.url
+          )
+        ).module.namespace as typeof testModule;
+        render = module.render;
+        break;
+      }
+      case 'global': {
+        render = (await import('../../../lib/render-lit-html.js')).render;
+        module = await import(`../tests/${testFile}-ssr.js`);
+        break;
+      }
+      case 'global-shimmed': {
+        render = (await import('../../../lib/render-with-global-dom-shim.js'))
+          .render;
+        module = await import(`../tests/${testFile}-ssr.js`);
+        break;
+      }
+      default: {
+        throw new Error(`Invalid mode: ${mode}`);
+      }
     }
 
     const testDescOrFn = module.tests[testName] as SSRTest;
