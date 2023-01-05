@@ -7,7 +7,7 @@
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
-import {render} from './render-lit-html.js';
+import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
 
@@ -70,14 +70,14 @@ export class LitElementRenderer extends ElementRenderer {
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* render((this.element as any).render(), renderInfo);
+    yield* renderValue((this.element as any).render(), renderInfo);
   }
 
   *renderLight(renderInfo: RenderInfo): RenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* render(value, renderInfo);
+      yield* renderValue(value, renderInfo);
     } else {
       yield '';
     }
