@@ -12,7 +12,7 @@ const attributesForElement = (
   element: InstanceType<typeof HTMLElementShim>
 ) => {
   let attrs = attributes.get(element);
-  if (!attrs) {
+  if (attrs === undefined) {
     attributes.set(element, (attrs = new Map()));
   }
   return attrs;
@@ -41,15 +41,10 @@ const HTMLElementShim = class HTMLElement extends ElementShim {
       value,
     }));
   }
-  private _shadowRoot: null | ShadowRoot = null;
+  private __shadowRoot: null | ShadowRoot = null;
   get shadowRoot() {
-    return this._shadowRoot;
+    return this.__shadowRoot;
   }
-  attributeChangedCallback?(
-    name: string,
-    old: string | null,
-    value: string | null
-  ): void;
   setAttribute(name: string, value: unknown) {
     // Emulate browser behavior that silently casts all values to string. E.g.
     // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
@@ -62,27 +57,25 @@ const HTMLElementShim = class HTMLElement extends ElementShim {
     return attributesForElement(this).has(name);
   }
   attachShadow(init: ShadowRootInit): ShadowRoot {
-    const shadowRoot = {host: this};
+    const shadowRoot = {host: this} as object as ShadowRoot;
     if (init && init.mode === 'open') {
-      this._shadowRoot = shadowRoot;
+      this.__shadowRoot = shadowRoot;
     }
     return shadowRoot;
   }
   getAttribute(name: string) {
     const value = attributesForElement(this).get(name);
-    return value === undefined ? null : value;
+    return value ?? null;
   }
 };
 const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
 
-interface CustomHTMLElement {
+interface CustomHTMLElementConstructor {
   new (): HTMLElement;
   observedAttributes?: string[];
 }
-
-class ShadowRoot {}
 
 type CustomElementRegistration = {
   ctor: {new (): HTMLElement};
@@ -92,16 +85,16 @@ type CustomElementRegistration = {
 const CustomElementRegistryShim = class CustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
 
-  define(name: string, ctor: CustomHTMLElement) {
+  define(name: string, ctor: CustomHTMLElementConstructor) {
     this.__definitions.set(name, {
       ctor,
-      observedAttributes: (ctor as CustomHTMLElement).observedAttributes ?? [],
+      observedAttributes: ctor.observedAttributes ?? [],
     });
   }
 
   get(name: string) {
     const definition = this.__definitions.get(name);
-    return definition && definition.ctor;
+    return definition?.ctor;
   }
 };
 const CustomElementRegistryShimWithRealType =
