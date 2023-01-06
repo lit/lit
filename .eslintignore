@@ -275,8 +275,6 @@ packages/labs/ssr-client/controllers/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
 
-packages/labs/ssr-dom-shim/node_modules/
-packages/labs/ssr-dom-shim/tsconfig.tsbuildinfo
 packages/labs/ssr-dom-shim/index.*
 
 packages/labs/task/development/
