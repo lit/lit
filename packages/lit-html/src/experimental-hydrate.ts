@@ -15,7 +15,7 @@ import {
 } from './directive-helpers.js';
 
 // In the Node build, this import will be injected by Rollup:
-// import {Buffer} from 'node';
+// import {Buffer} from 'buffer';
 
 const NODE_MODE = false;
 
