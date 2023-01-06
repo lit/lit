@@ -17,8 +17,11 @@ import {SSRTest} from '../tests/ssr-test.js';
 /**
  * Keep track of which tests have already been registered so that we don't
  * register the same custom element more than once per Node process.
+ *
+ * Note this only applies in global mode. In vm mode, we actually must register
+ * elements every time.
  */
-const registeredTests = new Set<string>();
+const registeredGlobalTests = new Set<string>();
 
 /**
  * Koa Middleware for @web/test-runner which handles /render/ prefixed GET
@@ -76,9 +79,25 @@ export const ssrMiddleware = () => {
     const testDescOrFn = module.tests[testName] as SSRTest;
     const test =
       typeof testDescOrFn === 'function' ? testDescOrFn() : testDescOrFn;
-    if (test.registerElements && !registeredTests.has(testName)) {
-      registeredTests.add(testName);
-      await test.registerElements();
+    if (test.registerElements) {
+      switch (mode) {
+        case 'vm':
+        case 'vm-shimmed': {
+          await test.registerElements();
+          break;
+        }
+        case 'global':
+        case 'global-shimmed': {
+          if (!registeredGlobalTests.has(testName)) {
+            registeredGlobalTests.add(testName);
+            await test.registerElements();
+          }
+          break;
+        }
+        default: {
+          throw new Error(`Invalid mode: ${mode}`);
+        }
+      }
     }
     const result = render(
       test.render(...test.expectations[0].args),
