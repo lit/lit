@@ -97,7 +97,7 @@
       "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
       "env": {
         "MODE": "dev",
-        "NODE_OPTIONS": "experimental-vm-modules",
+        "NODE_OPTIONS": "--experimental-vm-modules",
         "CONCURRENT_BROWSERS": "1"
       },
       "#comment": [
@@ -118,7 +118,7 @@
       "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
       "env": {
         "MODE": "prod",
-        "NODE_OPTIONS": "experimental-vm-modules",
+        "NODE_OPTIONS": "--experimental-vm-modules",
         "CONCURRENT_BROWSERS": "1"
       },
       "dependencies": [
@@ -135,7 +135,7 @@
       "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
       "env": {
         "MODE": "dev",
-        "NODE_OPTIONS": "experimental-vm-modules",
+        "NODE_OPTIONS": "--experimental-vm-modules",
         "CONCURRENT_BROWSERS": "1"
       },
       "dependencies": [
@@ -152,7 +152,7 @@
       "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
       "env": {
         "MODE": "prod",
-        "NODE_OPTIONS": "experimental-vm-modules",
+        "NODE_OPTIONS": "--experimental-vm-modules",
         "CONCURRENT_BROWSERS": "1"
       },
       "dependencies": [
