@@ -8,7 +8,7 @@ import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {configureSsrLocalization} from '../ssr.js';
-import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
+import {render} from '@lit-labs/ssr';
 import {html} from 'lit';
 import {msg} from '@lit/localize';
 import {collectResultSync} from '@lit-labs/ssr/lib/render-result.js';
