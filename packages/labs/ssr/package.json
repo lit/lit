@@ -14,8 +14,10 @@
     "demo:global": "wireit",
     "test": "wireit",
     "test:integration": "wireit",
-    "test:integration:dev": "wireit",
-    "test:integration:prod": "wireit",
+    "test:integration:shimmed:dev": "wireit",
+    "test:integration:unshimmed:dev": "wireit",
+    "test:integration:shimmed:prod": "wireit",
+    "test:integration:unshimmed:prod": "wireit",
     "test:unit": "wireit"
   },
   "wireit": {
@@ -85,12 +87,14 @@
     },
     "test:integration": {
       "dependencies": [
-        "test:integration:dev",
-        "test:integration:prod"
+        "test:integration:shimmed:dev",
+        "test:integration:shimmed:prod",
+        "test:integration:unshimmed:dev",
+        "test:integration:unshimmed:prod"
       ]
     },
-    "test:integration:dev": {
-      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js",
+    "test:integration:shimmed:dev": {
+      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
       "#comment": [
         "TODO(aomarks) It seems like this should only depend on build:ts",
         "but it errors on missing .js files that come from core library Rollup builds"
@@ -105,8 +109,32 @@
       ],
       "output": []
     },
-    "test:integration:prod": {
-      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js",
+    "test:integration:shimmed:prod": {
+      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "files": [
+        "web-test-runner.config.js",
+        "../../tests/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:integration:unshimmed:dev": {
+      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "files": [
+        "web-test-runner.config.js",
+        "../../tests/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:integration:unshimmed:prod": {
+      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
       "dependencies": [
         "build",
         "../../tests:build"
