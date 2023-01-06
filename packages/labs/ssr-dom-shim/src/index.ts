@@ -21,20 +21,16 @@ const attributesForElement = (
 // The typings around the exports below are a little funky:
 //
 // 1. We want the `name` of the shim classes to match the real ones at runtime,
-//    hence e.g. `class HTMLElement`.
+//    hence e.g. `class Element`.
 // 2. We can't shadow the global types with a simple class declaration, because
-//    then we can't reference the global types for casting, hence
-//    `const HTMLElementShim = class HTMLElement`.
-// 3. We want to export the classes typed as the real ones, hence e.g. `const
-//    HTMLElementShimTyped = HTMLElementShim as object as typeof HTMLElement;`.
+//    then we can't reference the global types for casting, hence e.g.
+//    `const ElementShim = class Element`.
+// 3. We want to export the classes typed as the real ones, hence e.g.
+//    `const ElementShimTyped = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
-//    `export {HTMLElementShimWithRealType as HTMLElement}`.
+//    `export {ElementShimWithRealType as Element}`.
 
-const ElementShim = class Element {};
-const ElementShimWithRealType = ElementShim as object as typeof Element;
-export {ElementShimWithRealType as Element};
-
-const HTMLElementShim = class HTMLElement extends ElementShim {
+const ElementShim = class Element {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -68,6 +64,10 @@ const HTMLElementShim = class HTMLElement extends ElementShim {
     return value ?? null;
   }
 };
+const ElementShimWithRealType = ElementShim as object as typeof Element;
+export {ElementShimWithRealType as Element};
+
+const HTMLElementShim = class HTMLElement extends ElementShim {};
 const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
