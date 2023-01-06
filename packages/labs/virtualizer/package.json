@@ -121,7 +121,6 @@
     "tachometer": "^0.7.0"
   },
   "dependencies": {
-    "event-target-shim": "^6.0.2",
     "lit": "^2.5.0",
     "tslib": "^2.0.3"
   }

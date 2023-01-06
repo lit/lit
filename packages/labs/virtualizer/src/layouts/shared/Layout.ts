@@ -48,12 +48,21 @@ export interface InternalRange extends Range {
   lastVisible: number;
 }
 
-export interface LayoutState {
+export interface StateChangedMessage {
+  type: 'stateChanged';
   scrollSize: Size;
   range: InternalRange;
   childPositions: ChildPositions;
   scrollError?: Positions;
 }
+
+export interface UnpinnedMessage {
+  type: 'unpinned';
+}
+
+export type LayoutHostMessage = StateChangedMessage | UnpinnedMessage;
+
+export type LayoutHostSink = (message: LayoutHostMessage) => void;
 
 export type ChildPositions = Map<number, Positions>;
 
@@ -66,7 +75,10 @@ export interface PinOptions {
   block?: ScrollLogicalPosition;
 }
 
-export type LayoutConstructor = new (config?: object) => Layout;
+export type LayoutConstructor = new (
+  sink: LayoutHostSink,
+  config?: object
+) => Layout;
 
 export interface LayoutSpecifier {
   type: LayoutConstructor;
@@ -111,10 +123,6 @@ export interface Layout {
   readonly listenForChildLoadEvents?: boolean;
 
   updateItemSizes?: (sizes: ChildMeasurements) => void;
-
-  addEventListener: Function;
-
-  removeEventListener: Function;
 
   pin: PinOptions | null;
 

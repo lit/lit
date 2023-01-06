@@ -15,6 +15,7 @@ import {
   offsetAxis,
   ChildMeasurements,
   BaseLayoutConfig,
+  LayoutHostSink,
 } from './shared/Layout.js';
 
 type ItemBounds = {
@@ -24,7 +25,7 @@ type ItemBounds = {
 
 type FlowLayoutConstructor = {
   prototype: FlowLayout;
-  new (config?: BaseLayoutConfig): FlowLayout;
+  new (hostSink: LayoutHostSink, config?: BaseLayoutConfig): FlowLayout;
 };
 
 type FlowLayoutSpecifier = BaseLayoutConfig & {
@@ -495,44 +496,6 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._resetReflowState();
     }
   }
-
-  // TODO: Can this be made to inherit from base, with proper hooks?
-  // _reflow() {
-  //   const {_first, _last, _scrollSize, _firstVisible, _lastVisible} = this;
-
-  //   this._updateScrollSize();
-  //   this._setPositionFromPin();
-  //   this._getActiveItems();
-  //   this._updateVisibleIndices();
-
-  //   if (this._scrollSize !== _scrollSize) {
-  //     this._emitScrollSize();
-  //   }
-
-  //   if (
-  //     this._first !== _first ||
-  //     this._last !== _last ||
-  //     this._firstVisible !== _firstVisible ||
-  //     this._lastVisible !== _lastVisible
-  //   ) {
-  //     this._emitRange();
-  //   }
-
-  //   if (!(this._first === -1 && this._last === -1)) {
-  //     this._emitChildPositions();
-  //   }
-
-  //   if (this._scrollError !== 0) {
-  //     this._emitScrollError();
-  //   }
-
-  //   if (
-  //     (this._first === -1 && this._last == -1) ||
-  //     (this._first === _first && this._last === _last)
-  //   ) {
-  //     this._resetReflowState();
-  //   }
-  // }
 
   _resetReflowState() {
     this._anchorIdx = null;
