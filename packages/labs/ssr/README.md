@@ -10,12 +10,17 @@ A package for server-side rendering Lit templates and components.
 
 ### Rendering in the Node.js global scope
 
-The easiest way to get started is to import your Lit template modules (and any `LitElement` definitions they may use) into the node global scope and render them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-with-global-dom-shim.js` module. Since Lit-authored code may rely on DOM globals, the `render-with-global-dom-shim.js` module will install a minimal DOM shim into the Node.js global scope, which should be sufficient for typical use cases. As such, `render-with-global-dom-shim.js` should be imported before any modules containing Lit code.
+The easiest way to get started is to import your Lit template modules (and any
+`LitElement` definitions they may use) into the node global scope and render
+them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-lit-html.js` module. When
+running in Node, Lit automatically depends on Node-compatible implementations of
+a minimal set of DOM APIs provided by the `@lit-labs/ssr-dom-shim` package,
+including defining `customElements` on the global object.
 
 ```js
 // Example: server.js:
 
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
 import {myTemplate} from './my-template.js';
 
 //...
@@ -93,7 +98,7 @@ Because the `hydrate` function above does not descend into shadow roots, it only
 Put together, an HTML page that was server rendered and containing `LitElement`s in the main document might look like this:
 
 ```js
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
 import './app-components.js';
 
 const ssrResult = render(html`
