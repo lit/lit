@@ -13,32 +13,12 @@ import {Readable} from 'stream';
 
 import * as testModule from '../tests/basic-ssr.js';
 import {SSRTest} from '../tests/ssr-test.js';
-import {CustomElementRegistry} from '@lit-labs/ssr-dom-shim';
-
-import type Koa from 'koa';
 
 /**
- * Our SSR tests include global rendering, which means the Node process doing
- * the SSR rendering is shared between different browsers, so the global custom
- * element registry is shared too. Since we throw on duplicate registrations,
- * this means we need to reset the custom elements registry whenever we switch
- * browsers.
- *
- * Note this also means we need to set CONCURRENT_BROWSERS=1, so that no two
- * browsers are running at the same time.
+ * Keep track of which tests have already been registered so that we don't
+ * register the same custom element more than once per Node process.
  */
-const resetCustomElementRegistryIfNeeded = (() => {
-  let previousUserAgent: string | undefined = undefined;
-  return (context: Koa.Context) => {
-    const userAgent = context.header['user-agent'];
-    if (userAgent !== previousUserAgent) {
-      if (globalThis.customElements !== undefined) {
-        globalThis.customElements = new CustomElementRegistry();
-      }
-      previousUserAgent = userAgent;
-    }
-  };
-})();
+const registeredTests = new Set<string>();
 
 /**
  * Koa Middleware for @web/test-runner which handles /render/ prefixed GET
@@ -78,13 +58,11 @@ export const ssrMiddleware = () => {
         break;
       }
       case 'global': {
-        resetCustomElementRegistryIfNeeded(context);
         render = (await import('../../../lib/render-lit-html.js')).render;
         module = await import(`../tests/${testFile}-ssr.js`);
         break;
       }
       case 'global-shimmed': {
-        resetCustomElementRegistryIfNeeded(context);
         render = (await import('../../../lib/render-with-global-dom-shim.js'))
           .render;
         module = await import(`../tests/${testFile}-ssr.js`);
@@ -98,7 +76,8 @@ export const ssrMiddleware = () => {
     const testDescOrFn = module.tests[testName] as SSRTest;
     const test =
       typeof testDescOrFn === 'function' ? testDescOrFn() : testDescOrFn;
-    if (test.registerElements) {
+    if (test.registerElements && !registeredTests.has(testName)) {
+      registeredTests.add(testName);
       await test.registerElements();
     }
     const result = render(
