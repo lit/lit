@@ -127,7 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   ```ts
   import {configureSsrLocalization} from '@lit/localize-tools/lib/ssr.js';
-  import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+  import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
   import {html} from 'lit';
 
   const {withLocale} = await configureSsrLocalization({
