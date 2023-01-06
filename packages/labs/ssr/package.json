@@ -94,7 +94,7 @@
       ]
     },
     "test:integration:shimmed:dev": {
-      "command": "../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
       "env": {
         "MODE": "dev",
         "NODE_OPTIONS": "experimental-vm-modules",
