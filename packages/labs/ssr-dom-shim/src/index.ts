@@ -26,7 +26,7 @@ const attributesForElement = (
 //    then we can't reference the global types for casting, hence e.g.
 //    `const ElementShim = class Element`.
 // 3. We want to export the classes typed as the real ones, hence e.g.
-//    `const ElementShimTyped = ElementShim as object as typeof Element;`.
+//    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
 
