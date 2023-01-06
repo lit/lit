@@ -14,8 +14,10 @@
     "demo:global": "wireit",
     "test": "wireit",
     "test:integration": "wireit",
-    "test:integration:dev": "wireit",
-    "test:integration:prod": "wireit",
+    "test:integration:shimmed:dev": "wireit",
+    "test:integration:unshimmed:dev": "wireit",
+    "test:integration:shimmed:prod": "wireit",
+    "test:integration:unshimmed:prod": "wireit",
     "test:unit": "wireit"
   },
   "wireit": {
@@ -31,6 +33,7 @@
       "clean": "if-file-deleted",
       "dependencies": [
         "../ssr-client:build:ts:types",
+        "../ssr-dom-shim:build:ts",
         "../../lit:build:ts:types",
         "../../lit-html:build:ts:types",
         "../../lit-element:build:ts:types"
@@ -53,16 +56,16 @@
       "dependencies": [
         "build"
       ],
-      "files": [],
-      "output": []
+      "service": true,
+      "files": []
     },
     "demo:global": {
       "command": "node ./demo/global/server.js",
       "dependencies": [
         "build"
       ],
-      "files": [],
-      "output": []
+      "service": true,
+      "files": []
     },
     "test": {
       "dependencies": [
@@ -84,12 +87,18 @@
     },
     "test:integration": {
       "dependencies": [
-        "test:integration:dev",
-        "test:integration:prod"
+        "test:integration:shimmed:dev",
+        "test:integration:shimmed:prod",
+        "test:integration:unshimmed:dev",
+        "test:integration:unshimmed:prod"
       ]
     },
-    "test:integration:dev": {
-      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js",
+    "test:integration:shimmed:dev": {
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "env": {
+        "MODE": "dev",
+        "NODE_OPTIONS": "--experimental-vm-modules"
+      },
       "#comment": [
         "TODO(aomarks) It seems like this should only depend on build:ts",
         "but it errors on missing .js files that come from core library Rollup builds"
@@ -109,8 +118,44 @@
       ],
       "output": []
     },
-    "test:integration:prod": {
-      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js",
+    "test:integration:shimmed:prod": {
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "env": {
+        "MODE": "prod",
+        "NODE_OPTIONS": "--experimental-vm-modules"
+      },
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "files": [
+        "web-test-runner.config.js",
+        "../../tests/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:integration:unshimmed:dev": {
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "env": {
+        "MODE": "dev",
+        "NODE_OPTIONS": "--experimental-vm-modules"
+      },
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "files": [
+        "web-test-runner.config.js",
+        "../../tests/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:integration:unshimmed:prod": {
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "env": {
+        "MODE": "prod",
+        "NODE_OPTIONS": "--experimental-vm-modules"
+      },
       "dependencies": [
         "build",
         "../../tests:build"
@@ -146,6 +191,7 @@
     "@types/koa": "^2.0.49",
     "@types/koa__router": "^8.0.2",
     "@types/koa-cors": "*",
+    "@types/koa-mount": "^4.0.2",
     "@types/koa-static": "^4.0.1",
     "@types/parse5": "^6.0.1",
     "@types/resolve": "^1.20.2",
@@ -154,11 +200,13 @@
     "deepmerge": "^4.2.2",
     "koa": "^2.7.0",
     "koa-cors": "^0.0.16",
+    "koa-mount": "^4.0.0",
     "koa-node-resolve": "^1.0.0-pre.5",
     "koa-static": "^5.0.0"
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.0.0",
+    "@lit-labs/ssr-dom-shim": "^0.0.1",
     "@lit/reactive-element": "^1.5.0",
     "@parse5/tools": "^0.1.0",
     "@types/node": "^16.0.0",

@@ -64,6 +64,7 @@
         "./packages/labs/scoped-registry-mixin:build",
         "./packages/labs/ssr:build",
         "./packages/labs/ssr-client:build",
+        "./packages/labs/ssr-dom-shim:build",
         "./packages/labs/task:build",
         "./packages/labs/testing:build",
         "./packages/labs/virtualizer:build",
@@ -94,6 +95,7 @@
         "./packages/labs/scoped-registry-mixin:build:ts",
         "./packages/labs/ssr:build:ts",
         "./packages/labs/ssr-client:build:ts",
+        "./packages/labs/ssr-dom-shim:build:ts",
         "./packages/labs/task:build:ts",
         "./packages/labs/testing:build:ts",
         "./packages/labs/virtualizer:build:ts",
@@ -181,6 +183,7 @@
     "@changesets/get-github-info": "^0.5.0",
     "@esm-bundle/chai": "^4.3.4",
     "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-inject": "^5.0.2",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-virtual": "^2.1.0",
@@ -211,7 +214,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "~4.7.4",
     "uvu": "^0.5.6",
-    "wireit": "^0.9.1"
+    "wireit": "^0.9.3"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",

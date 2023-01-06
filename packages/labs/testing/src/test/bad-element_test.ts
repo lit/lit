@@ -23,9 +23,6 @@ suite(`bad-elements`, () => {
     } catch (error) {
       err = error as Error;
     }
-    assert.match(
-      err?.message ?? '',
-      /document.querySelectorAll is not a function/
-    );
+    assert.match(err?.message ?? '', /document is not defined/);
   });
 });

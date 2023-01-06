@@ -180,6 +180,9 @@
       "#comment": "Note this also builds polyfill-support via a TypeScript project reference.",
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
+      "dependencies": [
+        "../labs/ssr-dom-shim:build:ts"
+      ],
       "files": [
         "src/**/*.ts",
         "tsconfig.json",
@@ -318,6 +321,9 @@
     "!/development/test/",
     "/node/"
   ],
+  "dependencies": {
+    "@lit-labs/ssr-dom-shim": "^0.0.1"
+  },
   "devDependencies": {
     "@babel/cli": "^7.14.6",
     "@babel/core": "^7.14.6",

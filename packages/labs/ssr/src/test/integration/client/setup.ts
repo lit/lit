@@ -170,7 +170,7 @@ const assertHTML = (
   }
 };
 
-const modes = ['vm', 'global'] as const;
+const modes = ['vm', 'vm-shimmed', 'global', 'global-shimmed'] as const;
 export const setupTest = async (
   tests: SSRTestSuite,
   testFile: string,

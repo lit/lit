@@ -8,7 +8,7 @@
  * This is a server-only module that renders the HTML file shell.
  */
 
-import {render} from '../../lib/render-with-global-dom-shim.js';
+import {render} from '../../lib/render-lit-html.js';
 import {template, initialData} from './module.js';
 
 export function renderAppWithInitialData() {

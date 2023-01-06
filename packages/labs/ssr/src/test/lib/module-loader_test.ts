@@ -4,18 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {createRequire} from 'module';
 import {ModuleLoader} from '../../lib/module-loader.js';
-import {getWindow} from '../../lib/dom-shim.js';
 import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import * as path from 'path';
-
-const window = getWindow({
-  includeJSBuiltIns: true,
-  props: {require: createRequire(import.meta.url)},
-});
 
 const testIndex = new URL(
   '../test-files/module-loader/index.js',
@@ -23,7 +16,7 @@ const testIndex = new URL(
 ).pathname;
 
 test('loads a single module', async () => {
-  const loader = new ModuleLoader({global: window});
+  const loader = new ModuleLoader();
   const result = await loader.importModule('./test-1.js', testIndex);
   const {module, path: modulePath} = result;
   assert.is(module.namespace.x, 1);
@@ -33,7 +26,7 @@ test('loads a single module', async () => {
 });
 
 test('loads a module with an import', async () => {
-  const loader = new ModuleLoader({global: window});
+  const loader = new ModuleLoader();
   const result = await loader.importModule('./index.js', testIndex);
   const {module, path: modulePath} = result;
   assert.is(module.namespace.y, 1);
@@ -46,7 +39,7 @@ test('loads a module with an import', async () => {
 });
 
 test('loads a module with a built-in import', async () => {
-  const loader = new ModuleLoader({global: window});
+  const loader = new ModuleLoader();
   const result = await loader.importModule('./test-2.js', testIndex);
   const {module} = result;
   assert.is(loader.cache.has('path'), true);
@@ -54,7 +47,7 @@ test('loads a module with a built-in import', async () => {
 });
 
 test('resolves an exact exported path', async () => {
-  const loader = new ModuleLoader({global: window});
+  const loader = new ModuleLoader();
   const result = await loader.importModule('./lit-import.js', testIndex);
   const {module, path: modulePath} = result;
   assert.is(module.namespace.litIsServer, true);
@@ -67,7 +60,7 @@ test('resolves an exact exported path', async () => {
 });
 
 test('resolves a root exported path (.)', async () => {
-  const loader = new ModuleLoader({global: window});
+  const loader = new ModuleLoader();
   const result = await loader.importModule(
     './lit-import-from-root.js',
     testIndex
