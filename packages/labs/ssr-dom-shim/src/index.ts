@@ -94,6 +94,15 @@ const CustomElementRegistryShim = class CustomElementRegistry {
     }
     this.__definitions.set(name, {
       ctor,
+      // Note it's important we read `observedAttributes` in case it is a getter
+      // with side-effects, as is the case in Lit, where it triggers class
+      // finalization.
+      //
+      // TODO(aomarks) To be spec compliant, we should also capture the
+      // registration-time lifecycle methods like `connectedCallback`. For them
+      // to be actually accessible to e.g. the Lit SSR element renderer, though,
+      // we'd need to introduce a new API for accessing them (since `get` only
+      // returns the constructor).
       observedAttributes: ctor.observedAttributes ?? [],
     });
   }
