@@ -86,6 +86,12 @@ const CustomElementRegistryShim = class CustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
 
   define(name: string, ctor: CustomHTMLElementConstructor) {
+    if (this.__definitions.has(name)) {
+      throw new Error(
+        `Failed to execute 'define' on 'CustomElementRegistry': ` +
+          `the name "${name}" has already been used with this registry`
+      );
+    }
     this.__definitions.set(name, {
       ctor,
       observedAttributes: ctor.observedAttributes ?? [],
