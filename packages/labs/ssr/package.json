@@ -94,7 +94,12 @@
       ]
     },
     "test:integration:shimmed:dev": {
-      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "command": "../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "env": {
+        "MODE": "dev",
+        "NODE_OPTIONS": "experimental-vm-modules",
+        "CONCURRENT_BROWSERS": "1"
+      },
       "#comment": [
         "TODO(aomarks) It seems like this should only depend on build:ts",
         "but it errors on missing .js files that come from core library Rollup builds"
@@ -110,7 +115,12 @@
       "output": []
     },
     "test:integration:shimmed:prod": {
-      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-shimmed_test.js",
+      "env": {
+        "MODE": "prod",
+        "NODE_OPTIONS": "experimental-vm-modules",
+        "CONCURRENT_BROWSERS": "1"
+      },
       "dependencies": [
         "build",
         "../../tests:build"
@@ -122,7 +132,12 @@
       "output": []
     },
     "test:integration:unshimmed:dev": {
-      "command": "MODE=dev NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "env": {
+        "MODE": "dev",
+        "NODE_OPTIONS": "experimental-vm-modules",
+        "CONCURRENT_BROWSERS": "1"
+      },
       "dependencies": [
         "build",
         "../../tests:build"
@@ -134,7 +149,12 @@
       "output": []
     },
     "test:integration:unshimmed:prod": {
-      "command": "MODE=prod NODE_OPTIONS=--experimental-vm-modules node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "command": "node ../../tests/run-web-tests.js test/integration/client/**/*-unshimmed_test.js",
+      "env": {
+        "MODE": "prod",
+        "NODE_OPTIONS": "experimental-vm-modules",
+        "CONCURRENT_BROWSERS": "1"
+      },
       "dependencies": [
         "build",
         "../../tests:build"
