@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import '../src/simple-greeter';
-import WrappedSimpleGreeter from '../src/wrapped-simple-greeter';
+import SimpleGreeter from '../src/simple-greeter-react';
 
 export default function Home() {
   return (
@@ -26,7 +26,7 @@ export default function Home() {
             <code>@lit-labs/react</code>
           </a>
         </p>
-        <WrappedSimpleGreeter name="React" />
+        <SimpleGreeter name="React" />
       </main>
     </div>
   );
