@@ -23,9 +23,8 @@ Note: For manually testing changes to any package via the example project, the
 recommended way of installing dependencies within the example project is to do
 it with the [install-links]
 (https://docs.npmjs.com/cli/v9/commands/npm-install#install-links) option set to
-false. This is the default behavior for npm v8. However, if you're using npm v9,
-you can set it by running `npm i --install-links=false` within the example
-project directory. This will create a symlink, rather than packing and installed
-into `node_modules` which is useful for rapidly making changes to the internal
+false. The example projects should contain `.npmrc` files that explicitly sets
+this option. This will create a symlink, rather than packing and installing into
+`node_modules` which is useful for rapidly making changes to the internal
 package and seeing its effects in the example project without having to
 reinstall.
