@@ -1,5 +1,51 @@
 # Change Log
 
+## 3.0.0
+
+### Major Changes
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - ModuleLoader now provides a default VM global context object which provides basic globals that are available in both Node and browsers.
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - The SSR dom shim will now throw if a custom element is redefined.
+
+- [#3431](https://github.com/lit/lit/pull/3431) [`ff637f52`](https://github.com/lit/lit/commit/ff637f52a3c2252e37d6ea6ae352c3c0f35a9e87) - The Lit SSR DOM shim no longer defines a global `window` variable. This was removed to improve compatibility with libraries that detect whether they are running in Node vs the browser by checking for the presence of `window`.
+
+  If you have code that runs during SSR which depends on the presence of `window`, you can either replace `window` with `globalThis`, or use `isSsr` to avoid running that code on the server (see https://lit.dev/docs/ssr/authoring/#browser-only-code).
+
+- [#3467](https://github.com/lit/lit/pull/3467) [`c77220e8`](https://github.com/lit/lit/commit/c77220e80bc5b04628776ef8e5828fcde5f8ad16) - Allow SSR renderers to produce asynchronous values. This is a BREAKING change.
+
+  This changes the return type of `render()` and the `ElementRenderer` render methods to be a `RenderResult`, which is an iterable of strings or Promises and nested RenderResults.
+
+  The iterable remains a sync iterable, not an async iterable. This is to support environments that require synchronous renders and because sync iterables are faster than async iterables. Since many server renders will not require async rendering, they should work in sync contexts and shouldn't pay the overhead of an async iterable.
+
+  Including Promises in the sync iterable creates a kind of hybrid sync/async iteration protocol. Consumers of RenderResults must check each value to see if it is a Promise or iterable and wait or recurse as needed.
+
+  This change introduces three new utilities to do this:
+
+  - `collectResult(result: RenderResult): Promise<string>` - an async function that joins a RenderResult into a string. It waits for Promises and recurses into nested iterables.
+  - `collectResultSync(result: RenderResult)` - a sync function that joins a RenderResult into a string. It recurses into nested iterables, but _throws_ when it encounters a Promise.
+  - `RenderResultReadable` - a Node `Readable` stream implementation that provides values from a `RenderResult`. This can be piped into a `Writable` stream, or passed to web server frameworks like Koa.
+
+### Minor Changes
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - When running in Node, Lit now automatically includes minimal DOM shims which are
+  sufficient for most SSR (Server Side Rendering) use-cases, removing the need to
+  import the global DOM shim from `@lit-labs/ssr`.
+
+  The new `@lit-labs/ssr-dom-shim` package has been introduced, which exports an `HTMLElement`, `CustomElementRegistry`, and default `customElements` singleton.
+
+  The existing `@lit-labs/ssr` global DOM shim can still be used, and is compatible with the new package, because `@lit-labs/ssr` imports from `@lit-labs/ssr-dom-shim`. Importing the global DOM shim adds more APIs to the global object, such as a global `HTMLElement`, `TreeWalker`, `fetch`, and other APIs. It is recommended that users try to remove usage of the `@lit-labs/ssr` DOM shim, and instead rely on the more minimal, automatic shimming that `@lit/reactive-element` now provides automatically.
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - APIs such as attachShadow, setAttribute have been moved from the HTMLElement class shim to the Element class shim, matching the structure of the real API. This should have no effect in most cases, as HTMLElement inherits from Element.
+
+### Patch Changes
+
+- Updated dependencies [[`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8)]:
+  - @lit-labs/ssr-dom-shim@1.0.0
+  - @lit/reactive-element@1.6.0
+  - lit-html@2.6.0
+  - lit@2.6.0
+
 ## 2.3.0
 
 ### Minor Changes
