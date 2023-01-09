@@ -1,5 +1,21 @@
 # Change Log
 
+## 1.1.1
+
+### Patch Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Add console warning for reserved react properties found on a wrapped web component in dev mode only.
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Filter \_\_forwaredRef from build.
+
+## 1.1.0
+
+### Minor Changes
+
+- [#2988](https://github.com/lit/lit/pull/2988) [`2d10c26d`](https://github.com/lit/lit/commit/2d10c26d6c526faafacc5d28d0f70f671e72560d) - Provide a params object to createComponent to improve developer experience and make it easier to maintain and add future features.
+
+- [#3128](https://github.com/lit/lit/pull/3128) [`491d0e37`](https://github.com/lit/lit/commit/491d0e379dda03787de088b0c4a74b5234ac4940) - Application of react props on web components matches the behavior of setting props on dom elements.
+
 ## 1.0.9
 
 ### Patch Changes

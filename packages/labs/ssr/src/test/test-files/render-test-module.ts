@@ -234,3 +234,33 @@ export const nestedTemplateResult = html`<div></div>`;
 export const trickyNestedDynamicChildren = html`<test-simple-slot
   >${html`${nestedTemplateResult}${nestedTemplateResult}`}</test-simple-slot
 >`;
+
+@customElement('test-shadowroot-open')
+export class TestShadowrootOpen extends LitElement {
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    mode: 'open' as const,
+  };
+}
+
+export const shadowrootOpen = html`<test-shadowroot-open></test-shadowroot-open>`;
+
+@customElement('test-shadowroot-closed')
+export class TestShadowrootClosed extends LitElement {
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    mode: 'closed' as const,
+  };
+}
+
+export const shadowrootClosed = html`<test-shadowroot-closed></test-shadowroot-closed>`;
+
+@customElement('test-shadowrootdelegatesfocus')
+export class TestShadowrootdelegatesfocus extends LitElement {
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+}
+
+export const shadowrootdelegatesfocus = html`<test-shadowrootdelegatesfocus></test-shadowrootdelegatesfocus>`;

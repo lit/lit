@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/virtualizer",
-  "version": "0.7.2",
+  "version": "1.0.1",
   "description": "Viewport-based virtualization (virtual scrolling) for Lit",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
@@ -11,6 +11,9 @@
     ".": {
       "default": "./lit-virtualizer.js"
     },
+    "./events.js": {
+      "default": "./events.js"
+    },
     "./layouts/flexWrap.js": {
       "default": "./layouts/flexWrap.js"
     },
@@ -19,6 +22,9 @@
     },
     "./layouts/grid.js": {
       "default": "./layouts/grid.js"
+    },
+    "./layouts/masonry.js": {
+      "default": "./layouts/masonry.js"
     },
     "./LitVirtualizer.js": {
       "default": "./LitVirtualizer.js"
@@ -68,8 +74,10 @@
         "polyfillLoaders/**/*.{js,d.ts,d.ts.map}",
         "test/**/*.{js,d.ts,d.ts.map}",
         "!test/screenshot/**",
+        "events.{js,d.ts,d.ts.map}",
         "lit-virtualizer.{js,d.ts,d.ts.map}",
         "LitVirtualizer.{js,d.ts,d.ts.map}",
+        "ScrollerController.{js,d.ts,d.ts.map}",
         "virtualize.{js,d.ts,d.ts.map}",
         "Virtualizer.{js,d.ts,d.ts.map}"
       ],
@@ -84,6 +92,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [
         "web-test-runner.config.js"
       ],
@@ -95,10 +108,12 @@
     "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/events.{js,d.ts,d.ts.map,js.map}",
     "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
     "/virtualize.{d.ts,d.ts.map,js,js.map}",
     "/Virtualizer.{d.ts,d.ts.map,js,js.map}",
-    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}"
+    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/ScrollerController.{d.ts,d.ts.map,js,js.map}"
   ],
   "devDependencies": {
     "@open-wc/testing": "^3.1.6",
@@ -107,7 +122,7 @@
   },
   "dependencies": {
     "event-target-shim": "^6.0.2",
-    "lit": "^2.0.0",
+    "lit": "^2.5.0",
     "tslib": "^2.0.3"
   }
 }

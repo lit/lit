@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.4.0",
+  "version": "2.6.0",
   "publishConfig": {
     "access": "public"
   },
@@ -284,6 +284,11 @@
         "build:ts",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -297,6 +302,11 @@
         "build:rollup",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -327,9 +337,9 @@
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.4.0",
+    "@lit/reactive-element": "^1.6.0",
     "lit-element": "^3.2.0",
-    "lit-html": "^2.4.0"
+    "lit-html": "^2.6.0"
   },
   "devDependencies": {
     "@webcomponents/shadycss": "^1.8.0",

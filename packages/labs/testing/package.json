@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/testing",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -53,6 +53,11 @@
       "dependencies": [
         "build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [
         "web-test-runner.config.js"
       ],
@@ -80,10 +85,10 @@
     "lib/**/*.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
-    "@lit-labs/ssr": "^2.2.0",
+    "@lit-labs/ssr": "^3.0.0",
     "@web/test-runner-commands": "^0.6.1",
     "@webcomponents/template-shadowroot": "^0.1.0",
-    "lit": "^2.3.0"
+    "lit": "^2.6.0"
   },
   "devDependencies": {
     "@open-wc/testing": "^3.1.5"

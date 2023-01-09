@@ -17,6 +17,7 @@ export type {
   VariableDeclaration,
   ClassDeclaration,
   LitElementDeclaration,
+  LitElementExport,
   PackageJson,
   ModuleWithLitElementDeclarations,
 } from './lib/model.js';

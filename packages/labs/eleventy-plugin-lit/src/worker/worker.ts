@@ -5,7 +5,7 @@
  */
 
 import {parentPort} from 'worker_threads';
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import type {Message} from './types.js';

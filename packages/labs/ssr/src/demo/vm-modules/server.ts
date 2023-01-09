@@ -9,14 +9,15 @@ import staticFiles from 'koa-static';
 import koaNodeResolve from 'koa-node-resolve';
 import {URL} from 'url';
 import * as path from 'path';
-
-import {renderModule} from '../../lib/render-module.js';
+import {ModuleLoader} from '../../lib/module-loader.js';
 import {Readable} from 'stream';
+import mount from 'koa-mount';
 
 const {nodeResolve} = koaNodeResolve;
 
 const moduleUrl = new URL(import.meta.url);
-const packageRoot = path.resolve(moduleUrl.pathname, '../../..');
+const ssrPackageRoot = path.resolve(moduleUrl.pathname, '../../..');
+const monorepoRoot = path.resolve(moduleUrl.pathname, '../../../../../..');
 
 const port = 8080;
 
@@ -30,18 +31,23 @@ app.use(async (ctx: Koa.Context, next: Function) => {
     return;
   }
 
-  const ssrResult = await (renderModule(
+  const moduleLoader = new ModuleLoader();
+  const importResult = await moduleLoader.importModule(
     './app-server.js',
-    import.meta.url,
-    'renderAppWithInitialData',
-    []
-  ) as Promise<Iterable<unknown>>);
+    import.meta.url
+  );
+  const {renderAppWithInitialData} = importResult.module
+    .namespace as typeof import('./app-server.js');
+  const ssrResult = await renderAppWithInitialData();
 
   ctx.type = 'text/html';
   ctx.body = Readable.from(ssrResult);
 });
-app.use(nodeResolve({}));
-app.use(staticFiles(packageRoot));
+app.use(nodeResolve({root: monorepoRoot}));
+app.use(
+  mount('/node_modules', staticFiles(path.join(monorepoRoot, 'node_modules')))
+);
+app.use(staticFiles(ssrPackageRoot));
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });

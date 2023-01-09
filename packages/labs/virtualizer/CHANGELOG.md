@@ -1,5 +1,57 @@
 # @lit-labs/virtualizer
 
+## 1.0.1
+
+### Patch Changes
+
+- [#3519](https://github.com/lit/lit/pull/3519) [`393e30cf`](https://github.com/lit/lit/commit/393e30cf7c7f97712e524df34e7343147055fc5d) - Fix [#3481: Error when immediately re-rendering](https://github.com/lit/lit/issues/3481)
+
+- [#3519](https://github.com/lit/lit/pull/3519) [`393e30cf`](https://github.com/lit/lit/commit/393e30cf7c7f97712e524df34e7343147055fc5d) - Fix [#3518: New layoutComplete promise created instead of using existing one](https://github.com/lit/lit/issues/3518)
+
+- [#3525](https://github.com/lit/lit/pull/3525) [`0b67553d`](https://github.com/lit/lit/commit/0b67553d13da43b4039359d4c8c4ef82f0302a4a) - Fix [#3493: Doesn't update on scroll when a clipping ancestor is in Shadow DOM](https://github.com/lit/lit/issues/3493)
+
+- [#3527](https://github.com/lit/lit/pull/3527) [`feb2494d`](https://github.com/lit/lit/commit/feb2494dee3f6f1c907fd432023955fc5f040e28) - Added missing "events.js.map" sourcemap file.
+
+## 1.0.0
+
+_NOTE: As of this release, virtualizer is moving away from 0.x-based versioning to signify prereleases and adopting standard SemVer major/minor/patch semantics. The fact that this release is numbered 1.0 has no special significance._
+
+### Major Changes
+
+- [#3183](https://github.com/lit/lit/pull/3183) [`fd7d86a5`](https://github.com/lit/lit/commit/fd7d86a5001ab38aadf7c474848d8c65f10b156d)
+  - Significantly overhaul scrolling implementation
+    - Make smooth scrolling work as seamlessly as possible
+    - Make the API for scrolling to a virtualizer child element more like the corresponding native API
+    - Add a `pin` option to layouts: declaratively specify scroll position relative to a given child element
+  - Make `<lit-virtualizer>` use the `virtualize()` directive under the hood, restoring original factoring and reducing duplication
+  - Standardize on one way to specify layout (factory function + config object), removing support for older (mostly never documented) options
+  - Add `layoutComplete` promise that resolves when virtualizer thinks it is done with a layout / render cycle (intended primarily for testing purposes)
+  - Fix [#3290: Export virtualizerRef symbol](https://github.com/lit/lit/issues/3290)
+  - Fix [#3491: keyFunction based on index doesn't work properly](https://github.com/lit/lit/issues/3491)
+  - Fix [#3492: Grid layout scrollSize calculated incorrectly when padding doesn't match gap](https://github.com/lit/lit/issues/3492)
+
+### Minor Changes
+
+- [#3263](https://github.com/lit/lit/pull/3263) [`4271dffa`](https://github.com/lit/lit/commit/4271dffaac2126d9b1147f87208dd3aa9c59e129)
+
+  - Add experimental masonry layout (API and behavior subject to change)
+  - Fix [#3342: Gap miscalculation in grid base layout](https://github.com/lit/lit/issues/3342)
+
+- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix [#3498: Scrolling to element with 'nearest' option differs from native behavior](https://github.com/lit/lit/issues/3498)
+
+### Patch Changes
+
+- [#3430](https://github.com/lit/lit/pull/3430) [`412b05e7`](https://github.com/lit/lit/commit/412b05e78781a2a7c139a1bbdc1ce6f38ca6c0e6) - Added an events.js module to enable exporting of RangeChangedEvent and VisibilityChangedEvent classes
+
+- [#3424](https://github.com/lit/lit/pull/3424) [`005c68fa`](https://github.com/lit/lit/commit/005c68fa656dd2f96ffdd4c05ef59aa7679193df) - Fix [#3400: Calculates size incorrectly when a scrolling ancestor has padding](https://github.com/lit/lit/issues/3400)
+
+- [#3501](https://github.com/lit/lit/pull/3501) [`3262c80f`](https://github.com/lit/lit/commit/3262c80f5fa396f95515cb40e01f743f4c224f7e) - Fix [#3243: DOM update doesn't successfully complete under some circumstances](https://github.com/lit/lit/issues/3243)
+
+- [#3489](https://github.com/lit/lit/pull/3489) [`f5065f52`](https://github.com/lit/lit/commit/f5065f527999e48c42c15169cac4293ea1bbf0d7) - Added a shim for deprecated scrollToIndex API, to be removed in a future version
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - lit@2.5.0
+
 ## 0.7.2
 
 ### Patch Changes

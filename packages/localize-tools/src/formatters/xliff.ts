@@ -57,20 +57,9 @@ export class XliffFormatter implements Formatter {
   readTranslations(): Bundle[] {
     const bundles: Array<Bundle> = [];
     for (const locale of this.config.targetLocales) {
-      const path = pathLib.join(
-        this.config.resolve(this.xliffConfig.xliffDir),
-        locale + '.xlf'
-      );
-      let xmlStr;
-      try {
-        xmlStr = fsExtra.readFileSync(path, 'utf8');
-      } catch (err) {
-        if ((err as Error & {code: string}).code === 'ENOENT') {
-          // It's ok if the file doesn't exist, it's probably just the first
-          // time we're running for this locale.
-          continue;
-        }
-        throw err;
+      const xmlStr = this.readTranslationFile(locale);
+      if (!xmlStr) {
+        continue;
       }
       bundles.push(this.parseXliff(xmlStr));
     }
@@ -170,10 +159,14 @@ export class XliffFormatter implements Formatter {
     }
     const writes: Array<Promise<void>> = [];
     for (const targetLocale of this.config.targetLocales) {
+      const existingTargetXmlStr = this.readTranslationFile(targetLocale);
       const xmlStr = this.encodeLocale(
         sourceMessages,
         targetLocale,
-        translations.get(targetLocale) || []
+        translations.get(targetLocale) || [],
+        existingTargetXmlStr
+          ? new xmldom.DOMParser().parseFromString(existingTargetXmlStr)
+          : undefined
       );
       const path = pathLib.join(xliffDir, `${targetLocale}.xlf`);
       writes.push(
@@ -195,83 +188,86 @@ export class XliffFormatter implements Formatter {
   private encodeLocale(
     sourceMessages: ProgramMessage[],
     targetLocale: Locale,
-    targetMessages: Message[]
+    targetMessages: Message[],
+    targetDocument?: XMLDocument
   ): string {
     const translationsByName = makeMessageIdMap(targetMessages);
-
-    const doc = new xmldom.DOMImplementation().createDocument('', '', null);
-    const indent = (node: Element | Document, level = 0) =>
-      node.appendChild(doc.createTextNode('\n' + Array(level + 1).join('  ')));
-    doc.appendChild(
-      doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
-    );
-    indent(doc);
-
-    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#xliff
-    const xliff = doc.createElement('xliff');
-    xliff.setAttribute('version', '1.2');
-    xliff.setAttribute('xmlns', 'urn:oasis:names:tc:xliff:document:1.2');
-    doc.appendChild(xliff);
-    indent(xliff);
-
-    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#file
-    const file = doc.createElement('file');
-    xliff.appendChild(file);
-    file.setAttribute('target-language', targetLocale);
-    file.setAttribute('source-language', this.config.sourceLocale);
-    // TODO The spec requires the source filename in the "original" attribute,
-    // but we don't currently track filenames.
-    file.setAttribute('original', 'lit-localize-inputs');
-    // Plaintext seems right, as opposed to HTML, since our translatable message
-    // text is just text, and all HTML markup is encoded into <x> or <ph>
-    // elements.
-    file.setAttribute('datatype', 'plaintext');
-    indent(file);
-
-    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#body
-    const body = doc.createElement('body');
-    file.appendChild(body);
-    indent(body);
-
+    const doc = targetDocument || this.initNewTargetDocument(targetLocale);
+    const indent = this.createIndentFunction(doc);
+    const existingTranslationsByName = this.makeExistingTranslationsMap(doc);
+    const body = getOneElementByTagNameOrThrow(doc, 'body');
+    const names = new Set();
     for (const {name, contents: sourceContents, desc} of sourceMessages) {
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#trans-unit
-      const transUnit = doc.createElement('trans-unit');
-      body.appendChild(transUnit);
-      indent(transUnit, 1);
-      transUnit.setAttribute('id', name);
+      let transUnit = existingTranslationsByName.get(name);
+      if (!transUnit) {
+        transUnit = doc.createElement('trans-unit');
+        transUnit.setAttribute('id', name);
+        this.appendChild(body, transUnit, 0, indent);
+      }
 
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#source
-      const source = doc.createElement('source');
+      let source = this.getElementByTagName(transUnit, 'source');
+      if (!source) {
+        source = doc.createElement('source');
+        this.appendChild(transUnit, source, 1, indent);
+      } else {
+        this.clearElement(source);
+      }
       for (const child of this.encodeContents(doc, sourceContents)) {
         source.appendChild(child);
       }
-      transUnit.appendChild(source);
 
       const translation = translationsByName.get(name);
-      if (translation !== undefined) {
+      if (translation) {
         // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#target
-        const target = doc.createElement('target');
+        let target = this.getElementByTagName(transUnit, 'target');
+        if (!target) {
+          target = doc.createElement('target');
+          this.appendChild(transUnit, target, 1, indent);
+        } else {
+          this.clearElement(target);
+        }
         for (const child of this.encodeContents(doc, translation.contents)) {
           target.appendChild(child);
         }
-        indent(transUnit, 1);
-        transUnit.appendChild(target);
       }
 
       if (desc) {
         // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#note
-        const note = doc.createElement('note');
+        let note = this.getNoteElement(transUnit, desc);
+        if (!note) {
+          note = doc.createElement('note');
+          note.setAttribute('from', 'lit-localize');
+          this.appendChild(transUnit, note, 1, indent);
+        } else {
+          // migrate existing notes generated by lit-localize
+          if (!note.hasAttribute('from')) {
+            note.setAttribute('from', 'lit-localize');
+          }
+          this.clearElement(note);
+        }
         note.appendChild(doc.createTextNode(desc));
-        indent(transUnit, 1);
-        transUnit.appendChild(note);
       }
 
-      indent(transUnit);
-      indent(body);
+      names.add(name);
     }
-    indent(file);
-    indent(xliff);
+
+    // clean up obsolete translations
+    existingTranslationsByName.forEach((existingTransUnit, existingName) => {
+      if (!names.has(existingName)) {
+        this.removeChildAndPrecedingText(body, existingTransUnit);
+      }
+    });
+
+    if (!targetDocument) {
+      indent(getOneElementByTagNameOrThrow(doc, 'file'));
+      indent(getOneElementByTagNameOrThrow(doc, 'xliff'));
+    }
+
+    // for existing files this is a guess
     indent(doc);
+
     const serializer = new xmldom.XMLSerializer();
     const xmlStr = serializer.serializeToString(doc);
     return xmlStr;
@@ -318,5 +314,139 @@ export class XliffFormatter implements Formatter {
         `Internal error: unknown xliff placeholderStyle: ${unreachable(style)}`
       );
     }
+  }
+
+  private initNewTargetDocument(targetLocale: Locale): XMLDocument {
+    const doc = new xmldom.DOMImplementation().createDocument('', '', null);
+    const indent = this.createIndentFunction(doc);
+    doc.appendChild(
+      doc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"')
+    );
+    indent(doc);
+
+    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#xliff
+    const xliff = doc.createElement('xliff');
+    xliff.setAttribute('version', '1.2');
+    xliff.setAttribute('xmlns', 'urn:oasis:names:tc:xliff:document:1.2');
+    doc.appendChild(xliff);
+    indent(xliff);
+
+    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#file
+    const file = doc.createElement('file');
+    xliff.appendChild(file);
+    file.setAttribute('target-language', targetLocale);
+    file.setAttribute('source-language', this.config.sourceLocale);
+    // TODO The spec requires the source filename in the "original" attribute,
+    // but we don't currently track filenames.
+    file.setAttribute('original', 'lit-localize-inputs');
+    // Plaintext seems right, as opposed to HTML, since our translatable message
+    // text is just text, and all HTML markup is encoded into <x> or <ph>
+    // elements.
+    file.setAttribute('datatype', 'plaintext');
+    indent(file);
+
+    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#body
+    const body = doc.createElement('body');
+    file.appendChild(body);
+
+    return doc;
+  }
+
+  private readTranslationFile(locale: Locale): string | undefined {
+    const path = pathLib.join(
+      this.config.resolve(this.xliffConfig.xliffDir),
+      locale + '.xlf'
+    );
+    try {
+      return fsExtra.readFileSync(path, 'utf8');
+    } catch (err) {
+      if ((err as Error & {code: string}).code === 'ENOENT') {
+        // It's ok if the file doesn't exist, it's probably just the first
+        // time we're running for this locale.
+        return undefined;
+      }
+      throw err;
+    }
+  }
+
+  private makeExistingTranslationsMap(
+    document: XMLDocument
+  ): Map<string, Element> {
+    const map = new Map<string, Element>();
+    const transUnits = document.getElementsByTagName('trans-unit');
+    for (let t = 0; t < transUnits.length; t++) {
+      const transUnit = transUnits[t];
+      map.set(getNonEmptyAttributeOrThrow(transUnit, 'id'), transUnit);
+    }
+    return map;
+  }
+
+  private getElementByTagName(
+    element: Element,
+    tagName: string
+  ): Element | undefined {
+    const matches = element.getElementsByTagName(tagName);
+    return matches.length === 1 ? matches[0] : undefined;
+  }
+
+  private getNoteElement(element: Element, note: string): Element | undefined {
+    const matches = element.getElementsByTagName('note');
+    if (matches.length < 1) {
+      return undefined;
+    }
+    for (let i = 0; i < matches.length; i++) {
+      const el = matches.item(i);
+      if (el?.getAttribute('from') === 'lit-localize') {
+        return el;
+      }
+      // generated by previous version of lit-localize
+      if (el?.textContent?.trim() === note) {
+        return el;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * xmldom does not implement replaceChildren.
+   */
+  private clearElement(element: Element) {
+    const children = element.childNodes;
+    for (let i = 0; i < children.length; i++) {
+      element.removeChild(children.item(i));
+    }
+  }
+
+  /**
+   * Append childNode to parentNode, try to preserve some
+   * whitespace / indentation for common scenarios.
+   */
+  private appendChild(
+    parentNode: Node,
+    childNode: Node,
+    level: number,
+    indent: Function
+  ) {
+    const lastChild = parentNode.lastChild;
+    if (lastChild) {
+      parentNode.insertBefore(indent(parentNode, level), lastChild);
+      parentNode.insertBefore(childNode, lastChild);
+    } else {
+      parentNode.appendChild(indent(parentNode, level));
+      parentNode.appendChild(childNode);
+      parentNode.appendChild(indent(parentNode, level - 1));
+    }
+  }
+
+  private removeChildAndPrecedingText(parentNode: Node, childNode: Node) {
+    if (childNode.previousSibling?.nodeType === childNode.TEXT_NODE) {
+      parentNode.removeChild(childNode.previousSibling);
+    }
+    parentNode.removeChild(childNode);
+  }
+
+  private createIndentFunction(doc: Document): Function {
+    return (node: Element | Document, level = 0) =>
+      node.appendChild(doc.createTextNode('\n' + Array(level + 1).join('  ')));
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/react",
-  "version": "1.0.9",
+  "version": "1.1.1",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -121,6 +121,11 @@
         "../../reactive-element:build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -131,19 +136,24 @@
         "build:rollup",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     }
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit/reactive-element": "^1.4.0",
-    "@types/react": "^18.0.21",
-    "@types/react-dom": "^18.0.6",
+    "@lit/reactive-element": "^1.5.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
     "@types/trusted-types": "^2.0.2",
     "@lit-internal/scripts": "^1.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
   },
   "publishConfig": {
     "access": "public"

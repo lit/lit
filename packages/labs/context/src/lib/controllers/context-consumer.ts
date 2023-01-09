@@ -5,7 +5,7 @@
  */
 
 import {ContextRequestEvent} from '../context-request-event.js';
-import {ContextKey, ContextType} from '../context-key.js';
+import {Context, ContextType} from '../create-context.js';
 import {ReactiveController, ReactiveElement} from 'lit';
 
 /**
@@ -17,21 +17,18 @@ import {ReactiveController, ReactiveElement} from 'lit';
  * disconnected.
  */
 export class ContextConsumer<
-  Context extends ContextKey<unknown, unknown>,
+  C extends Context<unknown, unknown>,
   HostElement extends ReactiveElement
 > implements ReactiveController
 {
   private provided = false;
 
-  public value?: ContextType<Context> = undefined;
+  public value?: ContextType<C> = undefined;
 
   constructor(
     protected host: HostElement,
-    private context: Context,
-    private callback?: (
-      value: ContextType<Context>,
-      dispose?: () => void
-    ) => void,
+    private context: C,
+    private callback?: (value: ContextType<C>, dispose?: () => void) => void,
     private subscribe: boolean = false
   ) {
     this.host.addController(this);

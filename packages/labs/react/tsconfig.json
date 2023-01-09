@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "target": "es2019",
-    "module": "Node",
+    "module": "NodeNext",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,

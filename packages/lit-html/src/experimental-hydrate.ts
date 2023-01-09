@@ -14,6 +14,11 @@ import {
   isTemplateResult,
 } from './directive-helpers.js';
 
+// In the Node build, this import will be injected by Rollup:
+// import {Buffer} from 'buffer';
+
+const NODE_MODE = false;
+
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
@@ -426,5 +431,15 @@ export const digestForTemplateResult = (templateResult: TemplateResult) => {
       hashes[i % digestSize] = (hashes[i % digestSize] * 33) ^ s.charCodeAt(i);
     }
   }
-  return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)));
+  const str = String.fromCharCode(...new Uint8Array(hashes.buffer));
+  // Use `btoa` in browsers because it is supported universally.
+  //
+  // In Node, we are sometimes executing in an isolated VM context, which means
+  // neither `btoa` nor `Buffer` will be globally available by default (also
+  // note that `btoa` is only supported in Node 16+ anyway, and we still support
+  // Node 14). Instead of requiring users to always provide an implementation
+  // for `btoa` when they set up their VM context, we instead inject an import
+  // for `Buffer` from Node's built-in `buffer` module in our Rollup config (see
+  // note at the top of this file), and use that.
+  return NODE_MODE ? Buffer.from(str, 'binary').toString('base64') : btoa(str);
 };

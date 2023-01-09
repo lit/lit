@@ -13,7 +13,7 @@ import {
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
-import {VisibilityChangedEvent} from '../../Virtualizer.js';
+import {VisibilityChangedEvent} from '../../events.js';
 import {expect, html, fixture} from '@open-wc/testing';
 
 describe('VisibilityChanged event', () => {

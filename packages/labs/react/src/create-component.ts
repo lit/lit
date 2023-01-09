@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import React from 'react';
-
 // Match a prop name to a typed event callback by
 // adding an Event type as an expected property on a string.
 export type EventName<T extends Event = Event> = string & {
@@ -22,15 +20,15 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
-type ReactProps<I, E = {}> = Omit<React.HTMLAttributes<I>, keyof E>;
-type ElementWithoutPropsOrEventListeners<I, E = {}> = Omit<
+type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
+type ElementWithoutPropsOrEventListeners<I, E> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>
 >;
 
 // Props the user is allowed to use, includes standard attributes, children,
 // ref, as well as special event and element properties.
-type WebComponentProps<
+export type WebComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = Partial<
@@ -47,7 +45,7 @@ type ReactComponentProps<
   I extends HTMLElement,
   E extends EventNames = {}
 > = WebComponentProps<I, E> & {
-  __forwardedRef?: React.Ref<I>;
+  __forwardedRef: React.Ref<I>;
 };
 
 export type ReactWebComponent<
@@ -66,6 +64,8 @@ interface Options<I extends HTMLElement, E extends EventNames = {}> {
 }
 
 type Constructor<T> = {new (): T};
+
+const DEV_MODE = true;
 
 const reservedReactProperties = new Set([
   'children',
@@ -124,22 +124,35 @@ const setProperty = <E extends Element>(
   events?: EventNames
 ) => {
   const event = events?.[name];
-  if (event !== undefined) {
+  if (event !== undefined && value !== old) {
     // Dirty check event value.
-    if (value !== old) {
-      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
-    }
-  } else {
-    // But don't dirty check properties; elements are assumed to do this.
-    node[name as keyof E] = value as E[keyof E];
+    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    return;
   }
+
+  // Note, the attribute removal here for `undefined` and `null` values is done
+  // to match React's behavior on non-custom elements. It needs special
+  // handling because it does not match platform behavior.  For example,
+  // setting the `id` property to `undefined` sets the attribute to the string
+  // "undefined." React "fixes" that odd behavior and the code here matches
+  // React's convention.
+  if (
+    (value === undefined || value === null) &&
+    name in HTMLElement.prototype
+  ) {
+    node.removeAttribute(name);
+    return;
+  }
+
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
 };
 
 // Set a React ref. Note, there are 2 kinds of refs and there's no built in
 // React API to set a ref.
 const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
   if (typeof ref === 'function') {
-    (ref as (e: Element | null) => void)(value);
+    ref(value);
   } else {
     (ref as {current: Element | null}).current = value;
   }
@@ -230,6 +243,22 @@ export function createComponent<
     tag = tagName;
   }
 
+  // Warn users when web components use reserved React properties
+  if (DEV_MODE) {
+    for (const p of reservedReactProperties) {
+      if (p in element.prototype && !(p in HTMLElement.prototype)) {
+        // Note, this effectively warns only for `ref` since the other
+        // reserved props are on HTMLElement.prototype. To address this
+        // would require crawling down the prototype, which doesn't feel worth
+        // it since implementing these properties on an element is extremely
+        // rare.
+        console.warn(`${tagName} contains property ${p} which is a React
+reserved property. It will be used by React and not set on
+the element.`);
+      }
+    }
+  }
+
   const Component = React.Component;
   const createElement = React.createElement;
   const eventProps = new Set(Object.keys(events ?? {}));
@@ -238,8 +267,8 @@ export function createComponent<
 
   class ReactComponent extends Component<Props> {
     private _element: I | null = null;
-    private _elementProps!: {[index: string]: unknown};
-    private _userRef?: React.Ref<I>;
+    private _elementProps!: Record<string, unknown>;
+    private _forwardedRef?: React.Ref<I>;
     private _ref?: React.RefCallback<I>;
 
     static displayName = displayName ?? element.name;
@@ -288,44 +317,42 @@ export function createComponent<
      *
      */
     override render() {
-      // Since refs only get fulfilled once, pass a new one if the user's
-      // ref changed. This allows refs to be fulfilled as expected, going from
+      // Extract and remove __forwardedRef from userProps in a rename-safe way
+      const {__forwardedRef, ...userProps} = this.props;
+      // Since refs only get fulfilled once, pass a new one if the user's ref
+      // changed. This allows refs to be fulfilled as expected, going from
       // having a value to null.
-      const userRef = this.props.__forwardedRef ?? null;
-      if (this._ref === undefined || this._userRef !== userRef) {
+      if (this._forwardedRef !== __forwardedRef) {
         this._ref = (value: I | null) => {
-          if (this._element === null) {
-            this._element = value;
+          if (__forwardedRef !== null) {
+            setRef(__forwardedRef, value);
           }
-          if (userRef !== null) {
-            setRef(userRef, value);
-          }
-          this._userRef = userRef;
+
+          this._element = value;
+          this._forwardedRef = __forwardedRef;
         };
       }
-      // Filters class properties out and passes the remaining
-      // attributes to React. This allows attributes to use framework rules
-      // for setting attributes and render correctly under SSR.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const props: any = {ref: this._ref};
-      // Note, save element props while iterating to avoid the need to
-      // iterate again when setting properties.
+      // Save element props while iterating to avoid the need to iterate again
+      // when setting properties.
       this._elementProps = {};
-      for (const [k, v] of Object.entries(this.props)) {
-        if (k === '__forwardedRef') continue;
-
-        if (
-          eventProps.has(k) ||
-          (!reservedReactProperties.has(k) &&
-            !(k in HTMLElement.prototype) &&
-            k in element.prototype)
-        ) {
-          this._elementProps[k] = v;
-        } else {
+      const props: Record<string, unknown> = {ref: this._ref};
+      // Filters class properties and event properties out and passes the
+      // remaining attributes to React. This allows attributes to use framework
+      // rules for setting attributes and render correctly under SSR.
+      for (const [k, v] of Object.entries(userProps)) {
+        if (reservedReactProperties.has(k)) {
           // React does *not* handle `className` for custom elements so
           // coerce it to `class` so it's handled correctly.
           props[k === 'className' ? 'class' : k] = v;
+          continue;
         }
+
+        if (eventProps.has(k) || k in element.prototype) {
+          this._elementProps[k] = v;
+          continue;
+        }
+
+        props[k] = v;
       }
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
@@ -334,11 +361,11 @@ export function createComponent<
   const ForwardedComponent: ReactWebComponent<I, E> = React.forwardRef<
     I,
     WebComponentProps<I, E>
-  >((props, ref) =>
+  >((props, __forwardedRef) =>
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
-      {...props, __forwardedRef: ref},
-      props?.children as React.ReactNode
+      {...props, __forwardedRef},
+      props?.children
     )
   );
 
