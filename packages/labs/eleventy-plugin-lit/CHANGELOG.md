@@ -1,5 +1,17 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 1.0.0
+
+### Major Changes
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - The Lit SSR global DOM shim is no longer automatically loaded when rendering Lit components from Eleventy. When paired with the latest version of Lit, the global DOM shim is no longer typically required, because Lit now automatically imports shimmed versions of needed APIs.
+
+### Patch Changes
+
+- Updated dependencies [[`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`ff637f52`](https://github.com/lit/lit/commit/ff637f52a3c2252e37d6ea6ae352c3c0f35a9e87), [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`c77220e8`](https://github.com/lit/lit/commit/c77220e80bc5b04628776ef8e5828fcde5f8ad16)]:
+  - @lit-labs/ssr@3.0.0
+  - lit@2.6.0
+
 ## 0.2.3
 
 ### Patch Changes

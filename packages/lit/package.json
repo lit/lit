@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "publishConfig": {
     "access": "public"
   },
@@ -337,9 +337,9 @@
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.5.0",
+    "@lit/reactive-element": "^1.6.0",
     "lit-element": "^3.2.0",
-    "lit-html": "^2.5.0"
+    "lit-html": "^2.6.0"
   },
   "devDependencies": {
     "@webcomponents/shadycss": "^1.8.0",

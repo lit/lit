@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "publishConfig": {
     "access": "public"
   },
@@ -135,14 +135,14 @@
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "jsonschema": "^1.4.0",
-    "lit": "^2.2.0",
+    "lit": "^2.6.0",
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
     "typescript": "~4.7.4"
   },
   "devDependencies": {
-    "@lit-labs/ssr": "^2.1.0",
+    "@lit-labs/ssr": "^3.0.0",
     "@lit/ts-transformers": "^1.1.0",
     "@types/fs-extra": "^9.0.1",
     "@types/minimist": "^1.2.0",
