@@ -1,5 +1,5 @@
 {
-  "name": "@lit-internal/examples-nextjs",
+  "name": "@lit-examples/nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {
