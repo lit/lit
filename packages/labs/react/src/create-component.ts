@@ -20,7 +20,11 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
-type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
+// React 18 typings do not include implicit children
+type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E> & {
+  children?: React.ReactNode;
+};
+
 type ElementWithoutPropsOrEventListeners<I, E> = Omit<
   I,
   keyof E | keyof ReactProps<I, E>

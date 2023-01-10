@@ -219,5 +219,8 @@
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
     "**/*.{js,ts}": "eslint --fix"
+  },
+  "dependencies": {
+    "@types/react": "^18.0.26"
   }
 }
