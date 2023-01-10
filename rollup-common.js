@@ -494,6 +494,8 @@ export function litProdConfig({
                   // i.e. using globalThis instead of window, and shimming APIs
                   // needed for Lit bootup.
                   'const NODE_MODE = false': 'const NODE_MODE = true',
+                  'const ENABLE_SHADYDOM_NOPATCH = true':
+                    'const ENABLE_SHADYDOM_NOPATCH = false',
                 },
               }),
               sourcemaps(),
