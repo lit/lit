@@ -131,7 +131,7 @@
   ],
   "dependencies": {
     "@lit/localize": "^0.11.0",
-    "@xmldom/xmldom": "^0.8.2",
+    "@xmldom/xmldom": "^0.8.4",
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "jsonschema": "^1.4.0",
