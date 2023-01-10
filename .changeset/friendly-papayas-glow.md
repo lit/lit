@@ -3,4 +3,4 @@
 'lit-html': patch
 ---
 
-disable shadydom in node dev environments
+Disable ShadyDOM noPatch in Node dev build. This fixes the issue of throwing due to undefined `window`.
