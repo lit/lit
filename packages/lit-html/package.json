@@ -287,7 +287,8 @@
     "test": "wireit",
     "test:dev": "wireit",
     "test:prod": "wireit",
-    "test:node": "wireit"
+    "test:node": "wireit",
+    "test:node-dev": "wireit"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
@@ -408,6 +409,7 @@
         "test:dev",
         "test:prod",
         "test:node",
+        "test:node-dev",
         "check-version"
       ]
     },
@@ -433,6 +435,15 @@
     },
     "test:node": {
       "command": "node development/test/node-imports.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:node-dev": {
+      "command": "node --conditions=development development/test/node-imports.js",
       "dependencies": [
         "build:ts",
         "build:rollup"
