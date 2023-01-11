@@ -43,3 +43,11 @@ export class MyElement extends ReactiveElement {
 
 export class MyOtherElement extends ReactiveElement {}
 customElements.define('my-other-element', MyOtherElement);
+
+import assert from 'node:assert/strict';
+import {HTMLElement} from '@lit-labs/ssr-dom-shim';
+assert.strictEqual(
+  Object.getPrototypeOf(ReactiveElement),
+  HTMLElement,
+  'Expected ReactiveElement to extend HTMLElement from ssr-dom-shim'
+);
