@@ -275,6 +275,7 @@ const injectNodeDomShimIntoReactiveElement = [
     include: ['**/packages/lit-html/development/experimental-hydrate.js'],
   }),
   replace({
+    preventAssignment: true,
     values: {
       'extends HTMLElement': 'extends (globalThis.HTMLElement ?? HTMLElement)',
     },
