@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export {patchCreateElement} from '../lib/utils.js';
+export {patchCreateElement} from '../lib/patch-create-element.js';

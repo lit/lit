@@ -9,13 +9,11 @@
  * development mode. For use in servers.
  */
 
-// TODO(augustjk) Remove when https://github.com/lit/lit/pull/3522 lands
-import '@lit-labs/ssr/lib/install-global-dom-shim.js';
-
 // eslint-disable-next-line import/extensions
 import * as ReactJSXDevRuntime from 'react/jsx-dev-runtime';
 import {createElement, type ElementType, type ReactNode} from 'react';
-import {isCustomElement, renderShadowContents} from '../lib/utils.js';
+import {isCustomElement} from '../lib/utils.js';
+import {renderShadowContents} from '../lib/render-shadow-contents.js';
 
 export const jsxDEV = <P extends {children?: ReactNode[] | ReactNode}>(
   type: ElementType<P>,

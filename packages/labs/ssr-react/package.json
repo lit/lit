@@ -71,9 +71,9 @@
     "directory": "packages/labs/ssr-react"
   },
   "dependencies": {
-    "@lit-labs/ssr": "^2.2.3",
+    "@lit-labs/ssr": "^3.0.0",
     "@types/react": "17 || 18",
-    "lit": "^2.4.1"
+    "lit": "^2.6.1"
   },
   "peerDependencies": {
     "react": "17 || 18"
