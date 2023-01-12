@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.6.1
+
+### Patch Changes
+
+- [#3526](https://github.com/lit/lit/pull/3526) [`65e56655`](https://github.com/lit/lit/commit/65e56655b73d22172647c1a748e7a907ad0227c0) - Disable ShadyDOM noPatch in Node dev build. This fixes the issue of throwing due to undefined `window`.
+
 ## 2.6.0
 
 ### Minor Changes
