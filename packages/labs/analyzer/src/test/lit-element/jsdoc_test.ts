@@ -8,7 +8,7 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
-import {getSourceFilename, languages} from '../utils.js';
+import {getSourceFilename, InMemoryAnalyzer, languages} from '../utils.js';
 
 import {createPackageAnalyzer, Module, AbsolutePath} from '../../index.js';
 
@@ -445,5 +445,262 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.equal(member.deprecated, 'Method 2 deprecated');
   });
 
-  test.run();
+  // test.run();
+
+  // Doing module JSDoc tests in-memory, to test a number of variations
+  // without needing to maintain a file for each.
+
+  for (const hasFirstStatementDoc of [false, true]) {
+    const moduleTest = suite<{
+      analyzer: InMemoryAnalyzer;
+    }>(
+      `Module jsDoc tests, ${
+        hasFirstStatementDoc ? 'has' : 'no'
+      } first statement docs (${lang})`
+    );
+
+    moduleTest.before.each((ctx) => {
+      ctx.analyzer = new InMemoryAnalyzer(lang, {
+        '/package.json': JSON.stringify({name: '@lit-internal/in-memory-test'}),
+      });
+    });
+
+    const firstStatementDoc = hasFirstStatementDoc
+      ? `
+      /**
+       * First statement description
+       * @summary First statement summary
+       */
+    `
+      : '';
+
+    moduleTest('untagged module description with @module tag', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * Module description
+           * more description
+           * @module
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(module.description, 'Module description\nmore description');
+    });
+
+    moduleTest(
+      'untagged module description with @fileoverview tag',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * Module description
+           * more description
+           * @fileoverview
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+      }
+    );
+
+    moduleTest('module description in @fileoverview tag', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * @fileoverview Module description
+           * more description
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(module.description, 'Module description\nmore description');
+    });
+
+    moduleTest(
+      'untagged module description with @packageDocumentation tag',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * Module description
+           * more description
+           * @packageDocumentation
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+      }
+    );
+
+    moduleTest(
+      'module description in @packageDocumentation tag',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * @packageDocumentation Module description
+           * more description
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+      }
+    );
+
+    moduleTest(
+      'module description in @packageDocumentation tag with other tags',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * @packageDocumentation Module description
+           * more description
+           * @module foo
+           * @deprecated Module is deprecated
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+        assert.equal(module.deprecated, 'Module is deprecated');
+      }
+    );
+
+    moduleTest('untagged module description', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * Module description
+           * more module description
+           * @summary Module summary
+           * @deprecated
+           */
+          /**
+           * First statement description
+           * @summary First statement summary
+           */
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(
+        module.description,
+        'Module description\nmore module description'
+      );
+      assert.equal(module.summary, 'Module summary');
+      assert.equal(module.deprecated, true);
+    });
+
+    moduleTest('multiple untagged module descriptions', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * Module description
+           * more module description
+           */
+          /**
+           * Even more module description
+           */
+          /**
+           * First statement description
+           * @summary First statement summary
+           */
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(
+        module.description,
+        'Module description\nmore module description\nEven more module description'
+      );
+    });
+
+    moduleTest(
+      'multiple untagged module descriptions with other tags',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * Module description
+           * more module description
+           * @deprecated
+          */
+          /**
+           * Even more module description
+           * @summary Module summary
+           */
+          /**
+           * First statement description
+           * @summary First statement summary
+           */
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore module description\nEven more module description'
+        );
+        assert.equal(module.summary, 'Module summary');
+        assert.equal(module.deprecated, true);
+      }
+    );
+
+    moduleTest.run();
+  }
 }

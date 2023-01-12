@@ -64,6 +64,11 @@ const getJSDocTagComment = (tag: ts.JSDocTag) => {
   return normalizeLineEndings(comment).trim();
 };
 
+const isModuleJSDocTag = (tag: ts.JSDocTag) =>
+  tag.tagName.text === 'module' ||
+  tag.tagName.text === 'fileoverview' ||
+  tag.tagName.text === 'packageDocumentation';
+
 /**
  * Parses name, type, summary, and description from JSDoc tag for things like
  * @fires.
@@ -220,6 +225,57 @@ const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
   }
 };
 
+const moduleJSDocsMap = new WeakMap<ts.SourceFile, ts.JSDoc[]>();
+
+/**
+ * Returns the module-level JSDoc comment blocks for a given source file.
+ *
+ * Note that TS does not have a concept of module-level JSDoc; if it
+ * exists, it will always be attached to the first statement in the module.
+ *
+ * Thus, we parse module-level documentation using the following heuristic:
+ * - If the first statement only has one JSDoc block, it is only treated as
+ *   module documentation if it contains a `@module`, `@fileoverview`, or
+ *   `@packageDocumentation` tag. This is required to disambiguate a module
+ *   description (with an undocumented first statement) from documentation
+ *   for the first statement.
+ * - If the first statement has more than one JSDoc block, we collect all
+ *   but the last and use those, regardless of whether they contain one
+ *   of the above module-designating tags (the last one is assumed to belong
+ *   to the first statement).
+ *
+ * This function caches its result against the given sourceFile, since it is
+ * needed both to find the module comment and to filter out module comments
+ * node comments.
+ */
+const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
+  let moduleJSDocs = moduleJSDocsMap.get(sourceFile);
+  if (moduleJSDocs !== undefined) {
+    return moduleJSDocs;
+  }
+  // Get the first child in the sourceFile; note that returning the first child
+  // from `ts.forEachChild` is more robust than `sourceFile.getChildAt(0)`,
+  // since `forEachChild` flattens embedded arrays that the child APIs would
+  // otherwise return.
+  const firstChild = ts.forEachChild(sourceFile, (n) => n);
+  if (firstChild === undefined) {
+    moduleJSDocs = [];
+  } else {
+    // Get the JSDoc blocks attached to the first child (they oddly show up
+    // in the node's children)
+    const jsDocs = firstChild.getChildren().filter(ts.isJSDoc);
+    // If there is more than one leading JSDoc block, grab all but the last,
+    // otherwise grab the one (see heuristic above)
+    moduleJSDocs = jsDocs.slice(0, jsDocs.length > 1 ? -1 : 1);
+    // If there is only one leading JSDoc block, it must have a module tag
+    if (jsDocs.length === 1 && !jsDocs[0].tags?.some(isModuleJSDocTag)) {
+      moduleJSDocs = [];
+    }
+  }
+  moduleJSDocsMap.set(sourceFile, moduleJSDocs!);
+  return moduleJSDocs;
+};
+
 /**
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given node.
@@ -230,15 +286,13 @@ export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
   if (jsDocTags !== undefined) {
     addJSDocTagInfo(info, jsDocTags);
   }
-  // If we didn't have a tagged @description, we'll use any untagged text as
-  // the description. If we also didn't have a @summary and the untagged text
-  // has a line break, we'll use the first chunk as the summary, and the
-  // remainder as a description.
   if (info.description === undefined || info.summary === undefined) {
+    const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
     const comment = normalizeLineEndings(
       node
         .getChildren()
         .filter(ts.isJSDoc)
+        .filter((c) => !moduleJSDocs.includes(c))
         .map((n) => n.comment)
         .filter((c) => c !== undefined)
         .join('\n')
@@ -253,26 +307,12 @@ export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
  * a given source file.
  */
 export const parseModuleJSDocInfo = (sourceFile: ts.SourceFile) => {
-  const firstChild = ts.forEachChild(sourceFile, (n) => n);
-  if (firstChild === undefined) {
-    return {};
-  }
-  const jsDocs = firstChild.getChildren().filter(ts.isJSDoc);
-  const moduleJSDocs = jsDocs.slice(0, jsDocs.length > 1 ? -1 : 1);
-  const jsDocTags = moduleJSDocs.flatMap((d) => d.tags ?? []);
-  if (
-    jsDocs.length === 1 &&
-    !jsDocTags.find(
-      (t) =>
-        t.tagName.text === 'module' ||
-        t.tagName.text === 'fileoverview' ||
-        t.tagName.text === 'packageDocumentation'
-    )
-  ) {
-    return {};
-  }
+  const moduleJSDocs = getModuleJSDocs(sourceFile);
   const info: NodeJSDocInfo = {};
-  addJSDocTagInfo(info, jsDocTags);
+  addJSDocTagInfo(
+    info,
+    moduleJSDocs.flatMap((m) => m.tags ?? [])
+  );
   if (info.description === undefined) {
     const comment = moduleJSDocs
       .map((d) => d.comment)
