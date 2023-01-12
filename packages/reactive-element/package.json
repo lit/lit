@@ -166,7 +166,9 @@
     "test:dev": "wireit",
     "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit"
+    "test:node-dev": "wireit",
+    "test:node-dom-shim": "wireit",
+    "test:node-dom-shim-dev": "wireit"
   },
   "wireit": {
     "build": {
@@ -268,6 +270,8 @@
         "test:prod",
         "test:node",
         "test:node-dev",
+        "test:node-dom-shim",
+        "test:node-dom-shim-dev",
         "check-version"
       ]
     },
@@ -313,6 +317,24 @@
     },
     "test:node-dev": {
       "command": "node --conditions=development development/test/node-imports.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:node-dom-shim": {
+      "command": "node development/test/node-dom-shim.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:node-dom-shim-dev": {
+      "command": "node --conditions=development development/test/node-dom-shim.js",
       "dependencies": [
         "build:ts",
         "build:rollup"
