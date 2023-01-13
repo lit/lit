@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Internal package links in lockfile will go out of date often.
+# External dependency versions are pinned in package.json instead.
+package-lock.json
