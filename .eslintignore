@@ -283,6 +283,7 @@ packages/labs/ssr-react/lib/
 packages/labs/ssr-react/index.*
 packages/labs/ssr-react/jsx-runtime.*
 packages/labs/ssr-react/jsx-dev-runtime.*
+packages/labs/ssr-react/enable-lit-ssr.*
 
 packages/labs/task/development/
 packages/labs/task/test/
