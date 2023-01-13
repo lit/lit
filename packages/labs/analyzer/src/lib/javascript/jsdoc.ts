@@ -40,11 +40,16 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 
 // Regex for parsing name, type, and description from JSDoc comments
 const parseNameTypeDescRE =
-  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:[\s\-:]+)?(?<description>[\s\S]*)$/m;
+  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+]+)?(?<description>[\s\S]*)$/m;
 
 // Regex for parsing name and description from JSDoc comments
-const parseNameDescRE =
-  /^(?<name>[^\s:]+)(?:[\s\-:]+)?(?<description>[\s\S]*)$/m;
+const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
+
+// Regex for parsing optional name and description from JSDoc comments, where
+// the dash is required before the description (syntax for `@slot` tag, whose
+// default slot has no name)
+const parseNameDashDescRE =
+  /^(?<name>^\S*)?(?:\s+-\s+(?<description>[\s\S]*))?$/m;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
@@ -106,15 +111,25 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
  * * @slot name: description
  */
 export const parseNamedJSDocInfo = (
-  tag: ts.JSDocTag
+  tag: ts.JSDocTag,
+  requireDash = false
 ): NamedJSDocInfo | undefined => {
   const comment = getJSDocTagComment(tag);
   if (comment == undefined) {
     return undefined;
   }
-  const nameDesc = comment.match(parseNameDescRE);
+  const nameDesc = comment.match(
+    requireDash ? parseNameDashDescRE : parseNameDescRE
+  );
   if (nameDesc === null) {
-    throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
+    throw new DiagnosticsError(
+      tag,
+      `Unexpected JSDoc format.${
+        parseNameDashDescRE
+          ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
+          : ''
+      }`
+    );
   }
   const {name, description} = nameDesc.groups!;
   const info: NamedJSDocInfo = {name};

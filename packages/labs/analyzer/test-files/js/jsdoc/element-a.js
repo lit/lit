@@ -9,26 +9,23 @@ import {LitElement} from 'lit';
 /**
  * A cool custom element.
  *
- * @slot basic
- * @slot with-description Description for with-description
+ * @slot - Description for default slot
+ * @slot no-description
+ * @slot with-description - Description for with-description
  * with wraparound
  * @slot with-description-dash - Description for with-description-dash
- * @slot with-description-colon: Description for with-description-colon
- * @cssPart basic
+ * @cssPart no-description
  * @cssPart with-description Description for :part(with-description)
  * with wraparound
  * @cssPart with-description-dash - Description for :part(with-description-dash)
- * @cssPart with-description-colon: Description for :part(with-description-colon)
- * @cssProperty --basic
+ * @cssProperty --no-description
  * @cssProperty --with-description Description for --with-description
  * with wraparound
  * @cssProperty --with-description-dash - Description for --with-description-dash
- * @cssProperty --with-description-colon: Description for --with-description-colon
- * @cssProp --short-basic
+ * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound
  * @cssProp --short-with-description-dash - Description for --short-with-description-dash
- * @cssProp --short-with-description-colon: Description for --short-with-description-colon
  */
 export class ElementA extends LitElement {
   /**
@@ -82,16 +79,11 @@ export class ElementA extends LitElement {
    * with wraparound
    *
    * @param {string} a Param a description
-   * @param {boolean} b Param b summary
-   * with wraparound
-   *
-   * Param b description
+   * @param {boolean} b Param b description
    * with wraparound
    *
    * @param {number[]} c Param c description
-   * @returns {string} Method 2 return summary
-   *
-   * Method 2 return description
+   * @returns {string} Method 2 return description
    *
    * @deprecated Method 2 deprecated
    */
