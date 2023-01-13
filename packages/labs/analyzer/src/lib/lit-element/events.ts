@@ -14,7 +14,7 @@ import ts from 'typescript';
 import {parseNamedTypedJSDocInfo} from '../javascript/jsdoc.js';
 import {Event} from '../model.js';
 import {AnalyzerInterface} from '../model.js';
-import {getTypeForJSDocTag} from '../types.js';
+import {getTypeForTypeString} from '../types.js';
 
 /**
  * Returns an array of analyzer `Event` models for the given
@@ -32,7 +32,7 @@ export const addEventsToMap = (
   const {name, type, description, summary} = info;
   events.set(name, {
     name,
-    type: type ? getTypeForJSDocTag(tag, analyzer) : undefined,
+    type: type ? getTypeForTypeString(type, tag, analyzer) : undefined,
     description,
     summary,
   });

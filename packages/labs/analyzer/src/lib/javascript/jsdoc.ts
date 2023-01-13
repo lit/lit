@@ -33,22 +33,18 @@ export const hasJSDocTag = (node: ts.Node, tag: string) => {
 };
 
 /**
- * Remove line feeds from JSDoc summaries, so they are normalized to
+ * Remove line feeds from JSDoc comments, so they are normalized to
  * unix `\n` line endings.
  */
 const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 
-// Regex for parsing name, type, summary, and descriptions from JSDoc comments
-const parseNameTypeDescSummaryRE =
-  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:[\s\-:]+)?(?:(?<summary>(?:[^\n]+\n)+)\s*\n(?=\S))?(?<description>[\s\S]*)$/m;
+// Regex for parsing name, type, and description from JSDoc comments
+const parseNameTypeDescRE =
+  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:[\s\-:]+)?(?<description>[\s\S]*)$/m;
 
-// Regex for parsing name, summary, and descriptions from JSDoc comments
-const parseNameDescSummaryRE =
-  /^(?<name>[^\s:]+)(?:[\s\-:]+)?(?:(?<summary>(?:[^\n]+\n)+)\s*\n(?=\S))?(?<description>[\s\S]*)$/m;
-
-// Regex for parsing summary and description from JSDoc comments
-const parseDescSummaryRE =
-  /^^(?:(?<summary>(?:[^\n]+\n)+)\s*\n(?=\S))?(?<description>[\s\S]*)$/m;
+// Regex for parsing name and description from JSDoc comments
+const parseNameDescRE =
+  /^(?<name>[^\s:]+)(?:[\s\-:]+)?(?<description>[\s\S]*)$/m;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
@@ -70,33 +66,29 @@ const isModuleJSDocTag = (tag: ts.JSDocTag) =>
   tag.tagName.text === 'packageDocumentation';
 
 /**
- * Parses name, type, summary, and description from JSDoc tag for things like
- * @fires.
+ * Parses name, type, and description from JSDoc tag for things like `@fires`.
  *
  * Supports the following patterns following the tag (TS parses the tag for us):
  * * @fires event-name
  * * @fires event-name description
  * * @fires event-name - description
+ * * @fires event-name: description
  * * @fires event-name {Type}
  * * @fires event-name {Type} description
- * * @fires event-name {Type} - summary
- * *
- * * description
+ * * @fires event-name {Type} - description
+ * * @fires event-name {Type}: description
  */
 export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
   const comment = getJSDocTagComment(tag);
   if (comment == undefined) {
     return undefined;
   }
-  const nameDescSummary = comment.match(parseNameTypeDescSummaryRE);
-  if (nameDescSummary === null) {
+  const nameTypeDesc = comment.match(parseNameTypeDescRE);
+  if (nameTypeDesc === null) {
     throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
   }
-  const {name, type, description, summary} = nameDescSummary.groups!;
+  const {name, type, description} = nameTypeDesc.groups!;
   const info: NamedTypedJSDocInfo = {name, type};
-  if (summary !== undefined) {
-    info.summary = normalizeLineEndings(summary);
-  }
   if (description.length > 0) {
     info.description = normalizeLineEndings(description);
   }
@@ -104,17 +96,14 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
 };
 
 /**
- * Parses name, summary, and description from JSDoc tag for things like @slot,
- * @cssPart, and @cssProp.
+ * Parses name and description from JSDoc tag for things like `@slot`,
+ * `@cssPart`, and `@cssProp`.
  *
  * Supports the following patterns following the tag (TS parses the tag for us):
  * * @slot name
  * * @slot name description
- * * @slot name: description
  * * @slot name - description
- * * @slot name - summary...
- * *
- * * description (multiline)
+ * * @slot name: description
  */
 export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag
@@ -123,15 +112,12 @@ export const parseNamedJSDocInfo = (
   if (comment == undefined) {
     return undefined;
   }
-  const nameDescSummary = comment.match(parseNameDescSummaryRE);
-  if (nameDescSummary === null) {
+  const nameDesc = comment.match(parseNameDescRE);
+  if (nameDesc === null) {
     throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
   }
-  const {name, description, summary} = nameDescSummary.groups!;
+  const {name, description} = nameDesc.groups!;
   const info: NamedJSDocInfo = {name};
-  if (summary !== undefined) {
-    info.summary = normalizeLineEndings(summary);
-  }
   if (description.length > 0) {
     info.description = normalizeLineEndings(description);
   }
@@ -139,32 +125,16 @@ export const parseNamedJSDocInfo = (
 };
 
 /**
- * Parses summary and description from JSDoc tag for things like @return.
- *
- * Supports the following patterns following the tag (TS parses the tag for us):
- * * @return description
- * * @return summary...
- * *
- * * description (multiline)
+ * Parses the description from JSDoc tag for things like `@return`.
  */
-export const parseJSDocInfo = (tag: ts.JSDocTag): JSDocInfo | undefined => {
-  const comment = getJSDocTagComment(tag);
-  if (comment == undefined) {
-    return undefined;
+export const parseJSDocDescription = (
+  tag: ts.JSDocTag
+): JSDocInfo | undefined => {
+  const description = getJSDocTagComment(tag);
+  if (description == undefined || description.length === 0) {
+    return {};
   }
-  const descSummary = comment.match(parseDescSummaryRE);
-  if (descSummary === null) {
-    throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
-  }
-  const {description, summary} = descSummary.groups!;
-  const info: JSDocInfo = {};
-  if (summary !== undefined) {
-    info.summary = normalizeLineEndings(summary);
-  }
-  if (description.length > 0) {
-    info.description = normalizeLineEndings(description);
-  }
-  return info;
+  return {description};
 };
 
 /**
@@ -193,34 +163,6 @@ const addJSDocTagInfo = (
       case 'deprecated':
         info.deprecated = comment !== undefined ? comment : true;
         break;
-    }
-  }
-};
-
-/**
- * Add description and/or summary info from freeform comment text in a
- * JSDoc comment block to the given info object.
- */
-const addJSDocCommentInfo = (info: NodeJSDocInfo, comment: string) => {
-  if (comment.length === 0) {
-    return;
-  }
-  if (info.summary !== undefined && info.description === undefined) {
-    info.description = comment;
-  } else if (info.description !== undefined && info.summary === undefined) {
-    info.summary = comment;
-  } else {
-    const match = comment.match(parseDescSummaryRE);
-    if (match === null) {
-      info.description = normalizeLineEndings(comment);
-    } else {
-      const {summary, description} = match.groups!;
-      if (summary !== undefined) {
-        info.summary = normalizeLineEndings(summary);
-      }
-      if (description.length > 0) {
-        info.description = normalizeLineEndings(description);
-      }
     }
   }
 };
@@ -286,18 +228,24 @@ export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
   if (jsDocTags !== undefined) {
     addJSDocTagInfo(info, jsDocTags);
   }
-  if (info.description === undefined || info.summary === undefined) {
+  if (info.description === undefined) {
     const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
     const comment = normalizeLineEndings(
       node
         .getChildren()
         .filter(ts.isJSDoc)
+        // Module-level docs (that are explicitly tagged as such) may be
+        // attached to the first declaration if the declaration is undocumented,
+        // so we filter those out since they shouldn't apply to a
+        // declaration node
         .filter((c) => !moduleJSDocs.includes(c))
         .map((n) => n.comment)
         .filter((c) => c !== undefined)
         .join('\n')
     );
-    addJSDocCommentInfo(info, comment);
+    if (comment.length > 0) {
+      info.description = comment;
+    }
   }
   return info;
 };
@@ -318,7 +266,9 @@ export const parseModuleJSDocInfo = (sourceFile: ts.SourceFile) => {
       .map((d) => d.comment)
       .filter((c) => c !== undefined)
       .join('\n');
-    addJSDocCommentInfo(info, comment);
+    if (comment.length > 0) {
+      info.description = comment;
+    }
   }
   return info;
 };

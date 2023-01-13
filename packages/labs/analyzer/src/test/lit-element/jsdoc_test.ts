@@ -85,18 +85,6 @@ for (const lang of languages) {
     assert.equal(slot.description, 'Description for with-description-colon');
   });
 
-  test('slots - with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isLitElementDeclaration());
-    const slot = element.slots.get('with-summary');
-    assert.ok(slot);
-    assert.equal(slot.summary, 'Summary for with-summary');
-    assert.equal(
-      slot.description,
-      'Description for with-summary\nMore description for with-summary\n\nEven more description for with-summary'
-    );
-  });
-
   // cssParts
 
   test('cssParts - Correct number found', ({getModule}) => {
@@ -150,18 +138,6 @@ for (const lang of languages) {
     );
   });
 
-  test('cssParts - with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isLitElementDeclaration());
-    const part = element.cssParts.get('with-summary');
-    assert.ok(part);
-    assert.equal(part.summary, 'Summary for :part(with-summary)');
-    assert.equal(
-      part.description,
-      'Description for :part(with-summary)\nMore description for :part(with-summary)\n\nEven more description for :part(with-summary)'
-    );
-  });
-
   // cssProperties
 
   test('cssProperties - Correct number found', ({getModule}) => {
@@ -209,18 +185,6 @@ for (const lang of languages) {
     assert.equal(prop.description, 'Description for --with-description-dash');
   });
 
-  test('cssProperties - with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isLitElementDeclaration());
-    const prop = element.cssProperties.get('--with-summary');
-    assert.ok(prop);
-    assert.equal(prop.summary, 'Summary for --with-summary');
-    assert.equal(
-      prop.description,
-      'Description for --with-summary\nMore description for --with-summary\n\nEven more description for --with-summary'
-    );
-  });
-
   test('cssProperties - short-basic', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
@@ -266,18 +230,6 @@ for (const lang of languages) {
     );
   });
 
-  test('cssProperties - short-with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isLitElementDeclaration());
-    const prop = element.cssProperties.get('--short-with-summary');
-    assert.ok(prop);
-    assert.equal(prop.summary, 'Summary for --short-with-summary');
-    assert.equal(
-      prop.description,
-      'Description for --short-with-summary\nMore description for --short-with-summary\n\nEven more description for --short-with-summary'
-    );
-  });
-
   // Class description, summary, deprecated
 
   test('tagged description and summary', ({getModule}) => {
@@ -308,22 +260,6 @@ nisi ut aliquip ex ea commodo consequat.`
     );
     assert.equal(element.summary, `UntaggedDescription summary.`);
     assert.equal(element.deprecated, `UntaggedDescription deprecated message.`);
-  });
-
-  test('untagged description and summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration(
-      'UntaggedDescSummary'
-    );
-    assert.ok(element.isLitElementDeclaration());
-    assert.equal(
-      element.description,
-      `UntaggedDescSummary description. Lorem ipsum dolor sit amet, consectetur
-adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-nisi ut aliquip ex ea commodo consequat.`
-    );
-    assert.equal(element.summary, `UntaggedDescSummary summary.`);
-    assert.equal(element.deprecated, true);
   });
 
   // Fields

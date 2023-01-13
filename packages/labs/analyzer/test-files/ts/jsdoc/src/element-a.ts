@@ -98,9 +98,6 @@ export class ElementA extends LitElement {
   field4 = new Promise<void>((r) => r());
 
   /**
-   * Method 1 summary
-   * with wraparound
-   *
    * Method 1 description
    * with wraparound
    */
@@ -152,15 +149,3 @@ export class TaggedDescription extends LitElement {}
  * @summary UntaggedDescription summary.
  */
 export class UntaggedDescription extends LitElement {}
-
-/**
- * UntaggedDescSummary summary.
- *
- * UntaggedDescSummary description. Lorem ipsum dolor sit amet, consectetur
- * adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
- * aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
- * nisi ut aliquip ex ea commodo consequat.
- *
- * @deprecated
- */
-export class UntaggedDescSummary extends LitElement {}

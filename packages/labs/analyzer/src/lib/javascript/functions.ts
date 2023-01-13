@@ -14,7 +14,7 @@ import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
 import {AnalyzerInterface, Parameter, Return} from '../model.js';
 import {getTypeForNode, getTypeForType} from '../types.js';
-import {parseJSDocInfo} from './jsdoc.js';
+import {parseJSDocDescription} from './jsdoc.js';
 
 /**
  * Returns information on FunctionLike nodes
@@ -40,7 +40,7 @@ const getParameter = (
   const p: Parameter = {
     name: param.name.getText(),
     type: getTypeForNode(param, analyzer),
-    ...(paramTag ? parseJSDocInfo(paramTag) : {}),
+    ...(paramTag ? parseJSDocDescription(paramTag) : {}),
     optional: false,
     rest: false,
   };
@@ -76,6 +76,6 @@ const getReturn = (
   }
   return {
     type: getTypeForType(signature.getReturnType(), node, analyzer),
-    ...(returnTag ? parseJSDocInfo(returnTag) : {}),
+    ...(returnTag ? parseJSDocDescription(returnTag) : {}),
   };
 };

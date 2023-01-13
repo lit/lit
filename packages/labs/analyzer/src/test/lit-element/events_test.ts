@@ -159,8 +159,7 @@ for (const lang of languages) {
     );
     assert.equal(event.type?.references[2].module, 'custom-event.js');
     assert.equal(event.type?.references[2].name, 'ExternalClass');
-    assert.equal(event.summary, 'Inline\ndetail custom event summary');
-    assert.equal(event.description, 'Inline detail custom event\ndescription');
+    assert.equal(event.description, 'Inline\ndetail custom event description');
   });
 
   test.run();
