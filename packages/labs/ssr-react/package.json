@@ -1,12 +1,59 @@
 {
   "name": "@lit-labs/ssr-react",
-  "type": "module",
   "version": "0.0.0",
   "publishConfig": {
     "access": "public"
   },
   "description": "Lit SSR integration for React",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/ssr-react",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/ssr-react"
+  },
   "main": "index.js",
+  "typings": "index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "node": "./node/index.js",
+      "default": "./index.js"
+    },
+    "./jsx-runtime": {
+      "types": "./jsx-runtime.d.ts",
+      "node": "./node/jsx-runtime.js",
+      "default": "./jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./jsx-dev-runtime.d.ts",
+      "node": "./node/jsx-dev-runtime.js",
+      "default": "./jsx-dev-runtime.js"
+    },
+    "./enable-lit-ssr": {
+      "types": "./enable-lit-ssr.d.ts",
+      "node": "./node/enable-lit-ssr.js",
+      "default": "./enable-lit-ssr.js"
+    }
+  },
+  "files": [
+    "/node/",
+    "/lib/",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/jsx-runtime.{d.ts,d.ts.map,js,js.map}",
+    "/jsx-dev-runtime.{d.ts,d.ts.map,js,js.map}",
+    "/enable-lit-ssr.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr": "^3.0.0",
+    "lit": "^2.6.1"
+  },
+  "peerDependencies": {
+    "@types/react": "17 || 18",
+    "react": "17 || 18"
+  },
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
@@ -33,6 +80,7 @@
         "index.{d.ts,d.ts.map,js,js.map}",
         "jsx-runtime.{d.ts,d.ts.map,js,js.map}",
         "jsx-dev-runtime.{d.ts,d.ts.map,js,js.map}",
+        "enable-lit-ssr.{d.ts,d.ts.map,js,js.map}",
         "tsconfig.tsbuildinfo"
       ]
     },
@@ -40,45 +88,5 @@
       "command": "echo \"TODO\"",
       "dependencies": []
     }
-  },
-  "files": [
-    "/node/",
-    "/lib/",
-    "/index.{d.ts,d.ts.map,js,js.map}",
-    "/jsx-runtime.{d.ts,d.ts.map,js,js.map}",
-    "/jsx-dev-runtime.{d.ts,d.ts.map,js,js.map}"
-  ],
-  "exports": {
-    ".": {
-      "types": "./index.d.ts",
-      "node": "./node/index.js",
-      "default": "./index.js"
-    },
-    "./jsx-runtime": {
-      "node": "./node/jsx-runtime.js",
-      "default": "./jsx-runtime.js"
-    },
-    "./jsx-dev-runtime": {
-      "node": "./node/jsx-dev-runtime.js",
-      "default": "./jsx-dev-runtime.js"
-    }
-  },
-  "author": "Google LLC",
-  "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/ssr-react"
-  },
-  "dependencies": {
-    "@lit-labs/ssr": "^3.0.0",
-    "lit": "^2.6.1"
-  },
-  "peerDependencies": {
-    "@types/react": "17 || 18",
-    "react": "17 || 18"
-  },
-  "engines": {
-    "node": ">=13.9.0"
   }
 }
