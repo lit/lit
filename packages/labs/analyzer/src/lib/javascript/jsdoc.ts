@@ -40,7 +40,7 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 
 // Regex for parsing name, type, and description from JSDoc comments
 const parseNameTypeDescRE =
-  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+]+)?(?<description>[\s\S]*)$/m;
+  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
 
 // Regex for parsing name and description from JSDoc comments
 const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
