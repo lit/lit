@@ -6,7 +6,24 @@
 
 import {LitElementRenderer} from '@lit-labs/ssr/lib/lit-element-renderer.js';
 import {getElementRenderer} from '@lit-labs/ssr/lib/element-renderer.js';
-import type {RenderInfo} from '@lit-labs/ssr/lib/render-lit-html.js';
+import type {RenderInfo} from '@lit-labs/ssr';
+
+const reservedReactProperties = new Set([
+  'children',
+  'localName',
+  'ref',
+  'style',
+  'className',
+]);
+
+const attributesToProps = (attrs: NamedNodeMap) => {
+  const props: {[index: string]: string} = {};
+  for (let i = 0; i < attrs.length; i++) {
+    const attr = attrs[i];
+    props[attr.name] = attr.value;
+  }
+  return props;
+};
 
 /**
  * Renders the shadow contents of the provided custom element type with props.
@@ -22,14 +39,17 @@ export const renderShadowContents = (type: string, props: {} | null) => {
 
   const renderer = getElementRenderer(renderInfo, type);
 
-  if (props != null) {
+  if (renderer.element !== undefined && props != null) {
     for (const [k, v] of Object.entries(props)) {
-      if (renderer.element) {
-        if (k in renderer.element) {
-          renderer.setProperty(k, v);
-        } else {
-          renderer.setAttribute(k, String(v));
-        }
+      // Reserved React Props do not need to be set on the element
+      if (reservedReactProperties.has(k)) {
+        continue;
+      }
+
+      if (k in renderer.element) {
+        renderer.setProperty(k, v);
+      } else {
+        renderer.setAttribute(k, String(v));
       }
     }
   }
@@ -40,7 +60,10 @@ export const renderShadowContents = (type: string, props: {} | null) => {
 
   const shadowContents = renderer.renderShadow(renderInfo);
 
-  const elementAttributes = renderer.element?.attributes;
+  const elementAttributes =
+    renderer.element !== undefined
+      ? attributesToProps(renderer.element.attributes)
+      : {};
 
   const {mode = 'open', delegatesFocus} = renderer.shadowRootOptions;
   const templateAttributes = {

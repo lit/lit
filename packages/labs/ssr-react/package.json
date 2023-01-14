@@ -32,7 +32,7 @@
       "node": "./node/jsx-dev-runtime.js",
       "default": "./jsx-dev-runtime.js"
     },
-    "./enable-lit-ssr": {
+    "./enable-lit-ssr.js": {
       "types": "./enable-lit-ssr.d.ts",
       "node": "./node/enable-lit-ssr.js",
       "default": "./enable-lit-ssr.js"
