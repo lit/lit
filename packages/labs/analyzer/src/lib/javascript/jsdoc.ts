@@ -162,10 +162,10 @@ const addJSDocTagInfo = (
 ) => {
   for (const tag of jsDocTags) {
     const comment = getJSDocTagComment(tag);
-    switch (tag.tagName.text) {
+    switch (tag.tagName.text.toLowerCase()) {
       case 'description':
       case 'fileoverview':
-      case 'packageDocumentation':
+      case 'packagedocumentation':
         if (comment !== undefined) {
           info.description = comment;
         }
