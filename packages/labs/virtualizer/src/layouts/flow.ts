@@ -254,12 +254,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       return 0;
     }
     if (upper > this._scrollSize - this._viewDim1) {
-      return this._totalItems - 1;
+      return this.items.length - 1;
     }
     return Math.max(
       0,
       Math.min(
-        this._totalItems - 1,
+        this.items.length - 1,
         Math.floor((lower + upper) / 2 / this._delta)
       )
     );
@@ -306,7 +306,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * viewed range.
    */
   _getActiveItems() {
-    if (this._viewDim1 === 0 || this._totalItems === 0) {
+    if (this._viewDim1 === 0 || this.items.length === 0) {
       this._clearItems();
     } else {
       this._getItems();
@@ -382,7 +382,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._anchorPos = anchorLeadingMargin;
     }
 
-    if (this._anchorIdx === this._totalItems - 1) {
+    if (this._anchorIdx === this.items.length - 1) {
       this._anchorPos = this._scrollSize - anchorTrailingMargin - anchorSize;
     }
 
@@ -431,7 +431,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       }
     }
 
-    while (this._physicalMax < upper && this._last < this._totalItems - 1) {
+    while (this._physicalMax < upper && this._last < this.items.length - 1) {
       let size = this._getSize(++this._last);
       if (size === undefined) {
         this._stable = false;
@@ -473,13 +473,13 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       return this._physicalMin;
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - this._first * this._delta;
-    } else if (this._last === this._totalItems - 1) {
+    } else if (this._last === this.items.length - 1) {
       return this._physicalMax - this._scrollSize;
     } else if (this._physicalMax >= this._scrollSize) {
       return (
         this._physicalMax -
         this._scrollSize +
-        (this._totalItems - 1 - this._last) * this._delta
+        (this.items.length - 1 - this._last) * this._delta
       );
     }
     return 0;
@@ -533,7 +533,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     const {averageMarginSize} = this._metricsCache;
     this._scrollSize = Math.max(
       1,
-      this._totalItems * (averageMarginSize + this._getAverageSize()) +
+      this.items.length * (averageMarginSize + this._getAverageSize()) +
         averageMarginSize
     );
   }

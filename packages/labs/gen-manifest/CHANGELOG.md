@@ -1,5 +1,17 @@
 # @lit-labs/gen-manifest
 
+## 0.1.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - Added support for export, slot, cssPart, and cssProperty to analyzer and manifest generator. Also improved JS project analysis performance.
+
+### Patch Changes
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d), [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d), [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - @lit-labs/analyzer@0.5.0
+  - @lit-labs/gen-utils@0.2.0
+
 ## 0.0.2
 
 ### Patch Changes

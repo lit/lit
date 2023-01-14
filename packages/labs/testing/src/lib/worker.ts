@@ -5,7 +5,7 @@
  */
 
 import {parentPort, workerData} from 'worker_threads';
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr';
 
 import type {Payload} from './lit-ssr-plugin.js';
 

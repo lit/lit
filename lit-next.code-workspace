@@ -77,6 +77,10 @@
       "path": "packages/labs/gen-manifest"
     },
     {
+      "name": "examples",
+      "path": "examples"
+    },
+    {
       "name": "lit-monorepo",
       "path": "."
     }
@@ -90,7 +94,8 @@
     "files.exclude": {
       "**/.wireit": true
     },
-    "javascript.preferences.importModuleSpecifierEnding": "js"
+    "javascript.preferences.importModuleSpecifierEnding": "js",
+    "eslint.workingDirectories": [{"mode": "auto"}]
   },
   "extensions": {
     "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

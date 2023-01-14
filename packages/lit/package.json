@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.4.1",
+  "version": "2.6.1",
   "publishConfig": {
     "access": "public"
   },
@@ -183,7 +183,8 @@
     "test": "wireit",
     "test:dev": "wireit",
     "test:prod": "wireit",
-    "test:node": "wireit"
+    "test:node": "wireit",
+    "test:node-dev": "wireit"
   },
   "wireit": {
     "build": {
@@ -274,7 +275,8 @@
       "dependencies": [
         "test:dev",
         "test:prod",
-        "test:node"
+        "test:node",
+        "test:node-dev"
       ]
     },
     "test:dev": {
@@ -284,6 +286,11 @@
         "build:ts",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -297,11 +304,25 @@
         "build:rollup",
         "../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
     "test:node": {
       "command": "node development/test/node-imports.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:node-dev": {
+      "command": "node --conditions=development development/test/node-imports.js",
       "dependencies": [
         "build:ts",
         "build:rollup"
@@ -327,9 +348,9 @@
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.4.0",
+    "@lit/reactive-element": "^1.6.0",
     "lit-element": "^3.2.0",
-    "lit-html": "^2.4.0"
+    "lit-html": "^2.6.0"
   },
   "devDependencies": {
     "@webcomponents/shadycss": "^1.8.0",

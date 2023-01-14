@@ -1,5 +1,13 @@
 # @lit-labs/gen-wrapper-angular
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d), [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d), [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - @lit-labs/analyzer@0.5.0
+  - @lit-labs/gen-utils@0.2.0
+
 ## 0.0.3
 
 ### Patch Changes

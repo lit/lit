@@ -58,8 +58,8 @@ Another way we can use a context in a component is via the `ContextConsumer` con
 #### **`my-element.ts`**:
 
 ```ts
-import {ContextConsumer, property} from '@lit-labs/context';
-import {LitElement} from 'lit';
+import {LitElement, property} from 'lit';
+import {ContextConsumer} from '@lit-labs/context';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
@@ -86,7 +86,7 @@ controller and update its value when the property value changes.
 #### **`my-app.ts`**:
 
 ```ts
-import {LitElement} from 'lit';
+import {LitElement, property, html} from 'lit';
 import {provide} from '@lit-labs/context';
 import {loggerContext, Logger} from './logger.js';
 
@@ -110,7 +110,7 @@ We can also use the `ContextProvider` controller directly:
 #### **`my-app.ts`**:
 
 ```ts
-import {LitElement} from 'lit';
+import {LitElement, html} from 'lit';
 import {ContextProvider} from '@lit-labs/context';
 import {loggerContext, Logger} from './logger.js';
 
