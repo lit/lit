@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import {
   ItemBox,
   Margins,
@@ -28,6 +27,22 @@ import {
   UnpinnedEvent,
 } from './events.js';
 import {ScrollerController} from './ScrollerController.js';
+
+// Virtualizer depends on `ResizeObserver`, which is supported in
+// all modern browsers. For developers whose browser support
+// matrix includes older browsers, we include a compatible
+// polyfill in the package; this bit of module state facilitates
+// a simple mechanism (see ./polyfillLoaders/ResizeObserver.js.)
+// for loading the polyfill.
+let _ResizeObserver: typeof ResizeObserver | undefined = window?.ResizeObserver;
+
+/**
+ * Call this function to provide a `ResizeObserver` polyfill for Virtualizer to use.
+ * @param Ctor Constructor for a `ResizeObserver` polyfill (recommend using the one provided with the Virtualizer package)
+ */
+export function provideResizeObserver(Ctor: typeof ResizeObserver) {
+  _ResizeObserver = Ctor;
+}
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
@@ -240,15 +255,16 @@ export class Virtualizer {
     this._initLayout(config.layout || ({} as BaseLayoutConfig));
   }
 
-  private async _initObservers() {
+  private _initObservers() {
     this._mutationObserver = new MutationObserver(
       this._finishDOMUpdate.bind(this)
     );
-    const ResizeObserver = await getResizeObserver();
-    this._hostElementRO = new ResizeObserver(() =>
+    this._hostElementRO = new _ResizeObserver!(() =>
       this._hostElementSizeChanged()
     );
-    this._childrenRO = new ResizeObserver(this._childrenSizeChanged.bind(this));
+    this._childrenRO = new _ResizeObserver!(
+      this._childrenSizeChanged.bind(this)
+    );
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -257,8 +273,8 @@ export class Virtualizer {
     hostElement[virtualizerRef] = this;
   }
 
-  async connected() {
-    await this._initObservers();
+  connected() {
+    this._initObservers();
     const includeSelf = this._isScroller;
     this._clippingAncestors = getClippingAncestors(
       this._hostElement!,
@@ -305,10 +321,10 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController?.detach(this) || null;
-    this._mutationObserver?.disconnect();
-    this._hostElementRO?.disconnect();
-    this._childrenRO?.disconnect();
+    this._scrollerController = this._scrollerController!.detach(this) || null;
+    this._mutationObserver!.disconnect();
+    this._hostElementRO!.disconnect();
+    this._childrenRO!.disconnect();
     this._rejectLayoutCompletePromise('disconnected');
   }
 

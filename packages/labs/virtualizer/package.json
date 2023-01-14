@@ -29,6 +29,12 @@
     "./LitVirtualizer.js": {
       "default": "./LitVirtualizer.js"
     },
+    "./polyfillLoaders/ResizeObserver.js": {
+      "default": "./polyfillLoaders/ResizeObserver.js"
+    },
+    "./polyfills/resize-observer-polyfill/ResizeObserver.js": {
+      "default": "./polyfillLoaders/ResizeObserver.js"
+    },
     "./virtualize.js": {
       "default": "./virtualize.js"
     }
