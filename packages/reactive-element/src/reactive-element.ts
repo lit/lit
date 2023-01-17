@@ -1176,13 +1176,13 @@ export abstract class ReactiveElement
    * @category updates
    */
   requestUpdate(
-    name?: PropertyKey,
+    name?: PropertyKey | Event,
     oldValue?: unknown,
     options?: PropertyDeclaration
   ): void {
     let shouldRequestUpdate = true;
     // If we have a property key, perform property update steps.
-    if (name !== undefined) {
+    if (name !== undefined && !(name instanceof Event)) {
       options =
         options ||
         (this.constructor as typeof ReactiveElement).getPropertyOptions(name);

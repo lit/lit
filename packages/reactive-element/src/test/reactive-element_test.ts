@@ -3278,4 +3278,11 @@ suite('ReactiveElement', () => {
       // Suppress no-unused-vars warnings
     }
   });
+
+  test('requestUpdate can be used as a template @event binding', () => {
+    class E extends ReactiveElement {}
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    el.requestUpdate(new CustomEvent('custom-event'));
+  });
 });
