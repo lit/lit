@@ -223,6 +223,13 @@ export class Virtualizer {
   private _layoutCompleteRejecter: Function | null = null;
   private _pendingLayoutComplete: number | null = null;
 
+  /**
+   * Layout initialization is async because we dynamically load
+   * the default layout if none is specified. This state is to track
+   * whether init is complete.
+   */
+  private _layoutInitialized: Promise<void> | null = null;
+
   constructor(config: VirtualizerConfig) {
     if (!config) {
       throw new Error(
@@ -252,7 +259,10 @@ export class Virtualizer {
     // If no layout is specified, we make an empty
     // layout config, which will result in the default
     // layout with default parameters
-    this._initLayout(config.layout || ({} as BaseLayoutConfig));
+    const layoutConfig = config.layout || ({} as BaseLayoutConfig);
+    // Save the promise returned by `_initLayout` as a state
+    // variable we can check before updating layout config
+    this._layoutInitialized = this._initLayout(layoutConfig);
   }
 
   private _initObservers() {
@@ -374,9 +384,16 @@ export class Virtualizer {
     return this._sizer;
   }
 
-  updateLayoutConfig(layoutConfig: LayoutConfigValue) {
+  async updateLayoutConfig(layoutConfig: LayoutConfigValue) {
+    // If layout initialization hasn't finished yet, we wait
+    // for it to finish so we can check whether the new config
+    // is compatible with the existing layout before proceeding.
+    await this._layoutInitialized;
     const Ctor =
       ((layoutConfig as LayoutSpecifier).type as LayoutConstructor) ||
+      // The new config is compatible with the current layout,
+      // so we update the config and return true to indicate
+      // a successful update
       DefaultLayoutConstructor;
     if (typeof Ctor === 'function' && this._layout instanceof Ctor) {
       const config = {...(layoutConfig as LayoutSpecifier)} as {
@@ -384,6 +401,11 @@ export class Virtualizer {
       };
       delete config.type;
       this._layout.config = config as BaseLayoutConfig;
+      // The new config requires a different layout altogether, but
+      // to limit implementation complexity we don't support dynamically
+      // changing the layout of an existing virtualizer instance.
+      // Returning false here lets the caller know that they should
+      // instead make a new virtualizer instance with the desired layout.
       return true;
     }
     return false;
