@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.1
+
+### Patch Changes
+
+- [#3432](https://github.com/lit/lit/pull/3432) [`805607fb`](https://github.com/lit/lit/commit/805607fb19535f5e2eaa2a27743ed6f1ff6fbb6d) - `LitElementRenderer` now uses `renderValue` from `lib/render-value.js`, removing a circular dependency.
+
 ## 3.0.0
 
 ### Major Changes
