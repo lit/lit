@@ -412,7 +412,9 @@ export class XliffFormatter implements Formatter {
    */
   private clearElement(element: Element) {
     const children = element.childNodes;
-    for (let i = 0; i < children.length; i++) {
+    // Iterate backwards so we don't have to worry about the index changing each
+    // time we remove.
+    for (let i = children.length - 1; i >= 0; i--) {
       element.removeChild(children.item(i));
     }
   }
