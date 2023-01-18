@@ -10,11 +10,13 @@ import {escapeHtml} from './util/escape-html.js';
 import type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
 
-export type Constructor<T> = {new (): T};
+type Interface<T> = {
+  [P in keyof T]: T[P];
+};
 
 export type ElementRendererConstructor = (new (
   tagName: string
-) => ElementRenderer) &
+) => Interface<ElementRenderer>) &
   typeof ElementRenderer;
 
 type AttributesMap = Map<string, string>;
