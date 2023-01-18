@@ -79,16 +79,20 @@ export abstract class ElementRenderer {
   /**
    * Should implement server-appropriate implementation of connectedCallback
    */
-  abstract connectedCallback(): void;
+  connectedCallback(): void {
+    // do nothing
+  }
 
   /**
    * Should implement server-appropriate implementation of attributeChangedCallback
    */
-  abstract attributeChangedCallback(
-    name: string,
-    old: string | null,
-    value: string | null
-  ): void;
+  attributeChangedCallback(
+    _name: string,
+    _old: string | null,
+    _value: string | null
+  ) {
+    // do nothing
+  }
 
   /**
    * Handles setting a property.
@@ -134,12 +138,16 @@ export abstract class ElementRenderer {
   /**
    * Render a single element's ShadowRoot children.
    */
-  abstract renderShadow(_renderInfo: RenderInfo): RenderResult | undefined;
+  renderShadow(_renderInfo: RenderInfo): RenderResult | undefined {
+    return undefined;
+  }
 
   /**
    * Render an element's light DOM children.
    */
-  abstract renderLight(renderInfo: RenderInfo): RenderResult | undefined;
+  renderLight(_renderInfo: RenderInfo): RenderResult | undefined {
+    return undefined;
+  }
 
   /**
    * Render an element's attributes.
@@ -184,9 +192,4 @@ class FallbackRenderer extends ElementRenderer {
       }
     }
   }
-
-  connectedCallback() {}
-  attributeChangedCallback() {}
-  *renderLight() {}
-  *renderShadow() {}
 }
