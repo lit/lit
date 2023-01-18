@@ -411,37 +411,66 @@ export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
-  readonly _fieldMap: Map<string, ClassField> | undefined;
-  readonly _methodMap: Map<string, ClassMethod> | undefined;
+  readonly _fieldMap: Map<string, ClassField>;
+  readonly _methodMap: Map<string, ClassMethod>;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
     this._getHeritage = init.getHeritage;
-    this._fieldMap = init.fieldMap;
-    this._methodMap = init.methodMap;
+    this._fieldMap = init.fieldMap ?? new Map();
+    this._methodMap = init.methodMap ?? new Map();
   }
 
+  /**
+   * Returns this class's `ClassHeritage` model, with references to its
+   * `superClass` and `mixins`.
+   */
   get heritage(): ClassHeritage {
     return (this._heritage ??= this._getHeritage());
   }
 
+  /**
+   * Returns iterator of the `ClassField`s defined on the immediate class
+   * (excluding any inherited members).
+   */
   get fields() {
-    return Array.from(this._fieldMap?.values() ?? []);
+    return this._fieldMap.values();
   }
 
-  get methods() {
-    return Array.from(this._methodMap?.values() ?? []);
+  /**
+   * Returns iterator of the `ClassMethod`s defined on the immediate class
+   * (excluding any inherited members).
+   */
+  get methods(): IterableIterator<ClassMethod> {
+    return this._methodMap.values();
   }
 
+  /**
+   * Returns a `ClassField` model the given name defined on the immediate class
+   * (excluding any inherited members).
+   */
   getField(name: string): ClassField | undefined {
-    return this._fieldMap?.get(name);
+    return this._fieldMap.get(name);
   }
 
+  /**
+   * Returns a `ClassMethod` model for the given name defined on the immediate
+   * class (excluding any inherited members).
+   */
   getMethod(name: string): ClassMethod | undefined {
-    return this._methodMap?.get(name);
+    return this._methodMap.get(name);
   }
 
+  /**
+   * Returns a `ClassField` or `ClassMethod` model for the given name defined on
+   * the immediate class (excluding any inherited members).
+   *
+   * Note that if a field and method of the same name were defined (error is TS,
+   * but possible in JS), the `ClassField` will be returned from this method, as
+   * it takes precedence by virtue of being an instance property (vs. a method,
+   * which is defined on the prototype).
+   */
   getMember(name: string): ClassMethod | ClassField | undefined {
     return this.getField(name) ?? this.getMethod(name);
   }

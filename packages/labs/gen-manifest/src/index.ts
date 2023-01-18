@@ -203,8 +203,8 @@ const convertClassDeclaration = (
     ),
     // mixins: [], // TODO
     ...useIfNotEmpty('members', [
-      ...(declaration.fields ?? []).map(convertClassField),
-      ...(declaration.methods ?? []).map(convertClassMethod),
+      ...Array.from(declaration.fields).map(convertClassField),
+      ...Array.from(declaration.methods).map(convertClassMethod),
     ]),
     // source: {href: 'TODO'}, // TODO
   };

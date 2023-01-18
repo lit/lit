@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import ts from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
@@ -5,6 +11,12 @@ import {DiagnosticsError} from './errors.js';
 import {Analyzer} from './analyzer.js';
 
 export interface AnalyzerOptions {
+  /**
+   * Glob of source files to exclude from project during analysis.
+   *
+   * Useful for excluding things source like test folders that might otherwise
+   * be included in a project's tsconfig.
+   */
   exclude?: string[];
 }
 
@@ -65,7 +77,7 @@ export const createPackageAnalyzer = (
           moduleResolution: 'node',
         },
         include: ['**/*.js'],
-        exclude: options.exclude ? [...options.exclude] : [],
+        exclude: options.exclude ?? [],
       },
       ts.sys /* host */,
       packagePath /* basePath */
