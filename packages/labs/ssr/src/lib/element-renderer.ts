@@ -52,6 +52,9 @@ export type ShadowRootOptions = ShadowRootInit;
  * An object that renders elements of a certain type.
  */
 export abstract class ElementRenderer {
+  // TODO (justinfagnani): We shouldn't assume that ElementRenderer subclasses
+  // create an element instance. Move this to a base class for renderes that
+  // do.
   element?: HTMLElement;
   tagName: string;
 
@@ -72,19 +75,38 @@ export abstract class ElementRenderer {
     return false;
   }
 
+  /**
+   * Called when a custom element is instantiated during a server render.
+   *
+   * An ElementRenderer can actually instantiate the custom element class, or
+   * it could emulate the element in some other way.
+   */
   constructor(tagName: string) {
     this.tagName = tagName;
   }
 
   /**
-   * Should implement server-appropriate implementation of connectedCallback
+   * Called when a custom element is "attached" to the server DOM.
+   *
+   * Because we don't presume a full DOM emulation, this isn't the same as
+   * being connected in a real browser. There may not be an owner document,
+   * parentNode, etc., depending on the DOM emulation.
+   *
+   * If this renderer is creating actual element instances, it may forward
+   * the call to the element's `connectedCallback()`.
+   *
+   * The default impementation is a no-op.
    */
   connectedCallback(): void {
     // do nothing
   }
 
   /**
-   * Should implement server-appropriate implementation of attributeChangedCallback
+   * Called from `setAttribute()` to emulate the browser's
+   * `attributeChangedCallback` lifecycle hook.
+   *
+   * If this renderer is creating actual element instances, it may forward
+   * the call to the element's `attributeChangedCallback()`.
    */
   attributeChangedCallback(
     _name: string,
@@ -95,9 +117,10 @@ export abstract class ElementRenderer {
   }
 
   /**
-   * Handles setting a property.
+   * Handles setting a property on the element.
    *
-   * Default implementation sets the property on the renderer's element instance.
+   * The default implementation sets the property on the renderer's element
+   * instance.
    *
    * @param name Name of the property
    * @param value Value of the property
@@ -128,31 +151,35 @@ export abstract class ElementRenderer {
   }
 
   /**
-   * Override this getter to configure the element's shadow root, if one is
-   * created with `renderShadow`.
+   * The shadow root options to write to the declarative shadow DOM <template>,
+   * if one is created with `renderShadow()`.
    */
   get shadowRootOptions(): ShadowRootInit {
     return {mode: 'open'};
   }
 
   /**
-   * Render a single element's ShadowRoot children.
+   * Render the element's shadow root children.
+   *
+   * If `renderShadow()` returns undefined, no declarative shadow root is
+   * emitted.
    */
   renderShadow(_renderInfo: RenderInfo): RenderResult | undefined {
     return undefined;
   }
 
   /**
-   * Render an element's light DOM children.
+   * Render the element's light DOM children.
    */
   renderLight(_renderInfo: RenderInfo): RenderResult | undefined {
     return undefined;
   }
 
   /**
-   * Render an element's attributes.
+   * Render the element's attributes.
    *
-   * Default implementation serializes all attributes on the element instance.
+   * The default implementation serializes all attributes on the element
+   * instance.
    */
   *renderAttributes(): RenderResult {
     if (this.element !== undefined) {
