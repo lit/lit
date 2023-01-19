@@ -24,6 +24,7 @@
     "lit-element/**/*.ts",
     "reactive-element/**/*.ts",
     "lit-html/**/*.ts",
+    "slottable-request/**/*.ts",
     "utils/**/*.ts"
   ],
   "exclude": []

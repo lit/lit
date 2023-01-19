@@ -84,4 +84,28 @@ class RequestSlottable<T> extends AsyncDirective {
   }
 }
 
-export const requestSlot = directive(RequestSlottable);
+/**
+ * Lit directive that implements the "Slottable Request Protocol" for requesting
+ * slotted content be provided by the host of the component.
+ *
+ * The directive should be rendered once per unique slottable instance
+ * requested, and performs several tasks per instance:
+ * - Renders a `<slot>` element with a unique slot name
+ * - Diapstches a `slottable-request` event with provided data and unique slot
+ *   name
+ * - Handles lazily rendering an optional fallback template into the slot's
+ *   fallback content if the request has not been fulfilled by
+ *   `requestAnimationFrame` timing.
+ *
+ * @param name The name for the slottable request (i.e. type of slotted item
+ *   requeseted)
+ * @param data Instance-specific data to send
+ * @param keyOrFallback An instance-specific string key to uniquely identify the item
+ *   within instances of the same name. Keys should always be provided if multiple
+ *   instances of the same name are requested. If no key is provied, this argument
+ *   may be used to provide a fallback template, which is rendered if the
+ *   slottable request is not fulfilled.
+ * @param fallback When a key is provided, this argument may be used to provide a
+ *   fallback template, which is rendered if the slottable request is not fulfilled.
+ */
+export const requestSlottable = directive(RequestSlottable);

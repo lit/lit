@@ -102,7 +102,9 @@
         "../../../rollup-common.js"
       ],
       "output": [
-        "slottable-request.js{,.map}",
+        "slottable-request-event.js{,.map}",
+        "render-slottable.js{,.map}",
+        "request-slottable.js{,.map}",
         "test/**/*.js{,.map}"
       ]
     },
