@@ -17,7 +17,7 @@ import {
   LitElementDeclaration,
   AnalyzerInterface,
   Event,
-  NamedJSDocInfo,
+  NamedDescribed,
 } from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {addEventsToMap} from './events.js';
@@ -52,9 +52,9 @@ export const getJSDocData = (
   analyzer: AnalyzerInterface
 ) => {
   const events = new Map<string, Event>();
-  const slots = new Map<string, NamedJSDocInfo>();
-  const cssProperties = new Map<string, NamedJSDocInfo>();
-  const cssParts = new Map<string, NamedJSDocInfo>();
+  const slots = new Map<string, NamedDescribed>();
+  const cssProperties = new Map<string, NamedDescribed>();
+  const cssParts = new Map<string, NamedDescribed>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
     for (const tag of jsDocTags) {
@@ -91,7 +91,7 @@ export const getJSDocData = (
  * provided map.
  */
 const addNamedJSDocInfoToMap = (
-  map: Map<string, NamedJSDocInfo>,
+  map: Map<string, NamedDescribed>,
   tag: ts.JSDocTag
 ) => {
   const info = parseNamedJSDocInfo(tag);

@@ -13,10 +13,10 @@
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
 import {
-  JSDocInfo,
-  NamedJSDocInfo,
-  NamedTypedJSDocInfo,
-  NodeJSDocInfo,
+  Described,
+  NamedDescribed,
+  TypedNamedDescribed,
+  DeprecatableDescribed,
 } from '../model.js';
 
 /**
@@ -93,7 +93,7 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
     throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
   }
   const {name, type, description} = nameTypeDesc.groups!;
-  const info: NamedTypedJSDocInfo = {name, type};
+  const info: TypedNamedDescribed = {name, type};
   if (description.length > 0) {
     info.description = normalizeLineEndings(description);
   }
@@ -113,7 +113,7 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
 export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag,
   requireDash = false
-): NamedJSDocInfo | undefined => {
+): NamedDescribed | undefined => {
   const comment = getJSDocTagComment(tag);
   if (comment == undefined) {
     return undefined;
@@ -132,7 +132,7 @@ export const parseNamedJSDocInfo = (
     );
   }
   const {name, description} = nameDesc.groups!;
-  const info: NamedJSDocInfo = {name};
+  const info: NamedDescribed = {name};
   if (description.length > 0) {
     info.description = normalizeLineEndings(description);
   }
@@ -144,7 +144,7 @@ export const parseNamedJSDocInfo = (
  */
 export const parseJSDocDescription = (
   tag: ts.JSDocTag
-): JSDocInfo | undefined => {
+): Described | undefined => {
   const description = getJSDocTagComment(tag);
   if (description == undefined || description.length === 0) {
     return {};
@@ -157,7 +157,7 @@ export const parseJSDocDescription = (
  * given info object.
  */
 const addJSDocTagInfo = (
-  info: NodeJSDocInfo,
+  info: DeprecatableDescribed,
   jsDocTags: readonly ts.JSDocTag[]
 ) => {
   for (const tag of jsDocTags) {
@@ -237,8 +237,8 @@ const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given node.
  */
-export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
-  const info: NodeJSDocInfo = {};
+export const parseNodeJSDocInfo = (node: ts.Node): DeprecatableDescribed => {
+  const info: DeprecatableDescribed = {};
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
     addJSDocTagInfo(info, jsDocTags);
@@ -271,7 +271,7 @@ export const parseNodeJSDocInfo = (node: ts.Node): NodeJSDocInfo => {
  */
 export const parseModuleJSDocInfo = (sourceFile: ts.SourceFile) => {
   const moduleJSDocs = getModuleJSDocs(sourceFile);
-  const info: NodeJSDocInfo = {};
+  const info: DeprecatableDescribed = {};
   addJSDocTagInfo(
     info,
     moduleJSDocs.flatMap((m) => m.tags ?? [])

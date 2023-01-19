@@ -78,7 +78,7 @@ export type LocalNameOrReference = string | Reference;
 export type ExportMap = Map<string, LocalNameOrReference>;
 export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
 
-export interface ModuleInit extends NodeJSDocInfo {
+export interface ModuleInit extends DeprecatableDescribed {
   sourceFile: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
@@ -270,7 +270,7 @@ export class Module {
   }
 }
 
-interface DeclarationInit extends NodeJSDocInfo {
+interface DeclarationInit extends DeprecatableDescribed {
   name: string;
 }
 
@@ -323,7 +323,7 @@ export class VariableDeclaration extends Declaration {
   }
 }
 
-export interface FunctionLikeInit extends NodeJSDocInfo {
+export interface FunctionLikeInit extends DeprecatableDescribed {
   name: string;
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
@@ -476,20 +476,20 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
-export interface JSDocInfo {
+export interface Described {
   description?: string | undefined;
   summary?: string | undefined;
 }
 
-export interface NamedJSDocInfo extends JSDocInfo {
+export interface NamedDescribed extends Described {
   name: string;
 }
 
-export interface NamedTypedJSDocInfo extends NamedJSDocInfo {
+export interface TypedNamedDescribed extends NamedDescribed {
   type?: string;
 }
 
-export interface NodeJSDocInfo extends JSDocInfo {
+export interface DeprecatableDescribed extends Described {
   deprecated?: string | boolean | undefined;
 }
 
@@ -497,9 +497,9 @@ interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   reactiveProperties: Map<string, ReactiveProperty>;
   events: Map<string, Event>;
-  slots: Map<string, NamedJSDocInfo>;
-  cssProperties: Map<string, NamedJSDocInfo>;
-  cssParts: Map<string, NamedJSDocInfo>;
+  slots: Map<string, NamedDescribed>;
+  cssProperties: Map<string, NamedDescribed>;
+  cssParts: Map<string, NamedDescribed>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -516,9 +516,9 @@ export class LitElementDeclaration extends ClassDeclaration {
 
   readonly reactiveProperties: Map<string, ReactiveProperty>;
   readonly events: Map<string, Event>;
-  readonly slots: Map<string, NamedJSDocInfo>;
-  readonly cssProperties: Map<string, NamedJSDocInfo>;
-  readonly cssParts: Map<string, NamedJSDocInfo>;
+  readonly slots: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: LitElementDeclarationInit) {
     super(init);
@@ -538,7 +538,7 @@ export interface LitElementExport extends LitElementDeclaration {
   tagname: string;
 }
 
-export interface PropertyLike extends NodeJSDocInfo {
+export interface PropertyLike extends DeprecatableDescribed {
   name: string;
   type: Type | undefined;
   default?: string | undefined;

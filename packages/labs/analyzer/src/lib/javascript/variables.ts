@@ -15,7 +15,7 @@ import {
   VariableDeclaration,
   AnalyzerInterface,
   DeclarationInfo,
-  NodeJSDocInfo,
+  DeprecatableDescribed,
 } from '../model.js';
 import {hasExportModifier} from '../utils.js';
 import {DiagnosticsError} from '../errors.js';
@@ -34,7 +34,7 @@ type VariableName =
 const getVariableDeclaration = (
   dec: ts.VariableDeclaration | ts.EnumDeclaration,
   name: ts.Identifier,
-  jsDocInfo: NodeJSDocInfo,
+  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): VariableDeclaration => {
   return new VariableDeclaration({
@@ -71,7 +71,7 @@ const getVariableDeclarationInfoList = (
   dec: ts.VariableDeclaration,
   name: VariableName,
   isExport: boolean,
-  jsDocInfo: NodeJSDocInfo,
+  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
   if (ts.isIdentifier(name)) {

@@ -19,7 +19,7 @@ import {
   ClassMethod,
   Parameter,
   Return,
-  NodeJSDocInfo,
+  DeprecatableDescribed,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
@@ -108,7 +108,7 @@ const convertModule = (module: Module): cem.Module => {
   };
 };
 
-const convertCommonInfo = (info: NodeJSDocInfo) => {
+const convertCommonInfo = (info: DeprecatableDescribed) => {
   return {
     description: ifNotEmpty(info.description),
     summary: ifNotEmpty(info.summary),
