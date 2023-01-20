@@ -15,16 +15,45 @@ import {
   Type,
   VariableDeclaration,
   LitElementExport,
+  ClassField,
+  ClassMethod,
+  Parameter,
+  Return,
+  DeprecatableDescribed,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
-const ifDefined = <O, K extends keyof O>(model: O, name: K) => {
-  const obj: Partial<Pick<O, K>> = {};
-  if (model[name] !== undefined) {
-    obj[name] = model[name];
+/**
+ * For optional entries in the manifest, if the value has no meaningful value
+ * (i.e. it's an empty string or array or `false`), return `undefined` so that
+ * we don't serialize a key with a meaningless value to JSON, to cut down size
+ * of the manifest (note that `JSON.serialize` will not emit keys with
+ * `undefined` values)
+ */
+const ifNotEmpty = <T>(v: T): T | undefined => {
+  if (
+    (v as unknown) === false ||
+    ((typeof v === 'string' || Array.isArray(v)) && v.length === 0)
+  ) {
+    return undefined;
   }
-  return obj;
+  return v;
+};
+
+/**
+ * Transform the given value only if it had a meaningful value, otherwise
+ * return `undefined` so that it is not serialized to JSON.
+ */
+const transformIfNotEmpty = <T, R>(
+  value: T,
+  transformer: (v: NonNullable<T>) => R
+): R | undefined => {
+  const v = ifNotEmpty(value);
+  if (v !== undefined) {
+    return ifNotEmpty(transformer(v as NonNullable<T>));
+  }
+  return undefined;
 };
 
 /**
@@ -62,16 +91,33 @@ const convertModule = (module: Module): cem.Module => {
   return {
     kind: 'javascript-module',
     path: module.jsPath,
-    summary: 'TODO', // TODO
-    description: 'TODO', // TODO
-    declarations: [...module.declarations.map(convertDeclaration)],
-    exports: [
+    description: ifNotEmpty(module.description),
+    summary: ifNotEmpty(module.summary),
+    deprecated: ifNotEmpty(module.deprecated),
+    declarations: transformIfNotEmpty(module.declarations, (d) =>
+      d.map(convertDeclaration)
+    ),
+    exports: ifNotEmpty([
       ...module.exportNames.map((name) =>
         convertJavascriptExport(name, module.getExportReference(name))
       ),
       ...module.getCustomElementExports().map(convertCustomElementExport),
-    ],
-    deprecated: false, // TODO
+    ]),
+  };
+};
+
+const convertCommonInfo = (info: DeprecatableDescribed) => {
+  return {
+    description: ifNotEmpty(info.description),
+    summary: ifNotEmpty(info.summary),
+    deprecated: ifNotEmpty(info.deprecated),
+  };
+};
+
+const convertCommonDeclarationInfo = (declaration: Declaration) => {
+  return {
+    name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
+    ...convertCommonInfo(declaration),
   };
 };
 
@@ -121,37 +167,103 @@ const convertLitElementDeclaration = (
   return {
     ...convertClassDeclaration(declaration),
     tagName: declaration.tagname,
-    attributes: [
-      // TODO
-    ],
-    events: Array.from(declaration.events.values()).map(convertEvent),
-    slots: Array.from(declaration.slots.values()),
-    cssParts: Array.from(declaration.cssParts.values()),
-    cssProperties: Array.from(declaration.cssProperties.values()),
-    demos: [
-      // TODO
-    ],
     customElement: true,
+    // attributes: [], // TODO
+    events: transformIfNotEmpty(declaration.events, (v) =>
+      Array.from(v.values()).map(convertEvent)
+    ),
+    slots: transformIfNotEmpty(declaration.slots, (v) =>
+      Array.from(v.values())
+    ),
+    cssParts: transformIfNotEmpty(declaration.cssParts, (v) =>
+      Array.from(v.values())
+    ),
+    cssProperties: transformIfNotEmpty(declaration.cssProperties, (v) =>
+      Array.from(v.values())
+    ),
+    // demos: [], // TODO
   };
 };
 
 const convertClassDeclaration = (
   declaration: ClassDeclaration
 ): cem.ClassDeclaration => {
-  const {superClass} = declaration.heritage;
   return {
     kind: 'class',
-    name: declaration.name!, // TODO(kschaaf) name isn't optional in CEM
-    ...ifDefined(declaration, 'description'),
-    ...ifDefined(declaration, 'summary'),
-    superclass: superClass ? convertReference(superClass) : undefined,
-    mixins: [], // TODO
-    members: [
-      // TODO: ClassField
-      // TODO: ClassMethod
-    ],
-    source: {href: 'TODO'}, // TODO
-    deprecated: false, // TODO
+    ...convertCommonDeclarationInfo(declaration),
+    superclass: transformIfNotEmpty(
+      declaration.heritage.superClass,
+      convertReference
+    ),
+    // mixins: [], // TODO
+    members: ifNotEmpty([
+      ...Array.from(declaration.fields).map(convertClassField),
+      ...Array.from(declaration.methods).map(convertClassMethod),
+    ]),
+    // source: {href: 'TODO'}, // TODO
+  };
+};
+
+const convertCommonMemberInfo = (member: ClassField | ClassMethod) => {
+  return {
+    static: ifNotEmpty(member.static),
+    privacy: ifNotEmpty(member.privacy),
+    inheritedFrom: transformIfNotEmpty(member.inheritedFrom, convertReference),
+    source: ifNotEmpty(member.source),
+  };
+};
+
+const convertCommonFunctionLikeInfo = (functionLike: ClassMethod) => {
+  return {
+    parameters: transformIfNotEmpty(functionLike.parameters, (p) =>
+      p.map(convertParameter)
+    ),
+    return: transformIfNotEmpty(functionLike.return, convertReturn),
+  };
+};
+
+const convertReturn = (ret: Return) => {
+  return {
+    type: transformIfNotEmpty(ret.type, convertType),
+    summary: ifNotEmpty(ret.summary),
+    description: ifNotEmpty(ret.description),
+  };
+};
+
+const convertCommonPropertyLikeInfo = (
+  propertyLike: Parameter | ClassField
+) => {
+  return {
+    type: transformIfNotEmpty(propertyLike.type, convertType),
+    default: ifNotEmpty(propertyLike.default),
+  };
+};
+
+const convertParameter = (param: Parameter): cem.Parameter => {
+  return {
+    name: param.name,
+    ...convertCommonInfo(param),
+    ...convertCommonPropertyLikeInfo(param),
+    optional: ifNotEmpty(param.optional),
+    rest: ifNotEmpty(param.rest),
+  };
+};
+
+const convertClassField = (field: ClassField): cem.ClassField => {
+  return {
+    kind: 'field',
+    ...convertCommonDeclarationInfo(field),
+    ...convertCommonMemberInfo(field),
+    ...convertCommonPropertyLikeInfo(field),
+  };
+};
+
+const convertClassMethod = (method: ClassMethod): cem.ClassMethod => {
+  return {
+    kind: 'method',
+    ...convertCommonDeclarationInfo(method),
+    ...convertCommonMemberInfo(method),
+    ...convertCommonFunctionLikeInfo(method),
   };
 };
 
@@ -160,28 +272,32 @@ const convertVariableDeclaration = (
 ): cem.VariableDeclaration => {
   return {
     kind: 'variable',
-    name: declaration.name,
-    summary: 'TODO', // TODO
-    description: 'TODO', // TODO
-    type: declaration.type ? convertType(declaration.type) : {text: 'TODO'}, // TODO(kschaaf) type isn't optional in CEM
+    ...convertCommonDeclarationInfo(declaration),
+    type: transformIfNotEmpty(declaration.type, convertType) ?? {
+      text: 'unknown',
+    }, // TODO(kschaaf) type isn't optional in CEM
   };
 };
 
 const convertEvent = (event: Event): cem.Event => {
   return {
     name: event.name,
-    type: event.type ? convertType(event.type) : {text: 'TODO'}, // TODO(kschaaf) type isn't optional in CEM
+    type: transformIfNotEmpty(event.type, convertType) ?? {text: 'Event'}, // TODO(kschaaf) type isn't optional in CEM
+    description: ifNotEmpty(event.description),
+    summary: ifNotEmpty(event.summary),
   };
 };
 
 const convertType = (type: Type): cem.Type => {
   return {
     text: type.text,
-    references: convertTypeReference(type.text, type.references),
+    references: transformIfNotEmpty(type.references, (r) =>
+      convertTypeReferences(type.text, r)
+    ),
   };
 };
 
-const convertTypeReference = (
+const convertTypeReferences = (
   text: string,
   references: Reference[]
 ): cem.TypeReference[] => {

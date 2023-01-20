@@ -1,8 +1,24 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import ts from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {DiagnosticsError} from './errors.js';
 import {Analyzer} from './analyzer.js';
+
+export interface AnalyzerOptions {
+  /**
+   * Glob of source files to exclude from project during analysis.
+   *
+   * Useful for excluding things source like test folders that might otherwise
+   * be included in a project's tsconfig.
+   */
+  exclude?: string[];
+}
 
 /**
  * Returns an analyzer for a Lit npm package based on a filesystem path.
@@ -11,7 +27,10 @@ import {Analyzer} from './analyzer.js';
  * specifying a folder, if no tsconfig.json file is found directly in the root
  * folder, the project will be analyzed as JavaScript.
  */
-export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
+export const createPackageAnalyzer = (
+  packagePath: AbsolutePath,
+  options: AnalyzerOptions = {}
+) => {
   // This logic accepts either a path to folder containing a tsconfig.json
   // directly inside it or a path to a specific tsconfig file. If no tsconfig
   // file is found, we fallback to creating a Javascript program.
@@ -22,6 +41,9 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
   let commandLine: ts.ParsedCommandLine;
   if (ts.sys.fileExists(configFileName)) {
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
+    if (options.exclude !== undefined) {
+      (configFile.config.exclude ??= []).push(...options.exclude);
+    }
     commandLine = ts.parseJsonConfigFileContent(
       configFile.config /* json */,
       ts.sys /* host */,
@@ -55,6 +77,7 @@ export const createPackageAnalyzer = (packagePath: AbsolutePath) => {
           moduleResolution: 'node',
         },
         include: ['**/*.js'],
+        exclude: options.exclude ?? [],
       },
       ts.sys /* host */,
       packagePath /* basePath */

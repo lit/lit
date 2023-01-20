@@ -46,6 +46,7 @@
         "../analyzer:build",
         "../gen-wrapper-react:build",
         "../gen-wrapper-vue:build",
+        "../gen-manifest:build",
         "../gen-utils:build"
       ]
     },
