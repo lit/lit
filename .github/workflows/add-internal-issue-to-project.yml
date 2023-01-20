@@ -2,9 +2,13 @@
 #
 # Based on the example at
 # https://docs.github.com/en/issues/trying-out-the-new-projects-experience/automating-projects#example-workflow-authenticating-with-a-personal-access-token
+
+name: Add internal issue to project board
+
 on:
   issues:
     types: [opened]
+
 jobs:
   add-issue-to-project:
     # Don't run on forks. Issues on forks aren't relevant, and secrets aren't

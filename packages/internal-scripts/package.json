@@ -44,6 +44,8 @@
     "fast-glob": "^3.2.5",
     "line-reader": "^0.4.0",
     "marked": "^4.0.16",
+    "node-2fa": "^2.0.3",
+    "playwright": "^1.29.2",
     "puppeteer": "^15.4.0"
   },
   "devDependencies": {

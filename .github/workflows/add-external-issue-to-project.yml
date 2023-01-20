@@ -1,0 +1,47 @@
+# GitHub action that automatically adds newly filed issues from external repos
+# to the Lit project.
+#
+# See packages/internal-scripts/src/add-external-issue-to-project-board.ts for
+# more details.
+
+name: Add external issue to project board
+
+on:
+  repository_dispatch:
+    types: [external_issue_opened]
+
+jobs:
+  add-issue-to-project:
+    # Don't run on forks. Issues on forks aren't relevant, and secrets aren't
+    # available anyway.
+    if: github.repository == 'lit/lit'
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - uses: google/wireit@setup-github-actions-caching/v1
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Build
+        run: npm run build -w packages/internal-scripts
+
+      - name: Install playwright deps
+        run: npx playwright install-deps
+
+      - name: Add issue to project board
+        env:
+          GITHUB_USERNAME: lit-project-board-robot
+          GITHUB_PASSWORD: ${{ secrets.LIT_PROJECT_BOARD_ROBOT_PASSWORD }}
+          GITHUB_2FA_SEED: ${{ secrets.LIT_PROJECT_BOARD_ROBOT_2FA_SEED }}
+          PROJECT_VIEW_URL: https://github.com/orgs/lit/projects/4/views/46
+          ISSUE_URL: ${{ github.event.client_payload.issue_url }}
+        run: node packages/internal-scripts/lib/add-external-issue-to-project-board.js
