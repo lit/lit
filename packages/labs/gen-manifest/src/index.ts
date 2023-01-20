@@ -33,10 +33,8 @@ import type * as cem from 'custom-elements-manifest/schema';
  */
 const ifNotEmpty = <T>(v: T): T | undefined => {
   if (
-    v === undefined ||
-    (typeof v === 'boolean' && v === false) ||
-    (typeof v === 'string' && v.length === 0) ||
-    (Array.isArray(v) && v.length === 0)
+    (v as unknown) === false ||
+    ((typeof v === 'string' || Array.isArray(v)) && v.length === 0)
   ) {
     return undefined;
   }
