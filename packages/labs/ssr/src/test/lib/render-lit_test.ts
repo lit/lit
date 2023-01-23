@@ -233,7 +233,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       result,
-      `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+      `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
     );
     assert.is(customElementsRendered.length, 1);
     assert.is(customElementsRendered[0], 'test-simple');
@@ -247,7 +247,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       result,
-      `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+      `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
     );
   });
 
@@ -257,7 +257,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part v2CxGIW+qHI=--><test-property ><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part v2CxGIW+qHI=--><test-property ><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -267,7 +267,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo="bar"><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo="bar"><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -277,7 +277,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -287,7 +287,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -297,7 +297,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -307,7 +307,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part 7z41MJchKXM=--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><!--lit-node 0--><template shadowroot="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+      `<!--lit-part 7z41MJchKXM=--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
     );
   });
 
@@ -316,7 +316,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(elementWithDefaultReflectedProperties);
     assert.is(
       result,
-      `<!--lit-part tktTsdmfB74=--><test-reflected-properties baz="default reflected string"><template shadowroot="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+      `<!--lit-part tktTsdmfB74=--><test-reflected-properties baz="default reflected string"><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
     );
   });
 
@@ -326,7 +326,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part Q0bbGrx71ic=--><test-will-update  ><!--lit-node 0--><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
+      `<!--lit-part Q0bbGrx71ic=--><test-will-update  ><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
     );
   });
 
@@ -339,7 +339,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(noSlot);
     assert.is(
       result,
-      `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
+      `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
     );
   });
 
@@ -348,7 +348,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(shadowrootOpen);
     assert.is(
       result,
-      `<!--lit-part eTOxy3auvsY=--><test-shadowroot-open><template shadowroot="open"><!--lit-part--><!--/lit-part--></template></test-shadowroot-open><!--/lit-part-->`
+      `<!--lit-part eTOxy3auvsY=--><test-shadowroot-open><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-shadowroot-open><!--/lit-part-->`
     );
   });
 
@@ -357,7 +357,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(shadowrootClosed);
     assert.is(
       result,
-      `<!--lit-part 35tY6VC7KzI=--><test-shadowroot-closed><template shadowroot="closed"><!--lit-part--><!--/lit-part--></template></test-shadowroot-closed><!--/lit-part-->`
+      `<!--lit-part 35tY6VC7KzI=--><test-shadowroot-closed><template shadowroot="closed" shadowrootmode="closed"><!--lit-part--><!--/lit-part--></template></test-shadowroot-closed><!--/lit-part-->`
     );
   });
 
@@ -366,7 +366,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(shadowrootdelegatesfocus);
     assert.is(
       result,
-      `<!--lit-part Nim07tlWyJ0=--><test-shadowrootdelegatesfocus><template shadowroot="open" shadowrootdelegatesfocus><!--lit-part--><!--/lit-part--></template></test-shadowrootdelegatesfocus><!--/lit-part-->`
+      `<!--lit-part Nim07tlWyJ0=--><test-shadowrootdelegatesfocus><template shadowroot="open" shadowrootmode="open" shadowrootdelegatesfocus><!--lit-part--><!--/lit-part--></template></test-shadowrootdelegatesfocus><!--/lit-part-->`
     );
   });
 
