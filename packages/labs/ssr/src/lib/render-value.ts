@@ -732,7 +732,7 @@ function* renderTemplateResult(
             const delegatesfocusAttr = delegatesFocus
               ? ' shadowrootdelegatesfocus'
               : '';
-            yield `<template shadowroot="${mode}"${delegatesfocusAttr}>`;
+            yield `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`;
             yield* shadowContents;
             yield '</template>';
           }
