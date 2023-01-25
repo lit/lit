@@ -15,6 +15,7 @@ export class Test1 extends LitElement {
     this,
     [
       {path: '/', render: () => html`<h2>Root</h2>`},
+      {path: '/#hash', render: () => html`<h2>Hash</h2>`},
       {path: '/test1/:x', render: ({x}) => html`<h2>Test 1: ${x}</h2>`},
       {path: '/child1/*', render: () => html`<child-1></child-1>`},
       {path: '/child2/*', render: () => html`<child-2></child-2>`},
