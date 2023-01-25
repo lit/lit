@@ -205,7 +205,7 @@ export abstract class ElementRenderer {
  * An ElementRenderer used as a fallback in the case where a custom element is
  * either unregistered or has no other matching renderer.
  */
-class FallbackRenderer extends ElementRenderer {
+export class FallbackRenderer extends ElementRenderer {
   private readonly _attributes: {[name: string]: string} = {};
 
   override setAttribute(name: string, value: string) {
