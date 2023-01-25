@@ -72,11 +72,13 @@
         "../ssr:build:ts"
       ],
       "files": [
-        "src/**/*.ts",
+        "src/**/*.ts{,x}",
         "tsconfig.json"
       ],
       "output": [
         "node/",
+        "tests/",
+        "lib/",
         "index.{d.ts,d.ts.map,js,js.map}",
         "jsx-runtime.{d.ts,d.ts.map,js,js.map}",
         "jsx-dev-runtime.{d.ts,d.ts.map,js,js.map}",
@@ -85,8 +87,17 @@
       ]
     },
     "test": {
-      "command": "echo \"TODO\"",
-      "dependencies": []
+      "command": "uvu tests _test.js$",
+      "dependencies": [
+        "build"
+      ]
     }
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uvu": "^0.5.6"
   }
 }
