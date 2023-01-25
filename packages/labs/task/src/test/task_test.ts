@@ -303,7 +303,7 @@ suite('Task', () => {
     await renderElement(el);
     assert.equal(el.task.status, TaskStatus.PENDING);
 
-    // Catch the rejection to supress uncaught rejection warnings
+    // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Task error reported.
     el.rejectTask();
@@ -330,7 +330,7 @@ suite('Task', () => {
     el.a = 'a2';
     el.b = 'b2';
     await tasksUpdateComplete();
-    // Catch the rejection to supress uncaught rejection warnings
+    // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     el.rejectTask();
     await tasksUpdateComplete();
@@ -396,7 +396,7 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
 
-    // Catch the rejection to supress uncaught rejection warnings
+    // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
     el.rejectTask();
@@ -452,7 +452,7 @@ suite('Task', () => {
       task = new Task(
         this,
         ([a, b]) => [a * 2, b.split('')],
-        // Make sure that we can use `as const` to force inferece of the args
+        // Make sure that we can use `as const` to force inference of the args
         // as [number, string] instead of (number | string)[]
         () => [1, 'b'] as const
       );

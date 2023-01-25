@@ -173,7 +173,7 @@ export const setChildPartValue = <T extends ChildPart>(
   return part;
 };
 
-// A sentinal value that can never appear as a part value except when set by
+// A sentinel value that can never appear as a part value except when set by
 // live(). Used to force a dirty-check to fail and cause a re-render.
 const RESET_VALUE = {};
 
@@ -196,7 +196,7 @@ export const setCommittedValue = (part: Part, value: unknown = RESET_VALUE) =>
  *
  * The committed value is used for change detection and efficient updates of
  * the part. It can differ from the value set by the template or directive in
- * cases where the template value is transformed before being commited.
+ * cases where the template value is transformed before being committed.
  *
  * - `TemplateResult`s are committed as a `TemplateInstance`
  * - Iterables are committed as `Array<ChildPart>`

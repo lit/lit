@@ -285,7 +285,7 @@ export class MyItems extends LitElement {
 }
 ```
 
-## API Referrence
+## API Reference
 
 ### `items` property
 

@@ -83,7 +83,7 @@ export async function ssrFixture<T extends HTMLElement>(
     // See https://web.dev/declarative-shadow-dom/#parser-only
     const fragment = new DOMParser().parseFromString(
       // DOMParser could separate opening lit-part comment from others as it
-      // selectively places some elements into <body>. Wraping the entire
+      // selectively places some elements into <body>. Wrapping the entire
       // rendered content in <body> preserves order.
       '<body>' + rendered + '</body>',
       'text/html',

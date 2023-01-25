@@ -2939,7 +2939,7 @@ suite('lit-html', () => {
 
   const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
 
-  securityHooksSuiteFunction('enahnced security hooks', () => {
+  securityHooksSuiteFunction('enhanced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
       constructor(sanitizeTo: string) {
@@ -3055,7 +3055,7 @@ suite('lit-html', () => {
       ]);
     });
 
-    test('sanitizes concatonated attributes after contatonation', () => {
+    test('sanitizes concatenated attributes after concatenation', () => {
       render(html`<div attrib="hello ${'big'} world"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),

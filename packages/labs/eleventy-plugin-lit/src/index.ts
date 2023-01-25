@@ -169,7 +169,7 @@ ${reset}`
       )
     ).module.namespace.render as typeof contextifiedRender;
     // TOOD(aomarks) We could also directly synthesize an html TemplateResult
-    // instead of doing so via the the unsafeHTML directive. The directive is
+    // instead of doing so via the unsafeHTML directive. The directive is
     // performing some extra validation that doesn't really apply to us.
     contextifiedUnsafeHTML = (
       await loader.importModule(

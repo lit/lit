@@ -60,7 +60,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   public offsetWithinScroller: Positions = {left: 0, top: 0};
 
   /**
-   * Flag for debouncing asynchnronous reflow requests.
+   * Flag for debouncing asynchronous reflow requests.
    */
   private _pendingReflow = false;
 

@@ -129,7 +129,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Added
 
-- Added an `initialState` sentinal value that task functions can return to reset the task state to INITIAL.
+- Added an `initialState` sentinel value that task functions can return to reset the task state to INITIAL.
 
 <!-- ### Removed -->
 <!-- ### Fixed -->

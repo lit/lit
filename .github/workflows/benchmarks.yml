@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
   benchmarks:
-    # Don't run on forks. Benchmarks can't run on forks becuase secrets aren't
+    # Don't run on forks. Benchmarks can't run on forks because secrets aren't
     # available, which are needed for posting result comments.
     if: github.repository == 'lit/lit'
 

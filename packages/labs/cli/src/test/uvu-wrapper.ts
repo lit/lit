@@ -8,7 +8,7 @@ const TIMEOUT = IN_CI ? 60_000 : 30_000;
 /**
  * A safer wrapper around uvu.suite.
  *
- * Adds a timeout so that the the test doesn't hang forever, and so that it
+ * Adds a timeout so that the test doesn't hang forever, and so that it
  * can't be garbage collected.
  *
  * Automatically calls `run` as well.

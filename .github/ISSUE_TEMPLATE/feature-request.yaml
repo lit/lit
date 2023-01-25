@@ -6,7 +6,7 @@ body:
     attributes:
       label: Should this be an RFC?
       description: |
-        Lit uses the [Lit RFC Process](https://github.com/lit/rfcs) to propose and discuss substantial chnages. Significant changes should not be opened as feature request issues here, but follow the RFC process at https://github.com/lit/rfcs.
+        Lit uses the [Lit RFC Process](https://github.com/lit/rfcs) to propose and discuss substantial changes. Significant changes should not be opened as feature request issues here, but follow the RFC process at https://github.com/lit/rfcs.
       options:
       - label: This is not a substantial change
         required: true

@@ -57,7 +57,7 @@ interface ClickableInput extends HTMLInputElement {
 
 const throwIfRunOnServer = () => {
   if (!(globalThis instanceof window.constructor)) {
-    throw new Error('Upate should not be run on the server');
+    throw new Error('Update should not be run on the server');
   }
 };
 

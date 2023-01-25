@@ -125,7 +125,7 @@ export const useController = <C extends ReactiveController>(
   // created with useMemo().
   // TODO (justinfagnani): since this controller are mutable, this may cause
   // issues such as "shearing" with React concurrent mode. The solution there
-  // will likely be to shapshot the controller state with something like
+  // will likely be to snapshot the controller state with something like
   // `useMutableSource`:
   // https://github.com/reactjs/rfcs/blob/master/text/0147-use-mutable-source.md
   // We can address this when React's concurrent mode is closer to shipping.

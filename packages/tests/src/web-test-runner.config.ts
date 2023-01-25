@@ -233,7 +233,7 @@ const config: TestRunnerConfig = {
           !context.url.includes('/development/') &&
           // lit doesn't have a dev mode
           !context.url.includes('/packages/lit/') &&
-          // some 3rd party modles can come from e.g. /packages/node_modules/*
+          // some 3rd party modules can come from e.g. /packages/node_modules/*
           !context.url.includes('/node_modules/')
         ) {
           console.log('Unexpected prod request in dev mode:', context.url);
