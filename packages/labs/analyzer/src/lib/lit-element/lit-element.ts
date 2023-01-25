@@ -11,10 +11,16 @@
  */
 
 import ts from 'typescript';
-import {getHeritage} from '../javascript/classes.js';
-import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
+import {getClassMembers, getHeritage} from '../javascript/classes.js';
+import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
+import {
+  LitElementDeclaration,
+  AnalyzerInterface,
+  Event,
+  NamedDescribed,
+} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
-import {getEvents} from './events.js';
+import {addEventsToMap} from './events.js';
 import {getProperties} from './properties.js';
 
 /**
@@ -22,18 +28,76 @@ import {getProperties} from './properties.js';
  * (branded as LitClassDeclaration).
  */
 export const getLitElementDeclaration = (
-  node: LitClassDeclaration,
+  declaration: LitClassDeclaration,
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
-    tagname: getTagName(node),
+    tagname: getTagName(declaration),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
-    name: node.name?.text ?? '',
-    node,
-    reactiveProperties: getProperties(node, analyzer),
-    events: getEvents(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    name: declaration.name?.text ?? '',
+    node: declaration,
+    reactiveProperties: getProperties(declaration, analyzer),
+    ...getJSDocData(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer),
+    ...getClassMembers(declaration, analyzer),
   });
+};
+
+/**
+ * Parses element metadata from jsDoc tags from a LitElement declaration into
+ * Maps of <name, info>.
+ */
+export const getJSDocData = (
+  node: LitClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  const events = new Map<string, Event>();
+  const slots = new Map<string, NamedDescribed>();
+  const cssProperties = new Map<string, NamedDescribed>();
+  const cssParts = new Map<string, NamedDescribed>();
+  const jsDocTags = ts.getJSDocTags(node);
+  if (jsDocTags !== undefined) {
+    for (const tag of jsDocTags) {
+      switch (tag.tagName.text) {
+        case 'fires':
+          addEventsToMap(tag, events, analyzer);
+          break;
+        case 'slot':
+          addNamedJSDocInfoToMap(slots, tag);
+          break;
+        case 'cssProp':
+          addNamedJSDocInfoToMap(cssProperties, tag);
+          break;
+        case 'cssProperty':
+          addNamedJSDocInfoToMap(cssProperties, tag);
+          break;
+        case 'cssPart':
+          addNamedJSDocInfoToMap(cssParts, tag);
+          break;
+      }
+    }
+  }
+  return {
+    ...parseNodeJSDocInfo(node),
+    events,
+    slots,
+    cssProperties,
+    cssParts,
+  };
+};
+
+/**
+ * Adds name, description, and summary info for a given jsdoc tag into the
+ * provided map.
+ */
+const addNamedJSDocInfoToMap = (
+  map: Map<string, NamedDescribed>,
+  tag: ts.JSDocTag
+) => {
+  const info = parseNamedJSDocInfo(tag);
+  if (info !== undefined) {
+    map.set(info.name, info);
+  }
 };
 
 /**

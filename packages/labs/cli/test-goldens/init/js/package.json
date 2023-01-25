@@ -13,7 +13,7 @@
     "lit"
   ],
   "dependencies": {
-    "lit": "^2.2.8"
+    "lit": "^2.6.1"
   },
   "devDependencies": {
     "@web/dev-server": "^0.1.32"
@@ -22,5 +22,8 @@
     "./lib/my-element.js": {
       "default": "./lib/my-element.js"
     }
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }

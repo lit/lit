@@ -138,7 +138,7 @@ test('element generation TS named', async ({rig, testConsole}) => {
 
 test('default config in subdirectory', async ({rig, testConsole}) => {
   await symlinkAllCommands(rig);
-  const cli = new LitCli(['init', 'element', '--dir', 'subdir'], {
+  const cli = new LitCli(['init', 'element', '--out', 'subdir'], {
     cwd: rig.rootDir,
     console: testConsole,
   });

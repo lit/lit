@@ -8,9 +8,10 @@ import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {configureSsrLocalization} from '../ssr.js';
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr';
 import {html} from 'lit';
 import {msg} from '@lit/localize';
+import {collectResultSync} from '@lit-labs/ssr/lib/render-result.js';
 
 const translations = new Map([
   [
@@ -39,14 +40,6 @@ const {withLocale} = await configureSsrLocalization({
   loadLocale: async (locale) => translations.get(locale),
 });
 
-const concat = (iterator: Iterable<string>) => {
-  let out = '';
-  for (const part of iterator) {
-    out += part;
-  }
-  return out;
-};
-
 const removeHtmlComments = (htmlStr: string) =>
   htmlStr.replace(/<!--.*?-->/g, '');
 
@@ -56,10 +49,10 @@ const randomTimeout = () =>
 const renderHelloWorld = (locale: string) =>
   new Promise<string>((resolve) => {
     withLocale(locale, async () => {
-      const hello = concat(render(msg(html`Hello`, {id: 'hello'})));
+      const hello = collectResultSync(render(msg(html`Hello`, {id: 'hello'})));
       // Randomize reentry to simulate concurrent requests to an async server.
       await randomTimeout();
-      const world = concat(render(msg(html`World`, {id: 'world'})));
+      const world = collectResultSync(render(msg(html`World`, {id: 'world'})));
       resolve(removeHtmlComments(`${hello} ${world}`));
     });
   });

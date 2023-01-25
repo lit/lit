@@ -14,6 +14,8 @@ import 'react-dom/umd/react-dom.development.js';
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
+const DEV_MODE = !!ReactiveElement.enableWarning;
+
 // Needed for JSX expressions
 const React = window.React;
 
@@ -55,6 +57,14 @@ class BasicElement extends ReactiveElement {
   @property({type: Boolean})
   disabled = false;
 
+  // override a react reserved property
+  @property({type: Boolean})
+  ref = false;
+
+  // override a react reserved property
+  @property({type: String})
+  locaName = 'basic-element-x-foo';
+
   @property({type: Boolean, reflect: true})
   rbool = false;
   @property({type: String, reflect: true})
@@ -82,9 +92,76 @@ class BasicElement extends ReactiveElement {
   }
 }
 
-suite('createComponent', () => {
-  let container: HTMLElement;
+let container: HTMLElement;
+let el: HTMLDivElement;
+let wrappedEl: BasicElement;
 
+const basicElementEvents = {
+  onFoo: 'foo' as EventName<MouseEvent>,
+  onBar: 'bar',
+};
+
+// if some tag, run options
+// otherwise
+const BasicElementComponent = createComponent({
+  react: window.React,
+  elementClass: BasicElement,
+  events: basicElementEvents,
+  tagName,
+});
+
+const renderReactComponent = async (
+  props?: React.ComponentProps<typeof BasicElementComponent>
+) => {
+  window.ReactDOM.render(
+    <>
+      <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
+      <x-foo {...props}/>
+      <BasicElementComponent {...props}/>,
+    </>,
+    container
+  );
+
+  el = container.querySelector('div')!;
+  wrappedEl = container.querySelector(tagName)! as BasicElement;
+
+  await wrappedEl.updateComplete;
+};
+
+if (DEV_MODE) {
+  suite('Developer mode warnings', () => {
+    let warnings: string[] = [];
+    const consoleWarn = console.warn;
+
+    suiteSetup(() => {
+      console.warn = (message: string) => warnings.push(message);
+    });
+
+    suiteTeardown(() => {
+      console.warn = consoleWarn;
+    });
+
+    setup(() => {
+      warnings = [];
+    });
+
+    test('warns when react resered properties are used', () => { 
+      createComponent({
+        react: window.React,
+        elementClass: BasicElement,
+        events: basicElementEvents,
+        tagName,
+      });
+
+      // We only expect a warning for ref and not localName
+      // since we don't warn on overrides of HTMLElement properties
+      // that React treats specially.
+      assert.equal(warnings.length, 1);
+    })
+  });
+}
+
+suite('createComponent', () => {
   setup(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -95,41 +172,6 @@ suite('createComponent', () => {
       container.parentNode.removeChild(container);
     }
   });
-
-  const basicElementEvents = {
-    onFoo: 'foo' as EventName<MouseEvent>,
-    onBar: 'bar',
-  };
-
-  // if some tag, run options
-  // otherwise
-  const BasicElementComponent = createComponent({
-    react: window.React,
-    elementClass: BasicElement,
-    events: basicElementEvents,
-    tagName,
-  });
-
-  let el: HTMLDivElement;
-  let wrappedEl: BasicElement;
-
-  const renderReactComponent = async (
-    props?: React.ComponentProps<typeof BasicElementComponent>
-  ) => {
-    window.ReactDOM.render(
-      <>
-        <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
-        <x-foo {...props}/>
-        <BasicElementComponent {...props}/>,
-      </>,
-      container
-    );
-
-    el = container.querySelector('div')!;
-    wrappedEl = container.querySelector(tagName)! as BasicElement;
-
-    await wrappedEl.updateComplete;
-  };
 
   /*
     The following test will not build if an incorrect typing occurs

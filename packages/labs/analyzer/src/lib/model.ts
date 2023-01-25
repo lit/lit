@@ -78,7 +78,7 @@ export type LocalNameOrReference = string | Reference;
 export type ExportMap = Map<string, LocalNameOrReference>;
 export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
 
-export interface ModuleInit {
+export interface ModuleInit extends DeprecatableDescribed {
   sourceFile: ts.SourceFile;
   sourcePath: PackagePath;
   jsPath: PackagePath;
@@ -137,6 +137,18 @@ export class Module {
    * A list of module paths for all wildcard re-exports
    */
   private _finalizeExports: (() => void) | undefined;
+  /**
+   * The module's user-facing description.
+   */
+  readonly description?: string | undefined;
+  /**
+   * The module's user-facing summary.
+   */
+  readonly summary?: string | undefined;
+  /**
+   * The module's user-facing deprecation status.
+   */
+  readonly deprecated?: string | boolean | undefined;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
@@ -147,6 +159,9 @@ export class Module {
     this.dependencies = init.dependencies;
     this._exportMap = init.exportMap;
     this._finalizeExports = init.finalizeExports;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
   }
 
   /**
@@ -176,10 +191,29 @@ export class Module {
   getExport(name: string): Declaration | Reference {
     this._ensureExportsFinalized();
     const exp = this._exportMap.get(name);
-    if (exp instanceof Reference) {
+    if (exp === undefined) {
+      throw new Error(
+        `Module ${this.sourcePath} did not contain an export named ${name}`
+      );
+    } else if (exp instanceof Reference) {
       return exp;
     } else {
-      return this.getDeclaration(name);
+      return this.getDeclaration(exp);
+    }
+  }
+
+  /**
+   * Return Reference for given export name.
+   *
+   * For references to local declarations, the module will be undefined.
+   * For re-exports, the Reference will point to a package & module.
+   */
+  getExportReference(name: string): Reference {
+    const exp = this.getExport(name);
+    if (exp instanceof Declaration) {
+      return new Reference({name: exp.name, dereference: () => exp});
+    } else {
+      return exp;
     }
   }
 
@@ -225,16 +259,31 @@ export class Module {
       (name) => this.getDeclaration(name)
     ));
   }
+
+  /**
+   * Returns all custom elements registered in this module.
+   */
+  getCustomElementExports(): LitElementExport[] {
+    return this.declarations.filter(
+      (d) => d.isLitElementDeclaration() && d.tagname !== undefined
+    ) as LitElementExport[];
+  }
 }
 
-interface DeclarationInit {
+interface DeclarationInit extends DeprecatableDescribed {
   name: string;
 }
 
 export abstract class Declaration {
-  name: string;
+  readonly name: string;
+  readonly description?: string | undefined;
+  readonly summary?: string | undefined;
+  readonly deprecated?: string | boolean | undefined;
   constructor(init: DeclarationInit) {
     this.name = init.name;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
   }
   isVariableDeclaration(): this is VariableDeclaration {
     return this instanceof VariableDeclaration;
@@ -245,20 +294,104 @@ export abstract class Declaration {
   isLitElementDeclaration(): this is LitElementDeclaration {
     return this instanceof LitElementDeclaration;
   }
+  isFunctionDeclaration(): this is FunctionDeclaration {
+    return this instanceof FunctionDeclaration;
+  }
+  isClassField(): this is ClassField {
+    return this instanceof ClassField;
+  }
+  isClassMethod(): this is ClassMethod {
+    return this instanceof ClassMethod;
+  }
 }
 
 export interface VariableDeclarationInit extends DeclarationInit {
-  node: ts.VariableDeclaration;
+  node: ts.VariableDeclaration | ts.ExportAssignment | ts.EnumDeclaration;
   type: Type | undefined;
 }
 
 export class VariableDeclaration extends Declaration {
-  readonly node: ts.VariableDeclaration;
+  readonly node:
+    | ts.VariableDeclaration
+    | ts.ExportAssignment
+    | ts.EnumDeclaration;
   readonly type: Type | undefined;
   constructor(init: VariableDeclarationInit) {
     super(init);
     this.node = init.node;
     this.type = init.type;
+  }
+}
+
+export interface FunctionLikeInit extends DeprecatableDescribed {
+  name: string;
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+}
+
+export class FunctionDeclaration extends Declaration {
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+  constructor(init: FunctionLikeInit) {
+    super(init);
+    this.parameters = init.parameters;
+    this.return = init.return;
+  }
+}
+
+export type Privacy = 'public' | 'private' | 'protected';
+
+export interface SourceReference {
+  href: string;
+}
+
+export interface ClassMethodInit extends FunctionLikeInit {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+}
+
+export class ClassMethod extends Declaration {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+  constructor(init: ClassMethodInit) {
+    super(init);
+    this.static = init.static;
+    this.privacy = init.privacy;
+    this.inheritedFrom = init.inheritedFrom;
+    this.source = init.source;
+    this.parameters = init.parameters;
+    this.return = init.return;
+  }
+}
+
+export interface ClassFieldInit extends PropertyLike {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+}
+
+export class ClassField extends Declaration {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+  type?: Type | undefined;
+  default?: string | undefined;
+  constructor(init: ClassFieldInit) {
+    super(init);
+    this.static = init.static;
+    this.privacy = init.privacy;
+    this.inheritedFrom = init.inheritedFrom;
+    this.source = init.source;
+    this.type = init.type;
+    this.default = init.default;
   }
 }
 
@@ -270,28 +403,103 @@ export type ClassHeritage = {
 export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
   getHeritage: () => ClassHeritage;
+  fieldMap?: Map<string, ClassField> | undefined;
+  methodMap?: Map<string, ClassMethod> | undefined;
 }
 
 export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
+  readonly _fieldMap: Map<string, ClassField>;
+  readonly _methodMap: Map<string, ClassMethod>;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
     this._getHeritage = init.getHeritage;
+    this._fieldMap = init.fieldMap ?? new Map();
+    this._methodMap = init.methodMap ?? new Map();
   }
 
+  /**
+   * Returns this class's `ClassHeritage` model, with references to its
+   * `superClass` and `mixins`.
+   */
   get heritage(): ClassHeritage {
     return (this._heritage ??= this._getHeritage());
   }
+
+  /**
+   * Returns iterator of the `ClassField`s defined on the immediate class
+   * (excluding any inherited members).
+   */
+  get fields() {
+    return this._fieldMap.values();
+  }
+
+  /**
+   * Returns iterator of the `ClassMethod`s defined on the immediate class
+   * (excluding any inherited members).
+   */
+  get methods(): IterableIterator<ClassMethod> {
+    return this._methodMap.values();
+  }
+
+  /**
+   * Returns a `ClassField` model the given name defined on the immediate class
+   * (excluding any inherited members).
+   */
+  getField(name: string): ClassField | undefined {
+    return this._fieldMap.get(name);
+  }
+
+  /**
+   * Returns a `ClassMethod` model for the given name defined on the immediate
+   * class (excluding any inherited members).
+   */
+  getMethod(name: string): ClassMethod | undefined {
+    return this._methodMap.get(name);
+  }
+
+  /**
+   * Returns a `ClassField` or `ClassMethod` model for the given name defined on
+   * the immediate class (excluding any inherited members).
+   *
+   * Note that if a field and method of the same name were defined (error is TS,
+   * but possible in JS), the `ClassField` will be returned from this method, as
+   * it takes precedence by virtue of being an instance property (vs. a method,
+   * which is defined on the prototype).
+   */
+  getMember(name: string): ClassMethod | ClassField | undefined {
+    return this.getField(name) ?? this.getMethod(name);
+  }
+}
+
+export interface Described {
+  description?: string | undefined;
+  summary?: string | undefined;
+}
+
+export interface NamedDescribed extends Described {
+  name: string;
+}
+
+export interface TypedNamedDescribed extends NamedDescribed {
+  type?: string;
+}
+
+export interface DeprecatableDescribed extends Described {
+  deprecated?: string | boolean | undefined;
 }
 
 interface LitElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   reactiveProperties: Map<string, ReactiveProperty>;
-  readonly events: Map<string, Event>;
+  events: Map<string, Event>;
+  slots: Map<string, NamedDescribed>;
+  cssProperties: Map<string, NamedDescribed>;
+  cssParts: Map<string, NamedDescribed>;
 }
 
 export class LitElementDeclaration extends ClassDeclaration {
@@ -307,22 +515,47 @@ export class LitElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
 
   readonly reactiveProperties: Map<string, ReactiveProperty>;
-
   readonly events: Map<string, Event>;
+  readonly slots: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
     this.reactiveProperties = init.reactiveProperties;
     this.events = init.events;
+    this.slots = init.slots;
+    this.cssProperties = init.cssProperties;
+    this.cssParts = init.cssParts;
   }
 }
 
-export interface ReactiveProperty {
+/**
+ * A LitElementDeclaration that has been globally registered with a tagname.
+ */
+export interface LitElementExport extends LitElementDeclaration {
+  tagname: string;
+}
+
+export interface PropertyLike extends DeprecatableDescribed {
   name: string;
-
   type: Type | undefined;
+  default?: string | undefined;
+}
 
+export interface Return {
+  type?: Type | undefined;
+  summary?: string | undefined;
+  description?: string | undefined;
+}
+
+export interface Parameter extends PropertyLike {
+  optional?: boolean | undefined;
+  rest?: boolean | undefined;
+}
+
+export interface ReactiveProperty extends PropertyLike {
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?
@@ -350,6 +583,7 @@ export interface ReactiveProperty {
 export interface Event {
   name: string;
   description: string | undefined;
+  summary: string | undefined;
   type: Type | undefined;
 }
 

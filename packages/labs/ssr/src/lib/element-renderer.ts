@@ -7,13 +7,16 @@
  */
 
 import {escapeHtml} from './util/escape-html.js';
-import {RenderInfo} from './render-lit-html.js';
+import type {RenderInfo} from './render-value.js';
+import type {RenderResult} from './render-result.js';
 
-export type Constructor<T> = {new (): T};
+type Interface<T> = {
+  [P in keyof T]: T[P];
+};
 
 export type ElementRendererConstructor = (new (
   tagName: string
-) => ElementRenderer) &
+) => Interface<ElementRenderer>) &
   typeof ElementRenderer;
 
 type AttributesMap = Map<string, string>;
@@ -40,6 +43,11 @@ export const getElementRenderer = (
   }
   return new FallbackRenderer(tagName);
 };
+
+export interface ShadowRootOptions {
+  mode: 'open' | 'closed';
+  delegatesFocus?: boolean;
+}
 
 /**
  * An object that renders elements of a certain type.
@@ -117,23 +125,29 @@ export abstract class ElementRenderer {
   }
 
   /**
+   * Override this getter to configure the element's shadow root, if one is
+   * created with `renderShadow`.
+   */
+  get shadowRootOptions(): ShadowRootOptions {
+    return {mode: 'open'};
+  }
+
+  /**
    * Render a single element's ShadowRoot children.
    */
-  abstract renderShadow(
-    _renderInfo: RenderInfo
-  ): IterableIterator<string> | undefined;
+  abstract renderShadow(_renderInfo: RenderInfo): RenderResult | undefined;
 
   /**
    * Render an element's light DOM children.
    */
-  abstract renderLight(renderInfo: RenderInfo): IterableIterator<string>;
+  abstract renderLight(renderInfo: RenderInfo): RenderResult | undefined;
 
   /**
    * Render an element's attributes.
    *
    * Default implementation serializes all attributes on the element instance.
    */
-  *renderAttributes(): IterableIterator<string> {
+  *renderAttributes(): RenderResult {
     if (this.element !== undefined) {
       const {attributes} = this.element;
       for (
@@ -162,7 +176,7 @@ class FallbackRenderer extends ElementRenderer {
     this._attributes[name] = value;
   }
 
-  override *renderAttributes(): IterableIterator<string> {
+  override *renderAttributes(): RenderResult {
     for (const [name, value] of Object.entries(this._attributes)) {
       if (value === '' || value === undefined || value === null) {
         yield ` ${name}`;

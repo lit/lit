@@ -17,10 +17,23 @@ import {AbsolutePath} from './paths.js';
 const npmModule = /^(?<package>(@[^/]+\/[^/]+)|[^/]+)\/?(?<module>.*)$/;
 
 /**
- * Returns if the given declaration is exported from the module or not.
+ * Returns a ts.Symbol for a name in scope at a given location in the AST.
+ * TODO(kschaaf): There are ~1748 symbols in scope of a typical hello world,
+ * due to DOM globals. Perf might become an issue here.
  */
-export const isExport = (node: ts.Declaration) =>
-  !!node.modifiers?.find((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+export const getSymbolForName = (
+  name: string,
+  location: ts.Node,
+  analyzer: AnalyzerInterface
+): ts.Symbol | undefined => {
+  return analyzer.program
+    .getTypeChecker()
+    .getSymbolsInScope(
+      location,
+      (ts.SymbolFlags as unknown as {All: number}).All
+    )
+    .filter((s) => s.name === name)[0];
+};
 
 interface ModuleSpecifierInfo {
   specifier: string;
@@ -286,9 +299,19 @@ const getLocalReference = (
  *   {name: 'c', reference: 'c'},
  * ]
  * ```
+ *
  * This also handles explicit re-export syntax, which all become References:
  * ```
  *   export {a as x, b as y, c} from 'foo';
+ * ```
+ *
+ * Finally, this handles namespace exports, which become a single Reference:
+ * ```
+ *   export * as ns from 'foo';
+ * ```
+ * becomes:
+ * ```
+ *   [{name: 'ns', reference: new Reference('*', 'foo')}]
  * ```
  */
 export const getExportReferences = (
@@ -300,7 +323,9 @@ export const getExportReferences = (
     [];
   if (ts.isNamedExports(exportClause)) {
     for (const el of exportClause.elements) {
-      const exportName = (el.propertyName ?? el.name).getText();
+      const exportName = el.name.getText();
+      const localNameNode = el.propertyName ?? el.name;
+      const localName = localNameNode.getText();
       if (moduleSpecifier !== undefined) {
         // This was an explicit re-export (e.g. `export {a} from 'foo'`), so add
         // a Reference
@@ -310,16 +335,17 @@ export const getExportReferences = (
           decNameOrRef: getImportReference(
             specifier,
             moduleSpecifier,
-            el.name.getText(),
+            localName,
             analyzer
           ),
         });
       } else {
         // Get the declaration for this symbol, so we can determine if
-        // it was declared locally or not
-        const symbol = analyzer.program
-          .getTypeChecker()
-          .getSymbolAtLocation(el.name);
+        // it was declared locally or not. Note we use name-based searching
+        // to find the symbol, because `getSymbolAtLocation()` for
+        // `export {Foo}` will annoyingly just point back to the export
+        // line, rather than the location it was actually declared.
+        const symbol = getSymbolForName(localName, localNameNode, analyzer);
         const decl = symbol?.declarations?.[0];
         if (symbol === undefined || decl === undefined) {
           throw new DiagnosticsError(
@@ -337,10 +363,25 @@ export const getExportReferences = (
         } else {
           // Otherwise, the declaration is local, so just add its name; this
           // can be looked up directly in `getDeclaration` for the module
-          refs.push({exportName, decNameOrRef: el.name.getText()});
+          refs.push({exportName, decNameOrRef: localName});
         }
       }
     }
+  } else if (
+    // e.g. `export * as ns from 'foo'`;
+    ts.isNamespaceExport(exportClause) &&
+    moduleSpecifier !== undefined
+  ) {
+    const specifier = getSpecifierString(moduleSpecifier);
+    refs.push({
+      exportName: exportClause.name.getText(),
+      decNameOrRef: getImportReference(
+        specifier,
+        moduleSpecifier,
+        '*',
+        analyzer
+      ),
+    });
   } else {
     throw new DiagnosticsError(
       exportClause,

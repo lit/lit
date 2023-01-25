@@ -4375,7 +4375,16 @@ export const tests: {[name: string]: SSRTest} = {
 
   'Custom element with no renderer: Attributes': () => {
     return {
-      registerElements() {
+      async registerElements() {
+        // Extending LitElement always works, because we automatically shim
+        // HTMLElement in the Node build of Lit. However, we don't automatically
+        // set HTMLElement as a global. So, since these tests can run either
+        // with or without the legacy global DOM shim installed, HTMLElement
+        // might not be defined as a global here. We can import it directly from
+        // the minimal DOM shim package, though.
+        const HTMLElement =
+          globalThis.HTMLElement ??
+          (await import('@lit-labs/ssr-dom-shim')).HTMLElement;
         customElements.define('x-norenderer', class extends HTMLElement {});
       },
       render() {

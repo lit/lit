@@ -16,9 +16,15 @@ export type {
   Declaration,
   VariableDeclaration,
   ClassDeclaration,
+  ClassField,
+  ClassMethod,
+  Parameter,
+  Return,
   LitElementDeclaration,
+  LitElementExport,
   PackageJson,
   ModuleWithLitElementDeclarations,
+  DeprecatableDescribed,
 } from './lib/model.js';
 
 export type {AbsolutePath, PackagePath} from './lib/paths.js';

@@ -41,6 +41,33 @@ export function getCallerFromStack() {
   }
 }
 
+function getParentElement(el: Element) {
+  if (el.parentElement !== null) {
+    return el.parentElement;
+  }
+  const parentNode = el.parentNode;
+  if (parentNode && parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+    return (parentNode as ShadowRoot).host || null;
+  }
+  return null;
+}
+
+function getElementAncestors(el: Element, includeSelf = false) {
+  const ancestors = [];
+  let parent = includeSelf ? el : getParentElement(el);
+  while (parent !== null) {
+    ancestors.push(parent);
+    parent = getParentElement(parent);
+  }
+  return ancestors;
+}
+
+function getClippingAncestors(el: Element, includeSelf = false) {
+  return getElementAncestors(el, includeSelf).filter(
+    (a) => getComputedStyle(a).overflow !== 'visible'
+  );
+}
+
 /**
  * Given an element and an optional viewport element, returns true if the
  * element would be visible in the viewport.  If no viewport is provided,
@@ -48,19 +75,29 @@ export function getCallerFromStack() {
  */
 export function isInViewport(element: Element, viewport?: Element) {
   const elementRect = element.getBoundingClientRect();
-  const viewportRect = viewport
-    ? viewport.getBoundingClientRect()
-    : {
-        top: 0,
-        left: 0,
-        bottom: window.innerHeight || document.documentElement.clientHeight,
-        right: window.innerWidth || document.documentElement.clientWidth,
-      };
+
+  let top = 0;
+  let left = 0;
+  let bottom = window.innerHeight;
+  let right = window.innerWidth;
+
+  if (viewport) {
+    const clippingAncestors = getClippingAncestors(viewport, true);
+
+    for (const ancestor of clippingAncestors) {
+      const ancestorBounds = ancestor.getBoundingClientRect();
+      top = Math.max(top, ancestorBounds.top);
+      left = Math.max(left, ancestorBounds.left);
+      bottom = Math.min(bottom, ancestorBounds.bottom);
+      right = Math.min(right, ancestorBounds.right);
+    }
+  }
+
   return (
-    elementRect.top < viewportRect.bottom &&
-    elementRect.left < viewportRect.right &&
-    elementRect.bottom > viewportRect.top &&
-    elementRect.right > viewportRect.left
+    elementRect.top < bottom &&
+    elementRect.left < right &&
+    elementRect.bottom > top &&
+    elementRect.right > left
   );
 }
 

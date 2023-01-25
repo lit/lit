@@ -275,6 +275,8 @@ packages/labs/ssr-client/controllers/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
 
+packages/labs/ssr-dom-shim/index.*
+
 packages/labs/task/development/
 packages/labs/task/test/
 packages/labs/task/node_modules/
@@ -308,6 +310,10 @@ packages/labs/virtualizer/LitVirtualizer.js
 packages/labs/virtualizer/LitVirtualizer.d.ts
 packages/labs/virtualizer/LitVirtualizer.d.ts.map
 packages/labs/virtualizer/LitVirtualizer.js.map
+packages/labs/virtualizer/ScrollerController.js
+packages/labs/virtualizer/ScrollerController.d.ts
+packages/labs/virtualizer/ScrollerController.d.ts.map
+packages/labs/virtualizer/ScrollerController.js.map
 packages/labs/virtualizer/test/**/*.d.ts
 packages/labs/virtualizer/test/**/*.d.ts.map
 packages/labs/virtualizer/test/**/*.js
@@ -315,6 +321,7 @@ packages/labs/virtualizer/test/**/*.js.map
 packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
 packages/labs/virtualizer/events.d.ts*
 packages/labs/virtualizer/events.js
+packages/labs/virtualizer/events.js.map
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/

@@ -16,7 +16,7 @@
     "lit"
   ],
   "dependencies": {
-    "lit": "^2.2.8"
+    "lit": "^2.6.1"
   },
   "devDependencies": {
     "@web/dev-server": "^0.1.32",
@@ -26,5 +26,8 @@
     "./lib/el-element.js": {
       "default": "./lib/el-element.js"
     }
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }

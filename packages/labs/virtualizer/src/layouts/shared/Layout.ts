@@ -39,6 +39,26 @@ export type Positions = {
   yOffset?: number;
 };
 
+export interface Range {
+  first: number;
+  last: number;
+}
+export interface InternalRange extends Range {
+  firstVisible: number;
+  lastVisible: number;
+}
+
+export type ChildPositions = Map<number, Positions>;
+
+export type ChildMeasurements = {[key: number]: ItemBox};
+
+export type MeasureChildFunction = <T>(element: Element, item: T) => ItemBox;
+
+export interface PinOptions {
+  index: number;
+  block?: ScrollLogicalPosition;
+}
+
 export type LayoutConstructor = new (config?: object) => Layout;
 
 export interface LayoutSpecifier {
@@ -46,6 +66,18 @@ export interface LayoutSpecifier {
 }
 
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
+
+export interface BaseLayoutConfig {
+  direction?: ScrollDirection;
+  pin?: PinOptions;
+}
+
+export type LayoutConfigValue = LayoutSpecifier | BaseLayoutConfig;
+
+export interface ScrollToCoordinates {
+  top?: number;
+  left?: number;
+}
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
@@ -55,7 +87,7 @@ export type ScrollDirection = 'vertical' | 'horizontal';
 export interface Layout {
   config?: object;
 
-  totalItems: number;
+  items: unknown[];
 
   direction: ScrollDirection;
 
@@ -63,17 +95,25 @@ export interface Layout {
 
   viewportScroll: Positions;
 
-  readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
+  totalScrollSize: Size;
+
+  offsetWithinScroller: Positions;
+
+  readonly measureChildren?: boolean | MeasureChildFunction;
 
   readonly listenForChildLoadEvents?: boolean;
 
-  updateItemSizes?: (sizes: {[key: number]: ItemBox}) => void;
+  updateItemSizes?: (sizes: ChildMeasurements) => void;
 
   addEventListener: Function;
 
   removeEventListener: Function;
 
-  scrollToIndex: (index: number, position: string) => void;
+  pin: PinOptions | null;
+
+  unpin: Function;
+
+  getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
   /**
    * Called by a Virtualizer when an update that
@@ -119,5 +159,5 @@ export interface Layout {
    *       width: number,
    *     }
    */
-  reflowIfNeeded: (force: boolean) => void;
+  reflowIfNeeded: (force?: boolean) => void;
 }

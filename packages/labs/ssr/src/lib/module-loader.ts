@@ -6,17 +6,101 @@
 
 import * as path from 'path';
 import {promises as fs} from 'fs';
-import {URL, fileURLToPath, pathToFileURL} from 'url';
+import {fileURLToPath, pathToFileURL} from 'url';
 import * as vm from 'vm';
-import resolveAsync from 'resolve';
+import enhancedResolve from 'enhanced-resolve';
 import {builtinModules} from 'module';
-
-type PackageJSON = {main?: string; module?: string; 'jsnext:main'?: string};
 
 const builtIns = new Set(builtinModules);
 
 const specifierMatches = (specifier: string, match: string) =>
   specifier === match || specifier.startsWith(match + '/');
+
+/**
+ * Creates a new object that provides a basic set of globals suitable for use as
+ * the default context object for a VM module.
+ *
+ * Note this does not return all default Node globals, rather it returns the
+ * subset of Node globals which are also defined in browsers.
+ */
+export function makeDefaultContextObject() {
+  // Everything at or below Node 14 can be always assumed present, since that's
+  // the lowest version we support.
+  //
+  // Note we create new objects for things like console and performance so that
+  // VM contexts can't override the parent context implementations.
+  const ctx: Partial<typeof globalThis> = {
+    // Node 0.10.0+
+    setTimeout,
+    setInterval,
+    clearTimeout,
+    clearInterval,
+    console: {
+      assert: (...args) => console.assert(...args),
+      clear: (...args) => console.clear(...args),
+      count: (...args) => console.count(...args),
+      countReset: (...args) => console.countReset(...args),
+      debug: (...args) => console.debug(...args),
+      dir: (...args) => console.dir(...args),
+      dirxml: (...args) => console.dirxml(...args),
+      error: (...args) => console.error(...args),
+      group: (...args) => console.group(...args),
+      groupCollapsed: (...args) => console.groupCollapsed(...args),
+      groupEnd: (...args) => console.groupEnd(...args),
+      info: (...args) => console.info(...args),
+      log: (...args) => console.log(...args),
+      profile: (...args) => console.profile(...args),
+      profileEnd: (...args) => console.profileEnd(...args),
+      table: (...args) => console.table(...args),
+      time: (...args) => console.time(...args),
+      timeEnd: (...args) => console.timeEnd(...args),
+      timeLog: (...args) => console.timeLog(...args),
+      timeStamp: (...args) => console.timeStamp(...args),
+      trace: (...args) => console.trace(...args),
+      warn: (...args) => console.warn(...args),
+    } as typeof console,
+    // Node 8.5.0+
+    performance: {
+      clearMarks: (...args) => performance.clearMarks(...args),
+      clearMeasures: (...args) => performance.clearMeasures(...args),
+      clearResourceTimings: (...args) =>
+        performance.clearResourceTimings(...args),
+      getEntries: (...args) => performance.getEntries(...args),
+      getEntriesByName: (...args) => performance.getEntriesByName(...args),
+      getEntriesByType: (...args) => performance.getEntriesByType(...args),
+      mark: (...args) => performance.mark(...args),
+      measure: (...args) => performance.measure(...args),
+      now: (...args) => performance.now(...args),
+      setResourceTimingBufferSize: (...args) =>
+        performance.setResourceTimingBufferSize(...args),
+      get timeOrigin() {
+        return performance.timeOrigin;
+      },
+    } as typeof performance,
+    // Node 10+
+    URL,
+    URLSearchParams,
+    // Node 11+
+    queueMicrotask,
+  };
+  // Everything above Node 14 should be set conditionally.
+  // Node 16+
+  if (globalThis.atob !== undefined) {
+    ctx.atob = atob;
+  }
+  if (globalThis.btoa !== undefined) {
+    ctx.btoa = btoa;
+  }
+  // Node 17+
+  if (globalThis.structuredClone !== undefined) {
+    ctx.structuredClone = structuredClone;
+  }
+  // Node 18+
+  if (globalThis.fetch !== undefined) {
+    ctx.fetch = fetch;
+  }
+  return ctx;
+}
 
 // IMPORTANT: We should always use our own VmModule interface for public APIs
 // instead of vm.Module, because vm.Module typings are not provided by
@@ -87,7 +171,9 @@ export class ModuleLoader {
   // TODO (justinfagnani): Allow passing a filesystem object to allow network
   // sources, in-memory for tests, etc.
   constructor(options?: Options) {
-    this._context = vm.createContext(options?.global);
+    this._context = vm.createContext(
+      options?.global ?? makeDefaultContextObject()
+    );
   }
 
   /**
@@ -276,17 +362,11 @@ export const resolveSpecifier = async (
       // a single version.
       referrerPath = fileURLToPath(import.meta.url);
     }
-    const modulePath = await resolve(specifier, {
-      basedir: path.dirname(referrerPath),
-      moduleDirectory: ['node_modules'],
+    const modulePath = await resolve(specifier, path.dirname(referrerPath), {
+      modules: ['node_modules'],
       extensions: ['.js'],
-      // Some packages use a non-standard alternative to the "main" field
-      // in their package.json to differentiate their ES module version.
-      packageFilter: (packageJson: PackageJSON) => {
-        packageJson.main =
-          packageJson.module ?? packageJson['jsnext:main'] ?? packageJson.main;
-        return packageJson;
-      },
+      mainFields: ['module', 'jsnext:main', 'main'],
+      conditionNames: ['node', 'import'],
     });
     return pathToFileURL(modulePath);
   }
@@ -301,10 +381,12 @@ const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
 
 const resolve = async (
   id: string,
-  opts: resolveAsync.AsyncOpts
+  path: string,
+  opts: Partial<enhancedResolve.ResolveOptions>
 ): Promise<string> => {
+  const resolver = enhancedResolve.create(opts);
   return new Promise((res, rej) => {
-    resolveAsync(id, opts, (err, resolved) => {
+    resolver({}, path, id, {}, (err: unknown, resolved?: string) => {
       if (err != null) {
         rej(err);
       } else {

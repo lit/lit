@@ -15,10 +15,12 @@ import {
   VariableDeclaration,
   AnalyzerInterface,
   DeclarationInfo,
+  DeprecatableDescribed,
 } from '../model.js';
-import {isExport} from '../references.js';
+import {hasExportModifier} from '../utils.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
+import {parseNodeJSDocInfo} from './jsdoc.js';
 
 type VariableName =
   | ts.Identifier
@@ -30,14 +32,16 @@ type VariableName =
  * ts.Identifier within a potentially nested ts.VariableDeclaration.
  */
 const getVariableDeclaration = (
-  dec: ts.VariableDeclaration,
+  dec: ts.VariableDeclaration | ts.EnumDeclaration,
   name: ts.Identifier,
+  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): VariableDeclaration => {
   return new VariableDeclaration({
     name: name.text,
     node: dec,
     type: getTypeForNode(name, analyzer),
+    ...jsDocInfo,
   });
 };
 
@@ -49,8 +53,12 @@ export const getVariableDeclarationInfo = (
   statement: ts.VariableStatement,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
+  const isExport = hasExportModifier(statement);
+  const jsDocInfo = parseNodeJSDocInfo(statement);
   return statement.declarationList.declarations
-    .map((d) => getVariableDeclarationInfoList(d, d.name, analyzer))
+    .map((d) =>
+      getVariableDeclarationInfoList(d, d.name, isExport, jsDocInfo, analyzer)
+    )
     .flat();
 };
 
@@ -62,14 +70,16 @@ export const getVariableDeclarationInfo = (
 const getVariableDeclarationInfoList = (
   dec: ts.VariableDeclaration,
   name: VariableName,
+  isExport: boolean,
+  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
   if (ts.isIdentifier(name)) {
     return [
       {
         name: name.text,
-        factory: () => getVariableDeclaration(dec, name, analyzer),
-        isExport: isExport(dec),
+        factory: () => getVariableDeclaration(dec, name, jsDocInfo, analyzer),
+        isExport,
       },
     ];
   } else if (
@@ -82,7 +92,15 @@ const getVariableDeclarationInfoList = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarationInfoList(dec, el.name, analyzer))
+      .map((el) =>
+        getVariableDeclarationInfoList(
+          dec,
+          el.name,
+          isExport,
+          jsDocInfo,
+          analyzer
+        )
+      )
       .flat();
   } else {
     throw new DiagnosticsError(
@@ -90,4 +108,52 @@ const getVariableDeclarationInfoList = (
       `Expected declaration name to either be an Identifier or a BindingPattern`
     );
   }
+};
+
+/**
+ * Returns declaration info & factory for a default export assignment.
+ */
+export const getExportAssignmentVariableDeclarationInfo = (
+  exportAssignment: ts.ExportAssignment,
+  analyzer: AnalyzerInterface
+): DeclarationInfo => {
+  return {
+    name: 'default',
+    factory: () =>
+      getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
+    isExport: true,
+  };
+};
+
+/**
+ * Returns an analyzer `VariableDeclaration` model for the given default
+ * ts.ExportAssignment, handling the case of: `export const 'some expression'`;
+ *
+ * Note that even though this technically isn't a VariableDeclaration in
+ * TS, we model it as one since it could unobservably be implemented as
+ * `const varDec = 'some expression'; export {varDec as default} `
+ */
+const getExportAssignmentVariableDeclaration = (
+  exportAssignment: ts.ExportAssignment,
+  analyzer: AnalyzerInterface
+): VariableDeclaration => {
+  return new VariableDeclaration({
+    name: 'default',
+    node: exportAssignment,
+    type: getTypeForNode(exportAssignment.expression, analyzer),
+    ...parseNodeJSDocInfo(exportAssignment),
+  });
+};
+
+export const getEnumDeclarationInfo = (
+  statement: ts.EnumDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  const jsDocInfo = parseNodeJSDocInfo(statement);
+  return {
+    name: statement.name.text,
+    factory: () =>
+      getVariableDeclaration(statement, statement.name, jsDocInfo, analyzer),
+    isExport: hasExportModifier(statement),
+  };
 };
