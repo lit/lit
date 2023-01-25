@@ -21,23 +21,21 @@ import {
 } from './references.js';
 
 /**
- * Returns an analyzer `Type` object for the given jsDoc tag.
+ * Returns an analyzer `Type` object for the given type string,
+ * evaluated at the given location.
  *
- * Note, the tag type must
+ * Used for parsing types from JSDoc.
  */
-export const getTypeForJSDocTag = (
-  tag: ts.JSDocTag,
+export const getTypeForTypeString = (
+  typeString: string,
+  location: ts.Node,
   analyzer: AnalyzerInterface
 ): Type | undefined => {
-  const typeString =
-    ts.isJSDocUnknownTag(tag) && typeof tag.comment === 'string'
-      ? tag.comment?.match(/{(?<type>.*)}/)?.groups?.type
-      : undefined;
   if (typeString !== undefined) {
     const typeNode = parseType(typeString);
     if (typeNode == undefined) {
       throw new DiagnosticsError(
-        tag,
+        location,
         `Internal error: failed to parse type from JSDoc comment.`
       );
     }
@@ -47,7 +45,8 @@ export const getTypeForJSDocTag = (
     return new Type({
       type,
       text: typeString,
-      getReferences: () => getReferencesForTypeNode(typeNode, tag, analyzer),
+      getReferences: () =>
+        getReferencesForTypeNode(typeNode, location, analyzer),
     });
   } else {
     return undefined;
@@ -77,7 +76,7 @@ export const getTypeForNode = (
  * Converts a ts.Type into an analyzer Type object (which wraps
  * the ts.Type, but also provides analyzer Reference objects).
  */
-const getTypeForType = (
+export const getTypeForType = (
   type: ts.Type,
   location: ts.Node,
   analyzer: AnalyzerInterface

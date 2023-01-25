@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "publishConfig": {
     "access": "public"
   },

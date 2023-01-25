@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.7
+
+### Patch Changes
+
+- [#3576](https://github.com/lit/lit/pull/3576) [`6be30739`](https://github.com/lit/lit/commit/6be30739694dd6f09b6cf28c9146db3ee66d1cf1) - Fix regression in Localize XLIFF serialization. When updating an existing XLIFF file, placeholders would appear in the wrong places.
+
 ## 0.6.6
 
 ### Patch Changes

@@ -4,9 +4,20 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * @fileoverview
+ *
+ * Utilities for analyzing JSDoc comments
+ */
+
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {AnalyzerInterface, NamedJSDocInfo, NodeJSDocInfo} from '../model.js';
+import {
+  Described,
+  NamedDescribed,
+  TypedNamedDescribed,
+  DeprecatableDescribed,
+} from '../model.js';
 
 /**
  * @fileoverview
@@ -15,120 +26,264 @@ import {AnalyzerInterface, NamedJSDocInfo, NodeJSDocInfo} from '../model.js';
  */
 
 /**
- * Remove line feeds from JSDoc summaries, so they are normalized to
- * unix `\n` line endings.
+ * Returns true if given node has a JSDoc tag
  */
-const normalizeLineEndings = (s: string) => s.replace(/\r/g, '');
-
-// Regex for parsing name, summary, and descriptions from JSDoc comments
-const parseNameDescSummaryRE =
-  /^\s*(?<name>[^\s:]+)([\s-:]+)?(?<summary>[^\n\r]+)?([\n\r]+(?<description>[\s\S]*))?$/m;
-
-// Regex for parsing summary and description from JSDoc comments
-const parseDescSummaryRE =
-  /^\s*(?<summary>[^\n\r]+)\r?\n\r?\n(?<description>[\s\S]*)$/m;
+export const hasJSDocTag = (node: ts.Node, tag: string) => {
+  return ts.getJSDocTags(node).some((t) => t.tagName.text === tag);
+};
 
 /**
- * Parses name, summary, and description from JSDoc tag for things like @slot,
- * @cssPart, and @cssProp.
- *
- * Supports the following patterns following the tag (TS parses the tag for us):
- * * @slot name
- * * @slot name summary
- * * @slot name: summary
- * * @slot name - summary
- * * @slot name - summary...
- * *
- * * description (multiline)
+ * Remove line feeds from JSDoc comments, so they are normalized to
+ * unix `\n` line endings.
  */
-export const parseNameDescSummary = (
-  tag: ts.JSDocTag
-): NamedJSDocInfo | undefined => {
-  const {comment} = tag;
-  if (comment == undefined) {
+const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
+
+// Regex for parsing name, type, and description from JSDoc comments
+const parseNameTypeDescRE =
+  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
+
+// Regex for parsing name and description from JSDoc comments
+const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
+
+// Regex for parsing optional name and description from JSDoc comments, where
+// the dash is required before the description (syntax for `@slot` tag, whose
+// default slot has no name)
+const parseNameDashDescRE =
+  /^(?<name>^\S*)?(?:\s+-\s+(?<description>[\s\S]*))?$/m;
+
+const getJSDocTagComment = (tag: ts.JSDocTag) => {
+  let {comment} = tag;
+  if (comment === undefined) {
     return undefined;
+  }
+  if (Array.isArray(comment)) {
+    comment = comment.map((c) => c.text).join('');
   }
   if (typeof comment !== 'string') {
     throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
   }
-  const nameDescSummary = comment.match(parseNameDescSummaryRE);
-  if (nameDescSummary === null) {
+  return normalizeLineEndings(comment).trim();
+};
+
+const isModuleJSDocTag = (tag: ts.JSDocTag) =>
+  tag.tagName.text === 'module' ||
+  tag.tagName.text === 'fileoverview' ||
+  tag.tagName.text === 'packageDocumentation';
+
+/**
+ * Parses name, type, and description from JSDoc tag for things like `@fires`.
+ *
+ * Supports the following patterns following the tag (TS parses the tag for us):
+ * * @fires event-name
+ * * @fires event-name description
+ * * @fires event-name - description
+ * * @fires event-name: description
+ * * @fires event-name {Type}
+ * * @fires event-name {Type} description
+ * * @fires event-name {Type} - description
+ * * @fires event-name {Type}: description
+ */
+export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
+  const comment = getJSDocTagComment(tag);
+  if (comment == undefined) {
+    return undefined;
+  }
+  const nameTypeDesc = comment.match(parseNameTypeDescRE);
+  if (nameTypeDesc === null) {
     throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
   }
-  const {name, description, summary} = nameDescSummary.groups!;
-  const v: NamedJSDocInfo = {name};
-  if (summary !== undefined) {
-    v.summary = summary;
+  const {name, type, description} = nameTypeDesc.groups!;
+  const info: TypedNamedDescribed = {name, type};
+  if (description.length > 0) {
+    info.description = normalizeLineEndings(description);
   }
-  if (description !== undefined) {
-    v.description = normalizeLineEndings(description);
+  return info;
+};
+
+/**
+ * Parses name and description from JSDoc tag for things like `@slot`,
+ * `@cssPart`, and `@cssProp`.
+ *
+ * Supports the following patterns following the tag (TS parses the tag for us):
+ * * @slot name
+ * * @slot name description
+ * * @slot name - description
+ * * @slot name: description
+ */
+export const parseNamedJSDocInfo = (
+  tag: ts.JSDocTag,
+  requireDash = false
+): NamedDescribed | undefined => {
+  const comment = getJSDocTagComment(tag);
+  if (comment == undefined) {
+    return undefined;
   }
-  return v;
+  const nameDesc = comment.match(
+    requireDash ? parseNameDashDescRE : parseNameDescRE
+  );
+  if (nameDesc === null) {
+    throw new DiagnosticsError(
+      tag,
+      `Unexpected JSDoc format.${
+        parseNameDashDescRE
+          ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
+          : ''
+      }`
+    );
+  }
+  const {name, description} = nameDesc.groups!;
+  const info: NamedDescribed = {name};
+  if (description.length > 0) {
+    info.description = normalizeLineEndings(description);
+  }
+  return info;
+};
+
+/**
+ * Parses the description from JSDoc tag for things like `@return`.
+ */
+export const parseJSDocDescription = (
+  tag: ts.JSDocTag
+): Described | undefined => {
+  const description = getJSDocTagComment(tag);
+  if (description == undefined || description.length === 0) {
+    return {};
+  }
+  return {description};
+};
+
+/**
+ * Add `@description`, `@summary`, and `@deprecated` JSDoc tag info to the
+ * given info object.
+ */
+const addJSDocTagInfo = (
+  info: DeprecatableDescribed,
+  jsDocTags: readonly ts.JSDocTag[]
+) => {
+  for (const tag of jsDocTags) {
+    const comment = getJSDocTagComment(tag);
+    switch (tag.tagName.text.toLowerCase()) {
+      case 'description':
+      case 'fileoverview':
+      case 'packagedocumentation':
+        if (comment !== undefined) {
+          info.description = comment;
+        }
+        break;
+      case 'summary':
+        if (comment !== undefined) {
+          info.summary = comment;
+        }
+        break;
+      case 'deprecated':
+        info.deprecated = comment !== undefined ? comment : true;
+        break;
+    }
+  }
+};
+
+const moduleJSDocsMap = new WeakMap<ts.SourceFile, ts.JSDoc[]>();
+
+/**
+ * Returns the module-level JSDoc comment blocks for a given source file.
+ *
+ * Note that TS does not have a concept of module-level JSDoc; if it
+ * exists, it will always be attached to the first statement in the module.
+ *
+ * Thus, we parse module-level documentation using the following heuristic:
+ * - If the first statement only has one JSDoc block, it is only treated as
+ *   module documentation if it contains a `@module`, `@fileoverview`, or
+ *   `@packageDocumentation` tag. This is required to disambiguate a module
+ *   description (with an undocumented first statement) from documentation
+ *   for the first statement.
+ * - If the first statement has more than one JSDoc block, we collect all
+ *   but the last and use those, regardless of whether they contain one
+ *   of the above module-designating tags (the last one is assumed to belong
+ *   to the first statement).
+ *
+ * This function caches its result against the given sourceFile, since it is
+ * needed both to find the module comment and to filter out module comments
+ * node comments.
+ */
+const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
+  let moduleJSDocs = moduleJSDocsMap.get(sourceFile);
+  if (moduleJSDocs !== undefined) {
+    return moduleJSDocs;
+  }
+  // Get the first child in the sourceFile; note that returning the first child
+  // from `ts.forEachChild` is more robust than `sourceFile.getChildAt(0)`,
+  // since `forEachChild` flattens embedded arrays that the child APIs would
+  // otherwise return.
+  const firstChild = ts.forEachChild(sourceFile, (n) => n);
+  if (firstChild === undefined) {
+    moduleJSDocs = [];
+  } else {
+    // Get the JSDoc blocks attached to the first child (they oddly show up
+    // in the node's children)
+    const jsDocs = firstChild.getChildren().filter(ts.isJSDoc);
+    // If there is more than one leading JSDoc block, grab all but the last,
+    // otherwise grab the one (see heuristic above)
+    moduleJSDocs = jsDocs.slice(0, jsDocs.length > 1 ? -1 : 1);
+    // If there is only one leading JSDoc block, it must have a module tag
+    if (jsDocs.length === 1 && !jsDocs[0].tags?.some(isModuleJSDocTag)) {
+      moduleJSDocs = [];
+    }
+  }
+  moduleJSDocsMap.set(sourceFile, moduleJSDocs!);
+  return moduleJSDocs;
 };
 
 /**
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given node.
  */
-export const parseNodeJSDocInfo = (
-  node: ts.Node,
-  analyzer: AnalyzerInterface
-): NodeJSDocInfo => {
-  const v: NodeJSDocInfo = {};
+export const parseNodeJSDocInfo = (node: ts.Node): DeprecatableDescribed => {
+  const info: DeprecatableDescribed = {};
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
-    for (const tag of jsDocTags) {
-      const {comment} = tag;
-      if (comment !== undefined && typeof comment !== 'string') {
-        throw new DiagnosticsError(
-          tag,
-          `Internal error: unsupported node type`
-        );
-      }
-      switch (tag.tagName.text) {
-        case 'description':
-          if (comment !== undefined) {
-            v.description = normalizeLineEndings(comment);
-          }
-          break;
-        case 'summary':
-          if (comment !== undefined) {
-            v.summary = comment;
-          }
-          break;
-        case 'deprecated':
-          v.deprecated = comment !== undefined ? comment : true;
-          break;
-      }
+    addJSDocTagInfo(info, jsDocTags);
+  }
+  if (info.description === undefined) {
+    const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
+    const comment = normalizeLineEndings(
+      node
+        .getChildren()
+        .filter(ts.isJSDoc)
+        // Module-level docs (that are explicitly tagged as such) may be
+        // attached to the first declaration if the declaration is undocumented,
+        // so we filter those out since they shouldn't apply to a
+        // declaration node
+        .filter((c) => !moduleJSDocs.includes(c))
+        .map((n) => n.comment)
+        .filter((c) => c !== undefined)
+        .join('\n')
+    );
+    if (comment.length > 0) {
+      info.description = comment;
     }
   }
-  // If we didn't have a tagged @description, we'll use any untagged text as
-  // the description. If we also didn't have a @summary and the untagged text
-  // has a line break, we'll use the first chunk as the summary, and the
-  // remainder as a description.
-  if (v.description === undefined) {
-    // Strangely, it only seems possible to get the untagged jsdoc comments
-    // via the typechecker/symbol API
-    const checker = analyzer.program.getTypeChecker();
-    const symbol =
-      checker.getSymbolAtLocation(node) ??
-      checker.getTypeAtLocation(node).getSymbol();
-    const comments = symbol?.getDocumentationComment(checker);
-    if (comments !== undefined) {
-      const comment = comments.map((c) => c.text).join('\n');
-      if (v.summary !== undefined) {
-        v.description = normalizeLineEndings(comment);
-      } else {
-        const info = comment.match(parseDescSummaryRE);
-        if (info === null) {
-          v.description = normalizeLineEndings(comment);
-        } else {
-          const {summary, description} = info.groups!;
-          v.summary = summary;
-          v.description = normalizeLineEndings(description);
-        }
-      }
+  return info;
+};
+
+/**
+ * Parse summary, description, and deprecated information from JSDoc comments on
+ * a given source file.
+ */
+export const parseModuleJSDocInfo = (sourceFile: ts.SourceFile) => {
+  const moduleJSDocs = getModuleJSDocs(sourceFile);
+  const info: DeprecatableDescribed = {};
+  addJSDocTagInfo(
+    info,
+    moduleJSDocs.flatMap((m) => m.tags ?? [])
+  );
+  if (info.description === undefined) {
+    const comment = moduleJSDocs
+      .map((d) => d.comment)
+      .filter((c) => c !== undefined)
+      .join('\n');
+    if (comment.length > 0) {
+      info.description = comment;
     }
   }
-  return v;
+  return info;
 };

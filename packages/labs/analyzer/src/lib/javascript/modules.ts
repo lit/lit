@@ -26,6 +26,7 @@ import {getClassDeclarationInfo} from './classes.js';
 import {
   getExportAssignmentVariableDeclarationInfo,
   getVariableDeclarationInfo,
+  getEnumDeclarationInfo,
 } from './variables.js';
 import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
@@ -35,6 +36,7 @@ import {
   getImportReferenceForSpecifierExpression,
   getSpecifierString,
 } from '../references.js';
+import {parseModuleJSDocInfo} from './jsdoc.js';
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -98,6 +100,11 @@ export const getModule = (
   const reexports: ts.Expression[] = [];
   const addDeclaration = (info: DeclarationInfo) => {
     const {name, factory, isExport} = info;
+    if (declarationMap.has(name)) {
+      throw new Error(
+        `Internal error: duplicate declaration '${name}' in ${sourceFile.fileName}`
+      );
+    }
     declarationMap.set(name, factory);
     if (isExport) {
       exportMap.set(name, name);
@@ -111,6 +118,8 @@ export const getModule = (
       addDeclaration(getClassDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
+    } else if (ts.isEnumDeclaration(statement)) {
+      addDeclaration(getEnumDeclarationInfo(statement, analyzer));
     } else if (ts.isExportDeclaration(statement) && !statement.isTypeOnly) {
       const {exportClause, moduleSpecifier} = statement;
       if (exportClause === undefined) {
@@ -151,6 +160,7 @@ export const getModule = (
     dependencies,
     exportMap,
     finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
+    ...parseModuleJSDocInfo(sourceFile),
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,

@@ -11,13 +11,13 @@
  */
 
 import ts from 'typescript';
-import {getHeritage} from '../javascript/classes.js';
-import {parseNodeJSDocInfo, parseNameDescSummary} from '../javascript/jsdoc.js';
+import {getClassMembers, getHeritage} from '../javascript/classes.js';
+import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
 import {
   LitElementDeclaration,
   AnalyzerInterface,
   Event,
-  NamedJSDocInfo,
+  NamedDescribed,
 } from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
 import {addEventsToMap} from './events.js';
@@ -28,17 +28,18 @@ import {getProperties} from './properties.js';
  * (branded as LitClassDeclaration).
  */
 export const getLitElementDeclaration = (
-  node: LitClassDeclaration,
+  declaration: LitClassDeclaration,
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
-    tagname: getTagName(node),
+    tagname: getTagName(declaration),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
-    name: node.name?.text ?? '',
-    node,
-    reactiveProperties: getProperties(node, analyzer),
-    ...getJSDocData(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    name: declaration.name?.text ?? '',
+    node: declaration,
+    reactiveProperties: getProperties(declaration, analyzer),
+    ...getJSDocData(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer),
+    ...getClassMembers(declaration, analyzer),
   });
 };
 
@@ -51,9 +52,9 @@ export const getJSDocData = (
   analyzer: AnalyzerInterface
 ) => {
   const events = new Map<string, Event>();
-  const slots = new Map<string, NamedJSDocInfo>();
-  const cssProperties = new Map<string, NamedJSDocInfo>();
-  const cssParts = new Map<string, NamedJSDocInfo>();
+  const slots = new Map<string, NamedDescribed>();
+  const cssProperties = new Map<string, NamedDescribed>();
+  const cssParts = new Map<string, NamedDescribed>();
   const jsDocTags = ts.getJSDocTags(node);
   if (jsDocTags !== undefined) {
     for (const tag of jsDocTags) {
@@ -77,7 +78,7 @@ export const getJSDocData = (
     }
   }
   return {
-    ...parseNodeJSDocInfo(node, analyzer),
+    ...parseNodeJSDocInfo(node),
     events,
     slots,
     cssProperties,
@@ -90,10 +91,10 @@ export const getJSDocData = (
  * provided map.
  */
 const addNamedJSDocInfoToMap = (
-  map: Map<string, NamedJSDocInfo>,
+  map: Map<string, NamedDescribed>,
   tag: ts.JSDocTag
 ) => {
-  const info = parseNameDescSummary(tag);
+  const info = parseNamedJSDocInfo(tag);
   if (info !== undefined) {
     map.set(info.name, info);
   }

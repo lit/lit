@@ -16,9 +16,7 @@ import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 import {DiagnosticsError} from '../errors.js';
-
-const isStatic = (prop: ts.PropertyDeclaration) =>
-  prop.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.StaticKeyword);
+import {hasStaticModifier} from '../utils.js';
 
 export const getProperties = (
   classDeclaration: LitClassDeclaration,
@@ -53,13 +51,13 @@ export const getProperties = (
         reflect: getPropertyReflect(options),
         converter: getPropertyConverter(options),
       });
-    } else if (name === 'properties' && isStatic(prop)) {
+    } else if (name === 'properties' && hasStaticModifier(prop)) {
       // This field has the static properties block (initializer or getter).
       // Note we will process this after the loop so that the
       // `undecoratedProperties` map is complete before processing the static
       // properties block.
       staticProperties = prop;
-    } else if (!isStatic(prop)) {
+    } else if (!hasStaticModifier(prop)) {
       // Store the declaration node for any undecorated properties. In a TS
       // program that happens to use a static properties block along with
       // the `declare` keyword to type the field, we can use this node to
