@@ -2,4 +2,4 @@
 'lit-html': patch
 ---
 
-Add more detail to some hydration errors
+Make FallbackRenderer not emit a shadow root
