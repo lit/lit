@@ -53,7 +53,7 @@ export type ShadowRootOptions = ShadowRootInit;
  */
 export abstract class ElementRenderer {
   // TODO (justinfagnani): We shouldn't assume that ElementRenderer subclasses
-  // create an element instance. Move this to a base class for renderes that
+  // create an element instance. Move this to a base class for renderers that
   // do.
   element?: HTMLElement;
   tagName: string;
