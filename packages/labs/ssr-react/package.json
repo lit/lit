@@ -99,5 +99,14 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "uvu": "^0.5.6"
-  }
+  },
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "ssr",
+    "lit-ssr",
+    "react"
+  ]
 }
