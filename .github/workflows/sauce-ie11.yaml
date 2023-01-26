@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   tests-sauce-ie11:
     # Don't run on forks. Sauce tests need access to secrets.
-    if: github.repository == 'lit/lit'
+    if: github.event.pull_request.base.repo.id == github.event.pull_request.head.repo.id
 
     # Sauce tests are still unreliable. Run them, but don't mark a commit as
     # failing if it fails.
