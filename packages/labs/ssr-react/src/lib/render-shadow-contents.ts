@@ -60,6 +60,8 @@ export const renderShadowContents = (type: string, props: {} | null) => {
 
   const shadowContents = renderer.renderShadow(renderInfo);
 
+  // elementAttributes will be provided to React as props for the host element
+  // for properly rendering reflected attributes
   const elementAttributes =
     renderer.element !== undefined
       ? attributesToProps(renderer.element.attributes)
