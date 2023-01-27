@@ -44,7 +44,8 @@
       ],
       "files": [
         "src/**/*.ts",
-        "tsconfig.json"
+        "tsconfig.json",
+        "tsconfig.tsbuildinfo"
       ],
       "output": [
         "index.{d.ts,d.ts.map,js,js.map}"
