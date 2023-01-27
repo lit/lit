@@ -138,7 +138,6 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     const hostElement = part.parentNode as HTMLElement;
     if (hostElement && hostElement.nodeType === 1) {
       hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
-        e.stopPropagation();
         this._first = e.first;
         this._last = e.last;
         this.setValue(this.render());

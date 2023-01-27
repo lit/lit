@@ -11,7 +11,7 @@ export class RangeChangedEvent extends Event {
   last: number;
 
   constructor(range: Range) {
-    super(RangeChangedEvent.eventName, {bubbles: true});
+    super(RangeChangedEvent.eventName, {bubbles: false});
     this.first = range.first;
     this.last = range.last;
   }
@@ -24,7 +24,7 @@ export class VisibilityChangedEvent extends Event {
   last: number;
 
   constructor(range: Range) {
-    super(VisibilityChangedEvent.eventName, {bubbles: true});
+    super(VisibilityChangedEvent.eventName, {bubbles: false});
     this.first = range.first;
     this.last = range.last;
   }

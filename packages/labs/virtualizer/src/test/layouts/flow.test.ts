@@ -56,7 +56,7 @@ describe('flow layout', () => {
     )) as LitVirtualizer;
     expect(virtualizer).to.be.instanceof(LitVirtualizer);
     await until(() => getVisibleItems(virtualizer).length === 4);
-    return {container, virtualizer};
+    return virtualizer;
   }
 
   function getVisibleItems(virtualizer: LitVirtualizer) {
@@ -67,14 +67,14 @@ describe('flow layout', () => {
 
   describe('item resizing', () => {
     it('emits VisibilityChanged event due to item resizing', async () => {
-      const {container, virtualizer} = await createVirtualizer({
+      const virtualizer = await createVirtualizer({
         items: array(1000),
       });
       const visibilityChangedEvents: VisibilityChangedEvent[] = [];
 
       await until(() => getVisibleItems(virtualizer).length == 4);
 
-      container.addEventListener('visibilityChanged', (e) => {
+      virtualizer.addEventListener('visibilityChanged', (e) => {
         visibilityChangedEvents.push(e as VisibilityChangedEvent);
       });
 
@@ -105,7 +105,7 @@ describe('flow layout', () => {
 
   describe('element(<index>).scrollIntoView', () => {
     it('shows the correct items when scrolling to start position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       virtualizer.element(5)!.scrollIntoView({block: 'start'});
 
@@ -120,7 +120,7 @@ describe('flow layout', () => {
     });
 
     it('shows leading items when scrolling to last item in start position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       virtualizer.element(999)!.scrollIntoView({block: 'start'});
 
@@ -135,7 +135,7 @@ describe('flow layout', () => {
     });
 
     it('shows the correct items when scrolling to center position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       virtualizer.element(200)!.scrollIntoView({block: 'center'});
 
@@ -151,7 +151,7 @@ describe('flow layout', () => {
     });
 
     it('shows trailing items when scrolling to first item in end position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
       virtualizer.element(0)!.scrollIntoView({block: 'end'});
 
       await until(() =>
@@ -165,7 +165,7 @@ describe('flow layout', () => {
     });
 
     it('shows the correct items when scrolling to nearest position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       // The nearest position for item 500 will be at the end.
       virtualizer.element(500)!.scrollIntoView({block: 'nearest'});
@@ -208,7 +208,7 @@ describe('flow layout', () => {
 
   describe('scrollToIndex', () => {
     it('shows the correct items when scrolling to start position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       virtualizer.scrollToIndex(5, 'start');
 
@@ -223,7 +223,7 @@ describe('flow layout', () => {
     });
 
     it('shows leading items when scrolling to last item in start position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       virtualizer.scrollToIndex(999, 'start');
 
@@ -238,7 +238,7 @@ describe('flow layout', () => {
     });
 
     it('shows the correct items when scrolling to center position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       virtualizer.scrollToIndex(200, 'center');
 
@@ -254,7 +254,7 @@ describe('flow layout', () => {
     });
 
     it('shows trailing items when scrolling to first item in end position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
       virtualizer.scrollToIndex(0, 'end');
 
       await until(() =>
@@ -268,7 +268,7 @@ describe('flow layout', () => {
     });
 
     it('shows the correct items when scrolling to nearest position', async () => {
-      const {virtualizer} = await createVirtualizer({items: array(1000)});
+      const virtualizer = await createVirtualizer({items: array(1000)});
 
       // The nearest position for item 500 will be at the end.
       virtualizer.scrollToIndex(500, 'nearest');
