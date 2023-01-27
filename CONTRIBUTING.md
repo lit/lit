@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Lit!
 
-There are many ways to contribute to the Lit project, and we have many different needs to be addressed. All contributions, from PRs to reports of successful usage, are appreciated and valuable.
+There are many ways to contribute to the Lit project, and we have many different needs to be addressed. All contributions, from issues, to PRs, to reports of successful usage, are appreciated and valuable.
 
 ## Code of Conduct
 
@@ -33,6 +33,10 @@ Pull requests are greatly appreciated! To ensure a smooth review process, please
 5.  When addressing review comments, try to add new commits, rather than modifying previous commits. This makes it easier for reviewers to see what changed since the last review. `git commit --fixup {SHA}` is really useful for this. Obviously, requests like "Please rebase onto master" require changing commits.
 6.  If you [allow changes to be committed to your PR branches](https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) we can fix some small things in the PR for you, speeding up the review process. This is especially useful if you're new to TypeScript and need help with type annotations.
 7.  Please run `npm run lint` and `npm run format` before submitting PRs. PRs that don't lint and aren't formatted will fail continuous integration tests.
+
+## Discord Chat
+
+Our engineering team uses the [Lit Discord](https://lit.dev/discord/) to chat. You can read the development channels, or join us in `#get-involved`.
 
 ## Code Style
 
