@@ -44,11 +44,11 @@
       ],
       "files": [
         "src/**/*.ts",
-        "tsconfig.json",
-        "tsconfig.tsbuildinfo"
+        "tsconfig.json"
       ],
       "output": [
-        "index.{d.ts,d.ts.map,js,js.map}"
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "tsconfig.tsbuildinfo"
       ]
     },
     "test": {
