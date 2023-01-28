@@ -56,11 +56,20 @@ export interface StateChangedMessage {
   scrollError?: Positions;
 }
 
+export interface VisibilityChangedMessage {
+  type: 'visibilityChanged';
+  firstVisible: number;
+  lastVisible: number;
+}
+
 export interface UnpinnedMessage {
   type: 'unpinned';
 }
 
-export type LayoutHostMessage = StateChangedMessage | UnpinnedMessage;
+export type LayoutHostMessage =
+  | StateChangedMessage
+  | UnpinnedMessage
+  | VisibilityChangedMessage;
 
 export type LayoutHostSink = (message: LayoutHostMessage) => void;
 
