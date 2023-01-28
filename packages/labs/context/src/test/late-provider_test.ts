@@ -48,7 +48,13 @@ class LateContextProviderElement extends LitElement {
   }
 }
 
-suite('late context provider', () => {
+const ua = window.navigator.userAgent;
+const isIE = ua.indexOf('Trident/') > 0;
+
+const suiteSkipIE: typeof suite.skip = (...args) =>
+  isIE ? suite.skip(...args) : suite(...args);
+
+suiteSkipIE('late context provider', () => {
   // let consumer: ContextConsumerElement;
   // let provider: LateContextProviderElement;
   let container: HTMLElement;
