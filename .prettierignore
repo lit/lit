@@ -314,6 +314,7 @@ packages/labs/vue-utils/index.*
 packages/labs/vue-utils/wrapper-utils.*
 
 packages/labs/workers/development/
+packages/labs/workers/test/
 packages/labs/workers/index.*
 
 packages/lit-starter-js/node_modules/*

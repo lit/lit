@@ -33,6 +33,9 @@
     "build:ts": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
+    "test": "wireit",
+    "test:dev": "wireit",
+    "test:prod": "wireit",
     "checksize": "wireit"
   },
   "wireit": {
@@ -82,6 +85,40 @@
       "output": [
         "index.js{,.map}"
       ]
+    },
+    "test": {
+      "dependencies": [
+        "test:dev",
+        "test:prod"
+      ]
+    },
+    "test:dev": {
+      "command": "MODE=dev node ../../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [],
+      "output": []
+    },
+    "test:prod": {
+      "command": "MODE=prod node ../../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [],
+      "output": []
     },
     "checksize": {
       "command": "rollup -c --environment=CHECKSIZE",
