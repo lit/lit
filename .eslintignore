@@ -329,6 +329,9 @@ packages/labs/vue-utils/node_modules/
 packages/labs/vue-utils/index.*
 packages/labs/vue-utils/wrapper-utils.*
 
+packages/labs/workers/development/
+packages/labs/workers/index.*
+
 packages/labs/test-projects/test-element-a/**/*.d.ts
 packages/labs/test-projects/test-element-a/**/*.d.ts.map
 packages/labs/test-projects/test-element-a/**/*.js
