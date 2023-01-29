@@ -10,7 +10,7 @@ import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {RenderInfo} from '../../index.js';
-
+import {FallbackRenderer} from '../../lib/element-renderer.js';
 import type * as testModule from '../test-files/render-test-module.js';
 import {collectResultSync} from '../../lib/render-result.js';
 
@@ -249,6 +249,25 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       result,
       `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
     );
+  });
+
+  test(`Non-SSR'ed custom element`, async () => {
+    const {render, templateWithNotRenderedElement} = await setup();
+
+    const customElementsRendered: Array<string> = [];
+    const result = await render(templateWithNotRenderedElement, {
+      customElementRendered(tagName: string) {
+        customElementsRendered.push(tagName);
+      },
+      elementRenderers: [FallbackRenderer],
+    });
+    // Undefined elements should not emit a declarative shadowroot
+    assert.is(
+      result,
+      `<!--lit-part drPtGZnekSg=--><test-not-rendered></test-not-rendered><!--/lit-part-->`
+    );
+    assert.is(customElementsRendered.length, 1);
+    assert.is(customElementsRendered[0], 'test-not-rendered');
   });
 
   test('element with property', async () => {

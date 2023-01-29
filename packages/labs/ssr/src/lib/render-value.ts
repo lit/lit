@@ -719,25 +719,23 @@ function* renderTemplateResult(
             `Internal error: ${op.type} outside of custom element context`
           );
         }
-        if (instance.renderShadow !== undefined) {
-          renderInfo.customElementHostStack.push(instance);
-          const shadowContents = instance.renderShadow(renderInfo);
-          // Only emit a DSR if renderShadow() emitted something (returning
-          // undefined allows effectively no-op rendering the element)
-          if (shadowContents !== undefined) {
-            const {mode = 'open', delegatesFocus} =
-              instance.shadowRootOptions ?? {};
-            // `delegatesFocus` is intentionally allowed to coerce to boolean to
-            // match web platform behavior.
-            const delegatesfocusAttr = delegatesFocus
-              ? ' shadowrootdelegatesfocus'
-              : '';
-            yield `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`;
-            yield* shadowContents;
-            yield '</template>';
-          }
-          renderInfo.customElementHostStack.pop();
+        renderInfo.customElementHostStack.push(instance);
+        const shadowContents = instance.renderShadow(renderInfo);
+        // Only emit a DSR if renderShadow() emitted something (returning
+        // undefined allows effectively no-op rendering the element)
+        if (shadowContents !== undefined) {
+          const {mode = 'open', delegatesFocus} =
+            instance.shadowRootOptions ?? {};
+          // `delegatesFocus` is intentionally allowed to coerce to boolean to
+          // match web platform behavior.
+          const delegatesfocusAttr = delegatesFocus
+            ? ' shadowrootdelegatesfocus'
+            : '';
+          yield `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`;
+          yield* shadowContents;
+          yield '</template>';
         }
+        renderInfo.customElementHostStack.pop();
         break;
       }
       case 'custom-element-close':

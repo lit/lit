@@ -38,7 +38,7 @@ export class LitElementRenderer extends ElementRenderer {
     );
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +49,7 @@ export class LitElementRenderer extends ElementRenderer {
     (ReactiveElement.prototype as any).update.call(this.element);
   }
 
-  attributeChangedCallback(
+  override attributeChangedCallback(
     name: string,
     _old: string | null,
     value: string | null
@@ -57,7 +57,7 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  *renderShadow(renderInfo: RenderInfo): RenderResult {
+  override *renderShadow(renderInfo: RenderInfo): RenderResult {
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
@@ -73,7 +73,7 @@ export class LitElementRenderer extends ElementRenderer {
     yield* renderValue((this.element as any).render(), renderInfo);
   }
 
-  *renderLight(renderInfo: RenderInfo): RenderResult {
+  override *renderLight(renderInfo: RenderInfo): RenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
