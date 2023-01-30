@@ -51,7 +51,8 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "dependencies": [
-        "../../lit:build:ts:types"
+        "../../lit:build:ts:types",
+        "../ssr:build:ts"
       ],
       "files": [
         "src/**/*.ts",
@@ -139,7 +140,8 @@
   "dependencies": {
     "lit": "^2.0.0",
     "lit-html": "^2.0.0",
-    "@lit/reactive-element": "^1.0.0"
+    "@lit/reactive-element": "^1.0.0",
+    "@lit-labs/ssr": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

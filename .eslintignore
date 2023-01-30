@@ -331,6 +331,7 @@ packages/labs/vue-utils/wrapper-utils.*
 
 packages/labs/workers/development/
 packages/labs/workers/test/
+packages/labs/workers/lib/
 packages/labs/workers/index.*
 
 packages/labs/test-projects/test-element-a/**/*.d.ts

@@ -719,15 +719,9 @@ export abstract class ReactiveElement
         return (this as {[key: string]: unknown})[key as string];
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = (this as {} as {[key: string]: unknown})[
-          name as string
-        ];
-        (this as {} as {[key: string]: unknown})[key as string] = value;
-        (this as unknown as ReactiveElement).requestUpdate(
-          name,
-          oldValue,
-          options
-        );
+        const oldValue = (this as {} as {[name: PropertyKey]: unknown})[name];
+        (this as {} as {[key: string | symbol]: unknown})[key] = value;
+        this.requestUpdate(name, oldValue, options);
       },
       configurable: true,
       enumerable: true,
