@@ -88,7 +88,6 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     if (isGetter) {
       // Decorators is readonly so clone the property.
       const getterWithoutDecorators = factory.createGetAccessorDeclaration(
-        undefined,
         propertyOrGetter.modifiers,
         propertyOrGetter.name,
         propertyOrGetter.parameters,

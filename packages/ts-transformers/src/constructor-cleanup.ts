@@ -143,7 +143,6 @@ const cleanupClassConstructor = (
   newMembers.splice(newCtorIdx, 0, ctor);
 
   const newClass = context.factory.createClassDeclaration(
-    class_.decorators,
     class_.modifiers,
     class_.name,
     class_.typeParameters,

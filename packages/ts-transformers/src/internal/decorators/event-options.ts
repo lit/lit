@@ -251,7 +251,6 @@ class EventOptionsBindingVisitor implements GenericVisitor {
               factory.createParameterDeclaration(
                 undefined,
                 undefined,
-                undefined,
                 factory.createIdentifier('e'),
                 undefined,
                 undefined,
@@ -263,16 +262,21 @@ class EventOptionsBindingVisitor implements GenericVisitor {
             factory.createCallExpression(
               // Clone because there could be multiple event bindings and each
               // needs its own copy of the event handler reference.
-              cloneNode(eventHandlerReference, {factory: factory}),
+              (cloneNode as Function)(eventHandlerReference, {
+                factory,
+              }) as unknown as ts.PropertyAccessExpression,
               undefined,
               [factory.createIdentifier('e')]
             )
           )
         ),
-        ...this._eventOptionsNode.properties.map((property) =>
-          // Clone because there could be multiple event bindings and each needs
-          // its own copy of the event options.
-          cloneNode(property, {factory: factory})
+        ...this._eventOptionsNode.properties.map(
+          (property) =>
+            // Clone because there could be multiple event bindings and each needs
+            // its own copy of the event options.
+            (cloneNode as Function)(property, {
+              factory: factory,
+            }) as unknown as ts.ObjectLiteralElementLike
         ),
       ],
       false

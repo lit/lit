@@ -259,7 +259,7 @@ export class LitTransformer {
     const litClassContext = new LitClassContext(this._litFileContext, class_);
 
     // Class decorators
-    for (const decorator of class_.decorators ?? []) {
+    for (const decorator of ts.getDecorators(class_) ?? []) {
       if (!ts.isCallExpression(decorator.expression)) {
         continue;
       }
@@ -276,19 +276,21 @@ export class LitTransformer {
 
     // Class member decorators
     for (const member of class_.members ?? []) {
-      for (const decorator of member.decorators ?? []) {
-        if (!ts.isCallExpression(decorator.expression)) {
-          continue;
+      if (ts.canHaveDecorators(member)) {
+        for (const decorator of ts.getDecorators(member) ?? []) {
+          if (!ts.isCallExpression(decorator.expression)) {
+            continue;
+          }
+          const decoratorName = this._litFileContext.getCanonicalName(
+            decorator.expression.expression
+          );
+          if (decoratorName === undefined) {
+            continue;
+          }
+          this._memberDecoratorVisitors
+            .get(decoratorName)
+            ?.visit(litClassContext, member, decorator);
         }
-        const decoratorName = this._litFileContext.getCanonicalName(
-          decorator.expression.expression
-        );
-        if (decoratorName === undefined) {
-          continue;
-        }
-        this._memberDecoratorVisitors
-          .get(decoratorName)
-          ?.visit(litClassContext, member, decorator);
       }
     }
 
@@ -329,7 +331,6 @@ export class LitTransformer {
       ts.visitEachChild(
         this._context.factory.updateClassDeclaration(
           class_,
-          class_.decorators,
           class_.modifiers,
           class_.name,
           class_.typeParameters,
@@ -490,13 +491,12 @@ export class LitTransformer {
    * the decorators field to undefined so that we get clean output instead.
    */
   private _cleanUpDecoratorCruft(node: ts.Node) {
-    if (node.decorators === undefined || node.decorators.length > 0) {
+    if (!ts.canHaveDecorators(node) || ts.getDecorators(node)?.length !== 0) {
       return node;
     }
     if (ts.isClassDeclaration(node)) {
       return this._context.factory.updateClassDeclaration(
         node,
-        /* decorators */ undefined,
         node.modifiers,
         node.name,
         node.typeParameters,
@@ -507,7 +507,6 @@ export class LitTransformer {
     if (ts.isMethodDeclaration(node)) {
       return this._context.factory.updateMethodDeclaration(
         node,
-        /* decorators */ undefined,
         node.modifiers,
         node.asteriskToken,
         node.name,
