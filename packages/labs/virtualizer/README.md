@@ -293,7 +293,7 @@ Virtualizer depends on the standard [`ResizeObserver`]() API, which is supported
 
 The package also includes a simple mechanism for loading the `ResizeObserver` polyfill. This mechanism uses feature detection to determine whether the polyfill is required; if it is, then the polyfill is automatically loaded and provided directly to Virtualizer.
 
-You need to invoke the loader—which is aysnchronous—and await its return before running any code that would cause a virtualizer to be instantiated. The simplest way to do this is to load virtualizer itself with a dynamic `import()` statement. For example:
+You need to invoke the loader—which is asynchronous—and await its return before running any code that would cause a virtualizer to be instantiated. The simplest way to do this is to load virtualizer itself with a dynamic `import()` statement. For example:
 
 ```js
 import {loadPolyfillIfNeeded} from '@lit-labs/virtualizer/polyfillLoaders/ResizeObserver.js';
