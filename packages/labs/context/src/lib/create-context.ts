@@ -49,8 +49,8 @@ export type ContextType<Key extends Context<unknown, unknown>> =
  *
  * @param key a context key value
  * @template ValueType the type of value that can be provided by this context.
- * @returns the context key value with the correct type
+ * @returns the context key value cast to `Context<K, ValueType>`
  */
-export function createContext<ValueType>(key: unknown) {
-  return key as Context<typeof key, ValueType>;
+export function createContext<ValueType, K = unknown>(key: K) {
+  return key as Context<K, ValueType>;
 }
