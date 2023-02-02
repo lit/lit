@@ -57,15 +57,14 @@ export function consume<ValueType>({
   return decorateProperty({
     finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
       ctor.addInitializer((element: ReactiveElement): void => {
-        new ContextConsumer(
-          element,
+        new ContextConsumer(element, {
           context,
-          (value: ValueType) => {
+          callback: (value: ValueType) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- have to force the property on the type
             (element as any)[name] = value;
           },
-          subscribe
-        );
+          subscribe,
+        });
       });
     },
   });
