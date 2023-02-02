@@ -19,8 +19,12 @@ type PendingContextRequest = Omit<
 > & {element: HTMLElement};
 
 /**
- * A ContextRoot can be used to gather unsatisfied context requests and redispatch these
- * requests when new providers which satisfy matching context keys are available.
+ * A ContextRoot can be used to gather unsatisfied context requests and
+ * redispatch them when new providers which satisfy matching context keys are
+ * available.
+ *
+ * This allows providers to be added to a DOM tree, or upgraded, after the
+ * consumers.
  */
 export class ContextRoot {
   private pendingContextRequests = new Map<
