@@ -1318,7 +1318,7 @@ class ChildPart implements Disconnectable {
     const parent = this._$parent;
     if (
       parent !== undefined &&
-      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+      parentNode?.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
     ) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
       // still in the cloned fragment during initial render; if so, get the real
