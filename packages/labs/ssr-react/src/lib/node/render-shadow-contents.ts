@@ -70,6 +70,7 @@ export const renderShadowContents = (type: string, props: {} | null) => {
   const {mode = 'open', delegatesFocus} = renderer.shadowRootOptions;
   const templateAttributes = {
     shadowroot: mode,
+    shadowrootmode: mode,
     ...(delegatesFocus ? {shadowrootdelegatesfocus: ''} : {}),
   };
 
