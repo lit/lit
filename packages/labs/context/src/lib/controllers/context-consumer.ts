@@ -12,7 +12,7 @@ import {ReactiveController, ReactiveElement} from 'lit';
  * A ReactiveController which adds context consuming behavior to a custom
  * element by dispatching `context-request` events.
  *
- * When the host eleent is connected to the document it will emit a
+ * When the host element is connected to the document it will emit a
  * `context-request` event with its context key. When the context request
  * is satisfied the controller will invoke the callback, if present, and
  * trigger a host update so it can respond to the new value.
