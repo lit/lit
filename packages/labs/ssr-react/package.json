@@ -104,11 +104,11 @@
   },
   "keywords": [
     "lit",
-    "lit-html",
     "lit-element",
-    "LitElement",
-    "ssr",
     "lit-ssr",
-    "react"
+    "next",
+    "react",
+    "ssr",
+    "web components"
   ]
 }
