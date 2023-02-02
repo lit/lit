@@ -15,6 +15,8 @@ import {createElement, type ElementType, type ReactNode} from 'react';
 import {isCustomElement} from '../lib/utils.js';
 import {renderShadowContents} from '../lib/node/render-shadow-contents.js';
 
+export const Fragment = ReactJSXDevRuntime.Fragment;
+
 export const jsxDEV = <P extends {children?: ReactNode[] | ReactNode}>(
   type: ElementType<P>,
   props: P,

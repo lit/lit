@@ -19,5 +19,6 @@ declare module 'react/jsx-runtime' {
 }
 
 declare module 'react/jsx-dev-runtime' {
+  export const Fragment: any;
   export const jsxDEV: any;
 }
