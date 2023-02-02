@@ -259,6 +259,12 @@ packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
 packages/labs/scoped-registry-mixin/node_modules/
 packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
+packages/labs/slottable-request/development/
+packages/labs/slottable-request/test/
+packages/labs/slottable-request/node_modules/
+packages/labs/slottable-request/slottable-request-event.*
+packages/labs/slottable-request/render-slottable.*
+packages/labs/slottable-request/request-slottable.*
 packages/labs/ssr/demo/
 packages/labs/ssr/lib/
 packages/labs/ssr/node_modules/

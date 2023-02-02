@@ -1,0 +1,92 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "sampleSize": 50,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "name": "render-prop",
+      "url": "index.html?elCount=50&listCount=50&updateCount=0&approach=render-prop",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ]
+    },
+    {
+      "name": "render-prop-slot-fallback",
+      "url": "index.html?elCount=50&listCount=50&updateCount=0&approach=render-prop&mods=slot-fallback",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ]
+    },
+    {
+      "name": "static-slotted-no-wrap",
+      "url": "index.html?elCount=50&listCount=50&updateCount=0&approach=static-slotted&mods=no-wrapper",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ]
+    },
+    {
+      "name": "static-slotted",
+      "url": "index.html?elCount=50&listCount=50&updateCount=0&approach=static-slotted",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ]
+    },
+    {
+      "name": "slottable-request",
+      "url": "index.html?elCount=50&listCount=50&updateCount=0&approach=slottable-request",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ]
+    },
+    {
+      "name": "slottable-request-directive",
+      "url": "index.html?elCount=50&listCount=50&updateCount=0&approach=slottable-request-directive",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ]
+    }
+  ]
+}
