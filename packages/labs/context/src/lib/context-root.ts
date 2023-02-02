@@ -17,7 +17,8 @@ export class ContextRoot {
   private pendingContextRequests = new Map<
     Context<unknown, unknown>,
     {
-      // The WeakMap lets us detect if we're seen an element/callback pair yet
+      // The WeakMap lets us detect if we're seen an element/callback pair yet,
+      // without needing to iterate the `requests` array
       callbacks: WeakMap<HTMLElement, WeakSet<ContextCallback<unknown>>>;
 
       // Requests lets us iterate over every element/callback that we need to
