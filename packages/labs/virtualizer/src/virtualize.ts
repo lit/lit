@@ -97,11 +97,11 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     return this.render();
   }
 
-  private _updateVirtualizerConfig(
+  private async _updateVirtualizerConfig(
     part: ChildPart,
     config: VirtualizeDirectiveConfig<T>
   ) {
-    const compatible = this._virtualizer!.updateLayoutConfig(
+    const compatible = await this._virtualizer!.updateLayoutConfig(
       config.layout || {}
     );
     if (!compatible) {
