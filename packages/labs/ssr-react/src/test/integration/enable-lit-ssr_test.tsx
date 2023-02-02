@@ -20,7 +20,7 @@ const test = suite();
 test('single element', () => {
   assert.equal(
     ReactDOMServer.renderToString(<test-element />),
-    `<test-element><template shadowroot="open"><style>
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -32,7 +32,7 @@ test('single element', () => {
 test('single element with prop', () => {
   assert.equal(
     ReactDOMServer.renderToString(<test-element name="World" />),
-    `<test-element name="World"><template shadowroot="open"><style>
+    `<test-element name="World"><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -48,7 +48,7 @@ test('single element within DOM element', () => {
         <test-element />
       </div>
     ),
-    `<div><test-element><template shadowroot="open"><style>
+    `<div><test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -62,7 +62,7 @@ test('single element with string child', () => {
     ReactDOMServer.renderToString(
       <test-element>some string child</test-element>
     ),
-    `<test-element><template shadowroot="open"><style>
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -78,7 +78,7 @@ test('single element with element child', () => {
         <span>span child</span>
       </test-element>
     ),
-    `<test-element><template shadowroot="open"><style>
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -95,7 +95,7 @@ test('single element with multiple children', () => {
         <p>p</p>
       </test-element>
     ),
-    `<test-element><template shadowroot="open"><style>
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -113,7 +113,7 @@ test('single element with dynamic children', () => {
         ))}
       </test-element>
     ),
-    `<test-element><template shadowroot="open"><style>
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -129,12 +129,12 @@ test('nested element', () => {
         <test-element />
       </test-element>
     ),
-    `<test-element><template shadowroot="open"><style>
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
   </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
-      <slot></slot><!--/lit-part--></template><test-element><template shadowroot="open"><style>
+      <slot></slot><!--/lit-part--></template><test-element><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
