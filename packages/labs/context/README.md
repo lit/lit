@@ -28,57 +28,9 @@ export interface Logger {
 export const loggerContext = createContext<Logger>('logger');
 ```
 
-### Consuming a Context
+### Providing (Defining) a Context
 
-Now we can define a consumer for this context - some component in our app needs the logger.
-
-Here we're using the `@consume` property decorator to make a `ContextConsumer` controller
-and update its value when the context changes:
-
-#### **`my-element.ts`**:
-
-```ts
-import {LitElement, property} from 'lit';
-import {consume} from '@lit-labs/context';
-import {Logger, loggerContext} from './logger.js';
-
-export class MyElement extends LitElement {
-  @consume({context: loggerContext, subscribe: true})
-  @property({attribute: false})
-  public logger?: Logger;
-
-  private doThing() {
-    this.logger?.log('a thing was done');
-  }
-}
-```
-
-Another way we can use a context in a component is via the `ContextConsumer` controller directly:
-
-#### **`my-element.ts`**:
-
-```ts
-import {LitElement, property} from 'lit';
-import {ContextConsumer} from '@lit-labs/context';
-import {Logger, loggerContext} from './logger.js';
-
-export class MyElement extends LitElement {
-  public logger = new ContextConsumer(
-    this,
-    loggerContext,
-    undefined, // don't need to pass a callback
-    true // pass true to get updates if the logger changes
-  );
-
-  private doThing() {
-    this.logger.value?.log('a thing was done');
-  }
-}
-```
-
-### Providing a Context
-
-Finally we want to be able to provide this context from somewhere higher in the DOM.
+We want to be able to provide this context from somewhere higher in the DOM.
 
 Here we're using a `@provide` property decorator to make a `ContextProvider`
 controller and update its value when the property value changes.
@@ -105,7 +57,8 @@ export class MyApp extends LitElement {
 }
 ```
 
-We can also use the `ContextProvider` controller directly:
+<details>
+<summary>**We can also use the `ContextProvider` controller directly**</summary>
 
 #### **`my-app.ts`**:
 
@@ -132,6 +85,59 @@ export class MyApp extends LitElement {
   }
 }
 ```
+
+</details>
+
+### Consuming a Context
+
+Now we can define a consumer for this context - some component in our app needs the logger.
+
+Here we're using the `@consume` property decorator to make a `ContextConsumer` controller
+and update its value when the context changes:
+
+#### **`my-element.ts`**:
+
+```ts
+import {LitElement, property} from 'lit';
+import {consume} from '@lit-labs/context';
+import {Logger, loggerContext} from './logger.js';
+
+export class MyElement extends LitElement {
+  @consume({context: loggerContext, subscribe: true})
+  @property({attribute: false})
+  public logger?: Logger;
+
+  private doThing() {
+    this.logger?.log('a thing was done');
+  }
+}
+```
+
+<details>
+<summary>Another way we can use a context in a component is via the `ContextConsumer` controller directly**</summary>
+
+#### **`my-element.ts`**:
+
+```ts
+import {LitElement, property} from 'lit';
+import {ContextConsumer} from '@lit-labs/context';
+import {Logger, loggerContext} from './logger.js';
+
+export class MyElement extends LitElement {
+  public logger = new ContextConsumer(
+    this,
+    loggerContext,
+    undefined, // don't need to pass a callback
+    true // pass true to get updates if the logger changes
+  );
+
+  private doThing() {
+    this.logger.value?.log('a thing was done');
+  }
+}
+```
+
+</details>
 
 ## Known Issues
 
