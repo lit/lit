@@ -225,6 +225,12 @@ packages/labs/gen-wrapper-vue/*.d.ts
 packages/labs/gen-wrapper-vue/*.d.ts.map
 packages/labs/gen-wrapper-vue/gen-output/
 
+packages/labs/hot-elements/development/
+packages/labs/hot-elements/test/
+packages/labs/hot-elements/node_modules/
+packages/labs/hot-elements/lib/
+packages/labs/hot-elements/index.*
+
 packages/labs/motion/development/
 packages/labs/motion/test/
 packages/labs/motion/node_modules/

@@ -46,6 +46,10 @@
  *
  * @packageDocumentation
  */
+import {
+  adoptStyles,
+  supportsAdoptingStyleSheets,
+} from '@lit/reactive-element/css-tag.js';
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
 import {render, RenderOptions, noChange, RootPart} from 'lit-html';
 export * from '@lit/reactive-element';
@@ -223,6 +227,126 @@ export class LitElement extends ReactiveElement {
    */
   protected render(): unknown {
     return noChange;
+  }
+
+  /**
+   * HMR infrastructure can call this method in a devmode build to let an
+   * element know that it's been replaced. We'll then update our prototype,
+   * find all places in the DOM that the element can be found, and rerender
+   * them.
+   */
+  static notifyOnHotReplace:
+    | undefined
+    | ((tagname: string, updatedCtor: typeof LitElement) => void);
+
+  static {
+    // Add the notifyOnHotReplace static method in devmode.
+    if (DEV_MODE) {
+      interface NodeButMaybeMore extends Node {
+        host?: Element;
+        shadowRoot?: ShadowRoot;
+      }
+      /**
+       * Walks the given DOM node and yields the node and every descendant the node
+       * has, including through shadow dom boundaries, nodes distributed through
+       * slots, and ordinary children.
+       */
+      const shadowPiercingWalk = function* (
+        node: NodeButMaybeMore = document
+      ): IterableIterator<Node> {
+        yield node;
+        if ((node as Element).localName === 'slot') {
+          const slot = node as HTMLSlotElement;
+          const slotNodes = slot.assignedNodes({flatten: true});
+          for (let i = 0; i < slotNodes.length; i++) {
+            yield* shadowPiercingWalk(slotNodes[i]);
+          }
+        }
+        if (node.shadowRoot) {
+          const shadowRootNodes = node.shadowRoot.childNodes;
+          for (let i = 0; i < shadowRootNodes.length; i++) {
+            yield* shadowPiercingWalk(shadowRootNodes[i]);
+          }
+        } else if (node.childNodes) {
+          for (let i = 0; i < node.childNodes.length; i++) {
+            yield* shadowPiercingWalk(node.childNodes[i]);
+          }
+        }
+      };
+
+      LitElement.notifyOnHotReplace = function (
+        this: typeof LitElement,
+        tagname: string,
+        classObj: typeof LitElement
+      ) {
+        const existingProps = new Set(
+          Object.getOwnPropertyNames(this.prototype)
+        );
+        const newProps = new Set(
+          Object.getOwnPropertyNames(classObj.prototype)
+        );
+        for (const prop of Object.getOwnPropertyNames(classObj.prototype)) {
+          Object.defineProperty(
+            this.prototype,
+            prop,
+            Object.getOwnPropertyDescriptor(classObj.prototype, prop)!
+          );
+        }
+        for (const existingProp of existingProps) {
+          if (!newProps.has(existingProp)) {
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            delete (this.prototype as any)[existingProp];
+          }
+        }
+
+        // This new class object has never been finalized before. Need to finalize
+        // so that instances can get any updated styles.
+        classObj.finalize();
+
+        for (const node of shadowPiercingWalk(document)) {
+          if (
+            node instanceof HTMLElement &&
+            node.tagName.toLowerCase() === tagname.toLowerCase()
+          ) {
+            const myNode = node as LitElement;
+            // Get updated styling. Need to test that this works in all the
+            // different browser configs, only tested on recent Chrome so far,
+            // where overriding adopted stylesheets seems to just work.
+            const styles = (myNode.constructor as typeof LitElement)
+              .elementStyles;
+            const renderRoot = myNode.renderRoot;
+            if (styles && renderRoot instanceof ShadowRoot) {
+              if (supportsAdoptingStyleSheets) {
+                adoptStyles(renderRoot, styles);
+              } else {
+                // Remove all existing shimmed styles from the node.
+                const nodes = Array.from(renderRoot.children);
+                for (const node of nodes) {
+                  if (node.tagName.toLowerCase() === 'style') {
+                    renderRoot.removeChild(node);
+                  }
+                }
+                // `myNode.renderOptions.renderBefore` needs to be updated
+                // because it refers to the first shimmed adopted style, which was
+                // just removed. So, keep track of the last child in `renderRoot`
+                // because the first new shimmed adopted style to be added by
+                // `adoptStyles` will be its next sibling once `adoptStyles` is
+                // finished.
+                const lastChild = renderRoot.lastChild;
+                adoptStyles(renderRoot, styles);
+                if (lastChild) {
+                  myNode.renderOptions.renderBefore = lastChild.nextSibling;
+                } else {
+                  delete myNode.renderOptions.renderBefore;
+                }
+              }
+              // Ask for a re-render.
+              myNode.requestUpdate();
+            }
+          }
+        }
+      };
+    }
   }
 }
 
