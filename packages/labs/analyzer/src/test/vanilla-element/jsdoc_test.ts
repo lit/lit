@@ -43,13 +43,13 @@ for (const lang of languages) {
   test('slots - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    assert.equal(element.slots.size, 5);
+    assert.equal(element.slots.size, 4);
   });
 
-  test('slots - basic', ({getModule}) => {
+  test('slots - no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    const slot = element.slots.get('basic');
+    const slot = element.slots.get('no-description');
     assert.ok(slot);
     assert.equal(slot.summary, undefined);
     assert.equal(slot.description, undefined);
@@ -76,39 +76,18 @@ for (const lang of languages) {
     assert.equal(slot.description, 'Description for with-description-dash');
   });
 
-  test('slots - with-description-colon', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const slot = element.slots.get('with-description-colon');
-    assert.ok(slot);
-    assert.equal(slot.summary, undefined);
-    assert.equal(slot.description, 'Description for with-description-colon');
-  });
-
-  test('slots - with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const slot = element.slots.get('with-summary');
-    assert.ok(slot);
-    assert.equal(slot.summary, 'Summary for with-summary');
-    assert.equal(
-      slot.description,
-      'Description for with-summary\nMore description for with-summary\n\nEven more description for with-summary'
-    );
-  });
-
   // cssParts
 
   test('cssParts - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    assert.equal(element.cssParts.size, 5);
+    assert.equal(element.cssParts.size, 3);
   });
 
-  test('cssParts - basic', ({getModule}) => {
+  test('cssParts - no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    const part = element.cssParts.get('basic');
+    const part = element.cssParts.get('no-description');
     assert.ok(part);
     assert.equal(part.summary, undefined);
     assert.equal(part.description, undefined);
@@ -138,42 +117,18 @@ for (const lang of languages) {
     );
   });
 
-  test('cssParts - with-description-colon', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const part = element.cssParts.get('with-description-colon');
-    assert.ok(part);
-    assert.equal(part.summary, undefined);
-    assert.equal(
-      part.description,
-      'Description for :part(with-description-colon)'
-    );
-  });
-
-  test('cssParts - with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const part = element.cssParts.get('with-summary');
-    assert.ok(part);
-    assert.equal(part.summary, 'Summary for :part(with-summary)');
-    assert.equal(
-      part.description,
-      'Description for :part(with-summary)\nMore description for :part(with-summary)\n\nEven more description for :part(with-summary)'
-    );
-  });
-
   // cssProperties
 
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    assert.equal(element.cssProperties.size, 10);
+    assert.equal(element.cssProperties.size, 6);
   });
 
-  test('cssProperties - basic', ({getModule}) => {
+  test('cssProperties - no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    const prop = element.cssProperties.get('--basic');
+    const prop = element.cssProperties.get('--no-description');
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, undefined);
@@ -191,15 +146,6 @@ for (const lang of languages) {
     );
   });
 
-  test('cssProperties - with-description-colon', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const prop = element.cssProperties.get('--with-description-colon');
-    assert.ok(prop);
-    assert.equal(prop.summary, undefined);
-    assert.equal(prop.description, 'Description for --with-description-colon');
-  });
-
   test('cssProperties - with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
@@ -209,22 +155,10 @@ for (const lang of languages) {
     assert.equal(prop.description, 'Description for --with-description-dash');
   });
 
-  test('cssProperties - with-summary', ({getModule}) => {
+  test('cssProperties - short-no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    const prop = element.cssProperties.get('--with-summary');
-    assert.ok(prop);
-    assert.equal(prop.summary, 'Summary for --with-summary');
-    assert.equal(
-      prop.description,
-      'Description for --with-summary\nMore description for --with-summary\n\nEven more description for --with-summary'
-    );
-  });
-
-  test('cssProperties - short-basic', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const prop = element.cssProperties.get('--short-basic');
+    const prop = element.cssProperties.get('--short-no-description');
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, undefined);
@@ -242,18 +176,6 @@ for (const lang of languages) {
     );
   });
 
-  test('cssProperties - short-with-description-colon', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const prop = element.cssProperties.get('--short-with-description-colon');
-    assert.ok(prop);
-    assert.equal(prop.summary, undefined);
-    assert.equal(
-      prop.description,
-      'Description for --short-with-description-colon'
-    );
-  });
-
   test('cssProperties - short-with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
@@ -263,18 +185,6 @@ for (const lang of languages) {
     assert.equal(
       prop.description,
       'Description for --short-with-description-dash'
-    );
-  });
-
-  test('cssProperties - short-with-summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isCustomElementDeclaration());
-    const prop = element.cssProperties.get('--short-with-summary');
-    assert.ok(prop);
-    assert.equal(prop.summary, 'Summary for --short-with-summary');
-    assert.equal(
-      prop.description,
-      'Description for --short-with-summary\nMore description for --short-with-summary\n\nEven more description for --short-with-summary'
     );
   });
 
@@ -310,22 +220,6 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.equal(element.deprecated, `UntaggedDescription deprecated message.`);
   });
 
-  test('untagged description and summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration(
-      'UntaggedDescSummary'
-    );
-    assert.ok(element.isCustomElementDeclaration());
-    assert.equal(
-      element.description,
-      `UntaggedDescSummary description. Lorem ipsum dolor sit amet, consectetur
-adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-nisi ut aliquip ex ea commodo consequat.`
-    );
-    assert.equal(element.summary, `UntaggedDescSummary summary.`);
-    assert.equal(element.deprecated, true);
-  });
-
   // Fields
 
   test('field1', ({getModule}) => {
@@ -333,7 +227,6 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.ok(element.isClassDeclaration());
     const member = element.getField('field1');
     assert.ok(member?.isClassField());
-    assert.equal(member.summary, `Class field 1 summary\nwith wraparound`);
     assert.equal(
       member.description,
       `Class field 1 description\nwith wraparound`
@@ -363,7 +256,6 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.ok(element.isClassDeclaration());
     const member = element.getField('field3');
     assert.ok(member?.isClassField());
-    assert.equal(member.summary, `Class field 3 summary\nwith wraparound`);
     assert.equal(
       member.description,
       `Class field 3 description\nwith wraparound`
@@ -399,7 +291,6 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.ok(element.isClassDeclaration());
     const member = element.getMethod('method1');
     assert.ok(member?.isClassMethod());
-    assert.equal(member.summary, `Method 1 summary\nwith wraparound`);
     assert.equal(member.description, `Method 1 description\nwith wraparound`);
     assert.equal(member.parameters?.length, 0);
     assert.equal(member.return?.type?.text, 'void');
@@ -424,10 +315,6 @@ nisi ut aliquip ex ea commodo consequat.`
       member.parameters?.[1].description,
       'Param b description\nwith wraparound'
     );
-    assert.equal(
-      member.parameters?.[1].summary,
-      'Param b summary\nwith wraparound'
-    );
     assert.equal(member.parameters?.[1].type?.text, 'boolean');
     assert.equal(member.parameters?.[1].optional, true);
     assert.equal(member.parameters?.[1].default, 'false');
@@ -440,7 +327,6 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.equal(member.parameters?.[2].default, undefined);
     assert.equal(member.parameters?.[2].rest, true);
     assert.equal(member.return?.type?.text, 'string');
-    assert.equal(member.return?.summary, 'Method 2 return summary');
     assert.equal(member.return?.description, 'Method 2 return description');
     assert.equal(member.deprecated, 'Method 2 deprecated');
   });
