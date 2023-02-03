@@ -16,11 +16,14 @@ import {
   AnalyzerInterface,
   DeclarationInfo,
   DeprecatableDescribed,
+  Declaration,
 } from '../model.js';
 import {hasExportModifier} from '../utils.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
+import {getFunctionDeclaration} from './functions.js';
+import {getClassDeclaration, maybeGetAppliedMixin} from './classes.js';
 
 type VariableName =
   | ts.Identifier
@@ -34,9 +37,34 @@ type VariableName =
 const getVariableDeclaration = (
   dec: ts.VariableDeclaration | ts.EnumDeclaration,
   name: ts.Identifier,
+  isConst: boolean,
   jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
-): VariableDeclaration => {
+): Declaration => {
+  // For const variable declarations initialized to functions or classes, we
+  // treat these as FunctionDeclaration and ClassDeclaration, respectively since
+  // they are (mostly) unobservably different to the module consumer and we can
+  // give better docs this way
+  if (
+    ts.isVariableDeclaration(dec) &&
+    isConst &&
+    dec.initializer !== undefined
+  ) {
+    const {initializer} = dec;
+    if (
+      ts.isArrowFunction(initializer) ||
+      ts.isFunctionExpression(initializer)
+    ) {
+      return getFunctionDeclaration(initializer, name.getText(), analyzer);
+    } else if (ts.isClassExpression(initializer)) {
+      return getClassDeclaration(initializer, false, analyzer);
+    } else {
+      const classDec = maybeGetAppliedMixin(initializer, name, analyzer);
+      if (classDec !== undefined) {
+        return classDec;
+      }
+    }
+  }
   return new VariableDeclaration({
     name: name.text,
     node: dec,
@@ -55,9 +83,18 @@ export const getVariableDeclarationInfo = (
 ): DeclarationInfo[] => {
   const isExport = hasExportModifier(statement);
   const jsDocInfo = parseNodeJSDocInfo(statement);
-  return statement.declarationList.declarations
+  const {declarationList} = statement;
+  const isConst = Boolean(declarationList.flags & ts.NodeFlags.Const);
+  return declarationList.declarations
     .map((d) =>
-      getVariableDeclarationInfoList(d, d.name, isExport, jsDocInfo, analyzer)
+      getVariableDeclarationInfoList(
+        d,
+        d.name,
+        isExport,
+        isConst,
+        jsDocInfo,
+        analyzer
+      )
     )
     .flat();
 };
@@ -71,6 +108,7 @@ const getVariableDeclarationInfoList = (
   dec: ts.VariableDeclaration,
   name: VariableName,
   isExport: boolean,
+  isConst: boolean,
   jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
@@ -78,7 +116,8 @@ const getVariableDeclarationInfoList = (
     return [
       {
         name: name.text,
-        factory: () => getVariableDeclaration(dec, name, jsDocInfo, analyzer),
+        factory: () =>
+          getVariableDeclaration(dec, name, isConst, jsDocInfo, analyzer),
         isExport,
       },
     ];
@@ -97,6 +136,7 @@ const getVariableDeclarationInfoList = (
           dec,
           el.name,
           isExport,
+          isConst,
           jsDocInfo,
           analyzer
         )
@@ -153,7 +193,13 @@ export const getEnumDeclarationInfo = (
   return {
     name: statement.name.text,
     factory: () =>
-      getVariableDeclaration(statement, statement.name, jsDocInfo, analyzer),
+      getVariableDeclaration(
+        statement,
+        statement.name,
+        false,
+        jsDocInfo,
+        analyzer
+      ),
     isExport: hasExportModifier(statement),
   };
 };

@@ -38,7 +38,7 @@ export const getLitElementDeclaration = (
     node: declaration,
     reactiveProperties: getProperties(declaration, analyzer),
     ...getJSDocData(declaration, analyzer),
-    getHeritage: () => getHeritage(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, false, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
 };
@@ -165,12 +165,11 @@ export const isLitElementSubclass = (
   const checker = analyzer.program.getTypeChecker();
   const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
   const baseTypes = checker.getBaseTypes(type);
-  for (const t of baseTypes) {
-    if (_isLitElementClassDeclaration(t, analyzer)) {
-      return true;
-    }
-  }
-  return false;
+  return baseTypes.some((t) =>
+    t.isIntersection()
+      ? t.types.some((t) => _isLitElementClassDeclaration(t, analyzer))
+      : _isLitElementClassDeclaration(t, analyzer)
+  );
 };
 
 /**

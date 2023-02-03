@@ -297,6 +297,9 @@ export abstract class Declaration {
   isFunctionDeclaration(): this is FunctionDeclaration {
     return this instanceof FunctionDeclaration;
   }
+  isMixinDeclaration(): this is MixinDeclaration {
+    return this instanceof MixinDeclaration;
+  }
   isClassField(): this is ClassField {
     return this instanceof ClassField;
   }
@@ -401,14 +404,17 @@ export type ClassHeritage = {
 };
 
 export interface ClassDeclarationInit extends DeclarationInit {
-  node: ts.ClassDeclaration;
+  node: ts.ClassDeclaration | ts.ClassLikeDeclaration | ts.CallExpression;
   getHeritage: () => ClassHeritage;
   fieldMap?: Map<string, ClassField> | undefined;
   methodMap?: Map<string, ClassMethod> | undefined;
 }
 
 export class ClassDeclaration extends Declaration {
-  readonly node: ts.ClassDeclaration;
+  readonly node:
+    | ts.ClassDeclaration
+    | ts.ClassLikeDeclaration
+    | ts.CallExpression;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
   readonly _fieldMap: Map<string, ClassField>;
@@ -473,6 +479,22 @@ export class ClassDeclaration extends Declaration {
    */
   getMember(name: string): ClassMethod | ClassField | undefined {
     return this.getField(name) ?? this.getMethod(name);
+  }
+}
+
+export interface MixinDeclarationInit extends FunctionLikeInit {
+  node: ts.FunctionLikeDeclaration;
+  classDeclaration: ClassDeclaration;
+  superClassArgIdx: number;
+}
+
+export class MixinDeclaration extends FunctionDeclaration {
+  readonly classDeclaration: ClassDeclaration;
+  readonly superClassArgIdx: number;
+  constructor(init: MixinDeclarationInit) {
+    super(init);
+    this.classDeclaration = init.classDeclaration;
+    this.superClassArgIdx = init.superClassArgIdx;
   }
 }
 

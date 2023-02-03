@@ -20,6 +20,7 @@ import {
   Reference,
   ClassField,
   ClassMethod,
+  MixinDeclaration,
 } from '../model.js';
 import {
   isLitElementSubclass,
@@ -40,8 +41,9 @@ import {getTypeForNode} from '../types.js';
  * Returns an analyzer `ClassDeclaration` model for the given
  * ts.ClassDeclaration.
  */
-const getClassDeclaration = (
-  declaration: ts.ClassDeclaration,
+export const getClassDeclaration = (
+  declaration: ts.ClassLikeDeclaration,
+  isMixinClass: boolean,
   analyzer: AnalyzerInterface
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
@@ -51,7 +53,7 @@ const getClassDeclaration = (
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
-    getHeritage: () => getHeritage(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, isMixinClass, analyzer),
     ...parseNodeJSDocInfo(declaration),
     ...getClassMembers(declaration, analyzer),
   });
@@ -61,7 +63,7 @@ const getClassDeclaration = (
  * Returns the `fields` and `methods` of a class.
  */
 export const getClassMembers = (
-  declaration: ts.ClassDeclaration,
+  declaration: ts.ClassLikeDeclaration,
   analyzer: AnalyzerInterface
 ) => {
   const fieldMap = new Map<string, ClassField>();
@@ -129,7 +131,7 @@ export const getClassDeclarationInfo = (
 ): DeclarationInfo => {
   return {
     name: getClassDeclarationName(declaration),
-    factory: () => getClassDeclaration(declaration, analyzer),
+    factory: () => getClassDeclaration(declaration, false, analyzer),
     isExport: hasExportModifier(declaration),
   };
 };
@@ -139,6 +141,7 @@ export const getClassDeclarationInfo = (
  */
 export const getHeritage = (
   declaration: ts.ClassLikeDeclarationBase,
+  isMixinClass: boolean,
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
@@ -153,6 +156,7 @@ export const getHeritage = (
     }
     return getHeritageFromExpression(
       extendsClause.types[0].expression,
+      isMixinClass,
       analyzer
     );
   }
@@ -165,28 +169,68 @@ export const getHeritage = (
 
 export const getHeritageFromExpression = (
   expression: ts.Expression,
+  isMixinClass: boolean,
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
   // TODO(kschaaf): Support for extracting mixing applications from the heritage
   // expression https://github.com/lit/lit/issues/2998
   const mixins: Reference[] = [];
-  const superClass = getSuperClass(expression, analyzer);
+  const superClass = getSuperClassAndMixins(expression, mixins, analyzer);
   return {
-    superClass,
+    superClass: isMixinClass ? undefined : superClass,
     mixins,
   };
 };
 
-export const getSuperClass = (
+export const getSuperClassAndMixins = (
   expression: ts.Expression,
+  foundMixins: Reference[],
   analyzer: AnalyzerInterface
 ): Reference => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
   if (ts.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
+  } else if (
+    ts.isCallExpression(expression) &&
+    ts.isIdentifier(expression.expression)
+  ) {
+    const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
+    // We need to eagerly dereference a mixin ref to know what argument the
+    // super class is passed into
+    const mixin = mixinRef.dereference(MixinDeclaration);
+    if (mixin === undefined) {
+      throw new DiagnosticsError(
+        expression.expression,
+        `This is presumed to be a mixin but could it was not included in ` +
+          `the source files of this package and no custom-elements.json ` +
+          `was found for it.`
+      );
+    }
+    foundMixins.push(mixinRef);
+    const superArg = expression.arguments[mixin.superClassArgIdx];
+    const superClass = getSuperClassAndMixins(superArg, foundMixins, analyzer);
+    return superClass;
   }
   throw new DiagnosticsError(
     expression,
-    `Expected expression to be a concrete superclass. Mixins are not yet supported.`
+    `Expected expression to either be a concrete superclass or a mixin`
   );
+};
+
+export const maybeGetAppliedMixin = (
+  expression: ts.Expression,
+  identifier: ts.Identifier,
+  analyzer: AnalyzerInterface
+): ClassDeclaration | undefined => {
+  if (ts.isCallExpression(expression)) {
+    const heritage = getHeritageFromExpression(expression, false, analyzer);
+    if (heritage.superClass) {
+      return new ClassDeclaration({
+        name: identifier.text,
+        node: expression,
+        getHeritage: () => heritage,
+      });
+    }
+  }
+  return undefined;
 };
