@@ -28,6 +28,8 @@ export interface Logger {
 export const loggerContext = createContext<Logger>('logger');
 ```
 
+---
+
 ### Providing (Defining) a Context
 
 We want to be able to provide this context from somewhere higher in the DOM.
@@ -58,7 +60,7 @@ export class MyApp extends LitElement {
 ```
 
 <details>
-<summary>**We can also use the `ContextProvider` controller directly**</summary>
+<summary><b>We can also use the `ContextProvider` controller directly</b></summary>
 
 #### **`my-app.ts`**:
 
@@ -88,6 +90,8 @@ export class MyApp extends LitElement {
 
 </details>
 
+---
+
 ### Consuming a Context
 
 Now we can define a consumer for this context - some component in our app needs the logger.
@@ -114,7 +118,7 @@ export class MyElement extends LitElement {
 ```
 
 <details>
-<summary>Another way we can use a context in a component is via the `ContextConsumer` controller directly**</summary>
+<summary><b>Another way we can use a context in a component is via the `ContextConsumer` controller directly</b></summary>
 
 #### **`my-element.ts`**:
 
@@ -138,6 +142,8 @@ export class MyElement extends LitElement {
 ```
 
 </details>
+
+---
 
 ## Known Issues
 
