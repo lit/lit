@@ -35,6 +35,10 @@ import {
 } from '../utils.js';
 import {getFunctionLikeInfo} from './functions.js';
 import {getTypeForNode} from '../types.js';
+import {
+  isCustomElementSubclass,
+  getCustomElementDeclaration,
+} from '../custom-elements/custom-elements.js';
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -46,6 +50,9 @@ const getClassDeclaration = (
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
     return getLitElementDeclaration(declaration, analyzer);
+  }
+  if (isCustomElementSubclass(declaration, analyzer)) {
+    return getCustomElementDeclaration(declaration, analyzer);
   }
   return new ClassDeclaration({
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
