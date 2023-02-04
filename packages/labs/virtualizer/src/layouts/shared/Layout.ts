@@ -39,13 +39,73 @@ export type Positions = {
   yOffset?: number;
 };
 
-export type LayoutConstructor = new (config?: object) => Layout;
+export interface Range {
+  first: number;
+  last: number;
+}
+export interface InternalRange extends Range {
+  firstVisible: number;
+  lastVisible: number;
+}
+
+export interface StateChangedMessage {
+  type: 'stateChanged';
+  scrollSize: Size;
+  range: InternalRange;
+  childPositions: ChildPositions;
+  scrollError?: Positions;
+}
+
+export interface VisibilityChangedMessage {
+  type: 'visibilityChanged';
+  firstVisible: number;
+  lastVisible: number;
+}
+
+export interface UnpinnedMessage {
+  type: 'unpinned';
+}
+
+export type LayoutHostMessage =
+  | StateChangedMessage
+  | UnpinnedMessage
+  | VisibilityChangedMessage;
+
+export type LayoutHostSink = (message: LayoutHostMessage) => void;
+
+export type ChildPositions = Map<number, Positions>;
+
+export type ChildMeasurements = {[key: number]: ItemBox};
+
+export type MeasureChildFunction = <T>(element: Element, item: T) => ItemBox;
+
+export interface PinOptions {
+  index: number;
+  block?: ScrollLogicalPosition;
+}
+
+export type LayoutConstructor = new (
+  sink: LayoutHostSink,
+  config?: object
+) => Layout;
 
 export interface LayoutSpecifier {
   type: LayoutConstructor;
 }
 
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
+
+export interface BaseLayoutConfig {
+  direction?: ScrollDirection;
+  pin?: PinOptions;
+}
+
+export type LayoutConfigValue = LayoutSpecifier | BaseLayoutConfig;
+
+export interface ScrollToCoordinates {
+  top?: number;
+  left?: number;
+}
 
 export type ScrollDirection = 'vertical' | 'horizontal';
 
@@ -55,7 +115,7 @@ export type ScrollDirection = 'vertical' | 'horizontal';
 export interface Layout {
   config?: object;
 
-  totalItems: number;
+  items: unknown[];
 
   direction: ScrollDirection;
 
@@ -63,17 +123,21 @@ export interface Layout {
 
   viewportScroll: Positions;
 
-  readonly measureChildren?: boolean | ((e: Element, i: unknown) => ItemBox);
+  totalScrollSize: Size;
+
+  offsetWithinScroller: Positions;
+
+  readonly measureChildren?: boolean | MeasureChildFunction;
 
   readonly listenForChildLoadEvents?: boolean;
 
-  updateItemSizes?: (sizes: {[key: number]: ItemBox}) => void;
+  updateItemSizes?: (sizes: ChildMeasurements) => void;
 
-  addEventListener: Function;
+  pin: PinOptions | null;
 
-  removeEventListener: Function;
+  unpin: Function;
 
-  scrollToIndex: (index: number, position: string) => void;
+  getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
   /**
    * Called by a Virtualizer when an update that
@@ -119,5 +183,5 @@ export interface Layout {
    *       width: number,
    *     }
    */
-  reflowIfNeeded: (force: boolean) => void;
+  reflowIfNeeded: (force?: boolean) => void;
 }

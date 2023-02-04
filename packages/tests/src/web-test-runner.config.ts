@@ -38,7 +38,7 @@ const browserPresets = {
   sauce: [
     'sauce:Windows 10/Firefox@91', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-2',
-    'sauce:macOS 10.15/Safari@latest',
+    'sauce:macOS 11/Safari@latest',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
@@ -234,7 +234,7 @@ const config: TestRunnerConfig = {
           // lit and labs/testing don't have a dev mode
           !context.url.includes('/packages/lit/') &&
           !context.url.includes('/packages/labs/testing/') &&
-          // some 3rd party modles can come from e.g. /packages/node_modules/*
+          // some 3rd party modules can come from e.g. /packages/node_modules/*
           !context.url.includes('/node_modules/')
         ) {
           console.log('Unexpected prod request in dev mode:', context.url);

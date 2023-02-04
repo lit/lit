@@ -49,7 +49,7 @@ export class Test1 extends LitElement {
           await this._router.goto('/' + path);
 
           // Tell the router to cancel the original navigation to make it
-          // re-entrant safe. It'll be better if we can detect re-entrant calls
+          // reentrant safe. It'll be better if we can detect reentrant calls
           // to goto() and do this automatically.
           return false;
         },

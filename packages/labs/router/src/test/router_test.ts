@@ -199,4 +199,59 @@ const canTest =
       '<h2>Not Found</h2>'
     );
   });
+
+  test('link() returns URL string including parent route', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    assert.equal(el._router.link(), '/child1/');
+    assert.equal(child1._routes.link(), '/child1/def');
+  });
+
+  test('link() can replace local path', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    assert.equal(child1._routes.link('local_path'), `/child1/local_path`);
+  });
+
+  test(`link() with local absolute path doesn't include parent route`, async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    assert.equal(
+      child1._routes.link('/local_absolute_path'),
+      '/local_absolute_path'
+    );
+  });
 });

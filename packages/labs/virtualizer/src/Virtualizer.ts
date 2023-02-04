@@ -4,62 +4,54 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import {
   ItemBox,
   Margins,
+  LayoutConfigValue,
+  ChildPositions,
+  ChildMeasurements,
   Layout,
-  Positions,
   LayoutConstructor,
   LayoutSpecifier,
+  StateChangedMessage,
+  Size,
+  InternalRange,
+  MeasureChildFunction,
+  ScrollToCoordinates,
+  BaseLayoutConfig,
+  LayoutHostMessage,
 } from './layouts/shared/Layout.js';
+import {
+  RangeChangedEvent,
+  VisibilityChangedEvent,
+  UnpinnedEvent,
+} from './events.js';
+import {ScrollerController} from './ScrollerController.js';
+
+// Virtualizer depends on `ResizeObserver`, which is supported in
+// all modern browsers. For developers whose browser support
+// matrix includes older browsers, we include a compatible
+// polyfill in the package; this bit of module state facilitates
+// a simple mechanism (see ./polyfillLoaders/ResizeObserver.js.)
+// for loading the polyfill.
+let _ResizeObserver: typeof ResizeObserver | undefined = window?.ResizeObserver;
+
+/**
+ * Call this function to provide a `ResizeObserver` polyfill for Virtualizer to use.
+ * @param Ctor Constructor for a `ResizeObserver` polyfill (recommend using the one provided with the Virtualizer package)
+ */
+export function provideResizeObserver(Ctor: typeof ResizeObserver) {
+  _ResizeObserver = Ctor;
+}
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
-
-interface InternalRange {
-  first: number;
-  last: number;
-  num: number;
-  firstVisible: number;
-  lastVisible: number;
-}
-
-interface Range {
-  first: number;
-  last: number;
-}
-
-export class RangeChangedEvent extends Event {
-  static eventName = 'rangeChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(RangeChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
-}
-
-export class VisibilityChangedEvent extends Event {
-  static eventName = 'visibilityChanged';
-
-  first: number;
-  last: number;
-
-  constructor(range: Range) {
-    super(VisibilityChangedEvent.eventName, {bubbles: true});
-    this.first = range.first;
-    this.last = range.last;
-  }
-}
 
 declare global {
   interface HTMLElementEventMap {
     rangeChanged: RangeChangedEvent;
     visibilityChanged: VisibilityChangedEvent;
+    unpinned: UnpinnedEvent;
   }
 }
 
@@ -67,17 +59,27 @@ export interface VirtualizerHostElement extends HTMLElement {
   [virtualizerRef]?: Virtualizer;
 }
 
-interface ScrollSize {
-  height: number | null;
-  width: number | null;
+/**
+ * A very limited proxy object for a virtualizer child,
+ * returned by Virtualizer.element(idx: number). Introduced
+ * to enable scrolling a virtual element into view using
+ * a call that looks and behaves essentially the same as for
+ * a real Element. May be useful for other things later.
+ */
+export interface VirtualizerChildElementProxy {
+  scrollIntoView: (options?: ScrollIntoViewOptions) => void;
 }
 
-type ChildMeasurements = {[key: number]: ItemBox};
-
-export type ScrollToIndexValue = {index: number; position?: string} | null;
+/**
+ * Used internally for scrolling a (possibly virtual) element
+ * into view, given its index
+ */
+interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
+  index: number;
+}
 
 export interface VirtualizerConfig {
-  layout?: Layout | LayoutConstructor | LayoutSpecifier | null;
+  layout?: LayoutConfigValue;
 
   /**
    * The parent of all child nodes to be rendered.
@@ -86,6 +88,8 @@ export interface VirtualizerConfig {
 
   scroller?: boolean;
 }
+
+let DefaultLayoutConstructor: LayoutConstructor;
 
 /**
  * Provides virtual scrolling boilerplate.
@@ -97,21 +101,16 @@ export interface VirtualizerConfig {
  */
 export class Virtualizer {
   private _benchmarkStart: number | null = null;
-  /**
-   * Whether the layout should receive an updated viewport size on the next
-   * render.
-   */
-  // private _needsUpdateView: boolean = false;
 
   private _layout: Layout | null = null;
 
-  private _clippingAncestors: Element[] = [];
+  private _clippingAncestors: HTMLElement[] = [];
 
   /**
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: ScrollSize | null = null;
+  private _scrollSize: Size | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
@@ -122,7 +121,7 @@ export class Virtualizer {
   /**
    * A list of the positions (top, left) of the children in the current range.
    */
-  private _childrenPos: Array<{top: number; left: number}> | null = null;
+  private _childrenPos: ChildPositions | null = null;
 
   // TODO: (graynorton): type
   private _childMeasurements: ChildMeasurements | null = null;
@@ -140,6 +139,8 @@ export class Virtualizer {
    */
   protected _hostElement?: VirtualizerHostElement;
 
+  private _scrollerController: ScrollerController | null = null;
+
   private _isScroller = false;
 
   private _sizer: HTMLElement | null = null;
@@ -155,9 +156,6 @@ export class Virtualizer {
   private _childrenRO: ResizeObserver | null = null;
 
   private _mutationObserver: MutationObserver | null = null;
-  private _mutationPromise: Promise<void> | null = null;
-  private _mutationPromiseResolver: Function | null = null;
-  private _mutationsObserved = false;
 
   private _scrollEventListeners: (Element | Window)[] = [];
   private _scrollEventListenerOptions: AddEventListenerOptions = {
@@ -169,9 +167,15 @@ export class Virtualizer {
   private _loadListener = this._childLoaded.bind(this);
 
   /**
-   * Index and position of item to scroll to.
+   * Index of element to scroll into view, plus scroll
+   * behavior options, as imperatively specified via
+   * `element(index).scrollIntoView()`
    */
-  private _scrollToIndex: ScrollToIndexValue = null;
+  private _scrollIntoViewTarget: ScrollElementIntoViewOptions | null = null;
+
+  private _updateScrollIntoViewCoordinates:
+    | ((coordinates: ScrollToCoordinates) => void)
+    | null = null;
 
   /**
    * Items to render. Set by items.
@@ -209,9 +213,22 @@ export class Virtualizer {
   protected _measureCallback: ((sizes: ChildMeasurements) => void) | null =
     null;
 
-  protected _measureChildOverride:
-    | (<T>(element: Element, item: T) => ItemBox)
-    | null = null;
+  protected _measureChildOverride: MeasureChildFunction | null = null;
+
+  /**
+   * State for `layoutComplete` promise
+   */
+  private _layoutCompletePromise: Promise<void> | null = null;
+  private _layoutCompleteResolver: Function | null = null;
+  private _layoutCompleteRejecter: Function | null = null;
+  private _pendingLayoutComplete: number | null = null;
+
+  /**
+   * Layout initialization is async because we dynamically load
+   * the default layout if none is specified. This state is to track
+   * whether init is complete.
+   */
+  private _layoutInitialized: Promise<void> | null = null;
 
   constructor(config: VirtualizerConfig) {
     if (!config) {
@@ -239,26 +256,25 @@ export class Virtualizer {
   _init(config: VirtualizerConfig) {
     this._isScroller = !!config.scroller;
     this._initHostElement(config);
-    this._initLayout(config);
+    // If no layout is specified, we make an empty
+    // layout config, which will result in the default
+    // layout with default parameters
+    const layoutConfig = config.layout || ({} as BaseLayoutConfig);
+    // Save the promise returned by `_initLayout` as a state
+    // variable we can check before updating layout config
+    this._layoutInitialized = this._initLayout(layoutConfig);
   }
 
-  private async _initObservers() {
+  private _initObservers() {
     this._mutationObserver = new MutationObserver(
-      this._observeMutations.bind(this)
+      this._finishDOMUpdate.bind(this)
     );
-    const ResizeObserver = await getResizeObserver();
-    this._hostElementRO = new ResizeObserver(() =>
+    this._hostElementRO = new _ResizeObserver!(() =>
       this._hostElementSizeChanged()
     );
-    this._childrenRO = new ResizeObserver(this._childrenSizeChanged.bind(this));
-  }
-
-  async _initLayout(config: VirtualizerConfig) {
-    if (config.layout) {
-      this.layout = config.layout;
-    } else {
-      this.layout = (await import('./layouts/flow.js')).FlowLayout;
-    }
+    this._childrenRO = new _ResizeObserver!(
+      this._childrenSizeChanged.bind(this)
+    );
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -267,22 +283,25 @@ export class Virtualizer {
     hostElement[virtualizerRef] = this;
   }
 
-  async connected() {
-    await this._initObservers();
+  connected() {
+    this._initObservers();
     const includeSelf = this._isScroller;
     this._clippingAncestors = getClippingAncestors(
       this._hostElement!,
       includeSelf
     );
+
+    this._scrollerController = new ScrollerController(
+      this,
+      this._clippingAncestors[0]
+    );
+
     this._schedule(this._updateLayout);
     this._observeAndListen();
   }
 
   _observeAndListen() {
     this._mutationObserver!.observe(this._hostElement!, {childList: true});
-    this._mutationPromise = new Promise(
-      (resolve) => (this._mutationPromiseResolver = resolve)
-    );
     this._hostElementRO!.observe(this._hostElement!);
     this._scrollEventListeners.push(window);
     window.addEventListener('scroll', this, this._scrollEventListenerOptions);
@@ -295,6 +314,7 @@ export class Virtualizer {
       this._scrollEventListeners.push(ancestor);
       this._hostElementRO!.observe(ancestor);
     });
+    this._hostElementRO!.observe(this._scrollerController!.element);
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._scrollEventListeners.forEach((target) =>
       target.addEventListener('scroll', this, this._scrollEventListenerOptions)
@@ -311,9 +331,11 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
+    this._scrollerController = this._scrollerController!.detach(this) || null;
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();
     this._childrenRO!.disconnect();
+    this._rejectLayoutCompletePromise('disconnected');
   }
 
   private _applyVirtualizerStyles() {
@@ -325,7 +347,7 @@ export class Virtualizer {
     const style = hostElement.style as CSSStyleDeclaration & {contain: string};
     style.display = style.display || 'block';
     style.position = style.position || 'relative';
-    style.contain = style.contain || 'strict';
+    style.contain = style.contain || 'size layout';
 
     if (this._isScroller) {
       style.overflow = style.overflow || 'auto';
@@ -336,7 +358,7 @@ export class Virtualizer {
   _getSizer() {
     const hostElement = this._hostElement!;
     if (!this._sizer) {
-      // Use a pre-existing sizer element if provided (for better integration
+      // Use a preexisting sizer element if provided (for better integration
       // with vDOM renderers)
       let sizer = hostElement.querySelector(
         `[${SIZER_ATTRIBUTE}]`
@@ -362,76 +384,78 @@ export class Virtualizer {
     return this._sizer;
   }
 
-  // This will always actually return a layout instance,
-  // but TypeScript wants the getter and setter types to be the same
-  get layout(): Layout | LayoutConstructor | LayoutSpecifier | null {
-    return this._layout;
+  async updateLayoutConfig(layoutConfig: LayoutConfigValue) {
+    // If layout initialization hasn't finished yet, we wait
+    // for it to finish so we can check whether the new config
+    // is compatible with the existing layout before proceeding.
+    await this._layoutInitialized;
+    const Ctor =
+      ((layoutConfig as LayoutSpecifier).type as LayoutConstructor) ||
+      // The new config is compatible with the current layout,
+      // so we update the config and return true to indicate
+      // a successful update
+      DefaultLayoutConstructor;
+    if (typeof Ctor === 'function' && this._layout instanceof Ctor) {
+      const config = {...(layoutConfig as LayoutSpecifier)} as {
+        type?: LayoutConstructor;
+      };
+      delete config.type;
+      this._layout.config = config as BaseLayoutConfig;
+      // The new config requires a different layout altogether, but
+      // to limit implementation complexity we don't support dynamically
+      // changing the layout of an existing virtualizer instance.
+      // Returning false here lets the caller know that they should
+      // instead make a new virtualizer instance with the desired layout.
+      return true;
+    }
+    return false;
   }
 
-  // TODO (graynorton): Consider not allowing dynamic layout changes and
-  // instead just creating a new Virtualizer instance when a layout
-  // change is desired. Might simplify quite a bit.
-  set layout(layout: Layout | LayoutConstructor | LayoutSpecifier | null) {
-    if (this._layout === layout) {
-      return;
-    }
-
-    let _layout: LayoutConstructor | Layout | null = null;
-    let _config: object = {};
-
-    if (typeof layout === 'object') {
-      if ((layout as LayoutSpecifier).type !== undefined) {
-        _layout = (layout as LayoutSpecifier).type;
-        // delete (layout as LayoutSpecifier).type;
-      }
-      _config = layout as object;
+  private async _initLayout(layoutConfig: LayoutConfigValue) {
+    let config: BaseLayoutConfig | undefined;
+    let Ctor: LayoutConstructor | undefined;
+    if (typeof (layoutConfig as LayoutSpecifier).type === 'function') {
+      // If we have a full LayoutSpecifier, the `type` property
+      // gives us our constructor...
+      Ctor = (layoutConfig as LayoutSpecifier).type as LayoutConstructor;
+      // ...while the rest of the specifier is our layout config
+      const copy = {...(layoutConfig as LayoutSpecifier)} as {
+        type?: LayoutConstructor;
+      };
+      delete copy.type;
+      config = copy as BaseLayoutConfig;
     } else {
-      _layout = layout;
+      // If we don't have a full LayoutSpecifier, we just
+      // have a config for the default layout
+      config = layoutConfig as BaseLayoutConfig;
     }
 
-    if (typeof _layout === 'function') {
-      if (this._layout instanceof _layout) {
-        if (_config) {
-          this._layout!.config = _config;
-        }
-        return;
-      } else {
-        _layout = new _layout(_config);
+    if (Ctor === undefined) {
+      // If we don't have a constructor yet, load the default
+      DefaultLayoutConstructor = Ctor = (await import('./layouts/flow.js'))
+        .FlowLayout as unknown as LayoutConstructor;
+    }
+
+    this._layout = new Ctor(
+      (message: LayoutHostMessage) => this._handleLayoutMessage(message),
+      config
+    );
+
+    if (
+      this._layout.measureChildren &&
+      typeof this._layout.updateItemSizes === 'function'
+    ) {
+      if (typeof this._layout.measureChildren === 'function') {
+        this._measureChildOverride = this._layout.measureChildren;
       }
+      this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
 
-    if (this._layout) {
-      this._measureCallback = null;
-      this._measureChildOverride = null;
-      this._layout.removeEventListener('scrollsizechange', this);
-      this._layout.removeEventListener('scrollerrorchange', this);
-      this._layout.removeEventListener('itempositionchange', this);
-      this._layout.removeEventListener('rangechange', this);
-      this._sizeHostElement(undefined);
-      this._hostElement!.removeEventListener('load', this._loadListener, true);
+    if (this._layout.listenForChildLoadEvents) {
+      this._hostElement!.addEventListener('load', this._loadListener, true);
     }
 
-    this._layout = _layout as Layout | null;
-
-    if (this._layout) {
-      if (
-        this._layout.measureChildren &&
-        typeof this._layout.updateItemSizes === 'function'
-      ) {
-        if (typeof this._layout.measureChildren === 'function') {
-          this._measureChildOverride = this._layout.measureChildren;
-        }
-        this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
-      }
-      this._layout.addEventListener('scrollsizechange', this);
-      this._layout.addEventListener('scrollerrorchange', this);
-      this._layout.addEventListener('itempositionchange', this);
-      this._layout.addEventListener('rangechange', this);
-      if (this._layout.listenForChildLoadEvents) {
-        this._hostElement!.addEventListener('load', this._loadListener, true);
-      }
-      this._schedule(this._updateLayout);
-    }
+    this._schedule(this._updateLayout);
   }
 
   // TODO (graynorton): Rework benchmarking so that it has no API and
@@ -469,11 +493,7 @@ export class Virtualizer {
       const child = children[i];
       const idx = this._first + i;
       if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(
-          this,
-          child,
-          this._items[idx] /*as unknown as object*/
-        );
+        mm[idx] = fn.call(this, child, this._items[idx]);
       }
     }
     this._childMeasurements = mm;
@@ -491,15 +511,6 @@ export class Virtualizer {
     return Object.assign({width, height}, getMargins(element));
   }
 
-  /**
-   * Index and position of item to scroll to. The virtualizer will fix to that point
-   * until the user scrolls.
-   */
-  set scrollToIndex(newValue: ScrollToIndexValue) {
-    this._scrollToIndex = newValue;
-    this._schedule(this._updateLayout);
-  }
-
   protected async _schedule(method: Function): Promise<void> {
     if (!this._scheduled.has(method)) {
       this._scheduled.add(method);
@@ -509,7 +520,11 @@ export class Virtualizer {
     }
   }
 
-  async _updateDOM() {
+  async _updateDOM(state: StateChangedMessage) {
+    this._scrollSize = state.scrollSize;
+    this._adjustRange(state.range);
+    this._childrenPos = state.childPositions;
+    this._scrollError = state.scrollError || null;
     const {_rangeChanged, _itemsChanged} = this;
     if (this._visibilityChanged) {
       this._notifyVisibility();
@@ -517,15 +532,18 @@ export class Virtualizer {
     }
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
-      await this._mutationPromise;
+      this._rangeChanged = false;
+    } else {
+      this._finishDOMUpdate();
     }
+  }
+
+  _finishDOMUpdate() {
     this._children.forEach((child) => this._childrenRO!.observe(child));
-    this._positionChildren(this._childrenPos!);
+    this._checkScrollIntoViewTarget(this._childrenPos);
+    this._positionChildren(this._childrenPos);
     this._sizeHostElement(this._scrollSize);
-    if (this._scrollError) {
-      this._correctScrollError(this._scrollError);
-      this._scrollError = null;
-    }
+    this._correctScrollError();
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
     }
@@ -533,14 +551,7 @@ export class Virtualizer {
 
   _updateLayout() {
     if (this._layout) {
-      this._layout!.totalItems = this._items.length;
-      if (this._scrollToIndex !== null) {
-        this._layout!.scrollToIndex(
-          this._scrollToIndex.index,
-          this._scrollToIndex!.position!
-        );
-        this._scrollToIndex = null;
-      }
+      this._layout!.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
         // If the layout has been changed, we may have measurements but no callback
@@ -549,7 +560,7 @@ export class Virtualizer {
         }
         this._childMeasurements = null;
       }
-      this._layout!.reflowIfNeeded(this._itemsChanged);
+      this._layout!.reflowIfNeeded();
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
       }
@@ -565,6 +576,10 @@ export class Virtualizer {
       }
       window.performance.mark('uv-start');
     }
+    if (this._scrollerController!.correctingScrollError === false) {
+      // This is a user-initiated scroll, so we unpin the layout
+      this._layout?.unpin();
+    }
     this._schedule(this._updateLayout);
   }
 
@@ -573,29 +588,21 @@ export class Virtualizer {
       case 'scroll':
         if (
           event.currentTarget === window ||
-          this._clippingAncestors.includes(event.currentTarget as Element)
+          this._clippingAncestors.includes(event.currentTarget as HTMLElement)
         ) {
           this._handleScrollEvent();
         }
         break;
-      case 'scrollsizechange':
-        this._scrollSize = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'scrollerrorchange':
-        this._scrollError = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'itempositionchange':
-        this._childrenPos = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'rangechange':
-        this._adjustRange(event.detail);
-        this._schedule(this._updateDOM);
-        break;
       default:
         console.warn('event not handled', event);
+    }
+  }
+
+  _handleLayoutMessage(message: LayoutHostMessage) {
+    if (message.type === 'stateChanged') {
+      this._updateDOM(message);
+    } else if (message.type === 'unpinned') {
+      this._hostElement!.dispatchEvent(new UnpinnedEvent());
     }
   }
 
@@ -612,41 +619,62 @@ export class Virtualizer {
   }
 
   private _updateView() {
-    const hostElement = this._hostElement!;
-    const layout = this._layout!;
+    const hostElement = this._hostElement;
+    const scrollingElement = this._scrollerController?.element;
+    const layout = this._layout;
 
-    let top, left, bottom, right;
+    if (hostElement && scrollingElement && layout) {
+      let top, left, bottom, right;
 
-    const hostElementBounds = hostElement.getBoundingClientRect();
+      const hostElementBounds = hostElement.getBoundingClientRect();
 
-    top = 0;
-    left = 0;
-    bottom = window.innerHeight;
-    right = window.innerWidth;
+      top = 0;
+      left = 0;
+      bottom = window.innerHeight;
+      right = window.innerWidth;
 
-    for (const ancestor of this._clippingAncestors) {
-      const ancestorBounds = ancestor.getBoundingClientRect();
-      top = Math.max(top, ancestorBounds.top);
-      left = Math.max(left, ancestorBounds.left);
-      bottom = Math.min(bottom, ancestorBounds.bottom);
-      right = Math.min(right, ancestorBounds.right);
+      const ancestorBounds = this._clippingAncestors.map((ancestor) =>
+        ancestor.getBoundingClientRect()
+      );
+      ancestorBounds.unshift(hostElementBounds);
+
+      for (const bounds of ancestorBounds) {
+        top = Math.max(top, bounds.top);
+        left = Math.max(left, bounds.left);
+        bottom = Math.min(bottom, bounds.bottom);
+        right = Math.min(right, bounds.right);
+      }
+
+      const scrollingElementBounds = scrollingElement.getBoundingClientRect();
+
+      const offsetWithinScroller = {
+        left: hostElementBounds.left - scrollingElementBounds.left,
+        top: hostElementBounds.top - scrollingElementBounds.top,
+      };
+
+      const totalScrollSize = {
+        width: scrollingElement.scrollWidth,
+        height: scrollingElement.scrollHeight,
+      };
+
+      const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
+      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+
+      const height = Math.max(1, bottom - top);
+      const width = Math.max(1, right - left);
+
+      layout.viewportSize = {width, height};
+      layout.viewportScroll = {top: scrollTop, left: scrollLeft};
+      layout.totalScrollSize = totalScrollSize;
+      layout.offsetWithinScroller = offsetWithinScroller;
     }
-
-    const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-    const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
-
-    const height = Math.max(1, bottom - top);
-    const width = Math.max(1, right - left);
-
-    layout.viewportSize = {width, height};
-    layout.viewportScroll = {top: scrollTop, left: scrollLeft};
   }
 
   /**
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeHostElement(size?: ScrollSize | null) {
+  private _sizeHostElement(size?: Size | null) {
     // Some browsers seem to crap out if the host element gets larger than
     // a certain size, so we clamp it here (this value based on ad hoc
     // testing in Chrome / Safari / Firefox Mac)
@@ -667,15 +695,11 @@ export class Virtualizer {
    * Sets the top and left transform style of the children from the values in
    * pos.
    */
-  private _positionChildren(pos: Array<Positions>) {
+  private _positionChildren(pos: ChildPositions | null) {
     if (pos) {
-      const children = this._children;
-      Object.keys(pos).forEach((key) => {
-        const idx = (key as unknown as number) - this._first;
-        const child = children[idx];
+      pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
+        const child = this._children[index - this._first];
         if (child) {
-          const {top, left, width, height, xOffset, yOffset} =
-            pos[key as unknown as number];
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
           child.style.transform = `translate(${left}px, ${top}px)`;
@@ -708,15 +732,60 @@ export class Virtualizer {
       this._lastVisible !== _lastVisible;
   }
 
-  private _correctScrollError(err: {top: number; left: number}) {
-    const target = this._clippingAncestors[0];
-    if (target) {
-      target.scrollTop -= err.top;
-      target.scrollLeft -= err.left;
+  private _correctScrollError() {
+    if (this._scrollError) {
+      const {scrollTop, scrollLeft} = this._scrollerController!;
+      const {top, left} = this._scrollError;
+      this._scrollError = null;
+      this._scrollerController!.correctScrollError({
+        top: scrollTop - top,
+        left: scrollLeft - left,
+      });
+    }
+  }
+
+  public element(index: number): VirtualizerChildElementProxy | undefined {
+    if (index === Infinity) {
+      index = this._items.length - 1;
+    }
+    return this._items?.[index] === undefined
+      ? undefined
+      : {
+          scrollIntoView: (options: ScrollIntoViewOptions = {}) =>
+            this._scrollElementIntoView({...options, index}),
+        };
+  }
+
+  private _scrollElementIntoView(options: ScrollElementIntoViewOptions) {
+    if (options.index >= this._first && options.index <= this._last) {
+      this._children[options.index - this._first].scrollIntoView(options);
     } else {
-      window.scroll(
-        window.pageXOffset - err.left,
-        window.pageYOffset - err.top
+      options.index = Math.min(options.index, this._items.length - 1);
+      if (options.behavior === 'smooth') {
+        const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
+        const {behavior} = options;
+        this._updateScrollIntoViewCoordinates =
+          this._scrollerController!.managedScrollTo(
+            Object.assign(coordinates, {behavior}),
+            () => this._layout!.getScrollIntoViewCoordinates(options),
+            () => (this._scrollIntoViewTarget = null)
+          );
+        this._scrollIntoViewTarget = options;
+      } else {
+        this._layout!.pin = options;
+      }
+    }
+  }
+
+  /**
+   * If we are smoothly scrolling to an element and the target element
+   * is in the DOM, we update our target coordinates as needed
+   */
+  private _checkScrollIntoViewTarget(pos: ChildPositions | null) {
+    const {index} = this._scrollIntoViewTarget || {};
+    if (index && pos?.has(index)) {
+      this._updateScrollIntoViewCoordinates!(
+        this._layout!.getScrollIntoViewCoordinates(this._scrollIntoViewTarget!)
       );
     }
   }
@@ -740,23 +809,55 @@ export class Virtualizer {
     );
   }
 
+  public get layoutComplete(): Promise<void> {
+    // Lazily create promise
+    if (!this._layoutCompletePromise) {
+      this._layoutCompletePromise = new Promise((resolve, reject) => {
+        this._layoutCompleteResolver = resolve;
+        this._layoutCompleteRejecter = reject;
+      });
+    }
+    return this._layoutCompletePromise!;
+  }
+
+  private _rejectLayoutCompletePromise(reason: string) {
+    if (this._layoutCompleteRejecter !== null) {
+      this._layoutCompleteRejecter!(reason);
+    }
+    this._resetLayoutCompleteState();
+  }
+
+  private _scheduleLayoutComplete() {
+    // Don't do anything unless we have a pending promise
+    // And only request a frame if we haven't already done so
+    if (this._layoutCompletePromise && this._pendingLayoutComplete === null) {
+      // Wait one additional frame to be sure the layout is stable
+      this._pendingLayoutComplete = requestAnimationFrame(() =>
+        requestAnimationFrame(() => this._resolveLayoutCompletePromise())
+      );
+    }
+  }
+
+  private _resolveLayoutCompletePromise() {
+    if (this._layoutCompleteResolver !== null) {
+      this._layoutCompleteResolver();
+    }
+    this._resetLayoutCompleteState();
+  }
+
+  private _resetLayoutCompleteState() {
+    this._layoutCompletePromise = null;
+    this._layoutCompleteResolver = null;
+    this._layoutCompleteRejecter = null;
+    this._pendingLayoutComplete = null;
+  }
+
   /**
    * Render and update the view at the next opportunity with the given
    * hostElement size.
    */
   private _hostElementSizeChanged() {
     this._schedule(this._updateLayout);
-  }
-
-  private async _observeMutations() {
-    if (!this._mutationsObserved) {
-      this._mutationsObserved = true;
-      this._mutationPromiseResolver!();
-      this._mutationPromise = new Promise(
-        (resolve) => (this._mutationPromiseResolver = resolve)
-      );
-      this._mutationsObserved = false;
-    }
   }
 
   // TODO (graynorton): Rethink how this works. Probably child loading is too specific
@@ -786,6 +887,7 @@ export class Virtualizer {
     // internal state. This should be a harmless no-op if we're handling
     // an out-of-cycle ResizeObserver callback, so we don't need to
     // distinguish between the two cases.
+    this._scheduleLayoutComplete();
     this._itemsChanged = false;
     this._rangeChanged = false;
   }
@@ -808,6 +910,9 @@ function getMarginValue(value: string): number {
 
 // TODO (graynorton): Deal with iframes?
 function getParentElement(el: Element) {
+  if (el.assignedSlot !== null) {
+    return el.assignedSlot;
+  }
   if (el.parentElement !== null) {
     return el.parentElement;
   }
@@ -818,17 +923,19 @@ function getParentElement(el: Element) {
   return null;
 }
 
-function getElementAncestors(el: Element, includeSelf = false) {
+///
+
+function getElementAncestors(el: HTMLElement, includeSelf = false) {
   const ancestors = [];
-  let parent = includeSelf ? el : getParentElement(el);
+  let parent = includeSelf ? el : (getParentElement(el) as HTMLElement);
   while (parent !== null) {
     ancestors.push(parent);
-    parent = getParentElement(parent);
+    parent = getParentElement(parent) as HTMLElement;
   }
   return ancestors;
 }
 
-function getClippingAncestors(el: Element, includeSelf = false) {
+function getClippingAncestors(el: HTMLElement, includeSelf = false) {
   return getElementAncestors(el, includeSelf).filter(
     (a) => getComputedStyle(a).overflow !== 'visible'
   );

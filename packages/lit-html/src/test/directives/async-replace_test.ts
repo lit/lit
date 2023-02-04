@@ -230,7 +230,7 @@ suite('asyncReplace', () => {
   });
 
   suite('disconnection', () => {
-    test('does not render when iterable resolves while while disconnected', async () => {
+    test('does not render when iterable resolves while disconnected', async () => {
       const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
       const part = render(component(iterable), container);
       await iterable.push('1');

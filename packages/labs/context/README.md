@@ -32,18 +32,18 @@ export const loggerContext = createContext<Logger>('logger');
 
 Now we can define a consumer for this context - some component in our app needs the logger.
 
-Here we're using the `@contextProvided` property decorator to make a `ContextConsumer` controller
+Here we're using the `@consume` property decorator to make a `ContextConsumer` controller
 and update its value when the context changes:
 
 #### **`my-element.ts`**:
 
 ```ts
-import {contextRequest} from '@lit-labs/context';
 import {LitElement, property} from 'lit';
+import {consume} from '@lit-labs/context';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
-  @contextProvided({context: loggerContext, subscribe: true})
+  @consume({context: loggerContext, subscribe: true})
   @property({attribute: false})
   public logger?: Logger;
 
@@ -58,8 +58,8 @@ Another way we can use a context in a component is via the `ContextConsumer` con
 #### **`my-element.ts`**:
 
 ```ts
-import {ContextConsumer, property} from '@lit-labs/context';
-import {LitElement} from 'lit';
+import {LitElement, property} from 'lit';
+import {ContextConsumer} from '@lit-labs/context';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
@@ -80,18 +80,18 @@ export class MyElement extends LitElement {
 
 Finally we want to be able to provide this context from somewhere higher in the DOM.
 
-Here we're using a `@contextProvider` property decorator to make a `ContextProvider`
+Here we're using a `@provide` property decorator to make a `ContextProvider`
 controller and update its value when the property value changes.
 
 #### **`my-app.ts`**:
 
 ```ts
-import {LitElement} from 'lit';
-import {contextProvider} from '@lit-labs/context';
-import {loggerContext, Logger} from './my-logger.js';
+import {LitElement, property, html} from 'lit';
+import {provide} from '@lit-labs/context';
+import {loggerContext, Logger} from './logger.js';
 
 export class MyApp extends LitElement {
-  @contextProvider({context: loggerContext})
+  @provide({context: loggerContext})
   @property({attribute: false})
   public logger: Logger = {
     log: (msg) => {
@@ -110,9 +110,9 @@ We can also use the `ContextProvider` controller directly:
 #### **`my-app.ts`**:
 
 ```ts
-import {LitElement} from 'lit';
+import {LitElement, html} from 'lit';
 import {ContextProvider} from '@lit-labs/context';
-import {loggerContext, Logger} from './my-logger.js';
+import {loggerContext, Logger} from './logger.js';
 
 export class MyApp extends LitElement {
   // create a provider controller and a default logger
@@ -153,7 +153,9 @@ root.attach(document.body);
 
 The `ContextRoot` can be attached to any element and it will gather a list of any context requests which are received at the attached element. The `ContextProvider` controllers will emit `context-provider` events when they are connected to the DOM. These events act as triggers for the `ContextRoot` to redispatch these `context-request` events from their sources.
 
-This solution has a small overhead, in that if a provider is not within the DOM hierarchy of the unsatisfied requests we are unnecessarily refiring these requests, but this approach is safest and most correct in that it is very hard to manage stable DOM hierarchies with the semantics of slotting and reparenting that is common in web components implementations.
+This solution has a small overhead, in that if a provider is not within the DOM hierarchy of the unsatisfied requests we are unnecessarily refiring these requests, but this approach is safest and most correct in that it is very hard to manage unstable DOM hierarchies with the semantics of slotting and reparenting that is common in web components implementations.
+
+Note that ContextRoot uses [WeakRefs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) which are not supported in IE11.
 
 ## Contributing
 

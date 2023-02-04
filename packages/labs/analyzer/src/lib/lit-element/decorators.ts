@@ -7,7 +7,7 @@
 /**
  * @fileoverview
  *
- * Utilities for working with ReactiveElement decorators.
+ * Utilities for analyzing ReactiveElement decorators.
  */
 
 import ts from 'typescript';

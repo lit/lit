@@ -27,7 +27,7 @@ suite('Task', () => {
     b: string;
     c?: string;
     resolveTask: () => void;
-    rejectTask: () => void;
+    rejectTask: (error?: string) => void;
     taskValue?: string;
     renderedStatus?: string;
   }
@@ -46,7 +46,7 @@ suite('Task', () => {
       c?: string;
 
       resolveTask!: () => void;
-      rejectTask!: () => void;
+      rejectTask!: (error?: string) => void;
 
       taskValue?: string;
       renderedStatus?: string;
@@ -56,7 +56,7 @@ suite('Task', () => {
         const taskConfig = {
           task: (...args: unknown[]) =>
             new Promise((resolve, reject) => {
-              this.rejectTask = () => reject(`error`);
+              this.rejectTask = (error = 'error') => reject(error);
               this.resolveTask = () => resolve(args.join(','));
             }),
         };
@@ -303,7 +303,7 @@ suite('Task', () => {
     await renderElement(el);
     assert.equal(el.task.status, TaskStatus.PENDING);
 
-    // Catch the rejection to supress uncaught rejection warnings
+    // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Task error reported.
     el.rejectTask();
@@ -330,7 +330,7 @@ suite('Task', () => {
     el.a = 'a2';
     el.b = 'b2';
     await tasksUpdateComplete();
-    // Catch the rejection to supress uncaught rejection warnings
+    // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     el.rejectTask();
     await tasksUpdateComplete();
@@ -396,7 +396,7 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'pending');
 
-    // Catch the rejection to supress uncaught rejection warnings
+    // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
     el.rejectTask();
@@ -452,10 +452,80 @@ suite('Task', () => {
       task = new Task(
         this,
         ([a, b]) => [a * 2, b.split('')],
-        // Make sure that we can use `as const` to force inferece of the args
+        // Make sure that we can use `as const` to force inference of the args
         // as [number, string] instead of (number | string)[]
         () => [1, 'b'] as const
       );
     };
+  });
+
+  test('onComplete callback is called', async () => {
+    let numOnCompleteInvocations = 0;
+    let lastOnCompleteResult: string | undefined = undefined;
+    const el = getTestElement({
+      args: () => [el.a, el.b],
+      onComplete: (result) => {
+        numOnCompleteInvocations++;
+        lastOnCompleteResult = result;
+      },
+    });
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnCompleteInvocations, 0);
+    assert.equal(lastOnCompleteResult, undefined);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(numOnCompleteInvocations, 1);
+    assert.equal(lastOnCompleteResult, 'a,b');
+
+    numOnCompleteInvocations = 0;
+
+    // Called after every task completion.
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnCompleteInvocations, 0);
+    assert.equal(lastOnCompleteResult, 'a,b');
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(numOnCompleteInvocations, 1);
+    assert.equal(lastOnCompleteResult, 'a1,b');
+  });
+
+  test('onError callback is called', async () => {
+    let numOnErrorInvocations = 0;
+    let lastOnErrorResult: string | undefined = undefined;
+    const el = getTestElement({
+      args: () => [el.a, el.b],
+      onError: (error) => {
+        numOnErrorInvocations++;
+        lastOnErrorResult = error as string;
+      },
+    });
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnErrorInvocations, 0);
+    assert.equal(lastOnErrorResult, undefined);
+    el.rejectTask('error');
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(numOnErrorInvocations, 1);
+    assert.equal(lastOnErrorResult, 'error');
+
+    numOnErrorInvocations = 0;
+
+    // Called after every task error.
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(numOnErrorInvocations, 0);
+    assert.equal(lastOnErrorResult, 'error');
+    el.rejectTask('error2');
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(numOnErrorInvocations, 1);
+    assert.equal(lastOnErrorResult, 'error2');
   });
 });

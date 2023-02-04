@@ -20,7 +20,7 @@
  * List of attributes and which elements they apply is sourced from
  * https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes
  *
- * Commented elements were emperically found to not reflect from an associated
+ * Commented elements were empirically found to not reflect from an associated
  * property.
  */
 // prettier-ignore

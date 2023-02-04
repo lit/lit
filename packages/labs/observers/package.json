@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/observers",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A set of reactive controllers that facilitate using the platform observer objects.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -139,6 +139,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     },
@@ -148,6 +153,11 @@
         "build",
         "../../tests:build"
       ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     }

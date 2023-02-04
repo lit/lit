@@ -14,6 +14,11 @@ import {
   isTemplateResult,
 } from './directive-helpers.js';
 
+// In the Node build, this import will be injected by Rollup:
+// import {Buffer} from 'buffer';
+
+const NODE_MODE = false;
+
 const {
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
@@ -126,6 +131,9 @@ export const hydrate = (
   // it in the parts cache.
   let rootPart: ChildPart | undefined = undefined;
 
+  // Used for error messages
+  let rootPartMarker: Comment | undefined = undefined;
+
   // When we are in-between ChildPart markers, this is the current ChildPart.
   // It's needed to be able to set the ChildPart's endNode when we see a
   // close marker
@@ -148,11 +156,16 @@ export const hydrate = (
     const markerText = marker.data;
     if (markerText.startsWith('lit-part')) {
       if (stack.length === 0 && rootPart !== undefined) {
-        throw new Error('there must be only one root part per container');
+        throw new Error(
+          `There must be only one root part per container. ` +
+            `Found a part marker (${marker}) when we already have a root ` +
+            `part marker (${rootPartMarker})`
+        );
       }
       // Create a new ChildPart and push it onto the stack
       currentChildPart = openChildPart(rootValue, marker, stack, options);
       rootPart ??= currentChildPart;
+      rootPartMarker ??= marker;
     } else if (markerText.startsWith('lit-node')) {
       // Create and hydrate attribute parts into the current ChildPart on the
       // stack
@@ -165,11 +178,18 @@ export const hydrate = (
       currentChildPart = closeChildPart(marker, currentChildPart, stack);
     }
   }
-  console.assert(
-    rootPart !== undefined,
-    'there should be exactly one root part in a render container'
-  );
-  // This property needs to remain unminified.
+  if (rootPart === undefined) {
+    const elementMessage =
+      container instanceof ShadowRoot
+        ? `{container.host.localName}'s shadow root`
+        : container instanceof DocumentFragment
+        ? 'DocumentFragment'
+        : container.localName;
+    console.error(
+      `There should be exactly one root part in a render container, ` +
+        `but we didn't find any in ${elementMessage}.`
+    );
+  } // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (container as any)['_$litPart$'] = rootPart;
 };
@@ -426,5 +446,15 @@ export const digestForTemplateResult = (templateResult: TemplateResult) => {
       hashes[i % digestSize] = (hashes[i % digestSize] * 33) ^ s.charCodeAt(i);
     }
   }
-  return btoa(String.fromCharCode(...new Uint8Array(hashes.buffer)));
+  const str = String.fromCharCode(...new Uint8Array(hashes.buffer));
+  // Use `btoa` in browsers because it is supported universally.
+  //
+  // In Node, we are sometimes executing in an isolated VM context, which means
+  // neither `btoa` nor `Buffer` will be globally available by default (also
+  // note that `btoa` is only supported in Node 16+ anyway, and we still support
+  // Node 14). Instead of requiring users to always provide an implementation
+  // for `btoa` when they set up their VM context, we instead inject an import
+  // for `Buffer` from Node's built-in `buffer` module in our Rollup config (see
+  // note at the top of this file), and use that.
+  return NODE_MODE ? Buffer.from(str, 'binary').toString('base64') : btoa(str);
 };

@@ -10,6 +10,9 @@ import {AbsolutePath, PackagePath} from './paths.js';
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Constructor<T> = new (...args: any[]) => T;
+
 /**
  * Return type of `getLitElementModules`: contains a module and filtered list of
  * LitElementDeclarations contained within it.
@@ -51,7 +54,7 @@ export class Package extends PackageInfo {
 
   /**
    * Returns a list of modules in this package containing LitElement
-   * declarations, along with the filtered list of LitElementDeclarartions.
+   * declarations, along with the filtered list of LitElementDeclarations.
    */
   getLitElementModules() {
     const modules: {module: Module; declarations: LitElementDeclaration[]}[] =
@@ -71,8 +74,22 @@ export class Package extends PackageInfo {
   }
 }
 
-export interface ModuleInit {
+export type LocalNameOrReference = string | Reference;
+export type ExportMap = Map<string, LocalNameOrReference>;
+export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
+
+export interface ModuleInit extends DeprecatableDescribed {
   sourceFile: ts.SourceFile;
+  sourcePath: PackagePath;
+  jsPath: PackagePath;
+  packageJson: PackageJson;
+  declarationMap: DeclarationMap;
+  exportMap: ExportMap;
+  dependencies: Set<AbsolutePath>;
+  finalizeExports?: () => void;
+}
+
+export interface ModuleInfo {
   sourcePath: PackagePath;
   jsPath: PackagePath;
   packageJson: PackageJson;
@@ -94,25 +111,179 @@ export class Module {
    * project this will be the same as `sourcePath`.
    */
   readonly jsPath: PackagePath;
-  readonly declarations: Array<Declaration> = [];
+  /**
+   * A map of names to models or model factories for all Declarations in this module.
+   */
+  private readonly _declarationMap: DeclarationMap;
+  /**
+   * Private storage for all declarations within this module, memoized
+   * in `get declarations()` getter.
+   */
+  private _declarations: Declaration[] | undefined = undefined;
+  /**
+   * A set of all dependencies of this module, as module absolute paths.
+   */
+  readonly dependencies: Set<AbsolutePath>;
+  /**
+   * The package.json contents for the package containing this module.
+   */
   readonly packageJson: PackageJson;
+  /**
+   * A map of exported names to local declaration names or References, in
+   * the case of re-exported symbols.
+   */
+  private readonly _exportMap: ExportMap;
+  /**
+   * A list of module paths for all wildcard re-exports
+   */
+  private _finalizeExports: (() => void) | undefined;
+  /**
+   * The module's user-facing description.
+   */
+  readonly description?: string | undefined;
+  /**
+   * The module's user-facing summary.
+   */
+  readonly summary?: string | undefined;
+  /**
+   * The module's user-facing deprecation status.
+   */
+  readonly deprecated?: string | boolean | undefined;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
     this.sourcePath = init.sourcePath;
     this.jsPath = init.jsPath;
     this.packageJson = init.packageJson;
+    this._declarationMap = init.declarationMap;
+    this.dependencies = init.dependencies;
+    this._exportMap = init.exportMap;
+    this._finalizeExports = init.finalizeExports;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
+  }
+
+  /**
+   * Ensures the list of exports includes the names of all reexports
+   * from other modules.
+   */
+  private _ensureExportsFinalized() {
+    if (this._finalizeExports !== undefined) {
+      this._finalizeExports();
+      this._finalizeExports = undefined;
+    }
+  }
+
+  /**
+   * Returns names of all exported declarations.
+   */
+  get exportNames() {
+    this._ensureExportsFinalized();
+    return Array.from(this._exportMap.keys());
+  }
+
+  /**
+   * Given an exported symbol name, returns a Declaration if it was
+   * defined in this module, or a Reference if it was imported from
+   * another module.
+   */
+  getExport(name: string): Declaration | Reference {
+    this._ensureExportsFinalized();
+    const exp = this._exportMap.get(name);
+    if (exp === undefined) {
+      throw new Error(
+        `Module ${this.sourcePath} did not contain an export named ${name}`
+      );
+    } else if (exp instanceof Reference) {
+      return exp;
+    } else {
+      return this.getDeclaration(exp);
+    }
+  }
+
+  /**
+   * Return Reference for given export name.
+   *
+   * For references to local declarations, the module will be undefined.
+   * For re-exports, the Reference will point to a package & module.
+   */
+  getExportReference(name: string): Reference {
+    const exp = this.getExport(name);
+    if (exp instanceof Declaration) {
+      return new Reference({name: exp.name, dereference: () => exp});
+    } else {
+      return exp;
+    }
+  }
+
+  /**
+   * Given an exported symbol name, returns the concrete Declaration
+   * for that symbol, following it through any re-exports.
+   */
+  getResolvedExport(name: string): Declaration {
+    let exp = this.getExport(name);
+    while (exp instanceof Reference) {
+      exp = exp.dereference();
+    }
+    return exp as Declaration;
+  }
+
+  /**
+   * Returns a `Declaration` model for the given name in top-level module scope.
+   *
+   * Note, the name is local to the module, and the declaration may be exported
+   * from with a different name. The declaration is always concrete, and will
+   * never be a `Reference`.
+   */
+  getDeclaration(name: string): Declaration {
+    let dec = this._declarationMap.get(name);
+    if (dec === undefined) {
+      throw new Error(
+        `Module ${this.sourcePath} did not contain a declaration named ${name}`
+      );
+    }
+    // Overwrite a factory with its output (a `Declaration` model) on first
+    // request
+    if (typeof dec === 'function') {
+      this._declarationMap.set(name, (dec = dec()));
+    }
+    return dec;
+  }
+
+  /**
+   * Returns a list of all Declarations locally defined in this module.
+   */
+  get declarations() {
+    return (this._declarations ??= Array.from(this._declarationMap.keys()).map(
+      (name) => this.getDeclaration(name)
+    ));
+  }
+
+  /**
+   * Returns all custom elements registered in this module.
+   */
+  getCustomElementExports(): LitElementExport[] {
+    return this.declarations.filter(
+      (d) => d.isLitElementDeclaration() && d.tagname !== undefined
+    ) as LitElementExport[];
   }
 }
 
-interface DeclarationInit {
+interface DeclarationInit extends DeprecatableDescribed {
   name: string;
 }
 
 export abstract class Declaration {
-  name: string;
+  readonly name: string;
+  readonly description?: string | undefined;
+  readonly summary?: string | undefined;
+  readonly deprecated?: string | boolean | undefined;
   constructor(init: DeclarationInit) {
     this.name = init.name;
+    this.description = init.description;
+    this.summary = init.summary;
+    this.deprecated = init.deprecated;
   }
   isVariableDeclaration(): this is VariableDeclaration {
     return this instanceof VariableDeclaration;
@@ -123,15 +294,30 @@ export abstract class Declaration {
   isLitElementDeclaration(): this is LitElementDeclaration {
     return this instanceof LitElementDeclaration;
   }
+  isFunctionDeclaration(): this is FunctionDeclaration {
+    return this instanceof FunctionDeclaration;
+  }
+  isClassField(): this is ClassField {
+    return this instanceof ClassField;
+  }
+  isClassMethod(): this is ClassMethod {
+    return this instanceof ClassMethod;
+  }
+  isCustomElementDeclaration(): this is CustomElementDeclaration {
+    return this instanceof CustomElementDeclaration;
+  }
 }
 
 export interface VariableDeclarationInit extends DeclarationInit {
-  node: ts.VariableDeclaration;
+  node: ts.VariableDeclaration | ts.ExportAssignment | ts.EnumDeclaration;
   type: Type | undefined;
 }
 
 export class VariableDeclaration extends Declaration {
-  readonly node: ts.VariableDeclaration;
+  readonly node:
+    | ts.VariableDeclaration
+    | ts.ExportAssignment
+    | ts.EnumDeclaration;
   readonly type: Type | undefined;
   constructor(init: VariableDeclarationInit) {
     super(init);
@@ -140,26 +326,189 @@ export class VariableDeclaration extends Declaration {
   }
 }
 
+export interface FunctionLikeInit extends DeprecatableDescribed {
+  name: string;
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+}
+
+export class FunctionDeclaration extends Declaration {
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+  constructor(init: FunctionLikeInit) {
+    super(init);
+    this.parameters = init.parameters;
+    this.return = init.return;
+  }
+}
+
+export type Privacy = 'public' | 'private' | 'protected';
+
+export interface SourceReference {
+  href: string;
+}
+
+export interface ClassMethodInit extends FunctionLikeInit {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+}
+
+export class ClassMethod extends Declaration {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+  parameters?: Parameter[] | undefined;
+  return?: Return | undefined;
+  constructor(init: ClassMethodInit) {
+    super(init);
+    this.static = init.static;
+    this.privacy = init.privacy;
+    this.inheritedFrom = init.inheritedFrom;
+    this.source = init.source;
+    this.parameters = init.parameters;
+    this.return = init.return;
+  }
+}
+
+export interface ClassFieldInit extends PropertyLike {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+}
+
+export class ClassField extends Declaration {
+  static?: boolean | undefined;
+  privacy?: Privacy | undefined;
+  inheritedFrom?: Reference | undefined;
+  source?: SourceReference | undefined;
+  type?: Type | undefined;
+  default?: string | undefined;
+  constructor(init: ClassFieldInit) {
+    super(init);
+    this.static = init.static;
+    this.privacy = init.privacy;
+    this.inheritedFrom = init.inheritedFrom;
+    this.source = init.source;
+    this.type = init.type;
+    this.default = init.default;
+  }
+}
+
+export type ClassHeritage = {
+  mixins: Reference[];
+  superClass: Reference | undefined;
+};
+
 export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
+  getHeritage: () => ClassHeritage;
+  fieldMap?: Map<string, ClassField> | undefined;
+  methodMap?: Map<string, ClassMethod> | undefined;
 }
 
 export class ClassDeclaration extends Declaration {
   readonly node: ts.ClassDeclaration;
+  private _getHeritage: () => ClassHeritage;
+  private _heritage: ClassHeritage | undefined = undefined;
+  readonly _fieldMap: Map<string, ClassField>;
+  readonly _methodMap: Map<string, ClassMethod>;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
+    this._getHeritage = init.getHeritage;
+    this._fieldMap = init.fieldMap ?? new Map();
+    this._methodMap = init.methodMap ?? new Map();
+  }
+
+  /**
+   * Returns this class's `ClassHeritage` model, with references to its
+   * `superClass` and `mixins`.
+   */
+  get heritage(): ClassHeritage {
+    return (this._heritage ??= this._getHeritage());
+  }
+
+  /**
+   * Returns iterator of the `ClassField`s defined on the immediate class
+   * (excluding any inherited members).
+   */
+  get fields() {
+    return this._fieldMap.values();
+  }
+
+  /**
+   * Returns iterator of the `ClassMethod`s defined on the immediate class
+   * (excluding any inherited members).
+   */
+  get methods(): IterableIterator<ClassMethod> {
+    return this._methodMap.values();
+  }
+
+  /**
+   * Returns a `ClassField` model the given name defined on the immediate class
+   * (excluding any inherited members).
+   */
+  getField(name: string): ClassField | undefined {
+    return this._fieldMap.get(name);
+  }
+
+  /**
+   * Returns a `ClassMethod` model for the given name defined on the immediate
+   * class (excluding any inherited members).
+   */
+  getMethod(name: string): ClassMethod | undefined {
+    return this._methodMap.get(name);
+  }
+
+  /**
+   * Returns a `ClassField` or `ClassMethod` model for the given name defined on
+   * the immediate class (excluding any inherited members).
+   *
+   * Note that if a field and method of the same name were defined (error is TS,
+   * but possible in JS), the `ClassField` will be returned from this method, as
+   * it takes precedence by virtue of being an instance property (vs. a method,
+   * which is defined on the prototype).
+   */
+  getMember(name: string): ClassMethod | ClassField | undefined {
+    return this.getField(name) ?? this.getMethod(name);
   }
 }
 
-interface LitElementDeclarationInit extends ClassDeclarationInit {
-  tagname: string | undefined;
-  reactiveProperties: Map<string, ReactiveProperty>;
-  readonly events: Map<string, Event>;
+export interface Described {
+  description?: string | undefined;
+  summary?: string | undefined;
 }
 
-export class LitElementDeclaration extends ClassDeclaration {
+export interface NamedDescribed extends Described {
+  name: string;
+}
+
+export interface TypedNamedDescribed extends NamedDescribed {
+  type?: string;
+}
+
+export interface DeprecatableDescribed extends Described {
+  deprecated?: string | boolean | undefined;
+}
+
+interface CustomElementDeclarationInit extends ClassDeclarationInit {
+  tagname: string | undefined;
+  events: Map<string, Event>;
+  slots: Map<string, NamedDescribed>;
+  cssProperties: Map<string, NamedDescribed>;
+  cssParts: Map<string, NamedDescribed>;
+}
+
+interface LitElementDeclarationInit extends CustomElementDeclarationInit {
+  reactiveProperties: Map<string, ReactiveProperty>;
+}
+
+export class CustomElementDeclaration extends ClassDeclaration {
   /**
    * The element's tag name, if one is associated with this class declaration,
    * such as with a `@customElement()` decorator or `customElements.define()`
@@ -170,25 +519,55 @@ export class LitElementDeclaration extends ClassDeclaration {
    * base class or with scoped custom element registries.
    */
   readonly tagname: string | undefined;
-
-  readonly reactiveProperties: Map<string, ReactiveProperty>;
-
   readonly events: Map<string, Event>;
+  readonly slots: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssParts: Map<string, NamedDescribed>;
 
-  constructor(init: LitElementDeclarationInit) {
+  constructor(init: CustomElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
-    this.reactiveProperties = init.reactiveProperties;
     this.events = init.events;
+    this.slots = init.slots;
+    this.cssProperties = init.cssProperties;
+    this.cssParts = init.cssParts;
   }
 }
 
-export interface ReactiveProperty {
+export class LitElementDeclaration extends CustomElementDeclaration {
+  readonly reactiveProperties: Map<string, ReactiveProperty>;
+
+  constructor(init: LitElementDeclarationInit) {
+    super(init);
+    this.reactiveProperties = init.reactiveProperties;
+  }
+}
+
+/**
+ * A LitElementDeclaration that has been globally registered with a tagname.
+ */
+export interface LitElementExport extends LitElementDeclaration {
+  tagname: string;
+}
+
+export interface PropertyLike extends DeprecatableDescribed {
   name: string;
-  node: ts.PropertyDeclaration;
+  type: Type | undefined;
+  default?: string | undefined;
+}
 
-  type: Type;
+export interface Return {
+  type?: Type | undefined;
+  summary?: string | undefined;
+  description?: string | undefined;
+}
 
+export interface Parameter extends PropertyLike {
+  optional?: boolean | undefined;
+  rest?: boolean | undefined;
+}
+
+export interface ReactiveProperty extends PropertyLike {
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?
@@ -216,6 +595,7 @@ export interface ReactiveProperty {
 export interface Event {
   name: string;
   description: string | undefined;
+  summary: string | undefined;
   type: Type | undefined;
 }
 
@@ -229,6 +609,7 @@ export interface ReferenceInit {
   package?: string | undefined;
   module?: string | undefined;
   isGlobal?: boolean;
+  dereference?: () => Declaration | undefined;
 }
 
 export class Reference {
@@ -236,11 +617,14 @@ export class Reference {
   readonly package: string | undefined;
   readonly module: string | undefined;
   readonly isGlobal: boolean;
+  private readonly _dereference: () => Declaration | undefined;
+  private _model: Declaration | undefined = undefined;
   constructor(init: ReferenceInit) {
     this.name = init.name;
     this.package = init.package;
     this.module = init.module;
     this.isGlobal = init.isGlobal ?? false;
+    this._dereference = init.dereference ?? (() => undefined);
   }
 
   get moduleSpecifier() {
@@ -248,6 +632,21 @@ export class Reference {
     return this.isGlobal
       ? undefined
       : (this.package || '') + separator + (this.module || '');
+  }
+
+  /**
+   * Returns the Declaration model that this reference points to, optionally
+   * validating (and casting) it to be of a given type by passing a model
+   * constructor.
+   */
+  dereference<T extends Declaration>(type?: Constructor<T> | undefined): T {
+    const model = (this._model ??= this._dereference());
+    if (type !== undefined && model !== undefined && !(model instanceof type)) {
+      throw new Error(
+        `Expected reference to ${this.name} in module ${this.moduleSpecifier} to be of type ${type.name}`
+      );
+    }
+    return model as T;
   }
 }
 
@@ -302,6 +701,7 @@ export const getImportsStringForReferences = (references: Reference[]) => {
 };
 
 export interface AnalyzerInterface {
+  moduleCache: Map<AbsolutePath, Module>;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
   fs: Pick<
@@ -321,5 +721,15 @@ export interface AnalyzerInterface {
     | 'dirname'
     | 'parse'
     | 'normalize'
+    | 'isAbsolute'
   >;
 }
+
+/**
+ * The name, model factory, and export information about a given declaration.
+ */
+export type DeclarationInfo = {
+  name: string;
+  factory: () => Declaration;
+  isExport?: boolean;
+};

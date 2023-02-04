@@ -832,7 +832,7 @@ const getTemplateHtml = (
           issues, e.g. opening your code up to XSS attacks.
 
           If you're using the html or svg tagged template functions normally
-          and and still seeing this error, please file a bug at
+          and still seeing this error, please file a bug at
           https://github.com/lit/lit/issues/new?template=bug_report.md
           and include information about your build tooling, if any.
         `
@@ -914,7 +914,7 @@ class Template {
           const attrsToRemove = [];
           for (const name of (node as Element).getAttributeNames()) {
             // `name` is the name of the attribute we're iterating over, but not
-            // _neccessarily_ the name of the attribute we will create a part
+            // _necessarily_ the name of the attribute we will create a part
             // for. They can be different in browsers that don't iterate on
             // attributes in source order. In that case the attrNames array
             // contains the attribute name we'll process next. We only need the
@@ -1318,7 +1318,7 @@ class ChildPart implements Disconnectable {
     const parent = this._$parent;
     if (
       parent !== undefined &&
-      parentNode.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
+      parentNode?.nodeType === 11 /* Node.DOCUMENT_FRAGMENT */
     ) {
       // If the parentNode is a DocumentFragment, it may be because the DOM is
       // still in the cloned fragment during initial render; if so, get the real
@@ -1670,7 +1670,7 @@ export interface RootPart extends ChildPart {
    * as such, it is the responsibility of the caller to `render` to ensure that
    * `part.setConnected(false)` is called before the part object is potentially
    * discarded, to ensure that `AsyncDirective`s have a chance to dispose of
-   * any resources being held. If a `RootPart` that was prevously
+   * any resources being held. If a `RootPart` that was previously
    * disconnected is subsequently re-connected (and its `AsyncDirective`s should
    * re-connect), `setConnected(true)` should be called.
    *
@@ -2096,7 +2096,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('2.3.1');
+(global.litHtmlVersions ??= []).push('2.6.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

@@ -1,5 +1,11 @@
 <div align="center">
-<img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./packages/lit/logo-dark.svg" alt="Lit" width="300" height="141">
+  </source>
+  <source media="(prefers-color-scheme: light)" srcset="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+  </source>
+  <img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+</picture>
 
 ### Simple. Fast. Web Components.
 
@@ -58,7 +64,7 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
   - [`lit-starter-ts`](./packages/lit-starter-ts) ([template
     repo](https://github.com/lit/lit-element-starter-ts)) - A starter repo for building reusable components using Lit in TypeScript.
   - [`lit-starter-js`](./packages/lit-starter-js) ([template
-    repo](https://github.com/lit/lit-element-starter-js)) - A starter repo for building reusable components using Lit in Javascript.
+    repo](https://github.com/lit/lit-element-starter-js)) - A starter repo for building reusable components using Lit in JavaScript.
 - Internal packages (not published to npm)
   - [`tests`](./packages/tests) - Test infrastructure for the monorepo.
   - [`benchmarks`](./packages/benchmarks) - Benchmarks for testing various libraries in the monorepo.

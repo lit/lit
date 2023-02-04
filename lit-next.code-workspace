@@ -57,6 +57,30 @@
       "path": "packages/labs/cli"
     },
     {
+      "name": "gen-manifest",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-react",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-angular",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-vue",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "gen-utils",
+      "path": "packages/labs/gen-manifest"
+    },
+    {
+      "name": "examples",
+      "path": "examples"
+    },
+    {
       "name": "lit-monorepo",
       "path": "."
     }
@@ -70,7 +94,8 @@
     "files.exclude": {
       "**/.wireit": true
     },
-    "javascript.preferences.importModuleSpecifierEnding": "js"
+    "javascript.preferences.importModuleSpecifierEnding": "js",
+    "eslint.workingDirectories": [{"mode": "auto"}]
   },
   "extensions": {
     "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]

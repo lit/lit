@@ -50,7 +50,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
     await currentValue;
     // Since this is used in tests, awaiting a rAF here is a convenience so
     // that we get past any async code in directives used to resolve/commit
-    // the itereable value; when this returns it should be rendered
+    // the iterable value; when this returns it should be rendered
     await nextFrame();
   }
 }

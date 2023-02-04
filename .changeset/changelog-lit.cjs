@@ -10,7 +10,7 @@ const {
 } = require('@changesets/get-github-info');
 
 // Forked from: https://github.com/atlassian/changesets/blob/main/packages/changelog-github/src/index.ts
-// Remove the "Thanks!" message, as it's almost always self-congratuatory to our team
+// Remove the "Thanks!" message, as it's almost always self-congratulatory to our team
 // TODO: add back "Thanks!" for external contributors
 
 const repo = 'lit/lit';
@@ -39,11 +39,11 @@ const changelogFunctions = {
       .filter((_) => _)
       .join(', ')}]:`;
 
-    const updatedDepenenciesList = dependenciesUpdated.map(
+    const updatedDependenciesList = dependenciesUpdated.map(
       (dependency) => `  - ${dependency.name}@${dependency.newVersion}`
     );
 
-    return [changesetLink, ...updatedDepenenciesList].join('\n');
+    return [changesetLink, ...updatedDependenciesList].join('\n');
   },
   getReleaseLine: async (changeset, type, options) => {
     let prFromSummary;

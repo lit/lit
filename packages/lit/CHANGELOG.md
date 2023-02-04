@@ -1,5 +1,62 @@
 # Change Log
 
+## 2.6.1
+
+### Patch Changes
+
+- [#3526](https://github.com/lit/lit/pull/3526) [`65e56655`](https://github.com/lit/lit/commit/65e56655b73d22172647c1a748e7a907ad0227c0) - Disable ShadyDOM noPatch in Node dev build. This fixes the issue of throwing due to undefined `window`.
+
+- [#3561](https://github.com/lit/lit/pull/3561) [`e5c254e9`](https://github.com/lit/lit/commit/e5c254e96cb5d0f770ec616332e231559325c5c5) - Fix built-in shimming of `HTMLElement` for Node build of `reactive-element` to respect existing `HTMLElement` in global
+
+## 2.6.0
+
+### Minor Changes
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - When running in Node, Lit now automatically includes minimal DOM shims which are
+  sufficient for most SSR (Server Side Rendering) use-cases, removing the need to
+  import the global DOM shim from `@lit-labs/ssr`.
+
+  The new `@lit-labs/ssr-dom-shim` package has been introduced, which exports an `HTMLElement`, `CustomElementRegistry`, and default `customElements` singleton.
+
+  The existing `@lit-labs/ssr` global DOM shim can still be used, and is compatible with the new package, because `@lit-labs/ssr` imports from `@lit-labs/ssr-dom-shim`. Importing the global DOM shim adds more APIs to the global object, such as a global `HTMLElement`, `TreeWalker`, `fetch`, and other APIs. It is recommended that users try to remove usage of the `@lit-labs/ssr` DOM shim, and instead rely on the more minimal, automatic shimming that `@lit/reactive-element` now provides automatically.
+
+### Patch Changes
+
+- Updated dependencies [[`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8)]:
+  - @lit/reactive-element@1.6.0
+  - lit-html@2.6.0
+
+## 2.5.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - `lit-html` and `reactive-element` now include development Node builds with unminified code and dev warnings.
+
+### Patch Changes
+
+- Updated dependencies [[`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d)]:
+  - lit-html@2.5.0
+  - @lit/reactive-element@1.5.0
+
+## 2.4.1
+
+### Patch Changes
+
+- [#3374](https://github.com/lit/lit/pull/3374) [`bb098950`](https://github.com/lit/lit/commit/bb0989507f73f1e6d484199e3767eed39ebbaf22) - Initializers added to subclasses are no longer improperly added to superclass.
+
+## 2.4.0
+
+### Minor Changes
+
+- [#3318](https://github.com/lit/lit/pull/3318) [`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4) - Adds an `isServer` variable export to `lit` and `lit-html/is-server.js` which will be `true` in Node and `false` in the browser. This can be used when authoring components to change behavior based on whether or not the component is executing in an SSR context.
+
+### Patch Changes
+
+- [#3320](https://github.com/lit/lit/pull/3320) [`305852d4`](https://github.com/lit/lit/commit/305852d4a4f51174301720985de98fdbf8674648) - The `lit` package now specifies and "types" export condition allowing TypeScript `moduleResolution` to be `nodenext`.
+
+- Updated dependencies [[`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4)]:
+  - lit-html@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes

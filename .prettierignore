@@ -75,6 +75,7 @@ packages/lit-html/async-directive.*
 packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
+packages/lit-html/is-server.*
 
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
@@ -145,6 +146,10 @@ packages/labs/cli/index.d.ts
 packages/labs/cli/index.d.ts.map
 packages/labs/cli/test-gen/
 
+packages/labs/cli/test-goldens/
+packages/labs/cli-localize/lib/
+packages/labs/cli-localize/node_modules/
+
 packages/labs/context/development/
 packages/labs/context/test/
 packages/labs/context/node_modules/
@@ -159,6 +164,13 @@ packages/labs/eleventy-plugin-lit/worker/worker.*
 packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
+
+packages/labs/gen-manifest/index.js
+packages/labs/gen-manifest/index.js.map
+packages/labs/gen-manifest/index.d.ts
+packages/labs/gen-manifest/index.d.ts.map
+packages/labs/gen-manifest/test/
+packages/labs/gen-manifest/gen-output/
 
 packages/labs/gen-utils/lib/
 packages/labs/gen-utils/test/
@@ -250,6 +262,8 @@ packages/labs/ssr-client/controllers/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
 
+packages/labs/ssr-dom-shim/index.*
+
 packages/labs/task/development/
 packages/labs/task/test/
 packages/labs/task/node_modules/
@@ -281,11 +295,18 @@ packages/labs/virtualizer/LitVirtualizer.js
 packages/labs/virtualizer/LitVirtualizer.d.ts
 packages/labs/virtualizer/LitVirtualizer.d.ts.map
 packages/labs/virtualizer/LitVirtualizer.js.map
+packages/labs/virtualizer/ScrollerController.js
+packages/labs/virtualizer/ScrollerController.d.ts
+packages/labs/virtualizer/ScrollerController.d.ts.map
+packages/labs/virtualizer/ScrollerController.js.map
 packages/labs/virtualizer/test/**/*.d.ts
 packages/labs/virtualizer/test/**/*.d.ts.map
 packages/labs/virtualizer/test/**/*.js
 packages/labs/virtualizer/test/**/*.js.map
 packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
+packages/labs/virtualizer/events.d.ts*
+packages/labs/virtualizer/events.js
+packages/labs/virtualizer/events.js.map
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/

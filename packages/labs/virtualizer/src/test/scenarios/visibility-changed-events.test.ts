@@ -13,7 +13,7 @@ import {
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
-import {VisibilityChangedEvent} from '../../Virtualizer.js';
+import {VisibilityChangedEvent} from '../../events.js';
 import {expect, html, fixture} from '@open-wc/testing';
 
 describe('VisibilityChanged event', () => {
@@ -70,15 +70,13 @@ describe('VisibilityChanged event', () => {
 
     first(getVisibleItems(virtualizer)).style.height = '10px';
 
-    await until(() => containerEvents.length === 1);
-
-    expect(last(containerEvents).first).to.equal(0);
-    expect(last(containerEvents).last).to.equal(4);
-
     await until(() => virtualizerEvents.length === 1);
 
     expect(last(virtualizerEvents).first).to.equal(0);
     expect(last(virtualizerEvents).last).to.equal(4);
+
+    // The visibilitychanged event should not bubble up to its containing element.
+    expect(containerEvents.length).to.equal(0);
   });
 
   it('should fire when item moves out of view', async () => {
@@ -99,14 +97,12 @@ describe('VisibilityChanged event', () => {
 
     first(getVisibleItems(virtualizer)).style.height = '100px';
 
-    await until(() => containerEvents.length === 1);
-
-    expect(last(containerEvents).first).to.equal(0);
-    expect(last(containerEvents).last).to.equal(2);
-
     await until(() => virtualizerEvents.length === 1);
 
     expect(last(virtualizerEvents).first).to.equal(0);
     expect(last(virtualizerEvents).last).to.equal(2);
+
+    // The visibilitychanged event should not bubble up to its containing element.
+    expect(containerEvents.length).to.equal(0);
   });
 });

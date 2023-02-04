@@ -1,5 +1,24 @@
 # @lit-labs/testing
 
+## 0.2.0
+
+### Minor Changes
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - @lit-labs/testing no longer automatically loads the Lit SSR global DOM shim
+  when performing SSR, instead relying on newer versions of Lit which automatically
+  load necessary shims with minimal global pollution.
+
+  This may cause new or different test failures, because APIs such as `document`
+  will no longer be available on the server by default. Use `isServer` from the
+  `lit` package to guard against calling such APIs during SSR (see
+  https://lit.dev/docs/ssr/authoring/#browser-only-code for more information).
+
+### Patch Changes
+
+- Updated dependencies [[`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`ff637f52`](https://github.com/lit/lit/commit/ff637f52a3c2252e37d6ea6ae352c3c0f35a9e87), [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8), [`c77220e8`](https://github.com/lit/lit/commit/c77220e80bc5b04628776ef8e5828fcde5f8ad16)]:
+  - @lit-labs/ssr@3.0.0
+  - lit@2.6.0
+
 ## 0.1.1
 
 ### Patch Changes

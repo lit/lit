@@ -4,23 +4,24 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import EventTarget from '../../polyfillLoaders/EventTarget.js';
 import {
   Layout,
+  ChildPositions,
   Positions,
   ScrollDirection,
   Size,
   dimension,
   position,
+  PinOptions,
+  ScrollToCoordinates,
+  BaseLayoutConfig,
+  StateChangedMessage,
+  LayoutHostSink,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
   emit?: boolean;
 };
-
-export interface BaseLayoutConfig {
-  direction?: ScrollDirection;
-}
 
 export function dim1(direction: ScrollDirection): dimension {
   return direction === 'horizontal' ? 'width' : 'height';
@@ -54,24 +55,18 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   private _viewportSize: Size = {width: 0, height: 0};
 
+  public totalScrollSize: Size = {width: 0, height: 0};
+
+  public offsetWithinScroller: Positions = {left: 0, top: 0};
+
   /**
-   * Flag for debouncing asynchnronous reflow requests.
+   * Flag for debouncing asynchronous reflow requests.
    */
   private _pendingReflow = false;
 
   private _pendingLayoutUpdate = false;
 
-  /**
-   * Index of the item that has been scrolled to via the public API. When the
-   * viewport is otherwise scrolled, this value is set back to -1.
-   */
-  protected _scrollToIndex = -1;
-
-  /**
-   * When a child is scrolled to, the offset from the top of the child and the
-   * top of the viewport. Value is a proportion of the item size.
-   */
-  private _scrollToAnchor = 0;
+  protected _pin: PinOptions | null = null;
 
   /**
    * The index of the first item intersecting the viewport.
@@ -82,10 +77,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * The index of the last item intersecting the viewport.
    */
   protected _lastVisible = 0;
-
-  private _eventTargetPromise: Promise<void> = EventTarget().then((Ctor) => {
-    this._eventTarget = new Ctor();
-  });
 
   /**
    * Pixel offset in the scroll direction of the first child.
@@ -142,7 +133,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Total number of items that could possibly be displayed. Used to help
    * calculate the scroll size.
    */
-  protected _totalItems = 0;
+  protected _items: unknown[] = [];
 
   /**
    * The total (estimated) length of all items in the scrolling direction.
@@ -157,7 +148,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   // on viewport size, item size, other factors, possibly still with a dial of some kind
   protected _overhang = 1000;
 
-  private _eventTarget: EventTarget | null = null;
+  /**
+   * Call this to deliver messages (e.g. stateChanged, unpinned) to host
+   */
+  private _hostSink: LayoutHostSink;
 
   protected get _defaultConfig(): C {
     return {
@@ -165,7 +159,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     } as C;
   }
 
-  constructor(config?: C) {
+  constructor(hostSink: LayoutHostSink, config?: C) {
+    this._hostSink = hostSink;
     // Delay setting config so that subclasses do setup work first
     Promise.resolve().then(() => (this.config = config || this._defaultConfig));
   }
@@ -184,13 +179,12 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Maximum index of children + 1, to help estimate total height of the scroll
    * space.
    */
-  get totalItems(): number {
-    return this._totalItems;
+  get items(): unknown[] {
+    return this._items;
   }
-  set totalItems(num) {
-    const _num = Number(num);
-    if (_num !== this._totalItems) {
-      this._totalItems = _num;
+  set items(items: unknown[]) {
+    if (items !== this._items) {
+      this._items = items;
       this._scheduleReflow();
     }
   }
@@ -241,11 +235,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     Object.assign(this._latestCoords, coords);
     const oldPos = this._scrollPosition;
     this._scrollPosition = this._latestCoords[this._positionDim];
-    if (oldPos !== this._scrollPosition) {
-      this._scrollPositionChanged(oldPos, this._scrollPosition);
-      this._updateVisibleIndices({emit: true});
+    const change = Math.abs(oldPos - this._scrollPosition);
+    if (change >= 1) {
+      this._checkThresholds();
     }
-    this._checkThresholds();
   }
 
   /**
@@ -258,56 +251,34 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     }
   }
 
-  /**
-   * Scroll to the child at the given index, and the given position within that
-   * child.
-   */
-  scrollToIndex(index: number, position = 'start') {
-    if (!Number.isFinite(index)) return;
-    index = Math.min(this.totalItems, Math.max(0, index));
-    this._scrollToIndex = index;
-    if (position === 'nearest') {
-      position = index > this._first + this._num / 2 ? 'end' : 'start';
+  set pin(options: PinOptions | null) {
+    this._pin = options;
+    this._triggerReflow();
+  }
+
+  get pin() {
+    if (this._pin !== null) {
+      const {index, block} = this._pin;
+      return {
+        index: Math.max(0, Math.min(index, this.items.length - 1)),
+        block,
+      };
     }
-    switch (position) {
-      case 'start':
-        this._scrollToAnchor = 0;
-        break;
-      case 'center':
-        this._scrollToAnchor = 0.5;
-        break;
-      case 'end':
-        this._scrollToAnchor = 1;
-        break;
-      default:
-        throw new TypeError(
-          'position must be one of: start, center, end, nearest'
-        );
+    return null;
+  }
+
+  _clampScrollPosition(val: number) {
+    return Math.max(
+      -this.offsetWithinScroller[this._positionDim],
+      Math.min(val, this.totalScrollSize[dim1(this.direction)] - this._viewDim1)
+    );
+  }
+
+  unpin() {
+    if (this._pin !== null) {
+      this._sendUnpinnedMessage();
+      this._pin = null;
     }
-    this._scheduleReflow();
-  }
-
-  async dispatchEvent(evt: Event) {
-    await this._eventTargetPromise;
-    this._eventTarget!.dispatchEvent(evt);
-  }
-
-  async addEventListener(
-    type: string,
-    listener: EventListener | EventListenerObject | null,
-    options?: boolean | AddEventListenerOptions | undefined
-  ) {
-    await this._eventTargetPromise;
-    this._eventTarget!.addEventListener(type, listener, options);
-  }
-
-  async removeEventListener(
-    type: string,
-    callback: EventListener | EventListenerObject | null,
-    options?: boolean | EventListenerOptions | undefined
-  ) {
-    await this._eventTargetPromise;
-    this._eventTarget!.removeEventListener(type, callback, options);
   }
 
   /**
@@ -380,80 +351,124 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       this._pendingLayoutUpdate = false;
     }
     this._updateScrollSize();
+    this._setPositionFromPin();
     this._getActiveItems();
-    this._scrollIfNeeded();
     this._updateVisibleIndices();
-    this._emitScrollSize();
-    this._emitRange();
-    this._emitChildPositions();
-    this._emitScrollError();
-  }
-
-  protected _scrollIfNeeded() {
-    if (this._scrollToIndex === -1) {
-      return;
-    }
-    const index = this._scrollToIndex;
-    const anchor = this._scrollToAnchor;
-    const pos = this._getItemPosition(index)[this._positionDim];
-    const size = this._getItemSize(index)[this._sizeDim];
-
-    const curAnchorPos = this._scrollPosition + this._viewDim1 * anchor;
-    const newAnchorPos = pos + size * anchor;
-    // Ensure scroll position is an integer within scroll bounds.
-    const scrollPosition = Math.floor(
-      Math.min(
-        this._scrollSize - this._viewDim1,
-        Math.max(0, this._scrollPosition - curAnchorPos + newAnchorPos)
-      )
-    );
-    this._scrollError += this._scrollPosition - scrollPosition;
-    this._scrollPosition = scrollPosition;
-  }
-
-  protected _emitRange(inProps: unknown = undefined) {
-    const detail = Object.assign(
-      {
-        first: this._first,
-        last: this._last,
-        num: this._num,
-        firstVisible: this._firstVisible,
-        lastVisible: this._lastVisible,
-      },
-      inProps
-    );
-    this.dispatchEvent(new CustomEvent('rangechange', {detail}));
-  }
-
-  protected _emitScrollSize() {
-    const detail = {
-      [this._sizeDim]: this._scrollSize,
-      [this._secondarySizeDim]: null,
-    };
-    this.dispatchEvent(new CustomEvent('scrollsizechange', {detail}));
-  }
-
-  protected _emitScrollError() {
-    if (this._scrollError) {
-      const detail = {
-        [this._positionDim]: this._scrollError,
-        [this._secondaryPositionDim]: 0,
-      };
-      this.dispatchEvent(new CustomEvent('scrollerrorchange', {detail}));
-      this._scrollError = 0;
-    }
+    this._sendStateChangedMessage();
   }
 
   /**
-   * Get or estimate the top and left positions of items in the current range.
-   * Emit an itempositionchange event with these positions.
+   * If we are supposed to be pinned to a particular
+   * item or set of coordinates, we set `_scrollPosition`
+   * accordingly and adjust `_scrollError` as needed
+   * so that the virtualizer can keep the scroll
+   * position in the DOM in sync
    */
-  protected _emitChildPositions() {
-    const detail: {[key: number]: Positions} = {};
-    for (let idx = this._first; idx <= this._last; idx++) {
-      detail[idx] = this._getItemPosition(idx);
+  protected _setPositionFromPin() {
+    if (this.pin !== null) {
+      const lastScrollPosition = this._scrollPosition;
+      const {index, block} = this.pin;
+      this._scrollPosition =
+        this._calculateScrollIntoViewPosition({
+          index,
+          block: block || 'start',
+        }) - this.offsetWithinScroller[this._positionDim];
+      this._scrollError = lastScrollPosition - this._scrollPosition;
     }
-    this.dispatchEvent(new CustomEvent('itempositionchange', {detail}));
+  }
+  /**
+   * Calculate the coordinates to scroll to, given
+   * a request to scroll to the element at a specific
+   * index.
+   *
+   * Supports the same positioning options (`start`,
+   * `center`, `end`, `nearest`) as the standard
+   * `Element.scrollIntoView()` method, but currently
+   * only considers the provided value in the `block`
+   * dimension, since we don't yet have any layouts
+   * that support virtualization in two dimensions.
+   */
+  protected _calculateScrollIntoViewPosition(options: PinOptions) {
+    const {block} = options;
+    const index = Math.min(this.items.length, Math.max(0, options.index));
+    const itemStartPosition = this._getItemPosition(index)[this._positionDim];
+    let scrollPosition = itemStartPosition;
+    if (block !== 'start') {
+      const itemSize = this._getItemSize(index)[this._sizeDim];
+      if (block === 'center') {
+        scrollPosition =
+          itemStartPosition - 0.5 * this._viewDim1 + 0.5 * itemSize;
+      } else {
+        const itemEndPosition = itemStartPosition - this._viewDim1 + itemSize;
+        if (block === 'end') {
+          scrollPosition = itemEndPosition;
+        } else {
+          // block === 'nearest'
+          const currentScrollPosition = this._scrollPosition;
+          scrollPosition =
+            Math.abs(currentScrollPosition - itemStartPosition) <
+            Math.abs(currentScrollPosition - itemEndPosition)
+              ? itemStartPosition
+              : itemEndPosition;
+        }
+      }
+    }
+    scrollPosition += this.offsetWithinScroller[this._positionDim];
+    return this._clampScrollPosition(scrollPosition);
+  }
+
+  public getScrollIntoViewCoordinates(
+    options: PinOptions
+  ): ScrollToCoordinates {
+    return {
+      [this._positionDim as position]:
+        this._calculateScrollIntoViewPosition(options),
+    } as ScrollToOptions;
+  }
+
+  private _sendUnpinnedMessage() {
+    this._hostSink({
+      type: 'unpinned',
+    });
+  }
+
+  private _sendVisibilityChangedMessage() {
+    this._hostSink({
+      type: 'visibilityChanged',
+      firstVisible: this._firstVisible,
+      lastVisible: this._lastVisible,
+    });
+  }
+
+  protected _sendStateChangedMessage() {
+    const childPositions: ChildPositions = new Map();
+    if (this._first !== -1 && this._last !== -1) {
+      for (let idx = this._first; idx <= this._last; idx++) {
+        childPositions.set(idx, this._getItemPosition(idx));
+      }
+    }
+    const message: StateChangedMessage = {
+      type: 'stateChanged',
+      scrollSize: {
+        [this._sizeDim]: this._scrollSize,
+        [this._secondarySizeDim]: null,
+      } as Size,
+      range: {
+        first: this._first,
+        last: this._last,
+        firstVisible: this._firstVisible,
+        lastVisible: this._lastVisible,
+      },
+      childPositions,
+    };
+    if (this._scrollError) {
+      message.scrollError = {
+        [this._positionDim]: this._scrollError,
+        [this._secondaryPositionDim]: 0,
+      } as Positions;
+      this._scrollError = 0;
+    }
+    this._hostSink(message);
   }
 
   /**
@@ -467,7 +482,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   private _checkThresholds() {
-    if (this._viewDim1 === 0 && this._num > 0) {
+    if ((this._viewDim1 === 0 && this._num > 0) || this._pin !== null) {
       this._scheduleReflow();
     } else {
       const min = Math.max(0, this._scrollPosition - this._overhang);
@@ -477,6 +492,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       );
       if (this._physicalMin > min || this._physicalMax < max) {
         this._scheduleReflow();
+      } else {
+        this._updateVisibleIndices({emit: true});
       }
     }
   }
@@ -515,17 +532,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       this._firstVisible = firstVisible;
       this._lastVisible = lastVisible;
       if (options && options.emit) {
-        this._emitRange();
+        this._sendVisibilityChangedMessage();
       }
-    }
-  }
-
-  private _scrollPositionChanged(oldPos: number, newPos: number) {
-    // When both values are bigger than the max scroll position, keep the
-    // current _scrollToIndex, otherwise invalidate it.
-    const maxPos = this._scrollSize - this._viewDim1;
-    if (oldPos < maxPos || newPos < maxPos) {
-      this._scrollToIndex = -1;
     }
   }
 }

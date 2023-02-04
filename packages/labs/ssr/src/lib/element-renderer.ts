@@ -7,13 +7,16 @@
  */
 
 import {escapeHtml} from './util/escape-html.js';
-import {RenderInfo} from './render-lit-html.js';
+import type {RenderInfo} from './render-value.js';
+import type {RenderResult} from './render-result.js';
 
-export type Constructor<T> = {new (): T};
+type Interface<T> = {
+  [P in keyof T]: T[P];
+};
 
 export type ElementRendererConstructor = (new (
   tagName: string
-) => ElementRenderer) &
+) => Interface<ElementRenderer>) &
   typeof ElementRenderer;
 
 type AttributesMap = Map<string, string>;
@@ -41,10 +44,19 @@ export const getElementRenderer = (
   return new FallbackRenderer(tagName);
 };
 
+// TODO (justinfagnani): remove in favor of ShadowRootInit
+/**
+ * @deprecated Use ShadowRootInit instead
+ */
+export type ShadowRootOptions = ShadowRootInit;
+
 /**
  * An object that renders elements of a certain type.
  */
 export abstract class ElementRenderer {
+  // TODO (justinfagnani): We shouldn't assume that ElementRenderer subclasses
+  // create an element instance. Move this to a base class for renderers that
+  // do.
   element?: HTMLElement;
   tagName: string;
 
@@ -65,28 +77,52 @@ export abstract class ElementRenderer {
     return false;
   }
 
+  /**
+   * Called when a custom element is instantiated during a server render.
+   *
+   * An ElementRenderer can actually instantiate the custom element class, or
+   * it could emulate the element in some other way.
+   */
   constructor(tagName: string) {
     this.tagName = tagName;
   }
 
   /**
-   * Should implement server-appropriate implementation of connectedCallback
-   */
-  abstract connectedCallback(): void;
-
-  /**
-   * Should implement server-appropriate implementation of attributeChangedCallback
-   */
-  abstract attributeChangedCallback(
-    name: string,
-    old: string | null,
-    value: string | null
-  ): void;
-
-  /**
-   * Handles setting a property.
+   * Called when a custom element is "attached" to the server DOM.
    *
-   * Default implementation sets the property on the renderer's element instance.
+   * Because we don't presume a full DOM emulation, this isn't the same as
+   * being connected in a real browser. There may not be an owner document,
+   * parentNode, etc., depending on the DOM emulation.
+   *
+   * If this renderer is creating actual element instances, it may forward
+   * the call to the element's `connectedCallback()`.
+   *
+   * The default impementation is a no-op.
+   */
+  connectedCallback(): void {
+    // do nothing
+  }
+
+  /**
+   * Called from `setAttribute()` to emulate the browser's
+   * `attributeChangedCallback` lifecycle hook.
+   *
+   * If this renderer is creating actual element instances, it may forward
+   * the call to the element's `attributeChangedCallback()`.
+   */
+  attributeChangedCallback(
+    _name: string,
+    _old: string | null,
+    _value: string | null
+  ) {
+    // do nothing
+  }
+
+  /**
+   * Handles setting a property on the element.
+   *
+   * The default implementation sets the property on the renderer's element
+   * instance.
    *
    * @param name Name of the property
    * @param value Value of the property
@@ -117,23 +153,37 @@ export abstract class ElementRenderer {
   }
 
   /**
-   * Render a single element's ShadowRoot children.
+   * The shadow root options to write to the declarative shadow DOM <template>,
+   * if one is created with `renderShadow()`.
    */
-  abstract renderShadow(
-    _renderInfo: RenderInfo
-  ): IterableIterator<string> | undefined;
+  get shadowRootOptions(): ShadowRootInit {
+    return {mode: 'open'};
+  }
 
   /**
-   * Render an element's light DOM children.
-   */
-  abstract renderLight(renderInfo: RenderInfo): IterableIterator<string>;
-
-  /**
-   * Render an element's attributes.
+   * Render the element's shadow root children.
    *
-   * Default implementation serializes all attributes on the element instance.
+   * If `renderShadow()` returns undefined, no declarative shadow root is
+   * emitted.
    */
-  *renderAttributes(): IterableIterator<string> {
+  renderShadow(_renderInfo: RenderInfo): RenderResult | undefined {
+    return undefined;
+  }
+
+  /**
+   * Render the element's light DOM children.
+   */
+  renderLight(_renderInfo: RenderInfo): RenderResult | undefined {
+    return undefined;
+  }
+
+  /**
+   * Render the element's attributes.
+   *
+   * The default implementation serializes all attributes on the element
+   * instance.
+   */
+  *renderAttributes(): RenderResult {
     if (this.element !== undefined) {
       const {attributes} = this.element;
       for (
@@ -155,14 +205,14 @@ export abstract class ElementRenderer {
  * An ElementRenderer used as a fallback in the case where a custom element is
  * either unregistered or has no other matching renderer.
  */
-class FallbackRenderer extends ElementRenderer {
+export class FallbackRenderer extends ElementRenderer {
   private readonly _attributes: {[name: string]: string} = {};
 
   override setAttribute(name: string, value: string) {
     this._attributes[name] = value;
   }
 
-  override *renderAttributes(): IterableIterator<string> {
+  override *renderAttributes(): RenderResult {
     for (const [name, value] of Object.entries(this._attributes)) {
       if (value === '' || value === undefined || value === null) {
         yield ` ${name}`;
@@ -171,9 +221,4 @@ class FallbackRenderer extends ElementRenderer {
       }
     }
   }
-
-  connectedCallback() {}
-  attributeChangedCallback() {}
-  *renderLight() {}
-  *renderShadow() {}
 }

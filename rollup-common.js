@@ -11,6 +11,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
+import inject from '@rollup/plugin-inject';
 
 // Greek prefixes used with minified class and stable properties on objects to
 // avoid collisions with user code and/or subclasses between packages. They are
@@ -247,6 +248,41 @@ const generateTerserOptions = (
   },
 });
 
+/**
+ * Inject an import for the SSR DOM Shim into the Node build of
+ * `@lit-labs/reactive-element`, and modify the `extends` clause of
+ * `ReactiveElement` to use that `HTMLElement` shim, unless a global version has
+ * already been defined.
+ *
+ * ```js
+ * import {HTMLElement, customElements} from '@lit-labs/ssr-dom-shim';
+ *
+ * // ...
+ *
+ * export class ReactiveElement extends (globalThis.HTMLElement ?? HTMLElement) {
+ *   // ...
+ * }
+ * ```
+ */
+const injectNodeDomShimIntoReactiveElement = [
+  inject({
+    HTMLElement: ['@lit-labs/ssr-dom-shim', 'HTMLElement'],
+    customElements: ['@lit-labs/ssr-dom-shim', 'customElements'],
+    include: ['**/packages/reactive-element/development/reactive-element.js'],
+  }),
+  inject({
+    Buffer: ['buffer', 'Buffer'],
+    include: ['**/packages/lit-html/development/experimental-hydrate.js'],
+  }),
+  replace({
+    preventAssignment: true,
+    values: {
+      'extends HTMLElement': 'extends (globalThis.HTMLElement ?? HTMLElement)',
+    },
+    include: ['**/packages/reactive-element/development/reactive-element.js'],
+  }),
+];
+
 export function litProdConfig({
   entryPoints,
   external = [],
@@ -453,8 +489,9 @@ export function litProdConfig({
                     'const ENABLE_SHADYDOM_NOPATCH = false',
                 },
               }),
+              ...injectNodeDomShimIntoReactiveElement,
               sourcemaps(),
-              // We want the Node build to be minified because:
+              // We want the production Node build to be minified because:
               //
               // 1. It should be very slightly faster, even in Node where bytes
               //    are not as important as in the browser.
@@ -467,6 +504,39 @@ export function litProdConfig({
               //    otherwise have different names. The default export that
               //    lit-element will use is minified.
               terser(terserOptions),
+              summary({
+                showBrotliSize: true,
+                showGzippedSize: true,
+              }),
+              ...(CHECKSIZE ? [skipBundleOutput] : []),
+            ],
+          },
+          {
+            // Also create a development Node build that does not minify to be
+            // used during development so it can work along side the unminified
+            // dev build of lit-element
+            input: entryPoints.map((name) => `development/${name}.js`),
+            output: {
+              dir: `${outputDir}/node/development`,
+              format: 'esm',
+              preserveModules: true,
+              sourcemap: !CHECKSIZE,
+            },
+            external,
+            plugins: [
+              replace({
+                preventAssignment: true,
+                values: {
+                  // Setting NODE_MODE to true enables node-specific behaviors,
+                  // i.e. using globalThis instead of window, and shimming APIs
+                  // needed for Lit bootup.
+                  'const NODE_MODE = false': 'const NODE_MODE = true',
+                  'const ENABLE_SHADYDOM_NOPATCH = true':
+                    'const ENABLE_SHADYDOM_NOPATCH = false',
+                },
+              }),
+              ...injectNodeDomShimIntoReactiveElement,
+              sourcemaps(),
               summary({
                 showBrotliSize: true,
                 showGzippedSize: true,

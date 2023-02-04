@@ -1,35 +1,106 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import ts from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {DiagnosticsError} from './errors.js';
 import {Analyzer} from './analyzer.js';
 
+export interface AnalyzerOptions {
+  /**
+   * Glob of source files to exclude from project during analysis.
+   *
+   * Useful for excluding things source like test folders that might otherwise
+   * be included in a project's tsconfig.
+   */
+  exclude?: string[];
+}
+
 /**
  * Returns an analyzer for a Lit npm package based on a filesystem path.
+ *
+ * The path may specify a package root folder, or a specific tsconfig file. When
+ * specifying a folder, if no tsconfig.json file is found directly in the root
+ * folder, the project will be analyzed as JavaScript.
  */
-export const createPackageAnalyzer = (packageRoot: AbsolutePath) => {
-  const configFileName = ts.findConfigFile(
-    packageRoot,
-    ts.sys.fileExists,
-    'tsconfig.json'
-  );
-  if (configFileName === undefined) {
-    // TODO: use a hard-coded tsconfig for JS projects.
-    throw new Error(`tsconfig.json not found in ${packageRoot}`);
+export const createPackageAnalyzer = (
+  packagePath: AbsolutePath,
+  options: AnalyzerOptions = {}
+) => {
+  // This logic accepts either a path to folder containing a tsconfig.json
+  // directly inside it or a path to a specific tsconfig file. If no tsconfig
+  // file is found, we fallback to creating a JavaScript program.
+  const isDirectory = ts.sys.directoryExists(packagePath);
+  const configFileName = isDirectory
+    ? path.join(packagePath, 'tsconfig.json')
+    : packagePath;
+  let commandLine: ts.ParsedCommandLine;
+  if (ts.sys.fileExists(configFileName)) {
+    const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
+    if (options.exclude !== undefined) {
+      (configFile.config.exclude ??= []).push(...options.exclude);
+    }
+    commandLine = ts.parseJsonConfigFileContent(
+      configFile.config /* json */,
+      ts.sys /* host */,
+      packagePath /* basePath */,
+      undefined /* existingOptions */,
+      path.relative(packagePath, configFileName) /* configFileName */
+    );
+  } else if (isDirectory) {
+    console.info(`No tsconfig.json found; assuming package is JavaScript.`);
+    commandLine = ts.parseJsonConfigFileContent(
+      {
+        compilerOptions: {
+          // TODO(kschaaf): probably want to make this configurable
+          module: 'ES2020',
+          lib: ['es2020', 'DOM'],
+          allowJs: true,
+          skipLibCheck: true,
+          skipDefaultLibCheck: true,
+          // With `allowJs: true`, the program will automatically include every
+          // .d.ts file under node_modules/@types regardless of whether the
+          // program imported modules associated with those types, which can
+          // dramatically slow down the program analysis (this does not
+          // automatically happen when allowJs is false). For now, eliminating
+          // `typeRoots` fixes the automatic over-inclusion of .d.ts files as
+          // long as nodeResolution is properly set (it will still import .d.ts
+          // files into the project as expected based on imports). It may
+          // however cause a failure to find definitely-typed .d.ts files for
+          // imports in a JS project, but it seems unlikely these would be
+          // installed anyway.
+          typeRoots: [],
+          moduleResolution: 'node',
+        },
+        include: ['**/*.js'],
+        exclude: options.exclude ?? [],
+      },
+      ts.sys /* host */,
+      packagePath /* basePath */
+    );
+  } else {
+    throw new Error(
+      `The specified path '${packagePath}' was not a folder or a tsconfig file.`
+    );
   }
-  const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-  // Note `configFileName` is optional but must be set for
-  // `getOutputFileNames` to work correctly; however, it must be relative to
-  // `packageRoot`
-  const commandLine = ts.parseJsonConfigFileContent(
-    configFile.config /* json */,
-    ts.sys /* host */,
-    packageRoot /* basePath */,
-    undefined /* existingOptions */,
-    path.relative(packageRoot, configFileName) /* configFileName */
-  );
 
-  const program = ts.createProgram(commandLine.fileNames, commandLine.options);
+  // Ensure that `parent` nodes are set in the AST by creating a compiler
+  // host with this configuration; without these, `getText()` and other
+  // API's that require crawling up the AST tree to find the source file
+  // text may fail
+  const compilerHost = ts.createCompilerHost(
+    commandLine.options,
+    /* setParentNodes */ true
+  );
+  const program = ts.createProgram(
+    commandLine.fileNames,
+    commandLine.options,
+    compilerHost
+  );
 
   const analyzer = new Analyzer({getProgram: () => program, fs: ts.sys, path});
 
@@ -37,7 +108,7 @@ export const createPackageAnalyzer = (packageRoot: AbsolutePath) => {
   if (diagnostics.length > 0) {
     throw new DiagnosticsError(
       diagnostics,
-      `Error analyzing package '${packageRoot}': Please fix errors first`
+      `Error analyzing package '${packagePath}': Please fix errors first`
     );
   }
 

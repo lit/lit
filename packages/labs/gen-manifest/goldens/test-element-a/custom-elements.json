@@ -1,0 +1,770 @@
+{
+  "schemaVersion": "1.0.0",
+  "modules": [
+    {"kind": "javascript-module", "path": "detail-type.js"},
+    {
+      "kind": "javascript-module",
+      "path": "element-a.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementA",
+          "description": "This is a description of my element. It's pretty great. The description has\ntext that spans multiple lines.",
+          "summary": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "styles",
+              "static": true,
+              "privacy": "public",
+              "type": {
+                "text": "CSSResult",
+                "references": [
+                  {
+                    "name": "CSSResult",
+                    "package": "@lit/reactive-element",
+                    "module": "css-tag.js",
+                    "start": 0,
+                    "end": 9
+                  }
+                ]
+              },
+              "default": "css`\n    :host {\n      display: block;\n      background-color: var(--background-color);\n      color: var(-foreground-color);\n    }\n  `"
+            },
+            {
+              "kind": "field",
+              "name": "foo",
+              "privacy": "public",
+              "type": {"text": "string | undefined"}
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-a",
+          "customElement": true,
+          "events": [
+            {
+              "name": "a-changed",
+              "type": {"text": "Event"},
+              "description": "An awesome event to fire"
+            }
+          ],
+          "slots": [
+            {"name": "default", "description": "The default slot"},
+            {"name": "stuff", "description": "A slot for stuff"}
+          ],
+          "cssParts": [
+            {"name": "header", "description": "The header"},
+            {"name": "footer", "description": "The footer"}
+          ],
+          "cssProperties": [
+            {
+              "name": "--foreground-color",
+              "description": "The foreground color"
+            },
+            {
+              "name": "--background-color",
+              "description": "The background color"
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "localTypeVar",
+          "type": {
+            "text": "ElementA",
+            "references": [
+              {
+                "name": "ElementA",
+                "package": "@lit-internal/test-element-a",
+                "module": "element-a.js",
+                "start": 0,
+                "end": 8
+              }
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "packageTypeVar",
+          "type": {
+            "text": "Foo<Bar>",
+            "references": [
+              {
+                "name": "Foo",
+                "package": "@lit-internal/test-element-a",
+                "module": "package-stuff.js",
+                "start": 0,
+                "end": 3
+              },
+              {
+                "name": "Bar",
+                "package": "@lit-internal/test-element-a",
+                "module": "package-stuff.js",
+                "start": 4,
+                "end": 7
+              }
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "externalTypeVar",
+          "type": {
+            "text": "LitElement",
+            "references": [
+              {"name": "LitElement", "package": "lit", "start": 0, "end": 10}
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "globalTypeVar",
+          "type": {
+            "text": "HTMLElement",
+            "references": [
+              {
+                "name": "HTMLElement",
+                "package": "global:",
+                "start": 0,
+                "end": 11
+              }
+            ]
+          }
+        }
+      ],
+      "exports": [
+        {"kind": "js", "name": "ElementA", "declaration": {"name": "ElementA"}},
+        {
+          "kind": "js",
+          "name": "localTypeVar",
+          "declaration": {"name": "localTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "packageTypeVar",
+          "declaration": {"name": "packageTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "externalTypeVar",
+          "declaration": {"name": "externalTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "globalTypeVar",
+          "declaration": {"name": "globalTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "Foo",
+          "declaration": {
+            "name": "Foo",
+            "package": "@lit-internal/test-element-a",
+            "module": "package-stuff.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "Baz",
+          "declaration": {
+            "name": "Bar",
+            "package": "@lit-internal/test-element-a",
+            "module": "package-stuff.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "local",
+          "declaration": {"name": "localTypeVar"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-a",
+          "declaration": {"name": "ElementA"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-events.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "EventSubclass",
+          "superclass": {"name": "Event", "package": "global:"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "aStr",
+              "privacy": "public",
+              "type": {"text": "string"}
+            },
+            {
+              "kind": "field",
+              "name": "aNumber",
+              "privacy": "public",
+              "type": {"text": "number"}
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "ElementEvents",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "foo",
+              "privacy": "public",
+              "type": {"text": "string | undefined"}
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "fireStringCustomEvent",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {"text": "string"},
+                  "default": "'string-event'",
+                  "optional": true
+                },
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
+              "name": "fireNumberCustomEvent",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {"text": "number"},
+                  "default": "11",
+                  "optional": true
+                },
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
+              "name": "fireMyDetailCustomEvent",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "MyDetail",
+                    "references": [
+                      {
+                        "name": "MyDetail",
+                        "package": "@lit-internal/test-element-a",
+                        "module": "detail-type.js",
+                        "start": 0,
+                        "end": 8
+                      }
+                    ]
+                  },
+                  "default": "{a: 'a', b: 5} as MyDetail",
+                  "optional": true
+                },
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
+              "name": "fireTemplateResultCustomEvent",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "TemplateResult<1>",
+                    "references": [
+                      {
+                        "name": "TemplateResult",
+                        "package": "lit",
+                        "start": 0,
+                        "end": 14
+                      }
+                    ]
+                  },
+                  "default": "html``",
+                  "optional": true
+                },
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
+              "name": "fireEventSubclass",
+              "privacy": "public",
+              "parameters": [
+                {"name": "str", "type": {"text": "string"}},
+                {"name": "num", "type": {"text": "number"}},
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
+              "name": "fireSpecialEvent",
+              "privacy": "public",
+              "parameters": [
+                {"name": "num", "type": {"text": "number"}},
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            }
+          ],
+          "tagName": "element-events",
+          "customElement": true,
+          "events": [
+            {
+              "name": "string-custom-event",
+              "type": {
+                "text": "CustomEvent<string>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  }
+                ]
+              },
+              "description": "A custom event with a string payload"
+            },
+            {
+              "name": "number-custom-event",
+              "type": {
+                "text": "CustomEvent<number>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  }
+                ]
+              },
+              "description": "A custom event with a number payload"
+            },
+            {
+              "name": "my-detail-custom-event",
+              "type": {
+                "text": "CustomEvent<MyDetail>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "MyDetail",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "detail-type.js",
+                    "start": 12,
+                    "end": 20
+                  }
+                ]
+              },
+              "description": "A custom event with a MyDetail payload."
+            },
+            {
+              "name": "event-subclass",
+              "type": {
+                "text": "EventSubclass",
+                "references": [
+                  {
+                    "name": "EventSubclass",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-events.js",
+                    "start": 0,
+                    "end": 13
+                  }
+                ]
+              },
+              "description": "The subclass event with a string and number payload"
+            },
+            {
+              "name": "special-event",
+              "type": {
+                "text": "SpecialEvent",
+                "references": [
+                  {
+                    "name": "SpecialEvent",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "special-event.js",
+                    "start": 0,
+                    "end": 12
+                  }
+                ]
+              },
+              "description": "The special event with a number payload"
+            },
+            {
+              "name": "template-result-custom-event",
+              "type": {
+                "text": "CustomEvent<TemplateResult>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "TemplateResult",
+                    "package": "lit",
+                    "start": 12,
+                    "end": 26
+                  }
+                ]
+              },
+              "description": "The result-custom-event with a TemplateResult payload."
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SpecialEvent",
+          "declaration": {
+            "name": "SpecialEvent",
+            "package": "@lit-internal/test-element-a",
+            "module": "special-event.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "MyDetail",
+          "declaration": {
+            "name": "MyDetail",
+            "package": "@lit-internal/test-element-a",
+            "module": "detail-type.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "EventSubclass",
+          "declaration": {"name": "EventSubclass"}
+        },
+        {
+          "kind": "js",
+          "name": "ElementEvents",
+          "declaration": {"name": "ElementEvents"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-events",
+          "declaration": {"name": "ElementEvents"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-props.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementProps",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "aStr",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "default": "'aStr'"
+            },
+            {
+              "kind": "field",
+              "name": "aNum",
+              "privacy": "public",
+              "type": {"text": "number"},
+              "default": "-1"
+            },
+            {
+              "kind": "field",
+              "name": "aBool",
+              "privacy": "public",
+              "type": {"text": "boolean"},
+              "default": "false"
+            },
+            {
+              "kind": "field",
+              "name": "aStrArray",
+              "privacy": "public",
+              "type": {"text": "string[]"},
+              "default": "['a', 'b']"
+            },
+            {
+              "kind": "field",
+              "name": "aMyType",
+              "privacy": "public",
+              "type": {
+                "text": "MyType",
+                "references": [
+                  {
+                    "name": "MyType",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-props.js",
+                    "start": 0,
+                    "end": 6
+                  }
+                ]
+              },
+              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }"
+            },
+            {
+              "kind": "field",
+              "name": "aState",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "default": "'aState'"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-props",
+          "customElement": true,
+          "events": [
+            {
+              "name": "a-changed",
+              "type": {"text": "Event"},
+              "description": "An awesome event to fire"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementProps",
+          "declaration": {"name": "ElementProps"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-props",
+          "declaration": {"name": "ElementProps"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-slots.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementSlots",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "mainDefault",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "default": "'mainDefault'"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-slots",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementSlots",
+          "declaration": {"name": "ElementSlots"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-slots",
+          "declaration": {"name": "ElementSlots"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "package-stuff.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "Bar",
+          "members": [
+            {
+              "kind": "field",
+              "name": "bar",
+              "privacy": "public",
+              "type": {"text": "boolean"},
+              "default": "true"
+            }
+          ]
+        },
+        {
+          "kind": "class",
+          "name": "Foo",
+          "members": [
+            {
+              "kind": "field",
+              "name": "bar",
+              "privacy": "public",
+              "type": {
+                "text": "T | undefined",
+                "references": [
+                  {
+                    "name": "T",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "package-stuff.js",
+                    "start": 0,
+                    "end": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {"kind": "js", "name": "Bar", "declaration": {"name": "Bar"}},
+        {"kind": "js", "name": "Foo", "declaration": {"name": "Foo"}}
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "special-event.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "SpecialEvent",
+          "superclass": {"name": "Event", "package": "global:"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "aNumber",
+              "privacy": "public",
+              "type": {"text": "number"}
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SpecialEvent",
+          "declaration": {"name": "SpecialEvent"}
+        }
+      ]
+    }
+  ]
+}

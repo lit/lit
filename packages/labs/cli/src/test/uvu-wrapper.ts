@@ -8,7 +8,7 @@ const TIMEOUT = IN_CI ? 60_000 : 30_000;
 /**
  * A safer wrapper around uvu.suite.
  *
- * Adds a timeout so that the the test doesn't hang forever, and so that it
+ * Adds a timeout so that the test doesn't hang forever, and so that it
  * can't be garbage collected.
  *
  * Automatically calls `run` as well.
@@ -37,19 +37,21 @@ function timeout<T>(
   test: uvu.Callback<T>
 ): uvu.Callback<T> {
   return async (ctx) => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const result = Promise.race([
-      test(ctx),
-      new Promise<void>((_, reject) => {
-        timeoutId = setTimeout(
-          () => reject(new Error(`Test timed out: ${JSON.stringify(name)}`)),
-          ms
-        );
-      }),
-    ]);
-    result.finally(() => {
-      clearTimeout(timeoutId);
-    });
-    return result;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        test(ctx),
+        new Promise<void>((_, reject) => {
+          timeoutId = setTimeout(
+            () => reject(new Error(`Test timed out: ${JSON.stringify(name)}`)),
+            ms
+          );
+        }),
+      ]);
+    } finally {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+    }
   };
 }

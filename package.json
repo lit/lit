@@ -19,10 +19,10 @@
     "build:ts": "wireit",
     "build:lit-starter-ts": "wireit",
     "format": "npm run format:eslint && npm run format:prettier",
-    "format:eslint": "eslint \"**/*.{js,ts}\" --fix",
+    "format:eslint": "eslint --ignore-pattern=examples/ --fix \"**/*.{js,ts}\"",
     "format:prettier": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
-    "lint": "eslint \"**/*.{js,ts}\"",
+    "lint": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\"",
     "test": "npm run test:not-starter-kits && npm run test:lit-starter-js && npm run test:lit-starter-ts",
     "test:not-starter-kits": "wireit",
     "test:lit-starter-js": "wireit",
@@ -64,6 +64,7 @@
         "./packages/labs/scoped-registry-mixin:build",
         "./packages/labs/ssr:build",
         "./packages/labs/ssr-client:build",
+        "./packages/labs/ssr-dom-shim:build",
         "./packages/labs/task:build",
         "./packages/labs/testing:build",
         "./packages/labs/virtualizer:build",
@@ -94,6 +95,7 @@
         "./packages/labs/scoped-registry-mixin:build:ts",
         "./packages/labs/ssr:build:ts",
         "./packages/labs/ssr-client:build:ts",
+        "./packages/labs/ssr-dom-shim:build:ts",
         "./packages/labs/task:build:ts",
         "./packages/labs/testing:build:ts",
         "./packages/labs/virtualizer:build:ts",
@@ -181,8 +183,9 @@
     "@changesets/get-github-info": "^0.5.0",
     "@esm-bundle/chai": "^4.3.4",
     "@rollup/plugin-commonjs": "^22.0.0",
+    "@rollup/plugin-inject": "^5.0.2",
     "@rollup/plugin-node-resolve": "^13.2.1",
-    "@rollup/plugin-replace": "^4.0.0",
+    "@rollup/plugin-replace": "^5.0.2",
     "@rollup/plugin-virtual": "^2.1.0",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
@@ -195,6 +198,7 @@
     "@web/test-runner-mocha": "^0.7.5",
     "@web/test-runner-playwright": "^0.8.9",
     "@web/test-runner-saucelabs": "^0.8.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.13.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-no-only-tests": "^2.4.0",
@@ -210,10 +214,10 @@
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "~4.7.4",
     "uvu": "^0.5.6",
-    "wireit": "^0.7.1"
+    "wireit": "^0.9.3"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
-    "**/*.{js,ts}": "eslint --fix"
+    "**/*.{js,ts}": "eslint --ignore-pattern=examples/ --fix"
   }
 }

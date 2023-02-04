@@ -4,8 +4,10 @@ on: [push, pull_request]
 
 jobs:
   tests-sauce:
-    # Don't run on forks. Sauce tests need access to secrets.
-    if: github.repository == 'lit/lit'
+    # Sauce tests need access to secrets.
+    # Run only if PR's head repo is the same as base repo (lit/lit).
+    # i.e. skip job if head repo is a fork.
+    if: github.event.pull_request.head.repo.id == github.event.pull_request.base.repo.id
 
     # Sauce tests are still unreliable. Run them, but don't mark a commit as
     # failing if it fails.

@@ -7,13 +7,20 @@
 /**
  * @fileoverview
  *
- * Utilities for working with classes
+ * Utilities for analyzing variable declarations
  */
 
 import ts from 'typescript';
-import {VariableDeclaration, AnalyzerInterface} from '../model.js';
+import {
+  VariableDeclaration,
+  AnalyzerInterface,
+  DeclarationInfo,
+  DeprecatableDescribed,
+} from '../model.js';
+import {hasExportModifier} from '../utils.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
+import {parseNodeJSDocInfo} from './jsdoc.js';
 
 type VariableName =
   | ts.Identifier
@@ -21,21 +28,59 @@ type VariableName =
   | ts.ArrayBindingPattern;
 
 /**
- * Returns an array of analyzer `VariableDeclaration` models for the given
- * ts.VariableDeclaration.
+ * Returns an analyzer `VariableDeclaration` model for the given
+ * ts.Identifier within a potentially nested ts.VariableDeclaration.
  */
-export const getVariableDeclarations = (
+const getVariableDeclaration = (
+  dec: ts.VariableDeclaration | ts.EnumDeclaration,
+  name: ts.Identifier,
+  jsDocInfo: DeprecatableDescribed,
+  analyzer: AnalyzerInterface
+): VariableDeclaration => {
+  return new VariableDeclaration({
+    name: name.text,
+    node: dec,
+    type: getTypeForNode(name, analyzer),
+    ...jsDocInfo,
+  });
+};
+
+/**
+ * Returns name and model factories for all variable
+ * declarations in a variable statement.
+ */
+export const getVariableDeclarationInfo = (
+  statement: ts.VariableStatement,
+  analyzer: AnalyzerInterface
+): DeclarationInfo[] => {
+  const isExport = hasExportModifier(statement);
+  const jsDocInfo = parseNodeJSDocInfo(statement);
+  return statement.declarationList.declarations
+    .map((d) =>
+      getVariableDeclarationInfoList(d, d.name, isExport, jsDocInfo, analyzer)
+    )
+    .flat();
+};
+
+/**
+ * For a given `VariableName` (which might be a simple identifier or a
+ * destructuring pattern which contains more identifiers), return an array of
+ * tuples of name and factory for each declaration.
+ */
+const getVariableDeclarationInfoList = (
   dec: ts.VariableDeclaration,
   name: VariableName,
+  isExport: boolean,
+  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
-): VariableDeclaration[] => {
+): DeclarationInfo[] => {
   if (ts.isIdentifier(name)) {
     return [
-      new VariableDeclaration({
+      {
         name: name.text,
-        node: dec,
-        type: getTypeForNode(name, analyzer),
-      }),
+        factory: () => getVariableDeclaration(dec, name, jsDocInfo, analyzer),
+        isExport,
+      },
     ];
   } else if (
     // Recurse into the elements of an array/object destructuring variable
@@ -47,7 +92,15 @@ export const getVariableDeclarations = (
       ts.isBindingElement(el)
     ) as ts.BindingElement[];
     return els
-      .map((el) => getVariableDeclarations(dec, el.name, analyzer))
+      .map((el) =>
+        getVariableDeclarationInfoList(
+          dec,
+          el.name,
+          isExport,
+          jsDocInfo,
+          analyzer
+        )
+      )
       .flat();
   } else {
     throw new DiagnosticsError(
@@ -55,4 +108,52 @@ export const getVariableDeclarations = (
       `Expected declaration name to either be an Identifier or a BindingPattern`
     );
   }
+};
+
+/**
+ * Returns declaration info & factory for a default export assignment.
+ */
+export const getExportAssignmentVariableDeclarationInfo = (
+  exportAssignment: ts.ExportAssignment,
+  analyzer: AnalyzerInterface
+): DeclarationInfo => {
+  return {
+    name: 'default',
+    factory: () =>
+      getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
+    isExport: true,
+  };
+};
+
+/**
+ * Returns an analyzer `VariableDeclaration` model for the given default
+ * ts.ExportAssignment, handling the case of: `export const 'some expression'`;
+ *
+ * Note that even though this technically isn't a VariableDeclaration in
+ * TS, we model it as one since it could unobservably be implemented as
+ * `const varDec = 'some expression'; export {varDec as default} `
+ */
+const getExportAssignmentVariableDeclaration = (
+  exportAssignment: ts.ExportAssignment,
+  analyzer: AnalyzerInterface
+): VariableDeclaration => {
+  return new VariableDeclaration({
+    name: 'default',
+    node: exportAssignment,
+    type: getTypeForNode(exportAssignment.expression, analyzer),
+    ...parseNodeJSDocInfo(exportAssignment),
+  });
+};
+
+export const getEnumDeclarationInfo = (
+  statement: ts.EnumDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  const jsDocInfo = parseNodeJSDocInfo(statement);
+  return {
+    name: statement.name.text,
+    factory: () =>
+      getVariableDeclaration(statement, statement.name, jsDocInfo, analyzer),
+    isExport: hasExportModifier(statement),
+  };
 };

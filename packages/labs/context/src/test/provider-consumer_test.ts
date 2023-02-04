@@ -7,13 +7,16 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextProvider, ContextKey, ContextConsumer} from '@lit-labs/context';
+import {ContextProvider, Context, ContextConsumer} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
-const simpleContext = 'simple-context' as ContextKey<'simple-context', number>;
+const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
 class SimpleContextProvider extends LitElement {
-  private provider = new ContextProvider(this, simpleContext, 1000);
+  private provider = new ContextProvider(this, {
+    context: simpleContext,
+    initialValue: 1000,
+  });
 
   public setValue(value: number) {
     this.provider.setValue(value);
@@ -26,14 +29,13 @@ class MultipleContextConsumer extends LitElement {
 
   public constructor() {
     super();
-    new ContextConsumer(
-      this,
-      simpleContext,
-      (value) => {
+    new ContextConsumer(this, {
+      context: simpleContext,
+      callback: (value) => {
         this.value = value;
       },
-      true // allow multiple values
-    );
+      subscribe: true,
+    });
   }
 
   protected render(): TemplateResult {
@@ -47,8 +49,11 @@ class OnceContextConsumer extends LitElement {
 
   public constructor() {
     super();
-    new ContextConsumer(this, simpleContext, (value) => {
-      this.value = value;
+    new ContextConsumer(this, {
+      context: simpleContext,
+      callback: (value) => {
+        this.value = value;
+      },
     });
   }
 

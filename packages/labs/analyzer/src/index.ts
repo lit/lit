@@ -12,12 +12,20 @@ export type {
   Module,
   Reference,
   Type,
+  Event,
   Declaration,
   VariableDeclaration,
   ClassDeclaration,
+  ClassField,
+  ClassMethod,
+  Parameter,
+  Return,
   LitElementDeclaration,
+  CustomElementDeclaration,
+  LitElementExport,
   PackageJson,
   ModuleWithLitElementDeclarations,
+  DeprecatableDescribed,
 } from './lib/model.js';
 
 export type {AbsolutePath, PackagePath} from './lib/paths.js';
