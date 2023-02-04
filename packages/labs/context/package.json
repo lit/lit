@@ -148,7 +148,7 @@
   },
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.1.1",
+    "@lit-labs/testing": "^0.2.0",
     "@types/trusted-types": "^2.0.2"
   },
   "publishConfig": {
