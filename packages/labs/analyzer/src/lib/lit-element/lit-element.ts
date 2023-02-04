@@ -14,7 +14,7 @@ import ts from 'typescript';
 import {getClassMembers, getHeritage} from '../javascript/classes.js';
 import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
-import {getProperties} from './properties.js';
+import {getProperties as getReactiveProperties} from './properties.js';
 import {
   getJSDocData,
   getTagName as getCustomElementTagName,
@@ -33,7 +33,7 @@ export const getLitElementDeclaration = (
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
-    reactiveProperties: getProperties(declaration, analyzer),
+    reactiveProperties: getReactiveProperties(declaration),
     ...getJSDocData(declaration, analyzer),
     getHeritage: () => getHeritage(declaration, false, analyzer),
     ...getClassMembers(declaration, analyzer),

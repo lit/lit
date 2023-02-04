@@ -12,16 +12,12 @@
 
 import ts from 'typescript';
 import {LitClassDeclaration} from './lit-element.js';
-import {ReactiveProperty, AnalyzerInterface} from '../model.js';
-import {getTypeForNode} from '../types.js';
+import {ReactiveProperty} from '../model.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 import {DiagnosticsError} from '../errors.js';
 import {hasStaticModifier} from '../utils.js';
 
-export const getProperties = (
-  classDeclaration: LitClassDeclaration,
-  analyzer: AnalyzerInterface
-) => {
+export const getProperties = (classDeclaration: LitClassDeclaration) => {
   const reactiveProperties = new Map<string, ReactiveProperty>();
   const undecoratedProperties = new Map<string, ts.Node>();
 
@@ -45,7 +41,6 @@ export const getProperties = (
       const options = getPropertyOptions(propertyDecorator);
       reactiveProperties.set(name, {
         name,
-        type: getTypeForNode(prop, analyzer),
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
         reflect: getPropertyReflect(options),
@@ -68,13 +63,7 @@ export const getProperties = (
 
   // Handle static properties block (initializer or getter).
   if (staticProperties !== undefined) {
-    addPropertiesFromStaticBlock(
-      classDeclaration,
-      staticProperties,
-      undecoratedProperties,
-      reactiveProperties,
-      analyzer
-    );
+    addPropertiesFromStaticBlock(staticProperties, reactiveProperties);
   }
 
   return reactiveProperties;
@@ -85,18 +74,9 @@ export const getProperties = (
  * options to the provided `reactiveProperties` map.
  */
 const addPropertiesFromStaticBlock = (
-  classDeclaration: LitClassDeclaration,
   properties: ts.PropertyDeclaration | ts.GetAccessorDeclaration,
-  undecoratedProperties: Map<string, ts.Node>,
-  reactiveProperties: Map<string, ReactiveProperty>,
-  analyzer: AnalyzerInterface
+  reactiveProperties: Map<string, ReactiveProperty>
 ) => {
-  // Add any constructor initializers to the undecorated properties node map
-  // from which we can infer types from. This is the primary path that JS source
-  // can get their inferred types (in TS, types will come from the undecorated
-  // fields passed in, since you need to declare the field to assign it in the
-  // constructor).
-  addConstructorInitializers(classDeclaration, undecoratedProperties);
   // Find the object literal from the initializer or getter return value
   const object = getStaticPropertiesObjectLiteral(properties);
   // Loop over each key/value in the object and add them to the map
@@ -108,13 +88,8 @@ const addPropertiesFromStaticBlock = (
     ) {
       const name = prop.name.text;
       const options = prop.initializer;
-      const nodeForType = undecoratedProperties.get(name);
       reactiveProperties.set(name, {
         name,
-        type:
-          nodeForType !== undefined
-            ? getTypeForNode(nodeForType, analyzer)
-            : undefined,
         attribute: getPropertyAttribute(options, name),
         typeOption: getPropertyType(options),
         reflect: getPropertyReflect(options),
@@ -173,40 +148,6 @@ const getStaticPropertiesObjectLiteral = (
     );
   }
   return object;
-};
-
-/**
- * Adds any field initializers in the given class's constructor to the provided
- * map. This will be used for inferring the type of fields in JS programs.
- */
-const addConstructorInitializers = (
-  classDeclaration: ts.ClassDeclaration,
-  undecoratedProperties: Map<string, ts.Node>
-) => {
-  const ctor = classDeclaration.forEachChild((node) =>
-    ts.isConstructorDeclaration(node) ? node : undefined
-  );
-  if (ctor !== undefined) {
-    ctor.body?.statements.forEach((stmt) => {
-      // Look for initializers in the form of `this.foo = xxxx`
-      if (
-        ts.isExpressionStatement(stmt) &&
-        ts.isBinaryExpression(stmt.expression) &&
-        ts.isPropertyAccessExpression(stmt.expression.left) &&
-        stmt.expression.left.expression.kind === ts.SyntaxKind.ThisKeyword &&
-        ts.isIdentifier(stmt.expression.left.name) &&
-        !undecoratedProperties.has(stmt.expression.left.name.text)
-      ) {
-        // Add the initializer expression to the map
-        undecoratedProperties.set(
-          // Property name
-          stmt.expression.left.name.text,
-          // Expression from which we can infer a type
-          stmt.expression.right
-        );
-      }
-    });
-  }
 };
 
 /**

@@ -74,23 +74,24 @@ for (const lang of languages) {
     assert.ok(aProp);
     assert.equal(aProp.name, 'a', 'property name');
     assert.equal(aProp.attribute, 'a', 'attribute name');
-    assert.equal(aProp.type?.text, 'string');
-    // TODO (justinfagnani) better assertion
-    assert.ok(aProp.type);
+    assert.equal(decl.getField('a')?.type?.text, 'string');
     assert.equal(aProp.reflect, false);
 
     const bProp = decl.reactiveProperties.get('b');
     assert.ok(bProp);
     assert.equal(bProp.name, 'b');
     assert.equal(bProp.attribute, 'bbb');
-    assert.equal(bProp.type?.text, 'number');
+    assert.equal(decl.getField('b')?.type?.text, 'number');
     assert.equal(bProp.typeOption, 'Number');
 
     const cProp = decl.reactiveProperties.get('c');
     assert.ok(cProp);
     assert.equal(cProp.name, 'c');
     assert.equal(cProp.attribute, 'c');
-    assert.equal(cProp.type?.text, lang === 'ts' ? 'any' : undefined);
+    assert.equal(
+      decl.getField('c')?.type?.text,
+      lang === 'ts' ? 'any' : undefined
+    );
   });
 
   test('Analyzer finds LitElement properties from static getter', ({
@@ -110,7 +111,7 @@ for (const lang of languages) {
     assert.ok(fooProp);
     assert.equal(fooProp.name, 'foo', 'property name');
     assert.equal(fooProp.attribute, 'foo', 'attribute name');
-    assert.equal(fooProp.type?.text, 'string');
+    assert.equal(decl.getField('foo')?.type?.text, 'string');
     assert.equal(fooProp.reflect, false);
 
     const bProp = decl.reactiveProperties.get('bar');
@@ -119,7 +120,7 @@ for (const lang of languages) {
     assert.equal(bProp.attribute, 'bar');
 
     // This is inferred
-    assert.equal(bProp.type?.text, 'number');
+    assert.equal(decl.getField('bar')?.type?.text, 'number');
     assert.equal(bProp.typeOption, 'Number');
   });
 

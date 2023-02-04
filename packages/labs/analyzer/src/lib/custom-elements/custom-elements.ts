@@ -169,7 +169,7 @@ export const getCustomElementDeclaration = (
     name: node.name?.text ?? '',
     node,
     ...getJSDocData(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    getHeritage: () => getHeritage(node, false, analyzer),
     ...getClassMembers(node, analyzer),
   });
 };

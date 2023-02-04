@@ -74,33 +74,76 @@ export const getClassMembers = (
   analyzer: AnalyzerInterface
 ) => {
   const fieldMap = new Map<string, ClassField>();
+  const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
+  const staticMethodMap = new Map<string, ClassMethod>();
   declaration.members.forEach((node) => {
     if (ts.isMethodDeclaration(node)) {
-      methodMap.set(
+      const info = getMemberInfo(node);
+      (info.static ? staticMethodMap : methodMap).set(
         node.name.getText(),
         new ClassMethod({
-          ...getMemberInfo(node),
+          ...info,
           ...getFunctionLikeInfo(node, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );
     } else if (ts.isPropertyDeclaration(node)) {
-      fieldMap.set(
+      const info = getMemberInfo(node);
+      (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
         new ClassField({
-          ...getMemberInfo(node),
+          ...info,
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );
+    } else if (ts.isConstructorDeclaration(node)) {
+      addConstructorFields(node, fieldMap, analyzer);
     }
   });
   return {
     fieldMap,
+    staticFieldMap,
     methodMap,
+    staticMethodMap,
   };
+};
+
+/**
+ * Add ClassFields that are defined via an initializer in the
+ * constructor only
+ */
+const addConstructorFields = (
+  ctor: ts.ConstructorDeclaration,
+  fieldMap: Map<string, ClassField>,
+  analyzer: AnalyzerInterface
+) => {
+  ctor.body?.statements.forEach((stmt) => {
+    // Look for initializers in the form of `this.foo = xxxx`
+    if (
+      ts.isExpressionStatement(stmt) &&
+      ts.isBinaryExpression(stmt.expression) &&
+      ts.isPropertyAccessExpression(stmt.expression.left) &&
+      stmt.expression.left.expression.kind === ts.SyntaxKind.ThisKeyword &&
+      ts.isIdentifier(stmt.expression.left.name)
+    ) {
+      const name = stmt.expression.left.name.text;
+      const initializer = stmt.expression.right;
+      fieldMap.set(
+        name,
+        new ClassField({
+          name,
+          static: false,
+          privacy: getPrivacy(stmt),
+          default: initializer.getText(),
+          type: getTypeForNode(initializer, analyzer),
+          ...parseNodeJSDocInfo(stmt),
+        })
+      );
+    }
+  });
 };
 
 const getMemberInfo = (node: ts.MethodDeclaration | ts.PropertyDeclaration) => {

@@ -15,6 +15,12 @@
           "members": [
             {
               "kind": "field",
+              "name": "foo",
+              "privacy": "public",
+              "type": {"text": "string | undefined"}
+            },
+            {
+              "kind": "field",
               "name": "styles",
               "static": true,
               "privacy": "public",
@@ -31,12 +37,6 @@
                 ]
               },
               "default": "css`\n    :host {\n      display: block;\n      background-color: var(--background-color);\n      color: var(-foreground-color);\n    }\n  `"
-            },
-            {
-              "kind": "field",
-              "name": "foo",
-              "privacy": "public",
-              "type": {"text": "string | undefined"}
             },
             {
               "kind": "method",
@@ -215,13 +215,15 @@
               "kind": "field",
               "name": "aStr",
               "privacy": "public",
-              "type": {"text": "string"}
+              "type": {"text": "string"},
+              "default": "aStr"
             },
             {
               "kind": "field",
               "name": "aNumber",
               "privacy": "public",
-              "type": {"text": "number"}
+              "type": {"text": "number"},
+              "default": "aNumber"
             }
           ]
         },
@@ -753,7 +755,8 @@
               "kind": "field",
               "name": "aNumber",
               "privacy": "public",
-              "type": {"text": "number"}
+              "type": {"text": "number"},
+              "default": "aNumber"
             }
           ]
         }
