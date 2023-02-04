@@ -31,7 +31,7 @@ export class ContextProviderEvent<
   }
 }
 
-export interface Options<C> {
+export interface Options<C extends Context<unknown, unknown>> {
   context: C;
   initialValue?: ContextType<C>;
 }
