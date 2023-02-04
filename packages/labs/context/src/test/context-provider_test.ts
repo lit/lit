@@ -7,10 +7,11 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {Context, consume, provide} from '@lit-labs/context';
+import {Context, createContext, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
+const stringContext = createContext<string>(Symbol);
 
 class ContextConsumerElement extends LitElement {
   @consume({context: simpleContext, subscribe: true})
@@ -33,6 +34,19 @@ class ContextProviderElement extends LitElement {
   @property({type: Number, reflect: true})
   public value = 0;
 
+  @provide({context: stringContext})
+  public stringValue = '';
+
+  private _stringValue2 = '';
+
+  @provide({context: stringContext})
+  public set stringValue2(v: string) {
+    this._stringValue2 = v;
+  }
+  public get stringValue2() {
+    return this._stringValue2;
+  }
+
   protected render(): TemplateResult {
     return html`
       <div>
@@ -47,6 +61,7 @@ suite('@consume', () => {
   let consumer: ContextConsumerElement;
   let provider: ContextProviderElement;
   let container: HTMLElement;
+
   setup(async () => {
     container = document.createElement('div');
     container.innerHTML = `
@@ -91,6 +106,7 @@ suite('@consume: multiple instances', () => {
   let providers: ContextProviderElement[];
   let container: HTMLElement;
   const count = 3;
+
   setup(async () => {
     container = document.createElement('div');
     container.innerHTML = Array.from(
@@ -134,5 +150,29 @@ suite('@consume: multiple instances', () => {
     consumers.forEach((consumer, i) =>
       assert.strictEqual(consumer.value, 500 + i)
     );
+  });
+});
+
+suite('@provide', () => {
+  test('can get values of provide decorated fields', async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `
+        <context-provider value="1000">
+            <context-consumer></context-consumer>
+        </context-provider>
+    `;
+    document.body.appendChild(container);
+
+    const provider = container.querySelector(
+      'context-provider'
+    ) as ContextProviderElement;
+
+    assert.equal(provider.stringValue, '');
+    provider.stringValue = 'test';
+    assert.equal(provider.stringValue, 'test');
+
+    assert.equal(provider.stringValue2, '');
+    provider.stringValue2 = 'test';
+    assert.equal(provider.stringValue2, 'test');
   });
 });

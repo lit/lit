@@ -63,13 +63,17 @@ export function provide<ValueType>({
       // notify the controller of an updated value
       const descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, name);
       const oldSetter = descriptor?.set;
+      const oldGetter = descriptor?.get;
       const newDescriptor = {
         ...descriptor,
-        set: function (value: ValueType) {
+        set(value: ValueType) {
           controllerMap.get(this)?.setValue(value);
-          if (oldSetter) {
-            oldSetter.call(this, value);
-          }
+          oldSetter?.call(this, value);
+        },
+        get() {
+          return oldGetter !== undefined
+            ? oldGetter.call(this)
+            : controllerMap.get(this)?.value;
         },
       };
       Object.defineProperty(ctor.prototype, name, newDescriptor);
