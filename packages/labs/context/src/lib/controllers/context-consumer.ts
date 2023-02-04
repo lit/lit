@@ -11,6 +11,12 @@ import {
 import {Context, ContextType} from '../create-context.js';
 import {ReactiveController, ReactiveElement} from 'lit';
 
+export interface Options<C extends Context<unknown, unknown>> {
+  context: C;
+  callback?: (value: ContextType<C>, dispose?: () => void) => void;
+  subscribe?: boolean;
+}
+
 /**
  * ContextConsumer is a ReactiveController which binds a custom-element's
  * lifecycle to the Context API. When an element is connected to the DOM it
@@ -24,16 +30,42 @@ export class ContextConsumer<
   HostElement extends ReactiveElement
 > implements ReactiveController
 {
+  protected host: HostElement;
+  private context: C;
+  private callback?: (value: ContextType<C>, dispose?: () => void) => void;
+  private subscribe = false;
+
   private provided = false;
 
   public value?: ContextType<C> = undefined;
 
+  constructor(host: HostElement, options: Options<C>);
+  /** @deprecated Use new ContextConsumer(host, options) */
   constructor(
-    protected host: HostElement,
-    private context: C,
-    private callback?: (value: ContextType<C>, dispose?: () => void) => void,
-    private subscribe: boolean = false
+    host: HostElement,
+    context: C,
+    callback?: (value: ContextType<C>, dispose?: () => void) => void,
+    subscribe?: boolean
+  );
+  constructor(
+    host: HostElement,
+    contextOrOptions: C | Options<C>,
+    callback?: (value: ContextType<C>, dispose?: () => void) => void,
+    subscribe?: boolean
   ) {
+    this.host = host;
+    // This is a potentially fragile duck-type. It means a context object can't
+    // have a property name context and be used in positional argument form.
+    if ((contextOrOptions as Options<C>).context !== undefined) {
+      const options = contextOrOptions as Options<C>;
+      this.context = options.context;
+      this.callback = options.callback;
+      this.subscribe = options.subscribe ?? false;
+    } else {
+      this.context = contextOrOptions as C;
+      this.callback = callback;
+      this.subscribe = subscribe ?? false;
+    }
     this.host.addController(this);
   }
 
@@ -42,6 +74,7 @@ export class ContextConsumer<
   hostConnected(): void {
     this.dispatchRequest();
   }
+
   hostDisconnected(): void {
     if (this.unsubscribe) {
       this.unsubscribe();

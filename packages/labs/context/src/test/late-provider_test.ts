@@ -137,7 +137,7 @@ suiteSkipIE('late context provider', () => {
     await consumer.updateComplete;
 
     // Add a provider after the elements are setup
-    new ContextProvider(provider, simpleContext, 1000);
+    new ContextProvider(provider, {context: simpleContext, initialValue: 1000});
 
     await provider.updateComplete;
     await consumer.updateComplete;
