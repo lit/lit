@@ -123,7 +123,8 @@
       "clean": "if-file-deleted",
       "dependencies": [
         "../lit-html:build:ts:types",
-        "../reactive-element:build:ts:types"
+        "../reactive-element:build:ts:types",
+        "../labs/testing:build:ts:utils"
       ],
       "files": [
         "src/**/*.ts",
@@ -258,10 +259,11 @@
     "lit-html": "^2.2.0"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.1.1",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0",
     "tslib": "^2.0.3"
   },
   "directories": {

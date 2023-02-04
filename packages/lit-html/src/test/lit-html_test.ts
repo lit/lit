@@ -30,7 +30,7 @@ import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
-} from './test-utils/strip-markers.js';
+} from '@lit-labs/testing';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {AsyncDirective} from 'lit-html/async-directive.js';
 

@@ -231,8 +231,9 @@ const config: TestRunnerConfig = {
         if (
           context.url.includes('/packages/') &&
           !context.url.includes('/development/') &&
-          // lit doesn't have a dev mode
+          // lit and labs/testing don't have a dev mode
           !context.url.includes('/packages/lit/') &&
+          !context.url.includes('/packages/labs/testing/') &&
           // some 3rd party modules can come from e.g. /packages/node_modules/*
           !context.url.includes('/node_modules/')
         ) {

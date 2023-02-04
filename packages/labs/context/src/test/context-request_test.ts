@@ -14,12 +14,9 @@ import {
   consume,
 } from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
+import {stripExpressionComments} from '@lit-labs/testing';
 
 const simpleContext = createContext<number>('simple-context');
-
-// @TODO: would be good to get this exported out of lit-elements
-const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->/g, '');
 
 class SimpleContextProvider extends LitElement {
   private provider = new ContextProvider(this, {

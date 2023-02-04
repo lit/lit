@@ -6,7 +6,7 @@
 
 import {repeat} from 'lit-html/directives/repeat.js';
 import {render, html} from 'lit-html';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 function assertItemIdentity(

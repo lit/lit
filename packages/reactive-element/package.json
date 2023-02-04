@@ -184,6 +184,7 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "dependencies": [
+        "../labs/testing:build:ts:utils",
         "../labs/ssr-dom-shim:build:ts"
       ],
       "files": [

@@ -48,7 +48,8 @@
         "build:ts",
         "build:ts:types",
         "../../lit:build",
-        "../../reactive-element:build"
+        "../../reactive-element:build",
+        "../testing:build"
       ]
     },
     "build:ts": {
@@ -146,8 +147,9 @@
     "lit": "^2.5.0"
   },
   "devDependencies": {
-    "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.2.0",
+    "@types/trusted-types": "^2.0.2"
   },
   "publishConfig": {
     "access": "public"

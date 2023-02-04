@@ -5,7 +5,7 @@
  */
 import {html, ChildPart, render, svg} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from './test-utils/strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 import {
   getDirectiveClass,
   insertPart,

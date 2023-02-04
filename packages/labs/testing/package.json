@@ -18,6 +18,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:utils": "wireit",
     "test": "wireit"
   },
   "wireit": {
@@ -32,20 +33,38 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "dependencies": [
+        "build:ts:utils",
         "../../lit:build:ts:types",
         "../ssr:build:ts"
       ],
       "files": [
         "src/**/*.ts",
+        "!src/index.ts",
+        "!src/lib/utils.ts",
         "tsconfig.json"
       ],
       "output": [
-        "index.{d.ts,d.ts.map,js,js.map}",
         "fixtures.{d.ts,d.ts.map,js,js.map}",
         "web-test-runner-ssr-plugin.{d.ts,d.ts.map,js,js.map}",
         "lib/",
+        "!lib/utils.{d.ts,d.ts.map,js,js.map}",
         "test/",
         ".tsbuildinfo"
+      ]
+    },
+    "build:ts:utils": {
+      "command": "tsc --project tsconfig-utils.json --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [],
+      "files": [
+        "src/index.ts",
+        "src/lib/utils.ts",
+        "tsconfig-utils.json"
+      ],
+      "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "lib/utils.{d.ts,d.ts.map,js,js.map}",
+        ".tsbuildinfo-utils"
       ]
     },
     "test": {
