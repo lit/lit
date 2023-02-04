@@ -93,6 +93,10 @@ suite('lit-html', () => {
    * cases, though the exact behavior is undefined.
    */
   suite('marker insertion', () => {
+    test('GITHUB ACTIONS TEST: REMOVE', () => {
+      assert.fail();
+    });
+
     test('only text', () => {
       assertRender(html`${'A'}`, 'A');
     });
