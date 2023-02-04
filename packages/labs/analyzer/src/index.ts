@@ -21,6 +21,7 @@ export type {
   Parameter,
   Return,
   LitElementDeclaration,
+  CustomElementDeclaration,
   LitElementExport,
   PackageJson,
   ModuleWithLitElementDeclarations,

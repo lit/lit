@@ -13,6 +13,7 @@ import {
   provide,
   ContextRoot,
   ContextProvider,
+  ContextConsumer,
 } from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
@@ -47,14 +48,13 @@ class LateContextProviderElement extends LitElement {
   }
 }
 
-@customElement('lazy-context-provider')
-export class LazyContextProviderElement extends LitElement {
-  protected render() {
-    return html`<slot></slot>`;
-  }
-}
+const ua = window.navigator.userAgent;
+const isIE = ua.indexOf('Trident/') > 0;
 
-suite('late context provider', () => {
+const suiteSkipIE: typeof suite.skip = (...args) =>
+  isIE ? suite.skip(...args) : suite(...args);
+
+suiteSkipIE('late context provider', () => {
   // let consumer: ContextConsumerElement;
   // let provider: LateContextProviderElement;
   let container: HTMLElement;
@@ -114,10 +114,16 @@ suite('late context provider', () => {
   });
 
   test('lazy added provider', async () => {
+    @customElement('lazy-context-provider')
+    class LazyContextProviderElement extends LitElement {
+      protected render() {
+        return html`<slot></slot>`;
+      }
+    }
     container.innerHTML = `
-        <lazy-context-provider>
-            <context-consumer></context-consumer>
-        </lazy-context-provider>
+      <lazy-context-provider>
+        <context-consumer></context-consumer>
+      </lazy-context-provider>
     `;
 
     const provider = container.querySelector(
@@ -138,5 +144,109 @@ suite('late context provider', () => {
 
     // `value` should now be provided
     assert.strictEqual(consumer.value, 1000);
+  });
+
+  test('late element with multiple properties', async () => {
+    @customElement('context-consumer-2')
+    class ContextConsumer2Element extends LitElement {
+      @consume({context: simpleContext, subscribe: true})
+      @property({type: Number})
+      public value1 = 0;
+
+      @consume({context: simpleContext, subscribe: true})
+      @property({type: Number})
+      public value2 = 0;
+    }
+
+    container.innerHTML = `
+      <late-context-provider-2 value="999">
+        <context-consumer-2></context-consumer-2>
+      </late-context-provider-2>
+    `;
+
+    const provider = container.querySelector(
+      'late-context-provider-2'
+    ) as LateContextProviderElement;
+
+    const consumer = container.querySelector(
+      'context-consumer-2'
+    ) as ContextConsumer2Element;
+
+    // Let consumer update once with no provider
+    await consumer.updateComplete;
+
+    // Define provider element
+    customElements.define(
+      'late-context-provider-2',
+      class extends LateContextProviderElement {}
+    );
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    // Check that regardless of de-duping in ContextRoot, both @consume()
+    // decorated properties were set.
+    assert.equal(consumer.value1, 999, 'value1');
+    assert.equal(consumer.value2, 999, 'value2');
+  });
+
+  test('a moved component is only provided to once', async () => {
+    @customElement('context-consumer-3')
+    class ContextConsumer3Element extends LitElement {
+      _consume = new ContextConsumer(
+        this,
+        simpleContext,
+        (value) => {
+          this.value = value;
+          this.callCount++;
+        },
+        true
+      );
+
+      value: number | undefined = undefined;
+
+      callCount = 0;
+    }
+
+    container.innerHTML = `
+      <late-context-provider-3 value="999">
+        <div id="parent-1">
+          <context-consumer-3></context-consumer-3>
+        </div>
+        <div id="parent-2"></div>
+      </late-context-provider-3>
+    `;
+
+    const provider = container.querySelector(
+      'late-context-provider-3'
+    ) as LateContextProviderElement;
+
+    const consumer = container.querySelector(
+      'context-consumer-3'
+    ) as ContextConsumer3Element;
+
+    const parent2 = container.querySelector('#parent-2')!;
+
+    // Let consumer update once with no provider
+    await consumer.updateComplete;
+
+    // Re-parent the consumer so it dispatches a new context-request event
+    parent2.append(consumer);
+
+    // Let consumer update again with no provider
+    await consumer.updateComplete;
+
+    // Define provider element
+    customElements.define(
+      'late-context-provider-3',
+      class extends LateContextProviderElement {}
+    );
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    assert.equal(consumer.value, 999);
+    // Check that the consumer was called only once
+    assert.equal(consumer.callCount, 1);
   });
 });

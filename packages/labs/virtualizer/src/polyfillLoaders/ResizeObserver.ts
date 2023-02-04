@@ -4,30 +4,27 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ResizeObserverConstructor} from '../polyfills/resize-observer-polyfill/ResizeObserver.js';
-type ResizeObserverModule =
-  typeof import('../polyfills/resize-observer-polyfill/ResizeObserver.js');
+import {provideResizeObserver} from '../Virtualizer.js';
+export {provideResizeObserver} from '../Virtualizer.js';
 
-let _RO: ResizeObserverModule | ResizeObserverConstructor;
-let RO: ResizeObserverConstructor;
-
-export default async function ResizeObserver() {
-  return RO || init();
-}
-
-async function init() {
-  if (_RO) {
-    return ((await _RO) as ResizeObserverModule).default;
-  } else {
-    _RO = window.ResizeObserver;
-    try {
-      new _RO(function () {});
-    } catch (e) {
-      _RO = import(
-        '../polyfills/resize-observer-polyfill/ResizeObserver.js'
-      ) as unknown as ResizeObserverModule;
-      _RO = (await _RO).default;
-    }
-    return (RO = _RO);
+/**
+ * If your browser support matrix includes older browsers
+ * that don't implement `ResizeObserver`, import this function,
+ * call it, and await its return before doing anything that
+ * will cause a virtualizer to be instantiated. See docs
+ * for details.
+ */
+export async function loadPolyfillIfNeeded() {
+  try {
+    new ResizeObserver(function () {});
+    // Return value for testing purposes
+    return ResizeObserver;
+  } catch (e) {
+    const ROPolyfill = (
+      await import('../polyfills/resize-observer-polyfill/ResizeObserver.js')
+    ).default;
+    provideResizeObserver(ROPolyfill);
+    // Return value for testing purposes
+    return ROPolyfill;
   }
 }

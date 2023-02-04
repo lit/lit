@@ -285,6 +285,65 @@ export class MyItems extends LitElement {
 }
 ```
 
+## ResizeObserver dependency
+
+Virtualizer depends on the standard [`ResizeObserver`]() API, which is supported in all modern browsers. In case your browser support matrix includes older browsers that don't implement `ResizeObserver`, the Virtualizer package includes a `ResizeObserver` polyfill that is known to be compatible with Virtualizer. This is a forked version of Denis Rul's `resize-observer-polyfill` package, which we modified to extend its observations into shadow roots.
+
+### Using the default loader
+
+The package also includes a simple mechanism for loading the `ResizeObserver` polyfill. This mechanism uses feature detection to determine whether the polyfill is required; if it is, then the polyfill is automatically loaded and provided directly to Virtualizer.
+
+You need to invoke the loader—which is asynchronous—and await its return before running any code that would cause a virtualizer to be instantiated. The simplest way to do this is to load virtualizer itself with a dynamic `import()` statement. For example:
+
+```js
+import {loadPolyfillIfNeeded} from '@lit-labs/virtualizer/polyfillLoaders/ResizeObserver.js';
+
+async function load() {
+  await loadPolyfillIfNeeded();
+  await import('@lit-labs/virtualizer');
+}
+```
+
+### Writing a custom loader
+
+In case you want to make the `ResizeObserver` polyfill available for use outside of Virtualizer or have other specialized polyfill-loading requirements, you can alternatively import the polyfill directly and write your own custom code for loading and exposing it.
+
+If you choose this option, there are two ways you can make the polyfill available for Virtualizer to use:
+
+- Expose the polyfill via `window.ResizeObserver` so that Virtualizer can access it just as it would the native implementation.
+- Pass the polyfill constructor to Virtualizer's `provideResizeObserver()` function.
+
+Either way, you should do so before instantiating any virtualizers, just as when you use the provided loader.
+
+Here's how you would import the polyfill and the `provideResizeObserver()` function statically:
+
+```js
+import ResizeObserverPolyfill from '@lit-labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js';
+import {provideResizeObserver} from '@lit-labs/virtualizer/polyfillLoaders/ResizeObserver.js';
+```
+
+More typically, though, you'd import them dynamically:
+
+```js
+async function myCustomLoader() {
+  // Write whatever custom logic you need, using feature detection, etc...
+
+  // If you need to load the polyfill, do it like this:
+  const ResizeObserverPolyfill = await import(
+    '@lit-labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js'
+  ).default;
+
+  // To install the polyfill globally, do something like this:
+  window.ResizeObserver = ResizeObserverPolyfill;
+
+  // Or to provide it to Virtualizer, do something like this:
+  const {provideResizeObserver} = await import(
+    '@lit-labs/virtualizer/polyfillLoaders/ResizeObserver.js'
+  );
+  provideResizeObserver(ResizeObserverPolyfill);
+}
+```
+
 ## API Reference
 
 ### `items` property
