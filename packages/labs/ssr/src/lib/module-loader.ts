@@ -140,7 +140,7 @@ export interface Options {
  * (https://nodejs.org/api/vm.html).
  *
  * Most of the hooks implement fairly standard web-compatible module loading:
- *  - An import specifier resolver that uses Node module resoution
+ *  - An import specifier resolver that uses Node module resolution
  *  - A linker that loads dependencies from the local filesystem
  *  - A module cache keyed by resolved URL
  *  - import.meta.url support
@@ -163,7 +163,7 @@ export class ModuleLoader {
    * We want to be able to invalidate a module and the transitive closure
    * of its importers so that we can update the graph.
    *
-   * The keys of the map are useful for enumering static imported modules
+   * The keys of the map are useful for enumerating static imported modules
    * after an entrypoint is loaded.
    */
   readonly cache = new Map<string, ModuleRecord>();

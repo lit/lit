@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import EventTarget from '../../polyfillLoaders/EventTarget.js';
 import {
   Layout,
   ChildPositions,
@@ -13,10 +12,11 @@ import {
   Size,
   dimension,
   position,
-  InternalRange,
   PinOptions,
   ScrollToCoordinates,
   BaseLayoutConfig,
+  StateChangedMessage,
+  LayoutHostSink,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -60,7 +60,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   public offsetWithinScroller: Positions = {left: 0, top: 0};
 
   /**
-   * Flag for debouncing asynchnronous reflow requests.
+   * Flag for debouncing asynchronous reflow requests.
    */
   private _pendingReflow = false;
 
@@ -77,10 +77,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * The index of the last item intersecting the viewport.
    */
   protected _lastVisible = 0;
-
-  private _eventTargetPromise: Promise<void> = EventTarget().then((Ctor) => {
-    this._eventTarget = new Ctor();
-  });
 
   /**
    * Pixel offset in the scroll direction of the first child.
@@ -152,7 +148,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   // on viewport size, item size, other factors, possibly still with a dial of some kind
   protected _overhang = 1000;
 
-  private _eventTarget: EventTarget | null = null;
+  /**
+   * Call this to deliver messages (e.g. stateChanged, unpinned) to host
+   */
+  private _hostSink: LayoutHostSink;
 
   protected get _defaultConfig(): C {
     return {
@@ -160,7 +159,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     } as C;
   }
 
-  constructor(config?: C) {
+  constructor(hostSink: LayoutHostSink, config?: C) {
+    this._hostSink = hostSink;
     // Delay setting config so that subclasses do setup work first
     Promise.resolve().then(() => (this.config = config || this._defaultConfig));
   }
@@ -237,9 +237,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     this._scrollPosition = this._latestCoords[this._positionDim];
     const change = Math.abs(oldPos - this._scrollPosition);
     if (change >= 1) {
-      this._updateVisibleIndices({emit: true});
+      this._checkThresholds();
     }
-    this._checkThresholds();
   }
 
   /**
@@ -277,32 +276,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   unpin() {
     if (this._pin !== null) {
-      this._emitUnpinned();
+      this._sendUnpinnedMessage();
       this._pin = null;
     }
-  }
-
-  async dispatchEvent(evt: Event) {
-    await this._eventTargetPromise;
-    this._eventTarget!.dispatchEvent(evt);
-  }
-
-  async addEventListener(
-    type: string,
-    listener: EventListener | EventListenerObject | null,
-    options?: boolean | AddEventListenerOptions | undefined
-  ) {
-    await this._eventTargetPromise;
-    this._eventTarget!.addEventListener(type, listener, options);
-  }
-
-  async removeEventListener(
-    type: string,
-    callback: EventListener | EventListenerObject | null,
-    options?: boolean | EventListenerOptions | undefined
-  ) {
-    await this._eventTargetPromise;
-    this._eventTarget!.removeEventListener(type, callback, options);
   }
 
   /**
@@ -378,10 +354,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     this._setPositionFromPin();
     this._getActiveItems();
     this._updateVisibleIndices();
-    this._emitScrollSize();
-    this._emitRange();
-    this._emitChildPositions();
-    this._emitScrollError();
+    this._sendStateChangedMessage();
   }
 
   /**
@@ -453,51 +426,49 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     } as ScrollToOptions;
   }
 
-  private _emitUnpinned() {
-    this.dispatchEvent(new CustomEvent('unpinned'));
+  private _sendUnpinnedMessage() {
+    this._hostSink({
+      type: 'unpinned',
+    });
   }
 
-  protected _emitRange() {
-    const detail: InternalRange = {
-      first: this._first,
-      last: this._last,
+  private _sendVisibilityChangedMessage() {
+    this._hostSink({
+      type: 'visibilityChanged',
       firstVisible: this._firstVisible,
       lastVisible: this._lastVisible,
-    };
-    this.dispatchEvent(new CustomEvent('rangechange', {detail}));
+    });
   }
 
-  protected _emitScrollSize() {
-    const detail = {
-      [this._sizeDim]: this._scrollSize,
-      [this._secondarySizeDim]: null,
+  protected _sendStateChangedMessage() {
+    const childPositions: ChildPositions = new Map();
+    if (this._first !== -1 && this._last !== -1) {
+      for (let idx = this._first; idx <= this._last; idx++) {
+        childPositions.set(idx, this._getItemPosition(idx));
+      }
+    }
+    const message: StateChangedMessage = {
+      type: 'stateChanged',
+      scrollSize: {
+        [this._sizeDim]: this._scrollSize,
+        [this._secondarySizeDim]: null,
+      } as Size,
+      range: {
+        first: this._first,
+        last: this._last,
+        firstVisible: this._firstVisible,
+        lastVisible: this._lastVisible,
+      },
+      childPositions,
     };
-    this.dispatchEvent(new CustomEvent('scrollsizechange', {detail}));
-  }
-
-  protected _emitScrollError() {
     if (this._scrollError) {
-      const detail = {
+      message.scrollError = {
         [this._positionDim]: this._scrollError,
         [this._secondaryPositionDim]: 0,
-      };
-      this.dispatchEvent(new CustomEvent('scrollerrorchange', {detail}));
+      } as Positions;
       this._scrollError = 0;
     }
-  }
-
-  /**
-   * Get or estimate the top and left positions of items in the current range.
-   * Emit an itempositionchange event with these positions.
-   */
-  protected _emitChildPositions() {
-    if (this._first !== -1 && this._last !== -1) {
-      const detail: ChildPositions = new Map();
-      for (let idx = this._first; idx <= this._last; idx++) {
-        detail.set(idx, this._getItemPosition(idx));
-      }
-      this.dispatchEvent(new CustomEvent('itempositionchange', {detail}));
-    }
+    this._hostSink(message);
   }
 
   /**
@@ -521,6 +492,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       );
       if (this._physicalMin > min || this._physicalMax < max) {
         this._scheduleReflow();
+      } else {
+        this._updateVisibleIndices({emit: true});
       }
     }
   }
@@ -559,7 +532,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       this._firstVisible = firstVisible;
       this._lastVisible = lastVisible;
       if (options && options.emit) {
-        this._emitRange();
+        this._sendVisibilityChangedMessage();
       }
     }
   }

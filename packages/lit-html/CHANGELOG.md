@@ -224,7 +224,7 @@
   re-render to the tree. When called with `true`, any such directives'
   `reconnected` callback will be called prior to its next `update`/`render`
   callbacks. Note that `LitElement` will call this method by default on the
-  rendered part in its `connectedCallback` and `disconnetedCallback`.
+  rendered part in its `connectedCallback` and `disconnectedCallback`.
 - Added the `static-html` module, a static `html` tag function, a `literal` tag function, and `unsafeStatic()`, which allows template authors to add strings to the
   static structure of the template, before it's parsed as HTML. See [Static expressions](https://lit.dev/docs/templates/expressions/#static-expressions) for more details.
 - Added `lit-html/directive-helpers.js` module with helpers for creating custom directives. See [Custom directives](https://lit.dev/docs/api/custom-directives/#clearPart) for more details.
@@ -426,7 +426,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
   re-render to the tree. When called with `true`, any such directives'
   `reconnectedCallback` will be called prior to its next `update`/`render`
   callbacks. Note that `LitElement` will call this method by default on the
-  rendered part in its `connectedCallback` and `disconnetedCallback`.
+  rendered part in its `connectedCallback` and `disconnectedCallback`.
 
 - Added `unsafeStatic()`, which allows template authors to add strings to the
   static structure of the template, before it's parsed as HTML.
@@ -467,7 +467,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
   `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
 
 - (since 2.0.0-pre.3) The `setPartValue` function in
-  `directove-helpers.js` has been renamed to `setChildPartValue` and now only
+  `directive-helpers.js` has been renamed to `setChildPartValue` and now only
   supports ChildParts. Directives that require updating their container
   part outside the `render`/`update` lifecycle should extend
   `DisconnectableDirective` and use `this.setValue()`.
@@ -486,7 +486,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 - Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
 - Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
 - Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. `` html`<div id=${a}-${b}> ``
-- The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
+- The directive and part APIs are significantly different. See the [README](README.md) for more details.
 
 ### Added
 
@@ -688,7 +688,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 ### Changed
 
 - Eliminated a cycle in the module import graph ([#472](https://github.com/Polymer/lit-html/pull/472))
-- Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required paremeter ([#472](https://github.com/Polymer/lit-html/pull/472))
+- Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required parameter ([#472](https://github.com/Polymer/lit-html/pull/472))
 
 ## [0.11.0] - 2018-08-28
 
@@ -744,7 +744,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - Refactored how template tags and `render()` are implemented so that all
   specialization of template syntax is done in tags, not `render()`, allowing
-  for the mixining of templates of different syntaxes, and for hooks in
+  for the mixing-in of templates of different syntaxes, and for hooks in
   `render()` to change templates before they're initially processed.
 - Added ShadyCSS support in lib/shady-render.js. It's exported render function
   will pass templates to ShadyCSS's `prepareTemplate()` function to process style

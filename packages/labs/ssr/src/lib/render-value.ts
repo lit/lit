@@ -185,7 +185,7 @@ type CustomElementClosedOp = {
 
 /**
  * Operation to possibly emit the `<!--lit-node-->` marker; the operation
- * always emits if there were attribtue parts, and may emit if the node
+ * always emits if there were attribute parts, and may emit if the node
  * was a custom element and it needed `defer-hydration` because it was
  * rendered in the shadow root of another custom element host; we don't
  * know the latter at opcode generation time, and so that test is done at
@@ -315,7 +315,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   /**
    * Records the given string to the output, either by appending to the current
    * opcode (if already `text`) or by creating a new `text` opcode (if the
-   * previous opocde was not `text)
+   * previous opcode was not `text)
    */
   const flush = (value: string) => {
     const op = getLast(ops);
@@ -510,7 +510,7 @@ export type RenderInfo = {
   customElementHostStack: Array<ElementRenderer | undefined>;
 
   /**
-   * An optional callback to notifiy when a custom element has been rendered.
+   * An optional callback to notify when a custom element has been rendered.
    *
    * This allows servers to know what specific tags were rendered for a given
    * template, even in the case of conditional templates.
@@ -719,25 +719,23 @@ function* renderTemplateResult(
             `Internal error: ${op.type} outside of custom element context`
           );
         }
-        if (instance.renderShadow !== undefined) {
-          renderInfo.customElementHostStack.push(instance);
-          const shadowContents = instance.renderShadow(renderInfo);
-          // Only emit a DSR if renderShadow() emitted something (returning
-          // undefined allows effectively no-op rendering the element)
-          if (shadowContents !== undefined) {
-            const {mode = 'open', delegatesFocus} =
-              instance.shadowRootOptions ?? {};
-            // `delegatesFocus` is intentionally allowed to coerce to boolean to
-            // match web platform behavior.
-            const delegatesfocusAttr = delegatesFocus
-              ? ' shadowrootdelegatesfocus'
-              : '';
-            yield `<template shadowroot="${mode}"${delegatesfocusAttr}>`;
-            yield* shadowContents;
-            yield '</template>';
-          }
-          renderInfo.customElementHostStack.pop();
+        renderInfo.customElementHostStack.push(instance);
+        const shadowContents = instance.renderShadow(renderInfo);
+        // Only emit a DSR if renderShadow() emitted something (returning
+        // undefined allows effectively no-op rendering the element)
+        if (shadowContents !== undefined) {
+          const {mode = 'open', delegatesFocus} =
+            instance.shadowRootOptions ?? {};
+          // `delegatesFocus` is intentionally allowed to coerce to boolean to
+          // match web platform behavior.
+          const delegatesfocusAttr = delegatesFocus
+            ? ' shadowrootdelegatesfocus'
+            : '';
+          yield `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`;
+          yield* shadowContents;
+          yield '</template>';
         }
+        renderInfo.customElementHostStack.pop();
         break;
       }
       case 'custom-element-close':

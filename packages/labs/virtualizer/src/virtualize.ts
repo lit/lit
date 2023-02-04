@@ -97,11 +97,11 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     return this.render();
   }
 
-  private _updateVirtualizerConfig(
+  private async _updateVirtualizerConfig(
     part: ChildPart,
     config: VirtualizeDirectiveConfig<T>
   ) {
-    const compatible = this._virtualizer!.updateLayoutConfig(
+    const compatible = await this._virtualizer!.updateLayoutConfig(
       config.layout || {}
     );
     if (!compatible) {
@@ -138,7 +138,6 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     const hostElement = part.parentNode as HTMLElement;
     if (hostElement && hostElement.nodeType === 1) {
       hostElement.addEventListener('rangeChanged', (e: RangeChangedEvent) => {
-        e.stopPropagation();
         this._first = e.first;
         this._last = e.last;
         this.setValue(this.render());

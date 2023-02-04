@@ -106,7 +106,7 @@ suite('directive-helpers', () => {
     assertContent('<div>A</div>');
   });
 
-  test('insertPart keeps connectinon state in sync', () => {
+  test('insertPart keeps connection state in sync', () => {
     // Directive that tracks/renders connected state
     let connected = false;
     const aDirective = directive(

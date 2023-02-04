@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import getResizeObserver from './polyfillLoaders/ResizeObserver.js';
 import {
   ItemBox,
   Margins,
@@ -14,11 +13,13 @@ import {
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
+  StateChangedMessage,
   Size,
   InternalRange,
   MeasureChildFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
+  LayoutHostMessage,
 } from './layouts/shared/Layout.js';
 import {
   RangeChangedEvent,
@@ -26,6 +27,22 @@ import {
   UnpinnedEvent,
 } from './events.js';
 import {ScrollerController} from './ScrollerController.js';
+
+// Virtualizer depends on `ResizeObserver`, which is supported in
+// all modern browsers. For developers whose browser support
+// matrix includes older browsers, we include a compatible
+// polyfill in the package; this bit of module state facilitates
+// a simple mechanism (see ./polyfillLoaders/ResizeObserver.js.)
+// for loading the polyfill.
+let _ResizeObserver: typeof ResizeObserver | undefined = window?.ResizeObserver;
+
+/**
+ * Call this function to provide a `ResizeObserver` polyfill for Virtualizer to use.
+ * @param Ctor Constructor for a `ResizeObserver` polyfill (recommend using the one provided with the Virtualizer package)
+ */
+export function provideResizeObserver(Ctor: typeof ResizeObserver) {
+  _ResizeObserver = Ctor;
+}
 
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
@@ -206,6 +223,13 @@ export class Virtualizer {
   private _layoutCompleteRejecter: Function | null = null;
   private _pendingLayoutComplete: number | null = null;
 
+  /**
+   * Layout initialization is async because we dynamically load
+   * the default layout if none is specified. This state is to track
+   * whether init is complete.
+   */
+  private _layoutInitialized: Promise<void> | null = null;
+
   constructor(config: VirtualizerConfig) {
     if (!config) {
       throw new Error(
@@ -235,18 +259,22 @@ export class Virtualizer {
     // If no layout is specified, we make an empty
     // layout config, which will result in the default
     // layout with default parameters
-    this._initLayout(config.layout || ({} as BaseLayoutConfig));
+    const layoutConfig = config.layout || ({} as BaseLayoutConfig);
+    // Save the promise returned by `_initLayout` as a state
+    // variable we can check before updating layout config
+    this._layoutInitialized = this._initLayout(layoutConfig);
   }
 
-  private async _initObservers() {
+  private _initObservers() {
     this._mutationObserver = new MutationObserver(
       this._finishDOMUpdate.bind(this)
     );
-    const ResizeObserver = await getResizeObserver();
-    this._hostElementRO = new ResizeObserver(() =>
+    this._hostElementRO = new _ResizeObserver!(() =>
       this._hostElementSizeChanged()
     );
-    this._childrenRO = new ResizeObserver(this._childrenSizeChanged.bind(this));
+    this._childrenRO = new _ResizeObserver!(
+      this._childrenSizeChanged.bind(this)
+    );
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -255,8 +283,8 @@ export class Virtualizer {
     hostElement[virtualizerRef] = this;
   }
 
-  async connected() {
-    await this._initObservers();
+  connected() {
+    this._initObservers();
     const includeSelf = this._isScroller;
     this._clippingAncestors = getClippingAncestors(
       this._hostElement!,
@@ -303,10 +331,10 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController?.detach(this) || null;
-    this._mutationObserver?.disconnect();
-    this._hostElementRO?.disconnect();
-    this._childrenRO?.disconnect();
+    this._scrollerController = this._scrollerController!.detach(this) || null;
+    this._mutationObserver!.disconnect();
+    this._hostElementRO!.disconnect();
+    this._childrenRO!.disconnect();
     this._rejectLayoutCompletePromise('disconnected');
   }
 
@@ -330,7 +358,7 @@ export class Virtualizer {
   _getSizer() {
     const hostElement = this._hostElement!;
     if (!this._sizer) {
-      // Use a pre-existing sizer element if provided (for better integration
+      // Use a preexisting sizer element if provided (for better integration
       // with vDOM renderers)
       let sizer = hostElement.querySelector(
         `[${SIZER_ATTRIBUTE}]`
@@ -356,9 +384,16 @@ export class Virtualizer {
     return this._sizer;
   }
 
-  updateLayoutConfig(layoutConfig: LayoutConfigValue) {
+  async updateLayoutConfig(layoutConfig: LayoutConfigValue) {
+    // If layout initialization hasn't finished yet, we wait
+    // for it to finish so we can check whether the new config
+    // is compatible with the existing layout before proceeding.
+    await this._layoutInitialized;
     const Ctor =
       ((layoutConfig as LayoutSpecifier).type as LayoutConstructor) ||
+      // The new config is compatible with the current layout,
+      // so we update the config and return true to indicate
+      // a successful update
       DefaultLayoutConstructor;
     if (typeof Ctor === 'function' && this._layout instanceof Ctor) {
       const config = {...(layoutConfig as LayoutSpecifier)} as {
@@ -366,6 +401,11 @@ export class Virtualizer {
       };
       delete config.type;
       this._layout.config = config as BaseLayoutConfig;
+      // The new config requires a different layout altogether, but
+      // to limit implementation complexity we don't support dynamically
+      // changing the layout of an existing virtualizer instance.
+      // Returning false here lets the caller know that they should
+      // instead make a new virtualizer instance with the desired layout.
       return true;
     }
     return false;
@@ -396,7 +436,10 @@ export class Virtualizer {
         .FlowLayout as unknown as LayoutConstructor;
     }
 
-    this._layout = new Ctor(config);
+    this._layout = new Ctor(
+      (message: LayoutHostMessage) => this._handleLayoutMessage(message),
+      config
+    );
 
     if (
       this._layout.measureChildren &&
@@ -407,14 +450,11 @@ export class Virtualizer {
       }
       this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
-    this._layout.addEventListener('scrollsizechange', this);
-    this._layout.addEventListener('scrollerrorchange', this);
-    this._layout.addEventListener('itempositionchange', this);
-    this._layout.addEventListener('rangechange', this);
-    this._layout.addEventListener('unpinned', this);
+
     if (this._layout.listenForChildLoadEvents) {
       this._hostElement!.addEventListener('load', this._loadListener, true);
     }
+
     this._schedule(this._updateLayout);
   }
 
@@ -480,7 +520,11 @@ export class Virtualizer {
     }
   }
 
-  async _updateDOM() {
+  async _updateDOM(state: StateChangedMessage) {
+    this._scrollSize = state.scrollSize;
+    this._adjustRange(state.range);
+    this._childrenPos = state.childPositions;
+    this._scrollError = state.scrollError || null;
     const {_rangeChanged, _itemsChanged} = this;
     if (this._visibilityChanged) {
       this._notifyVisibility();
@@ -549,27 +593,16 @@ export class Virtualizer {
           this._handleScrollEvent();
         }
         break;
-      case 'scrollsizechange':
-        this._scrollSize = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'scrollerrorchange':
-        this._scrollError = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'itempositionchange':
-        this._childrenPos = event.detail;
-        this._schedule(this._updateDOM);
-        break;
-      case 'rangechange':
-        this._adjustRange(event.detail);
-        this._schedule(this._updateDOM);
-        break;
-      case 'unpinned':
-        this._hostElement!.dispatchEvent(new UnpinnedEvent());
-        break;
       default:
         console.warn('event not handled', event);
+    }
+  }
+
+  _handleLayoutMessage(message: LayoutHostMessage) {
+    if (message.type === 'stateChanged') {
+      this._updateDOM(message);
+    } else if (message.type === 'unpinned') {
+      this._hostElement!.dispatchEvent(new UnpinnedEvent());
     }
   }
 

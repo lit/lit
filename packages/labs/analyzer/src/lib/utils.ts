@@ -15,7 +15,7 @@ import {hasJSDocTag} from './javascript/jsdoc.js';
 import {Privacy} from './model.js';
 
 export const hasModifier = (node: ts.Node, modifier: ts.SyntaxKind) => {
-return node.modifiers?.some((s) => s.kind === modifier) ?? false;
+  return node.modifiers?.some((s) => s.kind === modifier) ?? false;
 };
 
 export const hasExportModifier = (node: ts.Node) => {

@@ -174,17 +174,21 @@ export abstract class SizeGapPaddingBaseLayout<
       .map((v) => paddingValueToNumber(v as PaddingValue));
     if (values.length === 1) {
       padding.top = padding.right = padding.bottom = padding.left = values[0];
+      this._triggerReflow();
     } else if (values.length === 2) {
       padding.top = padding.bottom = values[0];
       padding.right = padding.left = values[1];
+      this._triggerReflow();
     } else if (values.length === 3) {
       padding.top = values[0];
       padding.right = padding.left = values[1];
       padding.bottom = values[2];
+      this._triggerReflow();
     } else if (values.length === 4) {
       ['top', 'right', 'bottom', 'left'].forEach(
         (side, idx) => (padding[side as side] = values[idx])
       );
+      this._triggerReflow();
     }
   }
 }

@@ -1715,7 +1715,12 @@ suite('lit-html', () => {
     });
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
+      // Let's us get a reference to a directive instance
+      let currentDirective: CheckNodePropertiesBehavior;
+
       class CheckNodePropertiesBehavior extends Directive {
+        part?: ChildPart;
+
         render(_parentId?: string, _done?: (err?: unknown) => void) {
           return nothing;
         }
@@ -1724,6 +1729,9 @@ suite('lit-html', () => {
           part: ChildPart,
           [parentId, done]: DirectiveParameters<this>
         ) {
+          this.part = part;
+          // eslint-disable-next-line
+          currentDirective = this;
           try {
             const {parentNode, startNode, endNode} = part;
 
@@ -1820,6 +1828,19 @@ suite('lit-html', () => {
 
         render(makeTemplate(), container);
         await asyncCheckDivRendered;
+      });
+
+      test(`when the parentNode is null`, async () => {
+        const template = () => html`${checkPart('container')}`;
+
+        // Render the template to instantiate the directive
+        render(template(), container);
+
+        // Manually clear the container to detach the directive
+        container.innerHTML = '';
+
+        // Check that we can access parentNode
+        assert.equal(currentDirective.part!.parentNode, undefined);
       });
 
       test(`part's parentNode is correct when rendered into a document fragment`, async () => {
@@ -2939,7 +2960,7 @@ suite('lit-html', () => {
 
   const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
 
-  securityHooksSuiteFunction('enahnced security hooks', () => {
+  securityHooksSuiteFunction('enhanced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
       constructor(sanitizeTo: string) {
@@ -3055,7 +3076,7 @@ suite('lit-html', () => {
       ]);
     });
 
-    test('sanitizes concatonated attributes after contatonation', () => {
+    test('sanitizes concatenated attributes after concatenation', () => {
       render(html`<div attrib="hello ${'big'} world"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),

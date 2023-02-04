@@ -570,7 +570,7 @@ suite('ReactiveElement', () => {
     assert.equal(el.getAttribute('obj'), '{"obj":3}');
   });
 
-  test('property reflects when set in response to another propety changing via its attribute being set', async () => {
+  test('property reflects when set in response to another property changing via its attribute being set', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
@@ -2766,7 +2766,7 @@ suite('ReactiveElement', () => {
       assert.equal(a.updatedFoo, 20);
     });
 
-    test('exceptions in `updated` do not prevent further or re-entrant updates', async () => {
+    test('exceptions in `updated` do not prevent further or reentrant updates', async () => {
       let shouldThrow = false;
       let enqueue = false;
       class A extends ReactiveElement {

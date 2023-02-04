@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Positions, Size} from './shared/Layout.js';
+import {LayoutHostSink, Positions, Size} from './shared/Layout.js';
 import {GridBaseLayout, GridBaseLayoutConfig} from './shared/GridBaseLayout.js';
 import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
@@ -18,7 +18,10 @@ export interface MasonryLayoutConfig
 }
 
 type MasonryLayoutSpecifier = MasonryLayoutConfig & {
-  type: new (config?: MasonryLayoutConfig) => MasonryLayout;
+  type: new (
+    hostSink: LayoutHostSink,
+    config?: MasonryLayoutConfig
+  ) => MasonryLayout;
 };
 
 type MasonryLayoutSpecifierFactory = (

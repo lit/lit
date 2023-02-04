@@ -74,6 +74,13 @@ export class TestSimple extends LitElement {
 // prettier-ignore
 export const simpleTemplateWithElement = html`<test-simple></test-simple>`;
 
+// This must be excluded from rendering in the test
+@customElement('test-not-rendered')
+export class NotRendered extends LitElement {}
+
+// prettier-ignore
+export const templateWithNotRenderedElement = html`<test-not-rendered></test-not-rendered>`;
+
 @customElement('test-property')
 export class TestProperty extends LitElement {
   @property() foo?: string;

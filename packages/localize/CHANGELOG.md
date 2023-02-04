@@ -270,7 +270,7 @@ class HomePage {
 ### Fixed
 
 - Fixed `main` field of `package.json` so that it resolves to `lit-localize.js`
-  instead of non-existent file.
+  instead of nonexistent file.
 
 ## [0.4.0] - 2020-09-08
 

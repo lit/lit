@@ -85,7 +85,7 @@ suite('my-element', () => {
 
 #### `csrFixture`, `ssrNonHydratedFixture`, and `ssrHydratedFixture`
 
-`csrFixture` renders the the provided template client-side.
+`csrFixture` renders the provided template client-side.
 `ssrNonHydratedFixture` and `ssrHydratedFixture` are just `ssrFixture` with the
 `hydrate` option pre-filled.
 

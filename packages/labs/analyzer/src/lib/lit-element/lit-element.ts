@@ -12,16 +12,13 @@
 
 import ts from 'typescript';
 import {getClassMembers, getHeritage} from '../javascript/classes.js';
-import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
-import {
-  LitElementDeclaration,
-  AnalyzerInterface,
-  Event,
-  NamedDescribed,
-} from '../model.js';
+import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
 import {isCustomElementDecorator} from './decorators.js';
-import {addEventsToMap} from './events.js';
 import {getProperties} from './properties.js';
+import {
+  getJSDocData,
+  getTagName as getCustomElementTagName,
+} from '../custom-elements/custom-elements.js';
 
 /**
  * Gets an analyzer LitElementDeclaration object from a ts.ClassDeclaration
@@ -41,63 +38,6 @@ export const getLitElementDeclaration = (
     getHeritage: () => getHeritage(declaration, false, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
-};
-
-/**
- * Parses element metadata from jsDoc tags from a LitElement declaration into
- * Maps of <name, info>.
- */
-export const getJSDocData = (
-  node: LitClassDeclaration,
-  analyzer: AnalyzerInterface
-) => {
-  const events = new Map<string, Event>();
-  const slots = new Map<string, NamedDescribed>();
-  const cssProperties = new Map<string, NamedDescribed>();
-  const cssParts = new Map<string, NamedDescribed>();
-  const jsDocTags = ts.getJSDocTags(node);
-  if (jsDocTags !== undefined) {
-    for (const tag of jsDocTags) {
-      switch (tag.tagName.text) {
-        case 'fires':
-          addEventsToMap(tag, events, analyzer);
-          break;
-        case 'slot':
-          addNamedJSDocInfoToMap(slots, tag);
-          break;
-        case 'cssProp':
-          addNamedJSDocInfoToMap(cssProperties, tag);
-          break;
-        case 'cssProperty':
-          addNamedJSDocInfoToMap(cssProperties, tag);
-          break;
-        case 'cssPart':
-          addNamedJSDocInfoToMap(cssParts, tag);
-          break;
-      }
-    }
-  }
-  return {
-    ...parseNodeJSDocInfo(node),
-    events,
-    slots,
-    cssProperties,
-    cssParts,
-  };
-};
-
-/**
- * Adds name, description, and summary info for a given jsdoc tag into the
- * provided map.
- */
-const addNamedJSDocInfoToMap = (
-  map: Map<string, NamedDescribed>,
-  tag: ts.JSDocTag
-) => {
-  const info = parseNamedJSDocInfo(tag);
-  if (info !== undefined) {
-    map.set(info.name, info);
-  }
 };
 
 /**
@@ -178,7 +118,6 @@ export const isLitElementSubclass = (
  * @returns
  */
 export const getTagName = (declaration: LitClassDeclaration) => {
-  let tagName: string | undefined = undefined;
   const customElementDecorator = declaration.decorators?.find(
     isCustomElementDecorator
   );
@@ -188,32 +127,7 @@ export const getTagName = (declaration: LitClassDeclaration) => {
     ts.isStringLiteral(customElementDecorator.expression.arguments[0])
   ) {
     // Get tag from decorator: `@customElement('x-foo')`
-    tagName = customElementDecorator.expression.arguments[0].text;
-  } else {
-    // Otherwise, look for imperative define in the form of:
-    // `customElements.define('x-foo', XFoo);`
-    declaration.parent.forEachChild((child) => {
-      if (
-        ts.isExpressionStatement(child) &&
-        ts.isCallExpression(child.expression) &&
-        ts.isPropertyAccessExpression(child.expression.expression) &&
-        child.expression.arguments.length >= 2
-      ) {
-        const [tagNameArg, ctorArg] = child.expression.arguments;
-        const {expression, name} = child.expression.expression;
-        if (
-          ts.isIdentifier(expression) &&
-          expression.text === 'customElements' &&
-          ts.isIdentifier(name) &&
-          name.text === 'define' &&
-          ts.isStringLiteralLike(tagNameArg) &&
-          ts.isIdentifier(ctorArg) &&
-          ctorArg.text === declaration.name?.text
-        ) {
-          tagName = tagNameArg.text;
-        }
-      }
-    });
+    return customElementDecorator.expression.arguments[0].text;
   }
-  return tagName;
+  return getCustomElementTagName(declaration);
 };
