@@ -33,7 +33,7 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * import {loggerContext} from 'community-protocols/logger';
  *
  * class MyElement {
- *   @provide(loggerContext)
+ *   @provide({context: loggerContext})
  *   logger;
  *
  *   doThing() {

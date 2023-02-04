@@ -9,9 +9,12 @@ import {ContextCallback, ContextRequestEvent} from './context-request-event.js';
 import {ContextProviderEvent} from './controllers/context-provider.js';
 
 /**
- * A ContextRoot buffers unsatisfied context request events. It will redispatch
- * these requests when new providers which satisfy matching contexts
- * are available.
+ * A ContextRoot can be used to gather unsatisfied context requests and
+ * re-dispatch them when new providers which satisfy matching context keys are
+ * available.
+ *
+ * This allows providers to be added to a DOM tree, or upgraded, after the
+ * consumers.
  */
 export class ContextRoot {
   private pendingContextRequests = new Map<

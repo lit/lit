@@ -18,12 +18,16 @@ export interface Options<C extends Context<unknown, unknown>> {
 }
 
 /**
- * ContextConsumer is a ReactiveController which binds a custom-element's
- * lifecycle to the Context API. When an element is connected to the DOM it
- * will emit the context-request event, invoking the callback set on the
- * controller when the context request is satisfied. It will also call
- * the dispose method provided by the Context API when the element is
- * disconnected.
+ * A ReactiveController which adds context consuming behavior to a custom
+ * element by dispatching `context-request` events.
+ *
+ * When the host element is connected to the document it will emit a
+ * `context-request` event with its context key. When the context request
+ * is satisfied the controller will invoke the callback, if present, and
+ * trigger a host update so it can respond to the new value.
+ *
+ * It will also call the dispose method given by the provider when the
+ * host element is disconnected.
  */
 export class ContextConsumer<
   C extends Context<unknown, unknown>,
