@@ -303,6 +303,9 @@ export abstract class Declaration {
   isClassMethod(): this is ClassMethod {
     return this instanceof ClassMethod;
   }
+  isCustomElementDeclaration(): this is CustomElementDeclaration {
+    return this instanceof CustomElementDeclaration;
+  }
 }
 
 export interface VariableDeclarationInit extends DeclarationInit {
@@ -493,16 +496,19 @@ export interface DeprecatableDescribed extends Described {
   deprecated?: string | boolean | undefined;
 }
 
-interface LitElementDeclarationInit extends ClassDeclarationInit {
+interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
-  reactiveProperties: Map<string, ReactiveProperty>;
   events: Map<string, Event>;
   slots: Map<string, NamedDescribed>;
   cssProperties: Map<string, NamedDescribed>;
   cssParts: Map<string, NamedDescribed>;
 }
 
-export class LitElementDeclaration extends ClassDeclaration {
+interface LitElementDeclarationInit extends CustomElementDeclarationInit {
+  reactiveProperties: Map<string, ReactiveProperty>;
+}
+
+export class CustomElementDeclaration extends ClassDeclaration {
   /**
    * The element's tag name, if one is associated with this class declaration,
    * such as with a `@customElement()` decorator or `customElements.define()`
@@ -513,21 +519,27 @@ export class LitElementDeclaration extends ClassDeclaration {
    * base class or with scoped custom element registries.
    */
   readonly tagname: string | undefined;
-
-  readonly reactiveProperties: Map<string, ReactiveProperty>;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
   readonly cssProperties: Map<string, NamedDescribed>;
   readonly cssParts: Map<string, NamedDescribed>;
 
-  constructor(init: LitElementDeclarationInit) {
+  constructor(init: CustomElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
-    this.reactiveProperties = init.reactiveProperties;
     this.events = init.events;
     this.slots = init.slots;
     this.cssProperties = init.cssProperties;
     this.cssParts = init.cssParts;
+  }
+}
+
+export class LitElementDeclaration extends CustomElementDeclaration {
+  readonly reactiveProperties: Map<string, ReactiveProperty>;
+
+  constructor(init: LitElementDeclarationInit) {
+    super(init);
+    this.reactiveProperties = init.reactiveProperties;
   }
 }
 
