@@ -5,27 +5,31 @@
  */
 
 import {Context} from './create-context.js';
-import {ContextRequest, ContextRequestEvent} from './context-request-event.js';
+import {ContextCallback, ContextRequestEvent} from './context-request-event.js';
 import {ContextProviderEvent} from './controllers/context-provider.js';
 
-type UnknownContextKey = Context<unknown, unknown>;
-
 /**
- * A context request, with associated source element, with all objects as weak references.
- */
-type PendingContextRequest = Omit<
-  ContextRequest<UnknownContextKey>,
-  'context' | 'subscribe'
-> & {element: HTMLElement};
-
-/**
- * A ContextRoot can be used to gather unsatisfied context requests and redispatch these
- * requests when new providers which satisfy matching context keys are available.
+ * A ContextRoot buffers unsatisfied context request events. It will redispatch
+ * these requests when new providers which satisfy matching contexts
+ * are available.
  */
 export class ContextRoot {
   private pendingContextRequests = new Map<
-    UnknownContextKey,
-    Set<PendingContextRequest>
+    Context<unknown, unknown>,
+    {
+      // The WeakMap lets us detect if we're seen an element/callback pair yet,
+      // without needing to iterate the `requests` array
+      callbacks: WeakMap<HTMLElement, WeakSet<ContextCallback<unknown>>>;
+
+      // Requests lets us iterate over every element/callback that we need to
+      // replay context events for
+      // Both the element and callback must be stored in WeakRefs because the
+      // callback most likely has a strong ref to the element.
+      requests: Array<{
+        elementRef: WeakRef<HTMLElement>;
+        callbackRef: WeakRef<ContextCallback<unknown>>;
+      }>;
+    }
   >();
 
   /**
@@ -50,49 +54,74 @@ export class ContextRoot {
   }
 
   private onContextProvider = (
-    ev: ContextProviderEvent<Context<unknown, unknown>>
+    event: ContextProviderEvent<Context<unknown, unknown>>
   ) => {
-    const pendingRequests = this.pendingContextRequests.get(ev.context);
-    if (!pendingRequests) {
-      return; // no pending requests for this provider at this time
+    const pendingRequestData = this.pendingContextRequests.get(event.context);
+    if (pendingRequestData === undefined) {
+      // No pending requests for this context at this time
+      return;
     }
 
-    // clear our list, any still unsatisfied requests will re-add themselves
-    this.pendingContextRequests.delete(ev.context);
+    // Clear our list. Any still unsatisfied requests will re-add themselves
+    // when we dispatch the events below.
+    this.pendingContextRequests.delete(event.context);
 
-    // loop over all pending requests and re-dispatch them from their source
-    pendingRequests.forEach((request) => {
-      const element = request.element;
-      const callback = request.callback;
-      // redispatch if we still have all the parts of the request
-      if (element) {
+    // Loop over all pending requests and re-dispatch them from their source
+    const {requests} = pendingRequestData;
+    for (const {elementRef, callbackRef} of requests) {
+      const element = elementRef.deref();
+      const callback = callbackRef.deref();
+
+      if (element === undefined || callback === undefined) {
+        // The element was GC'ed. Do nothing.
+      } else {
+        // Re-dispatch if we still have the element and callback
         element.dispatchEvent(
-          new ContextRequestEvent(ev.context, callback, true)
+          new ContextRequestEvent(event.context, callback, true)
         );
       }
-    });
+    }
   };
 
   private onContextRequest = (
-    ev: ContextRequestEvent<Context<unknown, unknown>>
+    event: ContextRequestEvent<Context<unknown, unknown>>
   ) => {
-    // events that are not subscribing should not be captured
-    if (!ev.subscribe) {
+    // Events that are not subscribing should not be buffered
+    if (event.subscribe !== true) {
       return;
     }
-    // store a weakref to this element under the context key
-    const request: PendingContextRequest = {
-      element: ev.target as HTMLElement,
-      callback: ev.callback,
-    };
-    let pendingContextRequests = this.pendingContextRequests.get(ev.context);
-    if (!pendingContextRequests) {
-      pendingContextRequests = new Set();
-      this.pendingContextRequests.set(ev.context, pendingContextRequests);
+
+    const element = event.target as HTMLElement;
+    const callback = event.callback;
+
+    let pendingContextRequests = this.pendingContextRequests.get(event.context);
+    if (pendingContextRequests === undefined) {
+      this.pendingContextRequests.set(
+        event.context,
+        (pendingContextRequests = {
+          callbacks: new WeakMap(),
+          requests: [],
+        })
+      );
     }
-    // NOTE: if the element is connected multiple times it will add itself
-    // to this set multiple times since the set identify of the request
-    // object will be unique each time.
-    pendingContextRequests.add(request);
+
+    let callbacks = pendingContextRequests.callbacks.get(element);
+    if (callbacks === undefined) {
+      pendingContextRequests.callbacks.set(
+        element,
+        (callbacks = new WeakSet())
+      );
+    }
+
+    if (callbacks.has(callback)) {
+      // We're already tracking this element/callback pair
+      return;
+    }
+
+    callbacks.add(callback);
+    pendingContextRequests.requests.push({
+      elementRef: new WeakRef(element),
+      callbackRef: new WeakRef(callback),
+    });
   };
 }
