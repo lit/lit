@@ -10,7 +10,7 @@ This package provides tools to integrate [`@lit-labs/ssr`](../ssr/README.md) wit
 
 ## Usage
 
-To get React SSR to call into our library, we need to patch or replace React's default `createElement()` function and/or runtime JSX functions with our own. The way to achieve this depends on your project configuration.
+To get React SSR to deeply render Lit components, we'll need React JSX code to call an enhanced version of `createElement()` provided by this package. The way to achieve this depends on your project configuration.
 
 ### Using the Classic Runtime JSX Transform
 
@@ -34,7 +34,7 @@ import ReactDOM from 'react-dom';
 
 In the browser environment, this module does not patch `React.createElement()` but instead imports `lit/experimental-hydrate-support.js` which must be imported before the `lit` package to allow hydration of server-rendered Lit elements.
 
-This approach also has the advantage of working on Lit components turned to React components with the `@lit-labs/react` package which calls `React.createElement()` directly. It'll also work for any external React components pre-compiled with the classic JSX runtime transform.
+This approach has the advantage of being compatible with Lit components wrapped as React components using the `@lit-labs/react` package, which calls `React.createElement()` directly. It'll also work for any external React components pre-compiled with the classic JSX runtime transform.
 
 #### Specifying an alternative `createElement()` function
 
