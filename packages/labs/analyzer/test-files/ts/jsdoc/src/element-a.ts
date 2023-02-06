@@ -86,6 +86,26 @@ export class ElementA extends LitElement {
   method2(a: string, b = false, ...c: number[]) {
     return b ? a : c[0].toFixed();
   }
+
+  /**
+   * @summary Static class field 1 summary
+   * @description Static class field 1 description
+   * @protected
+   */
+  static field1: number | string;
+
+  /**
+   * @summary Static method 1 summary
+   * @description Static method 1 description
+   * @param a Param a description
+   * @param b Param b description
+   * @param c Param c description
+   * @returns Static method 1 return description
+   * @deprecated Static method 1 deprecated
+   */
+  static method1(a: string, b = false, ...c: number[]) {
+    return b ? a : c[0].toFixed();
+  }
 }
 
 /**
