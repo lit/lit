@@ -1,6 +1,12 @@
 name: Sauce IE11
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    # This is the default list, but I don't know how to YAML an empty pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
   tests-sauce-ie11:
