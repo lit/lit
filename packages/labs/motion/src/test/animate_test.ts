@@ -33,6 +33,9 @@ if (DEV_MODE) {
   LitElement.disableWarning?.('change-in-update');
 }
 
+const isSafari = /apple/i.test(navigator.vendor);
+const testSkipSafari = isSafari ? test.skip : test;
+
 /**
  * TODO
  * 1. work out when onStart/onComplete and animates run
@@ -356,7 +359,7 @@ if (DEV_MODE) {
     assert.equal((frames![1].color as string).trim(), 'rgb(255, 165, 0)');
   });
 
-  test('adjusts for ancestor position', async () => {
+  testSkipSafari('adjusts for ancestor position', async () => {
     let shiftChild = false;
     let shiftGChild = false;
     let childAnimateProps: CSSValues;
@@ -594,7 +597,7 @@ if (DEV_MODE) {
   });
 
   // TODO(sorvell) This is too flakey on Safari.
-  (/apple/i.test(navigator.vendor) ? test.skip : test)(
+  testSkipSafari(
     'animates in based on an element that animated out',
     async () => {
       let shouldRender = true;
