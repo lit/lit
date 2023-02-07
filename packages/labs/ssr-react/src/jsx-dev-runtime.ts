@@ -12,4 +12,4 @@
 import 'lit/experimental-hydrate-support.js';
 
 // eslint-disable-next-line import/extensions
-export {jsxDEV} from 'react/jsx-dev-runtime';
+export {Fragment, jsxDEV} from 'react/jsx-dev-runtime';
