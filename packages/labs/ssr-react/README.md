@@ -68,7 +68,9 @@ If your project is using the [runtime JSX transform](https://reactjs.org/blog/20
 
 These JSX runtime modules contain jsx functions enhanced to add the declarative shadow DOM output to registered custom elements when imported into server environemtns. They also automatically import `lit/experimental-hydrate-support.js` in the browser environment.
 
-However, they will not work for any pre-compiled JSX expressions or direct calls to `React.createElement()`, including those in the usage of the `@lit-labs/react` package's `createElement()`. Consider combining this with the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach to handle such scenarios.
+This method will not work for any pre-compiled JSX expressions or direct calls to `React.createElement()`, including those in the usage of the `@lit-labs/react` package's `createElement()`. Consider combining this with the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach to handle such scenarios.
+
+In the unlikely event that you wish to use React components that are pre-compiled with the automatic transform, i.e. those already written using `jsx` or `jsxs` functions, that also contain Lit components you wish to SSR, a build tool will need to be used to replace the import source of those functions to be from `@lit-labs/ssr-react`.
 
 ### Advanced Usage
 
