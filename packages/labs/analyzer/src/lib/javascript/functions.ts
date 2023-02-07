@@ -35,7 +35,7 @@ const getFunctionDeclarationName = (declaration: ts.FunctionDeclaration) => {
   if (name === undefined) {
     throw new DiagnosticsError(
       declaration,
-      'Unexpected class declaration without a name'
+      'Unexpected function declaration without a name'
     );
   }
   return name;
