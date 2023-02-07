@@ -287,7 +287,7 @@ nisi ut aliquip ex ea commodo consequat.`
   test('static field1', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isClassDeclaration());
-    const member = element.getField('field1', true);
+    const member = element.getStaticField('field1');
     assert.ok(member?.isClassField());
     assert.equal(member.summary, `Static class field 1 summary`);
     assert.equal(member.description, `Static class field 1 description`);
@@ -346,7 +346,7 @@ nisi ut aliquip ex ea commodo consequat.`
   test('static method1', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isClassDeclaration());
-    const member = element.getMethod('method1', true);
+    const member = element.getStaticMethod('method1');
     assert.ok(member?.isClassMethod());
     assert.equal(member.summary, `Static method 1 summary`);
     assert.equal(member.description, `Static method 1 description`);

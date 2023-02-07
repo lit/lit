@@ -472,19 +472,35 @@ export class ClassDeclaration extends Declaration {
   }
 
   /**
-   * Returns a `ClassField` model the given name defined on the immediate class
-   * (excluding any inherited members).
+   * Returns a non-static `ClassField` model the given name defined on the
+   * immediate class (excluding any inherited members).
    */
-  getField(name: string, isStatic = false): ClassField | undefined {
-    return (isStatic ? this._staticFieldMap : this._fieldMap).get(name);
+  getField(name: string): ClassField | undefined {
+    return this._fieldMap.get(name);
   }
 
   /**
-   * Returns a `ClassMethod` model for the given name defined on the immediate
+   * Returns a static `ClassField` model the given name defined on the immediate
    * class (excluding any inherited members).
    */
-  getMethod(name: string, isStatic = false): ClassMethod | undefined {
-    return (isStatic ? this._staticMethodMap : this._methodMap).get(name);
+  getStaticField(name: string): ClassField | undefined {
+    return this._staticFieldMap.get(name);
+  }
+
+  /**
+   * Returns a non-static `ClassMethod` model for the given name defined on the
+   * immediate class (excluding any inherited members).
+   */
+  getMethod(name: string): ClassMethod | undefined {
+    return this._methodMap.get(name);
+  }
+
+  /**
+   * Returns a static `ClassMethod` model for the given name defined on the
+   * immediate class (excluding any inherited members).
+   */
+  getStaticMethod(name: string): ClassMethod | undefined {
+    return this._staticMethodMap.get(name);
   }
 
   /**
