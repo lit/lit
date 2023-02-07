@@ -199,7 +199,7 @@ const config: TestRunnerConfig = {
         webcomponents: false,
         custom: [
           {
-            name: 'webcomponents-2.5.0',
+            name: 'webcomponents-2.6.0',
             path: require.resolve(
               '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
             ),
