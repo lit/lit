@@ -355,21 +355,17 @@ export interface ClassMethodInit extends FunctionLikeInit {
   source?: SourceReference | undefined;
 }
 
-export class ClassMethod extends Declaration {
+export class ClassMethod extends FunctionDeclaration {
   static?: boolean | undefined;
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
-  parameters?: Parameter[] | undefined;
-  return?: Return | undefined;
   constructor(init: ClassMethodInit) {
     super(init);
     this.static = init.static;
     this.privacy = init.privacy;
     this.inheritedFrom = init.inheritedFrom;
     this.source = init.source;
-    this.parameters = init.parameters;
-    this.return = init.return;
   }
 }
 

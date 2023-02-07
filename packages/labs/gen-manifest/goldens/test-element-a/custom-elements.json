@@ -733,11 +733,68 @@
               }
             }
           ]
+        },
+        {
+          "kind": "function",
+          "name": "function1",
+          "description": "Function 1 description",
+          "return": {"type": {"text": "void"}}
+        },
+        {
+          "kind": "function",
+          "name": "function2",
+          "description": "Function 2 description\nwith wraparound",
+          "summary": "Function 2 summary\nwith wraparound",
+          "deprecated": "Function 2 deprecated",
+          "parameters": [
+            {
+              "name": "a",
+              "description": "Param a description",
+              "type": {"text": "string"}
+            },
+            {
+              "name": "b",
+              "description": "Param b description\nwith wraparound",
+              "type": {"text": "boolean"},
+              "default": "false",
+              "optional": true
+            },
+            {
+              "name": "c",
+              "description": "Param c description",
+              "type": {"text": "number[]"},
+              "rest": true
+            }
+          ],
+          "return": {
+            "type": {"text": "string"},
+            "description": "Function 2 return description"
+          }
+        },
+        {
+          "kind": "function",
+          "name": "default",
+          "description": "Default function description",
+          "return": {
+            "type": {"text": "string"},
+            "description": "Default function return description"
+          }
         }
       ],
       "exports": [
         {"kind": "js", "name": "Bar", "declaration": {"name": "Bar"}},
-        {"kind": "js", "name": "Foo", "declaration": {"name": "Foo"}}
+        {"kind": "js", "name": "Foo", "declaration": {"name": "Foo"}},
+        {
+          "kind": "js",
+          "name": "function1",
+          "declaration": {"name": "function1"}
+        },
+        {
+          "kind": "js",
+          "name": "function2",
+          "declaration": {"name": "function2"}
+        },
+        {"kind": "js", "name": "default", "declaration": {"name": "default"}}
       ]
     },
     {

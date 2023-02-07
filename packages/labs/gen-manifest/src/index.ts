@@ -20,6 +20,7 @@ import {
   Parameter,
   Return,
   DeprecatableDescribed,
+  FunctionDeclaration,
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
@@ -128,8 +129,9 @@ const convertDeclaration = (declaration: Declaration): cem.Declaration => {
     return convertClassDeclaration(declaration);
   } else if (declaration.isVariableDeclaration()) {
     return convertVariableDeclaration(declaration);
+  } else if (declaration.isFunctionDeclaration()) {
+    return convertFunctionDeclaration(declaration);
   } else {
-    // TODO: FunctionDeclaration
     // TODO: MixinDeclaration
     // TODO: CustomElementMixinDeclaration;
     throw new Error(
@@ -215,7 +217,17 @@ const convertCommonMemberInfo = (member: ClassField | ClassMethod) => {
   };
 };
 
-const convertCommonFunctionLikeInfo = (functionLike: ClassMethod) => {
+const convertFunctionDeclaration = (
+  declaration: FunctionDeclaration
+): cem.FunctionDeclaration => {
+  return {
+    kind: 'function',
+    ...convertCommonDeclarationInfo(declaration),
+    ...convertCommonFunctionLikeInfo(declaration),
+  };
+};
+
+const convertCommonFunctionLikeInfo = (functionLike: FunctionDeclaration) => {
   return {
     parameters: transformIfNotEmpty(functionLike.parameters, (p) =>
       p.map(convertParameter)

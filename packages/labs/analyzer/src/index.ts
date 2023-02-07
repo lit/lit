@@ -26,6 +26,7 @@ export type {
   PackageJson,
   ModuleWithLitElementDeclarations,
   DeprecatableDescribed,
+  FunctionDeclaration,
 } from './lib/model.js';
 
 export type {AbsolutePath, PackagePath} from './lib/paths.js';
