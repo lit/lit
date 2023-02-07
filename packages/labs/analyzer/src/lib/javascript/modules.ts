@@ -37,6 +37,7 @@ import {
   getSpecifierString,
 } from '../references.js';
 import {parseModuleJSDocInfo} from './jsdoc.js';
+import {getFunctionDeclarationInfo} from './functions.js';
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -116,6 +117,8 @@ export const getModule = (
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
       addDeclaration(getClassDeclarationInfo(statement, analyzer));
+    } else if (ts.isFunctionDeclaration(statement)) {
+      addDeclaration(getFunctionDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
     } else if (ts.isEnumDeclaration(statement)) {
