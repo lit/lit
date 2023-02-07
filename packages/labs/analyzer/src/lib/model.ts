@@ -440,19 +440,35 @@ export class ClassDeclaration extends Declaration {
   }
 
   /**
-   * Returns iterator of the `ClassField`s defined on the immediate class
-   * (excluding any inherited members).
+   * Returns iterator of the non-static `ClassField`s defined on the immediate
+   * class (excluding any inherited members).
    */
-  get fields() {
-    return [...this._fieldMap.values(), ...this._staticFieldMap.values()];
+  get fields(): IterableIterator<ClassField> {
+    return this._fieldMap.values();
   }
 
   /**
-   * Returns iterator of the `ClassMethod`s defined on the immediate class
+   * Returns iterator of the static `ClassField`s defined on the immediate class
    * (excluding any inherited members).
    */
-  get methods() {
-    return [...this._methodMap.values(), ...this._staticMethodMap.values()];
+  get staticFields(): IterableIterator<ClassField> {
+    return this._staticFieldMap.values();
+  }
+
+  /**
+   * Returns iterator of the non-static `ClassMethod`s defined on the immediate
+   * class (excluding any inherited members).
+   */
+  get methods(): IterableIterator<ClassMethod> {
+    return this._methodMap.values();
+  }
+
+  /**
+   * Returns iterator of the static `ClassMethod`s defined on the immediate
+   * class (excluding any inherited members).
+   */
+  get staticMethods(): IterableIterator<ClassMethod> {
+    return this._staticMethodMap.values();
   }
 
   /**
