@@ -407,7 +407,9 @@ export interface ClassDeclarationInit extends DeclarationInit {
   node: ts.ClassDeclaration;
   getHeritage: () => ClassHeritage;
   fieldMap?: Map<string, ClassField> | undefined;
+  staticFieldMap?: Map<string, ClassField> | undefined;
   methodMap?: Map<string, ClassMethod> | undefined;
+  staticMethodMap?: Map<string, ClassMethod> | undefined;
 }
 
 export class ClassDeclaration extends Declaration {
@@ -415,14 +417,18 @@ export class ClassDeclaration extends Declaration {
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
   readonly _fieldMap: Map<string, ClassField>;
+  readonly _staticFieldMap: Map<string, ClassField>;
   readonly _methodMap: Map<string, ClassMethod>;
+  readonly _staticMethodMap: Map<string, ClassMethod>;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
     this.node = init.node;
     this._getHeritage = init.getHeritage;
     this._fieldMap = init.fieldMap ?? new Map();
+    this._staticFieldMap = init.staticFieldMap ?? new Map();
     this._methodMap = init.methodMap ?? new Map();
+    this._staticMethodMap = init.staticMethodMap ?? new Map();
   }
 
   /**
@@ -434,35 +440,67 @@ export class ClassDeclaration extends Declaration {
   }
 
   /**
-   * Returns iterator of the `ClassField`s defined on the immediate class
-   * (excluding any inherited members).
+   * Returns iterator of the non-static `ClassField`s defined on the immediate
+   * class (excluding any inherited members).
    */
-  get fields() {
+  get fields(): IterableIterator<ClassField> {
     return this._fieldMap.values();
   }
 
   /**
-   * Returns iterator of the `ClassMethod`s defined on the immediate class
+   * Returns iterator of the static `ClassField`s defined on the immediate class
    * (excluding any inherited members).
+   */
+  get staticFields(): IterableIterator<ClassField> {
+    return this._staticFieldMap.values();
+  }
+
+  /**
+   * Returns iterator of the non-static `ClassMethod`s defined on the immediate
+   * class (excluding any inherited members).
    */
   get methods(): IterableIterator<ClassMethod> {
     return this._methodMap.values();
   }
 
   /**
-   * Returns a `ClassField` model the given name defined on the immediate class
-   * (excluding any inherited members).
+   * Returns iterator of the static `ClassMethod`s defined on the immediate
+   * class (excluding any inherited members).
+   */
+  get staticMethods(): IterableIterator<ClassMethod> {
+    return this._staticMethodMap.values();
+  }
+
+  /**
+   * Returns a non-static `ClassField` model the given name defined on the
+   * immediate class (excluding any inherited members).
    */
   getField(name: string): ClassField | undefined {
     return this._fieldMap.get(name);
   }
 
   /**
-   * Returns a `ClassMethod` model for the given name defined on the immediate
+   * Returns a static `ClassField` model the given name defined on the immediate
    * class (excluding any inherited members).
+   */
+  getStaticField(name: string): ClassField | undefined {
+    return this._staticFieldMap.get(name);
+  }
+
+  /**
+   * Returns a non-static `ClassMethod` model for the given name defined on the
+   * immediate class (excluding any inherited members).
    */
   getMethod(name: string): ClassMethod | undefined {
     return this._methodMap.get(name);
+  }
+
+  /**
+   * Returns a static `ClassMethod` model for the given name defined on the
+   * immediate class (excluding any inherited members).
+   */
+  getStaticMethod(name: string): ClassMethod | undefined {
+    return this._staticMethodMap.get(name);
   }
 
   /**

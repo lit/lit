@@ -198,7 +198,9 @@ const convertClassDeclaration = (
     // mixins: [], // TODO
     members: ifNotEmpty([
       ...Array.from(declaration.fields).map(convertClassField),
+      ...Array.from(declaration.staticFields).map(convertClassField),
       ...Array.from(declaration.methods).map(convertClassMethod),
+      ...Array.from(declaration.staticMethods).map(convertClassMethod),
     ]),
     // source: {href: 'TODO'}, // TODO
   };

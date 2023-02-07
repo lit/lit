@@ -72,22 +72,26 @@ export const getClassMembers = (
   analyzer: AnalyzerInterface
 ) => {
   const fieldMap = new Map<string, ClassField>();
+  const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
+  const staticMethodMap = new Map<string, ClassMethod>();
   declaration.members.forEach((node) => {
     if (ts.isMethodDeclaration(node)) {
-      methodMap.set(
+      const info = getMemberInfo(node);
+      (info.static ? staticMethodMap : methodMap).set(
         node.name.getText(),
         new ClassMethod({
-          ...getMemberInfo(node),
+          ...info,
           ...getFunctionLikeInfo(node, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );
     } else if (ts.isPropertyDeclaration(node)) {
-      fieldMap.set(
+      const info = getMemberInfo(node);
+      (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
         new ClassField({
-          ...getMemberInfo(node),
+          ...info,
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
           ...parseNodeJSDocInfo(node),
@@ -97,7 +101,9 @@ export const getClassMembers = (
   });
   return {
     fieldMap,
+    staticFieldMap,
     methodMap,
+    staticMethodMap,
   };
 };
 
