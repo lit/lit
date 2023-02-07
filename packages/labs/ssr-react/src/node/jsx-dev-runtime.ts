@@ -13,7 +13,7 @@
 import * as ReactJSXDevRuntime from 'react/jsx-dev-runtime';
 import {createElement, type ElementType, type ReactNode} from 'react';
 import {isCustomElement} from '../lib/utils.js';
-import {renderShadowContents} from '../lib/node/render-shadow-contents.js';
+import {renderCustomElement} from '../lib/node/render-custom-element.js';
 
 export const Fragment = ReactJSXDevRuntime.Fragment;
 
@@ -27,7 +27,7 @@ export const jsxDEV = <P extends {children?: ReactNode[] | ReactNode}>(
 ) => {
   if (isCustomElement(type)) {
     const {shadowContents, elementAttributes, templateAttributes} =
-      renderShadowContents(type, props);
+      renderCustomElement(type, props);
 
     if (shadowContents) {
       const templateShadowRoot = createElement('template', {

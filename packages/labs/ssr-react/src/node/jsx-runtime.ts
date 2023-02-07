@@ -13,7 +13,7 @@
 import * as ReactJSXRuntime from 'react/jsx-runtime';
 import {createElement, type ReactNode, type ElementType} from 'react';
 import {isCustomElement} from '../lib/utils.js';
-import {renderShadowContents} from '../lib/node/render-shadow-contents.js';
+import {renderCustomElement} from '../lib/node/render-custom-element.js';
 
 export const Fragment = ReactJSXRuntime.Fragment;
 
@@ -24,7 +24,7 @@ export const jsx = <P extends {children?: ReactNode}>(
 ) => {
   if (isCustomElement(type)) {
     const {shadowContents, elementAttributes, templateAttributes} =
-      renderShadowContents(type, props);
+      renderCustomElement(type, props);
 
     if (shadowContents) {
       const templateShadowRoot = createElement('template', {
@@ -55,7 +55,7 @@ export const jsxs = <P extends {children: ReactNode[]}>(
 ) => {
   if (isCustomElement(type)) {
     const {shadowContents, elementAttributes, templateAttributes} =
-      renderShadowContents(type, props);
+      renderCustomElement(type, props);
 
     if (shadowContents) {
       const templateShadowRoot = createElement('template', {

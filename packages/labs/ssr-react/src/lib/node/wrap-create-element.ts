@@ -5,7 +5,7 @@
  */
 
 import {isCustomElement} from '../utils.js';
-import {renderShadowContents} from './render-shadow-contents.js';
+import {renderCustomElement} from './render-custom-element.js';
 
 import type {
   createElement as ReactCreateElement,
@@ -30,7 +30,7 @@ export function wrapCreateElement(
   ): ReactElement {
     if (isCustomElement(type)) {
       const {shadowContents, elementAttributes, templateAttributes} =
-        renderShadowContents(type, props);
+        renderCustomElement(type, props);
 
       if (shadowContents !== undefined) {
         const templateShadowRoot = originalCreateElement('template', {
