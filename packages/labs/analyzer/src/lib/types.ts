@@ -60,8 +60,6 @@ export const getTypeForNode = (
   node: ts.Node,
   analyzer: AnalyzerInterface
 ): Type => {
-  // Since getTypeAtLocation will return `any` for an untyped node, to support
-  // jsdoc @type for JS (TBD), we look at the jsdoc type first.
   return getTypeForType(
     analyzer.program.getTypeChecker().getTypeAtLocation(node),
     node,
