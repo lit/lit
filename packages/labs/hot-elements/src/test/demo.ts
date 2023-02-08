@@ -1,5 +1,6 @@
 import '../index.js';
 import {css, html, LitElement} from 'lit';
+import {property} from 'lit/decorators.js';
 
 class DemoElement extends LitElement {
   static styles = css`
@@ -10,11 +11,14 @@ class DemoElement extends LitElement {
     }
   `;
 
+  @property({type: Number}) rng = Math.random();
+
   render() {
     return html`
       <div>
+        <div>Random number initialized in constructor: ${this.rng}</div>
         <!-- Can update this too: -->
-        Updated render!!!!
+        <label>Hello world</label>
       </div>
     `;
   }

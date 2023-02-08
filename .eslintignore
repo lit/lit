@@ -231,6 +231,9 @@ packages/labs/hot-elements/node_modules/
 packages/labs/hot-elements/lib/
 packages/labs/hot-elements/index.*
 
+packages/labs/litespeed/built/bundle.js
+packages/labs/litespeed/litespeed.vsix
+
 packages/labs/motion/development/
 packages/labs/motion/test/
 packages/labs/motion/node_modules/

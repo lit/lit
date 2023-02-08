@@ -1,0 +1,31 @@
+{
+  "name": "litespeed",
+  "displayName": "litespeed",
+  "publisher": "google",
+  "description": "",
+  "version": "0.1.0",
+  "contributes": {
+    "commands": [
+      {
+        "command": "google.litespeed.startWebDevServer",
+        "title": "Start Web Dev Server With Litespeed"
+      }
+    ]
+  },
+  "main": "./bundle.js",
+  "activationEvents": [],
+  "icon": "logo.png",
+  "engines": {
+    "vscode": "^1.66.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git"
+  },
+  "author": "Google LLC",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/lit/lit/issues"
+  },
+  "homepage": "https://github.com/lit/lit#readme"
+}

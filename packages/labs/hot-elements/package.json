@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/context"
+    "directory": "packages/labs/hot-elements"
   },
   "type": "module",
   "main": "index.js",
@@ -74,7 +74,7 @@
       "dependencies": [
         "../../lit:build"
       ],
-      "command": "wds --node-resolve --open /src/test/demo.html"
+      "command": "wds"
     }
   },
   "author": "Google LLC",
