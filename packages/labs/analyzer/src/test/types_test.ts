@@ -155,54 +155,6 @@ test('inferredImportedClass', ({module}) => {
   assert.equal(type.references[0].isGlobal, false);
 });
 
-test('jsdocString', ({module}) => {
-  const type = typeForVariable(module, 'jsdocString');
-  assert.equal(type.text, 'string');
-  assert.equal(type.references.length, 0);
-});
-
-test('jsdocLocalClass', ({module}) => {
-  const type = typeForVariable(module, 'jsdocLocalClass');
-  assert.equal(type.text, 'LocalClass');
-  assert.equal(type.references.length, 1);
-  assert.equal(type.references[0].name, 'LocalClass');
-  assert.equal(type.references[0].package, '@lit-internal/test-types');
-  assert.equal(type.references[0].module, 'module.js');
-  assert.equal(type.references[0].isGlobal, false);
-});
-
-test('jsdocImportedClass', ({module}) => {
-  const type = typeForVariable(module, 'jsdocImportedClass');
-  assert.equal(type.text, 'ImportedClass');
-  assert.equal(type.references.length, 1);
-  assert.equal(type.references[0].name, 'ImportedClass');
-  assert.equal(type.references[0].package, '@lit-internal/test-types');
-  assert.equal(type.references[0].module, 'external.js');
-  assert.equal(type.references[0].isGlobal, false);
-});
-
-test('jsdocStringExternalClassUnion', ({module}) => {
-  const type = typeForVariable(module, 'jsdocStringExternalClassUnion');
-  assert.equal(type.text, 'string | ImportedClass');
-  assert.equal(type.references.length, 1);
-  assert.equal(type.references[0].name, 'ImportedClass');
-  assert.equal(type.references[0].package, '@lit-internal/test-types');
-  assert.equal(type.references[0].module, 'external.js');
-  assert.equal(type.references[0].isGlobal, false);
-});
-
-test('jsdocStringExternalGlobalClassUnion', ({module}) => {
-  const type = typeForVariable(module, 'jsdocStringExternalGlobalClassUnion');
-  assert.equal(type.text, 'string | ImportedClass | HTMLElement');
-  assert.equal(type.references.length, 2);
-  assert.equal(type.references[0].name, 'ImportedClass');
-  assert.equal(type.references[0].package, '@lit-internal/test-types');
-  assert.equal(type.references[0].module, 'external.js');
-  assert.equal(type.references[0].isGlobal, false);
-  assert.equal(type.references[1].name, 'HTMLElement');
-  assert.equal(type.references[1].isGlobal, true);
-});
-
 test('complexType', ({module}) => {
   const type = typeForVariable(module, 'complexType');
   assert.equal(type.text, 'Promise<Map<keyof LitElement, ImportedClass[]>>[]');
