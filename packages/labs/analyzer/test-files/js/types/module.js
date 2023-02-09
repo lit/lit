@@ -1,41 +1,51 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ImportedClass, ImportedInterface, returnsClass} from './external.js';
+/** @typedef {import("./external.js").ImportedInterface} ImportedInterface */
+import {ImportedClass, returnsClass} from './external.js';
 import {LitElement, html} from 'lit';
 
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
-export const testString: string = 'hi';
+/** @type {string} */
+export const testString = 'hi';
 export const inferredString = 'hi';
 
 export class LocalClass {}
-export interface LocalInterface {
-  someData: number;
-}
 
-export let localClass: LocalClass;
-export let importedClass: ImportedClass;
-export let externalClass: LitElement;
+/**
+ * @typedef LocalInterface
+ * @prop {number} someData
+ */
 
-export let localInterface: LocalInterface;
-export let importedInterface: ImportedInterface;
+/** @type {LocalClass} */
+export let localClass;
+/** @type {ImportedClass} */
+export let importedClass;
+/** @type {LitElement} */
+export let externalClass;
 
-export const testStringNumberUnion: string | number = 'hi';
-export const testStringClassUnion: string | LocalClass = 'hi';
-export const testStringImportedClassUnion: string | ImportedClass = 'hi';
-export const testStringImportedGlobalClassUnion:
-  | string
-  | ImportedClass
-  | HTMLElement = 'hi';
+/** @type {LocalInterface} */
+export let localInterface;
+/** @type {ImportedInterface} */
+export let importedInterface;
+
+/** @type {string | number} */
+export const testStringNumberUnion = 'hi';
+/** @type {string | LocalClass} */
+export const testStringClassUnion = 'hi';
+/** @type {string | ImportedClass} */
+export const testStringImportedClassUnion = 'hi';
+/** @type {string | ImportedClass | HTMLElement} */
+export const testStringImportedGlobalClassUnion = 'hi';
 
 export const inferredLocalClass = new LocalClass();
 export const inferredImportedClass = new ImportedClass();
 export const inferredExternalClass = new LitElement();
 
-export let complexType: Promise<Map<keyof LitElement, ImportedClass[]>>[];
+/** @type {Promise<Map<keyof LitElement, ImportedClass[]>>[]} */
+export let complexType;
 
 export const {
   destructObj,
@@ -45,7 +55,8 @@ export const {
   foo: {destructObjNested: new LitElement()},
 };
 
-const separatelyExportedClass: LocalClass = new LocalClass();
+/** @type {LocalClass} */
+const separatelyExportedClass = new LocalClass();
 export {separatelyExportedClass};
 
 const {
