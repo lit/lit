@@ -967,7 +967,7 @@ export abstract class ReactiveElement
     // (which is set in connectedCallback) to avoid the need to track a
     // first connected state.
     if (this.renderRoot !== undefined && this.isConnected) {
-      controller.hostConnected?.();
+      controller.hostConnected?.(this);
     }
   }
 
@@ -1043,7 +1043,7 @@ export abstract class ReactiveElement
       ).renderRoot = this.createRenderRoot();
     }
     this.enableUpdating(true);
-    this.__controllers?.forEach((c) => c.hostConnected?.());
+    this.__controllers?.forEach((c) => c.hostConnected?.(this));
   }
 
   /**
@@ -1061,7 +1061,7 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.hostDisconnected?.());
+    this.__controllers?.forEach((c) => c.hostDisconnected?.(this));
   }
 
   /**
@@ -1327,7 +1327,7 @@ export abstract class ReactiveElement
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
         this.willUpdate(changedProperties);
-        this.__controllers?.forEach((c) => c.hostUpdate?.());
+        this.__controllers?.forEach((c) => c.hostUpdate?.(this));
         this.update(changedProperties);
       } else {
         this.__markUpdated();
@@ -1372,7 +1372,7 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
-    this.__controllers?.forEach((c) => c.hostUpdated?.());
+    this.__controllers?.forEach((c) => c.hostUpdated?.(this));
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
