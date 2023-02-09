@@ -31,7 +31,7 @@ export const TaskStatus = {
  */
 export const initialState = Symbol();
 
-export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
 export type StatusRenderer<R> = {
   initial?: () => unknown;
@@ -159,7 +159,7 @@ export class Task<
     });
   }
 
-  hostUpdated() {
+  hostUpdate() {
     this.performTask();
   }
 
