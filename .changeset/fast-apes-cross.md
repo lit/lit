@@ -2,4 +2,4 @@
 '@lit-labs/task': minor
 ---
 
-Tasks now run on hostUpdate() instead of hostUpdated()
+Fix the change-in-update warning from Tasks by delaying the initial host update
