@@ -10,14 +10,6 @@ import {initialState, Task, TaskStatus, TaskConfig} from '@lit-labs/task';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-// Note, since tests are not built with production support, detect DEV_MODE
-// by checking if warning API is available.
-const DEV_MODE = !!ReactiveElement.enableWarning;
-
-if (DEV_MODE) {
-  ReactiveElement.disableWarning?.('change-in-update');
-}
-
 suite('Task', () => {
   let container: HTMLElement;
 
@@ -92,9 +84,29 @@ suite('Task', () => {
 
   const tasksUpdateComplete = nextFrame;
 
+  let warnMessages: Array<string>;
+  const originalConsoleWarn = console.warn;
+
+  suiteSetup(() => {
+    // Patch console.warn to check warnings
+    console.warn = (...args) => {
+      warnMessages.push(args.join(' '));
+      return originalConsoleWarn.apply(console, args);
+    };
+  });
+
+  suiteTeardown(() => {
+    // Un-patch console.warn
+    console.warn = originalConsoleWarn;
+  });
+
   setup(async () => {
     container = document.createElement('div');
     document.body.appendChild(container);
+    warnMessages = [];
+
+    // Individual tests can enable the warning
+    // ReactiveElement.disableWarning?.('change-in-update');
   });
 
   teardown(() => {
@@ -527,5 +539,47 @@ suite('Task', () => {
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(numOnErrorInvocations, 1);
     assert.equal(lastOnErrorResult, 'error2');
+  });
+
+  test('no change-in-update warning', async () => {
+    ReactiveElement.enableWarning?.('change-in-update');
+    let numInvocations = 0;
+
+    const el = getTestElement({
+      args: () => [1],
+      onComplete: () => {
+        numInvocations++;
+      },
+    });
+    await renderElement(el);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(numInvocations, 1);
+    assert.equal(warnMessages.length, 0);
+  });
+
+  test('Tasks can see effects of update()', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        args: () => [],
+        task: () => {
+          this.taskObservedValue = this.value;
+        },
+      });
+      value = 'foo';
+      taskObservedValue: string | undefined = undefined;
+
+      override update(changedProps: PropertyValues) {
+        super.update(changedProps);
+        this.value = 'bar';
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+    await el.task.taskComplete;
+
+    assert.equal(el.taskObservedValue, 'bar');
   });
 });
