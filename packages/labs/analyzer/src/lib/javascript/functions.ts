@@ -53,7 +53,7 @@ export const getFunctionDeclarationInfo = (
   };
 };
 
-export const getFunctionDeclaration = (
+const getFunctionDeclaration = (
   declaration: ts.FunctionLikeDeclaration,
   name: string,
   analyzer: AnalyzerInterface
