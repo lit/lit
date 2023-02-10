@@ -5,7 +5,7 @@
  */
 
 import {SizeCache} from './shared/SizeCache.js';
-import {BaseLayout, dim1} from './shared/BaseLayout.js';
+import {BaseLayout, dim1, dim2} from './shared/BaseLayout.js';
 import {
   Positions,
   Size,
@@ -106,6 +106,10 @@ class MetricsCache {
     return this._childSizeCache.getSize(index);
   }
 
+  getCrossSize(index: number, direction: ScrollDirection) {
+    return this._metricsCache.get(index)?.[dim2(direction)] || 0;
+  }
+
   getMarginSize(index: number) {
     return this._marginSizeCache.getSize(index);
   }
@@ -201,6 +205,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   _getSize(idx: number): number | undefined {
     const item = this._getPhysicalItem(idx);
     return item && this._metricsCache.getChildSize(idx);
+  }
+
+  _getCrossSize(idx: number): number {
+    const item = this._getPhysicalItem(idx);
+    return item ? this._metricsCache.getCrossSize(idx, this.direction) : 0;
   }
 
   _getAverageSize(): number {
@@ -412,6 +421,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._physicalMin = this._anchorPos - anchorLeadingMargin;
     this._physicalMax = this._anchorPos + anchorSize + anchorTrailingMargin;
 
+    let crossSize = this._getCrossSize(this._anchorIdx);
+
     while (this._physicalMin > lower && this._first > 0) {
       let size = this._getSize(--this._first);
       if (size === undefined) {
@@ -426,6 +437,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._physicalMin -= size;
       const pos = this._physicalMin;
       items.set(this._first, {pos, size});
+      crossSize = Math.max(crossSize, this._getCrossSize(this._first));
       this._physicalMin -= margin;
       if (this._stable === false && this._estimate === false) {
         break;
@@ -445,11 +457,14 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       }
       const pos = this._physicalMax;
       items.set(this._last, {pos, size});
+      crossSize = Math.max(crossSize, this._getCrossSize(this._last));
       this._physicalMax += size + margin;
       if (!this._stable && !this._estimate) {
         break;
       }
     }
+
+    this._crossSize = crossSize; // || null;
 
     // This handles the cases where we were relying on estimated sizes.
     const extentErr = this._calculateError();

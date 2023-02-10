@@ -9,11 +9,26 @@ export type Size = {
   [key in dimension]: number;
 };
 
+type numberOrOneHundredPercent = number | '100%';
+export type ScrollSizeValue =
+  | numberOrOneHundredPercent
+  | numberOrOneHundredPercent[];
+
+export type ScrollSize = {
+  [key in dimension]: ScrollSizeValue;
+};
+
 export type margin =
   | 'marginTop'
   | 'marginRight'
   | 'marginBottom'
   | 'marginLeft';
+
+export type writingMode =
+  | 'horizontal-tb'
+  | 'vertical-lr'
+  | 'vertical-rl'
+  | 'unknown';
 
 export type Margins = {
   [key in margin]: number;
@@ -50,7 +65,7 @@ export interface InternalRange extends Range {
 
 export interface StateChangedMessage {
   type: 'stateChanged';
-  scrollSize: Size;
+  scrollSize: ScrollSize;
   range: InternalRange;
   childPositions: ChildPositions;
   scrollError?: Positions;
@@ -118,6 +133,8 @@ export interface Layout {
   items: unknown[];
 
   direction: ScrollDirection;
+
+  writingMode: writingMode;
 
   viewportSize: Size;
 

@@ -17,6 +17,8 @@ import {
   BaseLayoutConfig,
   StateChangedMessage,
   LayoutHostSink,
+  writingMode,
+  ScrollSizeValue,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -58,6 +60,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   public totalScrollSize: Size = {width: 0, height: 0};
 
   public offsetWithinScroller: Positions = {left: 0, top: 0};
+
+  public writingMode: writingMode = 'unknown';
 
   /**
    * Flag for debouncing asynchronous reflow requests.
@@ -139,6 +143,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * The total (estimated) length of all items in the scrolling direction.
    */
   protected _scrollSize = 1;
+
+  protected _crossSize: number | null = 100;
 
   /**
    * Number of pixels beyond the viewport to still include
@@ -441,17 +447,31 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   protected _sendStateChangedMessage() {
+    console.log('_sendStateChangedMessage', this.writingMode);
     const childPositions: ChildPositions = new Map();
     if (this._first !== -1 && this._last !== -1) {
       for (let idx = this._first; idx <= this._last; idx++) {
         childPositions.set(idx, this._getItemPosition(idx));
       }
     }
+
+    const crossSize: ScrollSizeValue =
+      this.writingMode.indexOf(this.direction) === 0
+        ? [clampScrollSize(this._crossSize!), '100%']
+        : '100%';
+    console.log(
+      'CHECKING...',
+      crossSize,
+      this.writingMode,
+      this.direction,
+      this.writingMode.indexOf(this.direction)
+    );
+
     const message: StateChangedMessage = {
       type: 'stateChanged',
       scrollSize: {
-        [this._sizeDim]: this._scrollSize,
-        [this._secondarySizeDim]: null,
+        [this._sizeDim]: clampScrollSize(this._scrollSize),
+        [this._secondarySizeDim]: crossSize,
       } as Size,
       range: {
         first: this._first,
@@ -468,6 +488,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       } as Positions;
       this._scrollError = 0;
     }
+    console.log('MSG', message);
     this._hostSink(message);
   }
 
@@ -536,4 +557,12 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       }
     }
   }
+}
+
+function clampScrollSize(size: number) {
+  // Some browsers seem to crap out if the host element gets larger than
+  // a certain size, so we clamp it here (this value based on ad hoc
+  // testing in Chrome / Safari / Firefox Mac)
+  const max = 8200000;
+  return Math.min(max, size);
 }

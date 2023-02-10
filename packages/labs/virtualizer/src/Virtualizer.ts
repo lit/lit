@@ -14,12 +14,14 @@ import {
   LayoutConstructor,
   LayoutSpecifier,
   StateChangedMessage,
-  Size,
   InternalRange,
   MeasureChildFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
   LayoutHostMessage,
+  writingMode,
+  ScrollSize,
+  ScrollSizeValue,
 } from './layouts/shared/Layout.js';
 import {
   RangeChangedEvent,
@@ -110,7 +112,7 @@ export class Virtualizer {
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: Size | null = null;
+  private _scrollSize: ScrollSize | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
@@ -627,9 +629,11 @@ export class Virtualizer {
     const scrollingElement = this._scrollerController?.element;
     const layout = this._layout;
 
-    if (hostElement && scrollingElement && layout) {
+    if (hostElement && hostElement.isConnected && scrollingElement && layout) {
       let top, left, bottom, right;
 
+      const writingMode = getComputedStyle(hostElement)
+        .writingMode as writingMode;
       const hostElementBounds = hostElement.getBoundingClientRect();
 
       top = 0;
@@ -667,6 +671,7 @@ export class Virtualizer {
       const height = Math.max(1, bottom - top);
       const width = Math.max(1, right - left);
 
+      layout.writingMode = writingMode;
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
       layout.totalScrollSize = totalScrollSize;
@@ -678,20 +683,41 @@ export class Virtualizer {
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeHostElement(size?: Size | null) {
-    // Some browsers seem to crap out if the host element gets larger than
-    // a certain size, so we clamp it here (this value based on ad hoc
-    // testing in Chrome / Safari / Firefox Mac)
-    const max = 8200000;
-    const h = size && size.width !== null ? Math.min(max, size.width) : 0;
-    const v = size && size.height !== null ? Math.min(max, size.height) : 0;
+  private _sizeHostElement(size: ScrollSize | null) {
+    function cssScrollSizeValue(
+      size: ScrollSizeValue,
+      scroller = false
+    ): string {
+      if (size === '100%') {
+        return scroller ? '0px' : size;
+      }
+      if (typeof size === 'number') {
+        return `${size}px`;
+      }
+      if (scroller) {
+        return size[0] === '100%' ? `${size[1]}px` : '0px';
+      }
+      return `min(${[
+        cssScrollSizeValue(size[0]),
+        cssScrollSizeValue(size[1]),
+      ].join(', ')})`;
+    }
+    let h: string;
+    let v: string;
+    if (size === null) {
+      h = v = '0px';
+    } else {
+      h = cssScrollSizeValue(size.width, this._isScroller);
+      v = cssScrollSizeValue(size.height, this._isScroller);
+    }
+    console.log('SIZE', h, v);
 
     if (this._isScroller) {
-      this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+      this._getSizer().style.transform = `translate(${h}, ${v})`;
     } else {
       const style = this._hostElement!.style;
-      (style.minWidth as string | null) = h ? `${h}px` : '100%';
-      (style.minHeight as string | null) = v ? `${v}px` : '100%';
+      style.minWidth = h;
+      style.minHeight = v;
     }
   }
 
