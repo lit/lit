@@ -7,7 +7,9 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import ts from 'typescript';
-import {AbsolutePath, Analyzer} from '../index.js';
+import {AbsolutePath, Analyzer, Module} from '../index.js';
+import {fileURLToPath} from 'url';
+import {createPackageAnalyzer} from '../index.js';
 
 type Language = 'ts' | 'js';
 
@@ -200,3 +202,44 @@ export class InMemoryAnalyzer extends Analyzer {
     this._dirty = true;
   }
 }
+
+export interface AnalyzerTestContext<M extends boolean = false> {
+  analyzer: Analyzer;
+  packagePath: AbsolutePath;
+  getModule: (name: string) => Module;
+  module: M extends true ? Module : undefined;
+}
+
+export const setupAnalyzerForTest = <M extends string | undefined>(
+  ctx: AnalyzerTestContext<M extends string ? true : false>,
+  lang: Language,
+  pkg: string,
+  file?: M
+) => {
+  try {
+    const packagePath = fileURLToPath(
+      new URL(`../test-files/${lang}/${pkg}`, import.meta.url).href
+    ) as AbsolutePath;
+    const analyzer = createPackageAnalyzer(packagePath);
+    const getModule = (name: string) =>
+      analyzer.getModule(
+        getSourceFilename(
+          analyzer.path.join(packagePath, name),
+          lang
+        ) as AbsolutePath
+      );
+    ctx.packagePath = packagePath;
+    ctx.analyzer = analyzer;
+    ctx.module = (file !== undefined ? getModule(file) : undefined) as (
+      M extends string ? true : false
+    ) extends true
+      ? Module
+      : undefined;
+    ctx.getModule = getModule;
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
+};

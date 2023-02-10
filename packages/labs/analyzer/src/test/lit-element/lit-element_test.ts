@@ -7,51 +7,34 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, languages} from '../utils.js';
-
-import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../../index.js';
+import {
+  AnalyzerTestContext,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
 
 // Get actual constructor to test internal ability to assert the type
 // of a dereferenced Declaration
 import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
 
 for (const lang of languages) {
-  const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
-    `LitElement tests (${lang})`
-  );
+  const test = suite<AnalyzerTestContext>(`LitElement tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = (ctx.packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/basic-elements`, import.meta.url).href
-      ) as AbsolutePath);
-      ctx.analyzer = createPackageAnalyzer(packagePath);
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'basic-elements');
   });
 
   test('isLitElementDeclaration returns false for non-LitElement', ({
-    analyzer,
+    getModule,
   }) => {
-    const result = analyzer.getPackage();
-    const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getSourceFilename('not-lit', lang)
-    );
+    const elementAModule = getModule('not-lit');
     const decl = elementAModule?.getDeclaration('NotLit');
     assert.ok(decl);
     assert.equal(decl.isLitElementDeclaration(), false);
   });
 
-  test('Analyzer finds LitElement declarations', ({analyzer}) => {
-    const result = analyzer.getPackage();
-    const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getSourceFilename('element-a', lang)
-    );
+  test('Analyzer finds LitElement declarations', ({getModule}) => {
+    const elementAModule = getModule('element-a');
     assert.equal(elementAModule?.declarations.length, 1);
     const decl = elementAModule!.declarations[0];
     assert.equal(decl.name, 'ElementA');
@@ -59,11 +42,8 @@ for (const lang of languages) {
     assert.equal(decl.tagname, 'element-a');
   });
 
-  test('Analyzer finds LitElement properties ', ({analyzer}) => {
-    const result = analyzer.getPackage();
-    const elementAModule = result.modules.find(
-      (m) => m.sourcePath === getSourceFilename('element-a', lang)
-    );
+  test('Analyzer finds LitElement properties ', ({getModule}) => {
+    const elementAModule = getModule('element-a');
     const decl = elementAModule?.getDeclaration('ElementA');
     assert.ok(decl?.isLitElementDeclaration());
 
@@ -94,12 +74,10 @@ for (const lang of languages) {
   });
 
   test('Analyzer finds LitElement properties from static getter', ({
-    analyzer,
+    getModule,
   }) => {
-    const result = analyzer.getPackage();
-    const elementBModule = result.modules.find(
-      (m) => m.sourcePath === getSourceFilename('element-b', lang)
-    );
+    const elementBModule = getModule('element-b');
+
     const decl = elementBModule?.getDeclaration('ElementB');
     assert.ok(decl?.isLitElementDeclaration());
 
@@ -123,11 +101,8 @@ for (const lang of languages) {
     assert.equal(bProp.typeOption, 'Number');
   });
 
-  test('Analyezr finds subclass of LitElement', ({analyzer}) => {
-    const result = analyzer.getPackage();
-    const module = result.modules.find(
-      (m) => m.sourcePath === getSourceFilename('element-c', lang)
-    );
+  test('Analyezr finds subclass of LitElement', ({getModule}) => {
+    const module = getModule('element-c');
     const elementC = module?.getDeclaration('ElementC');
     assert.ok(elementC?.isLitElementDeclaration());
 

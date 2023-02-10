@@ -7,46 +7,17 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, languages} from '../utils.js';
-
 import {
-  createPackageAnalyzer,
-  Analyzer,
-  AbsolutePath,
-  Module,
-} from '../../index.js';
+  AnalyzerTestContext,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
 
 for (const lang of languages) {
-  const test = suite<{
-    analyzer: Analyzer;
-    packagePath: AbsolutePath;
-    module: Module;
-  }>(`Module tests (${lang})`);
+  const test = suite<AnalyzerTestContext<true>>(`Function tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/functions`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-
-      const result = analyzer.getPackage();
-      const file = getSourceFilename('functions', lang);
-      const module = result.modules.find((m) => m.sourcePath === file);
-      if (module === undefined) {
-        throw new Error(`Analyzer did not analyze file '${file}'`);
-      }
-
-      ctx.packagePath = packagePath;
-      ctx.analyzer = analyzer;
-      ctx.module = module;
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'functions', 'functions');
   });
 
   test('Function 1', ({module}) => {

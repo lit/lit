@@ -7,47 +7,25 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, languages} from '../utils.js';
-
+import {LitElementDeclaration} from '../../lib/model.js';
 import {
-  createPackageAnalyzer,
-  Analyzer,
-  AbsolutePath,
-  LitElementDeclaration,
-} from '../../index.js';
+  AnalyzerTestContext,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
+
+interface TestContext extends AnalyzerTestContext<true> {
+  element: LitElementDeclaration;
+}
 
 for (const lang of languages) {
-  const test = suite<{
-    analyzer: Analyzer;
-    packagePath: AbsolutePath;
-    element: LitElementDeclaration;
-  }>(`LitElement event tests (${lang})`);
+  const test = suite<TestContext>(`LitElement event tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/events`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-
-      const result = analyzer.getPackage();
-      const elementAModule = result.modules.find(
-        (m) => m.sourcePath === getSourceFilename('element-a', lang)
-      );
-      const element = elementAModule!.declarations.filter((d) =>
-        d.isLitElementDeclaration()
-      )[0] as LitElementDeclaration;
-
-      ctx.packagePath = packagePath;
-      ctx.analyzer = analyzer;
-      ctx.element = element;
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'events', 'element-a');
+    ctx.element = ctx.module.declarations.find((d) =>
+      d.isLitElementDeclaration()
+    ) as LitElementDeclaration;
   });
 
   test('Correct number of events found', ({element}) => {
