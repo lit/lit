@@ -12,9 +12,58 @@
 
 import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
-import {AnalyzerInterface, Parameter, Return} from '../model.js';
+import {
+  AnalyzerInterface,
+  DeclarationInfo,
+  FunctionDeclaration,
+  Parameter,
+  Return,
+} from '../model.js';
 import {getTypeForNode, getTypeForType} from '../types.js';
-import {parseJSDocDescription} from './jsdoc.js';
+import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
+import {hasDefaultModifier, hasExportModifier} from '../utils.js';
+
+/**
+ * Returns the name of a function declaration.
+ */
+const getFunctionDeclarationName = (declaration: ts.FunctionDeclaration) => {
+  const name =
+    declaration.name?.text ??
+    // The only time a function declaration will not have a name is when it is
+    // a default export, aka `export default function() {...}`
+    (hasDefaultModifier(declaration) ? 'default' : undefined);
+  if (name === undefined) {
+    throw new DiagnosticsError(
+      declaration,
+      'Unexpected function declaration without a name'
+    );
+  }
+  return name;
+};
+
+export const getFunctionDeclarationInfo = (
+  declaration: ts.FunctionDeclaration,
+  analyzer: AnalyzerInterface
+): DeclarationInfo => {
+  const name = getFunctionDeclarationName(declaration);
+  return {
+    name,
+    factory: () => getFunctionDeclaration(declaration, name, analyzer),
+    isExport: hasExportModifier(declaration),
+  };
+};
+
+const getFunctionDeclaration = (
+  declaration: ts.FunctionLikeDeclaration,
+  name: string,
+  analyzer: AnalyzerInterface
+): FunctionDeclaration => {
+  return new FunctionDeclaration({
+    name,
+    ...parseNodeJSDocInfo(declaration),
+    ...getFunctionLikeInfo(declaration, analyzer),
+  });
+};
 
 /**
  * Returns information on FunctionLike nodes
