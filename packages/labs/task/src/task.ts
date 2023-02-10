@@ -159,7 +159,7 @@ export class Task<
     });
   }
 
-  hostUpdate() {
+  hostUpdated() {
     this.performTask();
   }
 
@@ -203,8 +203,11 @@ export class Task<
     this.status = TaskStatus.PENDING;
     let result!: R | typeof initialState;
     let error: unknown;
-    // Request an update to report pending state.
-    this._host.requestUpdate();
+
+    // Request an update to report pending state. Do this in a
+    // microtask to avoid the change-in-update warning
+    queueMicrotask(() => this._host.requestUpdate());
+
     const key = ++this._callId;
     try {
       result = await this._task(args!);

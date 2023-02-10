@@ -541,7 +541,7 @@ suite('Task', () => {
     assert.equal(lastOnErrorResult, 'error2');
   });
 
-  test('no update warning', async () => {
+  test('no change-in-update warning', async () => {
     ReactiveElement.enableWarning?.('change-in-update');
     let numInvocations = 0;
 
@@ -556,5 +556,30 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(numInvocations, 1);
     assert.equal(warnMessages.length, 0);
+  });
+
+  test('Tasks can see effects of update()', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        args: () => [],
+        task: () => {
+          this.taskObservedValue = this.value;
+        },
+      });
+      value = 'foo';
+      taskObservedValue: string | undefined = undefined;
+
+      override update(changedProps: PropertyValues) {
+        super.update(changedProps);
+        this.value = 'bar';
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+    await el.task.taskComplete;
+
+    assert.equal(el.taskObservedValue, 'bar');
   });
 });
