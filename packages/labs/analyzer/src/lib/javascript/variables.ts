@@ -15,12 +15,14 @@ import {
   VariableDeclaration,
   AnalyzerInterface,
   DeclarationInfo,
-  DeprecatableDescribed,
+  Declaration,
 } from '../model.js';
 import {hasExportModifier} from '../utils.js';
 import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
+import {getFunctionDeclaration} from './functions.js';
+import {getClassDeclaration} from './classes.js';
 
 type VariableName =
   | ts.Identifier
@@ -32,16 +34,45 @@ type VariableName =
  * ts.Identifier within a potentially nested ts.VariableDeclaration.
  */
 const getVariableDeclaration = (
+  statement: ts.VariableStatement,
   dec: ts.VariableDeclaration | ts.EnumDeclaration,
   name: ts.Identifier,
-  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
-): VariableDeclaration => {
+): Declaration => {
+  // For const variable declarations initialized to functions or classes, we
+  // treat these as FunctionDeclaration and ClassDeclaration, respectively since
+  // they are (mostly) unobservably different to the module consumer and we can
+  // give better docs this way
+  if (
+    ts.isVariableDeclaration(dec) &&
+    Boolean(statement.declarationList.flags & ts.NodeFlags.Const) &&
+    dec.initializer !== undefined
+  ) {
+    const {initializer} = dec;
+    if (
+      ts.isArrowFunction(initializer) ||
+      ts.isFunctionExpression(initializer)
+    ) {
+      return getFunctionDeclaration(
+        initializer,
+        name.getText(),
+        analyzer,
+        statement
+      );
+    } else if (ts.isClassExpression(initializer)) {
+      return getClassDeclaration(
+        initializer,
+        name.getText(),
+        analyzer,
+        statement
+      );
+    }
+  }
   return new VariableDeclaration({
     name: name.text,
     node: dec,
     type: getTypeForNode(name, analyzer),
-    ...jsDocInfo,
+    ...parseNodeJSDocInfo(statement),
   });
 };
 
@@ -54,10 +85,10 @@ export const getVariableDeclarationInfo = (
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
   const isExport = hasExportModifier(statement);
-  const jsDocInfo = parseNodeJSDocInfo(statement);
-  return statement.declarationList.declarations
+  const {declarationList} = statement;
+  return declarationList.declarations
     .map((d) =>
-      getVariableDeclarationInfoList(d, d.name, isExport, jsDocInfo, analyzer)
+      getVariableDeclarationInfoList(statement, d, d.name, isExport, analyzer)
     )
     .flat();
 };
@@ -68,17 +99,17 @@ export const getVariableDeclarationInfo = (
  * tuples of name and factory for each declaration.
  */
 const getVariableDeclarationInfoList = (
+  statement: ts.VariableStatement,
   dec: ts.VariableDeclaration,
   name: VariableName,
   isExport: boolean,
-  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
   if (ts.isIdentifier(name)) {
     return [
       {
         name: name.text,
-        factory: () => getVariableDeclaration(dec, name, jsDocInfo, analyzer),
+        factory: () => getVariableDeclaration(statement, dec, name, analyzer),
         isExport,
       },
     ];
@@ -94,10 +125,10 @@ const getVariableDeclarationInfoList = (
     return els
       .map((el) =>
         getVariableDeclarationInfoList(
+          statement,
           dec,
           el.name,
           isExport,
-          jsDocInfo,
           analyzer
         )
       )
@@ -146,14 +177,24 @@ const getExportAssignmentVariableDeclaration = (
 };
 
 export const getEnumDeclarationInfo = (
-  statement: ts.EnumDeclaration,
+  dec: ts.EnumDeclaration,
   analyzer: AnalyzerInterface
 ) => {
-  const jsDocInfo = parseNodeJSDocInfo(statement);
   return {
-    name: statement.name.text,
-    factory: () =>
-      getVariableDeclaration(statement, statement.name, jsDocInfo, analyzer),
-    isExport: hasExportModifier(statement),
+    name: dec.name.text,
+    factory: () => getEnumDeclaration(dec, analyzer),
+    isExport: hasExportModifier(dec),
   };
+};
+
+const getEnumDeclaration = (
+  dec: ts.EnumDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  return new VariableDeclaration({
+    name: dec.name.text,
+    node: dec,
+    type: getTypeForNode(dec.name, analyzer),
+    ...parseNodeJSDocInfo(dec),
+  });
 };
