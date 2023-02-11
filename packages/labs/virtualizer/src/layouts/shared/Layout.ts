@@ -9,10 +9,8 @@ export type Size = {
   [key in dimension]: number;
 };
 
-type numberOrOneHundredPercent = number | '100%';
-export type ScrollSizeValue =
-  | numberOrOneHundredPercent
-  | numberOrOneHundredPercent[];
+type minOrMax = 'min' | 'max';
+export type ScrollSizeValue = number | [minOrMax, number];
 
 export type ScrollSize = {
   [key in dimension]: ScrollSizeValue;

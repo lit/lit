@@ -18,7 +18,6 @@ import {
   StateChangedMessage,
   LayoutHostSink,
   writingMode,
-  ScrollSizeValue,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -447,7 +446,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   protected _sendStateChangedMessage() {
-    console.log('_sendStateChangedMessage', this.writingMode);
     const childPositions: ChildPositions = new Map();
     if (this._first !== -1 && this._last !== -1) {
       for (let idx = this._first; idx <= this._last; idx++) {
@@ -455,23 +453,14 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       }
     }
 
-    const crossSize: ScrollSizeValue =
-      this.writingMode.indexOf(this.direction) === 0
-        ? [clampScrollSize(this._crossSize!), '100%']
-        : '100%';
-    console.log(
-      'CHECKING...',
-      crossSize,
-      this.writingMode,
-      this.direction,
-      this.writingMode.indexOf(this.direction)
-    );
+    const minOrMax =
+      this.writingMode.indexOf(this.direction) === 0 ? 'min' : 'max';
 
     const message: StateChangedMessage = {
       type: 'stateChanged',
       scrollSize: {
         [this._sizeDim]: clampScrollSize(this._scrollSize),
-        [this._secondarySizeDim]: crossSize,
+        [this._secondarySizeDim]: [minOrMax, clampScrollSize(this._crossSize!)],
       } as Size,
       range: {
         first: this._first,
@@ -488,7 +477,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       } as Positions;
       this._scrollError = 0;
     }
-    console.log('MSG', message);
     this._hostSink(message);
   }
 

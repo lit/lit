@@ -688,19 +688,13 @@ export class Virtualizer {
       size: ScrollSizeValue,
       scroller = false
     ): string {
-      if (size === '100%') {
-        return scroller ? '0px' : size;
-      }
       if (typeof size === 'number') {
         return `${size}px`;
       }
       if (scroller) {
-        return size[0] === '100%' ? `${size[1]}px` : '0px';
+        return size[0] === 'min' ? `${size[1]}px` : '0px';
       }
-      return `min(${[
-        cssScrollSizeValue(size[0]),
-        cssScrollSizeValue(size[1]),
-      ].join(', ')})`;
+      return `${size[0]}(100%, ${size[1]}px)`;
     }
     let h: string;
     let v: string;
@@ -710,7 +704,6 @@ export class Virtualizer {
       h = cssScrollSizeValue(size.width, this._isScroller);
       v = cssScrollSizeValue(size.height, this._isScroller);
     }
-    console.log('SIZE', h, v);
 
     if (this._isScroller) {
       this._getSizer().style.transform = `translate(${h}, ${v})`;
