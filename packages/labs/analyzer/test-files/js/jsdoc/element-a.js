@@ -27,5 +27,15 @@ import {LitElement} from 'lit';
  * with wraparound
  * @cssProp --short-with-description-dash - Description for --short-with-description-dash
  */
-export class ElementA extends LitElement {}
+export class ElementA extends LitElement {
+  /**
+   * Class field 1 description
+   */
+  field1 = 'default1';
+
+  /**
+   * Method 1 description
+   */
+  method1() {}
+}
 customElements.define('element-a', ElementA);

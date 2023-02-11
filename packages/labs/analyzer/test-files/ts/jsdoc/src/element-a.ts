@@ -29,4 +29,14 @@ import {customElement} from 'lit/decorators.js';
  * @cssProp --short-with-description-dash - Description for --short-with-description-dash
  */
 @customElement('element-a')
-export class ElementA extends LitElement {}
+export class ElementA extends LitElement {
+  /**
+   * Class field 1 description
+   */
+  field1 = 'default1';
+
+  /**
+   * Method 1 description
+   */
+  method1() {}
+}

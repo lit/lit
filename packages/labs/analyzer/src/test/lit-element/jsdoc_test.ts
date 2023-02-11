@@ -444,6 +444,21 @@ for (const lang of languages) {
       }
     );
 
+    test('basic class analysis', ({getModule}) => {
+      const element = getModule('element-a').getDeclaration('ElementA');
+      assert.ok(element.isClassDeclaration());
+      assert.equal(element.description, 'A cool custom element.');
+      const field = element.getField('field1');
+      assert.ok(field?.isClassField());
+      assert.equal(field.description, `Class field 1 description`);
+      assert.equal(field.type?.text, 'string');
+      const method = element.getMethod('method1');
+      assert.ok(method?.isClassMethod());
+      assert.equal(method.description, `Method 1 description`);
+      assert.equal(method.parameters?.length, 0);
+      assert.equal(method.return?.type?.text, 'void');
+    });
+
     moduleTest.run();
   }
 }
