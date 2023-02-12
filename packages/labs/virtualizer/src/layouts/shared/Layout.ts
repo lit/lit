@@ -28,6 +28,8 @@ export type writingMode =
   | 'vertical-rl'
   | 'unknown';
 
+export type direction = 'ltr' | 'rtl';
+
 export type Margins = {
   [key in margin]: number;
 };

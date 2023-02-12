@@ -20,6 +20,7 @@ import {
   BaseLayoutConfig,
   LayoutHostMessage,
   writingMode,
+  direction,
   ScrollSize,
   ScrollSizeValue,
 } from './layouts/shared/Layout.js';
@@ -632,8 +633,14 @@ export class Virtualizer {
     if (hostElement && hostElement.isConnected && scrollingElement && layout) {
       let top, left, bottom, right;
 
-      const writingMode = getComputedStyle(hostElement)
-        .writingMode as writingMode;
+      const hostStyle = getComputedStyle(hostElement);
+      const contextStyle = getComputedStyle(getParentElement(hostElement)!);
+
+      const direction = hostStyle.direction as direction;
+      const writingMode: writingMode = hostStyle.writingMode as writingMode;
+      const contextWritingMode = contextStyle.writingMode as writingMode;
+      console.log('WHEE', direction, writingMode, contextWritingMode);
+
       const hostElementBounds = hostElement.getBoundingClientRect();
 
       top = 0;
