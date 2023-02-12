@@ -11,7 +11,6 @@ import {
   Size,
   Margins,
   margin,
-  ScrollDirection,
   offsetAxis,
   ChildMeasurements,
   BaseLayoutConfig,
@@ -44,16 +43,16 @@ export const flow: FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) =>
     config
   );
 
-function leadingMargin(direction: ScrollDirection): margin {
-  return direction === 'horizontal' ? 'marginLeft' : 'marginTop';
+function leadingMargin(): margin {
+  return 'marginTop';
 }
 
-function trailingMargin(direction: ScrollDirection): margin {
-  return direction === 'horizontal' ? 'marginRight' : 'marginBottom';
+function trailingMargin(): margin {
+  return 'marginBottom';
 }
 
-function offset(direction: ScrollDirection): offsetAxis {
-  return direction === 'horizontal' ? 'xOffset' : 'yOffset';
+function offset(): offsetAxis {
+  return 'yOffset';
 }
 
 function collapseMargins(a: number, b: number): number {
@@ -66,18 +65,18 @@ class MetricsCache {
   private _marginSizeCache = new SizeCache();
   private _metricsCache: Map<number, Size & Margins> = new Map();
 
-  update(metrics: {[key: number]: Size & Margins}, direction: ScrollDirection) {
+  update(metrics: {[key: number]: Size & Margins}) {
     const marginsToUpdate: Set<number> = new Set();
     Object.keys(metrics).forEach((key) => {
       const k = Number(key);
       this._metricsCache.set(k, metrics[k]);
-      this._childSizeCache.set(k, metrics[k][dim1(direction)]);
+      this._childSizeCache.set(k, metrics[k][dim1()]);
       marginsToUpdate.add(k);
       marginsToUpdate.add(k + 1);
     });
     for (const k of marginsToUpdate) {
-      const a = this._metricsCache.get(k)?.[leadingMargin(direction)] || 0;
-      const b = this._metricsCache.get(k - 1)?.[trailingMargin(direction)] || 0;
+      const a = this._metricsCache.get(k)?.[leadingMargin()] || 0;
+      const b = this._metricsCache.get(k - 1)?.[trailingMargin()] || 0;
       this._marginSizeCache.set(k, collapseMargins(a, b));
     }
   }
@@ -98,16 +97,16 @@ class MetricsCache {
     return this._marginSizeCache.totalSize;
   }
 
-  getLeadingMarginValue(index: number, direction: ScrollDirection) {
-    return this._metricsCache.get(index)?.[leadingMargin(direction)] || 0;
+  getLeadingMarginValue(index: number) {
+    return this._metricsCache.get(index)?.[leadingMargin()] || 0;
   }
 
   getChildSize(index: number) {
     return this._childSizeCache.getSize(index);
   }
 
-  getCrossSize(index: number, direction: ScrollDirection) {
-    return this._metricsCache.get(index)?.[dim2(direction)] || 0;
+  getCrossSize(index: number) {
+    return this._metricsCache.get(index)?.[dim2()] || 0;
   }
 
   getMarginSize(index: number) {
@@ -182,7 +181,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * argument.
    */
   updateItemSizes(sizes: ChildMeasurements) {
-    this._metricsCache.update(sizes as Size & Margins, this.direction);
+    this._metricsCache.update(sizes as Size & Margins);
     // if (this._nMeasured) {
     // this._updateItemSize();
     this._scheduleReflow();
@@ -209,7 +208,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
   _getCrossSize(idx: number): number {
     const item = this._getPhysicalItem(idx);
-    return item ? this._metricsCache.getCrossSize(idx, this.direction) : 0;
+    return item ? this._metricsCache.getCrossSize(idx) : 0;
   }
 
   _getAverageSize(): number {
@@ -544,8 +543,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     return {
       [this._positionDim]: this._getPosition(idx),
       [this._secondaryPositionDim]: 0,
-      [offset(this.direction)]: -(
-        this._metricsCache.getLeadingMarginValue(idx, this.direction) ??
+      [offset()]: -(
+        this._metricsCache.getLeadingMarginValue(idx) ??
         this._metricsCache.averageMarginSize
       ),
     } as Positions;

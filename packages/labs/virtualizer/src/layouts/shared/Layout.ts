@@ -111,7 +111,6 @@ export interface LayoutSpecifier {
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 
 export interface BaseLayoutConfig {
-  direction?: ScrollDirection;
   pin?: PinOptions;
 }
 
@@ -122,8 +121,6 @@ export interface ScrollToCoordinates {
   left?: number;
 }
 
-export type ScrollDirection = 'vertical' | 'horizontal';
-
 /**
  * Interface for layouts consumed by Virtualizer.
  */
@@ -131,8 +128,6 @@ export interface Layout {
   config?: object;
 
   items: unknown[];
-
-  direction: ScrollDirection;
 
   writingMode: writingMode;
 

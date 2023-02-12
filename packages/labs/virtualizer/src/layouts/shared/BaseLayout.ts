@@ -8,7 +8,6 @@ import {
   Layout,
   ChildPositions,
   Positions,
-  ScrollDirection,
   Size,
   dimension,
   position,
@@ -24,20 +23,20 @@ type UpdateVisibleIndicesOptions = {
   emit?: boolean;
 };
 
-export function dim1(direction: ScrollDirection): dimension {
-  return direction === 'horizontal' ? 'width' : 'height';
+export function dim1(): dimension {
+  return 'height';
 }
 
-export function dim2(direction: ScrollDirection): dimension {
-  return direction === 'horizontal' ? 'height' : 'width';
+export function dim2(): dimension {
+  return 'width';
 }
 
-export function pos1(direction: ScrollDirection): position {
-  return direction === 'horizontal' ? 'left' : 'top';
+export function pos1(): position {
+  return 'top';
 }
 
-export function pos2(direction: ScrollDirection): position {
-  return direction === 'horizontal' ? 'top' : 'left';
+export function pos2(): position {
+  return 'left';
 }
 
 export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
@@ -45,11 +44,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * The last set viewport scroll position.
    */
   private _latestCoords: Positions = {left: 0, top: 0};
-
-  /**
-   * Scrolling direction.
-   */
-  private _direction: ScrollDirection | null = null;
 
   /**
    * Dimensions of the viewport.
@@ -159,9 +153,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   private _hostSink: LayoutHostSink;
 
   protected get _defaultConfig(): C {
-    return {
-      direction: 'vertical',
-    } as C;
+    return {} as C;
   }
 
   constructor(hostSink: LayoutHostSink, config?: C) {
@@ -175,9 +167,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   get config(): C {
-    return {
-      direction: this.direction,
-    } as C;
+    return {} as C;
   }
 
   /**
@@ -191,25 +181,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     if (items !== this._items) {
       this._items = items;
       this._scheduleReflow();
-    }
-  }
-
-  /**
-   * Primary scrolling direction.
-   */
-  get direction(): ScrollDirection {
-    return this._direction!;
-  }
-  set direction(dir) {
-    // Force it to be either horizontal or vertical.
-    dir = dir === 'horizontal' ? dir : 'vertical';
-    if (dir !== this._direction) {
-      this._direction = dir;
-      this._sizeDim = dir === 'horizontal' ? 'width' : 'height';
-      this._secondarySizeDim = dir === 'horizontal' ? 'height' : 'width';
-      this._positionDim = dir === 'horizontal' ? 'left' : 'top';
-      this._secondaryPositionDim = dir === 'horizontal' ? 'top' : 'left';
-      this._triggerReflow();
     }
   }
 
@@ -275,7 +246,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   _clampScrollPosition(val: number) {
     return Math.max(
       -this.offsetWithinScroller[this._positionDim],
-      Math.min(val, this.scrollSize[dim1(this.direction)] - this._viewDim1)
+      Math.min(val, this.scrollSize[dim1()] - this._viewDim1)
     );
   }
 
@@ -453,8 +424,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       }
     }
 
-    const minOrMax =
-      this.writingMode.indexOf(this.direction) === 0 ? 'min' : 'max';
+    const minOrMax = this.writingMode.indexOf('vertical') === 0 ? 'min' : 'max';
 
     const message: StateChangedMessage = {
       type: 'stateChanged',

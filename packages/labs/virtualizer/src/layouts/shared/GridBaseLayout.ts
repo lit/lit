@@ -84,12 +84,9 @@ export abstract class GridBaseLayout<
         );
       }
       if (gapValue === Infinity && gap === '_gap2') {
+        // TODO: Revise this to reflect the fact that 'direction' is no longer a thing
         throw new Error(
-          `grid layout: ${gap2Name(
-            this.direction
-          )}-gap cannot be set to 'auto' when direction is set to ${
-            this.direction
-          }`
+          `grid layout: ${gap2Name()}-gap cannot be set to 'auto' when direction is set to ${'vertical'}`
         );
       }
     });
@@ -162,7 +159,7 @@ export abstract class GridBaseLayout<
               (this._idealSize1 / this._idealSize2) * metrics.itemSize2
             );
             break;
-          case dim1(this.direction):
+          case dim1():
             metrics.itemSize1 = Math.round(this._idealSize1);
             break;
           case 'area':

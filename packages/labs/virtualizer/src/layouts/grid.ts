@@ -82,8 +82,8 @@ export class GridLayout extends GridBaseLayout<GridBaseLayoutConfig> {
       [this._positionDim]:
         padding1.start + Math.floor(idx / rolumns) * this._delta,
       [this._secondaryPositionDim]: positions[idx % rolumns],
-      [dim1(this.direction)]: itemSize1,
-      [dim2(this.direction)]: itemSize2,
+      [dim1()]: itemSize1,
+      [dim2()]: itemSize2,
     } as unknown as {top: number; left: number};
   }
 

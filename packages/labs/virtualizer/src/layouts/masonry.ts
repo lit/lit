@@ -103,10 +103,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     let maxRangeMapKey = -Infinity;
     this.items.forEach((item, idx) => {
       const aspectRatio = this._getAspectRatio!(item as {integer: number});
-      const size1 =
-        this.direction === 'horizontal'
-          ? itemSize2 * aspectRatio
-          : itemSize2 / aspectRatio;
+      const size1 = itemSize2 / aspectRatio;
       const pos1 = nextPosPerRolumn[nextRolumn];
       const pos2 = positions[nextRolumn];
       this._positions.set(idx, {

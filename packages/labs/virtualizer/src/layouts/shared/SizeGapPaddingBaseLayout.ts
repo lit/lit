@@ -7,7 +7,7 @@
 // import { dimension } from './Layout.js';
 import {BaseLayoutConfig} from './Layout.js';
 import {BaseLayout, dim1, dim2} from './BaseLayout.js';
-import {ScrollDirection, Size} from './Layout.js';
+import {Size} from './Layout.js';
 
 export type PixelSize = `${'0' | `${number}px`}`;
 
@@ -52,20 +52,20 @@ function gapValueToNumber(v: GapValue | 'auto'): number {
   return parseInt(v);
 }
 
-export function gap1(direction: ScrollDirection) {
-  return direction === 'horizontal' ? 'column' : 'row';
+export function gap1(): 'row' | 'column' {
+  return 'row';
 }
 
-export function gap2(direction: ScrollDirection) {
-  return direction === 'horizontal' ? 'row' : 'column';
+export function gap2(): 'row' | 'column' {
+  return 'column';
 }
 
-export function padding1(direction: ScrollDirection): [side, side] {
-  return direction === 'horizontal' ? ['left', 'right'] : ['top', 'bottom'];
+export function padding1(): [side, side] {
+  return ['top', 'bottom'];
 }
 
-export function padding2(direction: ScrollDirection): [side, side] {
-  return direction === 'horizontal' ? ['top', 'bottom'] : ['left', 'right'];
+export function padding2(): [side, side] {
+  return ['left', 'right'];
 }
 
 export interface SizeGapPaddingBaseLayoutConfig extends BaseLayoutConfig {
@@ -101,34 +101,34 @@ export abstract class SizeGapPaddingBaseLayout<
 
   // Temp, to support current flexWrap implementation
   protected get _idealSize(): number {
-    return (this._itemSize as Size)[dim1(this.direction)];
+    return (this._itemSize as Size)[dim1()];
   }
 
   protected get _idealSize1(): number {
-    return (this._itemSize as Size)[dim1(this.direction)];
+    return (this._itemSize as Size)[dim1()];
   }
 
   protected get _idealSize2(): number {
-    return (this._itemSize as Size)[dim2(this.direction)];
+    return (this._itemSize as Size)[dim2()];
   }
 
   protected get _gap1(): number {
-    return (this._gaps as Gaps)[gap1(this.direction)];
+    return (this._gaps as Gaps)[gap1()];
   }
 
   protected get _gap2(): number {
-    return (this._gaps as Gaps)[gap2(this.direction)];
+    return (this._gaps as Gaps)[gap2()];
   }
 
   protected get _padding1(): [number, number] {
     const padding = this._padding as Padding;
-    const [start, end] = padding1(this.direction);
+    const [start, end] = padding1();
     return [padding[start], padding[end]];
   }
 
   protected get _padding2(): [number, number] {
     const padding = this._padding as Padding;
-    const [start, end] = padding2(this.direction);
+    const [start, end] = padding2();
     return [padding[start], padding[end]];
   }
 
