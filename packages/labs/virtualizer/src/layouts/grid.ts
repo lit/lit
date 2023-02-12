@@ -57,7 +57,7 @@ export class GridLayout extends GridBaseLayout<GridBaseLayoutConfig> {
       const {padding1} = metrics;
       const min = Math.max(0, this._scrollPosition - this._overhang);
       const max = Math.min(
-        this._scrollSize,
+        this._virtualizerSize,
         this._scrollPosition + this._viewDim1 + this._overhang
       );
       const firstCow = Math.max(
@@ -87,7 +87,7 @@ export class GridLayout extends GridBaseLayout<GridBaseLayoutConfig> {
     } as unknown as {top: number; left: number};
   }
 
-  _updateScrollSize() {
+  _updateVirtualizerSize() {
     const {rolumns, gap1, padding1, itemSize1} = this._metrics!;
     let size = 1;
     if (rolumns > 0) {
@@ -95,6 +95,6 @@ export class GridLayout extends GridBaseLayout<GridBaseLayoutConfig> {
       size =
         padding1.start + cows * itemSize1 + (cows - 1) * gap1 + padding1.end;
     }
-    this._scrollSize = size;
+    this._virtualizerSize = size;
   }
 }

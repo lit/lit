@@ -10,10 +10,10 @@ export type Size = {
 };
 
 type minOrMax = 'min' | 'max';
-export type ScrollSizeValue = number | [minOrMax, number];
+export type VirtualizerSizeValue = number | [minOrMax, number];
 
-export type ScrollSize = {
-  [key in dimension]: ScrollSizeValue;
+export type VirtualizerSize = {
+  [key in dimension]: VirtualizerSizeValue;
 };
 
 export type margin =
@@ -65,7 +65,7 @@ export interface InternalRange extends Range {
 
 export interface StateChangedMessage {
   type: 'stateChanged';
-  scrollSize: ScrollSize;
+  virtualizerSize: VirtualizerSize;
   range: InternalRange;
   childPositions: ChildPositions;
   scrollError?: Positions;
@@ -140,7 +140,7 @@ export interface Layout {
 
   viewportScroll: Positions;
 
-  totalScrollSize: Size;
+  scrollSize: Size;
 
   offsetWithinScroller: Positions;
 

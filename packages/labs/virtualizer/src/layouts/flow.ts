@@ -263,7 +263,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     if (lower <= 0) {
       return 0;
     }
-    if (upper > this._scrollSize - this._viewDim1) {
+    if (upper > this._virtualizerSize - this._viewDim1) {
       return this.items.length - 1;
     }
     return Math.max(
@@ -362,7 +362,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     lower = this._scrollPosition - this._overhang; //leadingOverhang;
     upper = this._scrollPosition + this._viewDim1 + this._overhang; // trailingOverhang;
 
-    if (upper < 0 || lower > this._scrollSize) {
+    if (upper < 0 || lower > this._virtualizerSize) {
       this._clearItems();
       return;
     }
@@ -393,7 +393,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     }
 
     if (this._anchorIdx === this.items.length - 1) {
-      this._anchorPos = this._scrollSize - anchorTrailingMargin - anchorSize;
+      this._anchorPos =
+        this._virtualizerSize - anchorTrailingMargin - anchorSize;
     }
 
     // Anchor might be outside bounds, so prefer correcting the error and keep
@@ -490,11 +491,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - this._first * this._delta;
     } else if (this._last === this.items.length - 1) {
-      return this._physicalMax - this._scrollSize;
-    } else if (this._physicalMax >= this._scrollSize) {
+      return this._physicalMax - this._virtualizerSize;
+    } else if (this._physicalMax >= this._virtualizerSize) {
       return (
         this._physicalMax -
-        this._scrollSize +
+        this._virtualizerSize +
         (this.items.length - 1 - this._last) * this._delta
       );
     }
@@ -518,9 +519,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._stable = true;
   }
 
-  _updateScrollSize() {
+  _updateVirtualizerSize() {
     const {averageMarginSize} = this._metricsCache;
-    this._scrollSize = Math.max(
+    this._virtualizerSize = Math.max(
       1,
       this.items.length * (averageMarginSize + this._getAverageSize()) +
         averageMarginSize

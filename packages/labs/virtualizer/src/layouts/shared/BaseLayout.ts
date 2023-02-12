@@ -56,7 +56,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   private _viewportSize: Size = {width: 0, height: 0};
 
-  public totalScrollSize: Size = {width: 0, height: 0};
+  public scrollSize: Size = {width: 0, height: 0};
 
   public offsetWithinScroller: Positions = {left: 0, top: 0};
 
@@ -141,7 +141,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The total (estimated) length of all items in the scrolling direction.
    */
-  protected _scrollSize = 1;
+  protected _virtualizerSize = 1;
 
   protected _crossSize: number | null = 100;
 
@@ -275,7 +275,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   _clampScrollPosition(val: number) {
     return Math.max(
       -this.offsetWithinScroller[this._positionDim],
-      Math.min(val, this.totalScrollSize[dim1(this.direction)] - this._viewDim1)
+      Math.min(val, this.scrollSize[dim1(this.direction)] - this._viewDim1)
     );
   }
 
@@ -301,12 +301,12 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   /**
    * Calculates (precisely or by estimating, if needed) the total length of all items in
-   * the scrolling direction, including spacing, caching the value in the `_scrollSize` field.
+   * the scrolling direction, including spacing, caching the value in the `_size` field.
    *
    * Should return a minimum value of 1 to ensure at least one item is rendered.
    * TODO (graynorton): Possibly no longer required, but leaving here until it can be verified.
    */
-  protected abstract _updateScrollSize(): void;
+  protected abstract _updateVirtualizerSize(): void;
 
   protected _updateLayout(): void {
     // Override
@@ -355,7 +355,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       this._updateLayout();
       this._pendingLayoutUpdate = false;
     }
-    this._updateScrollSize();
+    this._updateVirtualizerSize();
     this._setPositionFromPin();
     this._getActiveItems();
     this._updateVisibleIndices();
@@ -458,9 +458,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
     const message: StateChangedMessage = {
       type: 'stateChanged',
-      scrollSize: {
-        [this._sizeDim]: clampScrollSize(this._scrollSize),
-        [this._secondarySizeDim]: [minOrMax, clampScrollSize(this._crossSize!)],
+      virtualizerSize: {
+        [this._sizeDim]: clampSize(this._virtualizerSize),
+        [this._secondarySizeDim]: [minOrMax, clampSize(this._crossSize!)],
       } as Size,
       range: {
         first: this._first,
@@ -496,7 +496,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     } else {
       const min = Math.max(0, this._scrollPosition - this._overhang);
       const max = Math.min(
-        this._scrollSize,
+        this._virtualizerSize,
         this._scrollPosition + this._viewDim1 + this._overhang
       );
       if (this._physicalMin > min || this._physicalMax < max) {
@@ -547,7 +547,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 }
 
-function clampScrollSize(size: number) {
+function clampSize(size: number) {
   // Some browsers seem to crap out if the host element gets larger than
   // a certain size, so we clamp it here (this value based on ad hoc
   // testing in Chrome / Safari / Firefox Mac)

@@ -186,16 +186,16 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     if (chunk._rolumns.length === 0) return;
     const scrollPos = Math.max(
       0,
-      Math.min(this._scrollPosition, this._scrollSize - this._viewDim1)
+      Math.min(this._scrollPosition, this._virtualizerSize - this._viewDim1)
     );
     const min = Math.max(0, scrollPos - this._overhang);
     const max = Math.min(
-      this._scrollSize,
+      this._virtualizerSize,
       scrollPos + this._viewDim1 + this._overhang
     );
     const mid = (min + max) / 2;
     const estMidRolumn = Math.round(
-      (mid / this._scrollSize) * chunk._rolumns.length
+      (mid / this._virtualizerSize) * chunk._rolumns.length
     );
     let idx = estMidRolumn;
     while (chunk._rolumns[idx]._startPos < min) {
@@ -325,9 +325,9 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     });
   }
 
-  _updateScrollSize() {
+  _updateVirtualizerSize() {
     const chunk = this._chunks[0];
-    this._scrollSize =
+    this._virtualizerSize =
       !chunk || chunk._rolumns.length === 0 ? 1 : chunk._size + 2 * this._gap!;
     // chunk._rolumns[chunk._rolumns.length - 1]._startPos +
     // chunk._itemPositions[chunk._rolumns.length - 1][this._sizeDim] +

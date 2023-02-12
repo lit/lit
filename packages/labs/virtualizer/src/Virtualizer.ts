@@ -21,8 +21,8 @@ import {
   LayoutHostMessage,
   writingMode,
   direction,
-  ScrollSize,
-  ScrollSizeValue,
+  VirtualizerSize,
+  VirtualizerSizeValue,
 } from './layouts/shared/Layout.js';
 import {
   RangeChangedEvent,
@@ -113,7 +113,7 @@ export class Virtualizer {
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: ScrollSize | null = null;
+  private _virtualizerSize: VirtualizerSize | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
@@ -524,7 +524,7 @@ export class Virtualizer {
   }
 
   async _updateDOM(state: StateChangedMessage) {
-    this._scrollSize = state.scrollSize;
+    this._virtualizerSize = state.virtualizerSize;
     this._adjustRange(state.range);
     this._childrenPos = state.childPositions;
     this._scrollError = state.scrollError || null;
@@ -545,7 +545,7 @@ export class Virtualizer {
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._checkScrollIntoViewTarget(this._childrenPos);
     this._positionChildren(this._childrenPos);
-    this._sizeHostElement(this._scrollSize);
+    this._sizeHostElement(this._virtualizerSize);
     this._correctScrollError();
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
@@ -667,7 +667,7 @@ export class Virtualizer {
         top: hostElementBounds.top - scrollingElementBounds.top,
       };
 
-      const totalScrollSize = {
+      const scrollSize = {
         width: scrollingElement.scrollWidth,
         height: scrollingElement.scrollHeight,
       };
@@ -681,7 +681,7 @@ export class Virtualizer {
       layout.writingMode = writingMode;
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
-      layout.totalScrollSize = totalScrollSize;
+      layout.scrollSize = scrollSize;
       layout.offsetWithinScroller = offsetWithinScroller;
     }
   }
@@ -690,9 +690,9 @@ export class Virtualizer {
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeHostElement(size: ScrollSize | null) {
+  private _sizeHostElement(size: VirtualizerSize | null) {
     function cssScrollSizeValue(
-      size: ScrollSizeValue,
+      size: VirtualizerSizeValue,
       scroller = false
     ): string {
       if (typeof size === 'number') {

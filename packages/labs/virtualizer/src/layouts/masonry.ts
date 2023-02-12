@@ -98,7 +98,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     let nextPos = padding1.start;
     const nextPosPerRolumn = new Array(rolumns).fill(null).map((_) => nextPos);
     let nextRolumn = 0;
-    let scrollSize = 0;
+    let virtualizerSize = 0;
     let minRangeMapKey = Infinity;
     let maxRangeMapKey = -Infinity;
     this.items.forEach((item, idx) => {
@@ -128,7 +128,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
         const [minIdx, maxIdx] = this._rangeMap.get(n) ?? [Infinity, -Infinity];
         this._rangeMap.set(n, [Math.min(idx, minIdx), Math.max(idx, maxIdx)]);
       }
-      scrollSize = Math.max(scrollSize, max1 + padding1.end);
+      virtualizerSize = Math.max(virtualizerSize, max1 + padding1.end);
       nextPosPerRolumn[nextRolumn] += size1 + gap1;
       nextPos = Infinity;
       nextPosPerRolumn.forEach((pos, rolumn) => {
@@ -145,11 +145,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     }
     if (maxRangeMapKey !== -Infinity) {
       const maxRange = this._rangeMap.get(maxRangeMapKey)!;
-      for (let n = maxRangeMapKey + G; n < scrollSize + G; n += G) {
+      for (let n = maxRangeMapKey + G; n < virtualizerSize + G; n += G) {
         this._rangeMap.set(n, maxRange);
       }
     }
-    this._scrollSize = scrollSize;
+    this._virtualizerSize = virtualizerSize;
   }
 
   _getActiveItems() {
@@ -163,7 +163,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     } else {
       const min = Math.max(0, this._scrollPosition - this._overhang);
       const max = Math.min(
-        this._scrollSize,
+        this._virtualizerSize,
         this._scrollPosition + this._viewDim1 + this._overhang
       );
       const maxIdx = this.items.length - 1;
@@ -183,8 +183,8 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     return this._positions.get(idx)!;
   }
 
-  _updateScrollSize() {
-    // We calculate scrollSize in _layouOutChildren(),
+  _updateVirtualizerSize() {
+    // We calculate _virtualizerSize in _layouOutChildren(),
     // no need to do it here
   }
 }
