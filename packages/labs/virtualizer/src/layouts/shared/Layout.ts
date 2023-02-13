@@ -4,21 +4,25 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export type logicalDimension = 'blockSize' | 'inlineSize';
+export type logicalSizeDimension = 'blockSize' | 'inlineSize';
 export type LogicalSize = {
-  [key in logicalDimension]: number;
+  blockSize: number;
+  inlineSize: number;
+  // [key in logicalSizeDimension]: number;
 };
 
-export type fixedDimension = 'height' | 'width';
+export type fixedSizeDimension = 'height' | 'width';
 export type FixedSize = {
-  [key in fixedDimension]: number;
+  height: number;
+  width: number;
+  // [key in fixedSizeDimension]: number;
 };
 
 type minOrMax = 'min' | 'max';
 export type VirtualizerSizeValue = number | [minOrMax, number];
 
 export type VirtualizerSize = {
-  [key in logicalDimension]: VirtualizerSizeValue;
+  [key in logicalSizeDimension]: VirtualizerSizeValue;
 };
 
 export type margin =
@@ -39,15 +43,16 @@ export type Margins = {
   [key in margin]: number;
 };
 
-export type ItemBox = FixedSize | (FixedSize & Margins);
+export type ItemBox = LogicalSize | (LogicalSize & Margins);
+
+export type logicalPositionDimension = 'insetInlineStart' | 'insetBlockStart';
 
 export type position = 'inlinePosition' | 'top';
-export type offset = 'top' | 'right' | 'bottom' | 'left';
 export type offsetAxis = 'xOffset' | 'yOffset';
 
-export type scrollPositionDimension = 'top' | 'left';
-export type ScrollPosition = {
-  [key in scrollPositionDimension]: number;
+export type fixedPositionDimension = 'top' | 'left';
+export type FixedPosition = {
+  [key in fixedPositionDimension]: number;
 };
 
 // TODO (graynorton@): This has become a bit of a
@@ -56,8 +61,8 @@ export type ScrollPosition = {
 // `positionChildren()` that knows how to translate the
 // provided fields into the appropriate DOM manipulations.
 export type Positions = {
-  inlinePosition: number;
-  blockPosition: number;
+  insetInlineStart: number;
+  insetBlockStart: number;
   inlineSize?: number;
   blockSize?: number;
   xOffset?: number;
@@ -78,7 +83,7 @@ export interface StateChangedMessage {
   virtualizerSize: VirtualizerSize;
   range: InternalRange;
   childPositions: ChildPositions;
-  scrollError?: ScrollPosition;
+  scrollError?: FixedPosition;
 }
 
 export interface VisibilityChangedMessage {
@@ -145,11 +150,11 @@ export interface Layout {
 
   viewportSize: LogicalSize;
 
-  viewportScroll: ScrollPosition;
+  viewportScroll: FixedPosition;
 
   scrollSize: LogicalSize;
 
-  offsetWithinScroller: ScrollPosition;
+  offsetWithinScroller: FixedPosition;
 
   readonly measureChildren?: boolean | MeasureChildFunction;
 

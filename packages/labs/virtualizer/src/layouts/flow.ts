@@ -5,7 +5,7 @@
  */
 
 import {SizeCache} from './shared/SizeCache.js';
-import {BaseLayout, dim1, dim2} from './shared/BaseLayout.js';
+import {BaseLayout} from './shared/BaseLayout.js';
 import {
   Positions,
   LogicalSize,
@@ -42,10 +42,6 @@ export const flow: FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) =>
     config
   );
 
-function offset(): offsetAxis {
-  return 'yOffset';
-}
-
 function collapseMargins(a: number, b: number): number {
   const m = [a, b].sort();
   return m[1] <= 0 ? Math.min(...m) : m[0] >= 0 ? Math.max(...m) : m[0] + m[1];
@@ -61,7 +57,7 @@ class MetricsCache {
     Object.keys(metrics).forEach((key) => {
       const k = Number(key);
       this._metricsCache.set(k, metrics[k]);
-      this._childSizeCache.set(k, metrics[k][dim1()]);
+      this._childSizeCache.set(k, metrics[k].blockSize);
       marginsToUpdate.add(k);
       marginsToUpdate.add(k + 1);
     });
@@ -97,7 +93,7 @@ class MetricsCache {
   }
 
   getCrossSize(index: number) {
-    return this._metricsCache.get(index)?.[dim2()] || 0;
+    return this._metricsCache.get(index)?.inlineSize || 0;
   }
 
   getMarginSize(index: number) {
@@ -203,7 +199,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _getAverageSize(): number {
-    return this._metricsCache.averageChildSize || this._itemSize[this._sizeDim];
+    return this._metricsCache.averageChildSize || this._itemSize.blockSize;
   }
 
   _estimatePosition(idx: number): number {
@@ -531,10 +527,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * Returns the top and left positioning of the item at idx.
    */
   _getItemPosition(idx: number): Positions {
+    const offsetAxis: offsetAxis =
+      this.writingMode[0] === 'h' ? 'yOffset' : 'xOffset';
     return {
-      [this._positionDim]: this._getPosition(idx),
-      [this._secondaryPositionDim]: 0,
-      [offset()]: -(
+      insetBlockStart: this._getPosition(idx),
+      insetInlineStart: 0,
+      [offsetAxis]: -(
         this._metricsCache.getLeadingMarginValue(idx) ??
         this._metricsCache.averageMarginSize
       ),
@@ -546,8 +544,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _getItemSize(idx: number): LogicalSize {
     return {
-      [this._sizeDim]: this._getSize(idx) || this._getAverageSize(),
-      [this._secondarySizeDim]: this._itemSize[this._secondarySizeDim],
+      blockSize: this._getSize(idx) || this._getAverageSize(),
+      inlineSize: this._itemSize.inlineSize,
     } as LogicalSize;
   }
 

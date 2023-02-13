@@ -14,9 +14,9 @@ import {
   ChildMeasurements,
   ItemBox,
   LayoutHostSink,
+  LogicalSize,
   MeasureChildFunction,
   Positions,
-  Size,
 } from './shared/Layout.js';
 
 interface FlexWrapLayoutConfig extends SizeGapPaddingBaseLayoutConfig {
@@ -75,7 +75,7 @@ interface FlickrImageData {
  * TODO @straversi: document and test this Layout.
  */
 export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfig> {
-  private _itemSizes: Array<Size> = [];
+  private _itemSizes: Array<LogicalSize> = [];
   // private _itemPositions: Array<Positions> = [];
   // private _rolumnStartIdx: Array<number> = [];
   // private _rolumnStartPos: Array<number> = [];
@@ -98,16 +98,25 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   /**
    * TODO graynorton@ Don't hard-code Flickr - probably need a config option
    */
-  measureChildren: MeasureChildFunction = function (e: Element, i: unknown) {
+  measureChildren: MeasureChildFunction = (e: Element, i: unknown) => {
     const {naturalWidth, naturalHeight} = e as HTMLImageElement;
+    let width = -1;
+    let height = -1;
     if (naturalWidth !== undefined && naturalHeight != undefined) {
-      return {width: naturalWidth, height: naturalHeight};
+      width = naturalWidth;
+      height = naturalHeight;
+    } else {
+      const {o_width, o_height} = i as FlickrImageData;
+      if (o_width !== undefined && o_height !== undefined) {
+        width = o_width;
+        height = o_height;
+      }
     }
-    const {o_width, o_height} = i as FlickrImageData;
-    if (o_width !== undefined && o_height !== undefined) {
-      return {width: o_width, height: o_height};
+    if (this.writingMode[0] === 'h') {
+      return {inlineSize: width, blockSize: height};
+    } else {
+      return {inlineSize: height, blockSize: width};
     }
-    return {width: -1, height: -1};
   };
 
   updateItemSizes(sizes: ChildMeasurements) {
@@ -116,12 +125,12 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
       const n = Number(key);
       const chunk = this._getChunk(n);
       const dims = sizes[n];
-      const prevDims = this._itemSizes[n];
-      if (dims.width && dims.height) {
+      const prevDims: ItemBox = this._itemSizes[n];
+      if (dims.inlineSize && dims.blockSize) {
         if (
           !prevDims ||
-          prevDims.width !== dims.width ||
-          prevDims.height !== dims.height
+          prevDims.inlineSize !== dims.inlineSize ||
+          prevDims.blockSize !== dims.blockSize
         ) {
           chunk._dirty = true;
           dirty = true;
@@ -152,8 +161,8 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   }
 
   _recordAspectRatio(dims: ItemBox) {
-    if (dims.width && dims.height) {
-      const bucket = Math.round((dims.width / dims.height) * 10) / 10;
+    if (dims.inlineSize && dims.blockSize) {
+      const bucket = Math.round((dims.inlineSize / dims.blockSize) * 10) / 10;
       if (this._aspectRatios[bucket]) {
         this._aspectRatios[bucket]++;
       } else {
@@ -163,9 +172,9 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     }
   }
 
-  _getRandomAspectRatio(): Size {
+  _getRandomAspectRatio(): LogicalSize {
     if (this._numberOfAspectRatiosMeasured === 0) {
-      return {width: 1, height: 1};
+      return {inlineSize: 1, blockSize: 1};
     }
     const n = Math.random() * this._numberOfAspectRatiosMeasured;
     const buckets = Object.keys(this._aspectRatios);
@@ -174,7 +183,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     while (m < n && i < buckets.length) {
       m += this._aspectRatios[buckets[++i]];
     }
-    return {width: Number(buckets[i]), height: 1};
+    return {inlineSize: Number(buckets[i]), blockSize: 1};
   }
 
   // _viewDim2Changed() {
@@ -186,7 +195,10 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     if (chunk._rolumns.length === 0) return;
     const scrollPos = Math.max(
       0,
-      Math.min(this._scrollPosition, this._virtualizerSize - this._viewDim1)
+      Math.min(
+        this._blockScrollPosition,
+        this._virtualizerSize - this._viewDim1
+      )
     );
     const min = Math.max(0, scrollPos - this._overhang);
     const max = Math.min(
@@ -224,18 +236,18 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     return chunk._itemPositions[idx];
   }
 
-  _getItemSize(idx: number): Size {
+  _getItemSize(idx: number): LogicalSize {
     const chunk = this._getChunk(0);
-    const {width, height} = chunk._itemPositions[idx];
-    return {width, height} as Size;
+    const {inlineSize, blockSize} = chunk._itemPositions[idx];
+    return {inlineSize, blockSize} as LogicalSize;
   }
 
-  _getNaturalItemDims(idx: number): Size {
+  _getNaturalItemDims(idx: number): LogicalSize {
     let itemDims = this._itemSizes[idx];
     if (
       itemDims === undefined ||
-      itemDims.width === -1 ||
-      itemDims.height === -1
+      itemDims.inlineSize === -1 ||
+      itemDims.blockSize === -1
     ) {
       itemDims = this._getRandomAspectRatio();
     }
@@ -260,27 +272,27 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
       let itemStartPos = this._gap!;
       for (let i = startIdx; i <= lastIdx; i++) {
         const pos = chunk._itemPositions[i];
-        pos.width = pos.width! * lastRatio;
-        pos.height = pos.height! * lastRatio;
-        pos.left = this._positionDim === 'left' ? startPos : itemStartPos;
-        pos.top = this._positionDim === 'top' ? startPos : itemStartPos;
-        itemStartPos += pos[this._secondarySizeDim]! + gap;
+        pos.inlineSize = pos.inlineSize! * lastRatio;
+        pos.blockSize = pos.blockSize! * lastRatio;
+        pos.insetInlineStart = itemStartPos;
+        pos.insetBlockStart = startPos;
+        itemStartPos += pos.inlineSize! + gap;
       }
-      rolumn._size = chunk._itemPositions[lastIdx][this._sizeDim]!;
+      rolumn._size = chunk._itemPositions[lastIdx].blockSize!;
     };
     while (idx <= endIdx) {
       const itemDims = this._getNaturalItemDims(idx);
       const availableSpace = this._viewDim2 - gap * (idx - startIdx + 2);
-      const itemSize = itemDims[this._sizeDim];
-      const itemSize2 = itemDims[this._secondarySizeDim];
+      const itemSize = itemDims.blockSize;
+      const itemSize2 = itemDims.inlineSize;
       const idealScaleFactor = this._idealSize! / itemSize;
       const adjItemSize = idealScaleFactor * itemSize;
       const adjItemSize2 = idealScaleFactor * itemSize2;
       chunk._itemPositions[idx] = {
-        left: 0,
-        top: 0,
-        width: this._sizeDim === 'width' ? adjItemSize : adjItemSize2,
-        height: this._sizeDim === 'height' ? adjItemSize : adjItemSize2,
+        insetBlockStart: 0,
+        insetInlineStart: 0,
+        inlineSize: adjItemSize2,
+        blockSize: adjItemSize,
       };
       const ratio = availableSpace / (rolumnSize2 + adjItemSize2);
       if (Math.abs(1 - ratio) > Math.abs(1 - lastRatio)) {

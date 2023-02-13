@@ -72,8 +72,8 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
 
   protected _getItemSize(_idx: number): LogicalSize {
     return {
-      [this._sizeDim]: this._metrics!.itemSize1,
-      [this._secondarySizeDim]: this._metrics!.itemSize2,
+      blockSize: this._metrics!.itemSize1,
+      inlineSize: this._metrics!.itemSize2,
     } as unknown as LogicalSize;
   }
 
@@ -107,10 +107,10 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
       const pos1 = nextPosPerRolumn[nextRolumn];
       const pos2 = positions[nextRolumn];
       this._positions.set(idx, {
-        [this._positionDim]: pos1,
-        [this._secondaryPositionDim]: pos2,
-        [this._sizeDim]: size1,
-        [this._secondarySizeDim]: itemSize2,
+        insetBlockStart: pos1,
+        insetInlineStart: pos2,
+        blockSize: size1,
+        inlineSize: itemSize2,
       } as Positions);
       const max1 = pos1 + size1;
       const firstRangeMapKey = this._getRangeMapKey(pos1, MIN);

@@ -6,7 +6,7 @@
 
 // import { dimension } from './Layout.js';
 import {BaseLayoutConfig} from './Layout.js';
-import {BaseLayout, dim1, dim2} from './BaseLayout.js';
+import {BaseLayout} from './BaseLayout.js';
 import {LogicalSize} from './Layout.js';
 
 export type PixelSize = `${'0' | `${number}px`}`;
@@ -103,15 +103,15 @@ export abstract class SizeGapPaddingBaseLayout<
 
   // Temp, to support current flexWrap implementation
   protected get _idealSize(): number {
-    return (this._itemSize as LogicalSize)[dim1()];
+    return (this._itemSize as LogicalSize).blockSize;
   }
 
   protected get _idealSize1(): number {
-    return (this._itemSize as LogicalSize)[dim1()];
+    return (this._itemSize as LogicalSize).blockSize;
   }
 
   protected get _idealSize2(): number {
-    return (this._itemSize as LogicalSize)[dim2()];
+    return (this._itemSize as LogicalSize).inlineSize;
   }
 
   protected get _gap1(): number {

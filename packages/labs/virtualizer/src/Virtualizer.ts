@@ -158,6 +158,8 @@ export class Virtualizer {
    */
   private _childrenRO: ResizeObserver | null = null;
 
+  private _windowResizeCallback: (() => void) | null = null;
+
   private _mutationObserver: MutationObserver | null = null;
 
   private _scrollEventListeners: (Element | Window)[] = [];
@@ -277,11 +279,12 @@ export class Virtualizer {
       this._finishDOMUpdate.bind(this)
     );
     this._hostElementRO = new _ResizeObserver!(() =>
-      this._hostElementSizeChanged()
+      this._viewportSizeChanged()
     );
     this._childrenRO = new _ResizeObserver!(
       this._childrenSizeChanged.bind(this)
     );
+    this._windowResizeCallback = this._viewportSizeChanged.bind(this);
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -322,6 +325,7 @@ export class Virtualizer {
       this._hostElementRO!.observe(ancestor);
     });
     this._hostElementRO!.observe(this._scrollerController!.element);
+    window.addEventListener('resize', this._windowResizeCallback!);
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._scrollEventListeners.forEach((target) =>
       target.addEventListener('scroll', this, this._scrollEventListenerOptions)
@@ -341,6 +345,7 @@ export class Virtualizer {
     this._scrollerController = this._scrollerController!.detach(this) || null;
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();
+    window.removeEventListener('resize', this._windowResizeCallback!);
     this._childrenRO!.disconnect();
     this._rejectLayoutCompletePromise('disconnected');
   }
@@ -453,7 +458,9 @@ export class Virtualizer {
       typeof this._layout.updateItemSizes === 'function'
     ) {
       if (typeof this._layout.measureChildren === 'function') {
-        this._measureChildOverride = this._layout.measureChildren;
+        this._measureChildOverride = this._layout.measureChildren.bind(
+          this._layout
+        );
       }
       this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
@@ -515,6 +522,8 @@ export class Virtualizer {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
+    const blockSize = this._writingMode[0] === 'h' ? height : width;
+    const inlineSize = this._writingMode[0] === 'h' ? width : height;
     const style = getComputedStyle(element);
     const writingMode = style.writingMode as writingMode;
     const direction = style.direction as direction;
@@ -522,7 +531,7 @@ export class Virtualizer {
     const reverseDirection =
       deriveDirection(writingMode, direction) !== this._derivedDirection;
     return Object.assign(
-      {width, height},
+      {blockSize, inlineSize},
       getMargins(element, flipAxis, reverseDirection)
     );
   }
@@ -647,15 +656,14 @@ export class Virtualizer {
       let top, left, bottom, right;
 
       const hostStyle = getComputedStyle(hostElement);
-      const contextStyle = getComputedStyle(getParentElement(hostElement)!);
+      // const contextStyle = getComputedStyle(getParentElement(hostElement)!);
 
       const direction = hostStyle.direction as direction;
       const writingMode = (this._writingMode =
         hostStyle.writingMode as writingMode);
       this._derivedDirection = deriveDirection(writingMode, direction);
-      const contextWritingMode =
-        /*this._contextWritingMode = */ contextStyle.writingMode as writingMode;
-      console.log('WHEE', direction, writingMode, contextWritingMode);
+      // const contextWritingMode =
+      //   this._contextWritingMode = contextStyle.writingMode as writingMode;
 
       const hostElementBounds = hostElement.getBoundingClientRect();
 
@@ -764,8 +772,8 @@ export class Virtualizer {
       pos.forEach(
         (
           {
-            blockPosition,
-            inlinePosition,
+            insetBlockStart: blockPosition,
+            insetInlineStart: inlinePosition,
             blockSize,
             inlineSize,
             xOffset,
@@ -807,7 +815,7 @@ export class Virtualizer {
               child.style.inlineSize = inlineSize + 'px';
             }
             if (blockSize !== undefined) {
-              child.style.height = blockSize + 'px';
+              child.style.blockSize = blockSize + 'px';
             }
             (child.style.left as string | null) =
               xOffset === undefined ? null : xOffset + 'px';
@@ -957,7 +965,7 @@ export class Virtualizer {
    * Render and update the view at the next opportunity with the given
    * hostElement size.
    */
-  private _hostElementSizeChanged() {
+  private _viewportSizeChanged() {
     this._schedule(this._updateLayout);
   }
 

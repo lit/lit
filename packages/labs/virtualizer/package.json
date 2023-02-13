@@ -123,7 +123,7 @@
   ],
   "devDependencies": {
     "@open-wc/testing": "^3.1.6",
-    "@web/dev-server-esbuild": "^0.3.0",
+    "@web/dev-server-esbuild": "^0.3.3",
     "tachometer": "^0.7.0"
   },
   "dependencies": {
