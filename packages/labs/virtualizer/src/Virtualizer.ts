@@ -206,6 +206,10 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
+  private _writingMode: writingMode = 'unknown';
+  // private _contextWritingMode: writingMode = 'unknown';
+  private _derivedDirection: direction = 'unknown';
+
   protected _scheduled = new WeakSet();
 
   /**
@@ -511,7 +515,16 @@ export class Virtualizer {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
-    return Object.assign({width, height}, getMargins(element));
+    const style = getComputedStyle(element);
+    const writingMode = style.writingMode as writingMode;
+    const direction = style.direction as direction;
+    const flipAxis = writingMode[0] !== this._writingMode[0];
+    const reverseDirection =
+      deriveDirection(writingMode, direction) !== this._derivedDirection;
+    return Object.assign(
+      {width, height},
+      getMargins(element, flipAxis, reverseDirection)
+    );
   }
 
   protected async _schedule(method: Function): Promise<void> {
@@ -637,8 +650,11 @@ export class Virtualizer {
       const contextStyle = getComputedStyle(getParentElement(hostElement)!);
 
       const direction = hostStyle.direction as direction;
-      const writingMode: writingMode = hostStyle.writingMode as writingMode;
-      const contextWritingMode = contextStyle.writingMode as writingMode;
+      const writingMode = (this._writingMode =
+        hostStyle.writingMode as writingMode);
+      this._derivedDirection = deriveDirection(writingMode, direction);
+      const contextWritingMode =
+        /*this._contextWritingMode = */ contextStyle.writingMode as writingMode;
       console.log('WHEE', direction, writingMode, contextWritingMode);
 
       const hostElementBounds = hostElement.getBoundingClientRect();
@@ -668,8 +684,8 @@ export class Virtualizer {
       };
 
       const scrollSize = {
-        width: scrollingElement.scrollWidth,
-        height: scrollingElement.scrollHeight,
+        inlineSize: scrollingElement.scrollWidth,
+        blockSize: scrollingElement.scrollHeight,
       };
 
       const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
@@ -679,7 +695,10 @@ export class Virtualizer {
       const width = Math.max(1, right - left);
 
       layout.writingMode = writingMode;
-      layout.viewportSize = {width, height};
+      layout.viewportSize = {
+        inlineSize: writingMode === 'horizontal-tb' ? width : height,
+        blockSize: writingMode === 'horizontal-tb' ? height : width,
+      };
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
       layout.scrollSize = scrollSize;
       layout.offsetWithinScroller = offsetWithinScroller;
@@ -703,21 +722,23 @@ export class Virtualizer {
       }
       return `${size[0]}(100%, ${size[1]}px)`;
     }
-    let h: string;
-    let v: string;
+    let inline: string;
+    let block: string;
     if (size === null) {
-      h = v = '0px';
+      inline = block = '0px';
     } else {
-      h = cssScrollSizeValue(size.width, this._isScroller);
-      v = cssScrollSizeValue(size.height, this._isScroller);
+      inline = cssScrollSizeValue(size.inlineSize, this._isScroller);
+      block = cssScrollSizeValue(size.blockSize, this._isScroller);
     }
 
     if (this._isScroller) {
+      const h = this._writingMode === 'horizontal-tb' ? inline : block;
+      const v = this._writingMode === 'horizontal-tb' ? block : inline;
       this._getSizer().style.transform = `translate(${h}, ${v})`;
     } else {
       const style = this._hostElement!.style;
-      style.minWidth = h;
-      style.minHeight = v;
+      style.minInlineSize = inline;
+      style.minBlockSize = block;
     }
   }
 
@@ -726,25 +747,75 @@ export class Virtualizer {
    * pos.
    */
   private _positionChildren(pos: ChildPositions | null) {
+    type LayoutParams = {writingMode: writingMode; direction: direction};
     if (pos) {
-      pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
-        const child = this._children[index - this._first];
+      const hostWidth = this._hostElement!.getBoundingClientRect().width;
+      const childLayoutParams: LayoutParams[] = [];
+      const children = this._children;
+      pos.forEach((_, index) => {
+        const child = children[index - this._first];
         if (child) {
-          child.style.position = 'absolute';
-          child.style.boxSizing = 'border-box';
-          child.style.transform = `translate(${left}px, ${top}px)`;
-          if (width !== undefined) {
-            child.style.width = width + 'px';
-          }
-          if (height !== undefined) {
-            child.style.height = height + 'px';
-          }
-          (child.style.left as string | null) =
-            xOffset === undefined ? null : xOffset + 'px';
-          (child.style.top as string | null) =
-            yOffset === undefined ? null : yOffset + 'px';
+          const style = getComputedStyle(child);
+          const writingMode = style.writingMode as writingMode;
+          const direction = style.direction as direction;
+          childLayoutParams[index] = {writingMode, direction};
         }
       });
+      pos.forEach(
+        (
+          {
+            blockPosition,
+            inlinePosition,
+            blockSize,
+            inlineSize,
+            xOffset,
+            yOffset,
+          },
+          index
+        ) => {
+          const child = children[index - this._first];
+          if (child) {
+            child.style.position = 'absolute';
+            child.style.boxSizing = 'border-box';
+
+            const {writingMode /*, direction*/} = childLayoutParams[index];
+            // const derivedDirection = deriveDirection(writingMode, direction);
+
+            if (writingMode[0] !== this._writingMode[0]) {
+              const oInlineSize = inlineSize;
+              inlineSize = blockSize;
+              blockSize = oInlineSize;
+            }
+
+            let left, top;
+            if (this._writingMode[0] === 'h') {
+              top = blockPosition;
+              left =
+                this._derivedDirection === 'ltr'
+                  ? inlinePosition
+                  : hostWidth - inlinePosition;
+            } else {
+              top = inlinePosition;
+              left =
+                this._derivedDirection === 'ltr'
+                  ? blockPosition
+                  : hostWidth - blockPosition;
+            }
+
+            child.style.transform = `translate(${left}px, ${top}px)`;
+            if (inlineSize !== undefined) {
+              child.style.inlineSize = inlineSize + 'px';
+            }
+            if (blockSize !== undefined) {
+              child.style.height = blockSize + 'px';
+            }
+            (child.style.left as string | null) =
+              xOffset === undefined ? null : xOffset + 'px';
+            (child.style.top as string | null) =
+              yOffset === undefined ? null : yOffset + 'px';
+          }
+        }
+      );
     }
   }
 
@@ -923,14 +994,45 @@ export class Virtualizer {
   }
 }
 
-function getMargins(el: Element): Margins {
+function getMargins(
+  el: Element,
+  flipAxis = false,
+  reverseDirection = false
+): Margins {
   const style = window.getComputedStyle(el);
-  return {
-    marginTop: getMarginValue(style.marginTop),
-    marginRight: getMarginValue(style.marginRight),
-    marginBottom: getMarginValue(style.marginBottom),
-    marginLeft: getMarginValue(style.marginLeft),
-  };
+  if (flipAxis) {
+    if (reverseDirection) {
+      return {
+        marginBlockStart: getMarginValue(style.marginInlineEnd),
+        marginBlockEnd: getMarginValue(style.marginInlineStart),
+        marginInlineStart: getMarginValue(style.marginBlockEnd),
+        marginInlineEnd: getMarginValue(style.marginBlockStart),
+      };
+    } else {
+      return {
+        marginBlockStart: getMarginValue(style.marginInlineStart),
+        marginBlockEnd: getMarginValue(style.marginInlineEnd),
+        marginInlineStart: getMarginValue(style.marginBlockStart),
+        marginInlineEnd: getMarginValue(style.marginBlockEnd),
+      };
+    }
+  } else {
+    if (reverseDirection) {
+      return {
+        marginBlockStart: getMarginValue(style.marginBlockEnd),
+        marginBlockEnd: getMarginValue(style.marginBlockStart),
+        marginInlineStart: getMarginValue(style.marginInlineEnd),
+        marginInlineEnd: getMarginValue(style.marginInlineStart),
+      };
+    } else {
+      return {
+        marginBlockStart: getMarginValue(style.marginBlockStart),
+        marginBlockEnd: getMarginValue(style.marginBlockEnd),
+        marginInlineStart: getMarginValue(style.marginInlineStart),
+        marginInlineEnd: getMarginValue(style.marginInlineEnd),
+      };
+    }
+  }
 }
 
 function getMarginValue(value: string): number {
@@ -969,4 +1071,11 @@ function getClippingAncestors(el: HTMLElement, includeSelf = false) {
   return getElementAncestors(el, includeSelf).filter(
     (a) => getComputedStyle(a).overflow !== 'visible'
   );
+}
+
+function deriveDirection(writingMode: writingMode, direction: direction) {
+  return (writingMode[0] === 'h' && direction === 'rtl') ||
+    writingMode.indexOf('rtl') > 0
+    ? 'rtl'
+    : 'ltr';
 }

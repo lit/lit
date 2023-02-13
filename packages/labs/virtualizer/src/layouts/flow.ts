@@ -8,9 +8,8 @@ import {SizeCache} from './shared/SizeCache.js';
 import {BaseLayout, dim1, dim2} from './shared/BaseLayout.js';
 import {
   Positions,
-  Size,
+  LogicalSize,
   Margins,
-  margin,
   offsetAxis,
   ChildMeasurements,
   BaseLayoutConfig,
@@ -43,14 +42,6 @@ export const flow: FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) =>
     config
   );
 
-function leadingMargin(): margin {
-  return 'marginTop';
-}
-
-function trailingMargin(): margin {
-  return 'marginBottom';
-}
-
 function offset(): offsetAxis {
   return 'yOffset';
 }
@@ -63,9 +54,9 @@ function collapseMargins(a: number, b: number): number {
 class MetricsCache {
   private _childSizeCache = new SizeCache();
   private _marginSizeCache = new SizeCache();
-  private _metricsCache: Map<number, Size & Margins> = new Map();
+  private _metricsCache: Map<number, LogicalSize & Margins> = new Map();
 
-  update(metrics: {[key: number]: Size & Margins}) {
+  update(metrics: {[key: number]: LogicalSize & Margins}) {
     const marginsToUpdate: Set<number> = new Set();
     Object.keys(metrics).forEach((key) => {
       const k = Number(key);
@@ -75,8 +66,8 @@ class MetricsCache {
       marginsToUpdate.add(k + 1);
     });
     for (const k of marginsToUpdate) {
-      const a = this._metricsCache.get(k)?.[leadingMargin()] || 0;
-      const b = this._metricsCache.get(k - 1)?.[trailingMargin()] || 0;
+      const a = this._metricsCache.get(k)?.marginBlockStart || 0;
+      const b = this._metricsCache.get(k - 1)?.marginBlockEnd || 0;
       this._marginSizeCache.set(k, collapseMargins(a, b));
     }
   }
@@ -98,7 +89,7 @@ class MetricsCache {
   }
 
   getLeadingMarginValue(index: number) {
-    return this._metricsCache.get(index)?.[leadingMargin()] || 0;
+    return this._metricsCache.get(index)?.marginBlockStart || 0;
   }
 
   getChildSize(index: number) {
@@ -124,7 +115,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   /**
    * Initial estimate of item size
    */
-  _itemSize: Size = {width: 100, height: 100};
+  _itemSize: LogicalSize = {inlineSize: 100, blockSize: 100};
 
   /**
    * Indices of children mapped to their (position and length) in the scrolling
@@ -181,7 +172,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * argument.
    */
   updateItemSizes(sizes: ChildMeasurements) {
-    this._metricsCache.update(sizes as Size & Margins);
+    this._metricsCache.update(sizes as LogicalSize & Margins);
     // if (this._nMeasured) {
     // this._updateItemSize();
     this._scheduleReflow();
@@ -358,8 +349,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     // Determine the lower and upper bounds of the region to be
     // rendered, relative to the viewport
-    lower = this._scrollPosition - this._overhang; //leadingOverhang;
-    upper = this._scrollPosition + this._viewDim1 + this._overhang; // trailingOverhang;
+    lower = this._blockScrollPosition - this._overhang; //leadingOverhang;
+    upper = this._blockScrollPosition + this._viewDim1 + this._overhang; // trailingOverhang;
 
     if (upper < 0 || lower > this._virtualizerSize) {
       this._clearItems();
@@ -409,7 +400,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     }
 
     if (anchorErr) {
-      this._scrollPosition -= anchorErr;
+      this._blockScrollPosition -= anchorErr;
       lower -= anchorErr;
       upper -= anchorErr;
       this._scrollError += anchorErr;
@@ -472,7 +463,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._physicalMin -= extentErr;
       this._physicalMax -= extentErr;
       this._anchorPos -= extentErr;
-      this._scrollPosition -= extentErr;
+      this._blockScrollPosition -= extentErr;
       items.forEach((item) => (item.pos -= extentErr));
       this._scrollError += extentErr;
     }
@@ -553,11 +544,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   /**
    * Returns the height and width of the item at idx.
    */
-  _getItemSize(idx: number): Size {
+  _getItemSize(idx: number): LogicalSize {
     return {
       [this._sizeDim]: this._getSize(idx) || this._getAverageSize(),
       [this._secondarySizeDim]: this._itemSize[this._secondarySizeDim],
-    } as Size;
+    } as LogicalSize;
   }
 
   _viewDim2Changed() {

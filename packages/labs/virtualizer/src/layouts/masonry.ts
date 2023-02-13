@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LayoutHostSink, Positions, Size} from './shared/Layout.js';
+import {LayoutHostSink, Positions, LogicalSize} from './shared/Layout.js';
 import {GridBaseLayout, GridBaseLayoutConfig} from './shared/GridBaseLayout.js';
 import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
@@ -70,11 +70,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     return super.items;
   }
 
-  protected _getItemSize(_idx: number): Size {
+  protected _getItemSize(_idx: number): LogicalSize {
     return {
       [this._sizeDim]: this._metrics!.itemSize1,
       [this._secondarySizeDim]: this._metrics!.itemSize2,
-    } as unknown as Size;
+    } as unknown as LogicalSize;
   }
 
   protected _updateLayout() {
@@ -158,10 +158,10 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
       this._physicalMin = 0;
       this._physicalMax = 0;
     } else {
-      const min = Math.max(0, this._scrollPosition - this._overhang);
+      const min = Math.max(0, this._blockScrollPosition - this._overhang);
       const max = Math.min(
         this._virtualizerSize,
-        this._scrollPosition + this._viewDim1 + this._overhang
+        this._blockScrollPosition + this._viewDim1 + this._overhang
       );
       const maxIdx = this.items.length - 1;
       const minRange = this._rangeMap.get(this._getRangeMapKey(min, MIN)) ?? [

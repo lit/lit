@@ -7,7 +7,7 @@
 // import { dimension } from './Layout.js';
 import {BaseLayoutConfig} from './Layout.js';
 import {BaseLayout, dim1, dim2} from './BaseLayout.js';
-import {Size} from './Layout.js';
+import {LogicalSize} from './Layout.js';
 
 export type PixelSize = `${'0' | `${number}px`}`;
 
@@ -32,7 +32,9 @@ type PaddingSpec =
   | ThreePaddingValues
   | FourPaddingValues;
 
-type PixelDimensions = {width: PixelSize; height: PixelSize};
+type LogicalPixelDimensions = {inlineSize: PixelSize; blockSize: PixelSize};
+type FixedPixelDimensions = {width: PixelSize; height: PixelSize};
+type PixelDimensions = LogicalPixelDimensions | FixedPixelDimensions;
 
 // function numberToPixelSize(n: number): PixelSize {
 //     return n === 0 ? '0' : `${n}px`;
@@ -82,7 +84,7 @@ type Padding = {[key in side]: number};
 export abstract class SizeGapPaddingBaseLayout<
   C extends SizeGapPaddingBaseLayoutConfig
 > extends BaseLayout<C> {
-  protected _itemSize: Size | {} = {};
+  protected _itemSize: LogicalSize | {} = {};
   protected _gaps: Gaps | {} = {};
   protected _padding: Padding | {} = {};
 
@@ -101,15 +103,15 @@ export abstract class SizeGapPaddingBaseLayout<
 
   // Temp, to support current flexWrap implementation
   protected get _idealSize(): number {
-    return (this._itemSize as Size)[dim1()];
+    return (this._itemSize as LogicalSize)[dim1()];
   }
 
   protected get _idealSize1(): number {
-    return (this._itemSize as Size)[dim1()];
+    return (this._itemSize as LogicalSize)[dim1()];
   }
 
   protected get _idealSize2(): number {
-    return (this._itemSize as Size)[dim2()];
+    return (this._itemSize as LogicalSize)[dim2()];
   }
 
   protected get _gap1(): number {
@@ -133,21 +135,30 @@ export abstract class SizeGapPaddingBaseLayout<
   }
 
   set itemSize(dims: PixelDimensions | PixelSize) {
-    const size = this._itemSize as Size;
+    const size = this._itemSize as LogicalSize;
+    let normalizedDims: LogicalPixelDimensions;
     if (typeof dims === 'string') {
-      dims = {
-        width: dims,
-        height: dims,
+      normalizedDims = {
+        inlineSize: dims,
+        blockSize: dims,
       };
+    } else if ((dims as FixedPixelDimensions).width !== undefined) {
+      normalizedDims = {
+        inlineSize: (dims as FixedPixelDimensions).width,
+        blockSize: (dims as FixedPixelDimensions).height,
+      };
+    } else {
+      normalizedDims = dims as LogicalPixelDimensions;
     }
-    const width = parseInt(dims.width);
-    const height = parseInt(dims.height);
-    if (width !== size.width) {
-      size.width = width;
+
+    const inlineSize = parseInt(normalizedDims.inlineSize);
+    const blockSize = parseInt(normalizedDims.blockSize);
+    if (inlineSize !== size.inlineSize) {
+      size.inlineSize = inlineSize;
       this._triggerReflow();
     }
-    if (height !== size.height) {
-      size.height = height;
+    if (blockSize !== size.blockSize) {
+      size.blockSize = blockSize;
       this._triggerReflow();
     }
   }

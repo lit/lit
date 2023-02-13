@@ -4,23 +4,28 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export type dimension = 'height' | 'width';
-export type Size = {
-  [key in dimension]: number;
+export type logicalDimension = 'blockSize' | 'inlineSize';
+export type LogicalSize = {
+  [key in logicalDimension]: number;
+};
+
+export type fixedDimension = 'height' | 'width';
+export type FixedSize = {
+  [key in fixedDimension]: number;
 };
 
 type minOrMax = 'min' | 'max';
 export type VirtualizerSizeValue = number | [minOrMax, number];
 
 export type VirtualizerSize = {
-  [key in dimension]: VirtualizerSizeValue;
+  [key in logicalDimension]: VirtualizerSizeValue;
 };
 
 export type margin =
-  | 'marginTop'
-  | 'marginRight'
-  | 'marginBottom'
-  | 'marginLeft';
+  | 'marginBlockStart'
+  | 'marginBlockEnd'
+  | 'marginInlineStart'
+  | 'marginInlineEnd';
 
 export type writingMode =
   | 'horizontal-tb'
@@ -28,17 +33,22 @@ export type writingMode =
   | 'vertical-rl'
   | 'unknown';
 
-export type direction = 'ltr' | 'rtl';
+export type direction = 'ltr' | 'rtl' | 'unknown';
 
 export type Margins = {
   [key in margin]: number;
 };
 
-export type ItemBox = Size | (Size & Margins);
+export type ItemBox = FixedSize | (FixedSize & Margins);
 
-export type position = 'left' | 'top';
+export type position = 'inlinePosition' | 'top';
 export type offset = 'top' | 'right' | 'bottom' | 'left';
 export type offsetAxis = 'xOffset' | 'yOffset';
+
+export type scrollPositionDimension = 'top' | 'left';
+export type ScrollPosition = {
+  [key in scrollPositionDimension]: number;
+};
 
 // TODO (graynorton@): This has become a bit of a
 // grab-bag. It might make sense to let each layout define
@@ -46,10 +56,10 @@ export type offsetAxis = 'xOffset' | 'yOffset';
 // `positionChildren()` that knows how to translate the
 // provided fields into the appropriate DOM manipulations.
 export type Positions = {
-  left: number;
-  top: number;
-  width?: number;
-  height?: number;
+  inlinePosition: number;
+  blockPosition: number;
+  inlineSize?: number;
+  blockSize?: number;
   xOffset?: number;
   yOffset?: number;
 };
@@ -68,7 +78,7 @@ export interface StateChangedMessage {
   virtualizerSize: VirtualizerSize;
   range: InternalRange;
   childPositions: ChildPositions;
-  scrollError?: Positions;
+  scrollError?: ScrollPosition;
 }
 
 export interface VisibilityChangedMessage {
@@ -131,13 +141,15 @@ export interface Layout {
 
   writingMode: writingMode;
 
-  viewportSize: Size;
+  direction: direction;
 
-  viewportScroll: Positions;
+  viewportSize: LogicalSize;
 
-  scrollSize: Size;
+  viewportScroll: ScrollPosition;
 
-  offsetWithinScroller: Positions;
+  scrollSize: LogicalSize;
+
+  offsetWithinScroller: ScrollPosition;
 
   readonly measureChildren?: boolean | MeasureChildFunction;
 

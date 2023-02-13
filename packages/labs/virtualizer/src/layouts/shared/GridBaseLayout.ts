@@ -10,7 +10,6 @@ import {
   AutoGapSpec,
   gap2 as gap2Name,
 } from './SizeGapPaddingBaseLayout.js';
-import {dim1} from './BaseLayout.js';
 
 type FlexSpec =
   | boolean
@@ -159,7 +158,7 @@ export abstract class GridBaseLayout<
               (this._idealSize1 / this._idealSize2) * metrics.itemSize2
             );
             break;
-          case dim1():
+          case this._blockSizeDimension:
             metrics.itemSize1 = Math.round(this._idealSize1);
             break;
           case 'area':
