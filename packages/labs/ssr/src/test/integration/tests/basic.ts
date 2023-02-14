@@ -1668,7 +1668,7 @@ export const tests: {[name: string]: SSRTest} = {
         },
       },
     ],
-    stableSelectors: ['input'],
+    stableSelectors: ['textarea'],
   },
 
   /******************************************************
