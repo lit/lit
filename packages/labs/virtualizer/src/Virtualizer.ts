@@ -129,13 +129,11 @@ export class Virtualizer {
   // TODO: (graynorton): type
   private _childMeasurements: ChildMeasurements | null = null;
 
-  private _toBeMeasured: Map<HTMLElement, unknown> = new Map();
+  private _rangeChanged = false;
 
-  private _rangeChanged = true;
+  private _itemsChanged = false;
 
-  private _itemsChanged = true;
-
-  private _visibilityChanged = true;
+  private _visibilityChanged = false;
 
   /**
    * The HTMLElement that hosts the virtualizer. Set by hostElement.
@@ -506,13 +504,10 @@ export class Virtualizer {
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(this, child, this._items[idx]);
-      }
+      mm[idx] = fn.call(this, child, this._items[idx]);
     }
     this._childMeasurements = mm;
     this._schedule(this._updateLayout);
-    this._toBeMeasured.clear();
   }
 
   /**
@@ -558,6 +553,7 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
+      this._itemsChanged = false;
     } else {
       this._finishDOMUpdate();
     }
@@ -981,24 +977,12 @@ export class Virtualizer {
   // update cycle that results in changes to physical items, and we also
   // end up here if one or more children change size independently of
   // the virtualizer update cycle.
-  private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
+  private _childrenSizeChanged() {
     // Only measure if the layout requires it
     if (this._layout?.measureChildren) {
-      for (const change of changes) {
-        this._toBeMeasured.set(
-          change.target as HTMLElement,
-          change.contentRect
-        );
-      }
       this._measureChildren();
     }
-    // If this is the end of an update cycle, we need to reset some
-    // internal state. This should be a harmless no-op if we're handling
-    // an out-of-cycle ResizeObserver callback, so we don't need to
-    // distinguish between the two cases.
     this._scheduleLayoutComplete();
-    this._itemsChanged = false;
-    this._rangeChanged = false;
   }
 }
 

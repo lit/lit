@@ -38,7 +38,7 @@ export const masonry: MasonryLayoutSpecifierFactory = (
     config
   );
 
-type RangeMapEntry = [number, number];
+type RangeMapEntry = [number, number, number, number];
 
 const MIN = 'MIN';
 const MAX = 'MAX';
@@ -122,8 +122,15 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
         maxRangeMapKey = lastRangeMapKey;
       }
       for (let n = firstRangeMapKey; n <= lastRangeMapKey; n += G) {
-        const [minIdx, maxIdx] = this._rangeMap.get(n) ?? [Infinity, -Infinity];
-        this._rangeMap.set(n, [Math.min(idx, minIdx), Math.max(idx, maxIdx)]);
+        const [minIdx, maxIdx, minExtent, maxExtent] = this._rangeMap.get(
+          n
+        ) ?? [Infinity, -Infinity, Infinity, -Infinity];
+        this._rangeMap.set(n, [
+          Math.min(idx, minIdx),
+          Math.max(idx, maxIdx),
+          Math.min(pos1, minExtent),
+          Math.max(max1, maxExtent),
+        ]);
       }
       virtualizerSize = Math.max(virtualizerSize, max1 + padding1.end);
       nextPosPerRolumn[nextRolumn] += size1 + gap1;
@@ -137,7 +144,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     });
     if (minRangeMapKey !== Infinity) {
       for (let n = 0; n < minRangeMapKey; n += G) {
-        this._rangeMap.set(n, [-1, -1]);
+        this._rangeMap.set(n, [-1, -1, 0, 0]);
       }
     }
     if (maxRangeMapKey !== -Infinity) {

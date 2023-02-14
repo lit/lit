@@ -14,13 +14,15 @@ export type PixelSize = `${'0' | `${number}px`}`;
 type GapValue = PixelSize;
 type TwoGapValues = `${GapValue} ${GapValue}`;
 
-export type GapSpec = GapValue | TwoGapValues;
+export type ExplicitGapSpec = GapValue | TwoGapValues;
 
 export type AutoGapSpec =
   | PixelSize
   | `${PixelSize} ${PixelSize}`
   | `auto ${PixelSize}`
   | `${PixelSize} auto`;
+
+export type GapSpec = ExplicitGapSpec | AutoGapSpec;
 
 type PaddingValue = PixelSize | 'match-gap';
 type TwoPaddingValues = `${PaddingValue} ${PaddingValue}`;
@@ -87,6 +89,8 @@ export abstract class SizeGapPaddingBaseLayout<
   protected _itemSize: LogicalSize | {} = {};
   protected _gaps: Gaps | {} = {};
   protected _padding: Padding | {} = {};
+  protected _lastGapSpec: GapSpec | '' = '';
+  protected _lastPaddingSpec: PaddingSpec | '' = '';
 
   protected get _defaultConfig(): C {
     return Object.assign({}, super._defaultConfig, {
@@ -164,47 +168,45 @@ export abstract class SizeGapPaddingBaseLayout<
   }
 
   // This setter is overridden in specific layouts to narrow the accepted types
-  set gap(spec: GapSpec | AutoGapSpec) {
-    const values = spec.split(' ').map((v) => gapValueToNumber(v as GapValue));
-    const gaps = this._gaps as Gaps;
-    if (values[0] !== gaps.row) {
+  set gap(spec: GapSpec) {
+    if (spec !== this._lastGapSpec) {
+      const values = spec
+        .split(' ')
+        .map((v) => gapValueToNumber(v as GapValue));
+      const gaps = this._gaps as Gaps;
       gaps.row = values[0];
-      this._triggerReflow();
-    }
-    if (values[1] === undefined) {
-      if (values[0] !== gaps.column) {
+      if (values[1] === undefined) {
         gaps.column = values[0];
-        this._triggerReflow();
-      }
-    } else {
-      if (values[1] !== gaps.column) {
+      } else {
         gaps.column = values[1];
-        this._triggerReflow();
       }
+      this._lastGapSpec = spec;
+      this._triggerReflow();
     }
   }
 
   set padding(spec: PaddingSpec) {
-    const padding = this._padding as Padding;
-    const values = spec
-      .split(' ')
-      .map((v) => paddingValueToNumber(v as PaddingValue));
-    if (values.length === 1) {
-      padding.top = padding.right = padding.bottom = padding.left = values[0];
-      this._triggerReflow();
-    } else if (values.length === 2) {
-      padding.top = padding.bottom = values[0];
-      padding.right = padding.left = values[1];
-      this._triggerReflow();
-    } else if (values.length === 3) {
-      padding.top = values[0];
-      padding.right = padding.left = values[1];
-      padding.bottom = values[2];
-      this._triggerReflow();
-    } else if (values.length === 4) {
-      ['top', 'right', 'bottom', 'left'].forEach(
-        (side, idx) => (padding[side as side] = values[idx])
-      );
+    if (spec !== this._lastPaddingSpec) {
+      const padding = this._padding as Padding;
+      const values = spec
+        .split(' ')
+        .map((v) => paddingValueToNumber(v as PaddingValue));
+      if (values.length === 1) {
+        padding.top = padding.right = padding.bottom = padding.left = values[0];
+      } else if (values.length === 2) {
+        padding.top = padding.bottom = values[0];
+        padding.right = padding.left = values[1];
+      } else if (values.length === 3) {
+        padding.top = values[0];
+        padding.right = padding.left = values[1];
+        padding.bottom = values[2];
+      } else if (values.length === 4) {
+        padding.top = values[0];
+        padding.right = values[1];
+        padding.bottom = values[2];
+        padding.left = values[3];
+      }
+      this._lastPaddingSpec = spec;
       this._triggerReflow();
     }
   }

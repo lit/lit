@@ -70,7 +70,8 @@ export class GridLayout extends GridBaseLayout<GridBaseLayoutConfig> {
 
       this._first = firstCow * rolumns;
       this._last = Math.min(lastCow * rolumns - 1, this.items.length - 1);
-      this._physicalMin = padding1.start + this._delta * firstCow;
+      this._physicalMin =
+        (firstCow > 0 ? padding1.start : 0) + this._delta * firstCow;
       this._physicalMax = padding1.start + this._delta * lastCow;
     }
   }
