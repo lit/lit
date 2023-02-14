@@ -4,11 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-// Set Symbol.asyncIterator on browsers without it
-if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
-  Object.defineProperty(Symbol, 'asyncIterator', {value: Symbol()});
-}
-
 const nextFrame = () => new Promise((r) => requestAnimationFrame(r));
 
 /**
