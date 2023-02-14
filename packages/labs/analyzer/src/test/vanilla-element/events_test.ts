@@ -8,14 +8,14 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {
-  AnalyzerTestContext,
+  AnalyzerModuleTestContext,
   languages,
-  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
 import {CustomElementDeclaration} from '../../index.js';
 
-interface TestContext extends AnalyzerTestContext<true> {
+interface TestContext extends AnalyzerModuleTestContext {
   element: CustomElementDeclaration;
 }
 
@@ -23,7 +23,7 @@ for (const lang of languages) {
   const test = suite<TestContext>(`Vanilla element event tests (${lang})`);
 
   test.before((ctx) => {
-    setupAnalyzerForTest(ctx, lang, 'vanilla-events', 'element-a');
+    setupAnalyzerForTestWithModule(ctx, lang, 'vanilla-events', 'element-a');
     ctx.element = ctx.module.declarations.find((d) =>
       d.isCustomElementDeclaration()
     ) as CustomElementDeclaration;

@@ -9,12 +9,12 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import {LitElementDeclaration} from '../../lib/model.js';
 import {
-  AnalyzerTestContext,
+  AnalyzerModuleTestContext,
   languages,
-  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
-interface TestContext extends AnalyzerTestContext<true> {
+interface TestContext extends AnalyzerModuleTestContext {
   element: LitElementDeclaration;
 }
 
@@ -22,7 +22,7 @@ for (const lang of languages) {
   const test = suite<TestContext>(`LitElement event tests (${lang})`);
 
   test.before((ctx) => {
-    setupAnalyzerForTest(ctx, lang, 'events', 'element-a');
+    setupAnalyzerForTestWithModule(ctx, lang, 'events', 'element-a');
     ctx.element = ctx.module.declarations.find((d) =>
       d.isLitElementDeclaration()
     ) as LitElementDeclaration;

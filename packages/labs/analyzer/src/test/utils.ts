@@ -203,18 +203,16 @@ export class InMemoryAnalyzer extends Analyzer {
   }
 }
 
-export interface AnalyzerTestContext<M extends boolean = false> {
+export interface AnalyzerTestContext {
   analyzer: Analyzer;
   packagePath: AbsolutePath;
   getModule: (name: string) => Module;
-  module: M extends true ? Module : undefined;
 }
 
-export const setupAnalyzerForTest = <M extends string | undefined>(
-  ctx: AnalyzerTestContext<M extends string ? true : false>,
+export const setupAnalyzerForTest = (
+  ctx: AnalyzerTestContext,
   lang: Language,
-  pkg: string,
-  file?: M
+  pkg: string
 ) => {
   try {
     const packagePath = fileURLToPath(
@@ -230,12 +228,28 @@ export const setupAnalyzerForTest = <M extends string | undefined>(
       );
     ctx.packagePath = packagePath;
     ctx.analyzer = analyzer;
-    ctx.module = (file !== undefined ? getModule(file) : undefined) as (
-      M extends string ? true : false
-    ) extends true
-      ? Module
-      : undefined;
     ctx.getModule = getModule;
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
+};
+
+export interface AnalyzerModuleTestContext extends AnalyzerTestContext {
+  module: Module;
+}
+
+export const setupAnalyzerForTestWithModule = (
+  ctx: AnalyzerModuleTestContext,
+  lang: Language,
+  pkg: string,
+  module: string
+) => {
+  try {
+    setupAnalyzerForTest(ctx, lang, pkg);
+    ctx.module = ctx.getModule(module);
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.

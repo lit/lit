@@ -11,13 +11,17 @@ import * as assert from 'uvu/assert';
 import {Module, getImportsStringForReferences} from '../index.js';
 
 import {Reference} from '../lib/model.js';
-import {AnalyzerTestContext, languages, setupAnalyzerForTest} from './utils.js';
+import {
+  AnalyzerModuleTestContext,
+  languages,
+  setupAnalyzerForTestWithModule,
+} from './utils.js';
 
 for (const lang of languages) {
-  const test = suite<AnalyzerTestContext<true>>(`Types tests (${lang})`);
+  const test = suite<AnalyzerModuleTestContext>(`Types tests (${lang})`);
 
   test.before((ctx) => {
-    setupAnalyzerForTest(ctx, lang, 'types', 'module');
+    setupAnalyzerForTestWithModule(ctx, lang, 'types', 'module');
   });
 
   const typeForVariable = (module: Module, name: string) => {

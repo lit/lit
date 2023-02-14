@@ -8,14 +8,14 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {
-  AnalyzerTestContext,
+  AnalyzerModuleTestContext,
   languages,
-  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
 import {LitElementDeclaration} from '../../index.js';
 
-interface TestContext extends AnalyzerTestContext<true> {
+interface TestContext extends AnalyzerModuleTestContext {
   element: LitElementDeclaration;
 }
 
@@ -23,7 +23,7 @@ for (const lang of languages) {
   const test = suite<TestContext>(`LitElement property tests (${lang})`);
 
   test.before((ctx) => {
-    setupAnalyzerForTest(ctx, lang, 'properties', 'element-a');
+    setupAnalyzerForTestWithModule(ctx, lang, 'properties', 'element-a');
     ctx.element = ctx.module.declarations.find((d) =>
       d.isLitElementDeclaration()
     ) as LitElementDeclaration;

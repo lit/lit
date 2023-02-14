@@ -8,16 +8,16 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {
-  AnalyzerTestContext,
+  AnalyzerModuleTestContext,
   languages,
-  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
 for (const lang of languages) {
-  const test = suite<AnalyzerTestContext<true>>(`Function tests (${lang})`);
+  const test = suite<AnalyzerModuleTestContext>(`Function tests (${lang})`);
 
   test.before((ctx) => {
-    setupAnalyzerForTest(ctx, lang, 'functions', 'functions');
+    setupAnalyzerForTestWithModule(ctx, lang, 'functions', 'functions');
   });
 
   test('Function 1', ({module}) => {

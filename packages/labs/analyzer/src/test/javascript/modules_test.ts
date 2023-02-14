@@ -9,20 +9,20 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import path from 'path';
 import {
-  AnalyzerTestContext,
+  AnalyzerModuleTestContext,
   getSourceFilename,
   InMemoryAnalyzer,
   languages,
-  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
 import {AbsolutePath} from '../../index.js';
 
 for (const lang of languages) {
-  const test = suite<AnalyzerTestContext<true>>(`Module tests (${lang})`);
+  const test = suite<AnalyzerModuleTestContext>(`Module tests (${lang})`);
 
   test.before((ctx) => {
-    setupAnalyzerForTest(ctx, lang, 'modules', 'module-a');
+    setupAnalyzerForTestWithModule(ctx, lang, 'modules', 'module-a');
   });
 
   test('Dependencies correctly analyzed', ({module}) => {
