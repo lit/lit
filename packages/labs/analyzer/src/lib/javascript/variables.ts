@@ -35,7 +35,7 @@ type VariableName =
  */
 const getVariableDeclaration = (
   statement: ts.VariableStatement,
-  dec: ts.VariableDeclaration | ts.EnumDeclaration,
+  dec: ts.VariableDeclaration,
   name: ts.Identifier,
   analyzer: AnalyzerInterface
 ): Declaration => {
@@ -53,12 +53,7 @@ const getVariableDeclaration = (
       ts.isArrowFunction(initializer) ||
       ts.isFunctionExpression(initializer)
     ) {
-      return getFunctionDeclaration(
-        initializer,
-        name.getText(),
-        analyzer,
-        statement
-      );
+      return getFunctionDeclaration(initializer, name.getText(), analyzer);
     } else if (ts.isClassExpression(initializer)) {
       return getClassDeclaration(
         initializer,

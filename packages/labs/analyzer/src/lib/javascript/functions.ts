@@ -56,21 +56,15 @@ export const getFunctionDeclarationInfo = (
 /**
  * Returns an analyzer `FunctionDeclaration` model for the given
  * ts.FunctionLikeDeclaration.
- *
- * Note, the `docNode` may differ from the `declaration` in
- * the case of a const assignment to a function expression, as
- * the docs will be on the VariableStatement rather than
- * the class-like expression.
  */
 export const getFunctionDeclaration = (
   declaration: ts.FunctionLikeDeclaration,
   name: string,
-  analyzer: AnalyzerInterface,
-  docNode?: ts.Node
+  analyzer: AnalyzerInterface
 ): FunctionDeclaration => {
   return new FunctionDeclaration({
     name,
-    ...parseNodeJSDocInfo(docNode ?? declaration),
+    ...parseNodeJSDocInfo(declaration),
     ...getFunctionLikeInfo(declaration, analyzer),
   });
 };
