@@ -1628,6 +1628,49 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['input'],
   },
 
+  'AttributePart on raw text element in shadow root': {
+    // Regression test for https://github.com/lit/lit/issues/3663.
+    //
+    // Confirms that attribute bindings to raw text elements now
+    // work as expected.
+    registerElements() {
+      class RawElementHost extends LitElement {
+        @property()
+        text = 'hello';
+
+        override render() {
+          return html`<textarea .value=${this.text}></textarea>`;
+        }
+      }
+      customElements.define('raw-element-host', RawElementHost);
+    },
+    render() {
+      return html`<raw-element-host></raw-element-host>`;
+    },
+    expectations: [
+      {
+        args: [],
+        html: '<raw-element-host></raw-element-host>',
+        async check(assert: Chai.Assert, dom: HTMLElement) {
+          const host = dom.querySelector('raw-element-host') as LitElement & {
+            text: string;
+          };
+          assert.instanceOf(host, LitElement);
+          assert.equal(host.text, 'hello');
+
+          await host.updateComplete;
+          const textarea = host.shadowRoot?.querySelector('textarea');
+          assert.equal(textarea?.value, 'hello');
+
+          host.text = 'goodbye';
+          await host.updateComplete;
+          assert.equal(textarea?.value, 'goodbye');
+        },
+      },
+    ],
+    stableSelectors: ['textarea'],
+  },
+
   /******************************************************
    * PropertyPart tests
    ******************************************************/
