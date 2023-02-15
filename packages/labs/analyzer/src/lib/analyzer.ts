@@ -32,6 +32,7 @@ export class Analyzer implements AnalyzerInterface {
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
+  private diagnostics: Array<ts.Diagnostic> = [];
 
   constructor(init: AnalyzerInit) {
     this._getProgram = init.getProgram;
@@ -72,6 +73,14 @@ export class Analyzer implements AnalyzerInterface {
         )
       ),
     });
+  }
+
+  addDiagnostic(diagnostic: ts.Diagnostic) {
+    this.diagnostics.push(diagnostic);
+  }
+
+  getDiagnostics(): Array<ts.Diagnostic> {
+    return Array.from(this.diagnostics);
   }
 }
 

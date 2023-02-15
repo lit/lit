@@ -15,7 +15,7 @@ import {LitClassDeclaration} from './lit-element.js';
 import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
-import {DiagnosticsError} from '../errors.js';
+import {DiagnosticsError, createDiagnostic} from '../errors.js';
 import {hasStaticModifier} from '../utils.js';
 
 export const getProperties = (
@@ -34,10 +34,13 @@ export const getProperties = (
 
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
-      throw new DiagnosticsError(prop, 'Unsupported property name');
+      analyzer.addDiagnostic(
+        createDiagnostic(prop, 'Unsupported property name')
+      );
+      continue;
     }
-    const name = prop.name.text;
 
+    const name = prop.name.text;
     const propertyDecorator = getPropertyDecorator(prop);
     if (propertyDecorator !== undefined) {
       // Decorated property; get property options from the decorator and add

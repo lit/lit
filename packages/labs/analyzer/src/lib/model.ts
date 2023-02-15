@@ -752,6 +752,7 @@ export interface AnalyzerInterface {
     | 'normalize'
     | 'isAbsolute'
   >;
+  addDiagnostic(diagnostic: ts.Diagnostic): void;
 }
 
 /**
