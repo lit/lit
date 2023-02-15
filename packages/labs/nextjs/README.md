@@ -32,6 +32,8 @@ The plugin may not work properly if you are providing a custom webpack configura
 
 The server rendered output contains HTML with declarative shadow DOM which may require a polyfill for some browsers. See [Enabling Declarative Shadow DOM from `@lit-labs/ssr-react`](../ssr-react/README.md#enabling-declarative-shadow-dom) for more information.
 
+While running the dev server, modifying any module that contains a custom element registration can cause an error that can only be fixed by restarting the dev server. See [issue #3672](https://github.com/lit/lit/issues/3672).
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
