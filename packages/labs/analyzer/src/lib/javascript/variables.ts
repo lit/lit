@@ -53,7 +53,12 @@ const getVariableDeclaration = (
       ts.isArrowFunction(initializer) ||
       ts.isFunctionExpression(initializer)
     ) {
-      return getFunctionDeclaration(initializer, name.getText(), analyzer);
+      return getFunctionDeclaration(
+        initializer,
+        name.getText(),
+        analyzer,
+        statement
+      );
     } else if (ts.isClassExpression(initializer)) {
       return getClassDeclaration(
         initializer,

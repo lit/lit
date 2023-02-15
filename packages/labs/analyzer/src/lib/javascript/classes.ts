@@ -44,10 +44,9 @@ import {
  * Returns an analyzer `ClassDeclaration` model for the given
  * ts.ClassLikeDeclaration.
  *
- * Note, the `docNode` may differ from the `declaration` in
- * the case of a const assignment to a class expression, as
- * the docs will be on the VariableStatement rather than
- * the class-like expression.
+ * Note, the `docNode` may differ from the `declaration` in the case of a const
+ * assignment to a class expression, as the JSDoc will be attached to the
+ * VariableStatement rather than the class-like expression.
  */
 export const getClassDeclaration = (
   declaration: ts.ClassLikeDeclaration,

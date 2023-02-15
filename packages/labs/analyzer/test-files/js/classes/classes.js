@@ -129,7 +129,7 @@ export const ConstClass = class IgnoreThisName extends BaseClass {
 };
 
 /**
- * ConstClassNoName description
+ * @description ConstClassNoName description
  */
 export const ConstClassNoName = class extends BaseClass {
   /**

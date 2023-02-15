@@ -38,10 +38,10 @@ export default function () {
 }
 
 /**
- * @summary Const function summary
+ * Const function description
  * with wraparound
  *
- * @description Const function description
+ * @summary Const function summary
  * with wraparound
  *
  * @param {string} a Param a description

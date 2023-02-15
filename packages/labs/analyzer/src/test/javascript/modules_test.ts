@@ -304,6 +304,10 @@ for (const lang of languages) {
           module.description,
           'Module description\nmore description'
         );
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
       }
     );
 
@@ -323,6 +327,10 @@ for (const lang of languages) {
         getSourceFilename('/module', lang) as AbsolutePath
       );
       assert.equal(module.description, 'Module description\nmore description');
+      assert.equal(
+        module.getDeclaration('foo').description,
+        hasFirstStatementDoc ? 'First statement description' : undefined
+      );
     });
 
     moduleTest(
@@ -347,6 +355,10 @@ for (const lang of languages) {
           module.description,
           'Module description\nmore description'
         );
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
       }
     );
 
@@ -370,6 +382,10 @@ for (const lang of languages) {
         assert.equal(
           module.description,
           'Module description\nmore description'
+        );
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
         );
       }
     );
@@ -398,6 +414,10 @@ for (const lang of languages) {
           'Module description\nmore description'
         );
         assert.equal(module.deprecated, 'Module is deprecated');
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
       }
     );
 
@@ -427,6 +447,10 @@ for (const lang of languages) {
       );
       assert.equal(module.summary, 'Module summary');
       assert.equal(module.deprecated, true);
+      assert.equal(
+        module.getDeclaration('foo').description,
+        'First statement description'
+      );
     });
 
     moduleTest('multiple untagged module descriptions', ({analyzer}) => {
@@ -453,6 +477,10 @@ for (const lang of languages) {
       assert.equal(
         module.description,
         'Module description\nmore module description\nEven more module description'
+      );
+      assert.equal(
+        module.getDeclaration('foo').description,
+        'First statement description'
       );
     });
 
@@ -487,6 +515,10 @@ for (const lang of languages) {
         );
         assert.equal(module.summary, 'Module summary');
         assert.equal(module.deprecated, true);
+        assert.equal(
+          module.getDeclaration('foo').description,
+          'First statement description'
+        );
       }
     );
 
