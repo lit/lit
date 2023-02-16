@@ -142,7 +142,7 @@ export const getClassDeclarationInfo = (
 ): DeclarationInfo => {
   return {
     name: getClassDeclarationName(declaration),
-    factory: () => getClassDeclaration(declaration, analyzer),
+    factory: getClassDeclaration(declaration, analyzer),
     isExport: hasExportModifier(declaration),
   };
 };

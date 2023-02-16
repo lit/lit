@@ -48,7 +48,7 @@ export const getFunctionDeclarationInfo = (
   const name = getFunctionDeclarationName(declaration);
   return {
     name,
-    factory: () => getFunctionDeclaration(declaration, name, analyzer),
+    factory: getFunctionDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(declaration),
   };
 };

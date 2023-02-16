@@ -78,7 +78,7 @@ const getVariableDeclarationInfoList = (
     return [
       {
         name: name.text,
-        factory: () => getVariableDeclaration(dec, name, jsDocInfo, analyzer),
+        factory: getVariableDeclaration(dec, name, jsDocInfo, analyzer),
         isExport,
       },
     ];
@@ -119,8 +119,7 @@ export const getExportAssignmentVariableDeclarationInfo = (
 ): DeclarationInfo => {
   return {
     name: 'default',
-    factory: () =>
-      getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
+    factory: getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
     isExport: true,
   };
 };
@@ -152,8 +151,12 @@ export const getEnumDeclarationInfo = (
   const jsDocInfo = parseNodeJSDocInfo(statement);
   return {
     name: statement.name.text,
-    factory: () =>
-      getVariableDeclaration(statement, statement.name, jsDocInfo, analyzer),
+    factory: getVariableDeclaration(
+      statement,
+      statement.name,
+      jsDocInfo,
+      analyzer
+    ),
     isExport: hasExportModifier(statement),
   };
 };

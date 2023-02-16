@@ -76,7 +76,7 @@ export class Package extends PackageInfo {
 
 export type LocalNameOrReference = string | Reference;
 export type ExportMap = Map<string, LocalNameOrReference>;
-export type DeclarationMap = Map<string, Declaration | (() => Declaration)>;
+export type DeclarationMap = Map<string, Declaration>;
 
 export interface ModuleInit extends DeprecatableDescribed {
   sourceFile: ts.SourceFile;
@@ -237,16 +237,11 @@ export class Module {
    * never be a `Reference`.
    */
   getDeclaration(name: string): Declaration {
-    let dec = this._declarationMap.get(name);
+    const dec = this._declarationMap.get(name);
     if (dec === undefined) {
       throw new Error(
         `Module ${this.sourcePath} did not contain a declaration named ${name}`
       );
-    }
-    // Overwrite a factory with its output (a `Declaration` model) on first
-    // request
-    if (typeof dec === 'function') {
-      this._declarationMap.set(name, (dec = dec()));
     }
     return dec;
   }
@@ -764,6 +759,6 @@ export interface AnalyzerInterface {
  */
 export type DeclarationInfo = {
   name: string;
-  factory: () => Declaration;
+  factory: Declaration;
   isExport?: boolean;
 };
