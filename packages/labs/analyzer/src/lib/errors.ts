@@ -18,14 +18,26 @@ const diagnosticsHost: ts.FormatDiagnosticsHost = {
   },
 };
 
-export const createDiagnostic = (node: ts.Node, message: string) => ({
-  file: node.getSourceFile(),
-  start: node.getStart(),
-  length: node.getWidth(),
-  category: ts.DiagnosticCategory.Error,
-  code: 2323,
-  messageText: message ?? '',
-});
+interface DiagnosticOptions {
+  node: ts.Node;
+  message?: string | undefined;
+  category?: ts.DiagnosticCategory;
+}
+
+export const createDiagnostic = ({
+  node,
+  message,
+  category,
+}: DiagnosticOptions) => {
+  return {
+    file: node.getSourceFile(),
+    start: node.getStart(),
+    length: node.getWidth(),
+    category: category ?? ts.DiagnosticCategory.Error,
+    code: 2323,
+    messageText: message ?? '',
+  };
+};
 
 export class DiagnosticsError extends Error {
   diagnostics: ts.Diagnostic[];
@@ -40,7 +52,7 @@ export class DiagnosticsError extends Error {
       diagnostics = nodeOrDiagnostics;
     } else {
       const node = nodeOrDiagnostics as ts.Node;
-      diagnostics = [createDiagnostic(node, message!)];
+      diagnostics = [createDiagnostic({node, message})];
       message = undefined;
     }
     super(

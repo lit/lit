@@ -35,7 +35,11 @@ export const getProperties = (
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
       analyzer.addDiagnostic(
-        createDiagnostic(prop, 'Unsupported property name')
+        createDiagnostic({
+          node: prop,
+          message: 'Unsupported property name',
+          category: ts.DiagnosticCategory.Warning,
+        })
       );
       continue;
     }
