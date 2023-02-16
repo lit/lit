@@ -76,6 +76,10 @@ export class Analyzer implements AnalyzerInterface {
     });
   }
 
+  addDiagnostic(diagnostic: ts.Diagnostic) {
+    this.diagnosticCollector?.add(diagnostic);
+  }
+
   pushDiagnosticContext() {
     const context = new DiagnosticCollector(this.diagnosticCollector);
     this.diagnosticCollector = context;

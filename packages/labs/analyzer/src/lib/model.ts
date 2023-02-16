@@ -88,6 +88,7 @@ export interface ModuleInit extends DeprecatableDescribed {
   exportMap: ExportMap;
   dependencies: Set<AbsolutePath>;
   finalizeExports?: () => void;
+  diagnostics: Array<ts.Diagnostic> | undefined;
 }
 
 export interface ModuleInfo {
@@ -150,6 +151,10 @@ export class Module {
    * The module's user-facing deprecation status.
    */
   readonly deprecated?: string | boolean | undefined;
+  /**
+   * Any diagnostics collected while analyzing this module.
+   */
+  readonly diagnostics: ReadonlyArray<ts.Diagnostic>;
 
   constructor(init: ModuleInit) {
     this.sourceFile = init.sourceFile;
@@ -163,6 +168,7 @@ export class Module {
     this.description = init.description;
     this.summary = init.summary;
     this.deprecated = init.deprecated;
+    this.diagnostics = init.diagnostics ?? [];
   }
 
   /**
@@ -753,7 +759,9 @@ export interface AnalyzerInterface {
     | 'normalize'
     | 'isAbsolute'
   >;
-  diagnostics?: DiagnosticCollector | undefined;
+  addDiagnostic(diagnostic: ts.Diagnostic): void;
+  pushDiagnosticContext(): DiagnosticCollector;
+  popDiagnosticContext(context: DiagnosticCollector): void;
 }
 
 /**

@@ -82,6 +82,8 @@ export const getModule = (
   analyzer: AnalyzerInterface,
   packageInfo: PackageInfo = getPackageInfo(modulePath, analyzer)
 ) => {
+  const diagnosticContext = analyzer.pushDiagnosticContext();
+
   // Return cached module if we've parsed this sourceFile already and its
   // dependencies haven't changed
   const cachedModule = getAndValidateModuleFromCache(modulePath, analyzer);
@@ -155,15 +157,23 @@ export const getModule = (
       );
     }
   }
+
+  const moduleInfo = getModuleInfo(modulePath, analyzer, packageInfo);
+  const moduleJSDocInfo = parseModuleJSDocInfo(sourceFile);
+
+  analyzer.popDiagnosticContext(diagnosticContext);
+  const diagnostics = Array.from(diagnosticContext.all);
+
   // Construct module and save in cache
   const module = new Module({
-    ...getModuleInfo(modulePath, analyzer, packageInfo),
+    ...moduleInfo,
     sourceFile,
     declarationMap,
     dependencies,
     exportMap,
     finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
-    ...parseModuleJSDocInfo(sourceFile),
+    ...moduleJSDocInfo,
+    diagnostics,
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
