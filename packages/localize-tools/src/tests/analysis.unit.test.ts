@@ -205,6 +205,100 @@ test('parameterized HTML message', () => {
   ]);
 });
 
+test('nested HTML', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg(html\`<b>Hello \${html\`<i>Friend</i>\`}</b>\`, {id: 'greeting'});
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'greeting',
+      contents: [
+        {untranslatable: '<b>', index: 0},
+        'Hello ',
+        {untranslatable: '${html `<i>Friend</i>`}</b>', index: 1},
+      ],
+    },
+  ]);
+});
+
+test('nested translated HTML', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg(html\`<b>Hello \${msg(html\`<i>Friend</i>\`, {id: 'friend'})}</b>\`, {id: 'greeting'});
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'greeting',
+      contents: [
+        {untranslatable: '<b>', index: 0},
+        'Hello ',
+        {
+          untranslatable: "${msg(html `<i>Friend</i>`, { id: 'friend' })}</b>",
+          index: 1,
+        },
+      ],
+    },
+    {
+      name: 'friend',
+      contents: [
+        {untranslatable: '<i>', index: 0},
+        'Friend',
+        {untranslatable: '</i>', index: 1},
+      ],
+    },
+  ]);
+});
+
+test('translated attribute', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg(html\`Hello <b bar=\${msg("world")}>\${"World"}</b>!\`);
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'h4e21de5ae33a92f3',
+      contents: [
+        'Hello ',
+        {
+          untranslatable: '<b bar="${msg("world")}">${"World"}</b>',
+          index: 0,
+        },
+        '!',
+      ],
+    },
+    {
+      name: 's4f59ff5e730c8af3',
+      contents: ['world'],
+    },
+  ]);
+});
+
+test('translated attribute with id', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg(html\`Hello <b bar=\${msg("world", {id: "bar"})}>\${"World"}</b>!\`);
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'h4e21de5ae33a92f3',
+      contents: [
+        'Hello ',
+        {
+          untranslatable:
+            '<b bar="${msg("world", { id: "bar" })}">${"World"}</b>',
+          index: 0,
+        },
+        '!',
+      ],
+    },
+    {
+      name: 'bar',
+      contents: ['world'],
+    },
+  ]);
+});
+
 test('desc option (string)', () => {
   const src = `
     import {msg} from '@lit/localize';
