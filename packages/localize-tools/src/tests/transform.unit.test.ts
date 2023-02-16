@@ -274,32 +274,31 @@ test('multiple expression-placeholders and order switching', () => {
   );
 });
 
-// TODO(aomarks) Uncomment with fix for #2426
-// test('msg(html(html))', () => {
-//   checkTransform(
-//     'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
-//     'html`Hello <b><i>World</i></b>!`;'
-//   );
-// });
+test('msg(html(html))', () => {
+  checkTransform(
+    'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
+    'html`Hello <b><i>World</i></b>!`;'
+  );
+});
 
-// test('msg(html(html)) translated', () => {
-//   checkTransform(
-//     'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
-//     'html`Hola <b><i>World</i></b>!`;',
-//     {
-//       messages: [
-//         {
-//           name: 'foo',
-//           contents: [
-//             'Hola ',
-//             {untranslatable: '<b>${html`<i>World</i>`}</b>', index: 0},
-//             '!',
-//           ],
-//         },
-//       ],
-//     }
-//   );
-// });
+test('msg(html(html)) translated', () => {
+  checkTransform(
+    'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
+    'html`Hola <b><i>World</i></b>!`;',
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: [
+            'Hola ',
+            {untranslatable: '<b>${html`<i>World</i>`}</b>', index: 0},
+            '!',
+          ],
+        },
+      ],
+    }
+  );
+});
 
 test('msg(string(msg(string)))', () => {
   checkTransform(
