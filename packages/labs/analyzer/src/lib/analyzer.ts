@@ -7,6 +7,7 @@
 import ts from 'typescript';
 import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
 import {AbsolutePath} from './paths.js';
+import {DiagnosticCollector} from './diagnostic-collector.js';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
 import {
@@ -32,7 +33,7 @@ export class Analyzer implements AnalyzerInterface {
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
-  private diagnostics: Array<ts.Diagnostic> = [];
+  private diagnosticCollector: DiagnosticCollector | undefined = undefined;
 
   constructor(init: AnalyzerInit) {
     this._getProgram = init.getProgram;
@@ -75,12 +76,19 @@ export class Analyzer implements AnalyzerInterface {
     });
   }
 
-  addDiagnostic(diagnostic: ts.Diagnostic) {
-    this.diagnostics.push(diagnostic);
+  pushDiagnosticContext() {
+    const context = new DiagnosticCollector(this.diagnosticCollector);
+    this.diagnosticCollector = context;
+    return context;
   }
 
-  getDiagnostics(): Array<ts.Diagnostic> {
-    return Array.from(this.diagnostics);
+  popDiagnosticContext(context: DiagnosticCollector) {
+    if (context !== this.diagnosticCollector) {
+      throw new Error(
+        'Only the diagnostic context at the top of the stack can be popped.'
+      );
+    }
+    this.diagnosticCollector = this.diagnosticCollector.parent;
   }
 }
 

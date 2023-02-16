@@ -6,6 +6,7 @@
 
 import ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
+import type {DiagnosticCollector} from './diagnostic-collector.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
@@ -752,7 +753,7 @@ export interface AnalyzerInterface {
     | 'normalize'
     | 'isAbsolute'
   >;
-  addDiagnostic(diagnostic: ts.Diagnostic): void;
+  diagnostics?: DiagnosticCollector | undefined;
 }
 
 /**
