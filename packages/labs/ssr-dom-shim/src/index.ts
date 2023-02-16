@@ -18,6 +18,74 @@ const attributesForElement = (
   return attrs;
 };
 
+// Shim the global element internals object
+// Methods should be fine as noops and properties can generally
+// be while on the server.
+const InternalsShim = class ElementInternals {
+  ariaAtomic = '';
+  ariaAutoComplete = '';
+  ariaBusy = '';
+  ariaChecked = '';
+  ariaColCount = '';
+  ariaColIndex = '';
+  ariaColIndexText = '';
+  ariaColSpan = '';
+  ariaCurrent = '';
+  ariaDisabled = '';
+  ariaExpanded = '';
+  ariaHasPopup = '';
+  ariaHidden = '';
+  ariaInvalid = '';
+  ariaKeyShortcuts = '';
+  ariaLabel = '';
+  ariaLevel = '';
+  ariaLive = '';
+  ariaModal = '';
+  ariaMultiLine = '';
+  ariaMultiSelectable = '';
+  ariaOrientation = '';
+  ariaPlaceholder = '';
+  ariaPosInSet = '';
+  ariaPressed = '';
+  ariaReadOnly = '';
+  ariaRelevant = '';
+  ariaRequired = '';
+  ariaRoleDescription = '';
+  ariaRowCount = '';
+  ariaRowIndex = '';
+  ariaRowIndexText = '';
+  ariaRowSpan = '';
+  ariaSelected = '';
+  ariaSetSize = '';
+  ariaSort = '';
+  ariaValueMax = '';
+  ariaValueMin = '';
+  ariaValueNow = '';
+  ariaValueText = '';
+  role = '';
+  private _host: {shadowRoot: ShadowRoot | null};
+  get shadowRoot() {
+    return this._host.shadowRoot;
+  }
+  constructor(_host: {shadowRoot: ShadowRoot | null}) {
+    this._host = _host;
+  }
+  checkValidity() {
+    return true;
+  }
+  form = null;
+  labels = [] as unknown as NodeListOf<HTMLLabelElement>;
+  reportValidity() {
+    return true;
+  }
+  setFormValue(): void {}
+  setValidity(): void {}
+  states = new Set();
+  validationMessage = '';
+  validity = {} as globalThis.ValidityState;
+  willValidate = true;
+};
+
 // The typings around the exports below are a little funky:
 //
 // 1. We want the `name` of the shim classes to match the real ones at runtime,
@@ -29,7 +97,6 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-
 const ElementShim = class Element {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
@@ -58,6 +125,10 @@ const ElementShim = class Element {
       this.__shadowRoot = shadowRoot;
     }
     return shadowRoot;
+  }
+  attachInternals(): ElementInternals {
+    const internals = new InternalsShim(this);
+    return internals as ElementInternals;
   }
   getAttribute(name: string) {
     const value = attributesForElement(this).get(name);
