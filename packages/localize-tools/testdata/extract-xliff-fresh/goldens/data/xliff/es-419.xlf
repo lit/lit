@@ -8,6 +8,15 @@
 <trans-unit id="h82ccc38d4d46eaa9">
   <source>Hello <x id="0" equiv-text="&lt;b&gt;${html `&lt;i&gt;World&lt;/i&gt;`}&lt;/b&gt;"/>!</source>
 </trans-unit>
+<trans-unit id="h4e21de5ae33a92f3">
+  <source>Hello <x id="0" equiv-text="&lt;b bar=&quot;${msg(&quot;world&quot;, { id: &quot;bar&quot; })}&quot;&gt;${msg(&quot;World&quot;)}&lt;/b&gt;"/>!</source>
+</trans-unit>
+<trans-unit id="bar">
+  <source>world</source>
+</trans-unit>
+<trans-unit id="s0f19e6c4e521dd53">
+  <source>World</source>
+</trans-unit>
 <trans-unit id="he7b474847636149b">
   <source>Hello <x id="0" equiv-text="&lt;b&gt;${name}"/>!<x id="1" equiv-text="&lt;/b&gt;"/></source>
   <note from="lit-localize">Description of Hello $(name)</note>

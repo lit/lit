@@ -59,6 +59,14 @@
   <source>described 0</source>
   <target>described 0</target>
 </trans-unit>
+<trans-unit id="h4e21de5ae33a92f3">
+  <source>Hello <x id="0" equiv-text="&lt;b bar=&quot;${msg(&quot;world&quot;, { id: &quot;bar&quot; })}&quot;&gt;${msg(&quot;World&quot;)}&lt;/b&gt;"/>!</source>
+  <target>Hola <x id="0" equiv-text="&lt;b bar=&quot;${msg(&quot;world&quot;, { id: &quot;bar&quot; })}&quot;&gt;${msg(&quot;World&quot;)}&lt;/b&gt;"/>!</target>
+</trans-unit>
+<trans-unit id="bar">
+  <source>world</source>
+  <target>mundo</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

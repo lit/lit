@@ -86,3 +86,6 @@ html`Hello <b foo=${msg("World")}>World</b>`;
 html`<b foo=${msg("Hello")}>Hello</b><b bar=${msg("World")}>World</b>`;
 html`Hello <b .foo=${"World"}>World</b>`;
 html`Hello <b .foo=${msg("World")}>World</b>`;
+
+// Nested translations, including in attribute position
+msg(html`Hello <b bar=${msg("world", {id: "bar"})}>${msg("World")}</b>!`);

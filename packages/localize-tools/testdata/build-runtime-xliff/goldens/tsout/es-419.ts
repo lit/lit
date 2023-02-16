@@ -8,9 +8,11 @@ import {str} from '@lit/localize';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const templates = {
+  bar: `mundo`,
   h02c268d9b1fcb031: html`&lt;Hola<b>&lt;Mundo &amp; Amigos&gt;</b>!&gt;`,
   h349c3c4777670217: html`[SALT] Hola <b>${0}</b>!`,
   h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
+  h4e21de5ae33a92f3: html`Hola <b bar="${0}">${1}</b>!`,
   h82ccc38d4d46eaa9: html`Hola <b>${0}</b>!`,
   h8d70dfec810d1eae: html`<b>Hola</b>! Clic <a href="${0}/${1}">aquí</a>!`,
   h99e74f744fda7e25: html`Clic <a href="${0}">aquí</a>!`,

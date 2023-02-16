@@ -17,3 +17,6 @@ msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);
 
 // A localized Lit template that contains a nested Lit template.
 msg(html`Hello <b>${html`<i>World</i>`}</b>!`);
+
+// Nested translations, including in attribute position
+msg(html`Hello <b bar=${msg("world", {id: "bar"})}>${msg("World")}</b>!`);

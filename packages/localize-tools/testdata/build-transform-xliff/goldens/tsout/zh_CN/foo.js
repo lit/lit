@@ -60,3 +60,5 @@ html`Hello <b foo=${'World'}>World</b>`;
 html`<b foo=${'Hello'}>Hello</b><b bar=${'World'}>World</b>`;
 html`Hello <b .foo=${'World'}>World</b>`;
 html`Hello <b .foo=${'World'}>World</b>`;
+// Nested translations, including in attribute position
+html`Hello <b bar=${'world'}>World</b>!`;

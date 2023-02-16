@@ -58,3 +58,6 @@ msg(html`<b>Hello</b>! Click <a href="${urlBase}/${urlPath}">here</a>!`);
 
 // Escaped markup characters should remain escaped
 msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);
+
+// Nested translations, including in attribute position
+msg(html`Hello <b bar=${msg("world", {id: "bar"})}>${msg("World")}</b>!`);
