@@ -14,6 +14,7 @@ import {
   getPackageInfo,
   getPackageRootForModulePath,
 } from './javascript/packages.js';
+import {logDiagnostics} from './errors.js';
 
 export interface AnalyzerInit {
   getProgram: () => ts.Program;
@@ -54,6 +55,8 @@ export class Analyzer implements AnalyzerInterface {
   }
 
   getPackage() {
+    const diagnosticContext = this.pushDiagnosticContext();
+
     const rootFileNames = this.program.getRootFileNames();
 
     // Find the package.json for this package based on the first root filename
@@ -64,7 +67,7 @@ export class Analyzer implements AnalyzerInterface {
     }
     const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
 
-    return new Package({
+    const pkg = new Package({
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
@@ -74,6 +77,11 @@ export class Analyzer implements AnalyzerInterface {
         )
       ),
     });
+
+    this.popDiagnosticContext(diagnosticContext);
+    logDiagnostics(Array.from(diagnosticContext.all));
+
+    return pkg;
   }
 
   addDiagnostic(diagnostic: ts.Diagnostic) {

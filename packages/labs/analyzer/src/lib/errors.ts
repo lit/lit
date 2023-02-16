@@ -39,6 +39,14 @@ export const createDiagnostic = ({
   };
 };
 
+export const logDiagnostics = (diagnostics: Array<ts.Diagnostic>) => {
+  if (diagnostics.length > 0) {
+    console.log(
+      ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
+    );
+  }
+};
+
 export class DiagnosticsError extends Error {
   diagnostics: ts.Diagnostic[];
   constructor(diagnostics: readonly ts.Diagnostic[], message?: string);
