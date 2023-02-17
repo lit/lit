@@ -1,24 +1,21 @@
 {
   "name": "@lit-labs/router",
   "version": "0.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A router for Lit.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/router"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "type": "module",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
-  "typings": "index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
@@ -36,6 +33,16 @@
       "default": "./routes.js"
     }
   },
+  "scripts": {
+    "build": "wireit",
+    "build:rollup": "wireit",
+    "build:ts": "wireit",
+    "build:ts:types": "wireit",
+    "checksize": "wireit",
+    "test": "wireit",
+    "test:dev": "wireit",
+    "test:prod": "wireit"
+  },
   "files": [
     "/development/",
     "!/development/test/",
@@ -43,15 +50,18 @@
     "/router.{d.ts,d.ts.map,js,js.map}",
     "/routes.{d.ts,d.ts.map,js,js.map}"
   ],
-  "scripts": {
-    "build": "wireit",
-    "build:rollup": "wireit",
-    "build:ts": "wireit",
-    "build:ts:types": "wireit",
-    "test": "wireit",
-    "test:dev": "wireit",
-    "test:prod": "wireit",
-    "checksize": "wireit"
+  "dependencies": {
+    "lit": "^2.1.0"
+  },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.2.0",
+    "@types/trusted-types": "^2.0.2",
+    "urlpattern-polyfill": "^5.0.5"
+  },
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
   },
   "wireit": {
     "test": {
@@ -155,15 +165,5 @@
       ],
       "output": []
     }
-  },
-  "author": "Google LLC",
-  "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.2.0",
-    "@types/trusted-types": "^2.0.2",
-    "urlpattern-polyfill": "^5.0.5"
-  },
-  "dependencies": {
-    "lit": "^2.1.0"
   }
 }

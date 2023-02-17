@@ -1,21 +1,21 @@
 {
   "name": "@lit-labs/scoped-registry-mixin",
   "version": "1.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A mixin for using speculative \"scoped CustomElementRegistry\" with LitElement.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/scoped-registry-mixin"
   },
-  "type": "module",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "scoped-registry-mixin.js",
   "module": "scoped-registry-mixin.js",
-  "typings": "scoped-registry-mixin.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./development/scoped-registry-mixin.d.ts",
@@ -23,21 +23,34 @@
       "default": "./scoped-registry-mixin.js"
     }
   },
+  "scripts": {
+    "build": "wireit",
+    "build:rollup": "wireit",
+    "build:ts": "wireit",
+    "build:ts:types": "wireit",
+    "checksize": "wireit",
+    "start": "wireit",
+    "test": "wireit",
+    "test:dev": "wireit",
+    "test:prod": "wireit"
+  },
   "files": [
     "/development/",
     "!/development/test/",
     "/scoped-registry-mixin.{d.ts,d.ts.map,js,js.map}"
   ],
-  "scripts": {
-    "start": "wireit",
-    "build": "wireit",
-    "build:ts": "wireit",
-    "build:ts:types": "wireit",
-    "build:rollup": "wireit",
-    "test": "wireit",
-    "test:dev": "wireit",
-    "test:prod": "wireit",
-    "checksize": "wireit"
+  "dependencies": {
+    "@lit/reactive-element": "^1.0.0",
+    "lit": "^2.0.0"
+  },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@types/trusted-types": "^2.0.2",
+    "@webcomponents/scoped-custom-element-registry": "^0.0.5"
+  },
+  "typings": "scoped-registry-mixin.d.ts",
+  "directories": {
+    "test": "test"
   },
   "wireit": {
     "start": {
@@ -142,18 +155,5 @@
       "files": [],
       "output": []
     }
-  },
-  "author": "Google LLC",
-  "dependencies": {
-    "@lit/reactive-element": "^1.0.0",
-    "lit": "^2.0.0"
-  },
-  "devDependencies": {
-    "@types/trusted-types": "^2.0.2",
-    "@webcomponents/scoped-custom-element-registry": "^0.0.5",
-    "@lit-internal/scripts": "^1.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

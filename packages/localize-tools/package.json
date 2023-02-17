@@ -6,27 +6,58 @@
   },
   "description": "Localization tooling for lit-html",
   "license": "BSD-3-Clause",
-  "author": "Google LLC",
-  "homepage": "https://github.com/lit/lit/tree/main/packages/localize-tools",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/localize-tools"
   },
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/localize-tools",
+  "main": "lit-localize.js",
   "bin": {
     "lit-localize": "bin/lit-localize.js"
   },
-  "main": "lit-localize.js",
   "type": "module",
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
     "generate-json-schema": "wireit",
     "test": "wireit",
+    "test:check-tsc": "wireit",
     "test:unit": "wireit",
     "test:unit:ssr": "wireit",
-    "test:update-goldens": "wireit",
-    "test:check-tsc": "wireit"
+    "test:update-goldens": "wireit"
+  },
+  "files": [
+    "/config.schema.json",
+    "/lib/",
+    "!/lib/.tsbuildinfo",
+    "!/lib/tests/",
+    "/src/",
+    "!/src/tests/"
+  ],
+  "dependencies": {
+    "@lit/localize": "^0.11.0",
+    "@xmldom/xmldom": "^0.8.2",
+    "fast-glob": "^3.2.7",
+    "fs-extra": "^10.0.0",
+    "jsonschema": "^1.4.0",
+    "lit": "^2.6.0",
+    "minimist": "^1.2.5",
+    "parse5": "^6.0.1",
+    "source-map-support": "^0.5.19",
+    "typescript": "~4.7.4"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "0.0.0",
+    "@lit-labs/ssr": "^3.0.0",
+    "@lit/ts-transformers": "^1.1.0",
+    "@types/fs-extra": "^9.0.1",
+    "@types/minimist": "^1.2.0",
+    "@types/parse5": "^6.0.1",
+    "@types/prettier": "^2.0.1",
+    "rimraf": "^3.0.2",
+    "typescript-json-schema": "^0.54.0"
   },
   "wireit": {
     "build": {
@@ -120,36 +151,5 @@
       "files": [],
       "output": []
     }
-  },
-  "files": [
-    "/src/",
-    "!/src/tests/",
-    "/lib/",
-    "!/lib/tests/",
-    "!/lib/.tsbuildinfo",
-    "/config.schema.json"
-  ],
-  "dependencies": {
-    "@lit/localize": "^0.11.0",
-    "@xmldom/xmldom": "^0.8.2",
-    "fast-glob": "^3.2.7",
-    "fs-extra": "^10.0.0",
-    "jsonschema": "^1.4.0",
-    "lit": "^2.6.0",
-    "minimist": "^1.2.5",
-    "parse5": "^6.0.1",
-    "source-map-support": "^0.5.19",
-    "typescript": "~4.7.4"
-  },
-  "devDependencies": {
-    "@lit-labs/ssr": "^3.0.0",
-    "@lit/ts-transformers": "^1.1.0",
-    "@types/fs-extra": "^9.0.1",
-    "@types/minimist": "^1.2.0",
-    "@types/parse5": "^6.0.1",
-    "@types/prettier": "^2.0.1",
-    "rimraf": "^3.0.2",
-    "@lit-internal/tests": "0.0.0",
-    "typescript-json-schema": "^0.54.0"
   }
 }

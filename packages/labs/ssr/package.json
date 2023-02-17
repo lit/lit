@@ -1,24 +1,72 @@
 {
   "name": "@lit-labs/ssr",
-  "type": "module",
   "version": "3.0.1",
   "publishConfig": {
     "access": "public"
   },
   "description": "SSR for Lit",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/ssr"
+  },
+  "author": "Google LLC",
   "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=13.9.0"
+  },
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
-    "demo:vm-modules": "wireit",
     "demo:global": "wireit",
+    "demo:vm-modules": "wireit",
     "test": "wireit",
     "test:integration": "wireit",
     "test:integration:shimmed:dev": "wireit",
-    "test:integration:unshimmed:dev": "wireit",
     "test:integration:shimmed:prod": "wireit",
+    "test:integration:unshimmed:dev": "wireit",
     "test:integration:unshimmed:prod": "wireit",
     "test:unit": "wireit"
+  },
+  "files": [
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lib/"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr-client": "^1.0.0",
+    "@lit-labs/ssr-dom-shim": "^1.0.0",
+    "@lit/reactive-element": "^1.6.0",
+    "@parse5/tools": "^0.1.0",
+    "@types/node": "^16.0.0",
+    "enhanced-resolve": "^5.10.0",
+    "lit": "^2.6.0",
+    "lit-element": "^3.1.0",
+    "lit-html": "^2.6.0",
+    "node-fetch": "^3.2.8",
+    "parse5": "^7.1.1"
+  },
+  "devDependencies": {
+    "@koa/router": "^12.0.0",
+    "@open-wc/testing": "^3.0.0-next.1",
+    "@open-wc/testing-karma": "^4.0.9",
+    "@types/command-line-args": "^5.0.0",
+    "@types/koa": "^2.0.49",
+    "@types/koa-cors": "*",
+    "@types/koa-mount": "^4.0.2",
+    "@types/koa-static": "^4.0.1",
+    "@types/koa__router": "^8.0.2",
+    "@types/parse5": "^6.0.1",
+    "@types/resolve": "^1.20.2",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "command-line-args": "^5.1.1",
+    "deepmerge": "^4.2.2",
+    "koa": "^2.7.0",
+    "koa-cors": "^0.0.16",
+    "koa-mount": "^4.0.0",
+    "koa-node-resolve": "^1.0.0-pre.5",
+    "koa-static": "^5.0.0"
   },
   "wireit": {
     "build": {
@@ -167,53 +215,5 @@
       ],
       "output": []
     }
-  },
-  "files": [
-    "/lib/",
-    "/index.{d.ts,d.ts.map,js,js.map}"
-  ],
-  "author": "Google LLC",
-  "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/ssr"
-  },
-  "devDependencies": {
-    "@koa/router": "^12.0.0",
-    "@open-wc/testing": "^3.0.0-next.1",
-    "@open-wc/testing-karma": "^4.0.9",
-    "@types/command-line-args": "^5.0.0",
-    "@types/koa": "^2.0.49",
-    "@types/koa__router": "^8.0.2",
-    "@types/koa-cors": "*",
-    "@types/koa-mount": "^4.0.2",
-    "@types/koa-static": "^4.0.1",
-    "@types/parse5": "^6.0.1",
-    "@types/resolve": "^1.20.2",
-    "@webcomponents/template-shadowroot": "^0.1.0",
-    "command-line-args": "^5.1.1",
-    "deepmerge": "^4.2.2",
-    "koa": "^2.7.0",
-    "koa-cors": "^0.0.16",
-    "koa-mount": "^4.0.0",
-    "koa-node-resolve": "^1.0.0-pre.5",
-    "koa-static": "^5.0.0"
-  },
-  "dependencies": {
-    "@lit-labs/ssr-client": "^1.0.0",
-    "@lit-labs/ssr-dom-shim": "^1.0.0",
-    "@lit/reactive-element": "^1.6.0",
-    "@parse5/tools": "^0.1.0",
-    "@types/node": "^16.0.0",
-    "enhanced-resolve": "^5.10.0",
-    "lit": "^2.6.0",
-    "lit-element": "^3.1.0",
-    "lit-html": "^2.6.0",
-    "node-fetch": "^3.2.8",
-    "parse5": "^7.1.1"
-  },
-  "engines": {
-    "node": ">=13.9.0"
   }
 }

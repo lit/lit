@@ -1,19 +1,40 @@
 {
   "name": "@lit-labs/gen-utils",
-  "description": "Utilities for lit code generators",
   "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
-  "author": "Google LLC",
+  "description": "Utilities for lit code generators",
   "license": "BSD-3-Clause",
-  "bugs": "https://github.com/lit/lit/issues",
-  "type": "module",
-  "main": "index.js",
   "repository": "lit/lit",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit",
+  "bugs": "https://github.com/lit/lit/issues",
+  "main": "index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.8.0"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit"
+  },
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "generator",
+    "cli"
+  ],
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.5.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.0"
   },
   "wireit": {
     "build": {
@@ -44,26 +65,5 @@
       "files": [],
       "output": []
     }
-  },
-  "dependencies": {
-    "@lit-labs/analyzer": "^0.5.0"
-  },
-  "devDependencies": {
-    "@lit-internal/tests": "^0.0.0"
-  },
-  "engines": {
-    "node": ">=14.8.0"
-  },
-  "files": [
-    "lib"
-  ],
-  "homepage": "https://github.com/lit/lit",
-  "keywords": [
-    "lit",
-    "lit-html",
-    "lit-element",
-    "LitElement",
-    "generator",
-    "cli"
-  ]
+  }
 }

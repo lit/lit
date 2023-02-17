@@ -6,19 +6,31 @@
   },
   "description": "Localization client library for lit-html",
   "license": "BSD-3-Clause",
-  "author": "Google LLC",
-  "homepage": "https://github.com/Lit/Lit/tree/main/packages/localize",
   "repository": {
     "type": "git",
     "url": "https://github.com/Lit/Lit.git",
     "directory": "packages/localize"
   },
+  "author": "Google LLC",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/localize",
   "main": "lit-localize.js",
   "type": "module",
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
     "test": "wireit"
+  },
+  "files": [
+    "/init/",
+    "/internal/",
+    "/lit-localize.d.ts",
+    "/lit-localize.d.ts.map",
+    "/lit-localize.js",
+    "/lit-localize.js.map"
+  ],
+  "dependencies": {
+    "@lit/reactive-element": "^1.4.0",
+    "lit": "^2.3.0"
   },
   "wireit": {
     "build": {
@@ -63,17 +75,5 @@
       ],
       "output": []
     }
-  },
-  "files": [
-    "/lit-localize.d.ts",
-    "/lit-localize.d.ts.map",
-    "/lit-localize.js",
-    "/lit-localize.js.map",
-    "/internal/",
-    "/init/"
-  ],
-  "dependencies": {
-    "@lit/reactive-element": "^1.4.0",
-    "lit": "^2.3.0"
   }
 }

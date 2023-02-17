@@ -1,17 +1,17 @@
 {
-  "private": true,
   "name": "@lit-internal/test-element-a",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "build": "wireit",
     "pack": "wireit"
   },
   "files": [
+    "/detail-type.{js,js.map,d.ts,d.ts.map}",
     "/element-a.{js,js.map,d.ts,d.ts.map}",
     "/element-events.{js,js.map,d.ts,d.ts.map}",
     "/element-props.{js,js.map,d.ts,d.ts.map}",
     "/element-slots.{js,js.map,d.ts,d.ts.map}",
-    "/detail-type.{js,js.map,d.ts,d.ts.map}",
     "/package-stuff.{js,js.map,d.ts,d.ts.map}",
     "/special-event.{js,js.map,d.ts,d.ts.map}"
   ],

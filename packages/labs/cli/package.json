@@ -1,25 +1,57 @@
 {
   "name": "@lit-labs/cli",
-  "description": "Tooling for Lit development",
   "version": "0.3.0",
   "publishConfig": {
     "access": "public"
   },
-  "author": "Google LLC",
+  "description": "Tooling for Lit development",
   "license": "BSD-3-Clause",
+  "repository": "lit/lit",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit",
+  "bugs": "https://github.com/lit/lit/issues",
+  "main": "lib/index.js",
   "bin": {
     "lit": "./bin/lit.js"
   },
-  "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
-  "main": "lib/index.js",
-  "repository": "lit/lit",
+  "exports": "./index.js",
+  "engines": {
+    "node": ">=14.8.0"
+  },
   "scripts": {
     "build": "wireit",
+    "build:deps": "wireit",
     "test": "wireit",
-    "test:compile": "wireit",
     "test:actual": "wireit",
-    "build:deps": "wireit"
+    "test:compile": "wireit"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "npm-shrinkwrap.json"
+  ],
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement"
+  ],
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.5.0",
+    "@lit-labs/gen-utils": "^0.2.0",
+    "@lit/localize-tools": "^0.6.1",
+    "chalk": "^5.0.1",
+    "command-line-args": "^5.2.1",
+    "command-line-commands": "^3.0.2",
+    "command-line-usage": "^6.1.1",
+    "tslib": "^2.0.3"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.0",
+    "@types/command-line-args": "^5.2.0",
+    "@types/command-line-commands": "^2.0.1",
+    "@types/command-line-usage": "^5.0.2"
   },
   "wireit": {
     "build": {
@@ -77,37 +109,5 @@
       "files": [],
       "output": []
     }
-  },
-  "dependencies": {
-    "@lit-labs/analyzer": "^0.5.0",
-    "@lit-labs/gen-utils": "^0.2.0",
-    "@lit/localize-tools": "^0.6.1",
-    "chalk": "^5.0.1",
-    "command-line-args": "^5.2.1",
-    "command-line-commands": "^3.0.2",
-    "command-line-usage": "^6.1.1",
-    "tslib": "^2.0.3"
-  },
-  "devDependencies": {
-    "@lit-internal/tests": "^0.0.0",
-    "@types/command-line-args": "^5.2.0",
-    "@types/command-line-commands": "^2.0.1",
-    "@types/command-line-usage": "^5.0.2"
-  },
-  "engines": {
-    "node": ">=14.8.0"
-  },
-  "files": [
-    "bin",
-    "lib",
-    "npm-shrinkwrap.json"
-  ],
-  "exports": "./index.js",
-  "homepage": "https://github.com/lit/lit",
-  "keywords": [
-    "lit",
-    "lit-html",
-    "lit-element",
-    "LitElement"
-  ]
+  }
 }

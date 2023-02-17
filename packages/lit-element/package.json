@@ -15,7 +15,6 @@
   "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
-  "types": "index.d.ts",
   "type": "module",
   "exports": {
     ".": {
@@ -104,8 +103,35 @@
     "prepublishOnly": "npm run check-version",
     "test": "wireit",
     "test:dev": "wireit",
-    "test:prod": "wireit",
-    "test:node": "wireit"
+    "test:node": "wireit",
+    "test:prod": "wireit"
+  },
+  "files": [
+    "/decorators.{d.ts,d.ts.map,js,js.map}",
+    "/decorators/",
+    "/development/",
+    "!/development/test/",
+    "/experimental-hydrate-support.{d.ts,d.ts.map,js,js.map}",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lit-element.{d.ts,d.ts.map,js,js.map}",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit/reactive-element": "^1.3.0",
+    "lit-html": "^2.2.0"
+  },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.2.0",
+    "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/template": "^1.4.4",
+    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "tslib": "^2.0.3"
+  },
+  "types": "index.d.ts",
+  "directories": {
+    "test": "test"
   },
   "wireit": {
     "build": {
@@ -242,31 +268,5 @@
       "files": [],
       "output": []
     }
-  },
-  "files": [
-    "/decorators.{d.ts,d.ts.map,js,js.map}",
-    "/experimental-hydrate-support.{d.ts,d.ts.map,js,js.map}",
-    "/index.{d.ts,d.ts.map,js,js.map}",
-    "/lit-element.{d.ts,d.ts.map,js,js.map}",
-    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
-    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
-    "/decorators/",
-    "/development/",
-    "!/development/test/"
-  ],
-  "dependencies": {
-    "@lit/reactive-element": "^1.3.0",
-    "lit-html": "^2.2.0"
-  },
-  "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.2.0",
-    "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "tslib": "^2.0.3"
-  },
-  "directories": {
-    "test": "test"
   }
 }

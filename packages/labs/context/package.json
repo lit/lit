@@ -1,21 +1,21 @@
 {
   "name": "@lit-labs/context",
   "version": "0.2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/context"
   },
-  "type": "module",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
-  "typings": "index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
@@ -23,23 +23,36 @@
       "default": "./index.js"
     }
   },
-  "files": [
-    "/src/",
-    "!/src/test/",
-    "/lib/",
-    "/development/",
-    "!/development/test/",
-    "/index.{d.ts,d.ts.map,js,js.map}"
-  ],
   "scripts": {
     "build": "wireit",
+    "build:rollup": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
-    "build:rollup": "wireit",
+    "checksize": "wireit",
     "test": "wireit",
     "test:dev": "wireit",
-    "test:prod": "wireit",
-    "checksize": "wireit"
+    "test:prod": "wireit"
+  },
+  "files": [
+    "/development/",
+    "!/development/test/",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lib/",
+    "/src/",
+    "!/src/test/"
+  ],
+  "dependencies": {
+    "@lit/reactive-element": "^1.5.0",
+    "lit": "^2.5.0"
+  },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.2.0",
+    "@types/trusted-types": "^2.0.2"
+  },
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
   },
   "wireit": {
     "build": {
@@ -140,18 +153,5 @@
       "files": [],
       "output": []
     }
-  },
-  "author": "Google LLC",
-  "dependencies": {
-    "@lit/reactive-element": "^1.5.0",
-    "lit": "^2.5.0"
-  },
-  "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.2.0",
-    "@types/trusted-types": "^2.0.2"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

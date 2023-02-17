@@ -1,40 +1,49 @@
 {
   "name": "@lit-labs/eleventy-plugin-lit",
   "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Eleventy plugin for rendering Lit components.",
-  "author": "Google LLC",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/eleventy-plugin-lit"
   },
-  "publishConfig": {
-    "access": "public"
-  },
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
-  "types": "index.d.ts",
   "exports": {
     ".": {
       "default": "./index.js"
     }
   },
-  "files": [
-    "/index.{d.ts,d.ts.map,js,js.map}",
-    "/worker/worker.{d.ts,d.ts.map,js,js.map}",
-    "/worker/package.json"
-  ],
   "engines": {
     "node": ">=12.16.0"
   },
   "scripts": {
     "build": "wireit",
-    "build:ts": "wireit",
     "build:demo": "wireit",
+    "build:ts": "wireit",
     "serve:demo": "wireit",
     "test": "wireit"
   },
+  "files": [
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/worker/package.json",
+    "/worker/worker.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr": "^3.0.0",
+    "lit": "^2.6.0"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^1.0.0",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "rimraf": "^3.0.2"
+  },
+  "types": "index.d.ts",
   "wireit": {
     "build": {
       "dependencies": [
@@ -88,14 +97,5 @@
       "files": [],
       "output": []
     }
-  },
-  "dependencies": {
-    "@lit-labs/ssr": "^3.0.0",
-    "lit": "^2.6.0"
-  },
-  "devDependencies": {
-    "@11ty/eleventy": "^1.0.0",
-    "@webcomponents/template-shadowroot": "^0.1.0",
-    "rimraf": "^3.0.2"
   }
 }

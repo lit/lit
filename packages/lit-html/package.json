@@ -277,34 +277,49 @@
   },
   "scripts": {
     "build": "wireit",
+    "build:rollup": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
-    "build:rollup": "wireit",
     "build:version-stability-test": "wireit",
     "check-version": "wireit",
     "checksize": "wireit",
     "prepublishOnly": "npm run check-version",
     "test": "wireit",
     "test:dev": "wireit",
-    "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit"
+    "test:node-dev": "wireit",
+    "test:prod": "wireit"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
-    "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
-    "/directive.{d.ts,d.ts.map,js,js.map}",
-    "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
-    "/lit-html.{d.ts,d.ts.map,js,js.map}",
-    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
-    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
-    "/static.{d.ts,d.ts.map,js,js.map}",
-    "/is-server.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
+    "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
+    "/directive.{d.ts,d.ts.map,js,js.map}",
     "/directives/",
-    "/node/"
+    "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
+    "/is-server.{d.ts,d.ts.map,js,js.map}",
+    "/lit-html.{d.ts,d.ts.map,js,js.map}",
+    "/node/",
+    "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
+    "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
+    "/static.{d.ts,d.ts.map,js,js.map}"
   ],
+  "dependencies": {
+    "@types/trusted-types": "^2.0.2"
+  },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.2.0",
+    "@types/web-ie11": "^0.0.0",
+    "@webcomponents/shadycss": "^1.8.0",
+    "@webcomponents/template": "^1.4.4",
+    "@webcomponents/webcomponentsjs": "^2.6.0"
+  },
+  "typings": "lit-html.d.ts",
+  "directories": {
+    "test": "test"
+  },
   "wireit": {
     "build": {
       "dependencies": [
@@ -464,20 +479,5 @@
       "files": [],
       "output": []
     }
-  },
-  "dependencies": {
-    "@types/trusted-types": "^2.0.2"
-  },
-  "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.2.0",
-    "@types/web-ie11": "^0.0.0",
-    "@webcomponents/shadycss": "^1.8.0",
-    "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0"
-  },
-  "typings": "lit-html.d.ts",
-  "directories": {
-    "test": "test"
   }
 }

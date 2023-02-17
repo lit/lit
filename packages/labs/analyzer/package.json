@@ -6,18 +6,30 @@
   },
   "description": "A static analyzer for Lit",
   "license": "BSD-3-Clause",
-  "author": "Google LLC",
-  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/analyzer",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/analyzer"
   },
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/analyzer",
   "main": "index.js",
   "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit"
+  },
+  "files": [
+    "/lib/",
+    "!/lib/.tsbuildinfo",
+    "index.*"
+  ],
+  "dependencies": {
+    "package-json-type": "^1.0.3",
+    "typescript": "~4.7.4"
   },
   "wireit": {
     "build": {
@@ -46,17 +58,5 @@
       ],
       "output": []
     }
-  },
-  "files": [
-    "index.*",
-    "/lib/",
-    "!/lib/.tsbuildinfo"
-  ],
-  "exports": {
-    ".": "./index.js"
-  },
-  "dependencies": {
-    "package-json-type": "^1.0.3",
-    "typescript": "~4.7.4"
   }
 }

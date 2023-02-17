@@ -1,25 +1,25 @@
 {
   "name": "@lit-internal/test-element-a-ng",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch"
-  },
-  "version": "1.0.0",
-  "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.0"
-  },
-  "peerDependencies": {
-    "@angular/common": "^13.3.0",
-    "@angular/core": "^13.3.0"
-  },
-  "devDependencies": {
-    "typescript": "~4.7.4"
   },
   "files": [
     "element-a.js",
     "element-events.js",
     "element-props.js",
     "element-slots.js"
-  ]
+  ],
+  "peerDependencies": {
+    "@angular/common": "^13.3.0",
+    "@angular/core": "^13.3.0"
+  },
+  "dependencies": {
+    "@lit-internal/test-element-a": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~4.7.4"
+  }
 }

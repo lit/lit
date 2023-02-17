@@ -1,22 +1,41 @@
 {
   "name": "@lit-labs/cli-localize",
-  "description": "Implements the `lit localize` command. Use from @lit-labs/cli",
   "version": "0.1.0",
   "publishConfig": {
     "access": "public"
   },
-  "author": "Google LLC",
+  "description": "Implements the `lit localize` command. Use from @lit-labs/cli",
   "license": "BSD-3-Clause",
-  "bugs": "https://github.com/lit/lit/issues",
-  "type": "module",
-  "main": "lib/index.js",
   "repository": "lit/lit",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit",
+  "bugs": "https://github.com/lit/lit/issues",
+  "main": "lib/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.8.0"
+  },
   "scripts": {
     "build": "wireit",
-    "test": "wireit",
-    "test:compile": "wireit",
+    "build:compile": "wireit",
     "build:deps": "wireit",
-    "build:compile": "wireit"
+    "test": "wireit",
+    "test:compile": "wireit"
+  },
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "lit",
+    "localization",
+    "localize",
+    "lit-cli"
+  ],
+  "dependencies": {
+    "@lit/localize-tools": "^0.6.3"
+  },
+  "devDependencies": {
+    "typescript": "~4.6.2"
   },
   "wireit": {
     "build": {
@@ -60,24 +79,5 @@
       ],
       "output": []
     }
-  },
-  "dependencies": {
-    "@lit/localize-tools": "^0.6.3"
-  },
-  "devDependencies": {
-    "typescript": "~4.6.2"
-  },
-  "engines": {
-    "node": ">=14.8.0"
-  },
-  "files": [
-    "lib"
-  ],
-  "homepage": "https://github.com/lit/lit",
-  "keywords": [
-    "lit",
-    "localization",
-    "localize",
-    "lit-cli"
-  ]
+  }
 }

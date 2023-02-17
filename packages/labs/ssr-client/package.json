@@ -1,21 +1,21 @@
 {
   "name": "@lit-labs/ssr-client",
   "version": "1.0.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/ssr-client"
   },
-  "type": "module",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
-  "typings": "index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "exports": {
     ".": {
       "development": "./development/index.js",
@@ -26,18 +26,30 @@
       "default": "./directives/render-light.js"
     }
   },
+  "scripts": {
+    "build": "wireit",
+    "build:rollup": "wireit",
+    "build:ts": "wireit",
+    "build:ts:types": "wireit",
+    "checksize": "wireit"
+  },
   "files": [
     "/development/",
     "!/development/test/",
     "/directives/",
     "/index.{d.ts,d.ts.map,js,js.map}"
   ],
-  "scripts": {
-    "build": "wireit",
-    "build:ts": "wireit",
-    "build:ts:types": "wireit",
-    "build:rollup": "wireit",
-    "checksize": "wireit"
+  "dependencies": {
+    "@lit/reactive-element": "^1.0.0",
+    "lit": "^2.0.0",
+    "lit-html": "^2.0.0"
+  },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0"
+  },
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
   },
   "wireit": {
     "build": {
@@ -100,17 +112,5 @@
       ],
       "output": []
     }
-  },
-  "author": "Google LLC",
-  "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0"
-  },
-  "dependencies": {
-    "lit": "^2.0.0",
-    "lit-html": "^2.0.0",
-    "@lit/reactive-element": "^1.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

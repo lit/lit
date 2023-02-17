@@ -2,8 +2,8 @@
   "name": "@lit-labs/virtualizer",
   "version": "1.0.1",
   "description": "Viewport-based virtualization (virtual scrolling) for Lit",
-  "author": "Google LLC",
   "license": "BSD-3-Clause",
+  "author": "Google LLC",
   "main": "lit-virtualizer.js",
   "module": "lit-virtualizer.js",
   "type": "module",
@@ -47,9 +47,30 @@
     "build:copy-polyfill": "wireit",
     "build:ts": "wireit",
     "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
+    "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots",
     "test": "wireit",
-    "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
-    "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
+    "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js"
+  },
+  "files": [
+    "/events.{js,d.ts,d.ts.map,js.map}",
+    "/layouts/*.{d.ts,d.ts.map,js,js.map}",
+    "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
+    "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
+    "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/ScrollerController.{d.ts,d.ts.map,js,js.map}",
+    "/virtualize.{d.ts,d.ts.map,js,js.map}",
+    "/Virtualizer.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "lit": "^2.5.0",
+    "tslib": "^2.0.3"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^3.1.6",
+    "@web/dev-server-esbuild": "^0.3.0",
+    "tachometer": "^0.7.0"
   },
   "wireit": {
     "build": {
@@ -108,26 +129,5 @@
       ],
       "output": []
     }
-  },
-  "files": [
-    "/layouts/*.{d.ts,d.ts.map,js,js.map}",
-    "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
-    "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
-    "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
-    "/events.{js,d.ts,d.ts.map,js.map}",
-    "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
-    "/virtualize.{d.ts,d.ts.map,js,js.map}",
-    "/Virtualizer.{d.ts,d.ts.map,js,js.map}",
-    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}",
-    "/ScrollerController.{d.ts,d.ts.map,js,js.map}"
-  ],
-  "devDependencies": {
-    "@open-wc/testing": "^3.1.6",
-    "@web/dev-server-esbuild": "^0.3.0",
-    "tachometer": "^0.7.0"
-  },
-  "dependencies": {
-    "lit": "^2.5.0",
-    "tslib": "^2.0.3"
   }
 }

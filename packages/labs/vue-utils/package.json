@@ -6,17 +6,16 @@
   },
   "description": "Utilities for generating a Vue component wrapper for a LitElement.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/vue-utils"
   },
-  "type": "module",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
-  "typings": "index.d.ts",
-  "directories": {},
+  "type": "module",
   "exports": {
     ".": {
       "development": "./development/index.js",
@@ -27,18 +26,27 @@
       "default": "./wrapper-utils.js"
     }
   },
+  "scripts": {
+    "build": "wireit",
+    "build:rollup": "wireit",
+    "build:ts": "wireit",
+    "build:ts:types": "wireit",
+    "checksize": "wireit"
+  },
   "files": [
     "/development/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/wrapper-utils.{d.ts,d.ts.map,js,js.map}"
   ],
-  "scripts": {
-    "build": "wireit",
-    "build:ts": "wireit",
-    "build:ts:types": "wireit",
-    "build:rollup": "wireit",
-    "checksize": "wireit"
+  "dependencies": {
+    "vue": "^3.2.25"
   },
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@types/trusted-types": "^2.0.2"
+  },
+  "typings": "index.d.ts",
+  "directories": {},
   "wireit": {
     "build": {
       "dependencies": [
@@ -99,13 +107,5 @@
       ],
       "output": []
     }
-  },
-  "author": "Google LLC",
-  "dependencies": {
-    "vue": "^3.2.25"
-  },
-  "devDependencies": {
-    "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0"
   }
 }

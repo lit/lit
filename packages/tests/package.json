@@ -8,9 +8,9 @@
     "test": "wireit"
   },
   "devDependencies": {
-    "@types/prettier": "^2.0.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
+    "@types/prettier": "^2.0.1",
     "@webcomponents/webcomponentsjs": "^2.6.0",
     "diff": "^5.0.0",
     "dir-compare": "^4.0.0",

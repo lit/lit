@@ -1,21 +1,21 @@
 {
   "name": "@lit-labs/react",
   "version": "1.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
-  "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
     "directory": "packages/labs/react"
   },
-  "type": "module",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
   "main": "index.js",
   "module": "index.js",
-  "typings": "index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "type": "module",
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
@@ -28,22 +28,35 @@
       "default": "./use-controller.js"
     }
   },
+  "scripts": {
+    "build": "wireit",
+    "build:rollup": "wireit",
+    "build:ts": "wireit",
+    "build:ts:types": "wireit",
+    "checksize": "wireit",
+    "test": "wireit",
+    "test:dev": "wireit",
+    "test:prod": "wireit"
+  },
   "files": [
+    "/create-component.{d.ts,d.ts.map,js,js.map}",
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/create-component.{d.ts,d.ts.map,js,js.map}",
     "/use-controller.{d.ts,d.ts.map,js,js.map}"
   ],
-  "scripts": {
-    "build": "wireit",
-    "build:ts": "wireit",
-    "build:ts:types": "wireit",
-    "build:rollup": "wireit",
-    "test": "wireit",
-    "test:dev": "wireit",
-    "test:prod": "wireit",
-    "checksize": "wireit"
+  "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit/reactive-element": "^1.5.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/trusted-types": "^2.0.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "typings": "index.d.ts",
+  "directories": {
+    "test": "test"
   },
   "wireit": {
     "build": {
@@ -144,18 +157,5 @@
       "files": [],
       "output": []
     }
-  },
-  "author": "Google LLC",
-  "devDependencies": {
-    "@lit/reactive-element": "^1.5.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

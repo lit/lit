@@ -34,6 +34,15 @@
     "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
+  "dependencies": {
+    "@lit/reactive-element": "^1.1.0",
+    "lit-element": "^3.1.0",
+    "lit-html": "^2.1.0",
+    "tachometer": "^0.7.0"
+  },
+  "devDependencies": {
+    "chromedriver": "^109"
+  },
   "wireit": {
     "build": {
       "command": "tsc --build --pretty",
@@ -60,14 +69,5 @@
         "../reactive-element:build"
       ]
     }
-  },
-  "dependencies": {
-    "@lit/reactive-element": "^1.1.0",
-    "lit-element": "^3.1.0",
-    "lit-html": "^2.1.0",
-    "tachometer": "^0.7.0"
-  },
-  "devDependencies": {
-    "chromedriver": "^109"
   }
 }

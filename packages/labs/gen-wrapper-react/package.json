@@ -1,21 +1,44 @@
 {
   "name": "@lit-labs/gen-wrapper-react",
-  "description": "Code generator for React wrapper for Lit components",
   "version": "0.2.2",
   "publishConfig": {
     "access": "public"
   },
-  "author": "Google LLC",
+  "description": "Code generator for React wrapper for Lit components",
   "license": "BSD-3-Clause",
-  "bugs": "https://github.com/lit/lit/issues",
-  "type": "module",
-  "main": "lib/index.js",
   "repository": "lit/lit",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit",
+  "bugs": "https://github.com/lit/lit/issues",
+  "main": "lib/index.js",
+  "type": "module",
+  "engines": {
+    "node": ">=14.8.0"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
     "test:gen": "wireit",
     "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "generator",
+    "cli",
+    "react"
+  ],
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.5.0",
+    "@lit-labs/gen-utils": "^0.2.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.0"
   },
   "wireit": {
     "build": {
@@ -58,28 +81,5 @@
         "./test-output:test"
       ]
     }
-  },
-  "dependencies": {
-    "@lit-labs/analyzer": "^0.5.0",
-    "@lit-labs/gen-utils": "^0.2.0"
-  },
-  "devDependencies": {
-    "@lit-internal/tests": "^0.0.0"
-  },
-  "engines": {
-    "node": ">=14.8.0"
-  },
-  "files": [
-    "index.js"
-  ],
-  "homepage": "https://github.com/lit/lit",
-  "keywords": [
-    "lit",
-    "lit-html",
-    "lit-element",
-    "LitElement",
-    "generator",
-    "cli",
-    "react"
-  ]
+  }
 }
