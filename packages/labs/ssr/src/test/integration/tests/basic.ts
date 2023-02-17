@@ -5185,4 +5185,41 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-defer'],
     };
   },
+
+  'LitElement: ElementInternals': () => {
+    return {
+      registerElements() {
+        class LEInternals extends LitElement {
+          constructor() {
+            super();
+            const internals = this.attachInternals() as ElementInternals & {
+              role: string;
+            };
+            internals.role = 'widget';
+          }
+        }
+        customElements.define('le-internals', LEInternals);
+      },
+      render() {
+        return html`<le-internals></le-internals>`;
+      },
+      serverRenderOptions: {
+        deferHydration: true,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-internals') as LitElement;
+            assert.equal(el.getAttribute('role'), 'widget');
+          },
+          html: {
+            root: `<le-internals role="widget"></le-internals>`,
+            'le-internals': ``,
+          },
+        },
+      ],
+      stableSelectors: ['le-internals'],
+    };
+  },
 };

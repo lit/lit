@@ -3,6 +3,7 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
+import {InternalsShim} from './InternalsShim.js';
 
 const attributes: WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -16,74 +17,6 @@ const attributesForElement = (
     attributes.set(element, (attrs = new Map()));
   }
   return attrs;
-};
-
-// Shim the global element internals object
-// Methods should be fine as noops and properties can generally
-// be while on the server.
-const InternalsShim = class ElementInternals {
-  ariaAtomic = '';
-  ariaAutoComplete = '';
-  ariaBusy = '';
-  ariaChecked = '';
-  ariaColCount = '';
-  ariaColIndex = '';
-  ariaColIndexText = '';
-  ariaColSpan = '';
-  ariaCurrent = '';
-  ariaDisabled = '';
-  ariaExpanded = '';
-  ariaHasPopup = '';
-  ariaHidden = '';
-  ariaInvalid = '';
-  ariaKeyShortcuts = '';
-  ariaLabel = '';
-  ariaLevel = '';
-  ariaLive = '';
-  ariaModal = '';
-  ariaMultiLine = '';
-  ariaMultiSelectable = '';
-  ariaOrientation = '';
-  ariaPlaceholder = '';
-  ariaPosInSet = '';
-  ariaPressed = '';
-  ariaReadOnly = '';
-  ariaRelevant = '';
-  ariaRequired = '';
-  ariaRoleDescription = '';
-  ariaRowCount = '';
-  ariaRowIndex = '';
-  ariaRowIndexText = '';
-  ariaRowSpan = '';
-  ariaSelected = '';
-  ariaSetSize = '';
-  ariaSort = '';
-  ariaValueMax = '';
-  ariaValueMin = '';
-  ariaValueNow = '';
-  ariaValueText = '';
-  role = '';
-  private _host: {shadowRoot: ShadowRoot | null};
-  get shadowRoot() {
-    return this._host.shadowRoot;
-  }
-  constructor(_host: {shadowRoot: ShadowRoot | null}) {
-    this._host = _host;
-  }
-  checkValidity() {
-    return true;
-  }
-  form = null;
-  labels = [] as unknown as NodeListOf<HTMLLabelElement>;
-  reportValidity() {
-    return true;
-  }
-  setFormValue(): void {}
-  setValidity(): void {}
-  states = new Set();
-  validationMessage = '';
-  validity = {} as globalThis.ValidityState;
-  willValidate = true;
 };
 
 // The typings around the exports below are a little funky:
@@ -108,7 +41,7 @@ const ElementShim = class Element {
   get shadowRoot() {
     return this.__shadowRoot;
   }
-  setAttribute(name: string, value: unknown) {
+  setAttribute(name: string, value: unknown): void {
     // Emulate browser behavior that silently casts all values to string. E.g.
     // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
     attributesForElement(this).set(name, String(value));
