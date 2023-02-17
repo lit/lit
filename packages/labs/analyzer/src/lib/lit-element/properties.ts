@@ -37,7 +37,9 @@ export const getProperties = (
       analyzer.addDiagnostic(
         createDiagnostic({
           node: prop,
-          message: 'Unsupported property name',
+          message:
+            '@lit-labs/analyzer only supports properties named with plain ' +
+            'identifiers. This property was ignored.',
           category: ts.DiagnosticCategory.Warning,
         })
       );
