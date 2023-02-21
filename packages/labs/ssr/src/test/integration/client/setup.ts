@@ -174,7 +174,7 @@ const modes = ['vm', 'vm-shimmed', 'global', 'global-shimmed'] as const;
 export const setupTest = async (
   tests: SSRTestSuite,
   testFile: string,
-  mode: typeof modes[number] = 'vm'
+  mode: (typeof modes)[number] = 'vm'
 ) => {
   suite(`${testFile}: ${mode}`, () => {
     let container: HTMLElement;

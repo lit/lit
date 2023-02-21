@@ -391,7 +391,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         }
         if (node.attrs.length > 0) {
           const attrInfo = [] as Array<
-            [boolean, boolean, typeof node.attrs[0]]
+            [boolean, boolean, (typeof node.attrs)[0]]
           >;
           for (const attr of node.attrs) {
             const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
