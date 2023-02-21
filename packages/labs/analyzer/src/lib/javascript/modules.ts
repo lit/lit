@@ -97,7 +97,7 @@ export const getModule = (
   }
 
   const dependencies = new Set<AbsolutePath>();
-  const declarationMap: DeclarationMap = new Map<string, Declaration>();
+  const declarationMap: DeclarationMap = new Map<string, () => Declaration>();
   const exportMap: ExportMap = new Map<string, LocalNameOrReference>();
   const reexports: ts.Expression[] = [];
   const addDeclaration = (info: DeclarationInfo) => {
@@ -118,6 +118,7 @@ export const getModule = (
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
       addDeclaration(getClassDeclarationInfo(statement, analyzer));
+      // Ignore function overloads by checking for `statement.body`.
     } else if (ts.isFunctionDeclaration(statement) && statement.body) {
       addDeclaration(getFunctionDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
