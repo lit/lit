@@ -3,29 +3,23 @@
  * Copyright 2023 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-export interface InternalsHost {
-  hasAttribute(name: string): boolean;
-  shadowRoot: ShadowRoot | null;
-  setAttribute(key: string, value: unknown): void;
-}
 
 /**
- * @TODO
- * - This can be typed better with keyof ARIAMixin, but TypeScript's definition
- * doesn't match what exists in the browsers
+ * TODO
+ * - Potentially remove the keys that don't formally exist in AriaMixin, waiting for review consensus
  */
-export const ariaMixinEnum: Record<string, string> = {
+export const ariaMixinEnum: Record<keyof ARIAMixin, string> = {
   ariaAtomic: 'aria-atomic',
   ariaAutoComplete: 'aria-autocomplete',
-  ariaBraileLabel: 'aria-brailelabel',
-  ariaBraileDescription: 'aria-brailedescription',
+  // ariaBraileLabel: 'aria-brailelabel',
+  // ariaBraileDescription: 'aria-brailedescription',
   ariaBusy: 'aria-busy',
   ariaChecked: 'aria-checked',
   ariaColCount: 'aria-colcount',
   ariaColIndex: 'aria-colindex',
   ariaColSpan: 'aria-colspan',
   ariaCurrent: 'aria-current',
-  ariaDescription: 'aria-description',
+  // ariaDescription: 'aria-description',
   ariaDisabled: 'aria-disabled',
   ariaExpanded: 'aria-expanded',
   ariaHasPopup: 'aria-haspopup',
@@ -58,8 +52,17 @@ export const ariaMixinEnum: Record<string, string> = {
   role: 'role',
 };
 
-/** Force the attributes onto the reference element based on internals properties */
-export const initAom = (ref: InternalsHost, internals: ElementInternals) => {
+/**
+ * Reflect internals AOM attributes back to the DOM prior to hydration
+ * to ensure search bots can accurately parse element semantics prior
+ * to hydration. This is called whenever an instance of ElementInternals
+ * is created on an element to wire up the getters/setters
+ * for the AriaMixin properties
+ *
+ * TODO - Determine the proper way to hydrate any attributes set by the shim
+ * and remove these when the element is fully rendered
+ */
+export const initAom = (ref: HTMLElement, internals: ElementInternals) => {
   for (const _key of Object.keys(ariaMixinEnum)) {
     const key = _key as keyof ARIAMixin;
     internals[key] = null;
@@ -129,12 +132,16 @@ export const InternalsShim = class ElementInternals {
   ariaValueNow = '';
   ariaValueText = '';
   role = '';
-  _host: InternalsHost;
+  __host: HTMLElement;
   get shadowRoot() {
-    return this._host.shadowRoot;
+    // Grab the shadow root instance from the Element shim
+    // to ensure that the shadow root is always available
+    // to the internals instance even if the mode is 'closed'
+    return (this.__host as HTMLElement & {__shadowRoot: ShadowRoot})
+      .__shadowRoot;
   }
-  constructor(_host: InternalsHost) {
-    this._host = _host;
+  constructor(_host: HTMLElement) {
+    this.__host = _host;
 
     initAom(_host, this);
   }

@@ -3,7 +3,7 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {InternalsShim} from './InternalsShim.js';
+import {InternalsShim} from './element-internals.js';
 
 const attributes: WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -37,8 +37,14 @@ const ElementShim = class Element {
       value,
     }));
   }
-  private __shadowRoot: null | ShadowRoot = null;
+  private __shadowRootMode: null | ShadowRootMode = null;
+  protected __shadowRoot: null | ShadowRoot = null;
+  protected __internals: null | ElementInternals = null;
+
   get shadowRoot() {
+    if (this.__shadowRootMode === 'closed') {
+      return null;
+    }
     return this.__shadowRoot;
   }
   setAttribute(name: string, value: unknown): void {
@@ -54,13 +60,15 @@ const ElementShim = class Element {
   }
   attachShadow(init: ShadowRootInit): ShadowRoot {
     const shadowRoot = {host: this} as object as ShadowRoot;
+    this.__shadowRootMode = init.mode;
     if (init && init.mode === 'open') {
       this.__shadowRoot = shadowRoot;
     }
     return shadowRoot;
   }
   attachInternals(): ElementInternals {
-    const internals = new InternalsShim(this);
+    const internals = new InternalsShim(this as unknown as HTMLElement);
+    this.__internals = internals;
     return internals as ElementInternals;
   }
   getAttribute(name: string) {
