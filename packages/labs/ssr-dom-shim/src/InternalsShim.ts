@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 export interface InternalsHost {
+  hasAttribute(name: string): boolean;
   shadowRoot: ShadowRoot | null;
   setAttribute(key: string, value: unknown): void;
 }
@@ -71,7 +72,11 @@ export const initAom = (ref: InternalsHost, internals: ElementInternals) => {
       },
       set(value) {
         closureValue = value;
-        if (value) {
+        /**
+         * The internals semantics will favor any attribute already set
+         * on the host element over the internals property
+         */
+        if (value && !ref.hasAttribute(attributeName)) {
           ref.setAttribute(attributeName, value);
         }
       },
