@@ -82,14 +82,15 @@ export const getModule = (
   analyzer: AnalyzerInterface,
   packageInfo: PackageInfo = getPackageInfo(modulePath, analyzer)
 ) => {
-  const diagnosticContext = analyzer.pushDiagnosticContext();
-
   // Return cached module if we've parsed this sourceFile already and its
   // dependencies haven't changed
   const cachedModule = getAndValidateModuleFromCache(modulePath, analyzer);
   if (cachedModule !== undefined) {
     return cachedModule;
   }
+
+  const diagnosticContext = analyzer.pushDiagnosticContext();
+
   const sourceFile = analyzer.program.getSourceFile(
     analyzer.path.normalize(modulePath)
   );
