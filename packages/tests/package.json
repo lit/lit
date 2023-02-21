@@ -48,7 +48,12 @@
         "../reactive-element:build"
       ],
       "files": [],
-      "output": []
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      }
     }
   }
 }
