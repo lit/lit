@@ -54,6 +54,8 @@ export * from 'lit-html';
 import {LitUnstable} from 'lit-html';
 import {ReactiveUnstable} from '@lit/reactive-element';
 
+typeof window === 'undefined' || (window['globalThis'] = window); // fix for iOS 11
+
 /**
  * Contains types that are part of the unstable debug API.
  *
