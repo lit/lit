@@ -89,8 +89,6 @@ export const getModule = (
     return cachedModule;
   }
 
-  const diagnosticContext = analyzer.pushDiagnosticContext();
-
   const sourceFile = analyzer.program.getSourceFile(
     analyzer.path.normalize(modulePath)
   );
@@ -162,9 +160,6 @@ export const getModule = (
   const moduleInfo = getModuleInfo(modulePath, analyzer, packageInfo);
   const moduleJSDocInfo = parseModuleJSDocInfo(sourceFile);
 
-  analyzer.popDiagnosticContext(diagnosticContext);
-  const diagnostics = Array.from(diagnosticContext.all);
-
   // Construct module and save in cache
   const module = new Module({
     ...moduleInfo,
@@ -174,7 +169,6 @@ export const getModule = (
     exportMap,
     finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
     ...moduleJSDocInfo,
-    diagnostics,
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,

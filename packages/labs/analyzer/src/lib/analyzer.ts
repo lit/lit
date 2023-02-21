@@ -7,7 +7,6 @@
 import ts from 'typescript';
 import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
 import {AbsolutePath} from './paths.js';
-import {DiagnosticCollector} from './diagnostic-collector.js';
 import {getModule} from './javascript/modules.js';
 export {PackageJson};
 import {
@@ -34,7 +33,7 @@ export class Analyzer implements AnalyzerInterface {
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
-  private diagnosticCollector: DiagnosticCollector | undefined = undefined;
+  private diagnostics: Array<ts.Diagnostic> = [];
 
   constructor(init: AnalyzerInit) {
     this._getProgram = init.getProgram;
@@ -55,8 +54,6 @@ export class Analyzer implements AnalyzerInterface {
   }
 
   getPackage() {
-    const diagnosticContext = this.pushDiagnosticContext();
-
     const rootFileNames = this.program.getRootFileNames();
 
     // Find the package.json for this package based on the first root filename
@@ -78,29 +75,13 @@ export class Analyzer implements AnalyzerInterface {
       ),
     });
 
-    this.popDiagnosticContext(diagnosticContext);
-    logDiagnostics(Array.from(diagnosticContext.all));
+    logDiagnostics(this.diagnostics);
 
     return pkg;
   }
 
   addDiagnostic(diagnostic: ts.Diagnostic) {
-    this.diagnosticCollector?.add(diagnostic);
-  }
-
-  pushDiagnosticContext() {
-    const context = new DiagnosticCollector(this.diagnosticCollector);
-    this.diagnosticCollector = context;
-    return context;
-  }
-
-  popDiagnosticContext(context: DiagnosticCollector) {
-    if (context !== this.diagnosticCollector) {
-      throw new Error(
-        'Only the diagnostic context at the top of the stack can be popped.'
-      );
-    }
-    this.diagnosticCollector = this.diagnosticCollector.parent;
+    this.diagnostics.push(diagnostic);
   }
 }
 
