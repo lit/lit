@@ -40,7 +40,7 @@ export const TemplateResultType = {
 } as const;
 
 export type TemplateResultType =
-  typeof TemplateResultType[keyof typeof TemplateResultType];
+  (typeof TemplateResultType)[keyof typeof TemplateResultType];
 
 /**
  * Tests if a value is a TemplateResult.
