@@ -45,8 +45,8 @@ export const getProperties = (
       );
       continue;
     }
-
     const name = prop.name.text;
+
     const propertyDecorator = getPropertyDecorator(prop);
     if (propertyDecorator !== undefined) {
       // Decorated property; get property options from the decorator and add

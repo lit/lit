@@ -88,7 +88,6 @@ export const getModule = (
   if (cachedModule !== undefined) {
     return cachedModule;
   }
-
   const sourceFile = analyzer.program.getSourceFile(
     analyzer.path.normalize(modulePath)
   );
@@ -157,19 +156,15 @@ export const getModule = (
       );
     }
   }
-
-  const moduleInfo = getModuleInfo(modulePath, analyzer, packageInfo);
-  const moduleJSDocInfo = parseModuleJSDocInfo(sourceFile);
-
   // Construct module and save in cache
   const module = new Module({
-    ...moduleInfo,
+    ...getModuleInfo(modulePath, analyzer, packageInfo),
     sourceFile,
     declarationMap,
     dependencies,
     exportMap,
     finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
-    ...moduleJSDocInfo,
+    ...parseModuleJSDocInfo(sourceFile),
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
