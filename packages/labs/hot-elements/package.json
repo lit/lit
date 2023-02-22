@@ -33,7 +33,8 @@
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
-    "demo": "wireit"
+    "demo": "wireit",
+    "vite-demo": "wireit"
   },
   "wireit": {
     "build": {
@@ -75,6 +76,12 @@
         "../../lit:build"
       ],
       "command": "wds"
+    },
+    "vite-demo": {
+      "dependencies": [
+        "../../lit:build"
+      ],
+      "command": "vite"
     }
   },
   "author": "Google LLC",
@@ -86,7 +93,8 @@
     "@lit-internal/scripts": "^1.0.0",
     "@web/dev-server": "^0.1.35",
     "@web/dev-server-esbuild": "^0.3.3",
-    "@web/dev-server-hmr": "^0.1.10"
+    "@web/dev-server-hmr": "^0.1.10",
+    "vite": "^4.1.1"
   },
   "publishConfig": {
     "access": "public"

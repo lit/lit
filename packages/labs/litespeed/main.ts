@@ -3,6 +3,7 @@ import type * as wds from '@web/dev-server';
 import type * as wdsCore from '@web/dev-server-core';
 import * as path from 'path';
 import {createRequire} from 'module';
+import WebSocket from 'ws';
 
 export function activate(context: vscode.ExtensionContext) {
   const command = 'google.litespeed.startWebDevServer';
@@ -91,16 +92,84 @@ export function activate(context: vscode.ExtensionContext) {
     config.plugins ??= [];
     config.plugins.unshift(new MyPlugin());
     config.port = 54792;
-    await wdsLib.startDevServer({
-      config,
-      readCliArgs: false,
-      readFileConfig: false,
-    });
+    // await wdsLib.startDevServer({
+    //   config,
+    //   readCliArgs: false,
+    //   readFileConfig: false,
+    // });
 
     // console.log(`Hello ${name}!!!`);
+
+    const fileTracker = new InMemoryFileTracker();
+    disposables.push(fileTracker);
+
+    const wsClient = new WebSocket('ws://localhost:5173/', 'vite-hmr');
+    fileTracker.onFileChanged((filename) => {
+      wsClient.send(JSON.stringify({type: 'litespeed-file-changed', filename}));
+    });
+    fileTracker.onFileClosed((filename) => {
+      wsClient.send(JSON.stringify({type: 'litespeed-file-closed', filename}));
+    });
+    wsClient.on('open', () => {
+      wsClient.send(JSON.stringify({type: 'litespeed-connected'}));
+      vscode.window.showInformationMessage(`Connected`);
+    });
+    wsClient.on('error', (error) => {
+      vscode.window.showInformationMessage(`Error: ${error}`);
+    });
+
+    vscode.window.showInformationMessage(`Initialized`);
   };
 
   context.subscriptions.push(
     vscode.commands.registerCommand(command, commandHandler)
   );
+}
+
+type Callback = (filename: string) => void;
+class InMemoryFileTracker implements vscode.Disposable {
+  private readonly openFiles = new Map<string, vscode.TextDocument>();
+  private readonly disposables: vscode.Disposable[] = [];
+  private readonly changedCallbacks = new Set<Callback>();
+  private readonly closedCallbacks = new Set<Callback>();
+  constructor() {
+    this.disposables.push(
+      vscode.workspace.onDidChangeTextDocument(({document}) => {
+        this.openFiles.set(document.fileName, document);
+        for (const callback of this.changedCallbacks) {
+          callback(document.fileName);
+        }
+      })
+    );
+    this.disposables.push(
+      vscode.workspace.onDidCloseTextDocument((document) => {
+        this.openFiles.delete(document.fileName);
+        for (const callback of this.closedCallbacks) {
+          callback(document.fileName);
+        }
+      })
+    );
+    this.disposables.push(
+      vscode.workspace.onDidSaveTextDocument((document) => {
+        this.openFiles.delete(document.fileName, document);
+        for (const callback of this.closedCallbacks) {
+          callback(document.fileName);
+        }
+      })
+    );
+  }
+
+  onFileChanged(callback: Callback) {
+    this.changedCallbacks.add(callback);
+  }
+
+  onFileClosed(callback: Callback) {
+    this.closedCallbacks.add(callback);
+  }
+
+  dispose() {
+    for (const disposable of this.disposables) {
+      disposable.dispose();
+    }
+  }
 }
