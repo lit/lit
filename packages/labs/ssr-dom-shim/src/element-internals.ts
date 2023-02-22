@@ -6,20 +6,22 @@
 
 /**
  * TODO
- * - Potentially remove the keys that don't formally exist in AriaMixin, waiting for review consensus
+ * - This type could be better inferred as Record<keyof ARIAMixin, string>;
+ *   however, modern browsers and TypeScript seem to lack a common
+ *   definition of the keys listed in ARIAMixin
  */
-export const ariaMixinEnum: Record<keyof ARIAMixin, string> = {
+export const ariaMixinEnum: Record<string, string> = {
   ariaAtomic: 'aria-atomic',
   ariaAutoComplete: 'aria-autocomplete',
-  // ariaBraileLabel: 'aria-brailelabel',
-  // ariaBraileDescription: 'aria-brailedescription',
+  ariaBraileLabel: 'aria-brailelabel',
+  ariaBraileDescription: 'aria-brailedescription',
   ariaBusy: 'aria-busy',
   ariaChecked: 'aria-checked',
   ariaColCount: 'aria-colcount',
   ariaColIndex: 'aria-colindex',
   ariaColSpan: 'aria-colspan',
   ariaCurrent: 'aria-current',
-  // ariaDescription: 'aria-description',
+  ariaDescription: 'aria-description',
   ariaDisabled: 'aria-disabled',
   ariaExpanded: 'aria-expanded',
   ariaHasPopup: 'aria-haspopup',
@@ -90,7 +92,7 @@ export const initAom = (ref: HTMLElement, internals: ElementInternals) => {
 // Shim the global element internals object
 // Methods should be fine as noops and properties can generally
 // be while on the server.
-export const InternalsShim = class ElementInternals {
+export const InternalsShim = class ElementInternals implements ARIAMixin {
   ariaAtomic = '';
   ariaAutoComplete = '';
   ariaBraileLabel = '';
