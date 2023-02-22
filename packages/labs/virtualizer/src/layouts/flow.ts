@@ -9,9 +9,8 @@ import {BaseLayout} from './shared/BaseLayout.js';
 import {
   Positions,
   LogicalSize,
-  Margins,
   offsetAxis,
-  ChildMeasurements,
+  ChildLayoutInfo,
   BaseLayoutConfig,
   LayoutHostSink,
 } from './shared/Layout.js';
@@ -50,16 +49,15 @@ function collapseMargins(a: number, b: number): number {
 class MetricsCache {
   private _childSizeCache = new SizeCache();
   private _marginSizeCache = new SizeCache();
-  private _metricsCache: Map<number, LogicalSize & Margins> = new Map();
+  private _metricsCache: ChildLayoutInfo = new Map();
 
-  update(metrics: {[key: number]: LogicalSize & Margins}) {
+  update(metrics: ChildLayoutInfo) {
     const marginsToUpdate: Set<number> = new Set();
-    Object.keys(metrics).forEach((key) => {
-      const k = Number(key);
-      this._metricsCache.set(k, metrics[k]);
-      this._childSizeCache.set(k, metrics[k].blockSize);
-      marginsToUpdate.add(k);
-      marginsToUpdate.add(k + 1);
+    metrics.forEach((childMetrics, key) => {
+      this._metricsCache.set(key, childMetrics);
+      this._childSizeCache.set(key, childMetrics.blockSize);
+      marginsToUpdate.add(key);
+      marginsToUpdate.add(key + 1);
     });
     for (const k of marginsToUpdate) {
       const a = this._metricsCache.get(k)?.marginBlockStart || 0;
@@ -147,8 +145,6 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _stable = true;
 
-  private _measureChildren = true;
-
   _estimate = true;
 
   // protected _defaultConfig: BaseLayoutConfig = Object.assign({}, super._defaultConfig, {
@@ -159,16 +155,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   //   super(config);
   // }
 
-  get measureChildren() {
-    return this._measureChildren;
-  }
-
   /**
    * Determine the average size of all children represented in the sizes
    * argument.
    */
-  updateItemSizes(sizes: ChildMeasurements) {
-    this._metricsCache.update(sizes as LogicalSize & Margins);
+  updateItemSizes(childLayoutInfo: ChildLayoutInfo) {
+    this._metricsCache.update(childLayoutInfo);
     // if (this._nMeasured) {
     // this._updateItemSize();
     this._scheduleReflow();

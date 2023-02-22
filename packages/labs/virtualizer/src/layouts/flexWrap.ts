@@ -11,11 +11,11 @@ import {
   GapSpec,
 } from './shared/SizeGapPaddingBaseLayout.js';
 import {
-  ChildMeasurements,
-  ItemBox,
+  ChildLayoutInfo,
+  ElementLayoutInfo,
   LayoutHostSink,
   LogicalSize,
-  MeasureChildFunction,
+  EditElementLayoutInfoFunction,
   Positions,
 } from './shared/Layout.js';
 
@@ -98,34 +98,44 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   /**
    * TODO graynorton@ Don't hard-code Flickr - probably need a config option
    */
-  measureChildren: MeasureChildFunction = (e: Element, i: unknown) => {
-    const {naturalWidth, naturalHeight} = e as HTMLImageElement;
-    let width = -1;
-    let height = -1;
+  editElementLayoutInfo: EditElementLayoutInfoFunction = (
+    element: Element,
+    item: unknown,
+    baselineInfo: ElementLayoutInfo
+  ) => {
+    const {writingMode} = this;
+    const {naturalWidth, naturalHeight} = element as HTMLImageElement;
     if (naturalWidth !== undefined && naturalHeight != undefined) {
-      width = naturalWidth;
-      height = naturalHeight;
+      return augmentBaselineInfo(naturalWidth, naturalHeight);
     } else {
-      const {o_width, o_height} = i as FlickrImageData;
+      const {o_width, o_height} = item as FlickrImageData;
       if (o_width !== undefined && o_height !== undefined) {
-        width = o_width;
-        height = o_height;
+        return augmentBaselineInfo(o_width, o_height);
+      } else {
+        return baselineInfo;
       }
     }
-    if (this.writingMode[0] === 'h') {
-      return {inlineSize: width, blockSize: height};
-    } else {
-      return {inlineSize: height, blockSize: width};
+
+    function augmentBaselineInfo(width: number, height: number) {
+      return writingMode[0] === 'h'
+        ? Object.assign(baselineInfo, {
+            inlineSize: width,
+            blockSize: height,
+          })
+        : Object.assign(baselineInfo, {
+            inlineSize: height,
+            blockSize: width,
+          });
     }
   };
 
-  updateItemSizes(sizes: ChildMeasurements) {
+  updateItemSizes(sizes: ChildLayoutInfo) {
     let dirty;
     Object.keys(sizes).forEach((key) => {
       const n = Number(key);
       const chunk = this._getChunk(n);
-      const dims = sizes[n];
-      const prevDims: ItemBox = this._itemSizes[n];
+      const dims = sizes.get(n)!;
+      const prevDims: LogicalSize = this._itemSizes[n];
       if (dims.inlineSize && dims.blockSize) {
         if (
           !prevDims ||
@@ -134,8 +144,8 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
         ) {
           chunk._dirty = true;
           dirty = true;
-          this._itemSizes[n] = sizes[n];
-          this._recordAspectRatio(sizes[n]);
+          this._itemSizes[n] = dims;
+          this._recordAspectRatio(dims);
         }
       }
     });
@@ -160,7 +170,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
     );
   }
 
-  _recordAspectRatio(dims: ItemBox) {
+  _recordAspectRatio(dims: ElementLayoutInfo) {
     if (dims.inlineSize && dims.blockSize) {
       const bucket = Math.round((dims.inlineSize / dims.blockSize) * 10) / 10;
       if (this._aspectRatios[bucket]) {

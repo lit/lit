@@ -20,6 +20,7 @@ import {
   direction,
   fixedPositionDimension,
   fixedSizeDimension,
+  ChildLayoutInfo,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -395,11 +396,27 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     });
   }
 
+  protected _getAdjustedItemPosition(idx: number) {
+    const pos = this._getItemPosition(idx);
+    if (this.direction === 'rtl') {
+      // if (true/*this.writingMode[0] === 'h'*/) {
+      const size = this._getItemSize(idx);
+      pos.insetInlineStart =
+        this._viewDim2 - pos.insetInlineStart - size.inlineSize;
+      // }
+      // else {
+      // pos.insetBlockStart = this._virtualizerSize - pos.insetBlockStart;
+      // }
+    }
+    return pos;
+  }
+
   protected _sendStateChangedMessage() {
     const childPositions: ChildPositions = new Map();
     if (this._first !== -1 && this._last !== -1) {
       for (let idx = this._first; idx <= this._last; idx++) {
-        childPositions.set(idx, this._getItemPosition(idx));
+        const pos = this._getAdjustedItemPosition(idx);
+        childPositions.set(idx, pos);
       }
     }
 
@@ -501,6 +518,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
         this._sendVisibilityChangedMessage();
       }
     }
+  }
+
+  public updateItemSizes(_sizes: ChildLayoutInfo) {
+    this._scheduleReflow();
   }
 }
 

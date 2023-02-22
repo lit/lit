@@ -5,17 +5,17 @@
  */
 
 import {
-  ItemBox,
+  ElementLayoutInfo,
   Margins,
   LayoutConfigValue,
   ChildPositions,
-  ChildMeasurements,
+  ChildLayoutInfo,
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
   StateChangedMessage,
   InternalRange,
-  MeasureChildFunction,
+  EditElementLayoutInfoFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
   LayoutHostMessage,
@@ -127,7 +127,7 @@ export class Virtualizer {
   private _childrenPos: ChildPositions | null = null;
 
   // TODO: (graynorton): type
-  private _childMeasurements: ChildMeasurements | null = null;
+  private _childLayoutInfo: ChildLayoutInfo | null = null;
 
   private _rangeChanged = false;
 
@@ -208,7 +208,7 @@ export class Virtualizer {
 
   private _writingMode: writingMode = 'unknown';
   // private _contextWritingMode: writingMode = 'unknown';
-  private _derivedDirection: direction = 'unknown';
+  private _direction: direction = 'unknown';
 
   protected _scheduled = new WeakSet();
 
@@ -217,10 +217,9 @@ export class Virtualizer {
    * measured, and their dimensions passed to this callback. Use it to layout
    * children as needed.
    */
-  protected _measureCallback: ((sizes: ChildMeasurements) => void) | null =
-    null;
+  protected _measureCallback: ((sizes: ChildLayoutInfo) => void) | null = null;
 
-  protected _measureChildOverride: MeasureChildFunction | null = null;
+  protected _editElementLayoutInfo: EditElementLayoutInfoFunction | null = null;
 
   /**
    * State for `layoutComplete` promise
@@ -451,12 +450,9 @@ export class Virtualizer {
       config
     );
 
-    if (
-      this._layout.measureChildren &&
-      typeof this._layout.updateItemSizes === 'function'
-    ) {
-      if (typeof this._layout.measureChildren === 'function') {
-        this._measureChildOverride = this._layout.measureChildren.bind(
+    if (typeof this._layout.updateItemSizes === 'function') {
+      if (this._layout.editElementLayoutInfo) {
+        this._editElementLayoutInfo = this._layout.editElementLayoutInfo.bind(
           this._layout
         );
       }
@@ -497,23 +493,24 @@ export class Virtualizer {
     return null;
   }
 
-  private _measureChildren(): void {
-    const mm: ChildMeasurements = {};
+  private _readLayoutInfo(): void {
+    this._childLayoutInfo = new Map();
     const children = this._children;
-    const fn = this._measureChildOverride || this._measureChild;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      mm[idx] = fn.call(this, child, this._items[idx]);
+      this._childLayoutInfo.set(
+        idx,
+        this._readElementLayoutInfo(child, this._items[idx])
+      );
     }
-    this._childMeasurements = mm;
     this._schedule(this._updateLayout);
   }
 
   /**
    * Returns the width, height, and margins of the given child.
    */
-  _measureChild(element: Element): ItemBox {
+  _readElementLayoutInfo(element: Element, item: unknown): ElementLayoutInfo {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
@@ -523,12 +520,15 @@ export class Virtualizer {
     const writingMode = style.writingMode as writingMode;
     const direction = style.direction as direction;
     const flipAxis = writingMode[0] !== this._writingMode[0];
-    const reverseDirection =
-      deriveDirection(writingMode, direction) !== this._derivedDirection;
-    return Object.assign(
+    const reverseDirection = direction !== this._direction;
+    const baselineInfo = Object.assign(
+      {writingMode, direction},
       {blockSize, inlineSize},
       getMargins(element, flipAxis, reverseDirection)
     );
+    return this._editElementLayoutInfo
+      ? this._editElementLayoutInfo(element, item, baselineInfo)
+      : baselineInfo;
   }
 
   protected async _schedule(method: Function): Promise<void> {
@@ -562,8 +562,8 @@ export class Virtualizer {
   _finishDOMUpdate() {
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._checkScrollIntoViewTarget(this._childrenPos);
-    this._positionChildren(this._childrenPos);
     this._sizeHostElement(this._virtualizerSize);
+    this._positionChildren(this._childrenPos);
     this._correctScrollError();
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
@@ -574,12 +574,12 @@ export class Virtualizer {
     if (this._layout) {
       this._layout!.items = this._items;
       this._updateView();
-      if (this._childMeasurements !== null) {
+      if (this._childLayoutInfo !== null) {
         // If the layout has been changed, we may have measurements but no callback
         if (this._measureCallback) {
-          this._measureCallback(this._childMeasurements);
+          this._measureCallback(this._childLayoutInfo);
         }
-        this._childMeasurements = null;
+        // this._childLayoutInfo = null;
       }
       this._layout!.reflowIfNeeded();
       if (this._benchmarkStart && 'mark' in window.performance) {
@@ -654,10 +654,9 @@ export class Virtualizer {
       const hostStyle = getComputedStyle(hostElement);
       // const contextStyle = getComputedStyle(getParentElement(hostElement)!);
 
-      const direction = hostStyle.direction as direction;
+      this._direction = hostStyle.direction as direction;
       const writingMode = (this._writingMode =
         hostStyle.writingMode as writingMode);
-      this._derivedDirection = deriveDirection(writingMode, direction);
       // const contextWritingMode =
       //   this._contextWritingMode = contextStyle.writingMode as writingMode;
 
@@ -699,6 +698,7 @@ export class Virtualizer {
       const width = Math.max(1, right - left);
 
       layout.writingMode = writingMode;
+      layout.direction = this._direction;
       layout.viewportSize = {
         inlineSize: writingMode === 'horizontal-tb' ? width : height,
         blockSize: writingMode === 'horizontal-tb' ? height : width,
@@ -751,20 +751,9 @@ export class Virtualizer {
    * pos.
    */
   private _positionChildren(pos: ChildPositions | null) {
-    type LayoutParams = {writingMode: writingMode; direction: direction};
-    if (pos) {
-      const hostWidth = this._hostElement!.getBoundingClientRect().width;
-      const childLayoutParams: LayoutParams[] = [];
+    if (pos && pos.size > 0) {
+      // const hostWidth = this._hostElement!.getBoundingClientRect().width;
       const children = this._children;
-      pos.forEach((_, index) => {
-        const child = children[index - this._first];
-        if (child) {
-          const style = getComputedStyle(child);
-          const writingMode = style.writingMode as writingMode;
-          const direction = style.direction as direction;
-          childLayoutParams[index] = {writingMode, direction};
-        }
-      });
       pos.forEach(
         (
           {
@@ -782,41 +771,37 @@ export class Virtualizer {
             child.style.position = 'absolute';
             child.style.boxSizing = 'border-box';
 
-            const {writingMode /*, direction*/} = childLayoutParams[index];
-            // const derivedDirection = deriveDirection(writingMode, direction);
-
-            if (writingMode[0] !== this._writingMode[0]) {
-              const oInlineSize = inlineSize;
-              inlineSize = blockSize;
-              blockSize = oInlineSize;
+            const childLayoutInfo = this._childLayoutInfo?.get(index);
+            if (childLayoutInfo) {
+              if (childLayoutInfo.writingMode[0] !== this._writingMode[0]) {
+                const oInlineSize = inlineSize;
+                inlineSize = blockSize;
+                blockSize = oInlineSize;
+              }
             }
 
             let left, top;
             if (this._writingMode[0] === 'h') {
               top = blockPosition;
-              left =
-                this._derivedDirection === 'ltr'
-                  ? inlinePosition
-                  : hostWidth - inlinePosition;
+              left = inlinePosition;
             } else {
               top = inlinePosition;
-              left =
-                this._derivedDirection === 'ltr'
-                  ? blockPosition
-                  : hostWidth - blockPosition;
+              left = blockPosition;
             }
 
             child.style.transform = `translate(${left}px, ${top}px)`;
+
             if (inlineSize !== undefined) {
               child.style.inlineSize = inlineSize + 'px';
             }
             if (blockSize !== undefined) {
               child.style.blockSize = blockSize + 'px';
             }
+
             (child.style.left as string | null) =
-              xOffset === undefined ? null : xOffset + 'px';
+              xOffset === undefined ? '0' : xOffset + 'px';
             (child.style.top as string | null) =
-              yOffset === undefined ? null : yOffset + 'px';
+              yOffset === undefined ? '0' : yOffset + 'px';
           }
         }
       );
@@ -979,9 +964,9 @@ export class Virtualizer {
   // the virtualizer update cycle.
   private _childrenSizeChanged() {
     // Only measure if the layout requires it
-    if (this._layout?.measureChildren) {
-      this._measureChildren();
-    }
+    // if (this._layout?.measureChildren) {
+    this._readLayoutInfo();
+    // }
     this._scheduleLayoutComplete();
   }
 }
@@ -1063,11 +1048,4 @@ function getClippingAncestors(el: HTMLElement, includeSelf = false) {
   return getElementAncestors(el, includeSelf).filter(
     (a) => getComputedStyle(a).overflow !== 'visible'
   );
-}
-
-function deriveDirection(writingMode: writingMode, direction: direction) {
-  return (writingMode[0] === 'h' && direction === 'rtl') ||
-    writingMode.indexOf('rtl') > 0
-    ? 'rtl'
-    : 'ltr';
 }

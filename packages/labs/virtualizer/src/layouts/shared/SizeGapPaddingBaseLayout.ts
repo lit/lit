@@ -147,9 +147,11 @@ export abstract class SizeGapPaddingBaseLayout<
         blockSize: dims,
       };
     } else if ((dims as FixedPixelDimensions).width !== undefined) {
+      const {width, height} = dims as FixedPixelDimensions;
+      const horizontal = this.writingMode[0] === 'h';
       normalizedDims = {
-        inlineSize: (dims as FixedPixelDimensions).width,
-        blockSize: (dims as FixedPixelDimensions).height,
+        inlineSize: horizontal ? width : height,
+        blockSize: horizontal ? height : width,
       };
     } else {
       normalizedDims = dims as LogicalPixelDimensions;

@@ -43,7 +43,13 @@ export type Margins = {
   [key in margin]: number;
 };
 
-export type ItemBox = LogicalSize | (LogicalSize & Margins);
+export type ItemBox = LogicalSize & Margins;
+export type ElementLayoutInfo = ItemBox & LayoutParams;
+
+export interface LayoutParams {
+  direction: direction;
+  writingMode: writingMode;
+}
 
 export type logicalPositionDimension = 'insetInlineStart' | 'insetBlockStart';
 
@@ -105,9 +111,13 @@ export type LayoutHostSink = (message: LayoutHostMessage) => void;
 
 export type ChildPositions = Map<number, Positions>;
 
-export type ChildMeasurements = {[key: number]: ItemBox};
+export type ChildLayoutInfo = Map<number, ElementLayoutInfo>;
 
-export type MeasureChildFunction = <T>(element: Element, item: T) => ItemBox;
+export type EditElementLayoutInfoFunction = <T>(
+  element: Element,
+  item: T,
+  baseInfo: ElementLayoutInfo
+) => ElementLayoutInfo;
 
 export interface PinOptions {
   index: number;
@@ -156,11 +166,11 @@ export interface Layout {
 
   offsetWithinScroller: FixedPosition;
 
-  readonly measureChildren?: boolean | MeasureChildFunction;
+  readonly editElementLayoutInfo?: EditElementLayoutInfoFunction;
 
   readonly listenForChildLoadEvents?: boolean;
 
-  updateItemSizes?: (sizes: ChildMeasurements) => void;
+  updateItemSizes?: (sizes: ChildLayoutInfo) => void;
 
   pin: PinOptions | null;
 

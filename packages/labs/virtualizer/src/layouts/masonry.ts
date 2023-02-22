@@ -4,11 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LayoutHostSink, Positions, LogicalSize} from './shared/Layout.js';
+import {
+  LayoutHostSink,
+  Positions,
+  LogicalSize,
+  writingMode,
+} from './shared/Layout.js';
 import {GridBaseLayout, GridBaseLayoutConfig} from './shared/GridBaseLayout.js';
 import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
-type GetAspectRatio = (item: unknown) => number;
+type GetAspectRatio = (item: unknown, writingMode?: writingMode) => number;
 
 export interface MasonryLayoutConfig
   extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
@@ -102,7 +107,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     let minRangeMapKey = Infinity;
     let maxRangeMapKey = -Infinity;
     this.items.forEach((item, idx) => {
-      const aspectRatio = this._getAspectRatio!(item as {integer: number});
+      const aspectRatio = this._getAspectRatio!(item, this.writingMode);
       const size1 = itemSize2 / aspectRatio;
       const pos1 = nextPosPerRolumn[nextRolumn];
       const pos2 = positions[nextRolumn];
