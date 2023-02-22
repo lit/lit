@@ -64,7 +64,7 @@ export class Analyzer implements AnalyzerInterface {
     }
     const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
 
-    const pkg = new Package({
+    return new Package({
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
@@ -74,14 +74,14 @@ export class Analyzer implements AnalyzerInterface {
         )
       ),
     });
-
-    logDiagnostics(this.diagnostics);
-
-    return pkg;
   }
 
   addDiagnostic(diagnostic: ts.Diagnostic) {
     this.diagnostics.push(diagnostic);
+  }
+
+  logDiagnostics() {
+    logDiagnostics(this.diagnostics);
   }
 }
 

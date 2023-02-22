@@ -122,6 +122,8 @@ export const run = async (
           await writeFileTree(out, await generator.generate(options, console));
         })
       );
+      // Log any diagnostics collected while running the generators.
+      analyzer.logDiagnostics();
       // `allSettled` will swallow errors, so we need to filter them out of
       // the results and throw a new error up the stack describing all the errors
       // that happened
