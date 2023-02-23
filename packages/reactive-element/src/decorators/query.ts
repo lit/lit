@@ -14,6 +14,8 @@
 import {ReactiveElement} from '../reactive-element.js';
 import {decorateProperty} from './base.js';
 
+const DEV_MODE = true;
+
 /**
  * A property decorator that converts a class property into a getter that
  * executes a querySelector on the element's renderRoot.
@@ -41,7 +43,7 @@ import {decorateProperty} from './base.js';
  */
 export function query(selector: string, cache?: boolean) {
   return decorateProperty({
-    descriptor: (_name: PropertyKey) => {
+    descriptor: (name: PropertyKey) => {
       const descriptor = {
         get(this: ReactiveElement) {
           return this.renderRoot?.querySelector(selector) ?? null;
@@ -50,7 +52,9 @@ export function query(selector: string, cache?: boolean) {
         configurable: true,
       };
       if (cache) {
-        const key = Symbol();
+        const key = DEV_MODE
+          ? Symbol(`${String(name)} (@query() cache)`)
+          : Symbol();
         descriptor.get = function (this: ReactiveElement) {
           if (
             (this as unknown as {[key: symbol]: Element | null})[key] ===
