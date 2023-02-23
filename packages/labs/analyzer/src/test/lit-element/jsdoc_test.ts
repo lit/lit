@@ -7,35 +7,21 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, InMemoryAnalyzer, languages} from '../utils.js';
+import {
+  AnalyzerTestContext,
+  getSourceFilename,
+  InMemoryAnalyzer,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
 
-import {createPackageAnalyzer, Module, AbsolutePath} from '../../index.js';
+import {AbsolutePath} from '../../index.js';
 
 for (const lang of languages) {
-  const test = suite<{
-    getModule: (name: string) => Module;
-  }>(`LitElement event tests (${lang})`);
+  const test = suite<AnalyzerTestContext>(`JSDoc tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/jsdoc`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-      ctx.getModule = (name: string) =>
-        analyzer.getModule(
-          getSourceFilename(
-            analyzer.path.join(packagePath, name),
-            lang
-          ) as AbsolutePath
-        );
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'jsdoc');
   });
 
   // slots
