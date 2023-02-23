@@ -81,6 +81,8 @@ const polyfillSupport = ({LitElement}: {LitElement: PatchableLitElement}) => {
   };
 };
 
+typeof window === 'undefined' || (window['globalThis'] = window); // fix for iOS 11
+
 if (DEV_MODE) {
   globalThis.litElementPolyfillSupportDevMode ??= polyfillSupport;
 } else {
