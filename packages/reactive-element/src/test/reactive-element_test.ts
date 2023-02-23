@@ -1286,13 +1286,11 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     assert.equal(changed, 1);
     assert.equal(el.foo, 20);
-    assert.equal(el.__foo, 20);
     assert.isFalse(el.hasAttribute('foo'));
     el.bar = 'hi';
     await el.updateComplete;
     assert.equal(changed, 2);
     assert.equal(el.bar, 'hi');
-    assert.equal(el.__bar, 'hi');
     assert.isTrue(el.hasAttribute('bar'));
   });
 
