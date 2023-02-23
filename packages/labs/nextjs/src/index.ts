@@ -20,7 +20,7 @@ export = (_pluginOptions: LitSsrPluginOptions = {}) =>
           // Grab entry points for all pages
           // TODO(augustjk) This may not work for the new "app" directory
           // https://github.com/lit/lit/issues/3657
-          test: /\/pages\//,
+          test: /\/pages\/.*\.(?:jsx?|tsx?)$/,
           // Exclude Next's own distributed files as they're commonjs and won't
           // play nice with `imports-loader`
           exclude: /next\/dist\//,
