@@ -1,10 +1,10 @@
 # @lit-labs/ssr-react
 
-A package for integrating Lit SSR with Next.js.
+Integrates Lit SSR with Next.js to enable deep server rendering of Lit components.
 
 ## Overview
 
-Lit components, by default, can be imported and added to Next.js projects but will only be shallowly rendered on the server.
+Lit components can be imported and added to Next.js projects but by default they will only be _shallowly_ rendered on the server. That is, the Lit component's tag and attributes set via JSX will be rendered, but the component's shadow DOM will not be.
 
 This package provides a plugin for Next.js that incorporates tools from [`@lit-labs/ssr-react`](../ssr-react/README.md) into the project for deep server rendering of Lit components.
 
