@@ -38,6 +38,7 @@ export = (_pluginOptions: LitSsrPluginOptions = {}) =>
           // external code for server environments but we specifically want to
           // catch react/jsx-runtime imports for external packages as well.
           // This might change in a future update to Next.js.
+          // https://github.com/vercel/next.js/issues/46396
           // This is what we're grabbing:
           // https://github.com/vercel/next.js/blob/412dfc52cc5e378e4f74e44af698dad25031a938/packages/next/src/build/webpack-config.ts#L1378-L1429
           const nextHandleExternals = config.externals[0];
