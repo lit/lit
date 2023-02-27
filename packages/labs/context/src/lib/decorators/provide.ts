@@ -65,7 +65,7 @@ export function provide<ValueType>({
       const oldSetter = descriptor?.set;
       const newDescriptor = {
         ...descriptor,
-        set: function (value: ValueType) {
+        set: function (this: ReactiveElement, value: ValueType) {
           controllerMap.get(this)?.setValue(value);
           if (oldSetter) {
             oldSetter.call(this, value);
