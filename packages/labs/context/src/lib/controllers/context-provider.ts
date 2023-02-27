@@ -28,9 +28,6 @@ export class ContextProviderEvent<
    */
   public constructor(public readonly context: C) {
     super('context-provider', {bubbles: true, composed: true});
-    // Work around TypeScript compiler bug
-    // https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
-    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
