@@ -46,7 +46,7 @@ export function overloaded(x: number): number;
  */
 export function overloaded(x: string | number): string | number {
   if (typeof x === 'string') {
-    return x + x;
+    return x + 'abc';
   } else {
     return x + 123;
   }

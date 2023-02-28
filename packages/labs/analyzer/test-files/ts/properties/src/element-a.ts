@@ -90,7 +90,7 @@ export class ElementA extends LitElement {
    */
   overloaded(x: string | number): string | number {
     if (typeof x === 'string') {
-      return x + x;
+      return x + 'abc';
     } else {
       return x + 123;
     }

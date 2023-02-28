@@ -44,7 +44,7 @@ export default function () {
  */
 export function overloaded(x) {
   if (typeof x === 'string') {
-    return x + x;
+    return x + 'abc';
   } else {
     return x + 123;
   }
