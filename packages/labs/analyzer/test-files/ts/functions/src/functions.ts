@@ -51,3 +51,48 @@ export function overloaded(x: string | number): string | number {
     return x + 123;
   }
 }
+
+/**
+ * This is not the implementation signature, but there are no docs on the
+ * implementation signature.
+ * @param x This might be a string or a number, even though this signature
+ * only allows strings.
+ * @returns Returns either a string or a number, but this signature only
+ * mentions `string`.
+ */
+export function overloadedWithDocsOnOverloadOnly(x: string): string;
+export function overloadedWithDocsOnOverloadOnly(x: number): number;
+export function overloadedWithDocsOnOverloadOnly(
+  x: string | number
+): string | number {
+  if (typeof x === 'string') {
+    return x + 'abc';
+  } else {
+    return x + 123;
+  }
+}
+
+/**
+ * This is not the implementation signature.
+ * @param x This is definitely a string.
+ * @returns Returns a string for sure.
+ */
+export function overloadedWithDocsOnMany(x: string): string;
+/**
+ * This is not the implementation signature either.
+ * @param x This is a number, whether you like it or not.
+ * @returns Also a number.
+ */
+export function overloadedWithDocsOnMany(x: number): number;
+/**
+ * This is the implementation signature.
+ * @param x Maybe a string, maybe a number.
+ * @returns Returns either a string or a number, depending on the mood.
+ */
+export function overloadedWithDocsOnMany(x: string | number): string | number {
+  if (typeof x === 'string') {
+    return x + 'abc';
+  } else {
+    return x + 123;
+  }
+}
