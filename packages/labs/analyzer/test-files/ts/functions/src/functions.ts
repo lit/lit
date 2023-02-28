@@ -36,3 +36,18 @@ export function function2(a: string, b = false, ...c: number[]) {
 export default function () {
   return 'default';
 }
+
+export function overloaded(x: string): string;
+export function overloaded(x: number): number;
+/**
+ * This function has an overloaded signature in TS.
+ * @param x Some value, either a string or a number.
+ * @returns Returns either a string or a number.
+ */
+export function overloaded(x: string | number): string | number {
+  if (typeof x === 'string') {
+    return x + x;
+  } else {
+    return x + 123;
+  }
+}
