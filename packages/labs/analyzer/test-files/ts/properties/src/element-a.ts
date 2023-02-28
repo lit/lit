@@ -15,6 +15,8 @@ export interface LocalInterface {
   someData: number;
 }
 
+const unsupportedPropertyName = Symbol();
+
 @customElement('element-a')
 export class ElementA extends LitElement {
   static properties = {
@@ -80,4 +82,7 @@ export class ElementA extends LitElement {
 
   @property()
   union: LocalClass | HTMLElement | ImportedClass;
+
+  @property()
+  [unsupportedPropertyName]: string;
 }

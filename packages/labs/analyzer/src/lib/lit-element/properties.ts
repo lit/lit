@@ -42,7 +42,7 @@ export const getProperties = (
             '@lit-labs/analyzer only supports properties named with plain ' +
             'identifiers. This property was ignored.',
           category: ts.DiagnosticCategory.Warning,
-          code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME,
+          code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
         })
       );
       continue;

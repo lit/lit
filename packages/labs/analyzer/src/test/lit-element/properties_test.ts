@@ -9,6 +9,7 @@ import {suite} from 'uvu';
 import * as assert from 'uvu/assert';
 import {fileURLToPath} from 'url';
 import {getSourceFilename, languages} from '../utils.js';
+import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 import {
   createPackageAnalyzer,
@@ -209,6 +210,27 @@ for (const lang of languages) {
     assert.equal(property.type?.references.length, 0);
     assert.equal(property.typeOption, 'Number');
     assert.equal(property.attribute, 'static-prop');
+  });
+
+  test('property with an unsupported name type', ({analyzer, element}) => {
+    const diagnostics = Array.from(analyzer.getDiagnostics());
+    assert.equal(diagnostics.length, 1);
+    assert.equal(
+      diagnostics[0].code,
+      DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE
+    );
+
+    // Fields named with symbols are visible in the `fields` iterator.
+    const field = Array.from(element.fields).find(
+      (x) => x.name === '[unsupportedPropertyName]'
+    );
+    assert.ok(field);
+
+    // Reactive properties named with symbols are not supported.
+    const reactiveProperty = element.reactiveProperties.get(
+      '[unsupportedPropertyName]'
+    );
+    assert.not(reactiveProperty);
   });
 
   test.run();

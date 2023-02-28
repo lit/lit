@@ -13,6 +13,8 @@ export class LocalClass {
   }
 }
 
+const unsupportedPropertyName = Symbol();
+
 export class ElementA extends LitElement {
   static properties = {
     noOptionsString: {},
@@ -34,6 +36,8 @@ export class ElementA extends LitElement {
     union: {},
     staticProp: {attribute: 'static-prop', type: Number},
   };
+
+  [unsupportedPropertyName] = '';
 
   constructor() {
     super();

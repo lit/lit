@@ -80,6 +80,10 @@ export class Analyzer implements AnalyzerInterface {
     this.diagnostics.push(diagnostic);
   }
 
+  *getDiagnostics(): IterableIterator<ts.Diagnostic> {
+    yield* this.diagnostics;
+  }
+
   logDiagnostics() {
     logDiagnostics(this.diagnostics);
   }
