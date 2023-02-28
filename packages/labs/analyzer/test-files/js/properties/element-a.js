@@ -56,5 +56,18 @@ export class ElementA extends LitElement {
     this.globalClass = document.createElement('foo');
     this.staticProp = 42;
   }
+
+  /**
+   * This function has an overloaded signature in TS.
+   * @param {string | number} x Some value, either a string or a number.
+   * @returns {string | number} Returns either a string or a number.
+   */
+  overloaded(x) {
+    if (typeof x === 'string') {
+      return x + x;
+    } else {
+      return x + 123;
+    }
+  }
 }
 customElements.define('element-a', ElementA);
