@@ -5,6 +5,7 @@
  */
 
 import ts from 'typescript';
+import {DiagnosticCode} from './diagnostic-code.js';
 
 const diagnosticsHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName(name: string) {
@@ -22,19 +23,21 @@ interface DiagnosticOptions {
   node: ts.Node;
   message?: string | undefined;
   category?: ts.DiagnosticCategory;
+  code?: DiagnosticCode | undefined;
 }
 
 export const createDiagnostic = ({
   node,
   message,
   category,
+  code,
 }: DiagnosticOptions) => {
   return {
     file: node.getSourceFile(),
     start: node.getStart(),
     length: node.getWidth(),
     category: category ?? ts.DiagnosticCategory.Error,
-    code: 2323,
+    code: code ?? DiagnosticCode.UNKNOWN,
     messageText: message ?? '',
   };
 };
