@@ -55,8 +55,8 @@ export function overloaded(x: string | number): string | number {
 /**
  * This is not the implementation signature, but there are no docs on the
  * implementation signature.
- * @param x This might be a string or a number, even though this signature
- * only allows strings.
+ * @param x This might be a string or a number, even though this signature only
+ * allows strings.
  * @returns Returns either a string or a number, but this signature only
  * mentions `string`.
  */

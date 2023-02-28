@@ -111,5 +111,64 @@ for (const lang of languages) {
     assert.equal(fn.deprecated, undefined);
   });
 
+  test('Overloaded function with docs only on a non-implementation signature', ({
+    module,
+  }) => {
+    const exportedFn = module.getResolvedExport(
+      'overloadedWithDocsOnOverloadOnly'
+    );
+    const fn = module.getDeclaration('overloadedWithDocsOnOverloadOnly');
+    assert.equal(fn, exportedFn);
+    assert.ok(fn?.isFunctionDeclaration());
+    assert.equal(fn.name, `overloadedWithDocsOnOverloadOnly`);
+    assert.equal(
+      fn.description?.replace(/\n/g, ' '),
+      `This is not the implementation signature, but there are no docs on the implementation signature.`
+    );
+    assert.equal(fn.summary, undefined);
+    assert.equal(fn.parameters?.length, 1);
+    assert.equal(fn.parameters?.[0].name, 'x');
+    assert.equal(
+      fn.parameters?.[0].description?.replace(/\n/g, ' '),
+      'This might be a string or a number, even though this signature only allows strings.'
+    );
+    assert.equal(fn.parameters?.[0].summary, undefined);
+    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
+    assert.equal(fn.parameters?.[0].default, undefined);
+    assert.equal(fn.parameters?.[0].rest, false);
+    assert.equal(fn.return?.type?.text, 'string | number');
+    assert.equal(
+      fn.return?.description?.replace(/\n/g, ' '),
+      'Returns either a string or a number, but this signature only mentions `string`.'
+    );
+    assert.equal(fn.deprecated, undefined);
+  });
+
+  test('Overloaded function with docs on many signatures', ({module}) => {
+    const exportedFn = module.getResolvedExport('overloadedWithDocsOnMany');
+    const fn = module.getDeclaration('overloadedWithDocsOnMany');
+    assert.equal(fn, exportedFn);
+    assert.ok(fn?.isFunctionDeclaration());
+    assert.equal(fn.name, `overloadedWithDocsOnMany`);
+    assert.equal(fn.description, `This is the implementation signature.`);
+    assert.equal(fn.summary, undefined);
+    assert.equal(fn.parameters?.length, 1);
+    assert.equal(fn.parameters?.[0].name, 'x');
+    assert.equal(
+      fn.parameters?.[0].description,
+      'Maybe a string, maybe a number.'
+    );
+    assert.equal(fn.parameters?.[0].summary, undefined);
+    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
+    assert.equal(fn.parameters?.[0].default, undefined);
+    assert.equal(fn.parameters?.[0].rest, false);
+    assert.equal(fn.return?.type?.text, 'string | number');
+    assert.equal(
+      fn.return?.description?.replace(/\n/g, ' '),
+      'Returns either a string or a number, depending on the mood.'
+    );
+    assert.equal(fn.deprecated, undefined);
+  });
+
   test.run();
 }
