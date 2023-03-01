@@ -56,7 +56,6 @@ declare global {
     'simple-greeter': SimpleGreeter;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
       'simple-greeter':

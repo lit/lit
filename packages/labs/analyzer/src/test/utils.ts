@@ -7,7 +7,9 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import ts from 'typescript';
-import {AbsolutePath, Analyzer} from '../index.js';
+import {AbsolutePath, Analyzer, Module} from '../index.js';
+import {fileURLToPath} from 'url';
+import {createPackageAnalyzer} from '../index.js';
 
 type Language = 'ts' | 'js';
 
@@ -200,3 +202,58 @@ export class InMemoryAnalyzer extends Analyzer {
     this._dirty = true;
   }
 }
+
+export interface AnalyzerTestContext {
+  analyzer: Analyzer;
+  packagePath: AbsolutePath;
+  getModule: (name: string) => Module;
+}
+
+export const setupAnalyzerForTest = (
+  ctx: AnalyzerTestContext,
+  lang: Language,
+  pkg: string
+) => {
+  try {
+    const packagePath = fileURLToPath(
+      new URL(`../test-files/${lang}/${pkg}`, import.meta.url).href
+    ) as AbsolutePath;
+    const analyzer = createPackageAnalyzer(packagePath);
+    const getModule = (name: string) =>
+      analyzer.getModule(
+        getSourceFilename(
+          analyzer.path.join(packagePath, name),
+          lang
+        ) as AbsolutePath
+      );
+    ctx.packagePath = packagePath;
+    ctx.analyzer = analyzer;
+    ctx.getModule = getModule;
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
+};
+
+export interface AnalyzerModuleTestContext extends AnalyzerTestContext {
+  module: Module;
+}
+
+export const setupAnalyzerForTestWithModule = (
+  ctx: AnalyzerModuleTestContext,
+  lang: Language,
+  pkg: string,
+  module: string
+) => {
+  try {
+    setupAnalyzerForTest(ctx, lang, pkg);
+    ctx.module = ctx.getModule(module);
+  } catch (error) {
+    // Uvu has a bug where it silently ignores failures in before and after,
+    // see https://github.com/lukeed/uvu/issues/191.
+    console.error('uvu before error', error);
+    process.exit(1);
+  }
+};

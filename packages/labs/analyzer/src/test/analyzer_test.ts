@@ -8,28 +8,19 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import * as path from 'path';
-import {fileURLToPath} from 'url';
-import {getOutputFilename, getSourceFilename, languages} from './utils.js';
-
-import {createPackageAnalyzer, Analyzer, AbsolutePath} from '../index.js';
+import {
+  AnalyzerTestContext,
+  getOutputFilename,
+  getSourceFilename,
+  languages,
+  setupAnalyzerForTest,
+} from './utils.js';
 
 for (const lang of languages) {
-  const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
-    `Basic Analyzer tests (${lang})`
-  );
+  const test = suite<AnalyzerTestContext>(`Basic Analyzer tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = (ctx.packagePath = fileURLToPath(
-        new URL(`../test-files/${lang}/basic-elements`, import.meta.url).href
-      ) as AbsolutePath);
-      ctx.analyzer = createPackageAnalyzer(packagePath);
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'basic-elements');
   });
 
   test('Reads project files', ({analyzer, packagePath}) => {
