@@ -191,7 +191,9 @@ for (const lang of languages) {
     assert.equal(property.attribute, 'static-prop');
   });
 
-  test('method with an overloaded signature', ({element}) => {
+  test('method with an overloaded signature and docs on a implementation signature', ({
+    element,
+  }) => {
     const fn = Array.from(element.methods).find((m) => m.name === 'overloaded');
     assert.ok(fn?.isFunctionDeclaration());
     assert.equal(fn.name, `overloaded`);
@@ -214,6 +216,37 @@ for (const lang of languages) {
     assert.equal(
       fn.return?.description,
       'Returns either a string or a number.'
+    );
+    assert.equal(fn.deprecated, undefined);
+  });
+
+  test('method with an overloaded signature and docs only on an overload signature', ({
+    element,
+  }) => {
+    const fn = Array.from(element.methods).find(
+      (m) => m.name === 'overloadedWithDocsOnOverloadOnly'
+    );
+    assert.ok(fn?.isFunctionDeclaration());
+    assert.equal(fn.name, `overloadedWithDocsOnOverloadOnly`);
+    assert.equal(
+      fn.description?.replace(/\n/g, ' '),
+      `This is not the implementation signature, but there are no docs on the implementation signature.`
+    );
+    assert.equal(fn.summary, undefined);
+    assert.equal(fn.parameters?.length, 1);
+    assert.equal(fn.parameters?.[0].name, 'x');
+    assert.equal(
+      fn.parameters?.[0].description?.replace(/\n/g, ' '),
+      'This might be a string or a number, even though this signature only allows strings.'
+    );
+    assert.equal(fn.parameters?.[0].summary, undefined);
+    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
+    assert.equal(fn.parameters?.[0].default, undefined);
+    assert.equal(fn.parameters?.[0].rest, false);
+    assert.equal(fn.return?.type?.text, 'string | number');
+    assert.equal(
+      fn.return?.description?.replace(/\n/g, ' '),
+      'Returns either a string or a number, but this signature only mentions `string`.'
     );
     assert.equal(fn.deprecated, undefined);
   });
