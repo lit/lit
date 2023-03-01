@@ -58,10 +58,26 @@ const getFunctionDeclaration = (
   name: string,
   analyzer: AnalyzerInterface
 ): FunctionDeclaration => {
+  let nodeForJSDocInfo: ts.FunctionLikeDeclaration = declaration;
+
+  if (ts.getJSDocTags(nodeForJSDocInfo).length === 0) {
+    // Overloaded functions have mulitple declaration nodes. If there are no
+    // JSDoc tags on the provided declaration, use the first one that does have
+    // JSDoc tags for the purpose of extracting a description.
+    const type = analyzer.program
+      .getTypeChecker()
+      .getTypeAtLocation(declaration);
+    const allDeclarations = type.getSymbol()?.getDeclarations();
+    nodeForJSDocInfo =
+      (allDeclarations as Array<ts.FunctionLikeDeclaration> | undefined)?.find(
+        (x) => ts.getJSDocTags(x).length !== 0
+      ) ?? nodeForJSDocInfo;
+  }
+
   return new FunctionDeclaration({
     name,
-    ...parseNodeJSDocInfo(declaration),
-    ...getFunctionLikeInfo(declaration, analyzer),
+    ...parseNodeJSDocInfo(nodeForJSDocInfo),
+    ...getFunctionLikeInfo(declaration, nodeForJSDocInfo, analyzer),
   });
 };
 
@@ -70,20 +86,24 @@ const getFunctionDeclaration = (
  */
 export const getFunctionLikeInfo = (
   node: ts.FunctionLikeDeclaration,
+  docNode: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
 ) => {
   return {
-    parameters: node.parameters.map((p) => getParameter(p, analyzer)),
-    return: getReturn(node, analyzer),
+    parameters: node.parameters.map((p, i) =>
+      getParameter(p, docNode.parameters[i], analyzer)
+    ),
+    return: getReturn(node, docNode, analyzer),
   };
 };
 
 const getParameter = (
   param: ts.ParameterDeclaration,
+  docNode: ts.ParameterDeclaration,
   analyzer: AnalyzerInterface
 ): Parameter => {
   const paramTag = ts.getAllJSDocTagsOfKind(
-    param,
+    docNode,
     ts.SyntaxKind.JSDocParameterTag
   )[0];
   const p: Parameter = {
@@ -108,10 +128,11 @@ const getParameter = (
 
 const getReturn = (
   node: ts.FunctionLikeDeclaration,
+  docNode: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
 ): Return => {
   const returnTag = ts.getAllJSDocTagsOfKind(
-    node,
+    docNode,
     ts.SyntaxKind.JSDocReturnTag
   )[0];
   const signature = analyzer.program

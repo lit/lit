@@ -82,7 +82,7 @@ export const getClassMembers = (
         node.name.getText(),
         new ClassMethod({
           ...info,
-          ...getFunctionLikeInfo(node, analyzer),
+          ...getFunctionLikeInfo(node, node, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );
