@@ -23,6 +23,26 @@ import {getTypeForNode, getTypeForType} from '../types.js';
 import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
 import {hasDefaultModifier, hasExportModifier} from '../utils.js';
 
+export const getDocNodeForFunctionLikeDeclaration = (
+  declaration: ts.FunctionLikeDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  if (ts.getJSDocTags(declaration).length !== 0) {
+    return declaration;
+  }
+
+  // Overloaded functions have mulitple declaration nodes. If there are no
+  // JSDoc tags on the provided declaration, use the first one that does have
+  // JSDoc tags for the purpose of extracting a description.
+  const type = analyzer.program.getTypeChecker().getTypeAtLocation(declaration);
+  const allDeclarations = type.getSymbol()?.getDeclarations();
+  return (
+    (allDeclarations as Array<ts.FunctionLikeDeclaration> | undefined)?.find(
+      (x) => ts.getJSDocTags(x).length !== 0
+    ) ?? declaration
+  );
+};
+
 /**
  * Returns the name of a function declaration.
  */
@@ -58,26 +78,11 @@ const getFunctionDeclaration = (
   name: string,
   analyzer: AnalyzerInterface
 ): FunctionDeclaration => {
-  let nodeForJSDocInfo: ts.FunctionLikeDeclaration = declaration;
-
-  if (ts.getJSDocTags(nodeForJSDocInfo).length === 0) {
-    // Overloaded functions have mulitple declaration nodes. If there are no
-    // JSDoc tags on the provided declaration, use the first one that does have
-    // JSDoc tags for the purpose of extracting a description.
-    const type = analyzer.program
-      .getTypeChecker()
-      .getTypeAtLocation(declaration);
-    const allDeclarations = type.getSymbol()?.getDeclarations();
-    nodeForJSDocInfo =
-      (allDeclarations as Array<ts.FunctionLikeDeclaration> | undefined)?.find(
-        (x) => ts.getJSDocTags(x).length !== 0
-      ) ?? nodeForJSDocInfo;
-  }
-
+  const docNode = getDocNodeForFunctionLikeDeclaration(declaration, analyzer);
   return new FunctionDeclaration({
     name,
-    ...parseNodeJSDocInfo(nodeForJSDocInfo),
-    ...getFunctionLikeInfo(declaration, nodeForJSDocInfo, analyzer),
+    ...parseNodeJSDocInfo(docNode),
+    ...getFunctionLikeInfo(declaration, docNode, analyzer),
   });
 };
 
