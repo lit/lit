@@ -251,5 +251,36 @@ for (const lang of languages) {
     assert.equal(fn.deprecated, undefined);
   });
 
+  test('method with an overloaded signature and docs on many overload signatures', ({
+    element,
+  }) => {
+    const fn = Array.from(element.methods).find(
+      (m) => m.name === 'overloadedWithDocsOnMany'
+    );
+    assert.ok(fn?.isFunctionDeclaration());
+    assert.equal(fn.name, `overloadedWithDocsOnMany`);
+    assert.equal(
+      fn.description?.replace(/\n/g, ' '),
+      `This is the implementation signature.`
+    );
+    assert.equal(fn.summary, undefined);
+    assert.equal(fn.parameters?.length, 1);
+    assert.equal(fn.parameters?.[0].name, 'x');
+    assert.equal(
+      fn.parameters?.[0].description?.replace(/\n/g, ' '),
+      'Maybe a string, maybe a number.'
+    );
+    assert.equal(fn.parameters?.[0].summary, undefined);
+    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
+    assert.equal(fn.parameters?.[0].default, undefined);
+    assert.equal(fn.parameters?.[0].rest, false);
+    assert.equal(fn.return?.type?.text, 'string | number');
+    assert.equal(
+      fn.return?.description?.replace(/\n/g, ' '),
+      'Returns either a string or a number, depending on the mood.'
+    );
+    assert.equal(fn.deprecated, undefined);
+  });
+
   test.run();
 }
