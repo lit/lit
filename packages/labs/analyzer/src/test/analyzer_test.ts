@@ -15,6 +15,7 @@ import {
   languages,
   setupAnalyzerForTest,
 } from './utils.js';
+import {DiagnosticCode} from '../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   const test = suite<AnalyzerTestContext>(`Basic Analyzer tests (${lang})`);
@@ -25,7 +26,7 @@ for (const lang of languages) {
 
   test('Reads project files', ({analyzer, packagePath}) => {
     const rootFileNames = analyzer.program.getRootFileNames();
-    assert.equal(rootFileNames.length, 6);
+    assert.equal(rootFileNames.length, 7);
 
     const elementAPath = path.resolve(
       packagePath,
@@ -43,6 +44,30 @@ for (const lang of languages) {
     assert.equal(elementAModule?.jsPath, getOutputFilename('class-a', lang));
     assert.equal(elementAModule?.declarations.length, 1);
     assert.equal(elementAModule?.declarations[0].name, 'ClassA');
+  });
+
+  test('Only identifier-named properties are supported', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const mod = result.modules.find(
+      (m) =>
+        m.sourcePath ===
+        getSourceFilename('class-with-unsupported-property', lang)
+    );
+    assert.ok(mod);
+
+    const declaration = mod.getDeclaration('ClassWithUnsupportedProperty');
+    assert.ok(declaration?.isClassDeclaration());
+
+    // Fields named with symbols are not visible in the `fields` iterator.
+    assert.equal(Array.from(declaration.fields).length, 0);
+
+    // Fields named with symbols result in a diagnostic.
+    const diagnostics = Array.from(analyzer.getDiagnostics());
+    assert.equal(diagnostics.length, 1);
+    assert.equal(
+      diagnostics[0].code,
+      DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE
+    );
   });
 
   test.run();
