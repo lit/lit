@@ -13,11 +13,6 @@ import {memorySuite} from '../test-utils/memory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Set Symbol.asyncIterator on browsers without it
-if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
-  Object.defineProperty(Symbol, 'Symbol.asyncIterator', {value: Symbol()});
-}
-
 const nextFrame = () =>
   new Promise<void>((r) => requestAnimationFrame(() => r()));
 

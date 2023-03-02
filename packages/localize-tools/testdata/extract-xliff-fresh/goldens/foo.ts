@@ -14,3 +14,6 @@ msg(html`Hello <b>${name}!</b>`, {desc: 'Description of Hello $(name)'});
 
 // Escaped markup characters should remain escaped
 msg(html`&lt;Hello<b>&lt;World &amp; Friends&gt;</b>!&gt;`);
+
+// A localized Lit template that contains a nested Lit template.
+msg(html`Hello <b>${html`<i>World</i>`}</b>!`);

@@ -37,7 +37,7 @@ Options:
 `;
 
 const commands = ['build', 'extract'] as const;
-type Command = typeof commands[number];
+type Command = (typeof commands)[number];
 const isCommand = (str: string): str is Command =>
   commands.includes(str as Command);
 

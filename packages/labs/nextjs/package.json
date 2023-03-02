@@ -1,0 +1,68 @@
+{
+  "name": "@lit-labs/nextjs",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Next.js Plugin for Lit SSR",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/nextjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/nextjs"
+  },
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "files": [
+    "/index.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr-react": "^0.0.0",
+    "imports-loader": "^4.0.1"
+  },
+  "peerDependencies": {
+    "next": "12 || 13"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../ssr-react:build:ts"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "test": {
+      "command": "echo \"TODO\""
+    }
+  },
+  "keywords": [
+    "lit",
+    "lit-element",
+    "lit-ssr",
+    "next",
+    "nextjs",
+    "react",
+    "ssr",
+    "web components"
+  ]
+}

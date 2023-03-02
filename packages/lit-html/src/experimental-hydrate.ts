@@ -348,11 +348,10 @@ const createAttributeParts = (
   const match = /lit-node (\d+)/.exec(comment.data)!;
   const nodeIndex = parseInt(match[1]);
 
-  // For void elements, the node the comment was referring to will be
-  // the previousSibling; for non-void elements, the comment is guaranteed
-  // to be the first child of the element (i.e. it won't have a previousSibling
-  // meaning it should use the parentElement)
-  const node = comment.previousElementSibling ?? comment.parentElement;
+  // Node markers are added as a previous sibling to identify elements
+  // with attribute/property/element/event bindings or custom elements
+  // whose `defer-hydration` attribute needs to be removed
+  const node = comment.nextElementSibling;
   if (node === null) {
     throw new Error('could not find node for attribute parts');
   }

@@ -3,8 +3,8 @@
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
 [![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
-[![Published on npm](https://img.shields.io/npm/v/lit-html/next)](https://www.npmjs.com/package/lit-html)
-[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
+[![Published on npm](https://img.shields.io/npm/v/lit-html.svg?logo=npm)](https://www.npmjs.com/package/lit-html)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
 lit-html is the template system that powers the [Lit](https://lit.dev) library for building fast web components. When using `lit-html` to develop web components, most users should import lit-html via the [`lit`](https://www.npmjs.com/package/lit) package rather than installing and importing from `lit-html` directly.

@@ -7,35 +7,17 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, languages} from '../utils.js';
-
-import {createPackageAnalyzer, AbsolutePath, Module} from '../../index.js';
+import {
+  AnalyzerTestContext,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
 
 for (const lang of languages) {
-  const test = suite<{
-    getModule: (name: string) => Module;
-  }>(`Class tests (${lang})`);
+  const test = suite<AnalyzerTestContext>(`Class tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/classes`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-      ctx.getModule = (name: string) =>
-        analyzer.getModule(
-          getSourceFilename(
-            analyzer.path.join(packagePath, name),
-            lang
-          ) as AbsolutePath
-        );
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'classes');
   });
 
   // Class description, summary, deprecated

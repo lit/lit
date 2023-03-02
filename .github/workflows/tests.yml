@@ -34,6 +34,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Check formatting
+        run: npm run format:check
+
       - name: Changeset
         # Enforce that all PRs that change packages need changesets. Changes
         # without changesets result in this job failing.

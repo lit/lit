@@ -33,11 +33,11 @@ jobs:
         run: npm run build
 
       - name: Create release image
+        env:
+          BODY: ${{ github.event.pull_request.body }}
         run: |
           # Store the PR body contents containing the changelog in 'release.md'
-          cat <<'EOF' > release.md
-          ${{ github.event.pull_request.body }}
-          EOF
+          echo "$BODY" > release.md
           # Only render the pull request content including and after the "#
           # Releases" heading.
           node_modules/.bin/release-image -m <(sed -n '/# Releases/,$p' release.md)

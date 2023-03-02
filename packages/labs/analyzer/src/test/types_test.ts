@@ -7,37 +7,21 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
 
-import {
-  createPackageAnalyzer,
-  AbsolutePath,
-  Module,
-  getImportsStringForReferences,
-} from '../index.js';
+import {Module, getImportsStringForReferences} from '../index.js';
 
 import {Reference} from '../lib/model.js';
-import {languages} from './utils.js';
+import {
+  AnalyzerModuleTestContext,
+  languages,
+  setupAnalyzerForTestWithModule,
+} from './utils.js';
 
 for (const lang of languages) {
-  const test = suite<{module: Module; packagePath: AbsolutePath}>(
-    `Types tests (${lang})`
-  );
+  const test = suite<AnalyzerModuleTestContext>(`Types tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = (ctx.packagePath = fileURLToPath(
-        new URL(`../test-files/${lang}/types`, import.meta.url).href
-      ) as AbsolutePath);
-      const analyzer = createPackageAnalyzer(packagePath);
-      const pkg = analyzer.getPackage();
-      ctx.module = pkg.modules.filter((m) => m.jsPath === 'module.js')[0];
-    } catch (e) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error(e);
-      process.exit(1);
-    }
+    setupAnalyzerForTestWithModule(ctx, lang, 'types', 'module');
   });
 
   const typeForVariable = (module: Module, name: string) => {
