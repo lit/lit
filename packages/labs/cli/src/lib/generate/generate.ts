@@ -5,6 +5,7 @@
  */
 
 import {createPackageAnalyzer} from '@lit-labs/analyzer';
+import {logDiagnostics} from '@lit-labs/analyzer/lib/errors.js';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
@@ -123,7 +124,7 @@ export const run = async (
         })
       );
       // Log any diagnostics collected while running the generators.
-      analyzer.logDiagnostics();
+      logDiagnostics(Array.from(analyzer.getDiagnostics()));
       // `allSettled` will swallow errors, so we need to filter them out of
       // the results and throw a new error up the stack describing all the errors
       // that happened
