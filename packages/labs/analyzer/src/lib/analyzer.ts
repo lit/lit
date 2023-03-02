@@ -13,7 +13,7 @@ import {
   getPackageInfo,
   getPackageRootForModulePath,
 } from './javascript/packages.js';
-import {logDiagnostics} from './errors.js';
+import {DiagnosticOptions, createDiagnostic, logDiagnostics} from './errors.js';
 
 export interface AnalyzerInit {
   getProgram: () => ts.Program;
@@ -76,8 +76,8 @@ export class Analyzer implements AnalyzerInterface {
     });
   }
 
-  addDiagnostic(diagnostic: ts.Diagnostic) {
-    this.diagnostics.push(diagnostic);
+  addDiagnostic(options: DiagnosticOptions) {
+    this.diagnostics.push(createDiagnostic(options));
   }
 
   *getDiagnostics(): IterableIterator<ts.Diagnostic> {

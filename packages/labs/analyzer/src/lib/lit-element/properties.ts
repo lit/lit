@@ -15,7 +15,7 @@ import {LitClassDeclaration} from './lit-element.js';
 import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
-import {DiagnosticsError, createDiagnostic} from '../errors.js';
+import {DiagnosticsError} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
 import {hasStaticModifier} from '../utils.js';
 
@@ -35,16 +35,14 @@ export const getProperties = (
 
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
-      analyzer.addDiagnostic(
-        createDiagnostic({
-          node: prop,
-          message:
-            '@lit-labs/analyzer only supports properties named with plain ' +
-            'identifiers. This property was ignored.',
-          category: ts.DiagnosticCategory.Warning,
-          code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
-        })
-      );
+      analyzer.addDiagnostic({
+        node: prop,
+        message:
+          '@lit-labs/analyzer only supports properties named with plain ' +
+          'identifiers. This property was ignored.',
+        category: ts.DiagnosticCategory.Warning,
+        code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
+      });
       continue;
     }
     const name = prop.name.text;

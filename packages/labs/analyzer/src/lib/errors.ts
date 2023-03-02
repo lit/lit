@@ -19,7 +19,7 @@ const diagnosticsHost: ts.FormatDiagnosticsHost = {
   },
 };
 
-interface DiagnosticOptions {
+export interface DiagnosticOptions {
   node: ts.Node;
   message?: string | undefined;
   category?: ts.DiagnosticCategory;
