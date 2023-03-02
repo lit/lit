@@ -82,34 +82,5 @@ for (const lang of languages) {
     assert.equal(fn.deprecated, undefined);
   });
 
-  test('Overloaded function', ({module}) => {
-    const exportedFn = module.getResolvedExport('overloaded');
-    const fn = module.getDeclaration('overloaded');
-    assert.equal(fn, exportedFn);
-    assert.ok(fn?.isFunctionDeclaration());
-    assert.equal(fn.name, `overloaded`);
-    assert.equal(
-      fn.description,
-      `This function has an overloaded signature in TS.`
-    );
-    assert.equal(fn.summary, undefined);
-    assert.equal(fn.parameters?.length, 1);
-    assert.equal(fn.parameters?.[0].name, 'x');
-    assert.equal(
-      fn.parameters?.[0].description,
-      'Some value, either a string or a number.'
-    );
-    assert.equal(fn.parameters?.[0].summary, undefined);
-    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
-    assert.equal(fn.parameters?.[0].default, undefined);
-    assert.equal(fn.parameters?.[0].rest, false);
-    assert.equal(fn.return?.type?.text, 'string | number');
-    assert.equal(
-      fn.return?.description,
-      'Returns either a string or a number.'
-    );
-    assert.equal(fn.deprecated, undefined);
-  });
-
   test.run();
 }

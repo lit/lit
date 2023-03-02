@@ -117,8 +117,7 @@ export const getModule = (
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
       addDeclaration(getClassDeclarationInfo(statement, analyzer));
-      // Ignore function overloads by checking for `statement.body`.
-    } else if (ts.isFunctionDeclaration(statement) && statement.body) {
+    } else if (ts.isFunctionDeclaration(statement)) {
       addDeclaration(getFunctionDeclarationInfo(statement, analyzer));
     } else if (ts.isVariableStatement(statement)) {
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
