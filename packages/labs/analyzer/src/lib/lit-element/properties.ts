@@ -38,8 +38,9 @@ export const getProperties = (
       analyzer.addDiagnostic({
         node: prop,
         message:
-          '@lit-labs/analyzer only supports properties named with plain ' +
-          'identifiers. This property was ignored.',
+          '@lit-labs/analyzer only supports analyzing reactive properties of ' +
+          '`LitElement` extension classes named with plain identifiers. This ' +
+          'property was ignored.',
         category: ts.DiagnosticCategory.Warning,
         code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
       });
