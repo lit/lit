@@ -8,18 +8,28 @@ import {
   LayoutHostSink,
   Positions,
   LogicalSize,
-  writingMode,
+  // FixedSize,
+  // writingMode,
+  // EditElementLayoutInfoFunction,
+  ElementLayoutInfo,
+  EditElementLayoutInfoFunctionOptions,
+  // ChildLayoutInfo
 } from './shared/Layout.js';
 import {GridBaseLayout, GridBaseLayoutConfig} from './shared/GridBaseLayout.js';
 import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
-type GetAspectRatio = (item: unknown, writingMode?: writingMode) => number;
+type GetAspectRatioFromItem = (item: unknown) => number;
+type GetAspectRatioFromElement = (
+  element: Element,
+  requestReflow: () => void
+) => number;
 
 export interface MasonryLayoutConfig
   extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
   flex: boolean;
   itemSize: PixelSize;
-  getAspectRatio: GetAspectRatio;
+  getAspectRatioFromItem?: GetAspectRatioFromItem;
+  getAspectRatioFromElement?: GetAspectRatioFromElement;
 }
 
 type MasonryLayoutSpecifier = MasonryLayoutConfig & {
@@ -44,6 +54,13 @@ export const masonry: MasonryLayoutSpecifierFactory = (
   );
 
 type RangeMapEntry = [number, number, number, number];
+type ElementLayoutInfoWithAspectRatio = ElementLayoutInfo & {
+  aspectRatio: number;
+};
+type ChildLayoutInfoWithAspectRatio = Map<
+  number,
+  ElementLayoutInfoWithAspectRatio
+>;
 
 const MIN = 'MIN';
 const MAX = 'MAX';
@@ -51,18 +68,26 @@ type MinOrMax = 'MIN' | 'MAX';
 
 export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   private _RANGE_MAP_GRANULARITY = 100;
+  private _childLayoutInfo: ChildLayoutInfoWithAspectRatio = new Map();
   private _positions: Map<number, Positions> = new Map();
   private _rangeMap: Map<number, RangeMapEntry> = new Map();
-  private _getAspectRatio?: GetAspectRatio;
+  private _getAspectRatioFromItem?: GetAspectRatioFromItem;
+  private _getAspectRatioFromElement?: GetAspectRatioFromElement;
 
   protected get _defaultConfig(): MasonryLayoutConfig {
     return Object.assign({}, super._defaultConfig, {
-      getAspectRatio: () => 1,
+      // getAspectRatio: () => 1,
     });
   }
 
-  set getAspectRatio(getAspectRatio: GetAspectRatio) {
-    this._getAspectRatio = getAspectRatio;
+  set getAspectRatioFromItem(getAspectRatioFromItem: GetAspectRatioFromItem) {
+    this._getAspectRatioFromItem = getAspectRatioFromItem;
+  }
+
+  set getAspectRatioFromElement(
+    getAspectRatioFromElement: GetAspectRatioFromElement
+  ) {
+    this._getAspectRatioFromElement = getAspectRatioFromElement;
   }
 
   set items(items: unknown[]) {
@@ -107,7 +132,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     let minRangeMapKey = Infinity;
     let maxRangeMapKey = -Infinity;
     this.items.forEach((item, idx) => {
-      const aspectRatio = this._getAspectRatio!(item, this.writingMode);
+      const aspectRatio = this._getAspectRatioFromItem
+        ? this._getAspectRatioFromItem(item)
+        : this._childLayoutInfo.get(idx)
+        ? this._childLayoutInfo.get(idx)!.aspectRatio
+        : 1;
       const size1 = itemSize2 / aspectRatio;
       const pos1 = nextPosPerRolumn[nextRolumn];
       const pos2 = positions[nextRolumn];
@@ -195,5 +224,27 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   _updateVirtualizerSize() {
     // We calculate _virtualizerSize in _layouOutChildren(),
     // no need to do it here
+  }
+
+  editElementLayoutInfo(options: EditElementLayoutInfoFunctionOptions) {
+    const {baselineInfo, element} = options;
+    if (this._getAspectRatioFromElement) {
+      const triggerReflow = () => this._triggerReflow();
+      return {
+        ...baselineInfo,
+        aspectRatio: this._getAspectRatioFromElement(element, triggerReflow),
+      };
+    } else {
+      return baselineInfo;
+    }
+  }
+
+  updateItemSizes(childLayoutInfo: ChildLayoutInfoWithAspectRatio) {
+    childLayoutInfo.forEach((info, idx) => {
+      if (info.aspectRatio !== -1) {
+        this._childLayoutInfo.set(idx, info);
+      }
+    });
+    this._scheduleLayoutUpdate();
   }
 }

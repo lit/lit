@@ -8,7 +8,6 @@ import {
   Layout,
   ChildPositions,
   Positions,
-  FixedPosition,
   LogicalSize,
   VirtualizerSize,
   PinOptions,
@@ -18,9 +17,9 @@ import {
   LayoutHostSink,
   writingMode,
   direction,
-  fixedPositionDimension,
   fixedSizeDimension,
   ChildLayoutInfo,
+  LogicalCoordinates,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
@@ -33,7 +32,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The last set viewport scroll position.
    */
-  private _latestCoords: FixedPosition = {left: 0, top: 0};
+  private _latestCoords: LogicalCoordinates = {inline: 0, block: 0};
 
   /**
    * Dimensions of the viewport.
@@ -42,7 +41,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   public scrollSize: LogicalSize = {inlineSize: 0, blockSize: 0};
 
-  public offsetWithinScroller: FixedPosition = {left: 0, top: 0};
+  public offsetWithinScroller: LogicalCoordinates = {inline: 0, block: 0};
 
   public writingMode: writingMode = 'unknown';
 
@@ -87,10 +86,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected _last = -1;
 
-  protected get _blockScrollDimension(): fixedPositionDimension {
-    return this.writingMode === 'horizontal-tb' ? 'top' : 'left';
-  }
-
+  // TODO (gn): Figure out whether we want to let layouts know
+  // writingMode to keep supporting this type of functionality (see GridBaseLayout)
   protected get _blockSizeDimension(): fixedSizeDimension {
     return this.writingMode === 'horizontal-tb' ? 'width' : 'height';
   }
@@ -184,13 +181,13 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * Scroll offset of the viewport.
    */
-  get viewportScroll(): FixedPosition {
+  get viewportScroll(): LogicalCoordinates {
     return this._latestCoords;
   }
   set viewportScroll(coords) {
     Object.assign(this._latestCoords, coords);
     const oldPos = this._blockScrollPosition;
-    this._blockScrollPosition = this._latestCoords[this._blockScrollDimension];
+    this._blockScrollPosition = this._latestCoords.block;
     const change = Math.abs(oldPos - this._blockScrollPosition);
     if (change >= 1) {
       this._checkThresholds();
@@ -225,7 +222,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   _clampScrollPosition(val: number) {
     return Math.max(
-      -this.offsetWithinScroller[this._blockScrollDimension],
+      -this.offsetWithinScroller.block,
       Math.min(val, this.scrollSize.blockSize - this._viewDim1)
     );
   }
@@ -328,7 +325,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
         this._calculateScrollIntoViewPosition({
           index,
           block: block || 'start',
-        }) - this.offsetWithinScroller[this._blockScrollDimension];
+        }) - this.offsetWithinScroller.block;
       this._scrollError = lastScrollPosition - this._blockScrollPosition;
     }
   }
@@ -369,7 +366,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
         }
       }
     }
-    scrollPosition += this.offsetWithinScroller[this._blockScrollDimension];
+    scrollPosition += this.offsetWithinScroller.block;
     return this._clampScrollPosition(scrollPosition);
   }
 
@@ -437,18 +434,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       childPositions,
     };
     if (this._scrollError) {
-      let dim1, dim2;
-      if (this.writingMode[0] === 'h') {
-        dim1 = 'top';
-        dim2 = 'left';
-      } else {
-        dim1 = 'left';
-        dim2 = 'top';
-      }
       message.scrollError = {
-        [dim1]: this._scrollError,
-        [dim2]: 0,
-      } as FixedPosition;
+        block: this._scrollError,
+        inline: 0,
+      };
       this._scrollError = 0;
     }
     this._hostSink(message);

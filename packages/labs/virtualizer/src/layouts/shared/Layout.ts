@@ -51,14 +51,20 @@ export interface LayoutParams {
   writingMode: writingMode;
 }
 
-export type logicalPositionDimension = 'insetInlineStart' | 'insetBlockStart';
+// export type logicalPositionDimension = 'insetInlineStart' | 'insetBlockStart';
 
-export type position = 'inlinePosition' | 'top';
-export type offsetAxis = 'xOffset' | 'yOffset';
+// export type position = 'inlinePosition' | 'top';
 
-export type fixedPositionDimension = 'top' | 'left';
-export type FixedPosition = {
-  [key in fixedPositionDimension]: number;
+export type fixedCoordinateLabel = 'top' | 'left'; // TODO: Don't think we need this
+export type FixedCoordinates = {
+  top: number;
+  left: number;
+};
+
+// export type logicalCoordinateLabel = 'block' | 'inline';
+export type LogicalCoordinates = {
+  block: number;
+  inline: number;
 };
 
 // TODO (graynorton@): This has become a bit of a
@@ -71,8 +77,6 @@ export type Positions = {
   insetBlockStart: number;
   inlineSize?: number;
   blockSize?: number;
-  xOffset?: number;
-  yOffset?: number;
 };
 
 export interface Range {
@@ -89,7 +93,7 @@ export interface StateChangedMessage {
   virtualizerSize: VirtualizerSize;
   range: InternalRange;
   childPositions: ChildPositions;
-  scrollError?: FixedPosition;
+  scrollError?: LogicalCoordinates;
 }
 
 export interface VisibilityChangedMessage {
@@ -113,10 +117,15 @@ export type ChildPositions = Map<number, Positions>;
 
 export type ChildLayoutInfo = Map<number, ElementLayoutInfo>;
 
-export type EditElementLayoutInfoFunction = <T>(
-  element: Element,
-  item: T,
-  baseInfo: ElementLayoutInfo
+export interface EditElementLayoutInfoFunctionOptions {
+  element: Element;
+  item: unknown;
+  index: number;
+  baselineInfo: ElementLayoutInfo;
+}
+
+export type EditElementLayoutInfoFunction = (
+  options: EditElementLayoutInfoFunctionOptions
 ) => ElementLayoutInfo;
 
 export interface PinOptions {
@@ -160,11 +169,11 @@ export interface Layout {
 
   viewportSize: LogicalSize;
 
-  viewportScroll: FixedPosition;
+  viewportScroll: LogicalCoordinates;
 
   scrollSize: LogicalSize;
 
-  offsetWithinScroller: FixedPosition;
+  offsetWithinScroller: LogicalCoordinates;
 
   readonly editElementLayoutInfo?: EditElementLayoutInfoFunction;
 

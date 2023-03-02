@@ -9,7 +9,6 @@ import {BaseLayout} from './shared/BaseLayout.js';
 import {
   Positions,
   LogicalSize,
-  offsetAxis,
   ChildLayoutInfo,
   BaseLayoutConfig,
   LayoutHostSink,
@@ -519,15 +518,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * Returns the top and left positioning of the item at idx.
    */
   _getItemPosition(idx: number): Positions {
-    const offsetAxis: offsetAxis =
-      this.writingMode[0] === 'h' ? 'yOffset' : 'xOffset';
+    const marginOffset =
+      this._metricsCache.getLeadingMarginValue(idx) ??
+      this._metricsCache.averageMarginSize;
     return {
-      insetBlockStart: this._getPosition(idx),
+      insetBlockStart: this._getPosition(idx) - marginOffset,
       insetInlineStart: 0,
-      [offsetAxis]: -(
-        this._metricsCache.getLeadingMarginValue(idx) ??
-        this._metricsCache.averageMarginSize
-      ),
     } as Positions;
   }
 

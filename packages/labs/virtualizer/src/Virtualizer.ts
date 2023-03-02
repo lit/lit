@@ -23,6 +23,9 @@ import {
   direction,
   VirtualizerSize,
   VirtualizerSizeValue,
+  fixedCoordinateLabel,
+  fixedSizeDimension,
+  LogicalCoordinates,
 } from './layouts/shared/Layout.js';
 import {
   RangeChangedEvent,
@@ -119,7 +122,7 @@ export class Virtualizer {
    * Difference between scroll target's current and required scroll offsets.
    * Provided by layout.
    */
-  private _scrollError: {left: number; top: number} | null = null;
+  private _scrollError: LogicalCoordinates | null = null;
 
   /**
    * A list of the positions (top, left) of the children in the current range.
@@ -499,10 +502,7 @@ export class Virtualizer {
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      this._childLayoutInfo.set(
-        idx,
-        this._readElementLayoutInfo(child, this._items[idx])
-      );
+      this._childLayoutInfo.set(idx, this._readElementLayoutInfo(child, idx));
     }
     this._schedule(this._updateLayout);
   }
@@ -510,7 +510,7 @@ export class Virtualizer {
   /**
    * Returns the width, height, and margins of the given child.
    */
-  _readElementLayoutInfo(element: Element, item: unknown): ElementLayoutInfo {
+  _readElementLayoutInfo(element: Element, index: number): ElementLayoutInfo {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
@@ -526,8 +526,9 @@ export class Virtualizer {
       {blockSize, inlineSize},
       getMargins(element, flipAxis, reverseDirection)
     );
+    const item = this._items[index];
     return this._editElementLayoutInfo
-      ? this._editElementLayoutInfo(element, item, baselineInfo)
+      ? this._editElementLayoutInfo({element, item, index, baselineInfo})
       : baselineInfo;
   }
 
@@ -652,13 +653,10 @@ export class Virtualizer {
       let top, left, bottom, right;
 
       const hostStyle = getComputedStyle(hostElement);
-      // const contextStyle = getComputedStyle(getParentElement(hostElement)!);
 
       this._direction = hostStyle.direction as direction;
       const writingMode = (this._writingMode =
         hostStyle.writingMode as writingMode);
-      // const contextWritingMode =
-      //   this._contextWritingMode = contextStyle.writingMode as writingMode;
 
       const hostElementBounds = hostElement.getBoundingClientRect();
 
@@ -687,25 +685,55 @@ export class Virtualizer {
       };
 
       const scrollSize = {
-        inlineSize: scrollingElement.scrollWidth,
-        blockSize: scrollingElement.scrollHeight,
+        width: scrollingElement.scrollWidth,
+        height: scrollingElement.scrollHeight,
       };
 
-      const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+      const scrollPosition = {
+        top: top - hostElementBounds.top + hostElement.scrollTop,
+        left: left - hostElementBounds.left + hostElement.scrollLeft,
+      };
 
-      const height = Math.max(1, bottom - top);
-      const width = Math.max(1, right - left);
+      // const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
+      // const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+
+      const viewportSize = {
+        height: Math.max(1, bottom - top),
+        width: Math.max(1, right - left),
+      };
 
       layout.writingMode = writingMode;
       layout.direction = this._direction;
+
+      type selectors = [
+        fixedSizeDimension,
+        fixedSizeDimension,
+        fixedCoordinateLabel,
+        fixedCoordinateLabel
+      ];
+
+      const [inlineSize, blockSize, inlineCoordinate, blockCoordinate] = (
+        writingMode === 'horizontal-tb'
+          ? ['width', 'height', 'left', 'top']
+          : ['height', 'width', 'top', 'left']
+      ) as selectors;
+
       layout.viewportSize = {
-        inlineSize: writingMode === 'horizontal-tb' ? width : height,
-        blockSize: writingMode === 'horizontal-tb' ? height : width,
+        inlineSize: viewportSize[inlineSize],
+        blockSize: viewportSize[blockSize],
       };
-      layout.viewportScroll = {top: scrollTop, left: scrollLeft};
-      layout.scrollSize = scrollSize;
-      layout.offsetWithinScroller = offsetWithinScroller;
+      layout.viewportScroll = {
+        inline: scrollPosition[inlineCoordinate],
+        block: scrollPosition[blockCoordinate],
+      };
+      layout.scrollSize = {
+        inlineSize: scrollSize[inlineSize],
+        blockSize: scrollSize[blockSize],
+      };
+      layout.offsetWithinScroller = {
+        inline: offsetWithinScroller[inlineCoordinate],
+        block: offsetWithinScroller[blockCoordinate],
+      };
     }
   }
 
@@ -752,20 +780,9 @@ export class Virtualizer {
    */
   private _positionChildren(pos: ChildPositions | null) {
     if (pos && pos.size > 0) {
-      // const hostWidth = this._hostElement!.getBoundingClientRect().width;
       const children = this._children;
       pos.forEach(
-        (
-          {
-            insetBlockStart: blockPosition,
-            insetInlineStart: inlinePosition,
-            blockSize,
-            inlineSize,
-            xOffset,
-            yOffset,
-          },
-          index
-        ) => {
+        ({insetBlockStart, insetInlineStart, blockSize, inlineSize}, index) => {
           const child = children[index - this._first];
           if (child) {
             child.style.position = 'absolute';
@@ -782,11 +799,11 @@ export class Virtualizer {
 
             let left, top;
             if (this._writingMode[0] === 'h') {
-              top = blockPosition;
-              left = inlinePosition;
+              top = insetBlockStart;
+              left = insetInlineStart;
             } else {
-              top = inlinePosition;
-              left = blockPosition;
+              top = insetInlineStart;
+              left = insetBlockStart;
             }
 
             child.style.transform = `translate(${left}px, ${top}px)`;
@@ -797,11 +814,6 @@ export class Virtualizer {
             if (blockSize !== undefined) {
               child.style.blockSize = blockSize + 'px';
             }
-
-            (child.style.left as string | null) =
-              xOffset === undefined ? '0' : xOffset + 'px';
-            (child.style.top as string | null) =
-              yOffset === undefined ? '0' : yOffset + 'px';
           }
         }
       );
@@ -825,11 +837,13 @@ export class Virtualizer {
   private _correctScrollError() {
     if (this._scrollError) {
       const {scrollTop, scrollLeft} = this._scrollerController!;
-      const {top, left} = this._scrollError;
+      const {block, inline} = this._scrollError;
       this._scrollError = null;
       this._scrollerController!.correctScrollError({
-        top: scrollTop - top,
-        left: scrollLeft - left,
+        top:
+          scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline),
+        left:
+          scrollLeft - (this._writingMode === 'horizontal-tb' ? inline : block),
       });
     }
   }

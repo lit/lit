@@ -15,7 +15,7 @@ import {
   ElementLayoutInfo,
   LayoutHostSink,
   LogicalSize,
-  EditElementLayoutInfoFunction,
+  EditElementLayoutInfoFunctionOptions,
   Positions,
 } from './shared/Layout.js';
 
@@ -98,12 +98,9 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   /**
    * TODO graynorton@ Don't hard-code Flickr - probably need a config option
    */
-  editElementLayoutInfo: EditElementLayoutInfoFunction = (
-    element: Element,
-    item: unknown,
-    baselineInfo: ElementLayoutInfo
-  ) => {
-    const {writingMode} = this;
+  editElementLayoutInfo(options: EditElementLayoutInfoFunctionOptions) {
+    const {baselineInfo, element, item} = options;
+    const {writingMode} = baselineInfo;
     const {naturalWidth, naturalHeight} = element as HTMLImageElement;
     if (naturalWidth !== undefined && naturalHeight != undefined) {
       return augmentBaselineInfo(naturalWidth, naturalHeight);
@@ -127,15 +124,13 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
             blockSize: width,
           });
     }
-  };
+  }
 
   updateItemSizes(sizes: ChildLayoutInfo) {
     let dirty;
-    Object.keys(sizes).forEach((key) => {
-      const n = Number(key);
-      const chunk = this._getChunk(n);
-      const dims = sizes.get(n)!;
-      const prevDims: LogicalSize = this._itemSizes[n];
+    sizes.forEach((dims, idx) => {
+      const chunk = this._getChunk(idx);
+      const prevDims: LogicalSize = this._itemSizes[idx];
       if (dims.inlineSize && dims.blockSize) {
         if (
           !prevDims ||
@@ -144,7 +139,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
         ) {
           chunk._dirty = true;
           dirty = true;
-          this._itemSizes[n] = dims;
+          this._itemSizes[idx] = dims;
           this._recordAspectRatio(dims);
         }
       }
