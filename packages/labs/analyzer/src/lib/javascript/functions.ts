@@ -23,26 +23,6 @@ import {getTypeForNode, getTypeForType} from '../types.js';
 import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
 import {hasDefaultModifier, hasExportModifier} from '../utils.js';
 
-export const getDocNodeForFunctionLikeDeclaration = (
-  declaration: ts.FunctionLikeDeclaration,
-  analyzer: AnalyzerInterface
-) => {
-  if (ts.getJSDocTags(declaration).length !== 0) {
-    return declaration;
-  }
-
-  // Overloaded functions have mulitple declaration nodes. If there are no
-  // JSDoc tags on the provided declaration, use the first one that does have
-  // JSDoc tags for the purpose of extracting a description.
-  const type = analyzer.program.getTypeChecker().getTypeAtLocation(declaration);
-  const allDeclarations = type.getSymbol()?.getDeclarations();
-  return (
-    (allDeclarations as Array<ts.FunctionLikeDeclaration> | undefined)?.find(
-      (x) => ts.getJSDocTags(x).length !== 0
-    ) ?? declaration
-  );
-};
-
 /**
  * Returns the name of a function declaration.
  */
@@ -78,11 +58,10 @@ const getFunctionDeclaration = (
   name: string,
   analyzer: AnalyzerInterface
 ): FunctionDeclaration => {
-  const docNode = getDocNodeForFunctionLikeDeclaration(declaration, analyzer);
   return new FunctionDeclaration({
     name,
-    ...parseNodeJSDocInfo(docNode),
-    ...getFunctionLikeInfo(declaration, docNode, analyzer),
+    ...parseNodeJSDocInfo(declaration),
+    ...getFunctionLikeInfo(declaration, analyzer),
   });
 };
 
@@ -91,24 +70,20 @@ const getFunctionDeclaration = (
  */
 export const getFunctionLikeInfo = (
   node: ts.FunctionLikeDeclaration,
-  docNode: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
 ) => {
   return {
-    parameters: node.parameters.map((p, i) =>
-      getParameter(p, docNode.parameters[i], analyzer)
-    ),
-    return: getReturn(node, docNode, analyzer),
+    parameters: node.parameters.map((p) => getParameter(p, analyzer)),
+    return: getReturn(node, analyzer),
   };
 };
 
 const getParameter = (
   param: ts.ParameterDeclaration,
-  docNode: ts.ParameterDeclaration,
   analyzer: AnalyzerInterface
 ): Parameter => {
   const paramTag = ts.getAllJSDocTagsOfKind(
-    docNode,
+    param,
     ts.SyntaxKind.JSDocParameterTag
   )[0];
   const p: Parameter = {
@@ -133,11 +108,10 @@ const getParameter = (
 
 const getReturn = (
   node: ts.FunctionLikeDeclaration,
-  docNode: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
 ): Return => {
   const returnTag = ts.getAllJSDocTagsOfKind(
-    docNode,
+    node,
     ts.SyntaxKind.JSDocReturnTag
   )[0];
   const signature = analyzer.program

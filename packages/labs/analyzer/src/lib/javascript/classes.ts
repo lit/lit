@@ -33,10 +33,7 @@ import {
   hasExportModifier,
   getPrivacy,
 } from '../utils.js';
-import {
-  getDocNodeForFunctionLikeDeclaration,
-  getFunctionLikeInfo,
-} from './functions.js';
+import {getFunctionLikeInfo} from './functions.js';
 import {getTypeForNode} from '../types.js';
 import {
   isCustomElementSubclass,
@@ -81,13 +78,12 @@ export const getClassMembers = (
   declaration.members.forEach((node) => {
     if (ts.isMethodDeclaration(node) && node.body) {
       const info = getMemberInfo(node);
-      const docNode = getDocNodeForFunctionLikeDeclaration(node, analyzer);
       (info.static ? staticMethodMap : methodMap).set(
         node.name.getText(),
         new ClassMethod({
           ...info,
-          ...getFunctionLikeInfo(node, docNode, analyzer),
-          ...parseNodeJSDocInfo(docNode),
+          ...getFunctionLikeInfo(node, analyzer),
+          ...parseNodeJSDocInfo(node),
         })
       );
     } else if (ts.isPropertyDeclaration(node)) {
