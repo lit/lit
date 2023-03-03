@@ -81,6 +81,8 @@ export const getClassMembers = (
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
   declaration.members.forEach((node) => {
+    // Ignore non-implementation signatures of overloaded methods by checking
+    // for `node.body`.
     if (ts.isMethodDeclaration(node) && node.body) {
       const info = getMemberInfo(node);
       const name = node.name.getText();
