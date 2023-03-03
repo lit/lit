@@ -400,7 +400,7 @@ export type ClassHeritage = {
 };
 
 export interface ClassDeclarationInit extends DeclarationInit {
-  node: ts.ClassDeclaration;
+  node: ts.ClassLikeDeclaration;
   getHeritage: () => ClassHeritage;
   fieldMap?: Map<string, ClassField> | undefined;
   staticFieldMap?: Map<string, ClassField> | undefined;
@@ -409,7 +409,7 @@ export interface ClassDeclarationInit extends DeclarationInit {
 }
 
 export class ClassDeclaration extends Declaration {
-  readonly node: ts.ClassDeclaration;
+  readonly node: ts.ClassLikeDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
   readonly _fieldMap: Map<string, ClassField>;
