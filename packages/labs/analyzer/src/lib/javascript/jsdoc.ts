@@ -239,20 +239,22 @@ const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
  */
 export const parseNodeJSDocInfo = (node: ts.Node): DeprecatableDescribed => {
   const info: DeprecatableDescribed = {};
-  const jsDocTags = ts.getJSDocTags(node);
+  const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
+  // Module-level docs (that are explicitly tagged as such) may be
+  // attached to the first declaration if the declaration is undocumented,
+  // so we filter those out since they shouldn't apply to a
+  // declaration node
+  const jsDocTags = ts
+    .getJSDocTags(node)
+    .filter(({parent}) => !moduleJSDocs.includes(parent as ts.JSDoc));
   if (jsDocTags !== undefined) {
     addJSDocTagInfo(info, jsDocTags);
   }
   if (info.description === undefined) {
-    const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
     const comment = normalizeLineEndings(
       node
         .getChildren()
         .filter(ts.isJSDoc)
-        // Module-level docs (that are explicitly tagged as such) may be
-        // attached to the first declaration if the declaration is undocumented,
-        // so we filter those out since they shouldn't apply to a
-        // declaration node
         .filter((c) => !moduleJSDocs.includes(c))
         .map((n) => n.comment)
         .filter((c) => c !== undefined)
