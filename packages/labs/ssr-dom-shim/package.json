@@ -20,6 +20,10 @@
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
+    },
+    "./element-internals.js": {
+      "types": "./element-internals.d.ts",
+      "default": "./element-internals.js"
     }
   },
   "files": [

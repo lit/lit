@@ -54,41 +54,6 @@ export const ariaMixinEnum: Record<string, string> = {
   role: 'role',
 };
 
-/**
- * Reflect internals AOM attributes back to the DOM prior to hydration
- * to ensure search bots can accurately parse element semantics prior
- * to hydration. This is called whenever an instance of ElementInternals
- * is created on an element to wire up the getters/setters
- * for the AriaMixin properties
- *
- * TODO - Determine the proper way to hydrate any attributes set by the shim
- * and remove these when the element is fully rendered
- */
-export const initAom = (ref: HTMLElement, internals: ElementInternals) => {
-  for (const _key of Object.keys(ariaMixinEnum)) {
-    const key = _key as keyof ARIAMixin;
-    internals[key] = null;
-
-    let closureValue = '';
-    const attributeName = ariaMixinEnum[key];
-    Object.defineProperty(internals, key, {
-      get() {
-        return closureValue;
-      },
-      set(value) {
-        closureValue = value;
-        /**
-         * The internals semantics will favor any attribute already set
-         * on the host element over the internals property
-         */
-        if (value && !ref.hasAttribute(attributeName)) {
-          ref.setAttribute(attributeName, value);
-        }
-      },
-    });
-  }
-};
-
 // Shim the global element internals object
 // Methods should be fine as noops and properties can generally
 // be while on the server.
@@ -144,8 +109,6 @@ export const InternalsShim = class ElementInternals implements ARIAMixin {
   }
   constructor(_host: HTMLElement) {
     this.__host = _host;
-
-    initAom(_host, this);
   }
   checkValidity() {
     return true;

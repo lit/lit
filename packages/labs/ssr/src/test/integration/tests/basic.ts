@@ -5214,8 +5214,49 @@ export const tests: {[name: string]: SSRTest} = {
             assert.equal(el.getAttribute('role'), 'widget');
           },
           html: {
-            root: `<le-internals role="widget"></le-internals>`,
+            root: `<le-internals role="widget" hydrate-internals-role="widget"></le-internals>`,
             'le-internals': ``,
+          },
+        },
+      ],
+      stableSelectors: ['le-internals'],
+    };
+  },
+
+  'LitElement: ElementInternals with hydration': () => {
+    return {
+      registerElements() {
+        class LEInternalsHydrate extends LitElement {
+          internals;
+          constructor() {
+            super();
+            const internals = this.attachInternals() as ElementInternals & {
+              role: string;
+            };
+            internals.role = 'widget';
+            this.internals = internals;
+          }
+        }
+        customElements.define('le-internals-hydrate', LEInternalsHydrate);
+      },
+      render() {
+        return html`<le-internals-hydrate></le-internals-hydrate>`;
+      },
+      serverRenderOptions: {
+        deferHydration: false,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-internals-hydrate'
+            ) as LitElement & {internals: {role: string}};
+            assert.isFalse(el.hasAttribute('role'));
+          },
+          html: {
+            root: `<le-internals-hydrate></le-internals-hydrate>`,
+            'le-internals-hydrate': ``,
           },
         },
       ],

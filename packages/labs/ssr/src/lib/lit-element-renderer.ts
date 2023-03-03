@@ -7,6 +7,7 @@
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
+import {ariaMixinEnum} from '@lit-labs/ssr-dom-shim/element-internals.js';
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
@@ -29,6 +30,36 @@ export class LitElementRenderer extends ElementRenderer {
   constructor(tagName: string) {
     super(tagName);
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
+
+    /**
+     * Reflect internals AOM attributes back to the DOM prior to hydration
+     * to ensure search bots can accurately parse element semantics prior
+     * to hydration. This is called whenever an instance of ElementInternals
+     * is created on an element to wire up the getters/setters
+     * for the AriaMixin properties
+     *
+     * TODO - Determine the proper way to hydrate any attributes set by the shim
+     * and remove these when the element is fully rendered
+     */
+    const internals = (
+      this.element as object as {__internals: ElementInternals}
+    ).__internals;
+    if (internals) {
+      for (const [key, value] of Object.entries(internals)) {
+        const ariaAttribute = ariaMixinEnum[key];
+        if (
+          ariaAttribute &&
+          value &&
+          !this.element.hasAttribute(ariaAttribute)
+        ) {
+          this.element.setAttribute(ariaAttribute, value);
+          this.element.setAttribute(
+            `hydrate-internals-${ariaAttribute}`,
+            value
+          );
+        }
+      }
+    }
   }
 
   override get shadowRootOptions() {
