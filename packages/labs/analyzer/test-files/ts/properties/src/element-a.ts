@@ -81,57 +81,24 @@ export class ElementA extends LitElement {
   @property()
   union: LocalClass | HTMLElement | ImportedClass;
 
+  /**
+   * This signature only works with strings.
+   * @param x Accepts a string.
+   * @returns Returns a string.
+   */
   overloaded(x: string): string;
+  /**
+   * This signature only works with numbers.
+   * @param x Accepts a number.
+   * @returns Returns a number.
+   */
   overloaded(x: number): number;
   /**
-   * This function has an overloaded signature in TS.
-   * @param x Some value, either a string or a number.
+   * This signature works with strings or numbers.
+   * @param x Accepts either a string or a number.
    * @returns Returns either a string or a number.
    */
   overloaded(x: string | number): string | number {
-    if (typeof x === 'string') {
-      return x + 'abc';
-    } else {
-      return x + 123;
-    }
-  }
-
-  /**
-   * This is not the implementation signature, but there are no docs on the
-   * implementation signature.
-   * @param x This might be a string or a number, even though this signature
-   * only allows strings.
-   * @returns Returns either a string or a number, but this signature only
-   * mentions `string`.
-   */
-  overloadedWithDocsOnOverloadOnly(x: string): string;
-  overloadedWithDocsOnOverloadOnly(x: number): number;
-  overloadedWithDocsOnOverloadOnly(x: string | number): string | number {
-    if (typeof x === 'string') {
-      return x + 'abc';
-    } else {
-      return x + 123;
-    }
-  }
-
-  /**
-   * This is not the implementation signature.
-   * @param x This is definitely a string.
-   * @returns Returns a string for sure.
-   */
-  overloadedWithDocsOnMany(x: string): string;
-  /**
-   * This is not the implementation signature either.
-   * @param x This is a number, whether you like it or not.
-   * @returns Also a number.
-   */
-  overloadedWithDocsOnMany(x: number): number;
-  /**
-   * This is the implementation signature.
-   * @param x Maybe a string, maybe a number.
-   * @returns Returns either a string or a number, depending on the mood.
-   */
-  overloadedWithDocsOnMany(x: string | number): string | number {
     if (typeof x === 'string') {
       return x + 'abc';
     } else {

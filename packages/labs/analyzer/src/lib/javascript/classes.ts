@@ -83,11 +83,12 @@ export const getClassMembers = (
   declaration.members.forEach((node) => {
     if (ts.isMethodDeclaration(node) && node.body) {
       const info = getMemberInfo(node);
+      const name = node.name.getText();
       (info.static ? staticMethodMap : methodMap).set(
-        node.name.getText(),
+        name,
         new ClassMethod({
           ...info,
-          ...getFunctionLikeInfo(node, analyzer),
+          ...getFunctionLikeInfo(node, name, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );

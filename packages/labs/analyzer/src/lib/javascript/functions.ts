@@ -16,6 +16,7 @@ import {
   AnalyzerInterface,
   DeclarationInfo,
   FunctionDeclaration,
+  FunctionLikeInit,
   FunctionOverloadDeclaration,
   Parameter,
   Return,
@@ -68,26 +69,9 @@ export const getFunctionDeclaration = (
   analyzer: AnalyzerInterface,
   docNode?: ts.Node
 ): FunctionDeclaration => {
-  // Overloaded functions have multiple declaration nodes.
-  const type = analyzer.program.getTypeChecker().getTypeAtLocation(declaration);
-  const overloadDeclarations = type
-    .getSymbol()
-    ?.getDeclarations()
-    ?.filter((x) => x !== declaration) as Array<ts.FunctionLikeDeclaration>;
-
   return new FunctionDeclaration({
-    name,
     ...parseNodeJSDocInfo(docNode ?? declaration),
-    ...getFunctionLikeInfo(declaration, analyzer),
-    overloads: overloadDeclarations?.map((overload) => {
-      return new FunctionOverloadDeclaration({
-        name,
-        // `docNode ?? overload` isn't needed here because TS doesn't allow
-        // const function assignments to be overloaded as of now.
-        ...parseNodeJSDocInfo(overload),
-        ...getFunctionLikeInfo(overload, analyzer),
-      });
-    }),
+    ...getFunctionLikeInfo(declaration, name, analyzer),
   });
 };
 
@@ -96,11 +80,39 @@ export const getFunctionDeclaration = (
  */
 export const getFunctionLikeInfo = (
   node: ts.FunctionLikeDeclaration,
+  name: string,
   analyzer: AnalyzerInterface
-) => {
+): FunctionLikeInit => {
+  let overloads = undefined;
+  if (node.body) {
+    // Overloaded functions have multiple declaration nodes.
+    const type = analyzer.program.getTypeChecker().getTypeAtLocation(node);
+    const overloadDeclarations = type
+      .getSymbol()
+      ?.getDeclarations()
+      ?.filter((x) => x !== node) as Array<ts.FunctionLikeDeclaration>;
+
+    overloads = overloadDeclarations?.map((overload) => {
+      const info = getFunctionLikeInfo(overload, name, analyzer);
+      return new FunctionOverloadDeclaration({
+        // `docNode ?? overload` isn't needed here because TS doesn't allow
+        // const function assignments to be overloaded as of now.
+        ...parseNodeJSDocInfo(overload),
+
+        // `info` can't be spread because `FunctionLikeInit` has an `overloads`
+        // property, even though it's always `undefined` in this case.
+        name: info.name,
+        parameters: info.parameters,
+        return: info.return,
+      });
+    });
+  }
+
   return {
+    name,
     parameters: node.parameters.map((p) => getParameter(p, analyzer)),
     return: getReturn(node, analyzer),
+    overloads,
   };
 };
 
