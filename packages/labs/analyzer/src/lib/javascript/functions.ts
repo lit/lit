@@ -16,6 +16,7 @@ import {
   AnalyzerInterface,
   DeclarationInfo,
   FunctionDeclaration,
+  FunctionOverloadDeclaration,
   Parameter,
   Return,
 } from '../model.js';
@@ -67,10 +68,26 @@ export const getFunctionDeclaration = (
   analyzer: AnalyzerInterface,
   docNode?: ts.Node
 ): FunctionDeclaration => {
+  // Overloaded functions have multiple declaration nodes.
+  const type = analyzer.program.getTypeChecker().getTypeAtLocation(declaration);
+  const overloadDeclarations = type
+    .getSymbol()
+    ?.getDeclarations()
+    ?.filter((x) => x !== declaration) as Array<ts.FunctionLikeDeclaration>;
+
   return new FunctionDeclaration({
     name,
     ...parseNodeJSDocInfo(docNode ?? declaration),
     ...getFunctionLikeInfo(declaration, analyzer),
+    overloads: overloadDeclarations?.map((overload) => {
+      return new FunctionOverloadDeclaration({
+        name,
+        // `docNode ?? overload` isn't needed here because TS doesn't allow
+        // const function assignments to be overloaded as of now.
+        ...parseNodeJSDocInfo(overload),
+        ...getFunctionLikeInfo(overload, analyzer),
+      });
+    }),
   });
 };
 
