@@ -2,4 +2,7 @@
 '@lit-labs/analyzer': minor
 ---
 
-Documentation for overloaded functions and methods is now extracted from another declaration if the implementation declaration has no JSDoc tags.
+Adds support for overloaded functions. Methods of model objects that accept a
+string key will now specifically return the `FunctionDeclaration` of the
+implementation signature of an overloaded function, which has a new `overloads`
+field containing a `FunctionOverloadDeclaration` for each overload signature.
