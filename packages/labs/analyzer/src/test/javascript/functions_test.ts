@@ -184,17 +184,17 @@ for (const lang of languages) {
     const fn = module.getDeclaration('overloaded');
     assert.equal(fn, exportedFn);
     assert.ok(fn?.isFunctionDeclaration());
-    assert.equal(fn.name, `overloaded`);
+    assert.equal(fn.name, 'overloaded');
     assert.equal(
       fn.description,
-      `This function has an overloaded signature in TS.`
+      'This signature works with strings or numbers.'
     );
     assert.equal(fn.summary, undefined);
     assert.equal(fn.parameters?.length, 1);
     assert.equal(fn.parameters?.[0].name, 'x');
     assert.equal(
       fn.parameters?.[0].description,
-      'Some value, either a string or a number.'
+      'Accepts either a string or a number.'
     );
     assert.equal(fn.parameters?.[0].summary, undefined);
     assert.equal(fn.parameters?.[0].type?.text, 'string | number');
@@ -206,65 +206,56 @@ for (const lang of languages) {
       'Returns either a string or a number.'
     );
     assert.equal(fn.deprecated, undefined);
-  });
 
-  test('Overloaded function with docs only on a non-implementation signature', ({
-    module,
-  }) => {
-    const exportedFn = module.getResolvedExport(
-      'overloadedWithDocsOnOverloadOnly'
-    );
-    const fn = module.getDeclaration('overloadedWithDocsOnOverloadOnly');
-    assert.equal(fn, exportedFn);
-    assert.ok(fn?.isFunctionDeclaration());
-    assert.equal(fn.name, `overloadedWithDocsOnOverloadOnly`);
-    assert.equal(
-      fn.description?.replace(/\n/g, ' '),
-      `This is not the implementation signature, but there are no docs on the implementation signature.`
-    );
-    assert.equal(fn.summary, undefined);
-    assert.equal(fn.parameters?.length, 1);
-    assert.equal(fn.parameters?.[0].name, 'x');
-    assert.equal(
-      fn.parameters?.[0].description?.replace(/\n/g, ' '),
-      'This might be a string or a number, even though this signature only allows strings.'
-    );
-    assert.equal(fn.parameters?.[0].summary, undefined);
-    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
-    assert.equal(fn.parameters?.[0].default, undefined);
-    assert.equal(fn.parameters?.[0].rest, false);
-    assert.equal(fn.return?.type?.text, 'string | number');
-    assert.equal(
-      fn.return?.description?.replace(/\n/g, ' '),
-      'Returns either a string or a number, but this signature only mentions `string`.'
-    );
-    assert.equal(fn.deprecated, undefined);
-  });
+    // TODO: Run the same assertions in both languages once TS supports
+    // `@overload` for JSDoc in JS.
+    // <https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-rc/#overload-support-in-jsdoc>
+    if (lang === 'ts') {
+      assert.ok(fn.overloads);
+      assert.equal(fn.overloads.length, 2);
 
-  test('Overloaded function with docs on many signatures', ({module}) => {
-    const exportedFn = module.getResolvedExport('overloadedWithDocsOnMany');
-    const fn = module.getDeclaration('overloadedWithDocsOnMany');
-    assert.equal(fn, exportedFn);
-    assert.ok(fn?.isFunctionDeclaration());
-    assert.equal(fn.name, `overloadedWithDocsOnMany`);
-    assert.equal(fn.description, `This is the implementation signature.`);
-    assert.equal(fn.summary, undefined);
-    assert.equal(fn.parameters?.length, 1);
-    assert.equal(fn.parameters?.[0].name, 'x');
-    assert.equal(
-      fn.parameters?.[0].description,
-      'Maybe a string, maybe a number.'
-    );
-    assert.equal(fn.parameters?.[0].summary, undefined);
-    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
-    assert.equal(fn.parameters?.[0].default, undefined);
-    assert.equal(fn.parameters?.[0].rest, false);
-    assert.equal(fn.return?.type?.text, 'string | number');
-    assert.equal(
-      fn.return?.description?.replace(/\n/g, ' '),
-      'Returns either a string or a number, depending on the mood.'
-    );
-    assert.equal(fn.deprecated, undefined);
+      assert.equal(fn.overloads[0].name, 'overloaded');
+      assert.equal(
+        fn.overloads[0].description,
+        'This signature only works with strings.'
+      );
+      assert.equal(fn.overloads[0].summary, undefined);
+      assert.equal(fn.overloads[0].parameters?.length, 1);
+      assert.equal(fn.overloads[0].parameters?.[0].name, 'x');
+      assert.equal(
+        fn.overloads[0].parameters?.[0].description,
+        'Accepts a string.'
+      );
+      assert.equal(fn.overloads[0].parameters?.[0].summary, undefined);
+      assert.equal(fn.overloads[0].parameters?.[0].type?.text, 'string');
+      assert.equal(fn.overloads[0].parameters?.[0].default, undefined);
+      assert.equal(fn.overloads[0].parameters?.[0].rest, false);
+      assert.equal(fn.overloads[0].return?.type?.text, 'string');
+      assert.equal(fn.overloads[0].return?.description, 'Returns a string.');
+      assert.equal(fn.overloads[0].deprecated, undefined);
+
+      assert.equal(fn.overloads[1].name, 'overloaded');
+      assert.equal(
+        fn.overloads[1].description,
+        'This signature only works with numbers.'
+      );
+      assert.equal(fn.overloads[1].summary, undefined);
+      assert.equal(fn.overloads[1].parameters?.length, 1);
+      assert.equal(fn.overloads[1].parameters?.[0].name, 'x');
+      assert.equal(
+        fn.overloads[1].parameters?.[0].description,
+        'Accepts a number.'
+      );
+      assert.equal(fn.overloads[1].parameters?.[0].summary, undefined);
+      assert.equal(fn.overloads[1].parameters?.[0].type?.text, 'number');
+      assert.equal(fn.overloads[1].parameters?.[0].default, undefined);
+      assert.equal(fn.overloads[1].parameters?.[0].rest, false);
+      assert.equal(fn.overloads[1].return?.type?.text, 'number');
+      assert.equal(fn.overloads[1].return?.description, 'Returns a number.');
+      assert.equal(fn.overloads[1].deprecated, undefined);
+    } else {
+      assert.equal(fn.overloads?.length ?? 0, 0);
+    }
   });
 
   test.run();

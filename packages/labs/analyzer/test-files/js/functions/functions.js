@@ -89,41 +89,11 @@ export const asyncFunction = async (a) => {
 };
 
 /**
- * This function has an overloaded signature in TS.
- * @param {string | number} x Some value, either a string or a number.
+ * This signature works with strings or numbers.
+ * @param {string | number} x Accepts either a string or a number.
  * @returns {string | number} Returns either a string or a number.
  */
 export function overloaded(x) {
-  if (typeof x === 'string') {
-    return x + 'abc';
-  } else {
-    return x + 123;
-  }
-}
-
-/**
- * This is not the implementation signature, but there are no docs on the
- * implementation signature.
- * @param {string | number} x This might be a string or a number, even though
- * this signature only allows strings.
- * @returns {string | number} Returns either a string or a number, but this
- * signature only mentions `string`.
- */
-export function overloadedWithDocsOnOverloadOnly(x) {
-  if (typeof x === 'string') {
-    return x + 'abc';
-  } else {
-    return x + 123;
-  }
-}
-
-/**
- * This is the implementation signature.
- * @param {string | number} x Maybe a string, maybe a number.
- * @returns {string | number} Returns either a string or a number, depending on
- * the mood.
- */
-export function overloadedWithDocsOnMany(x) {
   if (typeof x === 'string') {
     return x + 'abc';
   } else {
