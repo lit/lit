@@ -80,4 +80,29 @@ export class ElementA extends LitElement {
 
   @property()
   union: LocalClass | HTMLElement | ImportedClass;
+
+  /**
+   * This signature only works with strings.
+   * @param x Accepts a string.
+   * @returns Returns a string.
+   */
+  overloaded(x: string): string;
+  /**
+   * This signature only works with numbers.
+   * @param x Accepts a number.
+   * @returns Returns a number.
+   */
+  overloaded(x: number): number;
+  /**
+   * This signature works with strings or numbers.
+   * @param x Accepts either a string or a number.
+   * @returns Returns either a string or a number.
+   */
+  overloaded(x: string | number): string | number {
+    if (typeof x === 'string') {
+      return x + 'abc';
+    } else {
+      return x + 123;
+    }
+  }
 }

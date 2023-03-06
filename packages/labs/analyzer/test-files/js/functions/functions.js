@@ -87,3 +87,16 @@ export const asyncFunction = async (a) => {
   await 0;
   return a;
 };
+
+/**
+ * This signature works with strings or numbers.
+ * @param {string | number} x Accepts either a string or a number.
+ * @returns {string | number} Returns either a string or a number.
+ */
+export function overloaded(x) {
+  if (typeof x === 'string') {
+    return x + 'abc';
+  } else {
+    return x + 123;
+  }
+}

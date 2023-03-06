@@ -81,13 +81,16 @@ export const getClassMembers = (
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
   declaration.members.forEach((node) => {
-    if (ts.isMethodDeclaration(node)) {
+    // Ignore non-implementation signatures of overloaded methods by checking
+    // for `node.body`.
+    if (ts.isMethodDeclaration(node) && node.body) {
       const info = getMemberInfo(node);
+      const name = node.name.getText();
       (info.static ? staticMethodMap : methodMap).set(
-        node.name.getText(),
+        name,
         new ClassMethod({
           ...info,
-          ...getFunctionLikeInfo(node, analyzer),
+          ...getFunctionLikeInfo(node, name, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );
