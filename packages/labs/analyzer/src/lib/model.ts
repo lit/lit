@@ -331,15 +331,29 @@ export interface FunctionLikeInit extends DeprecatableDescribed {
   name: string;
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
+  overloads?: FunctionOverloadDeclaration[] | undefined;
 }
 
 export class FunctionDeclaration extends Declaration {
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
+  overloads?: FunctionOverloadDeclaration[] | undefined;
   constructor(init: FunctionLikeInit) {
     super(init);
     this.parameters = init.parameters;
     this.return = init.return;
+    this.overloads = init.overloads;
+  }
+}
+
+export interface FunctionLikeOverloadInit extends FunctionLikeInit {
+  overloads?: undefined;
+}
+
+export class FunctionOverloadDeclaration extends FunctionDeclaration {
+  override overloads: undefined;
+  constructor(init: FunctionLikeOverloadInit) {
+    super(init);
   }
 }
 
@@ -401,7 +415,7 @@ export type ClassHeritage = {
 };
 
 export interface ClassDeclarationInit extends DeclarationInit {
-  node: ts.ClassDeclaration;
+  node: ts.ClassLikeDeclaration;
   getHeritage: () => ClassHeritage;
   fieldMap?: Map<string, ClassField> | undefined;
   staticFieldMap?: Map<string, ClassField> | undefined;
@@ -410,7 +424,7 @@ export interface ClassDeclarationInit extends DeclarationInit {
 }
 
 export class ClassDeclaration extends Declaration {
-  readonly node: ts.ClassDeclaration;
+  readonly node: ts.ClassLikeDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
   readonly _fieldMap: Map<string, ClassField>;

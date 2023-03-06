@@ -60,5 +60,18 @@ export class ElementA extends LitElement {
     this.globalClass = document.createElement('foo');
     this.staticProp = 42;
   }
+
+  /**
+   * This signature works with strings or numbers.
+   * @param {string | number} x Accepts either a string or a number.
+   * @returns {string | number} Returns either a string or a number.
+   */
+  overloaded(x) {
+    if (typeof x === 'string') {
+      return x + 'abc';
+    } else {
+      return x + 123;
+    }
+  }
 }
 customElements.define('element-a', ElementA);

@@ -43,11 +43,17 @@ import {
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
- * ts.ClassDeclaration.
+ * ts.ClassLikeDeclaration.
+ *
+ * Note, the `docNode` may differ from the `declaration` in the case of a const
+ * assignment to a class expression, as the JSDoc will be attached to the
+ * VariableStatement rather than the class-like expression.
  */
-const getClassDeclaration = (
-  declaration: ts.ClassDeclaration,
-  analyzer: AnalyzerInterface
+export const getClassDeclaration = (
+  declaration: ts.ClassLikeDeclaration,
+  name: string,
+  analyzer: AnalyzerInterface,
+  docNode?: ts.Node
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
     return getLitElementDeclaration(declaration, analyzer);
@@ -56,11 +62,10 @@ const getClassDeclaration = (
     return getCustomElementDeclaration(declaration, analyzer);
   }
   return new ClassDeclaration({
-    // TODO(kschaaf): support anonymous class expressions when assigned to a const
-    name: declaration.name?.text ?? '',
+    name,
     node: declaration,
     getHeritage: () => getHeritage(declaration, analyzer),
-    ...parseNodeJSDocInfo(declaration),
+    ...parseNodeJSDocInfo(docNode ?? declaration),
     ...getClassMembers(declaration, analyzer),
   });
 };
@@ -69,7 +74,7 @@ const getClassDeclaration = (
  * Returns the `fields` and `methods` of a class.
  */
 export const getClassMembers = (
-  declaration: ts.ClassDeclaration,
+  declaration: ts.ClassLikeDeclaration,
   analyzer: AnalyzerInterface
 ) => {
   const fieldMap = new Map<string, ClassField>();
@@ -77,13 +82,16 @@ export const getClassMembers = (
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
   declaration.members.forEach((node) => {
-    if (ts.isMethodDeclaration(node)) {
+    // Ignore non-implementation signatures of overloaded methods by checking
+    // for `node.body`.
+    if (ts.isMethodDeclaration(node) && node.body) {
       const info = getMemberInfo(node);
+      const name = node.name.getText();
       (info.static ? staticMethodMap : methodMap).set(
-        node.name.getText(),
+        name,
         new ClassMethod({
           ...info,
-          ...getFunctionLikeInfo(node, analyzer),
+          ...getFunctionLikeInfo(node, name, analyzer),
           ...parseNodeJSDocInfo(node),
         })
       );
@@ -153,9 +161,10 @@ export const getClassDeclarationInfo = (
   declaration: ts.ClassDeclaration,
   analyzer: AnalyzerInterface
 ): DeclarationInfo => {
+  const name = getClassDeclarationName(declaration);
   return {
-    name: getClassDeclarationName(declaration),
-    factory: () => getClassDeclaration(declaration, analyzer),
+    name,
+    factory: () => getClassDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(declaration),
   };
 };

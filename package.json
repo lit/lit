@@ -226,6 +226,6 @@
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
-    "**/*.{js,ts}": "eslint --ignore-pattern=examples/ --fix"
+    "{*.{js,ts},!(examples)/**/*.{js,ts}}": "eslint --fix"
   }
 }

@@ -28,60 +28,13 @@
 export class ElementA extends HTMLElement {
   /**
    * Class field 1 description
-   * with wraparound
    */
   private field1 = 'default1';
 
   /**
-   * @summary Class field 2 summary
-   * with wraparound
-   *
-   * @description Class field 2 description
-   * with wraparound
-   */
-  protected field2: number | string;
-
-  /**
-   * @description Class field 3 description
-   * with wraparound
-   * @deprecated
-   */
-  field3?: string;
-
-  /**
-   * Class field 4 description
-   * with wraparound
-   * @summary Class field 4 summary
-   * with wraparound
-   * @deprecated Class field 4 deprecated
-   */
-  field4 = new Promise<void>((r) => r());
-
-  /**
    * Method 1 description
-   * with wraparound
    */
   method1() {}
-
-  /**
-   * @summary Method 2 summary
-   * with wraparound
-   *
-   * @description Method 2 description
-   * with wraparound
-   *
-   * @param a Param a description
-   * @param b Param b description
-   * with wraparound
-   *
-   * @param c Param c description
-   * @returns Method 2 return description
-   *
-   * @deprecated Method 2 deprecated
-   */
-  method2(a: string, b = false, ...c: number[]) {
-    return b ? a : c[0].toFixed();
-  }
 }
 
 customElements.define('element-a', ElementA);

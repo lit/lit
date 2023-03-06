@@ -192,6 +192,83 @@ for (const lang of languages) {
     assert.equal(property.attribute, 'static-prop');
   });
 
+  test('method with an overloaded signature', ({element}) => {
+    const fn = Array.from(element.methods).find((m) => m.name === 'overloaded');
+    assert.ok(fn?.isFunctionDeclaration());
+    assert.equal(fn.name, 'overloaded');
+    assert.equal(
+      fn.description,
+      'This signature works with strings or numbers.'
+    );
+    assert.equal(fn.summary, undefined);
+    assert.equal(fn.parameters?.length, 1);
+    assert.equal(fn.parameters?.[0].name, 'x');
+    assert.equal(
+      fn.parameters?.[0].description,
+      'Accepts either a string or a number.'
+    );
+    assert.equal(fn.parameters?.[0].summary, undefined);
+    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
+    assert.equal(fn.parameters?.[0].default, undefined);
+    assert.equal(fn.parameters?.[0].rest, false);
+    assert.equal(fn.return?.type?.text, 'string | number');
+    assert.equal(
+      fn.return?.description,
+      'Returns either a string or a number.'
+    );
+    assert.equal(fn.deprecated, undefined);
+
+    // TODO: Run the same assertions in both languages once TS supports
+    // `@overload` for JSDoc in JS.
+    // <https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-rc/#overload-support-in-jsdoc>
+    if (lang === 'ts') {
+      assert.ok(fn.overloads);
+      assert.equal(fn.overloads.length, 2);
+
+      assert.equal(fn.overloads[0].name, 'overloaded');
+      assert.equal(
+        fn.overloads[0].description,
+        'This signature only works with strings.'
+      );
+      assert.equal(fn.overloads[0].summary, undefined);
+      assert.equal(fn.overloads[0].parameters?.length, 1);
+      assert.equal(fn.overloads[0].parameters?.[0].name, 'x');
+      assert.equal(
+        fn.overloads[0].parameters?.[0].description,
+        'Accepts a string.'
+      );
+      assert.equal(fn.overloads[0].parameters?.[0].summary, undefined);
+      assert.equal(fn.overloads[0].parameters?.[0].type?.text, 'string');
+      assert.equal(fn.overloads[0].parameters?.[0].default, undefined);
+      assert.equal(fn.overloads[0].parameters?.[0].rest, false);
+      assert.equal(fn.overloads[0].return?.type?.text, 'string');
+      assert.equal(fn.overloads[0].return?.description, 'Returns a string.');
+      assert.equal(fn.overloads[0].deprecated, undefined);
+
+      assert.equal(fn.overloads[1].name, 'overloaded');
+      assert.equal(
+        fn.overloads[1].description,
+        'This signature only works with numbers.'
+      );
+      assert.equal(fn.overloads[1].summary, undefined);
+      assert.equal(fn.overloads[1].parameters?.length, 1);
+      assert.equal(fn.overloads[1].parameters?.[0].name, 'x');
+      assert.equal(
+        fn.overloads[1].parameters?.[0].description,
+        'Accepts a number.'
+      );
+      assert.equal(fn.overloads[1].parameters?.[0].summary, undefined);
+      assert.equal(fn.overloads[1].parameters?.[0].type?.text, 'number');
+      assert.equal(fn.overloads[1].parameters?.[0].default, undefined);
+      assert.equal(fn.overloads[1].parameters?.[0].rest, false);
+      assert.equal(fn.overloads[1].return?.type?.text, 'number');
+      assert.equal(fn.overloads[1].return?.description, 'Returns a number.');
+      assert.equal(fn.overloads[1].deprecated, undefined);
+    } else {
+      assert.equal(fn.overloads?.length ?? 0, 0);
+    }
+  });
+
   test('property with an unsupported name type', ({analyzer, element}) => {
     const diagnostics = Array.from(analyzer.getDiagnostics());
     // This currently results in two diagnostics: one for the
