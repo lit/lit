@@ -105,6 +105,8 @@ export const getClassMembers = (
           ...parseNodeJSDocInfo(node),
         })
       );
+    } else if (ts.isConstructorDeclaration(node)) {
+      addConstructorFields(node, fieldMap, analyzer);
     }
   });
   return {
@@ -113,6 +115,41 @@ export const getClassMembers = (
     methodMap,
     staticMethodMap,
   };
+};
+
+/**
+ * Add ClassFields that are defined via an initializer in the
+ * constructor only
+ */
+const addConstructorFields = (
+  ctor: ts.ConstructorDeclaration,
+  fieldMap: Map<string, ClassField>,
+  analyzer: AnalyzerInterface
+) => {
+  ctor.body?.statements.forEach((stmt) => {
+    // Look for initializers in the form of `this.foo = xxxx`
+    if (
+      ts.isExpressionStatement(stmt) &&
+      ts.isBinaryExpression(stmt.expression) &&
+      ts.isPropertyAccessExpression(stmt.expression.left) &&
+      stmt.expression.left.expression.kind === ts.SyntaxKind.ThisKeyword &&
+      ts.isIdentifier(stmt.expression.left.name)
+    ) {
+      const name = stmt.expression.left.name.text;
+      const initializer = stmt.expression.right;
+      fieldMap.set(
+        name,
+        new ClassField({
+          name,
+          static: false,
+          privacy: getPrivacy(stmt),
+          default: initializer.getText(),
+          type: getTypeForNode(initializer, analyzer),
+          ...parseNodeJSDocInfo(stmt),
+        })
+      );
+    }
+  });
 };
 
 const getMemberInfo = (node: ts.MethodDeclaration | ts.PropertyDeclaration) => {
