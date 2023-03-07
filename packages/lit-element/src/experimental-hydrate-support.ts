@@ -95,6 +95,16 @@ globalThis.litElementHydrateSupport = ({
     update.call(this, changedProperties);
     if (this._$needsHydration) {
       this._$needsHydration = false;
+      // Remove aria attributes added by internals shim during SSR
+      // TODO(augustjk) Prefix should probably be an exported const
+      for (let i = 0; i < this.attributes.length; i++) {
+        const attr = this.attributes[i];
+        if (attr.name.startsWith('hydrate-internals-')) {
+          const ariaAttr = attr.name.slice('hydrate-internals-'.length);
+          this.removeAttribute(ariaAttr);
+          this.removeAttribute(attr.name);
+        }
+      }
       hydrate(value, this.renderRoot, this.renderOptions);
     } else {
       render(value, this.renderRoot, this.renderOptions);
