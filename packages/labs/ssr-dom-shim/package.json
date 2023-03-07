@@ -27,7 +27,8 @@
     }
   },
   "files": [
-    "index.{d.ts,d.ts.map,js,js.map}"
+    "index.{d.ts,d.ts.map,js,js.map}",
+    "element-internals.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "wireit",
@@ -48,6 +49,7 @@
       ],
       "output": [
         "index.{d.ts,d.ts.map,js,js.map}",
+        "element-internals.{d.ts,d.ts.map,js,js.map}",
         "tsconfig.tsbuildinfo"
       ]
     }
