@@ -5260,7 +5260,10 @@ export const tests: {[name: string]: SSRTest} = {
           },
         },
       ],
-      stableSelectors: ['le-internals'],
+      expectMutationsDuringHydration: true,
+      expectMutationsDuringUpgrade: true,
+      skipPreHydrationAssertHtml: true,
+      stableSelectors: ['le-internals-hydrate'],
     };
   },
 };
