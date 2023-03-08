@@ -1,5 +1,5 @@
 ---
-"@lit-labs/virtualizer": patch
+'@lit-labs/virtualizer': patch
 ---
 
-[@lit-labs/virtualizer]: handle uninitialized layout in _childrenSizeChanged
+[@lit-labs/virtualizer]: handle uninitialized layout in \_childrenSizeChanged
