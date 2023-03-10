@@ -354,7 +354,7 @@ const d =
     : document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
-const createMarker = (v = '') => d.createComment(v);
+const createMarker = () => d.createComment('');
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
@@ -1398,8 +1398,11 @@ class ChildPart implements Disconnectable {
     }
   }
 
-  private _insert<T extends Node>(node: T, ref = this._$endNode) {
-    return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
+  private _insert<T extends Node>(node: T) {
+    return wrap(wrap(this._$startNode).parentNode!).insertBefore(
+      node,
+      this._$endNode
+    );
   }
 
   private _commitNode(value: Node): void {
@@ -1467,7 +1470,7 @@ class ChildPart implements Disconnectable {
       (node as Text).data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
-        const textNode = document.createTextNode('');
+        const textNode = d.createTextNode('');
         this._commitNode(textNode);
         // When setting text content, for security purposes it matters a lot
         // what the parent is. For example, <style> and <script> need to be
