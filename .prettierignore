@@ -260,9 +260,11 @@ packages/labs/ssr/index.*
 
 packages/labs/ssr-client/development/
 packages/labs/ssr-client/directives/
-packages/labs/ssr-client/controllers/
+packages/labs/ssr-client/lib/
+packages/labs/ssr-client/node/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
+packages/labs/ssr-client/lit-element-hydrate-support.*
 
 packages/labs/ssr-dom-shim/index.*
 packages/labs/ssr-dom-shim/lib/

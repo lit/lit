@@ -18,10 +18,25 @@
   },
   "exports": {
     ".": {
+      "types": "./development.index.d.ts",
+      "node": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
       "development": "./development/index.js",
       "default": "./index.js"
     },
+    "./lit-element-hydrate-support.js": {
+      "types": "./development/lit-element-hydrate-support.d.ts",
+      "node": {
+        "development": "./node/development/lit-element-hydrate-support.js",
+        "default": "./node/lit-element-hydrate-support.js"
+      },
+      "development": "./development/lit-element-hydrate-support.js",
+      "default": "./lit-element-hydrate-support.js"
+    },
     "./directives/render-light.js": {
+      "types": "./development/directives/render-light.d.ts",
       "development": "./development/directives/render-light.js",
       "default": "./directives/render-light.js"
     }
@@ -30,7 +45,9 @@
     "/development/",
     "!/development/test/",
     "/directives/",
-    "/index.{d.ts,d.ts.map,js,js.map}"
+    "/lib/",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lit-element-hydrate-support.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "wireit",
@@ -72,7 +89,8 @@
       "files": [],
       "output": [
         "*.d.ts{,.map}",
-        "directives/*.d.ts{,.map}"
+        "directives/*.d.ts{,.map}",
+        "lib/*.d.ts{,.map}"
       ]
     },
     "build:rollup": {
@@ -86,7 +104,10 @@
       ],
       "output": [
         "index.js{,.map}",
-        "directives/*.js{,.map}"
+        "lit-element-hydrate-support.js{,.map}",
+        "directives/*.js{,.map}",
+        "lib/*.js{,.map}",
+        "node/"
       ]
     },
     "checksize": {
