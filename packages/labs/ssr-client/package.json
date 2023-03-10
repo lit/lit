@@ -106,9 +106,10 @@
     "@lit-internal/scripts": "^1.0.0"
   },
   "dependencies": {
+    "@lit-labs/ssr-dom-shim": "^1.1.0",
+    "@lit/reactive-element": "^1.0.0",
     "lit": "^2.0.0",
-    "lit-html": "^2.0.0",
-    "@lit/reactive-element": "^1.0.0"
+    "lit-html": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"
