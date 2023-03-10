@@ -113,6 +113,9 @@ type ChildPartState =
  * @param rootValue
  * @param container
  * @param userOptions
+ *
+ * @deprecated This has been moved to `@lit-labs/ssr-client` and will be removed
+ * in a future release.
  */
 export const hydrate = (
   rootValue: unknown,

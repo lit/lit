@@ -8,6 +8,8 @@
  * LitElement support for hydration of content rendered using lit-ssr.
  *
  * @packageDocumentation
+ *
+ * @deprecated Moved to `@lit-labs/ssr-client/lit-element-hydrate-support.js`.
  */
 
 import type {PropertyValues} from '@lit/reactive-element';
@@ -113,3 +115,8 @@ globalThis.litElementHydrateSupport = ({
     }
   };
 };
+
+console.warn(
+  'Import from `lit-element/experimental-hydrate-support.js` is deprecated.' +
+    'Import `@lit-labs/ssr-client/lit-element-hydrate-support.js` instead.'
+);
