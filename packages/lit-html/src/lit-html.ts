@@ -855,7 +855,7 @@ export type {Template};
 class Template {
   /** @internal */
   el!: HTMLTemplateElement;
-  /** @internal */
+
   parts: Array<TemplatePart> = [];
 
   constructor(
@@ -1087,9 +1087,7 @@ function resolveDirective(
  * update the template instance.
  */
 class TemplateInstance implements Disconnectable {
-  /** @internal */
   _$template: Template;
-  /** @internal */
   _parts: Array<Part | undefined> = [];
 
   /** @internal */
@@ -1193,9 +1191,7 @@ type AttributeTemplatePart = {
   readonly type: typeof ATTRIBUTE_PART;
   readonly index: number;
   readonly name: string;
-  /** @internal */
   readonly ctor: typeof AttributePart;
-  /** @internal */
   readonly strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {

@@ -4,15 +4,23 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateResult} from './lit-html.js';
-
-import {noChange, RenderOptions, _$LH} from './lit-html.js';
-import {AttributePartInfo, PartType} from './directive.js';
+import {
+  _$LH,
+  DirectiveParent,
+  RenderOptions,
+  TemplateResult,
+  noChange,
+} from 'lit-html';
+import {
+  AttributePart,
+  AttributePartInfo,
+  PartType,
+} from 'lit-html/directive.js';
 import {
   isPrimitive,
   isSingleExpression,
   isTemplateResult,
-} from './directive-helpers.js';
+} from 'lit-html/directive-helpers.js';
 
 // In the Node build, this import will be injected by Rollup:
 // import {Buffer} from 'buffer';
@@ -270,7 +278,13 @@ const openChildPart = (
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(value)}`;
     if (marker.data === markerWithDigest) {
-      const template = ChildPart.prototype._$getTemplate(value);
+      const template = (
+        ChildPart.prototype as ChildPart & {
+          _$getTemplate(
+            value: TemplateResult
+          ): ConstructorParameters<typeof TemplateInstance>[0];
+        }
+      )._$getTemplate(value);
       const instance = new TemplateInstance(template, part);
       stack.push({
         type: 'template-instance',
@@ -320,7 +334,7 @@ const closeChildPart = (
     throw new Error('unbalanced part marker');
   }
 
-  part._$endNode = marker;
+  (part as ChildPart & {_$endNode: ChildNode})._$endNode = marker;
 
   const currentState = stack.pop()!;
 
@@ -400,12 +414,16 @@ const createAttributeParts = (
           instancePart.type === PartType.EVENT ||
           instancePart.type === PartType.PROPERTY
         );
-        instancePart._$setValue(
-          value,
-          instancePart,
-          state.instancePartIndex,
-          noCommit
-        );
+        (
+          instancePart as AttributePart & {
+            _$setValue(
+              value: unknown,
+              directiveParent: DirectiveParent,
+              valueIndex?: number,
+              noCommit?: boolean
+            ): void;
+          }
+        )._$setValue(value, instancePart, state.instancePartIndex, noCommit);
         state.instancePartIndex += templatePart.strings.length - 1;
         instance._parts.push(instancePart);
       } else {

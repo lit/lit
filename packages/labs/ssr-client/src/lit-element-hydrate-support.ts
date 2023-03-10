@@ -26,7 +26,6 @@ interface PatchableLitElement extends HTMLElement {
   _$needsHydration: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 globalThis.litElementHydrateSupport = ({
   LitElement,
 }: {
