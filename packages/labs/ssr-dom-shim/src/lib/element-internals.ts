@@ -4,17 +4,23 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-/**
- * TODO
- * - This type could be better inferred as Record<keyof ARIAMixin, string>;
- *   however, modern browsers and TypeScript seem to lack a common
- *   definition of the keys listed in ARIAMixin
- */
-export const ariaMixinEnum: Record<string, string> = {
+// As of TypeScript 4.7.4, `ARIAMixin` is missing the following properties
+// https://w3c.github.io/aria/#state_prop_def
+declare global {
+  interface ARIAMixin {
+    ariaBraileLabel: string | null;
+    ariaBraileRoleDescription: string | null;
+    ariaDescription: string | null;
+    ariaInvalid: string | null;
+    role: string | null;
+  }
+}
+
+export const ariaMixinEnum: Record<keyof ARIAMixin, string> = {
   ariaAtomic: 'aria-atomic',
   ariaAutoComplete: 'aria-autocomplete',
   ariaBraileLabel: 'aria-brailelabel',
-  ariaBraileDescription: 'aria-brailedescription',
+  ariaBraileRoleDescription: 'aria-braileroledescription',
   ariaBusy: 'aria-busy',
   ariaChecked: 'aria-checked',
   ariaColCount: 'aria-colcount',
@@ -57,11 +63,13 @@ export const ariaMixinEnum: Record<string, string> = {
 // Shim the global element internals object
 // Methods should be fine as noops and properties can generally
 // be while on the server.
-export const InternalsShim = class ElementInternals implements ARIAMixin {
+export const ElementInternalsShim = class ElementInternals
+  implements ARIAMixin
+{
   ariaAtomic = '';
   ariaAutoComplete = '';
   ariaBraileLabel = '';
-  ariaBraileDescription = '';
+  ariaBraileRoleDescription = '';
   ariaBusy = '';
   ariaChecked = '';
   ariaColCount = '';
@@ -122,6 +130,12 @@ export const InternalsShim = class ElementInternals implements ARIAMixin {
   setValidity(): void {}
   states = new Set();
   validationMessage = '';
-  validity = {} as globalThis.ValidityState;
+  validity = {} as ValidityState;
   willValidate = true;
 };
+
+const ElementInternalsShimWithRealType =
+  ElementInternalsShim as object as typeof ElementInternals;
+export {ElementInternalsShimWithRealType as ElementInternals};
+
+export const HYDRATE_INTERNALS_ATTR_PREFIX = 'hydrate-internals-';

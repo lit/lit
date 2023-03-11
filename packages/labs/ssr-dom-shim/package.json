@@ -20,15 +20,11 @@
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
-    },
-    "./element-internals.js": {
-      "types": "./element-internals.d.ts",
-      "default": "./element-internals.js"
     }
   },
   "files": [
     "index.{d.ts,d.ts.map,js,js.map}",
-    "element-internals.{d.ts,d.ts.map,js,js.map}"
+    "lib/"
   ],
   "scripts": {
     "build": "wireit",
@@ -48,8 +44,8 @@
         "tsconfig.json"
       ],
       "output": [
+        "lib/",
         "index.{d.ts,d.ts.map,js,js.map}",
-        "element-internals.{d.ts,d.ts.map,js,js.map}",
         "tsconfig.tsbuildinfo"
       ]
     }

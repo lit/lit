@@ -3,7 +3,13 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {InternalsShim} from './element-internals.js';
+import {ElementInternalsShim} from './lib/element-internals.js';
+
+export {
+  ariaMixinEnum,
+  ElementInternals,
+  HYDRATE_INTERNALS_ATTR_PREFIX,
+} from './lib/element-internals.js';
 
 const attributes: WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -67,7 +73,7 @@ const ElementShim = class Element {
     return shadowRoot;
   }
   attachInternals(): ElementInternals {
-    const internals = new InternalsShim(this as unknown as HTMLElement);
+    const internals = new ElementInternalsShim(this as unknown as HTMLElement);
     this.__internals = internals;
     return internals as ElementInternals;
   }
