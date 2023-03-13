@@ -20,12 +20,14 @@ jobs:
           git config --global user.email "lit-robot@google.com"
 
       - name: Setup Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Checkout Lit Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: lit
           # This makes Actions fetch all Git history so that Changesets can
@@ -58,7 +60,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.LIT_ROBOT_NPM_PUBLISH_ACCESS_TOKEN }}
 
       - name: Checkout dist repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # GitHub Actions outputs are strings and the string 'false' converts to
         # `true` because it isn't the empty string.
         if: steps.cs.outputs.published == 'true'
