@@ -23,9 +23,11 @@ import {
   direction,
   VirtualizerSize,
   VirtualizerSizeValue,
-  fixedCoordinateLabel,
-  fixedSizeDimension,
+  // fixedCoordinateLabel,
+  // fixedSizeDimension,
+  fixedSizeDimensionCapitalized,
   LogicalCoordinates,
+  fixedInsetLabel,
 } from './layouts/shared/Layout.js';
 import {
   RangeChangedEvent,
@@ -650,20 +652,77 @@ export class Virtualizer {
     const layout = this._layout;
 
     if (hostElement && hostElement.isConnected && scrollingElement && layout) {
-      let top, left, bottom, right;
+      // let insetBlockStart, insetInlineStart, insetBlockEnd, insetInlineEnd;
 
       const hostStyle = getComputedStyle(hostElement);
 
-      this._direction = hostStyle.direction as direction;
+      const direction = (this._direction = hostStyle.direction as direction);
       const writingMode = (this._writingMode =
         hostStyle.writingMode as writingMode);
 
+      let insetBlockStart: number,
+        insetBlockEnd: number,
+        insetInlineStart: number,
+        insetInlineEnd: number,
+        // scrollSize: {
+        //   inlineSize: number,
+        //   blockSize: number
+        // },
+        blockSizeLabel: fixedSizeDimensionCapitalized,
+        inlineSizeLabel: fixedSizeDimensionCapitalized,
+        blockStartLabel: fixedInsetLabel,
+        blockEndLabel: fixedInsetLabel,
+        inlineStartLabel: fixedInsetLabel,
+        inlineEndLabel: fixedInsetLabel,
+        blockScrollPosition: (el: Element) => number,
+        inlineScrollPosition: (el: Element) => number;
+
+      if (writingMode === 'horizontal-tb') {
+        blockSizeLabel = 'Height';
+        inlineSizeLabel = 'Width';
+        blockStartLabel = 'top';
+        blockEndLabel = 'bottom';
+        insetBlockStart = 0;
+        insetBlockEnd = window.innerHeight;
+        blockScrollPosition = (el: Element) => el.scrollTop;
+        if (direction === 'ltr') {
+          inlineStartLabel = 'left';
+          inlineEndLabel = 'right';
+          inlineScrollPosition = (el: Element) => el.scrollLeft;
+        } else {
+          inlineStartLabel = 'right';
+          inlineEndLabel = 'left';
+          inlineScrollPosition = (el: Element) => -el.scrollLeft;
+        }
+      } else {
+        blockSizeLabel = 'Width';
+        inlineSizeLabel = 'Height';
+        if (writingMode === 'vertical-lr') {
+          blockStartLabel = 'left';
+          blockEndLabel = 'right';
+          blockScrollPosition = (el: Element) => el.scrollLeft;
+        } else {
+          blockStartLabel = 'right';
+          blockEndLabel = 'left';
+          blockScrollPosition = (el: Element) => -el.scrollLeft;
+        }
+        if (direction === 'ltr') {
+          inlineStartLabel = 'top';
+          inlineEndLabel = 'bottom';
+          inlineScrollPosition = (el: Element) => el.scrollTop;
+        } else {
+          inlineStartLabel = 'bottom';
+          inlineEndLabel = 'top';
+          inlineScrollPosition = (el: Element) => -el.scrollTop;
+        }
+      }
+
       const hostElementBounds = hostElement.getBoundingClientRect();
 
-      top = 0;
-      left = 0;
-      bottom = window.innerHeight;
-      right = window.innerWidth;
+      insetBlockStart = 0;
+      insetInlineStart = 0;
+      insetBlockEnd = window[`inner${blockSizeLabel}`];
+      insetInlineEnd = window[`inner${inlineSizeLabel}`];
 
       const ancestorBounds = this._clippingAncestors.map((ancestor) =>
         ancestor.getBoundingClientRect()
@@ -671,69 +730,79 @@ export class Virtualizer {
       ancestorBounds.unshift(hostElementBounds);
 
       for (const bounds of ancestorBounds) {
-        top = Math.max(top, bounds.top);
-        left = Math.max(left, bounds.left);
-        bottom = Math.min(bottom, bounds.bottom);
-        right = Math.min(right, bounds.right);
+        insetBlockStart = Math.max(insetBlockStart, bounds[blockStartLabel]);
+        insetInlineStart = Math.max(insetInlineStart, bounds[inlineStartLabel]);
+        insetBlockEnd = Math.min(insetBlockEnd, bounds[blockEndLabel]);
+        insetInlineEnd = Math.min(insetInlineEnd, bounds[inlineEndLabel]);
       }
 
       const scrollingElementBounds = scrollingElement.getBoundingClientRect();
 
-      const offsetWithinScroller = {
-        left: hostElementBounds.left - scrollingElementBounds.left,
-        top: hostElementBounds.top - scrollingElementBounds.top,
+      layout.offsetWithinScroller = {
+        inline:
+          hostElementBounds[inlineStartLabel] -
+          scrollingElementBounds[inlineStartLabel],
+        block:
+          hostElementBounds[blockStartLabel] -
+          scrollingElementBounds[blockStartLabel],
       };
 
-      const scrollSize = {
-        width: scrollingElement.scrollWidth,
-        height: scrollingElement.scrollHeight,
+      layout.scrollSize = {
+        inlineSize: scrollingElement[`scroll${inlineSizeLabel}`],
+        blockSize: scrollingElement[`scroll${blockSizeLabel}`],
       };
 
-      const scrollPosition = {
-        top: top - hostElementBounds.top + hostElement.scrollTop,
-        left: left - hostElementBounds.left + hostElement.scrollLeft,
+      layout.viewportScroll = {
+        inline:
+          insetInlineStart -
+          hostElementBounds[inlineStartLabel] +
+          inlineScrollPosition(hostElement),
+        block:
+          insetBlockStart -
+          hostElementBounds[blockStartLabel] +
+          blockScrollPosition(hostElement),
       };
 
       // const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
       // const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
 
-      const viewportSize = {
-        height: Math.max(1, bottom - top),
-        width: Math.max(1, right - left),
+      layout.viewportSize = {
+        blockSize: Math.max(1, insetBlockEnd - insetBlockStart),
+        inlineSize: Math.max(1, insetInlineEnd - insetInlineStart),
       };
 
       layout.writingMode = writingMode;
       layout.direction = this._direction;
 
-      type selectors = [
-        fixedSizeDimension,
-        fixedSizeDimension,
-        fixedCoordinateLabel,
-        fixedCoordinateLabel
-      ];
+      // type selectors = [
+      //   fixedSizeDimension,
+      //   fixedSizeDimension,
+      //   fixedCoordinateLabel,
+      //   fixedCoordinateLabel
+      // ];
 
-      const [inlineSize, blockSize, inlineCoordinate, blockCoordinate] = (
-        writingMode === 'horizontal-tb'
-          ? ['width', 'height', 'left', 'top']
-          : ['height', 'width', 'top', 'left']
-      ) as selectors;
+      // const [inlineSize, blockSize, inlineCoordinate, blockCoordinate] = (
+      //   writingMode === 'horizontal-tb'
+      //     ? ['width', 'height', 'left', 'top']
+      //     : ['height', 'width', 'top', 'left']
+      // ) as selectors;
 
-      layout.viewportSize = {
-        inlineSize: viewportSize[inlineSize],
-        blockSize: viewportSize[blockSize],
-      };
-      layout.viewportScroll = {
-        inline: scrollPosition[inlineCoordinate],
-        block: scrollPosition[blockCoordinate],
-      };
-      layout.scrollSize = {
-        inlineSize: scrollSize[inlineSize],
-        blockSize: scrollSize[blockSize],
-      };
-      layout.offsetWithinScroller = {
-        inline: offsetWithinScroller[inlineCoordinate],
-        block: offsetWithinScroller[blockCoordinate],
-      };
+      // layout.viewportSize = {
+      //   inlineSize: viewportSize[inlineSize],
+      //   blockSize: viewportSize[blockSize],
+      // };
+      // layout.viewportScroll = {
+      //   inline: scrollPosition[inlineCoordinate],
+      //   block: scrollPosition[blockCoordinate],
+      // };
+      // layout.scrollSize = {
+      //   inlineSize: scrollSize[inlineSize],
+      //   blockSize: scrollSize[blockSize],
+      // };
+      // layout.offsetWithinScroller = {
+      //   inline: offsetWithinScroller[inlineCoordinate],
+      //   block: offsetWithinScroller[blockCoordinate],
+      // };
     }
   }
 
@@ -798,13 +867,29 @@ export class Virtualizer {
             }
 
             let left, top;
-            if (this._writingMode[0] === 'h') {
+            if (this._writingMode === 'horizontal-tb') {
               top = insetBlockStart;
-              left = insetInlineStart;
+              left =
+                this._direction === 'ltr'
+                  ? insetInlineStart
+                  : -insetInlineStart;
             } else {
-              top = insetInlineStart;
-              left = insetBlockStart;
+              left =
+                this._writingMode === 'vertical-lr'
+                  ? insetBlockStart
+                  : -insetBlockStart;
+              top =
+                this._direction === 'ltr'
+                  ? insetInlineStart
+                  : -insetInlineStart;
             }
+            // if (this._writingMode[0] === 'h') {
+            //   top = insetBlockStart;
+            //   left = insetInlineStart;
+            // } else {
+            //   top = insetInlineStart;
+            //   left = insetBlockStart;
+            // }
 
             child.style.transform = `translate(${left}px, ${top}px)`;
 

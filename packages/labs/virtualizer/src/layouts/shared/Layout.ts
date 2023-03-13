@@ -12,6 +12,7 @@ export type LogicalSize = {
 };
 
 export type fixedSizeDimension = 'height' | 'width';
+export type fixedSizeDimensionCapitalized = 'Height' | 'Width';
 export type FixedSize = {
   height: number;
   width: number;
@@ -22,7 +23,8 @@ type minOrMax = 'min' | 'max';
 export type VirtualizerSizeValue = number | [minOrMax, number];
 
 export type VirtualizerSize = {
-  [key in logicalSizeDimension]: VirtualizerSizeValue;
+  blockSize: VirtualizerSizeValue;
+  inlineSize: VirtualizerSizeValue;
 };
 
 export type margin =
@@ -54,6 +56,8 @@ export interface LayoutParams {
 // export type logicalPositionDimension = 'insetInlineStart' | 'insetBlockStart';
 
 // export type position = 'inlinePosition' | 'top';
+
+export type fixedInsetLabel = 'top' | 'bottom' | 'left' | 'right';
 
 export type fixedCoordinateLabel = 'top' | 'left'; // TODO: Don't think we need this
 export type FixedCoordinates = {
