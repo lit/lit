@@ -874,7 +874,7 @@ export class Virtualizer {
   // the virtualizer update cycle.
   private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
     // Only measure if the layout requires it
-    if (this._layout?.measureChildren) {
+    if (this._layout!.measureChildren) {
       for (const change of changes) {
         this._toBeMeasured.set(
           change.target as HTMLElement,
