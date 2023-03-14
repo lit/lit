@@ -26,8 +26,6 @@ type UpdateVisibleIndicesOptions = {
   emit?: boolean;
 };
 
-// export function fixedPositionDimension(logicalPositionDimension: log)
-
 export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The last set viewport scroll position.
@@ -260,10 +258,6 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     // Override
   }
 
-  // protected _viewDim2Changed(): void {
-  //   this._scheduleLayoutUpdate();
-  // }
-
   /**
    * The height or width of the viewport, whichever corresponds to the scrolling direction.
    */
@@ -393,26 +387,11 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     });
   }
 
-  protected _getAdjustedItemPosition(idx: number) {
-    const pos = this._getItemPosition(idx);
-    if (this.direction === 'rtl') {
-      // if (true/*this.writingMode[0] === 'h'*/) {
-      const size = this._getItemSize(idx);
-      pos.insetInlineStart =
-        this._viewDim2 - pos.insetInlineStart - size.inlineSize;
-      // }
-      // else {
-      // pos.insetBlockStart = this._virtualizerSize - pos.insetBlockStart;
-      // }
-    }
-    return pos;
-  }
-
   protected _sendStateChangedMessage() {
     const childPositions: ChildPositions = new Map();
     if (this._first !== -1 && this._last !== -1) {
       for (let idx = this._first; idx <= this._last; idx++) {
-        const pos = this._getAdjustedItemPosition(idx);
+        const pos = this._getItemPosition(idx);
         childPositions.set(idx, pos);
       }
     }
