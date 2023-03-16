@@ -48,7 +48,7 @@ export function provide<ValueType>({
 }: {
   context: Context<unknown, ValueType>;
 }): <K extends PropertyKey>(
-  protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
+  protoOrDescriptor: ReactiveElement & Partial<Record<K, ValueType>>,
   name?: K
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

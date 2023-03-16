@@ -31,7 +31,7 @@ customElements.define('context-consumer', ContextConsumerElement);
 class ContextProviderElement extends LitElement {
   @provide({context: simpleContext})
   @property({type: Number, reflect: true})
-  public value = 0;
+  public value?: number;
 
   protected render(): TemplateResult {
     return html`
