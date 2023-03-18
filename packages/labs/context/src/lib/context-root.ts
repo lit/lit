@@ -94,7 +94,10 @@ export class ContextRoot {
       return;
     }
 
-    const element = event.target as HTMLElement;
+    // Use composedPath (as opposed to event.target) to cover cases
+    // where the consumer is in the shadowDom of the provider (in which case,
+    // event.target === this.host because of event retargeting).
+    const element = event.composedPath()[0] as HTMLElement;
     const callback = event.callback;
 
     let pendingContextRequests = this.pendingContextRequests.get(event.context);
