@@ -5188,6 +5188,12 @@ export const tests: {[name: string]: SSRTest} = {
 
   'LitElement: ElementInternals': () => {
     return {
+      // ElementInternals is not implemented in Safari yet
+      skip: Boolean(
+        globalThis.navigator &&
+          navigator.userAgent.includes('Safari/') &&
+          navigator.userAgent.includes('Version/')
+      ),
       registerElements() {
         class LEInternals extends LitElement {
           constructor() {
@@ -5225,6 +5231,12 @@ export const tests: {[name: string]: SSRTest} = {
 
   'LitElement: ElementInternals with hydration': () => {
     return {
+      // ElementInternals is not implemented in Safari yet
+      skip: Boolean(
+        globalThis.navigator &&
+          navigator.userAgent.includes('Safari/') &&
+          navigator.userAgent.includes('Version/')
+      ),
       registerElements() {
         class LEInternalsHydrate extends LitElement {
           internals;
