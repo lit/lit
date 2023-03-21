@@ -147,20 +147,20 @@ suiteSkipIE('late context provider', () => {
   });
 
   test('lazy added provider, with consumer in shadowRoot of provider', async () => {
-    @customElement('lazy-context-provider')
-    class LazyContextProviderElement extends LitElement {
+    @customElement('lazy-context-provider-consumer')
+    class LazyContextProviderConsumerElement extends LitElement {
       protected render() {
         return html`<context-consumer></context-consumer>`;
       }
     }
     container.innerHTML = `
-      <lazy-context-provider>
-      </lazy-context-provider>
+      <lazy-context-provider-consumer>
+      </lazy-context-provider-consumer>
     `;
 
     const provider = container.querySelector(
-      'lazy-context-provider'
-    ) as LazyContextProviderElement;
+      'lazy-context-provider-consumer'
+    ) as LazyContextProviderConsumerElement;
 
     const consumer = provider.shadowRoot!.querySelector(
       'context-consumer'
