@@ -146,6 +146,38 @@ suiteSkipIE('late context provider', () => {
     assert.strictEqual(consumer.value, 1000);
   });
 
+  test('lazy added provider, with consumer in shadowRoot of provider', async () => {
+    @customElement('lazy-context-provider')
+    class LazyContextProviderElement extends LitElement {
+      protected render() {
+        return html`<context-consumer></context-consumer>`;
+      }
+    }
+    container.innerHTML = `
+      <lazy-context-provider>
+      </lazy-context-provider>
+    `;
+
+    const provider = container.querySelector(
+      'lazy-context-provider'
+    ) as LazyContextProviderElement;
+
+    const consumer = provider.shadowRoot!.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await consumer.updateComplete;
+
+    // Add a provider after the elements are setup
+    new ContextProvider(provider, {context: simpleContext, initialValue: 1000});
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    // `value` should now be provided
+    assert.strictEqual(consumer.value, 1000);
+  });
+
   test('late element with multiple properties', async () => {
     @customElement('context-consumer-2')
     class ContextConsumer2Element extends LitElement {
