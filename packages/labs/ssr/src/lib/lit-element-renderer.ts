@@ -8,7 +8,7 @@ import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
 import {
-  ariaMixinEnum,
+  ariaMixinAttributes,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from '@lit-labs/ssr-dom-shim';
 import {renderValue} from './render-value.js';
@@ -43,13 +43,11 @@ export class LitElementRenderer extends ElementRenderer {
       this.element as object as {__internals: ElementInternals}
     ).__internals;
     if (internals) {
-      for (const [key, value] of Object.entries(internals)) {
-        const ariaAttribute = ariaMixinEnum[key as keyof ARIAMixin];
-        if (
-          ariaAttribute &&
-          value &&
-          !this.element.hasAttribute(ariaAttribute)
-        ) {
+      for (const [ariaProp, ariaAttribute] of Object.entries(
+        ariaMixinAttributes
+      )) {
+        const value = internals[ariaProp as keyof ARIAMixin];
+        if (value && !this.element.hasAttribute(ariaAttribute)) {
           this.element.setAttribute(ariaAttribute, value);
           this.element.setAttribute(
             `${HYDRATE_INTERNALS_ATTR_PREFIX}${ariaAttribute}`,

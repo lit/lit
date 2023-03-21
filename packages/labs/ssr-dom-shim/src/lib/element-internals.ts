@@ -16,7 +16,14 @@ declare global {
   }
 }
 
-export const ariaMixinEnum: Record<keyof ARIAMixin, string> = {
+type ARIAAttributeMap = {
+  [K in keyof ARIAMixin]: string;
+};
+
+/**
+ * Map of ARIAMixin properties to attributes
+ */
+export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaAtomic: 'aria-atomic',
   ariaAutoComplete: 'aria-autocomplete',
   ariaBraileLabel: 'aria-brailelabel',
@@ -119,6 +126,12 @@ export const ElementInternalsShim = class ElementInternals
     this.__host = _host;
   }
   checkValidity() {
+    // TODO(augustjk) Consider actually implementing logic.
+    // See https://github.com/lit/lit/issues/3740
+    console.warn(
+      '`ElementInternals.checkValidity()` was called on the server.' +
+        'This method always returns true.'
+    );
     return true;
   }
   form = null;

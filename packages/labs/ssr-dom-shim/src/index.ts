@@ -6,7 +6,7 @@
 import {ElementInternalsShim} from './lib/element-internals.js';
 
 export {
-  ariaMixinEnum,
+  ariaMixinAttributes,
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
@@ -73,6 +73,12 @@ const ElementShim = class Element {
     return shadowRoot;
   }
   attachInternals(): ElementInternals {
+    if (this.__internals !== null) {
+      throw new Error(
+        `Failed to execute 'attachInternals' on 'HTMLElement': ` +
+          `ElementInternals for the specified element was already attached.`
+      );
+    }
     const internals = new ElementInternalsShim(this as unknown as HTMLElement);
     this.__internals = internals;
     return internals as ElementInternals;
