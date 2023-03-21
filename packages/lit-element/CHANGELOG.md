@@ -1,5 +1,17 @@
 # Change Log
 
+## 3.3.0
+
+### Minor Changes
+
+- [#3677](https://github.com/lit/lit/pull/3677) [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86) - [SSR only] Reflect ARIA attributes onto server rendered Lit elements with attached internals during SSR and remove them upon hydration.
+
+### Patch Changes
+
+- Updated dependencies [[`4d698430`](https://github.com/lit/lit/commit/4d698430b38efa49c97b841238b331340af5fef0), [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit-html@2.7.0
+  - @lit-labs/ssr-dom-shim@1.1.0
+
 ## 3.2.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.1.0
+
+### Minor Changes
+
+- [#3660](https://github.com/lit/lit/pull/3660) [`65df149f`](https://github.com/lit/lit/commit/65df149f761ff4052beb064386bd59f568a87154) - Fix the change-in-update warning from Tasks by delaying the initial host update
+
 ## 2.0.0
 
 ### Major Changes
