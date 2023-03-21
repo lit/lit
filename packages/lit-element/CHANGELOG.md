@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- [#3677](https://github.com/lit/lit/pull/3677) [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86) - Reflect ARIA attributes onto server rendered Lit elements with attached internals during SSR and remove them upon hydration.
+- [#3677](https://github.com/lit/lit/pull/3677) [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86) - [SSR only] Reflect ARIA attributes onto server rendered Lit elements with attached internals during SSR and remove them upon hydration.
 
 ### Patch Changes
 

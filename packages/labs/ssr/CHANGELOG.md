@@ -16,7 +16,7 @@
 
 - [#3712](https://github.com/lit/lit/pull/3712) [`f2eb9796`](https://github.com/lit/lit/commit/f2eb97962c7e77373b3b8861ab59639de22da3d0) - Fix a few things in the README
 
-- [#3719](https://github.com/lit/lit/pull/3719) [`a5a584d5`](https://github.com/lit/lit/commit/a5a584d5b935f85cef4cbb8c9ff95cae34a8f41c) - Make FallbackRenderer not emit a shadow root
+- [#3590](https://github.com/lit/lit/pull/3590) [`1d8a38ed`](https://github.com/lit/lit/commit/1d8a38ed0b962f23813a90c3c6423716c9271d83) - Make FallbackRenderer not emit a shadow root
 
 - [#3584](https://github.com/lit/lit/pull/3584) [`61ec3dab`](https://github.com/lit/lit/commit/61ec3dab761e379c65f9e27946e53137da83fb58) - Remove `abstract` from members of the ElementRendererConstructor type
 
