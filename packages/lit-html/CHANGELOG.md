@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.7.0
+
+### Minor Changes
+
+- [#3667](https://github.com/lit/lit/pull/3667) [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f) - Improved how nodes with attribute/property/event/element bindings are rendered in SSR, to avoid adding comments inside of "raw text elements" like `<textarea>`. Fixes #3663.
+
+  Note: `@lit-labs/ssr` and `lit-html` must be updated together.
+
+### Patch Changes
+
+- [#3615](https://github.com/lit/lit/pull/3615) [`4d698430`](https://github.com/lit/lit/commit/4d698430b38efa49c97b841238b331340af5fef0) - Don't throw in `ChildPart.parentNode` if the `parentNode` is null
+
+- [#3583](https://github.com/lit/lit/pull/3583) [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544) - Add more detail to some hydration errors
+
 ## 2.6.1
 
 ### Patch Changes
