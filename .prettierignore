@@ -265,6 +265,7 @@ packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
 
 packages/labs/ssr-dom-shim/index.*
+packages/labs/ssr-dom-shim/lib/
 
 packages/labs/ssr-react/node/
 packages/labs/ssr-react/lib/

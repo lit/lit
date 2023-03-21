@@ -230,6 +230,7 @@ export const setupTest = async (
         expectMutationsOnFirstRender,
         expectMutationsDuringHydration,
         expectMutationsDuringUpgrade,
+        skipPreHydrationAssertHtml,
       } = testSetup;
 
       const testFn =
@@ -257,7 +258,9 @@ export const setupTest = async (
         // The first expectation args are used in the server render. Check the DOM
         // pre-hydration to make sure they're correct. The DOM is changed again
         // against the first expectation after hydration in the loop below.
-        assertHTML(container, expectations[0].html);
+        if (!skipPreHydrationAssertHtml) {
+          assertHTML(container, expectations[0].html);
+        }
         const stableNodes = stableSelectors.map((selector) =>
           container.querySelector(selector)
         );

@@ -37,6 +37,7 @@ export interface SSRTestDescription {
   expectMutationsOnFirstRender?: boolean;
   expectMutationsDuringHydration?: boolean;
   expectMutationsDuringUpgrade?: boolean;
+  skipPreHydrationAssertHtml?: boolean;
   skip?: boolean;
   only?: boolean;
   registerElements?(): void | Promise<unknown>;
