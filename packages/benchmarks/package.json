@@ -68,6 +68,6 @@
     "tachometer": "^0.7.0"
   },
   "devDependencies": {
-    "chromedriver": "^109"
+    "chromedriver": "^111.0.0"
   }
 }
