@@ -1,4 +1,4 @@
-# @lit-labs/ssr-react
+# @lit-labs/nextjs
 
 Integrates Lit SSR with Next.js to enable deep server rendering of Lit components.
 
