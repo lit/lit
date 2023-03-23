@@ -31,7 +31,9 @@ export type {
 } from './reactive-controller.js';
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
+
+// Lets a minifier replace globalThis references with a minified name
+const global = globalThis;
 
 if (NODE_MODE) {
   global.customElements ??= customElements;
@@ -48,8 +50,9 @@ let requestUpdateThenable: (name: string) => {
 
 let issueWarning: (code: string, warning: string) => void;
 
-const trustedTypes = (global as unknown as {trustedTypes?: {emptyScript: ''}})
-  .trustedTypes;
+const trustedTypes = (
+  globalThis as unknown as {trustedTypes?: {emptyScript: ''}}
+).trustedTypes;
 
 // Temporary workaround for https://crbug.com/993268
 // Currently, any attribute starting with "on" is considered to be a
@@ -149,7 +152,7 @@ interface DebugLoggingWindow {
  */
 const debugLogEvent = DEV_MODE
   ? (event: ReactiveUnstable.DebugLog.Entry) => {
-      const shouldEmit = (global as unknown as DebugLoggingWindow)
+      const shouldEmit = (globalThis as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (!shouldEmit) {
         return;

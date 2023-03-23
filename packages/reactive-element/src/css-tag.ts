@@ -5,14 +5,13 @@
  */
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
 
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
 export const supportsAdoptingStyleSheets: boolean =
-  global.ShadowRoot &&
-  (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
+  globalThis.ShadowRoot &&
+  (globalThis.ShadyCSS === undefined || globalThis.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
   'replace' in CSSStyleSheet.prototype;
 
@@ -177,7 +176,7 @@ export const adoptStyles = (
     styles.forEach((s) => {
       const style = document.createElement('style');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const nonce = (global as any)['litNonce'];
+      const nonce = (globalThis as any)['litNonce'];
       if (nonce !== undefined) {
         style.setAttribute('nonce', nonce);
       }

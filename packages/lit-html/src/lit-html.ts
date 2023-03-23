@@ -11,8 +11,6 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 const NODE_MODE = false;
-// Use window for browser builds because IE11 doesn't have globalThis.
-const global = NODE_MODE ? globalThis : window;
 
 /**
  * Contains types that are part of the unstable debug API.
@@ -193,7 +191,7 @@ interface DebugLoggingWindow {
  */
 const debugLogEvent = DEV_MODE
   ? (event: LitUnstable.DebugLog.Entry) => {
-      const shouldEmit = (global as unknown as DebugLoggingWindow)
+      const shouldEmit = (globalThis as unknown as DebugLoggingWindow)
         .emitLitDebugLogEvents;
       if (!shouldEmit) {
         return;
@@ -239,7 +237,7 @@ const wrap =
     ? global.ShadyDOM!.wrap
     : (node: Node) => node;
 
-const trustedTypes = (global as unknown as Partial<Window>).trustedTypes;
+const trustedTypes = (globalThis as unknown as Window).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
