@@ -16,14 +16,11 @@ import {decorateProperty} from './base.js';
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
-const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
-
 /**
  * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
  */
 const slotAssignedElements =
-  global.HTMLSlotElement?.prototype.assignedElements != null
+  globalThis.HTMLSlotElement?.prototype.assignedElements != null
     ? (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
         slot.assignedElements(opts)
     : (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>

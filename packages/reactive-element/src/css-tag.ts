@@ -5,7 +5,9 @@
  */
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
+
+// Allows minifiers to rename references to globalThis
+const global = globalThis;
 
 /**
  * Whether the current browser supports `adoptedStyleSheets`.

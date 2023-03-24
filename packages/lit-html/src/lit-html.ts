@@ -11,8 +11,9 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 const NODE_MODE = false;
-// Use window for browser builds because IE11 doesn't have globalThis.
-const global = NODE_MODE ? globalThis : window;
+
+// Allows minifiers to rename references to globalThis
+const global = globalThis;
 
 /**
  * Contains types that are part of the unstable debug API.
@@ -239,7 +240,7 @@ const wrap =
     ? (global.ShadyDOM!.wrap as <T extends Node>(node: T) => T)
     : <T extends Node>(node: T) => node;
 
-const trustedTypes = (global as unknown as Partial<Window>).trustedTypes;
+const trustedTypes = (global as unknown as Window).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template

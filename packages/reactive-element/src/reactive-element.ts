@@ -31,7 +31,9 @@ export type {
 } from './reactive-controller.js';
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
+
+// Lets a minifier replace globalThis references with a minified name
+const global = globalThis;
 
 if (NODE_MODE) {
   global.customElements ??= customElements;
