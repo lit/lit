@@ -909,7 +909,6 @@ class Template {
           for (const name of (node as Element).getAttributeNames()) {
             if (name.endsWith(boundAttributeSuffix)) {
               const realName = attrNames[attrNameIndex++];
-              // Lowercase for case-sensitive SVG attributes like viewBox
               const value = (node as Element).getAttribute(name)!;
               const statics = value.split(marker);
               const m = /([.?@])?(.*)/.exec(realName)!;
