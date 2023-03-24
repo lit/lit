@@ -41,13 +41,6 @@ if (NODE_MODE) {
 
 const DEV_MODE = true;
 
-let requestUpdateThenable: (name: string) => {
-  then: (
-    onfulfilled?: (value: boolean) => void,
-    _onrejected?: () => void
-  ) => void;
-};
-
 let issueWarning: (code: string, warning: string) => void;
 
 const trustedTypes = (global as unknown as {trustedTypes?: {emptyScript: ''}})
@@ -93,22 +86,6 @@ if (DEV_MODE) {
         `the \`polyfill-support\` module has not been loaded.`
     );
   }
-
-  requestUpdateThenable = (name) => ({
-    then: (
-      onfulfilled?: (value: boolean) => void,
-      _onrejected?: () => void
-    ) => {
-      issueWarning(
-        'request-update-promise',
-        `The \`requestUpdate\` method should no longer return a Promise but ` +
-          `does so on \`${name}\`. Use \`updateComplete\` instead.`
-      );
-      if (onfulfilled !== undefined) {
-        onfulfilled(false);
-      }
-    },
-  });
 }
 
 /**
@@ -797,22 +774,6 @@ export abstract class ReactiveElement
       }
     }
     this.elementStyles = this.finalizeStyles(this.styles);
-    // DEV mode warnings
-    if (DEV_MODE) {
-      const warnRemovedOrRenamed = (name: string, renamed = false) => {
-        if (this.prototype.hasOwnProperty(name)) {
-          issueWarning(
-            renamed ? 'renamed-api' : 'removed-api',
-            `\`${name}\` is implemented on class ${this.name}. It ` +
-              `has been ${renamed ? 'renamed' : 'removed'} ` +
-              `in this version of LitElement.`
-          );
-        }
-      };
-      warnRemovedOrRenamed('initialize');
-      warnRemovedOrRenamed('requestUpdateInternal');
-      warnRemovedOrRenamed('_getUpdateComplete', true);
-    }
     return true;
   }
 
@@ -1211,11 +1172,6 @@ export abstract class ReactiveElement
     if (!this.isUpdatePending && shouldRequestUpdate) {
       this.__updatePromise = this.__enqueueUpdate();
     }
-    // Note, since this no longer returns a promise, in dev mode we return a
-    // thenable which warns if it's called.
-    return DEV_MODE
-      ? (requestUpdateThenable(this.localName) as unknown as void)
-      : undefined;
   }
 
   /**

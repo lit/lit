@@ -235,36 +235,6 @@ const polyfillSupport = DEV_MODE
   : globalThis.litElementPolyfillSupport;
 polyfillSupport?.({LitElement});
 
-// DEV mode warnings
-if (DEV_MODE) {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  // Note, for compatibility with closure compilation, this access
-  // needs to be as a string property index.
-  (LitElement as any)['finalize'] = function (this: typeof LitElement) {
-    const finalized = (ReactiveElement as any).finalize.call(this);
-    if (!finalized) {
-      return false;
-    }
-    const warnRemovedOrRenamed = (obj: any, name: string, renamed = false) => {
-      if (obj.hasOwnProperty(name)) {
-        const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
-          .name;
-        issueWarning(
-          renamed ? 'renamed-api' : 'removed-api',
-          `\`${name}\` is implemented on class ${ctorName}. It ` +
-            `has been ${renamed ? 'renamed' : 'removed'} ` +
-            `in this version of LitElement.`
-        );
-      }
-    };
-    warnRemovedOrRenamed(this, 'render');
-    warnRemovedOrRenamed(this, 'getStyles', true);
-    warnRemovedOrRenamed((this as typeof LitElement).prototype, 'adoptStyles');
-    return true;
-  };
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}
-
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
  *
