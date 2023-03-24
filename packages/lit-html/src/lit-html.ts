@@ -236,8 +236,8 @@ const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
   global.ShadyDOM?.inUse &&
   global.ShadyDOM?.noPatch === true
-    ? global.ShadyDOM!.wrap
-    : (node: Node) => node;
+    ? (global.ShadyDOM!.wrap as <T extends Node>(node: T) => T)
+    : <T extends Node>(node: T) => node;
 
 const trustedTypes = (global as unknown as Partial<Window>).trustedTypes;
 
@@ -874,12 +874,10 @@ class Template {
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
-    // Reparent SVG nodes into template root
+    // Re-parent SVG nodes into template root
     if (type === SVG_RESULT) {
-      const content = this.el.content;
-      const svgElement = content.firstChild!;
-      svgElement.remove();
-      content.append(...svgElement.childNodes);
+      const svgElement = this.el.content.firstChild!;
+      svgElement.replaceWith(...svgElement.childNodes);
     }
 
     // Walk the template to find binding markers and create TemplateParts
