@@ -76,14 +76,12 @@ class ClassMapDirective extends Directive {
     const classList = part.element.classList;
 
     // Remove old classes that no longer apply
-    // We use forEach() instead of for-of so that we don't require down-level
-    // iteration.
-    this._previousClasses.forEach((name) => {
+    for (const name of this._previousClasses) {
       if (!(name in classInfo)) {
         classList.remove(name);
         this._previousClasses!.delete(name);
       }
-    });
+    }
 
     // Add or remove classes based on their classMap value
     for (const name in classInfo) {
