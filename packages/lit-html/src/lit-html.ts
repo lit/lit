@@ -629,9 +629,7 @@ export interface RenderOptions {
 
 const walker = d.createTreeWalker(
   d,
-  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
-  null,
-  false
+  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */
 );
 
 let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
