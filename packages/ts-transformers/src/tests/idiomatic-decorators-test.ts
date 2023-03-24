@@ -1644,8 +1644,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     'lit/decorators/custom-element.js',
     '@lit/reactive-element/decorators.js',
     '@lit/reactive-element/decorators/custom-element.js',
-    'lit-element',
-    'lit-element/index.js',
     'lit-element/decorators.js',
   ]) {
     test(`various valid import specifiers [${specifier}]`, () => {
@@ -1674,7 +1672,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     'lit/decorators/custom-element',
     '@lit/reactive-element/decorators',
     '@lit/reactive-element/decorators/custom-element',
-    'lit-element/index',
     'lit-element/decorators',
   ]) {
     test(`various invalid import specifiers [${specifier}]`, () => {
