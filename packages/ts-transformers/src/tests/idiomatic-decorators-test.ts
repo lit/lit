@@ -1692,7 +1692,8 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
   test('only remove imports that will be transformed', () => {
     const input = `
-    import {LitElement, customElement} from 'lit-element';
+    import {LitElement} from 'lit-element';
+    import {customElement} from 'lit-element/decorators.js';
 
     @customElement('my-element')
     class MyElement extends LitElement {
@@ -1711,7 +1712,8 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
   test("don't remove existing no-binding import", () => {
     const input = `
-    import {LitElement, customElement} from 'lit-element';
+    import {LitElement} from 'lit-element';
+    import {customElement} from 'lit-element/decorators.js';
     import './my-custom-element.js';
 
     @customElement('my-element')
