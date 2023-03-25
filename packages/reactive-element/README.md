@@ -9,10 +9,6 @@
 
 A simple low level base class for creating fast, lightweight web components.
 
-## About this release
-
-This is a stable release of `@lit/reactive-element` 1.0.0 (part of the Lit 2.0 release). If upgrading from previous versions of `UpdatingElement`, please see the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/).
-
 ## Documentation
 
 Full documentation is available at [lit.dev](https://lit.dev/docs/api/ReactiveElement/).

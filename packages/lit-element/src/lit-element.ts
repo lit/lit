@@ -79,10 +79,6 @@ export namespace Unstable {
   }
 }
 
-// For backwards compatibility export ReactiveElement as UpdatingElement. Note,
-// IE transpilation requires exporting like this.
-export const UpdatingElement = ReactiveElement;
-
 const DEV_MODE = true;
 
 let issueWarning: (code: string, warning: string) => void;

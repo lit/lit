@@ -4,14 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  html,
-  LitElement,
-  UpdatingElement,
-  ReactiveElement,
-  Part,
-  nothing,
-} from 'lit-element';
+import {html, LitElement, ReactiveElement, Part, nothing} from 'lit-element';
 import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 import {
   canTestLitElement,
@@ -306,15 +299,6 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
 
   test('can use ReactiveElement', async () => {
     class A extends ReactiveElement {}
-    customElements.define(generateElementName(), A);
-    const a = new A();
-    container.appendChild(a);
-    await a.updateComplete;
-    assert.ok(a.hasUpdated);
-  });
-
-  test('can use UpdatingElement', async () => {
-    class A extends UpdatingElement {}
     customElements.define(generateElementName(), A);
     const a = new A();
     container.appendChild(a);
