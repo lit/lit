@@ -335,7 +335,7 @@ export const defaultConverter: ComplexAttributeConverter = {
     let fromValue: unknown = value;
     switch (type) {
       case Boolean:
-        fromValue = value !== null;
+        fromValue = value === null ? null : Boolean(value);
         break;
       case Number:
         fromValue = value === null ? null : Number(value);
