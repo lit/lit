@@ -122,6 +122,11 @@ export const hydrate = (
   container: Element | DocumentFragment,
   options: Partial<RenderOptions> = {}
 ) => {
+  console.warn(
+    'Importing `hydrate()` from `lit-html/experimental-hydrate.js` is deprecated.' +
+      'Import from `@lit-labs/ssr-client` instead.'
+  );
+
   // TODO(kschaaf): Do we need a helper for _$litPart$ ("part for node")?
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
