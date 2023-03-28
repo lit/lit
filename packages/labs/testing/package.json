@@ -35,7 +35,8 @@
       "dependencies": [
         "build:ts:utils",
         "../../lit:build:ts:types",
-        "../ssr:build:ts"
+        "../ssr:build:ts",
+        "../ssr-client:build:ts:types"
       ],
       "files": [
         "src/**/*.ts",
@@ -105,6 +106,7 @@
   ],
   "dependencies": {
     "@lit-labs/ssr": "^3.0.0",
+    "@lit-labs/ssr-client": "^1.0.1",
     "@web/test-runner-commands": "^0.6.1",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "lit": "^2.6.0"

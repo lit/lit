@@ -28,7 +28,7 @@ export = (_pluginOptions: LitSsrPluginOptions = {}) =>
           options: {
             // This adds a side-effectful import which monkey patches
             // `React.createElement` in the server and imports
-            // `lit/experimental-hydrate-support.js` in the client.
+            // `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the client.
             imports: ['side-effects @lit-labs/ssr-react/enable-lit-ssr.js'],
           },
         });
