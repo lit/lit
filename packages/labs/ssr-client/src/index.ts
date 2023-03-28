@@ -3,4 +3,4 @@
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-export {hydrate} from './lib/hydrate-lit-html.js';
+export * from './lib/hydrate-lit-html.js';

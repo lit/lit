@@ -15,4 +15,5 @@ export default litProdConfig({
     'directives/render-light',
   ],
   external: ['lit/directive.js', 'lit/directive-helpers.js'],
+  includeNodeBuild: true,
 });

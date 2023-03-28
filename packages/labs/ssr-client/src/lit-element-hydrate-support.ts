@@ -12,7 +12,7 @@
 
 import type {PropertyValues} from '@lit/reactive-element';
 import {render, RenderOptions} from 'lit-html';
-import {hydrate} from 'lit-html/experimental-hydrate.js';
+import {hydrate} from './lib/hydrate-lit-html.js';
 import {HYDRATE_INTERNALS_ATTR_PREFIX} from '@lit-labs/ssr-dom-shim';
 
 interface PatchableLitElement extends HTMLElement {

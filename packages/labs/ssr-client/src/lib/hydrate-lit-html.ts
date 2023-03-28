@@ -5,12 +5,12 @@
  */
 
 import {
-  _$LH,
   DirectiveParent,
   RenderOptions,
   TemplateResult,
   noChange,
 } from 'lit-html';
+import {_$LH} from 'lit-html/private-ssr-support.js';
 import {
   AttributePart,
   AttributePartInfo,
@@ -27,13 +27,8 @@ import {
 
 const NODE_MODE = false;
 
-const {
-  _TemplateInstance: TemplateInstance,
-  _isIterable: isIterable,
-  _resolveDirective: resolveDirective,
-  _ChildPart: ChildPart,
-  _ElementPart: ElementPart,
-} = _$LH;
+const {TemplateInstance, isIterable, resolveDirective, ChildPart, ElementPart} =
+  _$LH;
 
 type ChildPart = InstanceType<typeof ChildPart>;
 type TemplateInstance = InstanceType<typeof TemplateInstance>;
@@ -220,7 +215,7 @@ const openChildPart = (
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
       part = new ChildPart(marker, null, state.instance, options);
-      state.instance._parts.push(part);
+      state.instance._$parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
@@ -425,7 +420,7 @@ const createAttributeParts = (
           }
         )._$setValue(value, instancePart, state.instancePartIndex, noCommit);
         state.instancePartIndex += templatePart.strings.length - 1;
-        instance._parts.push(instancePart);
+        instance._$parts.push(instancePart);
       } else {
         // templatePart.type === PartType.ELEMENT
         const instancePart = new ElementPart(node, state.instance, options);
@@ -433,7 +428,7 @@ const createAttributeParts = (
           instancePart,
           state.result.values[state.instancePartIndex++]
         );
-        instance._parts.push(instancePart);
+        instance._$parts.push(instancePart);
       }
       state.templatePartIndex++;
     }

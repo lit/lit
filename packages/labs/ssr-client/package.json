@@ -18,7 +18,7 @@
   },
   "exports": {
     ".": {
-      "types": "./development.index.d.ts",
+      "types": "./development/index.d.ts",
       "node": {
         "development": "./node/development/index.js",
         "default": "./node/index.js"
