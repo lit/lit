@@ -3,4 +3,4 @@
 'lit': patch
 ---
 
-[lit-html] styleMap fails when update contains priority directive
+Fix styleMap's handling of important flags
