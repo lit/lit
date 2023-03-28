@@ -133,6 +133,21 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '');
   });
 
+  test('adds priority in updated properties', () => {
+    renderStyleMap({color: 'blue !important'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('color'), 'blue');
+    assert.equal(el.style.getPropertyPriority('color'), 'important');
+    renderStyleMap({color: 'green !important'});
+    assert.equal(el.style.getPropertyValue('color'), 'green');
+    assert.equal(el.style.getPropertyPriority('color'), 'important');
+    renderStyleMap({color: 'red'});
+    assert.equal(el.style.getPropertyValue('color'), 'red');
+    assert.equal(el.style.getPropertyPriority('color'), '');
+    renderStyleMap({});
+    assert.equal(el.style.getPropertyValue('color'), '');
+  });
+
   test('works when used with the same object', () => {
     const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
     renderStyleMap(styleInfo);

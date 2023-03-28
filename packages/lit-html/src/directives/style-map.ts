@@ -24,6 +24,9 @@ export interface StyleInfo {
   [name: string]: string | undefined | null;
 }
 
+const IMPORTNAT_PRIORITY = 'important';
+const IMPORTANT_DIRECTIVE = '!important';
+
 class StyleMapDirective extends Directive {
   _previousStyleProperties?: Set<string>;
 
@@ -95,11 +98,13 @@ class StyleMapDirective extends Directive {
       const value = styleInfo[name];
       if (value != null) {
         this._previousStyleProperties.add(name);
-        if (name.includes('-')) {
-          style.setProperty(name, value);
+        const valueToUse = value.replace(IMPORTANT_DIRECTIVE, '');
+        const priority = valueToUse !== value ? IMPORTNAT_PRIORITY : '';
+        if (name.includes('-') || priority) {
+          style.setProperty(name, valueToUse, priority);
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (style as any)[name] = value;
+          (style as any)[name] = valueToUse;
         }
       }
     }
