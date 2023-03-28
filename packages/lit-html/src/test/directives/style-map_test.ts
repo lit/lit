@@ -56,6 +56,7 @@ suite('styleMap', () => {
           backgroundColor: 'blue',
           webkitAppearance: 'none',
           ['padding-left']: '4px',
+          '--fooBar': 'red',
         })}
       ></div>`,
       container
@@ -66,6 +67,8 @@ suite('styleMap', () => {
     assert.equal(style.backgroundColor, 'blue');
     assert.include(['none', undefined], style.webkitAppearance);
     assert.equal(style.paddingLeft, '4px');
+    assert.equal(style.getPropertyValue('--fooBar'), 'red');
+    assert.equal(style.getPropertyValue('--foobar'), '');
   });
 
   test('first render skips undefined properties', () => {
