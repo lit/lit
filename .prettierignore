@@ -10,6 +10,7 @@ node_modules/
 .vscode/
 .wireit
 /temp
+.idea
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
