@@ -6,3 +6,4 @@
 /performance_controller.*
 /resize_controller.*
 /intersection_controller.*
+/observer_controller.*

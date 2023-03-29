@@ -41,6 +41,11 @@
       "types": "./development/intersection_controller.d.ts",
       "development": "./development/intersection_controller.js",
       "default": "./intersection_controller.js"
+    },
+    "./observer_controller.js": {
+      "types": "./development/observer_controller.d.ts",
+      "development": "./development/observer_controller.js",
+      "default": "./observer_controller.js"
     }
   },
   "files": [
@@ -50,7 +55,8 @@
     "/mutation_controller.{d.ts,d.ts.map,js,js.map}",
     "/performance_controller.{d.ts,d.ts.map,js,js.map}",
     "/resize_controller.{d.ts,d.ts.map,js,js.map}",
-    "/intersection_controller.{d.ts,d.ts.map,js,js.map}"
+    "/intersection_controller.{d.ts,d.ts.map,js,js.map}",
+    "/observer_controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "wireit",
@@ -109,6 +115,7 @@
       ],
       "output": [
         "index.js{,.map}",
+        "observer_controller.js{,.map}",
         "intersection_controller.js{,.map}",
         "mutation_controller.js{,.map}",
         "performance_controller.js{,.map}",
