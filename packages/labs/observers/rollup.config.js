@@ -11,10 +11,10 @@ export default litProdConfig({
   packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: [
     'index',
-    'mutation_controller',
-    'resize_controller',
-    'intersection_controller',
-    'performance_controller',
+    'mutation-controller',
+    'resize-controller',
+    'intersection-controller',
+    'performance-controller',
   ],
   external: ['@lit/reactive-element'],
 });

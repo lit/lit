@@ -22,35 +22,35 @@
       "development": "./development/index.js",
       "default": "./index.js"
     },
-    "./mutation_controller.js": {
-      "types": "./development/mutation_controller.d.ts",
-      "development": "./development/mutation_controller.js",
-      "default": "./mutation_controller.js"
+    "./mutation-controller.js": {
+      "types": "./development/mutation-controller.d.ts",
+      "development": "./development/mutation-controller.js",
+      "default": "./mutation-controller.js"
     },
-    "./performance_controller.js": {
-      "types": "./development/performance_controller.d.ts",
-      "development": "./development/performance_controller.js",
-      "default": "./performance_controller.js"
+    "./performance-controller.js": {
+      "types": "./development/performance-controller.d.ts",
+      "development": "./development/performance-controller.js",
+      "default": "./performance-controller.js"
     },
-    "./resize_controller.js": {
-      "types": "./development/resize_controller.d.ts",
-      "development": "./development/resize_controller.js",
-      "default": "./resize_controller.js"
+    "./resize-controller.js": {
+      "types": "./development/resize-controller.d.ts",
+      "development": "./development/resize-controller.js",
+      "default": "./resize-controller.js"
     },
-    "./intersection_controller.js": {
-      "types": "./development/intersection_controller.d.ts",
-      "development": "./development/intersection_controller.js",
-      "default": "./intersection_controller.js"
+    "./intersection-controller.js": {
+      "types": "./development/intersection-controller.d.ts",
+      "development": "./development/intersection-controller.js",
+      "default": "./intersection-controller.js"
     }
   },
   "files": [
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/mutation_controller.{d.ts,d.ts.map,js,js.map}",
-    "/performance_controller.{d.ts,d.ts.map,js,js.map}",
-    "/resize_controller.{d.ts,d.ts.map,js,js.map}",
-    "/intersection_controller.{d.ts,d.ts.map,js,js.map}"
+    "/mutation-controller.{d.ts,d.ts.map,js,js.map}",
+    "/performance-controller.{d.ts,d.ts.map,js,js.map}",
+    "/resize-controller.{d.ts,d.ts.map,js,js.map}",
+    "/intersection-controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "wireit",
@@ -109,10 +109,10 @@
       ],
       "output": [
         "index.js{,.map}",
-        "intersection_controller.js{,.map}",
-        "mutation_controller.js{,.map}",
-        "performance_controller.js{,.map}",
-        "resize_controller.js{,.map}",
+        "intersection-controller.js{,.map}",
+        "mutation-controller.js{,.map}",
+        "performance-controller.js{,.map}",
+        "resize-controller.js{,.map}",
         "test/**/*.js{,.map}"
       ]
     },
