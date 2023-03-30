@@ -20,7 +20,8 @@
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "noEmitOnError": false
   },
   "include": ["src/**/*.ts"],
   "exclude": []
