@@ -264,7 +264,7 @@
     "@lit-labs/testing": "^0.2.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "@webcomponents/webcomponentsjs": "^2.8.0",
     "tslib": "^2.0.3"
   },
   "directories": {

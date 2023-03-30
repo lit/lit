@@ -364,10 +364,10 @@
     "@babel/plugin-proposal-class-properties": "^7.14.5",
     "@babel/plugin-proposal-decorators": "^7.14.5",
     "@babel/plugin-transform-typescript": "^7.14.6",
+    "@lit-internal/scripts": "^1.0.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0"
+    "@webcomponents/webcomponentsjs": "^2.8.0"
   },
   "typings": "reactive-element.d.ts",
   "directories": {

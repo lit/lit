@@ -353,10 +353,10 @@
     "lit-html": "^2.7.0"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0",
+    "@webcomponents/webcomponentsjs": "^2.8.0",
     "tslib": "^2.0.3"
   },
   "typings": "index.d.ts"
