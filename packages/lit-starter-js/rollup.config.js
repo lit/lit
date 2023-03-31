@@ -24,7 +24,7 @@ export default {
     replace({'Reflect.decorate': 'undefined'}),
     resolve(),
     terser({
-      ecma: 2017,
+      ecma: 2021,
       module: true,
       warnings: true,
       mangle: {

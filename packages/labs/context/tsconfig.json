@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
+    "target": "es2021",
     "module": "NodeNext",
     "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
