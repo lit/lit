@@ -162,6 +162,8 @@ suiteSkipIE('late context provider', () => {
       'lazy-context-provider-consumer'
     ) as LazyContextProviderConsumerElement;
 
+    await provider.updateComplete;
+
     const consumer = provider.shadowRoot!.querySelector(
       'context-consumer'
     ) as ContextConsumerElement;
