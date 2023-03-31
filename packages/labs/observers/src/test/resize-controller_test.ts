@@ -13,7 +13,7 @@ import {
   ResizeController,
   ResizeControllerConfig,
   ResizeValueCallback,
-} from '@lit-labs/observers/resize_controller.js';
+} from '@lit-labs/observers/resize-controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -474,7 +474,7 @@ if (DEV_MODE) {
     // This test only checks compile-type behavior. There are no runtime checks.
     const el = await getTestElement();
     const A = new ResizeController<number>(el, {
-      // @ts-expect-error Type 'string' is not assignable to type 'number'
+      // @ts-expect-error Type 'number' is not assignable to type 'string'
       callback: () => '',
     });
     if (A) {
@@ -484,11 +484,11 @@ if (DEV_MODE) {
     const B = new ResizeController(el, {
       callback: () => '',
     });
-    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
     B.value = 2;
 
     const C = new ResizeController(el, {}) as ResizeController<string>;
-    // @ts-expect-error Type 'number' is not assignable to type 'string'.
+    // @ts-expect-error Type 'number' is not assignable to type 'string'
     C.value = 3;
 
     const narrowTypeCb: ResizeValueCallback<string | null> = () => '';

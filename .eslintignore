@@ -10,6 +10,7 @@ node_modules/
 .vscode/
 .wireit
 /temp
+.idea
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -238,10 +239,11 @@ packages/labs/observers/development/
 packages/labs/observers/test/
 packages/labs/observers/node_modules/
 packages/labs/observers/index.*
-packages/labs/observers/mutation_controller.*
-packages/labs/observers/performance_controller.*
-packages/labs/observers/resize_controller.*
-packages/labs/observers/intersection_controller.*
+packages/labs/observers/mutation-controller.*
+packages/labs/observers/performance-controller.*
+packages/labs/observers/resize-controller.*
+packages/labs/observers/intersection-controller.*
+
 packages/labs/react/development/
 packages/labs/react/test/
 packages/labs/react/node_modules/
