@@ -138,6 +138,8 @@ const stableProperties = {
   _$initialize: 'T',
   // lit-html: Disconnectable interface (used by lit-html and AsyncDirective)
   _$isConnected: 'U',
+  // lit-html: TemplateInstance (used by private-ssr-support)
+  _$parts: 'V',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -272,7 +274,10 @@ const injectNodeDomShimIntoReactiveElement = [
   }),
   inject({
     Buffer: ['buffer', 'Buffer'],
-    include: ['**/packages/lit-html/development/experimental-hydrate.js'],
+    include: [
+      '**/packages/lit-html/development/experimental-hydrate.js',
+      '**/packages/labs/ssr-client/development/lib/hydrate-lit-html.js',
+    ],
   }),
   replace({
     preventAssignment: true,

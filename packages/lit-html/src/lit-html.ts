@@ -855,7 +855,7 @@ export type {Template};
 class Template {
   /** @internal */
   el!: HTMLTemplateElement;
-  /** @internal */
+
   parts: Array<TemplatePart> = [];
 
   constructor(
@@ -1082,15 +1082,14 @@ function resolveDirective(
   return value;
 }
 
+export type {TemplateInstance};
 /**
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
 class TemplateInstance implements Disconnectable {
-  /** @internal */
   _$template: Template;
-  /** @internal */
-  _parts: Array<Part | undefined> = [];
+  _$parts: Array<Part | undefined> = [];
 
   /** @internal */
   _$parent: ChildPart;
@@ -1148,7 +1147,7 @@ class TemplateInstance implements Disconnectable {
         } else if (templatePart.type === ELEMENT_PART) {
           part = new ElementPart(node as HTMLElement, this, options);
         }
-        this._parts.push(part);
+        this._$parts.push(part);
         templatePart = parts[++partIndex];
       }
       if (nodeIndex !== templatePart?.index) {
@@ -1161,7 +1160,7 @@ class TemplateInstance implements Disconnectable {
 
   _update(values: Array<unknown>) {
     let i = 0;
-    for (const part of this._parts) {
+    for (const part of this._$parts) {
       if (part !== undefined) {
         debugLogEvent?.({
           kind: 'set part',
@@ -1193,9 +1192,7 @@ type AttributeTemplatePart = {
   readonly type: typeof ATTRIBUTE_PART;
   readonly index: number;
   readonly name: string;
-  /** @internal */
   readonly ctor: typeof AttributePart;
-  /** @internal */
   readonly strings: ReadonlyArray<string>;
 };
 type NodeTemplatePart = {
@@ -1521,7 +1518,7 @@ class ChildPart implements Disconnectable {
         kind: 'template updating',
         template,
         instance: this._$committedValue as TemplateInstance,
-        parts: (this._$committedValue as TemplateInstance)._parts,
+        parts: (this._$committedValue as TemplateInstance)._$parts,
         options: this.options,
         values,
       });
@@ -1533,7 +1530,7 @@ class ChildPart implements Disconnectable {
         kind: 'template instantiated',
         template,
         instance,
-        parts: instance._parts,
+        parts: instance._$parts,
         options: this.options,
         fragment,
         values,
@@ -1543,7 +1540,7 @@ class ChildPart implements Disconnectable {
         kind: 'template instantiated and updated',
         template,
         instance,
-        parts: instance._parts,
+        parts: instance._$parts,
         options: this.options,
         fragment,
         values,
@@ -2078,11 +2075,10 @@ export const _$LH = {
   _markerMatch: markerMatch,
   _HTML_RESULT: HTML_RESULT,
   _getTemplateHtml: getTemplateHtml,
-  // Used in hydrate
+  // Used in tests and private-ssr-support
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
-  // Used in tests and private-ssr-support
   _ChildPart: ChildPart,
   _AttributePart: AttributePart,
   _BooleanAttributePart: BooleanAttributePart,

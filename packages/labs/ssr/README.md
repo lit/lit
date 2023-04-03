@@ -74,14 +74,14 @@ context.body = Readable.from(ssrResult);
 
 ### Hydrating Lit templates
 
-"Hydration" is the process of re-associating expressions in a template with the nodes they should update in the DOM. Hydration is performed by the `hydrate()` function from the `lit/experimental-hydrate.js` module.
+"Hydration" is the process of re-associating expressions in a template with the nodes they should update in the DOM. Hydration is performed by the `hydrate()` function from the `@lit-labs/ssr-client` module.
 
 Prior to updating a server-rendered container using `render()`, you must first call `hydrate()` on that container using the same template and data that was used to render on the server:
 
 ```js
 import {myTemplate} from './my-template.js';
 import {render} from 'lit';
-import {hydrate} from 'lit/experimental-hydrate.js';
+import {hydrate} from '@lit-labs/ssr-client';
 // Initial hydration required before render:
 // (must be same data used to render on the server)
 const initialData = getInitialAppData();
@@ -95,7 +95,7 @@ const update = (data) => render(myTemplate(data), document.body);
 
 When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowroot>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browser feature that is shipping [Chrome](https://developer.chrome.com/blog/new-in-chrome-90/#declarative). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) polyfill, described below.
 
-`hydrate()` does not descend into shadow roots - it only works on one scope of the DOM at a time. To hydrate `LitElement` shadow roots, load the `lit/experimental-hydrate-support.js` module, which installs support for `LitElement` to automatically hydrate itself when it detects it was server-rendered with declarative shadow DOM. This module must be loaded before the `lit` module is loaded, to ensure hydration support is properly installed.
+`hydrate()` does not descend into shadow roots - it only works on one scope of the DOM at a time. To hydrate `LitElement` shadow roots, load the `@lit-labs/ssr-client/lit-element-hydrate-support.js` module, which installs support for `LitElement` to automatically hydrate itself when it detects it was server-rendered with declarative shadow DOM. This module must be loaded before the `lit` module is loaded, to ensure hydration support is properly installed.
 
 Put together, an HTML page that was server rendered and containing `LitElement`s in the main document might look like this:
 

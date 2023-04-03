@@ -252,7 +252,7 @@ to their JavaScript implementations, becoming responsive and interactive.
 Lit components can automatically hydrate themselves when they detect that a
 Shadow Root has already been attached, as long as Lit's _experimental hydrate
 support_ module has been installed by importing
-[`lit/experimental-hydrate-support.js`](https://github.com/lit/lit/blob/main/packages/lit-element/src/experimental-hydrate-support.ts).
+[`@lit-labs/ssr-client/lit-element-hydrate-support.js`](https://github.com/lit/lit/blob/main/packages/labs/ssr-client/src/lit-element-hydrate-support.ts).
 
 > ⏱️ The Lit hydration support module **must be loaded before Lit or any
 > components that depend on Lit are imported**, because it modifies the initial
@@ -325,7 +325,7 @@ The file `_includes/default.html` would then contain the following:
         execute them yet, though. -->
     <link
       rel="modulepreload"
-      href="/node_modules/lit/experimental-hydrate-support.js"
+      href="/node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js"
     />
     <link rel="modulepreload" href="/_js/component1.js" />
     <link rel="modulepreload" href="/_js/component2.js" />
@@ -368,7 +368,7 @@ The file `_includes/default.html` would then contain the following:
         // Start fetching the Lit hydration support module (note the absence
         // of "await" -- we don't want to block yet).
         const litHydrateSupportInstalled = import(
-          '/node_modules/lit/experimental-hydrate-support.js'
+          '/node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js'
         );
 
         // Check if we require the declarative shadow DOM polyfill. As of

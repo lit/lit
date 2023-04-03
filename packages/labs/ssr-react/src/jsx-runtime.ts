@@ -9,6 +9,6 @@
  * production mode. For use in browsers.
  */
 
-import 'lit/experimental-hydrate-support.js';
+import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 // eslint-disable-next-line import/extensions
 export {Fragment, jsx, jsxs} from 'react/jsx-runtime';

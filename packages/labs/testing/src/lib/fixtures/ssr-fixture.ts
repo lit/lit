@@ -6,7 +6,7 @@
 
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
-import {hydrate as hydrateFunc} from 'lit/experimental-hydrate.js';
+import {hydrate as hydrateFunc} from '@lit-labs/ssr-client';
 import {createContainer} from './fixture-wrapper.js';
 import {litSsrPluginCommand} from '../constants.js';
 import {nextFrame} from '../utils.js';

@@ -8,14 +8,14 @@
  * LitElement support for hydration of content rendered using lit-ssr.
  *
  * @packageDocumentation
- *
- * @deprecated Moved to `@lit-labs/ssr-client/lit-element-hydrate-support.js`.
  */
 
 import type {PropertyValues} from '@lit/reactive-element';
 import {render, RenderOptions} from 'lit-html';
-import {hydrate} from 'lit-html/experimental-hydrate.js';
-import {HYDRATE_INTERNALS_ATTR_PREFIX} from '@lit-labs/ssr-dom-shim';
+import {hydrate} from './lib/hydrate-lit-html.js';
+
+// Keep consistent with `@lit-labs/ssr-dom-shim`
+const HYDRATE_INTERNALS_ATTR_PREFIX = 'hydrate-internals-';
 
 interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
@@ -28,7 +28,6 @@ interface PatchableLitElement extends HTMLElement {
   _$needsHydration: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 globalThis.litElementHydrateSupport = ({
   LitElement,
 }: {
@@ -115,8 +114,3 @@ globalThis.litElementHydrateSupport = ({
     }
   };
 };
-
-console.warn(
-  'Import from `lit-element/experimental-hydrate-support.js` is deprecated.' +
-    'Import `@lit-labs/ssr-client/lit-element-hydrate-support.js` instead.'
-);
