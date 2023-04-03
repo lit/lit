@@ -1,5 +1,11 @@
 # @lit-labs/observers
 
+## 2.0.0
+
+### Major Changes
+
+- [#3771](https://github.com/lit/lit/pull/3771) [`89da3d80`](https://github.com/lit/lit/commit/89da3d802e506a7400bc415ef77c2bfffce8ffa6) - Change filenames to match project convention: replace `_` with `-`.
+
 ## 1.1.0
 
 ### Minor Changes
