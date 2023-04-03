@@ -46,6 +46,7 @@
     "!/development/test/",
     "/directives/",
     "/lib/",
+    "/node/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/lit-element-hydrate-support.{d.ts,d.ts.map,js,js.map}"
   ],
