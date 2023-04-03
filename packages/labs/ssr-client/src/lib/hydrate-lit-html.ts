@@ -146,12 +146,7 @@ export const hydrate = (
   // templates
   const stack: Array<ChildPartState> = [];
 
-  const walker = document.createTreeWalker(
-    container,
-    NodeFilter.SHOW_COMMENT,
-    null,
-    false
-  );
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_COMMENT);
   let marker: Comment | null;
 
   // Walk the DOM looking for part marker comments
