@@ -13,7 +13,9 @@
 import type {PropertyValues} from '@lit/reactive-element';
 import {render, RenderOptions} from 'lit-html';
 import {hydrate} from './lib/hydrate-lit-html.js';
-import {HYDRATE_INTERNALS_ATTR_PREFIX} from '@lit-labs/ssr-dom-shim';
+
+// Keep consistent with `@lit-labs/ssr-dom-shim`
+const HYDRATE_INTERNALS_ATTR_PREFIX = 'hydrate-internals-';
 
 interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
