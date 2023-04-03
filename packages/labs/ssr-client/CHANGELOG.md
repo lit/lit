@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.0
+
+### Minor Changes
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
 ## 1.0.1
 
 ### Patch Changes

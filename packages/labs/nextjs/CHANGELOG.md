@@ -1,5 +1,13 @@
 # @lit-labs/nextjs
 
+## 0.1.1
+
+### Patch Changes
+
+- [#3748](https://github.com/lit/lit/pull/3748) [`3cea6b2d`](https://github.com/lit/lit/commit/3cea6b2d23f294d41c57f8e695575468cc068332) - Fix README title
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - Use hydration modules from `@lit-labs/ssr-client`
+
 ## 0.1.0
 
 ### Minor Changes
