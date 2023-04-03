@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -207,7 +207,7 @@
     "koa-static": "^5.0.0"
   },
   "dependencies": {
-    "@lit-labs/ssr-client": "^1.0.0",
+    "@lit-labs/ssr-client": "^1.1.0",
     "@lit-labs/ssr-dom-shim": "^1.1.0",
     "@lit/reactive-element": "^1.6.0",
     "@parse5/tools": "^0.1.0",

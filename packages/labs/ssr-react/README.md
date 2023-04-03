@@ -32,7 +32,7 @@ import ReactDOM from 'react-dom';
 ...
 ```
 
-In the browser environment, this module does not patch `React.createElement()` but instead imports `lit/experimental-hydrate-support.js` which must be imported before the `lit` package to allow hydration of server-rendered Lit elements.
+In the browser environment, this module does not patch `React.createElement()` but instead imports `@lit-labs/ssr-client/lit-element-hydrate-support.js` which must be imported before the `lit` package to allow hydration of server-rendered Lit elements.
 
 This approach has the advantage of being compatible with Lit components wrapped as React components using the `@lit-labs/react` package, which calls `React.createElement()` directly. It'll also work for any external React components pre-compiled with the classic JSX runtime transform.
 
@@ -57,7 +57,7 @@ You may also set the compiler options to specify the function to use instead of 
 
 Note that the import line must still be present for every file that contains JSX expressions to transform in the classic runtime mode.
 
-This approach only works for server-rendering custom elements added to the project in JSX expressions. It will not affect any pre-compiled JSX expressions or direct calls to `React.createElement()`. You will also need to manually import the `lit/experimental-hydrate-support.js` to your client JS. For those scenarios, use the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach.
+This approach only works for server-rendering custom elements added to the project in JSX expressions. It will not affect any pre-compiled JSX expressions or direct calls to `React.createElement()`. You will also need to manually import the `@lit-labs/ssr-client/lit-element-hydrate-support.js` to your client JS. For those scenarios, use the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach.
 
 ### Using the Automatic Runtime JSX Transform
 
@@ -66,7 +66,7 @@ If your project is using the [runtime JSX transform](https://reactjs.org/blog/20
 - For Babel: set the [`importSource`](https://babeljs.io/docs/en/babel-preset-react#importsource) option in `@babel/preset-react` to `@lit-labs/ssr-react`.
 - For TypeScript: set the [`jsxImportSource`](https://www.typescriptlang.org/tsconfig#jsxImportSource) option in `tsconfig.json` to `@lit-labs/ssr-react`.
 
-These JSX runtime modules contain jsx functions enhanced to add the declarative shadow DOM output to registered custom elements when imported into server environemtns. They also automatically import `lit/experimental-hydrate-support.js` in the browser environment.
+These JSX runtime modules contain jsx functions enhanced to add the declarative shadow DOM output to registered custom elements when imported into server environemtns. They also automatically import `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the browser environment.
 
 This method will not work for any pre-compiled JSX expressions or direct calls to `React.createElement()`, including those in the usage of the `@lit-labs/react` package's `createElement()`. Consider combining this with the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach to handle such scenarios.
 

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'lit/experimental-hydrate-support.js';
+import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
 export * from './lib/fixtures/csr-fixture.js';
 export * from './lib/fixtures/ssr-fixture.js';
