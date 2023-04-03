@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.1
+
+### Patch Changes
+
+- [#3781](https://github.com/lit/lit/pull/3781) [`41b18f30`](https://github.com/lit/lit/commit/41b18f3004163e9011c822dddf73a8669e3c74d8) - Include node build output in npm package. Fixes "Cannot find module ... ssr-client/node/index.js" errors.
+
 ## 1.1.0
 
 ### Minor Changes
