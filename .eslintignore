@@ -37,8 +37,6 @@ packages/lit/directive-helpers.*
 packages/lit/directive.*
 packages/lit/async-directive.*
 packages/lit/html.*
-packages/lit/experimental-hydrate-support.*
-packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
