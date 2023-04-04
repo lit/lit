@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-client",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -46,6 +46,7 @@
     "!/development/test/",
     "/directives/",
     "/lib/",
+    "/node/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/lit-element-hydrate-support.{d.ts,d.ts.map,js,js.map}"
   ],
