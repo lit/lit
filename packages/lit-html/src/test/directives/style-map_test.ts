@@ -133,7 +133,9 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '');
   });
 
-  test('adds priority in updated properties', () => {
+  // IE does not seeem to properly handle priority argument to
+  // CSSStyleDeclaration.setProperty()
+  (isIE ? test.skip : test)('adds priority in updated properties', () => {
     renderStyleMap({color: 'blue !important'});
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.getPropertyValue('color'), 'blue');
