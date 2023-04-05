@@ -229,15 +229,6 @@
       "development": "./development/directives/when.js",
       "default": "./directives/when.js"
     },
-    "./experimental-hydrate.js": {
-      "types": "./development/experimental-hydrate.d.ts",
-      "node": {
-        "development": "./node/development/experimental-hydrate.js",
-        "default": "./node/experimental-hydrate.js"
-      },
-      "development": "./development/experimental-hydrate.js",
-      "default": "./experimental-hydrate.js"
-    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "node": {
@@ -294,7 +285,6 @@
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
     "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
     "/directive.{d.ts,d.ts.map,js,js.map}",
-    "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
     "/lit-html.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
@@ -359,7 +349,6 @@
         "async-directive.js{,.map}",
         "directive-helpers.js{,.map}",
         "directive.js{,.map}",
-        "experimental-hydrate.js{,.map}",
         "lit-html.js{,.map}",
         "polyfill-support.js{,.map}",
         "private-ssr-support.js{,.map}",
