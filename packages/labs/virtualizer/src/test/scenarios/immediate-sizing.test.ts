@@ -47,7 +47,7 @@ describe("Don't behave badly when sizing element before initialization is comple
   ignoreBenignErrors(beforeEach, afterEach);
 
   it('should render the element without error', async () => {
-    const example: ImmediateSizing = await fixture(
+    await fixture(
       testingHtml`
         <immediate-sizing .items=${['item 1', 'item 2']}></immediate-sizing>
       `
