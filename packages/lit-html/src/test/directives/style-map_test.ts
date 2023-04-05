@@ -79,15 +79,27 @@ suite('styleMap', () => {
   });
 
   test('adds and updates properties', () => {
-    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px', opacity: '0.5'});
+    renderStyleMap({
+      marginTop: '2px',
+      'padding-bottom': '4px',
+      opacity: '0.5',
+      'z-index': 10,
+    });
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     assert.equal(el.style.opacity, '0.5');
-    renderStyleMap({marginTop: '4px', paddingBottom: '8px', opacity: '0.55'});
+    assert.equal(el.style.zIndex, '10');
+    renderStyleMap({
+      marginTop: '4px',
+      paddingBottom: '8px',
+      opacity: '0.55',
+      'z-index': 1,
+    });
     assert.equal(el.style.marginTop, '4px');
     assert.equal(el.style.paddingBottom, '8px');
     assert.equal(el.style.opacity, '0.55');
+    assert.equal(el.style.zIndex, '1');
   });
 
   test('removes properties', () => {
