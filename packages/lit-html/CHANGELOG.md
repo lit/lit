@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.7.2
+
+### Patch Changes
+
+- [#3788](https://github.com/lit/lit/pull/3788) [`88fe0390`](https://github.com/lit/lit/commit/88fe039015ff979e031efbdde1861ae5b11a0da5) - Allow numbers to be used as values in styleMap()
+
 ## 2.7.1
 
 ### Patch Changes
