@@ -89,6 +89,7 @@ suite('styleMap', () => {
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     assert.equal(el.style.opacity, '0.5');
+    assert.equal(el.style.zIndex, '10');
     renderStyleMap({
       marginTop: '4px',
       paddingBottom: '8px',
