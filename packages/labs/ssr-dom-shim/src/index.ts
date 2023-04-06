@@ -111,10 +111,17 @@ const CustomElementRegistryShim = class CustomElementRegistry {
 
   define(name: string, ctor: CustomHTMLElementConstructor) {
     if (this.__definitions.has(name)) {
-      throw new Error(
-        `Failed to execute 'define' on 'CustomElementRegistry': ` +
-          `the name "${name}" has already been used with this registry`
-      );
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(
+          `'CustomElementRegistry' already has "${name}" defined. ` +
+            `Overriding in development mode.`
+        );
+      } else {
+        throw new Error(
+          `Failed to execute 'define' on 'CustomElementRegistry': ` +
+            `the name "${name}" has already been used with this registry`
+        );
+      }
     }
     this.__definitions.set(name, {
       ctor,
