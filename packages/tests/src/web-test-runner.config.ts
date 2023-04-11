@@ -38,7 +38,7 @@ const browserPresets = {
   sauce: [
     'sauce:Windows 10/Firefox@102', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-2',
-    'sauce:macOS 13/safari@latest',
+    'sauce:macOS 11/Safari@latest',
   ],
 };
 
@@ -54,15 +54,10 @@ function makeSauceLauncherOnce() {
           ' and SAUCE_ACCESS_KEY environment variables.'
       );
     }
-    sauceLauncher = createSauceLabsLauncher(
-      {
-        user,
-        key,
-      },
-      {
-        acceptInsecureCerts: false,
-      }
-    );
+    sauceLauncher = createSauceLabsLauncher({
+      user,
+      key,
+    });
   }
   return sauceLauncher;
 }
