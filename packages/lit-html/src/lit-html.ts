@@ -1858,7 +1858,7 @@ class BooleanAttributePart extends AttributePart {
     });
     (wrap(this.element) as Element).toggleAttribute(
       this.name,
-      (value as boolean) && value !== nothing
+      !!value && value !== nothing
     );
   }
 }
