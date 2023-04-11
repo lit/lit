@@ -1154,6 +1154,20 @@ suite('lit-html', () => {
       assertContent('<div foo=""></div>');
       assert.isEmpty(observer.takeRecords());
     });
+
+    test('binding undefined removes the attribute', () => {
+      const go = (v: unknown) => render(html`<div ?foo=${v}></div>`, container);
+      go(undefined);
+      assertContent('<div></div>');
+      // it doesn't toggle the attribute
+      go(undefined);
+      assertContent('<div></div>');
+      // it does remove it
+      go(true);
+      assertContent('<div foo=""></div>');
+      go(undefined);
+      assertContent('<div></div>');
+    });
   });
 
   suite('properties', () => {
