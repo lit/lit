@@ -7,7 +7,7 @@
 import {assert} from '@open-wc/testing';
 
 import {render} from 'lit';
-import {hydrate} from 'lit/experimental-hydrate.js';
+import {hydrate} from '@lit-labs/ssr-client';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot/template-shadowroot.js';
 import {SSRExpectedHTML, SSRTestSuite} from '../tests/ssr-test.js';
 

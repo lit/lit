@@ -34,7 +34,7 @@ const {
   connectedDisconnectable,
 } = _$LH;
 
-import {digestForTemplateResult} from 'lit/experimental-hydrate.js';
+import {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 import {
   ElementRenderer,

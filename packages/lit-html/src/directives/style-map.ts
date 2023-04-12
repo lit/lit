@@ -21,7 +21,7 @@ import {
  * for CSSStyleDeclaration like `backgroundColor`.
  */
 export interface StyleInfo {
-  [name: string]: string | undefined | null;
+  [name: string]: string | number | undefined | null;
 }
 
 const important = 'important';
@@ -94,11 +94,14 @@ class StyleMapDirective extends Directive {
       const value = styleInfo[name];
       if (value != null) {
         this._previousStyleProperties.add(name);
-        const isImportant = value.endsWith(importantFlag);
+        const isImportant =
+          typeof value === 'string' && value.endsWith(importantFlag);
         if (name.includes('-') || isImportant) {
           style.setProperty(
             name,
-            isImportant ? value.slice(0, flagTrim) : value,
+            isImportant
+              ? (value as string).slice(0, flagTrim)
+              : (value as string),
             isImportant ? important : ''
           );
         } else {

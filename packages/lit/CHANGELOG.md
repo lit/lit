@@ -1,5 +1,21 @@
 # Change Log
 
+## 2.7.2
+
+### Patch Changes
+
+- [#3788](https://github.com/lit/lit/pull/3788) [`88fe0390`](https://github.com/lit/lit/commit/88fe039015ff979e031efbdde1861ae5b11a0da5) - Allow numbers to be used as values in styleMap()
+
+## 2.7.1
+
+### Patch Changes
+
+- [#3768](https://github.com/lit/lit/pull/3768) [`7c1191da`](https://github.com/lit/lit/commit/7c1191da8e2f33e145ea58265531b7c744835401) - Fix styleMap's handling of important flags
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
 ## 2.7.0
 
 ### Minor Changes
