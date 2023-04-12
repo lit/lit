@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "test:common": "wireit"
   },
   "devDependencies": {
     "@types/prettier": "^2.0.1",
@@ -32,7 +33,10 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "node ./run-web-tests.js && MODE=prod node ./run-web-tests.js",
+      "command": "npm run test:common && MODE=prod npm run test:common"
+    },
+    "test:common": {
+      "command": "node ./run-web-tests.js",
       "dependencies": [
         "build",
         "../labs/context:build",
@@ -51,6 +55,9 @@
       "output": [],
       "env": {
         "BROWSERS": {
+          "external": true
+        },
+        "MODE": {
           "external": true
         }
       }
