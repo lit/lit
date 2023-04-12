@@ -254,7 +254,6 @@ const config: TestRunnerConfig = {
       return next();
     },
   ],
-  testsStartTimeout: 60000,
   browserStartTimeout: 60000, // default 30000
   testsFinishTimeout: 600000, // default 20000
   testFramework: {
