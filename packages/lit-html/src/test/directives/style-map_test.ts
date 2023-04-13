@@ -12,8 +12,9 @@ import {assert} from '@esm-bundle/chai';
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;
+const supportsCSSVariables = isIE || isChrome41;
 const testIfSupportsCSSVariables = (test: any) =>
-  isIE || isChrome41 ? test.skip : test;
+  supportsCSSVariables ? test.skip : test;
 
 suite('styleMap', () => {
   let container: HTMLDivElement;
@@ -56,6 +57,7 @@ suite('styleMap', () => {
           backgroundColor: 'blue',
           webkitAppearance: 'none',
           ['padding-left']: '4px',
+          '--fooBar': 'red',
         })}
       ></div>`,
       container
@@ -66,6 +68,10 @@ suite('styleMap', () => {
     assert.equal(style.backgroundColor, 'blue');
     assert.include(['none', undefined], style.webkitAppearance);
     assert.equal(style.paddingLeft, '4px');
+    if (supportsCSSVariables) {
+      assert.equal(style.getPropertyValue('--fooBar'), 'red');
+      assert.equal(style.getPropertyValue('--foobar'), '');
+    }
   });
 
   test('first render skips undefined properties', () => {

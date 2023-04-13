@@ -60,9 +60,11 @@ class StyleMapDirective extends Directive {
       // Exception is any property name containing a dash, including
       // custom properties; we assume these are already dash-cased i.e.:
       //  `--my-button-color` --> `--my-button-color`
-      prop = prop
-        .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
-        .toLowerCase();
+      prop = prop.includes('-')
+        ? prop
+        : prop
+            .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
+            .toLowerCase();
       return style + `${prop}:${value};`;
     }, '');
   }
@@ -126,8 +128,10 @@ class StyleMapDirective extends Directive {
  *
  * `styleMap` can only be used in the `style` attribute and must be the only
  * expression in the attribute. It takes the property names in the
- * {@link StyleInfo styleInfo} object and adds the property values as CSS
- * properties. Property names with dashes (`-`) are assumed to be valid CSS
+ * {@link StyleInfo styleInfo} object and adds the properties to the inline
+ * style of the element.
+ *
+ * Property names with dashes (`-`) are assumed to be valid CSS
  * property names and set on the element's style object using `setProperty()`.
  * Names without dashes are assumed to be camelCased JavaScript property names
  * and set on the element's style object using property assignment, allowing the
