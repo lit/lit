@@ -176,7 +176,7 @@ export const adoptStyles = (
       s instanceof CSSStyleSheet ? s : s.styleSheet!
     );
   } else {
-    styles.forEach((s) => {
+    for (const s of styles) {
       const style = document.createElement('style');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const nonce = (global as any)['litNonce'];
@@ -185,7 +185,7 @@ export const adoptStyles = (
       }
       style.textContent = (s as CSSResult).cssText;
       renderRoot.appendChild(style);
-    });
+    }
   }
 };
 
