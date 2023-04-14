@@ -1272,9 +1272,9 @@ export abstract class ReactiveElement
       }
     }
     // Mixin instance properties once, if they exist.
-    //  The forEach() expression will only when when __instanceProperties is
-    //  defined, and it returns undefined, setting __instanceProperties to
-    //  undefined
+    // The forEach() expression will only run when when __instanceProperties is
+    // defined, and it returns undefined, setting __instanceProperties to
+    // undefined
     this.__instanceProperties &&= this.__instanceProperties.forEach(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (v, p) => ((this as any)[p] = v)
@@ -1428,9 +1428,9 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    //  The forEach() expression will only when when __instanceProperties is
-    //  defined, and it returns undefined, setting __instanceProperties to
-    //  undefined
+    // The forEach() expression will only run when when __instanceProperties is
+    // defined, and it returns undefined, setting __instanceProperties to
+    // undefined
     this.__reflectingProperties &&= this.__reflectingProperties.forEach(
       (v, k) => this.__propertyToAttribute(k, this[k as keyof this], v)
     ) as undefined;
