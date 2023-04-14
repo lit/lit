@@ -2,9 +2,9 @@
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "target": "es2020",
+    "target": "es2021",
     "module": "esnext",
-    "lib": ["es2019", "ES2020.String"],
+    "lib": ["es2021"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
