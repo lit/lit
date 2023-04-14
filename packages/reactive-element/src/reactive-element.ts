@@ -642,7 +642,9 @@ export abstract class ReactiveElement
     // user-defined accessors. Note that if the super has an accessor we will
     // still overwrite it
     if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
-      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+      const key = DEV_MODE
+        ? Symbol(`${String(name)} (@property() cache)`)
+        : Symbol();
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
