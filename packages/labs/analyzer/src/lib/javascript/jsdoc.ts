@@ -14,9 +14,10 @@ import ts from 'typescript';
 import {DiagnosticsError} from '../errors.js';
 import {
   Described,
-  NamedDescribed,
   TypedNamedDescribed,
   DeprecatableDescribed,
+  NamedDescribedDefault,
+  NamedDescribed,
 } from '../model.js';
 
 /**
@@ -50,6 +51,16 @@ const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
 // default slot has no name)
 const parseNameDashDescRE =
   /^(?<name>^\S*)?(?:\s+-\s+(?<description>[\s\S]*))?$/m;
+
+// Regex for parsing name and description from JSDoc comments
+const parseNameDefaultDescRE =
+  /^\[(?<name>[^[\s=]*)=(?<defaultValue>[^\]]*)\](?:\s+-\s+(?<description>[\s\S]*))?/m;
+
+// Regex for parsing optional name and description from JSDoc comments, where
+// the dash is required before the description (syntax for `@slot` tag, whose
+// default slot has no name)
+const parseNameDefaultDashDescRE =
+  /^\[(?<name>[^[\s=]*)=(?<defaultValue>[^\]]*)\](?:\s+-\s+(?<description>[\s\S]*))?$/m;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
@@ -100,6 +111,17 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
   return info;
 };
 
+function makeDashParseError(tag: ts.JSDocTag, requireDash: boolean) {
+  return new DiagnosticsError(
+    tag,
+    `Unexpected JSDoc format.${
+      requireDash
+        ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
+        : ''
+    }`
+  );
+}
+
 /**
  * Parses name and description from JSDoc tag for things like `@slot`,
  * `@cssPart`, and `@cssProp`.
@@ -109,34 +131,49 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
  * * @slot name description
  * * @slot name - description
  * * @slot name: description
+ * * @cssProp [--name=default]
+ * * @cssProp [--name=default] description
+ * * @cssProp [--name=default] - description
+ * * @cssProp [--name=default]: description
  */
 export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag,
   requireDash = false
-): NamedDescribed | undefined => {
+): NamedDescribedDefault | undefined => {
   const comment = getJSDocTagComment(tag);
   if (comment == undefined) {
     return undefined;
   }
-  const nameDesc = comment.match(
-    requireDash ? parseNameDashDescRE : parseNameDescRE
-  );
-  if (nameDesc === null) {
-    throw new DiagnosticsError(
-      tag,
-      `Unexpected JSDoc format.${
-        parseNameDashDescRE
-          ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
-          : ''
-      }`
+  if (comment.match(/^\[.+=.+\]/)) {
+    const nameDefaultDesc = comment.match(
+      requireDash ? parseNameDefaultDashDescRE : parseNameDefaultDescRE
     );
+    if (nameDefaultDesc === null) {
+      throw makeDashParseError(tag, requireDash);
+    }
+    const {name, description, defaultValue} = nameDefaultDesc.groups!;
+    const info: NamedDescribedDefault = {name};
+    if (description?.length > 0) {
+      info.description = normalizeLineEndings(description);
+    }
+    if (defaultValue?.length > 0) {
+      info.default = defaultValue;
+    }
+    return info;
+  } else {
+    const nameDesc = comment.match(
+      requireDash ? parseNameDashDescRE : parseNameDescRE
+    );
+    if (nameDesc === null) {
+      throw makeDashParseError(tag, requireDash);
+    }
+    const {name, description} = nameDesc.groups!;
+    const info: NamedDescribed = {name};
+    if (description?.length > 0) {
+      info.description = normalizeLineEndings(description);
+    }
+    return info;
   }
-  const {name, description} = nameDesc.groups!;
-  const info: NamedDescribed = {name};
-  if (description.length > 0) {
-    info.description = normalizeLineEndings(description);
-  }
-  return info;
 };
 
 /**

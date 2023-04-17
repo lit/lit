@@ -104,7 +104,7 @@ for (const lang of languages) {
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssProperties.size, 6);
+    assert.equal(element.cssProperties.size, 9);
   });
 
   test('cssProperties - no-description', ({getModule}) => {
@@ -135,6 +135,30 @@ for (const lang of languages) {
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, 'Description for --with-description-dash');
+  });
+
+  test('cssProperties - default-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--default-no-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - default-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--default-with-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - default-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--default-with-description-dash');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
   });
 
   test('cssProperties - short-no-description', ({getModule}) => {

@@ -9,7 +9,7 @@
  *
  * @slot - Description for default slot
  * @slot no-description
- * @slot with-description - Description for with-description
+ * @slot with-description Description for with-description
  * with wraparound
  * @slot with-description-dash - Description for with-description-dash
  * @cssPart no-description
@@ -20,6 +20,10 @@
  * @cssProperty --with-description Description for --with-description
  * with wraparound
  * @cssProperty --with-description-dash - Description for --with-description-dash
+ * @cssProperty [--default-no-description=#324fff]
+ * @cssProperty [--default-with-description=#324fff] Description for --default-with-description
+ * with wraparound
+ * @cssProperty [--default-with-description-dash=#324fff] - Description for --default-with-description-dash
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound
