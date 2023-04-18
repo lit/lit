@@ -165,7 +165,6 @@ class QueryAssignedLegacyNodesVisitor {
                 factory.createParameterDeclaration(
                   undefined,
                   undefined,
-                  undefined,
                   factory.createIdentifier('node'),
                   undefined,
                   undefined,
@@ -215,7 +214,6 @@ class QueryAssignedLegacyNodesVisitor {
     );
 
     return factory.createGetAccessorDeclaration(
-      undefined,
       undefined,
       factory.createIdentifier(name),
       [],

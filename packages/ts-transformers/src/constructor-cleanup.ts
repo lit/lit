@@ -33,7 +33,7 @@ export function constructorCleanupTransformer(
 ): ts.TransformerFactory<ts.SourceFile> {
   return (context) => {
     const toDelete = new WeakSet<ts.Node>();
-    const visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
+    const visit = (node: ts.Node): ts.VisitResult<ts.Node | undefined> => {
       if (toDelete.has(node)) {
         return undefined;
       }
@@ -43,7 +43,7 @@ export function constructorCleanupTransformer(
       return ts.visitEachChild(node, visit, context);
     };
     return (file) => {
-      return ts.visitNode(file, visit);
+      return ts.visitNode(file, visit) as ts.SourceFile;
     };
   };
 }
@@ -143,7 +143,6 @@ const cleanupClassConstructor = (
   newMembers.splice(newCtorIdx, 0, ctor);
 
   const newClass = context.factory.createClassDeclaration(
-    class_.decorators,
     class_.modifiers,
     class_.name,
     class_.typeParameters,
