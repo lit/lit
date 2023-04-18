@@ -269,9 +269,6 @@ export class LitTransformer {
 
     // Class decorators
     for (const decorator of this.getDecorators(class_)) {
-      if (!ts.isDecorator(decorator)) {
-        continue;
-      }
       if (!ts.isCallExpression(decorator.expression)) {
         continue;
       }

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^9.0.0",
     "@types/react": "file:../../../../node_modules/@types/react",

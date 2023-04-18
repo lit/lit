@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@esm-bundle/chai": "^4.1.5",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^9.0.0",
-    "chai": "^4.3.7",
     "vue": "^3.2.25",
     "@lit-labs/vue-utils": "../../vue-utils",
     "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.0.tgz",

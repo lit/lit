@@ -9,7 +9,7 @@ import {property} from 'lit/decorators/property.js';
 
 import {Context, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
-// ?
+
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
 class ContextConsumerElement extends LitElement {
