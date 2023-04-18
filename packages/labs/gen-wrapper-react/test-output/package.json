@@ -9,7 +9,6 @@
     "@types/mocha": "^9.0.0",
     "@types/react": "file:../../../../node_modules/@types/react",
     "@types/react-dom": "file:../../../../node_modules/@types/react-dom",
-    "chai": "^4.3.7",
     "react": "file:../../../../node_modules/react",
     "react-dom": "file:../../../../node_modules/react-dom",
     "@lit-labs/react": "file:../../react",
