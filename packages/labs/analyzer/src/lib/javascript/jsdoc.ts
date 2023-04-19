@@ -49,18 +49,20 @@ const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
 // Regex for parsing optional name and description from JSDoc comments, where
 // the dash is required before the description (syntax for `@slot` tag, whose
 // default slot has no name)
-const parseNameDashDescRE =
-  /^(?<name>^\S*)?(?:\s+-\s+(?<description>[\s\S]*))?$/m;
+const parseNameDashDescRE = /^(?<name>^\S*)?(?:\s+-\s+(?<description>.+))?$/m;
 
-// Regex for parsing name and description from JSDoc comments
+// Regex for parsing optional name, default, and description from JSDoc comments
 const parseNameDefaultDescRE =
-  /^\[(?<name>[^[\s=]*)=(?<defaultValue>[^\]]*)\](?:\s+-\s+(?<description>[\s\S]*))?/m;
+  /^\[(?<name>[^[\s=]+)=?(?<defaultValue>[^\]]+)?\](?:\s+-\s+(?<description>.+))?/m;
 
 // Regex for parsing optional name and description from JSDoc comments, where
 // the dash is required before the description (syntax for `@slot` tag, whose
 // default slot has no name)
 const parseNameDefaultDashDescRE =
-  /^\[(?<name>[^[\s=]*)=(?<defaultValue>[^\]]*)\](?:\s+-\s+(?<description>[\s\S]*))?$/m;
+  /^\[(?<name>[^[\s=]+)=?(?<defaultValue>[^\]]+)?\](?:\s+-\s+(?<description>.+))?$/m;
+
+// is it an optional jsdoc prop name?
+const isOptionalJSDocNameRegex = /^\[.+(?:=.+)?\]/;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
@@ -144,7 +146,7 @@ export const parseNamedJSDocInfo = (
   if (comment == undefined) {
     return undefined;
   }
-  if (comment.match(/^\[.+=.+\]/)) {
+  if (isOptionalJSDocNameRegex.test(comment)) {
     const nameDefaultDesc = comment.match(
       requireDash ? parseNameDefaultDashDescRE : parseNameDefaultDescRE
     );

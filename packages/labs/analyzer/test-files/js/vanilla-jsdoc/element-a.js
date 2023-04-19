@@ -24,6 +24,10 @@
  * @cssProperty [--default-with-description=#324fff] Description for --default-with-description
  * with wraparound
  * @cssProperty [--default-with-description-dash=#324fff] - Description for --default-with-description-dash
+ * @cssProperty [--optional-no-description]
+ * @cssProperty [--optional-with-description] Description for --optional-with-description
+ * with wraparound
+ * @cssProperty [--optional-with-description-dash] - Description for --optional-with-description-dash
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound

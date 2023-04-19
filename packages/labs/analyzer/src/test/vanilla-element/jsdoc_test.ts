@@ -106,7 +106,7 @@ for (const lang of languages) {
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isCustomElementDeclaration());
-    assert.equal(element.cssProperties.size, 9);
+    assert.equal(element.cssProperties.size, 12);
   });
 
   test('cssProperties - no-description', ({getModule}) => {
@@ -161,6 +161,30 @@ for (const lang of languages) {
     const prop = element.cssProperties.get('--default-with-description-dash');
     assert.ok(prop);
     assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - optional-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const prop = element.cssProperties.get('--optional-no-description');
+    assert.ok(prop);
+    assert.equal(prop.default, undefined);
+  });
+
+  test('cssProperties - optional-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const prop = element.cssProperties.get('--optional-with-description');
+    assert.ok(prop);
+    assert.equal(prop.default, undefined);
+  });
+
+  test('cssProperties - optional-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const prop = element.cssProperties.get('--optional-with-description-dash');
+    assert.ok(prop);
+    assert.equal(prop.default, undefined);
   });
 
   test('cssProperties - short-no-description', ({getModule}) => {
