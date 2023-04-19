@@ -643,7 +643,9 @@ export abstract class ReactiveElement
     // still overwrite it
     if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
       const key = DEV_MODE
-        ? Symbol(`${String(name)} (@property() cache)`)
+        ? // Use Symbol.for in dev mode to make it easier to maintain state
+          // when doing HMR.
+          Symbol.for(`${String(name)} (@property() cache)`)
         : Symbol();
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
