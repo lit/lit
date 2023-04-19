@@ -45,16 +45,6 @@ export class MasonryGotchas extends LitElement {
       ></lit-virtualizer>
     `;
   }
-
-  //   async firstUpdated() {
-  //     const virtualizer = this.shadowRoot.querySelector('lit-virtualizer');
-  //     await new Promise(requestAnimationFrame);
-  //     const firstChildHeight =
-  //       getComputedStyle(virtualizer.children[0]).height;
-  //     const virtualizerHeight =
-  //       getComputedStyle(virtualizer).height;
-  //     console.log(firstChildHeight, virtualizerHeight);
-  //   }
 }
 
 describe("Size virtualizer properly even if last item placed doesn't extend the furthest", () => {
