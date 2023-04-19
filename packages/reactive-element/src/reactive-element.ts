@@ -643,7 +643,7 @@ export abstract class ReactiveElement
     // still overwrite it
     if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
       const key = DEV_MODE
-        ? Symbol(`${String(name)} (@property() cache)`)
+        ? Symbol.for(`${String(name)} (@property() cache)`)
         : Symbol();
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
