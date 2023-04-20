@@ -349,7 +349,7 @@ The file `_includes/default.html` would then contain the following:
       if (!HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
         // This browser does not have native declarative shadow DOM support, so we hide
         // the body until the template-shadowroot polyfill has executed
-        document.body.setAttribute('dsd-pending');
+        document.body.setAttribute('dsd-pending', '');
       }
     </script>
 
