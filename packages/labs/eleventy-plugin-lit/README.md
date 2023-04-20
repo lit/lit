@@ -344,12 +344,12 @@ The file `_includes/default.html` would then contain the following:
     </style>
   </head>
 
-  <body dsd-pending>
+  <body>
     <script>
-      if (HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
-        // This browser has native declarative shadow DOM support, so we can
-        // allow painting immediately.
-        document.body.removeAttribute('dsd-pending');
+      if (!HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
+        // This browser does not have native declarative shadow DOM support, so we hide
+        // the body until the template-shadowroot polyfill has executed
+        document.body.setAttribute('dsd-pending');
       }
     </script>
 
