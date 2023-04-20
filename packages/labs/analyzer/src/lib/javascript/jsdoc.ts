@@ -16,7 +16,6 @@ import {
   Described,
   TypedNamedDescribed,
   DeprecatableDescribed,
-  NamedDescribedDefault,
   NamedDescribed,
 } from '../model.js';
 
@@ -43,26 +42,15 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 const parseNameTypeDescRE =
   /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
 
-// Regex for parsing name and description from JSDoc comments
-const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
-
 // Regex for parsing optional name and description from JSDoc comments, where
 // the dash is required before the description (syntax for `@slot` tag, whose
 // default slot has no name)
-const parseNameDashDescRE = /^(?<name>^\S*)?(?:\s+-\s+(?<description>.+))?$/m;
+const parseNameDashDescRE =
+  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?\s+-\s+(?<description>[\s\S]*)$/;
 
 // Regex for parsing optional name, default, and description from JSDoc comments
-const parseNameDefaultDescRE =
-  /^\[(?<name>[^[\s=]+)=?(?<defaultValue>[^\]]+)?\](?:\s+-\s+(?<description>.+))?/m;
-
-// Regex for parsing optional name and description from JSDoc comments, where
-// the dash is required before the description (syntax for `@slot` tag, whose
-// default slot has no name)
-const parseNameDefaultDashDescRE =
-  /^\[(?<name>[^[\s=]+)=?(?<defaultValue>[^\]]+)?\](?:\s+-\s+(?<description>.+))?$/m;
-
-// is it an optional jsdoc prop name?
-const isOptionalJSDocNameRegex = /^\[.+(?:=.+)?\]/;
+const parseNameDescRE =
+  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?<description>[\s\S]*)$/;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
@@ -118,7 +106,8 @@ function makeDashParseError(tag: ts.JSDocTag, requireDash: boolean) {
     tag,
     `Unexpected JSDoc format.${
       requireDash
-        ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
+        ? ' Tag must contain a whitespace-separated dash between the name and description, ' +
+          "i.e. '@slot header - This is the description'"
         : ''
     }`
   );
@@ -141,41 +130,25 @@ function makeDashParseError(tag: ts.JSDocTag, requireDash: boolean) {
 export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag,
   requireDash = false
-): NamedDescribedDefault | undefined => {
+): NamedDescribed | undefined => {
   const comment = getJSDocTagComment(tag);
   if (comment == undefined) {
     return undefined;
   }
-  if (isOptionalJSDocNameRegex.test(comment)) {
-    const nameDefaultDesc = comment.match(
-      requireDash ? parseNameDefaultDashDescRE : parseNameDefaultDescRE
-    );
-    if (nameDefaultDesc === null) {
-      throw makeDashParseError(tag, requireDash);
-    }
-    const {name, description, defaultValue} = nameDefaultDesc.groups!;
-    const info: NamedDescribedDefault = {name};
-    if (description?.length > 0) {
-      info.description = normalizeLineEndings(description);
-    }
-    if (defaultValue?.length > 0) {
-      info.default = defaultValue;
-    }
-    return info;
-  } else {
-    const nameDesc = comment.match(
-      requireDash ? parseNameDashDescRE : parseNameDescRE
-    );
-    if (nameDesc === null) {
-      throw makeDashParseError(tag, requireDash);
-    }
-    const {name, description} = nameDesc.groups!;
-    const info: NamedDescribed = {name};
-    if (description?.length > 0) {
-      info.description = normalizeLineEndings(description);
-    }
-    return info;
+  const regex = requireDash ? parseNameDashDescRE : parseNameDescRE;
+  const nameDesc = comment.match(regex);
+  if (nameDesc === null) {
+    throw makeDashParseError(tag, requireDash);
   }
+  const {name, description, defaultValue} = nameDesc.groups!;
+  const info: NamedDescribed = {name};
+  if (description?.length > 0) {
+    info.description = normalizeLineEndings(description);
+  }
+  if (defaultValue?.length > 0) {
+    info.default = defaultValue;
+  }
+  return info;
 };
 
 /**

@@ -534,9 +534,6 @@ export interface Described {
 
 export interface NamedDescribed extends Described {
   name: string;
-}
-
-export interface NamedDescribedDefault extends NamedDescribed {
   default?: string;
 }
 
@@ -573,7 +570,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
-  readonly cssProperties: Map<string, NamedDescribedDefault>;
+  readonly cssProperties: Map<string, NamedDescribed>;
   readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: CustomElementDeclarationInit) {
