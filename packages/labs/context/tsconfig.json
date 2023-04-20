@@ -19,7 +19,10 @@
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "paths": {
+      "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": []
