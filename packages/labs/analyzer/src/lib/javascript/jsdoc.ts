@@ -50,7 +50,7 @@ const parseNameDashDescRE =
 
 // Regex for parsing optional name, default, and description from JSDoc comments
 const parseNameDescRE =
-  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?<description>[\s\S]*)$/;
+  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/;
 
 const getJSDocTagComment = (tag: ts.JSDocTag) => {
   let {comment} = tag;
