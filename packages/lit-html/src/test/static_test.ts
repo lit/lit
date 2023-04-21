@@ -177,4 +177,12 @@ suite('static', () => {
       '<div>[object Object]</div>'
     );
   });
+
+  test('static html should not add value for consumed static expression', () => {
+    const tagName = literal`div`;
+    const template = html`<${tagName}>${'foo'}</${tagName}>`;
+    assert.equal(template.values.length, 1);
+    const template2 = html`<${tagName}>${'foo'}</${tagName}>${'bar'}`;
+    assert.equal(template2.values.length, 2);
+  });
 });
