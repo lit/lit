@@ -42,7 +42,9 @@ export const packageJsonTemplate = (
         '@vitejs/plugin-vue': '^3.1.2',
         '@rollup/plugin-typescript': '^9.0.1',
         vite: '^3.1.8',
-        'vue-tsc': '^1.0.8',
+        // Pinning to this minor version due to build errors in 1.4.0
+        // See https://github.com/lit/lit/issues/3827
+        'vue-tsc': '~1.3.19',
       },
       files: [...moduleNames.map((f) => `${f}.*`)],
     },
