@@ -7,6 +7,7 @@
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
 import {html, noChange, nothing, Part} from 'lit';
+import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
   Directive,
@@ -4249,6 +4250,28 @@ export const tests: {[name: string]: SSRTest} = {
       ],
       stableSelectors: ['div', 'span'],
     };
+  },
+
+  /******************************************************
+   * Static html tests
+   ******************************************************/
+
+  'Static html': {
+    render(x: unknown) {
+      const tagName = x === 'foo' ? literal`div` : literal`p`;
+      return staticHtml`<${tagName}>${x}</${tagName}>`;
+    },
+    expectations: [
+      {
+        args: ['foo'],
+        html: '<div>foo</div>',
+      },
+      {
+        args: ['foo2'],
+        html: '<p>foo2</p>',
+      },
+    ],
+    stableSelectors: [],
   },
 
   /******************************************************
