@@ -113,6 +113,57 @@ suiteSkipIE('late context provider', () => {
     assert.strictEqual(consumer.onceValue, 0);
   });
 
+  test(`handles late upgrade properly in nested shadowRoot`, async () => {
+    const host = document.createElement('div');
+
+    host.attachShadow({mode: 'open'});
+    const root = host.shadowRoot!;
+    root.innerHTML = `
+        <late-context-provider-nested value="1000">
+            <context-consumer></context-consumer>
+        </late-context-provider-nested>
+    `;
+
+    container.append(host);
+
+    const provider = root.querySelector(
+      'late-context-provider-nested'
+    ) as LateContextProviderElement;
+
+    const consumer = root.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await consumer.updateComplete;
+
+    // Initially consumer has initial value
+    assert.strictEqual(consumer.value, 0);
+    assert.strictEqual(consumer.onceValue, 0);
+
+    // Define provider element
+    customElements.define(
+      'late-context-provider-nested',
+      class extends LateContextProviderElement {}
+    );
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    // `value` should now be provided
+    assert.strictEqual(consumer.value, 1000);
+
+    // but only to the subscribed value
+    assert.strictEqual(consumer.onceValue, 0);
+
+    // Confirm subscription is established
+    provider.value = 500;
+    await consumer.updateComplete;
+    assert.strictEqual(consumer.value, 500);
+
+    // and once was not updated
+    assert.strictEqual(consumer.onceValue, 0);
+  });
+
   test('lazy added provider', async () => {
     @customElement('lazy-context-provider')
     class LazyContextProviderElement extends LitElement {
