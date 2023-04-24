@@ -1428,8 +1428,8 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    // The forEach() expression will only run when when __instanceProperties is
-    // defined, and it returns undefined, setting __instanceProperties to
+    // The forEach() expression will only run when when __reflectingProperties is
+    // defined, and it returns undefined, setting __reflectingProperties to
     // undefined
     this.__reflectingProperties &&= this.__reflectingProperties.forEach(
       (v, k) => this.__propertyToAttribute(k, this[k as keyof this], v)
