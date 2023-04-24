@@ -114,7 +114,10 @@ const CustomElementRegistryShim = class CustomElementRegistry {
       if (process.env.NODE_ENV === 'development') {
         console.warn(
           `'CustomElementRegistry' already has "${name}" defined. ` +
-            `Overriding in development mode.`
+            `This may have been caused by live reload or hot module ` +
+            `replacement in which case it can be safely ignored.\n` +
+            `Make sure to test your application with a production build as ` +
+            `repeat registrations will throw in production.`
         );
       } else {
         throw new Error(
