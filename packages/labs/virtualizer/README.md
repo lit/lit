@@ -280,7 +280,7 @@ export class MyItems extends LitElement {
   scrollToListItem(idx) {
     // Use the `virtualizerRef` symbol as a property key on the
     // host element to access the virtualizer reference
-    this.list[virtualizerRef].scrollElementIntoView({index: idx});
+    this.list[virtualizerRef].element(idx).scrollIntoView();
   }
 }
 ```
