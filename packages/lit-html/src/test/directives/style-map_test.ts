@@ -12,9 +12,9 @@ import {assert} from '@esm-bundle/chai';
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;
-const supportsCSSVariables = isIE || isChrome41;
+const supportsCSSVariables = !isIE && !isChrome41;
 const testIfSupportsCSSVariables = (test: any) =>
-  supportsCSSVariables ? test.skip : test;
+  supportsCSSVariables ? test : test.skip;
 
 suite('styleMap', () => {
   let container: HTMLDivElement;
