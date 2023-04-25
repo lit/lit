@@ -585,15 +585,13 @@ export abstract class ReactiveElement
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
     const attributes: string[] = [];
-    // Use forEach so this works even if for/of loops are compiled to for loops
-    // expecting arrays
-    this.elementProperties.forEach((v, p) => {
+    for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this.__attributeToPropertyMap.set(attr, p);
         attributes.push(attr);
       }
-    });
+    }
     return attributes;
   }
 
@@ -961,16 +959,14 @@ export abstract class ReactiveElement
    * the native platform default).
    */
   private __saveInstanceProperties() {
-    // Use forEach so this works even if for/of loops are compiled to for loops
-    // expecting arrays
-    (this.constructor as typeof ReactiveElement).elementProperties.forEach(
-      (_v, p) => {
-        if (this.hasOwnProperty(p)) {
-          this.__instanceProperties!.set(p, this[p as keyof this]);
-          delete this[p as keyof this];
-        }
+    const elementProperties = (this.constructor as typeof ReactiveElement)
+      .elementProperties;
+    for (const p of elementProperties.keys()) {
+      if (this.hasOwnProperty(p)) {
+        this.__instanceProperties!.set(p, this[p as keyof this]);
+        delete this[p as keyof this];
       }
-    );
+    }
   }
 
   /**
@@ -1276,13 +1272,13 @@ export abstract class ReactiveElement
       }
     }
     // Mixin instance properties once, if they exist.
-    if (this.__instanceProperties) {
-      // Use forEach so this works even if for/of loops are compiled to for loops
-      // expecting arrays
+    // The forEach() expression will only run when when __instanceProperties is
+    // defined, and it returns undefined, setting __instanceProperties to
+    // undefined
+    this.__instanceProperties &&= this.__instanceProperties.forEach(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.__instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
-      this.__instanceProperties = undefined;
-    }
+      (v, p) => ((this as any)[p] = v)
+    ) as undefined;
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
     try {
@@ -1432,14 +1428,12 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    if (this.__reflectingProperties !== undefined) {
-      // Use forEach so this works even if for/of loops are compiled to for
-      // loops expecting arrays
-      this.__reflectingProperties.forEach((v, k) =>
-        this.__propertyToAttribute(k, this[k as keyof this], v)
-      );
-      this.__reflectingProperties = undefined;
-    }
+    // The forEach() expression will only run when when __reflectingProperties is
+    // defined, and it returns undefined, setting __reflectingProperties to
+    // undefined
+    this.__reflectingProperties &&= this.__reflectingProperties.forEach(
+      (v, k) => this.__propertyToAttribute(k, this[k as keyof this], v)
+    ) as undefined;
     this.__markUpdated();
   }
 
