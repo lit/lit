@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.3.2
+
+### Patch Changes
+
+- [#3766](https://github.com/lit/lit/pull/3766) [`4431cbb8`](https://github.com/lit/lit/commit/4431cbb85428e54bafa090088056a325fe623aa1) - Fix styleMap initial render of mixed-case custom props
+
 ## 3.3.1
 
 ### Patch Changes

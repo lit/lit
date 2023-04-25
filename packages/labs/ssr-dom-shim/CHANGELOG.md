@@ -1,5 +1,11 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.1.1
+
+### Patch Changes
+
+- [#3793](https://github.com/lit/lit/pull/3793) [`8a11f7ea`](https://github.com/lit/lit/commit/8a11f7ea0964c8d8f055e1a085e3f5b99877dccd) - Warn instead of throwing on repeat custom element registration in development mode.
+
 ## 1.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.9
+
+### Patch Changes
+
+- [#3800](https://github.com/lit/lit/pull/3800) [`c5add753`](https://github.com/lit/lit/commit/c5add75362b61fa331b534fe6291d3264b0d1f93) - Relax the typescript version for compatibility with typescript > 4.7 && < 5.0
+
 ## 0.6.8
 
 ### Patch Changes
