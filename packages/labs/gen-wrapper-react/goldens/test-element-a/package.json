@@ -5,7 +5,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch"
   },
-  "version": "1.0.0",
+  "version": "1.0.1-pre.0",
   "dependencies": {
     "@lit-internal/test-element-a": "^1.0.1-pre.0",
     "@lit-labs/react": "^1.0.4"
