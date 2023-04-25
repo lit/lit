@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/context",
-  "version": "0.3.0",
+  "version": "0.3.1-pre.0",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -144,13 +144,13 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^1.5.0",
-    "lit": "^2.7.0"
+    "@lit/reactive-element": "^2.0.0-pre.0",
+    "lit": "^3.0.0-pre.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.2.0",
+    "@lit-internal/scripts": "^1.0.1-pre.0",
+    "@lit-labs/testing": "^0.2.2-pre.0",
     "@types/trusted-types": "^2.0.2"
   },
   "publishConfig": {

@@ -1,5 +1,24 @@
 # Change Log
 
+## 2.0.0-pre.0
+
+### Major Changes
+
+- [#3756](https://github.com/lit/lit/pull/3756) [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4) - Drop IE11 support
+
+### Patch Changes
+
+- [#3816](https://github.com/lit/lit/pull/3816) [`be72f66b`](https://github.com/lit/lit/commit/be72f66bd9aab5d0586729fb5be4bac4aa27cb7f) - Use Symbol.for in accessor to keep things easy for HMR.
+
+- [#3762](https://github.com/lit/lit/pull/3762) [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2) - Remove Lit 1 -> Lit 2 migration warnings
+
+- [#3809](https://github.com/lit/lit/pull/3809) [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7) - Use for/of loops in more places
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa)]:
+  - @lit-labs/ssr-dom-shim@1.1.1-pre.0
+
 ## 1.6.1
 
 ### Patch Changes

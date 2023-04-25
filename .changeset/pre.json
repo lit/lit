@@ -44,5 +44,27 @@
     "@lit-internal/tests": "0.0.0",
     "@lit/ts-transformers": "1.1.3"
   },
-  "changesets": []
+  "changesets": [
+    "angry-rockets-search",
+    "big-ducks-decide",
+    "blue-glasses-tickle",
+    "curvy-ducks-unite",
+    "fifty-forks-decide",
+    "healthy-planes-smash",
+    "hip-badgers-burn",
+    "hot-rabbits-promise",
+    "hungry-paws-beam",
+    "long-parrots-dress",
+    "mean-elephants-cough",
+    "odd-windows-sip",
+    "pink-teachers-brush",
+    "quick-bananas-rhyme",
+    "quiet-dots-yell",
+    "rotten-worms-itch",
+    "shiny-jeans-drum",
+    "silly-gorillas-arrive",
+    "warm-camels-end",
+    "wild-rabbits-pay",
+    "yellow-starfishes-rush"
+  ]
 }
