@@ -16,7 +16,7 @@
     "/special-event.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
-    "lit": "^3.0.0-pre.0"
+    "lit": "^2.0.0"
   },
   "devDependencies": {
     "typescript": "~4.7.4"
