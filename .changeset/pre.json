@@ -1,6 +1,6 @@
 {
   "mode": "pre",
-  "tag": "3.0",
+  "tag": "pre",
   "initialVersions": {
     "@lit-internal/benchmarks": "1.0.2",
     "@lit-internal/scripts": "1.0.0",
