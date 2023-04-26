@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/gen-utils",
   "description": "Utilities for lit code generators",
-  "version": "0.2.1",
+  "version": "0.2.2-3.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -46,10 +46,10 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.6.0"
+    "@lit-labs/analyzer": "^0.6.1-3.0.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.0"
+    "@lit-internal/tests": "^0.0.1-3.0.0"
   },
   "engines": {
     "node": ">=14.8.0"

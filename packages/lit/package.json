@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.7.3",
+  "version": "3.0.0-3.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -336,12 +336,12 @@
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.6.0",
-    "lit-element": "^3.3.0",
-    "lit-html": "^2.7.0"
+    "@lit/reactive-element": "^2.0.0-3.0.0",
+    "lit-element": "^4.0.0-3.0.0",
+    "lit-html": "^3.0.0-3.0.0"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
+    "@lit-internal/scripts": "^1.0.1-3.0.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.8.0",

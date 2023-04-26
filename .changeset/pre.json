@@ -44,5 +44,21 @@
     "@lit-internal/tests": "0.0.0",
     "@lit/ts-transformers": "1.1.3"
   },
-  "changesets": []
+  "changesets": [
+    "angry-rabbits-compare",
+    "big-ducks-decide",
+    "blue-glasses-tickle",
+    "curvy-ducks-unite",
+    "fifty-forks-decide",
+    "healthy-planes-smash",
+    "hungry-paws-beam",
+    "long-parrots-dress",
+    "odd-windows-sip",
+    "quick-bananas-rhyme",
+    "quiet-dots-yell",
+    "rotten-worms-itch",
+    "shiny-jeans-drum",
+    "wild-rabbits-pay",
+    "yellow-starfishes-rush"
+  ]
 }
