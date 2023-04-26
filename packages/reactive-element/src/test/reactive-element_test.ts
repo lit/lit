@@ -1286,14 +1286,45 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     assert.equal(changed, 1);
     assert.equal(el.foo, 20);
-    assert.equal(el.__foo, 20);
     assert.isFalse(el.hasAttribute('foo'));
     el.bar = 'hi';
     await el.updateComplete;
     assert.equal(changed, 2);
     assert.equal(el.bar, 'hi');
-    assert.equal(el.__bar, 'hi');
     assert.isTrue(el.hasAttribute('bar'));
+  });
+
+  test('Internal storage for `@property` does not collide with other properties', async () => {
+    let changed = 0;
+
+    const hasChanged = () => {
+      changed++;
+      return true;
+    };
+
+    class E extends ReactiveElement {
+      static override get properties(): PropertyDeclarations {
+        return {foo: {hasChanged}};
+      }
+
+      foo: number;
+      __foo: number;
+
+      constructor() {
+        super();
+        this.foo = 111;
+        this.__foo = 222;
+      }
+    }
+
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    el.foo = 333;
+    await el.updateComplete;
+    assert.equal(changed, 2);
+    assert.equal(el.foo, 333);
+    assert.equal(el.__foo, 222);
   });
 
   test('`firstUpdated` called when element first updates', async () => {

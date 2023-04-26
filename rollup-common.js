@@ -219,7 +219,7 @@ const generateTerserOptions = (
   testPropertyPrefix = ''
 ) => ({
   warnings: true,
-  ecma: 2017,
+  ecma: 2021,
   compress: {
     unsafe: true,
     // An extra pass can squeeze out an extra byte or two.

@@ -2,11 +2,11 @@
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
-    "target": "ES2020",
+    "target": "es2021",
     "module": "ES2020",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2020"],
+    "lib": ["es2021"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,

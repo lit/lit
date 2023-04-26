@@ -62,8 +62,8 @@ interface Cache {
  * Common compiler options between TS & JS
  */
 const compilerOptions: ts.CompilerOptions = {
-  target: ts.ScriptTarget.ES2020,
-  lib: ['es2020', 'DOM'],
+  target: ts.ScriptTarget.ES2021,
+  lib: ['es2021', 'DOM'],
   module: ts.ModuleKind.ES2020,
   outDir: './',
   moduleResolution: ts.ModuleResolutionKind.NodeJs,

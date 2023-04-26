@@ -31,20 +31,15 @@ export type {
 } from './reactive-controller.js';
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
+
+// Lets a minifier replace globalThis references with a minified name
+const global = globalThis;
 
 if (NODE_MODE) {
   global.customElements ??= customElements;
 }
 
 const DEV_MODE = true;
-
-let requestUpdateThenable: (name: string) => {
-  then: (
-    onfulfilled?: (value: boolean) => void,
-    _onrejected?: () => void
-  ) => void;
-};
 
 let issueWarning: (code: string, warning: string) => void;
 
@@ -91,22 +86,6 @@ if (DEV_MODE) {
         `the \`polyfill-support\` module has not been loaded.`
     );
   }
-
-  requestUpdateThenable = (name) => ({
-    then: (
-      onfulfilled?: (value: boolean) => void,
-      _onrejected?: () => void
-    ) => {
-      issueWarning(
-        'request-update-promise',
-        `The \`requestUpdate\` method should no longer return a Promise but ` +
-          `does so on \`${name}\`. Use \`updateComplete\` instead.`
-      );
-      if (onfulfilled !== undefined) {
-        onfulfilled(false);
-      }
-    },
-  });
 }
 
 /**
@@ -606,15 +585,13 @@ export abstract class ReactiveElement
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
     const attributes: string[] = [];
-    // Use forEach so this works even if for/of loops are compiled to for loops
-    // expecting arrays
-    this.elementProperties.forEach((v, p) => {
+    for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
       if (attr !== undefined) {
         this.__attributeToPropertyMap.set(attr, p);
         attributes.push(attr);
       }
-    });
+    }
     return attributes;
   }
 
@@ -663,7 +640,11 @@ export abstract class ReactiveElement
     // user-defined accessors. Note that if the super has an accessor we will
     // still overwrite it
     if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
-      const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
+      const key = DEV_MODE
+        ? // Use Symbol.for in dev mode to make it easier to maintain state
+          // when doing HMR.
+          Symbol.for(`${String(name)} (@property() cache)`)
+        : Symbol();
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         Object.defineProperty(this.prototype, name, descriptor);
@@ -795,22 +776,6 @@ export abstract class ReactiveElement
       }
     }
     this.elementStyles = this.finalizeStyles(this.styles);
-    // DEV mode warnings
-    if (DEV_MODE) {
-      const warnRemovedOrRenamed = (name: string, renamed = false) => {
-        if (this.prototype.hasOwnProperty(name)) {
-          issueWarning(
-            renamed ? 'renamed-api' : 'removed-api',
-            `\`${name}\` is implemented on class ${this.name}. It ` +
-              `has been ${renamed ? 'renamed' : 'removed'} ` +
-              `in this version of LitElement.`
-          );
-        }
-      };
-      warnRemovedOrRenamed('initialize');
-      warnRemovedOrRenamed('requestUpdateInternal');
-      warnRemovedOrRenamed('_getUpdateComplete', true);
-    }
     return true;
   }
 
@@ -994,16 +959,14 @@ export abstract class ReactiveElement
    * the native platform default).
    */
   private __saveInstanceProperties() {
-    // Use forEach so this works even if for/of loops are compiled to for loops
-    // expecting arrays
-    (this.constructor as typeof ReactiveElement).elementProperties.forEach(
-      (_v, p) => {
-        if (this.hasOwnProperty(p)) {
-          this.__instanceProperties!.set(p, this[p as keyof this]);
-          delete this[p as keyof this];
-        }
+    const elementProperties = (this.constructor as typeof ReactiveElement)
+      .elementProperties;
+    for (const p of elementProperties.keys()) {
+      if (this.hasOwnProperty(p)) {
+        this.__instanceProperties!.set(p, this[p as keyof this]);
+        delete this[p as keyof this];
       }
-    );
+    }
   }
 
   /**
@@ -1209,11 +1172,6 @@ export abstract class ReactiveElement
     if (!this.isUpdatePending && shouldRequestUpdate) {
       this.__updatePromise = this.__enqueueUpdate();
     }
-    // Note, since this no longer returns a promise, in dev mode we return a
-    // thenable which warns if it's called.
-    return DEV_MODE
-      ? (requestUpdateThenable(this.localName) as unknown as void)
-      : undefined;
   }
 
   /**
@@ -1314,13 +1272,13 @@ export abstract class ReactiveElement
       }
     }
     // Mixin instance properties once, if they exist.
-    if (this.__instanceProperties) {
-      // Use forEach so this works even if for/of loops are compiled to for loops
-      // expecting arrays
+    // The forEach() expression will only run when when __instanceProperties is
+    // defined, and it returns undefined, setting __instanceProperties to
+    // undefined
+    this.__instanceProperties &&= this.__instanceProperties.forEach(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this.__instanceProperties!.forEach((v, p) => ((this as any)[p] = v));
-      this.__instanceProperties = undefined;
-    }
+      (v, p) => ((this as any)[p] = v)
+    ) as undefined;
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
     try {
@@ -1470,14 +1428,12 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    if (this.__reflectingProperties !== undefined) {
-      // Use forEach so this works even if for/of loops are compiled to for
-      // loops expecting arrays
-      this.__reflectingProperties.forEach((v, k) =>
-        this.__propertyToAttribute(k, this[k as keyof this], v)
-      );
-      this.__reflectingProperties = undefined;
-    }
+    // The forEach() expression will only run when when __reflectingProperties is
+    // defined, and it returns undefined, setting __reflectingProperties to
+    // undefined
+    this.__reflectingProperties &&= this.__reflectingProperties.forEach(
+      (v, k) => this.__propertyToAttribute(k, this[k as keyof this], v)
+    ) as undefined;
     this.__markUpdated();
   }
 

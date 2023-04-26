@@ -24,7 +24,7 @@ declare global {
     [tagName]: BasicElement;
     'x-foo': XFoo,
   }
-  
+
   namespace JSX {
     interface IntrinsicElements {
       "x-foo": WebComponentProps<XFoo>,
@@ -145,7 +145,7 @@ if (DEV_MODE) {
       warnings = [];
     });
 
-    test('warns when react resered properties are used', () => { 
+    test('warns when react resered properties are used', () => {
       createComponent({
         react: window.React,
         elementClass: BasicElement,
@@ -192,7 +192,7 @@ suite('createComponent', () => {
 
     const elWithoutMap = container.querySelector(tagName)! as BasicElement;
     await elWithoutMap.updateComplete;
-    
+
     assert.equal(elWithoutMap.textContent, 'Component without event map.');
   });
 
@@ -298,7 +298,7 @@ suite('createComponent', () => {
     assert.equal(el.id, 'id');
     assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
     assert.equal(el.id, wrappedEl.id);
-    
+
     await renderReactComponent({id: undefined});
     assert.equal(el.getAttribute('id'), null);
     assert.equal(el.id, '');
@@ -448,7 +448,7 @@ suite('createComponent', () => {
     await renderReactComponent({'aria-checked': null});
     assert.equal(el.getAttribute('aria-checked'), null);
     assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
-        
+
     await renderReactComponent({'aria-checked': true});
     assert.equal(el.getAttribute('aria-checked'), 'true');
     assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));

@@ -11,8 +11,9 @@ const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
 const ENABLE_SHADYDOM_NOPATCH = true;
 const NODE_MODE = false;
-// Use window for browser builds because IE11 doesn't have globalThis.
-const global = NODE_MODE ? globalThis : window;
+
+// Allows minifiers to rename references to globalThis
+const global = globalThis;
 
 /**
  * Contains types that are part of the unstable debug API.
@@ -236,10 +237,10 @@ const wrap =
   ENABLE_SHADYDOM_NOPATCH &&
   global.ShadyDOM?.inUse &&
   global.ShadyDOM?.noPatch === true
-    ? global.ShadyDOM!.wrap
-    : (node: Node) => node;
+    ? (global.ShadyDOM!.wrap as <T extends Node>(node: T) => T)
+    : <T extends Node>(node: T) => node;
 
-const trustedTypes = (global as unknown as Partial<Window>).trustedTypes;
+const trustedTypes = (global as unknown as Window).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -629,9 +630,7 @@ export interface RenderOptions {
 
 const walker = d.createTreeWalker(
   d,
-  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
-  null,
-  false
+  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */
 );
 
 let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
@@ -667,7 +666,7 @@ export interface DirectiveParent {
 const getTemplateHtml = (
   strings: TemplateStringsArray,
   type: ResultType
-): [TrustedHTML, Array<string | undefined>] => {
+): [TrustedHTML, Array<string>] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
   // syntactic position of the bindings. They can be in text position, where
@@ -678,7 +677,7 @@ const getTemplateHtml = (
   // Stores the case-sensitive bound attribute names in the order of their
   // parts. ElementParts are also reflected in this array as undefined
   // rather than a string, to disambiguate from attribute bindings.
-  const attrNames: Array<string | undefined> = [];
+  const attrNames: Array<string> = [];
   let html = type === SVG_RESULT ? '<svg>' : '';
 
   // When we're inside a raw text tag (not it's text content), the regex
@@ -808,9 +807,7 @@ const getTemplateHtml = (
             s.slice(attrNameEndIndex)) +
           marker +
           end
-        : s +
-          marker +
-          (attrNameEndIndex === -2 ? (attrNames.push(undefined), i) : end);
+        : s + marker + (attrNameEndIndex === -2 ? i : end);
   }
 
   const htmlResult: string | TrustedHTML =
@@ -874,12 +871,10 @@ class Template {
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
-    // Reparent SVG nodes into template root
+    // Re-parent SVG nodes into template root
     if (type === SVG_RESULT) {
-      const content = this.el.content;
-      const svgElement = content.firstChild!;
-      svgElement.remove();
-      content.append(...svgElement.childNodes);
+      const svgElement = this.el.content.firstChild!;
+      svgElement.replaceWith(...svgElement.childNodes);
     }
 
     // Walk the template to find binding markers and create TemplateParts
@@ -908,55 +903,34 @@ class Template {
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
         if ((node as Element).hasAttributes()) {
-          // We defer removing bound attributes because on IE we might not be
-          // iterating attributes in their template order, and would sometimes
-          // remove an attribute that we still need to create a part for.
-          const attrsToRemove = [];
           for (const name of (node as Element).getAttributeNames()) {
-            // `name` is the name of the attribute we're iterating over, but not
-            // _necessarily_ the name of the attribute we will create a part
-            // for. They can be different in browsers that don't iterate on
-            // attributes in source order. In that case the attrNames array
-            // contains the attribute name we'll process next. We only need the
-            // attribute name here to know if we should process a bound attribute
-            // on this element.
-            if (
-              name.endsWith(boundAttributeSuffix) ||
-              name.startsWith(marker)
-            ) {
+            if (name.endsWith(boundAttributeSuffix)) {
               const realName = attrNames[attrNameIndex++];
-              attrsToRemove.push(name);
-              if (realName !== undefined) {
-                // Lowercase for case-sensitive SVG attributes like viewBox
-                const value = (node as Element).getAttribute(
-                  realName.toLowerCase() + boundAttributeSuffix
-                )!;
-                const statics = value.split(marker);
-                const m = /([.?@])?(.*)/.exec(realName)!;
-                parts.push({
-                  type: ATTRIBUTE_PART,
-                  index: nodeIndex,
-                  name: m[2],
-                  strings: statics,
-                  ctor:
-                    m[1] === '.'
-                      ? PropertyPart
-                      : m[1] === '?'
-                      ? BooleanAttributePart
-                      : m[1] === '@'
-                      ? EventPart
-                      : AttributePart,
-                });
-              } else {
-                parts.push({
-                  type: ELEMENT_PART,
-                  index: nodeIndex,
-                });
-              }
+              const value = (node as Element).getAttribute(name)!;
+              const statics = value.split(marker);
+              const m = /([.?@])?(.*)/.exec(realName)!;
+              parts.push({
+                type: ATTRIBUTE_PART,
+                index: nodeIndex,
+                name: m[2],
+                strings: statics,
+                ctor:
+                  m[1] === '.'
+                    ? PropertyPart
+                    : m[1] === '?'
+                    ? BooleanAttributePart
+                    : m[1] === '@'
+                    ? EventPart
+                    : AttributePart,
+              });
+              (node as Element).removeAttribute(name);
+            } else if (name.startsWith(marker)) {
+              parts.push({
+                type: ELEMENT_PART,
+                index: nodeIndex,
+              });
+              (node as Element).removeAttribute(name);
             }
-          }
-          for (const name of attrsToRemove) {
-            (node as Element).removeAttribute(name);
           }
         }
         // TODO (justinfagnani): benchmark the regex against testing for each
@@ -1869,14 +1843,6 @@ class PropertyPart extends AttributePart {
   }
 }
 
-// Temporary workaround for https://crbug.com/993268
-// Currently, any attribute starting with "on" is considered to be a
-// TrustedScript source. Such boolean attributes must be set to the equivalent
-// trusted emptyScript value.
-const emptyStringForBooleanAttribute = trustedTypes
-  ? (trustedTypes.emptyScript as unknown as '')
-  : '';
-
 export type {BooleanAttributePart};
 class BooleanAttributePart extends AttributePart {
   override readonly type = BOOLEAN_ATTRIBUTE_PART;
@@ -1890,14 +1856,10 @@ class BooleanAttributePart extends AttributePart {
       value: !!(value && value !== nothing),
       options: this.options,
     });
-    if (value && value !== nothing) {
-      (wrap(this.element) as Element).setAttribute(
-        this.name,
-        emptyStringForBooleanAttribute
-      );
-    } else {
-      (wrap(this.element) as Element).removeAttribute(this.name);
-    }
+    (wrap(this.element) as Element).toggleAttribute(
+      this.name,
+      !!value && value !== nothing
+    );
   }
 }
 
