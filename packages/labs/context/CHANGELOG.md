@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 0.3.1
+
+### Patch Changes
+
+- [#3834](https://github.com/lit/lit/pull/3834) [`9a4a1786`](https://github.com/lit/lit/commit/9a4a178618ba1a7c3e0e4eb603d5ca6c22ca58d7) - Fixes ContextRoot for requesters in nested shadowRoots, #3833
+
 ## 0.3.0
 
 ### Minor Changes
