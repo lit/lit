@@ -3,7 +3,9 @@ name: Release
 on:
   push:
     branches:
-      - "3.0"
+      - main
+      # Temporary for pre-release.
+      - '3.0'
 
 jobs:
   release:
