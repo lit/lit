@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.2
+
+### Patch Changes
+
+- [#3849](https://github.com/lit/lit/pull/3849) [`02d6a35a`](https://github.com/lit/lit/commit/02d6a35ab75285905b28a5b29e8a7740d3cb5e3f) - Add "module" to condition names to resolve for module loader
+
 ## 3.1.1
 
 ### Patch Changes
