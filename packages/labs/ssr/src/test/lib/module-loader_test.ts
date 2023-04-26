@@ -80,4 +80,20 @@ test('resolves a root exported path (.)', async () => {
   assert.ok(loader.cache.has(isServerPath));
 });
 
+test('prefers "module" condition over "import"', async () => {
+  const loader = new ModuleLoader();
+  const result = await loader.importModule(
+    './module-package-import.js',
+    testIndex
+  );
+  const {module, path: modulePath} = result;
+  assert.is(module.namespace.packageValue, 'module');
+  assert.ok(loader.cache.has(modulePath));
+  const packagePath = path.resolve(
+    path.dirname(testIndex),
+    '../../../../test-projects/test-module-package/index.module.js'
+  );
+  assert.ok(loader.cache.has(packagePath));
+});
+
 test.run();
