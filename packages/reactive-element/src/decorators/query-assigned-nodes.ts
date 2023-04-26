@@ -12,7 +12,6 @@
  */
 
 import {decorateProperty} from './base.js';
-import {queryAssignedElements} from './query-assigned-elements.js';
 
 import type {ReactiveElement} from '../reactive-element.js';
 
@@ -51,7 +50,9 @@ type TSDecoratorReturnType = void | any;
  * }
  * ```
  *
- * Note the type of this property should be annotated as `Array<Node>`.
+ * Note the type of this property should be annotated as `Array<Node>`. Use the
+ * queryAssignedElements decorator to list only elements, and optionally filter
+ * the element list using a CSS selector.
  *
  * @category Decorator
  */
@@ -59,72 +60,9 @@ export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
 ): TSDecoratorReturnType;
 
-/**
- * A property decorator that converts a class property into a getter that
- * returns the `assignedNodes` of the given named `slot`.
- *
- * Example usage:
- * ```ts
- * class MyElement {
- *   @queryAssignedNodes('list', true, '.item')
- *   listItems!: Array<HTMLElement>;
- *
- *   render() {
- *     return html`
- *       <slot name="list"></slot>
- *     `;
- *   }
- * }
- * ```
- *
- * Note the type of this property should be annotated as `Array<Node>` if used
- * without a `selector` or `Array<HTMLElement>` if a selector is provided.
- * Use {@linkcode queryAssignedElements @queryAssignedElements} to list only
- * elements, and optionally filter the element list using a CSS selector.
- *
- * @param slotName A string name of the slot.
- * @param flatten A boolean which when true flattens the assigned nodes,
- *     meaning any assigned nodes that are slot elements are replaced with their
- *     assigned nodes.
- * @param selector A CSS selector used to filter the elements returned.
- *
- * @category Decorator
- * @deprecated Prefer passing in a single options object, i.e. `{slot: 'list'}`.
- * If using `selector` please use `@queryAssignedElements`.
- * `@queryAssignedNodes('', false, '.item')` is functionally identical to
- * `@queryAssignedElements({slot: '', flatten: false, selector: '.item'})` or
- * `@queryAssignedElements({selector: '.item'})`.
- */
-export function queryAssignedNodes(
-  slotName?: string,
-  flatten?: boolean,
-  selector?: string
-): TSDecoratorReturnType;
-
-export function queryAssignedNodes(
-  slotOrOptions?: string | QueryAssignedNodesOptions,
-  flatten?: boolean,
-  selector?: string
-) {
-  // Normalize the overloaded arguments.
-  let slot = slotOrOptions;
-  let assignedNodesOptions: AssignedNodesOptions;
-  if (typeof slotOrOptions === 'object') {
-    slot = slotOrOptions.slot;
-    assignedNodesOptions = slotOrOptions;
-  } else {
-    assignedNodesOptions = {flatten};
-  }
-
-  // For backwards compatibility, queryAssignedNodes with a selector behaves
-  // exactly like queryAssignedElements with a selector.
-  if (selector) {
-    return queryAssignedElements({
-      slot: slot as string,
-      flatten,
-      selector,
-    });
-  }
+export function queryAssignedNodes(options?: QueryAssignedNodesOptions) {
+  const slot = options?.slot;
+  const assignedNodesOptions = options;
 
   return decorateProperty({
     descriptor: (_name: PropertyKey) => ({
