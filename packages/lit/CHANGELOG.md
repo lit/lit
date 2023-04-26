@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.7.3
+
+### Patch Changes
+
+- [#3825](https://github.com/lit/lit/pull/3825) [`343187b1`](https://github.com/lit/lit/commit/343187b1acbbdb02ce8d01fa0a0d326870419763) - `static-html` no longer adds an item to `TemplateResult`'s value array for the last consumed static value. This fixes an error with server-side rendering of static html.
+
+- [#3766](https://github.com/lit/lit/pull/3766) [`4431cbb8`](https://github.com/lit/lit/commit/4431cbb85428e54bafa090088056a325fe623aa1) - Fix styleMap initial render of mixed-case custom props
+
 ## 2.7.2
 
 ### Patch Changes

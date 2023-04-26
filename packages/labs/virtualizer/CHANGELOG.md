@@ -1,5 +1,13 @@
 # @lit-labs/virtualizer
 
+## 2.0.1
+
+### Patch Changes
+
+- [#3819](https://github.com/lit/lit/pull/3819) [`f0c8336a`](https://github.com/lit/lit/commit/f0c8336a03ca2c02c48a13710eca8aca3ba70758) - Fix [#3815: Masonry: size and range bugs when the last item placed isn't the one extending the furthest](https://github.com/lit/lit/issues/3815)
+
+- [#3708](https://github.com/lit/lit/pull/3708) [`a1f8c345`](https://github.com/lit/lit/commit/a1f8c345cc978be06c6416edd1228fc5471c53d8) - [@lit-labs/virtualizer]: handle uninitialized layout in \_childrenSizeChanged
+
 ## 2.0.0
 
 ### Major Changes
