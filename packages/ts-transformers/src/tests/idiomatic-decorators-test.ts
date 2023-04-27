@@ -1215,96 +1215,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-        ?.querySelector('slot:not([name])')
+        ?.querySelector(\`slot:not([name])\`)
         ?.assignedNodes() ?? [];
       }
 
       unrelated2() {}
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
-  test('deprecated @queryAssignedNodes (with slot name)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes('list')
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector('slot[name=list]')
-          ?.assignedNodes() ?? [];
-      }
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
-  test('deprecated @queryAssignedNodes (with flatten)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes('list', true)
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector('slot[name=list]')
-          ?.assignedNodes({flatten: true}) ?? [];
-      }
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
-  test('deprecated @queryAssignedNodes (with selector)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes('list', false, '.item')
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector('slot[name=list]')
-          ?.assignedNodes()
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches('.item')
-          ) ?? [];
-      }
     }
     `;
     checkTransform(input, expected, options);

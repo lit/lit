@@ -24,15 +24,9 @@ const flush =
   class D extends RenderingElement {
     @queryAssignedNodes() defaultAssigned!: Node[];
 
-    // Testing backwards compatible deprecated API.
-    @queryAssignedNodes('footer', true) _footerAssigned!: Node[];
     @queryAssignedNodes({slot: 'footer', flatten: true})
     footerAssigned!: Node[];
 
-    // Testing backwards compatible deprecated API.
-    @queryAssignedNodes('footer', true, '.item')
-    _footerAssignedItems!: HTMLElement[];
-    // Legacy selector can be transformed into queryAssignedElements.
     @queryAssignedElements({slot: 'footer', flatten: true, selector: '.item'})
     footerAssignedItems!: HTMLElement[];
 
@@ -166,17 +160,14 @@ const flush =
     // Note, `defaultAssigned` does `flatten` so we test that the property
     // reflects current state and state when nodes are added or removed to
     // the light DOM of the element containing the element under test.
-    assert.deepEqual(el.assignedNodesEl._footerAssigned, []);
     assert.deepEqual(el.assignedNodesEl.footerAssigned, []);
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
     el.append(child1, child2);
     flush();
-    assert.deepEqual(el.assignedNodesEl._footerAssigned, [child1, child2]);
     assert.deepEqual(el.assignedNodesEl.footerAssigned, [child1, child2]);
     child2.remove();
     flush();
-    assert.deepEqual(el.assignedNodesEl._footerAssigned, [child1]);
     assert.deepEqual(el.assignedNodesEl.footerAssigned, [child1]);
   });
 
@@ -184,23 +175,19 @@ const flush =
     // Note, `defaultAssigned` does `flatten` so we test that the property
     // reflects current state and state when nodes are added or removed to
     // the light DOM of the element containing the element under test.
-    assert.deepEqual(el.assignedNodesEl._footerAssignedItems, []);
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
     child2.classList.add('item');
     el.append(child1, child2);
     flush();
-    assert.deepEqual(el.assignedNodesEl._footerAssignedItems, [child2]);
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, [child2]);
     child2.remove();
     flush();
-    assert.deepEqual(el.assignedNodesEl._footerAssignedItems, []);
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
   });
 
   test('returns assignedNodes for slot that contains text nodes filtered by selector', () => {
-    assert.deepEqual(el.assignedNodesEl._footerAssignedItems, []);
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
     const child1 = document.createElement('div');
     const child2 = document.createElement('div');
@@ -213,11 +200,9 @@ const flush =
     el.appendChild(child2);
     el.appendChild(text2);
     flush();
-    assert.deepEqual(el.assignedNodesEl._footerAssignedItems, [child2]);
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, [child2]);
     el.removeChild(child2);
     flush();
-    assert.deepEqual(el.assignedNodesEl._footerAssignedItems, []);
     assert.deepEqual(el.assignedNodesEl.footerAssignedItems, []);
   });
 
