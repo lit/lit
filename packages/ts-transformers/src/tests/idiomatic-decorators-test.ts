@@ -1215,7 +1215,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-        ?.querySelector('slot:not([name])')
+        ?.querySelector(\`slot:not([name])\`)
         ?.assignedNodes() ?? [];
       }
 
