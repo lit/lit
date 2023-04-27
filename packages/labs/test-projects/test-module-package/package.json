@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "name": "@lit-internal/test-module-package",
+  "version": "1.0.0",
+  "exports": {
+    ".": {
+      "module": "./index.module.js",
+      "import": "./index.import.js",
+      "default": "./index.js"
+    }
+  }
+}
