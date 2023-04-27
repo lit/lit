@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/vue-utils",
-  "version": "0.1.0",
+  "version": "0.1.1-pre.0",
   "publishConfig": {
     "access": "public"
   },
@@ -106,6 +106,6 @@
   },
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.1-pre.0"
   }
 }
