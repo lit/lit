@@ -58,9 +58,7 @@ type TSDecoratorReturnType = void | any;
  */
 export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
-): TSDecoratorReturnType;
-
-export function queryAssignedNodes(options?: QueryAssignedNodesOptions) {
+): TSDecoratorReturnType {
   const slot = options?.slot;
   const assignedNodesOptions = options;
 
