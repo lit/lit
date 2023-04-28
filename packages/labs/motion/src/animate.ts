@@ -580,7 +580,7 @@ export class Animate extends AsyncDirective {
  * Used in an async function to mark a promise that we're deliberately not
  * awaiting.
  */
-function noAwait(p: null | undefined | Promise<unknown>) {}
+function noAwait(_p: null | undefined | Promise<unknown>) {}
 
 /**
  * The `animate` directive animates a node's layout between renders.
