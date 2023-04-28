@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 import {LitElement, ReactiveControllerHost} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
@@ -330,12 +335,12 @@ export class Animate extends AsyncDirective {
           : frames;
         // adjust z so always on top...
         z++;
-        frames!.forEach((f) => (f.zIndex = z));
+        frames!.forEach((f) => (f['zIndex'] = z));
       } else if (this.options.in) {
         frames = [...this.options.in, {}];
       }
     }
-    this.animate(frames, animationOptions);
+    noAwait(this.animate(frames, animationOptions));
   }
 
   resetStyles() {
@@ -383,8 +388,9 @@ export class Animate extends AsyncDirective {
         // or animation but setting left/top should be rare, especially via
         // animation.
         const left =
-          (this._fromValues!.left as number) - (shifted.left as number);
-        const top = (this._fromValues!.top as number) - (shifted.top as number);
+          (this._fromValues!['left'] as number) - (shifted['left'] as number);
+        const top =
+          (this._fromValues!['top'] as number) - (shifted['top'] as number);
         const isStatic = getComputedStyle(this.element).position === 'static';
         if (isStatic && (left !== 0 || top !== 0)) {
           this.element.style.position = 'relative';
@@ -478,21 +484,21 @@ export class Animate extends AsyncDirective {
     if (ancestorProps !== undefined) {
       // gather scaling data for ancestors
       ancestorProps.forEach((a) => {
-        if (a.width) {
-          dScaleX = dScaleX / (a.width as number);
+        if (a['width']) {
+          dScaleX = dScaleX / (a['width'] as number);
         }
-        if (a.height) {
-          dScaleY = dScaleY / (a.height as number);
+        if (a['height']) {
+          dScaleY = dScaleY / (a['height'] as number);
         }
       });
       // Move position by ancestor scaling amount.
-      if (from.left !== undefined && to.left !== undefined) {
-        from.left = dScaleX * (from.left as number);
-        to.left = dScaleX * (to.left as number);
+      if (from['left'] !== undefined && to['left'] !== undefined) {
+        from['left'] = dScaleX * (from['left'] as number);
+        to['left'] = dScaleX * (to['left'] as number);
       }
-      if (from.top !== undefined && to.top !== undefined) {
-        from.top = dScaleY * (from.top as number);
-        to.top = dScaleY * (to.top as number);
+      if (from['top'] !== undefined && to['top'] !== undefined) {
+        from['top'] = dScaleY * (from['top'] as number);
+        to['top'] = dScaleY * (to['top'] as number);
       }
     }
     return {from, to};
@@ -515,7 +521,9 @@ export class Animate extends AsyncDirective {
         if (op.transform !== undefined) {
           props[p] = op.value!;
           hasFrames = true;
-          fromFrame.transform = `${fromFrame.transform ?? ''} ${op.transform}`;
+          fromFrame['transform'] = `${fromFrame['transform'] ?? ''} ${
+            op['transform']
+          }`;
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
@@ -523,7 +531,7 @@ export class Animate extends AsyncDirective {
         toFrame[p] = t;
       }
     }
-    fromFrame.transformOrigin = toFrame.transformOrigin = center
+    fromFrame['transformOrigin'] = toFrame['transformOrigin'] = center
       ? 'center center'
       : 'top left';
     this.animatingProperties = props;
@@ -547,7 +555,7 @@ export class Animate extends AsyncDirective {
         didAnimate = true;
         this.webAnimation = this.element.animate(frames, options);
         const controller = this.getController();
-        controller?.add(this);
+        noAwait(controller?.add(this));
         try {
           await this.webAnimation.finished;
         } catch (e) {
@@ -572,6 +580,12 @@ export class Animate extends AsyncDirective {
     }
   }
 }
+
+/**
+ * Used in an async function to mark a promise that we're deliberately not
+ * awaiting.
+ */
+function noAwait(_p: null | undefined | Promise<unknown>) {}
 
 /**
  * The `animate` directive animates a node's layout between renders.
