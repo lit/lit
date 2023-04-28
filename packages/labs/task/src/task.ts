@@ -166,7 +166,7 @@ export class Task<
   protected async performTask() {
     const args = this._getArgs?.();
     if (this.shouldRun(args)) {
-      this.run(args);
+      await this.run(args);
     }
   }
 

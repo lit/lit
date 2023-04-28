@@ -582,4 +582,23 @@ suite('Task', () => {
 
     assert.equal(el.taskObservedValue, 'bar');
   });
+
+  test('performTask waits on the task', async () => {
+    const el = getTestElement({
+      args: () => [el.a],
+    });
+    await renderElement(el);
+    let taskComplete = false;
+    (async () => {
+      el.a = 'z';
+      // @ts-expect-error: We're testing the behavior of a protected method
+      await el.task.performTask();
+      taskComplete = true;
+    })();
+    await tasksUpdateComplete();
+    assert.isFalse(taskComplete);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.isTrue(taskComplete);
+  });
 });
