@@ -335,7 +335,7 @@ export class Animate extends AsyncDirective {
         frames = [...this.options.in, {}];
       }
     }
-    this.animate(frames, animationOptions);
+    noAwait(this.animate(frames, animationOptions));
   }
 
   resetStyles() {
@@ -550,7 +550,7 @@ export class Animate extends AsyncDirective {
         didAnimate = true;
         this.webAnimation = this.element.animate(frames, options);
         const controller = this.getController();
-        controller?.add(this);
+        noAwait(controller?.add(this));
         try {
           await this.webAnimation.finished;
         } catch (e) {
@@ -575,6 +575,12 @@ export class Animate extends AsyncDirective {
     }
   }
 }
+
+/**
+ * Used in an async function to mark a promise that we're deliberately not
+ * awaiting.
+ */
+function noAwait(p: null | undefined | Promise<unknown>) {}
 
 /**
  * The `animate` directive animates a node's layout between renders.
