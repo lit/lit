@@ -23,9 +23,11 @@ export function wrapCreateElement(
   // non-React alternatives like preact?
   originalCreateElement: typeof ReactCreateElement
 ) {
-  return function createElement<P extends {}>(
+  return function createElement<
+    P extends {children?: ReactNode | Array<ReactNode>}
+  >(
     type: ElementType<P>,
-    props: P,
+    props: P | null,
     ...children: ReactNode[]
   ): ReactElement {
     if (isCustomElement(type)) {
@@ -40,11 +42,20 @@ export function wrapCreateElement(
           },
         });
 
+        const newChildren: ReactNode[] = [templateShadowRoot];
+        if (props?.children !== undefined) {
+          if (Array.isArray(props.children)) {
+            newChildren.push(...props.children);
+          } else {
+            newChildren.push(props.children);
+          }
+        }
+        newChildren.push(...children);
+
         return originalCreateElement(
           type,
           {...props, ...elementAttributes},
-          templateShadowRoot,
-          ...children
+          ...newChildren
         );
       }
     }
