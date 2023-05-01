@@ -11,6 +11,7 @@
  * not an arrow function.
  */
 
+import {HasChanged} from '../reactive-element.js';
 import {property} from './property.js';
 
 export interface InternalPropertyDeclaration<Type = unknown> {
@@ -19,7 +20,7 @@ export interface InternalPropertyDeclaration<Type = unknown> {
    * it is set. The function should take the `newValue` and `oldValue` and
    * return `true` if an update should be requested.
    */
-  hasChanged?(value: Type, oldValue: Type): boolean;
+  hasChanged?: HasChanged<Type>;
 }
 
 /**
