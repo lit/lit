@@ -38,6 +38,7 @@ import {
 } from '../references.js';
 import {parseModuleJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclarationInfo} from './functions.js';
+import {makeDiagnostic} from '../utils.js';
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -100,11 +101,12 @@ export const getModule = (
   const exportMap: ExportMap = new Map<string, LocalNameOrReference>();
   const reexports: ts.Expression[] = [];
   const addDeclaration = (info: DeclarationInfo) => {
-    const {name, factory, isExport} = info;
+    const {name, node, factory, isExport} = info;
     if (declarationMap.has(name)) {
-      throw new Error(
-        `Internal error: duplicate declaration '${name}' in ${sourceFile.fileName}`
+      analyzer.diagnostics.push(
+        makeDiagnostic(node, `Duplicate declaration '${name}'`)
       );
+      return;
     }
     declarationMap.set(name, factory);
     if (isExport) {
@@ -135,7 +137,7 @@ export const getModule = (
         if (moduleSpecifier === undefined) {
           throw new DiagnosticsError(
             statement,
-            `Expected a wildcard export to have a module specifier.`
+            `Internal Error: expected a wildcard export to always have a module specifier.`
           );
         }
         reexports.push(moduleSpecifier);
@@ -152,9 +154,13 @@ export const getModule = (
         getExportAssignmentVariableDeclarationInfo(statement, analyzer)
       );
     } else if (ts.isImportDeclaration(statement)) {
-      dependencies.add(
-        getPathForModuleSpecifierExpression(statement.moduleSpecifier, analyzer)
+      const path = getPathForModuleSpecifierExpression(
+        statement.moduleSpecifier,
+        analyzer
       );
+      if (path !== undefined) {
+        dependencies.add(path);
+      }
     }
   }
   // Construct module and save in cache
@@ -185,10 +191,11 @@ const finalizeExports = (
   analyzer: AnalyzerInterface
 ) => {
   for (const moduleSpecifier of reexportSpecifiers) {
-    const module = getModule(
-      getPathForModuleSpecifierExpression(moduleSpecifier, analyzer),
-      analyzer
-    );
+    const path = getPathForModuleSpecifierExpression(moduleSpecifier, analyzer);
+    if (path === undefined) {
+      continue;
+    }
+    const module = getModule(path, analyzer);
     for (const name of module.exportNames) {
       exportMap.set(
         name,
@@ -300,7 +307,7 @@ const getJSPathFromSourcePath = (
 export const getPathForModuleSpecifierExpression = (
   specifierExpression: ts.Expression,
   analyzer: AnalyzerInterface
-): AbsolutePath => {
+): AbsolutePath | undefined => {
   const specifier = getSpecifierString(specifierExpression);
   return getPathForModuleSpecifier(specifier, specifierExpression, analyzer);
 };
@@ -312,7 +319,7 @@ export const getPathForModuleSpecifier = (
   specifier: string,
   location: ts.Node,
   analyzer: AnalyzerInterface
-): AbsolutePath => {
+): AbsolutePath | undefined => {
   const resolvedPath = ts.resolveModuleName(
     specifier,
     location.getSourceFile().fileName,
@@ -320,10 +327,13 @@ export const getPathForModuleSpecifier = (
     analyzer.fs
   ).resolvedModule?.resolvedFileName;
   if (resolvedPath === undefined) {
-    throw new DiagnosticsError(
-      location,
-      `Could not resolve specifier ${specifier} to filesystem path.`
+    analyzer.diagnostics.push(
+      makeDiagnostic(
+        location,
+        `Could not resolve specifier ${specifier} to filesystem path.`
+      )
     );
+    return undefined;
   }
   return analyzer.path.normalize(resolvedPath) as AbsolutePath;
 };

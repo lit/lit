@@ -7,7 +7,6 @@
 import ts from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
-import {DiagnosticsError} from './errors.js';
 import {Analyzer} from './analyzer.js';
 
 export interface AnalyzerOptions {
@@ -103,14 +102,7 @@ export const createPackageAnalyzer = (
   );
 
   const analyzer = new Analyzer({getProgram: () => program, fs: ts.sys, path});
-
-  const diagnostics = program.getSemanticDiagnostics();
-  if (diagnostics.length > 0) {
-    throw new DiagnosticsError(
-      diagnostics,
-      `Error analyzing package '${packagePath}': Please fix errors first`
-    );
-  }
+  analyzer.diagnostics.push(...program.getSemanticDiagnostics());
 
   return analyzer;
 };

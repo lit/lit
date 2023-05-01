@@ -32,6 +32,7 @@ import {
   hasStaticModifier,
   hasExportModifier,
   getPrivacy,
+  makeDiagnostic,
 } from '../utils.js';
 import {getFunctionLikeInfo} from './functions.js';
 import {getTypeForNode} from '../types.js';
@@ -135,7 +136,7 @@ const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
   if (name === undefined) {
     throw new DiagnosticsError(
       declaration,
-      'Unexpected class declaration without a name'
+      'Internal error: expected class declaration to either have a name or be a default export'
     );
   }
   return name;
@@ -151,6 +152,7 @@ export const getClassDeclarationInfo = (
   const name = getClassDeclarationName(declaration);
   return {
     name,
+    node: declaration,
     factory: () => getClassDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(declaration),
   };
@@ -202,13 +204,16 @@ export const getHeritageFromExpression = (
 export const getSuperClass = (
   expression: ts.Expression,
   analyzer: AnalyzerInterface
-): Reference => {
+): Reference | undefined => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
   if (ts.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
   }
-  throw new DiagnosticsError(
-    expression,
-    `Expected expression to be a concrete superclass. Mixins are not yet supported.`
+  analyzer.diagnostics.push(
+    makeDiagnostic(
+      expression,
+      `Expected expression to be a concrete superclass. Mixins are not yet supported.`
+    )
   );
+  return undefined;
 };

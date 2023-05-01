@@ -17,8 +17,7 @@ import {
   DeclarationInfo,
   Declaration,
 } from '../model.js';
-import {hasExportModifier} from '../utils.js';
-import {DiagnosticsError} from '../errors.js';
+import {hasExportModifier, makeDiagnostic} from '../utils.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclaration} from './functions.js';
@@ -109,6 +108,7 @@ const getVariableDeclarationInfoList = (
     return [
       {
         name: name.text,
+        node: name,
         factory: () => getVariableDeclaration(statement, dec, name, analyzer),
         isExport,
       },
@@ -134,10 +134,13 @@ const getVariableDeclarationInfoList = (
       )
       .flat();
   } else {
-    throw new DiagnosticsError(
-      dec,
-      `Expected declaration name to either be an Identifier or a BindingPattern`
+    analyzer.diagnostics.push(
+      makeDiagnostic(
+        dec,
+        `Expected declaration name to either be an Identifier or a BindingPattern`
+      )
     );
+    return [];
   }
 };
 
@@ -150,6 +153,7 @@ export const getExportAssignmentVariableDeclarationInfo = (
 ): DeclarationInfo => {
   return {
     name: 'default',
+    node: exportAssignment,
     factory: () =>
       getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
     isExport: true,
@@ -182,6 +186,7 @@ export const getEnumDeclarationInfo = (
 ) => {
   return {
     name: dec.name.text,
+    node: dec,
     factory: () => getEnumDeclaration(dec, analyzer),
     isExport: hasExportModifier(dec),
   };

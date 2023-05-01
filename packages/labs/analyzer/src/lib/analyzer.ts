@@ -32,6 +32,7 @@ export class Analyzer implements AnalyzerInterface {
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
+  readonly diagnostics: ts.Diagnostic[] = [];
 
   constructor(init: AnalyzerInit) {
     this._getProgram = init.getProgram;

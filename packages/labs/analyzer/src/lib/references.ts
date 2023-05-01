@@ -5,7 +5,6 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from './errors.js';
 import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
 import {
   getResolvedExportFromSourcePath,
@@ -13,6 +12,7 @@ import {
   getModuleInfo,
 } from './javascript/modules.js';
 import {AbsolutePath} from './paths.js';
+import {makeDiagnostic} from './utils.js';
 
 const npmModule = /^(?<package>(@[^/]+\/[^/]+)|[^/]+)\/?(?<module>.*)$/;
 
@@ -82,10 +82,10 @@ export const getReferenceForIdentifier = (
     .getTypeChecker()
     .getSymbolAtLocation(identifier);
   if (symbol === undefined) {
-    throw new DiagnosticsError(
-      identifier,
-      'Internal error: Could not get symbol for identifier.'
+    analyzer.diagnostics.push(
+      makeDiagnostic(identifier, `Could not find symbol for identifier.`)
     );
+    return undefined;
   }
   return getReferenceForSymbol(symbol, identifier, analyzer);
 };
@@ -101,7 +101,7 @@ export function getReferenceForSymbol(
   symbol: ts.Symbol,
   location: ts.Node,
   analyzer: AnalyzerInterface
-): Reference {
+): Reference | undefined {
   const {name: symbolName} = symbol;
   // TODO(kschaaf): Do we need to check other declarations? The assumption is
   // that even with multiple declarations (e.g. because of class interface +
@@ -110,10 +110,13 @@ export function getReferenceForSymbol(
   // and not need a specific module specifier.
   const declaration = symbol?.declarations?.[0];
   if (declaration === undefined) {
-    throw new DiagnosticsError(
-      location,
-      `Could not find declaration for symbol '${symbolName}'`
+    analyzer.diagnostics.push(
+      makeDiagnostic(
+        location,
+        `Could not find declaration for symbol '${symbolName}'`
+      )
     );
+    return undefined;
   }
   const declarationSourceFile = declaration.getSourceFile();
   const locationSourceFile = location.getSourceFile();
@@ -217,26 +220,30 @@ export const getImportReference = (
       // External import: extract the npm package (taking care to respect
       // npm orgs) and module specifier (if any)
       const info = specifier.match(npmModule);
-      if (!info || !info.groups) {
-        throw new DiagnosticsError(
-          location,
-          `External npm package could not be parsed from module specifier '${specifier}'.`
+      if (info && info.groups) {
+        refPackage = info.groups.package;
+        refModule = info.groups.module || undefined;
+      } else {
+        analyzer.diagnostics.push(
+          makeDiagnostic(
+            location,
+            `External npm package could not be parsed from module specifier '${specifier}'.`
+          )
         );
       }
-      refPackage = info.groups.package;
-      refModule = info.groups.module || undefined;
     }
   }
   return new Reference({
     name,
     package: refPackage,
     module: refModule,
-    dereference: () =>
-      getResolvedExportFromSourcePath(
-        getPathForModuleSpecifier(specifier, location, analyzer),
-        name,
-        analyzer
-      ),
+    dereference: () => {
+      const path = getPathForModuleSpecifier(specifier, location, analyzer);
+      if (path === undefined) {
+        return;
+      }
+      return getResolvedExportFromSourcePath(path, name, analyzer);
+    },
   });
 };
 
@@ -348,18 +355,21 @@ export const getExportReferences = (
         const symbol = getSymbolForName(localName, localNameNode, analyzer);
         const decl = symbol?.declarations?.[0];
         if (symbol === undefined || decl === undefined) {
-          throw new DiagnosticsError(
-            el,
-            `Could not find declaration for symbol`
+          analyzer.diagnostics.push(
+            makeDiagnostic(el, `Could not find declaration for symbol`)
           );
+          continue;
         }
         if (ts.isImportSpecifier(decl)) {
           // If the declaration was an import specifier, this means it's being
           // re-exported, so add a Reference
-          refs.push({
-            exportName,
-            decNameOrRef: getReferenceForSymbol(symbol, decl, analyzer),
-          });
+          const ref = getReferenceForSymbol(symbol, decl, analyzer);
+          if (ref !== undefined) {
+            refs.push({
+              exportName,
+              decNameOrRef: ref,
+            });
+          }
         } else {
           // Otherwise, the declaration is local, so just add its name; this
           // can be looked up directly in `getDeclaration` for the module
@@ -383,9 +393,8 @@ export const getExportReferences = (
       ),
     });
   } else {
-    throw new DiagnosticsError(
-      exportClause,
-      `Unhandled form of ExportDeclaration`
+    analyzer.diagnostics.push(
+      makeDiagnostic(exportClause, `Unhandled form of ExportDeclaration`)
     );
   }
   return refs;

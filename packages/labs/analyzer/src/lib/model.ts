@@ -752,6 +752,7 @@ export interface AnalyzerInterface {
   moduleCache: Map<AbsolutePath, Module>;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
+  diagnostics: ts.Diagnostic[];
   fs: Pick<
     ts.System,
     | 'readDirectory'
@@ -778,6 +779,7 @@ export interface AnalyzerInterface {
  */
 export type DeclarationInfo = {
   name: string;
+  node: ts.Node;
   factory: () => Declaration;
   isExport?: boolean;
 };

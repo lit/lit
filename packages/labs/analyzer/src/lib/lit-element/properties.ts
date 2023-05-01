@@ -15,8 +15,7 @@ import {LitClassDeclaration} from './lit-element.js';
 import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
-import {DiagnosticsError} from '../errors.js';
-import {hasStaticModifier} from '../utils.js';
+import {hasStaticModifier, makeDiagnostic} from '../utils.js';
 
 export const getProperties = (
   classDeclaration: LitClassDeclaration,
@@ -34,7 +33,10 @@ export const getProperties = (
 
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
-      throw new DiagnosticsError(prop, 'Unsupported property name');
+      analyzer.diagnostics.push(
+        makeDiagnostic(prop, 'Unsupported property name')
+      );
+      continue;
     }
     const name = prop.name.text;
 
@@ -98,7 +100,10 @@ const addPropertiesFromStaticBlock = (
   // constructor).
   addConstructorInitializers(classDeclaration, undecoratedProperties);
   // Find the object literal from the initializer or getter return value
-  const object = getStaticPropertiesObjectLiteral(properties);
+  const object = getStaticPropertiesObjectLiteral(properties, analyzer);
+  if (object === undefined) {
+    return;
+  }
   // Loop over each key/value in the object and add them to the map
   for (const prop of object.properties) {
     if (
@@ -121,9 +126,11 @@ const addPropertiesFromStaticBlock = (
         converter: getPropertyConverter(options),
       });
     } else {
-      throw new DiagnosticsError(
-        prop,
-        'Unsupported static properties entry. Expected a string identifier key and object literal value.'
+      analyzer.diagnostics.push(
+        makeDiagnostic(
+          prop,
+          'Unsupported static properties entry. Expected a string identifier key and object literal value.'
+        )
       );
     }
   }
@@ -143,8 +150,9 @@ const addPropertiesFromStaticBlock = (
  *   }
  */
 const getStaticPropertiesObjectLiteral = (
-  properties: ts.PropertyDeclaration | ts.GetAccessorDeclaration
-): ts.ObjectLiteralExpression => {
+  properties: ts.PropertyDeclaration | ts.GetAccessorDeclaration,
+  analyzer: AnalyzerInterface
+): ts.ObjectLiteralExpression | undefined => {
   let object: ts.ObjectLiteralExpression | undefined = undefined;
   if (
     ts.isPropertyDeclaration(properties) &&
@@ -167,9 +175,11 @@ const getStaticPropertiesObjectLiteral = (
     }
   }
   if (object === undefined) {
-    throw new DiagnosticsError(
-      properties,
-      `Unsupported static properties format. Expected an object literal assigned in a static initializer or returned from a static getter.`
+    analyzer.diagnostics.push(
+      makeDiagnostic(
+        properties,
+        `Unsupported static properties format. Expected an object literal assigned in a static initializer or returned from a static getter.`
+      )
     );
   }
   return object;

@@ -53,3 +53,17 @@ export const getPrivacy = (node: ts.Node): Privacy => {
     ? 'protected'
     : 'public';
 };
+
+export const makeDiagnostic = (
+  node: ts.Node,
+  message: string
+): ts.Diagnostic => {
+  return {
+    messageText: message,
+    category: ts.DiagnosticCategory.Error,
+    code: 117471,
+    file: node.getSourceFile(),
+    start: node.getStart(),
+    length: node.getWidth(),
+  };
+};

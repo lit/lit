@@ -23,7 +23,11 @@ import {
 } from '../model.js';
 import {getTypeForNode, getTypeForType} from '../types.js';
 import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
-import {hasDefaultModifier, hasExportModifier} from '../utils.js';
+import {
+  hasDefaultModifier,
+  hasExportModifier,
+  makeDiagnostic,
+} from '../utils.js';
 
 /**
  * Returns the name of a function declaration.
@@ -37,7 +41,7 @@ const getFunctionDeclarationName = (declaration: ts.FunctionDeclaration) => {
   if (name === undefined) {
     throw new DiagnosticsError(
       declaration,
-      'Unexpected function declaration without a name'
+      'Internal Error: expected every function declaration to either have a name or be a default export'
     );
   }
   return name;
@@ -50,6 +54,7 @@ export const getFunctionDeclarationInfo = (
   const name = getFunctionDeclarationName(declaration);
   return {
     name,
+    node: declaration,
     factory: () => getFunctionDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(declaration),
   };
@@ -147,7 +152,7 @@ const getParameter = (
 const getReturn = (
   node: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
-): Return => {
+): Return | undefined => {
   const returnTag = ts.getAllJSDocTagsOfKind(
     node,
     ts.SyntaxKind.JSDocReturnTag
@@ -156,10 +161,10 @@ const getReturn = (
     .getTypeChecker()
     .getSignatureFromDeclaration(node);
   if (signature === undefined) {
-    throw new DiagnosticsError(
-      node,
-      `Could not get signature to determine return type`
+    analyzer.diagnostics.push(
+      makeDiagnostic(node, `Could not get signature to determine return type`)
     );
+    return undefined;
   }
   return {
     type: getTypeForType(signature.getReturnType(), node, analyzer),
