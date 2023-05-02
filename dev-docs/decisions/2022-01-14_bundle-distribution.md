@@ -1,7 +1,5 @@
 # Bundle distribution
 
-2022-01-14
-
 ## Status
 
 Accepted
