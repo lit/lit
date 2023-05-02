@@ -534,6 +534,7 @@ export interface Described {
 
 export interface NamedDescribed extends Described {
   name: string;
+  default?: string;
 }
 
 export interface TypedNamedDescribed extends NamedDescribed {
