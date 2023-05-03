@@ -5,27 +5,52 @@
  */
 
 import ts from 'typescript';
+import {DiagnosticCode} from './diagnostic-code.js';
+import {EOL} from 'os';
+import * as path from 'path';
 
 const diagnosticsHost: ts.FormatDiagnosticsHost = {
   getCanonicalFileName(name: string) {
-    return name;
+    return path.resolve(name);
   },
   getCurrentDirectory() {
     return process.cwd();
   },
   getNewLine() {
-    return '\n';
+    return EOL;
   },
 };
 
-export const createDiagnostic = (node: ts.Node, message: string) => ({
-  file: node.getSourceFile(),
-  start: node.getStart(),
-  length: node.getWidth(),
-  category: ts.DiagnosticCategory.Error,
-  code: 2323,
-  messageText: message ?? '',
-});
+export interface DiagnosticOptions {
+  node: ts.Node;
+  message?: string | undefined;
+  category?: ts.DiagnosticCategory;
+  code?: DiagnosticCode | undefined;
+}
+
+export const createDiagnostic = ({
+  node,
+  message,
+  category,
+  code,
+}: DiagnosticOptions) => {
+  return {
+    file: node.getSourceFile(),
+    start: node.getStart(),
+    length: node.getWidth(),
+    category: category ?? ts.DiagnosticCategory.Error,
+    code: code ?? DiagnosticCode.UNKNOWN,
+    messageText: message ?? '',
+  };
+};
+
+export const logDiagnostics = (diagnostics: Array<ts.Diagnostic>) => {
+  if (diagnostics.length > 0) {
+    console.log(
+      ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
+    );
+  }
+};
 
 export class DiagnosticsError extends Error {
   diagnostics: ts.Diagnostic[];
@@ -40,7 +65,7 @@ export class DiagnosticsError extends Error {
       diagnostics = nodeOrDiagnostics;
     } else {
       const node = nodeOrDiagnostics as ts.Node;
-      diagnostics = [createDiagnostic(node, message!)];
+      diagnostics = [createDiagnostic({node, message})];
       message = undefined;
     }
     super(

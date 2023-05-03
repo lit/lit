@@ -13,6 +13,7 @@ import {
   getPackageInfo,
   getPackageRootForModulePath,
 } from './javascript/packages.js';
+import {logDiagnostics} from './errors.js';
 
 export interface AnalyzerInit {
   getProgram: () => ts.Program;
@@ -73,6 +74,10 @@ export class Analyzer implements AnalyzerInterface {
         )
       ),
     });
+  }
+
+  logDiagnostics() {
+    logDiagnostics(this.diagnostics);
   }
 }
 

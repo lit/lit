@@ -11,6 +11,7 @@
  */
 
 import ts from 'typescript';
+import {DiagnosticCode} from '../diagnostic-code.js';
 import {DiagnosticsError} from '../errors.js';
 import {
   ClassDeclaration,
@@ -96,6 +97,21 @@ export const getClassMembers = (
         })
       );
     } else if (ts.isPropertyDeclaration(node)) {
+      if (!ts.isIdentifier(node.name)) {
+        analyzer.diagnostics.push(
+          makeDiagnostic(
+            node,
+            '@lit-labs/analyzer only supports analyzing class properties ' +
+              'named with plain identifiers. This property was ignored.',
+            {
+              category: ts.DiagnosticCategory.Warning,
+              code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
+            }
+          )
+        );
+        return;
+      }
+
       const info = getMemberInfo(node);
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),

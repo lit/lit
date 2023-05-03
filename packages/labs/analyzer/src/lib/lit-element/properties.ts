@@ -16,6 +16,7 @@ import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 import {hasStaticModifier, makeDiagnostic} from '../utils.js';
+import {DiagnosticCode} from '../diagnostic-code.js';
 
 export const getProperties = (
   classDeclaration: LitClassDeclaration,
@@ -34,7 +35,16 @@ export const getProperties = (
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
       analyzer.diagnostics.push(
-        makeDiagnostic(prop, 'Unsupported property name')
+        makeDiagnostic(
+          prop,
+          '@lit-labs/analyzer only supports analyzing reactive properties of ' +
+            '`LitElement` extension classes named with plain identifiers. This ' +
+            'property was ignored.',
+          {
+            category: ts.DiagnosticCategory.Warning,
+            code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
+          }
+        )
       );
       continue;
     }
