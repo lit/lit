@@ -10,6 +10,7 @@ import {renderCustomElement} from './render-custom-element.js';
 import type {
   createElement as ReactCreateElement,
   ElementType,
+  PropsWithChildren,
   ReactElement,
   ReactNode,
 } from 'react';
@@ -23,11 +24,9 @@ export function wrapCreateElement(
   // non-React alternatives like preact?
   originalCreateElement: typeof ReactCreateElement
 ) {
-  return function createElement<
-    P extends {children?: ReactNode | Array<ReactNode>}
-  >(
+  return function createElement<P>(
     type: ElementType<P>,
-    props: P | null,
+    props: PropsWithChildren<P> | null,
     ...children: ReactNode[]
   ): ReactElement {
     if (isCustomElement(type)) {
