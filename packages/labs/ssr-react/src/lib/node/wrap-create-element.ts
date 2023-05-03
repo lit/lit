@@ -42,14 +42,15 @@ export function wrapCreateElement(
         });
 
         const newChildren: ReactNode[] = [templateShadowRoot];
-        if (props?.children !== undefined) {
-          if (Array.isArray(props.children)) {
-            newChildren.push(...props.children);
-          } else {
-            newChildren.push(props.children);
-          }
+        // React.createElement prefers children arguments over props.children
+        // https://github.com/facebook/react/blob/v18.2.0/packages/react/src/ReactElement.js#L401-L417
+        if (children.length > 0) {
+          newChildren.push(...children);
+        } else if (Array.isArray(props?.children)) {
+          newChildren.push(...props!.children);
+        } else if (props?.children !== undefined) {
+          newChildren.push(props.children);
         }
-        newChildren.push(...children);
 
         return originalCreateElement(
           type,
