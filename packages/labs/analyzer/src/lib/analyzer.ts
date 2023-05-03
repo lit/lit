@@ -63,7 +63,7 @@ export class Analyzer implements AnalyzerInterface {
     }
     const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
 
-    const pack = new Package({
+    return new Package({
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
@@ -73,7 +73,6 @@ export class Analyzer implements AnalyzerInterface {
         )
       ),
     });
-    return pack;
   }
 
   addDiagnostic(diagnostic: ts.Diagnostic) {
