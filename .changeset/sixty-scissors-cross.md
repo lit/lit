@@ -3,6 +3,4 @@
 '@lit-labs/cli': minor
 ---
 
-The analyzer no longer crashes when a class extending `LitElement` has a
-property with a non-identifier name and instead adds a diagnostic. The CEM
-generator now logs diagnostics collected while generating the manifest.
+The analyzer no longer crashes in many cases when encountering code with unexpected syntax or cases that the analyzer does not yet handle. The custom elements manifest generator also logs diagnostics collected while generating the manifest, but generates the manifest whenever possible.
