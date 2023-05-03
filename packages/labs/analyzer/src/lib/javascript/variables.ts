@@ -17,11 +17,13 @@ import {
   DeclarationInfo,
   Declaration,
 } from '../model.js';
-import {hasExportModifier, makeDiagnostic} from '../utils.js';
+import {hasExportModifier} from '../utils.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclaration} from './functions.js';
 import {getClassDeclaration} from './classes.js';
+import {createDiagnostic} from '../errors.js';
+import {DiagnosticCode} from '../diagnostic-code.js';
 
 type VariableName =
   | ts.Identifier
@@ -135,10 +137,12 @@ const getVariableDeclarationInfoList = (
       .flat();
   } else {
     analyzer.diagnostics.push(
-      makeDiagnostic(
-        dec,
-        `Expected declaration name to either be an Identifier or a BindingPattern`
-      )
+      createDiagnostic({
+        node: dec,
+        message: `Expected declaration name to either be an Identifier or a BindingPattern`,
+        category: ts.DiagnosticCategory.Warning,
+        code: DiagnosticCode.UNSUPPORTED,
+      })
     );
     return [];
   }

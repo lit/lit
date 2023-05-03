@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
+import {DiagnosticsError, createDiagnostic} from '../errors.js';
 import {
   AnalyzerInterface,
   DeclarationInfo,
@@ -23,11 +23,7 @@ import {
 } from '../model.js';
 import {getTypeForNode, getTypeForType} from '../types.js';
 import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
-import {
-  hasDefaultModifier,
-  hasExportModifier,
-  makeDiagnostic,
-} from '../utils.js';
+import {hasDefaultModifier, hasExportModifier} from '../utils.js';
 
 /**
  * Returns the name of a function declaration.
@@ -162,7 +158,10 @@ const getReturn = (
     .getSignatureFromDeclaration(node);
   if (signature === undefined) {
     analyzer.diagnostics.push(
-      makeDiagnostic(node, `Could not get signature to determine return type`)
+      createDiagnostic({
+        node,
+        message: `Could not get signature to determine return type`,
+      })
     );
     return undefined;
   }

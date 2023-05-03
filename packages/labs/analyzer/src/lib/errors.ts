@@ -23,7 +23,7 @@ const diagnosticsHost: ts.FormatDiagnosticsHost = {
 
 export interface DiagnosticOptions {
   node: ts.Node;
-  message?: string | undefined;
+  message: string;
   category?: ts.DiagnosticCategory;
   code?: DiagnosticCode | undefined;
 }
@@ -65,7 +65,7 @@ export class DiagnosticsError extends Error {
       diagnostics = nodeOrDiagnostics;
     } else {
       const node = nodeOrDiagnostics as ts.Node;
-      diagnostics = [createDiagnostic({node, message})];
+      diagnostics = [createDiagnostic({node, message: message!})];
       message = undefined;
     }
     super(

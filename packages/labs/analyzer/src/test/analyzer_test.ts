@@ -63,10 +63,7 @@ for (const lang of languages) {
 
     // Fields named with symbols result in a diagnostic.
     assert.equal(analyzer.diagnostics.length, 1);
-    assert.equal(
-      analyzer.diagnostics[0].code,
-      DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE
-    );
+    assert.equal(analyzer.diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
   });
 
   test.run();

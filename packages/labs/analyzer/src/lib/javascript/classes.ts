@@ -12,7 +12,7 @@
 
 import ts from 'typescript';
 import {DiagnosticCode} from '../diagnostic-code.js';
-import {DiagnosticsError} from '../errors.js';
+import {DiagnosticsError, createDiagnostic} from '../errors.js';
 import {
   ClassDeclaration,
   AnalyzerInterface,
@@ -33,7 +33,6 @@ import {
   hasStaticModifier,
   hasExportModifier,
   getPrivacy,
-  makeDiagnostic,
 } from '../utils.js';
 import {getFunctionLikeInfo} from './functions.js';
 import {getTypeForNode} from '../types.js';
@@ -99,15 +98,14 @@ export const getClassMembers = (
     } else if (ts.isPropertyDeclaration(node)) {
       if (!ts.isIdentifier(node.name)) {
         analyzer.diagnostics.push(
-          makeDiagnostic(
+          createDiagnostic({
             node,
-            '@lit-labs/analyzer only supports analyzing class properties ' +
+            message:
+              '@lit-labs/analyzer only supports analyzing class properties ' +
               'named with plain identifiers. This property was ignored.',
-            {
-              category: ts.DiagnosticCategory.Warning,
-              code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
-            }
-          )
+            category: ts.DiagnosticCategory.Warning,
+            code: DiagnosticCode.UNSUPPORTED,
+          })
         );
         return;
       }
@@ -226,10 +224,12 @@ export const getSuperClass = (
     return getReferenceForIdentifier(expression, analyzer);
   }
   analyzer.diagnostics.push(
-    makeDiagnostic(
-      expression,
-      `Expected expression to be a concrete superclass. Mixins are not yet supported.`
-    )
+    createDiagnostic({
+      node: expression,
+      message: `Expected expression to be a concrete superclass. Mixins are not yet supported.`,
+      code: DiagnosticCode.UNSUPPORTED,
+      category: ts.DiagnosticCategory.Warning,
+    })
   );
   return undefined;
 };

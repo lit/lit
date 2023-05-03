@@ -13,7 +13,6 @@
 import ts from 'typescript';
 import {hasJSDocTag} from './javascript/jsdoc.js';
 import {Privacy} from './model.js';
-import {DiagnosticCode} from './diagnostic-code.js';
 
 export const hasModifier = (node: ts.Node, modifier: ts.SyntaxKind) => {
   return node.modifiers?.some((s) => s.kind === modifier) ?? false;
@@ -53,19 +52,4 @@ export const getPrivacy = (node: ts.Node): Privacy => {
     : isProtected(node)
     ? 'protected'
     : 'public';
-};
-
-export const makeDiagnostic = (
-  node: ts.Node,
-  message: string,
-  options?: {code?: number; category?: ts.DiagnosticCategory}
-): ts.Diagnostic => {
-  return {
-    messageText: message,
-    category: options?.category ?? ts.DiagnosticCategory.Error,
-    code: options?.code ?? DiagnosticCode.UNKNOWN,
-    file: node.getSourceFile(),
-    start: node.getStart(),
-    length: node.getWidth(),
-  };
 };

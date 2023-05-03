@@ -30,7 +30,7 @@ import {
 } from './variables.js';
 import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
-import {DiagnosticsError} from '../errors.js';
+import {DiagnosticsError, createDiagnostic} from '../errors.js';
 import {
   getExportReferences,
   getImportReferenceForSpecifierExpression,
@@ -38,7 +38,6 @@ import {
 } from '../references.js';
 import {parseModuleJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclarationInfo} from './functions.js';
-import {makeDiagnostic} from '../utils.js';
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -104,7 +103,11 @@ export const getModule = (
     const {name, node, factory, isExport} = info;
     if (declarationMap.has(name)) {
       analyzer.diagnostics.push(
-        makeDiagnostic(node, `Duplicate declaration '${name}'`)
+        createDiagnostic({
+          node,
+          message: `Duplicate declaration '${name}'`,
+          category: ts.DiagnosticCategory.Error,
+        })
       );
       return;
     }
@@ -328,10 +331,11 @@ export const getPathForModuleSpecifier = (
   ).resolvedModule?.resolvedFileName;
   if (resolvedPath === undefined) {
     analyzer.diagnostics.push(
-      makeDiagnostic(
-        location,
-        `Could not resolve specifier ${specifier} to filesystem path.`
-      )
+      createDiagnostic({
+        node: location,
+        message: `Could not resolve specifier ${specifier} to filesystem path.`,
+        category: ts.DiagnosticCategory.Error,
+      })
     );
     return undefined;
   }

@@ -15,8 +15,9 @@ import {LitClassDeclaration} from './lit-element.js';
 import {ReactiveProperty, AnalyzerInterface} from '../model.js';
 import {getTypeForNode} from '../types.js';
 import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
-import {hasStaticModifier, makeDiagnostic} from '../utils.js';
+import {hasStaticModifier} from '../utils.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
+import {createDiagnostic} from '../errors.js';
 
 export const getProperties = (
   classDeclaration: LitClassDeclaration,
@@ -35,16 +36,15 @@ export const getProperties = (
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
       analyzer.diagnostics.push(
-        makeDiagnostic(
-          prop,
-          '@lit-labs/analyzer only supports analyzing reactive properties of ' +
+        createDiagnostic({
+          node: prop,
+          message:
+            '@lit-labs/analyzer only supports analyzing reactive properties of ' +
             '`LitElement` extension classes named with plain identifiers. This ' +
             'property was ignored.',
-          {
-            category: ts.DiagnosticCategory.Warning,
-            code: DiagnosticCode.UNSUPPORTED_PROPERTY_NAME_TYPE,
-          }
-        )
+          category: ts.DiagnosticCategory.Warning,
+          code: DiagnosticCode.UNSUPPORTED,
+        })
       );
       continue;
     }
@@ -137,10 +137,13 @@ const addPropertiesFromStaticBlock = (
       });
     } else {
       analyzer.diagnostics.push(
-        makeDiagnostic(
-          prop,
-          'Unsupported static properties entry. Expected a string identifier key and object literal value.'
-        )
+        createDiagnostic({
+          node: prop,
+          message:
+            'Unsupported static properties entry. Expected a string identifier key and object literal value.',
+          code: DiagnosticCode.UNSUPPORTED,
+          category: ts.DiagnosticCategory.Warning,
+        })
       );
     }
   }
@@ -186,10 +189,12 @@ const getStaticPropertiesObjectLiteral = (
   }
   if (object === undefined) {
     analyzer.diagnostics.push(
-      makeDiagnostic(
-        properties,
-        `Unsupported static properties format. Expected an object literal assigned in a static initializer or returned from a static getter.`
-      )
+      createDiagnostic({
+        node: properties,
+        message: `Unsupported static properties format. Expected an object literal assigned in a static initializer or returned from a static getter.`,
+        code: DiagnosticCode.UNSUPPORTED,
+        category: ts.DiagnosticCategory.Warning,
+      })
     );
   }
   return object;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import ts, {DiagnosticCategory} from 'typescript';
 import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
 import {
   getResolvedExportFromSourcePath,
@@ -12,7 +12,8 @@ import {
   getModuleInfo,
 } from './javascript/modules.js';
 import {AbsolutePath} from './paths.js';
-import {makeDiagnostic} from './utils.js';
+import {createDiagnostic} from './errors.js';
+import {DiagnosticCode} from './diagnostic-code.js';
 
 const npmModule = /^(?<package>(@[^/]+\/[^/]+)|[^/]+)\/?(?<module>.*)$/;
 
@@ -83,7 +84,10 @@ export const getReferenceForIdentifier = (
     .getSymbolAtLocation(identifier);
   if (symbol === undefined) {
     analyzer.diagnostics.push(
-      makeDiagnostic(identifier, `Could not find symbol for identifier.`)
+      createDiagnostic({
+        node: identifier,
+        message: `Could not find symbol for identifier.`,
+      })
     );
     return undefined;
   }
@@ -111,10 +115,10 @@ export function getReferenceForSymbol(
   const declaration = symbol?.declarations?.[0];
   if (declaration === undefined) {
     analyzer.diagnostics.push(
-      makeDiagnostic(
-        location,
-        `Could not find declaration for symbol '${symbolName}'`
-      )
+      createDiagnostic({
+        node: location,
+        message: `Could not find declaration for symbol '${symbolName}'`,
+      })
     );
     return undefined;
   }
@@ -225,10 +229,10 @@ export const getImportReference = (
         refModule = info.groups.module || undefined;
       } else {
         analyzer.diagnostics.push(
-          makeDiagnostic(
-            location,
-            `External npm package could not be parsed from module specifier '${specifier}'.`
-          )
+          createDiagnostic({
+            node: location,
+            message: `External npm package could not be parsed from module specifier '${specifier}'.`,
+          })
         );
       }
     }
@@ -356,7 +360,10 @@ export const getExportReferences = (
         const decl = symbol?.declarations?.[0];
         if (symbol === undefined || decl === undefined) {
           analyzer.diagnostics.push(
-            makeDiagnostic(el, `Could not find declaration for symbol`)
+            createDiagnostic({
+              node: el,
+              message: `Could not find declaration for symbol`,
+            })
           );
           continue;
         }
@@ -394,7 +401,12 @@ export const getExportReferences = (
     });
   } else {
     analyzer.diagnostics.push(
-      makeDiagnostic(exportClause, `Unhandled form of ExportDeclaration`)
+      createDiagnostic({
+        node: exportClause,
+        message: `Unhandled form of ExportDeclaration`,
+        category: DiagnosticCategory.Warning,
+        code: DiagnosticCode.UNSUPPORTED,
+      })
     );
   }
   return refs;

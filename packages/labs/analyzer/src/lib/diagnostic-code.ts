@@ -11,11 +11,11 @@ export const DiagnosticCode = {
   UNKNOWN: 548000, // The letters L-I-T are on digits 5-4-8 on a phone keypad.
 
   /**
-   * This code represents a situation where the type of a property name is not
-   * supported in the given context. For example, when a symbol is used to name
-   * a property where the analyzer only supports plain identifiers.
+   * This code represents a situation where ordinary and otherwise-valid code
+   * is not yet supported in the Lit analyzer. We should aim to remove uses of
+   * this code.
    */
-  UNSUPPORTED_PROPERTY_NAME_TYPE: 548001,
+  UNSUPPORTED: 548001,
 } as const;
 
 // This lets the `DiagnosticCode` type act as an enum by extracting a union of
