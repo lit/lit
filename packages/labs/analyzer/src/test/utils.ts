@@ -10,7 +10,6 @@ import ts from 'typescript';
 import {AbsolutePath, Analyzer, Module} from '../index.js';
 import {fileURLToPath} from 'url';
 import {createPackageAnalyzer} from '../index.js';
-import {DiagnosticsError} from '../lib/errors.js';
 
 type Language = 'ts' | 'js';
 
@@ -220,11 +219,9 @@ export const setupAnalyzerForTest = (
       new URL(`../test-files/${lang}/${pkg}`, import.meta.url).href
     ) as AbsolutePath;
     const analyzer = createPackageAnalyzer(packagePath);
-    if (analyzer.diagnostics.length > 0) {
-      throw new DiagnosticsError(
-        analyzer.diagnostics,
-        `Got diagnostics while creating package analyzer for ${pkg}`
-      );
+    const diagnostics = [...analyzer.getDiagnostics()];
+    if (diagnostics.length > 0) {
+      throw makeDiagnosticError(diagnostics);
     }
     const getModule = (name: string) =>
       analyzer.getModule(
@@ -247,6 +244,16 @@ export const setupAnalyzerForTest = (
 export interface AnalyzerModuleTestContext extends AnalyzerTestContext {
   module: Module;
 }
+
+export const makeDiagnosticError = (diagnostics: ts.Diagnostic[]) => {
+  return new Error(
+    ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+      getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+      getCanonicalFileName: (fileName) => fileName,
+      getNewLine: () => ts.sys.newLine,
+    })
+  );
+};
 
 export const setupAnalyzerForTestWithModule = (
   ctx: AnalyzerModuleTestContext,

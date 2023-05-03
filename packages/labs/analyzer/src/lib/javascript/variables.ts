@@ -73,7 +73,7 @@ const getVariableDeclaration = (
     name: name.text,
     node: dec,
     type: getTypeForNode(name, analyzer),
-    ...parseNodeJSDocInfo(statement),
+    ...parseNodeJSDocInfo(statement, analyzer),
   });
 };
 
@@ -136,10 +136,10 @@ const getVariableDeclarationInfoList = (
       )
       .flat();
   } else {
-    analyzer.diagnostics.push(
+    analyzer.addDiagnostic(
       createDiagnostic({
         node: dec,
-        message: `Expected declaration name to either be an Identifier or a BindingPattern`,
+        message: `Expected declaration name to either be an identifier or a destructuring`,
         category: ts.DiagnosticCategory.Warning,
         code: DiagnosticCode.UNSUPPORTED,
       })
@@ -180,7 +180,7 @@ const getExportAssignmentVariableDeclaration = (
     name: 'default',
     node: exportAssignment,
     type: getTypeForNode(exportAssignment.expression, analyzer),
-    ...parseNodeJSDocInfo(exportAssignment),
+    ...parseNodeJSDocInfo(exportAssignment, analyzer),
   });
 };
 
@@ -204,6 +204,6 @@ const getEnumDeclaration = (
     name: dec.name.text,
     node: dec,
     type: getTypeForNode(dec.name, analyzer),
-    ...parseNodeJSDocInfo(dec),
+    ...parseNodeJSDocInfo(dec, analyzer),
   });
 };

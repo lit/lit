@@ -13,7 +13,6 @@ import {
   getPackageInfo,
   getPackageRootForModulePath,
 } from './javascript/packages.js';
-import {logDiagnostics} from './errors.js';
 
 export interface AnalyzerInit {
   getProgram: () => ts.Program;
@@ -33,7 +32,7 @@ export class Analyzer implements AnalyzerInterface {
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
-  readonly diagnostics: ts.Diagnostic[] = [];
+  private readonly diagnostics: ts.Diagnostic[] = [];
 
   constructor(init: AnalyzerInit) {
     this._getProgram = init.getProgram;
@@ -64,7 +63,7 @@ export class Analyzer implements AnalyzerInterface {
     }
     const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
 
-    return new Package({
+    const pack = new Package({
       ...packageInfo,
       modules: rootFileNames.map((fileName) =>
         getModule(
@@ -74,10 +73,15 @@ export class Analyzer implements AnalyzerInterface {
         )
       ),
     });
+    return pack;
   }
 
-  logDiagnostics() {
-    logDiagnostics(this.diagnostics);
+  addDiagnostic(diagnostic: ts.Diagnostic) {
+    this.diagnostics.push(diagnostic);
+  }
+
+  *getDiagnostics() {
+    yield* ts.sortAndDeduplicateDiagnostics(this.diagnostics);
   }
 }
 

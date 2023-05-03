@@ -62,8 +62,9 @@ for (const lang of languages) {
     assert.equal(Array.from(declaration.fields).length, 0);
 
     // Fields named with symbols result in a diagnostic.
-    assert.equal(analyzer.diagnostics.length, 1);
-    assert.equal(analyzer.diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, 1);
+    assert.equal(diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
   });
 
   test.run();

@@ -83,7 +83,7 @@ export const getReferenceForIdentifier = (
     .getTypeChecker()
     .getSymbolAtLocation(identifier);
   if (symbol === undefined) {
-    analyzer.diagnostics.push(
+    analyzer.addDiagnostic(
       createDiagnostic({
         node: identifier,
         message: `Could not find symbol for identifier.`,
@@ -114,7 +114,7 @@ export function getReferenceForSymbol(
   // and not need a specific module specifier.
   const declaration = symbol?.declarations?.[0];
   if (declaration === undefined) {
-    analyzer.diagnostics.push(
+    analyzer.addDiagnostic(
       createDiagnostic({
         node: location,
         message: `Could not find declaration for symbol '${symbolName}'`,
@@ -224,11 +224,11 @@ export const getImportReference = (
       // External import: extract the npm package (taking care to respect
       // npm orgs) and module specifier (if any)
       const info = specifier.match(npmModule);
-      if (info && info.groups) {
+      if (info?.groups) {
         refPackage = info.groups.package;
         refModule = info.groups.module || undefined;
       } else {
-        analyzer.diagnostics.push(
+        analyzer.addDiagnostic(
           createDiagnostic({
             node: location,
             message: `External npm package could not be parsed from module specifier '${specifier}'.`,
@@ -359,7 +359,7 @@ export const getExportReferences = (
         const symbol = getSymbolForName(localName, localNameNode, analyzer);
         const decl = symbol?.declarations?.[0];
         if (symbol === undefined || decl === undefined) {
-          analyzer.diagnostics.push(
+          analyzer.addDiagnostic(
             createDiagnostic({
               node: el,
               message: `Could not find declaration for symbol`,
@@ -400,7 +400,7 @@ export const getExportReferences = (
       ),
     });
   } else {
-    analyzer.diagnostics.push(
+    analyzer.addDiagnostic(
       createDiagnostic({
         node: exportClause,
         message: `Unhandled form of ExportDeclaration`,

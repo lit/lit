@@ -10,6 +10,8 @@ import {LitCli} from '../lit-cli.js';
 import * as path from 'path';
 import {Command, ResolvedCommand} from '../command.js';
 import {Package} from '@lit-labs/analyzer/lib/model.js';
+import {EOL} from 'os';
+import * as ts from 'typescript';
 
 const reactCommand: Command = {
   name: 'react',
@@ -122,7 +124,7 @@ export const run = async (
         })
       );
       // Log any diagnostics collected while running the generators.
-      analyzer.logDiagnostics();
+      logDiagnostics([...analyzer.getDiagnostics()]);
       // `allSettled` will swallow errors, so we need to filter them out of
       // the results and throw a new error up the stack describing all the errors
       // that happened
@@ -142,5 +144,25 @@ export const run = async (
   } catch (e) {
     console.error((e as Error).message ?? e);
     return 1;
+  }
+};
+
+const diagnosticsHost: ts.FormatDiagnosticsHost = {
+  getCanonicalFileName(name: string) {
+    return path.resolve(name);
+  },
+  getCurrentDirectory() {
+    return process.cwd();
+  },
+  getNewLine() {
+    return EOL;
+  },
+};
+
+const logDiagnostics = (diagnostics: Array<ts.Diagnostic>) => {
+  if (diagnostics.length > 0) {
+    console.log(
+      ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
+    );
   }
 };

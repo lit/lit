@@ -11,12 +11,13 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
+import {createDiagnostic} from '../errors.js';
 import {
   Described,
   NamedDescribed,
   TypedNamedDescribed,
   DeprecatableDescribed,
+  AnalyzerInterface,
 } from '../model.js';
 
 /**
@@ -51,7 +52,7 @@ const parseNameDescRE = /^(?<name>^\S+)(?:\s?-\s+)?(?<description>[\s\S]*)$/m;
 const parseNameDashDescRE =
   /^(?<name>^\S*)?(?:\s+-\s+(?<description>[\s\S]*))?$/m;
 
-const getJSDocTagComment = (tag: ts.JSDocTag) => {
+const getJSDocTagComment = (tag: ts.JSDocTag, analyzer: AnalyzerInterface) => {
   let {comment} = tag;
   if (comment === undefined) {
     return undefined;
@@ -60,7 +61,13 @@ const getJSDocTagComment = (tag: ts.JSDocTag) => {
     comment = comment.map((c) => c.text).join('');
   }
   if (typeof comment !== 'string') {
-    throw new DiagnosticsError(tag, `Internal error: unsupported node type`);
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: tag,
+        message: `JSDoc error: unsupported node type`,
+      })
+    );
+    return undefined;
   }
   return normalizeLineEndings(comment).trim();
 };
@@ -83,14 +90,23 @@ const isModuleJSDocTag = (tag: ts.JSDocTag) =>
  * * @fires event-name {Type} - description
  * * @fires event-name {Type}: description
  */
-export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
-  const comment = getJSDocTagComment(tag);
+export const parseNamedTypedJSDocInfo = (
+  tag: ts.JSDocTag,
+  analyzer: AnalyzerInterface
+) => {
+  const comment = getJSDocTagComment(tag, analyzer);
   if (comment == undefined) {
     return undefined;
   }
   const nameTypeDesc = comment.match(parseNameTypeDescRE);
   if (nameTypeDesc === null) {
-    throw new DiagnosticsError(tag, 'Unexpected JSDoc format');
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: tag,
+        message: `JSDoc error: unexpected JSDoc format`,
+      })
+    );
+    return undefined;
   }
   const {name, type, description} = nameTypeDesc.groups!;
   const info: TypedNamedDescribed = {name, type};
@@ -112,9 +128,10 @@ export const parseNamedTypedJSDocInfo = (tag: ts.JSDocTag) => {
  */
 export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag,
+  analyzer: AnalyzerInterface,
   requireDash = false
 ): NamedDescribed | undefined => {
-  const comment = getJSDocTagComment(tag);
+  const comment = getJSDocTagComment(tag, analyzer);
   if (comment == undefined) {
     return undefined;
   }
@@ -122,14 +139,17 @@ export const parseNamedJSDocInfo = (
     requireDash ? parseNameDashDescRE : parseNameDescRE
   );
   if (nameDesc === null) {
-    throw new DiagnosticsError(
-      tag,
-      `Unexpected JSDoc format.${
-        parseNameDashDescRE
-          ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
-          : ''
-      }`
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: tag,
+        message: `Unexpected JSDoc format.${
+          parseNameDashDescRE
+            ? ` Tag must contain a whitespace-separated dash between the name and description, i.e. '@slot header - This is the description'`
+            : ''
+        }`,
+      })
     );
+    return undefined;
   }
   const {name, description} = nameDesc.groups!;
   const info: NamedDescribed = {name};
@@ -143,9 +163,10 @@ export const parseNamedJSDocInfo = (
  * Parses the description from JSDoc tag for things like `@return`.
  */
 export const parseJSDocDescription = (
-  tag: ts.JSDocTag
+  tag: ts.JSDocTag,
+  analyzer: AnalyzerInterface
 ): Described | undefined => {
-  const description = getJSDocTagComment(tag);
+  const description = getJSDocTagComment(tag, analyzer);
   if (description == undefined || description.length === 0) {
     return {};
   }
@@ -158,10 +179,11 @@ export const parseJSDocDescription = (
  */
 const addJSDocTagInfo = (
   info: DeprecatableDescribed,
-  jsDocTags: readonly ts.JSDocTag[]
+  jsDocTags: readonly ts.JSDocTag[],
+  analyzer: AnalyzerInterface
 ) => {
   for (const tag of jsDocTags) {
-    const comment = getJSDocTagComment(tag);
+    const comment = getJSDocTagComment(tag, analyzer);
     switch (tag.tagName.text.toLowerCase()) {
       case 'description':
       case 'fileoverview':
@@ -237,7 +259,10 @@ const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given node.
  */
-export const parseNodeJSDocInfo = (node: ts.Node): DeprecatableDescribed => {
+export const parseNodeJSDocInfo = (
+  node: ts.Node,
+  analyzer: AnalyzerInterface
+): DeprecatableDescribed => {
   const info: DeprecatableDescribed = {};
   const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
   // Module-level docs (that are explicitly tagged as such) may be
@@ -248,7 +273,7 @@ export const parseNodeJSDocInfo = (node: ts.Node): DeprecatableDescribed => {
     .getJSDocTags(node)
     .filter(({parent}) => !moduleJSDocs.includes(parent as ts.JSDoc));
   if (jsDocTags !== undefined) {
-    addJSDocTagInfo(info, jsDocTags);
+    addJSDocTagInfo(info, jsDocTags, analyzer);
   }
   if (info.description === undefined) {
     const comment = normalizeLineEndings(
@@ -271,12 +296,16 @@ export const parseNodeJSDocInfo = (node: ts.Node): DeprecatableDescribed => {
  * Parse summary, description, and deprecated information from JSDoc comments on
  * a given source file.
  */
-export const parseModuleJSDocInfo = (sourceFile: ts.SourceFile) => {
+export const parseModuleJSDocInfo = (
+  sourceFile: ts.SourceFile,
+  analyzer: AnalyzerInterface
+) => {
   const moduleJSDocs = getModuleJSDocs(sourceFile);
   const info: DeprecatableDescribed = {};
   addJSDocTagInfo(
     info,
-    moduleJSDocs.flatMap((m) => m.tags ?? [])
+    moduleJSDocs.flatMap((m) => m.tags ?? []),
+    analyzer
   );
   if (info.description === undefined) {
     const comment = moduleJSDocs

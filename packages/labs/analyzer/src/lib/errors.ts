@@ -6,20 +6,6 @@
 
 import ts from 'typescript';
 import {DiagnosticCode} from './diagnostic-code.js';
-import {EOL} from 'os';
-import * as path from 'path';
-
-const diagnosticsHost: ts.FormatDiagnosticsHost = {
-  getCanonicalFileName(name: string) {
-    return path.resolve(name);
-  },
-  getCurrentDirectory() {
-    return process.cwd();
-  },
-  getNewLine() {
-    return EOL;
-  },
-};
 
 export interface DiagnosticOptions {
   node: ts.Node;
@@ -43,35 +29,3 @@ export const createDiagnostic = ({
     messageText: message ?? '',
   };
 };
-
-export const logDiagnostics = (diagnostics: Array<ts.Diagnostic>) => {
-  if (diagnostics.length > 0) {
-    console.log(
-      ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
-    );
-  }
-};
-
-export class DiagnosticsError extends Error {
-  diagnostics: ts.Diagnostic[];
-  constructor(diagnostics: readonly ts.Diagnostic[], message?: string);
-  constructor(node: ts.Node, message: string);
-  constructor(
-    readonly nodeOrDiagnostics: readonly ts.Diagnostic[] | ts.Node,
-    message?: string
-  ) {
-    let diagnostics;
-    if (Array.isArray(nodeOrDiagnostics)) {
-      diagnostics = nodeOrDiagnostics;
-    } else {
-      const node = nodeOrDiagnostics as ts.Node;
-      diagnostics = [createDiagnostic({node, message: message!})];
-      message = undefined;
-    }
-    super(
-      (message ? message + ':\n' : '') +
-        ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
-    );
-    this.diagnostics = diagnostics;
-  }
-}

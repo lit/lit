@@ -752,7 +752,6 @@ export interface AnalyzerInterface {
   moduleCache: Map<AbsolutePath, Module>;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
-  diagnostics: ts.Diagnostic[];
   fs: Pick<
     ts.System,
     | 'readDirectory'
@@ -772,6 +771,9 @@ export interface AnalyzerInterface {
     | 'normalize'
     | 'isAbsolute'
   >;
+
+  addDiagnostic(diagnostic: ts.Diagnostic): void;
+  getDiagnostics(): IterableIterator<ts.Diagnostic>;
 }
 
 /**

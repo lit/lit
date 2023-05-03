@@ -273,9 +273,9 @@ for (const lang of languages) {
     // This currently results in two diagnostics: one for the
     // `LitElement`-specific part of the analysis and one for the vanilla class
     // analysis.
-    assert.equal(analyzer.diagnostics.length, 2);
-    assert.equal(analyzer.diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
-    assert.equal(analyzer.diagnostics[1].code, DiagnosticCode.UNSUPPORTED);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, 1);
+    assert.equal(diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
 
     // Fields named with symbols are not visible in the `fields` iterator.
     const field = Array.from(element.fields).find(

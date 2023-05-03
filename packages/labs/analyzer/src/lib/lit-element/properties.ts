@@ -35,12 +35,11 @@ export const getProperties = (
 
   for (const prop of propertyDeclarations) {
     if (!ts.isIdentifier(prop.name)) {
-      analyzer.diagnostics.push(
+      analyzer.addDiagnostic(
         createDiagnostic({
           node: prop,
           message:
-            '@lit-labs/analyzer only supports analyzing reactive properties of ' +
-            '`LitElement` extension classes named with plain identifiers. This ' +
+            '@lit-labs/analyzer only supports analyzing class properties named with plain identifiers. This ' +
             'property was ignored.',
           category: ts.DiagnosticCategory.Warning,
           code: DiagnosticCode.UNSUPPORTED,
@@ -136,7 +135,7 @@ const addPropertiesFromStaticBlock = (
         converter: getPropertyConverter(options),
       });
     } else {
-      analyzer.diagnostics.push(
+      analyzer.addDiagnostic(
         createDiagnostic({
           node: prop,
           message:
@@ -188,7 +187,7 @@ const getStaticPropertiesObjectLiteral = (
     }
   }
   if (object === undefined) {
-    analyzer.diagnostics.push(
+    analyzer.addDiagnostic(
       createDiagnostic({
         node: properties,
         message: `Unsupported static properties format. Expected an object literal assigned in a static initializer or returned from a static getter.`,

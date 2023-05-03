@@ -34,10 +34,10 @@ export const getTypeForTypeString = (
   if (typeString !== undefined) {
     const typeNode = parseType(typeString);
     if (typeNode == undefined) {
-      analyzer.diagnostics.push(
+      analyzer.addDiagnostic(
         createDiagnostic({
           node: location,
-          message: `Internal error: failed to parse type from JSDoc comment.`,
+          message: `Failed to parse type from JSDoc comment.`,
           category: ts.DiagnosticCategory.Warning,
         })
       );
@@ -91,10 +91,10 @@ export const getTypeForType = (
   );
   let getReferences;
   if (typeNode === undefined) {
-    analyzer.diagnostics.push(
+    analyzer.addDiagnostic(
       createDiagnostic({
         node: location,
-        message: `Internal error: could not convert type to type node`,
+        message: `Could not convert type to type node`,
         category: ts.DiagnosticCategory.Warning,
       })
     );
@@ -130,7 +130,7 @@ const getReferencesForTypeNode = (
       // `checker.getSymbolsInScope()`
       const symbol = getSymbolForName(name, location, analyzer);
       if (symbol === undefined) {
-        analyzer.diagnostics.push(
+        analyzer.addDiagnostic(
           createDiagnostic({
             node: location,
             message: `Could not get symbol for '${name}'.`,
@@ -144,7 +144,7 @@ const getReferencesForTypeNode = (
       }
     } else if (ts.isImportTypeNode(node)) {
       if (!ts.isLiteralTypeNode(node.argument)) {
-        analyzer.diagnostics.push(
+        analyzer.addDiagnostic(
           createDiagnostic({
             node: node.argument,
             message: 'Expected a string literal.',
@@ -154,7 +154,7 @@ const getReferencesForTypeNode = (
       }
       const name = getRootName(node.qualifier);
       if (!ts.isStringLiteral(node.argument.literal)) {
-        analyzer.diagnostics.push(
+        analyzer.addDiagnostic(
           createDiagnostic({
             node: node.argument.literal,
             message: `Expected import specifier to be a string literal`,

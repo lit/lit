@@ -102,7 +102,9 @@ export const createPackageAnalyzer = (
   );
 
   const analyzer = new Analyzer({getProgram: () => program, fs: ts.sys, path});
-  analyzer.diagnostics.push(...program.getSemanticDiagnostics());
+  for (const diagnostic of program.getSyntacticDiagnostics()) {
+    analyzer.addDiagnostic(diagnostic);
+  }
 
   return analyzer;
 };
