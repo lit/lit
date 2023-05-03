@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts, {DiagnosticCategory} from 'typescript';
+import ts from 'typescript';
 import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
 import {
   getResolvedExportFromSourcePath,
@@ -404,7 +404,7 @@ export const getExportReferences = (
       createDiagnostic({
         node: exportClause,
         message: `Unhandled form of ExportDeclaration`,
-        category: DiagnosticCategory.Warning,
+        category: ts.DiagnosticCategory.Warning,
         code: DiagnosticCode.UNSUPPORTED,
       })
     );
