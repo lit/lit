@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.1.1
+
+### Patch Changes
+
+- [#3847](https://github.com/lit/lit/pull/3847) [`b3625853`](https://github.com/lit/lit/commit/b36258534e6cce799297e837dadbd4bc37ab49fa) - Add a missing await in performTask
+
 ## 2.1.0
 
 ### Minor Changes

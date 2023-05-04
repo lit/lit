@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.7.3",
+  "version": "2.7.4",
   "publishConfig": {
     "access": "public"
   },
@@ -345,6 +345,7 @@
     "/decorators/",
     "/directives/",
     "/development/",
+    "!/development/test/",
     "/logo.svg"
   ],
   "dependencies": {
