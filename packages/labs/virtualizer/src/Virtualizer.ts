@@ -377,7 +377,7 @@ export class Virtualizer {
         visibility: 'hidden',
         fontSize: '2px',
       });
-      sizer.innerHTML = '&nbsp;';
+      sizer.textContent = '&nbsp;';
       sizer.setAttribute(SIZER_ATTRIBUTE, '');
       this._sizer = sizer;
     }
@@ -611,7 +611,7 @@ export class Virtualizer {
   }
 
   get _children(): Array<HTMLElement> {
-    const arr = [];
+    const arr: Array<HTMLElement> = [];
     let next = this._hostElement!.firstElementChild as HTMLElement;
     while (next) {
       if (!next.hasAttribute(SIZER_ATTRIBUTE)) {
@@ -930,7 +930,7 @@ function getParentElement(el: Element) {
 ///
 
 function getElementAncestors(el: HTMLElement, includeSelf = false) {
-  const ancestors = [];
+  const ancestors: Array<HTMLElement> = [];
   let parent = includeSelf ? el : (getParentElement(el) as HTMLElement);
   while (parent !== null) {
     ancestors.push(parent);
