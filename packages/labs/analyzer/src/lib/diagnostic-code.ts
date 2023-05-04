@@ -7,6 +7,8 @@
 export const DiagnosticCode = {
   /**
    * This is the default error code and doesn't indicate any specific error.
+   *
+   * We start numbering from 548000 to avoid collisions with other projects.
    */
   UNKNOWN: 548000, // The letters L-I-T are on digits 5-4-8 on a phone keypad.
 
