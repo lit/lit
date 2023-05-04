@@ -1,5 +1,11 @@
 # @lit-labs/ssr-react
 
+## 0.1.2
+
+### Patch Changes
+
+- [#3861](https://github.com/lit/lit/pull/3861) [`8deca6e6`](https://github.com/lit/lit/commit/8deca6e66ebc0bf22a82d58f0470e621a55ff1b0) - Handle children passed in via props
+
 ## 0.1.1
 
 ### Patch Changes
