@@ -25,7 +25,7 @@ export const addEventsToMap = (
   events: Map<string, Event>,
   analyzer: AnalyzerInterface
 ) => {
-  const info = parseNamedTypedJSDocInfo(tag);
+  const info = parseNamedTypedJSDocInfo(tag, analyzer);
   if (info === undefined) {
     return;
   }

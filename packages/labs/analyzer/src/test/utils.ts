@@ -219,6 +219,10 @@ export const setupAnalyzerForTest = (
       new URL(`../test-files/${lang}/${pkg}`, import.meta.url).href
     ) as AbsolutePath;
     const analyzer = createPackageAnalyzer(packagePath);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    if (diagnostics.length > 0) {
+      throw makeDiagnosticError(diagnostics);
+    }
     const getModule = (name: string) =>
       analyzer.getModule(
         getSourceFilename(
@@ -240,6 +244,16 @@ export const setupAnalyzerForTest = (
 export interface AnalyzerModuleTestContext extends AnalyzerTestContext {
   module: Module;
 }
+
+export const makeDiagnosticError = (diagnostics: ts.Diagnostic[]) => {
+  return new Error(
+    ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+      getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+      getCanonicalFileName: (fileName) => fileName,
+      getNewLine: () => ts.sys.newLine,
+    })
+  );
+};
 
 export const setupAnalyzerForTestWithModule = (
   ctx: AnalyzerModuleTestContext,

@@ -109,9 +109,10 @@ export const getTagName = (
  */
 const addNamedJSDocInfoToMap = (
   map: Map<string, NamedDescribed>,
-  tag: ts.JSDocTag
+  tag: ts.JSDocTag,
+  analyzer: AnalyzerInterface
 ) => {
-  const info = parseNamedJSDocInfo(tag);
+  const info = parseNamedJSDocInfo(tag, analyzer);
   if (info !== undefined) {
     map.set(info.name, info);
   }
@@ -137,22 +138,22 @@ export const getJSDocData = (
           addEventsToMap(tag, events, analyzer);
           break;
         case 'slot':
-          addNamedJSDocInfoToMap(slots, tag);
+          addNamedJSDocInfoToMap(slots, tag, analyzer);
           break;
         case 'cssProp':
-          addNamedJSDocInfoToMap(cssProperties, tag);
+          addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
           break;
         case 'cssProperty':
-          addNamedJSDocInfoToMap(cssProperties, tag);
+          addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
           break;
         case 'cssPart':
-          addNamedJSDocInfoToMap(cssParts, tag);
+          addNamedJSDocInfoToMap(cssParts, tag, analyzer);
           break;
       }
     }
   }
   return {
-    ...parseNodeJSDocInfo(node),
+    ...parseNodeJSDocInfo(node, analyzer),
     events,
     slots,
     cssProperties,

@@ -14,6 +14,7 @@ import {
 } from '../utils.js';
 
 import {LitElementDeclaration} from '../../index.js';
+import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 interface TestContext extends AnalyzerModuleTestContext {
   element: LitElementDeclaration;
@@ -266,6 +267,27 @@ for (const lang of languages) {
     } else {
       assert.equal(fn.overloads?.length ?? 0, 0);
     }
+  });
+
+  test('property with an unsupported name type', ({analyzer, element}) => {
+    // This currently results in two diagnostics: one for the
+    // `LitElement`-specific part of the analysis and one for the vanilla class
+    // analysis.
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, 1);
+    assert.equal(diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
+
+    // Fields named with symbols are not visible in the `fields` iterator.
+    const field = Array.from(element.fields).find(
+      (x) => x.name === '[unsupportedPropertyName]'
+    );
+    assert.not(field);
+
+    // Reactive properties named with symbols are not supported.
+    const reactiveProperty = element.reactiveProperties.get(
+      '[unsupportedPropertyName]'
+    );
+    assert.not(reactiveProperty);
   });
 
   test.run();

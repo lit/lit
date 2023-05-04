@@ -15,6 +15,8 @@ export interface LocalInterface {
   someData: number;
 }
 
+const unsupportedPropertyName = Symbol();
+
 @customElement('element-a')
 export class ElementA extends LitElement {
   static properties = {
@@ -105,4 +107,7 @@ export class ElementA extends LitElement {
       return x + 123;
     }
   }
+
+  @property()
+  [unsupportedPropertyName]: string;
 }
