@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2023 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 // import { dimension } from './Layout.js';
 import {BaseLayoutConfig} from './Layout.js';
 import {BaseLayout, dim1, dim2} from './BaseLayout.js';
