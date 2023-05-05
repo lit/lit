@@ -24,7 +24,7 @@ export function wrapCreateElement(
   // non-React alternatives like preact?
   originalCreateElement: typeof ReactCreateElement
 ) {
-  return function createElement<P>(
+  return function litPatchedCreateElement<P>(
     type: ElementType<P>,
     props: PropsWithChildren<P> | null,
     ...children: ReactNode[]

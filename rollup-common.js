@@ -79,6 +79,7 @@ const reservedProperties = [
   '_$litElement$',
   '_$litStatic$',
   '_$cssResult$',
+  '_$litProps$',
 ];
 
 // Private properties which should be stable between versions but are used on

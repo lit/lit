@@ -46,8 +46,13 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
         continue;
       }
 
-      if (k in renderer.element) {
-        renderer.setProperty(k, v);
+      // This prop is created by `@lit-labs/react` createComponent containing
+      // items to be set as properties
+      if (k === '_$litProps$') {
+        for (const [pk, pv] of Object.entries(v as object)) {
+          renderer.setProperty(pk, pv);
+        }
+        delete (props as {_$litProps$?: object})['_$litProps$'];
       } else {
         renderer.setAttribute(k, String(v));
       }

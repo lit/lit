@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+const NODE_MODE = false;
+
 // Match a prop name to a typed event callback by
 // adding an Event type as an expected property on a string.
 export type EventName<T extends Event = Event> = string & {
@@ -354,6 +356,20 @@ the element.`);
 
         props[k] = v;
       }
+
+      // If component is to be server rendered with `@lit-labs/ssr-react` pass
+      // element properties in a special bag to be set by the server-side
+      // element renderer.
+      if (
+        NODE_MODE &&
+        createElement.name === 'litPatchedCreateElement' &&
+        Object.keys(this._elementProps).length
+      ) {
+        // This property needs to remain unminified.
+        props['_$litProps$'] = this._elementProps;
+        return createElement<React.HTMLAttributes<I>, I>(tag, props);
+      }
+
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
   }
