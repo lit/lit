@@ -300,6 +300,7 @@ the element.`);
      */
     override componentDidMount() {
       this._updateElement();
+      this._element?.removeAttribute('defer-hydration');
     }
 
     /**
@@ -369,6 +370,10 @@ the element.`);
         props['_$litProps$'] = this._elementProps;
         return createElement<React.HTMLAttributes<I>, I>(tag, props);
       }
+
+      // Suppress hydration warning for server-rendered attributes, including
+      // "defer-hydration"
+      props.suppressHydrationWarning = true;
 
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
