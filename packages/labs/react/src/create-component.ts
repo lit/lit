@@ -30,7 +30,7 @@ type ElementWithoutPropsOrEventListeners<I, E> = Omit<
 // ref, as well as special event and element properties.
 export type WebComponentProps<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = EventNames
 > = Partial<
   ReactProps<I, E> &
     ElementWithoutPropsOrEventListeners<I, E> &
@@ -43,19 +43,19 @@ export type WebComponentProps<
 // and must fulfill any ref passed by the user.
 type ReactComponentProps<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = EventNames
 > = WebComponentProps<I, E> & {
   __forwardedRef: React.Ref<I>;
 };
 
 export type ReactWebComponent<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = EventNames
 > = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
-interface Options<I extends HTMLElement, E extends EventNames = {}> {
+interface Options<I extends HTMLElement, E extends EventNames = EventNames> {
   tagName: string;
   elementClass: Constructor<I>;
   react: typeof window.React;
@@ -184,7 +184,7 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
  */
 export function createComponent<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = EventNames
 >(options: Options<I, E>): ReactWebComponent<I, E>;
 /**
  * @deprecated Use `createComponent(options)` instead of individual arguments.
@@ -211,7 +211,7 @@ export function createComponent<
  */
 export function createComponent<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = EventNames
 >(
   ReactOrOptions: typeof window.React,
   tagName: string,
@@ -221,7 +221,7 @@ export function createComponent<
 ): ReactWebComponent<I, E>;
 export function createComponent<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = EventNames
 >(
   ReactOrOptions: typeof window.React | Options<I, E> = window.React,
   tagName?: string,

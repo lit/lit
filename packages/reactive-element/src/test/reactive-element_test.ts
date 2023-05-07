@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/* eslint-disable @typescript-eslint/ban-types */
+
 import {
   ComplexAttributeConverter,
   defaultConverter,

@@ -427,7 +427,7 @@ export class XliffFormatter implements Formatter {
     parentNode: Node,
     childNode: Node,
     level: number,
-    indent: Function
+    indent: IndentFunction
   ) {
     const lastChild = parentNode.lastChild;
     if (lastChild) {
@@ -447,8 +447,10 @@ export class XliffFormatter implements Formatter {
     parentNode.removeChild(childNode);
   }
 
-  private createIndentFunction(doc: Document): Function {
-    return (node: Element | Document, level = 0) =>
+  private createIndentFunction(doc: Document): IndentFunction {
+    return (node: Node, level = 0) =>
       node.appendChild(doc.createTextNode('\n' + Array(level + 1).join('  ')));
   }
 }
+
+type IndentFunction = (node: Node, level?: number) => Node;

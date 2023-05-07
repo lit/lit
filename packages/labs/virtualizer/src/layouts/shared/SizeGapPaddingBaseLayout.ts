@@ -76,9 +76,20 @@ type Padding = {[key in side]: number};
 export abstract class SizeGapPaddingBaseLayout<
   C extends SizeGapPaddingBaseLayoutConfig
 > extends BaseLayout<C> {
-  protected _itemSize: Size | {} = {};
-  protected _gaps: Gaps | {} = {};
-  protected _padding: Padding | {} = {};
+  protected _itemSize: Size = {
+    width: Infinity,
+    height: Infinity,
+  };
+  protected _gaps: Gaps = {
+    row: Infinity,
+    column: Infinity,
+  };
+  protected _padding: Padding = {
+    left: Infinity,
+    right: Infinity,
+    top: Infinity,
+    bottom: Infinity,
+  };
 
   protected get _defaultConfig(): C {
     return Object.assign({}, super._defaultConfig, {
@@ -90,44 +101,44 @@ export abstract class SizeGapPaddingBaseLayout<
 
   // Temp, to support current flexWrap implementation
   protected get _gap(): number {
-    return (this._gaps as Gaps).row;
+    return this._gaps.row;
   }
 
   // Temp, to support current flexWrap implementation
   protected get _idealSize(): number {
-    return (this._itemSize as Size)[dim1(this.direction)];
+    return this._itemSize[dim1(this.direction)];
   }
 
   protected get _idealSize1(): number {
-    return (this._itemSize as Size)[dim1(this.direction)];
+    return this._itemSize[dim1(this.direction)];
   }
 
   protected get _idealSize2(): number {
-    return (this._itemSize as Size)[dim2(this.direction)];
+    return this._itemSize[dim2(this.direction)];
   }
 
   protected get _gap1(): number {
-    return (this._gaps as Gaps)[gap1(this.direction)];
+    return this._gaps[gap1(this.direction)];
   }
 
   protected get _gap2(): number {
-    return (this._gaps as Gaps)[gap2(this.direction)];
+    return this._gaps[gap2(this.direction)];
   }
 
   protected get _padding1(): [number, number] {
-    const padding = this._padding as Padding;
+    const padding = this._padding;
     const [start, end] = padding1(this.direction);
     return [padding[start], padding[end]];
   }
 
   protected get _padding2(): [number, number] {
-    const padding = this._padding as Padding;
+    const padding = this._padding;
     const [start, end] = padding2(this.direction);
     return [padding[start], padding[end]];
   }
 
   set itemSize(dims: PixelDimensions | PixelSize) {
-    const size = this._itemSize as Size;
+    const size = this._itemSize;
     if (typeof dims === 'string') {
       dims = {
         width: dims,
@@ -149,7 +160,7 @@ export abstract class SizeGapPaddingBaseLayout<
   // This setter is overridden in specific layouts to narrow the accepted types
   set gap(spec: GapSpec | AutoGapSpec) {
     const values = spec.split(' ').map((v) => gapValueToNumber(v as GapValue));
-    const gaps = this._gaps as Gaps;
+    const gaps = this._gaps;
     if (values[0] !== gaps.row) {
       gaps.row = values[0];
       this._triggerReflow();
@@ -168,7 +179,7 @@ export abstract class SizeGapPaddingBaseLayout<
   }
 
   set padding(spec: PaddingSpec) {
-    const padding = this._padding as Padding;
+    const padding = this._padding;
     const values = spec
       .split(' ')
       .map((v) => paddingValueToNumber(v as PaddingValue));

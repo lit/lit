@@ -135,7 +135,7 @@ const convertDeclaration = (declaration: Declaration): cem.Declaration => {
     // TODO: MixinDeclaration
     // TODO: CustomElementMixinDeclaration;
     throw new Error(
-      `Unknown declaration: ${(declaration as Object).constructor.name}`
+      `Unknown declaration: ${(declaration as object).constructor.name}`
     );
   }
 };
