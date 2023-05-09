@@ -1005,6 +1005,9 @@ class Template {
       }
       nodeIndex++;
     }
+    // We could set walker.currentNode to another node here to prevent a memory
+    // leak, but every time we prepare a template, we immediately render it
+    // and re-use the walker in new TemplateInstance._clone().
     debugLogEvent?.({
       kind: 'template prep',
       template: this,
@@ -1155,6 +1158,10 @@ class TemplateInstance implements Disconnectable {
         nodeIndex++;
       }
     }
+    // We need to set the currentNode away from the cloned tree so that we
+    // don't hold onto the tree even if the tree is detached and should be
+    // freed.
+    walker.currentNode = d;
     return fragment;
   }
 
