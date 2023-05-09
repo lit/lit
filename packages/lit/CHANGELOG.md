@@ -25,6 +25,12 @@
   - lit-html@3.0.0-pre.0
   - lit-element@4.0.0-pre.0
 
+## 2.7.4
+
+### Patch Changes
+
+- [#3871](https://github.com/lit/lit/pull/3871) [`308280eb`](https://github.com/lit/lit/commit/308280eb1a1f66e07f651b72b050560ea3a01b84) - remove test directory from npm publication
+
 ## 2.7.3
 
 ### Patch Changes

@@ -9,6 +9,13 @@
 - Updated dependencies [[`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa)]:
   - @lit-labs/analyzer@0.6.1-pre.0
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`2c59ceb9`](https://github.com/lit/lit/commit/2c59ceb9427ca76a591084258eedab76644f2a63)]:
+  - @lit-labs/analyzer@0.7.0
+
 ## 0.2.1
 
 ### Patch Changes

@@ -175,6 +175,14 @@ packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
 
+packages/labs/eslint-plugin/lib/
+packages/labs/eslint-plugin/test/
+
+packages/labs/eslint-plugin/**/index.js
+packages/labs/eslint-plugin/**/index.js.map
+packages/labs/eslint-plugin/**/index.d.ts
+packages/labs/eslint-plugin/**/index.d.ts.map
+
 packages/labs/gen-manifest/index.js
 packages/labs/gen-manifest/index.js.map
 packages/labs/gen-manifest/index.d.ts

@@ -10,6 +10,7 @@ import {renderCustomElement} from './render-custom-element.js';
 import type {
   createElement as ReactCreateElement,
   ElementType,
+  PropsWithChildren,
   ReactElement,
   ReactNode,
 } from 'react';
@@ -23,9 +24,9 @@ export function wrapCreateElement(
   // non-React alternatives like preact?
   originalCreateElement: typeof ReactCreateElement
 ) {
-  return function createElement<P extends {}>(
+  return function createElement<P>(
     type: ElementType<P>,
-    props: P,
+    props: PropsWithChildren<P> | null,
     ...children: ReactNode[]
   ): ReactElement {
     if (isCustomElement(type)) {
@@ -40,11 +41,21 @@ export function wrapCreateElement(
           },
         });
 
+        const newChildren: ReactNode[] = [templateShadowRoot];
+        // React.createElement prefers children arguments over props.children
+        // https://github.com/facebook/react/blob/v18.2.0/packages/react/src/ReactElement.js#L401-L417
+        if (children.length > 0) {
+          newChildren.push(...children);
+        } else if (Array.isArray(props?.children)) {
+          newChildren.push(...props!.children);
+        } else if (props?.children !== undefined) {
+          newChildren.push(props.children);
+        }
+
         return originalCreateElement(
           type,
           {...props, ...elementAttributes},
-          templateShadowRoot,
-          ...children
+          ...newChildren
         );
       }
     }

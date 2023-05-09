@@ -534,6 +534,7 @@ export interface Described {
 
 export interface NamedDescribed extends Described {
   name: string;
+  default?: string;
 }
 
 export interface TypedNamedDescribed extends NamedDescribed {
@@ -771,6 +772,9 @@ export interface AnalyzerInterface {
     | 'normalize'
     | 'isAbsolute'
   >;
+
+  addDiagnostic(diagnostic: ts.Diagnostic): void;
+  getDiagnostics(): IterableIterator<ts.Diagnostic>;
 }
 
 /**
@@ -778,6 +782,7 @@ export interface AnalyzerInterface {
  */
 export type DeclarationInfo = {
   name: string;
+  node: ts.Node;
   factory: () => Declaration;
   isExport?: boolean;
 };

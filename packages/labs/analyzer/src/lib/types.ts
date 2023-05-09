@@ -5,7 +5,6 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from './errors.js';
 import {getPackageInfo} from './javascript/packages.js';
 import {Type, Reference, AnalyzerInterface} from './model.js';
 import {
@@ -19,6 +18,7 @@ import {
   getReferenceForSymbol,
   getSymbolForName,
 } from './references.js';
+import {createDiagnostic} from './errors.js';
 
 /**
  * Returns an analyzer `Type` object for the given type string,
@@ -34,10 +34,14 @@ export const getTypeForTypeString = (
   if (typeString !== undefined) {
     const typeNode = parseType(typeString);
     if (typeNode == undefined) {
-      throw new DiagnosticsError(
-        location,
-        `Internal error: failed to parse type from JSDoc comment.`
+      analyzer.addDiagnostic(
+        createDiagnostic({
+          node: location,
+          message: `Failed to parse type from JSDoc comment.`,
+          category: ts.DiagnosticCategory.Warning,
+        })
       );
+      return undefined;
     }
     const type = analyzer.program
       .getTypeChecker()
@@ -85,16 +89,24 @@ export const getTypeForType = (
     location,
     ts.NodeBuilderFlags.IgnoreErrors
   );
+  let getReferences;
   if (typeNode === undefined) {
-    throw new DiagnosticsError(
-      location,
-      `Internal error: could not convert type to type node`
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: location,
+        message: `Could not convert type to type node`,
+        category: ts.DiagnosticCategory.Warning,
+      })
     );
+    getReferences = () => [];
+  } else {
+    getReferences = () =>
+      getReferencesForTypeNode(typeNode, location, analyzer);
   }
   return new Type({
     type,
     text,
-    getReferences: () => getReferencesForTypeNode(typeNode, location, analyzer),
+    getReferences,
   });
 };
 
@@ -118,22 +130,37 @@ const getReferencesForTypeNode = (
       // `checker.getSymbolsInScope()`
       const symbol = getSymbolForName(name, location, analyzer);
       if (symbol === undefined) {
-        throw new DiagnosticsError(
-          location,
-          `Could not get symbol for '${name}'.`
+        analyzer.addDiagnostic(
+          createDiagnostic({
+            node: location,
+            message: `Could not get symbol for '${name}'.`,
+          })
         );
+        return;
       }
-      references.push(getReferenceForSymbol(symbol, location, analyzer));
+      const ref = getReferenceForSymbol(symbol, location, analyzer);
+      if (ref !== undefined) {
+        references.push(ref);
+      }
     } else if (ts.isImportTypeNode(node)) {
       if (!ts.isLiteralTypeNode(node.argument)) {
-        throw new DiagnosticsError(node, 'Expected a string literal.');
+        analyzer.addDiagnostic(
+          createDiagnostic({
+            node: node.argument,
+            message: 'Expected a string literal.',
+          })
+        );
+        return;
       }
       const name = getRootName(node.qualifier);
       if (!ts.isStringLiteral(node.argument.literal)) {
-        throw new DiagnosticsError(
-          location,
-          `Expected import specifier to be a string literal`
+        analyzer.addDiagnostic(
+          createDiagnostic({
+            node: node.argument.literal,
+            message: `Expected import specifier to be a string literal`,
+          })
         );
+        return;
       }
       const specifier = getSpecifierFromTypeImport(
         node.argument.literal.text,

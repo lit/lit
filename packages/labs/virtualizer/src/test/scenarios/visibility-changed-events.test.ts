@@ -105,4 +105,25 @@ describe('VisibilityChanged event', () => {
     // The visibilitychanged event should not bubble up to its containing element.
     expect(containerEvents.length).to.equal(0);
   });
+
+  it('should fire visibilityChanged even when other state (e.g, range) does not change', async () => {
+    const items = array(1000);
+    const {virtualizer} = await createVirtualizer({items});
+    const virtualizerEvents: VisibilityChangedEvent[] = [];
+
+    virtualizer.addEventListener('visibilityChanged', (e) => {
+      virtualizerEvents.push(e as VisibilityChangedEvent);
+    });
+
+    await new Promise(requestAnimationFrame);
+    expect(last(virtualizerEvents).first).to.equal(0);
+
+    virtualizer.scrollTo({top: 1000, behavior: 'smooth'});
+    await until(() => virtualizer.scrollTop === 1000);
+    expect(last(virtualizerEvents).first).to.be.greaterThan(0);
+
+    virtualizer.scrollTo({top: 0, behavior: 'smooth'});
+    await until(() => virtualizer.scrollTop === 0);
+    expect(last(virtualizerEvents).first).to.equal(0);
+  });
 });

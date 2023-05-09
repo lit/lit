@@ -333,6 +333,7 @@
     "/decorators/",
     "/directives/",
     "/development/",
+    "!/development/test/",
     "/logo.svg"
   ],
   "dependencies": {

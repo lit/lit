@@ -11,7 +11,8 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
+import {DiagnosticCode} from '../diagnostic-code.js';
+import {createDiagnostic} from '../errors.js';
 import {
   ClassDeclaration,
   AnalyzerInterface,
@@ -64,7 +65,7 @@ export const getClassDeclaration = (
     name,
     node: declaration,
     getHeritage: () => getHeritage(declaration, analyzer),
-    ...parseNodeJSDocInfo(docNode ?? declaration),
+    ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
 };
@@ -91,10 +92,24 @@ export const getClassMembers = (
         new ClassMethod({
           ...info,
           ...getFunctionLikeInfo(node, name, analyzer),
-          ...parseNodeJSDocInfo(node),
+          ...parseNodeJSDocInfo(node, analyzer),
         })
       );
     } else if (ts.isPropertyDeclaration(node)) {
+      if (!ts.isIdentifier(node.name)) {
+        analyzer.addDiagnostic(
+          createDiagnostic({
+            node,
+            message:
+              '@lit-labs/analyzer only supports analyzing class properties ' +
+              'named with plain identifiers. This property was ignored.',
+            category: ts.DiagnosticCategory.Warning,
+            code: DiagnosticCode.UNSUPPORTED,
+          })
+        );
+        return;
+      }
+
       const info = getMemberInfo(node);
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
@@ -102,7 +117,7 @@ export const getClassMembers = (
           ...info,
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
-          ...parseNodeJSDocInfo(node),
+          ...parseNodeJSDocInfo(node, analyzer),
         })
       );
     }
@@ -126,16 +141,21 @@ const getMemberInfo = (node: ts.MethodDeclaration | ts.PropertyDeclaration) => {
 /**
  * Returns the name of a class declaration.
  */
-const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
+const getClassDeclarationName = (
+  declaration: ts.ClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
   const name =
     declaration.name?.text ??
     // The only time a class declaration will not have a name is when it is
     // a default export, aka `export default class { }`
     (hasDefaultModifier(declaration) ? 'default' : undefined);
   if (name === undefined) {
-    throw new DiagnosticsError(
-      declaration,
-      'Unexpected class declaration without a name'
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: declaration,
+        message: `Illegal syntax: a class declaration must either have a name or be a default export`,
+      })
     );
   }
   return name;
@@ -147,10 +167,14 @@ const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
 export const getClassDeclarationInfo = (
   declaration: ts.ClassDeclaration,
   analyzer: AnalyzerInterface
-): DeclarationInfo => {
-  const name = getClassDeclarationName(declaration);
+): DeclarationInfo | undefined => {
+  const name = getClassDeclarationName(declaration, analyzer);
+  if (name === undefined) {
+    return undefined;
+  }
   return {
     name,
+    node: declaration,
     factory: () => getClassDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(declaration),
   };
@@ -167,15 +191,18 @@ export const getHeritage = (
     (c) => c.token === ts.SyntaxKind.ExtendsKeyword
   );
   if (extendsClause !== undefined) {
-    if (extendsClause.types.length !== 1) {
-      throw new DiagnosticsError(
-        extendsClause,
-        'Internal error: did not expect extends clause to have multiple types'
+    if (extendsClause.types.length === 1) {
+      return getHeritageFromExpression(
+        extendsClause.types[0].expression,
+        analyzer
       );
     }
-    return getHeritageFromExpression(
-      extendsClause.types[0].expression,
-      analyzer
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: extendsClause,
+        message:
+          'Illegal syntax: did not expect extends clause to have multiple types',
+      })
     );
   }
   // No extends clause; return empty heritage
@@ -202,13 +229,18 @@ export const getHeritageFromExpression = (
 export const getSuperClass = (
   expression: ts.Expression,
   analyzer: AnalyzerInterface
-): Reference => {
+): Reference | undefined => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
   if (ts.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
   }
-  throw new DiagnosticsError(
-    expression,
-    `Expected expression to be a concrete superclass. Mixins are not yet supported.`
+  analyzer.addDiagnostic(
+    createDiagnostic({
+      node: expression,
+      message: `Expected expression to be a concrete superclass. Mixins are not yet supported.`,
+      code: DiagnosticCode.UNSUPPORTED,
+      category: ts.DiagnosticCategory.Warning,
+    })
   );
+  return undefined;
 };

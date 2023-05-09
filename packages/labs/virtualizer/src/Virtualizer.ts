@@ -601,6 +601,10 @@ export class Virtualizer {
   _handleLayoutMessage(message: LayoutHostMessage) {
     if (message.type === 'stateChanged') {
       this._updateDOM(message);
+    } else if (message.type === 'visibilityChanged') {
+      this._firstVisible = message.firstVisible;
+      this._lastVisible = message.lastVisible;
+      this._notifyVisibility();
     } else if (message.type === 'unpinned') {
       this._hostElement!.dispatchEvent(new UnpinnedEvent());
     }

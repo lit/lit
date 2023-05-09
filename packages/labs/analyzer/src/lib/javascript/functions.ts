@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
+import {createDiagnostic} from '../errors.js';
 import {
   AnalyzerInterface,
   DeclarationInfo,
@@ -28,16 +28,22 @@ import {hasDefaultModifier, hasExportModifier} from '../utils.js';
 /**
  * Returns the name of a function declaration.
  */
-const getFunctionDeclarationName = (declaration: ts.FunctionDeclaration) => {
+const getFunctionDeclarationName = (
+  declaration: ts.FunctionDeclaration,
+  analyzer: AnalyzerInterface
+) => {
   const name =
     declaration.name?.text ??
     // The only time a function declaration will not have a name is when it is
     // a default export, aka `export default function() {...}`
     (hasDefaultModifier(declaration) ? 'default' : undefined);
   if (name === undefined) {
-    throw new DiagnosticsError(
-      declaration,
-      'Unexpected function declaration without a name'
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: declaration,
+        message:
+          'Illegal syntax: expected every function declaration to either have a name or be a default export',
+      })
     );
   }
   return name;
@@ -46,10 +52,14 @@ const getFunctionDeclarationName = (declaration: ts.FunctionDeclaration) => {
 export const getFunctionDeclarationInfo = (
   declaration: ts.FunctionDeclaration,
   analyzer: AnalyzerInterface
-): DeclarationInfo => {
-  const name = getFunctionDeclarationName(declaration);
+): DeclarationInfo | undefined => {
+  const name = getFunctionDeclarationName(declaration, analyzer);
+  if (name === undefined) {
+    return undefined;
+  }
   return {
     name,
+    node: declaration,
     factory: () => getFunctionDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(declaration),
   };
@@ -70,7 +80,7 @@ export const getFunctionDeclaration = (
   docNode?: ts.Node
 ): FunctionDeclaration => {
   return new FunctionDeclaration({
-    ...parseNodeJSDocInfo(docNode ?? declaration),
+    ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getFunctionLikeInfo(declaration, name, analyzer),
   });
 };
@@ -97,7 +107,7 @@ export const getFunctionLikeInfo = (
       return new FunctionOverloadDeclaration({
         // `docNode ?? overload` isn't needed here because TS doesn't allow
         // const function assignments to be overloaded as of now.
-        ...parseNodeJSDocInfo(overload),
+        ...parseNodeJSDocInfo(overload, analyzer),
 
         // `info` can't be spread because `FunctionLikeInit` has an `overloads`
         // property, even though it's always `undefined` in this case.
@@ -127,7 +137,7 @@ const getParameter = (
   const p: Parameter = {
     name: param.name.getText(),
     type: getTypeForNode(param, analyzer),
-    ...(paramTag ? parseJSDocDescription(paramTag) : {}),
+    ...(paramTag ? parseJSDocDescription(paramTag, analyzer) : {}),
     optional: false,
     rest: false,
   };
@@ -147,7 +157,7 @@ const getParameter = (
 const getReturn = (
   node: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
-): Return => {
+): Return | undefined => {
   const returnTag = ts.getAllJSDocTagsOfKind(
     node,
     ts.SyntaxKind.JSDocReturnTag
@@ -156,13 +166,17 @@ const getReturn = (
     .getTypeChecker()
     .getSignatureFromDeclaration(node);
   if (signature === undefined) {
-    throw new DiagnosticsError(
-      node,
-      `Could not get signature to determine return type`
+    // TODO: when does this happen? is it actionable for the user? if so, how?
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node,
+        message: `Could not get signature to determine return type`,
+      })
     );
+    return undefined;
   }
   return {
     type: getTypeForType(signature.getReturnType(), node, analyzer),
-    ...(returnTag ? parseJSDocDescription(returnTag) : {}),
+    ...(returnTag ? parseJSDocDescription(returnTag, analyzer) : {}),
   };
 };

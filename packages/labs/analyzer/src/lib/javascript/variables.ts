@@ -18,11 +18,12 @@ import {
   Declaration,
 } from '../model.js';
 import {hasExportModifier} from '../utils.js';
-import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclaration} from './functions.js';
 import {getClassDeclaration} from './classes.js';
+import {createDiagnostic} from '../errors.js';
+import {DiagnosticCode} from '../diagnostic-code.js';
 
 type VariableName =
   | ts.Identifier
@@ -72,7 +73,7 @@ const getVariableDeclaration = (
     name: name.text,
     node: dec,
     type: getTypeForNode(name, analyzer),
-    ...parseNodeJSDocInfo(statement),
+    ...parseNodeJSDocInfo(statement, analyzer),
   });
 };
 
@@ -109,6 +110,7 @@ const getVariableDeclarationInfoList = (
     return [
       {
         name: name.text,
+        node: name,
         factory: () => getVariableDeclaration(statement, dec, name, analyzer),
         isExport,
       },
@@ -134,10 +136,15 @@ const getVariableDeclarationInfoList = (
       )
       .flat();
   } else {
-    throw new DiagnosticsError(
-      dec,
-      `Expected declaration name to either be an Identifier or a BindingPattern`
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        node: dec,
+        message: `Expected declaration name to either be an identifier or a destructuring`,
+        category: ts.DiagnosticCategory.Warning,
+        code: DiagnosticCode.UNSUPPORTED,
+      })
     );
+    return [];
   }
 };
 
@@ -150,6 +157,7 @@ export const getExportAssignmentVariableDeclarationInfo = (
 ): DeclarationInfo => {
   return {
     name: 'default',
+    node: exportAssignment,
     factory: () =>
       getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
     isExport: true,
@@ -172,7 +180,7 @@ const getExportAssignmentVariableDeclaration = (
     name: 'default',
     node: exportAssignment,
     type: getTypeForNode(exportAssignment.expression, analyzer),
-    ...parseNodeJSDocInfo(exportAssignment),
+    ...parseNodeJSDocInfo(exportAssignment, analyzer),
   });
 };
 
@@ -182,6 +190,7 @@ export const getEnumDeclarationInfo = (
 ) => {
   return {
     name: dec.name.text,
+    node: dec,
     factory: () => getEnumDeclaration(dec, analyzer),
     isExport: hasExportModifier(dec),
   };
@@ -195,6 +204,6 @@ const getEnumDeclaration = (
     name: dec.name.text,
     node: dec,
     type: getTypeForNode(dec.name, analyzer),
-    ...parseNodeJSDocInfo(dec),
+    ...parseNodeJSDocInfo(dec, analyzer),
   });
 };

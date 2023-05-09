@@ -10,6 +10,13 @@
   - @lit-labs/gen-utils@0.2.2-pre.0
   - @lit-labs/analyzer@0.6.1-pre.0
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`2c59ceb9`](https://github.com/lit/lit/commit/2c59ceb9427ca76a591084258eedab76644f2a63)]:
+  - @lit-labs/analyzer@0.7.0
+
 ## 0.0.5
 
 ### Patch Changes
