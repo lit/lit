@@ -17,7 +17,7 @@ const reservedReactProperties = new Set([
 ]);
 
 const attributesToProps = (attrs: NamedNodeMap) => {
-  const props: {[index: string]: string} = {};
+  const props: {[attributeName: string]: string} = {};
   for (let i = 0; i < attrs.length; i++) {
     const attr = attrs[i];
     props[attr.name] = attr.value;
@@ -39,7 +39,7 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
 
   // elementAttributes will be provided to React as props for the host element
   // for properly rendering reflected attributes
-  const elementAttributes: {[index: string]: string} = {};
+  const elementAttributes: {[attributeName: string]: string} = {};
 
   const renderer = getElementRenderer(renderInfo, tagName);
 
