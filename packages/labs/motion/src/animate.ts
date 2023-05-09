@@ -79,22 +79,49 @@ const quotientOp = (a: number, b: number) => {
 };
 
 // Computes a transform given a before and after input for given properties.
-export const transformProps = {
+export const transformProps: {
+  [p: string]: (
+    a: number,
+    b: number
+  ) => {value?: number; transform?: string; override?: {[k: string]: string}};
+} = {
   left: (a: number, b: number) => {
     const value = diffOp(a, b);
-    return {value, transform: value && `translateX(${value}px)`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `translateX(${value}px)`;
+    return {value, transform};
   },
   top: (a: number, b: number) => {
     const value = diffOp(a, b);
-    return {value, transform: value && `translateY(${value}px)`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `translateY(${value}px)`;
+    return {value, transform};
   },
   width: (a: number, b: number) => {
+    let override: {} | undefined = undefined;
+    // To values of 0 would cause value to be Infinity. Instead we override b
+    // to be 1 and all that as an override of the property.
+    if (b === 0) {
+      b = 1;
+      override = {width: '1px'};
+    }
     const value = quotientOp(a, b);
-    return {value, transform: value && `scaleX(${value})`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `scaleX(${value})`;
+    return {value, override, transform};
   },
   height: (a: number, b: number) => {
+    let override: {} | undefined = undefined;
+    // To values of 0 would cause value to be Infinity. Instead we override b
+    // to be 1 and all that as an override of the property.
+    if (b === 0) {
+      b = 1;
+      override = {height: '1px'};
+    }
     const value = quotientOp(a, b);
-    return {value, transform: value && `scaleY(${value})`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `scaleY(${value})`;
+    return {value, override, transform};
   },
 };
 
@@ -524,6 +551,9 @@ export class Animate extends AsyncDirective {
           fromFrame['transform'] = `${fromFrame['transform'] ?? ''} ${
             op['transform']
           }`;
+          if (op.override) {
+            Object.assign(fromFrame, op.override);
+          }
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
