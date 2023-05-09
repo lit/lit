@@ -16,6 +16,12 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * not an arrow function.
  */
 
+type RecordOrClass<
+  K extends PropertyKey,
+  V,
+  ClassOverride
+> = ClassOverride extends Record<K, V> ? ClassOverride : Record<K, V>;
+
 /**
  * A property decorator that adds a ContextConsumer controller to the component
  * which will try and retrieve a value for the property via the Context API.
@@ -43,12 +49,13 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * ```
  * @category Decorator
  */
-export function provide<ValueType>({
+export function provide<ValueType, ClassOverride>({
   context: context,
 }: {
   context: Context<unknown, ValueType>;
 }): <K extends PropertyKey>(
-  protoOrDescriptor: ReactiveElement & Record<K, ValueType>,
+  protoOrDescriptor: ReactiveElement &
+    RecordOrClass<K, ValueType, ClassOverride>,
   name?: K
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

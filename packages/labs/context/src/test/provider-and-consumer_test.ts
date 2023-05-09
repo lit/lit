@@ -5,12 +5,13 @@
  */
 
 import {LitElement, html, TemplateResult} from 'lit';
-import {property} from 'lit/decorators/property.js';
+import {property, state} from 'lit/decorators.js';
 
 import {Context, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
+const stringContext = 'string-context' as Context<'string-context', string>;
 
 class ContextConsumerAndProviderElement extends LitElement {
   @consume({context: simpleContext, subscribe: true})
@@ -21,7 +22,17 @@ class ContextConsumerAndProviderElement extends LitElement {
   @property({type: Number})
   public value = 0;
 
+  @provide<string, any>({context: stringContext})
+  @state()
+  private _aString = 'a';
+
+  // @ts-expect-error the context type and field type are incompatible
+  @provide({context: stringContext})
+  _aNumber = 0;
+
   protected render(): TemplateResult {
+    this._aString;
+    this._aNumber;
     return html`Value <span id="value">${this.value}</span
       ><span id="fromAbove">${this.provided}</span><slot></slot>`;
   }
