@@ -634,6 +634,12 @@ const walker = d.createTreeWalker(
   false
 );
 
+// A node that we use to "park" the above TreeWalker at. This prevents the
+// TreeWalker from holding onto the DOM tree that we're processing after we're
+// done. This is necessary because we keep one TreeWalker instance for all tree
+// walks as a performance optimization.
+const walkerParkingNode = createMarker();
+
 let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
 
 //
@@ -1005,6 +1011,7 @@ class Template {
       }
       nodeIndex++;
     }
+    walker.currentNode = walkerParkingNode;
     debugLogEvent?.({
       kind: 'template prep',
       template: this,
@@ -1155,6 +1162,7 @@ class TemplateInstance implements Disconnectable {
         nodeIndex++;
       }
     }
+    walker.currentNode = walkerParkingNode;
     return fragment;
   }
 
