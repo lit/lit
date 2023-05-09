@@ -71,7 +71,9 @@
       "clean": "if-file-deleted",
       "dependencies": [
         "../ssr:build:ts",
-        "../ssr-client:build:ts:types"
+        "../ssr-client:build",
+        "../react:build",
+        "../../lit:build"
       ],
       "files": [
         "src/**/*.ts{,x}",
@@ -93,8 +95,7 @@
       "files": [],
       "output": [],
       "dependencies": [
-        "build",
-        "../react:build"
+        "build"
       ]
     }
   },

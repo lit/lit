@@ -39,6 +39,7 @@
   "files": [
     "/development/",
     "!/development/test/",
+    "/node/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/create-component.{d.ts,d.ts.map,js,js.map}",
     "/use-controller.{d.ts,d.ts.map,js,js.map}"
@@ -103,7 +104,8 @@
         "create-component.js{,.map}",
         "index.js{,.map}",
         "use-controller.js{,.map}",
-        "test/**/*.js{,.map}"
+        "test/**/*.js{,.map}",
+        "node/**/*.js{,.map}"
       ]
     },
     "checksize": {
