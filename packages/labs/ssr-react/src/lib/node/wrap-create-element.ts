@@ -59,6 +59,9 @@ export function wrapCreateElement(
         );
       }
     }
-    return originalCreateElement(type, props, ...children);
+    // The types here are complex, but the important thing is just that we're
+    // passing through the arguments to the original createElement function.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return originalCreateElement(type as any, props, ...children);
   };
 }
