@@ -32,7 +32,9 @@ export const renderModule = async (
     referrerPathOrFileUrl
   );
   const {module} = importResult;
-  const f = module.namespace[functionName] as (...args: unknown[]) => unknown;
+  // TODO (43081j): strongly type this cast as the exact function type it is
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const f = module.namespace[functionName] as Function;
   // TODO: should we require the result be an AsyncIterable?
   return f(...args);
 };
