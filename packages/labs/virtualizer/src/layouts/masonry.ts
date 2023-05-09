@@ -28,6 +28,7 @@ export interface MasonryLayoutConfig
   extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
   flex: boolean;
   itemSize: PixelSize;
+  getAspectRatio?: GetAspectRatioFromItem;
   getAspectRatioFromItem?: GetAspectRatioFromItem;
   getAspectRatioFromElement?: GetAspectRatioFromElement;
 }
@@ -78,6 +79,13 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     return Object.assign({}, super._defaultConfig, {
       // getAspectRatio: () => 1,
     });
+  }
+
+  set getAspectRatio(getAspectRatioFromItem: GetAspectRatioFromItem) {
+    console.warn(
+      'Masonry layout: getAspectRatio is deprecated. Use getAspectRatioFromItem instead.'
+    );
+    this._getAspectRatioFromItem = getAspectRatioFromItem;
   }
 
   set getAspectRatioFromItem(getAspectRatioFromItem: GetAspectRatioFromItem) {
