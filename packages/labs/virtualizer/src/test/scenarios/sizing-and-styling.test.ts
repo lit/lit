@@ -97,7 +97,7 @@ describe('Properly sizing virtualizer within host element', () => {
     )! as unknown as HTMLElement;
     await until(() => litVirtualizer.textContent?.includes('[4]'));
 
-    const renderedItems = [...litVirtualizer.querySelectorAll('.item')];
+    const renderedItems = Array.from(litVirtualizer.querySelectorAll('.item'));
     const rects = renderedItems.map((i) => i.getBoundingClientRect());
 
     const ceclvRect = ceclv.getBoundingClientRect();

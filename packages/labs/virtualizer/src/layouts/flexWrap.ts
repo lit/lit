@@ -91,10 +91,6 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
 
   listenForChildLoadEvents = true;
 
-  set gap(spec: GapSpec) {
-    super.gap = spec;
-  }
-
   /**
    * TODO graynorton@ Don't hard-code Flickr - probably need a config option
    */

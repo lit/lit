@@ -75,7 +75,7 @@ class MetricsCache {
       marginsToUpdate.add(k);
       marginsToUpdate.add(k + 1);
     });
-    for (const k of marginsToUpdate) {
+    for (const k of Array.from(marginsToUpdate)) {
       const a = this._metricsCache.get(k)?.[leadingMargin(direction)] || 0;
       const b = this._metricsCache.get(k - 1)?.[trailingMargin(direction)] || 0;
       this._marginSizeCache.set(k, collapseMargins(a, b));
