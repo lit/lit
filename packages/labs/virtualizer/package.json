@@ -48,6 +48,7 @@
     "build:ts": "wireit",
     "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
     "test": "wireit",
+    "test:es5build": "wireit",
     "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
     "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
   },
@@ -96,6 +97,7 @@
       "command": "node ../../tests/run-web-tests.js \"test/**/*.test.js\" --config web-test-runner.config.js --esbuild-target auto --node-resolve true",
       "dependencies": [
         "build",
+        "test:es5build",
         "../../tests:build"
       ],
       "env": {
@@ -105,6 +107,17 @@
       },
       "files": [
         "web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:es5build": {
+      "command": "tsc --target ES5 --noEmit --downlevelIteration",
+      "dependencies": [
+        "../../lit:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
       ],
       "output": []
     }
