@@ -19,7 +19,7 @@
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
+    // "experimentalDecorators": true,
     "stripInternal": true,
     "noImplicitOverride": true,
     "paths": {

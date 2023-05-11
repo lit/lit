@@ -16,8 +16,8 @@ suite('@state', () => {
   const hasChanged = (value: any, old: any) => old === undefined || value > old;
 
   class E extends ReactiveElement {
-    @state() prop = 'prop';
-    @state({hasChanged}) hasChangedProp = 10;
+    @state() accessor prop = 'prop';
+    @state({hasChanged}) accessor hasChangedProp = 10;
 
     updateCount = 0;
 

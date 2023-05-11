@@ -11,8 +11,8 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+// import type {ReactiveElement} from '../reactive-element.js';
+// import {decorateProperty} from './base.js';
 
 /**
  * Adds event listener options to a method used as an event listener in a
@@ -44,14 +44,12 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function eventOptions(options: AddEventListenerOptions) {
-  return decorateProperty({
-    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      Object.assign(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ctor.prototype[name as keyof ReactiveElement] as any,
-        options
-      );
-    },
-  });
-}
+export const eventOptions =
+  (options: AddEventListenerOptions) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  <C, V extends (this: C, ...args: any) => any>(
+    value: V,
+    _context: ClassMethodDecoratorContext<C, V>
+  ) => {
+    Object.assign(value, options);
+  };

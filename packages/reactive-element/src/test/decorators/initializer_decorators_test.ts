@@ -6,7 +6,7 @@
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {generateElementName} from '../test-helpers.js';
-import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
+// import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {assert} from '@esm-bundle/chai';
 import {property} from '@lit/reactive-element/decorators/property.js';
 
@@ -23,19 +23,22 @@ suite('Decorators using initializers', () => {
   });
 
   test('can create initializer decorator with `decorateProperty`', async () => {
-    const wasDecorated = (value: string) =>
-      decorateProperty({
-        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-          ctor.addInitializer((e: A) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (e as any).decoration = {name, value};
-          });
-        },
-      });
+    function wasDecorated(value: string) {
+      return <C extends A, V>(
+        _target: V,
+        {name, addInitializer}: ClassFieldDecoratorContext<C, V>
+      ) => {
+        addInitializer(function (this: C) {
+          this.decoration = {name, value};
+        });
+      };
+    }
 
     class A extends ReactiveElement {
       @wasDecorated('bar')
       foo?: string;
+
+      decoration?: {name: PropertyKey; value: string};
     }
     customElements.define(generateElementName(), A);
     const el = new A();
@@ -45,48 +48,35 @@ suite('Decorators using initializers', () => {
   });
 
   test('can create `listen` controller decorator', async () => {
-    const listeners: WeakMap<
-      ReactiveElement,
-      Array<{type: string; listener: (e: Event) => void}>
-    > = new WeakMap();
-    const listenWindow = <T>(type: string) => {
-      return decorateProperty({
-        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-          ctor.addInitializer((e: ReactiveElement) => {
-            const listener = (event: Event) =>
-              (
-                (ctor.prototype as unknown as T)[
-                  name as keyof T
-                ] as unknown as Function
-              ).call(e, event);
-            let l = listeners.get(e);
-            if (l === undefined) {
-              listeners.set(e, (l = []));
-              e.addController({
-                hostConnected() {
-                  l!.forEach((info) => {
-                    window.addEventListener(info.type, info.listener);
-                  });
-                },
-                hostDisconnected() {
-                  l!.forEach((info) => {
-                    window.removeEventListener(info.type, info.listener);
-                  });
-                },
-              });
-            }
-            l.push({type, listener});
+    // A decorator that adds a controller that listens to a window event.
+    const listenWindow =
+      (type: string) =>
+      <
+        C extends ReactiveElement,
+        V extends <E extends Event>(this: C, event: E) => any
+      >(
+        target: V,
+        {addInitializer}: ClassMethodDecoratorContext<C, V>
+      ) => {
+        addInitializer(function (this: C) {
+          const listener = (event: Event) => target.call(this, event);
+          this.addController({
+            hostConnected() {
+              window.addEventListener(type, listener);
+            },
+            hostDisconnected() {
+              window.removeEventListener(type, listener);
+            },
           });
-        },
-      });
-    };
+        });
+      };
 
     class B extends ReactiveElement {
-      @listenWindow<B>('nug')
+      @listenWindow('nug')
       eventHandler1(e: Event) {
         this.event1 = e.type;
       }
-      @listenWindow<B>('zug')
+      @listenWindow('zug')
       eventHandler2(e: Event) {
         this.event2 = e.type;
       }
@@ -111,40 +101,32 @@ suite('Decorators using initializers', () => {
 
   test('can create `validate` controller decorator', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type Validator = (v: any) => any;
+    type Validator<T> = (v: T) => T;
 
-    const validators: WeakMap<
-      ReactiveElement,
-      Array<{key: PropertyKey; validator: Validator}>
-    > = new WeakMap();
-
-    const validate = <T>(validatorFn: Validator) => {
-      return decorateProperty({
-        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-          ctor.addInitializer((e: ReactiveElement) => {
-            let v = validators.get(e);
-            if (v === undefined) {
-              validators.set(e, (v = []));
-              e.addController({
-                hostUpdate() {
-                  v!.forEach(({key, validator}) => {
-                    (e as unknown as T)[key as keyof T] = validator(
-                      (e as unknown as T)[key as keyof T]
-                    );
-                  });
-                },
-              });
-            }
-            v.push({key: name, validator: validatorFn});
+    const validate =
+      <T>(validatorFn: Validator<T>) =>
+      <C extends ReactiveElement, V extends T>(
+        _target: ClassAccessorDecoratorTarget<C, V>,
+        {
+          access: {get, set},
+          addInitializer,
+        }: ClassAccessorDecoratorContext<C, V>
+      ) => {
+        addInitializer(function (this: C) {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
+          const host = this;
+          this.addController({
+            hostUpdate() {
+              set(host, validatorFn(get(host)) as V);
+            },
           });
-        },
-      });
-    };
+        });
+      };
 
     class B extends ReactiveElement {
       @property()
-      @validate<B>((v: number) => Math.max(0, Math.min(10, v)))
-      foo = 5;
+      @validate((v: number) => Math.max(0, Math.min(10, v)))
+      accessor foo = 5;
     }
     customElements.define(generateElementName(), B);
     const el = new B();
@@ -161,55 +143,51 @@ suite('Decorators using initializers', () => {
 
   test('can create `observer` controller decorator', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type Observer = (value: any, previous?: any) => void;
+    type Observer<T> = (value: T, previous?: T) => void;
 
-    const observers: WeakMap<
-      ReactiveElement,
-      Array<{key: PropertyKey; observer: Observer; previousValue?: any}>
-    > = new WeakMap();
-
-    const observer = <T>(observerFn: Observer) => {
-      return decorateProperty({
-        finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-          ctor.addInitializer((e: ReactiveElement) => {
-            let v = observers.get(e);
-            if (v === undefined) {
-              observers.set(e, (v = []));
-              e.addController({
-                hostUpdated() {
-                  v!.forEach((info) => {
-                    const value = (e as unknown as T)[info.key as keyof T];
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const hasChanged =
-                      (e.constructor as any).getPropertyOptions(name)
-                        ?.hasChanged ?? Object.is;
-                    if (hasChanged(value, info.previousValue)) {
-                      info.observer.call(e, value, info.previousValue);
-                      info.previousValue = value;
-                    }
-                  });
-                },
-              });
-            }
-            v.push({key: name, observer: observerFn});
+    const observer = <T>(observerFn: Observer<T>) => {
+      return <C extends ReactiveElement, V extends T>(
+        _target: ClassAccessorDecoratorTarget<C, V>,
+        {
+          access: {get},
+          name,
+          addInitializer,
+        }: ClassAccessorDecoratorContext<C, V>
+      ) => {
+        addInitializer(function (this: C) {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
+          const host = this;
+          let previousValue = get(host);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const hasChanged =
+            (this.constructor as any).getPropertyOptions(name)?.hasChanged ??
+            Object.is;
+          this.addController({
+            hostUpdated() {
+              const value = get(host);
+              if (hasChanged(value, previousValue)) {
+                observerFn.call(host, value, previousValue);
+                previousValue = value;
+              }
+            },
           });
-        },
-      });
+        });
+      };
     };
 
     class B extends ReactiveElement {
       @property()
-      @observer<B>(function (this: B, value: number, previous?: number) {
+      @observer(function (this: B, value: number, previous?: number) {
         this._observedFoo = {value, previous};
       })
-      foo = 5;
+      accessor foo = 5;
       _observedFoo?: {value: number; previous?: number};
 
       @property()
-      @observer<B>(function (this: B, value: string, previous?: string) {
+      @observer(function (this: B, value: string, previous?: string) {
         this._observedBar = {value, previous};
       })
-      bar = 'bar';
+      accessor bar = 'bar';
       _observedBar?: {value: string; previous?: string};
     }
     customElements.define(generateElementName(), B);

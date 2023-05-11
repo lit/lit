@@ -38,7 +38,7 @@ export class MyElement extends ReactiveElement {
   `;
 
   @property()
-  name = 'World';
+  accessor name = 'World';
 }
 
 export class MyOtherElement extends ReactiveElement {}

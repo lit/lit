@@ -18,9 +18,9 @@ import {assert} from '@esm-bundle/chai';
   let el: C;
 
   class C extends RenderingElement {
-    @query('#blah') div?: HTMLDivElement;
-    @query('#blah', true) divCached?: HTMLDivElement;
-    @query('span', true) span?: HTMLSpanElement;
+    @query('#blah') accessor div!: HTMLDivElement;
+    @query('#blah', true) accessor divCached!: HTMLDivElement;
+    @query('span', true) accessor span!: HTMLSpanElement;
 
     static override properties = {condition: {}};
 

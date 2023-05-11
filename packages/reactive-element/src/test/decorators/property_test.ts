@@ -35,21 +35,21 @@ suite('@property', () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends ReactiveElement {
-      @property({attribute: false}) noAttr = 'noAttr';
-      @property({attribute: true}) atTr = 'attr';
+      @property({attribute: false}) accessor noAttr = 'noAttr';
+      @property({attribute: true}) accessor atTr = 'attr';
       @property({attribute: 'custom', reflect: true})
-      customAttr = 'customAttr';
-      @property({hasChanged}) hasChanged = 10;
-      @property({converter: fromAttribute}) fromAttribute = 1;
+      accessor customAttr = 'customAttr';
+      @property({hasChanged}) accessor hasChanged = 10;
+      @property({converter: fromAttribute}) accessor fromAttribute = 1;
       @property({reflect: true, converter: {toAttribute}})
-      toAttribute = 1;
+      accessor toAttribute = 1;
       @property({
         attribute: 'all-attr',
         hasChanged,
         converter: {fromAttribute, toAttribute},
         reflect: true,
       })
-      all = 10;
+      accessor all = 10;
 
       updateCount = 0;
 
@@ -120,11 +120,11 @@ suite('@property', () => {
       _foo?: number;
       updatedContent?: number;
 
-      @property({reflect: true, type: Number})
       get foo() {
         return this._foo as number;
       }
 
+      @property({reflect: true, type: Number})
       set foo(v: number) {
         const old = this.foo;
         this._foo = v;
@@ -155,17 +155,17 @@ suite('@property', () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends ReactiveElement {
-      @property({hasChanged}) hasChanged = 10;
-      @property({converter: fromAttribute}) fromAttribute = 1;
+      @property({hasChanged}) accessor hasChanged = 10;
+      @property({converter: fromAttribute}) accessor fromAttribute = 1;
       @property({reflect: true, converter: {toAttribute}})
-      toAttribute = 1;
+      accessor toAttribute = 1;
       @property({
         attribute: 'all-attr',
         hasChanged,
         converter: {fromAttribute, toAttribute},
         reflect: true,
       })
-      all = 10;
+      accessor all = 10;
 
       updateCount = 0;
 
@@ -256,7 +256,7 @@ suite('@property', () => {
         return {foo: {type: Number, reflect: true}};
       }
 
-      declare foo: number;
+      accessor foo: number;
 
       constructor() {
         super();
@@ -269,7 +269,7 @@ suite('@property', () => {
     const el1 = new E();
 
     class F extends E {
-      @property({type: Number}) override foo = 2;
+      @property({type: Number}) override accessor foo = 2;
     }
 
     customElements.define(generateElementName(), F);
@@ -304,7 +304,7 @@ suite('@property', () => {
     }
 
     class F extends E {
-      @property() bar = 'bar';
+      @property() accessor bar = 'bar';
     }
     customElements.define(generateElementName(), F);
     const el = new F();
@@ -378,9 +378,9 @@ suite('@property', () => {
         type: Number,
         validator: (value: number) => Math.min(10, Math.max(value, 0)),
       })
-      foo = 5;
+      accessor foo = 5;
 
-      @property({}) bar = 'bar';
+      @property({}) accessor bar = 'bar';
 
       _observedZot?: any;
 
@@ -392,7 +392,7 @@ suite('@property', () => {
           this._observedZot = {value: this.zot, oldValue};
         },
       } as PropertyDeclaration)
-      zot = '';
+      accessor zot = '';
 
       declare zot2: string;
       declare foo2: number;

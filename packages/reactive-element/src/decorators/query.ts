@@ -11,10 +11,7 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
-
-const DEV_MODE = true;
+import type {ReactiveElement} from '../reactive-element.js';
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -41,32 +38,24 @@ const DEV_MODE = true;
  * ```
  * @category Decorator
  */
-export function query(selector: string, cache?: boolean) {
-  return decorateProperty({
-    descriptor: (name: PropertyKey) => {
-      const descriptor = {
-        get(this: ReactiveElement) {
-          return this.renderRoot?.querySelector(selector) ?? null;
-        },
-        enumerable: true,
-        configurable: true,
-      };
-      if (cache) {
-        const key = DEV_MODE
-          ? Symbol(`${String(name)} (@query() cache)`)
-          : Symbol();
-        descriptor.get = function (this: ReactiveElement) {
-          if (
-            (this as unknown as {[key: symbol]: Element | null})[key] ===
-            undefined
-          ) {
-            (this as unknown as {[key: symbol]: Element | null})[key] =
-              this.renderRoot?.querySelector(selector) ?? null;
+export const query =
+  (selector: string, cache?: boolean) =>
+  <C extends ReactiveElement, V extends Element | null>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    {access: {get, set}}: ClassAccessorDecoratorContext<C, V>
+  ) => {
+    return {
+      get(this: C) {
+        if (cache) {
+          const result = get(this);
+          if (result === undefined) {
+            const result = this.renderRoot?.querySelector(selector) ?? null;
+            // TODO: remove cast
+            set(this, result as V);
           }
-          return (this as unknown as {[key: symbol]: Element | null})[key];
-        };
-      }
-      return descriptor;
-    },
-  });
-}
+          return result;
+        }
+        return this.renderRoot?.querySelector(selector) ?? null;
+      },
+    };
+  };
