@@ -18,7 +18,8 @@
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["@types/mocha"]
   },
   "include": ["src/**/*"],
   "exclude": ["src/index.ts", "src/lib/utils.ts"]

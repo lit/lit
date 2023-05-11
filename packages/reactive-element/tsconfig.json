@@ -24,7 +24,8 @@
     "noImplicitOverride": true,
     "paths": {
       "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
-    }
+    },
+    "types": ["@types/chai", "@types/mocha", "node"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",

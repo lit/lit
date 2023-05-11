@@ -22,7 +22,8 @@
     "experimentalDecorators": true,
     "paths": {
       "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
-    }
+    },
+    "types": ["@types/mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []

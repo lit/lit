@@ -23,7 +23,8 @@
     "noImplicitOverride": true,
     "paths": {
       "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
-    }
+    },
+    "types": ["@types/mocha", "node", "@types/trusted-types"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",

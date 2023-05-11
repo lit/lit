@@ -33,7 +33,7 @@
       ]
     },
     "build:ts": {
-      "command": "tsc --build --pretty",
+      "command": "tsc --version && tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
