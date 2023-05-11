@@ -323,5 +323,26 @@ if (DEV_MODE) {
         assert.equal(warnings.length, 1);
       });
     });
+
+    test('Warns on async performUpdate', async () => {
+      class C extends ReactiveElement {
+        // It would be nice if we could get TypeScript to warn here, but
+        // unfortunately anything is assignable to `void`. A return type of
+        // `undefined` is not possible in the superclass because `void` is not
+        // assignable to `undefined`.
+        override async performUpdate() {
+          super.performUpdate();
+        }
+      }
+      customElements.define(generateElementName(), C);
+      const el = new C();
+      container.append(el);
+
+      assert.equal(warnings.length, 0);
+      await el.updateComplete;
+
+      assert.equal(warnings.length, 1);
+      assert.include(warnings[0], 'async-perform-update');
+    });
   });
 }
