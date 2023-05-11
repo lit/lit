@@ -1,5 +1,15 @@
 # @lit-labs/virtualizer
 
+## 2.0.2
+
+### Patch Changes
+
+- [#3877](https://github.com/lit/lit/pull/3877) [`4418bed5`](https://github.com/lit/lit/commit/4418bed55635c8340c335c3be32895899fa703f4) - Converted a benign innerHTML assignment to textContent.
+
+- [#3884](https://github.com/lit/lit/pull/3884) [`2684dd65`](https://github.com/lit/lit/commit/2684dd6554a0ecb6ab2561b91488075fc9db9397) - Added license headers to files.
+
+- [#3874](https://github.com/lit/lit/pull/3874) [`d32eec70`](https://github.com/lit/lit/commit/d32eec70c7eac08746dd4fb4378050b20bb724ba) - Fix [#3873: visibilityChange event not fired if other state (e.g. range) hasn't also changed](https://github.com/lit/lit/issues/3873)
+
 ## 2.0.1
 
 ### Patch Changes
