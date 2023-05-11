@@ -474,10 +474,10 @@ export abstract class ReactiveElement
    */
   static addInitializer(initializer: Initializer) {
     this.finalize();
-    (this._initializers ??= []).push(initializer);
+    (this.__initializers ??= []).push(initializer);
   }
 
-  static _initializers?: Initializer[];
+  private static __initializers?: Initializer[];
 
   /*
    * Due to closure compiler ES6 compilation bugs, @nocollapse is required on
@@ -750,8 +750,8 @@ export abstract class ReactiveElement
     // Create own set of initializers for this class if any exist on the
     // superclass and copy them down. Note, for a small perf boost, avoid
     // creating initializers unless needed.
-    if (superCtor._initializers !== undefined) {
-      this._initializers = [...superCtor._initializers];
+    if (superCtor.__initializers !== undefined) {
+      this.__initializers = [...superCtor.__initializers];
     }
     this.elementProperties = new Map(superCtor.elementProperties);
     // initialize Map populated in observedAttributes
@@ -852,7 +852,9 @@ export abstract class ReactiveElement
   private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
-  private __updatePromise!: Promise<boolean>;
+  private __updatePromise: Promise<boolean> = new Promise<boolean>(
+    (res) => (this.enableUpdating = res)
+  );
 
   /**
    * True if there is a pending update as a result of calling `requestUpdate()`.
@@ -874,7 +876,7 @@ export abstract class ReactiveElement
    *
    * @internal
    */
-  _$changedProperties!: PropertyValues;
+  _$changedProperties: PropertyValues = new Map();
 
   /**
    * Map with keys of properties that should be reflected when updated.
@@ -893,25 +895,11 @@ export abstract class ReactiveElement
 
   constructor() {
     super();
-    this._initialize();
-  }
-
-  /**
-   * Internal only override point for customizing work done when elements
-   * are constructed.
-   *
-   * @internal
-   */
-  _initialize() {
-    this.__updatePromise = new Promise<boolean>(
-      (res) => (this.enableUpdating = res)
-    );
-    this._$changedProperties = new Map();
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
-    (this.constructor as typeof ReactiveElement)._initializers?.forEach((i) =>
+    (this.constructor as typeof ReactiveElement).__initializers?.forEach((i) =>
       i(this)
     );
   }
