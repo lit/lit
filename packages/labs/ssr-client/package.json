@@ -130,7 +130,7 @@
   "dependencies": {
     "@lit/reactive-element": "^1.0.0",
     "lit": "^2.0.0",
-    "lit-html": "^2.0.0"
+    "lit-html": "^2.7.1"
   },
   "publishConfig": {
     "access": "public"
