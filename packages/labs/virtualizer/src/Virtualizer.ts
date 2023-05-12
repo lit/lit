@@ -5,21 +5,27 @@
  */
 
 import {
-  ItemBox,
+  ElementLayoutInfo,
   Margins,
   LayoutConfigValue,
   ChildPositions,
-  ChildMeasurements,
+  ChildLayoutInfo,
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
   StateChangedMessage,
-  Size,
   InternalRange,
-  MeasureChildFunction,
+  EditElementLayoutInfoFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
   LayoutHostMessage,
+  writingMode,
+  direction,
+  VirtualizerSize,
+  VirtualizerSizeValue,
+  fixedSizeDimensionCapitalized,
+  LogicalCoordinates,
+  fixedInsetLabel,
 } from './layouts/shared/Layout.js';
 import {
   RangeChangedEvent,
@@ -110,13 +116,13 @@ export class Virtualizer {
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: Size | null = null;
+  private _virtualizerSize: VirtualizerSize | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
    * Provided by layout.
    */
-  private _scrollError: {left: number; top: number} | null = null;
+  private _scrollError: LogicalCoordinates | null = null;
 
   /**
    * A list of the positions (top, left) of the children in the current range.
@@ -124,15 +130,13 @@ export class Virtualizer {
   private _childrenPos: ChildPositions | null = null;
 
   // TODO: (graynorton): type
-  private _childMeasurements: ChildMeasurements | null = null;
+  private _childLayoutInfo: ChildLayoutInfo | null = null;
 
-  private _toBeMeasured: Map<HTMLElement, unknown> = new Map();
+  private _rangeChanged = false;
 
-  private _rangeChanged = true;
+  private _itemsChanged = false;
 
-  private _itemsChanged = true;
-
-  private _visibilityChanged = true;
+  private _visibilityChanged = false;
 
   /**
    * The HTMLElement that hosts the virtualizer. Set by hostElement.
@@ -154,6 +158,8 @@ export class Virtualizer {
    * Resize observer attached to children.
    */
   private _childrenRO: ResizeObserver | null = null;
+
+  private _windowResizeCallback: (() => void) | null = null;
 
   private _mutationObserver: MutationObserver | null = null;
 
@@ -203,6 +209,10 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
+  private _writingMode: writingMode = 'unknown';
+  // private _contextWritingMode: writingMode = 'unknown';
+  private _direction: direction = 'unknown';
+
   protected _scheduled = new WeakSet();
 
   /**
@@ -210,10 +220,9 @@ export class Virtualizer {
    * measured, and their dimensions passed to this callback. Use it to layout
    * children as needed.
    */
-  protected _measureCallback: ((sizes: ChildMeasurements) => void) | null =
-    null;
+  protected _measureCallback: ((sizes: ChildLayoutInfo) => void) | null = null;
 
-  protected _measureChildOverride: MeasureChildFunction | null = null;
+  protected _editElementLayoutInfo: EditElementLayoutInfoFunction | null = null;
 
   /**
    * State for `layoutComplete` promise
@@ -270,11 +279,12 @@ export class Virtualizer {
       this._finishDOMUpdate.bind(this)
     );
     this._hostElementRO = new _ResizeObserver!(() =>
-      this._hostElementSizeChanged()
+      this._viewportSizeChanged()
     );
     this._childrenRO = new _ResizeObserver!(
       this._childrenSizeChanged.bind(this)
     );
+    this._windowResizeCallback = this._viewportSizeChanged.bind(this);
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -315,6 +325,7 @@ export class Virtualizer {
       this._hostElementRO!.observe(ancestor);
     });
     this._hostElementRO!.observe(this._scrollerController!.element);
+    window.addEventListener('resize', this._windowResizeCallback!);
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._scrollEventListeners.forEach((target) =>
       target.addEventListener('scroll', this, this._scrollEventListenerOptions)
@@ -334,6 +345,7 @@ export class Virtualizer {
     this._scrollerController = this._scrollerController!.detach(this) || null;
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();
+    window.removeEventListener('resize', this._windowResizeCallback!);
     this._childrenRO!.disconnect();
     this._rejectLayoutCompletePromise('disconnected');
   }
@@ -441,12 +453,11 @@ export class Virtualizer {
       config
     );
 
-    if (
-      this._layout.measureChildren &&
-      typeof this._layout.updateItemSizes === 'function'
-    ) {
-      if (typeof this._layout.measureChildren === 'function') {
-        this._measureChildOverride = this._layout.measureChildren;
+    if (typeof this._layout.updateItemSizes === 'function') {
+      if (this._layout.editElementLayoutInfo) {
+        this._editElementLayoutInfo = this._layout.editElementLayoutInfo.bind(
+          this._layout
+        );
       }
       this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
@@ -485,30 +496,40 @@ export class Virtualizer {
     return null;
   }
 
-  private _measureChildren(): void {
-    const mm: ChildMeasurements = {};
+  private _readLayoutInfo(): void {
+    this._childLayoutInfo = new Map();
     const children = this._children;
-    const fn = this._measureChildOverride || this._measureChild;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(this, child, this._items[idx]);
-      }
+      this._childLayoutInfo.set(idx, this._readElementLayoutInfo(child, idx));
     }
-    this._childMeasurements = mm;
     this._schedule(this._updateLayout);
-    this._toBeMeasured.clear();
   }
 
   /**
    * Returns the width, height, and margins of the given child.
    */
-  _measureChild(element: Element): ItemBox {
+  _readElementLayoutInfo(element: Element, index: number): ElementLayoutInfo {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
-    return Object.assign({width, height}, getMargins(element));
+    const blockSize = this._writingMode[0] === 'h' ? height : width;
+    const inlineSize = this._writingMode[0] === 'h' ? width : height;
+    const style = getComputedStyle(element);
+    const writingMode = style.writingMode as writingMode;
+    const direction = style.direction as direction;
+    const flipAxis = writingMode[0] !== this._writingMode[0];
+    const reverseDirection = direction !== this._direction;
+    const baselineInfo = Object.assign(
+      {writingMode, direction},
+      {blockSize, inlineSize},
+      getMargins(element, flipAxis, reverseDirection)
+    );
+    const item = this._items[index];
+    return this._editElementLayoutInfo
+      ? this._editElementLayoutInfo({element, item, index, baselineInfo})
+      : baselineInfo;
   }
 
   protected async _schedule(method: Function): Promise<void> {
@@ -521,7 +542,7 @@ export class Virtualizer {
   }
 
   async _updateDOM(state: StateChangedMessage) {
-    this._scrollSize = state.scrollSize;
+    this._virtualizerSize = state.virtualizerSize;
     this._adjustRange(state.range);
     this._childrenPos = state.childPositions;
     this._scrollError = state.scrollError || null;
@@ -533,6 +554,7 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
+      this._itemsChanged = false;
     } else {
       this._finishDOMUpdate();
     }
@@ -541,8 +563,8 @@ export class Virtualizer {
   _finishDOMUpdate() {
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._checkScrollIntoViewTarget(this._childrenPos);
+    this._sizeHostElement(this._virtualizerSize);
     this._positionChildren(this._childrenPos);
-    this._sizeHostElement(this._scrollSize);
     this._correctScrollError();
     if (this._benchmarkStart && 'mark' in window.performance) {
       window.performance.mark('uv-end');
@@ -553,12 +575,11 @@ export class Virtualizer {
     if (this._layout) {
       this._layout!.items = this._items;
       this._updateView();
-      if (this._childMeasurements !== null) {
+      if (this._childLayoutInfo !== null) {
         // If the layout has been changed, we may have measurements but no callback
         if (this._measureCallback) {
-          this._measureCallback(this._childMeasurements);
+          this._measureCallback(this._childLayoutInfo);
         }
-        this._childMeasurements = null;
       }
       this._layout!.reflowIfNeeded();
       if (this._benchmarkStart && 'mark' in window.performance) {
@@ -627,50 +648,154 @@ export class Virtualizer {
     const scrollingElement = this._scrollerController?.element;
     const layout = this._layout;
 
-    if (hostElement && scrollingElement && layout) {
-      let top, left, bottom, right;
+    if (hostElement && hostElement.isConnected && scrollingElement && layout) {
+      const hostStyle = getComputedStyle(hostElement);
+
+      const direction = (this._direction = hostStyle.direction as direction);
+      const writingMode = (this._writingMode =
+        hostStyle.writingMode as writingMode);
+
+      let insetBlockStart: number,
+        insetBlockEnd: number,
+        insetInlineStart: number,
+        insetInlineEnd: number,
+        blockSizeLabel: fixedSizeDimensionCapitalized,
+        inlineSizeLabel: fixedSizeDimensionCapitalized,
+        blockStartLabel: fixedInsetLabel,
+        blockEndLabel: fixedInsetLabel,
+        inlineStartLabel: fixedInsetLabel,
+        inlineEndLabel: fixedInsetLabel,
+        blockScrollPosition: (el: Element) => number,
+        inlineScrollPosition: (el: Element) => number,
+        reverseBlockCoordinates = false,
+        reverseInlineCoordinates = false;
+
+      if (writingMode === 'horizontal-tb') {
+        blockSizeLabel = 'Height';
+        inlineSizeLabel = 'Width';
+        blockStartLabel = 'top';
+        blockEndLabel = 'bottom';
+        blockScrollPosition = (el: Element) => el.scrollTop;
+        if (direction === 'ltr') {
+          inlineStartLabel = 'left';
+          inlineEndLabel = 'right';
+          inlineScrollPosition = (el: Element) => el.scrollLeft;
+        } else {
+          inlineStartLabel = 'right';
+          inlineEndLabel = 'left';
+          inlineScrollPosition = (el: Element) => -el.scrollLeft;
+          reverseInlineCoordinates = true;
+        }
+      } else {
+        blockSizeLabel = 'Width';
+        inlineSizeLabel = 'Height';
+        if (writingMode === 'vertical-lr') {
+          blockStartLabel = 'left';
+          blockEndLabel = 'right';
+          blockScrollPosition = (el: Element) => el.scrollLeft;
+        } else {
+          blockStartLabel = 'right';
+          blockEndLabel = 'left';
+          blockScrollPosition = (el: Element) => -el.scrollLeft;
+          reverseBlockCoordinates = true;
+        }
+        if (direction === 'ltr') {
+          inlineStartLabel = 'top';
+          inlineEndLabel = 'bottom';
+          inlineScrollPosition = (el: Element) => el.scrollTop;
+        } else {
+          inlineStartLabel = 'bottom';
+          inlineEndLabel = 'top';
+          inlineScrollPosition = (el: Element) => -el.scrollTop;
+          reverseInlineCoordinates = true;
+        }
+      }
 
       const hostElementBounds = hostElement.getBoundingClientRect();
 
-      top = 0;
-      left = 0;
-      bottom = window.innerHeight;
-      right = window.innerWidth;
+      insetBlockStart = reverseBlockCoordinates
+        ? window[`inner${blockSizeLabel}`]
+        : 0;
+      insetInlineStart = reverseInlineCoordinates
+        ? window[`inner${inlineSizeLabel}`]
+        : 0;
+      insetBlockEnd = reverseBlockCoordinates
+        ? 0
+        : window[`inner${blockSizeLabel}`];
+      insetInlineEnd = reverseInlineCoordinates
+        ? 0
+        : window[`inner${inlineSizeLabel}`];
 
       const ancestorBounds = this._clippingAncestors.map((ancestor) =>
         ancestor.getBoundingClientRect()
       );
       ancestorBounds.unshift(hostElementBounds);
 
+      const blockMax = reverseBlockCoordinates ? Math.min : Math.max;
+      const blockMin = reverseBlockCoordinates ? Math.max : Math.min;
+      const inlineMax = reverseInlineCoordinates ? Math.min : Math.max;
+      const inlineMin = reverseInlineCoordinates ? Math.max : Math.min;
+
       for (const bounds of ancestorBounds) {
-        top = Math.max(top, bounds.top);
-        left = Math.max(left, bounds.left);
-        bottom = Math.min(bottom, bounds.bottom);
-        right = Math.min(right, bounds.right);
+        insetBlockStart = blockMax(insetBlockStart, bounds[blockStartLabel]);
+        insetInlineStart = inlineMax(
+          insetInlineStart,
+          bounds[inlineStartLabel]
+        );
+        insetBlockEnd = blockMin(insetBlockEnd, bounds[blockEndLabel]);
+        insetInlineEnd = inlineMin(insetInlineEnd, bounds[inlineEndLabel]);
       }
 
       const scrollingElementBounds = scrollingElement.getBoundingClientRect();
 
-      const offsetWithinScroller = {
-        left: hostElementBounds.left - scrollingElementBounds.left,
-        top: hostElementBounds.top - scrollingElementBounds.top,
+      layout.offsetWithinScroller = {
+        inline:
+          hostElementBounds[inlineStartLabel] -
+          scrollingElementBounds[inlineStartLabel],
+        block:
+          hostElementBounds[blockStartLabel] -
+          scrollingElementBounds[blockStartLabel],
       };
 
-      const totalScrollSize = {
-        width: scrollingElement.scrollWidth,
-        height: scrollingElement.scrollHeight,
+      layout.scrollSize = {
+        inlineSize: scrollingElement[`scroll${inlineSizeLabel}`],
+        blockSize: scrollingElement[`scroll${blockSizeLabel}`],
       };
 
-      const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+      layout.viewportScroll = {
+        inline: reverseInlineCoordinates
+          ? hostElementBounds[inlineStartLabel] -
+            insetInlineStart +
+            inlineScrollPosition(hostElement)
+          : insetInlineStart -
+            hostElementBounds[inlineStartLabel] +
+            inlineScrollPosition(hostElement),
+        block: reverseBlockCoordinates
+          ? hostElementBounds[blockStartLabel] -
+            insetBlockStart +
+            blockScrollPosition(hostElement)
+          : insetBlockStart -
+            hostElementBounds[blockStartLabel] +
+            blockScrollPosition(hostElement),
+      };
 
-      const height = Math.max(1, bottom - top);
-      const width = Math.max(1, right - left);
+      layout.viewportSize = {
+        blockSize: Math.max(
+          1,
+          reverseBlockCoordinates
+            ? insetBlockStart - insetBlockEnd
+            : insetBlockEnd - insetBlockStart
+        ),
+        inlineSize: Math.max(
+          1,
+          reverseInlineCoordinates
+            ? insetInlineStart - insetInlineEnd
+            : insetInlineEnd - insetInlineStart
+        ),
+      };
 
-      layout.viewportSize = {width, height};
-      layout.viewportScroll = {top: scrollTop, left: scrollLeft};
-      layout.totalScrollSize = totalScrollSize;
-      layout.offsetWithinScroller = offsetWithinScroller;
+      layout.writingMode = writingMode;
+      layout.direction = this._direction;
     }
   }
 
@@ -678,20 +803,42 @@ export class Virtualizer {
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeHostElement(size?: Size | null) {
-    // Some browsers seem to crap out if the host element gets larger than
-    // a certain size, so we clamp it here (this value based on ad hoc
-    // testing in Chrome / Safari / Firefox Mac)
-    const max = 8200000;
-    const h = size && size.width !== null ? Math.min(max, size.width) : 0;
-    const v = size && size.height !== null ? Math.min(max, size.height) : 0;
+  private _sizeHostElement(size: VirtualizerSize | null) {
+    function cssScrollSizeValue(
+      size: VirtualizerSizeValue,
+      scroller = false
+    ): string {
+      if (typeof size === 'number') {
+        return `${size}px`;
+      }
+      if (scroller) {
+        return size[0] === 'min' ? `${size[1]}px` : '0px';
+      }
+      return `${size[0]}(100%, ${size[1]}px)`;
+    }
+    let inline: string;
+    let block: string;
+    if (size === null) {
+      inline = block = '0px';
+    } else {
+      inline = cssScrollSizeValue(size.inlineSize, this._isScroller);
+      block = cssScrollSizeValue(size.blockSize, this._isScroller);
+    }
 
     if (this._isScroller) {
-      this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+      let h: string, v: string;
+      if (this._writingMode === 'horizontal-tb') {
+        v = block;
+        h = this._direction === 'ltr' ? inline : `-${inline}`;
+      } else {
+        h = this._writingMode === 'vertical-lr' ? block : `-${block}`;
+        v = this._direction === 'ltr' ? inline : `-${inline}`;
+      }
+      this._getSizer().style.transform = `translate(${h}, ${v})`;
     } else {
       const style = this._hostElement!.style;
-      (style.minWidth as string | null) = h ? `${h}px` : '100%';
-      (style.minHeight as string | null) = v ? `${v}px` : '100%';
+      style.minInlineSize = inline;
+      style.minBlockSize = block;
     }
   }
 
@@ -700,25 +847,53 @@ export class Virtualizer {
    * pos.
    */
   private _positionChildren(pos: ChildPositions | null) {
-    if (pos) {
-      pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
-        const child = this._children[index - this._first];
-        if (child) {
-          child.style.position = 'absolute';
-          child.style.boxSizing = 'border-box';
-          child.style.transform = `translate(${left}px, ${top}px)`;
-          if (width !== undefined) {
-            child.style.width = width + 'px';
+    if (pos && pos.size > 0) {
+      const children = this._children;
+      pos.forEach(
+        ({insetBlockStart, insetInlineStart, blockSize, inlineSize}, index) => {
+          const child = children[index - this._first];
+          if (child) {
+            child.style.position = 'absolute';
+            child.style.boxSizing = 'border-box';
+
+            const childLayoutInfo = this._childLayoutInfo?.get(index);
+            if (childLayoutInfo) {
+              if (childLayoutInfo.writingMode[0] !== this._writingMode[0]) {
+                const oInlineSize = inlineSize;
+                inlineSize = blockSize;
+                blockSize = oInlineSize;
+              }
+            }
+
+            let left, top;
+            if (this._writingMode === 'horizontal-tb') {
+              top = insetBlockStart;
+              left =
+                this._direction === 'ltr'
+                  ? insetInlineStart
+                  : -insetInlineStart;
+            } else {
+              left =
+                this._writingMode === 'vertical-lr'
+                  ? insetBlockStart
+                  : -insetBlockStart;
+              top =
+                this._direction === 'ltr'
+                  ? insetInlineStart
+                  : -insetInlineStart;
+            }
+
+            child.style.transform = `translate(${left}px, ${top}px)`;
+
+            if (inlineSize !== undefined) {
+              child.style.inlineSize = inlineSize + 'px';
+            }
+            if (blockSize !== undefined) {
+              child.style.blockSize = blockSize + 'px';
+            }
           }
-          if (height !== undefined) {
-            child.style.height = height + 'px';
-          }
-          (child.style.left as string | null) =
-            xOffset === undefined ? null : xOffset + 'px';
-          (child.style.top as string | null) =
-            yOffset === undefined ? null : yOffset + 'px';
         }
-      });
+      );
     }
   }
 
@@ -739,11 +914,13 @@ export class Virtualizer {
   private _correctScrollError() {
     if (this._scrollError) {
       const {scrollTop, scrollLeft} = this._scrollerController!;
-      const {top, left} = this._scrollError;
+      const {block, inline} = this._scrollError;
       this._scrollError = null;
       this._scrollerController!.correctScrollError({
-        top: scrollTop - top,
-        left: scrollLeft - left,
+        top:
+          scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline),
+        left:
+          scrollLeft - (this._writingMode === 'horizontal-tb' ? inline : block),
       });
     }
   }
@@ -860,7 +1037,7 @@ export class Virtualizer {
    * Render and update the view at the next opportunity with the given
    * hostElement size.
    */
-  private _hostElementSizeChanged() {
+  private _viewportSizeChanged() {
     this._schedule(this._updateLayout);
   }
 
@@ -876,35 +1053,51 @@ export class Virtualizer {
   // update cycle that results in changes to physical items, and we also
   // end up here if one or more children change size independently of
   // the virtualizer update cycle.
-  private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
-    // Only measure if the layout requires it
-    if (this._layout?.measureChildren) {
-      for (const change of changes) {
-        this._toBeMeasured.set(
-          change.target as HTMLElement,
-          change.contentRect
-        );
-      }
-      this._measureChildren();
-    }
-    // If this is the end of an update cycle, we need to reset some
-    // internal state. This should be a harmless no-op if we're handling
-    // an out-of-cycle ResizeObserver callback, so we don't need to
-    // distinguish between the two cases.
+  private _childrenSizeChanged() {
+    this._readLayoutInfo();
     this._scheduleLayoutComplete();
-    this._itemsChanged = false;
-    this._rangeChanged = false;
   }
 }
 
-function getMargins(el: Element): Margins {
+function getMargins(
+  el: Element,
+  flipAxis = false,
+  reverseDirection = false
+): Margins {
   const style = window.getComputedStyle(el);
-  return {
-    marginTop: getMarginValue(style.marginTop),
-    marginRight: getMarginValue(style.marginRight),
-    marginBottom: getMarginValue(style.marginBottom),
-    marginLeft: getMarginValue(style.marginLeft),
-  };
+  if (flipAxis) {
+    if (reverseDirection) {
+      return {
+        marginBlockStart: getMarginValue(style.marginInlineEnd),
+        marginBlockEnd: getMarginValue(style.marginInlineStart),
+        marginInlineStart: getMarginValue(style.marginBlockEnd),
+        marginInlineEnd: getMarginValue(style.marginBlockStart),
+      };
+    } else {
+      return {
+        marginBlockStart: getMarginValue(style.marginInlineStart),
+        marginBlockEnd: getMarginValue(style.marginInlineEnd),
+        marginInlineStart: getMarginValue(style.marginBlockStart),
+        marginInlineEnd: getMarginValue(style.marginBlockEnd),
+      };
+    }
+  } else {
+    if (reverseDirection) {
+      return {
+        marginBlockStart: getMarginValue(style.marginBlockEnd),
+        marginBlockEnd: getMarginValue(style.marginBlockStart),
+        marginInlineStart: getMarginValue(style.marginInlineEnd),
+        marginInlineEnd: getMarginValue(style.marginInlineStart),
+      };
+    } else {
+      return {
+        marginBlockStart: getMarginValue(style.marginBlockStart),
+        marginBlockEnd: getMarginValue(style.marginBlockEnd),
+        marginInlineStart: getMarginValue(style.marginInlineStart),
+        marginInlineEnd: getMarginValue(style.marginInlineEnd),
+      };
+    }
+  }
 }
 
 function getMarginValue(value: string): number {

@@ -5,15 +5,11 @@
  */
 
 import {SizeCache} from './shared/SizeCache.js';
-import {BaseLayout, dim1} from './shared/BaseLayout.js';
+import {BaseLayout} from './shared/BaseLayout.js';
 import {
   Positions,
-  Size,
-  Margins,
-  margin,
-  ScrollDirection,
-  offsetAxis,
-  ChildMeasurements,
+  LogicalSize,
+  ChildLayoutInfo,
   BaseLayoutConfig,
   LayoutHostSink,
 } from './shared/Layout.js';
@@ -44,18 +40,6 @@ export const flow: FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) =>
     config
   );
 
-function leadingMargin(direction: ScrollDirection): margin {
-  return direction === 'horizontal' ? 'marginLeft' : 'marginTop';
-}
-
-function trailingMargin(direction: ScrollDirection): margin {
-  return direction === 'horizontal' ? 'marginRight' : 'marginBottom';
-}
-
-function offset(direction: ScrollDirection): offsetAxis {
-  return direction === 'horizontal' ? 'xOffset' : 'yOffset';
-}
-
 function collapseMargins(a: number, b: number): number {
   const m = [a, b].sort();
   return m[1] <= 0 ? Math.min(...m) : m[0] >= 0 ? Math.max(...m) : m[0] + m[1];
@@ -64,20 +48,19 @@ function collapseMargins(a: number, b: number): number {
 class MetricsCache {
   private _childSizeCache = new SizeCache();
   private _marginSizeCache = new SizeCache();
-  private _metricsCache: Map<number, Size & Margins> = new Map();
+  private _metricsCache: ChildLayoutInfo = new Map();
 
-  update(metrics: {[key: number]: Size & Margins}, direction: ScrollDirection) {
+  update(metrics: ChildLayoutInfo) {
     const marginsToUpdate: Set<number> = new Set();
-    Object.keys(metrics).forEach((key) => {
-      const k = Number(key);
-      this._metricsCache.set(k, metrics[k]);
-      this._childSizeCache.set(k, metrics[k][dim1(direction)]);
-      marginsToUpdate.add(k);
-      marginsToUpdate.add(k + 1);
+    metrics.forEach((childMetrics, key) => {
+      this._metricsCache.set(key, childMetrics);
+      this._childSizeCache.set(key, childMetrics.blockSize);
+      marginsToUpdate.add(key);
+      marginsToUpdate.add(key + 1);
     });
     for (const k of marginsToUpdate) {
-      const a = this._metricsCache.get(k)?.[leadingMargin(direction)] || 0;
-      const b = this._metricsCache.get(k - 1)?.[trailingMargin(direction)] || 0;
+      const a = this._metricsCache.get(k)?.marginBlockStart || 0;
+      const b = this._metricsCache.get(k - 1)?.marginBlockEnd || 0;
       this._marginSizeCache.set(k, collapseMargins(a, b));
     }
   }
@@ -98,12 +81,16 @@ class MetricsCache {
     return this._marginSizeCache.totalSize;
   }
 
-  getLeadingMarginValue(index: number, direction: ScrollDirection) {
-    return this._metricsCache.get(index)?.[leadingMargin(direction)] || 0;
+  getLeadingMarginValue(index: number) {
+    return this._metricsCache.get(index)?.marginBlockStart || 0;
   }
 
   getChildSize(index: number) {
     return this._childSizeCache.getSize(index);
+  }
+
+  getCrossSize(index: number) {
+    return this._metricsCache.get(index)?.inlineSize || 0;
   }
 
   getMarginSize(index: number) {
@@ -121,7 +108,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   /**
    * Initial estimate of item size
    */
-  _itemSize: Size = {width: 100, height: 100};
+  _itemSize: LogicalSize = {inlineSize: 100, blockSize: 100};
 
   /**
    * Indices of children mapped to their (position and length) in the scrolling
@@ -157,8 +144,6 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    */
   _stable = true;
 
-  private _measureChildren = true;
-
   _estimate = true;
 
   // protected _defaultConfig: BaseLayoutConfig = Object.assign({}, super._defaultConfig, {
@@ -169,16 +154,12 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   //   super(config);
   // }
 
-  get measureChildren() {
-    return this._measureChildren;
-  }
-
   /**
    * Determine the average size of all children represented in the sizes
    * argument.
    */
-  updateItemSizes(sizes: ChildMeasurements) {
-    this._metricsCache.update(sizes as Size & Margins, this.direction);
+  updateItemSizes(childLayoutInfo: ChildLayoutInfo) {
+    this._metricsCache.update(childLayoutInfo);
     // if (this._nMeasured) {
     // this._updateItemSize();
     this._scheduleReflow();
@@ -203,8 +184,13 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     return item && this._metricsCache.getChildSize(idx);
   }
 
+  _getCrossSize(idx: number): number {
+    const item = this._getPhysicalItem(idx);
+    return item ? this._metricsCache.getCrossSize(idx) : 0;
+  }
+
   _getAverageSize(): number {
-    return this._metricsCache.averageChildSize || this._itemSize[this._sizeDim];
+    return this._metricsCache.averageChildSize || this._itemSize.blockSize;
   }
 
   _estimatePosition(idx: number): number {
@@ -254,7 +240,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     if (lower <= 0) {
       return 0;
     }
-    if (upper > this._scrollSize - this._viewDim1) {
+    if (upper > this._virtualizerSize - this._viewDim1) {
       return this.items.length - 1;
     }
     return Math.max(
@@ -350,10 +336,10 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     // Determine the lower and upper bounds of the region to be
     // rendered, relative to the viewport
-    lower = this._scrollPosition - this._overhang; //leadingOverhang;
-    upper = this._scrollPosition + this._viewDim1 + this._overhang; // trailingOverhang;
+    lower = this._blockScrollPosition - this._overhang; //leadingOverhang;
+    upper = this._blockScrollPosition + this._viewDim1 + this._overhang; // trailingOverhang;
 
-    if (upper < 0 || lower > this._scrollSize) {
+    if (upper < 0 || lower > this._virtualizerSize) {
       this._clearItems();
       return;
     }
@@ -384,7 +370,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     }
 
     if (this._anchorIdx === this.items.length - 1) {
-      this._anchorPos = this._scrollSize - anchorTrailingMargin - anchorSize;
+      this._anchorPos =
+        this._virtualizerSize - anchorTrailingMargin - anchorSize;
     }
 
     // Anchor might be outside bounds, so prefer correcting the error and keep
@@ -400,7 +387,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     }
 
     if (anchorErr) {
-      this._scrollPosition -= anchorErr;
+      this._blockScrollPosition -= anchorErr;
       lower -= anchorErr;
       upper -= anchorErr;
       this._scrollError += anchorErr;
@@ -411,6 +398,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._first = this._last = this._anchorIdx;
     this._physicalMin = this._anchorPos - anchorLeadingMargin;
     this._physicalMax = this._anchorPos + anchorSize + anchorTrailingMargin;
+
+    let crossSize = this._getCrossSize(this._anchorIdx);
 
     while (this._physicalMin > lower && this._first > 0) {
       let size = this._getSize(--this._first);
@@ -426,6 +415,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._physicalMin -= size;
       const pos = this._physicalMin;
       items.set(this._first, {pos, size});
+      crossSize = Math.max(crossSize, this._getCrossSize(this._first));
       this._physicalMin -= margin;
       if (this._stable === false && this._estimate === false) {
         break;
@@ -445,11 +435,14 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       }
       const pos = this._physicalMax;
       items.set(this._last, {pos, size});
+      crossSize = Math.max(crossSize, this._getCrossSize(this._last));
       this._physicalMax += size + margin;
       if (!this._stable && !this._estimate) {
         break;
       }
     }
+
+    this._crossSize = crossSize; // || null;
 
     // This handles the cases where we were relying on estimated sizes.
     const extentErr = this._calculateError();
@@ -457,7 +450,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._physicalMin -= extentErr;
       this._physicalMax -= extentErr;
       this._anchorPos -= extentErr;
-      this._scrollPosition -= extentErr;
+      this._blockScrollPosition -= extentErr;
       items.forEach((item) => (item.pos -= extentErr));
       this._scrollError += extentErr;
     }
@@ -475,11 +468,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     } else if (this._physicalMin <= 0) {
       return this._physicalMin - this._first * this._delta;
     } else if (this._last === this.items.length - 1) {
-      return this._physicalMax - this._scrollSize;
-    } else if (this._physicalMax >= this._scrollSize) {
+      return this._physicalMax - this._virtualizerSize;
+    } else if (this._physicalMax >= this._virtualizerSize) {
       return (
         this._physicalMax -
-        this._scrollSize +
+        this._virtualizerSize +
         (this.items.length - 1 - this._last) * this._delta
       );
     }
@@ -503,9 +496,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._stable = true;
   }
 
-  _updateScrollSize() {
+  _updateVirtualizerSize() {
     const {averageMarginSize} = this._metricsCache;
-    this._scrollSize = Math.max(
+    this._virtualizerSize = Math.max(
       1,
       this.items.length * (averageMarginSize + this._getAverageSize()) +
         averageMarginSize
@@ -525,24 +518,23 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * Returns the top and left positioning of the item at idx.
    */
   _getItemPosition(idx: number): Positions {
+    const marginOffset =
+      this._metricsCache.getLeadingMarginValue(idx) ??
+      this._metricsCache.averageMarginSize;
     return {
-      [this._positionDim]: this._getPosition(idx),
-      [this._secondaryPositionDim]: 0,
-      [offset(this.direction)]: -(
-        this._metricsCache.getLeadingMarginValue(idx, this.direction) ??
-        this._metricsCache.averageMarginSize
-      ),
+      insetBlockStart: this._getPosition(idx) - marginOffset,
+      insetInlineStart: 0,
     } as Positions;
   }
 
   /**
    * Returns the height and width of the item at idx.
    */
-  _getItemSize(idx: number): Size {
+  _getItemSize(idx: number): LogicalSize {
     return {
-      [this._sizeDim]: this._getSize(idx) || this._getAverageSize(),
-      [this._secondarySizeDim]: this._itemSize[this._secondarySizeDim],
-    } as Size;
+      blockSize: this._getSize(idx) || this._getAverageSize(),
+      inlineSize: this._itemSize.inlineSize,
+    } as LogicalSize;
   }
 
   _viewDim2Changed() {

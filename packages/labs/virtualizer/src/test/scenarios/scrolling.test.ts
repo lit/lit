@@ -11,22 +11,26 @@ import {
   VirtualizerFixtureOptions,
   observeScroll,
 } from '../virtualizer-test-utilities.js';
-import {BaseLayoutConfig} from '../../layouts/shared/Layout.js';
+// import {BaseLayoutConfig} from '../../layouts/shared/Layout.js';
+
+// TODO: Rewrite these tests to reflect the fact that 'direction' is no longer a thing
 
 type Coordinate = 'top' | 'left';
 
-function getCoordinate(fixtureOptions: VirtualizerFixtureOptions) {
-  const layout = fixtureOptions.layout as BaseLayoutConfig | undefined;
-  const direction = layout?.direction ?? 'vertical';
-  const coordinate: Coordinate = direction === 'vertical' ? 'top' : 'left';
-  const crossCoordinate: Coordinate = coordinate === 'top' ? 'left' : 'top';
+function getCoordinate(/*fixtureOptions: VirtualizerFixtureOptions*/) {
+  // const layout = fixtureOptions.layout as BaseLayoutConfig | undefined;
+  // const direction = layout?.direction ?? 'vertical';
+  const coordinate: Coordinate =
+    /*direction === 'horizontal' ? 'left' : */ 'top';
+  const crossCoordinate: Coordinate =
+    /*coordinate === 'left' ? 'top' : */ 'left';
   return {coordinate, crossCoordinate};
 }
 
 function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
   ignoreBenignErrors(beforeEach, afterEach);
 
-  const {coordinate} = getCoordinate(fixtureOptions);
+  const {coordinate} = getCoordinate(/*fixtureOptions*/);
 
   describe('smooth scrolling', () => {
     it('should take some time and end up where it is supposed to', async () => {
@@ -46,7 +50,7 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
        * known test cases we are going to issue two scrollTo calls.  This is a
        * temporary workaround.
        */
-      if (coordinate === 'left' && fixtureOptions.scroller) {
+      if (/*coordinate === 'left' && */ fixtureOptions.scroller) {
         const secondScrollResults = await observeScroll(scroller, () =>
           scroller.scrollTo({[coordinate]: 2000, behavior: 'smooth'})
         );
@@ -78,7 +82,7 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
        * known test cases we are going to issue two scrollTo calls.  This is a
        * temporary workaround.
        */
-      if (coordinate === 'left' && fixtureOptions.scroller) {
+      if (/*coordinate === 'left' && */ fixtureOptions.scroller) {
         const secondScrollResults = await observeScroll(scroller, () =>
           scroller.scrollTo({[coordinate]: 2000})
         );
@@ -147,47 +151,47 @@ describe.skip('basic scrolling functionality, via scrollTo()', () => {
     });
   });
 
-  describe('horizontal', () => {
-    describe('using <lit-virtualizer>...', () => {
-      describe('...and window scrolling', () => {
-        testBasicScrolling({
-          useDirective: false,
-          scroller: false,
-          layout: {direction: 'horizontal'},
-        });
-      });
-      describe('...and virtualizer scrolling', () => {
-        testBasicScrolling({
-          useDirective: false,
-          scroller: true,
-          layout: {direction: 'horizontal'},
-        });
-      });
-    });
+  // describe('horizontal', () => {
+  //   describe('using <lit-virtualizer>...', () => {
+  //     describe('...and window scrolling', () => {
+  //       testBasicScrolling({
+  //         useDirective: false,
+  //         scroller: false,
+  //         layout: {direction: 'horizontal'},
+  //       });
+  //     });
+  //     describe('...and virtualizer scrolling', () => {
+  //       testBasicScrolling({
+  //         useDirective: false,
+  //         scroller: true,
+  //         layout: {direction: 'horizontal'},
+  //       });
+  //     });
+  //   });
 
-    describe('using the virtualize() directive...', () => {
-      describe('...and window scrolling', () => {
-        testBasicScrolling({
-          useDirective: true,
-          scroller: false,
-          layout: {direction: 'horizontal'},
-        });
-      });
-      describe('...and virtualizer scrolling', () => {
-        testBasicScrolling({
-          useDirective: true,
-          scroller: true,
-          layout: {direction: 'horizontal'},
-        });
-      });
-    });
-  });
+  // describe('using the virtualize() directive...', () => {
+  //   describe('...and window scrolling', () => {
+  //     testBasicScrolling({
+  //       useDirective: true,
+  //       scroller: false,
+  //       layout: {direction: 'horizontal'},
+  //     });
+  //   });
+  //   describe('...and virtualizer scrolling', () => {
+  //     testBasicScrolling({
+  //       useDirective: true,
+  //       scroller: true,
+  //       layout: {direction: 'horizontal'},
+  //     });
+  //   });
+  // });
+  // });
 });
 
 function testScrollBy(fixtureOptions: VirtualizerFixtureOptions) {
   ignoreBenignErrors(beforeEach, afterEach);
 
-  const {coordinate, crossCoordinate} = getCoordinate(fixtureOptions);
+  const {coordinate, crossCoordinate} = getCoordinate(/*fixtureOptions*/);
 
   it('should work', async () => {
     const {scroller} = await virtualizerFixture(fixtureOptions);

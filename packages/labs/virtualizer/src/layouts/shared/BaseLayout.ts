@@ -8,56 +8,42 @@ import {
   Layout,
   ChildPositions,
   Positions,
-  ScrollDirection,
-  Size,
-  dimension,
-  position,
+  LogicalSize,
+  VirtualizerSize,
   PinOptions,
   ScrollToCoordinates,
   BaseLayoutConfig,
   StateChangedMessage,
   LayoutHostSink,
+  writingMode,
+  direction,
+  fixedSizeDimension,
+  ChildLayoutInfo,
+  LogicalCoordinates,
 } from './Layout.js';
 
 type UpdateVisibleIndicesOptions = {
   emit?: boolean;
 };
 
-export function dim1(direction: ScrollDirection): dimension {
-  return direction === 'horizontal' ? 'width' : 'height';
-}
-
-export function dim2(direction: ScrollDirection): dimension {
-  return direction === 'horizontal' ? 'height' : 'width';
-}
-
-export function pos1(direction: ScrollDirection): position {
-  return direction === 'horizontal' ? 'left' : 'top';
-}
-
-export function pos2(direction: ScrollDirection): position {
-  return direction === 'horizontal' ? 'top' : 'left';
-}
-
 export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The last set viewport scroll position.
    */
-  private _latestCoords: Positions = {left: 0, top: 0};
-
-  /**
-   * Scrolling direction.
-   */
-  private _direction: ScrollDirection | null = null;
+  private _latestCoords: LogicalCoordinates = {inline: 0, block: 0};
 
   /**
    * Dimensions of the viewport.
    */
-  private _viewportSize: Size = {width: 0, height: 0};
+  private _viewportSize: LogicalSize = {inlineSize: 0, blockSize: 0};
 
-  public totalScrollSize: Size = {width: 0, height: 0};
+  public scrollSize: LogicalSize = {inlineSize: 0, blockSize: 0};
 
-  public offsetWithinScroller: Positions = {left: 0, top: 0};
+  public offsetWithinScroller: LogicalCoordinates = {inline: 0, block: 0};
+
+  public writingMode: writingMode = 'unknown';
+
+  public direction: direction = 'unknown';
 
   /**
    * Flag for debouncing asynchronous reflow requests.
@@ -98,30 +84,16 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected _last = -1;
 
-  /**
-   * Length in the scrolling direction.
-   */
-  protected _sizeDim: dimension = 'height';
-
-  /**
-   * Length in the non-scrolling direction.
-   */
-  protected _secondarySizeDim: dimension = 'width';
-
-  /**
-   * Position in the scrolling direction.
-   */
-  protected _positionDim: position = 'top';
-
-  /**
-   * Position in the non-scrolling direction.
-   */
-  protected _secondaryPositionDim: position = 'left';
+  // TODO (gn): Figure out whether we want to let layouts know
+  // writingMode to keep supporting this type of functionality (see GridBaseLayout)
+  protected get _blockSizeDimension(): fixedSizeDimension {
+    return this.writingMode === 'horizontal-tb' ? 'width' : 'height';
+  }
 
   /**
    * Current scroll offset in pixels.
    */
-  protected _scrollPosition = 0;
+  protected _blockScrollPosition = 0;
 
   /**
    * Difference between current scroll offset and scroll offset calculated due
@@ -138,7 +110,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * The total (estimated) length of all items in the scrolling direction.
    */
-  protected _scrollSize = 1;
+  protected _virtualizerSize = 1;
+
+  protected _crossSize: number | null = 100;
 
   /**
    * Number of pixels beyond the viewport to still include
@@ -154,9 +128,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   private _hostSink: LayoutHostSink;
 
   protected get _defaultConfig(): C {
-    return {
-      direction: 'vertical',
-    } as C;
+    return {} as C;
   }
 
   constructor(hostSink: LayoutHostSink, config?: C) {
@@ -170,9 +142,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   get config(): C {
-    return {
-      direction: this.direction,
-    } as C;
+    return {} as C;
   }
 
   /**
@@ -190,28 +160,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   /**
-   * Primary scrolling direction.
-   */
-  get direction(): ScrollDirection {
-    return this._direction!;
-  }
-  set direction(dir) {
-    // Force it to be either horizontal or vertical.
-    dir = dir === 'horizontal' ? dir : 'vertical';
-    if (dir !== this._direction) {
-      this._direction = dir;
-      this._sizeDim = dir === 'horizontal' ? 'width' : 'height';
-      this._secondarySizeDim = dir === 'horizontal' ? 'height' : 'width';
-      this._positionDim = dir === 'horizontal' ? 'left' : 'top';
-      this._secondaryPositionDim = dir === 'horizontal' ? 'top' : 'left';
-      this._triggerReflow();
-    }
-  }
-
-  /**
    * Height and width of the viewport.
    */
-  get viewportSize(): Size {
+  get viewportSize(): LogicalSize {
     return this._viewportSize;
   }
   set viewportSize(dims) {
@@ -228,14 +179,14 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   /**
    * Scroll offset of the viewport.
    */
-  get viewportScroll(): Positions {
+  get viewportScroll(): LogicalCoordinates {
     return this._latestCoords;
   }
   set viewportScroll(coords) {
     Object.assign(this._latestCoords, coords);
-    const oldPos = this._scrollPosition;
-    this._scrollPosition = this._latestCoords[this._positionDim];
-    const change = Math.abs(oldPos - this._scrollPosition);
+    const oldPos = this._blockScrollPosition;
+    this._blockScrollPosition = this._latestCoords.block;
+    const change = Math.abs(oldPos - this._blockScrollPosition);
     if (change >= 1) {
       this._checkThresholds();
     }
@@ -269,8 +220,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   _clampScrollPosition(val: number) {
     return Math.max(
-      -this.offsetWithinScroller[this._positionDim],
-      Math.min(val, this.totalScrollSize[dim1(this.direction)] - this._viewDim1)
+      -this.offsetWithinScroller.block,
+      Math.min(val, this.scrollSize.blockSize - this._viewDim1)
     );
   }
 
@@ -292,37 +243,33 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected abstract _getActiveItems(): void;
 
-  protected abstract _getItemSize(_idx: number): Size;
+  protected abstract _getItemSize(_idx: number): LogicalSize;
 
   /**
    * Calculates (precisely or by estimating, if needed) the total length of all items in
-   * the scrolling direction, including spacing, caching the value in the `_scrollSize` field.
+   * the scrolling direction, including spacing, caching the value in the `_size` field.
    *
    * Should return a minimum value of 1 to ensure at least one item is rendered.
    * TODO (graynorton): Possibly no longer required, but leaving here until it can be verified.
    */
-  protected abstract _updateScrollSize(): void;
+  protected abstract _updateVirtualizerSize(): void;
 
   protected _updateLayout(): void {
     // Override
   }
 
-  // protected _viewDim2Changed(): void {
-  //   this._scheduleLayoutUpdate();
-  // }
-
   /**
    * The height or width of the viewport, whichever corresponds to the scrolling direction.
    */
   protected get _viewDim1(): number {
-    return this._viewportSize[this._sizeDim];
+    return this._viewportSize.blockSize;
   }
 
   /**
    * The height or width of the viewport, whichever does NOT correspond to the scrolling direction.
    */
   protected get _viewDim2(): number {
-    return this._viewportSize[this._secondarySizeDim];
+    return this._viewportSize.inlineSize;
   }
 
   protected _scheduleReflow() {
@@ -350,7 +297,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       this._updateLayout();
       this._pendingLayoutUpdate = false;
     }
-    this._updateScrollSize();
+    this._updateVirtualizerSize();
     this._setPositionFromPin();
     this._getActiveItems();
     this._updateVisibleIndices();
@@ -366,14 +313,14 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected _setPositionFromPin() {
     if (this.pin !== null) {
-      const lastScrollPosition = this._scrollPosition;
+      const lastScrollPosition = this._blockScrollPosition;
       const {index, block} = this.pin;
-      this._scrollPosition =
+      this._blockScrollPosition =
         this._calculateScrollIntoViewPosition({
           index,
           block: block || 'start',
-        }) - this.offsetWithinScroller[this._positionDim];
-      this._scrollError = lastScrollPosition - this._scrollPosition;
+        }) - this.offsetWithinScroller.block;
+      this._scrollError = lastScrollPosition - this._blockScrollPosition;
     }
   }
   /**
@@ -391,10 +338,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _calculateScrollIntoViewPosition(options: PinOptions) {
     const {block} = options;
     const index = Math.min(this.items.length, Math.max(0, options.index));
-    const itemStartPosition = this._getItemPosition(index)[this._positionDim];
+    const itemStartPosition = this._getItemPosition(index).insetBlockStart;
     let scrollPosition = itemStartPosition;
     if (block !== 'start') {
-      const itemSize = this._getItemSize(index)[this._sizeDim];
+      const itemSize = this._getItemSize(index).blockSize;
       if (block === 'center') {
         scrollPosition =
           itemStartPosition - 0.5 * this._viewDim1 + 0.5 * itemSize;
@@ -404,7 +351,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
           scrollPosition = itemEndPosition;
         } else {
           // block === 'nearest'
-          const currentScrollPosition = this._scrollPosition;
+          const currentScrollPosition = this._blockScrollPosition;
           scrollPosition =
             Math.abs(currentScrollPosition - itemStartPosition) <
             Math.abs(currentScrollPosition - itemEndPosition)
@@ -413,16 +360,16 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
         }
       }
     }
-    scrollPosition += this.offsetWithinScroller[this._positionDim];
+    scrollPosition += this.offsetWithinScroller.block;
     return this._clampScrollPosition(scrollPosition);
   }
 
   public getScrollIntoViewCoordinates(
     options: PinOptions
   ): ScrollToCoordinates {
+    const blockPosition = this.writingMode[0] === 'h' ? 'top' : 'left';
     return {
-      [this._positionDim as position]:
-        this._calculateScrollIntoViewPosition(options),
+      [blockPosition]: this._calculateScrollIntoViewPosition(options),
     } as ScrollToOptions;
   }
 
@@ -444,15 +391,19 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     const childPositions: ChildPositions = new Map();
     if (this._first !== -1 && this._last !== -1) {
       for (let idx = this._first; idx <= this._last; idx++) {
-        childPositions.set(idx, this._getItemPosition(idx));
+        const pos = this._getItemPosition(idx);
+        childPositions.set(idx, pos);
       }
     }
+
+    const minOrMax = this.writingMode.indexOf('vertical') === 0 ? 'min' : 'max';
+
     const message: StateChangedMessage = {
       type: 'stateChanged',
-      scrollSize: {
-        [this._sizeDim]: this._scrollSize,
-        [this._secondarySizeDim]: null,
-      } as Size,
+      virtualizerSize: {
+        blockSize: clampSize(this._virtualizerSize),
+        inlineSize: [minOrMax, clampSize(this._crossSize!)],
+      } as VirtualizerSize,
       range: {
         first: this._first,
         last: this._last,
@@ -463,9 +414,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     };
     if (this._scrollError) {
       message.scrollError = {
-        [this._positionDim]: this._scrollError,
-        [this._secondaryPositionDim]: 0,
-      } as Positions;
+        block: this._scrollError,
+        inline: 0,
+      };
       this._scrollError = 0;
     }
     this._hostSink(message);
@@ -485,10 +436,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     if ((this._viewDim1 === 0 && this._num > 0) || this._pin !== null) {
       this._scheduleReflow();
     } else {
-      const min = Math.max(0, this._scrollPosition - this._overhang);
+      const min = Math.max(0, this._blockScrollPosition - this._overhang);
       const max = Math.min(
-        this._scrollSize,
-        this._scrollPosition + this._viewDim1 + this._overhang
+        this._virtualizerSize,
+        this._blockScrollPosition + this._viewDim1 + this._overhang
       );
       if (this._physicalMin > min || this._physicalMax < max) {
         this._scheduleReflow();
@@ -509,9 +460,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     while (
       firstVisible < this._last &&
       Math.round(
-        this._getItemPosition(firstVisible)[this._positionDim] +
-          this._getItemSize(firstVisible)[this._sizeDim]
-      ) <= Math.round(this._scrollPosition)
+        this._getItemPosition(firstVisible).insetBlockStart +
+          this._getItemSize(firstVisible).blockSize
+      ) <= Math.round(this._blockScrollPosition)
     ) {
       firstVisible++;
     }
@@ -519,8 +470,8 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     let lastVisible = this._last;
     while (
       lastVisible > this._first &&
-      Math.round(this._getItemPosition(lastVisible)[this._positionDim]) >=
-        Math.round(this._scrollPosition + this._viewDim1)
+      Math.round(this._getItemPosition(lastVisible).insetBlockStart) >=
+        Math.round(this._blockScrollPosition + this._viewDim1)
     ) {
       lastVisible--;
     }
@@ -536,4 +487,16 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
       }
     }
   }
+
+  public updateItemSizes(_sizes: ChildLayoutInfo) {
+    this._scheduleReflow();
+  }
+}
+
+function clampSize(size: number) {
+  // Some browsers seem to crap out if the host element gets larger than
+  // a certain size, so we clamp it here (this value based on ad hoc
+  // testing in Chrome / Safari / Firefox Mac)
+  const max = 8200000;
+  return Math.min(max, size);
 }
