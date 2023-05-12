@@ -50,8 +50,8 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   private _rangeMap: Map<number, RangeMapEntry> = new Map();
   private _getAspectRatio?: GetAspectRatio;
 
-  protected get _defaultConfig(): MasonryLayoutConfig {
-    return Object.assign({}, super._defaultConfig, {
+  protected _getDefaultConfig(): MasonryLayoutConfig {
+    return Object.assign({}, super._getDefaultConfig(), {
       getAspectRatio: () => 1,
     });
   }
@@ -60,14 +60,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     this._getAspectRatio = getAspectRatio;
   }
 
-  set items(items: unknown[]) {
+  protected _setItems(items: unknown[]) {
     if (items !== this._items) {
       this._scheduleLayoutUpdate();
     }
-    super.items = items;
-  }
-  get items() {
-    return super.items;
+    super._setItems(items);
   }
 
   protected _getItemSize(_idx: number): Size {

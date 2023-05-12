@@ -86,8 +86,8 @@ export abstract class SizeGapPaddingBaseLayout<
   protected _gaps: Gaps | {} = {};
   protected _padding: Padding | {} = {};
 
-  protected get _defaultConfig(): C {
-    return Object.assign({}, super._defaultConfig, {
+  protected _getDefaultConfig(): C {
+    return Object.assign({}, super._getDefaultConfig(), {
       itemSize: {width: '300px', height: '300px'},
       gap: '8px',
       padding: 'match-gap',
@@ -152,8 +152,12 @@ export abstract class SizeGapPaddingBaseLayout<
     }
   }
 
-  // This setter is overridden in specific layouts to narrow the accepted types
   set gap(spec: GapSpec | AutoGapSpec) {
+    this._setGap(spec);
+  }
+
+  // This setter is overridden in specific layouts to narrow the accepted types
+  protected _setGap(spec: GapSpec | AutoGapSpec) {
     const values = spec.split(' ').map((v) => gapValueToNumber(v as GapValue));
     const gaps = this._gaps as Gaps;
     if (values[0] !== gaps.row) {
