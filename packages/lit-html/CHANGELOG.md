@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.7.4
+
+### Patch Changes
+
+- [#3888](https://github.com/lit/lit/pull/3888) [`0f30e6fb`](https://github.com/lit/lit/commit/0f30e6fbcc1aba2649e7670ac9c03544f4932b6d) - Fix a memory leak cause by lit-html's shared TreeWalker holding a reference to the last tree it walked.
+
 ## 2.7.3
 
 ### Patch Changes
