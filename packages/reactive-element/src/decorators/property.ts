@@ -58,6 +58,16 @@ export const property = (options?: PropertyDeclaration): PropertyDecorator =>
           set(this, v);
           this.requestUpdate(name, oldValue, options);
         },
+        init(this: C, v: V): V {
+          // Save instance property through setter
+          if (this.hasOwnProperty(name)) {
+            // @ts-expect-error: argh
+            delete this[name as keyof this];
+            // @ts-expect-error: argh
+            this[name as keyof this] = v;
+          }
+          return v;
+        },
       };
     } else if (kind === 'setter') {
       // NOTE: Because we need to wrap the setter, and we can't modify the class

@@ -6,8 +6,6 @@
 
 import {
   ComplexAttributeConverter,
-  defaultConverter,
-  PropertyDeclaration,
   PropertyDeclarations,
   PropertyValues,
   ReactiveElement,

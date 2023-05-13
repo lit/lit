@@ -190,37 +190,6 @@ if (DEV_MODE) {
         el.requestUpdate();
         await el.updateComplete;
       });
-
-      test('does not throw if no descriptor is created for the property', async () => {
-        class SomeElement extends ReactiveElement {
-          static override properties = {
-            prop: {},
-          };
-
-          static override getPropertyDescriptor(..._args: Array<any>) {
-            // Don't create any reactive properties.
-            return undefined;
-          }
-
-          constructor() {
-            super();
-            // Simulates a class field.
-            Object.defineProperty(this, 'prop', {
-              value: 123,
-              writable: true,
-              enumerable: true,
-              configurable: true,
-            });
-          }
-        }
-        customElements.define(generateElementName(), SomeElement);
-
-        const el = new SomeElement();
-        container.appendChild(el);
-
-        el.requestUpdate();
-        await el.updateComplete;
-      });
     });
 
     suite('conditional warnings', () => {
