@@ -530,13 +530,6 @@ export abstract class ReactiveElement
   static styles?: CSSResultGroup;
 
   /**
-   * The set of properties defined by this class that caused an accessor to be
-   * added during `createProperty`.
-   * @nocollapse
-   */
-  private static __reactivePropertyKeys?: Set<PropertyKey>;
-
-  /**
    * Returns a list of attributes corresponding to the registered properties.
    * @nocollapse
    * @category attributes
@@ -662,7 +655,7 @@ export abstract class ReactiveElement
       : undefined;
   }
 
-  private __instanceProperties?: PropertyValues = new Map();
+  // private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private __updatePromise: Promise<boolean> = new Promise<boolean>(
@@ -708,7 +701,6 @@ export abstract class ReactiveElement
 
   constructor() {
     super();
-    this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
     this.requestUpdate();
@@ -742,29 +734,6 @@ export abstract class ReactiveElement
     // Note, if the indexOf is -1, the >>> will flip the sign which makes the
     // splice do nothing.
     this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
-  }
-
-  /**
-   * Fixes any properties set on the instance before upgrade time.
-   * Otherwise these would shadow the accessor and break these properties.
-   * The properties are stored in a Map which is played back after the
-   * constructor runs. Note, on very old versions of Safari (<=9) or Chrome
-   * (<=41), properties created for native platform properties like (`id` or
-   * `name`) may not have default values set in the element constructor. On
-   * these browsers native properties appear on instances and therefore their
-   * default value will overwrite any element default (e.g. if the element sets
-   * this.id = 'id' in the constructor, the 'id' will become '' since this is
-   * the native platform default).
-   */
-  private __saveInstanceProperties() {
-    const elementProperties = (this.constructor as typeof ReactiveElement)
-      .elementProperties;
-    for (const p of elementProperties.keys()) {
-      if (this.hasOwnProperty(p)) {
-        this.__instanceProperties!.set(p, this[p as keyof this]);
-        delete this[p as keyof this];
-      }
-    }
   }
 
   /**
@@ -1044,39 +1013,6 @@ export abstract class ReactiveElement
       return;
     }
     debugLogEvent?.({kind: 'update'});
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      // Produce warning if any class properties are shadowed by class fields
-      if (DEV_MODE) {
-        const shadowedProperties: string[] = [];
-        (
-          this.constructor as typeof ReactiveElement
-        ).__reactivePropertyKeys?.forEach((p) => {
-          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-            shadowedProperties.push(p as string);
-          }
-        });
-        if (shadowedProperties.length) {
-          throw new Error(
-            `The following properties on element ${this.localName} will not ` +
-              `trigger updates as expected because they are set using class ` +
-              `fields: ${shadowedProperties.join(', ')}. ` +
-              `Native class fields and some compiled output will overwrite ` +
-              `accessors used for detecting changes. See ` +
-              `https://lit.dev/msg/class-field-shadowing ` +
-              `for more information.`
-          );
-        }
-      }
-    }
-    // Mixin instance properties once, if they exist.
-    // The forEach() expression will only run when when __instanceProperties is
-    // defined, and it returns undefined, setting __instanceProperties to
-    // undefined
-    this.__instanceProperties &&= this.__instanceProperties.forEach(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (v, p) => ((this as any)[p] = v)
-    ) as undefined;
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
     try {
