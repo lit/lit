@@ -98,6 +98,10 @@
     "eslint.workingDirectories": [{"mode": "auto"}]
   },
   "extensions": {
-    "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "fabiospampinato.vscode-terminals"
+    ]
   }
 }
