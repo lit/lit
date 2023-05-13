@@ -12,18 +12,39 @@
  */
 import {PropertyDeclaration, ReactiveElement} from '../reactive-element.js';
 
-export const property =
-  (options?: PropertyDeclaration) =>
+// Overloads for property decorator so that TypeScript can infer the correct
+// return type when a decorator is used as an accessor decorator or a setter
+// decorator.
+export type PropertyDecorator = {
+  // accessor decorator signature
   <C extends ReactiveElement, V>(
-    _target:
-      | ClassAccessorDecoratorContext<C, V>
-      | ClassSetterDecoratorContext<C, V>,
+    target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+
+  // setter decorator signature
+  <C extends ReactiveElement, V>(
+    target: (value: V) => void,
+    context: ClassSetterDecoratorContext<C, V>
+  ): (this: C, value: V) => void;
+};
+
+/**
+ * Wraps a class accessor or setter so that `requestUpdate()` is called with the
+ * property name and old value when the accessor is set.
+ */
+export const property = (options?: PropertyDeclaration): PropertyDecorator =>
+  (<C extends ReactiveElement, V>(
+    _target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
     context:
       | ClassAccessorDecoratorContext<C, V>
       | ClassSetterDecoratorContext<C, V>
-  ) => {
+  ): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
     const {kind} = context;
     if (kind === 'accessor') {
+      // Standard decorators cannot dynamically modify the class, so we can't
+      // replace a field with accessors. The user must use the new `accessor`
+      // keyword instead.
       const {
         access: {get, set},
         name,
@@ -39,6 +60,9 @@ export const property =
         },
       };
     } else if (kind === 'setter') {
+      // NOTE: Because we need to wrap the setter, and we can't modify the class
+      // directly in a standard decorator, we can only decorate setters, not
+      // getters. This is change from our legacy decorators.
       const {
         access: {set},
         name,
@@ -49,5 +73,5 @@ export const property =
         this.requestUpdate(name, oldValue, options);
       };
     }
-    return undefined;
-  };
+    throw new Error();
+  }) as PropertyDecorator;

@@ -23,20 +23,21 @@ const flush =
 
   @customElement('assigned-elements-el')
   class D extends RenderingElement {
-    @queryAssignedElements() defaultAssigned!: Element[];
+    @queryAssignedElements()
+    accessor defaultAssigned!: Element[];
 
     @queryAssignedElements({slot: 'footer', flatten: true})
-    footerAssigned!: Element[];
+    accessor footerAssigned!: Element[];
 
     @queryAssignedElements({slot: 'footer', flatten: false})
-    footerNotFlattenedSlot!: Element[];
+    accessor footerNotFlattenedSlot!: Element[];
 
     @queryAssignedElements({
       slot: 'footer',
       flatten: true,
       selector: '.item',
     })
-    footerAssignedFiltered!: Element[];
+    accessor footerAssignedFiltered!: Element[];
 
     override render() {
       return html`
@@ -49,9 +50,11 @@ const flush =
   const defaultSymbol = Symbol('default');
   @customElement('assigned-elements-el-2')
   class E extends RenderingElement {
-    @queryAssignedElements() [defaultSymbol]!: Element[];
+    @queryAssignedElements()
+    accessor [defaultSymbol]!: Element[];
 
-    @queryAssignedElements({slot: 'header'}) headerAssigned!: Element[];
+    @queryAssignedElements({slot: 'header'})
+    accessor headerAssigned!: Element[];
 
     override render() {
       return html`
@@ -70,7 +73,8 @@ const flush =
     div3!: HTMLDivElement;
     assignedEls!: D;
     assignedEls2!: E;
-    @queryAssignedElements() missingSlotAssignedElements!: Element[];
+    @queryAssignedElements()
+    accessor missingSlotAssignedElements!: Element[];
 
     override render() {
       return html`

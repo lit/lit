@@ -18,9 +18,11 @@ import {assert} from '@esm-bundle/chai';
   let el: C;
 
   class C extends RenderingElement {
-    @queryAll('div') divs!: NodeList;
+    @queryAll('div')
+    accessor divs!: NodeList;
 
-    @queryAll('span') spans!: NodeList;
+    @queryAll('span')
+    accessor spans!: NodeList;
 
     override render() {
       return html`

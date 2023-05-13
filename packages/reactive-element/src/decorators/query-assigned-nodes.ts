@@ -11,8 +11,6 @@
  * not an arrow function.
  */
 
-import {decorateProperty} from './base.js';
-
 import type {ReactiveElement} from '../reactive-element.js';
 
 /**
@@ -26,12 +24,8 @@ export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   slot?: string;
 }
 
-// TypeScript requires the decorator return type to be `void|any`.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TSDecoratorReturnType = void | any;
-
 /**
- * A property decorator that converts a class property into a getter that
+ * An accessor decorator that converts a class property into a getter that
  * returns the `assignedNodes` of the given `slot`.
  *
  * Can be passed an optional {@linkcode QueryAssignedNodesOptions} object.
@@ -56,22 +50,20 @@ type TSDecoratorReturnType = void | any;
  *
  * @category Decorator
  */
-export function queryAssignedNodes(
-  options?: QueryAssignedNodesOptions
-): TSDecoratorReturnType {
-  const slot = options?.slot;
-  const assignedNodesOptions = options;
-
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
+export const queryAssignedNodes =
+  (options?: QueryAssignedNodesOptions) =>
+  <C extends ReactiveElement, V extends ReadonlyArray<Node>>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    _context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> => {
+    const {slot} = options ?? {};
+    return {
+      get(this: C): V {
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+        // @ts-expect-error: argh!
         return slotEl?.assignedNodes(assignedNodesOptions) ?? [];
       },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
-}
+    };
+  };

@@ -43,9 +43,9 @@ export const query =
   <C extends ReactiveElement, V extends Element | null>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     {access: {get, set}}: ClassAccessorDecoratorContext<C, V>
-  ) => {
+  ): ClassAccessorDecoratorResult<C, V> => {
     return {
-      get(this: C) {
+      get(this: C): V {
         if (cache) {
           const result = get(this);
           if (result === undefined) {
@@ -53,9 +53,12 @@ export const query =
             // TODO: remove cast
             set(this, result as V);
           }
-          return result;
+          return result as V;
         }
-        return this.renderRoot?.querySelector(selector) ?? null;
+        // TODO: if we want to allow users to assert that the query will never
+        // return null, we need a new option and to throw here if the result
+        // is null.
+        return (this.renderRoot?.querySelector(selector) ?? null) as V;
       },
     };
   };

@@ -18,8 +18,11 @@ import {assert} from '@esm-bundle/chai';
   let el: C;
 
   class C extends RenderingElement {
-    @queryAsync('#blah') blah!: Promise<HTMLDivElement>;
-    @queryAsync('span') nope!: Promise<HTMLSpanElement | null>;
+    @queryAsync('#blah')
+    accessor blah!: Promise<HTMLDivElement>;
+
+    @queryAsync('span')
+    accessor nope!: Promise<HTMLSpanElement | null>;
 
     static override properties = {foo: {}};
 

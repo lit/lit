@@ -11,24 +11,8 @@
  * not an arrow function.
  */
 
-import {decorateProperty} from './base.js';
-
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
-
-/**
- * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
- */
-const slotAssignedElements =
-  globalThis.HTMLSlotElement?.prototype.assignedElements != null
-    ? (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
-        slot.assignedElements(opts)
-    : (slot: HTMLSlotElement, opts?: AssignedNodesOptions) =>
-        slot
-          .assignedNodes(opts)
-          .filter(
-            (node): node is Element => node.nodeType === Node.ELEMENT_NODE
-          );
 
 /**
  * Options for the {@linkcode queryAssignedElements} decorator. Extends the
@@ -45,7 +29,7 @@ export interface QueryAssignedElementsOptions
 }
 
 /**
- * A property decorator that converts a class property into a getter that
+ * An accessor decorator that converts a class property into a getter that
  * returns the `assignedElements` of the given `slot`. Provides a declarative
  * way to use
  * [`HTMLSlotElement.assignedElements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
@@ -73,23 +57,25 @@ export interface QueryAssignedElementsOptions
  *
  * @category Decorator
  */
-export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
-  const {slot, selector} = options ?? {};
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
+export const queryAssignedElements =
+  (options?: QueryAssignedElementsOptions) =>
+  <C extends ReactiveElement, V extends ReadonlyArray<Element>>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    _context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> => {
+    const {slot, selector} = options ?? {};
+    return {
+      get(this: C): V {
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        const elements =
-          slotEl != null ? slotAssignedElements(slotEl, options) : [];
+        const elements = slotEl?.assignedElements(options) ?? [];
         if (selector) {
+          // @ts-expect-error: argh!
           return elements.filter((node) => node.matches(selector));
         }
+        // @ts-expect-error: argh!
         return elements;
       },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
-}
+    };
+  };

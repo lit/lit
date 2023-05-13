@@ -11,8 +11,7 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+import type {ReactiveElement} from '../reactive-element.js';
 
 /**
  * A property decorator that converts a class property into a getter
@@ -38,14 +37,19 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function queryAll(selector: string) {
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
-        return this.renderRoot?.querySelectorAll(selector) ?? [];
+export const queryAll =
+  (selector: string) =>
+  <C extends ReactiveElement, V extends NodeList | ReadonlyArray<Element>>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    _context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> => {
+    return {
+      get(this: C): V {
+        // TODO: if we want to allow users to assert that the query will never
+        // return null, we need a new option and to throw here if the result
+        // is null.
+        return (this.renderRoot?.querySelectorAll(selector) ??
+          []) as unknown as V;
       },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
-}
+    };
+  };

@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 
-import {property} from './property.js';
+import {property, type PropertyDecorator} from './property.js';
 
 export interface InternalPropertyDeclaration<Type = unknown> {
   /**
@@ -32,7 +32,9 @@ export interface InternalPropertyDeclaration<Type = unknown> {
  * properties may be renamed by optimization tools like closure compiler.
  * @category Decorator
  */
-export function state(options?: InternalPropertyDeclaration) {
+export function state(
+  options?: InternalPropertyDeclaration
+): PropertyDecorator {
   return property({
     ...options,
     state: true,

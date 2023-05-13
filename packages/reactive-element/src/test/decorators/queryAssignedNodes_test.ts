@@ -22,13 +22,14 @@ const flush =
   let el: C;
 
   class D extends RenderingElement {
-    @queryAssignedNodes() defaultAssigned!: Node[];
+    @queryAssignedNodes()
+    accessor defaultAssigned!: Node[];
 
     @queryAssignedNodes({slot: 'footer', flatten: true})
-    footerAssigned!: Node[];
+    accessor footerAssigned!: Node[];
 
     @queryAssignedElements({slot: 'footer', flatten: true, selector: '.item'})
-    footerAssignedItems!: HTMLElement[];
+    accessor footerAssignedItems!: HTMLElement[];
 
     override render() {
       return html`
@@ -40,7 +41,8 @@ const flush =
   customElements.define('assigned-nodes-el', D);
 
   class E extends RenderingElement {
-    @queryAssignedNodes() defaultAssigned!: Node[];
+    @queryAssignedNodes()
+    accessor defaultAssigned!: Node[];
 
     override render() {
       return html`
@@ -54,7 +56,8 @@ const flush =
   const defaultSymbol = Symbol('default');
 
   class S extends RenderingElement {
-    @queryAssignedNodes() [defaultSymbol]!: Node[];
+    @queryAssignedNodes()
+    accessor [defaultSymbol]!: Node[];
 
     override render() {
       return html`
@@ -74,7 +77,8 @@ const flush =
     assignedNodesEl!: D;
     assignedNodesEl2!: E;
     assignedNodesEl3!: S;
-    @queryAssignedNodes() missingSlotAssignedNodes!: Node[];
+    @queryAssignedNodes()
+    accessor missingSlotAssignedNodes!: Node[];
 
     override render() {
       return html`

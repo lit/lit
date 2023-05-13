@@ -18,9 +18,16 @@ import {assert} from '@esm-bundle/chai';
   let el: C;
 
   class C extends RenderingElement {
-    @query('#blah') accessor div!: HTMLDivElement;
-    @query('#blah', true) accessor divCached!: HTMLDivElement;
-    @query('span', true) accessor span!: HTMLSpanElement;
+    @query('#blah')
+    // @ts-expect-error: no initializer. If we fix that, we should change the
+    // tests to not use non-null assertions.
+    accessor div: HTMLDivElement | null;
+
+    @query('#blah', true)
+    accessor divCached!: HTMLDivElement | null;
+
+    @query('span', true)
+    accessor span!: HTMLSpanElement | null;
 
     static override properties = {condition: {}};
 

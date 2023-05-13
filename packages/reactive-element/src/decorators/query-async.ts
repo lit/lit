@@ -11,8 +11,7 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+import type {ReactiveElement} from '../reactive-element.js';
 
 // Note, in the future, we may extend this decorator to support the use case
 // where the queried element may need to do work to become ready to interact
@@ -51,15 +50,23 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function queryAsync(selector: string) {
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      async get(this: ReactiveElement) {
+export const queryAsync =
+  (selector: string) =>
+  <C extends ReactiveElement, V extends Promise<Element | null>>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    _context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> => {
+    return {
+      // @ts-expect-error: TS doesn't know V extends Promise???
+      // This may be related to the "may be instantiated with a different type"
+      // error...
+      async get(this: C): V {
         await this.updateComplete;
-        return this.renderRoot?.querySelector(selector);
+        // TODO: if we want to allow users to assert that the query will never
+        // return null, we need a new option and to throw here if the result
+        // is null.
+        return (this.renderRoot?.querySelector(selector) ??
+          null) as unknown as V;
       },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
-}
+    };
+  };
