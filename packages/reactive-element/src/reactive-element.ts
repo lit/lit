@@ -596,140 +596,18 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Creates a property accessor on the element prototype if one does not exist
-   * and stores a {@linkcode PropertyDeclaration} for the property with the
-   * given options. The property setter calls the property's `hasChanged`
-   * property option or uses a strict identity check to determine whether or not
-   * to request an update.
-   *
-   * This method may be overridden to customize properties; however,
-   * when doing so, it's important to call `super.createProperty` to ensure
-   * the property is setup correctly. This method calls
-   * `getPropertyDescriptor` internally to get a descriptor to install.
-   * To customize what properties do when they are get or set, override
-   * `getPropertyDescriptor`. To customize the options for a property,
-   * implement `createProperty` like this:
-   *
-   * ```ts
-   * static createProperty(name, options) {
-   *   options = Object.assign(options, {myOption: true});
-   *   super.createProperty(name, options);
-   * }
-   * ```
-   *
-   * @nocollapse
-   * @category properties
-   */
-  static createProperty(
-    name: PropertyKey,
-    options: PropertyDeclaration = defaultPropertyDeclaration
-  ) {
-    // if this is a state property, force the attribute to false.
-    if (options.state) {
-      // Cast as any since this is readonly.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (options as any).attribute = false;
-    }
-    // Note, since this can be called by the `@property` decorator which
-    // is called before `finalize`, we ensure finalization has been kicked off.
-    this.finalize();
-    this.elementProperties.set(name, options);
-    // Do not generate an accessor if the prototype already has one, since
-    // it would be lost otherwise and that would never be the user's intention;
-    // Instead, we expect users to call `requestUpdate` themselves from
-    // user-defined accessors. Note that if the super has an accessor we will
-    // still overwrite it
-    if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
-      const key = DEV_MODE
-        ? // Use Symbol.for in dev mode to make it easier to maintain state
-          // when doing HMR.
-          Symbol.for(`${String(name)} (@property() cache)`)
-        : Symbol();
-      const descriptor = this.getPropertyDescriptor(name, key, options);
-      if (descriptor !== undefined) {
-        Object.defineProperty(this.prototype, name, descriptor);
-        if (DEV_MODE) {
-          // If this class doesn't have its own set, create one and initialize
-          // with the values in the set from the nearest ancestor class, if any.
-          if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-            this.__reactivePropertyKeys = new Set(
-              this.__reactivePropertyKeys ?? []
-            );
-          }
-          this.__reactivePropertyKeys!.add(name);
-        }
-      }
-    }
-  }
-
-  /**
-   * Returns a property descriptor to be defined on the given named property.
-   * If no descriptor is returned, the property will not become an accessor.
-   * For example,
-   *
-   * ```ts
-   * class MyElement extends LitElement {
-   *   static getPropertyDescriptor(name, key, options) {
-   *     const defaultDescriptor =
-   *         super.getPropertyDescriptor(name, key, options);
-   *     const setter = defaultDescriptor.set;
-   *     return {
-   *       get: defaultDescriptor.get,
-   *       set(value) {
-   *         setter.call(this, value);
-   *         // custom action.
-   *       },
-   *       configurable: true,
-   *       enumerable: true
-   *     }
-   *   }
-   * }
-   * ```
-   *
-   * @nocollapse
-   * @category properties
-   */
-  protected static getPropertyDescriptor(
-    name: PropertyKey,
-    key: string | symbol,
-    options: PropertyDeclaration
-  ): PropertyDescriptor | undefined {
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      get(): any {
-        return (this as {[key: string]: unknown})[key as string];
-      },
-      set(this: ReactiveElement, value: unknown) {
-        const oldValue = (this as {} as {[key: string]: unknown})[
-          name as string
-        ];
-        (this as {} as {[key: string]: unknown})[key as string] = value;
-        (this as unknown as ReactiveElement).requestUpdate(
-          name,
-          oldValue,
-          options
-        );
-      },
-      configurable: true,
-      enumerable: true,
-    };
-  }
-
-  /**
    * Returns the property options associated with the given property.
    * These options are defined with a `PropertyDeclaration` via the `properties`
-   * object or the `@property` decorator and are registered in
-   * `createProperty(...)`.
+   * object or the `@property` decorator.
    *
-   * Note, this method should be considered "final" and not overridden. To
-   * customize the options for a given property, override
-   * {@linkcode createProperty}.
+   * Note, this method should be considered "final" and not overridden.
    *
    * @nocollapse
    * @final
    * @category properties
    */
-  static getPropertyOptions(name: PropertyKey) {
+  static #getPropertyOptions(name: PropertyKey) {
+    // TODO: change this to read from decorator metadata once it's available.
     return this.elementProperties.get(name) || defaultPropertyDeclaration;
   }
 
@@ -756,25 +634,6 @@ export abstract class ReactiveElement
     this.elementProperties = new Map(superCtor.elementProperties);
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
-    // make any properties
-    // Note, only process "own" properties since this element will inherit
-    // any properties defined on the superClass, and finalization ensures
-    // the entire prototype chain is finalized.
-    if (this.hasOwnProperty(JSCompiler_renameProperty('properties', this))) {
-      const props = this.properties;
-      // support symbols in properties (IE11 does not support this)
-      const propKeys = [
-        ...Object.getOwnPropertyNames(props),
-        ...Object.getOwnPropertySymbols(props),
-      ];
-      // This for/of is ok because propKeys is an array
-      for (const p of propKeys) {
-        // note, use of `any` is due to TypeScript lack of support for symbol in
-        // index types
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.createProperty(p, (props as any)[p]);
-      }
-    }
     this.elementStyles = this.finalizeStyles(this.styles);
     return true;
   }
@@ -1105,7 +964,7 @@ export abstract class ReactiveElement
     // Use tracking info to avoid reflecting a property value to an attribute
     // if it was just set because the attribute changed.
     if (propName !== undefined && this.__reflectingProperty !== propName) {
-      const options = ctor.getPropertyOptions(propName);
+      const options = ctor.#getPropertyOptions(propName);
       const converter =
         typeof options.converter === 'function'
           ? {fromAttribute: options.converter}
@@ -1148,7 +1007,7 @@ export abstract class ReactiveElement
     if (name !== undefined) {
       options =
         options ||
-        (this.constructor as typeof ReactiveElement).getPropertyOptions(name);
+        (this.constructor as typeof ReactiveElement).#getPropertyOptions(name);
       const hasChanged = options.hasChanged || notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
         if (!this._$changedProperties.has(name)) {

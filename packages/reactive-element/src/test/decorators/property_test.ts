@@ -365,7 +365,7 @@ suite('@property', () => {
         changedProperties.forEach((value: unknown, key: PropertyKey) => {
           const options = (
             this.constructor as typeof ReactiveElement
-          ).getPropertyOptions(key) as MyPropertyDeclaration;
+          ).#getPropertyOptions(key) as MyPropertyDeclaration;
           const observer = options.observer;
           if (typeof observer === 'function') {
             observer.call(this, value);
