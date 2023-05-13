@@ -2586,57 +2586,6 @@ suite('ReactiveElement', () => {
     assert.equal(a.getAttribute('bar'), 'yo');
   });
 
-  suite('initializers', () => {
-    class Base extends ReactiveElement {
-      prop1?: string;
-      prop2?: string;
-      event?: string;
-    }
-    Base.addInitializer((a) => {
-      (a as Base).prop1 = 'prop1';
-    });
-    Base.addInitializer((a) => {
-      (a as Base).prop2 = 'prop2';
-    });
-    Base.addInitializer((a) => {
-      a.addEventListener('click', (e) => ((a as Base).event = e.type));
-    });
-    customElements.define(generateElementName(), Base);
-
-    test('addInitializer', () => {
-      const a = new Base();
-      container.appendChild(a);
-      assert.equal(a.prop1, 'prop1');
-      assert.equal(a.prop2, 'prop2');
-      a.dispatchEvent(new Event('click'));
-      assert.equal(a.event, 'click');
-    });
-
-    class Sub extends Base {
-      prop3?: string;
-    }
-    Sub.addInitializer((a) => {
-      (a as Sub).prop3 = 'prop3';
-    });
-    customElements.define(generateElementName(), Sub);
-
-    test('addInitializer on subclass', () => {
-      const s = new Sub();
-      container.appendChild(s);
-      assert.equal(s.prop1, 'prop1');
-      assert.equal(s.prop2, 'prop2');
-      assert.equal(s.prop3, 'prop3');
-      s.dispatchEvent(new Event('click'));
-      assert.equal(s.event, 'click');
-    });
-
-    test('addInitializer on subclass independent from superclass', () => {
-      const b = new Base();
-      container.appendChild(b);
-      assert.notOk((b as any).prop3);
-    });
-  });
-
   suite('exceptions', () => {
     let threwError = false;
     // Custom error listener.
