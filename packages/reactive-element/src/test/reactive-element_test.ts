@@ -12,6 +12,8 @@ import {
 } from '@lit/reactive-element';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
+import {property} from '../decorators/property.js';
+import {state} from '../decorators/state.js';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
@@ -146,32 +148,34 @@ suite('ReactiveElement', () => {
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
     class E extends ReactiveElement {
-      static override get properties() {
-        return {
-          noAttr: {attribute: false},
-          atTr: {attribute: true},
-          customAttr: {attribute: 'custom', reflect: true},
-          hasChanged: {hasChanged},
-          fromAttribute: {converter: fromAttribute},
-          toAttribute: {reflect: true, converter: {toAttribute}},
-          _state: {state: true},
-          all: {
-            attribute: 'all-attr',
-            hasChanged,
-            converter: {fromAttribute, toAttribute},
-            reflect: true,
-          },
-        };
-      }
+      @property({attribute: false})
+      accessor noAttr = 'noAttr';
 
-      noAttr = 'noAttr';
-      atTr = 'attr';
-      customAttr = 'customAttr';
-      hasChanged = 10;
-      fromAttribute = 1;
-      toAttribute = 1;
-      all = 10;
-      _state = 'internal';
+      @property({attribute: true})
+      accessor atTr = 'attr';
+
+      @property({attribute: 'custom', reflect: true})
+      accessor customAttr = 'customAttr';
+
+      @property({hasChanged})
+      accessor hasChanged = 10;
+
+      @property({converter: fromAttribute})
+      accessor fromAttribute = 1;
+
+      @property({reflect: true, converter: {toAttribute}})
+      accessor toAttribute = 1;
+
+      @state()
+      accessor _state = 'internal';
+
+      @property({
+        attribute: 'all-attr',
+        hasChanged,
+        converter: {fromAttribute, toAttribute},
+        reflect: true,
+      })
+      accessor all = 10;
 
       updateCount = 0;
 
@@ -260,17 +264,12 @@ suite('ReactiveElement', () => {
     };
 
     class E extends ReactiveElement {
-      static override get properties() {
-        return {
-          num: {type: Number, converter, reflect: true},
-          str: {type: String, converter, reflect: true},
-          foo: {type: FooType, converter, reflect: true},
-        };
-      }
-
-      num?: any;
-      str?: any;
-      foo?: any;
+      @property({type: Number, converter, reflect: true})
+      accessor num: any;
+      @property({type: String, converter, reflect: true})
+      accessor str: any;
+      @property({type: FooType, converter, reflect: true})
+      accessor foo: any;
     }
     customElements.define(generateElementName(), E);
     const el = new E();

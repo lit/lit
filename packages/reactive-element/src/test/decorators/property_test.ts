@@ -145,127 +145,18 @@ suite('@property', () => {
     assert.equal(el.getAttribute('foo'), '5');
   });
 
-  test('can mix property options via decorator and via getter', async () => {
-    const hasChanged = (value: any, old: any) =>
-      old === undefined || value > old;
-    const fromAttribute = (value: any) => parseInt(value);
-    const toAttribute = (value: any) => `${value}-attr`;
-    class E extends ReactiveElement {
-      @property({hasChanged}) accessor hasChanged = 10;
-      @property({converter: fromAttribute}) accessor fromAttribute = 1;
-      @property({reflect: true, converter: {toAttribute}})
-      accessor toAttribute = 1;
-      @property({
-        attribute: 'all-attr',
-        hasChanged,
-        converter: {fromAttribute, toAttribute},
-        reflect: true,
-      })
-      accessor all = 10;
-
-      updateCount = 0;
-
-      static override get properties() {
-        return {
-          noAttr: {attribute: false},
-          atTr: {attribute: true},
-          customAttr: {attribute: 'custom', reflect: true},
-        };
-      }
-
-      declare noAttr: string | undefined;
-      declare atTr: string | undefined;
-      declare customAttr: string | undefined;
-
-      constructor() {
-        super();
-        this.noAttr = 'noAttr';
-        this.atTr = 'attr';
-        this.customAttr = 'customAttr';
-      }
-
-      override update(changed: PropertyValues) {
-        this.updateCount++;
-        super.update(changed);
-      }
-    }
-    customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
-    await el.updateComplete;
-    assert.equal(el.updateCount, 1);
-    assert.equal(el.noAttr, 'noAttr');
-    assert.equal(el.atTr, 'attr');
-    assert.equal(el.customAttr, 'customAttr');
-    assert.equal(el.hasChanged, 10);
-    assert.equal(el.fromAttribute, 1);
-    assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute('toattribute'), '1-attr');
-    assert.equal(el.all, 10);
-    assert.equal(el.getAttribute('all-attr'), '10-attr');
-    el.setAttribute('noattr', 'noAttr2');
-    el.setAttribute('attr', 'attr2');
-    el.setAttribute('custom', 'customAttr2');
-    el.setAttribute('fromattribute', '2attr');
-    el.toAttribute = 2;
-    el.all = 5;
-    await el.updateComplete;
-    assert.equal(el.updateCount, 2);
-    assert.equal(el.noAttr, 'noAttr');
-    assert.equal(el.atTr, 'attr2');
-    assert.equal(el.customAttr, 'customAttr2');
-    assert.equal(el.fromAttribute, 2);
-    assert.equal(el.toAttribute, 2);
-    assert.equal(el.getAttribute('toattribute'), '2-attr');
-    assert.equal(el.all, 5);
-    el.all = 15;
-    await el.updateComplete;
-    assert.equal(el.updateCount, 3);
-    assert.equal(el.all, 15);
-    assert.equal(el.getAttribute('all-attr'), '15-attr');
-    el.setAttribute('all-attr', '16-attr');
-    await el.updateComplete;
-    assert.equal(el.updateCount, 4);
-    assert.equal(el.getAttribute('all-attr'), '16-attr');
-    assert.equal(el.all, 16);
-    el.hasChanged = 5;
-    await el.updateComplete;
-    assert.equal(el.hasChanged, 5);
-    assert.equal(el.updateCount, 4);
-    el.hasChanged = 15;
-    await el.updateComplete;
-    assert.equal(el.hasChanged, 15);
-    assert.equal(el.updateCount, 5);
-    el.setAttribute('all-attr', '5-attr');
-    await el.updateComplete;
-    assert.equal(el.all, 5);
-    assert.equal(el.updateCount, 5);
-    el.all = 15;
-    await el.updateComplete;
-    assert.equal(el.all, 15);
-    assert.equal(el.updateCount, 6);
-  });
-
   test('property options via decorator do not modify superclass', async () => {
     class E extends ReactiveElement {
-      static override get properties() {
-        return {foo: {type: Number, reflect: true}};
-      }
-
-      accessor foo: number;
-
-      constructor() {
-        super();
-        // Avoiding class fields for Babel compat.
-        this.foo = 1;
-      }
+      @property({type: Number, reflect: true})
+      accessor foo = 1;
     }
     customElements.define(generateElementName(), E);
     // Note, this forces `E` to finalize
     const el1 = new E();
 
     class F extends E {
-      @property({type: Number}) override accessor foo = 2;
+      @property({type: Number})
+      override accessor foo = 2;
     }
 
     customElements.define(generateElementName(), F);
@@ -284,23 +175,13 @@ suite('@property', () => {
 
   test('can mix properties superclass with decorator on subclass', async () => {
     class E extends ReactiveElement {
-      static override get properties() {
-        return {
-          foo: {},
-        };
-      }
-
-      declare foo: string;
-
-      constructor() {
-        super();
-        // Avoiding class fields for Babel compat.
-        this.foo = 'foo';
-      }
+      @property()
+      accessor foo = 'foo';
     }
 
     class F extends E {
-      @property() accessor bar = 'bar';
+      @property()
+      accessor bar = 'bar';
     }
     customElements.define(generateElementName(), F);
     const el = new F();
