@@ -91,7 +91,7 @@ The enhancements to `React.createElement()` or runtime JSX functions work by add
 
 For bare custom elements, all props provided by React are set as **attributes** on the element during server rendering, as is the default behavior for custom elements rendered by React on the client (as of version 18). This works for simple components whose properties can easily be represented as attributes, i.e. they are easily serialized/deserialized and the attribute name does not differ with the property name.
 
-For Lit elements wrapped with `@lit-labs/react`'s `createComponent()`, properties present on the element will be set as **properties** instead of **attributes** for server rendering. Client side hydration will also be deferred such that it'll wait for elemenet properties to be set before the first update happens. Note: this is only made available by the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach.
+For Lit elements wrapped with `@lit-labs/react`'s `createComponent()`, properties present on the element will be set as **properties** instead of **attributes** for server rendering. Client side hydration will also be deferred such that it'll wait for element properties to be set before the first update happens. Note: this is only made available by the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach.
 
 ## Enabling Declarative Shadow DOM
 
