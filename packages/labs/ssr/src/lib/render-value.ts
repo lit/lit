@@ -15,7 +15,11 @@ import type {
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
-import {isTemplateResult, getDirectiveClass} from 'lit/directive-helpers.js';
+import {
+  isPrimitive,
+  isTemplateResult,
+  getDirectiveClass,
+} from 'lit/directive-helpers.js';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 
 const {
@@ -32,6 +36,7 @@ const {
   BooleanAttributePart,
   EventPart,
   connectedDisconnectable,
+  isIterable,
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
@@ -574,7 +579,8 @@ export function* renderValue(
       value === noChange
     ) {
       // yield nothing
-    } else if (Array.isArray(value)) {
+    } else if (!isPrimitive(value) && isIterable(value)) {
+      // Not primitive since strings are iterable
       for (const item of value) {
         yield* renderValue(item, renderInfo);
       }

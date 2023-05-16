@@ -111,6 +111,46 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  /* Iterable Expression */
+  test('iterable expression with array value', async () => {
+    const {render, templateWithIterableExpression} = await setup();
+    const result = await render(
+      templateWithIterableExpression(['foo', 'bar', 'baz'])
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--lit-part-->foo<!--/lit-part--><!--lit-part-->bar<!--/lit-part--><!--lit-part-->baz<!--/lit-part--><!--/lit-part--></div><!--/lit-part-->`
+    );
+  });
+
+  test('iterable expression with set value', async () => {
+    const {render, templateWithIterableExpression} = await setup();
+    const result = await render(
+      templateWithIterableExpression(new Set(['foo', 'bar', 'baz']))
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--lit-part-->foo<!--/lit-part--><!--lit-part-->bar<!--/lit-part--><!--lit-part-->baz<!--/lit-part--><!--/lit-part--></div><!--/lit-part-->`
+    );
+  });
+
+  test('iterable expression with generator value', async () => {
+    const {render, templateWithIterableExpression} = await setup();
+    const result = await render(
+      templateWithIterableExpression(
+        (function* () {
+          yield 'foo';
+          yield 'bar';
+          yield 'baz';
+        })()
+      )
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--lit-part-->foo<!--/lit-part--><!--lit-part-->bar<!--/lit-part--><!--lit-part-->baz<!--/lit-part--><!--/lit-part--></div><!--/lit-part-->`
+    );
+  });
+
   /* Attribute Expressions */
 
   test('attribute expression with string value', async () => {
