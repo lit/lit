@@ -580,7 +580,7 @@ export function* renderValue(
     ) {
       // yield nothing
     } else if (!isPrimitive(value) && isIterable(value)) {
-      // Not primitive since strings are iterable
+      // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
         yield* renderValue(item, renderInfo);
       }
