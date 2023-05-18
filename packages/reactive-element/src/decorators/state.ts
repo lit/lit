@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 
-import {HasChanged} from '../reactive-element.js';
+import type {HasChanged} from '../reactive-element.js';
 import {property} from './property.js';
 
 export interface InternalPropertyDeclaration<Type = unknown> {
