@@ -434,7 +434,11 @@ const doubleQuoteAttrEndRegex = /"/g;
  * Comments are not parsed within raw text elements, so we need to search their
  * text content for marker strings.
  */
-const rawTextElement = /^(?:script|style|textarea|title)$/i;
+const rawTextElement = new Set(['script', 'style', 'textarea', 'title']);
+for (const tag of [...rawTextElement]) {
+  // `tagName` returns uppercase.
+  rawTextElement.add(tag.toUpperCase());
+}
 
 /** TemplateResult types */
 const HTML_RESULT = 1;
@@ -719,7 +723,7 @@ const getTemplateHtml = (
           // We started a weird comment, like </{
           regex = comment2EndRegex;
         } else if (match[TAG_NAME] !== undefined) {
-          if (rawTextElement.test(match[TAG_NAME])) {
+          if (rawTextElement.has(match[TAG_NAME])) {
             // Record if we encounter a raw-text element. We'll switch to
             // this regex at the end of the tag.
             rawTextEndRegex = new RegExp(`</${match[TAG_NAME]}`, 'g');
@@ -959,9 +963,7 @@ class Template {
             (node as Element).removeAttribute(name);
           }
         }
-        // TODO (justinfagnani): benchmark the regex against testing for each
-        // of the 3 raw text element names.
-        if (rawTextElement.test((node as Element).tagName)) {
+        if (rawTextElement.has((node as Element).tagName.toLowerCase())) {
           // For raw text elements we need to split the text content on
           // markers, create a Text node for each segment, and create
           // a TemplatePart for each marker.
