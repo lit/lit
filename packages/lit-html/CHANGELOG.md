@@ -20,6 +20,12 @@
 
 - [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
 
+## 2.7.4
+
+### Patch Changes
+
+- [#3888](https://github.com/lit/lit/pull/3888) [`0f30e6fb`](https://github.com/lit/lit/commit/0f30e6fbcc1aba2649e7670ac9c03544f4932b6d) - Fix a memory leak cause by lit-html's shared TreeWalker holding a reference to the last tree it walked.
+
 ## 2.7.3
 
 ### Patch Changes
