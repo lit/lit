@@ -1,5 +1,16 @@
 # @lit-labs/cli
 
+## 0.5.0
+
+### Minor Changes
+
+- [#3866](https://github.com/lit/lit/pull/3866) [`d8e80656`](https://github.com/lit/lit/commit/d8e806561e2d5c12bc99fcee34bce1825c3ca1ae) - The analyzer no longer crashes in many cases when encountering code with unexpected syntax or cases that the analyzer does not yet handle. The custom elements manifest generator also logs diagnostics collected while generating the manifest, but generates the manifest whenever possible.
+
+### Patch Changes
+
+- Updated dependencies [[`d8e80656`](https://github.com/lit/lit/commit/d8e806561e2d5c12bc99fcee34bce1825c3ca1ae)]:
+  - @lit-labs/analyzer@0.8.0
+
 ## 0.4.1-pre.0
 
 ### Patch Changes

@@ -19,11 +19,19 @@
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
+      "node": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
       "development": "./development/index.js",
       "default": "./index.js"
     },
     "./use-controller.js": {
       "types": "./development/use-controller.d.ts",
+      "node": {
+        "development": "./node/development/use-controller.js",
+        "default": "./node/use-controller.js"
+      },
       "development": "./development/use-controller.js",
       "default": "./use-controller.js"
     }
@@ -31,6 +39,7 @@
   "files": [
     "/development/",
     "!/development/test/",
+    "/node/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/create-component.{d.ts,d.ts.map,js,js.map}",
     "/use-controller.{d.ts,d.ts.map,js,js.map}"
@@ -43,6 +52,7 @@
     "test": "wireit",
     "test:dev": "wireit",
     "test:prod": "wireit",
+    "test:node": "wireit",
     "checksize": "wireit"
   },
   "wireit": {
@@ -94,7 +104,8 @@
         "create-component.js{,.map}",
         "index.js{,.map}",
         "use-controller.js{,.map}",
-        "test/**/*.js{,.map}"
+        "test/**/*.js{,.map}",
+        "node/**/*.js{,.map}"
       ]
     },
     "checksize": {
@@ -111,11 +122,12 @@
     "test": {
       "dependencies": [
         "test:dev",
-        "test:prod"
+        "test:prod",
+        "test:node"
       ]
     },
     "test:dev": {
-      "command": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "../../reactive-element:build",
@@ -124,23 +136,36 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "dev"
       },
       "files": [],
       "output": []
     },
     "test:prod": {
-      "command": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:rollup",
+        "../../reactive-element:build",
         "../../tests:build"
       ],
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "prod"
       },
+      "files": [],
+      "output": []
+    },
+    "test:node": {
+      "command": "node development/test/node-render.js",
+      "dependencies": [
+        "build:ts",
+        "build:rollup",
+        "../../reactive-element:build"
+      ],
       "files": [],
       "output": []
     }

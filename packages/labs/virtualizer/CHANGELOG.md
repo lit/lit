@@ -9,6 +9,16 @@
 - Updated dependencies [[`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
   - lit@3.0.0-pre.0
 
+## 2.0.2
+
+### Patch Changes
+
+- [#3877](https://github.com/lit/lit/pull/3877) [`4418bed5`](https://github.com/lit/lit/commit/4418bed55635c8340c335c3be32895899fa703f4) - Converted a benign innerHTML assignment to textContent.
+
+- [#3884](https://github.com/lit/lit/pull/3884) [`2684dd65`](https://github.com/lit/lit/commit/2684dd6554a0ecb6ab2561b91488075fc9db9397) - Added license headers to files.
+
+- [#3874](https://github.com/lit/lit/pull/3874) [`d32eec70`](https://github.com/lit/lit/commit/d32eec70c7eac08746dd4fb4378050b20bb724ba) - Fix [#3873: visibilityChange event not fired if other state (e.g. range) hasn't also changed](https://github.com/lit/lit/issues/3873)
+
 ## 2.0.1
 
 ### Patch Changes

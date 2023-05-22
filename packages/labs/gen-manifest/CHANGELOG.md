@@ -1,5 +1,12 @@
 # @lit-labs/gen-manifest
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`d8e80656`](https://github.com/lit/lit/commit/d8e806561e2d5c12bc99fcee34bce1825c3ca1ae)]:
+  - @lit-labs/analyzer@0.8.0
+
 ## 0.2.1-pre.0
 
 ### Patch Changes

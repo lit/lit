@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-wrapper-angular",
   "description": "Code generator for Angular wrappers for Lit components",
-  "version": "0.0.6-pre.0",
+  "version": "0.0.7",
   "publishConfig": {
     "access": "public"
   },
@@ -57,8 +57,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.6.1-pre.0",
-    "@lit-labs/gen-utils": "^0.2.2-pre.0"
+    "@lit-labs/analyzer": "^0.8.0",
+    "@lit-labs/gen-utils": "^0.2.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",

@@ -249,6 +249,7 @@ packages/labs/observers/resize-controller.*
 packages/labs/observers/intersection-controller.*
 
 packages/labs/react/development/
+packages/labs/react/node/
 packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
