@@ -373,7 +373,7 @@ the element.`);
 
       // Suppress hydration warning for server-rendered attributes, including
       // "defer-hydration"
-      props.suppressHydrationWarning = true;
+      props['suppressHydrationWarning'] = true;
 
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
