@@ -21,6 +21,10 @@ export const simpleTemplateResult = html`<div></div>`;
 // prettier-ignore
 export const templateWithTextExpression = (x: string|null|undefined) => html`<div>${x}</div>`;
 
+/* Iterable Expression */
+// prettier-ignore
+export const templateWithIterableExpression = (x: Iterable<string>) => html`<div>${x}</div>`;
+
 /* Attribute Expressions */
 // prettier-ignore
 export const templateWithAttributeExpression = (x: string) =>

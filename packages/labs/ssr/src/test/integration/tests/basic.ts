@@ -17,6 +17,7 @@ import {
   PartType,
 } from 'lit/directive.js';
 import {repeat} from 'lit/directives/repeat.js';
+import {map} from 'lit/directives/map.js';
 import {guard} from 'lit/directives/guard.js';
 import {cache} from 'lit/directives/cache.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -169,6 +170,40 @@ export const tests: {[name: string]: SSRTest} = {
       {
         args: ['foo'],
         html: '<div>foo</div>',
+      },
+    ],
+    stableSelectors: ['div'],
+  },
+
+  'ChildPart accepts array': {
+    render(x: unknown) {
+      return html` <div>${x}</div> `;
+    },
+    expectations: [
+      {
+        args: [[1, 2, 3]],
+        html: '<div>123</div>',
+      },
+      {
+        args: [[4, 5, 6]],
+        html: '<div>456</div>',
+      },
+    ],
+    stableSelectors: ['div'],
+  },
+
+  'ChildPart accepts set': {
+    render(x: unknown) {
+      return html` <div>${x}</div> `;
+    },
+    expectations: [
+      {
+        args: [new Set([1, 2, 3])],
+        html: '<div>123</div>',
+      },
+      {
+        args: [new Set([4, 5, 6])],
+        html: '<div>456</div>',
       },
     ],
     stableSelectors: ['div'],
@@ -599,6 +634,23 @@ export const tests: {[name: string]: SSRTest} = {
       return html`
         ${repeat(words, (word, i) => html` <p>${i}) ${word}</p> `)}
       `;
+    },
+    expectations: [
+      {
+        args: [['foo', 'bar', 'qux']],
+        html: '<p>\n  0) foo\n</p>\n<p>\n  1) bar\n</p>\n<p>\n  2) qux\n</p>\n',
+      },
+      {
+        args: [['A', 'B', 'C']],
+        html: '<p>\n  0) A\n</p>\n<p>\n  1) B\n</p>\n<p>\n  2) C\n</p>\n',
+      },
+    ],
+    stableSelectors: ['p'],
+  },
+
+  'ChildPart accepts directive: map': {
+    render(words: string[]) {
+      return html` ${map(words, (word, i) => html` <p>${i}) ${word}</p> `)} `;
     },
     expectations: [
       {
