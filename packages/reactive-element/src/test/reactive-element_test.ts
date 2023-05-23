@@ -247,7 +247,7 @@ suite('ReactiveElement', () => {
 
     // Type-only test ensuring that `hasChanged` can be defined.
     takePropertyDeclaration({
-      // @ts-expect-no-error
+      // Expect no type errors on the next line.
       hasChanged(newValue: number[], oldValue: number[]) {
         return newValue !== oldValue;
       },
