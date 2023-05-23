@@ -242,6 +242,18 @@ suite('ReactiveElement', () => {
     assert.equal(el.updateCount, 6);
   });
 
+  test('PropertyDeclaration field `hasChanged` can be passed concrete types', () => {
+    function takePropertyDeclaration(_p: PropertyDeclaration) {}
+
+    // Type-only test ensuring that `hasChanged` can be defined.
+    takePropertyDeclaration({
+      // @ts-expect-no-error
+      hasChanged(newValue: number[], oldValue: number[]) {
+        return newValue !== oldValue;
+      },
+    });
+  });
+
   test('property option `converter` can use `type` info', async () => {
     const FooType = {name: 'FooType'};
     // Make test work on IE where these are undefined.
