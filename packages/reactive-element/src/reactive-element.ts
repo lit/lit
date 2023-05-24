@@ -30,6 +30,9 @@ export type {
   ReactiveControllerHost,
 } from './reactive-controller.js';
 
+// TODO (justinfagnani): Add `hasOwn` here when we ship ES2022
+const {is, defineProperty, getOwnPropertyNames, getOwnPropertySymbols} = Object;
+
 const NODE_MODE = false;
 
 // Lets a minifier replace globalThis references with a minified name
@@ -344,10 +347,8 @@ export interface HasChanged {
  * Change function that returns true if `value` is different from `oldValue`.
  * This method is used as the default for a property's `hasChanged` function.
  */
-export const notEqual: HasChanged = (value: unknown, old: unknown): boolean => {
-  // This ensures (old==NaN, value==NaN) always returns false
-  return old !== value && (old === old || value === value);
-};
+export const notEqual: HasChanged = (value: unknown, old: unknown): boolean =>
+  !is(value, old);
 
 const defaultPropertyDeclaration: PropertyDeclaration = {
   attribute: true,
@@ -650,7 +651,7 @@ export abstract class ReactiveElement
         : Symbol();
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
-        Object.defineProperty(this.prototype, name, descriptor);
+        defineProperty(this.prototype, name, descriptor);
         if (DEV_MODE) {
           // If this class doesn't have its own set, create one and initialize
           // with the values in the set from the nearest ancestor class, if any.
@@ -733,7 +734,7 @@ export abstract class ReactiveElement
    * @category properties
    */
   static getPropertyOptions(name: PropertyKey) {
-    return this.elementProperties.get(name) || defaultPropertyDeclaration;
+    return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
   /**
@@ -767,8 +768,8 @@ export abstract class ReactiveElement
       const props = this.properties;
       // support symbols in properties (IE11 does not support this)
       const propKeys = [
-        ...Object.getOwnPropertyNames(props),
-        ...Object.getOwnPropertySymbols(props),
+        ...getOwnPropertyNames(props),
+        ...getOwnPropertySymbols(props),
       ];
       // This for/of is ok because propKeys is an array
       for (const p of propKeys) {
@@ -1146,14 +1147,15 @@ export abstract class ReactiveElement
     oldValue?: unknown,
     options?: PropertyDeclaration
   ): void {
-    let shouldRequestUpdate = true;
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
-      options =
-        options ||
-        (this.constructor as typeof ReactiveElement).getPropertyOptions(name);
-      const hasChanged = options.hasChanged || notEqual;
+      options ??= (
+        this.constructor as typeof ReactiveElement
+      ).getPropertyOptions(name);
+      const hasChanged = options.hasChanged ?? notEqual;
       if (hasChanged(this[name as keyof this], oldValue)) {
+        // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
+        // vs just Map.set()
         if (!this._$changedProperties.has(name)) {
           this._$changedProperties.set(name, oldValue);
         }
@@ -1162,17 +1164,14 @@ export abstract class ReactiveElement
         // property to `_reflectingProperties`. This ensures setting
         // attribute + property reflects correctly.
         if (options.reflect === true && this.__reflectingProperty !== name) {
-          if (this.__reflectingProperties === undefined) {
-            this.__reflectingProperties = new Map();
-          }
-          this.__reflectingProperties.set(name, options);
+          (this.__reflectingProperties ??= new Map()).set(name, options);
         }
       } else {
         // Abort the request if the property should not be considered changed.
-        shouldRequestUpdate = false;
+        return;
       }
     }
-    if (!this.isUpdatePending && shouldRequestUpdate) {
+    if (this.isUpdatePending === false) {
       this.__updatePromise = this.__enqueueUpdate();
     }
   }
