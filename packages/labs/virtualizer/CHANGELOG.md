@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.3
+
+### Patch Changes
+
+- [#3892](https://github.com/lit/lit/pull/3892) [`f5b2013d`](https://github.com/lit/lit/commit/f5b2013ddc38eb9b540e0b633a879ea860bc92d8) - Changed accessor and iterator code to support ES5 compilation.
+
 ## 2.0.2
 
 ### Patch Changes
