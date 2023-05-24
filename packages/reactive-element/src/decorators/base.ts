@@ -6,6 +6,10 @@
 
 import {ReactiveElement} from '../reactive-element.js';
 
+export type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
 export type Constructor<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): T;
@@ -71,7 +75,7 @@ export const decorateProperty =
     descriptor?: (property: PropertyKey) => PropertyDescriptor;
   }) =>
   (
-    protoOrDescriptor: ReactiveElement | ClassElement,
+    protoOrDescriptor: Interface<ReactiveElement> | ClassElement,
     name?: PropertyKey
     // Note TypeScript requires the return type to be `void|any`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
