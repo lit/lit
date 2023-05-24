@@ -368,7 +368,10 @@ const finalized = 'finalized';
 /**
  * A string representing one of the supported dev mode warning categories.
  */
-export type WarningKind = 'change-in-update' | 'migration';
+export type WarningKind =
+  | 'change-in-update'
+  | 'migration'
+  | 'async-perform-update';
 
 export type Initializer = (element: ReactiveElement) => void;
 
@@ -1052,9 +1055,9 @@ export abstract class ReactiveElement
       const attrValue = converter.toAttribute!(value, options.type);
       if (
         DEV_MODE &&
-        (this.constructor as typeof ReactiveElement).enabledWarnings!.indexOf(
+        (this.constructor as typeof ReactiveElement).enabledWarnings!.includes(
           'migration'
-        ) >= 0 &&
+        ) &&
         attrValue === undefined
       ) {
         issueWarning(
@@ -1206,7 +1209,23 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected scheduleUpdate(): void | Promise<unknown> {
-    return this.performUpdate();
+    const result = this.performUpdate();
+    if (
+      DEV_MODE &&
+      (this.constructor as typeof ReactiveElement).enabledWarnings!.includes(
+        'async-perform-update'
+      ) &&
+      typeof (result as unknown as Promise<unknown> | undefined)?.then ===
+        'function'
+    ) {
+      issueWarning(
+        'async-perform-update',
+        `Element ${this.localName} returned a Promise from performUpdate(). ` +
+          `This behavior is deprecated and will be removed in a future ` +
+          `version of ReactiveElement.`
+      );
+    }
+    return result;
   }
 
   /**
@@ -1217,16 +1236,9 @@ export abstract class ReactiveElement
    * generally not be needed, but it can be done in rare cases when you need to
    * update synchronously.
    *
-   * Note: To ensure `performUpdate()` synchronously completes a pending update,
-   * it should not be overridden. In LitElement 2.x it was suggested to override
-   * `performUpdate()` to also customizing update scheduling. Instead, you should now
-   * override `scheduleUpdate()`. For backwards compatibility with LitElement 2.x,
-   * scheduling updates via `performUpdate()` continues to work, but will make
-   * also calling `performUpdate()` to synchronously process updates difficult.
-   *
    * @category updates
    */
-  protected performUpdate(): void | Promise<unknown> {
+  protected performUpdate(): void {
     // Abort any update if one is not pending when this is called.
     // This can happen if `performUpdate` is called early to "flush"
     // the update.
@@ -1327,9 +1339,9 @@ export abstract class ReactiveElement
     if (
       DEV_MODE &&
       this.isUpdatePending &&
-      (this.constructor as typeof ReactiveElement).enabledWarnings!.indexOf(
+      (this.constructor as typeof ReactiveElement).enabledWarnings!.includes(
         'change-in-update'
-      ) >= 0
+      )
     ) {
       issueWarning(
         'change-in-update',
@@ -1462,7 +1474,10 @@ polyfillSupport?.({ReactiveElement});
 // Dev mode warnings...
 if (DEV_MODE) {
   // Default warning set.
-  ReactiveElement.enabledWarnings = ['change-in-update'];
+  ReactiveElement.enabledWarnings = [
+    'change-in-update',
+    'async-perform-update',
+  ];
   const ensureOwnWarnings = function (ctor: typeof ReactiveElement) {
     if (
       !ctor.hasOwnProperty(JSCompiler_renameProperty('enabledWarnings', ctor))
@@ -1475,7 +1490,7 @@ if (DEV_MODE) {
     warning: WarningKind
   ) {
     ensureOwnWarnings(this);
-    if (this.enabledWarnings!.indexOf(warning) < 0) {
+    if (!this.enabledWarnings!.includes(warning)) {
       this.enabledWarnings!.push(warning);
     }
   };
