@@ -234,7 +234,7 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * it is set. The function should take the `newValue` and `oldValue` and
    * return `true` if an update should be requested.
    */
-  hasChanged?: HasChanged<Type>;
+  hasChanged?(value: Type, oldValue: Type): boolean;
 
   /**
    * Indicates whether an accessor will be created for this property. By
@@ -336,8 +336,8 @@ export const defaultConverter: ComplexAttributeConverter = {
   },
 };
 
-export interface HasChanged<Type = unknown> {
-  (value: Type, old: Type): boolean;
+export interface HasChanged {
+  (value: unknown, old: unknown): boolean;
 }
 
 /**
