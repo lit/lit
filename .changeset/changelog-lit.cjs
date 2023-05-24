@@ -9,10 +9,6 @@ const {
   getInfoFromPullRequest,
 } = require('@changesets/get-github-info');
 
-// Forked from: https://github.com/atlassian/changesets/blob/main/packages/changelog-github/src/index.ts
-// Remove the "Thanks!" message, as it's almost always self-congratulatory to our team
-// TODO: add back "Thanks!" for external contributors
-
 const repo = 'lit/lit';
 
 const changelogFunctions = {
@@ -99,6 +95,22 @@ const changelogFunctions = {
       };
     })();
 
+    // Only congratulate community contributions.
+    usersFromSummary = usersFromSummary.filter((user) => {
+      return ![
+        'AndrewJakubowicz',
+        'augustjk',
+        'bicknellr',
+        'dfreedm',
+        'e111077',
+        'justinfagnani',
+        'kevinpschaaf',
+        'rictic',
+        'sorvell',
+        'usergenic',
+      ].includes(user);
+    });
+
     const users = usersFromSummary.length
       ? usersFromSummary
           .map(
@@ -111,6 +123,7 @@ const changelogFunctions = {
     const prefix = [
       links.pull === null ? '' : ` ${links.pull}`,
       links.commit === null ? '' : ` ${links.commit}`,
+      users === null ? '' : ` Thanks ${users}!`,
     ].join('');
 
     return `\n\n-${prefix ? `${prefix} -` : ''} ${firstLine}\n${futureLines
