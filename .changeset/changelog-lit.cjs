@@ -95,9 +95,26 @@ const changelogFunctions = {
       };
     })();
 
-    // Only congratulate community contributions.
-    usersFromSummary = usersFromSummary.filter((user) => {
-      return ![
+    const users = usersFromSummary.length
+      ? usersFromSummary
+          .filter((u) => !containsLitTeamMemberUsername(u))
+          .map(
+            (userFromSummary) =>
+              `[@${userFromSummary}](https://github.com/${userFromSummary})`
+          )
+          .join(', ')
+      : containsLitTeamMemberUsername(links.user)
+      ? null
+      : links.user;
+
+    /**
+     * containsLitTeamMemberUsername lets us only congratulate community
+     * contributions.
+     * @param {string} s - any string that may contain a username.
+     * @returns boolean indicating if a Lit team member was found in the string.
+     */
+    function containsLitTeamMemberUsername(s) {
+      return [
         'AndrewJakubowicz',
         'augustjk',
         'bicknellr',
@@ -108,17 +125,8 @@ const changelogFunctions = {
         'rictic',
         'sorvell',
         'usergenic',
-      ].includes(user);
-    });
-
-    const users = usersFromSummary.length
-      ? usersFromSummary
-          .map(
-            (userFromSummary) =>
-              `[@${userFromSummary}](https://github.com/${userFromSummary})`
-          )
-          .join(', ')
-      : links.user;
+      ].some((coreTeamUser) => s.includes(coreTeamUser));
+    }
 
     const prefix = [
       links.pull === null ? '' : ` ${links.pull}`,
