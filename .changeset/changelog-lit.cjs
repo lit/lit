@@ -9,6 +9,8 @@ const {
   getInfoFromPullRequest,
 } = require('@changesets/get-github-info');
 
+// Forked from: https://github.com/atlassian/changesets/blob/main/packages/changelog-github/src/index.ts
+
 const repo = 'lit/lit';
 
 const changelogFunctions = {
