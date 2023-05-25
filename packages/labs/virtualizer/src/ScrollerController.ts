@@ -75,7 +75,7 @@ export class ScrollerController extends ScrollerShim {
   private _originalScroll:
     | typeof Element.prototype.scroll
     | typeof window.scroll;
-  private _clients: unknown[] = [];
+  private _clients = new Set<unknown>();
   private _retarget: Nullable<retargetScrollCallback> = null;
   private _end: Nullable<endScrollCallback> = null;
   private __destination: Nullable<ScrollToOptions> = null;
@@ -237,8 +237,13 @@ export class ScrollerController extends ScrollerShim {
   }
 
   public detach(client: unknown) {
-    this._clients = this._clients.splice(this._clients.indexOf(client), 1);
-    if (this._clients.length === 0) {
+    this._clients.delete(client);
+
+    /**
+     * If there aren't any more clients, then return the node's default
+     * scrolling methods
+     */
+    if (this._clients.size === 0) {
       this._node.scrollTo = this._originalScrollTo;
       this._node.scrollBy = this._originalScrollBy;
       this._node.scroll = this._originalScroll;
@@ -248,8 +253,13 @@ export class ScrollerController extends ScrollerShim {
   }
 
   private _attach(client: unknown) {
-    this._clients.push(client);
-    if (this._clients.length === 1) {
+    this._clients.add(client);
+
+    /**
+     * The node should only have the methods shimmed when adding the first
+     * client – otherwise it's redundant
+     */
+    if (this._clients.size === 1) {
       this._node.scrollTo = this.scrollTo;
       this._node.scrollBy = this.scrollBy;
       this._node.scroll = this.scrollTo;
