@@ -116,18 +116,21 @@ const changelogFunctions = {
      * @returns boolean indicating if a Lit team member was found in the string.
      */
     function containsLitTeamMemberUsername(s) {
-      return [
-        'AndrewJakubowicz',
-        'augustjk',
-        'bicknellr',
-        'dfreedm',
-        'e111077',
-        'justinfagnani',
-        'kevinpschaaf',
-        'rictic',
-        'sorvell',
-        'usergenic',
-      ].some((coreTeamUser) => s.includes(coreTeamUser));
+      return new RegExp(
+        `\\b(${[
+          'AndrewJakubowicz',
+          'augustjk',
+          'bicknellr',
+          'dfreedm',
+          'e111077',
+          'justinfagnani',
+          'kevinpschaaf',
+          'rictic',
+          'sorvell',
+          'usergenic',
+        ].join('|')})\\b`,
+        'i'
+      ).test(s);
     }
 
     const prefix = [
