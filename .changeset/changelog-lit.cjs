@@ -136,7 +136,7 @@ const changelogFunctions = {
     const prefix = [
       links.pull === null ? '' : ` ${links.pull}`,
       links.commit === null ? '' : ` ${links.commit}`,
-      users === null ? '' : ` Thanks ${users}!`,
+      users === null || users === '' ? '' : ` Thanks ${users}!`,
     ].join('');
 
     return `\n\n-${prefix ? `${prefix} -` : ''} ${firstLine}\n${futureLines
