@@ -48,7 +48,7 @@ export function provide<ValueType>({
 }: {
   context: Context<unknown, ValueType>;
 }): <K extends PropertyKey>(
-  protoOrDescriptor: ReactiveElement & Partial<Record<K, ValueType>>,
+  protoOrDescriptor: ReactiveElement & LooseRecord<K, ValueType>,
   name?: K
   // Note TypeScript requires the return type to be `void|any`
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,3 +76,10 @@ export function provide<ValueType>({
     },
   });
 }
+
+/**
+ * Allows optional fields when the context type permits `undefined`.
+ */
+type LooseRecord<K extends string | number | symbol, V> = V extends undefined
+  ? Partial<Record<K, V>>
+  : Record<K, V>;
