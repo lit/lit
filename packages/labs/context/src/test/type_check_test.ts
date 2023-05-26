@@ -31,6 +31,19 @@ suite('compilation tests', () => {
       provideUndefinedWithOptional?: number;
       @provide({context: numberOrUndefinedContext})
       provideUndefinedWithOptionalUndefined?: number | undefined;
+      @provide({context: numberContext})
+      private providePrivate = 0;
+      @provide({context: numberContext})
+      private providePrivateOptional?: number;
+      @provide({context: numberContext})
+      protected provideProtected = 0;
+      @provide({context: numberContext})
+      protected provideProtectedOptional?: number;
+      constructor() {
+        super();
+        markAsUsed(this.providePrivate);
+        markAsUsed(this.providePrivateOptional);
+      }
     }
     markAsUsed(TestElement);
   });
@@ -92,32 +105,17 @@ suite('compilation tests', () => {
     markAsUsed(TestElement);
   });
 
-  test(`things we wish would type check, but don't currently`, () => {
-    class TestElement extends ReactiveElement {
-      // @ts-expect-error don't support providing private fields
-      @provide({context: numberContext})
-      private providePrivate = 0;
-      // @ts-expect-error don't support providing private fields
-      @provide({context: numberContext})
-      private providePrivateOptional?: number;
-      // @ts-expect-error don't support providing protected fields
-      @provide({context: numberContext})
-      protected provideProtected = 0;
-      // @ts-expect-error don't support providing protected fields
-      @provide({context: numberContext})
-      protected provideProtectedOptional?: number;
-
-      constructor() {
-        super();
-        markAsUsed(this.providePrivate);
-        markAsUsed(this.providePrivateOptional);
-      }
-    }
-    markAsUsed(TestElement);
-  });
-
   test(`things we wish wouldn't type check, but do currently`, () => {
     class TestElement extends ReactiveElement {
+      @provide({context: numberContext})
+      private provideNumberWithPrivateString = '';
+      @provide({context: numberContext})
+      private provideNumberWithPrivateOptionalString?: string;
+      @provide({context: numberContext})
+      protected provideNumberWithProtectedString = '';
+      @provide({context: numberContext})
+      protected provideNumberWithProtectedOptionalString?: string;
+
       @consume({context: numberContext})
       private consumeNumberWithPrivateString = '';
       @consume({context: numberContext})
@@ -129,6 +127,8 @@ suite('compilation tests', () => {
 
       constructor() {
         super();
+        markAsUsed(this.provideNumberWithPrivateString);
+        markAsUsed(this.provideNumberWithPrivateOptionalString);
         markAsUsed(this.consumeNumberWithPrivateString);
         markAsUsed(this.consumeNumberWithPrivateOptionalString);
       }
