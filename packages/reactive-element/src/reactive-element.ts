@@ -56,7 +56,7 @@ const trustedTypes = (global as unknown as {trustedTypes?: {emptyScript: ''}})
 // TrustedScript source. Such boolean attributes must be set to the equivalent
 // trusted emptyScript value.
 const emptyStringForBooleanAttribute = trustedTypes
-  ? (trustedTypes.emptyScript as unknown as '')
+  ? trustedTypes.emptyScript as string
   : '';
 
 const polyfillSupport = DEV_MODE
@@ -273,9 +273,7 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
  * accessor is made, and the property is processed according to the
  * PropertyDeclaration options.
  */
-export interface PropertyDeclarations {
-  readonly [key: string]: PropertyDeclaration;
-}
+export type PropertyDeclarations<T = Record<string, PropertyDeclaration<unknown, unknown>>> = Readonly<T>;
 
 type PropertyDeclarationMap = Map<PropertyKey, PropertyDeclaration>;
 
@@ -300,7 +298,7 @@ type AttributeMap = Map<string, PropertyKey>;
 // strongly-typed Map type.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type PropertyValues<T = any> = T extends object
-  ? PropertyValueMap<T>
+  ? { [K in keyof T]: T[K] }
   : Map<PropertyKey, unknown>;
 
 /**
@@ -315,23 +313,20 @@ export interface PropertyValueMap<T> extends Map<PropertyKey, unknown> {
   delete<K extends keyof T>(k: K): boolean;
 }
 
-export const defaultConverter: ComplexAttributeConverter = {
-  toAttribute(value: unknown, type?: unknown): unknown {
+export const defaultConverter: AttributeConverter = {
+  toAttribute(value: unknown, type?: unknown): string | null {
     switch (type) {
       case Boolean:
-        value = value ? emptyStringForBooleanAttribute : null;
-        break;
+        return value ? emptyStringForBooleanAttribute : null;
       case Object:
       case Array:
-        // if the value is `null` or `undefined` pass this through
-        // to allow removing/no change behavior.
-        value = value == null ? value : JSON.stringify(value);
-        break;
+        return value === null || value === undefined ? null : JSON.stringify(value);
+      default:
+        return value === null || value === undefined ? null : String(value);
     }
-    return value;
   },
 
-  fromAttribute(value: string | null, type?: unknown) {
+  fromAttribute(value: string | null, type?: unknown): unknown {
     let fromValue: unknown = value;
     switch (type) {
       case Boolean:
@@ -342,12 +337,8 @@ export const defaultConverter: ComplexAttributeConverter = {
         break;
       case Object:
       case Array:
-        // Do *not* generate exception when invalid JSON is set as elements
-        // don't normally complain on being mis-configured.
-        // TODO(sorvell): Do generate exception in *dev mode*.
         try {
-          // Assert to adhere to Bazel's "must type assert JSON parse" rule.
-          fromValue = JSON.parse(value!) as unknown;
+          fromValue = value === null ? null : JSON.parse(value) as unknown;
         } catch (e) {
           fromValue = null;
         }
@@ -357,18 +348,15 @@ export const defaultConverter: ComplexAttributeConverter = {
   },
 };
 
-export interface HasChanged {
-  (value: unknown, old: unknown): boolean;
-}
+export type HasChanged = (value: unknown, oldValue: unknown) => boolean;
 
 /**
  * Change function that returns true if `value` is different from `oldValue`.
  * This method is used as the default for a property's `hasChanged` function.
  */
-export const notEqual: HasChanged = (value: unknown, old: unknown): boolean => {
+export const notEqual: HasChanged = (value: unknown, old: unknown): boolean =>
   // This ensures (old==NaN, value==NaN) always returns false
-  return old !== value && (old === old || value === value);
-};
+  value !== oldValue && (oldValue === oldValue || value === value);
 
 const defaultPropertyDeclaration: PropertyDeclaration = {
   attribute: true,
@@ -651,7 +639,7 @@ export abstract class ReactiveElement
     if (options.state) {
       // Cast as any since this is readonly.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (options as any).attribute = false;
+      options = { ...options, attribute: false };
     }
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
@@ -708,21 +696,19 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  protected static getPropertyDescriptor(
+  protected static getPropertyDescriptor<T extends ReactiveElement>(
     name: PropertyKey,
     key: string | symbol,
     options: PropertyDeclaration
   ): PropertyDescriptor | undefined {
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      get(): any {
-        return (this as {[key: string]: unknown})[key as string];
+      get(this: T): unknown {
+        return this[key as keyof T];
       },
-      set(this: ReactiveElement, value: unknown) {
-        const oldValue = (this as {} as {[key: string]: unknown})[
-          name as string
-        ];
-        (this as {} as {[key: string]: unknown})[key as string] = value;
+      set(this: T, value: unknown) {
+        const oldValue = this[name as keyof T];
+        this[key as keyof T] = value as unknown as T[keyof T];
         (this as unknown as ReactiveElement).requestUpdate(
           name,
           oldValue,
