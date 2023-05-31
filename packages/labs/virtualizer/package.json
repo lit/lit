@@ -9,40 +9,52 @@
   "type": "module",
   "exports": {
     ".": {
-      "default": "./lit-virtualizer.js"
+      "default": "./lit-virtualizer.js",
+      "types": "./lit-virtualizer.d.ts"
     },
     "./events.js": {
-      "default": "./events.js"
+      "default": "./events.js",
+      "types": "./events.d.ts"
     },
     "./layouts/flexWrap.js": {
-      "default": "./layouts/flexWrap.js"
+      "default": "./layouts/flexWrap.js",
+      "types": "./layouts/flexWrap.d.ts"
     },
     "./layouts/flow.js": {
-      "default": "./layouts/flow.js"
+      "default": "./layouts/flow.js",
+      "types": "./layouts/flow.d.ts"
     },
     "./layouts/grid.js": {
-      "default": "./layouts/grid.js"
+      "default": "./layouts/grid.js",
+      "types": "./layouts/grid.d.ts"
     },
     "./layouts/masonry.js": {
-      "default": "./layouts/masonry.js"
+      "default": "./layouts/masonry.js",
+      "types": "./layouts/masonry.d.ts"
     },
     "./LitVirtualizer.js": {
-      "default": "./LitVirtualizer.js"
+      "default": "./LitVirtualizer.js",
+      "types": "./LitVirtualizer.d.ts"
     },
     "./polyfillLoaders/ResizeObserver.js": {
-      "default": "./polyfillLoaders/ResizeObserver.js"
+      "default": "./polyfillLoaders/ResizeObserver.js",
+      "types": "./polyfillLoaders/ResizeObserver.d.ts"
     },
     "./polyfills/resize-observer-polyfill/ResizeObserver.js": {
-      "default": "./polyfillLoaders/ResizeObserver.js"
+      "default": "./polyfillLoaders/ResizeObserver.js",
+      "types": "./polyfillLoaders/ResizeObserver.d.ts"
     },
     "./support/method-interception.js": {
-      "default": "./support/method-interception.js"
+      "default": "./support/method-interception.js",
+      "types": "./support/method-interception.d.ts"
     },
     "./support/resize-observer-errors.js": {
-      "default": "./support/resize-observer-errors.js"
+      "default": "./support/resize-observer-errors.js",
+      "types": "./support/resize-observer-errors.d.ts"
     },
     "./virtualize.js": {
-      "default": "./virtualize.js"
+      "default": "./virtualize.js",
+      "types": "./virtualize.d.ts"
     }
   },
   "scripts": {
