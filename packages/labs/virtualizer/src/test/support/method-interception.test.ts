@@ -15,6 +15,10 @@ class Greeter {
   greet(addressee: string) {
     return `Hello, ${addressee}`;
   }
+
+  toString() {
+    return 'Greeter';
+  }
 }
 
 describe('Greeter', () => {
@@ -62,5 +66,32 @@ describe('interceptMethod', () => {
     expect(greeter.bye!('Dave')).to.equal('undefined 👋');
     teardown();
     expect(greeter.bye).to.be.undefined;
+  });
+
+  it('must be torn down in the reverse order of setup or error is thrown', () => {
+    const greeter = new Greeter();
+    const teardown1 = interceptMethod(
+      greeter,
+      'greet',
+      (originalGreet, addressee) => `OMG ${originalGreet?.(addressee)}`
+    );
+    const teardown2 = interceptMethod(
+      greeter,
+      'greet',
+      (originalGreet, addressee) => `${originalGreet?.(addressee)} so much!!!`
+    );
+    expect(greeter.greet('Eve')).to.equal('OMG Hello, Eve so much!!!');
+    let caughtError: Error | undefined;
+    try {
+      teardown1();
+    } catch (e) {
+      caughtError = e as Error;
+    }
+    expect(caughtError?.message).to.equal(
+      'Unexpected method "greet" on Greeter likely due to out-of-sequence interceptor teardown.'
+    );
+    teardown2();
+    teardown1();
+    expect(greeter.greet('Eve')).to.equal('Hello, Eve');
   });
 });

@@ -54,9 +54,9 @@ export function interceptMethod<
   return () => {
     if ((target[methodName] as unknown as F | undefined) !== newMethod) {
       throw new Error(
-        `Unexpected method ${
+        `Unexpected method "${
           methodName as string
-        } on ${target} due to out-of-sequence interceptor teardown.`
+        }" on ${target} likely due to out-of-sequence interceptor teardown.`
       );
     }
     Object.assign(target, {[<string>methodName]: originalMethod});
