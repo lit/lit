@@ -87,6 +87,9 @@ suite('compilation tests', () => {
       @provide({context: numberContext}) provideNumberWithOptionalUndefined?:
         | number
         | undefined;
+
+      // @ts-expect-error experimental decorators unsupported on #private fields
+      @provide({context: numberContext}) #provideToPrivate = 0;
     }
     markAsUsed(TestElement);
   });
@@ -101,6 +104,8 @@ suite('compilation tests', () => {
       // @ts-expect-error number consuming number or undefined
       @consume({context: numberOrUndefinedContext})
       consumeUndefinedWithDefined = 0;
+      // @ts-expect-error experimental decorators unsupported on #private fields
+      @consume({context: numberContext}) #consumeWithPrivate = 0;
     }
     markAsUsed(TestElement);
   });
