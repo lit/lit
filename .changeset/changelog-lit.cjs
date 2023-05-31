@@ -10,8 +10,6 @@ const {
 } = require('@changesets/get-github-info');
 
 // Forked from: https://github.com/atlassian/changesets/blob/main/packages/changelog-github/src/index.ts
-// Remove the "Thanks!" message, as it's almost always self-congratulatory to our team
-// TODO: add back "Thanks!" for external contributors
 
 const repo = 'lit/lit';
 
@@ -101,16 +99,44 @@ const changelogFunctions = {
 
     const users = usersFromSummary.length
       ? usersFromSummary
+          .filter((u) => !containsLitTeamMemberUsername(u))
           .map(
             (userFromSummary) =>
               `[@${userFromSummary}](https://github.com/${userFromSummary})`
           )
           .join(', ')
+      : containsLitTeamMemberUsername(links.user)
+      ? null
       : links.user;
+
+    /**
+     * containsLitTeamMemberUsername lets us only congratulate community
+     * contributions.
+     * @param {string} s - any string that may contain a username.
+     * @returns boolean indicating if a Lit team member was found in the string.
+     */
+    function containsLitTeamMemberUsername(s) {
+      return new RegExp(
+        `\\b(${[
+          'AndrewJakubowicz',
+          'augustjk',
+          'bicknellr',
+          'dfreedm',
+          'e111077',
+          'justinfagnani',
+          'kevinpschaaf',
+          'rictic',
+          'sorvell',
+          'usergenic',
+        ].join('|')})\\b`,
+        'i'
+      ).test(s);
+    }
 
     const prefix = [
       links.pull === null ? '' : ` ${links.pull}`,
       links.commit === null ? '' : ` ${links.commit}`,
+      users === null || users === '' ? '' : ` Thanks ${users}!`,
     ].join('');
 
     return `\n\n-${prefix ? `${prefix} -` : ''} ${firstLine}\n${futureLines
