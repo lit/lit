@@ -68,23 +68,20 @@ type ConsumerDecorator<ValueType> = {
   <K extends PropertyKey, Proto extends ReactiveElement>(
     protoOrDescriptor: Proto,
     name?: K
-    // Note TypeScript requires the return type to be `void|any`
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): FieldMustMatchProvidedType<Proto, K, ValueType, void | any>;
+  ): FieldMustMatchProvidedType<Proto, K, ValueType>;
 };
 
-type FieldMustMatchProvidedType<
-  Obj,
-  Key extends PropertyKey,
-  ProvidedType,
-  ReturnValue
-> =
+// Note TypeScript requires the return type of a decorator to be `void | any`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DecoratorReturn = void | any;
+
+type FieldMustMatchProvidedType<Obj, Key extends PropertyKey, ProvidedType> =
   // First we check whether the object has the property as a required field
   Obj extends Record<Key, infer ConsumingType>
     ? // Ok, it does, just check whether it's ok to assign the
       // provided type to the consuming field
       [ProvidedType] extends [ConsumingType]
-      ? ReturnValue
+      ? DecoratorReturn
       : {
           message: 'provided type not assignable to consuming field';
           provided: ProvidedType;
@@ -95,7 +92,7 @@ type FieldMustMatchProvidedType<
     ? // Check assignability again. Note that we have to include undefined
       // here on the consuming type because it's optional.
       [ProvidedType] extends [ConsumingType | undefined]
-      ? ReturnValue
+      ? DecoratorReturn
       : {
           message: 'provided type not assignable to consuming field';
           provided: ProvidedType;
@@ -105,4 +102,4 @@ type FieldMustMatchProvidedType<
       // manually, i.e. not as a decorator (maybe don't do that! but if you do,
       // you're on your own for your type checking, sorry), or the field is
       // private, in which case we can't check it.
-      ReturnValue;
+      DecoratorReturn;

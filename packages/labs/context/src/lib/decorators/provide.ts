@@ -76,23 +76,20 @@ type ProvideDecorator<ContextType> = {
   <K extends PropertyKey, Proto extends ReactiveElement>(
     protoOrDescriptor: Proto,
     name?: K
-    // Note TypeScript requires the return type to be `void|any`
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): FieldMustMatchContextType<Proto, K, ContextType, void | any>;
+  ): FieldMustMatchContextType<Proto, K, ContextType>;
 };
 
-type FieldMustMatchContextType<
-  Obj,
-  Key extends PropertyKey,
-  ContextType,
-  ReturnValue
-> =
+// Note TypeScript requires the return type of a decorator to be `void | any`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DecoratorReturn = void | any;
+
+type FieldMustMatchContextType<Obj, Key extends PropertyKey, ContextType> =
   // First we check whether the object has the property as a required field
   Obj extends Record<Key, infer ProvidingType>
     ? // Ok, it does, just check whether it's ok to assign the
       // provided type to the consuming field
       [ProvidingType] extends [ContextType]
-      ? ReturnValue
+      ? DecoratorReturn
       : {
           message: 'providing field not assignable to context';
           context: ContextType;
@@ -103,7 +100,7 @@ type FieldMustMatchContextType<
     ? // Check assignability again. Note that we have to include undefined
       // here on the consuming type because it's optional.
       [Providing | undefined] extends [ContextType]
-      ? ReturnValue
+      ? DecoratorReturn
       : {
           message: 'providing field not assignable to context';
           context: ContextType;
@@ -113,4 +110,4 @@ type FieldMustMatchContextType<
       // manually, i.e. not as a decorator (maybe don't do that! but if you do,
       // you're on your own for your type checking, sorry), or the field is
       // private, in which case we can't check it.
-      ReturnValue;
+      DecoratorReturn;
