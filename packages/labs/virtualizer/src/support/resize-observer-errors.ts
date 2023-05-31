@@ -11,9 +11,9 @@ import {
 
 /**
  * In a testing environment with a setup/before and teardown/after callback pattern, this function
- * can be used to quickly install ignore benign errors that are expected to occur in tests.  For example, if a
- * @param before
- * @param after
+ * can be used to as a succinct declaration to ignore these errors in tests.
+ * @param before a setup callback; in Mocha, this would be the `beforeEach` function.
+ * @param after a teardown callback; in Mocha, this would be the `afterEach` function.
  */
 export function setupIgnoreWindowResizeObserverLoopErrors(
   before: Function,
