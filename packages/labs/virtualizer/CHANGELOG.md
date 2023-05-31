@@ -1,5 +1,13 @@
 # @lit-labs/virtualizer
 
+## 2.0.3
+
+### Patch Changes
+
+- [#3909](https://github.com/lit/lit/pull/3909) [`feded34b`](https://github.com/lit/lit/commit/feded34bf640291885b7d9de8713075cd7da1a54) Thanks [@chrispaterson](https://github.com/chrispaterson)! - Refactored and refurbished ScrollerController attach/detach code in effort to reduce potential memory leaks due to held instance references.
+
+- [#3892](https://github.com/lit/lit/pull/3892) [`f5b2013d`](https://github.com/lit/lit/commit/f5b2013ddc38eb9b540e0b633a879ea860bc92d8) - Changed accessor and iterator code to support ES5 compilation.
+
 ## 2.0.2
 
 ### Patch Changes

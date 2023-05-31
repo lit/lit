@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.3
+
+### Patch Changes
+
+- [#3905](https://github.com/lit/lit/pull/3905) [`f8d72859`](https://github.com/lit/lit/commit/f8d7285976390bbb35c540eb7b516f3748064d19) - Handle non-array iterables including `map` directive in child parts
+
 ## 3.1.2
 
 ### Patch Changes
