@@ -102,8 +102,6 @@ suite('@consume', () => {
     assert.strictEqual(consumer.optionalValue, undefined);
     assert.strictEqual(consumer.consumeOptionalWithDefault, undefined);
     provider.optionalValue = 500;
-    await provider.updateComplete;
-    await consumer.updateComplete;
     assert.strictEqual(consumer.optionalValue, 500);
     assert.strictEqual(consumer.consumeOptionalWithDefault, 500);
   });
