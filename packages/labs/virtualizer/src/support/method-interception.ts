@@ -5,7 +5,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type Function = (...args: any[]) => any;
+export type AnyFunction = (...args: any[]) => any;
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
@@ -15,7 +15,7 @@ export type Function = (...args: any[]) => any;
  * function that may be called or not depending on the interceptor's logic.  The
  * approach is analagous to calling super() in a subclass's method.
  */
-export type MethodInterceptor<T extends Function> = (
+export type MethodInterceptor<T extends AnyFunction> = (
   originalFunction: T | undefined,
   ...args: Parameters<T>
 ) => ReturnType<T>;
@@ -39,9 +39,9 @@ export type MethodInterceptorTeardown = () => void;
  *   to the object.
  */
 export function interceptMethod<
-  T extends {},
+  T extends object,
   K extends keyof T,
-  F extends Function
+  F extends AnyFunction
 >(
   target: T,
   methodName: K,
