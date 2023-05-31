@@ -88,6 +88,7 @@ suite('compilation tests', () => {
         | number
         | undefined;
 
+      // We'd like this to work. See https://github.com/lit/lit/issues/3926
       // @ts-expect-error experimental decorators unsupported on #private fields
       @provide({context: numberContext}) #provideToPrivate = 0;
     }
@@ -104,6 +105,7 @@ suite('compilation tests', () => {
       // @ts-expect-error number consuming number or undefined
       @consume({context: numberOrUndefinedContext})
       consumeUndefinedWithDefined = 0;
+      // We'd like this to work. See https://github.com/lit/lit/issues/3926
       // @ts-expect-error experimental decorators unsupported on #private fields
       @consume({context: numberContext}) #consumeWithPrivate = 0;
     }
