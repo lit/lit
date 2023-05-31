@@ -157,6 +157,12 @@ This solution has a small overhead, in that if a provider is not within the DOM 
 
 Note that ContextRoot uses [WeakRefs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) which are not supported in IE11.
 
+### Protected / Private Properties
+
+You can use the `@consume` and `@provide` decorators on TypeScript `protected` and `private` properties, but be aware that there is no type checking between the type of the context and the type of the property. This is because the TypeScript compiler does not make type information for protected or private properties available to decorators. Standard `#private` properties are not supported at all.
+
+We expect to fix all of this when we switch to standard decorators. See [#3926](https://github.com/lit/lit/issues/3926).
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
