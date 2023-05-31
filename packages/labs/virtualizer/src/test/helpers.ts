@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {
+  ignoreWindowOnError,
+  setupIgnoreWindowResizeObserverLoopErrors,
+} from '../support/resize-observer-errors.js';
+
 /**
  * Returns an array of 'n' items.  If no map function given, it
  * contains just numbers from 0 to length - 1.  Otherwise, the
@@ -153,45 +158,26 @@ export function ignoreBenignErrors(
   before: Mocha.HookFunction,
   after: Mocha.HookFunction
 ) {
-  ignoreWindowErrors(
-    before,
-    after,
-    /ResizeObserver loop limit exceeded|ResizeObserver loop completed with undelivered notifications/
-  );
+  return setupIgnoreWindowResizeObserverLoopErrors(before, after);
 }
+
 /**
- * Sets up the window.onerror handler to ignore uncaught exceptions which match the regexp.
+ *
+ * @param before
+ * @param after
+ * @param regexp
  */
 export function ignoreWindowErrors(
   before: Mocha.HookFunction,
   after: Mocha.HookFunction,
   regexp: RegExp
 ) {
-  let onerrorOriginal: OnErrorEventHandler;
-  let onerrorNew: OnErrorEventHandler;
-
-  before(() => {
-    onerrorOriginal = window.onerror;
-    onerrorNew = (err, ...restArgs) => {
-      if (regexp.test(`${err}`)) {
-        console.warn(`Ignored Error: ${err}`);
-        return false;
-      }
-      if (onerrorOriginal) {
-        return onerrorOriginal.apply(window, [
-          err,
-          ...restArgs,
-        ] as unknown as Parameters<typeof onerrorOriginal>);
-      }
-    };
-    window.onerror = onerrorNew;
-  });
+  let teardown: Function | undefined;
+  before(
+    () => (teardown = ignoreWindowOnError((message) => regexp.test(message)))
+  );
   after(() => {
-    if (onerrorNew !== window.onerror) {
-      throw new Error(
-        'Unexpected window.onerror handler due to out-of-sequence teardown.'
-      );
-    }
-    window.onerror = onerrorOriginal;
+    teardown?.();
+    teardown = undefined;
   });
 }
