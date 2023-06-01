@@ -5,6 +5,7 @@
  */
 
 import {
+  ignoreWindowResizeObserverLoopErrors,
   preventResizeObserverLoopErrorEventDefaults,
   setupIgnoreWindowResizeObserverLoopErrors,
 } from '../../support/resize-observer-errors.js';
@@ -29,6 +30,30 @@ async function windowError(message: string) {
 }
 
 beforeEach(() => (errors = 0));
+
+describe('ignoreWindowResizeObserverLoopErrors', () => {
+  let teardown: Function | undefined;
+  beforeEach(() => (teardown = ignoreWindowResizeObserverLoopErrors()));
+  afterEach(() => teardown?.());
+
+  it('throwing a CountingError adds to error count', () => {
+    try {
+      throw new CountingError('ResizeObserver loop limit exceeded');
+    } catch (e) {
+      expect(e).to.be.instanceOf(CountingError);
+    }
+    expect(errors).to.equal(1);
+  });
+
+  it('testing framework using window.error ignores loop limit errors', async () => {
+    expect(errors).to.equal(0);
+    await windowError('ResizeObserver loop limit exceeded');
+    await windowError(
+      'ResizeObserver loop completed with undelivered notifications'
+    );
+    expect(errors).to.equal(2);
+  });
+});
 
 describe('setupIgnoreWindowResizeObserverLoopErrors', () => {
   setupIgnoreWindowResizeObserverLoopErrors(beforeEach, afterEach);
