@@ -266,6 +266,7 @@ The update step, which is performed for initial renders as well, is performed in
 Updates are performed by iterating over the parts and values array, and calling `part._$setValue(value)`.
 
 What happens when a value is updated on a Part is determined by the parts themselves.
+Every single Part type will also call `resolveDirective` very early in the logic & reassign `value` to the returned value. This is [how directives can customize and extend how an expression renders](https://lit.dev/docs/templates/directives/).
 
 ### ChildPart#\_$setValue
 
@@ -317,5 +318,3 @@ An EventPart is authored the same as an AttributePart, but the attribute name is
 Nothing can be committed via an ElementPart. Instead `resolveDirective` is called, allowing directives to hook into the ElementPart position.
 
 For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the ElementPart location to then manage this elements animations.
-
-<!-- TODO: Mention directives -->
