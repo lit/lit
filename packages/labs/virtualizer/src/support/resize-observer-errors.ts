@@ -11,7 +11,7 @@ import {
 
 /**
  * In a testing environment with a setup/before and teardown/after callback pattern, this function
- * can be used to as a succinct declaration to ignore these errors in tests.
+ * can be used as a succinct declaration to ignore these errors in tests.
  * @param before a setup callback; in Mocha, this would be the `beforeEach` function.
  * @param after a teardown callback; in Mocha, this would be the `afterEach` function.
  */
