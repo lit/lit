@@ -9,52 +9,52 @@
   "type": "module",
   "exports": {
     ".": {
-      "default": "./lit-virtualizer.js",
-      "types": "./lit-virtualizer.d.ts"
+      "types": "./lit-virtualizer.d.ts",
+      "default": "./lit-virtualizer.js"
     },
     "./events.js": {
-      "default": "./events.js",
-      "types": "./events.d.ts"
+      "types": "./events.d.ts",
+      "default": "./events.js"
     },
     "./layouts/flexWrap.js": {
-      "default": "./layouts/flexWrap.js",
-      "types": "./layouts/flexWrap.d.ts"
+      "types": "./layouts/flexWrap.d.ts",
+      "default": "./layouts/flexWrap.js"
     },
     "./layouts/flow.js": {
-      "default": "./layouts/flow.js",
-      "types": "./layouts/flow.d.ts"
+      "types": "./layouts/flow.d.ts",
+      "default": "./layouts/flow.js"
     },
     "./layouts/grid.js": {
-      "default": "./layouts/grid.js",
-      "types": "./layouts/grid.d.ts"
+      "types": "./layouts/grid.d.ts",
+      "default": "./layouts/grid.js"
     },
     "./layouts/masonry.js": {
-      "default": "./layouts/masonry.js",
-      "types": "./layouts/masonry.d.ts"
+      "types": "./layouts/masonry.d.ts",
+      "default": "./layouts/masonry.js"
     },
     "./LitVirtualizer.js": {
-      "default": "./LitVirtualizer.js",
-      "types": "./LitVirtualizer.d.ts"
+      "types": "./LitVirtualizer.d.ts",
+      "default": "./LitVirtualizer.js"
     },
     "./polyfillLoaders/ResizeObserver.js": {
-      "default": "./polyfillLoaders/ResizeObserver.js",
-      "types": "./polyfillLoaders/ResizeObserver.d.ts"
+      "types": "./polyfillLoaders/ResizeObserver.d.ts",
+      "default": "./polyfillLoaders/ResizeObserver.js"
     },
     "./polyfills/resize-observer-polyfill/ResizeObserver.js": {
-      "default": "./polyfillLoaders/ResizeObserver.js",
-      "types": "./polyfillLoaders/ResizeObserver.d.ts"
+      "types": "./polyfillLoaders/ResizeObserver.d.ts",
+      "default": "./polyfillLoaders/ResizeObserver.js"
     },
     "./support/method-interception.js": {
-      "default": "./support/method-interception.js",
-      "types": "./support/method-interception.d.ts"
+      "types": "./support/method-interception.d.ts",
+      "default": "./support/method-interception.js"
     },
     "./support/resize-observer-errors.js": {
-      "default": "./support/resize-observer-errors.js",
-      "types": "./support/resize-observer-errors.d.ts"
+      "types": "./support/resize-observer-errors.d.ts",
+      "default": "./support/resize-observer-errors.js"
     },
     "./virtualize.js": {
-      "default": "./virtualize.js",
-      "types": "./virtualize.d.ts"
+      "types": "./virtualize.d.ts",
+      "default": "./virtualize.js"
     }
   },
   "scripts": {
