@@ -56,7 +56,7 @@ A tag function can return any object, it does not have to return a string.
 
 The first argument to the tag is a special array of strings that retains its identity across multiple evaluations of the tagged literal, and is always the exact same array of strings.
 
-We can see this if we put the tagged literal in a function:
+We can see that the identity is preserved if we put the tagged literal in a function:
 
 ```js
 // Store how many times we've seen each literal
@@ -110,7 +110,7 @@ A `Part` is a lit-html concept and represents the location of an expression in t
 | `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input ${...}>`  ``            |
 | `ElementPart`          | Expressions on the element tag                                     | `` html`<input ${...}>`  ``            |
 
-In all the cases above the authored code pass an expression into `${}` which represents a dynamic binding to the template, and the different part classes implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<input @click=${() => console.log('clicked')}`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
+In all the cases above the authored code pass an expression into `${<expr>}` which represents a dynamic binding to the template, and the different part types implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<input @click=${() => console.log('clicked')}`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
 
 Knowing about Parts is useful when [writing custom directives](https://lit.dev/docs/templates/custom-directives/#parts).
 
@@ -168,11 +168,11 @@ Evaluating a template expression can be _extremely_ fast. It's only as expensive
 
 When a template is rendered for the very first time on a page, it must be prepared. Preparation creates a `<template>` element that can be cloned to create new instances and stores metadata about the expressions so that updatable Parts can be created for the instance.
 
-### 2.1. Join the template's string literals with a marker string.
+### 2.1. Join the template's string literals with marker strings.
 
 Source: [lit-html.ts `getTemplateHtml` function](https://github.com/lit/lit/blob/5d68be35c192e8c4109911eec727fbb598557f72/packages/lit-html/src/lit-html.ts#L667)
 
-This is a pass over the static portion of the `html` tag function that returns an annotated HTML string, along with the case-sensitive bound attribute names in template order. The returned HTML contains the following annotations:
+This is a pass over the static strings portion of the `html` tag function returning an annotated HTML string, along with the case-sensitive bound attribute names in template order. The returned HTML contains the following annotations:
 
 - Expressions in text position (ie, `<p>${}</p>`), are marked with a comment node: `<!--lit$random$-->`
 - Expressions in attribute position (ie, `<p class="${}"></p>`), are marked with a sentinel string: `<p class$lit$="lit$random$"></p>`
@@ -187,15 +187,15 @@ Because this step does not use any provided values (and because templates are in
 
 ### 2.3. Create a lit-html `Template`
 
-The `Template` class does most of the heavy-lifting for preparing a template. It walks the tree of nodes in a `<template>` element finding the markers inserted in step 2.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, the depth-first index of the node is recorded, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute.
+The `Template` class does most of the heavy-lifting for preparing a template. It walks the tree of nodes in a `<template>` element finding the markers inserted in step 2.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, the depth-first index of the node is recorded, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute. The metadata containing the depth-first index of the node and type of expression is called a `TemplatePart` in the source.
 
-`Template` has to do different work for specific Node types:
+When traversing the tree of nodes, `Template` does different work for specific Node types:
 
 #### Element
 
-For each attribute on the element, if it has a `$lit$` suffix (also called a `boundAttributeSuffix`), then the expression represents either a `PropertyPart`, `BooleanAttributePart`, `EventPart`, or `AttributePart`. These are distinguished by the first character in the attribute name.
+For each attribute on the element, if it has a `$lit$` suffix, then the expression represents either a `PropertyPart`, `BooleanAttributePart`, `EventPart`, or `AttributePart`. These can be distinguished by the first character in the attribute name ([see authored colum in Parts table](#parts)).
 
-Bound attributes are removed and an expression metadata object is created that records its location and name.
+Bound attributes are removed and a `TemplatePart` is created that records its location and name.
 
 An attribute on the element may also represent an `ElementPart` in the case where the attribute name starts with the marker sentinel value. E.g. `<div ${} ${}>` is marked up as `<div lit$random$0="" lit$random$1="">`.
 
@@ -205,7 +205,9 @@ Usually text-position markers will be comment nodes, but inside `<style>`, `<scr
 
 #### Comment
 
-Comment usually either an expression marker, or a user-written comment with no expression associated with them. Occasionally though a user may have written an expression inside a comment. This is especially easy to do with IDEs that help comment out code sections and are inline-html aware. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
+A Comment is usually either an expression marker, or a user-written comment with no expression associated with them. Occasionally though a user may have written an expression inside a comment. This is especially easy to do with IDEs that help comment out code sections and are inline-html aware. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
+
+A comment that matches an expression marker ([added in 2.1](#21-join-the-templates-string-literals-with-a-marker-string)), marks a `TemplatePart` in ChildPart position.
 
 ## 3. Create
 
@@ -235,15 +237,15 @@ Note: When a `TemplateResult` is rendered to a container or Part we get its `Tem
 
 Certain extensions to lit-html may override `_$getTemplate` to modify templates or cache based on additional keys. `shady-render.js` library uses `ShadyCSS` (part of the Shadow DOM polyfills) to modify templates for CSS scoping, and caches templates based on their scope identifier in addition to their template strings.
 
-`_$getTemplate` is what initiates the Prepare step if a `Template` is not yet in the cache.
+`_$getTemplate` is what initiates the [Prepare step](#2-prepare) if a `Template` is not yet in the cache.
 
 </blockquote>
 
 ### 3.1 Create a `TemplateInstance`
 
-`TemplateInstance` is that class that is responsible for creating the initial DOM and updating that DOM. It's given a `Template`, and `RenderOptions`. The `TemplateInstance` holds references to the Parts used to update the template instance.
+`TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the Parts used to update the DOM.
 
-### 3.1 Clone the template
+### 3.2 Clone the template
 
 The `<template>` element is cloned by `TemplateInstance#_clone()`.
 
@@ -251,9 +253,9 @@ Care must be taken to manage cloning and upgrade order. We need the cloned DOM t
 
 In general, Custom Elements are barred from modifying their own DOM, and we don't need to worry about their ShadowRoots, except in the case of the Web Components polyfills. So with native Web Components, template contents are cloned with `document.importNode()`, which will cause Custom Elements to upgrade. With polyfilled Web Components, template contents are cloned with `template.content.cloneNode()`, which will not upgrade elements. They are then upgraded later.
 
-### 3.2 Create Parts
+### 3.3 Create Parts
 
-After cloning, `TemplateInstance#_clone()` walks the cloned contents so that we can associate nodes with expression metadata by depth-first-index. When we get to a node that has associated expression metadata we create a Part instance. This is where we instantiate either a `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart` or `BooleanAttributePart` based on the part type stored in the metadata.
+After cloning, `TemplateInstance#_clone()` walks the cloned contents to associate nodes with `TemplatePart`s by depth-first-index. When we get to a node that has an associated `TemplatePart` we create a Part instance. This is where we instantiate either a `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart` or `BooleanAttributePart` based on the type of the `TemplatePart`.
 
 These Part instances are stored on the `TemplateInstance`.
 
@@ -261,8 +263,59 @@ These Part instances are stored on the `TemplateInstance`.
 
 The update step, which is performed for initial renders as well, is performed in `TemplateInstance#_update()`.
 
-Updates are performed by iterating over each part and value, and calling `part._$setValue(v)`. The parts array and values array are always the same length.
+Updates are performed by iterating over the parts and values array, and calling `part._$setValue(value)`.
 
-The heavy-lifting of the update phase is done by the parts themselves, in `_$setValue()`.
+What happens when a value is updated on a Part is determined by the parts themselves.
 
-<!-- TODO: Add what each Part does during _$setValue() -->
+### ChildPart#\_$setValue
+
+Setting a value on a ChildPart occurs whenever the authored template has a dynamic expression in child part position, and the value is whatever has been passed into the tagged template literal expression.
+
+Some examples of authored templates that all result in rendering `<div>hi</div>` via a ChildPart:
+
+- `` html`<div>${"hi"}</div>` ``, sets the string literal value `"hi"` on the child part.
+- `` html`<div>${html`hi`}</div>` ``, sets the TemplateResult value `` html`<p>Hi</p>` `` on the child part.
+- `` html`<div>${['h', 'i']}</div>` ``, sets the iterable on the child part.
+- `` html`<div>${document.createTextNode('hi')}</div>` ``, sets the Text node on the child part.
+
+At a very high level, `ChildPart` tracks the last value it was updated with via `_$committedValue`, skipping any work if the passed value is equal to the last committed value. This is how ChildParts diff changes at the value level.
+If the `value` being set on the ChildPart is not the same as `_$committedValue`, then the value is processed (differently based on the type) into a Node or Nodes and is committed to the DOM. Then the `value` is set on `_$committedValue` so the following `_$setValue` call can omit additional work if the value is unchanged.
+
+Primitive values set on a `ChildPart`, (`null`, `undefined`, `boolean`, `number`, `string`, `symbol`, or `bigint`), create or update a Text node. Committing a text node is done in `_commitText`, which is also where text sanitization occurrs.
+
+If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResult` which renders that `TemplateResult` into the ChildPart, [creating and updating](#3-create) that `TemplatResult`.
+
+If the value is a Node, the the ChildPart clears any previously rendered nodes and inserts the Node value directly.
+
+### AttributePart#\_$setValue
+
+Setting a value on an `AttributePart` occurs whenever the authored template has a value or values bound to an attribute without the prefixes (`.`, `@`, `?`).
+
+In the single binding within an attribute value case such as `` html`<input value=${...}>` ``, an AttributePart once again uses `_$committedValue` to not do extra work. But otherwise calls `this.element.setAttribute(name, value)`.
+
+An AttributePart also handles the more complex case where multiple bindings might be within an attribute: `` html`<div class="${...} static-class ${...}"></div>` ``, but again this results in a `setAttribute` call.
+
+### PropertyPart#\_$setValue
+
+This extends `AttributePart`, with the only difference being that committing the value to the live DOM is not `setAttribute(name, value)`, but instead as a property via `this.element[name] = value`.
+
+A PropertyPart is authored the same as an AttributePart, but the attribute name is prefixed with `.`, e.g.: `` html`<input .value=${...}>` ``.
+
+### BooleanAttributePart#\_$setValue
+
+BooleanAttributePart also extends `AttributePart`, and overrides `_commitValue`. When the value is committed to a BooleanAttributePart, it is committed with roughly `this.element.toggleAttribute(name, value)`. A BooleanAttributePart is authored the same as an AttributePart, but the attribute name is prefixed with `?`, e.g.: `` html`<input ?checked=${...}>` ``.
+
+### EventPart#\_$setValue
+
+EventPart also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`.
+The EventPart ensures that event listeners are added and cleaned up between renders and if the passed in value changes.
+
+An EventPart is authored the same as an AttributePart, but the attribute name is prefixed with `@`, e.g.: `` html`<input @input=${...}>` ``.
+
+### ElementPart#\_$setValue
+
+Nothing can be committed via an ElementPart. Instead `resolveDirective` is called, allowing directives to hook into the ElementPart position.
+
+For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the ElementPart location to then manage this elements animations.
+
+<!-- TODO: Mention directives -->
