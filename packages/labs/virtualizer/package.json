@@ -41,8 +41,8 @@
       "default": "./polyfillLoaders/ResizeObserver.js"
     },
     "./polyfills/resize-observer-polyfill/ResizeObserver.js": {
-      "types": "./polyfillLoaders/ResizeObserver.d.ts",
-      "default": "./polyfillLoaders/ResizeObserver.js"
+      "types": "./polyfills/resize-observer-polyfill/ResizeObserver.d.ts",
+      "default": "./polyfills/resize-observer-polyfill/ResizeObserver.js"
     },
     "./support/method-interception.js": {
       "types": "./support/method-interception.d.ts",
