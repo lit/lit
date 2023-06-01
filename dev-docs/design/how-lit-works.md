@@ -101,13 +101,14 @@ During parsing, or when setting `innerHTML`, nodes that would normally become ch
 
 A `Part` is a lit-html concept and represents the location of an expression in the `html` tagged template literal:
 
-| Part                   | Description                                                            | Authored                               |
-| ---------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
-| `ChildPart`            | For expressions in HTML child position                                 | `` html`<div>${...}</div>`  ``         |
-| `AttributePart`        | For expressions in HTML attribute value position                       | `` html`<input id="${...}">`  ``       |
-| `BooleanAttributePart` | For expressions in a boolean attribute value (name prefixed with `?`)  | `` html`<input ?checked="${...}">`  `` |
-| `EventPart`            | For expressions in an event listener position (name prefixed with `@`) | `` html`<input @click=${...}`  ``      |
-| `PropertyPart`         | For expressions on the element tag                                     | `` html`<input ${...}>`  ``            |
+| Part                   | Description                                                        | Authored                               |
+| ---------------------- | ------------------------------------------------------------------ | -------------------------------------- |
+| `ChildPart`            | Expressions in HTML child position                                 | `` html`<div>${...}</div>`  ``         |
+| `AttributePart`        | Expressions in HTML attribute value position                       | `` html`<input id="${...}">`  ``       |
+| `BooleanAttributePart` | Expressions in a boolean attribute value (name prefixed with `?`)  | `` html`<input ?checked="${...}">`  `` |
+| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<input @click=${...}`  ``      |
+| `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input ${...}>`  ``            |
+| `ElementPart`          | Expressions on the element tag                                     | `` html`<input ${...}>`  ``            |
 
 In all the cases above the authored code pass an expression into `${}` which represents a dynamic binding to the template, and the different part classes implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<input @click=${() => console.log('clicked')}`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
 
