@@ -8,7 +8,7 @@ All the source code described by this document can be found in [`lit-html.ts`](h
 
 The source code itself is generally optimized to be read and we try to be as clear and self-documenting as possible, erring on the side of verbosity, with numerous comments when needed to explain why code is written as it is. We expect the source to be optimized by tools, so we can keep it understandable by humans.
 
-If anything is unclear or you have questions, please open an issue and we'll do our best to clarify either the source or this document.
+If anything is unclear or you have questions, reach out on our [Discord channel](https://discord.com/invite/buildWithLit), or ask a question on [GitHub Discussions](https://github.com/lit/lit/discussions). All our communities can be found on the [Lit Community page](https://lit.dev/docs/resources/community/).
 
 # What is lit-html?
 
@@ -18,7 +18,7 @@ The key feature that enables this is separating static parts of templates from t
 
 ## Comparison to Virtual DOM
 
-lit-html is comparable in many ways to virtual-DOM approaches, but it works without storing a separate representation of the DOM in memory, or computing DOM diffs like virtual-DOM libraries must do.
+lit-html is comparable in many ways to virtual-DOM (VDOM) approaches, but it works without storing a separate representation of the DOM in memory, or computing DOM diffs like virtual-DOM libraries must do.
 
 - Where VDOMs work at the level of the DOM representation of a UI, lit-html works at the _value_ level.
 - lit-html UIs are values, like VDOM, but instead of each DOM node being represented as a single value, the DOM structure is represented by a reference to a template.
@@ -106,8 +106,8 @@ A `Part` is a lit-html concept and represents the location of an expression in t
 | `ChildPart`            | Expressions in HTML child position                                 | `` html`<div>${...}</div>`  ``         |
 | `AttributePart`        | Expressions in HTML attribute value position                       | `` html`<input id="${...}">`  ``       |
 | `BooleanAttributePart` | Expressions in a boolean attribute value (name prefixed with `?`)  | `` html`<input ?checked="${...}">`  `` |
-| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<input @click=${...}`  ``      |
-| `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input ${...}>`  ``            |
+| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<input @click=${...}>`  ``     |
+| `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input .value=${...}>`  ``     |
 | `ElementPart`          | Expressions on the element tag                                     | `` html`<input ${...}>`  ``            |
 
 In all the cases above the authored code pass an expression into `${<expr>}` which represents a dynamic binding to the template, and the different part types implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<input @click=${() => console.log('clicked')}`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
@@ -136,7 +136,7 @@ Then rendered to a specific container:
 render(ui, container);
 ```
 
-`render()` can be called multiple times with results of the same template, but different state, and the DOM will be updated to match the state. From the author's point of view there's little difference between an initial render and an update.
+`render()` can be called multiple times with results of the same template, but different state, and the DOM will be updated to match the state. From the caller of `render`'s point of view, there is little difference between an initial render and an update.
 
 # Phases of Template Rendering
 
@@ -187,7 +187,7 @@ Because this step does not use any provided values (and because templates are in
 
 ### 2.3. Create a lit-html `Template`
 
-The `Template` class does most of the heavy-lifting for preparing a template. It walks the tree of nodes in a `<template>` element finding the markers inserted in step 2.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, the depth-first index of the node is recorded, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute. The metadata containing the depth-first index of the node and type of expression is called a `TemplatePart` in the source.
+The `Template` class does most of the heavy-lifting for preparing a template. It walks the tree of nodes in a `<template>` element finding the markers inserted in step 2.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, the depth-first index of the node is recorded, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute. The metadata containing the depth-first index of the node and type of expression is called a `TemplatePart` in the source. A `TemplatePart` is not the same as the `Parts` mentioned [in the Parts section](#parts), but is the inert definition for what `Part` should be created later during the [Create Parts](#33-create-parts) phase.
 
 When traversing the tree of nodes, `Template` does different work for specific Node types:
 
@@ -195,9 +195,9 @@ When traversing the tree of nodes, `Template` does different work for specific N
 
 For each attribute on the element, if it has a `$lit$` suffix, then the expression represents either a `PropertyPart`, `BooleanAttributePart`, `EventPart`, or `AttributePart`. These can be distinguished by the first character in the attribute name ([see authored colum in Parts table](#parts)).
 
-Bound attributes are removed and a `TemplatePart` is created that records its location and name.
-
 An attribute on the element may also represent an `ElementPart` in the case where the attribute name starts with the marker sentinel value. E.g. `<div ${} ${}>` is marked up as `<div lit$random$0="" lit$random$1="">`.
+
+For each of the bound attributes identified, they are removed from the element and a `TemplatePart` is created to record the location, name, and type of dynamic binding.
 
 #### Text
 
@@ -207,7 +207,7 @@ Usually text-position markers will be comment nodes, but inside `<style>`, `<scr
 
 A Comment is usually either an expression marker, or a user-written comment with no expression associated with them. Occasionally though a user may have written an expression inside a comment. This is especially easy to do with IDEs that help comment out code sections and are inline-html aware. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
 
-A comment that matches an expression marker ([added in 2.1](#21-join-the-templates-string-literals-with-a-marker-string)), marks a `TemplatePart` in ChildPart position.
+A comment that matches an expression marker ([added in step 2.1](#21-join-the-templates-string-literals-with-a-marker-string)), marks a `TemplatePart` in ChildPart position.
 
 ## 3. Create
 
@@ -245,30 +245,24 @@ Certain extensions to lit-html may override `_$getTemplate` to modify templates 
 
 `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the Parts used to update the DOM.
 
-### 3.2 Clone the template
+### 3.2 Clone the template and instantiate Parts
 
-The `<template>` element is cloned by `TemplateInstance#_clone()`.
+Within `TemplateInstance._clone()`, first the inert `<template>` element is cloned into a document fragment.
 
-Care must be taken to manage cloning and upgrade order. We need the cloned DOM to exactly match the template DOM so that we can find Part locations when we walk the cloned tree. When Custom Elements upgrade, it's possible that they could modify the DOM before we get a chance to walk it, throwing off our part indices.
-
-In general, Custom Elements are barred from modifying their own DOM, and we don't need to worry about their ShadowRoots, except in the case of the Web Components polyfills. So with native Web Components, template contents are cloned with `document.importNode()`, which will cause Custom Elements to upgrade. With polyfilled Web Components, template contents are cloned with `template.content.cloneNode()`, which will not upgrade elements. They are then upgraded later.
-
-### 3.3 Create Parts
-
-After cloning, `TemplateInstance#_clone()` walks the cloned contents to associate nodes with `TemplatePart`s by depth-first-index. When we get to a node that has an associated `TemplatePart` we create a Part instance. This is where we instantiate either a `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart` or `BooleanAttributePart` based on the type of the `TemplatePart`.
+After cloning, we walk the document fragment node tree to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a Part instance is created for the node. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
 
 These Part instances are stored on the `TemplateInstance`.
 
 ## 4. Update
 
-The update step, which is performed for initial renders as well, is performed in `TemplateInstance#_update()`.
+The update step, which is performed for initial renders as well, is performed in `TemplateInstance._update()`.
 
 Updates are performed by iterating over the parts and values array, and calling `part._$setValue(value)`.
 
 What happens when a value is updated on a Part is determined by the parts themselves.
-Every single Part type will also call `resolveDirective` very early in the logic & reassign `value` to the returned value. This is [how directives can customize and extend how an expression renders](https://lit.dev/docs/templates/directives/).
+Every single Part type will also call `resolveDirective` very early in the logic and reassign `value` to the returned value. This is [how directives can customize and extend how an expression renders](https://lit.dev/docs/templates/directives/).
 
-### ChildPart#\_$setValue
+### ChildPart.\_$setValue
 
 Setting a value on a ChildPart occurs whenever the authored template has a dynamic expression in child part position, and the value is whatever has been passed into the tagged template literal expression.
 
@@ -288,33 +282,29 @@ If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResu
 
 If the value is a Node, the the ChildPart clears any previously rendered nodes and inserts the Node value directly.
 
-### AttributePart#\_$setValue
+### AttributePart.\_$setValue
 
-Setting a value on an `AttributePart` occurs whenever the authored template has a value or values bound to an attribute without the prefixes (`.`, `@`, `?`).
+In the single binding attribute value case such as `` html`<input value=${...}>` ``, an `AttributePart` also uses `_$committedValue` to not do extra work. Values are committed by calling `this.element.setAttribute(name, value)`.
 
-In the single binding within an attribute value case such as `` html`<input value=${...}>` ``, an AttributePart once again uses `_$committedValue` to not do extra work. But otherwise calls `this.element.setAttribute(name, value)`.
+`AttributePart` also handles the more complex cases with multiple bindings in attribute value position: `` html`<div class="${...} static-class ${...}"></div>` ``. Multiple values are also committed with a `setAttribute` call after the values are evaluated and joined together.
 
-An AttributePart also handles the more complex case where multiple bindings might be within an attribute: `` html`<div class="${...} static-class ${...}"></div>` ``, but again this results in a `setAttribute` call.
+### PropertyPart.\_$setValue
 
-### PropertyPart#\_$setValue
+`PropertyPart` extends `AttributePart`, with the only difference being that committing the value to the live DOM is not via `setAttribute(name, value)`, but instead as a property via `this.element[name] = value`. E.g. `` html`<input .value=${'hi'}>` `` will commit the value `'hi'` with `inputEl.value = 'hi'`.
 
-This extends `AttributePart`, with the only difference being that committing the value to the live DOM is not `setAttribute(name, value)`, but instead as a property via `this.element[name] = value`.
+### BooleanAttributePart.\_$setValue
 
-A PropertyPart is authored the same as an AttributePart, but the attribute name is prefixed with `.`, e.g.: `` html`<input .value=${...}>` ``.
+BooleanAttributePart also extends `AttributePart`, and overrides `_commitValue`. When a value is committed to a `BooleanAttributePart`, a falsy or `nothing` value will remove the attribute, and a truthy value will set the attribute with an empty string attribute value.
 
-### BooleanAttributePart#\_$setValue
-
-BooleanAttributePart also extends `AttributePart`, and overrides `_commitValue`. When the value is committed to a BooleanAttributePart, it is committed with roughly `this.element.toggleAttribute(name, value)`. A BooleanAttributePart is authored the same as an AttributePart, but the attribute name is prefixed with `?`, e.g.: `` html`<input ?checked=${...}>` ``.
-
-### EventPart#\_$setValue
+### EventPart.\_$setValue
 
 EventPart also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`.
 The EventPart ensures that event listeners are added and cleaned up between renders and if the passed in value changes.
 
-An EventPart is authored the same as an AttributePart, but the attribute name is prefixed with `@`, e.g.: `` html`<input @input=${...}>` ``.
+A value of `null`, `undefined`, or `nothing` will remove any previously set listeners without adding a new listener.
 
-### ElementPart#\_$setValue
+### ElementPart.\_$setValue
 
-Nothing can be committed via an ElementPart. Instead `resolveDirective` is called, allowing directives to hook into the ElementPart position.
+Nothing can be committed via an ElementPart. Instead `resolveDirective` is called, allowing directives to hook into the `ElementPart` position.
 
-For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the ElementPart location to then manage this elements animations.
+For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the `ElementPart` location to then manage the elements animations.
