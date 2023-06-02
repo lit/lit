@@ -116,7 +116,7 @@ Knowing about Parts is useful when [writing custom directives](https://lit.dev/d
 
 # Rendering
 
-lit-html templates are only a description of the UI. They must be rendered to affect the DOM. While there are a few internal phases to rendering, to the author there appear to be only two: define and render.
+lit-html templates are only a description of the UI. They must be rendered to affect the DOM. While there are a few internal phases to rendering, to users of Lit there appear to be only two: define and render.
 
 Templates are most often written as functions that return a lit-html `TemplateResult`:
 
