@@ -136,7 +136,7 @@ Then rendered to a specific container:
 render(ui, container);
 ```
 
-`render()` can be called multiple times with results of the same template, but different state, and the DOM will be updated to match the state. From the caller of `render`'s point of view, there is little difference between an initial render and an update.
+`render()` can be called multiple times with results of the same template, but different state, and the DOM will be updated to match the state. From the caller of `render()`'s point of view, there is little difference between an initial render and an update.
 
 # Phases of Template Rendering
 
