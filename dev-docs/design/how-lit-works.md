@@ -14,7 +14,7 @@ If anything is unclear or you have questions, reach out on our [Discord channel]
 
 lit-html is an HTML templating library. Templates are written in JavaScript by mixing static HTML strings and dynamic JavaScript values using template literals. lit-html enables a functional / UI-as-data programming model, fast initial rendering, and fast updates that minimally update DOM when state changes.
 
-The key feature that enables this is separating static parts of templates from the dynamic parts with template literals, and never traversing or updating the static parts after the initial render. This makes lit-html very performant as can be seen in the [JS Frameworks Benchmark](https://krausest.github.io/js-framework-benchmark/). A great companion to this document is [Justin Fagnani's lit-html talk](https://youtu.be/Io6JjgckHbg?t=1032).
+The key feature that enables this is separating static parts of templates from the dynamic parts with template literals, and never traversing or updating the static parts after the initial render. This makes lit-html very performant as can be seen in the [JS Frameworks Benchmark](https://krausest.github.io/js-framework-benchmark/). A great companion to this document is [Justin Fagnani's lit-html talk](https://youtu.be/Io6JjgckHbg).
 
 # Foundational Pieces
 
