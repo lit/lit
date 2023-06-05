@@ -2,7 +2,7 @@
 
 ## About this Document
 
-This is a high-level overview for how lit-html works, what makes it fast, and how the code is organized. It's intended for contributors, or anyone who is interested in the inner workings of lit-html.
+This is an overview for how lit-html works, what makes it fast, and how the code is organized. It's intended for contributors, or anyone who is interested in the inner workings of lit-html.
 
 All the source code described by this document can be found in [`lit-html.ts`](https://github.com/lit/lit/blob/main/packages/lit-html/src/lit-html.ts).
 
@@ -14,15 +14,7 @@ If anything is unclear or you have questions, reach out on our [Discord channel]
 
 lit-html is an HTML templating library. Templates are written in JavaScript by mixing static HTML strings and dynamic JavaScript values using template literals. lit-html enables a functional / UI-as-data programming model, fast initial rendering, and fast updates that minimally update DOM when state changes.
 
-The key feature that enables this is separating static parts of templates from the dynamic parts with template literals, and never traversing or updating the static parts after the initial render.
-
-## Comparison to Virtual DOM
-
-lit-html is comparable in many ways to virtual-DOM (VDOM) approaches, but it works without storing a separate representation of the DOM in memory, or computing DOM diffs like virtual-DOM libraries must do.
-
-- Where VDOMs work at the level of the DOM representation of a UI, lit-html works at the _value_ level.
-- lit-html UIs are values, like VDOM, but instead of each DOM node being represented as a single value, the DOM structure is represented by a reference to a template.
-- lit-html only tracks the tree of dynamic values (called `Parts`) that is more sparse than the associated DOM tree, so traversing dynamic values when necessary is faster.
+The key feature that enables this is separating static parts of templates from the dynamic parts with template literals, and never traversing or updating the static parts after the initial render. This makes lit-html very performant as can be seen in the [JS Frameworks Benchmark](https://krausest.github.io/js-framework-benchmark/). A great companion to this document is [Justin Fagnani's lit-html talk](https://youtu.be/Io6JjgckHbg?t=1032).
 
 # Foundational Pieces
 
@@ -187,7 +179,7 @@ Because this step does not use any provided values (and because templates are in
 
 ### 2.3. Create a lit-html `Template`
 
-The `Template` class does most of the heavy-lifting for preparing a template. It walks the tree of nodes in a `<template>` element finding the markers inserted in step 2.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, the depth-first index of the node is recorded, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute. The metadata containing the depth-first index of the node and type of expression is called a `TemplatePart` in the source. A `TemplatePart` is not the same as the `Parts` mentioned [in the Parts section](#parts), but is the inert definition for what `Part` should be created later during the [Create Parts](#33-create-parts) phase.
+The `Template` class does most of the heavy-lifting for preparing a template. It walks the tree of nodes in a `<template>` element finding the markers inserted in step 2.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, the depth-first index of the node is recorded, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute. The metadata containing the depth-first index of the node and type of expression is called a `TemplatePart` in the source. A `TemplatePart` is not the same as the `Parts` mentioned [in the Parts section](#parts), but is the inert definition for what `Part` should be created later during the [Create Parts](#32-clone-the-template-and-instantiate-parts) phase.
 
 When traversing the tree of nodes, `Template` does different work for specific Node types:
 
