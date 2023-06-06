@@ -7,7 +7,7 @@ Audience: Lit core contributors.
 The end result of this document is a release of all unreleased changes on the main branch for all packages in the Lit monorepo.
 
 > **Note**
-> Before releasing, ensure the main branch has been imported and tested within Google.
+> Before releasing, ensure the main branch has been imported and tested within Google. Because Google has an unversioned monorepo, this provides confidence we are not releasing unexpected breaking changes. This can be checked by pinging the general development channel on [our Discord](https://discord.com/invite/buildWithLit).
 
 ### Tl;dr
 
@@ -24,7 +24,7 @@ The end result of this document is a release of all unreleased changes on the ma
 
 2. Click on the link "Review pending deployments" which will navigate you to a GitHub Action page for the Release workflow. Then click "Review deployments" and approve the pending deployment.
 
-![GitHub actions UI for the Release showing a "Review deployments" button](./images/lit-release-process/release-github-action-review-pending.png)
+![GitHub actions UI for the Release showing a "Review deployments" button](./images/lit-release-process/github-actions-release-pending-ui.png)
 
 ![GitHub actions UI modal for approving a pending release](./images/lit-release-process/review-pending-release-modal-ui.png)
 
@@ -79,7 +79,7 @@ If the release contains new API documentation then [lit.dev](https://lit.dev) wi
 1. Copy the release commit sha.
 2. Navigate to [lit-dev-tools-cjs/src/api-docs/configs/lit-2.ts](https://github.com/lit/lit.dev/blob/7da810ec1e0a77ddea516cad3a5c9f166ce718c1/packages/lit-dev-tools-cjs/src/api-docs/configs/lit-2.ts#L24)
 3. Replace the previous sha with the new sha.
-4. Re-build Lit.dev. When the build succeeds `pages.json` and/or `symbols.json` will contain the new documentation. If these files have not been updated then no API docs have changed.
+4. Re-build Lit.dev with `npm run build`. When the build succeeds `pages.json` and/or `symbols.json` will contain the new documentation. If these files have not been updated then no API docs have changed.
 5. Commit these changes to the lit.dev repo. [Example pull request](https://github.com/lit/lit.dev/pull/692).
 
 ## Communication
