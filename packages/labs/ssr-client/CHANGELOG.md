@@ -11,6 +11,12 @@
   - lit-html@3.0.0-pre.0
   - lit@3.0.0-pre.0
 
+## 1.1.2
+
+### Patch Changes
+
+- [#3901](https://github.com/lit/lit/pull/3901) [`82e9f370`](https://github.com/lit/lit/commit/82e9f3708973709e916ccbb6d8a450110dea7755) - Bump minimum version of `lit-html` dependency to 2.7.1 which includes needed shared internals.
+
 ## 1.1.1
 
 ### Patch Changes

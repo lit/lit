@@ -42,18 +42,12 @@ import {Context} from '../create-context.js';
  * @category Decorator
  */
 export function consume<ValueType>({
-  context: context,
+  context,
   subscribe,
 }: {
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
-}): <K extends PropertyKey>(
-  // Partial<> allows for providing the value to an optional field
-  protoOrDescriptor: ReactiveElement & Partial<Record<K, ValueType>>,
-  name?: K
-  // Note TypeScript requires the return type to be `void|any`
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-) => void | any {
+}): ConsumerDecorator<ValueType> {
   return decorateProperty({
     finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
       ctor.addInitializer((element: ReactiveElement): void => {
@@ -69,3 +63,43 @@ export function consume<ValueType>({
     },
   });
 }
+
+type ConsumerDecorator<ValueType> = {
+  <K extends PropertyKey, Proto extends ReactiveElement>(
+    protoOrDescriptor: Proto,
+    name?: K
+  ): FieldMustMatchProvidedType<Proto, K, ValueType>;
+};
+
+// Note TypeScript requires the return type of a decorator to be `void | any`
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DecoratorReturn = void | any;
+
+type FieldMustMatchProvidedType<Obj, Key extends PropertyKey, ProvidedType> =
+  // First we check whether the object has the property as a required field
+  Obj extends Record<Key, infer ConsumingType>
+    ? // Ok, it does, just check whether it's ok to assign the
+      // provided type to the consuming field
+      [ProvidedType] extends [ConsumingType]
+      ? DecoratorReturn
+      : {
+          message: 'provided type not assignable to consuming field';
+          provided: ProvidedType;
+          consuming: ConsumingType;
+        }
+    : // Next we check whether the object has the property as an optional field
+    Obj extends Partial<Record<Key, infer ConsumingType>>
+    ? // Check assignability again. Note that we have to include undefined
+      // here on the consuming type because it's optional.
+      [ProvidedType] extends [ConsumingType | undefined]
+      ? DecoratorReturn
+      : {
+          message: 'provided type not assignable to consuming field';
+          provided: ProvidedType;
+          consuming: ConsumingType | undefined;
+        }
+    : // Ok, the field isn't present, so either someone's using consume
+      // manually, i.e. not as a decorator (maybe don't do that! but if you do,
+      // you're on your own for your type checking, sorry), or the field is
+      // private, in which case we can't check it.
+      DecoratorReturn;

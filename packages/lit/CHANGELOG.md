@@ -25,6 +25,12 @@
   - lit-html@3.0.0-pre.0
   - lit-element@4.0.0-pre.0
 
+## 2.7.5
+
+### Patch Changes
+
+- [#3917](https://github.com/lit/lit/pull/3917) [`f6387e35`](https://github.com/lit/lit/commit/f6387e3532194bafd4be9621ccb162fc7c4046ba) - Allow decorators to accept `ReactiveElement` class from a different source.
+
 ## 2.7.4
 
 ### Patch Changes

@@ -168,6 +168,10 @@ describe('lit-virtualizer and virtualize directive', () => {
     expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
 
     // Clearing event arrays so we can watch for specific future events.
+    await until(() => ulv.rangeChangedEvents.length > 0);
+    await until(() => uvd.rangeChangedEvents.length > 0);
+    await until(() => ulv.visibilityChangedEvents.length > 0);
+    await until(() => uvd.visibilityChangedEvents.length > 0);
     ulv.rangeChangedEvents.splice(0);
     uvd.rangeChangedEvents.splice(0);
     ulv.visibilityChangedEvents.splice(0);

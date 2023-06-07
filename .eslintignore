@@ -335,6 +335,10 @@ packages/labs/virtualizer/ScrollerController.js
 packages/labs/virtualizer/ScrollerController.d.ts
 packages/labs/virtualizer/ScrollerController.d.ts.map
 packages/labs/virtualizer/ScrollerController.js.map
+packages/labs/virtualizer/support/**/*.d.ts
+packages/labs/virtualizer/support/**/*.d.ts.map
+packages/labs/virtualizer/support/**/*.js
+packages/labs/virtualizer/support/**/*.js.map
 packages/labs/virtualizer/test/**/*.d.ts
 packages/labs/virtualizer/test/**/*.d.ts.map
 packages/labs/virtualizer/test/**/*.js

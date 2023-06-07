@@ -6,6 +6,15 @@
 
 import {ReactiveElement} from '../reactive-element.js';
 
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise compatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+export type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
 export type Constructor<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): T;
@@ -71,7 +80,7 @@ export const decorateProperty =
     descriptor?: (property: PropertyKey) => PropertyDescriptor;
   }) =>
   (
-    protoOrDescriptor: ReactiveElement | ClassElement,
+    protoOrDescriptor: Interface<ReactiveElement> | ClassElement,
     name?: PropertyKey
     // Note TypeScript requires the return type to be `void|any`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

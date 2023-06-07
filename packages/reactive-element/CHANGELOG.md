@@ -25,6 +25,12 @@
 - Updated dependencies [[`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa)]:
   - @lit-labs/ssr-dom-shim@1.1.2-pre.0
 
+## 1.6.2
+
+### Patch Changes
+
+- [#3917](https://github.com/lit/lit/pull/3917) [`f6387e35`](https://github.com/lit/lit/commit/f6387e3532194bafd4be9621ccb162fc7c4046ba) - Allow decorators to accept `ReactiveElement` class from a different source.
+
 ## 1.6.1
 
 ### Patch Changes
