@@ -7,10 +7,11 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {Context, consume, provide} from '@lit-labs/context';
+import {createContext, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
 
-const simpleContext = 'simple-context' as Context<'simple-context', number>;
+const simpleContext = createContext<number>('simple-context');
+const optionalContext = createContext<number | undefined>('optional-context');
 
 class ContextConsumerElement extends LitElement {
   @consume({context: simpleContext, subscribe: true})
@@ -22,6 +23,14 @@ class ContextConsumerElement extends LitElement {
   @property({type: Number})
   public value2?: string;
 
+  @consume({context: optionalContext, subscribe: true})
+  @property({type: Number})
+  public optionalValue?: number;
+
+  @consume({context: optionalContext, subscribe: true})
+  @property({type: Number})
+  public consumeOptionalWithDefault: number | undefined = 0;
+
   protected render(): TemplateResult {
     return html`Value <span id="value">${this.value}</span>`;
   }
@@ -32,6 +41,10 @@ class ContextProviderElement extends LitElement {
   @provide({context: simpleContext})
   @property({type: Number, reflect: true})
   public value = 0;
+
+  @provide({context: optionalContext})
+  @property({type: Number})
+  public optionalValue?: number;
 
   protected render(): TemplateResult {
     return html`
@@ -83,6 +96,14 @@ suite('@consume', () => {
     provider.value = 500;
     await consumer.updateComplete;
     assert.strictEqual(consumer.value, 500);
+  });
+
+  test('consuming and providing with optional fields', async () => {
+    assert.strictEqual(consumer.optionalValue, undefined);
+    assert.strictEqual(consumer.consumeOptionalWithDefault, undefined);
+    provider.optionalValue = 500;
+    assert.strictEqual(consumer.optionalValue, 500);
+    assert.strictEqual(consumer.consumeOptionalWithDefault, 500);
   });
 });
 

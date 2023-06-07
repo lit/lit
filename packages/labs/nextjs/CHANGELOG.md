@@ -9,6 +9,13 @@
 - Updated dependencies [[`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa)]:
   - @lit-labs/ssr-react@0.1.2-pre.0
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`7932f7dd`](https://github.com/lit/lit/commit/7932f7ddc21308dc0bf7b1bbd0dde781a6c8dece)]:
+  - @lit-labs/ssr-react@0.2.0
+
 ## 0.1.1
 
 ### Patch Changes
