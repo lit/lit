@@ -394,87 +394,82 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             });
           }
         }
-        if (node.attrs.length > 0) {
-          const attrInfo = [] as Array<
-            [boolean, boolean, (typeof node.attrs)[0]]
-          >;
-          for (const attr of node.attrs) {
-            const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
-            const isElementBinding = attr.name.startsWith(marker);
-            if (isAttrBinding || isElementBinding) {
-              boundAttributesCount += 1;
-            }
-            attrInfo.push([isAttrBinding, isElementBinding, attr]);
+        const attrInfo = node.attrs.map((attr) => {
+          const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
+          const isElementBinding = attr.name.startsWith(marker);
+          if (isAttrBinding || isElementBinding) {
+            boundAttributesCount += 1;
           }
-          if (boundAttributesCount > 0 || node.isDefinedCustomElement) {
-            // We (may) need to emit a `<!-- lit-node -->` comment marker to
-            // indicate the following node needs to be identified during
-            // hydration when it has bindings or if it is a custom element (and
-            // thus may need its `defer-hydration` to be removed, depending on
-            // the `deferHydration` setting). The marker is emitted as a
-            // previous sibling before the node in question, to avoid issues
-            // with void elements (which do not have children) and raw text
-            // elements (whose children are intepreted as text).
-            flushTo(node.sourceCodeLocation!.startTag!.startOffset);
-            ops.push({
-              type: 'possible-node-marker',
-              boundAttributesCount,
-              nodeIndex,
-            });
-          }
-          for (const [isAttrBinding, isElementBinding, attr] of attrInfo) {
-            if (isAttrBinding || isElementBinding) {
-              // Note that although we emit a lit-node comment marker for any
-              // nodes with bindings, we don't account for it in the nodeIndex because
-              // that will not be injected into the client template
-              const strings = attr.value.split(marker);
-              // We store the case-sensitive name from `attrNames` (generated
-              // while parsing the template strings); note that this assumes
-              // parse5 attribute ordering matches string ordering
-              const name = attrNames[attrIndex++];
-              const attrSourceLocation =
-                node.sourceCodeLocation!.attrs![attr.name]!;
-              const attrNameStartOffset = attrSourceLocation.startOffset;
-              const attrEndOffset = attrSourceLocation.endOffset;
-              flushTo(attrNameStartOffset);
-              if (isAttrBinding) {
-                const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
-                  name as string
-                )!;
-                ops.push({
-                  type: 'attribute-part',
-                  index: nodeIndex,
-                  name: caseSensitiveName,
-                  ctor:
-                    prefix === '.'
-                      ? PropertyPart
-                      : prefix === '?'
-                      ? BooleanAttributePart
-                      : prefix === '@'
-                      ? EventPart
-                      : AttributePart,
-                  strings,
-                  tagName: tagName.toUpperCase(),
-                  useCustomElementInstance: node.isDefinedCustomElement,
-                });
-              } else {
-                ops.push({
-                  type: 'element-part',
-                  index: nodeIndex,
-                });
-              }
-              skipTo(attrEndOffset);
-            } else if (node.isDefinedCustomElement) {
-              // For custom elements, all static attributes are stored along
-              // with the `custom-element-open` opcode so that we can set them
-              // into the custom element instance, and then serialize them back
-              // out along with any manually-reflected attributes. As such, we
-              // skip over static attribute text here.
-              const attrSourceLocation =
-                node.sourceCodeLocation!.attrs![attr.name]!;
-              flushTo(attrSourceLocation.startOffset);
-              skipTo(attrSourceLocation.endOffset);
+          return [isAttrBinding, isElementBinding, attr] as const;
+        });
+        if (boundAttributesCount > 0 || node.isDefinedCustomElement) {
+          // We (may) need to emit a `<!-- lit-node -->` comment marker to
+          // indicate the following node needs to be identified during
+          // hydration when it has bindings or if it is a custom element (and
+          // thus may need its `defer-hydration` to be removed, depending on
+          // the `deferHydration` setting). The marker is emitted as a
+          // previous sibling before the node in question, to avoid issues
+          // with void elements (which do not have children) and raw text
+          // elements (whose children are intepreted as text).
+          flushTo(node.sourceCodeLocation!.startTag!.startOffset);
+          ops.push({
+            type: 'possible-node-marker',
+            boundAttributesCount,
+            nodeIndex,
+          });
+        }
+        for (const [isAttrBinding, isElementBinding, attr] of attrInfo) {
+          if (isAttrBinding || isElementBinding) {
+            // Note that although we emit a lit-node comment marker for any
+            // nodes with bindings, we don't account for it in the nodeIndex because
+            // that will not be injected into the client template
+            const strings = attr.value.split(marker);
+            // We store the case-sensitive name from `attrNames` (generated
+            // while parsing the template strings); note that this assumes
+            // parse5 attribute ordering matches string ordering
+            const name = attrNames[attrIndex++];
+            const attrSourceLocation =
+              node.sourceCodeLocation!.attrs![attr.name]!;
+            const attrNameStartOffset = attrSourceLocation.startOffset;
+            const attrEndOffset = attrSourceLocation.endOffset;
+            flushTo(attrNameStartOffset);
+            if (isAttrBinding) {
+              const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                name as string
+              )!;
+              ops.push({
+                type: 'attribute-part',
+                index: nodeIndex,
+                name: caseSensitiveName,
+                ctor:
+                  prefix === '.'
+                    ? PropertyPart
+                    : prefix === '?'
+                    ? BooleanAttributePart
+                    : prefix === '@'
+                    ? EventPart
+                    : AttributePart,
+                strings,
+                tagName: tagName.toUpperCase(),
+                useCustomElementInstance: node.isDefinedCustomElement,
+              });
+            } else {
+              ops.push({
+                type: 'element-part',
+                index: nodeIndex,
+              });
             }
+            skipTo(attrEndOffset);
+          } else if (node.isDefinedCustomElement) {
+            // For custom elements, all static attributes are stored along
+            // with the `custom-element-open` opcode so that we can set them
+            // into the custom element instance, and then serialize them back
+            // out along with any manually-reflected attributes. As such, we
+            // skip over static attribute text here.
+            const attrSourceLocation =
+              node.sourceCodeLocation!.attrs![attr.name]!;
+            flushTo(attrSourceLocation.startOffset);
+            skipTo(attrSourceLocation.endOffset);
           }
         }
 
