@@ -63,7 +63,7 @@ export default function(
             fileName: id
           });
         } catch (error) {
-          // check if Error ese treat as string
+          // check if Error else treat as string
           const message =
             error instanceof Error ? error.message : (error as string);
 
