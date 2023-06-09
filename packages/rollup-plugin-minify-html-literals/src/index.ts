@@ -1,5 +1,4 @@
-/// <reference path="declarations.d.ts" />
-import * as minify from 'minify-html-literals';
+/// <reference path="./lib/types/rollup-pluginutils.d.ts" />
 import {
   Plugin,
   SourceDescription,
@@ -7,6 +6,7 @@ import {
   PluginContext
 } from 'rollup';
 import { createFilter } from 'rollup-pluginutils';
+import * as minify from './lib/minify-html-literals.js';
 
 /**
  * Plugin options.
