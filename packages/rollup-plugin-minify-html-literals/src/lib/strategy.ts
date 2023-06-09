@@ -4,7 +4,7 @@ import CleanCSS, { OptionsOutput } from 'clean-css';
 import {
   OptimizationLevel,
   optimizationLevelFrom
-} from 'clean-css/lib/options/optimization-level';
+} from 'clean-css/lib/options/optimization-level.js';
 import { Options as HTMLOptions, minify } from 'html-minifier';
 import { TemplatePart } from './models.js';
 

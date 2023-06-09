@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 import { parseLiterals } from '../lib/parse-literals.js';
 import createParseTests from './parse-tests.js';
 

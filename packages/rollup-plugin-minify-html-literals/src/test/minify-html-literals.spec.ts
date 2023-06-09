@@ -1,11 +1,7 @@
 import { expect } from 'chai';
 import MagicString, { SourceMapOptions } from 'magic-string';
-import {
-  ParseLiteralsOptions,
-  Template,
-  TemplatePart,
-  parseLiterals
-} from 'parse-literals';
+import { ParseLiteralsOptions, parseLiterals } from '../lib/parse-literals.js';
+import { Template, TemplatePart } from '../lib/models.js';
 import { SinonSpy, spy } from 'sinon';
 import {
   SourceMap,

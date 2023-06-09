@@ -1,4 +1,4 @@
-declare module 'clean-css/lib/options/optimization-level' {
+declare module 'clean-css/lib/options/optimization-level.js' {
   import { Options, OptimizationsOptions } from 'clean-css';
 
   export interface OptimizationLevel {

@@ -24,13 +24,12 @@
     "directory": "packages/rollup-plugin-minify-html-literals"
   },
   "scripts": {
-    "clean": "rimraf \"lib/**/*\" && rimraf \"index.{js*,d.ts,d.ts.map,js.map}\" && rimraf \"{.nyc_output/,coverage/}\" && rimraf \"test/**/*\"",
+    "clean": "rimraf \"{lib/,test/}\" && rimraf \"index.{js*,d.ts,d.ts.map}\" && rimraf \"{.nyc_output/,coverage/}\"",
     "prebuild": "npm run clean",
     "build": "tsc",
-    "pretest": "npm run clean",
-    "test": "nyc mocha -r ts-node/register -r source-map-support/register test/*.ts",
+    "test": "nyc mocha test/*.js source-map-support/register",
     "coveralls": "cat coverage/lcov.info | coveralls",
-    "lint": "prettier --write \"*.{js,ts,json,md}\" \"{src,test}/**/*\"",
+    "lint": "prettier --write \"*.{js,ts,json,md}\" \"{src}/**/*\"",
     "precommit": "lint-staged",
     "release": "standard-version",
     "prepublishOnly": "npm run build"
@@ -46,7 +45,7 @@
       ".ts"
     ],
     "include": [
-      "index.ts"
+      "index.js"
     ],
     "exclude": [
       "index.d.ts"
@@ -59,7 +58,6 @@
     "all": true
   },
   "dependencies": {
-    "@types/html-minifier": "^3.5.3",
     "clean-css": "^4.2.1",
     "html-minifier": "^4.0.0",
     "magic-string": "^0.25.0",
@@ -69,8 +67,8 @@
     "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/html-minifier": "^3.5.3",
+    "@types/mocha": "^5.2.7",
     "@types/node": "^14.14.32",
     "@types/sinon": "^5.0.1",
     "chai": "^4.1.2",
@@ -86,7 +84,6 @@
     "source-map-support": "^0.5.6",
     "standard-version": "^9.0.0",
     "ts-node": "^7.0.0",
-    "typescript": "^5.1.3",
-    "wireit": "^0.9.5"
+    "typescript": "^5.1.3"
   }
 }

@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import * as minify from '../lib/minify-html-literals.js';
 import * as path from 'path';
 import { TransformPluginContext } from 'rollup';
 import { match, SinonSpy, spy } from 'sinon';
+import * as minify from '../lib/minify-html-literals.js';
 import minifyHTML, { Options } from '../index.js';
 
 describe('minify-html-literals', () => {

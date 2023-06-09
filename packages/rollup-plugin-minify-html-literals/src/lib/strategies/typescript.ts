@@ -1,4 +1,4 @@
-import * as ts from 'typescript';
+import ts from 'typescript';
 import { Strategy, TemplatePart } from '../models.js';
 
 export interface TypescriptStrategy extends Strategy<ts.Node> {
