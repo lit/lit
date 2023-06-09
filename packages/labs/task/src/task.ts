@@ -44,6 +44,7 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
+  throwErrors?: boolean;
   onComplete?: (value: R) => unknown;
   onError?: (error: unknown) => unknown;
 }
@@ -128,6 +129,13 @@ export class Task<
    */
   autoRun = true;
 
+  /**
+   * Determines whether errors in the task should throw and remain uncaught.
+   * This is useful for cases where there is no error renderer, and the task
+   * should not be throwing errors. Defaults to false.
+   */
+  throwErrors = false;
+
   private _resolveTaskComplete!: (value: R) => void;
   private _rejectTaskComplete!: (e: unknown) => void;
 
@@ -152,6 +160,9 @@ export class Task<
     this._onError = taskConfig.onError;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
+    }
+    if (taskConfig.throwErrors !== undefined) {
+      this.throwErrors = taskConfig.throwErrors;
     }
     this.taskComplete = new Promise((res, rej) => {
       this._resolveTaskComplete = res;
@@ -228,6 +239,11 @@ export class Task<
           this.status = TaskStatus.COMPLETE;
           this._resolveTaskComplete(result as R);
         } else {
+          if (!this.throwErrors) {
+            // Returning error in catch is fine because we are going to reject
+            // it in a few lines anyway.
+            this.taskComplete = this.taskComplete.catch((e) => e);
+          }
           try {
             this._onError?.(error);
           } catch {

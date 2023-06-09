@@ -601,4 +601,51 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.isTrue(taskComplete);
   });
+
+  test('task errors are caught by default', async () => {
+    let error: Error | undefined = undefined;
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: async () => {
+          throw new Error('This error is not expected');
+        },
+        autoRun: false,
+        onError: () => {
+          this.task.taskComplete.catch((err) => {
+            error = err;
+          });
+        },
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+    await el.task.run();
+    assert.isUndefined(error);
+  });
+
+  test('task errors are thrown by when throwErrors is true', async () => {
+    let error: Error | undefined = undefined;
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: () => {
+          throw new Error('This error is not expected');
+        },
+        autoRun: false,
+        throwErrors: true,
+        onError: () => {
+          this.task.taskComplete.catch((err) => {
+            error = err;
+          });
+        },
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+    await el.task.run();
+    assert.isDefined(error);
+  });
 });
