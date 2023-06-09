@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { parseLiterals } from '../src/parseLiterals';
+import { parseLiterals } from '../lib/parse-literals.js';
 
 export interface ParseTestsOptions {
   codePrefix?: string;
