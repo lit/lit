@@ -24,7 +24,7 @@
     "directory": "packages/rollup-plugin-minify-html-literals"
   },
   "scripts": {
-    "clean": "rimraf \"src/**/*.{js*,d.ts}\" && rimraf \"index.{js*,d.ts}\" && rimraf \"{.nyc_output/,coverage/}\"",
+    "clean": "rimraf \"lib/**/*\" && rimraf \"index.{js*,d.ts,d.ts.map,js.map}\" && rimraf \"{.nyc_output/,coverage/}\" && rimraf \"test/**/*\"",
     "prebuild": "npm run clean",
     "build": "tsc",
     "pretest": "npm run clean",
