@@ -1,7 +1,7 @@
 import MagicString, { SourceMapOptions } from 'magic-string';
 import { ParseLiteralsOptions, parseLiterals } from './parse-literals.js';
 import { Template, TemplatePart } from './models.js';
-import { Strategy, defaultMinifyOptions, defaultStrategy } from './strategy';
+import { Strategy, defaultMinifyOptions, defaultStrategy } from './strategy.js';
 
 /**
  * Options for <code>minifyHTMLLiterals()</code>.
@@ -278,7 +278,7 @@ export function minifyHTMLLiterals(
   options.parseLiteralsOptions = {
     ...{ fileName: options.fileName },
     ...(options.parseLiteralsOptions || {})
-  };
+  } as any;
 
   const templates = options.parseLiterals(source, options.parseLiteralsOptions);
   const strategy =

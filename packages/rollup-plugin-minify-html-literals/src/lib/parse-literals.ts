@@ -1,5 +1,5 @@
 import { Template, Strategy } from './models';
-import typescript from './strategies/typescript';
+import typescript from './strategies/typescript.js';
 
 export interface ParseLiteralsOptions {
   fileName?: string;

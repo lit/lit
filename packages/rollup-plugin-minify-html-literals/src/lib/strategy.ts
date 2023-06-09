@@ -6,7 +6,7 @@ import {
   optimizationLevelFrom
 } from 'clean-css/lib/options/optimization-level';
 import { Options as HTMLOptions, minify } from 'html-minifier';
-import { TemplatePart } from 'parse-literals';
+import { TemplatePart } from './models.js';
 
 /**
  * A strategy on how to minify HTML and optionally CSS.

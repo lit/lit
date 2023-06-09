@@ -3,7 +3,7 @@ import * as minify from '../lib/minify-html-literals.js';
 import * as path from 'path';
 import { TransformPluginContext } from 'rollup';
 import { match, SinonSpy, spy } from 'sinon';
-import minifyHTML, { Options } from '../index';
+import minifyHTML, { Options } from '../index.js';
 
 describe('minify-html-literals', () => {
   const fileName = path.resolve('test.js');

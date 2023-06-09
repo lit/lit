@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 import { parseLiterals } from '../lib/parse-literals.js';
-import createParseTests from './parse-tests';
+import createParseTests from './parse-tests.js';
 
 describe('parseLiterals()', () => {
   it('should allow overriding strategy', () => {
