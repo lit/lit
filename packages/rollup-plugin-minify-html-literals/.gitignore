@@ -3,3 +3,5 @@
 /.nyc_output
 **/*.js
 **/*.map
+**/*.d.ts
+!src/lib/types/**.d.ts
