@@ -176,7 +176,8 @@
     "test:dev": "wireit",
     "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit"
+    "test:node-dev": "wireit",
+    "test:prodsize": "wireit"
   },
   "wireit": {
     "build": {
@@ -319,6 +320,16 @@
       ],
       "files": [],
       "output": []
+    },
+    "test:prodsize": {
+      "command": "node scripts/check-prodsize.js",
+      "dependencies": [
+        "build:rollup",
+        "build:ts"
+      ],
+      "files": [
+        "scripts/check-prodsize.js"
+      ]
     }
   },
   "files": [
