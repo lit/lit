@@ -630,7 +630,7 @@ suite('Task', () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         task: () => {
-          throw new Error('This error is not expected');
+          throw new Error('This error is expected');
         },
         autoRun: false,
         throwErrors: true,
