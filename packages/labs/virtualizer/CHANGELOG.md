@@ -1,5 +1,15 @@
 # @lit-labs/virtualizer
 
+## 2.0.3
+
+### Patch Changes
+
+- [#3909](https://github.com/lit/lit/pull/3909) [`feded34b`](https://github.com/lit/lit/commit/feded34bf640291885b7d9de8713075cd7da1a54) Thanks [@chrispaterson](https://github.com/chrispaterson)! - Refactored and refurbished ScrollerController attach/detach code in effort to reduce potential memory leaks due to held instance references.
+
+- [#3892](https://github.com/lit/lit/pull/3892) [`f5b2013d`](https://github.com/lit/lit/commit/f5b2013ddc38eb9b540e0b633a879ea860bc92d8) - Changed accessor and iterator code to support ES5 compilation.
+
+- [#3929](https://github.com/lit/lit/pull/3929) [`c3672fca`](https://github.com/lit/lit/commit/c3672fca5ca6ed65156a2715fd1baf1d4430b0b1) - Added new support utilities for dealing with ResizeObserver loop limit exceeded errors.
+
 ## 2.0.2
 
 ### Patch Changes

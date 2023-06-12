@@ -1202,7 +1202,7 @@ type AttributeTemplatePart = {
   readonly ctor: typeof AttributePart;
   readonly strings: ReadonlyArray<string>;
 };
-type NodeTemplatePart = {
+type ChildTemplatePart = {
   readonly type: typeof CHILD_PART;
   readonly index: number;
 };
@@ -1221,7 +1221,7 @@ type CommentTemplatePart = {
  * TemplateParts.
  */
 type TemplatePart =
-  | NodeTemplatePart
+  | ChildTemplatePart
   | AttributeTemplatePart
   | ElementTemplatePart
   | CommentTemplatePart;
