@@ -2,4 +2,4 @@
 '@lit-labs/task': patch
 ---
 
-Catch user errors in Task
+Task will not throw errors unless user requests taskComplete
