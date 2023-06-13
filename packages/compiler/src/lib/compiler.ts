@@ -1,16 +1,23 @@
+/**
+ * @license
+ * Copyright 2023 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 import {programFromTsConfig} from './typescript.js';
 import {resolve as resolvePath} from 'path';
 import {compileLitTemplates} from './template-transform.js';
 
 export const hello = () => 'Hello';
 
-export const compile = async (path: string) => {
+export const compile = (path: string) => {
   const configPath = resolvePath(path);
   const program = programFromTsConfig(configPath);
   for (const file of program.getSourceFiles()) {
-    program.emit(file, undefined, undefined, undefined, {
+    console.log('COMPILING:', file.fileName);
+    const emitResult = program.emit(file, undefined, undefined, undefined, {
       before: [compileLitTemplates()],
     });
+    console.log(emitResult);
   }
 };
 

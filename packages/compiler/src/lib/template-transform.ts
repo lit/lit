@@ -1,30 +1,21 @@
 /**
  * @license
- * Copyright (c) 2020 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
+ * Copyright 2023 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import ts from 'typescript';
 import './install-dom-shim.js';
-import {_Σ as litHtmlPrivate} from 'lit-html';
+import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
 import {
   traverse,
   parseFragment,
   isCommentNode,
   isElement,
+  DocumentFragment,
 } from './parse5-utils.js';
-// types only
-import {DefaultTreeDocumentFragment} from 'parse5';
 
-const {_getTemplateHtml, _marker, _markerMatch, _boundAttributeSuffix} =
+const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} =
   litHtmlPrivate;
 
 export const PartType = {
@@ -129,18 +120,21 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
               tagName: string;
             }
         > = [];
-        const [html, attrNames] = _getTemplateHtml(
-          ts.isNoSubstitutionTemplateLiteral(templateExpression)
-            ? ([templateExpression.text] as unknown as TemplateStringsArray)
-            : ([
-                templateExpression.head.text,
-                ...templateExpression.templateSpans.map((s) => s.literal.text),
-              ] as unknown as TemplateStringsArray),
-          1
-        );
-        const ast = parseFragment(html, {
+        const spoofedTemplate = ts.isNoSubstitutionTemplateLiteral(
+          templateExpression
+        )
+          ? ([templateExpression.text] as unknown as TemplateStringsArray)
+          : ([
+              templateExpression.head.text,
+              ...templateExpression.templateSpans.map((s) => s.literal.text),
+            ] as unknown as TemplateStringsArray);
+        // lit-html tries to enforce that `getTemplateHtml` only accepts a
+        // TemplateStringsResult.
+        (spoofedTemplate as unknown as {raw: string}).raw = '';
+        const [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
+        const ast = parseFragment(html as unknown as string, {
           sourceCodeLocationInfo: true,
-        }) as DefaultTreeDocumentFragment;
+        }) as DocumentFragment;
 
         let nodeIndex = -1;
 
@@ -150,7 +144,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
         traverse(ast, {
           pre(node, _parent) {
             if (isCommentNode(node)) {
-              if (node.data === _markerMatch) {
+              if (node.data === markerMatch) {
                 // make a childPart
                 parts.push({
                   type: PartType.CHILD,
@@ -161,8 +155,8 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
               if (node.attrs.length > 0) {
                 const tagName = node.tagName;
                 for (const attr of node.attrs) {
-                  if (attr.name.endsWith(_boundAttributeSuffix)) {
-                    const strings = attr.value.split(_marker);
+                  if (attr.name.endsWith(boundAttributeSuffix)) {
+                    const strings = attr.value.split(marker);
                     // We store the case-sensitive name from `attrNames` (generated
                     // while parsing the template strings); note that this assumes
                     // parse5 attribute ordering matches string ordering
@@ -251,13 +245,13 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
               ),
             ]
           ),
-          // <tempalte> innerHTML
+          // <template> innerHTML
           f.createAssignment(
             f.createPropertyAccessExpression(
               template.variableName,
               f.createIdentifier('innerHTML')
             ),
-            f.createStringLiteral(html)
+            f.createStringLiteral(html as unknown as string)
           ),
           // Traverse into template-containing top-level statement
           ts.visitEachChild(node, rewriteTemplates, context),
@@ -310,7 +304,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
       //       ts.createLiteral('value'))]
       //   );
       // }
-      return ts.visitNode(sourceFile, rewriteTemplates);
+      return ts.visitNode(sourceFile, rewriteTemplates) as ts.SourceFile;
     };
   };
 };
