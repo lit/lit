@@ -20,7 +20,7 @@ lit-html's design arises naturally out of combining two powerful web primitives:
 
 TTL's provide an explicit syntax for separating static strings of HTML content and dynamic JavaScript values. The static strings are immutable and preserve identity across multiple evaluations of the tagged literal making them ideal for use as a cache key.
 
-The `<template>` element provides a container for HTML content that can later be cloned into the document. In a template element scripts don't run, styles don't apply, custom elements don't upgrade, etc. During rendering a template's content can be cloned or imported into the Document which makes the cloned nodes active.
+The `<template>` element provides a container for HTML content that can later be cloned into the document. In a template element: scripts don't run, styles don't apply, custom elements don't upgrade, etc. During rendering a template's content can be cloned or imported into the Document which makes the cloned nodes active.
 
 # Rendering
 
@@ -56,6 +56,7 @@ lit-html templates are only a description of the UI. They must be rendered with 
 **Update**: Iterate over the dynamic JS values and associated Lit `Part` only committing the values that have changed to the DOM.
 
 </li>
+</ol>
 </ol>
 
 The end result is `<h1>Example Title</h1>` rendered in the `<body>` element. If the user now executes `render(ui("Updated"), document.body)`, only the **Update** phase runs skipping the **Prepare** and **Create** phases.
@@ -158,7 +159,7 @@ Initiated by a call to lit-html's `render()` function, such as: `render(counterU
 
 The `render()` function looks for a field `_$litPart$` on the container element or instantiates and assigns a new `ChildPart` on the container. Calling `_$setValue` on the container's `ChildPart` kicks off rendering on the passed in `TemplateResult`.
 
-### 2.a. Prepare
+### 2.i. Prepare
 
 Source: [`_$getTemplate` method which is the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568)
 
@@ -182,7 +183,7 @@ console.log(preparedTemplate.parts);
 */
 ```
 
-### 2.a.1. Join the template's string literals with marker strings.
+#### Join the template's string literals with marker strings.
 
 Source: [lit-html.ts `getTemplateHtml` function](https://github.com/lit/lit/blob/5d68be35c192e8c4109911eec727fbb598557f72/packages/lit-html/src/lit-html.ts#L667)
 
@@ -215,24 +216,24 @@ getTemplateHtml([
 
 Notice that there are three markers that are associated with the example's three dynamic values contained in the `TemplateResult`'s `values` array.
 
-### 2.a.2. Create a `<template>` element
+#### Create a `<template>` element
 
-The prepared HTML string from step 2.a.1 is used to set the `innerHTML` of a new `<template>` element. This causes the browser to parse the template HTML. The prepared `<template>` element is assigned to `Template.el`.
+The prepared HTML string is used to set the `innerHTML` of a new `<template>` element. This causes the browser to parse the template HTML. The prepared `<template>` element is assigned to `Template.el`.
 
 > **Note**
 > In the prepared example HTML string above, the syntax `<?lit$1234$>` represents a [`ProcessingInstruction`](https://developer.mozilla.org/en-US/docs/Web/API/ProcessingInstruction) and is parsed and inserted into the `<template>` element as the comment node: `<!--?lit$1234$-->`. This is an optimization to reduce the number of bytes per dynamic annotation.
 
 This step is safe from XSS vulnerabilities or other malicious input because only the static strings are used and no dynamic values are inserted. Furthermore the `<template>` element only holds HTML, so scripts don't run, styles don't apply, custom elements don't upgrade, etc.
 
-### 2.a.3. Create the `TemplateParts`
+#### Create the `TemplateParts`
 
 A `TemplatePart` is metadata storing where a dynamic JavaScript value should be set on the DOM. Each `TemplatePart` contains the depth-first index of the node it is associated with, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute.
 
-`TemplateParts` are found by walking the tree of nodes in the `<template>` element and finding the markers prepared in 2.a.1. If a marker is found, either in an attribute, as a marker comment node, or in text content, a `TemplatePart` is created and stored in the `parts` class field.
+`TemplateParts` are found by walking the tree of nodes in the `<template>` element and finding the marker annotations. If a marker is found, either in an attribute, as a marker comment node, or in text content, a `TemplatePart` is created and stored in the `parts` class field.
 
 When traversing the tree of nodes, `Template` does different work for specific Node types:
 
-#### Element
+##### Element
 
 For each attribute on the element, if it has a `$lit$` suffix, then the expression represents either a `PropertyPart`, `BooleanAttributePart`, `EventPart`, or `AttributePart`. These can be distinguished by the first character in the attribute name ([see Appendix Parts table](#parts)).
 
@@ -240,17 +241,17 @@ An attribute on the element may also represent an `ElementPart` in the case wher
 
 For each of the bound attributes identified, they are removed from the element and a `TemplatePart` is created to record the location, name, and type of dynamic binding.
 
-#### Comment
+##### Comment
 
 A Comment is usually either an expression marker, or a user-written comment with no expression associated. Occasionally though a user may have written an expression inside a comment. This is especially easy to do with IDEs that help comment out code sections and are inline-html aware. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
 
-A comment that matches an expression marker ([added in step 2.a.1](#2a1-join-the-templates-string-literals-with-marker-strings)), marks a `TemplatePart` in ChildPart position.
+A comment that matches a marker annotation is a `TemplatePart` in ChildPart position.
 
-#### Text
+##### Text
 
 Usually text-position markers will be comment nodes, but inside `<style>`, `<script>`, `<textarea>`, `<title>` tags the markup that _looks_ like a comment (`<!-- lit -->`) will just be inserted as _text_ in the script or style. So we must search for the marker as text. If found we split the Text node and insert a comment marker.
 
-## 2.b. Create
+### 2.ii. Create
 
 The create phase is performed when rendering for the the first time to a specific container or Part.
 
@@ -270,11 +271,11 @@ console.log(instance._$parts);
 
 After the update phase this fragment is inserted into the DOM.
 
-### 2.b.1 Create a `TemplateInstance`
+#### Create a `TemplateInstance`
 
 A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the Parts used to update the DOM.
 
-### 2.b.2 Clone the template and instantiate Parts
+#### Clone the template and instantiate Parts
 
 Within `TemplateInstance._clone()`, first the `<template>` element is cloned into a document fragment.
 
@@ -282,7 +283,7 @@ After cloning, the document fragment node tree is walked to associate nodes with
 
 These Part instances are stored on the `TemplateInstance`.
 
-## 2.c. Update
+### 2.iii. Update
 
 The update step, which is performed for initial renders as well, is performed in `TemplateInstance._update()`.
 
@@ -305,7 +306,7 @@ ChildPart._$setValue(0);
 EventPart._$setValue(() => render(counterUi(1), container));
 ```
 
-### ChildPart.\_$setValue
+#### ChildPart.\_$setValue
 
 Setting a value on a ChildPart occurs whenever the authored template has a dynamic expression in child part position, and the value is whatever has been passed into the tagged template literal expression.
 
@@ -325,28 +326,28 @@ If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResu
 
 If the value is a Node, the the ChildPart clears any previously rendered nodes and inserts the Node value directly.
 
-### AttributePart.\_$setValue
+#### AttributePart.\_$setValue
 
 In the single binding attribute value case such as `` html`<input value=${...}>` ``, an `AttributePart` also uses `_$committedValue` to not do extra work. Values are committed by calling `this.element.setAttribute(name, value)`.
 
 `AttributePart` also handles the more complex cases with multiple bindings in attribute value position: `` html`<div class="${...} static-class ${...}"></div>` ``. Multiple values are also committed with a `setAttribute` call after the values are evaluated and joined together.
 
-### PropertyPart.\_$setValue
+#### PropertyPart.\_$setValue
 
 `PropertyPart` extends `AttributePart`, with the only difference being that committing the value to the live DOM is not via `setAttribute(name, value)`, but instead as a property via `this.element[name] = value`. E.g. `` html`<input .value=${'hi'}>` `` will commit the value `'hi'` with `inputEl.value = 'hi'`.
 
-### BooleanAttributePart.\_$setValue
+#### BooleanAttributePart.\_$setValue
 
 BooleanAttributePart also extends `AttributePart`, and overrides `_commitValue`. When a value is committed to a `BooleanAttributePart`, a falsy or `nothing` value will remove the attribute, and a truthy value will set the attribute with an empty string attribute value.
 
-### EventPart.\_$setValue
+#### EventPart.\_$setValue
 
 EventPart also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`.
 The EventPart ensures that event listeners are added and cleaned up between renders and if the passed in value changes.
 
 A value of `null`, `undefined`, or `nothing` will remove any previously set listeners without adding a new listener.
 
-### ElementPart.\_$setValue
+#### ElementPart.\_$setValue
 
 Nothing can be committed via an ElementPart. Instead `resolveDirective` is called, allowing directives to hook into the `ElementPart` position.
 
@@ -398,7 +399,7 @@ This results in the DOM updating with a green underlined number one, and the eve
 
 lit-html is fast, but what if it could be faster!?
 
-- [Declarative syntax for creating DOM Parts](https://github.com/WICG/webcomponents/issues/1003). This could remove the requirement for lit-html to walk the `<template>` elements tree and manually instiate Parts.
+- [Declarative syntax for creating DOM Parts](https://github.com/WICG/webcomponents/issues/990). This could remove the requirement for lit-html to walk the `<template>` element's tree and manually instantiate Parts.
 - Precompiling lit-html `html` tag functions (tracked in https://github.com/lit/lit/issues/189). This provides a mechanism to move the **Prepare** step into build tooling making the initial runtime render start at the **Create** step.
 
 # Appendix
