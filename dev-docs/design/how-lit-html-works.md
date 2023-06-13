@@ -12,11 +12,11 @@ If anything is unclear or you have questions, reach out on our [Discord channel]
 
 lit-html is an HTML templating library. Templates are written in JavaScript by mixing static HTML strings and dynamic JavaScript values using template literals. lit-html enables UI as a function of application state programming model, fast initial rendering, and fast updates that minimally update DOM when state changes.
 
-The key feature that enables this is separating static parts of templates from the dynamic parts with template literals, and never traversing or updating the static parts after the initial render. This makes lit-html very performant as can be seen in the [JS Frameworks Benchmark](https://krausest.github.io/js-framework-benchmark/). A great companion to this document is [Justin Fagnani's lit-html talk](https://youtu.be/Io6JjgckHbg).
+lit-html is very performant as can be seen in the [JS Frameworks Benchmark](https://krausest.github.io/js-framework-benchmark/). A great companion to this document is [Justin Fagnani's lit-html talk](https://youtu.be/Io6JjgckHbg).
 
 # Foundational Pieces
 
-lit-html relies on two key platform features for its performance and ergonomics: [JavaScript Tagged Template Literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) (TTL's) and the HTML [`<template>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) element.
+lit-html's design arises naturally out of combining two powerful web primitives: [JavaScript Tagged Template Literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) (TTL's) and the HTML [`<template>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) element.
 
 TTL's provide an explicit syntax for separating static strings of HTML content and dynamic JavaScript values. The static strings are immutable and preserve identity across multiple evaluations of the tagged literal making them ideal for use as a cache key.
 
