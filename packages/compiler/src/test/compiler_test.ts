@@ -15,11 +15,43 @@
 import tape, {Test} from 'tape';
 import tapePromiseLib from 'tape-promise';
 
-import {hello} from '../lib/compiler.js';
+import ts from 'typescript';
+
+// import {hello, compile} from '../lib/compiler.js';
+import {compileLitTemplates} from '../lib/template-transform.js';
+import {_Σ as litHtmlPrivate} from 'lit-html';
+
+const {_marker} = litHtmlPrivate;
 
 const tapePromise = (tapePromiseLib as any).default as typeof tapePromiseLib;
 const test = tapePromise(tape);
 
-test('meta', async (t: Test) => {
-  t.equal(hello(), 'Hello');
+// test('meta', async (t: Test) => {
+//   compile('./testdata/basic/input/tsconfig.json');
+//   t.equal(hello(), 'Hello');
+// });
+
+test('basic', async (t: Test) => {
+  const source = `
+import { html } from 'lit-html';
+export const sayHello = (name) => html \`<h1>Hello \${name}</h1>\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+  console.log(result.outputText);
+
+  t.equal(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+var lit_template_1 = { _strings: ["<h1>Hello ", "</h1>"], _element: document.createElement("template"), _parts: [{ _type: 2, index: 2 }] };
+lit_template_1.innerHTML = "<h1>Hello <?${_marker}></h1>"
+export const sayHello = (name) => ({ _$litType$: lit_template_1, values: [name] });
+`.trim()
+  );
 });
