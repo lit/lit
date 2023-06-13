@@ -46,7 +46,7 @@ suite('styleMap', () => {
         _part: AttributePart,
         [styleInfo]: Parameters<this['render']>
       ) {
-        return this.render(styleInfo);
+        return this.render(styleInfo) as any;
       }
     }
     const testStyleMap = directive(TestStyleMapDirective);
