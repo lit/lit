@@ -44,7 +44,6 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
-  throwErrors?: boolean;
   onComplete?: (value: R) => unknown;
   onError?: (error: unknown) => unknown;
 }
@@ -117,27 +116,52 @@ export class Task<
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
-   * A Promise that resolve when the current task run is complete.
-   *
-   * If a new task run is started while a previous run is pending, the Promise
-   * is kept and only resolved when the new run is completed.
-   */
-  taskComplete!: Promise<R>;
-
-  /**
    * Controls if they task will run when its arguments change. Defaults to true.
    */
   autoRun = true;
 
   /**
-   * Determines whether errors in the task should throw and remain uncaught.
-   * This is useful for cases where there is no error renderer, and the task
-   * should not be throwing errors. Defaults to false.
+   * A Promise that resolve when the current task run is complete.
+   *
+   * If a new task run is started while a previous run is pending, the Promise
+   * is kept and only resolved when the new run is completed.
    */
-  throwErrors = false;
+  get taskComplete(): Promise<R> {
+    // True only when called for the first time or after a run is complete.
+    const lastPromiseCompletedOrFirstRequest = !this._resolveTaskComplete;
 
-  private _resolveTaskComplete!: (value: R) => void;
-  private _rejectTaskComplete!: (e: unknown) => void;
+    // Generate an in-progress promise if the last promise was completed or this
+    // is the first time the promise is being requested and we are in the middle
+    // of a task.
+    if (
+      lastPromiseCompletedOrFirstRequest &&
+      this.status === TaskStatus.PENDING
+    ) {
+      this._taskComplete = new Promise((res, rej) => {
+        this._resolveTaskComplete = res;
+        this._rejectTaskComplete = rej;
+      });
+      // Otherwise we are at a run's completion or this is the first request
+      // and we are not in the middle of a task (i.e. INITIAL).
+    } else if (
+      !this._taskComplete ||
+      this.status === TaskStatus.COMPLETE ||
+      this.status === TaskStatus.ERROR
+    ) {
+      // Always generate a new, resolved promise on COMPLETE and ERROR b/c we
+      // don't know if the last resolved value has changed since last requested.
+      this._resolveTaskComplete = undefined;
+      this._rejectTaskComplete = undefined;
+      this._taskComplete = Promise.resolve(this._value as R);
+    }
+
+    // Return the promise or the cached in-progress promise.
+    return this._taskComplete;
+  }
+
+  private _resolveTaskComplete?: (value: R) => void;
+  private _rejectTaskComplete?: (e: unknown) => void;
+  private _taskComplete?: Promise<R>;
 
   constructor(
     host: ReactiveControllerHost,
@@ -161,13 +185,6 @@ export class Task<
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
     }
-    if (taskConfig.throwErrors !== undefined) {
-      this.throwErrors = taskConfig.throwErrors;
-    }
-    this.taskComplete = new Promise((res, rej) => {
-      this._resolveTaskComplete = res;
-      this._rejectTaskComplete = rej;
-    });
   }
 
   hostUpdated() {
@@ -202,15 +219,7 @@ export class Task<
    */
   async run(args?: T) {
     args ??= this._getArgs?.();
-    if (
-      this.status === TaskStatus.COMPLETE ||
-      this.status === TaskStatus.ERROR
-    ) {
-      this.taskComplete = new Promise((res, rej) => {
-        this._resolveTaskComplete = res;
-        this._rejectTaskComplete = rej;
-      });
-    }
+
     this.status = TaskStatus.PENDING;
     let result!: R | typeof initialState;
     let error: unknown;
@@ -237,22 +246,19 @@ export class Task<
             // Ignore user errors from onComplete.
           }
           this.status = TaskStatus.COMPLETE;
-          this._resolveTaskComplete(result as R);
+          this._resolveTaskComplete?.(result as R);
         } else {
-          if (!this.throwErrors) {
-            // Returning error in catch is fine because we are going to reject
-            // it in a few lines anyway.
-            this.taskComplete = this.taskComplete.catch((e) => e);
-          }
           try {
             this._onError?.(error);
           } catch {
             // Ignore user errors from onError.
           }
           this.status = TaskStatus.ERROR;
-          this._rejectTaskComplete(error);
+          this._rejectTaskComplete?.(error);
         }
         this._value = result as R;
+        // The run's ended so don't generate a task complete promise and either
+        // return the existing, resolved promise or a new resolved promise.
         this._error = error;
       }
       // Request an update with the final value.

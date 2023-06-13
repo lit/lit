@@ -602,50 +602,193 @@ suite('Task', () => {
     assert.isTrue(taskComplete);
   });
 
-  test('task errors are caught by default', async () => {
-    let error: Error | undefined = undefined;
+  test('generates a new taskComplete promise on run vs initial', async () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         task: async () => {
-          throw new Error('This error is not expected');
+          return crypto.randomUUID();
         },
         autoRun: false,
-        onError: () => {
-          this.task.taskComplete.catch((err) => {
-            error = err;
-          });
-        },
       });
     }
     customElements.define(generateElementName(), TestElement);
     const el = new TestElement();
     container.appendChild(el);
     await el.updateComplete;
-    await el.task.run();
-    assert.isUndefined(error);
+
+    const initialTaskComplete = el.task.taskComplete;
+    assert.isTrue(initialTaskComplete instanceof Promise);
+
+    const initialValue = await initialTaskComplete;
+    assert.equal(el.task.value, initialValue);
+
+    el.task.run();
+
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    const pendingTaskComplete = el.task.taskComplete;
+    assert.notEqual(pendingTaskComplete, initialTaskComplete);
+
+    const nextValue = await pendingTaskComplete;
+
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+
+    const completedTaskComplete = el.task.taskComplete;
+
+    assert.notEqual(completedTaskComplete, pendingTaskComplete);
+
+    // soft check that this is a new resolved promise
+    await completedTaskComplete;
+    await el.task.taskComplete;
+
+    assert.equal(nextValue, el.task.value);
   });
 
-  test('task errors are thrown by when throwErrors is true', async () => {
-    let error: Error | undefined = undefined;
+  test('generates a new taskComplete promise on subsequent runs', async () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
-        task: () => {
-          throw new Error('This error is expected');
+        task: async () => {
+          return crypto.randomUUID();
         },
         autoRun: false,
-        throwErrors: true,
-        onError: () => {
-          this.task.taskComplete.catch((err) => {
-            error = err;
-          });
-        },
       });
     }
     customElements.define(generateElementName(), TestElement);
     const el = new TestElement();
     container.appendChild(el);
     await el.updateComplete;
+
+    el.task.run();
+
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    const pendingTaskComplete = el.task.taskComplete;
+
+    await pendingTaskComplete;
+
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+
+    const nextTaskComplete = el.task.taskComplete;
+
+    // soft check that this is a new resolved promise
+    await nextTaskComplete;
+
+    assert.notEqual(nextTaskComplete, pendingTaskComplete);
+
+    el.task.run();
+
+    const subsequentTaskComplete = el.task.taskComplete;
+
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.notEqual(subsequentTaskComplete, pendingTaskComplete);
+  });
+
+  test('task does not throw if no taskComplete has been initiated', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: async () => {
+          throw new Error(
+            'If you see this in the console, this test is broken.'
+          );
+        },
+        autoRun: false,
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+
     await el.task.run();
-    assert.isDefined(error);
+  });
+
+  test('can catch error on taskComplete', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: async () => {
+          throw new Error(
+            'If you see this in the console, this test is broken.'
+          );
+        },
+        autoRun: false,
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+
+    el.task.run();
+
+    let error: Error | undefined = undefined;
+
+    await el.task.taskComplete.catch((e: Error) => {
+      error = e;
+    });
+
+    assert.isTrue(error !== undefined);
+    assert.equal(el.task.status, TaskStatus.ERROR);
+  });
+
+  test('reuses taskComplete promise in the middle of runs', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: async () => {
+          return crypto.randomUUID();
+        },
+        autoRun: false,
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+
+    el.task.run();
+
+    assert(el.task.status === TaskStatus.PENDING);
+    const firstTaskComplete = el.task.taskComplete;
+    assert.isTrue(firstTaskComplete instanceof Promise);
+
+    el.task.run();
+    assert(el.task.status === TaskStatus.PENDING);
+    const secondTaskComplete = el.task.taskComplete;
+
+    assert.equal(secondTaskComplete, firstTaskComplete);
+
+    await secondTaskComplete;
+
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+
+    const completeTaskComplete = el.task.taskComplete;
+
+    // soft check that this is a new resolved promise
+    await completeTaskComplete;
+    assert.notEqual(completeTaskComplete, secondTaskComplete);
+  });
+
+  test('subsequent resolve runs do not return same value', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: async () => {
+          return crypto.randomUUID();
+        },
+        autoRun: false,
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+
+    await el.task.run();
+
+    const firstValue = await el.task.taskComplete;
+    assert.equal(el.task.value, firstValue);
+
+    await el.task.run();
+
+    const secondValue = await el.task.taskComplete;
+
+    assert.equal(el.task.value, secondValue);
+    assert.notEqual(firstValue, secondValue);
   });
 });
