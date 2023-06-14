@@ -617,6 +617,7 @@ suite('Task', () => {
     await el.updateComplete;
 
     const initialTaskComplete = el.task.taskComplete;
+    assert.equal(el.task.status, TaskStatus.INITIAL);
     assert.isTrue(initialTaskComplete instanceof Promise);
 
     const initialValue = await initialTaskComplete;
@@ -634,10 +635,8 @@ suite('Task', () => {
 
     const completedTaskComplete = el.task.taskComplete;
 
-    assert.notEqual(completedTaskComplete, pendingTaskComplete);
+    assert.equal(completedTaskComplete, pendingTaskComplete);
 
-    // soft check that this is a new resolved promise
-    await completedTaskComplete;
     await el.task.taskComplete;
 
     assert.equal(nextValue, el.task.value);
@@ -668,10 +667,7 @@ suite('Task', () => {
 
     const nextTaskComplete = el.task.taskComplete;
 
-    // soft check that this is a new resolved promise
-    await nextTaskComplete;
-
-    assert.notEqual(nextTaskComplete, pendingTaskComplete);
+    assert.equal(nextTaskComplete, pendingTaskComplete);
 
     el.task.run();
 
@@ -760,9 +756,7 @@ suite('Task', () => {
 
     const completeTaskComplete = el.task.taskComplete;
 
-    // soft check that this is a new resolved promise
-    await completeTaskComplete;
-    assert.notEqual(completeTaskComplete, secondTaskComplete);
+    assert.equal(completeTaskComplete, secondTaskComplete);
   });
 
   test('subsequent resolve runs do not return same value', async () => {

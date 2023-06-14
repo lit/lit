@@ -127,35 +127,29 @@ export class Task<
    * is kept and only resolved when the new run is completed.
    */
   get taskComplete(): Promise<R> {
-    // True only when called for the first time or after a run is complete.
-    const lastPromiseCompletedOrFirstRequest = !this._resolveTaskComplete;
+    // If a task exists, return the cached promise. This is true in the case
+    // where the user has called taskComplete in pending or completed state
+    // before and has not run a new task since.
+    if (this._taskComplete) {
+      return this._taskComplete;
+    }
 
-    // Generate an in-progress promise if the last promise was completed or this
-    // is the first time the promise is being requested and we are in the middle
-    // of a task.
-    if (
-      lastPromiseCompletedOrFirstRequest &&
-      this.status === TaskStatus.PENDING
-    ) {
+    // Generate an in-progress promise if the the status is pending and has been
+    // cleared by .run().
+    if (this.status === TaskStatus.PENDING) {
       this._taskComplete = new Promise((res, rej) => {
         this._resolveTaskComplete = res;
         this._rejectTaskComplete = rej;
       });
+
       // Otherwise we are at a run's completion or this is the first request
       // and we are not in the middle of a task (i.e. INITIAL).
-    } else if (
-      !this._taskComplete ||
-      this.status === TaskStatus.COMPLETE ||
-      this.status === TaskStatus.ERROR
-    ) {
-      // Always generate a new, resolved promise on COMPLETE and ERROR b/c we
-      // don't know if the last resolved value has changed since last requested.
+    } else {
       this._resolveTaskComplete = undefined;
       this._rejectTaskComplete = undefined;
       this._taskComplete = Promise.resolve(this._value as R);
     }
 
-    // Return the promise or the cached in-progress promise.
     return this._taskComplete;
   }
 
@@ -219,6 +213,19 @@ export class Task<
    */
   async run(args?: T) {
     args ??= this._getArgs?.();
+
+    // Clear the last complete task in initial because it may be a resolved
+    // promise. Also clear if complete or error because the value returned by
+    // awaiting taskComplete may have changed since last run.
+    if (
+      this.status === TaskStatus.COMPLETE ||
+      this.status === TaskStatus.ERROR ||
+      this.status === TaskStatus.INITIAL
+    ) {
+      this._taskComplete = undefined;
+      this._resolveTaskComplete = undefined;
+      this._rejectTaskComplete = undefined;
+    }
 
     this.status = TaskStatus.PENDING;
     let result!: R | typeof initialState;
