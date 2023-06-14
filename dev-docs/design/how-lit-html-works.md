@@ -258,11 +258,11 @@ Usually text-position markers will be comment nodes, but inside `<style>`, `<scr
 
 ### 2.ii. Create
 
-The create phase is performed when rendering for the the first time to a specific container or Part.
+The create phase is performed only when rendering for **the first time to a specific Part**.
 
-In the `lit-html` source code this phase is the instantiating and cloning of a `TemplateInstance`.
+In the `lit-html` source code this phase is the [instantiating and cloning](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1534-L1535) of a `TemplateInstance`.
 
-For the example this phase results in the DOM nodes being cloned into a `fragment`, ready to be inserted in the document, and a list of `Parts` that can be updated to set the dynamic JavaScript values in that fragment.
+For the example, this phase results in the DOM nodes being cloned into a `fragment`, ready to be inserted in the document, and a list of `Parts` that can be updated by the next phase to set the dynamic JavaScript values in that fragment.
 
 ```js
 const instance = new TemplateInstance(preparedTemplate);
@@ -276,34 +276,36 @@ console.log(instance._$parts);
 
 After the update phase this fragment is inserted into the DOM.
 
+The following sections cover in detail what happens when the `TemplateInstance` is created and then cloned:
+
 #### Create a `TemplateInstance`
 
-A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the Parts used to update the DOM.
+A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the `Part`s used to update the DOM.
 
 #### Clone the template and instantiate Parts
 
 Within `TemplateInstance._clone()`, first the `<template>` element is cloned into a document fragment.
 
-After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a Part instance is created for the node. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
+After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a `Part` instance is created for the node. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
 
 These Part instances are stored on the `TemplateInstance`.
 
 ### 2.iii. Update
 
-The update step, which is performed for initial renders as well, is performed in `TemplateInstance._update()`.
+The update phase, which happens on every render, is initiated by [`TemplateInstance._update()`](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1532).
 
 Updates are performed by iterating over the parts and values array, and calling `part._$setValue(value)`.
 
 What happens when a value is updated on a Part is determined by the parts themselves.
 Every single Part type will also call `resolveDirective` very early in the logic and reassign `value` to the returned value. This is [how directives can customize and extend how an expression renders](https://lit.dev/docs/templates/directives/).
 
-Recall that our examples `TemplateResult` contains these dynamic values for the first render:
+Recall that our example's `TemplateResult` contains these dynamic values for the first render:
 
 ```js
 ['', 0, () => render(counterUi(1), container)];
 ```
 
-Which results in each of the three parts on the `TemplateInstance` being called with the associated value. For demonstrative purposes, inlined this looks like:
+Which results in each of the three parts on the `TemplateInstance` being called with the respective value. For demonstrative purposes, inlined this would look like:
 
 ```js
 AttributePart._$setValue('');
@@ -311,29 +313,31 @@ ChildPart._$setValue(0);
 EventPart._$setValue(() => render(counterUi(1), container));
 ```
 
+The DOM mutation caused by `_$setValue` differs per `Part` type:
+
 #### ChildPart.\_$setValue
 
-Setting a value on a ChildPart occurs whenever the authored template has a dynamic expression in child part position, and the value is whatever has been passed into the tagged template literal expression.
+Setting a value on a `ChildPart` occurs whenever the authored template has a dynamic expression in child part position, and the value is whatever has been passed into the tagged template literal expression.
 
-Some examples of authored templates that all result in rendering `<div>hi</div>` via a ChildPart:
+Some examples of authored templates that all result in rendering `<div>hi</div>` via a `ChildPart`:
 
 - `` html`<div>${"hi"}</div>` ``, sets the string literal value `"hi"` on the child part.
 - `` html`<div>${html`hi`}</div>` ``, sets the TemplateResult value `` html`<p>Hi</p>` `` on the child part.
 - `` html`<div>${['h', 'i']}</div>` ``, sets the iterable on the child part.
 - `` html`<div>${document.createTextNode('hi')}</div>` ``, sets the Text node on the child part.
 
-At a very high level, `ChildPart` tracks the last value it was updated with via `_$committedValue`, skipping any work if the passed value is equal to the last committed value. This is how ChildParts diff changes at the value level.
+At a very high level, `ChildPart` tracks the last value it was updated with via `_$committedValue`, skipping any work if the passed value is equal to the last committed value. This is how `ChildPart`s diff changes at the value level.
 If the `value` being set on the ChildPart is not the same as `_$committedValue`, then the value is processed (differently based on the type) into a Node or Nodes and is committed to the DOM. Then the `value` is set on `_$committedValue` so the following `_$setValue` call can omit additional work if the value is unchanged.
 
 Primitive values set on a `ChildPart`, (`null`, `undefined`, `boolean`, `number`, `string`, `symbol`, or `bigint`), create or update a Text node. Committing a text node is done in `_commitText`, which is also where text sanitization occurrs.
 
-If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResult` which renders that `TemplateResult` into the ChildPart, [creating and updating](#2b-create) that `TemplatResult`.
+If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResult` which renders that `TemplateResult` into the `ChildPart`, [preparing](#2i-prepare), [creating](#2ii-create) and [updating](#2iii-update) that `TemplateResult`.
 
-If the value is a Node, the the ChildPart clears any previously rendered nodes and inserts the Node value directly.
+If the value is a Node, then the `ChildPart` clears any previously rendered nodes and inserts the Node value directly.
 
 #### AttributePart.\_$setValue
 
-In the single binding attribute value case such as `` html`<input value=${...}>` ``, an `AttributePart` also uses `_$committedValue` to not do extra work. Values are committed by calling `this.element.setAttribute(name, value)`.
+In the single binding attribute value case such as `` html`<input value=${...}>` ``, an `AttributePart` also uses `_$committedValue` to diff against previously committed values and not do wasteful work. Values are committed by calling `this.element.setAttribute(name, value)`.
 
 `AttributePart` also handles the more complex cases with multiple bindings in attribute value position: `` html`<div class="${...} static-class ${...}"></div>` ``. Multiple values are also committed with a `setAttribute` call after the values are evaluated and joined together.
 
@@ -343,18 +347,18 @@ In the single binding attribute value case such as `` html`<input value=${...}>`
 
 #### BooleanAttributePart.\_$setValue
 
-BooleanAttributePart also extends `AttributePart`, and overrides `_commitValue`. When a value is committed to a `BooleanAttributePart`, a falsy or `nothing` value will remove the attribute, and a truthy value will set the attribute with an empty string attribute value.
+`BooleanAttributePart` also extends `AttributePart` and overrides `_commitValue`. When a value is committed to a `BooleanAttributePart`, a falsy or `nothing` value will remove the attribute, and a truthy value will set the attribute with an empty string attribute value.
 
 #### EventPart.\_$setValue
 
-EventPart also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`.
-The EventPart ensures that event listeners are added and cleaned up between renders and if the passed in value changes.
+`EventPart` also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`.
+The EventPart ensures that event listeners are added and cleaned up between renders and if the passed-in value changes.
 
 A value of `null`, `undefined`, or `nothing` will remove any previously set listeners without adding a new listener.
 
 #### ElementPart.\_$setValue
 
-Nothing can be committed via an ElementPart. Instead `resolveDirective` is called, allowing directives to hook into the `ElementPart` position.
+Nothing can be committed via an `ElementPart`. Instead `resolveDirective` is called, allowing directives to hook into the `ElementPart` position.
 
 For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the `ElementPart` location to then manage the elements animations.
 
@@ -383,14 +387,14 @@ The `TemplateResult` for `counterUi(1)` is:
 }
 ```
 
-Instead of redoing the work in the **Prepare** phase, the Lit `Template` is fetched from the cache using the template's `strings` Template String Array.
+Instead of redoing the work in the **Prepare** phase, the Lit `Template` is fetched from the cache using the template's `strings` Template Strings Array.
 
 > **Note**
-> The reference to the Template String Array is the cache key, not the value of the key. This is an O(1) lookup and not changed by the length of the static contents.
+> The reference to the Template Strings Array is the cache key, not the value of the key. This is an O(1) lookup and not changed by the length of the static contents.
 
-The container's `ChildPart` stores the last committed value - which in this case is a `TemplateInstance` referencing the `Template` returned from the cache. This lets us skip the **Create** phase.
+The container's `ChildPart` stores the last committed value - which in this case is a `TemplateInstance` referencing the `Template` returned from the cache. Because we're rendering the same `Template` to this `ChildPart` the **Create** phase is skipped.
 
-All that is left is to update the parts with the new values. For demonstrative purposes, inlined this looks like:
+All that is left is to iterate over the previously created `Part`s and call `_$setValue` with the new values. For demonstrative purposes, inlined this looks like:
 
 ```js
 AttributePart._$setValue('odd');
@@ -404,8 +408,8 @@ This results in the DOM updating with a green underlined number one, and the eve
 
 lit-html is fast, but what if it could be faster!?
 
-- [Declarative syntax for creating DOM Parts](https://github.com/WICG/webcomponents/issues/990). This could remove the requirement for lit-html to walk the `<template>` element's tree and manually instantiate Parts.
-- Precompiling lit-html `html` tag functions (tracked in https://github.com/lit/lit/issues/189). This provides a mechanism to move the **Prepare** step into build tooling making the initial runtime render start at the **Create** step.
+- [Declarative syntax for creating DOM Parts](https://github.com/WICG/webcomponents/issues/990). This could remove the requirement for lit-html to walk the `<template>` element's tree and manually instantiate Parts. This reduces the tree walk done in the **Create** phase.
+- Precompiling lit-html `html` tag functions (tracked in https://github.com/lit/lit/issues/189). This would allow opting into doing the **Prepare** phase in a compile step done by build tooling. Runtime would no longer have a **Prepare** phase.
 
 # Appendix
 
