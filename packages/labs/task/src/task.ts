@@ -141,7 +141,9 @@ export class Task<
         this._resolveTaskComplete = res;
         this._rejectTaskComplete = rej;
       });
-
+      // If the status is error, return a rejected promise.
+    } else if (this.status === TaskStatus.ERROR) {
+      this._taskComplete = Promise.reject(this._error);
       // Otherwise we are at a task run's completion or this is the first
       // request and we are not in the middle of a task (i.e. INITIAL).
     } else {

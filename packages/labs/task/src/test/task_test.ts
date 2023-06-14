@@ -697,6 +697,34 @@ suite('Task', () => {
     await el.task.run();
   });
 
+  test('rejects after erroring task completes', async () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        task: async () => {
+          throw new Error(
+            'If you see this in the console, this test is broken.'
+          );
+        },
+        autoRun: false,
+      });
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+
+    await el.task.run();
+
+    assert.equal(el.task.status, TaskStatus.ERROR);
+
+    let error: Error | undefined;
+    await el.task.taskComplete.catch((e: Error) => {
+      error = e;
+    });
+
+    assert.isTrue(error !== undefined);
+  });
+
   test('can catch error on taskComplete', async () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
