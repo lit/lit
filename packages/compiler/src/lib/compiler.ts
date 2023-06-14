@@ -7,17 +7,13 @@ import {programFromTsConfig} from './typescript.js';
 import {resolve as resolvePath} from 'path';
 import {compileLitTemplates} from './template-transform.js';
 
-export const hello = () => 'Hello';
-
 export const compile = (path: string) => {
   const configPath = resolvePath(path);
   const program = programFromTsConfig(configPath);
   for (const file of program.getSourceFiles()) {
-    console.log('COMPILING:', file.fileName);
-    const emitResult = program.emit(file, undefined, undefined, undefined, {
+    program.emit(file, undefined, undefined, undefined, {
       before: [compileLitTemplates()],
     });
-    console.log(emitResult);
   }
 };
 

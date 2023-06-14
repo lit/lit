@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 
-import {hello, compile} from '../lib/compiler.js';
+import {compile} from '../lib/compiler.js';
 import {compileLitTemplates} from '../lib/template-transform.js';
 import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
 
@@ -40,8 +40,7 @@ export const sayHello = (name) => html \`<h1>Hello \${name}</h1>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-var lit_template_1 = { _strings: ["<h1>Hello ", "</h1>"], _element: document.createElement("template"), _parts: [{ _type: 2, index: 2 }] };
-lit_template_1.innerHTML = "<h1>Hello <?${marker}></h1>"
+var lit_template_1 = { h: "<h1>Hello <?${marker}></h1>", parts: [{ type: 2, index: 2 }] };
 export const sayHello = (name) => ({ _$litType$: lit_template_1, values: [name] });
 `.trim()
   );

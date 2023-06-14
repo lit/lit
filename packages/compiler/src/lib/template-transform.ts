@@ -87,28 +87,6 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
         const template = topLevelStatementToTemplate.get(node as ts.Statement)!;
         const templateExpression = template.node.template;
 
-        // Generate template strings array
-        const stringsArrayExpression = f.createArrayLiteralExpression(
-          ts.isNoSubstitutionTemplateLiteral(templateExpression)
-            ? [f.createStringLiteral(templateExpression.text)]
-            : [
-                f.createStringLiteral(templateExpression.head.text),
-                ...templateExpression.templateSpans.map((s) =>
-                  f.createStringLiteral(s.literal.text)
-                ),
-              ]
-        );
-
-        // TODO: can we move element creation into the runtime to reduce duplication?
-        const elementExpression = f.createCallExpression(
-          f.createPropertyAccessExpression(
-            f.createIdentifier('document'),
-            f.createIdentifier('createElement')
-          ),
-          undefined,
-          [f.createStringLiteral('template')]
-        );
-
         // Generate parts array
         const parts: Array<
           | {type: typeof PartType.CHILD; index: number}
@@ -189,7 +167,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
           parts.map((part) => {
             const partProperties = [
               f.createPropertyAssignment(
-                '_type',
+                'type',
                 f.createNumericLiteral(part.type)
               ),
               f.createPropertyAssignment(
@@ -236,22 +214,13 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                 undefined,
                 f.createObjectLiteralExpression([
                   f.createPropertyAssignment(
-                    '_strings',
-                    stringsArrayExpression
+                    'h',
+                    f.createStringLiteral(html as unknown as string)
                   ),
-                  f.createPropertyAssignment('_element', elementExpression),
-                  f.createPropertyAssignment('_parts', partsArrayExpression),
+                  f.createPropertyAssignment('parts', partsArrayExpression),
                 ])
               ),
             ]
-          ),
-          // <template> innerHTML
-          f.createAssignment(
-            f.createPropertyAccessExpression(
-              template.variableName,
-              f.createIdentifier('innerHTML')
-            ),
-            f.createStringLiteral(html as unknown as string)
           ),
           // Traverse into template-containing top-level statement
           ts.visitEachChild(node, rewriteTemplates, context),
