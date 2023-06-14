@@ -606,7 +606,8 @@ suite('Task', () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         task: async () => {
-          return crypto.randomUUID();
+          // Use crypto.randomUUID when it's supported in our sauce targets.
+          return Math.random() * 1000000;
         },
         autoRun: false,
       });
@@ -646,7 +647,7 @@ suite('Task', () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         task: async () => {
-          return crypto.randomUUID();
+          return Math.random() * 1000000;
         },
         autoRun: false,
       });
@@ -728,7 +729,7 @@ suite('Task', () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         task: async () => {
-          return crypto.randomUUID();
+          return Math.random() * 1000000;
         },
         autoRun: false,
       });
@@ -763,7 +764,7 @@ suite('Task', () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         task: async () => {
-          return crypto.randomUUID();
+          return Math.random() * 1000000;
         },
         autoRun: false,
       });
