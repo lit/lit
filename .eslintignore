@@ -27,7 +27,7 @@ packages/compiler/development/
 packages/compiler/node_modules/
 packages/compiler/test/
 packages/compiler/lib/
-packages/compiler/out/
+packages/compiler/testdata/basic-elements/out
 packages/internal-scripts/node_modules/
 packages/internal-scripts/lib/
 
