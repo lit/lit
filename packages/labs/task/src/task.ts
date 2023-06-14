@@ -127,9 +127,9 @@ export class Task<
    * is kept and only resolved when the new run is completed.
    */
   get taskComplete(): Promise<R> {
-    // If a task exists, return the cached promise. This is true in the case
+    // If a task run exists, return the cached promise. This is true in the case
     // where the user has called taskComplete in pending or completed state
-    // before and has not run a new task since.
+    // before and has not started a new task run since.
     if (this._taskComplete) {
       return this._taskComplete;
     }
@@ -142,12 +142,10 @@ export class Task<
         this._rejectTaskComplete = rej;
       });
 
-      // Otherwise we are at a run's completion or this is the first request
-      // and we are not in the middle of a task (i.e. INITIAL).
+      // Otherwise we are at a task run's completion or this is the first
+      // request and we are not in the middle of a task (i.e. INITIAL).
     } else {
-      this._resolveTaskComplete = undefined;
-      this._rejectTaskComplete = undefined;
-      this._taskComplete = Promise.resolve(this._value as R);
+      this._taskComplete = Promise.resolve(this._value!);
     }
 
     return this._taskComplete;
@@ -214,14 +212,10 @@ export class Task<
   async run(args?: T) {
     args ??= this._getArgs?.();
 
-    // Clear the last complete task in initial because it may be a resolved
-    // promise. Also clear if complete or error because the value returned by
+    // Clear the last complete task run in INITIAL because it may be a resolved
+    // promise. Also clear if COMPLETE or ERROR because the value returned by
     // awaiting taskComplete may have changed since last run.
-    if (
-      this.status === TaskStatus.COMPLETE ||
-      this.status === TaskStatus.ERROR ||
-      this.status === TaskStatus.INITIAL
-    ) {
+    if (this.status !== TaskStatus.PENDING) {
       this._taskComplete = undefined;
       this._resolveTaskComplete = undefined;
       this._rejectTaskComplete = undefined;
