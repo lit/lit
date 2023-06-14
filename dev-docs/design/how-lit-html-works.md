@@ -10,7 +10,7 @@ If anything is unclear or you have questions, reach out on our [Discord channel]
 
 # What is lit-html?
 
-lit-html is an HTML templating library. Templates are written in JavaScript by mixing static HTML strings and dynamic JavaScript values using template literals. lit-html enables UI as a function of application state programming model, fast initial rendering, and fast updates that minimally update DOM when state changes.
+lit-html is an HTML templating library. Templates are written in JavaScript by mixing static HTML strings and dynamic JavaScript values using template literals. lit-html enables writing UI as a function of application state, it has fast initial rendering, and fast updates that minimally update DOM when state changes.
 
 lit-html is very performant as can be seen in the [JS Frameworks Benchmark](https://krausest.github.io/js-framework-benchmark/). A great companion to this document is [Justin Fagnani's lit-html talk](https://youtu.be/Io6JjgckHbg).
 
@@ -94,7 +94,7 @@ const counterUi = (count) => html` <span class="${count % 2 == 1 ? 'odd' : ''}">
 render(counterUi(0), container);
 ```
 
-[Live example hosted on lit.dev.](https://lit.dev/playground/#gist=a1058bae08d79928fc2fafaf02b04581)
+[Live example in the playground.](https://lit.dev/playground/#gist=a1058bae08d79928fc2fafaf02b04581)
 
 The sample code results in a counter which increments when the "Increment" button is clicked:
 
@@ -157,7 +157,7 @@ Evaluating a template expression is fast. It's only as expensive as the JavaScri
 
 Initiated by a call to lit-html's `render()` function, such as: `render(counterUi(0), container)` in the example.
 
-The `render()` function looks for a field `_$litPart$` on the container element or instantiates and assigns a new `ChildPart` on the container. Calling `_$setValue` on the container's `ChildPart` kicks off rendering on the passed in `TemplateResult`.
+The `render()` function looks for a field `_$litPart$` on the container element or instantiates and assigns a new `ChildPart` on the container. Calling `_$setValue` on the container's `ChildPart` kicks off rendering the passed in `TemplateResult`.
 
 ### 2.i. Prepare
 
