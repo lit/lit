@@ -257,8 +257,6 @@ export class Task<
           this._rejectTaskComplete?.(error);
         }
         this._value = result as R;
-        // The run's ended so don't generate a task complete promise and either
-        // return the existing, resolved promise or a new resolved promise.
         this._error = error;
       }
       // Request an update with the final value.
