@@ -163,16 +163,16 @@ The `render()` function looks for a field `_$litPart$` on the container element 
 
 Source: [`_$getTemplate` method which contains and caches the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568).
 
-When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element (within `el` class field) and a list of `TemplateParts` (stored in the `parts` class field). This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if the `TemplateResult` is ever encountered again.
+When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if the `TemplateResult` is ever encountered again.
 
-The returned value from `_$getTemplate` after the **Prepare** phase has completed for the sample code is:
+The returned value from `ChildPart._$getTemplate` after the **Prepare** phase has completed for the sample code is:
 
 ```js
 // Pseudo-code of the Prepare phase:
 let preparedTemplate = ChildPart._$getTemplate(counterUi(0));
 
 // Result of the Prepare phase:
-console.log(preparedTemplate.el.outerHtml);
+console.log(preparedTemplate.el);
 // <template><span><!--?lit$1234$--></span><button>Increment</button></template>
 
 console.log(preparedTemplate.parts);
@@ -188,11 +188,9 @@ console.log(preparedTemplate.parts);
 The following sections detail what happens in the constructor of the `Template` class
 when preparing a `TemplateResult` for the first time:
 
-#### Join the template's string literals with marker strings.
+#### Join the TemplateResult's template strings array with markers.
 
-Source: [lit-html.ts `getTemplateHtml` function](https://github.com/lit/lit/blob/5d68be35c192e8c4109911eec727fbb598557f72/packages/lit-html/src/lit-html.ts#L667)
-
-We have a list of static HTML strings, but these cannot be directly inserted into a `<template>` element. This pass converts the immutable template strings array into an annotated HTML string where the returned HTML marks the dynamic parts of the HTML with the following annotations:
+We have a list of static HTML strings, but these cannot yet be inserted into a `<template>` element. This pass converts the immutable template strings array into an annotated HTML string where the returned HTML marks the dynamic parts of the HTML with the following annotations:
 
 - Expressions in text position (e.g. `<span>${}</span>`), are marked with a comment node: `<span><!--?lit$random$--></span>`.
 - Expressions in attribute position (e.g. `<p class="${}"></p>`), are marked with a sentinel string: `<p class$lit$="lit$random$"></p>`, and the attribute name has the suffix `$lit$` appended.
@@ -223,22 +221,22 @@ getTemplateHtml([
 
 Notice that there are three markers that are associated with the example's three dynamic values contained in the `TemplateResult`'s `values` array.
 
+> **Note**
+> In the prepared example HTML string above, the syntax `<?lit$1234$>` represents a [`ProcessingInstruction`](https://developer.mozilla.org/en-US/docs/Web/API/ProcessingInstruction) and is parsed and inserted into the `<template>` element as the comment node: `<!--?lit$1234$-->`. This is an optimization to reduce the number of bytes per marker.
+
 #### Create a `<template>` element
 
-The prepared HTML string is used to set the `innerHTML` of a new `<template>` element. This causes the browser to parse the template HTML. The prepared `<template>` element is assigned to `Template.el`.
+The prepared HTML string is used to set the `innerHTML` of a new `<template>` element. This causes the browser to parse the template HTML. The prepared `<template>` element is assigned to the `Template`'s `el` class field.
 
-> **Note**
-> In the prepared example HTML string above, the syntax `<?lit$1234$>` represents a [`ProcessingInstruction`](https://developer.mozilla.org/en-US/docs/Web/API/ProcessingInstruction) and is parsed and inserted into the `<template>` element as the comment node: `<!--?lit$1234$-->`. This is an optimization to reduce the number of bytes per dynamic annotation.
+This step is safe from XSS vulnerabilities or other malicious input because only the static strings are used and no dynamic values are inserted. Also recall that the `<template>` element only holds HTML, so scripts don't run, styles don't apply, custom elements don't upgrade, etc.
 
-This step is safe from XSS vulnerabilities or other malicious input because only the static strings are used and no dynamic values are inserted. Furthermore the `<template>` element only holds HTML, so scripts don't run, styles don't apply, custom elements don't upgrade, etc.
-
-#### Create the `TemplateParts`
+#### Create the `TemplatePart`s
 
 A `TemplatePart` is metadata storing where a dynamic JavaScript value should be set on the DOM. Each `TemplatePart` contains the depth-first index of the node it is associated with, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute.
 
-`TemplateParts` are found by walking the tree of nodes in the `<template>` element and finding the marker annotations. If a marker is found, either in an attribute, as a marker comment node, or in text content, a `TemplatePart` is created and stored in the `parts` class field.
+`TemplatePart`s are found by walking the tree of nodes in the `<template>` element and finding the marker annotations. If a marker is found, either in an attribute, as a marker comment node, or in text content, a `TemplatePart` is created and stored in the `parts` class field.
 
-When traversing the tree of nodes, `Template` does different work for specific Node types:
+When traversing the tree of nodes, the following work is done for the different Node types:
 
 ##### Element
 
@@ -246,17 +244,17 @@ For each attribute on the element, if it has a `$lit$` suffix, then the expressi
 
 An attribute on the element may also represent an `ElementPart` in the case where the attribute name starts with the marker sentinel value. E.g. `<div ${} ${}>` is marked up as `<div lit$random$0="" lit$random$1="">`.
 
-For each of the bound attributes identified, they are removed from the element and a `TemplatePart` is created to record the location, name, and type of dynamic binding.
+For each of the bound attributes identified on the element, they are removed from the element and a `TemplatePart` is created to record the location, name, and type of dynamic binding.
 
 ##### Comment
 
-A Comment is usually either an expression marker, or a user-written comment with no expression associated. Occasionally though a user may have written an expression inside a comment. This is especially easy to do with IDEs that help comment out code sections and are inline-html aware. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
+A Comment is usually either an expression marker, or a user-written comment with no expression associated. Occasionally though a user may have written an expression inside a comment. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
 
 A comment that matches a marker annotation is a `TemplatePart` in ChildPart position.
 
 ##### Text
 
-Usually text-position markers will be comment nodes, but inside `<style>`, `<script>`, `<textarea>`, `<title>` tags the markup that _looks_ like a comment (`<!-- lit -->`) will just be inserted as _text_ in the script or style. So we must search for the marker as text. If found we split the Text node and insert a comment marker.
+Usually text-position markers will be comment nodes, but inside `<style>`, `<script>`, `<textarea>`, `<title>` tags the markup that _looks_ like a comment (`<!-- lit -->`) will be inserted as _text_. So we must search for the marker within Text nodes. If found we split the Text node and insert a comment marker, and store a `TemplatePart` in ChildPart position referencing the comment marker's node index.
 
 ### 2.ii. Create
 
