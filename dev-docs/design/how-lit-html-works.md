@@ -16,11 +16,11 @@ lit-html is very performant as can be seen in the [JS Frameworks Benchmark](http
 
 # Foundational Pieces
 
-lit-html's design arises naturally out of combining two powerful web primitives: [JavaScript Tagged Template Literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) (TTL's) and the HTML [`<template>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) element.
+lit-html's design arises naturally out of combining two powerful web primitives: [JavaScript Tagged Template Literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates) (TTLs) and the HTML [`<template>`](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template) element.
 
-TTL's provide an explicit syntax for separating static strings of HTML content and dynamic JavaScript values. The static strings are immutable and preserve identity across multiple evaluations of the tagged literal making them ideal for use as a cache key.
+TTLs provide an explicit syntax for separating static strings of HTML content and dynamic JavaScript values. The static strings are immutable and preserve identity across multiple evaluations of the tagged literal making them ideal for use as a cache key.
 
-The `<template>` element provides a container for HTML content that can later be cloned into the document. In a template element: scripts don't run, styles don't apply, custom elements don't upgrade, etc. During rendering a template's content can be cloned or imported into the Document which makes the cloned nodes active.
+The `<template>` element provides a container for HTML content that can later be cloned into the document. In a template element: scripts don't run, styles don't apply, custom elements don't upgrade, etc. During rendering, a template's content can be cloned or imported into the Document which makes the cloned nodes active.
 
 # Rendering
 
@@ -42,7 +42,7 @@ lit-html templates are only a description of the UI. They must be rendered with 
 <ol type="a">
 <li>
 
-**Prepare**: The first time render is called for each unique TTL, create a `<template>` element containing the static HTML and Lit `TemplateParts` encoding a mapping for each dynamic JavaScript value to its location in the static HTML.
+**Prepare**: The first time render is called for each unique TTL, create a `<template>` element containing the static HTML and Lit `TemplatePart`s encoding a mapping for each dynamic JavaScript value to its location in the static HTML.
 
 </li>
 <li>
@@ -102,7 +102,7 @@ The sample code results in a counter which increments when the "Increment" butto
 
 ## 1. Define
 
-Templates are defined with the `html` template tag. This tag does very little work - it only captures the current values and a reference to the strings object, and returns this as a `TemplateResult`.
+Templates are defined with the `html` template tag. This tag does very little work — it only captures the current values and a reference to the strings object, and returns this as a `TemplateResult`.
 
 lit-html ships with two template tags: `html` and `svg`. The `svg` tag is for defining SVG _fragment_ templates: it ensures that the elements created are in the SVG namespace.
 
@@ -161,15 +161,17 @@ The `render()` function looks for a field `_$litPart$` on the container element 
 
 ### 2.i. Prepare
 
-Source: [`_$getTemplate` method which is the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568)
+Source: [`_$getTemplate` method which contains and caches the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568).
 
-When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is a Lit `Template` class that contains a `<template>` element (within `el` class field) and a list of `TemplateParts` (stored in the `parts` class field). This Lit `Template` class is cached by the `TemplateResult`'s unique `strings` template array so this phase is skipped if the `TemplateResult` is ever encountered again.
+When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element (within `el` class field) and a list of `TemplateParts` (stored in the `parts` class field). This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if the `TemplateResult` is ever encountered again.
 
 The returned value from `_$getTemplate` after the **Prepare** phase has completed for the sample code is:
 
 ```js
-let preparedTemplate = new Template(counterUi(0));
+// Pseudo-code of the Prepare phase:
+let preparedTemplate = ChildPart._$getTemplate(counterUi(0));
 
+// Result of the Prepare phase:
 console.log(preparedTemplate.el.outerHtml);
 // <template><span><!--?lit$1234$--></span><button>Increment</button></template>
 
@@ -183,14 +185,17 @@ console.log(preparedTemplate.parts);
 */
 ```
 
+The following sections detail what happens in the constructor of the `Template` class
+when preparing a `TemplateResult` for the first time:
+
 #### Join the template's string literals with marker strings.
 
 Source: [lit-html.ts `getTemplateHtml` function](https://github.com/lit/lit/blob/5d68be35c192e8c4109911eec727fbb598557f72/packages/lit-html/src/lit-html.ts#L667)
 
 We have a list of static HTML strings, but these cannot be directly inserted into a `<template>` element. This pass converts the immutable template strings array into an annotated HTML string where the returned HTML marks the dynamic parts of the HTML with the following annotations:
 
-- Expressions in text position (ie, `<span>${}</span>`), are marked with a comment node: `<span><!--?lit$random$--></span>`.
-- Expressions in attribute position (ie, `<p class="${}"></p>`), are marked with a sentinel string: `<p class$lit$="lit$random$"></p>`, and the attribute name has the suffix `$lit$` appended.
+- Expressions in text position (e.g. `<span>${}</span>`), are marked with a comment node: `<span><!--?lit$random$--></span>`.
+- Expressions in attribute position (e.g. `<p class="${}"></p>`), are marked with a sentinel string: `<p class$lit$="lit$random$"></p>`, and the attribute name has the suffix `$lit$` appended.
 
 The suffix `$lit$` is appended to bound attributes so special-cased attributes (e.g., `style`, `class`, and many SVG attributes) aren't handled by the browser at a point when they contain marker expressions. For instance, IE and Edge parse the `style` attribute value and discard it if it's invalid CSS.
 
@@ -202,15 +207,17 @@ getTemplateHtml([
   '">',
   '</span><button @click=',
   '>Increment</button>',
-])[
-  // Which returns the following (spaces added for readability):
-  (`<span class$lit$="lit$1234$">
+]);
+
+// Which returns the following (spaces added for readability):
+[
+  `<span class$lit$="lit$1234$">
     <?lit$1234$>
   </span>
-  <button>@click$lit$=lit$1234$>
+  <button @click$lit$=lit$1234$>
     Increment
   </button>`,
-  ['class', '@click'])
+  ['class', '@click'],
 ];
 ```
 
