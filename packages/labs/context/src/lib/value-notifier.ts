@@ -57,8 +57,11 @@ export class ValueNotifier<T> {
           this.callbacks.delete(callback);
         });
       }
+      const dispose = this.callbacks.get(callback)!;
+      callback(this.value, dispose);
+    } else {
+      callback(this.value);
     }
-    callback(this.value);
   }
 
   clearCallbacks(): void {
