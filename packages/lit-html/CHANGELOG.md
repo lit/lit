@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.7.5
+
+### Patch Changes
+
+- [#3934](https://github.com/lit/lit/pull/3934) [`5659f6ee`](https://github.com/lit/lit/commit/5659f6eec2894f1534be1a367c8c93427d387a1a) - Rename internal type `NodeTemplatePart` to `ChildTemplatePart` for consistent part naming.
+
 ## 2.7.4
 
 ### Patch Changes

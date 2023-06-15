@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 0.3.3
+
+### Patch Changes
+
+- [#3956](https://github.com/lit/lit/pull/3956) [`d1cc410e`](https://github.com/lit/lit/commit/d1cc410ed9c9b36422e088c3dc66dffde1a9dee1) - Fix a memory leak when a context consumer sets `subscribe: true`.
+
 ## 0.3.2
 
 ### Patch Changes
