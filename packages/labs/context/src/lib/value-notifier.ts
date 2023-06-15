@@ -20,7 +20,7 @@ type Disposer = () => void;
  * for a number of use cases.
  */
 export class ValueNotifier<T> {
-  private callbacks: Map<ContextCallback<T>, Disposer> = new Map();
+  private disposers: Map<ContextCallback<T>, Disposer> = new Map();
 
   private _value!: T;
   public get value(): T {
@@ -45,26 +45,26 @@ export class ValueNotifier<T> {
   }
 
   updateObservers = (): void => {
-    for (const [callback, disposer] of this.callbacks) {
+    for (const [callback, disposer] of this.disposers) {
       callback(this._value, disposer);
     }
   };
 
   addCallback(callback: ContextCallback<T>, subscribe?: boolean): void {
     if (subscribe) {
-      if (!this.callbacks.has(callback)) {
-        this.callbacks.set(callback, () => {
-          this.callbacks.delete(callback);
+      if (!this.disposers.has(callback)) {
+        this.disposers.set(callback, () => {
+          this.disposers.delete(callback);
         });
       }
-      const dispose = this.callbacks.get(callback)!;
-      callback(this.value, dispose);
+      const disposer = this.disposers.get(callback)!;
+      callback(this.value, disposer);
     } else {
       callback(this.value);
     }
   }
 
   clearCallbacks(): void {
-    this.callbacks.clear();
+    this.disposers.clear();
   }
 }

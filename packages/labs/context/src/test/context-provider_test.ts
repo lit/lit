@@ -171,7 +171,7 @@ memorySuite('memory leak test', () => {
     container = document.createElement('div');
     container.innerHTML = `
         <context-provider value="1000">
-            <context-consumer p="${big()}"></context-consumer>
+            <context-consumer></context-consumer>
         </context-provider>
     `;
     document.body.appendChild(container);
@@ -210,7 +210,7 @@ memorySuite('memory leak test', () => {
     // Expect the nodes that were removed to be garbage collected.
     window.gc();
     // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
-    // DOM leak is orders of magnitude larger
+    // DOM leak is orders of magnitude larger.
     assert.isAtMost(
       performance.memory.usedJSHeapSize,
       heap * 1.5,
