@@ -193,6 +193,7 @@ memorySuite('memory leak test', () => {
   teardown(() => {
     document.body.removeChild(container);
   });
+
   test('attaching and removing the consumer should not leak', async () => {
     window.gc();
     const heap = performance.memory.usedJSHeapSize;
