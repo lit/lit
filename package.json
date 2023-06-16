@@ -36,8 +36,7 @@
     "version": "npm run changeset version && npm run update-version-vars",
     "update-version-vars": "node scripts/update-version-variables.js",
     "release": "npm run build && npm run changeset publish",
-    "benchmark:size": "wireit",
-    "benchmark:sizetest": "wireit"
+    "benchmark:size": "wireit"
   },
   "wireit": {
     "build": {
