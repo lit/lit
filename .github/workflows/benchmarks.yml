@@ -25,6 +25,16 @@ jobs:
       - name: NPM install
         run: npm ci
 
+      - name: Generate size report
+        run: npm run benchmark:sizetest
+
+      - name: Comment size info to PR
+        if: ${{ failure() }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: scripts/check-size-out.md
+          comment_tag: check-size # ensures we create or update one size comment
+
       - name: Build
         run: npm run build
 

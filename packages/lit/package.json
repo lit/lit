@@ -248,7 +248,9 @@
         "test/*_test.html",
         "development/test/*_test.html",
         "test/polyfill-support/*_test.html",
-        "development/test/polyfill-support/*_test.html"
+        "development/test/polyfill-support/*_test.html",
+        "lit-core.min.js{,.map}",
+        "lit-all.min.js{,.map}"
       ]
     },
     "checksize": {

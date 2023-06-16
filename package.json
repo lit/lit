@@ -35,7 +35,9 @@
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
     "update-version-vars": "node scripts/update-version-variables.js",
-    "release": "npm run build && npm run changeset publish"
+    "release": "npm run build && npm run changeset publish",
+    "benchmark:size": "wireit",
+    "benchmark:sizetest": "wireit"
   },
   "wireit": {
     "build": {
@@ -183,6 +185,31 @@
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/testing:test"
       ]
+    },
+    "benchmark:size": {
+      "dependencies": [
+        "./packages/lit:build:rollup",
+        "./packages/lit-html:build:rollup"
+      ],
+      "files": [
+        "scripts/check-size.js"
+      ],
+      "output": [
+        "scripts/check-size-out.md"
+      ],
+      "command": "node scripts/check-size.js"
+    },
+    "benchmark:sizetest": {
+      "#comment": "like benchmark:size, but instead of writing a md file, it prints output to the console and fails in case of a problem",
+      "dependencies": [
+        "./packages/lit:build:rollup",
+        "./packages/lit-html:build:rollup"
+      ],
+      "files": [
+        "scripts/check-size.js"
+      ],
+      "output": [],
+      "command": "node scripts/check-size.js --sizetest"
     }
   },
   "devDependencies": {
