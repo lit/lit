@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Generate size report
-        run: npm run benchmark:sizetest
+        run: npm run benchmark:size
 
       - name: Remove size info comment if any
         if: ${{ !failure() }}

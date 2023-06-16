@@ -279,8 +279,7 @@
     "test:dev": "wireit",
     "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit",
-    "test:prodsize": "wireit"
+    "test:node-dev": "wireit"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
@@ -403,8 +402,7 @@
         "test:prod",
         "test:node",
         "test:node-dev",
-        "check-version",
-        "test:prodsize"
+        "check-version"
       ]
     },
     "test:dev": {
@@ -454,17 +452,6 @@
       ],
       "files": [],
       "output": []
-    },
-    "test:prodsize": {
-      "command": "node scripts/check-prodsize.js",
-      "dependencies": [
-        "build:rollup",
-        "build:ts",
-        "build:version-stability-test"
-      ],
-      "files": [
-        "scripts/check-prodsize.js"
-      ]
     }
   },
   "dependencies": {
