@@ -45,7 +45,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
   // Transforms a SourceFile to add top-level declarations for each lit-html
   // template in the module
   return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-    const topLevelStatementToTemplate = new Map<ts.Statement, TemplateInfo>();
+    const topLevelStatementToTemplate = new Map<ts.Statement, TemplateInfo[]>();
     const expressionToTemplate = new Map<
       ts.TaggedTemplateExpression,
       TemplateInfo
@@ -67,7 +67,9 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
             node,
             variableName: ts.factory.createUniqueName('lit_template'),
           };
-          topLevelStatementToTemplate.set(topStatement, templateInfo);
+          const templates = topLevelStatementToTemplate.get(topStatement) ?? [];
+          templates.push(templateInfo);
+          topLevelStatementToTemplate.set(topStatement, templates);
           expressionToTemplate.set(node, templateInfo);
           console.log('Lit', nodeStack[1].getText());
           // console.log(nodeStack.map((n) => ts.SyntaxKind[n.kind]));
@@ -84,144 +86,151 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
       // Here we insert a top-level pre-compiled definiton of a template
       // that's contained within the current statement.
       if (topLevelStatementToTemplate.has(node as ts.Statement)) {
-        const template = topLevelStatementToTemplate.get(node as ts.Statement)!;
-        const templateExpression = template.node.template;
+        const topLevelTemplates = topLevelStatementToTemplate
+          .get(node as ts.Statement)!
+          .map((template) => {
+            const templateExpression = template.node.template;
 
-        // Generate parts array
-        const parts: Array<
-          | {type: typeof PartType.CHILD; index: number}
-          | {
-              type: PartType;
-              index: number;
-              name: string;
-              strings: Array<string>;
-              tagName: string;
-            }
-        > = [];
-        const spoofedTemplate = ts.isNoSubstitutionTemplateLiteral(
-          templateExpression
-        )
-          ? ([templateExpression.text] as unknown as TemplateStringsArray)
-          : ([
-              templateExpression.head.text,
-              ...templateExpression.templateSpans.map((s) => s.literal.text),
-            ] as unknown as TemplateStringsArray);
-        // lit-html tries to enforce that `getTemplateHtml` only accepts a
-        // TemplateStringsResult.
-        (spoofedTemplate as unknown as {raw: string}).raw = '';
-        const [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
-        const ast = parseFragment(html as unknown as string, {
-          sourceCodeLocationInfo: true,
-        }) as DocumentFragment;
+            // Generate parts array
+            const parts: Array<
+              | {type: typeof PartType.CHILD; index: number}
+              | {
+                  type: PartType;
+                  index: number;
+                  name: string;
+                  strings: Array<string>;
+                  tagName: string;
+                }
+            > = [];
+            const spoofedTemplate = ts.isNoSubstitutionTemplateLiteral(
+              templateExpression
+            )
+              ? ([templateExpression.text] as unknown as TemplateStringsArray)
+              : ([
+                  templateExpression.head.text,
+                  ...templateExpression.templateSpans.map(
+                    (s) => s.literal.text
+                  ),
+                ] as unknown as TemplateStringsArray);
+            // lit-html tries to enforce that `getTemplateHtml` only accepts a
+            // TemplateStringsResult.
+            (spoofedTemplate as unknown as {raw: string}).raw = '';
+            const [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
+            const ast = parseFragment(html as unknown as string, {
+              sourceCodeLocationInfo: true,
+            }) as DocumentFragment;
 
-        let nodeIndex = -1;
+            let nodeIndex = -1;
 
-        /* Current attribute part index, for indexing attrNames */
-        let attrIndex = 0;
+            /* Current attribute part index, for indexing attrNames */
+            let attrIndex = 0;
 
-        traverse(ast, {
-          pre(node, _parent) {
-            if (isCommentNode(node)) {
-              if (node.data === markerMatch) {
-                // make a childPart
-                parts.push({
-                  type: PartType.CHILD,
-                  index: nodeIndex,
-                });
-              }
-            } else if (isElement(node)) {
-              if (node.attrs.length > 0) {
-                const tagName = node.tagName;
-                for (const attr of node.attrs) {
-                  if (attr.name.endsWith(boundAttributeSuffix)) {
-                    const strings = attr.value.split(marker);
-                    // We store the case-sensitive name from `attrNames` (generated
-                    // while parsing the template strings); note that this assumes
-                    // parse5 attribute ordering matches string ordering
-                    const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
-                      attrNames[attrIndex++]!
-                    )!;
+            traverse(ast, {
+              pre(node, _parent) {
+                if (isCommentNode(node)) {
+                  if (node.data === markerMatch) {
+                    // make a childPart
                     parts.push({
-                      type:
-                        prefix === '.'
-                          ? PartType.PROPERTY
-                          : prefix === '?'
-                          ? PartType.BOOLEAN_ATTRIBUTE
-                          : prefix === '@'
-                          ? PartType.EVENT
-                          : PartType.ATTRIBUTE,
+                      type: PartType.CHILD,
                       index: nodeIndex,
-                      name: caseSensitiveName,
-                      strings,
-                      tagName,
                     });
                   }
+                } else if (isElement(node)) {
+                  if (node.attrs.length > 0) {
+                    const tagName = node.tagName;
+                    for (const attr of node.attrs) {
+                      if (attr.name.endsWith(boundAttributeSuffix)) {
+                        const strings = attr.value.split(marker);
+                        // We store the case-sensitive name from `attrNames` (generated
+                        // while parsing the template strings); note that this assumes
+                        // parse5 attribute ordering matches string ordering
+                        const [, prefix, caseSensitiveName] =
+                          /([.?@])?(.*)/.exec(attrNames[attrIndex++]!)!;
+                        parts.push({
+                          type:
+                            prefix === '.'
+                              ? PartType.PROPERTY
+                              : prefix === '?'
+                              ? PartType.BOOLEAN_ATTRIBUTE
+                              : prefix === '@'
+                              ? PartType.EVENT
+                              : PartType.ATTRIBUTE,
+                          index: nodeIndex,
+                          name: caseSensitiveName,
+                          strings,
+                          tagName,
+                        });
+                      }
+                    }
+                  }
                 }
-              }
-            }
-            nodeIndex++;
-          },
-        });
+                nodeIndex++;
+              },
+            });
 
-        const partsArrayExpression = f.createArrayLiteralExpression(
-          parts.map((part) => {
-            const partProperties = [
-              f.createPropertyAssignment(
-                'type',
-                f.createNumericLiteral(part.type)
-              ),
-              f.createPropertyAssignment(
-                'index',
-                f.createNumericLiteral(part.index)
-              ),
-            ];
-            if (
-              part.type === PartType.ATTRIBUTE ||
-              part.type === PartType.BOOLEAN_ATTRIBUTE ||
-              part.type === PartType.PROPERTY ||
-              part.type === PartType.EVENT
-            ) {
-              partProperties.push(
-                f.createPropertyAssignment(
-                  'name',
-                  f.createNumericLiteral(part.name)
-                ),
-                f.createPropertyAssignment(
-                  '_strings',
-                  f.createArrayLiteralExpression(
-                    part.strings.map((s) => f.createStringLiteral(s))
-                  )
-                ),
-                f.createPropertyAssignment(
-                  '_constructor',
-                  f.createIdentifier(AttributePartConstructors[part.type])
-                )
-              );
-            }
-            return f.createObjectLiteralExpression(partProperties);
-          })
-        );
+            const partsArrayExpression = f.createArrayLiteralExpression(
+              parts.map((part) => {
+                const partProperties = [
+                  f.createPropertyAssignment(
+                    'type',
+                    f.createNumericLiteral(part.type)
+                  ),
+                  f.createPropertyAssignment(
+                    'index',
+                    f.createNumericLiteral(part.index)
+                  ),
+                ];
+                if (
+                  part.type === PartType.ATTRIBUTE ||
+                  part.type === PartType.BOOLEAN_ATTRIBUTE ||
+                  part.type === PartType.PROPERTY ||
+                  part.type === PartType.EVENT
+                ) {
+                  partProperties.push(
+                    f.createPropertyAssignment(
+                      'name',
+                      f.createNumericLiteral(part.name)
+                    ),
+                    f.createPropertyAssignment(
+                      'strings',
+                      f.createArrayLiteralExpression(
+                        part.strings.map((s) => f.createStringLiteral(s))
+                      )
+                    ),
+                    f.createPropertyAssignment(
+                      'ctor',
+                      f.createIdentifier(AttributePartConstructors[part.type])
+                    )
+                  );
+                }
+                return f.createObjectLiteralExpression(partProperties);
+              })
+            );
+            // Compiled template expression
+            return f.createVariableStatement(
+              undefined,
+              f.createVariableDeclarationList(
+                [
+                  f.createVariableDeclaration(
+                    template.variableName,
+                    undefined,
+                    undefined,
+                    f.createObjectLiteralExpression([
+                      f.createPropertyAssignment(
+                        'h',
+                        f.createStringLiteral(html as unknown as string)
+                      ),
+                      f.createPropertyAssignment('parts', partsArrayExpression),
+                    ])
+                  ),
+                ],
+                ts.NodeFlags.Const
+              )
+            );
+          });
 
         return [
-          // Compiled template expression
-          f.createVariableStatement(
-            // TODO: why isn't this emitting a const?
-            [f.createModifier(ts.SyntaxKind.ConstKeyword)],
-            [
-              f.createVariableDeclaration(
-                template.variableName,
-                undefined,
-                undefined,
-                f.createObjectLiteralExpression([
-                  f.createPropertyAssignment(
-                    'h',
-                    f.createStringLiteral(html as unknown as string)
-                  ),
-                  f.createPropertyAssignment('parts', partsArrayExpression),
-                ])
-              ),
-            ]
-          ),
+          ...topLevelTemplates,
           // Traverse into template-containing top-level statement
           ts.visitEachChild(node, rewriteTemplates, context),
         ];
