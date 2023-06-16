@@ -28,6 +28,13 @@ jobs:
       - name: Generate size report
         run: npm run benchmark:sizetest
 
+      - name: Remove size info comment if any
+        if: ${{ !failure() }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          mode: delete
+          comment_tag: check-size # ensures we delete the comment if present
+
       - name: Comment size info to PR
         if: ${{ failure() }}
         uses: thollander/actions-comment-pull-request@v2

@@ -982,14 +982,13 @@ class Template {
     // We could set walker.currentNode to another node here to prevent a memory
     // leak, but every time we prepare a template, we immediately render it
     // and re-use the walker in new TemplateInstance._clone().
-    debugLogEvent &&
-      debugLogEvent({
-        kind: 'template prep',
-        template: this,
-        clonableTemplate: this.el,
-        parts: this.parts,
-        strings,
-      });
+    debugLogEvent?.({
+      kind: 'template prep',
+      template: this,
+      clonableTemplate: this.el,
+      parts: this.parts,
+      strings,
+    });
   }
 
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
@@ -2130,15 +2129,15 @@ export const render = (
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let part: ChildPart = (partOwnerNode as any)['_$litPart$'];
-  debugLogEvent &&
-    debugLogEvent({
-      kind: 'begin render',
-      id: renderId,
-      value,
-      container,
-      options,
-      part,
-    });
+
+  debugLogEvent?.({
+    kind: 'begin render',
+    id: renderId,
+    value,
+    container,
+    options,
+    part,
+  });
   if (part === undefined) {
     const endNode = options?.renderBefore ?? null;
     // This property needs to remain unminified.
@@ -2151,15 +2150,14 @@ export const render = (
     );
   }
   part._$setValue(value);
-  debugLogEvent &&
-    debugLogEvent({
-      kind: 'end render',
-      id: renderId,
-      value,
-      container,
-      options,
-      part,
-    });
+  debugLogEvent?.({
+    kind: 'end render',
+    id: renderId,
+    value,
+    container,
+    options,
+    part,
+  });
   return part as RootPart;
 };
 
