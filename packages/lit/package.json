@@ -267,7 +267,8 @@
         "test:dev",
         "test:prod",
         "test:node",
-        "test:node-dev"
+        "test:node-dev",
+        "test:prodsize"
       ]
     },
     "test:dev": {
