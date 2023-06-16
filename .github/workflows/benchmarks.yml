@@ -32,7 +32,7 @@ jobs:
         if: ${{ !failure() }}
         uses: thollander/actions-comment-pull-request@v2
         with:
-          mode: delete
+          message: 'The size of lit-html.js and lit-core.min.js are as expected.'
           comment_tag: check-size # ensures we delete the comment if present
 
       - name: Comment size info to PR
