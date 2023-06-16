@@ -42,12 +42,12 @@ lit-html templates are only a description of the UI. They must be rendered with 
 <ol type="a">
 <li>
 
-**Prepare**: The first time render is called for each unique TTL, create a `<template>` element containing the static HTML and Lit `TemplatePart`s encoding a mapping for each dynamic JavaScript value to its location in the static HTML.
+**Prepare**: The first time `render()` is called for each unique TTL, create a `<template>` element containing the static HTML and Lit `TemplatePart`s encoding a mapping for each dynamic JavaScript value to its location in the static HTML.
 
 </li>
 <li>
 
-**Create**: The first time render is called for a given node and template, clone the `<template>` contents into the DOM and instantiate the Lit `Part`s which manage the dynamic content.
+**Create**: The first time `render()` is called for a given node and template, clone the `<template>` contents into the DOM and instantiate the Lit `Part`s which manage the dynamic content.
 
 </li>
 
@@ -104,7 +104,7 @@ The sample code results in a counter which increments when the "Increment" butto
 
 Templates are defined with the `html` template tag. This tag does very little work — it only captures the current values and a reference to the strings object, and returns this as a `TemplateResult`.
 
-lit-html ships with two template tags: `html` and `svg`. The `svg` tag is for defining SVG _fragment_ templates: it ensures that the elements created are in the SVG namespace.
+lit-html ships with two template tag functions: `html` and `svg`. The `svg` tag is for defining SVG _fragment_ templates: it ensures that the elements created are in the SVG namespace.
 
 The default `html` and `svg` tags are extremely simple, capturing the static strings and dynamic values in an object literal:
 
@@ -157,13 +157,13 @@ Evaluating a template expression is fast. It's only as expensive as the JavaScri
 
 Initiated by a call to lit-html's `render()` function, such as: `render(counterUi(0), container)` in the example.
 
-The `render()` function looks for a field `_$litPart$` on the container element or instantiates and assigns a new `ChildPart` on the container. Calling `_$setValue` on the container's `ChildPart` kicks off rendering the passed in `TemplateResult`.
+The `render()` function looks for an existing `_$litPart$` field on the container element from a previous call, or instantiates and assigns a new `ChildPart` on the container. Then, the rendering of the passed in `TemplateResult` is kicked off by calling `_$setValue` on the container's `ChildPart`.
 
 ### 2.i. Prepare
 
 Source: [`_$getTemplate` method which contains and caches the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568).
 
-When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if the `TemplateResult` is ever encountered again.
+When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if a `TemplateResult` from the same tag function call is ever encountered again.
 
 The returned value from `ChildPart._$getTemplate` after the **Prepare** phase has completed for the sample code is:
 
@@ -232,7 +232,7 @@ This step is safe from XSS vulnerabilities or other malicious input because only
 
 #### Create the `TemplatePart`s
 
-A `TemplatePart` is metadata storing where a dynamic JavaScript value should be set on the DOM. Each `TemplatePart` contains the depth-first index of the node it is associated with, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute.
+A `TemplatePart` is a metadata object storing where a dynamic JavaScript value should be set on the DOM. Each `TemplatePart` contains the depth-first index of the node it is associated with, along with the type of expression (`'text'` or `'attribute'`) and the name of the attribute.
 
 `TemplatePart`s are found by walking the tree of nodes in the `<template>` element and finding the marker annotations. If a marker is found, either in an attribute, as a marker comment node, or in text content, a `TemplatePart` is created and stored in the `parts` class field.
 
@@ -258,7 +258,7 @@ Usually text-position markers will be comment nodes, but inside `<style>`, `<scr
 
 ### 2.ii. Create
 
-The create phase is performed only when rendering for **the first time to a specific Part**.
+The create phase is performed only when rendering for **the first time to a specific container's ChildPart**.
 
 In the `lit-html` source code this phase is the [instantiating and cloning](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1534-L1535) of a `TemplateInstance`.
 
