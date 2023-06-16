@@ -102,9 +102,9 @@ The sample code results in a counter which increments when the "Increment" butto
 
 ## 1. Define
 
-Templates are defined with the `html` template tag. This tag does very little work — it only captures the current values and a reference to the strings object, and returns this as a `TemplateResult`.
+Templates are defined with the `html` tag function. This tag does very little work — it only captures the current values and a reference to the strings object, and returns this as a `TemplateResult`.
 
-lit-html ships with two template tag functions: `html` and `svg`. The `svg` tag is for defining SVG _fragment_ templates: it ensures that the elements created are in the SVG namespace.
+lit-html ships with two tag functions: `html` and `svg`. The `svg` tag is for defining SVG _fragment_ templates: it ensures that the elements created are in the SVG namespace.
 
 The default `html` and `svg` tags are extremely simple, capturing the static strings and dynamic values in an object literal:
 
@@ -112,7 +112,7 @@ The default `html` and `svg` tags are extremely simple, capturing the static str
 const tag =
   (type) =>
   (strings, ...values) => ({
-    ['_$litType$']: type,
+    _$litType$: type,
     strings,
     values,
   });
@@ -136,7 +136,7 @@ html`
 
 // Then the `html` tag function expression evaluates to the following TemplateResult:
 {
-  ["_$litType$"]: 1,
+  _$litType$: 1,
   strings: [
     '<span class="',
     '">',
@@ -207,16 +207,13 @@ getTemplateHtml([
   '>Increment</button>',
 ]);
 
-// Which returns the following (spaces added for readability):
-[
-  `<span class$lit$="lit$1234$">
-    <?lit$1234$>
-  </span>
-  <button @click$lit$=lit$1234$>
-    Increment
-  </button>`,
-  ['class', '@click'],
-];
+// Returns the following annotated HTML (spaces added for readability):
+`<span class$lit$="lit$1234$">
+  <?lit$1234$>
+</span>
+<button @click$lit$=lit$1234$>
+  Increment
+</button>`;
 ```
 
 Notice that there are three markers that are associated with the example's three dynamic values contained in the `TemplateResult`'s `values` array.
@@ -247,8 +244,6 @@ An attribute on the element may also represent an `ElementPart` in the case wher
 For each of the bound attributes identified on the element, they are removed from the element and a `TemplatePart` is created to record the location, name, and type of dynamic binding.
 
 ##### Comment
-
-A Comment is usually either an expression marker, or a user-written comment with no expression associated. Occasionally though a user may have written an expression inside a comment. We might see a comment like `<!--<div>${text}</div>-->` in the template text, so we must scan comments for marker text.
 
 A comment that matches a marker annotation is a `TemplatePart` in ChildPart position.
 
@@ -372,7 +367,7 @@ The `TemplateResult` for `counterUi(1)` is:
 
 ```js
 {
-  ["_$litType$"]: 1,
+  _$litType$: 1,
   strings: [
     '<span class="',
     '">',
