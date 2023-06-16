@@ -1,6 +1,0 @@
-{
-  "name": "@lit-internal/test-basic-compiled-elements",
-  "dependencies": {
-    "lit": "^2.0.0"
-  }
-}
