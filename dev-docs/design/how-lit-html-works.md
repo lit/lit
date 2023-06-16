@@ -261,29 +261,28 @@ For the example, this phase results in the DOM nodes being cloned into a `fragme
 
 ```js
 const instance = new TemplateInstance(preparedTemplate);
+// The created DOM fragment will be inserted into the DOM.
 const fragment = instance._clone();
 
 console.log(instance._$parts);
-/*
-[AttributePart, ChildPart, EventPart]
-*/
+// [AttributePart, ChildPart, EventPart]
 ```
 
 After the update phase this fragment is inserted into the DOM.
 
 The following sections cover in detail what happens when the `TemplateInstance` is created and then cloned:
 
-#### Create a `TemplateInstance`
+#### Create a `TemplateInstance` and instantate `Part`s
 
 A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the `Part`s used to update the DOM.
-
-#### Clone the template and instantiate Parts
 
 Within `TemplateInstance._clone()`, first the `<template>` element is cloned into a document fragment.
 
 After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a `Part` instance is created for the node. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
 
 These Part instances are stored on the `TemplateInstance`.
+
+The `TemplateInstance`, with its `Part`s, is then stored on the `ChildPart` so that future render requests can use it to skip directly to the update phase.
 
 ### 2.iii. Update
 
