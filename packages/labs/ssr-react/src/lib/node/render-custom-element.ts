@@ -29,7 +29,10 @@ const attributesToProps = (attrs: NamedNodeMap) => {
  * Renders the shadow contents of the provided custom element type with props.
  * Should only be called in server environments.
  */
-export const renderCustomElement = (tagName: string, props: {} | null) => {
+export const renderCustomElement = (
+  tagName: string,
+  props: Record<PropertyKey, unknown> | null
+) => {
   const renderInfo: RenderInfo = {
     elementRenderers: [LitElementRenderer],
     customElementInstanceStack: [],

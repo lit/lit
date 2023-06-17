@@ -22,8 +22,8 @@ export const jsxDEV = <P extends {children?: ReactNode[] | ReactNode}>(
   props: P,
   key: string | undefined,
   isStaticChildren: boolean,
-  source: Object,
-  self: Object
+  source: object,
+  self: object
 ) => {
   if (isCustomElement(type)) {
     const {shadowContents, elementAttributes, templateAttributes} =

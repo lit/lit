@@ -219,8 +219,8 @@ export class Virtualizer {
    * State for `layoutComplete` promise
    */
   private _layoutCompletePromise: Promise<void> | null = null;
-  private _layoutCompleteResolver: Function | null = null;
-  private _layoutCompleteRejecter: Function | null = null;
+  private _layoutCompleteResolver: (() => void) | null = null;
+  private _layoutCompleteRejecter: ((reason: string) => void) | null = null;
   private _pendingLayoutComplete: number | null = null;
 
   /**
@@ -511,7 +511,7 @@ export class Virtualizer {
     return Object.assign({width, height}, getMargins(element));
   }
 
-  protected async _schedule(method: Function): Promise<void> {
+  protected async _schedule(method: () => unknown): Promise<void> {
     if (!this._scheduled.has(method)) {
       this._scheduled.add(method);
       await Promise.resolve();

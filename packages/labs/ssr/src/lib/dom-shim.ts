@@ -13,6 +13,7 @@
  */
 
 import fetch from 'node-fetch';
+import type {RequestInit} from 'node-fetch';
 import {
   HTMLElement,
   Element,
@@ -66,7 +67,7 @@ export const getWindow = ({
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    fetch: (url: URL, init: {}) =>
+    fetch: (url: URL, init: RequestInit) =>
       // TODO(aomarks) The typings from node-fetch are wrong because they don't
       // allow URL.
       fetch(url as unknown as Parameters<typeof fetch>[0], init),

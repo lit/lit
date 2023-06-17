@@ -4,5 +4,5 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export const isCustomElement = (type: string | Object): type is string =>
+export const isCustomElement = (type: unknown): type is string =>
   typeof type === 'string' && !!customElements.get(type);

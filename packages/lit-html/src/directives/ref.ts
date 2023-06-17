@@ -35,7 +35,7 @@ interface RefInternal {
 // to `options.host`.
 const lastElementForContextAndCallback: WeakMap<
   object,
-  WeakMap<Function, Element | undefined>
+  WeakMap<RefOrCallback, Element | undefined>
 > = new WeakMap();
 
 export type RefOrCallback = Ref | ((el: Element | undefined) => void);

@@ -53,6 +53,7 @@ export interface ReentrantConfiguration {
  */
 export const configureReentrantLocalization: ((
   config: ReentrantConfiguration
+  // eslint-disable-next-line @typescript-eslint/ban-types
 ) => {}) & {
   _LIT_LOCALIZE_CONFIGURE_LOCALIZATION_?: never;
 } = ({

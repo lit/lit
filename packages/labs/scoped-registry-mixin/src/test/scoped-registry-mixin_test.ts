@@ -19,7 +19,7 @@ export const canTest =
   (window as any).ShadowRootInit;
 
 class SimpleGreeting extends LitElement {
-  private name: String;
+  private name: string;
 
   static override get properties() {
     return {name: {type: String}};

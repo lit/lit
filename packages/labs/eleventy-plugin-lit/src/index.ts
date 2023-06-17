@@ -21,7 +21,7 @@ function configureWorker(
 ) {
   let worker: Worker;
 
-  const requestIdResolveMap = new Map<number, Function>();
+  const requestIdResolveMap = new Map<number, (val: string) => void>();
   let requestId = 0;
 
   eleventyConfig.on('eleventy.before', async () => {

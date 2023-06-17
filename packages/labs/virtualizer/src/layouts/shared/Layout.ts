@@ -135,7 +135,7 @@ export interface Layout {
 
   pin: PinOptions | null;
 
-  unpin: Function;
+  unpin: () => void;
 
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
