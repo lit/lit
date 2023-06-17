@@ -14,6 +14,7 @@ import {
   isElement,
   DocumentFragment,
 } from './parse5-utils.js';
+import {serialize} from 'parse5';
 
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} =
   litHtmlPrivate;
@@ -204,12 +205,16 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                       type: PartType.CHILD,
                       index: nodeIndex,
                     });
+                    // We have stored a reference to this comment node - so we can remove the comment text.
+                    node.data = '';
                   }
                 } else if (isElement(node)) {
+                  const attributesToRemove = new Set<unknown>();
                   if (node.attrs.length > 0) {
                     const tagName = node.tagName;
                     for (const attr of node.attrs) {
                       if (attr.name.endsWith(boundAttributeSuffix)) {
+                        attributesToRemove.add(attr);
                         const strings = attr.value.split(marker);
                         // We store the case-sensitive name from `attrNames` (generated
                         // while parsing the template strings); note that this assumes
@@ -233,6 +238,9 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                         shouldAddPartImports = true;
                       }
                     }
+                    node.attrs = node.attrs.filter(
+                      (attr) => !attributesToRemove.has(attr)
+                    );
                   }
                 }
                 nodeIndex++;
@@ -289,7 +297,9 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                     f.createObjectLiteralExpression([
                       f.createPropertyAssignment(
                         'h',
-                        f.createStringLiteral(html as unknown as string)
+                        f.createStringLiteral(
+                          serialize(ast).replace(/<!---->/g, '<?>')
+                        )
                       ),
                       f.createPropertyAssignment('parts', partsArrayExpression),
                     ])
