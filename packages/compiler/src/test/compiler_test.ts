@@ -84,9 +84,11 @@ function () {
   assert.equal(
     result.outputText.trim(),
     `
+import { _$LH as litHtmlPrivate } from "lit-html/private-ssr-support.js";
+const { AttributePart, PropertyPart, BooleanAttribute, EventPart } = litHtmlPrivate;
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<h1 class$lit$=${marker}>One</h1>", parts: [{ type: 1, index: 0, name: class, strings: ["", ""], ctor: AttributePart }] };
-const lit_template_2 = { h: "<h1 class$lit$=${marker}>Two</h1>", parts: [{ type: 1, index: 0, name: class, strings: ["", ""], ctor: AttributePart }] };
+const lit_template_1 = { h: "<h1 class$lit$=${marker}>One</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: AttributePart }] };
+const lit_template_2 = { h: "<h1 class$lit$=${marker}>Two</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: AttributePart }] };
 function () {
     const one = { _$litType$: lit_template_1, values: ['class-binding'] };
     const two = { _$litType$: lit_template_2, values: ['second-class-binding'] };

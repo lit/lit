@@ -41,6 +41,75 @@ interface TemplateInfo {
   variableName: ts.Identifier;
 }
 
+/**
+ * Add Parts constructors import.
+ */
+export const addPartConstructorImport = (
+  node: ts.SourceFile,
+  factory: ts.NodeFactory
+): ts.SourceFile => {
+  return factory.updateSourceFile(node, [
+    ...[
+      factory.createImportDeclaration(
+        undefined,
+        factory.createImportClause(
+          false,
+          undefined,
+          factory.createNamedImports([
+            factory.createImportSpecifier(
+              false,
+              factory.createIdentifier('_$LH'),
+              factory.createIdentifier('litHtmlPrivate')
+            ),
+          ])
+        ),
+        factory.createStringLiteral('lit-html/private-ssr-support.js'),
+        undefined
+      ),
+      factory.createVariableStatement(
+        undefined,
+        factory.createVariableDeclarationList(
+          [
+            factory.createVariableDeclaration(
+              factory.createObjectBindingPattern([
+                factory.createBindingElement(
+                  undefined,
+                  undefined,
+                  factory.createIdentifier('AttributePart'),
+                  undefined
+                ),
+                factory.createBindingElement(
+                  undefined,
+                  undefined,
+                  factory.createIdentifier('PropertyPart'),
+                  undefined
+                ),
+                factory.createBindingElement(
+                  undefined,
+                  undefined,
+                  factory.createIdentifier('BooleanAttribute'),
+                  undefined
+                ),
+                factory.createBindingElement(
+                  undefined,
+                  undefined,
+                  factory.createIdentifier('EventPart'),
+                  undefined
+                ),
+              ]),
+              undefined,
+              undefined,
+              factory.createIdentifier('litHtmlPrivate')
+            ),
+          ],
+          ts.NodeFlags.Const
+        )
+      ),
+    ],
+    ...node.statements,
+  ]);
+};
+
 export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
   // Transforms a SourceFile to add top-level declarations for each lit-html
   // template in the module
@@ -55,6 +124,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
     // current node so that we can quickly get the top-level statement
     // that contains a template.
     const nodeStack: Array<ts.Node> = [];
+    let shouldAddPartImports = false;
 
     // This visitor
     const findTemplates = <T extends ts.Node>(node: T) => {
@@ -160,6 +230,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                           strings,
                           tagName,
                         });
+                        shouldAddPartImports = true;
                       }
                     }
                   }
@@ -189,7 +260,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                   partProperties.push(
                     f.createPropertyAssignment(
                       'name',
-                      f.createNumericLiteral(part.name)
+                      f.createStringLiteral(part.name)
                     ),
                     f.createPropertyAssignment(
                       'strings',
@@ -261,28 +332,17 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
 
     return (sourceFile: ts.SourceFile) => {
       findTemplates(sourceFile);
-      // console.log(templates.map((t) => t.node.getText()));
-      // now add statements
-      // const f = context.factory;
-
-      // let templateIndex = 0;
-      // for (const s of sourceFile.statements) {
-      //   const template = templates[templateIndex];
-      //   if (s === template.topStatement) {
-      //     console.log('A', s.getText());
-      //   }
-      // }
-      // for (const t of templates) {
-      //   const varStmt = f.createVariableStatement(
-      //     [ts.createToken(ts.SyntaxKind.ConstKeyword)],
-      //     [f.createVariableDeclaration(
-      //       f.createUniqueName('hello'),
-      //       undefined,
-      //       undefined,
-      //       ts.createLiteral('value'))]
-      //   );
-      // }
-      return ts.visitNode(sourceFile, rewriteTemplates) as ts.SourceFile;
+      const transformed_source_file = ts.visitNode(
+        sourceFile,
+        rewriteTemplates
+      ) as ts.SourceFile;
+      if (shouldAddPartImports) {
+        return addPartConstructorImport(
+          transformed_source_file,
+          context.factory
+        );
+      }
+      return transformed_source_file;
     };
   };
 };
