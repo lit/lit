@@ -42,14 +42,14 @@ if (litCoreSize !== expectedLitCoreSize) {
   if (litCoreSize < expectedLitCoreSize) {
     reportProblem(`This is a size improvement! It shaves **${
       expectedLitCoreSize - litCoreSize
-    }** bytes off lit-core.min.js. Congratulations!
+    }** bytes off lit-core.min.js which is ${expectedLitCoreSize.toLocaleString()}B at head. Congratulations!
 
 Please update \`expectedLitCoreSize\` to ${litCoreSize} in \`scripts/check-size.js\` and push a new commit to your PR.`);
   } else {
     reportProblem(
       `**This is a size regression**. It adds **${
         litCoreSize - expectedLitCoreSize
-      }** bytes to lit-core.min.js. We're very sensitive to size increases. If this is intended, please update \`expectedLitCoreSize\` to ${litCoreSize} in \`scripts/check-size.js\` and push a new commit to your PR.`
+      }** bytes to lit-core.min.js which is ${expectedLitCoreSize.toLocaleString()}B at head. We're very sensitive to size increases. If this is intended, please update \`expectedLitCoreSize\` to ${litCoreSize} in \`scripts/check-size.js\` and push a new commit to your PR.`
     );
   }
 }
@@ -58,14 +58,14 @@ if (litHtmlSize !== expectedLitHtmlSize) {
   if (litHtmlSize < expectedLitHtmlSize) {
     reportProblem(`This is a size improvement! It shaves **${
       expectedLitHtmlSize - litHtmlSize
-    }** bytes off lit-html.js. Congratulations!
+    }** bytes off lit-html.js which is ${expectedLitHtmlSize.toLocaleString()}B at head. Congratulations!
 
 Please update \`expectedLitHtmlSize\` to ${litHtmlSize} in \`scripts/check-size.js\` and push a new commit to your PR.`);
   } else {
     reportProblem(
       `**This is a size regression**. It adds **${
         litHtmlSize - expectedLitHtmlSize
-      }** bytes to lit-html.js. We're very sensitive to size increases. If this is intended, please update \`expectedLitHtmlSize\` to ${litHtmlSize} in \`scripts/check-size.js\` and push a new commit to your PR.`
+      }** bytes to lit-html.js which is ${expectedLitHtmlSize.toLocaleString()}B at head. We're very sensitive to size increases. If this is intended, please update \`expectedLitHtmlSize\` to ${litHtmlSize} in \`scripts/check-size.js\` and push a new commit to your PR.`
     );
   }
 }
