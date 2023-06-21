@@ -1498,7 +1498,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import {LitElement} from 'lit';
     import {property, eventOptions} from 'lit/decorators.js';
 
-    export class MyElement extends LitElement {
+    class MyElement extends LitElement {
       @property()
       foo = 123;
 
@@ -1508,6 +1508,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
         console.log('click');
       }
     }
+    export { MyElement };
     `;
 
     let expected;
