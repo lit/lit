@@ -285,9 +285,14 @@ export class Task<
         return renderer.complete?.(this.value!);
       case TaskStatus.ERROR:
         return renderer.error?.(this.error);
-      default:
-        // exhaustiveness check
-        this.status as void;
+      default: {
+        // exhaustiveness check that can get optimized out
+        if (false as boolean) {
+          const never: never = this.status;
+          console.error(`Unexpected task status: ${never}`);
+        }
+        return;
+      }
     }
   }
 
