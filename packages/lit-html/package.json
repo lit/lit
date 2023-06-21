@@ -278,6 +278,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:compiled": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "build:version-stability-test": "wireit",
@@ -287,6 +288,7 @@
     "test": "wireit",
     "test:dev": "wireit",
     "test:prod": "wireit",
+    "test:dev:compiled": "wireit",
     "test:node": "wireit",
     "test:node-dev": "wireit"
   },
@@ -321,6 +323,23 @@
         "../labs/testing:build:ts:utils"
       ],
       "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json",
+        "tsconfig.polyfill-support.json"
+      ],
+      "output": [
+        "development/**/*.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo",
+        "tsconfig.polyfill-support.tsbuildinfo"
+      ]
+    },
+    "build:ts:compiled": {
+      "#comment": "Use the Lit compiler to precompile html tags to `TemplateCompiledResult`s - todo make this nice.",
+      "command": "node ../compiler/test/compile_lit_html.js",
+      "dependencies": [
+        "../compiler:build:ts"
+      ],
       "files": [
         "src/**/*.ts",
         "tsconfig.json",
@@ -461,6 +480,20 @@
         "build:ts",
         "build:rollup"
       ],
+      "files": [],
+      "output": []
+    },
+    "test:dev:compiled": {
+      "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build:ts:compiled",
+        "../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     }

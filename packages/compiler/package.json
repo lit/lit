@@ -18,7 +18,8 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "test:compiled-lit-html": "wireit"
   },
   "bugs": {
     "url": "https://github.com/Polymer/lit-html/issues"
@@ -64,6 +65,12 @@
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
+    },
+    "test:compiled-lit-html": {
+      "command": "node test/compile_lit_html.js",
+      "dependencies": [
+        "build:ts"
+      ]
     }
   }
 }

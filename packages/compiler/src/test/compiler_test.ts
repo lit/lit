@@ -76,7 +76,6 @@ function () {
     },
     transformers: {before: [compileLitTemplates()]},
   });
-  console.log(result.outputText);
 
   assert.equal(
     result.outputText.trim(),
