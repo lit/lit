@@ -5,10 +5,11 @@
  */
 
 import {LitElement, html, TemplateResult} from 'lit';
-import {property} from 'lit/decorators/property.js';
+import {property} from 'lit/decorators.js';
 
 import {createContext, consume, provide} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
+import {memorySuite} from './test_util.js';
 
 const simpleContext = createContext<number>('simple-context');
 const optionalContext = createContext<number | undefined>('optional-context');
@@ -154,6 +155,66 @@ suite('@consume: multiple instances', () => {
     await Promise.all(consumers.map((el) => el.updateComplete));
     consumers.forEach((consumer, i) =>
       assert.strictEqual(consumer.value, 500 + i)
+    );
+  });
+});
+
+memorySuite('memory leak test', () => {
+  let consumer: ContextConsumerElement;
+  let provider: ContextProviderElement;
+  let container: HTMLElement;
+
+  // Make a big array set on an expando to exaggerate any leaked DOM
+  const big = () => new Array(10000).fill(0);
+
+  setup(async () => {
+    container = document.createElement('div');
+    container.innerHTML = `
+        <context-provider value="1000">
+            <context-consumer></context-consumer>
+        </context-provider>
+    `;
+    document.body.appendChild(container);
+
+    provider = container.querySelector(
+      'context-provider'
+    ) as ContextProviderElement;
+
+    consumer = container.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    assert.isDefined(consumer);
+  });
+
+  teardown(() => {
+    document.body.removeChild(container);
+  });
+
+  test('attaching and removing the consumer should not leak', async () => {
+    window.gc();
+    const heap = performance.memory.usedJSHeapSize;
+    for (let i = 0; i < 1000; i++) {
+      // Remove the previous consumer & add a new one.
+      consumer.remove();
+      consumer = document.createElement(
+        'context-consumer'
+      ) as ContextConsumerElement;
+      (consumer as any).heapExpandoProp = big();
+      provider.appendChild(consumer);
+      await consumer.updateComplete;
+    }
+    // Expect the nodes that were removed to be garbage collected.
+    window.gc();
+    // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
+    // DOM leak is orders of magnitude larger.
+    assert.isAtMost(
+      performance.memory.usedJSHeapSize,
+      heap * 1.5,
+      'memory leak detected'
     );
   });
 });

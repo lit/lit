@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.4
+
+### Patch Changes
+
+- [#3942](https://github.com/lit/lit/pull/3942) [`ed42d5f0`](https://github.com/lit/lit/commit/ed42d5f07fc8eed344deaa2cd7b9a88ecdd68d54) - Fix adding node marker for hydration for nested custom elements without attributes. This ensures nested custom elements have their `defer-hydration` attribute removed when parent is hydrated even without any attributes or bindings.
+
 ## 3.1.3-pre.0
 
 ### Patch Changes

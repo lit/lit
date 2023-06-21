@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.1.2
+
+### Patch Changes
+
+- [#3953](https://github.com/lit/lit/pull/3953) [`2407c808`](https://github.com/lit/lit/commit/2407c808007268c1f96f14e311eb36d525080968) - Fix taskComplete not rejecting if after an error state
+
+- [#3947](https://github.com/lit/lit/pull/3947) [`0480e006`](https://github.com/lit/lit/commit/0480e00633e15740640f9ce937573085e91848b2) - Task will not throw errors unless user requests taskComplete
+
 ## 2.1.1-pre.0
 
 ### Patch Changes

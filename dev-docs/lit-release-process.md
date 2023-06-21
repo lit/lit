@@ -46,7 +46,7 @@ The end result of this document is a release of all unreleased changes on the ma
       1. Bump version numbers in package.json files.
       1. Bump dependency ranges in related package.json files if needed. (Only expected in minor or major releases).
    1. Errors to look for:
-      1. When a new package is created and released, it is easy to accidentally have the version in the package.json set to vesion 1.0.0, resulting in Changeset bumping the version to 2.0.0. Fix is to create the package at version 0.0.0.
+      1. When a new package is created and released, it is easy to accidentally have the version in the package.json set to version 1.0.0, resulting in Changeset bumping the version to 2.0.0. Fix is to create the package at version 0.0.0.
       1. Major version releases or minor features may require further scrutiny as major releases mark major events and require coordination.
       1. Changelog updates to `lit` core libraries such as `lit-html`, `lit-element`, and `@lit/reactive-element` should be relected in the umbrella `lit` package.
       1. Internal private or not ready to be released packages should not get changelogs or version bumps.
