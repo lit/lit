@@ -1515,7 +1515,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       expected = `
       import {LitElement} from 'lit';
 
-      class MyElement extends LitElement {
+      export class MyElement extends LitElement {
         static properties = {
           foo: {},
         };
@@ -1530,13 +1530,12 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
           console.log('click');
         }
       }
-      export { MyElement };
       `;
     } else {
       expected = `
       import {LitElement} from 'lit';
 
-      class MyElement extends LitElement {
+      export class MyElement extends LitElement {
         constructor() {
           super();
           this.foo = 123;
@@ -1550,7 +1549,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       MyElement.properties = {
         foo: {},
       };
-      export { MyElement };
       `;
     }
     checkTransform(input, expected, options);

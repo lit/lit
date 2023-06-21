@@ -285,9 +285,11 @@ export class Task<
         return renderer.complete?.(this.value!);
       case TaskStatus.ERROR:
         return renderer.error?.(this.error);
-      default:
-        // exhaustiveness check
-        this.status as void;
+      default: {
+        const expectNever = (_: never) => {};
+        expectNever(this.status);
+        return;
+      }
     }
   }
 
