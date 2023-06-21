@@ -45,7 +45,7 @@ class RefDirective extends AsyncDirective {
   private _ref?: RefOrCallback;
   private _context?: object;
 
-  render(_ref: RefOrCallback) {
+  render(_ref?: RefOrCallback) {
     return nothing;
   }
 
