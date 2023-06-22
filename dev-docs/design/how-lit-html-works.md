@@ -291,7 +291,6 @@ The update phase, which happens on every render, is initiated by [`TemplateInsta
 Updates are performed by iterating over the parts and values array, and calling `part._$setValue(value)`.
 
 What happens when a value is updated on a Part is determined by the parts themselves.
-Every single Part type will also call `resolveDirective` very early in the logic and reassign `value` to the returned value. This is [how directives can customize and extend how an expression renders](https://lit.dev/docs/templates/directives/).
 
 Recall that our example's `TemplateResult` contains these dynamic values for the first render:
 
@@ -306,6 +305,8 @@ AttributePart._$setValue('');
 ChildPart._$setValue(0);
 EventPart._$setValue(() => render(counterUi(1), container));
 ```
+
+Within `_$setValue`, every single Part type will also resolve directives and reassign `value` to the returned value. This is [how directives can customize and extend how an expression renders](https://lit.dev/docs/templates/directives/).
 
 The DOM mutation caused by `_$setValue` differs per `Part` type:
 
@@ -395,6 +396,9 @@ EventPart._$setValue(() => render(counterUi(2), container));
 
 This results in the DOM updating with a green underlined number one, and the event listener is swapped with the new listener.
 
+If any of the values being set remain the same (by triple equal check), Lit will not do any DOM
+operations.
+
 # Future work
 
 lit-html is fast, but what if it could be faster!?
@@ -408,14 +412,14 @@ lit-html is fast, but what if it could be faster!?
 
 A `Part` is a lit-html concept and represents the location of an expression in the `html` tagged template literal:
 
-| Part                   | Description                                                        | Authored                               |
-| ---------------------- | ------------------------------------------------------------------ | -------------------------------------- |
-| `ChildPart`            | Expressions in HTML child position                                 | `` html`<div>${...}</div>`  ``         |
-| `AttributePart`        | Expressions in HTML attribute value position                       | `` html`<input id="${...}">`  ``       |
-| `BooleanAttributePart` | Expressions in a boolean attribute value (name prefixed with `?`)  | `` html`<input ?checked="${...}">`  `` |
-| `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input .value=${...}>`  ``     |
-| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<button @click=${...}></button>`  ``     |
-| `ElementPart`          | Expressions on the element tag                                     | `` html`<input ${...}>`  ``            |
+| Part                   | Description                                                        | Authored                                     |
+| ---------------------- | ------------------------------------------------------------------ | -------------------------------------------- |
+| `ChildPart`            | Expressions in HTML child position                                 | `` html`<div>${...}</div>`  ``               |
+| `AttributePart`        | Expressions in HTML attribute value position                       | `` html`<input id="${...}">`  ``             |
+| `BooleanAttributePart` | Expressions in a boolean attribute value (name prefixed with `?`)  | `` html`<input ?checked="${...}">`  ``       |
+| `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input .value=${...}>`  ``           |
+| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<button @click=${...}></button>`  `` |
+| `ElementPart`          | Expressions on the element tag                                     | `` html`<input ${...}>`  ``                  |
 
 In all the cases above the authored code pass an expression into `${...}` which represents a dynamic binding to the template, and the different part types implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<button @click=${() => console.log('clicked')}></button>`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
 
