@@ -150,8 +150,8 @@ describe('lit-virtualizer and virtualize directive', () => {
 
     // There may occasionally be visibility change events from the initial render, so
     // we clear those out before we start watching for new ones to avoid flaky tess.
-    ulv.visibilityChangedEvents.splice(0);
-    uvd.visibilityChangedEvents.splice(0);
+    ulv.visibilityChangedEvents.length = 0;
+    uvd.visibilityChangedEvents.length = 0;
 
     // Changing selection doesn't trigger visibility changed or range changed events.
     ulv.selected = new Set([1, 3]);
@@ -177,10 +177,10 @@ describe('lit-virtualizer and virtualize directive', () => {
     await until(() => uvd.rangeChangedEvents.length > 0);
     await until(() => ulv.visibilityChangedEvents.length > 0);
     await until(() => uvd.visibilityChangedEvents.length > 0);
-    ulv.rangeChangedEvents.splice(0);
-    uvd.rangeChangedEvents.splice(0);
-    ulv.visibilityChangedEvents.splice(0);
-    uvd.visibilityChangedEvents.splice(0);
+    ulv.rangeChangedEvents.length = 0;
+    uvd.rangeChangedEvents.length = 0;
+    ulv.visibilityChangedEvents.length = 0;
+    uvd.visibilityChangedEvents.length = 0;
 
     // Adding an item to the start of the list to trigger rangechanged and
     // visibilitychanged events.
