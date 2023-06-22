@@ -272,7 +272,7 @@ After the update phase this fragment is inserted into the DOM.
 
 The following sections cover in detail what happens when the `TemplateInstance` is created and then cloned:
 
-#### Create a `TemplateInstance` and instantate `Part`s
+#### Create a `TemplateInstance` and instantiate `Part`s
 
 A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the `Part`s used to update the DOM.
 
@@ -316,16 +316,16 @@ Setting a value on a `ChildPart` occurs whenever the authored template has a dyn
 Some examples of authored templates that all result in rendering `<div>hi</div>` via a `ChildPart`:
 
 - `` html`<div>${"hi"}</div>` ``, sets the string literal value `"hi"` on the child part.
-- `` html`<div>${html`hi`}</div>` ``, sets the TemplateResult value `` html`<p>Hi</p>` `` on the child part.
+- `` html`<div>${html`hi`}</div>` ``, sets the TemplateResult value `` html`Hi` `` on the child part.
 - `` html`<div>${['h', 'i']}</div>` ``, sets the iterable on the child part.
 - `` html`<div>${document.createTextNode('hi')}</div>` ``, sets the Text node on the child part.
 
 At a very high level, `ChildPart` tracks the last value it was updated with via `_$committedValue`, skipping any work if the passed value is equal to the last committed value. This is how `ChildPart`s diff changes at the value level.
-If the `value` being set on the ChildPart is not the same as `_$committedValue`, then the value is processed (differently based on the type) into a Node or Nodes and is committed to the DOM. Then the `value` is set on `_$committedValue` so the following `_$setValue` call can omit additional work if the value is unchanged.
+If the `value` being set on the ChildPart is not the same as `_$committedValue`, then the value is processed (differently based on the type) into a Node or Nodes and is committed to the DOM. Then the `value` is set on `_$committedValue` so future calls to `_$setValue` can omit additional work if the value is unchanged.
 
 Primitive values set on a `ChildPart`, (`null`, `undefined`, `boolean`, `number`, `string`, `symbol`, or `bigint`), create or update a Text node. Committing a text node is done in `_commitText`, which is also where text sanitization occurrs.
 
-If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResult` which renders that `TemplateResult` into the `ChildPart`, [preparing](#2i-prepare), [creating](#2ii-create) and [updating](#2iii-update) that `TemplateResult`.
+If the value is a `TemplateResult`, then ChildPart executes `_commitTemplateResult` which renders that `TemplateResult` into the `ChildPart`, recursively following the same steps of [preparing](#2i-prepare), [creating](#2ii-create) and [updating](#2iii-update) that `TemplateResult` described in this document.
 
 If the value is a Node, then the `ChildPart` clears any previously rendered nodes and inserts the Node value directly.
 
@@ -354,7 +354,7 @@ A value of `null`, `undefined`, or `nothing` will remove any previously set list
 
 Nothing can be committed via an `ElementPart`. Instead `resolveDirective` is called, allowing directives to hook into the `ElementPart` position.
 
-For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the `ElementPart` location to then manage the elements animations.
+For example, [`@lit-labs/motion` has an `animate` directive](https://lit.dev/playground/#sample=examples/motion-simple) that can be applied on an element in the `ElementPart` location to then manage the element's animations.
 
 # Efficient Updates
 
@@ -381,12 +381,9 @@ The `TemplateResult` for `counterUi(1)` is:
 }
 ```
 
-Instead of redoing the work in the **Prepare** phase, the Lit `Template` is fetched from the cache using the template's `strings` Template Strings Array.
+Instead of redoing the work in the **Prepare** phase, the Lit `Template` is fetched from the cache using the template's `strings` Template Strings Array reference which is stable across multiple tag function evaluations as described in [Foundational Pieces](#foundational-pieces).
 
-> **Note**
-> The reference to the Template Strings Array is the cache key, not the value of the key. This is an O(1) lookup and not changed by the length of the static contents.
-
-The container's `ChildPart` stores the last committed value - which in this case is a `TemplateInstance` referencing the `Template` returned from the cache. Because we're rendering the same `Template` to this `ChildPart` the **Create** phase is skipped.
+The container's `ChildPart` stores the last committed value — which in this case is a `TemplateInstance` referencing the `Template` returned from the cache. Because we're rendering the same `Template` to this `ChildPart` the **Create** phase is skipped.
 
 All that is left is to iterate over the previously created `Part`s and call `_$setValue` with the new values. For demonstrative purposes, inlined this looks like:
 
@@ -416,10 +413,10 @@ A `Part` is a lit-html concept and represents the location of an expression in t
 | `ChildPart`            | Expressions in HTML child position                                 | `` html`<div>${...}</div>`  ``         |
 | `AttributePart`        | Expressions in HTML attribute value position                       | `` html`<input id="${...}">`  ``       |
 | `BooleanAttributePart` | Expressions in a boolean attribute value (name prefixed with `?`)  | `` html`<input ?checked="${...}">`  `` |
-| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<input @click=${...}>`  ``     |
 | `PropertyPart`         | Expressions in property value position (name prefixed with `.`)    | `` html`<input .value=${...}>`  ``     |
+| `EventPart`            | Expressions in an event listener position (name prefixed with `@`) | `` html`<button @click=${...}></button>`  ``     |
 | `ElementPart`          | Expressions on the element tag                                     | `` html`<input ${...}>`  ``            |
 
-In all the cases above the authored code pass an expression into `${<expr>}` which represents a dynamic binding to the template, and the different part types implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<input @click=${() => console.log('clicked')}`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
+In all the cases above the authored code pass an expression into `${...}` which represents a dynamic binding to the template, and the different part types implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<button @click=${() => console.log('clicked')}></button>`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
 
 Knowing about Parts is useful when [writing custom directives](https://lit.dev/docs/templates/custom-directives/#parts).
