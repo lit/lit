@@ -172,6 +172,10 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                   strings: Array<string>;
                   tagName: string;
                 }
+              | {
+                  type: typeof PartType.ELEMENT;
+                  index: number;
+                }
             > = [];
             const spoofedTemplate = ts.isNoSubstitutionTemplateLiteral(
               templateExpression
@@ -213,7 +217,10 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                   if (node.attrs.length > 0) {
                     const tagName = node.tagName;
                     for (const attr of node.attrs) {
-                      if (attr.name.endsWith(boundAttributeSuffix)) {
+                      if (
+                        attr.name.endsWith(boundAttributeSuffix) ||
+                        attr.name.startsWith(marker)
+                      ) {
                         attributesToRemove.add(attr);
                         const strings = attr.value.split(marker);
                         // We store the case-sensitive name from `attrNames` (generated
@@ -221,20 +228,28 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                         // parse5 attribute ordering matches string ordering
                         const [, prefix, caseSensitiveName] =
                           /([.?@])?(.*)/.exec(attrNames[attrIndex++]!)!;
-                        parts.push({
-                          type:
-                            prefix === '.'
-                              ? PartType.PROPERTY
-                              : prefix === '?'
-                              ? PartType.BOOLEAN_ATTRIBUTE
-                              : prefix === '@'
-                              ? PartType.EVENT
-                              : PartType.ATTRIBUTE,
-                          index: nodeIndex,
-                          name: caseSensitiveName,
-                          strings,
-                          tagName,
-                        });
+                        // TODO: Why is this a string undefined?
+                        if (caseSensitiveName !== 'undefined') {
+                          parts.push({
+                            type:
+                              prefix === '.'
+                                ? PartType.PROPERTY
+                                : prefix === '?'
+                                ? PartType.BOOLEAN_ATTRIBUTE
+                                : prefix === '@'
+                                ? PartType.EVENT
+                                : PartType.ATTRIBUTE,
+                            index: nodeIndex,
+                            name: caseSensitiveName,
+                            strings,
+                            tagName,
+                          });
+                        } else {
+                          parts.push({
+                            type: PartType.ELEMENT,
+                            index: nodeIndex,
+                          });
+                        }
                         shouldAddPartImports = true;
                       }
                     }
@@ -242,6 +257,9 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                       (attr) => !attributesToRemove.has(attr)
                     );
                   }
+                } else if (node.nodeName === '#text') {
+                  // We do not want to count text nodes.
+                  nodeIndex--;
                 }
                 nodeIndex++;
               },

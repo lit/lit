@@ -29,7 +29,7 @@ export const sayHello = (name) => html\`<h1>Hello \${name}\${'!'}</h1>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<h1>Hello <?><?></h1>", parts: [{ type: 2, index: 2 }, { type: 2, index: 3 }] };
+const lit_template_1 = { h: "<h1>Hello <?><?></h1>", parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
 export const sayHello = (name) => ({ _$litType$: lit_template_1, values: [name, '!'] });
 `.trim()
   );
@@ -89,6 +89,54 @@ function () {
     const one = { _$litType$: lit_template_1, values: ['class-binding'] };
     const two = { _$litType$: lit_template_2, values: ['second-class-binding'] };
 }
+`.trim()
+  );
+});
+
+test('ChildPart nodeIndex is correct when separated by textNode', () => {
+  const source = `
+import { html } from 'lit-html';
+const value = html\`<p>\${'a'}:\${1}</p>\`
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.equal(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+const lit_template_1 = { h: "<p><?>:<?></p>", parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
+const value = { _$litType$: lit_template_1, values: ['a', 1] };
+`.trim()
+  );
+});
+
+test('ElementPart position is compiled', () => {
+  const source = `
+import { html } from 'lit-html';
+const one = html\`<input \${'element-part'}>\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.equal(
+    result.outputText.trim(),
+    `
+import { _$LH as litHtmlPrivate } from "lit-html/private-ssr-support.js";
+const { AttributePart, PropertyPart, BooleanAttribute, EventPart } = litHtmlPrivate;
+import { html } from 'lit-html';
+const lit_template_1 = { h: "<input>", parts: [{ type: 6, index: 0 }] };
+const one = { _$litType$: lit_template_1, values: ['element-part'] };
 `.trim()
   );
 });
