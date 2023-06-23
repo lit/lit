@@ -116,6 +116,8 @@ describe('VisibilityChanged event', () => {
     });
 
     await new Promise(requestAnimationFrame);
+    await until(() => virtualizerEvents.length > 0);
+
     expect(last(virtualizerEvents).first).to.equal(0);
 
     virtualizer.scrollTo({top: 1000, behavior: 'smooth'});
