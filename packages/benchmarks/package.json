@@ -31,6 +31,7 @@
     "benchmark:reactive-element:list-update-reflect": "tach --config reactive-element/list/tachometer-update-reflect.json",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config reactive-element/list/tachometer.json",
     "build": "wireit",
+    "build:compiled": "wireit",
     "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
@@ -59,6 +60,32 @@
         "../lit-html:build",
         "../reactive-element:build"
       ]
+    },
+    "build:compiled": {
+      "#comment": "Use the Lit compiler to precompile html tags to `TemplateCompiledResult`s - todo make this nice.",
+      "command": "node ../compiler/test/compile_benchmarks.js",
+      "dependencies": [
+        "../compiler:build:ts",
+        "../lit-element:build",
+        "../lit-html:build",
+        "../reactive-element:build"
+      ],
+      "files": [
+        "tsconfig.json",
+        "lit-element/**/*.ts",
+        "reactive-element/**/*.ts",
+        "lit-html/**/*.ts",
+        "utils/**/*.ts",
+        "!**/*.d.ts"
+      ],
+      "output": [
+        "tsconfig.tsbuildinfo",
+        "lit-element/**/*.{js,js.map,d.ts,d.ts.map}",
+        "reactive-element/**/*.{js,js.map,d.ts,d.ts.map}",
+        "lit-html/**/*.{js,js.map,d.ts,d.ts.map}",
+        "utils/**/*.{js,js.map,d.ts,d.ts.map}",
+        "!lit-html/template-heavy/template-heavy.js"
+      ]
     }
   },
   "dependencies": {
@@ -68,6 +95,6 @@
     "tachometer": "^0.7.0"
   },
   "devDependencies": {
-    "chromedriver": "^113.0.0"
+    "chromedriver": "^114.0.0"
   }
 }
