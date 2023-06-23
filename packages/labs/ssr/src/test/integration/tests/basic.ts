@@ -4870,7 +4870,7 @@ export const tests: {[name: string]: SSRTest} = {
             assert.strictEqual((el as any).camelProp, 'boundProp2');
           },
           html: {
-            root: `<le-mixed-attr-binding camelProp="boundProp2" static></le-mixed-attr-binding>`,
+            root: `<le-mixed-attr-binding camelprop="boundProp2" static></le-mixed-attr-binding>`,
             'le-mixed-attr-binding': `<div>\n  [boundProp2]\n</div>`,
           },
         },
