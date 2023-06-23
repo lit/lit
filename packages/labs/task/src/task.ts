@@ -116,20 +116,46 @@ export class Task<
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
+   * Controls if they task will run when its arguments change. Defaults to true.
+   */
+  autoRun = true;
+
+  /**
    * A Promise that resolve when the current task run is complete.
    *
    * If a new task run is started while a previous run is pending, the Promise
    * is kept and only resolved when the new run is completed.
    */
-  taskComplete!: Promise<R>;
+  get taskComplete(): Promise<R> {
+    // If a task run exists, return the cached promise. This is true in the case
+    // where the user has called taskComplete in pending or completed state
+    // before and has not started a new task run since.
+    if (this._taskComplete) {
+      return this._taskComplete;
+    }
 
-  /**
-   * Controls if they task will run when its arguments change. Defaults to true.
-   */
-  autoRun = true;
+    // Generate an in-progress promise if the the status is pending and has been
+    // cleared by .run().
+    if (this.status === TaskStatus.PENDING) {
+      this._taskComplete = new Promise((res, rej) => {
+        this._resolveTaskComplete = res;
+        this._rejectTaskComplete = rej;
+      });
+      // If the status is error, return a rejected promise.
+    } else if (this.status === TaskStatus.ERROR) {
+      this._taskComplete = Promise.reject(this._error);
+      // Otherwise we are at a task run's completion or this is the first
+      // request and we are not in the middle of a task (i.e. INITIAL).
+    } else {
+      this._taskComplete = Promise.resolve(this._value!);
+    }
 
-  private _resolveTaskComplete!: (value: R) => void;
-  private _rejectTaskComplete!: (e: unknown) => void;
+    return this._taskComplete;
+  }
+
+  private _resolveTaskComplete?: (value: R) => void;
+  private _rejectTaskComplete?: (e: unknown) => void;
+  private _taskComplete?: Promise<R>;
 
   constructor(
     host: ReactiveControllerHost,
@@ -153,10 +179,6 @@ export class Task<
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
     }
-    this.taskComplete = new Promise((res, rej) => {
-      this._resolveTaskComplete = res;
-      this._rejectTaskComplete = rej;
-    });
   }
 
   hostUpdated() {
@@ -191,15 +213,16 @@ export class Task<
    */
   async run(args?: T) {
     args ??= this._getArgs?.();
-    if (
-      this.status === TaskStatus.COMPLETE ||
-      this.status === TaskStatus.ERROR
-    ) {
-      this.taskComplete = new Promise((res, rej) => {
-        this._resolveTaskComplete = res;
-        this._rejectTaskComplete = rej;
-      });
+
+    // Clear the last complete task run in INITIAL because it may be a resolved
+    // promise. Also clear if COMPLETE or ERROR because the value returned by
+    // awaiting taskComplete may have changed since last run.
+    if (this.status !== TaskStatus.PENDING) {
+      this._taskComplete = undefined;
+      this._resolveTaskComplete = undefined;
+      this._rejectTaskComplete = undefined;
     }
+
     this.status = TaskStatus.PENDING;
     let result!: R | typeof initialState;
     let error: unknown;
@@ -226,7 +249,7 @@ export class Task<
             // Ignore user errors from onComplete.
           }
           this.status = TaskStatus.COMPLETE;
-          this._resolveTaskComplete(result as R);
+          this._resolveTaskComplete?.(result as R);
         } else {
           try {
             this._onError?.(error);
@@ -234,7 +257,7 @@ export class Task<
             // Ignore user errors from onError.
           }
           this.status = TaskStatus.ERROR;
-          this._rejectTaskComplete(error);
+          this._rejectTaskComplete?.(error);
         }
         this._value = result as R;
         this._error = error;
