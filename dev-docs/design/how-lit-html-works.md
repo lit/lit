@@ -278,11 +278,11 @@ A `TemplateInstance` is responsible for creating the initial DOM and updating th
 
 Within `TemplateInstance._clone()`, first the `<template>` element is cloned into a document fragment.
 
-After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a `Part` instance is created for the node. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
+After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a `Part` instance is created for the node which holds a reference to the node for direct access during updates. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
 
 These Part instances are stored on the `TemplateInstance`.
 
-The `TemplateInstance`, with its `Part`s, is then stored on the `ChildPart` so that future render requests can use it to skip directly to the update phase.
+The `TemplateInstance`, with its `Part`s, is then stored on the root `ChildPart` so that future render requests can use it to skip directly to the update phase.
 
 ### 2.iii. Update
 
