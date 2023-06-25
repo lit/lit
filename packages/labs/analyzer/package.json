@@ -53,7 +53,8 @@
     "!/lib/.tsbuildinfo"
   ],
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./package-analyzer.js": "./package-analyzer.js"
   },
   "dependencies": {
     "package-json-type": "^1.0.3",
