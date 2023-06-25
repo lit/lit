@@ -134,6 +134,96 @@
       "development": "./development/decorators/state.js",
       "default": "./decorators/state.js"
     },
+    "./std-decorators.js": {
+      "types": "./development/std-decorators.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators.js",
+        "default": "./node/std-decorators.js"
+      },
+      "development": "./development/std-decorators.js",
+      "default": "./std-decorators.js"
+    },
+    "./std-decorators/custom-element.js": {
+      "types": "./development/std-decorators/custom-element.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/custom-element.js",
+        "default": "./node/std-decorators/custom-element.js"
+      },
+      "development": "./development/std-decorators/custom-element.js",
+      "default": "./std-decorators/custom-element.js"
+    },
+    "./std-decorators/event-options.js": {
+      "types": "./development/std-decorators/event-options.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/event-options.js",
+        "default": "./node/std-decorators/event-options.js"
+      },
+      "development": "./development/std-decorators/event-options.js",
+      "default": "./std-decorators/event-options.js"
+    },
+    "./std-decorators/property.js": {
+      "types": "./development/std-decorators/property.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/property.js",
+        "default": "./node/std-decorators/property.js"
+      },
+      "development": "./development/std-decorators/property.js",
+      "default": "./std-decorators/property.js"
+    },
+    "./std-decorators/query-all.js": {
+      "types": "./development/std-decorators/query-all.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-all.js",
+        "default": "./node/std-decorators/query-all.js"
+      },
+      "development": "./development/std-decorators/query-all.js",
+      "default": "./std-decorators/query-all.js"
+    },
+    "./std-decorators/query-assigned-elements.js": {
+      "types": "./development/std-decorators/query-assigned-elements.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-assigned-elements.js",
+        "default": "./node/std-decorators/query-assigned-elements.js"
+      },
+      "development": "./development/std-decorators/query-assigned-elements.js",
+      "default": "./std-decorators/query-assigned-elements.js"
+    },
+    "./std-decorators/query-assigned-nodes.js": {
+      "types": "./development/std-decorators/query-assigned-nodes.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-assigned-nodes.js",
+        "default": "./node/std-decorators/query-assigned-nodes.js"
+      },
+      "development": "./development/std-decorators/query-assigned-nodes.js",
+      "default": "./std-decorators/query-assigned-nodes.js"
+    },
+    "./std-decorators/query-async.js": {
+      "types": "./development/std-decorators/query-async.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-async.js",
+        "default": "./node/std-decorators/query-async.js"
+      },
+      "development": "./development/std-decorators/query-async.js",
+      "default": "./std-decorators/query-async.js"
+    },
+    "./std-decorators/query.js": {
+      "types": "./development/std-decorators/query.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query.js",
+        "default": "./node/std-decorators/query.js"
+      },
+      "development": "./development/std-decorators/query.js",
+      "default": "./std-decorators/query.js"
+    },
+    "./std-decorators/state.js": {
+      "types": "./development/std-decorators/state.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/state.js",
+        "default": "./node/std-decorators/state.js"
+      },
+      "development": "./development/std-decorators/state.js",
+      "default": "./std-decorators/state.js"
+    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "node": {
@@ -156,6 +246,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:std-decorators": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "build:babel": "wireit",
@@ -195,6 +286,7 @@
       "output": [
         "development/**/*.{js,js.map,d.ts,d.ts.map}",
         "!development/test/decorators-babel",
+        "!development/test/std-decorators",
         "tsconfig.tsbuildinfo",
         "tsconfig.polyfill-support.tsbuildinfo"
       ]
@@ -203,12 +295,28 @@
       "command": "treemirror development . \"**/*.d.ts{,.map}\"",
       "dependencies": [
         "../internal-scripts:build",
-        "build:ts"
+        "build:ts",
+        "build:ts:std-decorators"
       ],
       "files": [],
       "output": [
         "*.d.ts{,.map}",
         "decorators/*.d.ts{,.map}"
+      ]
+    },
+    "build:ts:std-decorators": {
+      "command": "tsc --pretty --project tsconfig.std-decorators.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/test/std-decorators/**/*.ts",
+        "tsconfig.std-decorators.json"
+      ],
+      "output": [
+        "development/test/std-decorators",
+        "tsconfig.std-decorators.tsbuildinfo"
       ]
     },
     "build:rollup": {

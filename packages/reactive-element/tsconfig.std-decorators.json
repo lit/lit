@@ -19,7 +19,6 @@
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
     "stripInternal": true,
     "noImplicitOverride": true,
     "paths": {
@@ -28,8 +27,9 @@
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
-    "src/**/*.ts"
+    "src/std-decorators/**/*.ts",
+    "src/test/std-decorators/**/*.ts"
   ],
-  "exclude": ["src/polyfill-support.ts", "src/test/std-decorators/**/*"],
+  "exclude": ["src/polyfill-support.ts"],
   "references": [{"path": "./tsconfig.polyfill-support.json"}]
 }
