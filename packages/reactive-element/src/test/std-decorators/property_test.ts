@@ -4,12 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  ReactiveElement,
-  PropertyValues,
-  // PropertyDeclaration,
-} from '../../reactive-element.js';
-import {property} from '../../std-decorators/property.js';
+import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
+import {property} from '@lit/reactive-element/std-decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 

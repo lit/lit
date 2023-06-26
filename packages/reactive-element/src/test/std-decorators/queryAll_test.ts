@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {queryAll} from '../../std-decorators/query-all.js';
+import {queryAll} from '@lit/reactive-element/std-decorators/query-all.js';
 import {
   canTestReactiveElement,
   generateElementName,
   RenderingElement,
   html,
-} from './test-helpers.js';
+} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 (canTestReactiveElement ? suite : suite.skip)('@queryAll', () => {

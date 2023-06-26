@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {queryAssignedElements} from '../../std-decorators/query-assigned-elements.js';
-import {customElement} from '../../std-decorators/custom-element.js';
+import {queryAssignedElements} from '@lit/reactive-element/std-decorators/query-assigned-elements.js';
+import {customElement} from '@lit/reactive-element/std-decorators/custom-element.js';
 import {
   canTestReactiveElement,
   generateElementName,
   RenderingElement,
   html,
-} from './test-helpers.js';
+} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 const flush =

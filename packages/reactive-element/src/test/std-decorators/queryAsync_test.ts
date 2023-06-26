@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {queryAsync} from '../../std-decorators/query-async.js';
+import {queryAsync} from '@lit/reactive-element/std-decorators/query-async.js';
 import {
   canTestReactiveElement,
   generateElementName,
   RenderingElement,
   html,
-} from './test-helpers.js';
+} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
 (canTestReactiveElement ? suite : suite.skip)('@queryAsync', () => {
