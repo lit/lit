@@ -5,6 +5,7 @@
 /test/
 /css-tag.*
 /decorators.*
+/std-decorators.*
 /polyfill-support.*
 /reactive-element.*
 /reactive-controller.*

@@ -376,6 +376,17 @@ export type WarningKind =
 
 export type Initializer = (element: ReactiveElement) => void;
 
+// Ensure metadata is enabled...
+// TODO: remove
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(Symbol as any).metadata ??= Symbol('metadata');
+
+// Maybe from a class's metadata object to property options
+export const propertyMetadata = new WeakMap<
+  object,
+  Map<PropertyKey, PropertyDeclaration>
+>();
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -498,7 +509,9 @@ export abstract class ReactiveElement
   private static __attributeToPropertyMap: AttributeMap;
 
   /**
-   * Marks class as having finished creating properties.
+   * Marks class as having been finalized, which includes creating properties
+   * from `static properties`, but does *not* include all properties created
+   * from decorators.
    */
   protected static [finalized] = true;
 
@@ -588,6 +601,7 @@ export abstract class ReactiveElement
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
+    this.collectMetadata();
     const attributes: string[] = [];
     for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
@@ -735,6 +749,32 @@ export abstract class ReactiveElement
    */
   static getPropertyOptions(name: PropertyKey) {
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
+  }
+
+  // This is a finalization step, but it needs to be separate from `finalize`
+  // because `finalize` can be called before a class has been fully initialized.
+  // This method should only be called once per class, as late as possible.
+  protected static collectMetadata() {
+    const metadata = this[Symbol.metadata];
+    if (metadata == null) {
+      return;
+    }
+    metadata['cls'] = this;
+    const properties = propertyMetadata.get(metadata);
+    if (properties === undefined) {
+      return;
+    }
+    for (const [p, options] of properties) {
+      this.elementProperties.set(p, options);
+      // If this class doesn't have its own set, create one and initialize
+      // with the values in the set from the nearest ancestor class, if any.
+      if (!this.hasOwnProperty('__reactivePropertyKeys')) {
+        this.__reactivePropertyKeys = new Set(
+          this.__reactivePropertyKeys ?? []
+        );
+      }
+      this.__reactivePropertyKeys!.add(p);
+    }
   }
 
   /**
@@ -1145,7 +1185,13 @@ export abstract class ReactiveElement
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
-    options?: PropertyDeclaration
+    options?: PropertyDeclaration,
+    // This is needed because standard decorators can't call requestUpdate()
+    // after the field is defined and acceessing the field before it's
+    // defined is an error.
+    // TODO: Copy the reflection logic to the decorator, or hide this parameter
+    // from the public API.
+    newValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1153,7 +1199,7 @@ export abstract class ReactiveElement
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
-      if (hasChanged(this[name as keyof this], oldValue)) {
+      if (hasChanged(newValue ?? this[name as keyof this], oldValue)) {
         // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
         // vs just Map.set()
         if (!this._$changedProperties.has(name)) {

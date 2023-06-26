@@ -37,6 +37,7 @@ export function state(
 ): PropertyDecorator {
   return property({
     ...options,
-    state: true,
+    // state: true,
+    attribute: false,
   });
 }

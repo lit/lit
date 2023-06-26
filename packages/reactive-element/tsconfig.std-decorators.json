@@ -3,7 +3,7 @@
     "composite": true,
     "target": "es2021",
     "module": "NodeNext",
-    "lib": ["es2021", "DOM", "DOM.Iterable"],
+    "lib": ["es2021", "DOM", "DOM.Iterable", "esnext.decorators"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
