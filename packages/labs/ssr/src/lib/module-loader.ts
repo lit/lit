@@ -368,7 +368,7 @@ export const resolveSpecifier = async (
       mainFields: ['module', 'jsnext:main', 'main'],
       conditionNames: ['node', 'module', 'import'],
     });
-    return pathToFileURL(modulePath);
+    return pathToFileURL(modulePath) as URL;
   }
 };
 
