@@ -123,6 +123,7 @@ packages/reactive-element/std-decorators/
 packages/reactive-element/test/
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
+packages/reactive-element/std-decorators.*
 packages/reactive-element/polyfill-support.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
