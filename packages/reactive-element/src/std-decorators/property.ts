@@ -35,7 +35,7 @@ export type PropertyDecorator = {
  */
 export const property = (options?: PropertyDeclaration): PropertyDecorator =>
   (<C extends ReactiveElement, V>(
-    _target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
+    target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
     context:
       | ClassAccessorDecoratorContext<C, V>
       | ClassSetterDecoratorContext<C, V>
@@ -45,17 +45,17 @@ export const property = (options?: PropertyDeclaration): PropertyDecorator =>
       // Standard decorators cannot dynamically modify the class, so we can't
       // replace a field with accessors. The user must use the new `accessor`
       // keyword instead.
-      const {
-        access: {get, set},
-        name,
-      } = context;
+      const {name} = context;
       return {
         get(this: C) {
-          return get(this);
+          // @ts-expect-error: argh
+          return (target as ClassAccessorDecoratorTarget<C, V>).get();
         },
         set(this: C, v: V) {
-          const oldValue = get(this);
-          set(this, v);
+          // @ts-expect-error: argh
+          const oldValue = (target as ClassAccessorDecoratorTarget<C, V>).get();
+          // @ts-expect-error: argh
+          (target as ClassAccessorDecoratorTarget<C, V>).set(v);
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
@@ -73,13 +73,10 @@ export const property = (options?: PropertyDeclaration): PropertyDecorator =>
       // NOTE: Because we need to wrap the setter, and we can't modify the class
       // directly in a standard decorator, we can only decorate setters, not
       // getters. This is change from our legacy decorators.
-      const {
-        access: {set},
-        name,
-      } = context;
+      const {name} = context;
       return function (this: C, value: V) {
         const oldValue = this[name as keyof C];
-        set(this, value);
+        (target as (value: V) => void)(value);
         this.requestUpdate(name, oldValue, options);
       };
     }
