@@ -10,7 +10,11 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import type {Constructor} from './base.js';
+
+export type Constructor<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): T;
+};
 
 /**
  * Class decorator factory that defines the decorated class as a custom element.

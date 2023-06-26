@@ -23,7 +23,10 @@ const DEV_MODE = true;
 // in use or it is and platform support is available.
 export const canTestReactiveElement =
   (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
-  window[`reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ((window as any)[
+    `reactiveElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`
+  ] as boolean | undefined);
 
 export class RenderingElement extends ReactiveElement {
   render(): string | undefined {

@@ -31,5 +31,8 @@
     "src/test/std-decorators/**/*.ts"
   ],
   "exclude": ["src/polyfill-support.ts"],
-  "references": [{"path": "./tsconfig.polyfill-support.json"}]
+  "references": [
+    {"path": "./tsconfig.polyfill-support.json"},
+    {"path": "./tsconfig.json"}
+  ]
 }
