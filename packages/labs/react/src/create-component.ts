@@ -371,9 +371,11 @@ the element.`);
         return createElement<React.HTMLAttributes<I>, I>(tag, props);
       }
 
-      // Suppress hydration warning for server-rendered attributes, including
-      // "defer-hydration"
-      props['suppressHydrationWarning'] = true;
+      if (!NODE_MODE) {
+        // Suppress hydration warning for server-rendered attributes, including
+        // "defer-hydration"
+        props['suppressHydrationWarning'] = true;
+      }
 
       return createElement<React.HTMLAttributes<I>, I>(tag, props);
     }
