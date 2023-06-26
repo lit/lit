@@ -41,17 +41,17 @@ import type {ReactiveElement} from '../reactive-element.js';
 export const query =
   (selector: string, cache?: boolean) =>
   <C extends ReactiveElement, V extends Element | null>(
-    _target: ClassAccessorDecoratorTarget<C, V>,
-    {access: {get, set}}: ClassAccessorDecoratorContext<C, V>
+    target: ClassAccessorDecoratorTarget<C, V>,
+    _context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V> => {
     return {
       get(this: C): V {
         if (cache) {
-          const result = get(this);
+          let result: Element | null = target.get.call(this);
           if (result === undefined) {
-            const result = this.renderRoot?.querySelector(selector) ?? null;
+            result = this.renderRoot?.querySelector(selector) ?? null;
             // TODO: remove cast
-            set(this, result as V);
+            target.set.call(this, result as V);
           }
           return result as V;
         }

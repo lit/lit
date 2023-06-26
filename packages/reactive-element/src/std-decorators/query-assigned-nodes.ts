@@ -63,7 +63,7 @@ export const queryAssignedNodes =
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         // @ts-expect-error: argh!
-        return slotEl?.assignedNodes(assignedNodesOptions) ?? [];
+        return slotEl?.assignedNodes(options) ?? [];
       },
     };
   };
