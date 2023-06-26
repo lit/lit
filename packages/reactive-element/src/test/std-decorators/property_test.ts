@@ -70,14 +70,25 @@ suite('@property', () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
     assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.getAttribute('noAttr'), null);
     assert.equal(el.atTr, 'attr');
+    assert.equal(el.getAttribute('attr'), null);
     assert.equal(el.customAttr, 'customAttr');
+    assert.equal(el.getAttribute('customAttr'), null);
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute('toattribute'), '1-attr');
+    assert.equal(el.getAttribute('toattribute'), null);
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    assert.equal(el.getAttribute('all-attr'), null);
+
+    // Test reflection
+    el.toAttribute = 27;
+    el.all = 27;
+    await el.updateComplete;
+    assert.equal(el.getAttribute('toattribute'), '27-attr');
+    assert.equal(el.getAttribute('all-attr'), '27-attr');
+
     el.setAttribute('noattr', 'noAttr2');
     el.setAttribute('attr', 'attr2');
     el.setAttribute('custom', 'customAttr2');
@@ -85,7 +96,7 @@ suite('@property', () => {
     el.toAttribute = 2;
     el.all = 5;
     await el.updateComplete;
-    assert.equal(el.updateCount, 2);
+    assert.equal(el.updateCount, 3);
     assert.equal(el.noAttr, 'noAttr');
     assert.equal(el.atTr, 'attr2');
     assert.equal(el.customAttr, 'customAttr2');
@@ -95,30 +106,30 @@ suite('@property', () => {
     assert.equal(el.all, 5);
     el.all = 15;
     await el.updateComplete;
-    assert.equal(el.updateCount, 3);
+    assert.equal(el.updateCount, 4);
     assert.equal(el.all, 15);
     assert.equal(el.getAttribute('all-attr'), '15-attr');
     el.setAttribute('all-attr', '16-attr');
     await el.updateComplete;
-    assert.equal(el.updateCount, 4);
+    assert.equal(el.updateCount, 5);
     assert.equal(el.getAttribute('all-attr'), '16-attr');
     assert.equal(el.all, 16);
     el.hasChanged = 5;
     await el.updateComplete;
     assert.equal(el.hasChanged, 5);
-    assert.equal(el.updateCount, 4);
+    assert.equal(el.updateCount, 5);
     el.hasChanged = 15;
     await el.updateComplete;
     assert.equal(el.hasChanged, 15);
-    assert.equal(el.updateCount, 5);
+    assert.equal(el.updateCount, 6);
     el.setAttribute('all-attr', '5-attr');
     await el.updateComplete;
     assert.equal(el.all, 5);
-    assert.equal(el.updateCount, 5);
+    assert.equal(el.updateCount, 6);
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.all, 15);
-    assert.equal(el.updateCount, 6);
+    assert.equal(el.updateCount, 7);
   });
 
   test('can decorate user accessor with @property', async () => {
@@ -215,9 +226,9 @@ suite('@property', () => {
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute('toattribute'), '1-attr');
+    assert.equal(el.getAttribute('toattribute'), null);
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    assert.equal(el.getAttribute('all-attr'), null);
     el.setAttribute('noattr', 'noAttr2');
     el.setAttribute('attr', 'attr2');
     el.setAttribute('custom', 'customAttr2');

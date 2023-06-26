@@ -1191,7 +1191,8 @@ export abstract class ReactiveElement
     // defined is an error.
     // TODO: Copy the reflection logic to the decorator, or hide this parameter
     // from the public API.
-    newValue?: unknown
+    newValue?: unknown,
+    reflect = true
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1209,7 +1210,11 @@ export abstract class ReactiveElement
         // Note, it's important that every change has a chance to add the
         // property to `_reflectingProperties`. This ensures setting
         // attribute + property reflects correctly.
-        if (options.reflect === true && this.__reflectingProperty !== name) {
+        if (
+          reflect &&
+          options.reflect === true &&
+          this.__reflectingProperty !== name
+        ) {
           (this.__reflectingProperties ??= new Map()).set(name, options);
         }
       } else {
