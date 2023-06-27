@@ -25,7 +25,7 @@ export const sayHello = (name) => html\`<h1>Hello \${name}\${'!'}</h1>\`;
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
@@ -48,7 +48,7 @@ export const sayHello = (name) => html\`<h1>Hello \${name}\${'!'}</h1>\`;
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit';
@@ -72,7 +72,7 @@ export const two = html\`<h1>Two</h1>\`;
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
@@ -100,14 +100,14 @@ function () {
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
-import { _$LH as litHtmlPrivate } from "lit-html/private-ssr-support.js";
-const { AttributePart, PropertyPart, BooleanAttributePart, EventPart } = litHtmlPrivate;
+import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
+const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<h1>One</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: AttributePart }] };
-const lit_template_2 = { h: "<h1>Two</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: AttributePart }] };
+const lit_template_1 = { h: "<h1>One</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: _$LH_AttributePart }] };
+const lit_template_2 = { h: "<h1>Two</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: _$LH_AttributePart }] };
 function () {
     const one = { _$litType$: lit_template_1, values: ['class-binding'] };
     const two = { _$litType$: lit_template_2, values: ['second-class-binding'] };
@@ -129,7 +129,7 @@ const value = html\`<p>\${'a'}:\${1}</p>\`
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
@@ -152,11 +152,11 @@ const one = html\`<input \${'element-part'}>\`;
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
-import { _$LH as litHtmlPrivate } from "lit-html/private-ssr-support.js";
-const { AttributePart, PropertyPart, BooleanAttributePart, EventPart } = litHtmlPrivate;
+import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
+const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
 const lit_template_1 = { h: "<input>", parts: [{ type: 6, index: 0 }] };
 const one = { _$litType$: lit_template_1, values: ['element-part'] };
@@ -184,7 +184,7 @@ import { html, nothing } from 'lit-html';
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
@@ -215,7 +215,7 @@ const outer = () => html\`<div>\${inner()}</div>\`
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
@@ -240,13 +240,13 @@ const booleanAttributePart = html\`<div ?data-attr="\${true}"></div>\`;
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
-import { _$LH as litHtmlPrivate } from "lit-html/private-ssr-support.js";
-const { AttributePart, PropertyPart, BooleanAttributePart, EventPart } = litHtmlPrivate;
+import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
+const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<div></div>", parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: BooleanAttributePart }] };
+const lit_template_1 = { h: "<div></div>", parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
 const booleanAttributePart = { _$litType$: lit_template_1, values: [true] };
 `.trim()
   );
@@ -266,7 +266,7 @@ render(html \`\${literal \`<p>Hello</p>\`}\`, container);
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(result.outputText.trim(), source.trim());
+  assert.fixture(result.outputText.trim(), source.trim());
 });
 
 test('Inlined nested html ttls', () => {
@@ -284,13 +284,43 @@ const template = html\`<div>\${html\`'potato'\`}</div>\`;
     transformers: {before: [compileLitTemplates()]},
   });
 
-  assert.equal(
+  assert.fixture(
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
 const lit_template_1 = { h: "<div><?></div>", parts: [{ type: 2, index: 1 }] };
 const lit_template_2 = { h: "'potato'", parts: [] };
 const template = { _$litType$: lit_template_1, values: [{ _$litType$: lit_template_2, values: [] }] };
+`.trim()
+  );
+});
+
+test('Do not duplicate Part constructors if identifiers collide', () => {
+  const source = `
+import { html } from 'lit-html';
+import { _$LH as litHtmlPrivate } from "lit-html/private-ssr-support.js";
+
+const BooleanAttributePart = false;
+
+const booleanAttributePart = html\`<div ?data-attr="\${true}"></div>\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.fixture(
+    result.outputText.trim(),
+    `
+import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
+const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
+import { html } from 'lit-html';
+const BooleanAttributePart = false;
+const lit_template_1 = { h: "<div></div>", parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
+const booleanAttributePart = { _$litType$: lit_template_1, values: [true] };
 `.trim()
   );
 });

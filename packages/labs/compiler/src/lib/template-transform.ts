@@ -29,11 +29,12 @@ export const PartType = {
 } as const;
 export type PartType = (typeof PartType)[keyof typeof PartType];
 
+// These constructors have been renamed to reduce the chance of a naming collision.
 const AttributePartConstructors = {
-  [PartType.ATTRIBUTE]: 'AttributePart',
-  [PartType.PROPERTY]: 'PropertyPart',
-  [PartType.BOOLEAN_ATTRIBUTE]: 'BooleanAttributePart',
-  [PartType.EVENT]: 'EventPart',
+  [PartType.ATTRIBUTE]: '_$LH_AttributePart',
+  [PartType.PROPERTY]: '_$LH_PropertyPart',
+  [PartType.BOOLEAN_ATTRIBUTE]: '_$LH_BooleanAttributePart',
+  [PartType.EVENT]: '_$LH_EventPart',
 } as const;
 
 interface TemplateInfo {
@@ -49,6 +50,8 @@ export const addPartConstructorImport = (
   node: ts.SourceFile,
   factory: ts.NodeFactory
 ): ts.SourceFile => {
+  const uniqueLitHtmlPrivateIdentifier =
+    factory.createUniqueName('litHtmlPrivate');
   return factory.updateSourceFile(node, [
     ...[
       factory.createImportDeclaration(
@@ -60,7 +63,7 @@ export const addPartConstructorImport = (
             factory.createImportSpecifier(
               false,
               factory.createIdentifier('_$LH'),
-              factory.createIdentifier('litHtmlPrivate')
+              uniqueLitHtmlPrivateIdentifier
             ),
           ])
         ),
@@ -75,32 +78,32 @@ export const addPartConstructorImport = (
               factory.createObjectBindingPattern([
                 factory.createBindingElement(
                   undefined,
-                  undefined,
                   factory.createIdentifier('AttributePart'),
+                  factory.createIdentifier('_$LH_AttributePart'),
                   undefined
                 ),
                 factory.createBindingElement(
-                  undefined,
                   undefined,
                   factory.createIdentifier('PropertyPart'),
+                  factory.createIdentifier('_$LH_PropertyPart'),
                   undefined
                 ),
                 factory.createBindingElement(
-                  undefined,
                   undefined,
                   factory.createIdentifier('BooleanAttributePart'),
+                  factory.createIdentifier('_$LH_BooleanAttributePart'),
                   undefined
                 ),
                 factory.createBindingElement(
                   undefined,
-                  undefined,
                   factory.createIdentifier('EventPart'),
+                  factory.createIdentifier('_$LH_EventPart'),
                   undefined
                 ),
               ]),
               undefined,
               undefined,
-              factory.createIdentifier('litHtmlPrivate')
+              uniqueLitHtmlPrivateIdentifier
             ),
           ],
           ts.NodeFlags.Const
