@@ -279,6 +279,7 @@
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
+    "build:ts:compiled": "wireit",
     "build:rollup": "wireit",
     "build:version-stability-test": "wireit",
     "check-version": "wireit",
@@ -288,7 +289,8 @@
     "test:dev": "wireit",
     "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit"
+    "test:node-dev": "wireit",
+    "test:dev:compiled": "wireit"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
@@ -342,6 +344,23 @@
       "output": [
         "*.d.ts{,.map}",
         "directives/*.d.ts{,.map}"
+      ]
+    },
+    "build:ts:compiled": {
+      "#comment": "Use the Lit compiler to precompile html tags to `TemplateCompiledResult`s - todo make this nice.",
+      "command": "node ../labs/compiler/test/compile_lit_html.js",
+      "dependencies": [
+        "../labs/compiler:build:ts"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json",
+        "tsconfig.compiled.json"
+      ],
+      "output": [
+        "compiled/**/*.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo",
+        "tsconfig.compiled.tsbuildinfo"
       ]
     },
     "build:rollup": {
@@ -413,6 +432,7 @@
         "test:prod",
         "test:node",
         "test:node-dev",
+        "test:dev:compiled",
         "check-version"
       ]
     },
@@ -461,6 +481,20 @@
         "build:ts",
         "build:rollup"
       ],
+      "files": [],
+      "output": []
+    },
+    "test:dev:compiled": {
+      "command": "MODE=dev node ../tests/run-web-tests.js \"compiled/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build:ts:compiled",
+        "../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
       "files": [],
       "output": []
     }

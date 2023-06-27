@@ -62,6 +62,7 @@ packages/lit-element/lit.min.*
 packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
 
+packages/lit-html/compiled/
 packages/lit-html/development/
 packages/lit-html/node/
 packages/lit-html/version-stability-build/
@@ -151,6 +152,10 @@ packages/labs/cli/test-goldens/
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
 
+packages/labs/compiler/development/
+packages/labs/compiler/node_modules/
+packages/labs/compiler/test/
+packages/labs/compiler/lib/
 packages/labs/context/development/
 packages/labs/context/test/
 packages/labs/context/node_modules/

@@ -67,7 +67,23 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
-    assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    const maybeCompiledTemplateResult = html``;
+    if (
+      !(
+        maybeCompiledTemplateResult._$litType$ &&
+        (maybeCompiledTemplateResult._$litType$ as unknown as CompiledTemplate)
+          .h
+      )
+    ) {
+      assert.isTrue(
+        isTemplateResult(maybeCompiledTemplateResult, TemplateResultType.HTML)
+      );
+    } else {
+      // If the TemplateResult has been compiled this returns false.
+      assert.isFalse(
+        isTemplateResult(maybeCompiledTemplateResult, TemplateResultType.HTML)
+      );
+    }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
 
     assert.isFalse(isTemplateResult(null));
