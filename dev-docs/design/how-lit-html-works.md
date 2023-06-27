@@ -26,7 +26,7 @@ The `<template>` element provides a container for HTML content that can later be
 
 ## Summary of lit-html rendering phases
 
-lit-html templates are only a description of the UI. They must be rendered with `render()` to affect the DOM. The **Define** and **Render** phases are controlled by the user of Lit, while **Prepare**, **Create**, and **Update** are internal phases.
+lit-html templates are only a description of the UI. They must be rendered with `render()` to affect the DOM. The **Define** and **Render** phases are controlled by the user of Lit, while **Prepare**, **Create**, and **Update** are internal phases. Rendering is split into internal phases so we can cache and reuse work done in the Prepare and Create phases.
 
 <ol>
 <li>
@@ -53,7 +53,7 @@ lit-html templates are only a description of the UI. They must be rendered with 
 
 <li>
 
-**Update**: Iterate over the dynamic JS values and associated Lit `Part` only committing the values that have changed to the DOM.
+**Update**: Iterate over the dynamic JS values and associated Lit `Part` only committing the values that have changed to the DOM. This is the only phase that's called every time a template is rendered.
 
 </li>
 </ol>
@@ -102,9 +102,9 @@ The sample code results in a counter which increments when the "Increment" butto
 
 ## 1. Define
 
-Templates are defined with the `html` tag function. This tag does very little work — it only captures the current values and a reference to the strings object, and returns this as a `TemplateResult`.
+Templates are defined with the `html` tag function. This tag does very little work — it only captures the current values and a reference to the strings object, and returns them as a `TemplateResult`.
 
-lit-html ships with two tag functions: `html` and `svg`. The `svg` tag is for defining SVG _fragment_ templates: it ensures that the elements created are in the SVG namespace.
+lit-html also ships with an `svg` function, which is just like the `html` function, but is for defining fragments of [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG) instead of fragments of HTML. When rendering, lit-html ensures that elements created with the `svg` function are created in the SVG namespace.
 
 The default `html` and `svg` tags are extremely simple, capturing the static strings and dynamic values in an object literal:
 
@@ -157,13 +157,15 @@ Evaluating a template expression is fast. It's only as expensive as the JavaScri
 
 Initiated by a call to lit-html's `render()` function, such as: `render(counterUi(0), container)` in the example.
 
-The `render()` function looks for an existing `_$litPart$` field on the container element from a previous call, or instantiates and assigns a new `ChildPart` on the container. Then, the rendering of the passed in `TemplateResult` is kicked off by calling `_$setValue` on the container's `ChildPart`.
+The `render()` function checks for a `_$litPart$` field on the container element, which will be a Lit `ChildPart` object if Lit has rendered into that container before. If it has, we can just tell that ChildPart to render the template by calling `_$setValue` on it, otherwise we'll instantiate a new ChildPart, assign it to the `_$litPart$` field on the container, and then call `_$setValue`. More on Parts, including ChildPart, below.
 
 ### 2.i. Prepare
 
-Source: [`_$getTemplate` method which contains and caches the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568).
+Source: [the `_$getTemplate` method which contains and caches the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568).
 
-When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if a `TemplateResult` from the same tag function call is ever encountered again.
+When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if a `TemplateResult` from the same tagged template literal is ever encountered again.
+
+The prepare phase only looks at the `TemplateResult`'s static strings, not the dynamic values, and so will only be run once for each unique tagged template literal in the source code.
 
 The returned value from `ChildPart._$getTemplate` after the **Prepare** phase has completed for the sample code is:
 
@@ -190,7 +192,7 @@ when preparing a `TemplateResult` for the first time:
 
 #### Join the TemplateResult's template strings array with markers.
 
-We have a list of static HTML strings, but these cannot yet be inserted into a `<template>` element. This pass converts the immutable template strings array into an annotated HTML string where the returned HTML marks the dynamic parts of the HTML with the following annotations:
+We have a list of static HTML strings, but these cannot yet be inserted into a `<template>` element. This pass converts the immutable template strings array into an annotated HTML string where the "holes" where dynamic values will go are marked as follows:
 
 - Expressions in text position (e.g. `<span>${}</span>`), are marked with a comment node: `<span><!--?lit$random$--></span>`.
 - Expressions in attribute position (e.g. `<p class="${}"></p>`), are marked with a sentinel string: `<p class$lit$="lit$random$"></p>`, and the attribute name has the suffix `$lit$` appended.
@@ -225,7 +227,7 @@ Notice that there are three markers that are associated with the example's three
 
 The prepared HTML string is used to set the `innerHTML` of a new `<template>` element. This causes the browser to parse the template HTML. The prepared `<template>` element is assigned to the `Template`'s `el` class field.
 
-This step is safe from XSS vulnerabilities or other malicious input because only the static strings are used and no dynamic values are inserted. Also recall that the `<template>` element only holds HTML, so scripts don't run, styles don't apply, custom elements don't upgrade, etc.
+This step is safe from XSS vulnerabilities or other malicious input because only the static strings are used and no dynamic values are inserted.
 
 #### Create the `TemplatePart`s
 
@@ -253,11 +255,11 @@ Usually text-position markers will be comment nodes, but inside `<style>`, `<scr
 
 ### 2.ii. Create
 
-The create phase is performed only when rendering for **the first time to a specific container's ChildPart**.
+The create phase is performed only when rendering **a Template for the first time to a specific container's ChildPart**.
 
 In the `lit-html` source code this phase is the [instantiating and cloning](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1534-L1535) of a `TemplateInstance`.
 
-For the example, this phase results in the DOM nodes being cloned into a `fragment`, ready to be inserted in the document, and a list of `Parts` that can be updated by the next phase to set the dynamic JavaScript values in that fragment.
+For the example, this phase results in the DOM nodes in the `<template>` being cloned into a `fragment`, ready to be inserted in the document, and a list of `Parts` that can be updated by the next phase to set the dynamic JavaScript values in that fragment.
 
 ```js
 const instance = new TemplateInstance(preparedTemplate);
@@ -274,11 +276,11 @@ The following sections cover in detail what happens when the `TemplateInstance` 
 
 #### Create a `TemplateInstance` and instantiate `Part`s
 
-A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an updatable instance of a `Template`. The `TemplateInstance` holds references to the `Part`s used to update the DOM.
+A `TemplateInstance` is responsible for creating the initial DOM and updating that DOM. It's an instance of a `Template` that's rendered to a specific place in the DOM. The `TemplateInstance` holds references to the `Part`s used to update the DOM.
 
 Within `TemplateInstance._clone()`, first the `<template>` element is cloned into a document fragment.
 
-After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a `Part` instance is created for the node which holds a reference to the node for direct access during updates. Based on the data in the `TemplatePart`, one of `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart` is instantiated.
+After cloning, the document fragment node tree is walked to associate nodes with `TemplatePart`s by depth-first-index. When a node's index matches the index stored on a `TemplatePart`, a `Part` instance is created for the node which holds a reference to the node for direct access during updates. Based on the `type` field of the `TemplatePart` we instantiate either a: `ChildPart`, `AttributePart`, `PropertyPart`, `EventPart`, `BooleanAttributePart`, or `ElementPart`.
 
 These Part instances are stored on the `TemplateInstance`.
 
@@ -286,7 +288,9 @@ The `TemplateInstance`, with its `Part`s, is then stored on the root `ChildPart`
 
 ### 2.iii. Update
 
-The update phase, which happens on every render, is initiated by [`TemplateInstance._update()`](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1532).
+The update phase, which happens on every render, is initiated by
+[`TemplateInstance._update()`](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1532).
+It's where we actually write to the DOM. All the steps up to here have created specific, cacheable objects for writing values to the DOM, and update is where those writes happen.
 
 Updates are performed by iterating over the parts and values array, and calling `part._$setValue(value)`.
 
@@ -424,3 +428,60 @@ A `Part` is a lit-html concept and represents the location of an expression in t
 In all the cases above the authored code pass an expression into `${...}` which represents a dynamic binding to the template, and the different part types implement how the value is committed to the DOM. For instance the `EventPart` in `` html`<button @click=${() => console.log('clicked')}></button>`  `` will take the user provided function, and manage `addEventListener` and `removeEventListener` calls on the DOM such that the passed function is called when the click event is triggered.
 
 Knowing about Parts is useful when [writing custom directives](https://lit.dev/docs/templates/custom-directives/#parts).
+
+## Concrete example: Reusing a template
+
+This example reuses the same template in multiple places and may provide more clarity on the relationship between multiple classes.
+
+Consider this code sample:
+
+```ts
+const imgTemplate = (url) => html`<img src=${url} />`;
+
+render(
+  html`${imgTemplate('1.jpg')} ${imgTemplate('2.jpg')} ${imgTemplate('3.jpg')}`,
+  document.body
+);
+```
+
+For the initial render:
+
+```mermaid
+flowchart TD
+    A[&#40url&#41 =&gt html`&ltimg src=$&#123url&#125&gt`] -->|Called with '1.jpg'| C1(TemplateResult\n&#123strings, values: &#91'1.jpg'&#93&#125)
+    A -->|Called with '2.jpg'| C2(TemplateResult\n&#123strings, values: &#91'2.jpg'&#93&#125)
+    A -->|Called with '3.jpg'| C3(TemplateResult\n&#123strings, values: &#91'3.jpg'&#93&#125)
+    C1 --> |Prepare| Template(&lttemplate&gt)
+    C2 --> |Cache lookup| Template
+    C3 --> |Cache lookup| Template
+    Template --> |Create| TI1(Template Instance 1)
+    Template --> |Create| TI2(Template Instance 2)
+    Template --> |Create| TI3(Template Instance 3)
+    TI1 --> |Update| Up1(Render &ltimg src='1.jpg'&gt)
+    TI2 --> |Update| Up2(Render &ltimg src='2.jpg'&gt)
+    TI3 --> |Update| Up3(Render &ltimg src='3.jpg'&gt)
+```
+
+Then if the following code is executed.
+
+```ts
+render(
+  html`${imgTemplate('4.jpg')} ${imgTemplate('5.jpg')} ${imgTemplate('6.jpg')}`,
+  document.body
+);
+```
+
+the resulting update:
+
+```mermaid
+flowchart TD
+    A[&#40url&#41 =&gt html`&ltimg src=$&#123url&#125&gt`] -->|Called with '4.jpg'| C1(TemplateResult\n&#123strings, values: &#91'4.jpg'&#93&#125)
+    A -->|Called with '5.jpg'| C2(TemplateResult\n&#123strings, values: &#91'5.jpg'&#93&#125)
+    A -->|Called with '6.jpg'| C3(TemplateResult\n&#123strings, values: &#91'6.jpg'&#93&#125)
+    C1 --> |Cache lookup| TI1(Template Instance 1)
+    C2 --> |Cache lookup| TI2(Template Instance 2)
+    C3 --> |Cache lookup| TI3(Template Instance 3)
+    TI1 --> |Update| Up1(setAttribute&#40imgElem1, '4.jpg'&#41)
+    TI2 --> |Update| Up2(setAttribute&#40imgElem2, '5.jpg'&#41)
+    TI3 --> |Update| Up3(setAttribute&#40imgElem3, '6.jpg'&#41)
+```
