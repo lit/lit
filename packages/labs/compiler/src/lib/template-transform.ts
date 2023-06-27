@@ -362,7 +362,13 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
         if (templateInfo === undefined) {
           throw new Error(`template info not found for ${node.getText()}`);
         }
-        const templateExpression = node.template;
+        // A LitTemplate can contain other templates in the values array that
+        // need to be compiled.
+        const templateExpression = ts.visitEachChild(
+          node.template,
+          rewriteTemplates,
+          context
+        );
 
         return f.createObjectLiteralExpression([
           f.createPropertyAssignment('_$litType$', templateInfo.variableName!),

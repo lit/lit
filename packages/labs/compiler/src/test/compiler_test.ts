@@ -269,4 +269,30 @@ render(html \`\${literal \`<p>Hello</p>\`}\`, container);
   assert.equal(result.outputText.trim(), source.trim());
 });
 
+test('Inlined nested html ttls', () => {
+  const source = `
+import {html} from 'lit-html';
+import {cache} from 'lit-html/directives/cache.js';
+
+const template = html\`<div>\${html\`'potato'\`}</div>\`;
+`;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.equal(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+const lit_template_1 = { h: "<div><?></div>", parts: [{ type: 2, index: 1 }] };
+const lit_template_2 = { h: "'potato'", parts: [] };
+const template = { _$litType$: lit_template_1, values: [{ _$litType$: lit_template_2, values: [] }] };
+`.trim()
+  );
+});
+
 test.run();
