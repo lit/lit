@@ -3,7 +3,7 @@ import {
   Plugin,
   SourceDescription,
   TransformHook,
-  PluginContext
+  PluginContext,
 } from 'rollup';
 import { createFilter } from 'rollup-pluginutils';
 import * as minify from './lib/minify-html-literals.js';
@@ -40,7 +40,7 @@ export interface Options {
   filter?: (id: string) => boolean;
 }
 
-export default function(
+export default function (
   options: Options = {}
 ): Plugin & { transform: TransformHook } {
   if (!options.minifyHTMLLiterals) {
@@ -60,7 +60,7 @@ export default function(
         try {
           return <SourceDescription>options.minifyHTMLLiterals!(code, {
             ...minifyOptions,
-            fileName: id
+            fileName: id,
           });
         } catch (error) {
           // check if Error else treat as string
@@ -75,6 +75,6 @@ export default function(
         }
       }
       return;
-    }
+    },
   };
 }

@@ -21,7 +21,7 @@ export default <TypescriptStrategy>{
   },
   walkChildNodes(node: ts.Node, visit: (node: ts.Node) => void) {
     visit(node);
-    ts.forEachChild(node, child => {
+    ts.forEachChild(node, (child) => {
       this.walkChildNodes(child, visit);
     });
   },
@@ -43,9 +43,9 @@ export default <TypescriptStrategy>{
       return [
         // "`head${" "}middle${" "}tail`"
         this.getHeadTemplatePart(node.head),
-        ...node.templateSpans.map(templateSpan =>
+        ...node.templateSpans.map((templateSpan) =>
           this.getMiddleTailTemplatePart(templateSpan.literal)
-        )
+        ),
       ];
     }
   },
@@ -57,7 +57,7 @@ export default <TypescriptStrategy>{
     return {
       text: fullText.slice(startOffset, fullText.length + endOffset),
       start: node.pos + startOffset,
-      end: node.end + endOffset
+      end: node.end + endOffset,
     };
   },
   getMiddleTailTemplatePart(node: ts.TemplateMiddle | ts.TemplateTail) {
@@ -70,7 +70,7 @@ export default <TypescriptStrategy>{
       // Use getStart() and not node.pos, which may include prefix comments,
       // which are part of the expression
       start: node.getStart(currentRoot) + 1,
-      end: node.end - endOffset
+      end: node.end - endOffset,
     };
-  }
+  },
 };

@@ -12,22 +12,22 @@ export function parseLiterals(
 ): Template[] {
   const strategy = {
     ...(<Strategy<any>>typescript),
-    ...(options.strategy || {})
+    ...(options.strategy || {}),
   };
 
   const literals: Template[] = [];
   const visitedTemplates: any[] = [];
-  strategy.walkNodes(strategy.getRootNode(source, options.fileName), node => {
+  strategy.walkNodes(strategy.getRootNode(source, options.fileName), (node) => {
     if (strategy.isTaggedTemplate(node)) {
       const template = strategy.getTaggedTemplateTemplate(node);
       visitedTemplates.push(template);
       literals.push({
         tag: strategy.getTagText(node),
-        parts: strategy.getTemplateParts(template)
+        parts: strategy.getTemplateParts(template),
       });
     } else if (strategy.isTemplate(node) && !visitedTemplates.includes(node)) {
       literals.push({
-        parts: strategy.getTemplateParts(node)
+        parts: strategy.getTemplateParts(node),
       });
     }
   });

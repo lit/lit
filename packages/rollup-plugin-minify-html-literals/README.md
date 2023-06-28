@@ -20,8 +20,8 @@ export default {
     minifyHTML(),
     // Order plugin before transpilers and other minifiers
     babel(),
-    uglify()
-  ]
+    uglify(),
+  ],
 };
 ```
 
@@ -49,9 +49,9 @@ export default {
       // Override minify-html-literals function
       minifyHTMLLiterals: null,
       // Override rollup-pluginutils filter from include/exclude
-      filter: null
-    })
-  ]
+      filter: null,
+    }),
+  ],
 };
 ```
 
@@ -72,7 +72,7 @@ export default {
         shouldMinify(template) {
           return (
             defaultShouldMinify(template) ||
-            template.parts.some(part => {
+            template.parts.some((part) => {
               // Matches Polymer templates that are not tagged
               return (
                 part.text.includes('<style') ||
@@ -80,9 +80,9 @@ export default {
               );
             })
           );
-        }
-      }
-    })
-  ]
+        },
+      },
+    }),
+  ],
 };
 ```
