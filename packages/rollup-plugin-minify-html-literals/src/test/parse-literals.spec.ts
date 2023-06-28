@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { parseLiterals } from '../lib/parse-literals.js';
 import createParseTests from './parse-tests.js';
 
-describe('parseLiterals()', () => {
+describe('parse-literals', () => {
   it('should allow overriding strategy', () => {
     const result: any[] = [];
     const strategy = {
@@ -13,7 +13,7 @@ describe('parseLiterals()', () => {
       getTagText: sinon.fake(),
       getTaggedTemplateTemplate: sinon.fake(),
       isTemplate: sinon.fake.returns(false),
-      getTemplateParts: sinon.fake()
+      getTemplateParts: sinon.fake(),
     };
 
     parseLiterals('true', { strategy });

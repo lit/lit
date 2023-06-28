@@ -31,10 +31,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'simple',
             start: 1 + offset,
-            end: 7 + offset
-          }
-        ]
-      }
+            end: 7 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -49,15 +49,15 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'first',
             start: 8 + offset,
-            end: 13 + offset
+            end: 13 + offset,
           },
           {
             text: 'second',
             start: 20 + offset,
-            end: 26 + offset
-          }
-        ]
-      }
+            end: 26 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -74,20 +74,20 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'first',
             start: 8 + offset,
-            end: 13 + offset
+            end: 13 + offset,
           },
           {
             text: 'second',
             start: 20 + offset,
-            end: 26 + offset
+            end: 26 + offset,
           },
           {
             text: 'third',
             start: 34 + offset,
-            end: 39 + offset
-          }
-        ]
-      }
+            end: 39 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -101,10 +101,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'simple',
             start: 5 + offset,
-            end: 11 + offset
-          }
-        ]
-      }
+            end: 11 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -118,10 +118,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'simple',
             start: 7 + offset,
-            end: 13 + offset
-          }
-        ]
-      }
+            end: 13 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -137,10 +137,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'simple',
             start: 12 + offset,
-            end: 18 + offset
-          }
-        ]
-      }
+            end: 18 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -158,24 +158,24 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'first',
             start: 5 + offset,
-            end: 10 + offset
+            end: 10 + offset,
           },
           {
             text: 'second',
             start: 27 + offset,
-            end: 33 + offset
-          }
-        ]
+            end: 33 + offset,
+          },
+        ],
       },
       {
         parts: [
           {
             text: 'simple',
             start: 19 + offset,
-            end: 25 + offset
-          }
-        ]
-      }
+            end: 25 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -190,10 +190,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'content: "\\2003"',
             start: 1 + offset,
-            end: 17 + offset
-          }
-        ]
-      }
+            end: 17 + offset,
+          },
+        ],
+      },
     ]);
 
     expect(
@@ -208,20 +208,20 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'content: "\\2003"',
             start: 1 + offset,
-            end: 17 + offset
+            end: 17 + offset,
           },
           {
             text: 'content: "\\2003"',
             start: 24 + offset,
-            end: 40 + offset
+            end: 40 + offset,
           },
           {
             text: 'content: "\\2003"',
             start: 48 + offset,
-            end: 64 + offset
-          }
-        ]
-      }
+            end: 64 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -238,10 +238,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: '/* more comments */:host { display: block }',
             start: 10 + offset,
-            end: 53 + offset
-          }
-        ]
-      }
+            end: 53 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -258,10 +258,10 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: '/* more comments */:host { display: block }',
             start: 1 + offset,
-            end: 44 + offset
-          }
-        ]
-      }
+            end: 44 + offset,
+          },
+        ],
+      },
     ]);
   });
 
@@ -278,15 +278,15 @@ export default function createParseTests(options: ParseTestsOptions = {}) {
           {
             text: 'head',
             start: 1 + offset,
-            end: 5 + offset
+            end: 5 + offset,
           },
           {
             text: 'tail',
             start: 30 + offset,
-            end: 34 + offset
-          }
-        ]
-      }
+            end: 34 + offset,
+          },
+        ],
+      },
     ]);
   });
 }

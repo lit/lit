@@ -8,6 +8,10 @@
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "private": true,
+  "files": [
+    "index.*",
+    "/lib/"
+  ],
   "keywords": [
     "rollup-plugin",
     "minify",
@@ -24,12 +28,12 @@
     "directory": "packages/rollup-plugin-minify-html-literals"
   },
   "scripts": {
-    "clean": "rimraf \"{lib/,test/}\" && rimraf \"index.{js*,d.ts,d.ts.map}\" && rimraf \"{.nyc_output/,coverage/}\"",
+    "clean": "rimraf {lib/,test/,} && rimraf tsconfig.tsbuildinfo && rimraf index.{js*,d.ts,d.ts.map,} && rimraf {.nyc_output/,coverage/}",
     "prebuild": "npm run clean",
     "build": "tsc",
-    "test": "nyc mocha test/*.js source-map-support/register",
+    "test": "nyc mocha -r source-map-support/register test/*.js",
     "coveralls": "cat coverage/lcov.info | coveralls",
-    "lint": "prettier --write \"*.{js,ts,json,md}\" \"{src}/**/*\"",
+    "lint": "prettier --write \"*.{js,ts,json,md}\" \"src/**/*\"",
     "precommit": "lint-staged",
     "release": "standard-version",
     "prepublishOnly": "npm run build"
@@ -45,7 +49,7 @@
       ".ts"
     ],
     "include": [
-      "index.js"
+      "src/index.ts"
     ],
     "exclude": [
       "index.d.ts"
@@ -58,32 +62,32 @@
     "all": true
   },
   "dependencies": {
-    "clean-css": "^4.2.1",
+    "clean-css": "^5.3.2",
     "html-minifier": "^4.0.0",
-    "magic-string": "^0.25.0",
+    "magic-string": "^0.30.0",
     "rollup-pluginutils": "^2.8.2"
   },
   "peerDependencies": {
     "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0"
   },
   "devDependencies": {
-    "@types/html-minifier": "^3.5.3",
-    "@types/mocha": "^5.2.7",
-    "@types/node": "^14.14.32",
-    "@types/sinon": "^5.0.1",
-    "chai": "^4.1.2",
-    "coveralls": "^3.0.2",
-    "husky": "^0.14.3",
-    "lint-staged": "^8.2.1",
-    "mocha": "^7.2.0",
-    "nyc": "^15.0.0",
-    "prettier": "^1.13.7",
-    "rimraf": "^2.6.2",
-    "rollup": "^3.5.1",
-    "sinon": "^6.1.4",
-    "source-map-support": "^0.5.6",
-    "standard-version": "^9.0.0",
-    "ts-node": "^7.0.0",
+    "@types/html-minifier": "^4.0.2",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.5",
+    "@types/sinon": "^10.0.15",
+    "chai": "^4.3.7",
+    "coveralls": "^3.1.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.2",
+    "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
+    "prettier": "^2.8.8",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.24.0",
+    "sinon": "^15.1.0",
+    "source-map-support": "^0.5.21",
+    "standard-version": "^9.5.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }
 }

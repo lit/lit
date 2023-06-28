@@ -23,7 +23,8 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
-    "typeRoots": ["./lib/types", "./node_modules/@types"]
+    "typeRoots": ["./lib/types", "./node_modules/@types"],
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
   "exclude": []
