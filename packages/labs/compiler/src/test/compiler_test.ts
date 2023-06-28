@@ -424,4 +424,49 @@ const template = html \`<\${'A'}></\${'A'}>\`;
   );
 });
 
+test('compile basic LitElement', () => {
+  const source = `
+import {html, LitElement} from 'lit';
+class A extends LitElement {
+  static properties = {
+    name: {type: String},
+  };
+  constructor() {
+    super();
+    this.name = 'Somebody';
+  }
+  render() {
+    return html\`<p>Hello, \${this.name}!</p>\`;
+  }
+}
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.fixture(
+    result.outputText.trim(),
+    `
+import { html, LitElement } from 'lit';
+const lit_template_1 = { h: "<p>Hello, <?>!</p>", parts: [{ type: 2, index: 1 }] };
+class A extends LitElement {
+    static properties = {
+        name: { type: String },
+    };
+    constructor() {
+        super();
+        this.name = 'Somebody';
+    }
+    render() {
+        return { _$litType$: lit_template_1, values: [this.name] };
+    }
+}
+`.trim()
+  );
+});
+
 test.run();
