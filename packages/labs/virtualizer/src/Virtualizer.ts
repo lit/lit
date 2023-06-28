@@ -940,7 +940,10 @@ function getElementAncestors(el: HTMLElement, includeSelf = false) {
 }
 
 function getClippingAncestors(el: HTMLElement, includeSelf = false) {
-  return getElementAncestors(el, includeSelf).filter(
-    (a) => getComputedStyle(a).overflow !== 'visible'
-  );
+  let foundFixed = false;
+  return getElementAncestors(el, includeSelf).filter((a) => {
+    const style = getComputedStyle(a);
+    foundFixed = foundFixed || style.position === 'fixed';
+    return !foundFixed && style.overflow !== 'visible';
+  });
 }
