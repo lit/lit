@@ -139,7 +139,7 @@ describe('lit-virtualizer and virtualize directive', () => {
     ulv.selected = selected;
     uvd.selected = selected;
 
-    // Wait for events from initial render to fire and clear them.
+    // Wait for events from initial render to fire.
     await until(() => ulv.rangeChangedEvents.length > 0);
     await until(() => uvd.rangeChangedEvents.length > 0);
     await until(() => ulv.visibilityChangedEvents.length > 0);
