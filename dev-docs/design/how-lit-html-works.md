@@ -163,7 +163,7 @@ The `render()` function checks for a `_$litPart$` field on the container element
 
 Source: [the `_$getTemplate` method which contains and caches the **Prepare** phase](https://github.com/lit/lit/blob/5659f6eec2894f1534be1a367c8c93427d387a1a/packages/lit-html/src/lit-html.ts#L1562-L1568).
 
-When a unique `TemplateResult` is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if a `TemplateResult` from the same tagged template literal is ever encountered again.
+When a unique `html` tagged template literal is rendered for the very first time on the page it must be prepared. The end result of the preparation phase is an instance of the Lit `Template` class that contains a `<template>` element and list of metadata objects (called `TemplatePart`s) storing where the dynamic JavaScript values should be set on the DOM. This Lit `Template` object is cached by the `TemplateResult`'s unique `strings` template strings array so this phase is skipped if a `TemplateResult` from the same tagged template literal is ever encountered again.
 
 The prepare phase only looks at the `TemplateResult`'s static strings, not the dynamic values, and so will only be run once for each unique tagged template literal in the source code.
 
@@ -255,7 +255,7 @@ Usually text-position markers will be comment nodes, but inside `<style>`, `<scr
 
 ### 2.ii. Create
 
-The create phase is performed only when rendering **a Template for the first time to a specific container's ChildPart**.
+The create phase is performed when a ChildPart is rendering a Template that it didn't use the previous time it rendered.
 
 In the `lit-html` source code this phase is the [instantiating and cloning](https://github.com/lit/lit/blob/64fb960246e8f1eae982c2f09fca9759001756af/packages/lit-html/src/lit-html.ts#L1534-L1535) of a `TemplateInstance`.
 
@@ -350,10 +350,9 @@ In the single binding attribute value case such as `` html`<input value=${...}>`
 
 #### EventPart.\_$setValue
 
-`EventPart` also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`.
-The EventPart ensures that event listeners are added and cleaned up between renders and if the passed-in value changes.
+`EventPart` also extends `AttributePart`, and overrides `_$setValue` to take the user provided event listener and then call `this.element.addEventListener(attributeName, value)`. The EventPart uses a listener object making it possible to update the listener without removing and adding a new one across re-renders even when the passed-in function changes. It will remove and add a new listener only if a listener object with different options compared to a previous render has been provided. A value of `null`, `undefined`, or `nothing` will remove any previously set listeners without adding a new listener.
 
-A value of `null`, `undefined`, or `nothing` will remove any previously set listeners without adding a new listener.
+It also ensures that event listeners are called with the value of `this` set to a host object — often the host component rendering the template.
 
 #### ElementPart.\_$setValue
 
@@ -400,8 +399,7 @@ EventPart._$setValue(() => render(counterUi(2), container));
 
 This results in the DOM updating with a green underlined number one, and the event listener is swapped with the new listener.
 
-If any of the values being set remain the same (by triple equal check), Lit will not do any DOM
-operations.
+If any of the values being set remain the same (by triple equal check), the Part will not do any DOM operations.
 
 # Future work
 
@@ -409,6 +407,7 @@ lit-html is fast, but what if it could be faster!?
 
 - [Declarative syntax for creating DOM Parts](https://github.com/WICG/webcomponents/issues/990). This could remove the requirement for lit-html to walk the `<template>` element's tree and manually instantiate Parts. This reduces the tree walk done in the **Create** phase.
 - Precompiling lit-html `html` tag functions (tracked in https://github.com/lit/lit/issues/189). This would allow opting into doing the **Prepare** phase in a compile step done by build tooling. Runtime would no longer have a **Prepare** phase.
+- [Template instantiation](https://github.com/WICG/webcomponents/blob/gh-pages/proposals/Template-Instantiation.md#html-template-instantiation) could also reduce prepare phase work and builds on top of the DOM parts proposal.
 
 # Appendix
 
