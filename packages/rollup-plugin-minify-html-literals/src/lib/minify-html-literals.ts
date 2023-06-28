@@ -324,9 +324,13 @@ export function minifyHTMLLiterals(
       }
 
       template.parts.forEach((part, index) => {
-        if (part.start < part.end) {
+        if (part.start < part.end && part.text[0] !== ';') {
           // Only overwrite if the literal part has text content
           ms.overwrite(part.start, part.end, minParts[index]);
+        }
+        if (part.text[0] === ';') {
+          // shift part.start one forward to fix removal of semicolons
+          ms.overwrite(part.start + 1, part.end, minParts[index]);
         }
       });
     }

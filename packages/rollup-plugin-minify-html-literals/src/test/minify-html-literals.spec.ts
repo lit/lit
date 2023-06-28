@@ -130,27 +130,27 @@ describe('minify-html-literals', () => {
 
     function cssProperty(property) {
       const width = '20px';
-      return css\`.foo{font-size:1rem;width:\${width}color:\${property}}\`; // TODO: fix the missing semicolon
+      return css\`.foo{font-size:1rem;width:\${width};color:\${property};}\`;
     }
   `;
 
-  // const STATIC_SOURCE = `
-  //   function render() {
-  //     const tagName = literal\`span\`
-  //     return html\`
-  //       <\${tagName}>
-  //       span content
-  //       </\${tagName}>
-  //     \`;
-  //   }
-  // `;
+  const STATIC_SOURCE = `
+    function render() {
+      const tagName = literal\`span\`
+      return html\`
+        <\${tagName}>
+        span content
+        </\${tagName}>
+      \`;
+    }
+  `;
 
-  // const STATIC_SOURCE_MIN = `
-  //   function render() {
-  //     const tagName = literal\`span\`
-  //     return html\`<\${tagName}>span content</\${tagName}>\`;
-  //   }
-  // `;
+  const STATIC_SOURCE_MIN = `
+    function render() {
+      const tagName = literal\`span\`
+      return html\`<\${tagName}>span content</\${tagName}>\`;
+    }
+  `;
 
   const SVG_SOURCE = `
     function taggedSVGMinify() {
@@ -243,6 +243,24 @@ describe('minify-html-literals', () => {
     }
   `;
 
+  const INLINE_CSS_EXPRESSION = `
+    function render() {
+      return html\`
+        <span style="height:\${100}px">
+        span content
+        </span>
+      \`;
+    }
+  `;
+
+  const INLINE_CSS_EXPRESSION_MIN = `
+    function render() {
+      return html\`
+        <span style="height:\${100}px">span content</span>
+      \`;
+    }
+  `;
+
   it('should minify "html" and "css" tagged templates', () => {
     const result = minifyHTMLLiterals(SOURCE, { fileName: 'test.js' });
     expect(result).to.be.an('object');
@@ -297,14 +315,22 @@ describe('minify-html-literals', () => {
     expect(result!.map!.version).to.equal(3);
     expect(result!.map!.mappings).to.be.a('string');
   });
+
+  it('should keep strings after css expressions', () => {
+    const result = minifyHTMLLiterals(INLINE_CSS_EXPRESSION, {
+      fileName: 'test.js',
+    });
+    expect(result).to.be.an('object');
+    expect(result!.code).to.equal(INLINE_CSS_EXPRESSION_MIN);
+  });
   // TODO: fix this test
-  // it('fails to minify static html templates', () => {
-  //   const result = minifyHTMLLiterals(STATIC_SOURCE, { fileName: 'test.js' });
-  //   console.log('RESULT', result?.code);
-  //   console.log('EXPECT', STATIC_SOURCE_MIN);
-  //   expect(result).to.be.an('object');
-  //   expect(result!.code).to.not.equal(STATIC_SOURCE_MIN);
-  // });
+  it('fails to minify static html templates', () => {
+    const result = minifyHTMLLiterals(STATIC_SOURCE, { fileName: 'test.js' });
+    console.log('RESULT', result?.code);
+    console.log('EXPECT', STATIC_SOURCE_MIN);
+    expect(result).to.be.an('object');
+    expect(result!.code).to.equal(STATIC_SOURCE_MIN);
+  });
 
   describe('options', () => {
     let minifyHTMLSpy: SinonSpy;
