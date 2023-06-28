@@ -139,6 +139,12 @@ describe('lit-virtualizer and virtualize directive', () => {
     ulv.selected = selected;
     uvd.selected = selected;
 
+    // Wait for events from initial render to fire.
+    await until(() => ulv.rangeChangedEvents.length > 0);
+    await until(() => uvd.rangeChangedEvents.length > 0);
+    await until(() => ulv.visibilityChangedEvents.length > 0);
+    await until(() => uvd.visibilityChangedEvents.length > 0);
+
     await until(() => ulv.shadowRoot?.textContent?.includes('[5 selected]'));
     await until(() => uvd.shadowRoot?.textContent?.includes('[5 selected]'));
 
@@ -147,11 +153,6 @@ describe('lit-virtualizer and virtualize directive', () => {
 
     expect(ulv.shadowRoot?.textContent).to.include('[5 selected]');
     expect(uvd.shadowRoot?.textContent).to.include('[5 selected]');
-
-    // There may occasionally be visibility change events from the initial render, so
-    // we clear those out before we start watching for new ones to avoid flaky tess.
-    ulv.visibilityChangedEvents.length = 0;
-    uvd.visibilityChangedEvents.length = 0;
 
     // Changing selection doesn't trigger visibility changed or range changed events.
     ulv.selected = new Set([1, 3]);
@@ -173,10 +174,13 @@ describe('lit-virtualizer and virtualize directive', () => {
     expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
 
     // Clearing event arrays so we can watch for specific future events.
-    await until(() => ulv.rangeChangedEvents.length > 0);
-    await until(() => uvd.rangeChangedEvents.length > 0);
-    await until(() => ulv.visibilityChangedEvents.length > 0);
-    await until(() => uvd.visibilityChangedEvents.length > 0);
+    // Note: The *correct* place to clear these would be at the site
+    // above where we say "Wait for events from initial render to fire."
+    // However, due to inconsistencies in the initial render behavior
+    // between runs and environments, there may still be in-flight events
+    // emitted due to initial render jitter that we need to account for,
+    // so clearing them here gives them time to come in, mostly due to the
+    // await until for the textcontent above.
     ulv.rangeChangedEvents.length = 0;
     uvd.rangeChangedEvents.length = 0;
     ulv.visibilityChangedEvents.length = 0;
