@@ -139,7 +139,7 @@ describe('lit-virtualizer and virtualize directive', () => {
     ulv.selected = selected;
     uvd.selected = selected;
 
-    // Wait for events from initial render to fire.
+    // Wait for events from initial render to fire and clear them.
     await until(() => ulv.rangeChangedEvents.length > 0);
     await until(() => uvd.rangeChangedEvents.length > 0);
     await until(() => ulv.visibilityChangedEvents.length > 0);
@@ -153,11 +153,6 @@ describe('lit-virtualizer and virtualize directive', () => {
 
     expect(ulv.shadowRoot?.textContent).to.include('[5 selected]');
     expect(uvd.shadowRoot?.textContent).to.include('[5 selected]');
-
-    // There may occasionally be visibility change events from the initial render, so
-    // we clear those out before we start watching for new ones to avoid flaky tess.
-    ulv.visibilityChangedEvents.length = 0;
-    uvd.visibilityChangedEvents.length = 0;
 
     // Changing selection doesn't trigger visibility changed or range changed events.
     ulv.selected = new Set([1, 3]);
