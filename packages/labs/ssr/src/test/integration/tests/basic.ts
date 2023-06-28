@@ -5261,6 +5261,54 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  'LitElement: hydrate nested element without attrs': () => {
+    // Regression test for https://github.com/lit/lit/issues/3939
+    //
+    // Confirms nested custom elements should have their defer-hydration
+    // attribute removed when parent is hydrated even without any attributes or
+    // bindings
+    return {
+      registerElements() {
+        class LEParent extends LitElement {
+          override render() {
+            return html`<le-child></le-child>`;
+          }
+        }
+        customElements.define('le-parent', LEParent);
+
+        class LEChild extends LitElement {
+          override render() {
+            return html`le-child`;
+          }
+        }
+        customElements.define('le-child', LEChild);
+      },
+      render() {
+        return html`<le-parent></le-parent>`;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const parent = dom.querySelector('le-parent') as LitElement;
+            await parent.updateComplete;
+            const child = parent.shadowRoot!.querySelector(
+              'le-child'
+            ) as LitElement;
+            assert.isFalse(child.hasAttribute('defer-hydration'));
+          },
+          html: {
+            root: `<le-parent></le-parent>`,
+            'le-parent': {
+              root: `<le-child></le-child>`,
+            },
+          },
+        },
+      ],
+      stableSelectors: ['le-parent'],
+    };
+  },
+
   'LitElement: ElementInternals': () => {
     return {
       // ElementInternals is not implemented in Safari yet

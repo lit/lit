@@ -139,6 +139,12 @@ describe('lit-virtualizer and virtualize directive', () => {
     ulv.selected = selected;
     uvd.selected = selected;
 
+    // Wait for events from initial render to fire.
+    await until(() => ulv.rangeChangedEvents.length > 0);
+    await until(() => uvd.rangeChangedEvents.length > 0);
+    await until(() => ulv.visibilityChangedEvents.length > 0);
+    await until(() => uvd.visibilityChangedEvents.length > 0);
+
     await until(() => ulv.shadowRoot?.textContent?.includes('[5 selected]'));
     await until(() => uvd.shadowRoot?.textContent?.includes('[5 selected]'));
 
@@ -168,14 +174,17 @@ describe('lit-virtualizer and virtualize directive', () => {
     expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
 
     // Clearing event arrays so we can watch for specific future events.
-    await until(() => ulv.rangeChangedEvents.length > 0);
-    await until(() => uvd.rangeChangedEvents.length > 0);
-    await until(() => ulv.visibilityChangedEvents.length > 0);
-    await until(() => uvd.visibilityChangedEvents.length > 0);
-    ulv.rangeChangedEvents.splice(0);
-    uvd.rangeChangedEvents.splice(0);
-    ulv.visibilityChangedEvents.splice(0);
-    uvd.visibilityChangedEvents.splice(0);
+    // Note: The *correct* place to clear these would be at the site
+    // above where we say "Wait for events from initial render to fire."
+    // However, due to inconsistencies in the initial render behavior
+    // between runs and environments, there may still be in-flight events
+    // emitted due to initial render jitter that we need to account for,
+    // so clearing them here gives them time to come in, mostly due to the
+    // await until for the textcontent above.
+    ulv.rangeChangedEvents.length = 0;
+    uvd.rangeChangedEvents.length = 0;
+    ulv.visibilityChangedEvents.length = 0;
+    uvd.visibilityChangedEvents.length = 0;
 
     // Adding an item to the start of the list to trigger rangechanged and
     // visibilitychanged events.
