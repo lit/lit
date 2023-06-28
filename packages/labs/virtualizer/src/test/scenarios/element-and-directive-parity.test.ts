@@ -174,6 +174,13 @@ describe('lit-virtualizer and virtualize directive', () => {
     expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
 
     // Clearing event arrays so we can watch for specific future events.
+    // Note: The *correct* place to clear these would be at the site
+    // above where we say "Wait for events from initial render to fire."
+    // However, due to inconsistencies in the initial render behavior
+    // between runs and environments, there may still be in-flight events
+    // emitted due to initial render jitter that we need to account for,
+    // so clearing them here gives them time to come in, mostly due to the
+    // await until for the textcontent above.
     ulv.rangeChangedEvents.length = 0;
     uvd.rangeChangedEvents.length = 0;
     ulv.visibilityChangedEvents.length = 0;
