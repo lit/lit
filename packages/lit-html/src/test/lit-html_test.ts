@@ -39,6 +39,7 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
 // For compiled template tests
 import {_$LH} from 'lit-html/private-ssr-support.js';
 import {until} from 'lit-html/directives/until.js';
+import {isTemplateResult, TemplateResultType} from '../directive-helpers.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
@@ -63,6 +64,8 @@ class FireEventDirective extends Directive {
   }
 }
 const fireEvent = directive(FireEventDirective);
+
+const isCompiledFile = !isTemplateResult(html``, TemplateResultType.HTML);
 
 suite('lit-html', () => {
   let container: HTMLDivElement;
@@ -2106,111 +2109,113 @@ suite('lit-html', () => {
         });
       });
 
-      test('Expressions inside template throw in dev mode', () => {
-        // top level
-        assert.throws(() => {
-          render(html`<template>${'test'}</template>`, container);
-        });
+      if (!isCompiledFile) {
+        test('Expressions inside template throw in dev mode', () => {
+          // top level
+          assert.throws(() => {
+            render(html`<template>${'test'}</template>`, container);
+          });
 
-        // inside template result
-        assert.throws(() => {
-          render(html`<div><template>${'test'}</template></div>`, container);
-        });
+          // inside template result
+          assert.throws(() => {
+            render(html`<div><template>${'test'}</template></div>`, container);
+          });
 
-        // child part deep inside
-        assert.throws(() => {
-          render(
-            html`<template>
+          // child part deep inside
+          assert.throws(() => {
+            render(
+              html`<template>
             <div><div><div><div>${'test'}</div></div></div></div>
             </template>`,
-            container
-          );
-        });
+              container
+            );
+          });
 
-        // attr part deep inside
-        assert.throws(() => {
-          render(
-            html`<template>
+          // attr part deep inside
+          assert.throws(() => {
+            render(
+              html`<template>
             <div><div><div><div class="${'test'}"></div></div></div></div>
             </template>`,
-            container
-          );
-        });
+              container
+            );
+          });
 
-        // element part deep inside
-        assert.throws(() => {
-          render(
-            html`<template>
+          // element part deep inside
+          assert.throws(() => {
+            render(
+              html`<template>
             <div><div><div><div ${'test'}></div></div></div></div>
             </template>`,
-            container
-          );
-        });
+              container
+            );
+          });
 
-        // attr on element a-ok
-        render(
-          html`<template id=${'test'}>
+          // attr on element a-ok
+          render(
+            html`<template id=${'test'}>
           <div>Static content is ok</div>
             </template>`,
-          container
-        );
-      });
-
-      test('Expressions inside nested templates throw in dev mode', () => {
-        // top level
-        assert.throws(() => {
-          render(
-            html`<template><template>${'test'}</template></template>`,
             container
           );
         });
 
-        // inside template result
-        assert.throws(() => {
-          render(
-            html`<template><div><template>${'test'}</template></template></div>`,
-            container
-          );
-        });
+        test('Expressions inside nested templates throw in dev mode', () => {
+          // top level
+          assert.throws(() => {
+            render(
+              html`<template><template>${'test'}</template></template>`,
+              container
+            );
+          });
 
-        // child part deep inside
-        assert.throws(() => {
-          render(
-            html`<template><template>
+          // inside template result
+          assert.throws(() => {
+            render(
+              html`<template><div><template>${'test'}</template></template></div>`,
+              container
+            );
+          });
+
+          // child part deep inside
+          assert.throws(() => {
+            render(
+              html`<template><template>
             <div><div><div><div>${'test'}</div></div></div></div>
             </template></template>`,
-            container
-          );
-        });
+              container
+            );
+          });
 
-        // attr part deep inside
-        assert.throws(() => {
-          render(
-            html`<template><template>
+          // attr part deep inside
+          assert.throws(() => {
+            render(
+              html`<template><template>
             <div><div><div><div class="${'test'}"></div></div></div></div>
             </template></template>`,
-            container
-          );
-        });
+              container
+            );
+          });
 
-        // attr part deep inside
-        assert.throws(() => {
-          render(
-            html`<template><template>
+          // attr part deep inside
+          assert.throws(() => {
+            render(
+              html`<template><template>
             <div><div><div><div ${'test'}></div></div></div></div>
             </template></template>`,
+              container
+            );
+          });
+
+          // attr on element a-ok
+          render(
+            html`<template id=${'test'}><template>
+          <div>Static content is ok</div>
+            </template></template>`,
             container
           );
         });
-
-        // attr on element a-ok
-        render(
-          html`<template id=${'test'}><template>
-          <div>Static content is ok</div>
-            </template></template>`,
-          container
-        );
-      });
+      }
     }
 
     test('directives have access to renderOptions', () => {
@@ -3172,59 +3177,61 @@ suite('lit-html', () => {
       assert.equal(warnings.length, 0);
     };
 
-    test('warns on octal escape', () => {
-      try {
-        render(html`\2022`, container);
-        assert.fail();
-      } catch (e) {
-        assertWarning('escape');
-      }
-    });
+    if (!isCompiledFile) {
+      test('warns on octal escape', () => {
+        try {
+          render(html`\2022`, container);
+          assert.fail();
+        } catch (e) {
+          assertWarning('escape');
+        }
+      });
 
-    test('Expressions inside textarea warn in dev mode', () => {
-      // top level
-      render(html`<textarea>${'test'}</textarea>`, container);
-      assertWarning('textarea');
+      test('Expressions inside textarea warn in dev mode', () => {
+        // top level
+        render(html`<textarea>${'test'}</textarea>`, container);
+        assertWarning('textarea');
 
-      // inside template result
-      render(html`<div><textarea>${'test'}</textarea></div>`, container);
-      assertWarning('textarea');
+        // inside template result
+        render(html`<div><textarea>${'test'}</textarea></div>`, container);
+        assertWarning('textarea');
 
-      // child part deep inside
-      render(
-        html`<textarea>
+        // child part deep inside
+        render(
+          html`<textarea>
         <div><div><div><div>${'test'}</div></div></div></div>
         </textarea>`,
-        container
-      );
-      assertWarning('textarea');
+          container
+        );
+        assertWarning('textarea');
 
-      // attr part deep inside
-      render(
-        html`<textarea>
+        // attr part deep inside
+        render(
+          html`<textarea>
         <div><div><div><div class="${'test'}"></div></div></div></div>
         </textarea>`,
-        container
-      );
-      assertWarning('textarea');
+          container
+        );
+        assertWarning('textarea');
 
-      // element part deep inside
-      render(
-        html`<textarea>
+        // element part deep inside
+        render(
+          html`<textarea>
         <div><div><div><div ${'test'}></div></div></div></div>
         </textarea>`,
-        container
-      );
-      assertWarning('textarea');
+          container
+        );
+        assertWarning('textarea');
 
-      // attr on element a-ok
-      render(
-        html`<textarea id=${'test'}>
+        // attr on element a-ok
+        render(
+          html`<textarea id=${'test'}>
         <div>Static content is ok</div>
           </textarea>`,
-        container
-      );
-      assertNoWarning();
-    });
+          container
+        );
+        assertNoWarning();
+      });
+    }
   });
 });

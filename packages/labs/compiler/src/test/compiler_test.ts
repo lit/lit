@@ -84,6 +84,29 @@ export const two = { _$litType$: lit_template_2, values: [] };
   );
 });
 
+test('TTL is only a dynamic binding', () => {
+  const source = `
+import { html } from 'lit-html';
+export const one = html\`\${'potato'}\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.fixture(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+const lit_template_1 = { h: "<?><?>", parts: [{ type: 2, index: 0 }] };
+export const one = { _$litType$: lit_template_1, values: ['potato'] };
+`.trim()
+  );
+});
+
 test('defining multiple TTLs in a function', () => {
   const source = `
 import { html } from 'lit-html';
@@ -321,6 +344,82 @@ import { html } from 'lit-html';
 const BooleanAttributePart = false;
 const lit_template_1 = { h: "<div></div>", parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
 const booleanAttributePart = { _$litType$: lit_template_1, values: [true] };
+`.trim()
+  );
+});
+
+// TODO: In the future we can figure out a way to correctly compile raw text
+// elements. The complexity is that they depend on creating adjacent Text nodes
+// which cannot be represented in the prepared HTML.
+test('raw text elements with any bindings are not compiled', () => {
+  const source = `
+import { html } from 'lit-html';
+
+const scriptTemplateNoBinding = html\`<script>potato</script>\`;
+const styleTemplateNoBinding = html\`<style>carrot</style>\`;
+const textareaTemplateNoBinding = html\`<textarea>tomato</textarea>\`;
+const titleTemplateNoBinding = html\`<title>avocado</title>\`;
+
+const scriptTemplateOneBinding = html\`<script>\${'potato'}</script>\`;
+const styleTemplateOneBinding = html\`<style>\${'carrot'}</style>\`;
+const textareaTemplateOneBinding = html\`<textarea>\${'tomato'}</textarea>\`;
+const titleTemplateOneBinding = html\`<title>\${'avocado'}</title>\`;
+
+const scriptTemplateShouldNotBeCompiled = html\`<script>potato \${'tomato'}</script>\`;
+const styleTemplateShouldNotBeCompiled = html\`<style>\${''} carrot \${''}</style>\`;
+const textareaTemplateShouldNotBeCompiled = html\`<textarea>\${''}\${''}</textarea>\`;
+const titleTemplateShouldNotBeCompiled = html\`<title> \${''} </title>\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.fixture(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+const lit_template_1 = { h: "<script>potato</script>", parts: [] };
+const scriptTemplateNoBinding = { _$litType$: lit_template_1, values: [] };
+const lit_template_2 = { h: "<style>carrot</style>", parts: [] };
+const styleTemplateNoBinding = { _$litType$: lit_template_2, values: [] };
+const lit_template_3 = { h: "<textarea>tomato</textarea>", parts: [] };
+const textareaTemplateNoBinding = { _$litType$: lit_template_3, values: [] };
+const lit_template_4 = { h: "<title>avocado</title>", parts: [] };
+const titleTemplateNoBinding = { _$litType$: lit_template_4, values: [] };
+const scriptTemplateOneBinding = html \`<script>\${'potato'}</script>\`;
+const styleTemplateOneBinding = html \`<style>\${'carrot'}</style>\`;
+const textareaTemplateOneBinding = html \`<textarea>\${'tomato'}</textarea>\`;
+const titleTemplateOneBinding = html \`<title>\${'avocado'}</title>\`;
+const scriptTemplateShouldNotBeCompiled = html \`<script>potato \${'tomato'}</script>\`;
+const styleTemplateShouldNotBeCompiled = html \`<style>\${''} carrot \${''}</style>\`;
+const textareaTemplateShouldNotBeCompiled = html \`<textarea>\${''}\${''}</textarea>\`;
+const titleTemplateShouldNotBeCompiled = html \`<title> \${''} </title>\`;
+`.trim()
+  );
+});
+
+test('do not compile templates with invalid "dynamic" tag name', () => {
+  const source = `
+import { html } from 'lit-html';
+const template = html\`<\${'A'}></\${'A'}>\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.fixture(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+const template = html \`<\${'A'}></\${'A'}>\`;
 `.trim()
   );
 });

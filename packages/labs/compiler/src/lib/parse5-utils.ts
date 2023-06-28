@@ -59,3 +59,9 @@ export const traverse = (node: Node, visitor: Visitor, parent?: ParentNode) => {
     visitor.post(node, parent);
   }
 };
+
+export const textContent = (
+  node: Node & {value?: string; childNodes?: Node[]}
+): string =>
+  node.value ??
+  '' + node.childNodes?.reduce((acc, child) => acc + textContent(child), '');

@@ -761,7 +761,7 @@ const getTemplateHtml = (
           }
           regex = tagEndRegex;
         } else if (match[DYNAMIC_TAG_NAME] !== undefined) {
-          if (DEV_MODE) {
+          if (DEV_MODE || NODE_MODE) {
             throw new Error(
               'Bindings in tag names are not supported. Please use static templates instead. ' +
                 'See https://lit.dev/docs/templates/expressions/#static-expressions'
