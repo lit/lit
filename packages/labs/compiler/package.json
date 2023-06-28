@@ -56,6 +56,9 @@
     },
     "build:ts": {
       "command": "tsc --build --pretty",
+      "dependencies": [
+        "../../lit-html:build:ts:types"
+      ],
       "files": [
         "src/**/*.ts",
         "tsconfig.json"
