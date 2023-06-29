@@ -50,8 +50,7 @@
     },
     "build": {
       "dependencies": [
-        "build:ts",
-        "../../lit-html:build"
+        "build:ts"
       ]
     },
     "build:ts": {

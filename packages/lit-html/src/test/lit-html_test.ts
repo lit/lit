@@ -39,7 +39,10 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
 // For compiled template tests
 import {_$LH} from 'lit-html/private-ssr-support.js';
 import {until} from 'lit-html/directives/until.js';
-import {isTemplateResult, TemplateResultType} from '../directive-helpers.js';
+import {
+  isTemplateResult,
+  TemplateResultType,
+} from 'lit-html/directive-helpers.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
