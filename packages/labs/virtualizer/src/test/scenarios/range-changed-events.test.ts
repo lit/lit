@@ -41,7 +41,7 @@ describe('RangeChanged event', () => {
     const virtualizer = await until(
       () => container.querySelector('lit-virtualizer') as LitVirtualizer
     );
-    await until(() => expect(virtualizer).to.be.instanceOf(LitVirtualizer));
+    expect(virtualizer).to.be.instanceOf(LitVirtualizer);
     return {container, virtualizer};
   }
 
