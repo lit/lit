@@ -133,4 +133,20 @@ describe('until', () => {
     );
     expect(error!.message).to.contain('at o.<anonymous>');
   });
+
+  it('allows you to wait for an error-throwing Chai expectation to be true', async () => {
+    const start = new Date().getTime();
+    await until(() => expect(start).to.be.lessThan(new Date().getTime() - 800));
+  });
+
+  it('rethrows the failed Chai expectation after timeout exceeded', async () => {
+    let err;
+    try {
+      await until(() => expect(true).to.be.false);
+    } catch (e) {
+      err = e;
+    }
+    expect(err).to.exist;
+    expect((err as Error)!.message).to.be.eq('expected true to be false');
+  });
 });

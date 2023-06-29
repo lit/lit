@@ -54,7 +54,7 @@ describe('flow layout', () => {
     const virtualizer = (await until(() =>
       container.querySelector('lit-virtualizer')
     )) as LitVirtualizer;
-    expect(virtualizer).to.be.instanceof(LitVirtualizer);
+    await until(() => expect(virtualizer).to.be.instanceOf(LitVirtualizer));
     await until(() => getVisibleItems(virtualizer).length === 4);
     return virtualizer;
   }

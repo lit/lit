@@ -27,7 +27,7 @@ describe('smoke test', () => {
         ></lit-virtualizer>
       `);
 
-      await until(() => lvs.textContent?.includes('number 3'));
+      await until(() => expect(lvs.textContent).to.contain('number 3'));
 
       expect(lvs.textContent).to.include('number 1');
       expect(lvs.textContent).to.include('number 2');
@@ -46,7 +46,7 @@ describe('smoke test', () => {
         </div>
       `);
 
-      await until(() => example.innerHTML.includes('baz'));
+      await until(() => expect(example.innerHTML).to.contain('baz'));
 
       expect(example.innerHTML).to.include('foo');
       expect(example.innerHTML).to.include('bar');

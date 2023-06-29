@@ -78,24 +78,23 @@ describe('Properly sizing virtualizer within host element', () => {
       </div>
     `);
 
-    await until(
-      () =>
-        root.querySelector(
-          'custom-element-containing-lit-virtualizer'
-        ) instanceof CustomElementContainingLitVirtualizer
+    await until(() =>
+      expect(
+        root.querySelector('custom-element-containing-lit-virtualizer')
+      ).to.be.instanceOf(CustomElementContainingLitVirtualizer)
     );
     const ceclv = root.querySelector(
       'custom-element-containing-lit-virtualizer'
     )!;
-    await until(
-      () =>
-        ceclv.shadowRoot?.querySelector('lit-virtualizer') instanceof
-        LitVirtualizer
+    await until(() =>
+      expect(
+        ceclv.shadowRoot?.querySelector('lit-virtualizer')
+      ).to.be.instanceOf(LitVirtualizer)
     );
     const litVirtualizer = ceclv.shadowRoot!.querySelector(
       'lit-virtualizer'
     )! as unknown as HTMLElement;
-    await until(() => litVirtualizer.textContent?.includes('[4]'));
+    await until(() => expect(litVirtualizer.textContent).to.contain('[4]'));
 
     const renderedItems = [...litVirtualizer.querySelectorAll('.item')];
     const rects = renderedItems.map((i) => i.getBoundingClientRect());

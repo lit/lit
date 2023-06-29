@@ -114,17 +114,35 @@ export function isInViewport(element: Element, viewport?: Element) {
  *
  *     const thing = await eventually(() => doc.query('thing'));
  *
+ * Note that errors are swallowed by this function until the timeout is
+ * reached, in which case an error will be thrown.  This means you can
+ * use eventually with expectations like so:
+ *
+ *     await eventually(() => expect(thing).to.be.true);
  */
 export async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
   const start = new Date().getTime();
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve, reject) => {
     check();
     function check() {
-      const result = cond();
-      if (result || new Date().getTime() - start > timeout) {
+      const [result, err] = testCond();
+      if (result) {
         return resolve(result);
       }
+      if (new Date().getTime() - start > timeout) {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result!);
+      }
       setTimeout(check, 0);
+    }
+    function testCond(): [T?, Error?] {
+      try {
+        return [cond(), undefined];
+      } catch (e: unknown) {
+        return [undefined, e as Error];
+      }
     }
   });
 }

@@ -26,7 +26,9 @@ async function windowError(message: string) {
   setTimeout(() => {
     throw new CountingError(message);
   });
-  await until(() => errors >= expectedErrorCount);
+  await until(() =>
+    expect(errors).to.be.greaterThanOrEqual(expectedErrorCount)
+  );
 }
 
 beforeEach(() => (errors = 0));
@@ -97,16 +99,18 @@ describe('preventResizeObserverLoopErrorEventDefaults', () => {
     expect(messages).to.deep.equal([]);
 
     await windowError('Do not record this error');
-    await until(() => messages.length >= 1);
-    expect(messages).to.deep.equal([
-      'Uncaught Error: Do not record this error',
-    ]);
+    await until(() =>
+      expect(messages).to.deep.equal([
+        'Uncaught Error: Do not record this error',
+      ])
+    );
     removeEventListener();
     await windowError('ResizeObserver loop limit exceeded');
-    await until(() => messages.length >= 2);
-    expect(messages).to.deep.equal([
-      'Uncaught Error: Do not record this error',
-      'Uncaught Error: ResizeObserver loop limit exceeded',
-    ]);
+    await until(() =>
+      expect(messages).to.deep.equal([
+        'Uncaught Error: Do not record this error',
+        'Uncaught Error: ResizeObserver loop limit exceeded',
+      ])
+    );
   });
 });
