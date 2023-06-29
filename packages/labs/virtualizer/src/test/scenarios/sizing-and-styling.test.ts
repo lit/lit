@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {array, ignoreBenignErrors, until} from '../helpers.js';
+import {array, ignoreBenignErrors, pass, until} from '../helpers.js';
 import {LitElement, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -94,7 +94,7 @@ describe('Properly sizing virtualizer within host element', () => {
     const litVirtualizer = ceclv.shadowRoot!.querySelector(
       'lit-virtualizer'
     )! as unknown as HTMLElement;
-    await until(() => expect(litVirtualizer.textContent).to.contain('[4]'));
+    await pass(() => expect(litVirtualizer.textContent).to.contain('[4]'));
 
     const renderedItems = [...litVirtualizer.querySelectorAll('.item')];
     const rects = renderedItems.map((i) => i.getBoundingClientRect());

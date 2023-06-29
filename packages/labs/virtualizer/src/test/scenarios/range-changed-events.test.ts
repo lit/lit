@@ -9,6 +9,7 @@ import {
   ignoreBenignErrors,
   isInViewport,
   last,
+  pass,
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -57,7 +58,7 @@ describe('RangeChanged event', () => {
     const containerEvents: RangeChangedEvent[] = [];
     const virtualizerEvents: RangeChangedEvent[] = [];
 
-    await until(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
+    await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
 
     container.addEventListener('rangeChanged', (e) => {
       containerEvents.push(e as RangeChangedEvent);
@@ -69,7 +70,7 @@ describe('RangeChanged event', () => {
 
     virtualizer.element(500)!.scrollIntoView();
 
-    await until(() => expect(virtualizerEvents.length).to.equal(1));
+    await pass(() => expect(virtualizerEvents.length).to.equal(1));
 
     // The overhang (i.e. length-in-pixels of rendered DOM that are outside
     // the viewport) is currently baked in at 1000px, which means there

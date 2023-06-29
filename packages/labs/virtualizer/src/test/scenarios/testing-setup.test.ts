@@ -10,6 +10,7 @@ import {
   last,
   ignoreBenignErrors,
   ignoreWindowErrors,
+  pass,
   until,
 } from '../helpers.js';
 import {expect} from '@open-wc/testing';
@@ -104,6 +105,36 @@ describe('ignoreBenignErrors', () => {
   });
 });
 
+describe('pass', () => {
+  it('returns immediately if there are no errors', async () => {
+    let x = true;
+
+    const result = await pass(() => (x = false));
+    expect(x).to.equal(false);
+
+    // This expectation just demonstrates we don't care what the
+    // result is that is returned by this function-- i.e. not relying
+    // on a truthy value.
+    expect(result).to.be.false;
+  });
+
+  it('allows you to wait for an error-throwing Chai expectation to be true', async () => {
+    const start = new Date().getTime();
+    await pass(() => expect(start).to.be.lessThan(new Date().getTime() - 800));
+  });
+
+  it('rethrows the failed Chai expectation after timeout exceeded', async () => {
+    let err;
+    try {
+      await pass(() => expect(true).to.be.false);
+    } catch (e) {
+      err = e;
+    }
+    expect(err).to.exist;
+    expect((err as Error)!.message).to.be.eq('expected true to be false');
+  });
+});
+
 describe('until', () => {
   it('resolves when condition is true', async () => {
     let condition = false;
@@ -132,21 +163,5 @@ describe('until', () => {
       'Condition not met within 1000ms: "() => condition"'
     );
     expect(error!.message).to.contain('at o.<anonymous>');
-  });
-
-  it('allows you to wait for an error-throwing Chai expectation to be true', async () => {
-    const start = new Date().getTime();
-    await until(() => expect(start).to.be.lessThan(new Date().getTime() - 800));
-  });
-
-  it('rethrows the failed Chai expectation after timeout exceeded', async () => {
-    let err;
-    try {
-      await until(() => expect(true).to.be.false);
-    } catch (e) {
-      err = e;
-    }
-    expect(err).to.exist;
-    expect((err as Error)!.message).to.be.eq('expected true to be false');
   });
 });
