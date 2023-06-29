@@ -1673,7 +1673,7 @@ suite('lit-html', () => {
     test(`don't render simple spoofed static values`, () => {
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML(`<div><!----></div>`),
-        r: {},
+        r: {} as unknown as Symbol,
         parts: [{type: 2, index: 1}],
       };
       const result = {
