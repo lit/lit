@@ -19,6 +19,10 @@
     "benchmark:lit-html:kitchen-sink-nop-update": "tach --config lit-html/kitchen-sink/tachometer-nop-update.json",
     "benchmark:lit-html:kitchen-sink-render": "tach --config lit-html/kitchen-sink/tachometer-render.json",
     "benchmark:lit-html:kitchen-sink-update": "tach --config lit-html/kitchen-sink/tachometer-update.json",
+    "benchmark:lit-html:kitchen-sink-compiled": "tach --config lit-html/kitchen-sink-compiled/tachometer.json",
+    "benchmark:lit-html:kitchen-sink-compiled-nop-update": "tach --config lit-html/kitchen-sink-compiled/tachometer-nop-update.json",
+    "benchmark:lit-html:kitchen-sink-compiled-render": "tach --config lit-html/kitchen-sink-compiled/tachometer-render.json",
+    "benchmark:lit-html:kitchen-sink-compiled-update": "tach --config lit-html/kitchen-sink-compiled/tachometer-update.json",
     "benchmark:lit-html:repeat": "tach --config lit-html/repeat/tachometer.json",
     "benchmark:lit-html:repeat-full": "tach --config lit-html/repeat/tachometer-full.json",
     "benchmark:lit-html:repeat-vs-map": "tach --config lit-html/repeat/tachometer-vs-map.json",
@@ -31,11 +35,19 @@
     "benchmark:reactive-element:list-update-reflect": "tach --config reactive-element/list/tachometer-update-reflect.json",
     "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config reactive-element/list/tachometer.json",
     "build": "wireit",
+    "build:uncompiled": "wireit",
+    "build:compiled": "wireit",
     "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
     "regen-template-benchmarks": "./generator/scripts/generate.sh"
   },
   "wireit": {
     "build": {
+      "dependencies": [
+        "build:uncompiled",
+        "build:compiled"
+      ]
+    },
+    "build:uncompiled": {
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": [
@@ -52,12 +64,26 @@
         "reactive-element/**/*.{js,js.map,d.ts,d.ts.map}",
         "lit-html/**/*.{js,js.map,d.ts,d.ts.map}",
         "utils/**/*.{js,js.map,d.ts,d.ts.map}",
-        "!lit-html/template-heavy/template-heavy.js"
+        "!lit-html/template-heavy/template-heavy.js",
+        "!lit-html/kitchen-sink-compiled/*.{js,js.map,d.ts,d.ts.map}"
       ],
       "dependencies": [
         "../lit-element:build",
         "../lit-html:build",
         "../reactive-element:build"
+      ]
+    },
+    "build:compiled": {
+      "command": "node ../labs/compiler/test/compile_benchmarks.js",
+      "dependencies": [
+        "../labs/compiler:build:ts",
+        "../lit-element:build",
+        "../lit-html:build",
+        "../reactive-element:build"
+      ],
+      "output": [
+        "tsconfig.compiled.tsbuildinfo",
+        "lit-html/kitchen-sink-compiled/*.{js,js.map,d.ts,d.ts.map}"
       ]
     }
   },

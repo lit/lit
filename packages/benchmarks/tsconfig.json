@@ -26,5 +26,5 @@
     "lit-html/**/*.ts",
     "utils/**/*.ts"
   ],
-  "exclude": []
+  "exclude": ["lit-html/kitchen-sink-compiled"]
 }

@@ -107,6 +107,33 @@ export const one = { _$litType$: lit_template_1, values: ['potato'] };
   );
 });
 
+test('kitchen sink bindings work correctly', () => {
+  const source = `
+import { html } from 'lit-html';
+const text = 'text';
+const node = document.createElement('span');
+export const one = html\`\${text} <!-- Comment binding \${text} --> \${node}\`;
+  `;
+  const result = ts.transpileModule(source, {
+    compilerOptions: {
+      target: ts.ScriptTarget.Latest,
+      module: ts.ModuleKind.ES2020,
+    },
+    transformers: {before: [compileLitTemplates()]},
+  });
+
+  assert.fixture(
+    result.outputText.trim(),
+    `
+import { html } from 'lit-html';
+const text = 'text';
+const node = document.createElement('span');
+const lit_template_1 = { h: "<?> <!-- Comment binding  --> <?><?>", parts: [{ type: 2, index: 0 }, { type: 7, index: 1 }, { type: 2, index: 2 }] };
+export const one = { _$litType$: lit_template_1, values: [text, text, node] };
+`.trim()
+  );
+});
+
 test('defining multiple TTLs in a function', () => {
   const source = `
 import { html } from 'lit-html';

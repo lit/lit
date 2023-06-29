@@ -26,6 +26,7 @@ export const PartType = {
   BOOLEAN_ATTRIBUTE: 4,
   EVENT: 5,
   ELEMENT: 6,
+  COMMENT_PART: 7,
 } as const;
 export type PartType = (typeof PartType)[keyof typeof PartType];
 
@@ -191,7 +192,10 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
 
           // Generate parts array
           const parts: Array<
-            | {type: typeof PartType.CHILD; index: number}
+            | {
+                type: typeof PartType.CHILD | typeof PartType.COMMENT_PART;
+                index: number;
+              }
             | {
                 type: PartType;
                 index: number;
@@ -296,6 +300,18 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                   });
                   // We have stored a reference to this comment node - so we can remove the comment text.
                   node.data = '';
+                } else {
+                  let i = -1;
+                  while ((i = node.data.indexOf(marker, i + 1)) !== -1) {
+                    // Comment node has a binding marker inside, make an inactive part
+                    // The binding won't work, but subsequent bindings will
+                    parts.push({type: PartType.COMMENT_PART, index: nodeIndex});
+                    // Move to the end of the match
+                    i += marker.length - 1;
+                  }
+                  // In the compiled result, remove the markers, so compiled
+                  // files are deterministic.
+                  node.data = node.data.split(marker).join('');
                 }
               } else if (isTextNode(node)) {
                 // We do not want to count text nodes.

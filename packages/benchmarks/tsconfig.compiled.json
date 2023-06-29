@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["lit-html/kitchen-sink-compiled"],
+  "exclude": []
+}
