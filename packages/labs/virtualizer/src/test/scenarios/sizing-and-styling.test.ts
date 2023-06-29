@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {array, ignoreBenignErrors, pass, until} from '../helpers.js';
+import {array, ignoreBenignErrors, pass} from '../helpers.js';
 import {LitElement, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -78,7 +78,7 @@ describe('Properly sizing virtualizer within host element', () => {
       </div>
     `);
 
-    await until(() =>
+    await pass(() =>
       expect(
         root.querySelector('custom-element-containing-lit-virtualizer')
       ).to.be.instanceOf(CustomElementContainingLitVirtualizer)
@@ -86,7 +86,7 @@ describe('Properly sizing virtualizer within host element', () => {
     const ceclv = root.querySelector(
       'custom-element-containing-lit-virtualizer'
     )!;
-    await until(() =>
+    await pass(() =>
       expect(
         ceclv.shadowRoot?.querySelector('lit-virtualizer')
       ).to.be.instanceOf(LitVirtualizer)

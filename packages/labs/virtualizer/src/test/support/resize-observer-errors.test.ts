@@ -10,7 +10,7 @@ import {
   setupIgnoreWindowResizeObserverLoopErrors,
 } from '../../support/resize-observer-errors.js';
 import {expect} from '@open-wc/testing';
-import {until, ignoreWindowErrors} from '../helpers.js';
+import {pass, ignoreWindowErrors} from '../helpers.js';
 
 let errors = 0;
 
@@ -26,9 +26,7 @@ async function windowError(message: string) {
   setTimeout(() => {
     throw new CountingError(message);
   });
-  await until(() =>
-    expect(errors).to.be.greaterThanOrEqual(expectedErrorCount)
-  );
+  await pass(() => expect(errors).to.be.greaterThanOrEqual(expectedErrorCount));
 }
 
 beforeEach(() => (errors = 0));
@@ -99,14 +97,14 @@ describe('preventResizeObserverLoopErrorEventDefaults', () => {
     expect(messages).to.deep.equal([]);
 
     await windowError('Do not record this error');
-    await until(() =>
+    await pass(() =>
       expect(messages).to.deep.equal([
         'Uncaught Error: Do not record this error',
       ])
     );
     removeEventListener();
     await windowError('ResizeObserver loop limit exceeded');
-    await until(() =>
+    await pass(() =>
       expect(messages).to.deep.equal([
         'Uncaught Error: Do not record this error',
         'Uncaught Error: ResizeObserver loop limit exceeded',
