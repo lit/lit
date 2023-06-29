@@ -18,7 +18,8 @@
     "test:integration:unshimmed:dev": "wireit",
     "test:integration:shimmed:prod": "wireit",
     "test:integration:unshimmed:prod": "wireit",
-    "test:unit": "wireit"
+    "test:unit": "wireit",
+    "test:build": "wireit"
   },
   "wireit": {
     "build": {
@@ -70,7 +71,8 @@
     "test": {
       "dependencies": [
         "test:unit",
-        "test:integration"
+        "test:integration",
+        "test:build"
       ]
     },
     "test:unit": {
@@ -170,6 +172,22 @@
       "files": [
         "web-test-runner.config.js",
         "../../tests/web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:build": {
+      "command": "tsc --pretty --noEmit",
+      "dependencies": [
+        "../ssr-client:build:ts:types",
+        "../ssr-dom-shim:build:ts",
+        "../../lit:build:ts:types",
+        "../../lit-html:build:ts:types",
+        "../../lit-element:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "custom_typings/**/*.ts",
+        "tsconfig.json"
       ],
       "output": []
     }

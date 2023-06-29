@@ -545,6 +545,80 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
     }
   });
+
+  test('server-only templates', async () => {
+    const {render, trivialServerOnly} = await setup();
+    const result = await render(trivialServerOnly);
+    assert.is(result, `<div>Server only</div>`);
+  });
+
+  test('server-only template with a binding', async () => {
+    const {render, serverOnlyWithBinding} = await setup();
+    const result = await render(serverOnlyWithBinding);
+    assert.is(result, `<div>Server only</div>`);
+  });
+
+  test('server-only template with an array', async () => {
+    const {render, serverOnlyArray} = await setup();
+    const result = await render(serverOnlyArray);
+    assert.is(result, `<div>onetwothree</div>`);
+  });
+
+  test('server-only template rendering normal', async () => {
+    const {render, serverOnlyRenderHydratable} = await setup();
+    const result = await render(serverOnlyRenderHydratable);
+    assert.is(
+      result,
+      //
+      `
+    <div>server only</div>
+    <!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->hydratable<!--/lit-part--></div><!--/lit-part-->
+  `
+    );
+  });
+
+  test('normal template renders server-only', async () => {
+    const {render, hydratableRenderServerOnly} = await setup();
+    const result = await render(hydratableRenderServerOnly);
+    assert.is(
+      result,
+      `<!--lit-part 83RBsBZZa48=-->
+  <div><!--lit-part-->dynamic!<!--/lit-part--></div>
+  <!--lit-part AEmR7W+R0Ak=--><div>one time</div><!--/lit-part-->
+<!--/lit-part-->`
+    );
+  });
+
+  test('server-only template into raw element', async () => {
+    const {render, serverOnlyRawElementTemplate} = await setup();
+    const result = await render(serverOnlyRawElementTemplate);
+    assert.is(
+      result,
+      `
+    <title>No comments inside</title>
+    <textarea>This also works (kinda).</textarea>
+  `
+    );
+  });
+
+  test('server-only document template can render an entire document', async () => {
+    const {render, serverOnlyDocumentTemplate} = await setup();
+    const result = await render(serverOnlyDocumentTemplate);
+    assert.is(
+      result,
+      `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>No comments inside</title>
+      </head>
+      <body>
+        <textarea>This also works (kinda).</textarea>
+      </body>
+    </html>
+  `
+    );
+  });
 }
 
 test.run();

@@ -50,13 +50,23 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {parseFragment} from 'parse5';
-import {isElementNode, isCommentNode, traverse} from '@parse5/tools';
+import {parseFragment, parse} from 'parse5';
+import {
+  isElementNode,
+  isCommentNode,
+  traverse,
+  isTextNode,
+} from '@parse5/tools';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
+import {
+  SERVER_DOCUMENT_ONLY,
+  getServerTemplateType,
+  isHydratable,
+} from './util/is-server-template.js';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -289,14 +299,20 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     TemplateResultType.HTML
   );
 
+  const templateType = getServerTemplateType(result);
+  const hydratable = isHydratable(result);
+
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    */
-  const ast = parseFragment(String(html), {
-    sourceCodeLocationInfo: true,
-  });
+  const ast =
+    templateType === SERVER_DOCUMENT_ONLY
+      ? parse(String(html), {sourceCodeLocationInfo: true})
+      : parseFragment(String(html), {
+          sourceCodeLocationInfo: true,
+        });
 
   const ops: Array<Op> = [];
 
@@ -489,7 +505,31 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           ops.push({
             type: 'custom-element-shadow',
           });
+        } else if (!hydratable && /^(title|textarea)$/i.test(node.tagName)) {
+          // look for mangled parts in the text content
+          for (const child of node.childNodes) {
+            if (!isTextNode(child)) {
+              throw new Error(
+                `Internal error: Unexpected child node inside raw text node, a ${node.tagName} should only contain text nodes, but found a ${node.nodeName} (tagname: ${node.tagName})`
+              );
+            }
+            const text = child.value;
+            const textStart = child.sourceCodeLocation!.startOffset;
+            flushTo(textStart);
+            const markerRegex = new RegExp(marker.replace(/\$/g, '\\$'), 'g');
+            for (const mark of text.matchAll(markerRegex)) {
+              flushTo(textStart + mark.index!);
+              ops.push({
+                type: 'child-part',
+                index: nodeIndex,
+                useCustomElementInstance: false,
+              });
+              skipTo(textStart + mark.index! + mark[0].length);
+            }
+            flushTo(textStart + text.length);
+          }
         }
+
         nodeIndex++;
       }
     },
@@ -545,7 +585,8 @@ declare global {
 
 export function* renderValue(
   value: unknown,
-  renderInfo: RenderInfo
+  renderInfo: RenderInfo,
+  hydratable = true
 ): RenderResult {
   patchIfDirective(value);
   if (isRenderLightDirective(value)) {
@@ -566,10 +607,19 @@ export function* renderValue(
     );
   }
   if (value != null && isTemplateResult(value)) {
-    yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
+    if (hydratable) {
+      yield `<!--lit-part ${digestForTemplateResult(
+        value as TemplateResult
+      )}-->`;
+    }
     yield* renderTemplateResult(value as TemplateResult, renderInfo);
+    if (hydratable) {
+      yield `<!--/lit-part-->`;
+    }
   } else {
-    yield `<!--lit-part-->`;
+    if (hydratable) {
+      yield `<!--lit-part-->`;
+    }
     if (
       value === undefined ||
       value === null ||
@@ -580,13 +630,15 @@ export function* renderValue(
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
-        yield* renderValue(item, renderInfo);
+        yield* renderValue(item, renderInfo, hydratable);
       }
     } else {
       yield escapeHtml(String(value));
     }
+    if (hydratable) {
+      yield `<!--/lit-part-->`;
+    }
   }
-  yield `<!--/lit-part-->`;
 }
 
 function* renderTemplateResult(
@@ -608,6 +660,7 @@ function* renderTemplateResult(
   // elements. For each we will record the offset of the node, and output the
   // previous span of HTML.
 
+  const hydratable = isHydratable(result);
   const ops = getTemplateOpcodes(result);
 
   /* The next value in result.values to render */
@@ -620,7 +673,15 @@ function* renderTemplateResult(
         break;
       case 'child-part': {
         const value = result.values[partIndex++];
-        yield* renderValue(value, renderInfo);
+        let renderAsHydratable = hydratable;
+        if (!hydratable && isTemplateResult(value)) {
+          // When we're rendering a a hydratable template inside a
+          // non-hydratable template, then we need to
+          // wrap it with parts so that the hydratable template can be
+          // updated.
+          renderAsHydratable ||= isHydratable(value);
+        }
+        yield* renderValue(value, renderInfo, renderAsHydratable);
         break;
       }
       case 'attribute-part': {
@@ -723,7 +784,9 @@ function* renderTemplateResult(
           op.boundAttributesCount > 0 ||
           renderInfo.customElementHostStack.length > 0
         ) {
-          yield `<!--lit-node ${op.nodeIndex}-->`;
+          if (hydratable) {
+            yield `<!--lit-node ${op.nodeIndex}-->`;
+          }
         }
         break;
       }
@@ -761,7 +824,7 @@ function* renderTemplateResult(
     }
   }
 
-  if (partIndex !== result.values.length) {
+  if (partIndex !== result.values.length && hydratable) {
     throwErrorForPartIndexMismatch(partIndex, result);
   }
 }
