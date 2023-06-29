@@ -505,7 +505,7 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
  *   1) fast to check
  *   2) code is small on the wire
  *   3) multiple versions of Lit in a single page will all produce mutually
- *      interoperable CompiledTemplate
+ *      interoperable CompiledTemplates
  *   4) normal JSON.parse (without an unusual reviver) can not produce a
  *      CompiledTemplate
  *
