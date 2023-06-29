@@ -143,7 +143,7 @@ describe('lit-virtualizer and virtualize directive', () => {
     await until(() => expect(ulv.rangeChangedEvents.length).to.equal(3));
     await until(() => expect(uvd.rangeChangedEvents.length).to.equal(3));
     await until(() => expect(ulv.visibilityChangedEvents.length).to.equal(3));
-    await until(() => expect(ulv.visibilityChangedEvents.length).to.equal(3));
+    await until(() => expect(uvd.visibilityChangedEvents.length).to.equal(3));
 
     // Clear initial events to make it easier to see what's happening with new events.
     ulv.rangeChangedEvents.length = 0;
