@@ -1,0 +1,115 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "sampleSize": 50,
+  "timeout": 0,
+  "collate": true,
+  "benchmarks": [
+    {
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "nop"
+        },
+        {
+          "mode": "performance",
+          "entryName": "replace"
+        },
+        {
+          "mode": "performance",
+          "entryName": "add"
+        },
+        {
+          "mode": "performance",
+          "entryName": "remove"
+        },
+        {
+          "mode": "performance",
+          "entryName": "addEdges"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeEdges"
+        },
+        {
+          "mode": "performance",
+          "entryName": "addMirror"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeMirror"
+        },
+        {
+          "mode": "performance",
+          "entryName": "addStripe"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeStripe"
+        },
+        {
+          "mode": "performance",
+          "entryName": "replaceStripe"
+        },
+        {
+          "mode": "performance",
+          "entryName": "reverse"
+        },
+        {
+          "mode": "performance",
+          "entryName": "swapOne"
+        },
+        {
+          "mode": "performance",
+          "entryName": "swapMany"
+        },
+        {
+          "mode": "performance",
+          "entryName": "swapEdges"
+        },
+        {
+          "mode": "performance",
+          "entryName": "moveForwardOne"
+        },
+        {
+          "mode": "performance",
+          "entryName": "moveForwardMany"
+        },
+        {
+          "mode": "performance",
+          "entryName": "moveBackwardOne"
+        },
+        {
+          "mode": "performance",
+          "entryName": "moveBackwardMany"
+        },
+        {
+          "mode": "performance",
+          "entryName": "shuffle"
+        },
+        {
+          "mode": "performance",
+          "entryName": "removeAll"
+        }
+      ],
+      "expand": [
+        {
+          "name": "repeat",
+          "url": "index.html?method=repeat"
+        },
+        {
+          "name": "map",
+          "url": "index.html?method=map"
+        }
+      ]
+    }
+  ]
+}
