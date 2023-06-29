@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {array, ignoreBenignErrors, until} from '../helpers.js';
+import {array, ignoreBenignErrors, pass, until} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {virtualize} from '../../virtualize.js';
 import {RangeChangedEvent, VisibilityChangedEvent} from '../../events.js';
@@ -140,70 +140,57 @@ describe('lit-virtualizer and virtualize directive', () => {
     uvd.selected = selected;
 
     // Wait for events from initial render to fire.
-    await until(() => ulv.rangeChangedEvents.length > 0);
-    await until(() => uvd.rangeChangedEvents.length > 0);
-    await until(() => ulv.visibilityChangedEvents.length > 0);
-    await until(() => uvd.visibilityChangedEvents.length > 0);
+    await pass(() => {
+      expect(ulv.rangeChangedEvents.length).to.equal(3);
+      expect(uvd.rangeChangedEvents.length).to.equal(3);
 
-    await until(() => ulv.shadowRoot?.textContent?.includes('[5 selected]'));
-    await until(() => uvd.shadowRoot?.textContent?.includes('[5 selected]'));
+      expect(ulv.visibilityChangedEvents.length).to.equal(3);
+      expect(uvd.visibilityChangedEvents.length).to.equal(3);
+    });
 
-    expect(ulv.shadowRoot?.textContent).to.include('[2 selected]');
-    expect(uvd.shadowRoot?.textContent).to.include('[2 selected]');
-
-    expect(ulv.shadowRoot?.textContent).to.include('[5 selected]');
-    expect(uvd.shadowRoot?.textContent).to.include('[5 selected]');
-
-    // Changing selection doesn't trigger visibility changed or range changed events.
-    ulv.selected = new Set([1, 3]);
-    uvd.selected = new Set([1, 3]);
-
-    await until(() => ulv.shadowRoot?.textContent?.includes('[3 selected]'));
-    await until(() => uvd.shadowRoot?.textContent?.includes('[3 selected]'));
-
-    expect(ulv.shadowRoot?.textContent).to.include('[1 selected]');
-    expect(uvd.shadowRoot?.textContent).to.include('[1 selected]');
-
-    expect(ulv.shadowRoot?.textContent).to.include('[3 selected]');
-    expect(uvd.shadowRoot?.textContent).to.include('[3 selected]');
-
-    expect(ulv.shadowRoot?.textContent).not.to.include('[2 selected]');
-    expect(uvd.shadowRoot?.textContent).not.to.include('[2 selected]');
-
-    expect(ulv.shadowRoot?.textContent).not.to.include('[5 selected]');
-    expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
-
-    // Clearing event arrays so we can watch for specific future events.
-    // Note: The *correct* place to clear these would be at the site
-    // above where we say "Wait for events from initial render to fire."
-    // However, due to inconsistencies in the initial render behavior
-    // between runs and environments, there may still be in-flight events
-    // emitted due to initial render jitter that we need to account for,
-    // so clearing them here gives them time to come in, mostly due to the
-    // await until for the textcontent above.
+    // Clear initial events to make it easier to see what's happening with new events.
     ulv.rangeChangedEvents.length = 0;
     uvd.rangeChangedEvents.length = 0;
     ulv.visibilityChangedEvents.length = 0;
     uvd.visibilityChangedEvents.length = 0;
 
-    // Adding an item to the start of the list to trigger rangechanged and
-    // visibilitychanged events.
+    await pass(() => {
+      expect(ulv.shadowRoot?.textContent).to.include('[2 selected]');
+      expect(uvd.shadowRoot?.textContent).to.include('[2 selected]');
+
+      expect(ulv.shadowRoot?.textContent).to.include('[5 selected]');
+      expect(uvd.shadowRoot?.textContent).to.include('[5 selected]');
+    });
+
+    // Changing selection doesn't trigger visibility changed or range changed events.
+    ulv.selected = new Set([1, 3]);
+    uvd.selected = new Set([1, 3]);
+
+    await pass(() => {
+      expect(ulv.shadowRoot?.textContent).to.include('[1 selected]');
+      expect(uvd.shadowRoot?.textContent).to.include('[1 selected]');
+
+      expect(ulv.shadowRoot?.textContent).to.include('[3 selected]');
+      expect(uvd.shadowRoot?.textContent).to.include('[3 selected]');
+
+      expect(ulv.shadowRoot?.textContent).not.to.include('[2 selected]');
+      expect(uvd.shadowRoot?.textContent).not.to.include('[2 selected]');
+
+      expect(ulv.shadowRoot?.textContent).not.to.include('[5 selected]');
+      expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
+    });
+
+    // Adding an item to the start of the list to trigger rangechanged events.
     ulv.items = [-1, ...items];
     uvd.items = [-1, ...items];
 
-    await until(() => ulv.shadowRoot?.textContent?.includes('[-1]'));
-    await until(() => uvd.shadowRoot?.textContent?.includes('[-1]'));
+    await pass(() => {
+      expect(ulv.shadowRoot?.textContent).to.include('[-1]');
+      expect(uvd.shadowRoot?.textContent).to.include('[-1]');
 
-    await until(() => ulv.rangeChangedEvents.length > 0);
-    await until(() => uvd.rangeChangedEvents.length > 0);
-
-    // NOTE(usergenic): This test was flaky around the number of range changed
-    // events; the expected number of range changed events at this stage should
-    // be 1, but in tests a subsequent range changed event is showing up to a
-    // larger "last" value after the first event.  For this reason, the test
-    // was adjusted to greaterThanOrEqual(1) instead of equal(1).
-    expect(ulv.rangeChangedEvents.length).to.be.greaterThanOrEqual(1);
-    expect(uvd.rangeChangedEvents.length).to.be.greaterThanOrEqual(1);
+      expect(ulv.rangeChangedEvents.length).to.equal(1);
+      expect(uvd.rangeChangedEvents.length).to.equal(1);
+    });
 
     // The indexes of visible items have not changed even though new item was
     // added to head of the array.  So no visibilitychanged events are expected.
