@@ -487,10 +487,48 @@ export interface CompiledTemplateResult {
 export interface CompiledTemplate extends Omit<Template, 'el'> {
   // el is overridden to be optional. We initialize it on first render
   el?: HTMLTemplateElement;
+  /**
+   * A value that can't be decoded from ordinary JSON, make it harder for
+   * a attacker-controlled data that goes through JSON.parse to produce a valid
+   * CompiledTemplate.
+   */
+  r: Symbol;
 
   // The prepared HTML string to create a template element from.
   h: TrustedHTML;
 }
+
+/**
+ * Prevents JSON injection attacks.
+ *
+ * The goals of this brand:
+ *   1) fast to check
+ *   2) code is small on the wire
+ *   3) multiple versions of Lit in a single page will all produce mutually
+ *      interoperable CompiledTemplate
+ *   4) normal JSON.parse (without an unusual reviver) can not produce a
+ *      CompiledTemplate
+ *
+ * Symbols satisfy (1), (2), and (4). We use Symbol.for to satisfy (3), but
+ * we don't care about the key, so we break ties via (2) and use the empty
+ * string.
+ */
+const brand = Symbol.for('');
+
+/**
+ * Safely extract the prepared compiled HTML string. An unsafe value returns an
+ * empty TrustedHTML string.
+ */
+const unwrapPreparedHtmlFromCompiledTemplate = (
+  value: unknown
+): TrustedHTML => {
+  if ((value as Partial<CompiledTemplate>)?.r !== brand) {
+    return policy !== undefined
+      ? policy.createHTML('')
+      : ('' as unknown as TrustedHTML);
+  }
+  return (value as CompiledTemplate).h;
+};
 
 /**
  * Generates a template literal tag function that returns a TemplateResult with
@@ -1517,7 +1555,10 @@ class ChildPart implements Disconnectable {
       typeof type === 'number'
         ? this._$getTemplate(result as TemplateResult)
         : (type.el === undefined &&
-            (type.el = Template.createElement(type.h, this.options)),
+            (type.el = Template.createElement(
+              unwrapPreparedHtmlFromCompiledTemplate(type),
+              this.options
+            )),
           type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {

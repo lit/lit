@@ -1600,6 +1600,7 @@ suite('lit-html', () => {
       // A compiled template for html`${'A'}`
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML('<!---->'),
+        r: Symbol.for(''),
         parts: [{type: 2, index: 0}],
       };
       assertRender(
@@ -1616,6 +1617,7 @@ suite('lit-html', () => {
       // A compiled template for html`<div>${'A'}</div>`
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML(`<div><!----></div>`),
+        r: Symbol.for(''),
         parts: [{type: 2, index: 1}],
       };
       const result = {
@@ -1630,6 +1632,7 @@ suite('lit-html', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML('<div></div>'),
+        r: Symbol.for(''),
         parts: [
           {
             type: 1,
@@ -1653,6 +1656,7 @@ suite('lit-html', () => {
       // A compiled template for html`<div ${ref(r)}></div>`
       const _$lit_template_1: CompiledTemplate = {
         h: policy.createHTML('<div></div>'),
+        r: Symbol.for(''),
         parts: [{type: 6, index: 0}],
       };
       const result = {
@@ -1664,6 +1668,20 @@ suite('lit-html', () => {
       const div = container.firstElementChild;
       assert.isDefined(div);
       assert.strictEqual(r.value, div);
+    });
+
+    test(`don't render simple spoofed static values`, () => {
+      const _$lit_template_1: CompiledTemplate = {
+        h: policy.createHTML(`<div><!----></div>`),
+        r: {},
+        parts: [{type: 2, index: 1}],
+      };
+      const result = {
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
+        values: ['A'],
+      };
+      assertRender(result, '');
     });
   });
 
