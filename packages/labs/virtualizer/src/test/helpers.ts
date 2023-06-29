@@ -140,8 +140,8 @@ async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
 
 /**
  * Returns a promise for the result of the code block given.  Errors are swallowed
- * by the function until the timeout is reached, in which case the error will be
- * thrown.  This means you can `pass` to wait for expectations like so:
+ * by the function until the timeout is reached, after which the error will be
+ * thrown.  This means you can use `pass` to wait for expectations like so:
  *
  *     await pass(() => expect(thing).to.be.true);
  *
@@ -162,8 +162,7 @@ export async function pass<T>(block: () => T, timeout = 1000): Promise<T> {
 
 /**
  * Returns a promise which will resolve to the first truthy result of condition
- * function or the last result of calling it within the given timeout.
- * The intended usage of this function in a test would look something
+ * function.  The intended usage of this function in a test would look something
  * like:
  *
  *     const thing = await until(() => doc.query('thing'));
