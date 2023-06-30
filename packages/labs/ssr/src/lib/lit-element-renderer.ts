@@ -81,7 +81,7 @@ export class LitElementRenderer extends ElementRenderer {
     _old: string | null,
     value: string | null
   ) {
-    attributeToProperty(this.element as LitElement, name.toLowerCase(), value);
+    attributeToProperty(this.element as LitElement, name, value);
   }
 
   override *renderShadow(renderInfo: RenderInfo): RenderResult {

@@ -56,13 +56,13 @@ const ElementShim = class Element {
   setAttribute(name: string, value: unknown): void {
     // Emulate browser behavior that silently casts all values to string. E.g.
     // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
-    attributesForElement(this).set(name.toLowerCase(), String(value));
+    attributesForElement(this).set(name, String(value));
   }
   removeAttribute(name: string) {
-    attributesForElement(this).delete(name.toLowerCase());
+    attributesForElement(this).delete(name);
   }
   hasAttribute(name: string) {
-    return attributesForElement(this).has(name.toLowerCase());
+    return attributesForElement(this).has(name);
   }
   attachShadow(init: ShadowRootInit): ShadowRoot {
     const shadowRoot = {host: this} as object as ShadowRoot;
@@ -84,7 +84,7 @@ const ElementShim = class Element {
     return internals as ElementInternals;
   }
   getAttribute(name: string) {
-    const value = attributesForElement(this).get(name.toLowerCase());
+    const value = attributesForElement(this).get(name);
     return value ?? null;
   }
 };

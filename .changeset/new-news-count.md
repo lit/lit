@@ -1,5 +1,4 @@
 ---
-'@lit-labs/ssr-dom-shim': patch
 '@lit-labs/ssr': patch
 ---
 
