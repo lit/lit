@@ -30,7 +30,7 @@
   "scripts": {
     "clean": "rimraf {lib/,test/,} && rimraf tsconfig.tsbuildinfo && rimraf index.{js*,d.ts,d.ts.map,} && rimraf {.nyc_output/,coverage/}",
     "prebuild": "npm run clean",
-    "build": "tsc",
+    "build": "tsc && mkdir lib/types/ && cp -r src/lib/types/ lib/types/",
     "test": "nyc mocha -r source-map-support/register test/*.js",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "lint": "prettier --write \"*.{js,ts,json,md}\" \"src/**/*\"",
@@ -65,7 +65,8 @@
     "clean-css": "^5.3.2",
     "html-minifier": "^4.0.0",
     "magic-string": "^0.30.0",
-    "rollup-pluginutils": "^2.8.2"
+    "rollup-pluginutils": "^2.8.2",
+    "typescript": "^5.1.3"
   },
   "peerDependencies": {
     "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0"
@@ -87,7 +88,6 @@
     "sinon": "^15.1.0",
     "source-map-support": "^0.5.21",
     "standard-version": "^9.5.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.3"
+    "ts-node": "^10.9.1"
   }
 }
