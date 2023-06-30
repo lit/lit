@@ -489,7 +489,9 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
   el?: HTMLTemplateElement;
 
   // The prepared HTML string to create a template element from.
-  h: TrustedHTML;
+  // The type is a TemplateStringsArray to guarantee that the value came from
+  // source code, preventing a JSON injection attack.
+  h: TemplateStringsArray;
 }
 
 /**
@@ -650,6 +652,39 @@ export interface DirectiveParent {
   _$isConnected: boolean;
   __directive?: Directive;
   __directives?: Array<Directive | undefined>;
+}
+
+function trustFromTemplateString(
+  tsa: TemplateStringsArray,
+  stringFromTSA: string
+): TrustedHTML {
+  // A security check to prevent spoofing of Lit template results.
+  // In the future, we may be able to replace this with Array.isTemplateObject,
+  // though we might need to make that check inside of the html and svg
+  // functions, because precompiled templates don't come in as
+  // TemplateStringArray objects.
+  if (!Array.isArray(tsa) || !tsa.hasOwnProperty('raw')) {
+    let message = 'invalid template strings array';
+    if (DEV_MODE) {
+      message = `
+          Internal Error: expected template strings to be an array
+          with a 'raw' field. Faking a template strings array by
+          calling html or svg like an ordinary function is effectively
+          the same as calling unsafeHtml and can lead to major security
+          issues, e.g. opening your code up to XSS attacks.
+          If you're using the html or svg tagged template functions normally
+          and still seeing this error, please file a bug at
+          https://github.com/lit/lit/issues/new?template=bug_report.md
+          and include information about your build tooling, if any.
+        `
+        .trim()
+        .replace(/\n */g, '\n');
+    }
+    throw new Error(message);
+  }
+  return policy !== undefined
+    ? policy.createHTML(stringFromTSA)
+    : (stringFromTSA as unknown as TrustedHTML);
 }
 
 /**
@@ -816,38 +851,8 @@ const getTemplateHtml = (
   const htmlResult: string | TrustedHTML =
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
 
-  // A security check to prevent spoofing of Lit template results.
-  // In the future, we may be able to replace this with Array.isTemplateObject,
-  // though we might need to make that check inside of the html and svg
-  // functions, because precompiled templates don't come in as
-  // TemplateStringArray objects.
-  if (!Array.isArray(strings) || !strings.hasOwnProperty('raw')) {
-    let message = 'invalid template strings array';
-    if (DEV_MODE) {
-      message = `
-          Internal Error: expected template strings to be an array
-          with a 'raw' field. Faking a template strings array by
-          calling html or svg like an ordinary function is effectively
-          the same as calling unsafeHtml and can lead to major security
-          issues, e.g. opening your code up to XSS attacks.
-
-          If you're using the html or svg tagged template functions normally
-          and still seeing this error, please file a bug at
-          https://github.com/lit/lit/issues/new?template=bug_report.md
-          and include information about your build tooling, if any.
-        `
-        .trim()
-        .replace(/\n */g, '\n');
-    }
-    throw new Error(message);
-  }
   // Returned as an array for terseness
-  return [
-    policy !== undefined
-      ? policy.createHTML(htmlResult)
-      : (htmlResult as unknown as TrustedHTML),
-    attrNames,
-  ];
+  return [trustFromTemplateString(strings, htmlResult), attrNames];
 };
 
 /** @internal */
@@ -1517,7 +1522,10 @@ class ChildPart implements Disconnectable {
       typeof type === 'number'
         ? this._$getTemplate(result as TemplateResult)
         : (type.el === undefined &&
-            (type.el = Template.createElement(type.h, this.options)),
+            (type.el = Template.createElement(
+              trustFromTemplateString(type.h, type.h[0]),
+              this.options
+            )),
           type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
