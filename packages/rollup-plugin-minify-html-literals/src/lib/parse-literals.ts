@@ -3,7 +3,7 @@ import typescript from './typescript.js';
 
 export interface ParseLiteralsOptions {
   fileName?: string;
-  strategy?: Partial<Strategy<any>>;
+  strategy?: Partial<Strategy<unknown>>;
 }
 
 export function parseLiterals(
@@ -11,7 +11,7 @@ export function parseLiterals(
   options: ParseLiteralsOptions = {}
 ): Template[] {
   const strategy = {
-    ...(<Strategy<any>>typescript),
+    ...(<Strategy<unknown>>typescript),
     ...(options.strategy || {}),
   };
 

@@ -11,7 +11,7 @@ export interface TypescriptStrategy extends Strategy<ts.Node> {
 
 let currentRoot: ts.SourceFile | undefined;
 export default <TypescriptStrategy>{
-  getRootNode(source: string, fileName: string = ''): ts.SourceFile {
+  getRootNode(source: string, fileName = ''): ts.SourceFile {
     return ts.createSourceFile(fileName, source, ts.ScriptTarget.ESNext);
   },
   walkNodes(root: ts.SourceFile, visit: (node: ts.Node) => void) {

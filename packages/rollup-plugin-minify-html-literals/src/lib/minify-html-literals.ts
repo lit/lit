@@ -6,7 +6,7 @@ import { Strategy, defaultMinifyOptions, defaultStrategy } from './strategy.js';
 /**
  * Options for <code>minifyHTMLLiterals()</code>.
  */
-export type Options = DefaultOptions | CustomOptions<any>;
+export type Options = DefaultOptions | CustomOptions<unknown>;
 
 /**
  * Options for <code>minifyHTMLLiterals()</code>, using default html-minifier
@@ -23,7 +23,8 @@ export interface DefaultOptions extends BaseOptions {
 /**
  * Options for <code>minifyHTMLLiterals()</code>, using a custom strategy.
  */
-export interface CustomOptions<S extends Strategy> extends BaseOptions {
+export interface CustomOptions<S extends Strategy | unknown>
+  extends BaseOptions {
   /**
    * HTML minification options.
    */
@@ -106,7 +107,7 @@ export interface BaseOptions {
  */
 export interface MagicStringLike {
   generateMap(options?: Partial<SourceMapOptions>): SourceMap;
-  overwrite(start: number, end: number, content: string): any;
+  overwrite(start: number, end: number, content: string): unknown;
   toString(): string;
 }
 
@@ -140,7 +141,7 @@ export interface Validation {
    *
    * @param placeholder the placeholder to check
    */
-  ensurePlaceholderValid(placeholder: any): void;
+  ensurePlaceholderValid(placeholder: unknown): void;
   /**
    * Throws an error if <code>strategy.splitHTMLByPlaceholder()</code> does not
    * return an HTML part string for each template part.

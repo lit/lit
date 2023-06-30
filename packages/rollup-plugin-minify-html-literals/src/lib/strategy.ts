@@ -14,7 +14,7 @@ import { TemplatePart } from './models.js';
  * @template O minify HTML options
  * @template C minify CSS options
  */
-export interface Strategy<O = any, C = any> {
+export interface Strategy<O = unknown, C = unknown> {
   /**
    * Retrieve a placeholder for the given array of template parts. The
    * placeholder returned should be the same if the function is invoked with the

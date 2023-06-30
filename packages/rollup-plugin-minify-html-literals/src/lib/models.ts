@@ -9,7 +9,7 @@ export interface TemplatePart {
   end: number;
 }
 
-export interface Strategy<N = any> {
+export interface Strategy<N = unknown> {
   getRootNode(source: string, fileName?: string): N;
   walkNodes(parent: N, visit: (child: N) => void): void;
   isTaggedTemplate(node: N): boolean;
