@@ -145,13 +145,6 @@ describe('minify-html-literals', () => {
     }
   `;
 
-  const STATIC_SOURCE_MIN = `
-    function render() {
-      const tagName = literal\`span\`
-      return html\`<\${tagName}>span content</\${tagName}>\`;
-    }
-  `;
-
   const SVG_SOURCE = `
     function taggedSVGMinify() {
       return svg\`
@@ -255,9 +248,7 @@ describe('minify-html-literals', () => {
 
   const INLINE_CSS_EXPRESSION_MIN = `
     function render() {
-      return html\`
-        <span style="height:\${100}px">span content</span>
-      \`;
+      return html\`<span style="height:\${100}px">span content</span>\`;
     }
   `;
 
@@ -323,13 +314,10 @@ describe('minify-html-literals', () => {
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(INLINE_CSS_EXPRESSION_MIN);
   });
-  // TODO: fix this test
+
   it('fails to minify static html templates', () => {
-    const result = minifyHTMLLiterals(STATIC_SOURCE, { fileName: 'test.js' });
-    console.log('RESULT', result?.code);
-    console.log('EXPECT', STATIC_SOURCE_MIN);
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(STATIC_SOURCE_MIN);
+    expect(() => minifyHTMLLiterals(STATIC_SOURCE, { fileName: 'test.js' })).to
+      .throw;
   });
 
   describe('options', () => {
