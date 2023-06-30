@@ -45,6 +45,8 @@ html`<input x=${x}>`;
 // prettier-ignore
 export const inputTemplateWithAttributeExpressionAndChildElement = (x: string) =>
   html`<input x=${x}><p>hi</p></input>`;
+// prettier-ignore
+export const templateWithMixedCaseAttrs = (str: string) => html`<svg dynamicCamel=${str} staticCamel="static"></svg>`;
 
 /* Reflected Property Expressions */
 
