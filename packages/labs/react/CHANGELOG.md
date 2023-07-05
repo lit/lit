@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.1
+
+### Patch Changes
+
+- [#3978](https://github.com/lit/lit/pull/3978) [`3711e665`](https://github.com/lit/lit/commit/3711e6650a59966e5be8d92dd0abf053d9a50d32) - Only add `suppressHydrationWarning` prop when rendered in the client. This will prevent `suppresshydrationwarning` attribute being added to the host element when using `@lit-labs/ssr-react`.
+
 ## 1.2.0
 
 ### Minor Changes

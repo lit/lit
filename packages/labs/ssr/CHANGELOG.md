@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.5
+
+### Patch Changes
+
+- [#3977](https://github.com/lit/lit/pull/3977) [`a2366a39`](https://github.com/lit/lit/commit/a2366a39635366dd252db4d4766867959ba03dff) - Make attribute handling case-insensitive for custom element rendering as it is in the browser for HTML elements.
+
 ## 3.1.4
 
 ### Patch Changes
