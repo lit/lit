@@ -274,11 +274,10 @@ const openChildPart = (
     // if (marker.data !== 'lit-part') {
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
-  } else if (
-    isTemplateResult(value) &&
-    // Ensure this is a TemplateResult and not a CompiledTemplateResult.
-    typeof value['_$litType$'] === 'number'
-  ) {
+  } else if (isTemplateResult(value)) {
+    if (typeof value['_$litType$'] !== 'number') {
+      throw new Error('compiled templates are not supported');
+    }
     const result = value as TemplateResult;
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(result)}`;

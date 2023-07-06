@@ -3,7 +3,14 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html, ChildPart, render, svg} from 'lit-html';
+import {
+  html,
+  ChildPart,
+  render,
+  svg,
+  TemplateResult,
+  CompiledTemplateResult,
+} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 import {
@@ -63,6 +70,29 @@ suite('directive-helpers', () => {
     assert.isFalse(isTemplateResult(null, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult(undefined, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult({}, TemplateResultType.HTML));
+  });
+
+  test('isTemplateResult type only test', () => {
+    // This test has no runtime checks, and fails at build time if there are
+    // type issues.
+    function acceptTemplateResult(_v: TemplateResult) {}
+    function acceptTemplateOrCompiledTemplateResult(
+      _v: TemplateResult | CompiledTemplateResult
+    ) {}
+
+    const v = html`` as TemplateResult | CompiledTemplateResult;
+    if (isTemplateResult(v)) {
+      acceptTemplateOrCompiledTemplateResult(v);
+
+      // @ts-expect-error v could be a CompiledTemplateResult
+      acceptTemplateResult(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.HTML)) {
+      acceptTemplateResult(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.SVG)) {
+      acceptTemplateResult(v);
+    }
   });
 
   test('isDirectiveResult', () => {

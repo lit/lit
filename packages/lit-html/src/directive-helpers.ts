@@ -48,17 +48,23 @@ export const TemplateResultType = {
 export type TemplateResultType =
   (typeof TemplateResultType)[keyof typeof TemplateResultType];
 
+type isTemplateResultType = {
+  (val: unknown): val is TemplateResult | CompiledTemplateResult;
+  (val: unknown, type: TemplateResultType): val is TemplateResult;
+};
+
 /**
  * Tests if a value is a TemplateResult or a CompiledTemplateResult.
  */
-export const isTemplateResult = (
+export const isTemplateResult = ((
   value: unknown,
-  type?: TemplateResultType
-): value is TemplateResult | CompiledTemplateResult =>
+  type: TemplateResultType | undefined
+) =>
   type === undefined
     ? // This property needs to remain unminified.
       (value as TemplateResult)?.['_$litType$'] !== undefined
-    : (value as TemplateResult)?.['_$litType$'] === type;
+    : (value as TemplateResult)?.['_$litType$'] ===
+      type) as unknown as isTemplateResultType;
 
 /**
  * Tests if a value is a DirectiveResult.

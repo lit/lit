@@ -35,7 +35,7 @@ function getStringsFromTemplate(
   if (typeof template['_$litType$'] === 'number') {
     return (template as TemplateResult).strings;
   } else {
-    return (template as CompiledTemplateResult)._$litType$.h;
+    return (template as CompiledTemplateResult)['_$litType$'].h;
   }
 }
 
