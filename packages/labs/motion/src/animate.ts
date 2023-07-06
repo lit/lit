@@ -83,7 +83,11 @@ export const transformProps: {
   [p: string]: (
     a: number,
     b: number
-  ) => {value?: number; transform?: string; override?: {[k: string]: string}};
+  ) => {
+    value?: number;
+    transform?: string;
+    overrideFrom?: {[k: string]: string};
+  };
 } = {
   left: (a: number, b: number) => {
     const value = diffOp(a, b);
@@ -108,7 +112,7 @@ export const transformProps: {
     const value = quotientOp(a, b);
     const transform =
       value == null || isNaN(value) ? undefined : `scaleX(${value})`;
-    return {value, override, transform};
+    return {value, overrideFrom: override, transform};
   },
   height: (a: number, b: number) => {
     let override: {} | undefined = undefined;
@@ -121,7 +125,7 @@ export const transformProps: {
     const value = quotientOp(a, b);
     const transform =
       value == null || isNaN(value) ? undefined : `scaleY(${value})`;
-    return {value, override, transform};
+    return {value, overrideFrom: override, transform};
   },
 };
 
@@ -551,8 +555,8 @@ export class Animate extends AsyncDirective {
           fromFrame['transform'] = `${fromFrame['transform'] ?? ''} ${
             op['transform']
           }`;
-          if (op.override) {
-            Object.assign(fromFrame, op.override);
+          if (op.overrideFrom) {
+            Object.assign(fromFrame, op.overrideFrom);
           }
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
