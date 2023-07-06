@@ -103,8 +103,8 @@ export const transformProps: {
   },
   width: (a: number, b: number) => {
     let override: {} | undefined = undefined;
-    // To values of 0 would cause value to be Infinity. Instead we override b
-    // to be 1 and all that as an override of the property.
+    // 'To' values of 0 would cause `value` to be Infinity. Instead we override
+    // `b` to be 1 and add 1px as an override of width.
     if (b === 0) {
       b = 1;
       override = {width: '1px'};
@@ -116,8 +116,8 @@ export const transformProps: {
   },
   height: (a: number, b: number) => {
     let override: {} | undefined = undefined;
-    // To values of 0 would cause value to be Infinity. Instead we override b
-    // to be 1 and all that as an override of the property.
+    // 'To' values of 0 would cause `value` to be Infinity. Instead we override
+    // `b` to be 1 and add 1px as an override of height.
     if (b === 0) {
       b = 1;
       override = {height: '1px'};
@@ -555,7 +555,7 @@ export class Animate extends AsyncDirective {
           fromFrame['transform'] = `${fromFrame['transform'] ?? ''} ${
             op['transform']
           }`;
-          if (op.overrideFrom) {
+          if (op.overrideFrom !== undefined) {
             Object.assign(fromFrame, op.overrideFrom);
           }
         }
