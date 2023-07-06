@@ -6,9 +6,14 @@
 import {notEqual} from '@lit/reactive-element';
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
+export interface TaskFunctionOptions {
+  signal?: AbortSignal;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TaskFunction<D extends ReadonlyArray<unknown>, R = any> = (
-  args: D
+  args: D,
+  options?: TaskFunctionOptions
 ) => R | typeof initialState | Promise<R | typeof initialState>;
 export type ArgsFunction<D extends ReadonlyArray<unknown>> = () => D;
 
@@ -111,6 +116,7 @@ export class Task<
   private _host: ReactiveControllerHost;
   private _value?: R;
   private _error?: unknown;
+  private _abortController?: AbortController;
   private _onComplete?: (result: R) => unknown;
   private _onError?: (error: unknown) => unknown;
   status: TaskStatus = TaskStatus.INITIAL;
@@ -214,10 +220,12 @@ export class Task<
   async run(args?: T) {
     args ??= this._getArgs?.();
 
-    // Clear the last complete task run in INITIAL because it may be a resolved
-    // promise. Also clear if COMPLETE or ERROR because the value returned by
-    // awaiting taskComplete may have changed since last run.
-    if (this.status !== TaskStatus.PENDING) {
+    if (this.status === TaskStatus.PENDING) {
+      this._abortController?.abort();
+    } else {
+      // Clear the last complete task run in INITIAL because it may be a resolved
+      // promise. Also clear if COMPLETE or ERROR because the value returned by
+      // awaiting taskComplete may have changed since last run.
       this._taskComplete = undefined;
       this._resolveTaskComplete = undefined;
       this._rejectTaskComplete = undefined;
@@ -232,8 +240,9 @@ export class Task<
     queueMicrotask(() => this._host.requestUpdate());
 
     const key = ++this._callId;
+    this._abortController = new AbortController();
     try {
-      result = await this._task(args!);
+      result = await this._task(args!, {signal: this._abortController.signal});
     } catch (e) {
       error = e;
     }
