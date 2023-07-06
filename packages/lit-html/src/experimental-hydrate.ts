@@ -274,11 +274,16 @@ const openChildPart = (
     // if (marker.data !== 'lit-part') {
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
-  } else if (isTemplateResult(value)) {
+  } else if (
+    isTemplateResult(value) &&
+    // Ensure this is a TemplateResult and not a CompiledTemplateResult.
+    typeof value['_$litType$'] === 'number'
+  ) {
+    const result = value as TemplateResult;
     // Check for a template result digest
-    const markerWithDigest = `lit-part ${digestForTemplateResult(value)}`;
+    const markerWithDigest = `lit-part ${digestForTemplateResult(result)}`;
     if (marker.data === markerWithDigest) {
-      const template = ChildPart.prototype._$getTemplate(value);
+      const template = ChildPart.prototype._$getTemplate(result);
       const instance = new TemplateInstance(template, part);
       stack.push({
         type: 'template-instance',
@@ -286,7 +291,7 @@ const openChildPart = (
         part,
         templatePartIndex: 0,
         instancePartIndex: 0,
-        result: value,
+        result,
       });
       // For TemplateResult values, we set the part value to the
       // generated TemplateInstance

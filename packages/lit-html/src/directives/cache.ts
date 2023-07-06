@@ -10,6 +10,7 @@ import {
   RootPart,
   render,
   nothing,
+  CompiledTemplateResult,
 } from '../lit-html.js';
 import {
   directive,
@@ -25,9 +26,22 @@ import {
   setCommittedValue,
 } from '../directive-helpers.js';
 
+/**
+ * @returns The template strings array for the provided template.
+ */
+function getStringsFromTemplate(
+  template: TemplateResult | CompiledTemplateResult
+): TemplateStringsArray {
+  if (typeof template['_$litType$'] === 'number') {
+    return (template as TemplateResult).strings;
+  } else {
+    return (template as CompiledTemplateResult)._$litType$.h;
+  }
+}
+
 class CacheDirective extends Directive {
   private _templateCache = new WeakMap<TemplateStringsArray, RootPart>();
-  private _value?: TemplateResult;
+  private _value?: TemplateResult | CompiledTemplateResult;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -45,17 +59,23 @@ class CacheDirective extends Directive {
     // into the cache.
     if (
       isTemplateResult(this._value) &&
-      (!isTemplateResult(v) || this._value.strings !== v.strings)
+      (!isTemplateResult(v) ||
+        getStringsFromTemplate(this._value) !== getStringsFromTemplate(v))
     ) {
       // This is always an array because we return [v] in render()
       const partValue = getCommittedValue(containerPart) as Array<ChildPart>;
       const childPart = partValue.pop()!;
-      let cachedContainerPart = this._templateCache.get(this._value.strings);
+      let cachedContainerPart = this._templateCache.get(
+        getStringsFromTemplate(this._value)
+      );
       if (cachedContainerPart === undefined) {
         const fragment = document.createDocumentFragment();
         cachedContainerPart = render(nothing, fragment);
         cachedContainerPart.setConnected(false);
-        this._templateCache.set(this._value.strings, cachedContainerPart);
+        this._templateCache.set(
+          getStringsFromTemplate(this._value),
+          cachedContainerPart
+        );
       }
       // Move into cache
       setCommittedValue(cachedContainerPart, [childPart]);
@@ -65,8 +85,13 @@ class CacheDirective extends Directive {
     // or is a different Template as the previous value, restore the child
     // part from the cache.
     if (isTemplateResult(v)) {
-      if (!isTemplateResult(this._value) || this._value.strings !== v.strings) {
-        const cachedContainerPart = this._templateCache.get(v.strings);
+      if (
+        !isTemplateResult(this._value) ||
+        getStringsFromTemplate(this._value) !== getStringsFromTemplate(v)
+      ) {
+        const cachedContainerPart = this._templateCache.get(
+          getStringsFromTemplate(v)
+        );
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value
           const partValue = getCommittedValue(

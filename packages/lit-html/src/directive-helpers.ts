@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_$LH, Part, DirectiveParent, TemplateResult} from './lit-html.js';
+import {
+  _$LH,
+  Part,
+  DirectiveParent,
+  TemplateResult,
+  CompiledTemplateResult,
+} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -43,12 +49,12 @@ export type TemplateResultType =
   (typeof TemplateResultType)[keyof typeof TemplateResultType];
 
 /**
- * Tests if a value is a TemplateResult.
+ * Tests if a value is a TemplateResult or a CompiledTemplateResult.
  */
 export const isTemplateResult = (
   value: unknown,
   type?: TemplateResultType
-): value is TemplateResult =>
+): value is TemplateResult | CompiledTemplateResult =>
   type === undefined
     ? // This property needs to remain unminified.
       (value as TemplateResult)?.['_$litType$'] !== undefined
