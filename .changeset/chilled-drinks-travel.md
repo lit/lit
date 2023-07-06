@@ -1,5 +1,5 @@
 ---
-'@lit-labs/ssr-client': minor
+'@lit-labs/ssr-client': patch
 'lit-html': minor
 'lit': minor
 ---
