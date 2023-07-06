@@ -50,7 +50,10 @@ export type TemplateResultType =
 
 type isTemplateResultType = {
   (val: unknown): val is TemplateResult | CompiledTemplateResult;
-  (val: unknown, type: TemplateResultType): val is TemplateResult;
+  <T extends TemplateResultType>(
+    val: unknown,
+    type: T
+  ): val is TemplateResult<T>;
 };
 
 /**
@@ -64,7 +67,16 @@ export const isTemplateResult = ((
     ? // This property needs to remain unminified.
       (value as TemplateResult)?.['_$litType$'] !== undefined
     : (value as TemplateResult)?.['_$litType$'] ===
-      type) as unknown as isTemplateResultType;
+      type) as isTemplateResultType;
+
+/**
+ * Tests if a value is a CompiledTemplateResult.
+ */
+export const isCompiledTemplateResult = (
+  value: unknown
+): value is CompiledTemplateResult => {
+  return (value as CompiledTemplateResult)?.['_$litType$']?.h != null;
+};
 
 /**
  * Tests if a value is a DirectiveResult.

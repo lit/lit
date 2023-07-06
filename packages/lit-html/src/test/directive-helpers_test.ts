@@ -10,6 +10,7 @@ import {
   svg,
   TemplateResult,
   CompiledTemplateResult,
+  CompiledTemplate,
 } from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from '@lit-labs/testing';
@@ -22,6 +23,7 @@ import {
   removePart,
   setChildPartValue,
   TemplateResultType,
+  isCompiledTemplateResult,
 } from 'lit-html/directive-helpers.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {
@@ -29,6 +31,12 @@ import {
   Directive,
   AsyncDirective,
 } from 'lit-html/async-directive.js';
+
+const branding_tag = (s: TemplateStringsArray) => s;
+const _$lit_template_1: CompiledTemplate = {
+  h: branding_tag``,
+  parts: [],
+};
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
@@ -70,6 +78,31 @@ suite('directive-helpers', () => {
     assert.isFalse(isTemplateResult(null, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult(undefined, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult({}, TemplateResultType.HTML));
+
+    assert.isTrue(
+      isTemplateResult({
+        _$litType$: _$lit_template_1,
+        values: [],
+      })
+    );
+    assert.isFalse(
+      isTemplateResult(
+        {
+          _$litType$: _$lit_template_1,
+          values: [],
+        },
+        TemplateResultType.HTML
+      )
+    );
+    assert.isFalse(
+      isTemplateResult(
+        {
+          _$litType$: _$lit_template_1,
+          values: [],
+        },
+        TemplateResultType.SVG
+      )
+    );
   });
 
   test('isTemplateResult type only test', () => {
@@ -93,6 +126,21 @@ suite('directive-helpers', () => {
     if (isTemplateResult(v, TemplateResultType.SVG)) {
       acceptTemplateResult(v);
     }
+  });
+
+  test('isCompiledTemplateResult', () => {
+    assert.isTrue(
+      isCompiledTemplateResult({
+        _$litType$: _$lit_template_1,
+        values: [],
+      })
+    );
+
+    assert.isFalse(isCompiledTemplateResult(html``));
+    assert.isFalse(isCompiledTemplateResult(svg``));
+    assert.isFalse(isCompiledTemplateResult(null));
+    assert.isFalse(isCompiledTemplateResult(undefined));
+    assert.isFalse(isCompiledTemplateResult({}));
   });
 
   test('isDirectiveResult', () => {
