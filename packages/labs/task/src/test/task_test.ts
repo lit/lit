@@ -244,6 +244,7 @@ suite('Task', () => {
     el.task.run();
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.ok(el.signal);
+    assert.strictEqual(el.signal?.aborted, false);
 
     // If we start a new run before the previous is complete, the signal
     // should be aborted
@@ -252,8 +253,14 @@ suite('Task', () => {
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.strictEqual(previousSignal?.aborted, true);
 
-    // And the new run should have a fresh, unaborted, signal
+    // And the new run should have a fresh, non-aborted, signal
     assert.notStrictEqual(previousSignal, el.signal);
+    assert.strictEqual(el.signal?.aborted, false);
+
+    // When the new run is complete, its signal is not aborted
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.strictEqual(el.signal?.aborted, false);
   });
 
