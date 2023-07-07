@@ -241,9 +241,11 @@ export class Task<
 
     const key = ++this._callId;
     this._abortController = new AbortController();
+    let errored = false;
     try {
       result = await this._task(args!, {signal: this._abortController.signal});
     } catch (e) {
+      errored = true;
       error = e;
     }
     // If this is the most recent task call, process this value.
@@ -251,7 +253,7 @@ export class Task<
       if (result === initialState) {
         this.status = TaskStatus.INITIAL;
       } else {
-        if (error === undefined) {
+        if (errored === false) {
           try {
             this._onComplete?.(result as R);
           } catch {
@@ -273,6 +275,30 @@ export class Task<
       }
       // Request an update with the final value.
       this._host.requestUpdate();
+    }
+  }
+
+  /**
+   * Aborts the currently pending task run by aborting the AbortSignal
+   * passed to the task function.
+   *
+   * Aborting a task does nothing if the task is not running: ie, in the
+   * complete, error, or initial states.
+   *
+   * Aborting a task does not automatically cancel the task function. The task
+   * function must be written to accept the AbortSignal and either forward it
+   * to other APIs like `fetch()`, or handle cancellation manually by using
+   * [`signal.throwIfAborted()`]{@link https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/throwIfAborted}
+   * or the
+   * [`abort`]{@link https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/abort_event}
+   * event.
+   *
+   * @param reason The reason for aborting. Passed to
+   *     `AbortController.abort()`.
+   */
+  abort(reason?: unknown) {
+    if (this.status === TaskStatus.PENDING) {
+      this._abortController?.abort(reason);
     }
   }
 

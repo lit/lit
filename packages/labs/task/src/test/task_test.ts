@@ -16,6 +16,14 @@ import {
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+// Safari didn't support reasons until 15.4
+const supportsAbortSignalReason = (() => {
+  const controller = new AbortController();
+  const {signal} = controller;
+  controller.abort('reason');
+  return signal.reason === 'reason';
+})();
+
 suite('Task', () => {
   let container: HTMLElement;
 
@@ -25,7 +33,7 @@ suite('Task', () => {
     b: string;
     c?: string;
     resolveTask: () => void;
-    rejectTask: (error?: string) => void;
+    rejectTask: (error: string | undefined) => void;
     signal?: AbortSignal;
     taskValue?: string;
     renderedStatus?: string;
@@ -45,7 +53,7 @@ suite('Task', () => {
       c?: string;
 
       resolveTask!: () => void;
-      rejectTask!: (error?: string) => void;
+      rejectTask!: (error: string | undefined) => void;
       signal?: AbortSignal;
 
       taskValue?: string;
@@ -56,9 +64,16 @@ suite('Task', () => {
         const taskConfig = {
           task: (args: readonly unknown[], options?: TaskFunctionOptions) =>
             new Promise((resolve, reject) => {
-              this.rejectTask = (error = 'error') => reject(error);
+              this.rejectTask = (error) => reject(error);
               this.resolveTask = () => resolve(args.join(','));
-              this.signal = options?.signal;
+              const signal = (this.signal = options?.signal);
+              if (signal?.aborted) {
+                reject(signal.reason);
+              } else {
+                signal?.addEventListener('abort', () => {
+                  reject(signal.reason);
+                });
+              }
             }),
         };
         Object.assign(taskConfig, config);
@@ -213,7 +228,7 @@ suite('Task', () => {
   test('task error is not reset on rerun', async () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, 'error');
@@ -225,7 +240,7 @@ suite('Task', () => {
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.equal(el.taskValue, 'error');
     // Reject task and check result.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, `error`);
@@ -261,6 +276,26 @@ suite('Task', () => {
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.strictEqual(el.signal?.aborted, false);
+  });
+
+  test('tasks can be aborted', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    // We can abort a task
+    el.task.run();
+    el.task.abort('testing');
+    await tasksUpdateComplete();
+    assert.strictEqual(el.signal?.aborted, true);
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    if (supportsAbortSignalReason) {
+      assert.equal(el.task.error, 'testing');
+    }
+
+    // We can restart the task
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
     assert.strictEqual(el.signal?.aborted, false);
   });
 
@@ -360,7 +395,7 @@ suite('Task', () => {
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Task error reported.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
@@ -386,7 +421,7 @@ suite('Task', () => {
     await tasksUpdateComplete();
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
@@ -404,6 +439,21 @@ suite('Task', () => {
     expected = 'a3,b3';
     assert.equal(el.task.value, expected);
     assert.equal(el.taskValue, expected);
+  });
+
+  test('errors can be undefined', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+
+    // Catch the rejection to suppress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
+    // Task error reported.
+    el.rejectTask(undefined);
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.task.error, undefined);
+    assert.equal(el.task.value, undefined);
+    assert.equal(el.taskValue, undefined);
   });
 
   test('reports only most recent value', async () => {
@@ -453,7 +503,7 @@ suite('Task', () => {
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'error');
 
