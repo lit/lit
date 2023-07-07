@@ -280,7 +280,7 @@ const openChildPart = (
       const template = (
         ChildPart.prototype as ChildPart & {
           _$getTemplate(
-            result: TemplateResult
+            value: TemplateResult
           ): ConstructorParameters<typeof TemplateInstance>[0];
         }
       )._$getTemplate(value);
