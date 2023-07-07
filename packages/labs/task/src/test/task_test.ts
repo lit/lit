@@ -33,7 +33,7 @@ suite('Task', () => {
     b: string;
     c?: string;
     resolveTask: () => void;
-    rejectTask: (error?: string) => void;
+    rejectTask: (error: string | undefined) => void;
     signal?: AbortSignal;
     taskValue?: string;
     renderedStatus?: string;
@@ -53,7 +53,7 @@ suite('Task', () => {
       c?: string;
 
       resolveTask!: () => void;
-      rejectTask!: (error?: string) => void;
+      rejectTask!: (error: string | undefined) => void;
       signal?: AbortSignal;
 
       taskValue?: string;
@@ -64,15 +64,13 @@ suite('Task', () => {
         const taskConfig = {
           task: (args: readonly unknown[], options?: TaskFunctionOptions) =>
             new Promise((resolve, reject) => {
-              this.rejectTask = (error = 'error') => reject(error);
+              this.rejectTask = (error) => reject(error);
               this.resolveTask = () => resolve(args.join(','));
               const signal = (this.signal = options?.signal);
               if (signal?.aborted) {
-                console.error('signal already aborted');
                 reject(signal.reason);
               } else {
                 signal?.addEventListener('abort', () => {
-                  console.error('signal abort event');
                   reject(signal.reason);
                 });
               }
@@ -230,7 +228,7 @@ suite('Task', () => {
   test('task error is not reset on rerun', async () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, 'error');
@@ -242,7 +240,7 @@ suite('Task', () => {
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.equal(el.taskValue, 'error');
     // Reject task and check result.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, `error`);
@@ -402,7 +400,7 @@ suite('Task', () => {
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Task error reported.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
@@ -428,7 +426,7 @@ suite('Task', () => {
     await tasksUpdateComplete();
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
@@ -446,6 +444,21 @@ suite('Task', () => {
     expected = 'a3,b3';
     assert.equal(el.task.value, expected);
     assert.equal(el.taskValue, expected);
+  });
+
+  test('errors can be undefined', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+
+    // Catch the rejection to suppress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
+    // Task error reported.
+    el.rejectTask(undefined);
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.task.error, undefined);
+    assert.equal(el.task.value, undefined);
+    assert.equal(el.taskValue, undefined);
   });
 
   test('reports only most recent value', async () => {
@@ -495,7 +508,7 @@ suite('Task', () => {
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'error');
 

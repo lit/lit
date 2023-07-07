@@ -241,9 +241,11 @@ export class Task<
 
     const key = ++this._callId;
     this._abortController = new AbortController();
+    let errored = false;
     try {
       result = await this._task(args!, {signal: this._abortController.signal});
     } catch (e) {
+      errored = true;
       error = e;
     }
     // If this is the most recent task call, process this value.
@@ -251,7 +253,7 @@ export class Task<
       if (result === initialState) {
         this.status = TaskStatus.INITIAL;
       } else {
-        if (error === undefined) {
+        if (errored === false) {
           try {
             this._onComplete?.(result as R);
           } catch {
