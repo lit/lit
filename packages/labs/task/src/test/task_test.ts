@@ -68,9 +68,11 @@ suite('Task', () => {
               this.resolveTask = () => resolve(args.join(','));
               const signal = (this.signal = options?.signal);
               if (signal?.aborted) {
+                console.error('signal already aborted');
                 reject(signal.reason);
               } else {
                 signal?.addEventListener('abort', () => {
+                  console.error('signal abort event');
                   reject(signal.reason);
                 });
               }
@@ -286,6 +288,7 @@ suite('Task', () => {
     // We can abort a task
     el.task.run();
     el.task.abort('testing');
+    await el.task.taskComplete;
     await tasksUpdateComplete();
     assert.strictEqual(el.signal?.aborted, true);
     assert.equal(el.task.status, TaskStatus.ERROR, 'A');
