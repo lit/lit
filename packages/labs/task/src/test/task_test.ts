@@ -286,21 +286,16 @@ suite('Task', () => {
     // We can abort a task
     el.task.run();
     el.task.abort('testing');
-    try {
-      await el.task.taskComplete;
-    } catch (e) {
-      // expected
-    }
     await tasksUpdateComplete();
     assert.strictEqual(el.signal?.aborted, true);
-    assert.equal(el.task.status, TaskStatus.ERROR, 'A');
+    assert.equal(el.task.status, TaskStatus.ERROR);
     if (supportsAbortSignalReason) {
       assert.equal(el.task.error, 'testing');
     }
 
     // We can restart the task
     el.task.run();
-    assert.equal(el.task.status, TaskStatus.PENDING, 'B');
+    assert.equal(el.task.status, TaskStatus.PENDING);
     assert.strictEqual(el.signal?.aborted, false);
   });
 
