@@ -60,13 +60,7 @@ suite('Task', () => {
               this.resolveTask = () => resolve(args.join(','));
               const signal = (this.signal = options?.signal);
               signal?.addEventListener('abort', () => {
-                try {
-                  // Throw so we can reject with the same Error type the
-                  // DOM uses.
-                  signal.throwIfAborted();
-                } catch (e) {
-                  reject(e);
-                }
+                reject(signal.reason);
               });
             }),
         };
