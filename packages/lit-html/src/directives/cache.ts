@@ -22,6 +22,7 @@ import {
   clearPart,
   getCommittedValue,
   insertPart,
+  isCompiledTemplateResult,
   isTemplateResult,
   setCommittedValue,
 } from '../directive-helpers.js';
@@ -32,11 +33,9 @@ import {
 function getStringsFromTemplate(
   template: TemplateResult | CompiledTemplateResult
 ): TemplateStringsArray {
-  if (typeof template['_$litType$'] === 'number') {
-    return (template as TemplateResult).strings;
-  } else {
-    return (template as CompiledTemplateResult)['_$litType$'].h;
-  }
+  return isCompiledTemplateResult(template)
+    ? template['_$litType$'].h
+    : template.strings;
 }
 
 class CacheDirective extends Directive {
