@@ -6,7 +6,13 @@
 
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
-import {initialState, Task, TaskStatus, TaskConfig} from '@lit-labs/task';
+import {
+  initialState,
+  Task,
+  TaskStatus,
+  TaskConfig,
+  TaskFunctionOptions,
+} from '@lit-labs/task';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -20,6 +26,7 @@ suite('Task', () => {
     c?: string;
     resolveTask: () => void;
     rejectTask: (error?: string) => void;
+    signal?: AbortSignal;
     taskValue?: string;
     renderedStatus?: string;
   }
@@ -39,6 +46,7 @@ suite('Task', () => {
 
       resolveTask!: () => void;
       rejectTask!: (error?: string) => void;
+      signal?: AbortSignal;
 
       taskValue?: string;
       renderedStatus?: string;
@@ -46,10 +54,11 @@ suite('Task', () => {
       constructor() {
         super();
         const taskConfig = {
-          task: (...args: unknown[]) =>
+          task: (args: readonly unknown[], options?: TaskFunctionOptions) =>
             new Promise((resolve, reject) => {
               this.rejectTask = (error = 'error') => reject(error);
               this.resolveTask = () => resolve(args.join(','));
+              this.signal = options?.signal;
             }),
         };
         Object.assign(taskConfig, config);
@@ -220,6 +229,39 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, `error`);
+  });
+
+  test('task functions receive an AbortSignal', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    // Initially we have no signal because the task function hasn't been run
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.INITIAL);
+    assert.equal(el.signal, undefined);
+
+    // When the task is run, we'll get a signal
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.ok(el.signal);
+    assert.strictEqual(el.signal?.aborted, false);
+
+    // If we start a new run before the previous is complete, the signal
+    // should be aborted
+    const previousSignal = el.signal;
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.strictEqual(previousSignal?.aborted, true);
+
+    // And the new run should have a fresh, non-aborted, signal
+    assert.notStrictEqual(previousSignal, el.signal);
+    assert.strictEqual(el.signal?.aborted, false);
+
+    // When the new run is complete, its signal is not aborted
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.strictEqual(el.signal?.aborted, false);
   });
 
   test('tasks do not run when `autoRun` is `false`', async () => {
