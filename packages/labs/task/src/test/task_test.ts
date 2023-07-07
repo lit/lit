@@ -288,7 +288,11 @@ suite('Task', () => {
     // We can abort a task
     el.task.run();
     el.task.abort('testing');
-    await el.task.taskComplete;
+    try {
+      await el.task.taskComplete;
+    } catch (e) {
+      // expected
+    }
     await tasksUpdateComplete();
     assert.strictEqual(el.signal?.aborted, true);
     assert.equal(el.task.status, TaskStatus.ERROR, 'A');
