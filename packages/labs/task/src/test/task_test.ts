@@ -58,7 +58,16 @@ suite('Task', () => {
             new Promise((resolve, reject) => {
               this.rejectTask = (error = 'error') => reject(error);
               this.resolveTask = () => resolve(args.join(','));
-              this.signal = options?.signal;
+              const signal = (this.signal = options?.signal);
+              signal?.addEventListener('abort', () => {
+                try {
+                  // Throw so we can reject with the same Error type the
+                  // DOM uses.
+                  signal.throwIfAborted();
+                } catch (e) {
+                  reject(e);
+                }
+              });
             }),
         };
         Object.assign(taskConfig, config);
@@ -261,6 +270,24 @@ suite('Task', () => {
     el.resolveTask();
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.strictEqual(el.signal?.aborted, false);
+  });
+
+  test('tasks can be aborted', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    // We can abort a task
+    el.task.run();
+    el.task.abort('testing');
+    await tasksUpdateComplete();
+    assert.strictEqual(el.signal?.aborted, true);
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.task.error, 'testing');
+
+    // We can restart the task
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
     assert.strictEqual(el.signal?.aborted, false);
   });
 
