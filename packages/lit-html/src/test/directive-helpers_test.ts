@@ -112,6 +112,12 @@ suite('directive-helpers', () => {
     function acceptTemplateOrCompiledTemplateResult(
       _v: TemplateResult | CompiledTemplateResult
     ) {}
+    function acceptTemplateResultHtml(
+      _v: TemplateResult<typeof TemplateResultType.HTML>
+    ) {}
+    function acceptTemplateResultSvg(
+      _v: TemplateResult<typeof TemplateResultType.SVG>
+    ) {}
 
     const v = html`` as TemplateResult | CompiledTemplateResult;
     if (isTemplateResult(v)) {
@@ -122,9 +128,15 @@ suite('directive-helpers', () => {
     }
     if (isTemplateResult(v, TemplateResultType.HTML)) {
       acceptTemplateResult(v);
+      acceptTemplateResultHtml(v);
+      // @ts-expect-error v is an html template result
+      acceptTemplateResultSvg(v);
     }
     if (isTemplateResult(v, TemplateResultType.SVG)) {
       acceptTemplateResult(v);
+      acceptTemplateResultSvg(v);
+      // @ts-expect-error v is an svg template result
+      acceptTemplateResultHtml(v);
     }
   });
 
