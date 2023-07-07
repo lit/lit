@@ -16,6 +16,7 @@ import {
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+// Safari didn't support reasons until 15.4
 const supportsAbortSignalReason = (() => {
   const controller = new AbortController();
   const {signal} = controller;
@@ -66,9 +67,13 @@ suite('Task', () => {
               this.rejectTask = (error = 'error') => reject(error);
               this.resolveTask = () => resolve(args.join(','));
               const signal = (this.signal = options?.signal);
-              signal?.addEventListener('abort', () => {
+              if (signal?.aborted) {
                 reject(signal.reason);
-              });
+              } else {
+                signal?.addEventListener('abort', () => {
+                  reject(signal.reason);
+                });
+              }
             }),
         };
         Object.assign(taskConfig, config);
@@ -283,14 +288,14 @@ suite('Task', () => {
     el.task.abort('testing');
     await tasksUpdateComplete();
     assert.strictEqual(el.signal?.aborted, true);
-    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.task.status, TaskStatus.ERROR, 'A');
     if (supportsAbortSignalReason) {
       assert.equal(el.task.error, 'testing');
     }
 
     // We can restart the task
     el.task.run();
-    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.task.status, TaskStatus.PENDING, 'B');
     assert.strictEqual(el.signal?.aborted, false);
   });
 
