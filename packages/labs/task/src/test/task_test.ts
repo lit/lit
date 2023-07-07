@@ -16,6 +16,13 @@ import {
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+const supportsAbortSignalReason = (() => {
+  const controller = new AbortController();
+  const {signal} = controller;
+  controller.abort('reason');
+  return signal.reason === 'reason';
+})();
+
 suite('Task', () => {
   let container: HTMLElement;
 
@@ -277,7 +284,9 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.strictEqual(el.signal?.aborted, true);
     assert.equal(el.task.status, TaskStatus.ERROR);
-    assert.equal(el.task.error, 'testing');
+    if (supportsAbortSignalReason) {
+      assert.equal(el.task.error, 'testing');
+    }
 
     // We can restart the task
     el.task.run();
