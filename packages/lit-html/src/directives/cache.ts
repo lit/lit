@@ -28,15 +28,15 @@ import {
 } from '../directive-helpers.js';
 
 /**
- * @returns The template strings array for the provided template.
+ * The template strings array contents are not compatible between the two
+ * template result types as the compiled template contains a prepared string,
+ * only use for cache key.
+ * @returns The template strings array for the provided template result.
  */
-function getStringsFromTemplate(
-  template: TemplateResult | CompiledTemplateResult
-): TemplateStringsArray {
-  return isCompiledTemplateResult(template)
-    ? template['_$litType$'].h
-    : template.strings;
-}
+const getStringsFromTemplateResult = (
+  result: TemplateResult | CompiledTemplateResult
+): TemplateStringsArray =>
+  isCompiledTemplateResult(result) ? result['_$litType$'].h : result.strings;
 
 class CacheDirective extends Directive {
   private _templateCache = new WeakMap<TemplateStringsArray, RootPart>();
@@ -59,20 +59,21 @@ class CacheDirective extends Directive {
     if (
       isTemplateResult(this._value) &&
       (!isTemplateResult(v) ||
-        getStringsFromTemplate(this._value) !== getStringsFromTemplate(v))
+        getStringsFromTemplateResult(this._value) !==
+          getStringsFromTemplateResult(v))
     ) {
       // This is always an array because we return [v] in render()
       const partValue = getCommittedValue(containerPart) as Array<ChildPart>;
       const childPart = partValue.pop()!;
       let cachedContainerPart = this._templateCache.get(
-        getStringsFromTemplate(this._value)
+        getStringsFromTemplateResult(this._value)
       );
       if (cachedContainerPart === undefined) {
         const fragment = document.createDocumentFragment();
         cachedContainerPart = render(nothing, fragment);
         cachedContainerPart.setConnected(false);
         this._templateCache.set(
-          getStringsFromTemplate(this._value),
+          getStringsFromTemplateResult(this._value),
           cachedContainerPart
         );
       }
@@ -86,10 +87,11 @@ class CacheDirective extends Directive {
     if (isTemplateResult(v)) {
       if (
         !isTemplateResult(this._value) ||
-        getStringsFromTemplate(this._value) !== getStringsFromTemplate(v)
+        getStringsFromTemplateResult(this._value) !==
+          getStringsFromTemplateResult(v)
       ) {
         const cachedContainerPart = this._templateCache.get(
-          getStringsFromTemplate(v)
+          getStringsFromTemplateResult(v)
         );
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value

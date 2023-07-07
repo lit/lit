@@ -48,7 +48,7 @@ export const TemplateResultType = {
 export type TemplateResultType =
   (typeof TemplateResultType)[keyof typeof TemplateResultType];
 
-type isTemplateResultType = {
+type IsTemplateResult = {
   (val: unknown): val is TemplateResult | CompiledTemplateResult;
   <T extends TemplateResultType>(
     val: unknown,
@@ -59,15 +59,14 @@ type isTemplateResultType = {
 /**
  * Tests if a value is a TemplateResult or a CompiledTemplateResult.
  */
-export const isTemplateResult = ((
+export const isTemplateResult: IsTemplateResult = (
   value: unknown,
-  type: TemplateResultType | undefined
-) =>
+  type?: TemplateResultType
+): value is TemplateResult =>
   type === undefined
     ? // This property needs to remain unminified.
       (value as TemplateResult)?.['_$litType$'] !== undefined
-    : (value as TemplateResult)?.['_$litType$'] ===
-      type) as isTemplateResultType;
+    : (value as TemplateResult)?.['_$litType$'] === type;
 
 /**
  * Tests if a value is a CompiledTemplateResult.
