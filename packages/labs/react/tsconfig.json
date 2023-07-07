@@ -22,7 +22,8 @@
     "experimentalDecorators": true,
     "jsx": "react",
     "noImplicitOverride": true,
-    "types": ["mocha", "react", "react-dom"]
+    "skipLibCheck": true,
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": []

@@ -388,8 +388,7 @@ the element.`);
   >((props, __forwardedRef) =>
     createElement<Props, ReactComponent, typeof ReactComponent>(
       ReactComponent,
-      {...props, __forwardedRef},
-      props?.children
+      {...props, __forwardedRef}
     )
   );
 

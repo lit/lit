@@ -127,7 +127,8 @@
       ]
     },
     "test:dev": {
-      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "#comment": "Test files must also be specified in web-test-runner.config.js rollup config",
+      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "../../reactive-element:build",
@@ -139,11 +140,14 @@
         },
         "MODE": "dev"
       },
-      "files": [],
+      "files": [
+        "web-test-runner.config.js"
+      ],
       "output": []
     },
     "test:prod": {
-      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "#comment": "Test files must also be specified in web-test-runner.config.js rollup config",
+      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:rollup",
@@ -156,7 +160,9 @@
         },
         "MODE": "prod"
       },
-      "files": [],
+      "files": [
+        "web-test-runner.config.js"
+      ],
       "output": []
     },
     "test:node": {
@@ -176,11 +182,12 @@
     "@lit/reactive-element": "^1.5.0",
     "@types/react-dom": "^18.2.6",
     "@types/trusted-types": "^2.0.2",
+    "@web/dev-server-rollup": "^0.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "@types/react": "^18.2.14"
+    "@types/react": "17 || 18"
   },
   "publishConfig": {
     "access": "public"
