@@ -225,6 +225,42 @@ suite('Task', () => {
     assert.equal(el.taskValue, `a1,b1`);
   });
 
+  test('tasks can have initialValue', async () => {
+    // The test helpers make it hard to write proper args callbacks
+    // `args: () => [this.a, this.b]` would work, but `[el.a]` doesn't
+    // since `el` isn't initialized yet. This little hack works:
+    let initializing = true;
+    const el = getTestElement({
+      initialValue: 'initial',
+      args: () => [initializing ? 'a' : el.a, initializing ? 'b' : el.b],
+    });
+    initializing = false;
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+    assert.equal(el.taskValue, 'initial');
+
+    // The task is complete, so waiting for it shouldn't change anything
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+
+    // An element update (which checks args again) should not cause a rerun
+    el.requestUpdate();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+
+    // The task still reruns when arguments change
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a1,b`);
+  });
+
   test('task error is not reset on rerun', async () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);

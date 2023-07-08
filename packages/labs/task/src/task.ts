@@ -49,6 +49,16 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
   autoRun?: boolean;
+
+  /**
+   * If initialValue is provided, the task is initialized to the COMPLETE
+   * status and the value is set to initialData.
+   *
+   * Initial args should be coherent with the initialValue, since they are
+   * assumed to be the args that would produce that value. When autoRun is
+   * `true` the task will not auto-run again until the args change.
+   */
+  initialValue?: R;
   onComplete?: (value: R) => unknown;
   onError?: (error: unknown) => unknown;
 }
@@ -184,6 +194,13 @@ export class Task<
     this._onError = taskConfig.onError;
     if (taskConfig.autoRun !== undefined) {
       this.autoRun = taskConfig.autoRun;
+    }
+    // Providing initialValue puts the task in COMPLETE state and stores the
+    // args immediately so it only runs when they change again.
+    if ('initialValue' in taskConfig) {
+      this._value = taskConfig.initialValue;
+      this.status = TaskStatus.COMPLETE;
+      this._previousArgs = this._getArgs?.();
     }
   }
 
