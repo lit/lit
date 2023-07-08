@@ -3,4 +3,5 @@
 /node_modules/
 /lib/
 /index.*
-/context.*
+/legacy-decorators.*
+/std-decorators.*

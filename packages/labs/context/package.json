@@ -21,6 +21,16 @@
       "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./std-decorators.js": {
+      "types": "./development/std-decorators.d.ts",
+      "development": "./development/std-decorators.js",
+      "default": "./std-decorators.js"
+    },
+    "./legacy-decorators.js": {
+      "types": "./development/legacy-decorators.d.ts",
+      "development": "./development/legacy-decorators.js",
+      "default": "./legacy-decorators.js"
     }
   },
   "files": [
@@ -53,6 +63,11 @@
       ]
     },
     "build:ts": {
+      "dependencies": [
+        "build:ts-main"
+      ]
+    },
+    "build:ts-main": {
       "command": "tsc --build --pretty",
       "dependencies": [
         "../../lit:build:ts:types",
@@ -65,6 +80,7 @@
       ],
       "output": [
         "development",
+        "!development/test/legacy-decorators",
         "tsconfig.tsbuildinfo"
       ]
     },
@@ -151,7 +167,8 @@
     "@esm-bundle/chai": "^4.3.4-fix.0",
     "@lit-internal/scripts": "^1.0.1-pre.0",
     "@lit-labs/testing": "^0.2.2-pre.0",
-    "@types/trusted-types": "^2.0.2"
+    "@types/trusted-types": "^2.0.2",
+    "typescript": "^5.2.0-beta"
   },
   "publishConfig": {
     "access": "public"

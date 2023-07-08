@@ -168,7 +168,9 @@ packages/labs/context/test/
 packages/labs/context/node_modules/
 packages/labs/context/lib/
 packages/labs/context/index.*
-packages/labs/context/context.*
+packages/labs/context/legacy-decorators.*
+packages/labs/context/std-decorators.*
+
 packages/labs/eleventy-plugin-lit/development/
 packages/labs/eleventy-plugin-lit/demo/_site/
 packages/labs/eleventy-plugin-lit/demo/_js/*.bundle.js

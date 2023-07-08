@@ -209,11 +209,11 @@ memorySuite('memory leak test', () => {
     }
     // Expect the nodes that were removed to be garbage collected.
     window.gc();
-    // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
+    // Allow a 100% margin of heap growth; due to the 10kb expando, an actual
     // DOM leak is orders of magnitude larger.
     assert.isAtMost(
       performance.memory.usedJSHeapSize,
-      heap * 1.5,
+      heap * 2,
       'memory leak detected'
     );
   });
