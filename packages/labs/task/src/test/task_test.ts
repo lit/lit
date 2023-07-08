@@ -686,7 +686,7 @@ suite('Task', () => {
     assert.equal(warnMessages.length, 0);
   });
 
-  test('Tasks can see effects of update()', async () => {
+  test('Tasks can see effects of willUpdate()', async () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         args: () => [],
@@ -697,8 +697,7 @@ suite('Task', () => {
       value = 'foo';
       taskObservedValue: string | undefined = undefined;
 
-      override update(changedProps: PropertyValues) {
-        super.update(changedProps);
+      override willUpdate() {
         this.value = 'bar';
       }
     }
@@ -709,6 +708,44 @@ suite('Task', () => {
     await el.task.taskComplete;
 
     assert.equal(el.taskObservedValue, 'bar');
+  });
+
+  test('Elements only render once for pending tasks', async () => {
+    let resolveTask: (v: unknown) => void;
+    let renderCount = 0;
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        args: () => [],
+        task: () => new Promise((res) => (resolveTask = res)),
+      });
+
+      override update(changedProperties: PropertyValues) {
+        super.update(changedProperties);
+        renderCount++;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    // The first update will trigger the task
+    await el.task.taskComplete;
+    assert.equal(renderCount, 1);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // The task starting should not trigger another update
+    await el.updateComplete;
+    assert.equal(renderCount, 1);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // But the task completing should
+    resolveTask!(undefined);
+    // TODO (justinfagnani): Awaiting taskComplete and updateComplete is
+    // similar in function to await tasksUpdateComplete(), but more accurate
+    // due to not relying on a rAF. We should update all the tests.
+    await el.task.taskComplete;
+    await el.updateComplete;
+    assert.equal(renderCount, 2);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
   });
 
   test('performTask waits on the task', async () => {
