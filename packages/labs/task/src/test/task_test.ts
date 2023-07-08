@@ -245,6 +245,12 @@ suite('Task', () => {
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.task.value, 'initial');
 
+    // An element update (which checks args again) should not cause a rerun
+    el.requestUpdate();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+
     // The task still reruns when arguments change
     el.a = 'a1';
     await tasksUpdateComplete();
