@@ -66,6 +66,9 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
    * those changes renderable.
    *
    * Note: `'afterUpdate'` is unlikely to be SSR compatible in the future.
+   *
+   * If `false`, the task is not run automatically, and must be run with the
+   * {@linkcode run} method.
    */
   autoRun?: boolean | 'afterUpdate';
 

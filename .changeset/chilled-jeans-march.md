@@ -2,4 +2,4 @@
 '@lit-labs/task': major
 ---
 
-Run tasks in update instead of updated
+Adds the `'afterUpdate'` option for `autoRun` to Task, and runs tasks by default in `hostUpdate()` instead of `hostUpdated()`.
