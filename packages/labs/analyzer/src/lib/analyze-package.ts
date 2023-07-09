@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts, {CompilerOptions} from 'typescript';
+import ts from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {DiagnosticsError} from './errors.js';
@@ -45,7 +45,7 @@ export const createPackageAnalyzer = (
     if (options.exclude !== undefined) {
       configFile.config.exclude = [
         ...(configFile.config.exclude ?? []),
-        options.exclude,
+        ...options.exclude,
       ];
     }
     commandLine = ts.parseJsonConfigFileContent(
