@@ -41,12 +41,8 @@ export const createPackageAnalyzer = (
   let commandLine: ts.ParsedCommandLine;
   if (ts.sys.fileExists(configFileName)) {
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-    // TODO: handle configFile.errors
     if (options.exclude !== undefined) {
-      configFile.config.exclude = [
-        ...(configFile.config.exclude ?? []),
-        ...options.exclude,
-      ];
+      (configFile.config.exclude ??= []).push(...options.exclude);
     }
     commandLine = ts.parseJsonConfigFileContent(
       configFile.config /* json */,
