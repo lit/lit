@@ -41,16 +41,19 @@ export const createPackageAnalyzer = (
   let commandLine: ts.ParsedCommandLine;
   if (ts.sys.fileExists(configFileName)) {
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-    const existingOptions: CompilerOptions = {};
+    // TODO: handle configFile.errors
     if (options.exclude !== undefined) {
-      existingOptions.exclude = options.exclude;
+      configFile.config.exclude = [
+        ...(configFile.config.exclude ?? []),
+        options.exclude,
+      ];
     }
     commandLine = ts.parseJsonConfigFileContent(
       configFile.config /* json */,
-      ts.sys,
-      packagePath,
-      existingOptions,
-      configFileName
+      ts.sys /* host */,
+      packagePath /* basePath */,
+      {} /* existingOptions */,
+      configFileName /* configFileName */
     );
   } else if (isDirectory) {
     console.info(`No tsconfig.json found; assuming package is JavaScript.`);
